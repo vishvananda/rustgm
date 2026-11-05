@@ -1334,6 +1334,7 @@ impl Checker<'_> {
         }
         let item = self.item(key)?;
         let ItemKind::Function {
+            flags,
             parameters,
             result,
             body,
@@ -1351,7 +1352,7 @@ impl Checker<'_> {
         if variadic
             && owner.is_none_or(|id| !self.report.resolution.foreign_owners.contains_key(&id))
         {
-            return Err(self.error(key, "variadic definitions require unstable Rust support"));
+            calling_conventions::variadic_definition(self.report, key, flags)?;
         }
         Ok(Signature {
             parameters,
@@ -1657,7 +1658,7 @@ impl Checker<'_> {
                             .bindings(binder)
                             .map_err(|e| self.error(key, e))?,
                     );
-                    self.publish_source_function(key, id, ty, signature.parameters)?;
+                    self.publish_source_function(key, id, ty)?;
                     let item = self.intern(
                         key,
                         Type::FunctionItem {

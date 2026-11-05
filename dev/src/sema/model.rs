@@ -38,6 +38,8 @@ pub enum Cast {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Operation {
+    /// Actual final ellipsis binding; declaration data alone cannot initialize it.
+    Variadic,
     Borrow,
     Address,
     AddressDereference,

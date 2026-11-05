@@ -1,0 +1,91 @@
+{
+  "cases": [
+    {
+      "file": "run.rs",
+      "sha256": "fe7e07cc6dc601202040c94bd04ce524eb26550209b96298b6cd1cdeb09f67c4",
+      "predecessor": "source.rs",
+      "predecessor_sha256": "32e3fd0dc317e37f7b4610c8343b8c979c7ebec9d94d70abec7262be58a0ed92",
+      "prediction": {
+        "accepted": true,
+        "emit": "obj",
+        "overflow_checks": false,
+        "cause": "separate actual application panic handler closes original assert fallback through normal source abort"
+      }
+    },
+    {
+      "file": "rzro.rs",
+      "sha256": "6fa93a76bc7ff9d97d266a005cd352ab5af0c7c4acbab2b809210b9b7b280013",
+      "predecessor": "srczero.rs",
+      "predecessor_sha256": "6cf466d07030beee93b15d8496b17492ad644b267d0b524d36c68862a7440618",
+      "prediction": {
+        "accepted": true,
+        "emit": "obj",
+        "overflow_checks": false,
+        "cause": "separate actual application panic handler closes original assert fallback through normal source abort"
+      }
+    },
+    {
+      "file": "rorder.rs",
+      "sha256": "a39f94c05a26b1983cd5a614550810b03f926935cdce8382a433bbdb939c2305",
+      "predecessor": "dc_order.rs",
+      "predecessor_sha256": "44408b2dad521b20cc011cf23f6ff0e10e68b9a8d91edcfa6e0680c3226ede0c",
+      "prediction": {
+        "accepted": true,
+        "emit": "obj",
+        "overflow_checks": false,
+        "cause": "separate actual application panic handler closes original assert fallback through normal source abort"
+      }
+    },
+    {
+      "file": "rfixed.rs",
+      "sha256": "e207ee411eea9a3b589b42bf2e3d008f5bae8f42c40c8373ed41cd1138966f5f",
+      "predecessor": "fixarg.rs",
+      "predecessor_sha256": "8e9125563faa3743ed390b37872633a662e82311197691a878c005633e8eff05",
+      "prediction": {
+        "accepted": true,
+        "emit": "obj",
+        "overflow_checks": false,
+        "cause": "separate actual application panic handler closes original assert fallback through normal source abort"
+      }
+    },
+    {
+      "file": "rfrom.rs",
+      "sha256": "0b3bb39417d14a2c98a2b686bac0896f6cb471e742c65fd5083a586905b22503",
+      "predecessor": "fdcall.rs",
+      "predecessor_sha256": "eb8269411e0dcb735dab589a7d72968b5a7d8fa4ff624d13ec294dc8ae7571e9",
+      "prediction": {
+        "accepted": true,
+        "emit": "obj",
+        "overflow_checks": false,
+        "cause": "separate actual application panic handler closes original assert fallback through normal source abort"
+      }
+    }
+  ],
+  "native": [
+    {
+      "source": "run.rs",
+      "observer": "native.c",
+      "stdout": "17 11 17.5 23 23 29 31\n"
+    },
+    {
+      "source": "rzro.rs",
+      "observer": "zero2.c",
+      "stdout": "37\n"
+    },
+    {
+      "source": "rorder.rs",
+      "observer": "drop.c",
+      "stdout": "41 41 77 47\n"
+    },
+    {
+      "source": "rfixed.rs",
+      "observer": "fixed.c",
+      "stdout": "31.5\n"
+    },
+    {
+      "source": "rfrom.rs",
+      "observer": "fdcall.c",
+      "stdout": "17\n"
+    }
+  ]
+}

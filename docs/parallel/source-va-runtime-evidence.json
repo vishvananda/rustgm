@@ -1,0 +1,1373 @@
+{
+  "schema": 1,
+  "base": "4cd080c84d7e2cac96885868f2b5cbe5957a1ccd",
+  "branch": "implement/source-va-runtime-20261105",
+  "scope": "finite actual source cursor runtime; const cleanup, c_void C enum ABI and full profiles remain required",
+  "compiler_sources": {
+    "dev/src/body/body_view.rs": "624b2adb19bbfb470c2e4f2c34dbdcd04cd49d9548a640f08dedf53eea6fd5a4",
+    "dev/src/body/build.rs": "6afaf03406a3a4ed921b4e9426f5ede197f3d418cc7bb2a9c7133b44db816850",
+    "dev/src/body/build/site_inputs.rs": "5695caab35d4543162ccb76128a2ceadb6db9931f97ef146c5861ee05a08e470",
+    "dev/src/body/build/vararg.rs": "0355d080e292164738b3cb756c207c8cbfa86eec46d802835a36ea9f086351d5",
+    "dev/src/body/ir.rs": "cf7cd6c74ed9c35a58d32b87c69cfba8d9241f2c41ffe1de755a461da7e30ee8",
+    "dev/src/body/mod.rs": "0b31eab6e2732ae104fbc5e1d96164ad34ff97003f61ee2678452b22191aadf1",
+    "dev/src/body/vararg.rs": "f0bb60f52cf093b4cca874018dac6a48af698ed89a3fa4ddaf16f341c40dbac9",
+    "dev/src/borrow/ownership.rs": "a7b6dbf9b844365b5c8f1c7866df9e2b629648a6865ae7b64ada5483adfd77f6",
+    "dev/src/borrow/ownership/paths.rs": "b91805660d2f01b93557a9b600e8f025cb9a48ce2e0ee8ce7d1992dfcdd145c4",
+    "dev/src/borrow/regions/places.rs": "865a591569ad54c469b7dae1680958ed2c95979e2bf342b5486585e9efc0e3d1",
+    "dev/src/const_eval/mod.rs": "e70aa9c7f42e2490bc3a955ffd9f48ad0330ed93cc012c36fee02c7906005f74",
+    "dev/src/lower/crate_originals/ports.rs": "170620b9b0e002b8dd44475e0c057f039f6ad1040a3c35d6376cd2fb965a3ff7",
+    "dev/src/lower/function.rs": "dc5628d6c7bbc64537f80345503cea5d931a9d58aa94d36818f9c6bc8cb7d4fc",
+    "dev/src/lower/function/vararg.rs": "c4b24f6a3638ab872defdb57b84c7931bff84ea23c8976cd6a9eaaa040ffc62a",
+    "dev/src/lower/instances/demand.rs": "9febfc108ba213d79ac8b3439a0bbdc9dc3985cefd5cca268fe41f840d340758",
+    "dev/src/lower/instances/dependencies.rs": "3e0ecdb8b3a92f044386e44e86bcec56917533bfea7f5396e198943fbc266876",
+    "dev/src/lower/transported_source/cfg_rows.rs": "8e0da938762cd23157a6a29a382c4ba3d7cc2ee70267f47a2d2c6c36c0116da6",
+    "dev/src/lowir/builder.rs": "959a0db3432ed7ab20cf8e06d53df88fd5d5798c383c0f211b226dd74cff413d",
+    "dev/src/lowir/builder/vararg.rs": "64035dea82ee717c2429c93d97023cb951d733877ce13664ba80a70908baf46d",
+    "dev/src/lowir/mod.rs": "4cc5d07751b10681d471b9c48de7229752a453ed35ec53123ea85dce0040862b",
+    "dev/src/lowir/program.rs": "528f1678088b9f4bcbb004da3fde298b383ac4c5bda4f2dd63f0854f681810c4",
+    "dev/src/lowir/validation.rs": "75ea61bc3cfe1264f96414aa9074362c4e96d44a41cdcf85cd7d3316bde76f2d",
+    "dev/src/lowir/vararg.rs": "71c6307f3a3ca89a66d9e0777b91126679c57e0c5090c7f02ccb3f05163816c7",
+    "dev/src/lowir/writer.rs": "ad1f285aa1a1091b3eaaa79d4ae5d41d6e353adedf3bd19e9cbc7cef022a0d5a",
+    "dev/src/resolve/bindings.rs": "abdc800e25c3688085a1e62967b3c4de490d1014d24ece7f43d8c79bacc0cfd2",
+    "dev/src/resolve/bindings/policy.rs": "add0195439081ed7ac88cdb4a89d49e816113332486939d0e889539c83a50bde",
+    "dev/src/sema/bodies.rs": "1d05fc35674069549f0b9bbaa3f2f1b0a892adb2e1ca1bb64bba5ddec8834bf1",
+    "dev/src/sema/bodies/variadics.rs": "a2650bc0033e6bf1048e1ec14c083994d59a3c21754126cfc8dd1a32145ea169",
+    "dev/src/sema/compiler_items.rs": "c6d5d62722de57deeec5bc0acfab832f1e47ec9e25e4a74e795ed4d2ce334049",
+    "dev/src/sema/compiler_items/intrinsic_contracts.rs": "427cece4ce17ade5b735fc0da417fc9c8112b9913b2d96260289c5934b4c72f5",
+    "dev/src/sema/compiler_items/intrinsic_contracts/open.rs": "3c81bd24ce2486de14e1f9c43e04843f6d5c334fa18238f743d5883a052d27a3",
+    "dev/src/sema/compiler_items/roles.rs": "033dd2423f83456300ece0ee61d37083ccacd23ca705dc838aa06ea07c89c2cc",
+    "dev/src/sema/compiler_items/tag_intrinsic/opened_calls.rs": "fb488e2267790f06b91bf7fe6acf262ccd77f00ba9287bf9bc77bdb84d93fc3a",
+    "dev/src/sema/compiler_items/vararg.rs": "f040f84d8c2db0409caaf306df79ffa2afcfb911d24eafc68ec7c65b22342965",
+    "dev/src/sema/compiler_items/vararg/binding.rs": "a8999c281126957e61971f7ee8cb1f9e54ee34ab63ec2d5914e811146d574314",
+    "dev/src/sema/compiler_items/vararg/calls.rs": "0b502d952a391344e5c97affa5d330f53666415098d81ab226b0bc8d3dda3ba4",
+    "dev/src/sema/compiler_items/vocab_semantics.rs": "7d0a327fa5982491fd3974c2e096478f77cd254ce5bb1b77c26ea8cf2b921985",
+    "dev/src/sema/compiler_items/wrappers.rs": "8813854ea8b7ca4a84f155da0534ffaef4d1e9e0958c12bc097cd9f67c5d6599",
+    "dev/src/sema/constants/values.rs": "ba6b5a754ca5de5b2576c434491811b57e9d821e1d4e3e020ec6b5990294da99",
+    "dev/src/sema/constants/values/va_src.rs": "2a9d48a5cc1fb4dea7d1d568f4c2ad1e3d5be82187b1c2dd071f045d23202c2a",
+    "dev/src/sema/declarations.rs": "f0d71fac6849fda9c7931cac97cac2ad4a9a9ba8b0e31b7bce5800f006acd880",
+    "dev/src/sema/declarations/calling_conventions.rs": "f75317d568de14aa7378cba060a657909b36eca75ffe4a224a60d56e0621272b",
+    "dev/src/sema/declarations/contracts.rs": "ebdb31d5ff1c80017875324021a4be33bb4993b90382194919e4049d79509f0c",
+    "dev/src/sema/declarations/destructors/headers.rs": "35c53722aa97af8df4d6aefba395626d16d82b1f8825cc3ff48db806f8613dfb",
+    "dev/src/sema/declarations/destructors/receivers.rs": "cffec9a7feb53ef6e0c8a381b6ecef67b7570a48f96f9b6aec542a4c3760049a",
+    "dev/src/sema/model.rs": "e019de9c26e07d7ae9598d708745e4da190ccd980221472108b4670c15813ce2",
+    "dev/src/sema/type_view.rs": "9f2e3e6ce5555a704aa52cba19588660e49f9dcd9a6c4c50a96baf1f8413e8c2",
+    "dev/tests/invariants/vocab_claims.rs": "b8068dbc66f5834043282e08600dc711ac4883c1a2af376011106c49b47b2803",
+    "dev/tests/suites/traits/mod.rs": "10b1865ec7c1b1ea5bf71badd210e15025bf4f467aac323414e61fedaa177ba9",
+    "dev/tests/vactx.rs": "0003f9a4b0ffeb9231269f82756b80c82953aefc6972d57a4b612b7abb95b8a4"
+  },
+  "fixtures": {
+    "pa31/tests/spec/source-va-runtime/README.md": "a3098967befff92d426933bc73c860fbedf08fe421a6547be1dfff953dd02adc",
+    "pa31/tests/spec/source-va-runtime/alias.rs": "c4a26f717947d6613cc51a352786be2262d7b303be94a5045d7a416273c79227",
+    "pa31/tests/spec/source-va-runtime/argraw.rs": "25da4de57079d16e325f9c8bc04df0922b13bd3df57f7faebc1da79409822832",
+    "pa31/tests/spec/source-va-runtime/bool.rs": "2c0c4cc3538acdd38f5751afc6c2ef00c0446b070eede3f3382cd51c3297af8f",
+    "pa31/tests/spec/source-va-runtime/c_void.md": "2d622454864a5ed26ec2245470fb19f7082fb813c461f55ca844bf5efb388293",
+    "pa31/tests/spec/source-va-runtime/clcall.rs": "13258ea991f754e2bcfa3bb142abca9d9003eed8f458b829d69758c017468cf9",
+    "pa31/tests/spec/source-va-runtime/cldef.rs": "3f63e2590f42a35441027193180e49ae38c87256ea0920c1f5444766bdc1622d",
+    "pa31/tests/spec/source-va-runtime/clread.rs": "854b62d5e558c9216da020af03f21f5f5b9c31135b0874611f90a841cdb949dd",
+    "pa31/tests/spec/source-va-runtime/const.rs": "5bbd00869c8fbb5dc22da4b0f57110d2b5ee9393e1a96ea1c6cb451f0bf5e16f",
+    "pa31/tests/spec/source-va-runtime/cutpred.json": "98c3a7b30152d3d5f4f107bfb408fc34b7b81739f7c49c81a85b652d44d3551e",
+    "pa31/tests/spec/source-va-runtime/cv_loc.rs": "46fa8cb7c5355c2563120333d93366a92fa8bf1a14bc6b3c281b37da438376dd",
+    "pa31/tests/spec/source-va-runtime/cvcopy.rs": "ef022dffd36ec6a37c807a794235befd5d3dc71c634863e76f125f57eea01840",
+    "pa31/tests/spec/source-va-runtime/cvdup.rs": "bb842563cc0d5a915964402682df8caf5c3f6c74b377535860aa6a55b2bb2444",
+    "pa31/tests/spec/source-va-runtime/cvgen.rs": "487b3716aea79ac3e4971c729df5f10adb681f3eebff49ba13366e765a08f7cf",
+    "pa31/tests/spec/source-va-runtime/cvloc.c": "bac53115e3d1c94efc028f454539fa794f205845ca2227c365bc65f896efb1a0",
+    "pa31/tests/spec/source-va-runtime/cvloc.json": "dc3b72fac4ad3cc738cbb0a6d96c55a97826450ec07e3e5b6143c7e1b9d49597",
+    "pa31/tests/spec/source-va-runtime/cvloc2.json": "8342393c6037596f7f08f1a5a131c51dec92470764452a49b77a45ea39a28384",
+    "pa31/tests/spec/source-va-runtime/cvloc2.rs": "1ff7c8af18386a842bda144db3474cbdc3abfdf102e74671485e76fb941783e1",
+    "pa31/tests/spec/source-va-runtime/cvnone.rs": "105c971a08a67959c077103719e903e5ed2f07e357adb27ca2486fe4fa8612fc",
+    "pa31/tests/spec/source-va-runtime/cvoid.c": "991c70b744b8009c49994e72830ef9baa0958fcc9c33e8159a23ed15d32dcf73",
+    "pa31/tests/spec/source-va-runtime/cvoid.rs": "085a147d5bbb8f36b80cc2c980939f2c795d946b8d49eb616c5e63248260dbcc",
+    "pa31/tests/spec/source-va-runtime/cvown.rs": "14ccad8ff2f90fa0ff518b67bf62431d13032b1c5ce70392c1fc8c2bff823c56",
+    "pa31/tests/spec/source-va-runtime/cvpred.json": "1477660e7dd1bd721b14b37fc92db06d013c866d602c06f0b84c299beb56c403",
+    "pa31/tests/spec/source-va-runtime/cvpriv.rs": "5bc2babdf9edc385b1439ec81f3464add6b33744d62db9cc60a2a50cc9b64bdb",
+    "pa31/tests/spec/source-va-runtime/cvrepr.rs": "ac8be7d5033ba78438671c6dd1465bcec41ff970fc74ca5f99efd1dacb2c769d",
+    "pa31/tests/spec/source-va-runtime/cvsame.rs": "e5910de0a88b98fa4a87621e17416046eb608ceca47300f4784cfa7dfbe94e67",
+    "pa31/tests/spec/source-va-runtime/cvtype.rs": "cb4d799a580f4965ad86423438dba628933f25b631bc8dfafdb4c17a471015eb",
+    "pa31/tests/spec/source-va-runtime/dc_method.rs": "184a73e8b608a672f67271f290eeeab1095a6c9da4a812382a90f9e23650c630",
+    "pa31/tests/spec/source-va-runtime/dc_ok.rs": "03578dfc571f2586ec08633aef7b98c7d9d637aa9086ec7aefbe687d4e1ac3ff",
+    "pa31/tests/spec/source-va-runtime/dc_order.rs": "44408b2dad521b20cc011cf23f6ff0e10e68b9a8d91edcfa6e0680c3226ede0c",
+    "pa31/tests/spec/source-va-runtime/dc_trait.rs": "ab869c5efa1dc46b2b419b57d28aeaa8ba3e1ad0ea7ab4af8da3ad51aac8ebfe",
+    "pa31/tests/spec/source-va-runtime/dc_trait2.rs": "a829bbf9ab70a921f04d9e488f18065cc08835c9390c0dc73286de752f371c93",
+    "pa31/tests/spec/source-va-runtime/dc_unsafe.rs": "c833f532e6decabc794f36c4562dd665f58bade4cbd1ef77ce00a9c8deb22d83",
+    "pa31/tests/spec/source-va-runtime/dcfix.json": "e543abee858ad5eb421f66b0d2fb48d45e9cfd4738a92a7ef0103246b6256f05",
+    "pa31/tests/spec/source-va-runtime/dcpred.json": "472ff7e9dc80c180d39ffece448fccaa72eeba9866e3ad3440e8cddaeb301fce",
+    "pa31/tests/spec/source-va-runtime/drop.c": "107681a5195583e944722229c30767f244e97dffaa41e923430a60bddb038cb3",
+    "pa31/tests/spec/source-va-runtime/escape.rs": "8f8defbadd7e86822965f9cc501447d4bf40fbead516cd9abc714240188a2170",
+    "pa31/tests/spec/source-va-runtime/fdcall.c": "4594ce7d3eed4c0411347dd94e2e55574daf54c77d21c42a2d1bcec7bfeafeb8",
+    "pa31/tests/spec/source-va-runtime/fdcall.rs": "eb8269411e0dcb735dab589a7d72968b5a7d8fa4ff624d13ec294dc8ae7571e9",
+    "pa31/tests/spec/source-va-runtime/feature.tsv": "b053c399d290b4acb68e28aa9a33194bff059253a02ac9868b9dbce2b32a0786",
+    "pa31/tests/spec/source-va-runtime/fixarg.rs": "8e9125563faa3743ed390b37872633a662e82311197691a878c005633e8eff05",
+    "pa31/tests/spec/source-va-runtime/fixed.c": "ac368dec38ccff67f762c0e111bd722f08ac0e59597a6fbaf164a5409c4d78e7",
+    "pa31/tests/spec/source-va-runtime/fixpred.json": "2e345a128dd888055875d49573efe4b3dad1322a93eb6c5aeb7c2dcf0bbbca74",
+    "pa31/tests/spec/source-va-runtime/float.rs": "320cc398bd27ca0b4e60499701cb09828105b80b922af85653b12a2b2ea3d338",
+    "pa31/tests/spec/source-va-runtime/fnptr.rs": "2d6938f915d026ce86cbdcb35c42ad010cb97406156f993ae5e1f40bd7b6cf69",
+    "pa31/tests/spec/source-va-runtime/initial2/clcall.rs": "b27a9b1132c9cfb1a3de1d33a7d00395ea93e536fde8773ba0e6e03bdedb055b",
+    "pa31/tests/spec/source-va-runtime/initial2/cldef.rs": "4a6d98b1ea8ff90168bdc909ed34974fd3ee4bf7e4adbd1af5efce3ae1c072ec",
+    "pa31/tests/spec/source-va-runtime/initial2/cutpred.json": "2d2fcb4e9eea349cad26326fdf9ae2b74d0174d2e5119ff4f5d2295a4dc522ad",
+    "pa31/tests/spec/source-va-runtime/initial2/prefix.rs": "f26e83b54acd17cbe03c4d1ddca266f6d666699367736e6ba8199fcfc3fafb94",
+    "pa31/tests/spec/source-va-runtime/initial2/safe2.rs": "9a610a40bb26d7a82c1828e264583f8de5b3194f6b57c8bc94840261dea079fa",
+    "pa31/tests/spec/source-va-runtime/initial2/source.rs": "e00a5b77d131eb19569293b5e4c5973703fbe0892bb2039f2ae320f916b8eebd",
+    "pa31/tests/spec/source-va-runtime/initial2/srczero.rs": "48749b05f5d66a7e1a2d730fb784fc1b4aaa8e2cab518447b40e4eb013cc0bec",
+    "pa31/tests/spec/source-va-runtime/initial2/unused2.rs": "ac22f3a6a1f00c6d8f53e13d3d6695f578105db0c24b83d912162f2408d80851",
+    "pa31/tests/spec/source-va-runtime/initial2/zero.c": "cce0dfb5437b6973b8135618e2e9c7432b6bf3daf73aa9d11cf7985808fc536d",
+    "pa31/tests/spec/source-va-runtime/initial3/clcall.rs": "959e590beeacd57cf69a0f027e3734c4a37cd3889e4cc0160abb8b4877fd6eed",
+    "pa31/tests/spec/source-va-runtime/initial3/cldef.rs": "f6565bedd18b476b6b0cab1892319d20c497308fb4d0e76c14b35cd76add68c3",
+    "pa31/tests/spec/source-va-runtime/initial3/cutpred.json": "3537230853c87ec94a6957958530259f6989927676d2946334d8f525594432b0",
+    "pa31/tests/spec/source-va-runtime/initial3/prefix.rs": "8e6539598800c59b4ded83babfcdc485d1edef2a0f64cce188abdfaa57dfe87f",
+    "pa31/tests/spec/source-va-runtime/initial3/safe2.rs": "f0e4464029264bd7a573b3418847f5a6dfe367bf13bda0077f7f5b33d85ec807",
+    "pa31/tests/spec/source-va-runtime/initial3/source.rs": "bfd2d42264373eb49a2f7a2e5f84fe9235a06a110be814f2289c6b4cfdb5e4b1",
+    "pa31/tests/spec/source-va-runtime/initial3/srczero.rs": "011aaa21b593c63ecc88c654360685ba625b73d074381ff752b298cc8c6592e7",
+    "pa31/tests/spec/source-va-runtime/initial3/unused2.rs": "0059e66ca9e8585af6832b15e4fa55345edf8f415cfe9b7b59956efd5c540a20",
+    "pa31/tests/spec/source-va-runtime/initial4/cutpred.json": "a20d5a0ddffa12372ce4a9182b5f06721f27698ae3c1055415c0a1efbc94972b",
+    "pa31/tests/spec/source-va-runtime/initial5/clcall.rs": "106625b92cd2b5af60feb2d48a89f7a2344bf1b576f566b825baa905275b5ad2",
+    "pa31/tests/spec/source-va-runtime/initial5/cldef.rs": "20399755717465a545525c45c18dcb5051d7c51edddfe79a4a8d0ccf5a5866e8",
+    "pa31/tests/spec/source-va-runtime/initial5/cutpred.json": "377696fe0c342079ef082768dfb17c3698c6ca7e68b3a699f227e1b2e26fb852",
+    "pa31/tests/spec/source-va-runtime/initial5/prefix.rs": "3017aae8aa4a41b8c2f2c2f145918153210b253fc2fbfccc2f59d5dcbff6d261",
+    "pa31/tests/spec/source-va-runtime/initial5/safe2.rs": "801e8b1b6293ecb481f56107e25e75da19c285f8ae1e0dd4f3f3c5f8e212d483",
+    "pa31/tests/spec/source-va-runtime/initial5/source.rs": "bcaecd8bddcd49f30ed2155dd585c39e7bfe5b5ea3887568147786533d2e19cd",
+    "pa31/tests/spec/source-va-runtime/initial5/srczero.rs": "3cdb3515d9a6330b11ad65358be62a136960784186529f1c6b7aedfd4bb68e67",
+    "pa31/tests/spec/source-va-runtime/initial5/unused2.rs": "2a22d1626f1c0a75bdb35dd60dd267124899fd3cd79261d3d2ce151653f43b83",
+    "pa31/tests/spec/source-va-runtime/native.c": "947047d1d1278e38a425434cf36a3d09d4072ecb7f05de1e0e275da594cb273b",
+    "pa31/tests/spec/source-va-runtime/native.rs": "4f21c757d36b0725c77ea111763b0fec82ade21ab1695726273822dfb98373f6",
+    "pa31/tests/spec/source-va-runtime/nofeat.rs": "78d1dc4c7a28a8386cb05e9dcabc20f368edc5b8b16b64c197f07d3a3299ea4b",
+    "pa31/tests/spec/source-va-runtime/original/ffi.rs": "902dad68e446f31f33809bcf2e02f77a0c48b7e10e652f427d43d794cd04340e",
+    "pa31/tests/spec/source-va-runtime/original/intrin.rs": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+    "pa31/tests/spec/source-va-runtime/original/sources.json": "b3daf8f38ad5ae7fd1b7fbe6f81aa7210968d726c7d2336273695bb94266ba47",
+    "pa31/tests/spec/source-va-runtime/original/valist.rs": "0eafd01f996b0e06644887453fb5229a0c4f359345888ce7fc554b157dbdb974",
+    "pa31/tests/spec/source-va-runtime/original/vari.rs": "3911ebaca93e5ebe8e5929f2d5d5348d77528b8d6f4b5c1cc598bbbb0d78adf4",
+    "pa31/tests/spec/source-va-runtime/prefix.rs": "a208159729846aea6c8faa70df0cb9bd13af1a72728fc429bfd0998a05fd70bd",
+    "pa31/tests/spec/source-va-runtime/rdpred.json": "930ac1d1fd99936b4514034adde8d761c0a68abada4bb9e3960c1711f95972a7",
+    "pa31/tests/spec/source-va-runtime/rfixed.rs": "e207ee411eea9a3b589b42bf2e3d008f5bae8f42c40c8373ed41cd1138966f5f",
+    "pa31/tests/spec/source-va-runtime/rfrom.rs": "0b3bb39417d14a2c98a2b686bac0896f6cb471e742c65fd5083a586905b22503",
+    "pa31/tests/spec/source-va-runtime/rorder.rs": "a39f94c05a26b1983cd5a614550810b03f926935cdce8382a433bbdb939c2305",
+    "pa31/tests/spec/source-va-runtime/rt_alias.rs": "7b22ca8f9fe41b4e3a536e70c18266a07d69dee38224403c3dea1c158f65bf96",
+    "pa31/tests/spec/source-va-runtime/rt_cloneborrow.rs": "5a48efa78c1bf55d693d503bb0aae33b9d4374c890e0a2b12070fd776922566f",
+    "pa31/tests/spec/source-va-runtime/rt_copyok.rs": "34c9a72e1286dce7680dfa81aed3fabc71445f25d9b5d8aa9493f28b66b96963",
+    "pa31/tests/spec/source-va-runtime/rt_ended.rs": "f6ca5a4056e853a6fb787e07d34ad56fc1f276984a43c7b4477c3cb3918aae1e",
+    "pa31/tests/spec/source-va-runtime/rt_endunsafe.rs": "2eaf44b80aa5a2b2a874bc85e9f2da5b02ad4686dbe0291f95543b8b6d8b3829",
+    "pa31/tests/spec/source-va-runtime/rt_escape.rs": "7ef0005b2f4062073d3d1df39721a7778fe24b9988a22f57facf8cf3e50070be",
+    "pa31/tests/spec/source-va-runtime/rt_mutability.rs": "b4622bc5e685f0cad25e1c9221608c11897c8e0d8ca108ee75d4f4a348b3a1a8",
+    "pa31/tests/spec/source-va-runtime/rt_readbool.rs": "081bfde519cc85954d692093077537e96dcb3cc8c8893ba707cb5b70779246d1",
+    "pa31/tests/spec/source-va-runtime/rt_readsafe.rs": "358ca36a1c0d2b2de3ca9e2ea8bf315bc07b6baa665a6e332bf1baad8a7a3034",
+    "pa31/tests/spec/source-va-runtime/rtpred.json": "7bebc786b09d58171f7b0a80790b7a3330b74e20406a6d59e082df0a341669a6",
+    "pa31/tests/spec/source-va-runtime/run.rs": "fe7e07cc6dc601202040c94bd04ce524eb26550209b96298b6cd1cdeb09f67c4",
+    "pa31/tests/spec/source-va-runtime/runpred.json": "442b0e8e2566466b1f708dee474bdba755a68b0e9af06ea13ee087f8fa2fa73e",
+    "pa31/tests/spec/source-va-runtime/rust.rs": "2e55de2a7ed6f8980020d4da7560c4083d34fe3bc0d98eb8844346942466bcd2",
+    "pa31/tests/spec/source-va-runtime/rzro.rs": "6fa93a76bc7ff9d97d266a005cd352ab5af0c7c4acbab2b809210b9b7b280013",
+    "pa31/tests/spec/source-va-runtime/safe.rs": "bd505707c1b5839470a15660cd69c1c4368190226912bc777a2b7856c6bd9d02",
+    "pa31/tests/spec/source-va-runtime/safe2.rs": "016dc2c1c8a8640d6016226c991f1bb10d6ac703ac9a45ce248d10c52a7319dc",
+    "pa31/tests/spec/source-va-runtime/small.rs": "f951849fb861e36367a5ae72d3e0fb47c79c64e9f6f20199a380e78c9b4d7e5e",
+    "pa31/tests/spec/source-va-runtime/source.rs": "32e3fd0dc317e37f7b4610c8343b8c979c7ebec9d94d70abec7262be58a0ed92",
+    "pa31/tests/spec/source-va-runtime/srczero.rs": "6cf466d07030beee93b15d8496b17492ad644b267d0b524d36c68862a7440618",
+    "pa31/tests/spec/source-va-runtime/stdpred.json": "f77c5f298e2c15bd9a76533fc24c8a9f92ca373c1bc90f772c302ae844febe6f",
+    "pa31/tests/spec/source-va-runtime/unsafe.rs": "d541365b53599265a282b026a12c7cb7cace7b6e6fe6a7d8f4bcf3bf17b82d27",
+    "pa31/tests/spec/source-va-runtime/unused.rs": "a7bbf9086249cd11eb4abc8a847f6d3e84d6cd0faf2b749a0d334b324c8c4bd9",
+    "pa31/tests/spec/source-va-runtime/unused2.rs": "6dbd051b11f2e78a82c547a6dbc6078b140b3e0a32df1716bd6ce5571907e436",
+    "pa31/tests/spec/source-va-runtime/wide.rs": "97fac512f59422e0143b2acd2ade7368993a5ec8655f6e4e4dfc269141a39041",
+    "pa31/tests/spec/source-va-runtime/work0.rs": "21ba608c1cd6c568877c134ace644c1d69146a37a2b2b20994f0f0f6eb101106",
+    "pa31/tests/spec/source-va-runtime/work128.rs": "0943d590e97de889218959582a7640bc435562e0eae683cd2dc6c8bbd223acf9",
+    "pa31/tests/spec/source-va-runtime/work32.rs": "f3224ac91de482043af4cd339110a3340d635f535ef17d4b2668236d90e7267f",
+    "pa31/tests/spec/source-va-runtime/work8.rs": "c6b695c9408a2626859ecf5b3d8b0a59ad54e5fd81a7685dde1c1cdcf38e8e87",
+    "pa31/tests/spec/source-va-runtime/workpred.json": "ba9fd880fe01535cedabbab720a8b19fcb0c0521c34f9d80c006223b64b0c3e6",
+    "pa31/tests/spec/source-va-runtime/zero.c": "cce0dfb5437b6973b8135618e2e9c7432b6bf3daf73aa9d11cf7985808fc536d",
+    "pa31/tests/spec/source-va-runtime/zero.rs": "10a5122670bd8e3ab82f7972f6773f03e489ed2f46624d50dcd09e7b14f7c324",
+    "pa31/tests/spec/source-va-runtime/zero2.c": "30b853181fe6271ee8a364b0c6d917e74988ceb41ae50bbd42a473ff204313d5"
+  },
+  "qualified_gate": {
+    "path": "obj/parallel/source-transport/va-run/gate9/receipt.json",
+    "sha256": "ab2248596fb8ae0ea58cc9bfec09d4cf78254b3e4f598477e78d551b0c5191d5"
+  },
+  "qualified_static": {
+    "path": "obj/parallel/source-transport/va-run/static11/receipt.json",
+    "sha256": "503d983a45be98466ddeacfb502e05f8ee767eabaf0ae0c31f3d9bea9a214da9"
+  },
+  "full_source_map": {
+    "path": "obj/parallel/source-transport/va-run/gate9/sources.json",
+    "sha256": "9d9840d151603cd249b335a7c788c867b435a8b9cfe6b403129e1ccb43cd1242"
+  },
+  "references": [
+    {
+      "path": "obj/parallel/source-transport/va-run/reference-v1/receipt.json",
+      "sha256": "25a63db4528966b33ea1125c04a4db1f6a1caddfe380c27f7f44933c26aaa1c1",
+      "reported_success": false,
+      "classification": "qualified or retained setup/prediction results; inspect original receipt"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/reference-v2/receipt.json",
+      "sha256": "e9b16c234faed3907fb70a0b37a2810c57f84ea4649c9313ea12ff59ce8d29e5",
+      "reported_success": false,
+      "classification": "qualified or retained setup/prediction results; inspect original receipt"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/reference-v3/receipt.json",
+      "sha256": "b37081d40a3eeb513d55b6bd9e65952d7f1ffa4f386cf9781e090d5ceb0d03c8",
+      "reported_success": false,
+      "classification": "qualified or retained setup/prediction results; inspect original receipt"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/reference-v4/receipt.json",
+      "sha256": "950d60d50e5f8b2eaf4b3fee35f1e5811b82e54cef41765dc7b2a136716bc8d1",
+      "reported_success": false,
+      "classification": "qualified or retained setup/prediction results; inspect original receipt"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/reference-v5/receipt.json",
+      "sha256": "a42b0422b0b47c1c4177fab568a9a6e01bf32d8e07fb90bc2b9531cd28a131c1",
+      "reported_success": true,
+      "classification": "qualified or retained setup/prediction results; inspect original receipt"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/reference-v6/receipt.json",
+      "sha256": "aca7611b10a05585f5f76c67377b933fe087d9d6343f8d645cb59161d4ed69ca",
+      "reported_success": true,
+      "classification": "qualified or retained setup/prediction results; inspect original receipt"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/reference-v7/receipt.json",
+      "sha256": "a6047529b20cfa60c52c9725bd3f8096f2d62eb5732acbb002faf13a95f735c3",
+      "reported_success": true,
+      "classification": "qualified or retained setup/prediction results; inspect original receipt"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/reference-v8/receipt.json",
+      "sha256": "2a30109fc824f6ba87dc4270040ab43e5778128799f14bd1b1421c2f0d18b4bb",
+      "reported_success": true,
+      "classification": "infrastructure ICE101 present; not semantic rejection"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/reference-v9/receipt.json",
+      "sha256": "4bab8d322fb413869265e9489c0c887533c256bea1b3bc2321a7d6f61c0b7133",
+      "reported_success": true,
+      "classification": "qualified or retained setup/prediction results; inspect original receipt"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/reference-v10/receipt.json",
+      "sha256": "cd0f9b549b815c0065b87da6dd4d0f1240658172d0de051e74071df60a9815c1",
+      "reported_success": true,
+      "classification": "qualified or retained setup/prediction results; inspect original receipt"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/reference-v11/receipt.json",
+      "sha256": "49352a985b56337cead9b2c93f92a05fae4a5adedbee345ef82fd2d33c0f58dd",
+      "reported_success": true,
+      "classification": "qualified or retained setup/prediction results; inspect original receipt"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/reference-v12/receipt.json",
+      "sha256": "7d99ba0d1a4ffa144fe79ec59dfd546d3e9cc8fe414a2d7732ebbc91918423fc",
+      "reported_success": false,
+      "classification": "checked setup failure; four native successors passed"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/reference-v13/receipt.json",
+      "sha256": "4415821dfbbb49c6b3eca613196330c6bc69087ec82caba2162f725a72c4a8b5",
+      "reported_success": true,
+      "classification": "qualified or retained setup/prediction results; inspect original receipt"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/reference-v14/receipt.json",
+      "sha256": "aed044f511794215936db3d3844c5dda2989f5f89c7fd95542cdd01536bb02e6",
+      "reported_success": false,
+      "classification": "observer duplicate user name setup failure"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/reference-v15/receipt.json",
+      "sha256": "0b26348352497370cc9f63ae48301c7a801c38c4aaa4b1c90bdf0acf3a19f3b7",
+      "reported_success": true,
+      "classification": "qualified or retained setup/prediction results; inspect original receipt"
+    }
+  ],
+  "local_history": [
+    {
+      "path": "obj/parallel/source-transport/va-run/static1/receipt.json",
+      "sha256": "ab43b7100911fd79450e43ca69ab627319fcd86cc8618f8e7dbc7d0bed3d082f",
+      "results": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 14.270051316998433
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 5.953976861026604
+        },
+        {
+          "name": "clippy",
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "--bin",
+            "rustgm",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "code": 101,
+          "seconds": 42.546258724003565
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/static2/receipt.json",
+      "sha256": "791c5a69bac6bec4de07de2536220c3adc50faae52cb9a3e876b100cd1686c4f",
+      "results": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 13.079431785969064
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 1,
+          "seconds": 3.025326135044452
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/static3/receipt.json",
+      "sha256": "a78cefff52478e7c29ccd504084c7e08907f17daf6ce6f8148ac920b691c77aa",
+      "results": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 15.637045837007463
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.729082871985156
+        },
+        {
+          "name": "clippy",
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "--bin",
+            "rustgm",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "code": 101,
+          "seconds": 56.00916647503618
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/static4/receipt.json",
+      "sha256": "737afd5dfc6fd73ddf343fc71d0cc660603cb045e993b413623b20ea3a5d7041",
+      "results": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 14.660825236001983
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.6997706760303117
+        },
+        {
+          "name": "clippy",
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "--bin",
+            "rustgm",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "code": 0,
+          "seconds": 55.31840553996153
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/static5/receipt.json",
+      "sha256": "08c597e36e3b02a211b18cf65bee2ff5eb642f19af267f8b3fe95f82e90004f3",
+      "results": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 14.073912841035053
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.4707983160042204
+        },
+        {
+          "name": "clippy",
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "--bin",
+            "rustgm",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "code": 0,
+          "seconds": 60.75584313203581
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/static6/receipt.json",
+      "sha256": "6e5d4f399ead23c3a90f1e55cf09b9358df50bc90085cb6bd9e1c3a63b218d61",
+      "results": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 14.044651750009507
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.2026721779839136
+        },
+        {
+          "name": "clippy",
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "--bin",
+            "rustgm",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "code": 0,
+          "seconds": 56.716211804014165
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/static7/receipt.json",
+      "sha256": "a05098f05c6c48945f5486b81853460d662830e7a5e9747c9a06db19f60a6a3d",
+      "results": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 27.69435278698802
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 4.332095568999648
+        },
+        {
+          "name": "clippy",
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "--bin",
+            "rustgm",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "code": 0,
+          "seconds": 77.3078290730482
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/static8/receipt.json",
+      "sha256": "49baa755269c2506443cb02601c00ab22df0c91c12566398a1b3a8ba8c5b61f5",
+      "results": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 13.861982383998111
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.952332499960903
+        },
+        {
+          "name": "clippy",
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "--bin",
+            "rustgm",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "code": 0,
+          "seconds": 62.624234197020996
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/static9/receipt.json",
+      "sha256": "59b2a44fa6b387d309d8950c5cba22faf74ec7ffb5262b4b3fac39a7c0390c35",
+      "results": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 13.82430795498658
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.4304086519987322
+        },
+        {
+          "name": "clippy",
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "--bin",
+            "rustgm",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "code": 0,
+          "seconds": 55.56317036499968
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/static10/receipt.json",
+      "sha256": "e16191bc6175740176fa76d607e944895204105df0965b5ef07fe13f48c20192",
+      "results": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 13.401258311001584
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.2353739769896492
+        },
+        {
+          "name": "clippy",
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "--bin",
+            "rustgm",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "code": 101,
+          "seconds": 2.479363437043503
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/static11/receipt.json",
+      "sha256": "503d983a45be98466ddeacfb502e05f8ee767eabaf0ae0c31f3d9bea9a214da9",
+      "results": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 15.118794846988749
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.3646091030095704
+        },
+        {
+          "name": "clippy",
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "--bin",
+            "rustgm",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "code": 0,
+          "seconds": 2.5423484410275705
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/gate1/receipt.json",
+      "sha256": "e902d3b8929bad6888cba2fb1a99718034602e5b287b08c70c7e8f50ac64af32",
+      "results": [
+        {
+          "name": "public",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "vactx::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 101,
+          "seconds": 159.61316760297632
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/gate2/receipt.json",
+      "sha256": "86fe3aae6de903df548c9c0edc257d963cdc2c13d81a8181127fdbea41c11afd",
+      "results": [
+        {
+          "name": "public",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "vactx::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 101,
+          "seconds": 94.43071887700353
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/gate3/receipt.json",
+      "sha256": "badbbef949c5ca06efab77c79a99a2192d9f67ff7a53625cdbb90595f6bafa05",
+      "results": [
+        {
+          "name": "public",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "vactx::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 101,
+          "seconds": 90.47030410601292
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/gate4/receipt.json",
+      "sha256": "b0f9d4b895dde590c85f222c096c28ad339ae8fed3c63f0ebe511b4335ff547d",
+      "results": [
+        {
+          "name": "public",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "vactx::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 101,
+          "seconds": 102.06218330498086
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/gate5/receipt.json",
+      "sha256": "4ef705d53855d11ca45f0b6f97adb264368514a29dfc9bb3b7d064d0a053c6ba",
+      "results": [
+        {
+          "name": "public",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "vactx::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 101,
+          "seconds": 96.14629673102172
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/gate6/receipt.json",
+      "sha256": "6f2d2b1f25ea18af6032d035d85c8114a278d54f7cb1f51688fb2f5e63f98757",
+      "results": [
+        {
+          "name": "public",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "vactx::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 101,
+          "seconds": 99.8547153690015
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/gate7/receipt.json",
+      "sha256": "c1114181ff9b4d73406a831a50e60b2914d26e47347480580497af5e8534c3d5",
+      "results": [
+        {
+          "name": "public",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "vactx::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 101,
+          "seconds": 10.190057193976827
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-run/gate9/receipt.json",
+      "sha256": "ab2248596fb8ae0ea58cc9bfec09d4cf78254b3e4f598477e78d551b0c5191d5",
+      "results": [
+        {
+          "name": "public",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "vactx::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 11.121047180029564
+        },
+        {
+          "name": "native",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "vactx::actual_source_cursor_reads_clones_and_scope_cleanup_execute_natively",
+            "--",
+            "--exact",
+            "--ignored",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 2.6562773030018434
+        },
+        {
+          "name": "old-va",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "vaops::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.6657616680022329
+        },
+        {
+          "name": "old-index",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "idxops::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 9.979249566968065
+        },
+        {
+          "name": "old-assign",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "mutops::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 5.504097466007806
+        },
+        {
+          "name": "registration",
+          "command": [
+            "python3",
+            "scripts/maintainer_suites.py",
+            "check"
+          ],
+          "code": 0,
+          "seconds": 0.1408643529866822
+        },
+        {
+          "name": "upstream",
+          "command": [
+            "python3",
+            "scripts/upstream.py",
+            "--verify"
+          ],
+          "code": 0,
+          "seconds": 0.22119475196814165
+        }
+      ]
+    }
+  ],
+  "native": [
+    {
+      "case": "run",
+      "path": "obj/parallel/source-transport/va-run/native-run-3151727",
+      "stdout": "17 11 17.5 23 23 29 31\n",
+      "artifacts": {
+        "backend.command": "a61b1a3f6259576e3ef65a7a15edb556d331fa681034f86a26bbebc20cb3447d",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "74ce424c59138b19deba98804c16731f5902fad769f917d4b7c8e3c11196f77e",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "9f564bdedcff2059b7c2c00bd8749ac8630ae65c8fadd1bd12e19fe769820a9c",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.stdout": "57a679ed9c1f9fd90029ab8653b7f528e99c565da635b07d1090c65eb2c6b00b",
+        "observer": "bfd531e60efe0431192d208777412cb5ecbe7e8bdfe2201736181f8c77407450",
+        "source.lowir": "e47e0f6f6ac055773302ba99eefeb1576bbffa741de44f84437512d6bf172588",
+        "source.o": "6330ec03f9a7d10c15610c6c3c45bb27a312604f9ce7dfd6df75e1592f70cdad"
+      }
+    },
+    {
+      "case": "rzro",
+      "path": "obj/parallel/source-transport/va-run/native-rzro-3151727",
+      "stdout": "37\n",
+      "artifacts": {
+        "backend.command": "a546dc61714c00b8b1a5e9610e7ad24a85868f6eb81c9be5df8f2b1813e019a7",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "fe3826163f0d36f1c56fd3487e10de42b4ad478c430d3289a0c9572818f9132b",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "6842ff5a3d73c09c5955ccb58b496bcd426df42146b89a8ca048e3d41287e9e7",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.stdout": "b58a3da5fde2680191877ec88a1aa7d06927cc3b30cdf0d0db8c39b488891576",
+        "observer": "4975f4b049c0508395fcd444f4b08038be80f13f28a28b57da11115c140ae594",
+        "source.lowir": "3f526b2eab85db3aae44f2a25a16ada8cb4f06bc2aa74a723b7bbe455c39d71f",
+        "source.o": "c97818299cdb0b5b5b368c141c3e9907bb0590c62fc9571b55d8b217c3e9f246"
+      }
+    },
+    {
+      "case": "cvloc2",
+      "path": "obj/parallel/source-transport/va-run/native-cvloc2-3151727",
+      "stdout": "1\n",
+      "artifacts": {
+        "backend.command": "5dacf9ace985e1b28470c354d1bd4a817e6390450fae225e953cb5e687bbd957",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "af933cabb249776d8d654fdde52e105b27baf3f18b9adec16bd139aaa68be84f",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "49f13c367c4092d71f332352c3a184330b276993d82d455364ba00958e38e61c",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.stdout": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "observer": "9151e60519f3156ee8dfd616a8c0b3a4c62154ea38d60bb390a14547fcf58222",
+        "source.lowir": "84deac5dccdfce75d354fd3eb8caacc22451566a5f014f8308c42488375ece89",
+        "source.o": "00ae5f2a0d1b3706164556876cd8f12ac0070f73f0e4762a5f2d3c34c9bf1750"
+      }
+    },
+    {
+      "case": "rorder",
+      "path": "obj/parallel/source-transport/va-run/native-rorder-3151727",
+      "stdout": "41 41 77 47\n",
+      "artifacts": {
+        "backend.command": "f119a40b2afaa7c5db39e4b704397e4bc15067189a23e5cdf88f3aa86004d96a",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "edf4b664aada7e10c190232450aa20e2fa8d9386784e67ba0d8dfd98a0a88db8",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "ad9b41e4c02c4804cce59d61132abedc5e172015fb6213c9c4158618426bcf14",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.stdout": "8eef2fbb31fbeae179127a77b6bf614a2fd1ead4a269f68497b6024dc2528378",
+        "observer": "6aadd1dd84606edac7a9d50676f5983adaa8910b5cb3271133df160eb9099c5c",
+        "source.lowir": "3e3d5cbf71cee8d2f151f5907d03bf37d5ec72378bc26cc36086b896dff2a44e",
+        "source.o": "d8d0ff90347f74d83001fb06cd92165967f532276e89181f9acc8886047abe04"
+      }
+    },
+    {
+      "case": "rfixed",
+      "path": "obj/parallel/source-transport/va-run/native-rfixed-3151727",
+      "stdout": "31.5\n",
+      "artifacts": {
+        "backend.command": "95eb97f794be3688a800405dfb7dd4928f6b9acf6b4f0eac49792bbe54b1930d",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "62d8b29fd17dd3b728734e9e163b4c2361f6fd15e7b78cb262b27a349226b611",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "c2b1b15c59d28cbdf317ba279d75e27ca2c8c7496b17a98be67c9856ea7e5a0c",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.stdout": "5ae536897a9035576994fff74304c7e8ed57c0ecb524b0211a43b9703a580b28",
+        "observer": "0dd66d4089595e2087cf6835f961c82e56a44ef0911722f3edd519715b2dbf6b",
+        "source.lowir": "6d029a14e808dc8db2298525fc7d05550bb8a4cd8c561ab99721795eeb96802e",
+        "source.o": "2e1ebfef7e8cf840dae816bb5c997a419b285f37c7f268d156dbec7d6160083a"
+      }
+    },
+    {
+      "case": "rfrom",
+      "path": "obj/parallel/source-transport/va-run/native-rfrom-3151727",
+      "stdout": "17\n",
+      "artifacts": {
+        "backend.command": "3b70d7f6ca22e77ebc0021c5fe97080e84cf42b38ad4c62bf6bf29e5d73404af",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "11fb7298cbc17b0aa08a703d6a2d9dce2ccd358a5187112c408706546b84793e",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "e42479a26cb9bb5f7073eb5186f3f4f0a38cb8dbf126eb88702d0db53144d8ca",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.stdout": "54183f4323f377b737433a1e98229ead0fdc686f93bab057ecb612daa94002b5",
+        "observer": "1bb33b25c98bb3d36c30dce2f40bf518bd8e1978b5adc9eaf471beded18a20d1",
+        "source.lowir": "9a5ecca4bc9c1c0d81ca0440a1cc79bfde697a00f22aaecb7e71e626b8eb91da",
+        "source.o": "c7785320ef622a73e080b527953fc838807c9bb77e5f6cc8c88523513cd3187f"
+      }
+    }
+  ],
+  "backend_source": "b7c6b8e72595a524e1b3f147212d69c02b257dd8",
+  "backend_lock": {
+    "path": "backend.lock.json",
+    "sha256": "f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581"
+  },
+  "backend_tools": {
+    "lowir": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/backend/pins/32b1e67c44d242351bb20787e3bbd287a603a677fffbe0859a38002be776f11d/lowir",
+      "sha256": "32b1e67c44d242351bb20787e3bbd287a603a677fffbe0859a38002be776f11d"
+    },
+    "lowir2native": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/backend/pins/27b3138e442d53706a059cea0ea98ede2756f56076f00f26ffc28da078974815/lowir2native",
+      "sha256": "27b3138e442d53706a059cea0ea98ede2756f56076f00f26ffc28da078974815"
+    },
+    "cppgm++": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/backend/pins/0d216449452b5a911d364ef7f4eb807d7b429a8cb96fb0afed8f99b60b5cfa5b/cppgm++",
+      "sha256": "0d216449452b5a911d364ef7f4eb807d7b429a8cb96fb0afed8f99b60b5cfa5b"
+    }
+  },
+  "reference_compiler": {
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+  },
+  "layouts": {
+    "sema::model::NodeFacts": {
+      "bytes": 80,
+      "align": 16
+    },
+    "sema::compiler_items::vararg::binding::BindingRequest": {
+      "bytes": 40,
+      "align": 4
+    },
+    "body::vararg::Start<'_>": {
+      "bytes": 16,
+      "align": 8
+    },
+    "sema::model::Operation": {
+      "bytes": 16,
+      "align": 8
+    },
+    "sema::compiler_items::vararg::calls::Read": {
+      "bytes": 12,
+      "align": 4
+    },
+    "body::ir::LocalKind": {
+      "bytes": 8,
+      "align": 4
+    }
+  },
+  "work": {
+    "base": 10684,
+    "widths": [
+      8,
+      32,
+      128
+    ],
+    "growth": [
+      114,
+      378,
+      1434
+    ],
+    "one_va_start_per_function": true,
+    "no_general_performance_claim": true
+  },
+  "required_rust_positive": [
+    {
+      "input": "cldef.rs",
+      "sha256": "3f63e2590f42a35441027193180e49ae38c87256ea0920c1f5444766bdc1622d",
+      "gap": "nominal const destruction eligibility for concrete original"
+    },
+    {
+      "input": "clcall.rs",
+      "sha256": "13258ea991f754e2bcfa3bb142abca9d9003eed8f458b829d69758c017468cf9",
+      "gap": "same defining cleanup gap; cursor CTFE remains independently required"
+    },
+    {
+      "input": "cvoid.rs",
+      "sha256": "085a147d5bbb8f36b80cc2c980939f2c795d946b8d49eb616c5e63248260dbcc",
+      "gap": "fieldless explicit-repr enum by-value C ABI"
+    }
+  ],
+  "failure_notes": [
+    "reference-v8 dc_trait emitted correct nonconst-trait diagnostic then ICE101; invalid as semantic evidence, corrected dc_trait2 v9 returns1 without ICE",
+    "native-source-2953716 real assert fallback link required rust_begin_unwind; handler successors preserve original source and body proof",
+    "reference-v12 rorder debug alignment instrumentation needs mem_align_const; separately frozen v13 debug-assertions=no passes; checked/null/panic closure remains required",
+    "reference-v14 cv_loc user identity duplicates existing actual function; preserved, separately frozen cvloc2 v15 passes"
+  ],
+  "remaining": [
+    "complete unchanged marker/module/macro source closure",
+    "const nominal/field/actual const Drop eligibility",
+    "executed cursor CTFE init/read/copy/end/cleanup",
+    "source metadata cursor locals/operations; existing profiles fence",
+    "generic C variadic definition specialization",
+    "other target ABIs and Miri",
+    "unnamed ellipsis lint/cap policy",
+    "checked arithmetic/alignment/null/panic closure",
+    "full private/release CI"
+  ],
+  "integration_conflicts": [
+    "policy.rs Feature68/69 union Root70/71",
+    "vocab_semantics and private vocab_claims union CVoid with Receiver",
+    "dependencies.rs preserve source_call va_arg descriptor; Root Some(_) replaces narrow matching arm",
+    "declarations.rs/contracts.rs full authored Function.parameters and fixed-only typed signature"
+  ],
+  "resource_policy": "two global heavy/one per tree;16GiB output cap/150GiB reserve;guarded batches<=230s",
+  "reference_sysroot": {
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libaddr2line-9bf1503802f1fe1f.rlib": "7151e251021895de9ece02d2b90749e270ef5bda45f2a6a7ee739f97c66c85fe",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libadler2-1855b06535e3a6dc.rlib": "4f54a8e3cf6ddab34f487bfca2410a6dd8fa53b9ab280697665deb21e32d8d2e",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/liballoc-ca14532e0afe7a5d.rlib": "2730ec537c47f62737c175c0fa8f43c60636c5887da80933be1b3c91ac708401",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcfg_if-380714c6ea67686e.rlib": "613acf65604d69867bc19230f51b366ec6b6e1d92195f04e176fcbdb686adf35",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcompiler_builtins-b8411246c6de4c7a.rlib": "92804424c98ac58c1f9621d4b1ed891c7a865f0fe93301bcdd2231a658e5aad9",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcore-a6075fd9c05de416.rlib": "37559e4d9488546d92cb19b74bcee17f7396c10a2a781c8a24e7464f836e7e51",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libgetopts-02c32a91bb4b14fa.rlib": "8cb979b4c6b274bf6c32bc29c48a8a050730e98f943170eb3a45701ea743bfa9",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libgimli-b05ed1427e633af3.rlib": "6c320a2dd15e16429f36e9ba429338f84a418af76069577330344b0170619aa5",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libhashbrown-5616f5bf81fe0066.rlib": "e373aa10a9f655a8e6fa91ba2eef66b99a69b1cb607e2a4d7c2699900da80643",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/liblibc-f28c4264f0143d08.rlib": "5ce7f12d841cdf03c7c32028dae76caf6fe98d7cc803348ddb27fc5473f5221e",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libmemchr-438369955a1aeb02.rlib": "408ce07402339f14f3adf3508cc269f205911793d05e491e9a511a690d3ce5c9",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libminiz_oxide-80dd92fda65ee391.rlib": "a680cc1274e1c295507b213c59699e1ab916aca9ff536d7060dc35312d6c9eee",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libobject-539315557aa33d2a.rlib": "486f694deebe572a5f74a8fb71634c1694558105a741de7e749ee035c6651e34",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libpanic_abort-0d311229c3300097.rlib": "9d55a53552cc14de6b79771cdb128210a6fc0b64433567d18421b24026a25c47",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libpanic_unwind-b12739ac718ad94d.rlib": "5312e9807325acdb811ac7e25f73d196576c63f202d4ec35551650fd1da59242",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libproc_macro-f5bcf216899e1faf.rlib": "c4e0a56a9ea5340e65176040a1eac2f8901d006d8e965ad9f70a6c019a699b65",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libprofiler_builtins-d21a783f1ca447d4.rlib": "a980830e0d65313f9454533c6ffd4f1df15c520d31c57d1d0186666df84b4015",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_demangle-7e135abb3d08f85c.rlib": "56c662bd31a71d8d2536ac88e97eae214d8ffae6a9cb143b89347aa7de94357e",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_literal_escaper-12f46c3d6b9a3a65.rlib": "be414c7b07d3a45bd7b2857eae0a625222f2ecc67fc0ce1b2e7417fc4965e866",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_alloc-4eb375f3ee2d977f.rlib": "bfdd07b74f8acb58f459ed23d89cd2f81d7fc285fb3cc7e5efc26e8e2779cf9e",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_core-ae5f5e65a4426175.rlib": "0af7b8ea23ffc909ff12ba00c2018699d16e72161fd388294d0d895f7309b1dd",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_std-2f6cfb1d83a94e28.rlib": "0e13b95c316200c04b97b8475b63cd0fca6762f96d2abf38b7631c9030f65e36",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd-2e38004a9ef1deab.rlib": "c72b308614b215194d09d3bb7369dfd9acd33225333dd44b85574d7af726403f",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd_detect-8ebd82e261ed1599.rlib": "f1fa3d746b6000f90728b7f89c7b7a80923f26fc1805812dbb456cbfa02c6e4d",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libsysroot-8f4ac395d4fcfa1a.rlib": "bd25a94a89ca227903812fcfc55fc3fd3266c547cc5b8d144f19af1a638e9663",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libtest-f749e999e116a5ef.rlib": "5be38b717eb421c7709798483b3354e88fdb81bc575ff610c95dfc6995184b9d",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libunwind-c548baaa1b36fffe.rlib": "f664c228f1c6c6733a1f1882fb1484d6dbf2da3001599ae88797afad3721b967"
+  },
+  "observer_compiler": {
+    "path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+    "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88"
+  }
+}

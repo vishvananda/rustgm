@@ -173,6 +173,8 @@ fn function_body(
         {
             write!(out, "    ")?;
             validation::scalar_operation(function, inst).map_err(io::Error::other)?;
+            super::vararg::instruction(program, function, signature, inst)
+                .map_err(io::Error::other)?;
             if let Some(temp) = inst.result {
                 match temp {
                     super::program::ResultId::Scalar(id) => write!(out, "%t{} = ", id.0)?,
@@ -224,6 +226,14 @@ fn instruction(
     out: &mut impl Write,
 ) -> io::Result<()> {
     let value = match inst.operation {
+        Operation::VaStart { list } => {
+            write!(out, "va_start ")?;
+            list
+        }
+        Operation::VaArg { ty, list } => {
+            write!(out, "va_arg {} ", ty.name())?;
+            list
+        }
         Operation::Copy(value) => {
             write!(out, "copy {} ", result_type(function, inst)?.name())?;
             value.operand

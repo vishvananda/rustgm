@@ -1,0 +1,36 @@
+{
+  "cases": [
+    {
+      "file": "fixarg.rs",
+      "sha256": "8e9125563faa3743ed390b37872633a662e82311197691a878c005633e8eff05",
+      "prediction": {
+        "accepted": true,
+        "emit": "obj",
+        "overflow_checks": false,
+        "cause": "one fixed floating register must precede variadic floating reads"
+      }
+    },
+    {
+      "file": "fdcall.rs",
+      "sha256": "eb8269411e0dcb735dab589a7d72968b5a7d8fa4ff624d13ec294dc8ae7571e9",
+      "prediction": {
+        "accepted": true,
+        "emit": "obj",
+        "overflow_checks": false,
+        "cause": "actual Rust source caller uses fixed-only public signature plus genuine C variadic operands"
+      }
+    }
+  ],
+  "native": [
+    {
+      "source": "fixarg.rs",
+      "observer": "fixed.c",
+      "stdout": "31.5\n"
+    },
+    {
+      "source": "fdcall.rs",
+      "observer": "fdcall.c",
+      "stdout": "17\n"
+    }
+  ]
+}

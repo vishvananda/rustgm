@@ -1,0 +1,41 @@
+{
+  "cases": [
+    {
+      "file": "work0.rs",
+      "sha256": "21ba608c1cd6c568877c134ace644c1d69146a37a2b2b20994f0f0f6eb101106",
+      "prediction": {
+        "accepted": true,
+        "emit": "metadata",
+        "cause": "0 distinct genuine C variadic cursor bodies, no output or panic stand-in"
+      }
+    },
+    {
+      "file": "work8.rs",
+      "sha256": "c6b695c9408a2626859ecf5b3d8b0a59ad54e5fd81a7685dde1c1cdcf38e8e87",
+      "prediction": {
+        "accepted": true,
+        "emit": "metadata",
+        "cause": "8 distinct genuine C variadic cursor bodies, no output or panic stand-in"
+      }
+    },
+    {
+      "file": "work32.rs",
+      "sha256": "f3224ac91de482043af4cd339110a3340d635f535ef17d4b2668236d90e7267f",
+      "prediction": {
+        "accepted": true,
+        "emit": "metadata",
+        "cause": "32 distinct genuine C variadic cursor bodies, no output or panic stand-in"
+      }
+    },
+    {
+      "file": "work128.rs",
+      "sha256": "0943d590e97de889218959582a7640bc435562e0eae683cd2dc6c8bbd223acf9",
+      "prediction": {
+        "accepted": true,
+        "emit": "metadata",
+        "cause": "128 distinct genuine C variadic cursor bodies, no output or panic stand-in"
+      }
+    }
+  ],
+  "native": []
+}

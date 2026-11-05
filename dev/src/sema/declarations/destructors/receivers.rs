@@ -124,14 +124,26 @@ impl Checker<'_> {
             .ok_or_else(|| {
                 self.error(key, "registered source Drop requires its ordinary header")
             })?;
-        let Some((application, crate::support::constness::Constness::Ordinary)) =
-            header.predicate.bound.trait_parts()
-        else {
+        let Some((application, constness)) = header.predicate.bound.trait_parts() else {
             return Err(self.error(
                 key,
                 "registered source Drop header lost its trait application",
             ));
         };
+        let crate::sema::associated::OwnerKind::Impl { constant, .. } = owner.kind else {
+            return Err(self.error(key, "registered source Drop lost its actual impl owner"));
+        };
+        let expected = if constant {
+            crate::support::constness::Constness::Const
+        } else {
+            crate::support::constness::Constness::Ordinary
+        };
+        if constness != expected {
+            return Err(self.error(
+                key,
+                "registered source Drop header changed its actual owner constness",
+            ));
+        }
         let application = self
             .facts
             .types

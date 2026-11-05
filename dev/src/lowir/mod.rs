@@ -5,5 +5,6 @@ pub mod builder;
 pub mod data;
 pub mod program;
 mod validation;
+mod vararg;
 pub mod vocabulary;
 pub mod writer;

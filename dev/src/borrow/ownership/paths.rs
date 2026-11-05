@@ -148,6 +148,10 @@ impl Paths {
             guard_places: Vec::new(),
         };
         for (index, local) in body.locals.iter().enumerate() {
+            if local.kind == LocalKind::Variadic {
+                crate::body::vararg::structural(types, body)?
+                    .ok_or("variadic initialized local has no genuine function preflight")?;
+            }
             let id = LocalId(u32::try_from(index).map_err(|_| "too many move locals")?);
             paths.insert(Root::Local(id), None, None, local.ty)?;
         }

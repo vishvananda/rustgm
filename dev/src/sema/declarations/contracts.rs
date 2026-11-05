@@ -24,9 +24,14 @@ impl Checker<'_> {
         key: NodeKey,
         id: DefId,
         ty: TypeId,
-        parameters: List,
     ) -> Result<(), Error> {
-        let ItemKind::Function { body, flags, .. } = self.item(key)?.kind else {
+        let ItemKind::Function {
+            body,
+            flags,
+            parameters,
+            ..
+        } = self.item(key)?.kind
+        else {
             return Err(self.error(key, "invalid function owner"));
         };
         if flags.constant

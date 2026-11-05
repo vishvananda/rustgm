@@ -1,6 +1,52 @@
 //! Retained ABI syntax selects a calling convention independently of safety.
 use super::{Declarations, Error, Kind, List, NodeKey, Report};
 
+/// A language gate permits declaration formation, never cursor storage or execution.
+pub(super) fn variadic_definition(
+    report: &Report,
+    key: NodeKey,
+    flags: crate::syntax::item::FunctionFlags,
+) -> Result<(), Error> {
+    let error = |message| Declarations::error(report, key, message);
+    let requested = report.package.requested_c_variadic().map_err(error)?;
+    permission(report, key, "c_variadic", requested)?;
+    if flags.safety != crate::syntax::item::Safety::Unsafe {
+        return Err(error(
+            "functions with a C variable argument list must be unsafe",
+        ));
+    }
+    if flags.constant {
+        let requested = report.package.requested_const_c_variadic().map_err(error)?;
+        permission(report, key, "const_c_variadic", requested)?;
+    }
+    Ok(())
+}
+fn permission(report: &Report, key: NodeKey, name: &str, requested: bool) -> Result<(), Error> {
+    if requested {
+        return Ok(());
+    }
+    let span = report
+        .package
+        .unit(key.file)
+        .configured
+        .ast
+        .node(key.node)
+        .span;
+    let feature = crate::resolve::bindings::FeatureName::new(name)
+        .map_err(|message| Declarations::error(report, key, message))?;
+    if report
+        .macro_allowances()
+        .allows_at(key.file, span, &feature)?
+    {
+        return Ok(());
+    }
+    Err(Declarations::error(
+        report,
+        key,
+        "variadic definition requires its actual language feature request",
+    ))
+}
+
 /// The parser permits an ellipsis only at the end of the parameter list.
 /// Keep that marker out of typed parameters without scanning ordinary inputs.
 pub(in crate::sema) fn fixed_parameters(

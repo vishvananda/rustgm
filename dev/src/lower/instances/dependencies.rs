@@ -72,6 +72,15 @@ fn source_call(
         return Ok(None);
     };
     match catalog.intrinsic_kind(crate::resolve::model::DefId(item.0))? {
+        Some(kind @ SourceIntrinsic::Declaration(_)) => {
+            let Some(read) =
+                crate::body::vararg::read_call(Reader::new(facts), &facts.types, body, value, ty)?
+            else {
+                return Ok(None);
+            };
+            catalog.require_vararg_report(report, facts, &read.selected, body.source)?;
+            Ok(Some(kind))
+        }
         Some(SourceIntrinsic::ConstEvalSelect) => Ok(Some(SourceIntrinsic::ConstEvalSelect)),
         Some(kind @ SourceIntrinsic::Layout(_)) => {
             layout_call(report, facts, body, value, ty, (signature, arguments))?;
@@ -255,6 +264,7 @@ impl Discovered {
                 // The classifier returns Some only for an authenticated direct
                 // operation. Reification and unsupported declarations return None.
                 // Lowering still requires the reached body and operation proof.
+
             }
             None => self.callable(&facts.types, ty)?,
         }

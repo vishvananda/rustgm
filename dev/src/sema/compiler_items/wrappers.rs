@@ -9,7 +9,7 @@ use crate::{
         aggregate::{self, FieldDestruction, SharedMutation},
     },
 };
-const ROLES: [LangItem; 7] = [
+const ROLES: [LangItem; 8] = [
     LangItem::ManuallyDrop,
     LangItem::MaybeDangling,
     LangItem::MaybeUninit,
@@ -17,12 +17,13 @@ const ROLES: [LangItem; 7] = [
     LangItem::UnsafeCell,
     LangItem::UnsafePinned,
     LangItem::VaList,
+    LangItem::CVoid,
 ];
 fn nominal_kind(role: LangItem) -> aggregate::Kind {
-    if role == LangItem::MaybeUninit {
-        aggregate::Kind::Union
-    } else {
-        aggregate::Kind::Struct
+    match role {
+        LangItem::MaybeUninit => aggregate::Kind::Union,
+        LangItem::CVoid => aggregate::Kind::Enum,
+        _ => aggregate::Kind::Struct,
     }
 }
 fn claim(
@@ -50,7 +51,9 @@ fn claim(
         return Err(error("source wrapper lost its actual item"));
     };
     let written = ast.items[index as usize];
-    let shape = if role == LangItem::MaybeUninit {
+    let shape = if role == LangItem::CVoid {
+        actual.kind == DefKind::Enum && matches!(written.kind, ItemKind::Enum { .. })
+    } else if role == LangItem::MaybeUninit {
         actual.kind == DefKind::Struct && matches!(written.kind, ItemKind::Union { .. })
     } else if matches!(
         role,
@@ -114,6 +117,7 @@ pub(in crate::sema) fn register(
                 | LangItem::UnsafeCell
                 | LangItem::UnsafePinned
                 | LangItem::VaList
+                | LangItem::CVoid
         ) {
             // Union storage already suppresses unselected fields. Pin retains
             // ordinary field destruction; identity grants no API/Copy permission.
@@ -164,7 +168,7 @@ pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Re
                 LangItem::MaybeDangling => {
                     facts.aggregates.permits_dangling_pointers(item) != Some(true)
                 }
-                LangItem::MaybeUninit | LangItem::Pin | LangItem::VaList => false,
+                LangItem::MaybeUninit | LangItem::Pin | LangItem::VaList | LangItem::CVoid => false,
                 LangItem::UnsafeCell | LangItem::UnsafePinned => {
                     facts.aggregates.shared_mutation(item) != Some(SharedMutation::Interior)
                 }

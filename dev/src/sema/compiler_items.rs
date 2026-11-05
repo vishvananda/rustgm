@@ -6,6 +6,7 @@ pub(in crate::sema) mod dereferencing;
 mod frozen_effects;
 pub(in crate::sema) mod pinning;
 pub(crate) mod pointers;
+pub(crate) mod vararg;
 mod vocab_semantics;
 pub(in crate::sema) use frozen_effects::Prepared as ImportedCallEffects;
 pub(in crate::sema) mod formatting;

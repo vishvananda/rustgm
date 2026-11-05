@@ -2,9 +2,7 @@
 use super::{Catalog, Declarations, DiscriminantSelection, Kind, TypeId};
 use crate::{
     resolve::{expansion::Report, model::DefId, unit::NodeKey},
-    sema::model::{BodyRegionOrigin, Operation},
     support::bindings::SourceIntrinsic,
-    syntax::ast::Kind as Syntax,
     types::{Store, arguments::Argument, callable::Convention},
 };
 
@@ -149,59 +147,37 @@ fn checked_node(
     call: NodeKey,
     expected: (TypeId, TypeId, TypeId, crate::types::RegionId),
 ) -> Result<(), &'static str> {
+    use super::super::intrinsic_contracts::{OpeningError, OpeningReference, checked_opening};
     let (callable, signature, input, region) = expected;
-    let Some(Operation::Call {
-        signature: actual,
-        source_use: Some(source_use),
-    }) = facts.node(call).and_then(|fact| fact.operation)
-    else {
-        return Err("source discriminant opening requires its current checked Operation::Call");
-    };
-    if actual != signature {
-        return Err("source discriminant opening changed its current checked signature");
-    }
-    source_use.effect_for(facts, owner)?;
-    let allocated = facts
-        .body_regions
-        .get(owner, region)
-        .ok_or("source discriminant opening has no owned call-argument region")?;
-    if allocated.body != owner
-        || allocated.source != call
-        || !matches!(allocated.origin, BodyRegionOrigin::CallArgument)
-    {
-        return Err("source discriminant opening borrowed another call's region");
-    }
-    let ast = &report.package.unit(call.file).configured.ast;
-    let Syntax::Call { callee, arguments } = ast.node(call.node).kind else {
-        return Err("source discriminant opening requires its actual call syntax");
-    };
-    if facts
-        .node(NodeKey {
-            node: callee,
-            ..call
-        })
-        .and_then(|fact| fact.ty)
-        != Some(callable)
-    {
-        return Err("source discriminant opening changed its actual complete callee");
-    }
-    let [argument] = ast.list(arguments) else {
-        return Err("source discriminant opening requires one actual argument");
-    };
-    let actual = facts
-        .node(NodeKey {
-            node: *argument,
-            ..call
-        })
-        .ok_or("source discriminant argument was not checked")?;
-    let argument = actual
-        .adjustment
-        .map(|a| a.target)
-        .or(actual.ty)
-        .ok_or("source discriminant argument has no checked type")?;
-    if !matches!(facts.types.kind(argument),Some(Kind::Reference{mutable:false,referent,..}) if referent==input)
-    {
-        return Err("source discriminant argument differs from its typed shared input");
-    }
-    Ok(())
+    checked_opening(
+        report,
+        facts,
+        owner,
+        call,
+        (callable, signature),
+        &[region],
+        OpeningReference {
+            mutable: false,
+            referent: input,
+        },
+    )
+    .map_err(|error| match error {
+        OpeningError::MissingCall => {
+            "source discriminant opening requires its current checked Operation::Call"
+        }
+        OpeningError::Signature => {
+            "source discriminant opening changed its current checked signature"
+        }
+        OpeningError::MissingRegion => {
+            "source discriminant opening has no owned call-argument region"
+        }
+        OpeningError::RegionOwner => "source discriminant opening borrowed another call's region",
+        OpeningError::Syntax => "source discriminant opening requires its actual call syntax",
+        OpeningError::Callee => "source discriminant opening changed its actual complete callee",
+        OpeningError::Arguments => "source discriminant opening requires one actual argument",
+        OpeningError::MissingInput => "source discriminant argument was not checked",
+        OpeningError::UntypedInput => "source discriminant argument has no checked type",
+        OpeningError::Input => "source discriminant argument differs from its typed shared input",
+        OpeningError::Effect(message) => message,
+    })
 }

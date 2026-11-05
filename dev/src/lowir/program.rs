@@ -85,6 +85,13 @@ pub enum Access {
 }
 #[derive(Clone, Copy, Debug)]
 pub enum Operation {
+    VaStart {
+        list: Operand,
+    },
+    VaArg {
+        ty: Type,
+        list: Operand,
+    },
     AtomicLoad {
         ty: Type,
         address: Operand,

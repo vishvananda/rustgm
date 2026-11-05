@@ -1,0 +1,20 @@
+{
+  "cases": [
+    {
+      "file": "cv_loc.rs",
+      "sha256": "46fa8cb7c5355c2563120333d93366a92fa8bf1a14bc6b3c281b37da438376dd",
+      "prediction": {
+        "accepted": true,
+        "emit": "obj",
+        "cause": "separate ordinary actual enum constructor/move/Rust call/tag cast consumer; original C enum by-value requirement retained"
+      }
+    }
+  ],
+  "native": [
+    {
+      "source": "cv_loc.rs",
+      "observer": "cvloc.c",
+      "stdout": "1\n"
+    }
+  ]
+}

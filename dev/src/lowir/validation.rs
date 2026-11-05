@@ -246,6 +246,7 @@ pub(super) fn scalar_operation(
         Ok(())
     };
     match instruction.operation {
+        Operation::VaStart { list } | Operation::VaArg { list, .. } => scalar_operand(list)?,
         Operation::Address(value) => scalar_operand(value)?,
         Operation::Copy(value)
         | Operation::Unary { value, .. }

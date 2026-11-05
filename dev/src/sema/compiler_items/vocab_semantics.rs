@@ -7,7 +7,10 @@ use crate::{
 
 pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Result<(), Error> {
     for role in LangItem::DECLARATIONS {
-        if matches!(role, LangItem::VaArgSafe | LangItem::VaList) {
+        if matches!(
+            role,
+            LangItem::VaArgSafe | LangItem::VaList | LangItem::CVoid
+        ) {
             // Actual ordinary trait/nominal producers retain their headers and
             // policies. Variadic initialization and reads need their own proof.
             continue;

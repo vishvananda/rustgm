@@ -22,6 +22,7 @@ mod slices;
 mod subtraction_runtime;
 mod termination_call;
 mod text;
+mod vararg;
 mod wrapping_runtime;
 use super::{
     Error,
@@ -118,6 +119,7 @@ struct Lower<'a, 'b, 'c> {
     body: &'b ir::Body,
     callable_origins: Option<Box<crate::body::operand_origins::Origins<'b>>>,
     cleanup: Option<Box<cleanup::Pending<'b>>>,
+    vararg: Option<crate::body::vararg::Start<'b>>,
     builder: Builder,
     locals: Vec<Option<Address>>,
     addresses: references::Storage,
@@ -142,6 +144,20 @@ pub(super) fn lower<'b>(
     plan: Option<&'b crate::borrow::destruction::Plan>,
     native: crate::lowir::program::SignatureId,
 ) -> Result<Function, Error> {
+    let vararg = crate::body::vararg::Start::prepare(context.constants, context.types, body)
+        .map_err(|message| Error {
+            node: Some(body.source.into()),
+            message,
+        })?;
+    if let Some(plan) = &vararg {
+        context
+            .constants
+            .vararg_target(context.layouts, body.locals[plan.local().0 as usize].ty)
+            .map_err(|message| Error {
+                node: Some(body.source.into()),
+                message,
+            })?;
+    }
     let cleanup = plan
         .map(|p| cleanup::Pending::new(body, p).map(Box::new))
         .transpose()
@@ -175,6 +191,7 @@ pub(super) fn lower<'b>(
         body,
         callable_origins: None,
         cleanup,
+        vararg,
         builder,
         locals: scratch.locals,
         addresses: references::Storage::default(),
@@ -315,6 +332,11 @@ impl Lower<'_, '_, '_> {
             Action::BindView { view, place } => self.bind_view(view, place)?,
             Action::Project(id) => self.project(id)?,
             Action::Select { projection, anchor } => self.select(projection, anchor)?,
+            Action::StorageLive(id)
+                if self.body.locals[id.0 as usize].kind == LocalKind::Variadic =>
+            {
+                self.initialize_vararg(id, location)?;
+            }
             Action::CheckInitialized(_)
             | Action::Mention(_)
             | Action::GuardStart(_)
@@ -885,6 +907,9 @@ impl Lower<'_, '_, '_> {
                 callee,
                 arguments,
             } => {
+                if let Some(value) = self.source_vararg_read(id)? {
+                    return Ok(value);
+                }
                 if let Some(value) = self.source_caller_location(id)? {
                     return Ok(value);
                 }

@@ -82,6 +82,8 @@ pub(in crate::resolve) enum Feature {
     UnsizedFnParams = 65,
     NegativeCoherence = 66,
     AsyncDrop = 67,
+    CVariadic = 68,
+    ConstCVariadic = 69,
     ArbitrarySelfTypes = 70,
     ArbitrarySelfTypesPointers = 71,
 }
@@ -153,6 +155,8 @@ impl Request {
             "never_type" => Self::Capability(Feature::NeverType),
             "stmt_expr_attributes" => Self::Capability(Feature::ExpressionAttributes),
             "const_trait_impl" => Self::Capability(Feature::ConstTrait),
+            "c_variadic" => Self::Capability(Feature::CVariadic),
+            "const_c_variadic" => Self::Library(Feature::ConstCVariadic),
             "min_adt_const_params" | "adt_const_params" => Self::Library(Feature::AdtConstParams),
             "async_drop" => Self::Library(Feature::AsyncDrop),
             "unboxed_closures" => Self::Capability(Feature::UnboxedClosures),
@@ -213,6 +217,8 @@ impl Features {
     fn needs_local_owner(&self) -> bool {
         self.has(Feature::AdtConstParams)
             || self.has(Feature::AsyncDrop)
+            || self.has(Feature::CVariadic)
+            || self.has(Feature::ConstCVariadic)
             || self.has(Feature::Fundamental)
             || self.has(Feature::ConstTrait)
             || self.has(Feature::NegativeImpls)

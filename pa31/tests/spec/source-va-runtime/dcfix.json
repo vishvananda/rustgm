@@ -1,0 +1,14 @@
+{
+  "cases": [
+    {
+      "file": "dc_trait2.rs",
+      "sha256": "a829bbf9ab70a921f04d9e488f18065cc08835c9390c0dc73286de752f371c93",
+      "prediction": {
+        "accepted": false,
+        "emit": "metadata",
+        "cause": "nonconst Drop trait with no unrelated const VaList fallback to trigger rustc ICE"
+      }
+    }
+  ],
+  "native": []
+}

@@ -516,6 +516,9 @@ impl<'a, 'b> Machine<'a, 'b> {
                 self.write_place(location, value)?;
             }
             Action::StorageLive(id) => {
+                if self.bodies[frame.body].locals[id.0 as usize].kind == LocalKind::Variadic {
+                    return Err("constant variadic cursor initialization is not implemented".into());
+                }
                 let ty = self.bodies[frame.body].locals[id.0 as usize].ty;
                 if !matches!(
                     self.bodies[frame.body].locals[id.0 as usize].kind,

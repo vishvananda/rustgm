@@ -596,6 +596,7 @@ pub fn scalar(value: Scalar, out: &mut impl Write) -> io::Result<()> {
 }
 fn operation(value: Operation, out: &mut impl Write) -> io::Result<()> {
     match value {
+        Operation::Variadic => write!(out, "variadic-binding"),
         Operation::Construct { variant } => write!(out, "construct variant={}", variant.0),
         Operation::FieldInit { field } => write!(out, "field-init field={}", field.0),
         Operation::Borrow => write!(out, "borrow"),

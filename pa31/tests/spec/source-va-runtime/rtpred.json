@@ -1,0 +1,86 @@
+{
+  "cases": [
+    {
+      "file": "rt_readsafe.rs",
+      "sha256": "358ca36a1c0d2b2de3ca9e2ea8bf315bc07b6baa665a6e332bf1baad8a7a3034",
+      "prediction": {
+        "accepted": false,
+        "emit": "metadata",
+        "cause": "E0133: actual unsafe next_arg"
+      }
+    },
+    {
+      "file": "rt_readbool.rs",
+      "sha256": "081bfde519cc85954d692093077537e96dcb3cc8c8893ba707cb5b70779246d1",
+      "prediction": {
+        "accepted": false,
+        "emit": "metadata",
+        "cause": "E0277: actual VaArgSafe bound"
+      }
+    },
+    {
+      "file": "rt_alias.rs",
+      "sha256": "7b22ca8f9fe41b4e3a536e70c18266a07d69dee38224403c3dea1c158f65bf96",
+      "prediction": {
+        "accepted": false,
+        "emit": "metadata",
+        "cause": "E0499: overlapping mutable cursor borrows"
+      }
+    },
+    {
+      "file": "rt_escape.rs",
+      "sha256": "7ef0005b2f4062073d3d1df39721a7778fe24b9988a22f57facf8cf3e50070be",
+      "prediction": {
+        "accepted": false,
+        "emit": "metadata",
+        "cause": "body-owned lifetime cannot escape"
+      }
+    },
+    {
+      "file": "rt_mutability.rs",
+      "sha256": "b4622bc5e685f0cad25e1c9221608c11897c8e0d8ca108ee75d4f4a348b3a1a8",
+      "prediction": {
+        "accepted": false,
+        "emit": "metadata",
+        "cause": "E0596: actual mutable cursor"
+      }
+    },
+    {
+      "file": "rt_endunsafe.rs",
+      "sha256": "2eaf44b80aa5a2b2a874bc85e9f2da5b02ad4686dbe0291f95543b8b6d8b3829",
+      "prediction": {
+        "accepted": false,
+        "emit": "metadata",
+        "cause": "E0133: actual unsafe va_end"
+      }
+    },
+    {
+      "file": "rt_copyok.rs",
+      "sha256": "34c9a72e1286dce7680dfa81aed3fabc71445f25d9b5d8aa9493f28b66b96963",
+      "prediction": {
+        "accepted": true,
+        "emit": "metadata",
+        "cause": "actual safe fallback body"
+      }
+    },
+    {
+      "file": "rt_ended.rs",
+      "sha256": "f6ca5a4056e853a6fb787e07d34ad56fc1f276984a43c7b4477c3cb3918aae1e",
+      "prediction": {
+        "accepted": true,
+        "emit": "metadata",
+        "cause": "actual direct fallback end and ordinary scope cleanup"
+      }
+    },
+    {
+      "file": "rt_cloneborrow.rs",
+      "sha256": "5a48efa78c1bf55d693d503bb0aae33b9d4374c890e0a2b12070fd776922566f",
+      "prediction": {
+        "accepted": true,
+        "emit": "metadata",
+        "cause": "independent owned clone keeps actual borrowed scope"
+      }
+    }
+  ],
+  "native": []
+}

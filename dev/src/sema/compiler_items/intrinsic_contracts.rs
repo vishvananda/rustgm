@@ -1,5 +1,6 @@
 //! Validated source intrinsic contracts retain actual declarations and substitutions.
 use super::Catalog;
+mod open;
 use crate::{
     resolve::{expansion::Report, model::DefId, package::Error},
     sema::model::{Declarations, Function},
@@ -8,6 +9,9 @@ use crate::{
         Kind, Primitive, TypeId, arguments::Argument, callable::Convention, instance::Instance,
         parameters::ParameterKind,
     },
+};
+pub(super) use open::{
+    Error as OpeningError, Reference as OpeningReference, checked as checked_opening,
 };
 
 /// A Body Call's roots are already opened into its caller, unlike an item signature.

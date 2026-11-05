@@ -139,6 +139,9 @@ fn locals(
             ir::LocalKind::Parameter(input) => g::LocalKind::Parameter(input),
             ir::LocalKind::Binding => g::LocalKind::Binding,
             ir::LocalKind::Merge => g::LocalKind::Merge,
+            ir::LocalKind::Variadic => {
+                return Err("source variadic locals require a wider transport profile");
+            }
             ir::LocalKind::Guard(_) => {
                 return Err("source guard locals require a wider transport profile");
             }

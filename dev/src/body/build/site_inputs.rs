@@ -17,20 +17,7 @@ impl Builder<'_> {
         let intrinsic = catalog
             .intrinsic_kind(definition)
             .map_err(|error| self.error(node, error))?;
-        if intrinsic == Some(SourceIntrinsic::DiscriminantValue) {
-            catalog
-                .validate_discriminant_opening(
-                    self.report,
-                    self.facts,
-                    self.source,
-                    crate::resolve::unit::NodeKey {
-                        node,
-                        ..self.source
-                    },
-                    (callable, signature),
-                )
-                .map_err(|error| self.error(node, error))?;
-        }
+        self.validate_source_opening(node, callable, signature, intrinsic)?;
         let required = tracked || intrinsic == Some(SourceIntrinsic::CallerLocation);
         if !required && self.facts.associated.trait_owner(definition).is_none() {
             return Ok(());
@@ -101,6 +88,49 @@ impl Builder<'_> {
                 self.facts,
             )
             .map_err(|error| self.error(node, error))
+    }
+    fn validate_source_opening(
+        &self,
+        node: NodeId,
+        callable: crate::types::TypeId,
+        signature: crate::types::TypeId,
+        intrinsic: Option<SourceIntrinsic>,
+    ) -> Result<(), Error> {
+        let catalog = self
+            .facts
+            .source_bindings
+            .as_deref()
+            .ok_or_else(|| self.error(node, "source call lost its catalog"))?;
+        if intrinsic == Some(SourceIntrinsic::DiscriminantValue) {
+            catalog
+                .validate_discriminant_opening(
+                    self.report,
+                    self.facts,
+                    self.source,
+                    crate::resolve::unit::NodeKey {
+                        node,
+                        ..self.source
+                    },
+                    (callable, signature),
+                )
+                .map_err(|error| self.error(node, error))?;
+        }
+        if matches!(intrinsic,Some(SourceIntrinsic::Declaration(identity)) if identity.name()=="va_arg")
+        {
+            catalog
+                .validate_vararg_opening(
+                    self.report,
+                    self.facts,
+                    self.source,
+                    crate::resolve::unit::NodeKey {
+                        node,
+                        ..self.source
+                    },
+                    (callable, signature),
+                )
+                .map_err(|error| self.error(node, error))?;
+        }
+        Ok(())
     }
     fn typed_source_call(
         &self,

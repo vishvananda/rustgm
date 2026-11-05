@@ -345,6 +345,20 @@ impl super::package::Package {
             "async destruction client identity changed",
         )
     }
+    /// Permission for a C-variadic definition, never its list layout or body proof.
+    pub(crate) fn requested_c_variadic(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::CVariadic,
+            "C-variadic client identity changed",
+        )
+    }
+    /// Const syntax authority remains tied to the actual unstable library API.
+    pub(crate) fn requested_const_c_variadic(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::ConstCVariadic,
+            "const C-variadic client identity changed",
+        )
+    }
     pub(crate) fn requested_unadjusted_abi(&self) -> Result<bool, &'static str> {
         self.requested_expression_feature(
             policy::Feature::AbiUnadjusted,

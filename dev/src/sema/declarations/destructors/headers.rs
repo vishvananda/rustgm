@@ -52,7 +52,7 @@ pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Heade
             polarity,
             trait_type: Some(path),
             target,
-            constant,
+            ..
         } = owner.kind
         else {
             continue;
@@ -65,8 +65,7 @@ pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Heade
         if facts.node(path).and_then(|f| f.reference) != Some(Target::Definition(drop_trait)) {
             continue;
         }
-        if constant
-            || unsafe_
+        if unsafe_
             || polarity != crate::sema::associated::ImplPolarity::Positive
             || crate::sema::lifetimes::arguments(report, path, false)?.is_some()
         {

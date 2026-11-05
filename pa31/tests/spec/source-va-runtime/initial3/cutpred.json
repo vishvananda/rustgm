@@ -1,0 +1,78 @@
+{
+  "stage": "separate targeted source consumer before candidate; full standard modules remain required",
+  "cases": [
+    {
+      "file": "source.rs",
+      "sha256": "bfd2d42264373eb49a2f7a2e5f84fe9235a06a110be814f2289c6b4cfdb5e4b1",
+      "prediction": {
+        "accepted": true,
+        "cause": "attributed actual standard declaration/body cutout; no runtime or marker substitute",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "srczero.rs",
+      "sha256": "011aaa21b593c63ecc88c654360685ba625b73d074381ff752b298cc8c6592e7",
+      "prediction": {
+        "accepted": true,
+        "cause": "same actual source cutout with zero fixed arguments",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "unused2.rs",
+      "sha256": "0059e66ca9e8585af6832b15e4fa55345edf8f415cfe9b7b59956efd5c540a20",
+      "prediction": {
+        "accepted": true,
+        "cause": "separate genuine wildcard ellipsis; original unnamed default-lint input retained",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "safe2.rs",
+      "sha256": "f0e4464029264bd7a573b3418847f5a6dfe367bf13bda0077f7f5b33d85ec807",
+      "prediction": {
+        "accepted": false,
+        "cause": "actual C variadic definition requires written unsafe",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "cldef.rs",
+      "sha256": "f6565bedd18b476b6b0cab1892319d20c497308fb4d0e76c14b35cd76add68c3",
+      "prediction": {
+        "accepted": true,
+        "cause": "genuine const language/API/drop/destruct authority without executed cursor CTFE",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "clcall.rs",
+      "sha256": "959e590beeacd57cf69a0f027e3734c4a37cd3889e4cc0160abb8b4877fd6eed",
+      "prediction": {
+        "accepted": true,
+        "cause": "actual constant variadic initialization/read-free execution: uncertain prediction",
+        "emit": "metadata"
+      }
+    }
+  ],
+  "native": [
+    {
+      "source": "source.rs",
+      "observer": "native.c",
+      "stdout": "17 11 17.5 23 23 29 31\n"
+    },
+    {
+      "source": "srczero.rs",
+      "observer": "zero2.c",
+      "stdout": "37\n"
+    }
+  ],
+  "adaptation": {
+    "foundation": "existing independently qualified source-panic-handler/provider.rs without authored user demo module; original source intervals retained in its provider-inputs.json",
+    "variance": "actual macro-produced type declarations and required Clone/Copy generation; unused formatting/comparison/hash/default generation omitted",
+    "inner": "actual x86_64 VaListInner omitting only unused Debug derive",
+    "vararg": "actual VaList/duplicate/Clone/Drop/VaArgSafe/next_arg/va_arg/va_copy/va_end headers and reached source bodies retained",
+    "source_sha256": "0eafd01f996b0e06644887453fb5229a0c4f359345888ce7fc554b157dbdb974"
+  }
+}

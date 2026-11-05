@@ -70,6 +70,9 @@ pub(super) fn emit(
                 LocalKind::Parameter(i) => g::LocalKind::Parameter(i),
                 LocalKind::Binding => g::LocalKind::Binding,
                 LocalKind::Merge => g::LocalKind::Merge,
+                LocalKind::Variadic => {
+                    return Err("generic variadic local port is outside row version zero");
+                }
                 LocalKind::Guard(_) => {
                     return Err("generic guard port is outside row version zero");
                 }

@@ -178,6 +178,22 @@ pub(crate) fn visit_bounds(
     body: &Body,
     sink: &mut impl PlaceBoundsSink,
 ) -> Result<(), &'static str> {
+    if crate::body::vararg::variadic(types, body) {
+        sink.charge(
+            body.locals
+                .len()
+                .saturating_add(body.statements.len())
+                .saturating_add(1),
+        )?;
+        let (local, _) = crate::body::vararg::structural(types, body)?
+            .ok_or("variadic local storage preflight is missing")?;
+        sink.obligation(Obligation {
+            source: body
+                .source
+                .proof_site(body.locals[local.0 as usize].source)?,
+            kind: Bound::LocalBorrow(crate::body::vararg::local_region(types, body, local)?),
+        })?;
+    }
     let mut borrowed = false;
     for value in &body.values {
         sink.charge(1)?;

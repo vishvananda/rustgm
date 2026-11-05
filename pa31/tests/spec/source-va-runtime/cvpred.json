@@ -1,0 +1,102 @@
+{
+  "stage": "independent actual CVoid prerequisite before candidate",
+  "cases": [
+    {
+      "file": "cvoid.rs",
+      "sha256": "085a147d5bbb8f36b80cc2c980939f2c795d946b8d49eb616c5e63248260dbcc",
+      "prediction": {
+        "accepted": true,
+        "cause": "actual complete repr(u8) source enum header and ordinary FFI move",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "cvtype.rs",
+      "sha256": "cb4d799a580f4965ad86423438dba628933f25b631bc8dfafdb4c17a471015eb",
+      "prediction": {
+        "accepted": false,
+        "cause": "actual lang target requires Enum",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "cvgen.rs",
+      "sha256": "487b3716aea79ac3e4971c729df5f10adb681f3eebff49ba13366e765a08f7cf",
+      "prediction": {
+        "accepted": true,
+        "cause": "unused enum role generic arity: no invented zero arity",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "cvrepr.rs",
+      "sha256": "ac8be7d5033ba78438671c6dd1465bcec41ff970fc74ca5f99efd1dacb2c769d",
+      "prediction": {
+        "accepted": true,
+        "cause": "unused ordinary C representation retains actual enum layout",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "cvnone.rs",
+      "sha256": "105c971a08a67959c077103719e903e5ed2f07e357adb27ca2486fe4fa8612fc",
+      "prediction": {
+        "accepted": true,
+        "cause": "unused enum role does not invent standard representation",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "cvsame.rs",
+      "sha256": "e5910de0a88b98fa4a87621e17416046eb608ceca47300f4784cfa7dfbe94e67",
+      "prediction": {
+        "accepted": true,
+        "cause": "same-spelling enum retains no role authority",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "cvdup.rs",
+      "sha256": "bb842563cc0d5a915964402682df8caf5c3f6c74b377535860aa6a55b2bb2444",
+      "prediction": {
+        "accepted": false,
+        "cause": "duplicate actual role identity",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "cvcopy.rs",
+      "sha256": "ef022dffd36ec6a37c807a794235befd5d3dc71c634863e76f125f57eea01840",
+      "prediction": {
+        "accepted": false,
+        "cause": "actual enum role supplies no Copy implementation",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "cvpriv.rs",
+      "sha256": "5bc2babdf9edc385b1439ec81f3464add6b33744d62db9cc60a2a50cc9b64bdb",
+      "prediction": {
+        "accepted": true,
+        "cause": "actual variants are public enum variants though hidden/unstable",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "cvown.rs",
+      "sha256": "14ccad8ff2f90fa0ff518b67bf62431d13032b1c5ce70392c1fc8c2bff823c56",
+      "prediction": {
+        "accepted": false,
+        "cause": "ordinary enum move remains checked",
+        "emit": "metadata"
+      }
+    }
+  ],
+  "native": [
+    {
+      "source": "cvoid.rs",
+      "observer": "cvoid.c",
+      "stdout": "1\n"
+    }
+  ]
+}

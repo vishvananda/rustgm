@@ -106,6 +106,8 @@ pub struct Projection {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum LocalKind {
     Parameter(u32),
+    /// Owned source ellipsis cursor, outside the public fixed parameter list.
+    Variadic,
     Binding,
     Merge,
     /// Internal shared view; native storage holds an address, never an owned snapshot.

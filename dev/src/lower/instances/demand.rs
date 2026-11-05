@@ -90,6 +90,11 @@ impl Ordinary {
                     .transpose()?
                     .flatten()
                     && kind != crate::support::bindings::SourceIntrinsic::ColdPath
+                    && !facts
+                        .source_bindings
+                        .as_deref()
+                        .ok_or("source vararg fallback catalog is missing")?
+                        .vararg_fallback(facts, instance)?
                 {
                     return Err(match kind {
                         crate::support::bindings::SourceIntrinsic::Declaration(_) => {

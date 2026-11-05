@@ -165,6 +165,7 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
         write!(out, "  local l{id} type={} ", local.ty.0)?;
         match local.kind {
             LocalKind::Parameter(index) => write!(out, "parameter={index}")?,
+            LocalKind::Variadic => write!(out, "variadic")?,
             LocalKind::Binding => write!(out, "binding")?,
             LocalKind::Merge => write!(out, "merge")?,
             LocalKind::Guard(id) => write!(out, "guard-view={}", id.0)?,

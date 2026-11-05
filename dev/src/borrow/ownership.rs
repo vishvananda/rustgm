@@ -252,7 +252,10 @@ impl BodyFacts {
             Action::StorageLive(id) | Action::StorageDead(id) => {
                 let path = &self.paths.entries[id.0 as usize];
                 let initialized = matches!(action, Action::StorageLive(_))
-                    && matches!(body.locals[id.0 as usize].kind, LocalKind::Parameter(_));
+                    && matches!(
+                        body.locals[id.0 as usize].kind,
+                        LocalKind::Parameter(_) | LocalKind::Variadic
+                    );
                 state.fill(path, initialized)?;
                 state.written(path.start, initialized);
             }

@@ -1,0 +1,18 @@
+{
+  "valist.rs": {
+    "original": "library/core/src/ffi/va_list.rs",
+    "sha256": "0eafd01f996b0e06644887453fb5229a0c4f359345888ce7fc554b157dbdb974"
+  },
+  "vari.rs": {
+    "original": "library/core/src/marker/variance.rs",
+    "sha256": "3911ebaca93e5ebe8e5929f2d5d5348d77528b8d6f4b5c1cc598bbbb0d78adf4"
+  },
+  "ffi.rs": {
+    "original": "library/core/src/ffi/mod.rs",
+    "sha256": "902dad68e446f31f33809bcf2e02f77a0c48b7e10e652f427d43d794cd04340e"
+  },
+  "intrin.rs": {
+    "original": "library/core/src/intrinsics/mod.rs",
+    "sha256": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3"
+  }
+}

@@ -694,6 +694,11 @@ impl Checker<'_> {
         Ok(())
     }
     fn start_function(&mut self, function: Function) -> Result<Option<Dependency>, Error> {
+        if function.body.is_some()
+            && let Some(dependency) = self.variadic_readiness(function)?
+        {
+            return Ok(Some(dependency));
+        }
         self.state.call_types.clear();
         self.state.projections = projections::Pending::default();
         self.state.notifications = notifications::Notifications::default();
@@ -751,46 +756,53 @@ impl Checker<'_> {
         )?;
         self.prepare_function_result(&function, result)?;
         let unit = self.report.package.unit(self.state.file);
-        for mut node in unit
+        for node in unit
             .configured
             .ast
             .list(function.parameters)
             .iter()
             .copied()
         {
-            if !self.active(node) {
-                continue;
-            }
-            while let Kind::Attributed { value, .. } = self.kind(node) {
-                node = value;
-            }
-            if let Some(receiver) = self.facts.receivers.get(&self.key(node)).copied() {
-                let term = self.known(node, receiver.ty)?;
-                self.state.locals[receiver.definition.0 as usize] = Some(term);
-                self.state.bindings.push(receiver.definition);
-                self.save(receiver.binding.node, term);
-                self.save(node, term);
-                continue;
-            }
-            let Kind::Parameter {
-                pattern,
-                ty: Some(ty),
-            } = self.kind(node)
-            else {
-                return Err(self.error(node, "unsupported parameter pattern"));
-            };
-            let ty = self
-                .facts
-                .node(self.key(ty))
-                .and_then(|f| f.ty)
-                .ok_or_else(|| self.error(node, "missing parameter annotation"))?;
-            let term = self.known(node, ty)?;
-            self.binding(pattern, term, None)?;
-            self.save(node, term);
+            self.function_parameter(node)?;
         }
         self.state.completion = readiness::Completion::Ordinary;
         self.start_body(body.node)?;
         self.advance_body()
+    }
+    fn function_parameter(&mut self, mut node: NodeId) -> Result<(), Error> {
+        if !self.active(node) {
+            return Ok(());
+        }
+        while let Kind::Attributed { value, .. } = self.kind(node) {
+            node = value;
+        }
+        if let Some(receiver) = self.facts.receivers.get(&self.key(node)).copied() {
+            let term = self.known(node, receiver.ty)?;
+            self.state.locals[receiver.definition.0 as usize] = Some(term);
+            self.state.bindings.push(receiver.definition);
+            self.save(receiver.binding.node, term);
+            self.save(node, term);
+            return Ok(());
+        }
+        let Kind::Parameter {
+            pattern,
+            ty: Some(ty),
+        } = self.kind(node)
+        else {
+            return Err(self.error(node, "unsupported parameter pattern"));
+        };
+        if self.variadic_parameter(node, pattern, ty)? {
+            return Ok(());
+        }
+        let ty = self
+            .facts
+            .node(self.key(ty))
+            .and_then(|f| f.ty)
+            .ok_or_else(|| self.error(node, "missing parameter annotation"))?;
+        let term = self.known(node, ty)?;
+        self.binding(pattern, term, None)?;
+        self.save(node, term);
+        Ok(())
     }
     pub(super) fn advance_body(&mut self) -> Result<Option<Dependency>, Error> {
         loop {

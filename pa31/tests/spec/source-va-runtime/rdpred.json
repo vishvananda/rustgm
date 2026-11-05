@@ -1,0 +1,25 @@
+{
+  "cases": [
+    {
+      "file": "rorder.rs",
+      "sha256": "a39f94c05a26b1983cd5a614550810b03f926935cdce8382a433bbdb939c2305",
+      "predecessor": "dc_order.rs",
+      "predecessor_sha256": "44408b2dad521b20cc011cf23f6ff0e10e68b9a8d91edcfa6e0680c3226ede0c",
+      "prediction": {
+        "accepted": true,
+        "emit": "obj",
+        "overflow_checks": false,
+        "cause": "separate actual application panic handler closes original assert fallback through normal source abort",
+        "debug_assertions": false
+      }
+    }
+  ],
+  "native": [
+    {
+      "source": "rorder.rs",
+      "observer": "drop.c",
+      "stdout": "41 41 77 47\n"
+    }
+  ],
+  "qualification": "separate unchecked alignment/null observer; checked setup failure retained in reference-v12"
+}

@@ -1,0 +1,170 @@
+{
+  "stage": "independent standard source consumers frozen before candidate",
+  "cases": [
+    {
+      "file": "native.rs",
+      "sha256": "4f21c757d36b0725c77ea111763b0fec82ade21ab1695726273822dfb98373f6",
+      "prediction": {
+        "accepted": true,
+        "cause": "actual standard fixed integer/float/pointer/clone/end/earlyexit/overflow cursor operations",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "zero.rs",
+      "sha256": "10a5122670bd8e3ab82f7972f6773f03e489ed2f46624d50dcd09e7b14f7c324",
+      "prediction": {
+        "accepted": true,
+        "cause": "zero fixed arguments: prediction before oracle",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "unused.rs",
+      "sha256": "a7bbf9086249cd11eb4abc8a847f6d3e84d6cd0faf2b749a0d334b324c8c4bd9",
+      "prediction": {
+        "accepted": true,
+        "cause": "unnamed unused ellipsis still has genuine definition",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "safe.rs",
+      "sha256": "bd505707c1b5839470a15660cd69c1c4368190226912bc777a2b7856c6bd9d02",
+      "prediction": {
+        "accepted": false,
+        "cause": "variadic function safety legality: uncertain prediction before oracle",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "unsafe.rs",
+      "sha256": "d541365b53599265a282b026a12c7cb7cace7b6e6fe6a7d8f4bcf3bf17b82d27",
+      "prediction": {
+        "accepted": false,
+        "cause": "actual unsafe next_arg call outside unsafe context",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "small.rs",
+      "sha256": "f951849fb861e36367a5ae72d3e0fb47c79c64e9f6f20199a380e78c9b4d7e5e",
+      "prediction": {
+        "accepted": false,
+        "cause": "actual VaArgSafe implementation prerequisite and C promotions",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "bool.rs",
+      "sha256": "2c0c4cc3538acdd38f5751afc6c2ef00c0446b070eede3f3382cd51c3297af8f",
+      "prediction": {
+        "accepted": false,
+        "cause": "actual VaArgSafe implementation prerequisite and C promotions",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "float.rs",
+      "sha256": "320cc398bd27ca0b4e60499701cb09828105b80b922af85653b12a2b2ea3d338",
+      "prediction": {
+        "accepted": false,
+        "cause": "actual VaArgSafe implementation prerequisite and C promotions",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "wide.rs",
+      "sha256": "97fac512f59422e0143b2acd2ade7368993a5ec8655f6e4e4dfc269141a39041",
+      "prediction": {
+        "accepted": false,
+        "cause": "actual VaArgSafe implementation prerequisite and C promotions",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "alias.rs",
+      "sha256": "c4a26f717947d6613cc51a352786be2262d7b303be94a5045d7a416273c79227",
+      "prediction": {
+        "accepted": false,
+        "cause": "opposing actual mutable cursor aliases",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "escape.rs",
+      "sha256": "8f8defbadd7e86822965f9cc501447d4bf40fbead516cd9abc714240188a2170",
+      "prediction": {
+        "accepted": false,
+        "cause": "internal cursor lifetime cannot escape as static",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "const.rs",
+      "sha256": "5bbd00869c8fbb5dc22da4b0f57110d2b5ee9393e1a96ea1c6cb451f0bf5e16f",
+      "prediction": {
+        "accepted": false,
+        "cause": "const C variadic definition legality",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "clread.rs",
+      "sha256": "854b62d5e558c9216da020af03f21f5f5b9c31135b0874611f90a841cdb949dd",
+      "prediction": {
+        "accepted": true,
+        "cause": "const source API permission without fabricating a live cursor",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "nofeat.rs",
+      "sha256": "78d1dc4c7a28a8386cb05e9dcabc20f368edc5b8b16b64c197f07d3a3299ea4b",
+      "prediction": {
+        "accepted": false,
+        "cause": "real missing compiler language feature request",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "rust.rs",
+      "sha256": "2e55de2a7ed6f8980020d4da7560c4083d34fe3bc0d98eb8844346942466bcd2",
+      "prediction": {
+        "accepted": false,
+        "cause": "C convention remains required",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "fnptr.rs",
+      "sha256": "2d6938f915d026ce86cbdcb35c42ad010cb97406156f993ae5e1f40bd7b6cf69",
+      "prediction": {
+        "accepted": true,
+        "cause": "foreign variadic function pointer does not allocate a cursor local",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "argraw.rs",
+      "sha256": "25da4de57079d16e325f9c8bc04df0922b13bd3df57f7faebc1da79409822832",
+      "prediction": {
+        "accepted": null,
+        "cause": "raw intrinsic omitted written VaArgSafe bound: declaration/use legality unknown",
+        "emit": "metadata"
+      }
+    }
+  ],
+  "native": [
+    {
+      "source": "native.rs",
+      "observer": "native.c",
+      "stdout": "17 11 17.5 23 23 29 31\n"
+    },
+    {
+      "source": "zero.rs",
+      "observer": "zero.c",
+      "stdout": "37\n"
+    }
+  ]
+}

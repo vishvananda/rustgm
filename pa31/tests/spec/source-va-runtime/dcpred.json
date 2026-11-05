@@ -1,0 +1,61 @@
+{
+  "cases": [
+    {
+      "file": "dc_ok.rs",
+      "sha256": "03578dfc571f2586ec08633aef7b98c7d9d637aa9086ec7aefbe687d4e1ac3ff",
+      "prediction": {
+        "accepted": true,
+        "cause": "ordinary genuine const Drop owner, method written non-const",
+        "emit": "metadata",
+        "overflow_checks": false
+      }
+    },
+    {
+      "file": "dc_trait.rs",
+      "sha256": "ab869c5efa1dc46b2b419b57d28aeaa8ba3e1ad0ea7ab4af8da3ad51aac8ebfe",
+      "prediction": {
+        "accepted": false,
+        "cause": "const impl requires actual const trait",
+        "emit": "metadata",
+        "overflow_checks": false
+      }
+    },
+    {
+      "file": "dc_unsafe.rs",
+      "sha256": "c833f532e6decabc794f36c4562dd665f58bade4cbd1ef77ce00a9c8deb22d83",
+      "prediction": {
+        "accepted": false,
+        "cause": "Drop remains safe trait",
+        "emit": "metadata",
+        "overflow_checks": false
+      }
+    },
+    {
+      "file": "dc_method.rs",
+      "sha256": "184a73e8b608a672f67271f290eeeab1095a6c9da4a812382a90f9e23650c630",
+      "prediction": {
+        "accepted": false,
+        "cause": "impl method cannot be written const",
+        "emit": "metadata",
+        "overflow_checks": false
+      }
+    },
+    {
+      "file": "dc_order.rs",
+      "sha256": "44408b2dad521b20cc011cf23f6ff0e10e68b9a8d91edcfa6e0680c3226ede0c",
+      "prediction": {
+        "accepted": true,
+        "cause": "operand dependent ordinary const Drop runtime owner, reverse scope and early-return cleanup",
+        "emit": "obj",
+        "overflow_checks": false
+      }
+    }
+  ],
+  "native": [
+    {
+      "source": "dc_order.rs",
+      "observer": "drop.c",
+      "stdout": "41 41 77 47\n"
+    }
+  ]
+}

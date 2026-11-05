@@ -31,6 +31,7 @@ mod residual_edges;
 mod retries;
 mod storage;
 pub mod templates;
+mod vararg;
 use super::ir::{
     Action, Block, BlockId, Body, Local, LocalId, LocalKind, Owner, Place, Program, Rvalue,
     ScalarId, Statement, Terminator, Value, ValueId, ValueList,
@@ -219,6 +220,16 @@ fn function_body(
     let mut body = Builder::new(report, facts, scratch, body, scope_plan, query)?
         .run(Some(function.parameters))
         .map_err(|e| report.diagnostic(e))?;
+    if super::vararg::variadic(&facts.types, &body) {
+        facts
+            .source_bindings
+            .as_deref()
+            .ok_or_else(|| report.body_error(source, "variadic source catalog is missing"))?
+            .require_provider_report(report)
+            .map_err(|message| report.body_error(source, message))?;
+        super::vararg::Start::prepare(crate::sema::values::Reader::new(facts), &facts.types, &body)
+            .map_err(|message| report.body_error(source, message))?;
+    }
     crate::body::instantiate::close_inline_operands(facts, &mut body)
         .map_err(|e| report.body_error(source, e))?;
     facts
@@ -774,8 +785,14 @@ impl<'a> Builder<'a> {
                 parameter = value;
             }
             let Kind::Parameter { pattern, .. } = self.kind(parameter) else {
+                if matches!(self.kind(parameter), Kind::Variadic) {
+                    return Err(self.error(parameter,"source varargs_without_pattern lint policy requires its actual implementation"));
+                }
                 return Err(self.error(parameter, "missing parameter syntax"));
             };
+            if self.variadic_parameter(parameter, pattern)? {
+                continue;
+            }
             if let Some(receiver) = self.facts.receivers.get(&NodeKey {
                 file: self.source.file,
                 node: parameter,
