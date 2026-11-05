@@ -1,0 +1,1 @@
+use core::{future::Future,pin::Pin,task::{Context,Poll,Waker},mem::ManuallyDrop}; async fn value(x:&mut u32){*x+=1;} fn main(){let mut x=1;let mut future=ManuallyDrop::new(value(&mut x));let mut context=Context::from_waker(Waker::noop());let _=Future::poll(unsafe{Pin::new_unchecked(&mut *future)},&mut context);let _observed=x;unsafe{ManuallyDrop::drop(&mut future)};}

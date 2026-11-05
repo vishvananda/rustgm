@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "baseline": "d4b17cd5c",
+  "scope": "independent real authored future state contracts; no candidate runtime/native claim",
+  "profile": "Rust1.98.0 edition2024 linuxx86-64 standard core; no async_drop feature requested",
+  "cases": [
+    {
+      "name": "native",
+      "path": "pa43/tests/spec/future-runtime-v1/native.rs",
+      "mode": "native",
+      "expected_status": 0,
+      "expected_run_status": 0,
+      "expected_stdout": "unpolled 129349\ncompleted 129576439989\npattern-unpolled 12593469\npattern-completed 1259736499\nreturned-capture 1959939\nborrowed-capture 171288\ncancelled-pending 19397629\ncompleted-pending 1939376299\n",
+      "sha256": "08002f7d4b0405f8b07a4dc307ed555ca3a238e325b2c7f911a4a67e6cbf2b6d"
+    },
+    {
+      "name": "unpin",
+      "path": "pa43/tests/spec/future-runtime-v1/unpin.rs",
+      "mode": "metadata",
+      "expected_status": 1,
+      "expected_code": "E0277",
+      "sha256": "893bd495551ee2109b6fe8b120babad70cd57ccfb70d978e6f8564442c2b0ee3"
+    },
+    {
+      "name": "copy",
+      "path": "pa43/tests/spec/future-runtime-v1/copy.rs",
+      "mode": "metadata",
+      "expected_status": 1,
+      "expected_code": "E0277",
+      "sha256": "04a7305eb111b97199a0aaec7f3f937cc07243fc152a76244951da24651cde11"
+    },
+    {
+      "name": "clone",
+      "path": "pa43/tests/spec/future-runtime-v1/clone.rs",
+      "mode": "metadata",
+      "expected_status": 1,
+      "expected_code": "E0277",
+      "sha256": "119ca1524cb07de80424d9c863a870b2236831132314e0822cb31f945d61a075"
+    },
+    {
+      "name": "captured-send",
+      "path": "pa43/tests/spec/future-runtime-v1/captured-send.rs",
+      "mode": "metadata",
+      "expected_status": 1,
+      "expected_code": null,
+      "sha256": "c8bb3dc961746b9565112093c56f360621fa67f31a82bbef363ac153c8bbbb0e",
+      "original_expected_code": "E0277",
+      "expected_cause": "future cannot be sent between threads safely"
+    },
+    {
+      "name": "scalar-send-sync",
+      "path": "pa43/tests/spec/future-runtime-v1/scalar-send-sync.rs",
+      "mode": "metadata",
+      "expected_status": 0,
+      "expected_code": null,
+      "sha256": "4645a2cc24511c1895ae4598dd0daed376888759fe5e79b8c36e98f7dd90c40e"
+    },
+    {
+      "name": "unpolled-loan",
+      "path": "pa43/tests/spec/future-runtime-v1/unpolled-loan.rs",
+      "mode": "metadata",
+      "expected_status": 1,
+      "expected_code": "E0503",
+      "sha256": "54765a81340597c41b0b8cb360d6dbc757cc2db9c97e9be8c92eb13140d7fab5"
+    },
+    {
+      "name": "escaping-loan",
+      "path": "pa43/tests/spec/future-runtime-v1/escaping-loan.rs",
+      "mode": "metadata",
+      "expected_status": 1,
+      "expected_code": "E0597",
+      "sha256": "887d0f229c6f5a0e0f7527c521aa0f6e22b68b2f1628d79390152c0e08264ffa"
+    },
+    {
+      "name": "wrong-output",
+      "path": "pa43/tests/spec/future-runtime-v1/wrong-output.rs",
+      "mode": "metadata",
+      "expected_status": 1,
+      "expected_code": "E0271",
+      "sha256": "859bae557a51791bbe96cdbdbe3407a78081148ccc570cedeaf83f5f12e4b187"
+    },
+    {
+      "name": "invalid-unused-body",
+      "path": "pa43/tests/spec/future-runtime-v1/invalid-unused-body.rs",
+      "mode": "metadata",
+      "expected_status": 1,
+      "expected_code": "E0308",
+      "sha256": "46342c0d80753d6759be186c12cd89cdc3a419f1e5c0d95ea579341b0166a6b9"
+    },
+    {
+      "name": "moved-input",
+      "path": "pa43/tests/spec/future-runtime-v1/moved-input.rs",
+      "mode": "metadata",
+      "expected_status": 1,
+      "expected_code": "E0382",
+      "sha256": "df614f35d52b887dfb0d9f55cce0646a4006cdaac702184310137413ab975a95"
+    },
+    {
+      "name": "completed-loan",
+      "path": "pa43/tests/spec/future-runtime-v1/completed-loan.rs",
+      "mode": "metadata",
+      "expected_status": 1,
+      "expected_code": "E0503",
+      "sha256": "9e6a9d4fe0def8c766c772bc32a245440276be1fa3bc28815dc3c8ce0a6ea127"
+    }
+  ],
+  "required_remaining": [
+    "await and saved-local frame",
+    "cancellation each suspension state",
+    "self references and pin loans",
+    "recursive compiler-owned async cleanup",
+    "async blocks closures traits and full source export"
+  ],
+  "prediction_basis": "Pinned AST lowering item.rs1469 onward moves every raw argument and defers parameter patterns; coroutine/mod.rs state0 captures and returned/poisoned state policy. Numeric trace predictions were authored before oracle execution.",
+  "diagnostic_review": {
+    "case": "captured-send",
+    "original_code_prediction": "E0277",
+    "observed": "unnumbered dedicated async captured-Send diagnostic",
+    "reason": "The status and captured raw-pointer !Send cause matched; the predicted diagnostic code did not. Original plan/failed receipt remain immutable. No source or native trace expectation changed.",
+    "raw_receipt_sha256": "2403343fa530c3677d77e81ec8280814ee61ecbd13e9143497aa37a0a73fe5b1"
+  }
+}
