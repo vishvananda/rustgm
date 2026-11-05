@@ -175,7 +175,7 @@ class MultipleUnits(unittest.TestCase):
                     mock.call(["validator", "-o", validated, str(source)]),
                     mock.call(["linker", "-O0", "-o", str(output), validated])])
 
-    def test_multiple_units_require_the_reviewed_object_profile(self):
+    def test_multiple_units_use_the_reviewed_host_object_validation(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             sources = [root / "one.lowir", root / "two.lowir"]
@@ -186,15 +186,26 @@ class MultipleUnits(unittest.TestCase):
             with mock.patch.object(backend, "load_tools", return_value=tools), mock.patch.object(
                     backend, "invoke") as invoke, mock.patch.object(backend, "emit_object") as emit:
                 backend.build_many(sources, output)
-                validated = [str(output.with_suffix(f".unit-{index}.validated.lowir"))
-                             for index in range(2)]
                 objects = [output.with_suffix(f".unit-{index}.o") for index in range(2)]
-                self.assertEqual(emit.call_args_list, [mock.call(Path(unit), target, tools)
-                                                     for unit, target in zip(validated, objects)])
+                self.assertEqual(emit.call_args_list, [mock.call(unit, target, tools)
+                                                     for unit, target in zip(sources, objects)])
                 self.assertEqual(invoke.call_args_list, [
-                    mock.call(["validator", "-o", validated[0], str(sources[0])]),
-                    mock.call(["validator", "-o", validated[1], str(sources[1])]),
                     mock.call(["cc", *map(str, objects), "-lm", "-o", str(output)])])
+
+    def test_object_inputs_cannot_route_to_the_cpp_frontend(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "source.cpp"
+            source.write_text("int main() { return 0; }")
+            with mock.patch.object(backend, "load_tools") as tools, mock.patch.object(
+                    backend, "invoke") as invoke:
+                with self.assertRaisesRegex(ValueError, "serialized .lowir"):
+                    backend.build_objects([source], root / "output")
+                tools.assert_not_called()
+                invoke.assert_not_called()
+                with self.assertRaisesRegex(ValueError, "serialized .lowir"):
+                    backend.emit_object(source, root / "output.o", {})
+                invoke.assert_not_called()
 
 
 if __name__ == "__main__":

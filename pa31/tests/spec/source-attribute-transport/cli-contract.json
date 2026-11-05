@@ -260,8 +260,8 @@
     "diagnostic": "source declaration kind is outside the initial source profile"
   },
   "backend": {
-    "lock_sha256": "6d300e6addfcd7050afef7940e8511f946f8113ad91e82901ab3f499c61757aa",
-    "object_sha256": "ded1b6800ce1bdaeaad45cd28c2903d7c96de7cdc29261f6834869a6eaf525fc",
+    "lock_sha256": "f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581",
+    "object_sha256": "0d216449452b5a911d364ef7f4eb807d7b429a8cb96fb0afed8f99b60b5cfa5b",
     "prebuilt_only": true
   },
   "native_driver": {
@@ -287,5 +287,10 @@
     "successful_disposable_cleanup": "after each native case; retain raw logs/provenance and shared two small rlibs until done"
   },
   "compatibility": "CLI always v1 only for actual SourceCore library; no user version flag or attribute-presence fallback. Legacy API/codec golden and non-SourceCore code path stay unchanged. No execution/nominal/Provided/UB policy expansion.",
-  "client_metadata_tag": 4
+  "client_metadata_tag": 4,
+  "previous_backend": {
+    "lock_sha256": "6d300e6addfcd7050afef7940e8511f946f8113ad91e82901ab3f499c61757aa",
+    "object_sha256": "ded1b6800ce1bdaeaad45cd28c2903d7c96de7cdc29261f6834869a6eaf525fc",
+    "prebuilt_only": true
+  }
 }

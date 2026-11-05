@@ -191,11 +191,11 @@ fn check_extremum(body: &Function, code: &[Instruction], maximum: bool) -> Resul
     assert!(temporary(left.operand, code[0].result));
     assert!(matches!(right, Operand::Parameter(1)));
     let Operation::Convert {
-        op: Convert::Trunc,
+        op: Convert::TruncExact,
         value,
     } = code[2].operation
     else {
-        return Err("missing compare-result truncation".into());
+        return Err("missing exact compare-result truncation".into());
     };
     assert_eq!(value.ty, Type::I64);
     assert!(temporary(value.operand, code[1].result));

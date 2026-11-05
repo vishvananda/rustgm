@@ -356,10 +356,13 @@ fn instruction(
             right
         }
         Operation::Convert { op, value } => {
+            write!(out, "convert {} ", op.name())?;
+            if matches!(op, super::vocabulary::Convert::TruncExact) {
+                write!(out, "exact ")?;
+            }
             write!(
                 out,
-                "convert {} {} {} ",
-                op.name(),
+                "{} {} ",
                 result_type(function, inst)?.name(),
                 value.ty.name()
             )?;

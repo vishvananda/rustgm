@@ -144,6 +144,8 @@ pub enum Convert {
     Sext,
     Zext,
     Trunc,
+    /// The producer proves the value is representable in the destination.
+    TruncExact,
     Sitofp,
     Uitofp,
     Fptosi,
@@ -157,7 +159,7 @@ impl Convert {
         match self {
             Self::Sext => "sext",
             Self::Zext => "zext",
-            Self::Trunc => "trunc",
+            Self::Trunc | Self::TruncExact => "trunc",
             Self::Sitofp => "sitofp",
             Self::Uitofp => "uitofp",
             Self::Fptosi => "fptosi",

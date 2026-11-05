@@ -125,15 +125,16 @@ def build_many(sources, output, *, native_plan=None, native_search=(), native_ob
 
 def build_objects(sources, output, *, libraries=(), search=(), native_objects=()):
     # The executable reader concatenates symbols instead of merging declarations.
-    # Separate units therefore require the explicit reviewed ELF object profile.
-    tools = load_tools(("lowir", "cppgm++"))
+    # The object driver validates with the host ABI facts, including SSEUP.
+    # The standalone reader deliberately has a narrower executable profile.
+    if not sources or any(source.suffix != ".lowir" or not source.is_file() for source in sources):
+        raise ValueError("object bridge accepts only existing serialized .lowir inputs")
+    tools = load_tools(("cppgm++",))
     output.parent.mkdir(parents=True, exist_ok=True)
     objects = []
     for index, source in enumerate(sources):
-        validated = output.with_suffix(f".unit-{index}.validated.lowir")
-        invoke([tools["lowir"], "-o", str(validated), str(source)])
         object_file = output.with_suffix(f".unit-{index}.o")
-        emit_object(validated, object_file, tools)
+        emit_object(source, object_file, tools)
         objects.append(str(object_file))
     for path in native_objects:
         verify_object(path)
@@ -149,6 +150,8 @@ def build_object(source, output):
 
 
 def emit_object(source, output, tools, *, run=None):
+    if source.suffix != ".lowir":
+        raise ValueError("object bridge accepts only serialized .lowir input")
     output.parent.mkdir(parents=True, exist_ok=True)
     # This mode validates serialized LowIR with the host-object ABI facts enabled.
     # The suffix gate prevents the multi-input driver from selecting a frontend.

@@ -26,3 +26,9 @@ function @rg_read_global() -> i32 [binding=strong] {
     %t0 = load i32 @host_global
     return i32 %t0
 }
+function @rg_predicate(%p0 : u32, %p1 : u32) -> u32 [binding=strong] {
+  block ^b0:
+    %t0 = cmp ult u32 %p0, %p1
+    %t1 = convert trunc exact u32 i64 %t0
+    return u32 %t1
+}

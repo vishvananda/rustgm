@@ -416,7 +416,24 @@ impl Builder {
     /// # Errors
     /// Rejects invalid construction state and void results.
     pub fn convert(&mut self, op: Convert, ty: Type, value: Value) -> Result<Value, &'static str> {
+        if matches!(op, Convert::TruncExact)
+            && (!ty.is_integer() || !value.ty.is_integer() || ty.bits() >= value.ty.bits())
+        {
+            return Err("exact integer truncation requires a narrower integer destination");
+        }
         self.value(ty, Operation::Convert { op, value })
+    }
+    /// A comparison produces zero or one, both representable in its U32 carrier.
+    /// # Errors
+    /// Rejects incompatible operands and invalid construction state.
+    pub fn compare_u32(
+        &mut self,
+        predicate: Predicate,
+        left: Value,
+        right: Value,
+    ) -> Result<Value, &'static str> {
+        let value = self.compare(predicate, left, right)?;
+        self.convert(Convert::TruncExact, Type::U32, value)
     }
     /// # Errors
     /// Rejects invalid construction state or exhausted argument identities.

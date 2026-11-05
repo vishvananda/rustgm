@@ -106,6 +106,15 @@ source image -> Rust lexer -> token-tree/parser/expansion/resolution worklist
 ```
 
 The external LowIR serialization is an authorized temporary backend boundary.
+The [current backend checkpoint](docs/backend-current-checkpoint.md) pins all
+three CPPGM tools to b7c6b8e72. Host-object units use the locked object driver's
+parser/validator directly; the standalone executable-profile reader cannot
+validate every host ABI class. Every object input retains the `.lowir` suffix
+gate. Emit `convert trunc exact` only with a real representability proof, as in
+the 0/1 comparison carrier for atomic min/max. Ordinary casts and wrapping masks
+retain their semantics. Available vector/debug/equivalent-entry vocabulary
+requires actual typed producer, feature, ABI and identity proofs before use.
+Do not import C++ aliasing or overflow assumptions from source type names.
 No Rust frontend phase may communicate by printing and reparsing token, syntax,
 type or diagnostic text. After an in-process backend becomes available, pass
 typed LowIR directly. All backend-visible facts must have a LowIR spelling.

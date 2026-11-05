@@ -274,3 +274,39 @@ fn public_lowir_rejects_unused_generic_proof_failures_without_partial_output()
     }
     Ok(())
 }
+
+#[test]
+fn predicate_carriers_claim_exactness_without_tagging_ordinary_casts()
+-> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::lowir::{program::Program, vocabulary::Convert, writer};
+    let mut program = Program::default();
+    let signature = program.signature(&[], Type::U32, false)?;
+    let entry = program.declare("predicate_carrier".into(), signature, true)?;
+    let mut builder = Builder::default();
+    let block = builder.block()?;
+    builder.enter(block)?;
+    let left = builder.integer(Type::U32, u128::from(u32::MAX))?;
+    let right = builder.integer(Type::U32, 0)?;
+    let predicate = builder.compare_u32(Predicate::Ult, left, right)?;
+    let wide = builder.integer(Type::I64, 300)?;
+    let _ordinary = builder.convert(Convert::Trunc, Type::U8, wide)?;
+    assert!(
+        builder
+            .convert(Convert::TruncExact, Type::I128, wide)
+            .is_err()
+    );
+    assert!(
+        builder
+            .convert(Convert::TruncExact, Type::F32, wide)
+            .is_err()
+    );
+    builder.terminate(Terminator::Return(Some(predicate)))?;
+    program.symbols[entry.0 as usize].body = Some(builder.finish()?);
+    let mut bytes = Vec::new();
+    writer::write(&program, &mut bytes)?;
+    let text = std::str::from_utf8(&bytes)?;
+    assert_eq!(text.matches("convert trunc exact u32 i64").count(), 1);
+    assert!(text.contains("convert trunc u8 i64 300"));
+    assert!(!text.contains("convert trunc exact u8"));
+    Ok(())
+}
