@@ -11,7 +11,7 @@ struct Entry {
 pub(super) struct Namespaces {
     entries: HashMap<CallerKey, Entry>,
     pub(super) observations:
-        HashMap<crate::sema::inline_constants::Context, super::observed_arguments::Observed>,
+        HashMap<super::observed_arguments::ArgumentOwner, super::observed_arguments::Observed>,
     pub(super) bytes: usize,
 }
 impl Namespaces {
@@ -288,6 +288,14 @@ fn validate_context(
 ) -> Result<(), &'static str> {
     use crate::types::Kind;
     let valid = match context {
+        CallerInstance::AsyncBody(future) => {
+            let definition = facts.checked_future_definition(future)?;
+            facts
+                .function_indices
+                .get(&definition)
+                .and_then(|&index| facts.functions.get(index))
+                .is_some_and(|function| function.body == Some(source))
+        }
         CallerInstance::Callable(instance) => match facts.types.kind(instance.ty()) {
             Some(Kind::FunctionItem { item, .. }) => {
                 facts

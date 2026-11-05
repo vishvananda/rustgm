@@ -18,7 +18,12 @@ impl EvaluationContext {
             | Owner::InitializerInstance { .. }
             | Owner::AnonymousConstant
             | Owner::AnonymousInstance(_) => Self::Constant,
-            Owner::Function { .. } | Owner::Closure { .. } | Owner::ClosureAdapter { .. } => parent,
+            Owner::Function { .. }
+            | Owner::Closure { .. }
+            | Owner::ClosureAdapter { .. }
+            | Owner::AsyncBody { .. }
+            | Owner::AsyncApplication { .. }
+            | Owner::FutureEntry { .. } => parent,
         }
     }
 }

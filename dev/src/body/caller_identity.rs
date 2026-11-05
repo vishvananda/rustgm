@@ -13,26 +13,32 @@ impl Owner {
             .source()
             .ok_or("imported body cannot reuse a source caller catalog")?;
         match self {
+            Self::AsyncBody { .. } => self.async_original_caller(facts, source, instance)?,
+            Self::AsyncApplication { future, .. } => {
+                let definition = facts.checked_future_definition(future)?;
+                if instance.is_some()
+                    || facts
+                        .function_indices
+                        .get(&definition)
+                        .and_then(|&index| facts.functions.get(index))
+                        .and_then(|function| function.body)
+                        != Some(source)
+                {
+                    return Err("async application caller belongs to another actual source body");
+                }
+                return Ok(CallerInstance::AsyncBody(future));
+            }
+            Self::FutureEntry { .. } => {
+                return Err(
+                    "future application requires its actual checked source capture namespace",
+                );
+            }
             Self::Function {
                 definition,
                 signature,
                 ..
             } => {
-                let declared = facts
-                    .function_indices
-                    .get(&definition)
-                    .and_then(|&n| facts.functions.get(n))
-                    .and_then(|f| f.body);
-                let selected = instance.is_none_or(|instance| {
-                    matches!(
-                        facts.types.kind(instance.ty()),
-                        Some(Kind::FunctionItem { item, signature: selected, .. })
-                            if item.0 == definition.0 && selected == signature
-                    )
-                });
-                if declared != Some(source) || !selected {
-                    return Err("source caller does not match its function owner");
-                }
+                Self::function_caller(facts, source, instance, definition, signature)?;
             }
             Self::Closure {
                 identity,
@@ -102,5 +108,69 @@ impl Owner {
             Self::AnonymousInstance(instance) => CallerInstance::Inline(instance),
             _ => instance.map_or(CallerInstance::Original, CallerInstance::Callable),
         })
+    }
+    fn async_original_caller(
+        self,
+        facts: &crate::sema::model::Declarations,
+        source: crate::body::ir::NodeKey,
+        instance: Option<crate::types::instance::Instance>,
+    ) -> Result<(), &'static str> {
+        let Self::AsyncBody {
+            identity,
+            future,
+            signature,
+        } = self
+        else {
+            return Err("deferred source caller requires its actual original owner");
+        };
+        let definition = facts
+            .opaques
+            .declarations
+            .get(&identity)
+            .ok_or("deferred caller lost its actual declaration")?
+            .owner;
+        let function = facts
+            .function_indices
+            .get(&definition)
+            .and_then(|&index| facts.functions.get(index))
+            .ok_or("deferred caller lost its actual function")?;
+        let actual = facts
+            .authored_async_body(function)?
+            .ok_or("deferred caller lost its actual authored input contract")?;
+        if instance.is_some()
+            || function.body != Some(source)
+            || actual.identity != identity
+            || actual.future != future
+            || actual.signature != signature
+        {
+            return Err(
+                "deferred caller changed its actual body, capture frame or Output signature",
+            );
+        }
+        Ok(())
+    }
+    fn function_caller(
+        facts: &crate::sema::model::Declarations,
+        source: crate::body::ir::NodeKey,
+        instance: Option<crate::types::instance::Instance>,
+        definition: crate::resolve::model::DefId,
+        signature: crate::types::TypeId,
+    ) -> Result<(), &'static str> {
+        let declared = facts
+            .function_indices
+            .get(&definition)
+            .and_then(|&n| facts.functions.get(n))
+            .and_then(|f| f.body);
+        let selected = instance.is_none_or(|instance| {
+            matches!(
+                facts.types.kind(instance.ty()),
+                Some(crate::types::Kind::FunctionItem { item, signature: selected, .. })
+                    if item.0 == definition.0 && selected == signature
+            )
+        });
+        if declared != Some(source) || !selected {
+            return Err("source caller does not match its function owner");
+        }
+        Ok(())
     }
 }

@@ -183,7 +183,38 @@ impl Engine {
                 .retain(template.clone())
                 .map_err(|e| report.body_error(template.body.source, e))?;
         }
+        self.transfer_defining_bodies(report, facts, prepared)
+    }
+    fn transfer_defining_bodies(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        prepared: &mut Prepared,
+    ) -> Result<(), Error> {
+        let mut deferred = Vec::new();
         for (&definition, template) in &self.originals {
+            if matches!(template.body.owner, Owner::AsyncBody { .. }) {
+                let growth = crate::support::retained::Growth::vector::<DefId>(
+                    deferred.len(),
+                    deferred.capacity(),
+                    1,
+                );
+                let bytes = facts
+                    .constant_work
+                    .template_bytes
+                    .saturating_add(growth.bytes);
+                if bytes > 64 * 1024 * 1024 {
+                    return Err(report.body_error(
+                        template.body.source,
+                        "deferred original handoff exceeds storage budget",
+                    ));
+                }
+                facts.constant_work.template_bytes = bytes;
+                facts.body_work.canonical_steps =
+                    facts.body_work.canonical_steps.saturating_add(growth.work);
+                deferred.push(definition);
+                continue;
+            }
             if self.component_contains(template.body.key()) {
                 continue;
             }
@@ -219,6 +250,23 @@ impl Engine {
                     format!("constant template {} is not a function", definition.0),
                 ));
             }
+        }
+        for definition in deferred {
+            let template = self
+                .originals
+                .remove(&definition)
+                .ok_or_else(|| Error::unlocated("deferred handoff lost its owned original"))?;
+            let source = template.body.source;
+            if self.component_contains(template.body.key()) {
+                return Err(report.body_error(
+                    source,
+                    "deferred original has duplicate component ownership",
+                ));
+            }
+            prepared
+                .templates
+                .retain_original(facts, template)
+                .map_err(|error| report.body_error(source, error))?;
         }
         Ok(())
     }

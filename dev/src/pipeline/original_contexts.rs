@@ -97,7 +97,15 @@ impl Original {
     }
     pub fn validate(&self, facts: &Declarations) -> Result<(), &'static str> {
         Self::validate_parts(facts, &self.template.body, &self.contract)?;
-        if let Owner::Function { definition, .. } = self.template.body.owner
+        let definition = match self.template.body.owner {
+            Owner::Function { definition, .. } => Some(definition),
+            Owner::AsyncBody { .. } => Some(crate::body::coroutines::original(
+                facts,
+                &self.template.body,
+            )?),
+            _ => None,
+        };
+        if let Some(definition) = definition
             && let Some(environment) = facts
                 .function_header(definition)?
                 .and_then(|h| h.environment)
@@ -114,7 +122,7 @@ impl Original {
     ) -> Result<(), &'static str> {
         Self::validate_parts_counted(facts, body, contract, &mut 0)
     }
-    pub(super) fn validate_parts_charged(
+    pub(crate) fn validate_parts_charged(
         facts: &mut Declarations,
         body: &crate::body::ir::Body,
         contract: &Contract,
@@ -153,17 +161,18 @@ impl Original {
             .source()
             .ok_or("source-free original requires its authenticated imported header")?;
         let valid = match body.owner {
+            Owner::AsyncBody { signature, .. } => {
+                let definition = crate::body::coroutines::original(facts, body)?;
+                contract.signature == Some(signature)
+                    && facts
+                        .function_header(definition)?
+                        .is_some_and(|header| contract.universals == header.universals)
+            }
             Owner::Function {
                 definition,
                 signature,
                 execution: None,
-            } => facts.function_header(definition)?.is_some_and(|header| {
-                header.body == Some(body.source)
-                    && header.signature == signature
-                    && contract.signature == Some(signature)
-                    && contract.universals == header.universals
-                    && header.declaration.source().is_some()
-            }),
+            } => Self::source_function(facts, body, contract, definition, signature)?,
             Owner::Initializer { definition, kind } => facts
                 .initializer_index(definition)
                 .and_then(|i| facts.initializers.get(i))
@@ -222,6 +231,45 @@ impl Original {
         }
         Ok(())
     }
+    fn source_function(
+        facts: &Declarations,
+        body: &crate::body::ir::Body,
+        contract: &Contract,
+        definition: crate::resolve::model::DefId,
+        signature: crate::types::TypeId,
+    ) -> Result<bool, &'static str> {
+        if facts.opaques.owners.contains_key(&definition)
+            && facts
+                .function_indices
+                .get(&definition)
+                .and_then(|&index| facts.functions.get(index))
+                .map(|function| facts.authored_async_body(function))
+                .transpose()?
+                .flatten()
+                .is_some()
+        {
+            return Err(
+                "an async constructor requires generated construction provenance, not an authored Function Original",
+            );
+        }
+        if facts
+            .source_bindings
+            .as_deref()
+            .and_then(|catalog| {
+                catalog.language(crate::support::bindings::LangItem::AsyncDropInPlace)
+            })
+            .is_some_and(|helper| helper.definition == definition)
+        {
+            return Err("compiler cleanup operation cannot acquire an authored Function Original");
+        }
+        Ok(facts.function_header(definition)?.is_some_and(|header| {
+            header.body == Some(body.source)
+                && header.signature == signature
+                && contract.signature == Some(signature)
+                && contract.universals == header.universals
+                && header.declaration.source().is_some()
+        }))
+    }
     fn validate_legacy_imported_parts(
         facts: &Declarations,
         body: &crate::body::ir::Body,
@@ -274,6 +322,7 @@ impl Original {
     }
     fn candidate(&self, facts: &Declarations) -> bool {
         match self.template.body.owner {
+            Owner::AsyncBody { .. } => true,
             Owner::Function { definition, .. } => crate::body::templates::owns(facts, definition),
             Owner::Initializer { definition, .. } => {
                 facts.associated.owner(definition).is_some()
@@ -354,7 +403,7 @@ impl Originals {
             contracts.push(row.contract);
         }
         // The receiving collection preflights every candidate before mutating it.
-        prepared.retain_component(candidates)?;
+        prepared.retain_component(facts, candidates)?;
         self.contexts.extend(contexts);
         for contract in contracts {
             self.contracts.insert(contract.key, contract);

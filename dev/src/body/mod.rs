@@ -10,6 +10,7 @@ mod clone_factories;
 mod collection_factories;
 pub(crate) mod conditional_inputs;
 pub mod constants;
+pub(crate) mod coroutines;
 mod diagnostics;
 pub(crate) mod operand_origins;
 pub use diagnostics::BodyOrigins;

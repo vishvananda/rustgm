@@ -126,6 +126,11 @@ fn promotions(graph: &mut Graph<'_>, checked: &Checked<'_>) -> Result<(), &'stat
         let mut entries: Vec<_> = promotions.entries().collect();
         entries.sort_unstable_by_key(|(id, _)| id.0);
         let owner = match body.owner {
+            Owner::AsyncBody { identity, .. } => format!("async-body:{}", identity.0),
+            Owner::AsyncApplication { future, .. } => format!("async-application:{}", future.0),
+            Owner::FutureEntry { key, .. } => {
+                format!("future-entry:{}:{:?}", key.future.0, key.operation)
+            }
             Owner::ClosureAdapter { adapter, .. } => format!(
                 "closure-adapter:{}:{}:{}",
                 adapter.instance().ty().0,
@@ -206,6 +211,9 @@ fn owner_key(
 ) -> Result<[u32; 12], &'static str> {
     let mut result = [0; 12];
     let ordinary = match key {
+        BodyKey::AsyncBody(identity) => (6, identity.0, 0, 0, 0, 0),
+        BodyKey::AsyncApplication(future) => (7, future.0, 0, 0, 0, 0),
+        BodyKey::FutureEntry(key) => (8, key.future.0, key.operation as u32, 0, 0, 0),
         BodyKey::ClosureAdapter(adapter) => (
             3,
             adapter.instance().ty().0,

@@ -39,7 +39,14 @@ pub(super) fn insert(
             index.insert(ItemId(definition.0), ordinal).is_some()
         }
         Owner::Closure { identity, .. } => closures.insert(identity, ordinal).is_some(),
-        Owner::AnonymousConstant => anonymous.insert(body.key(), ordinal).is_some(),
+        Owner::AnonymousConstant | Owner::AsyncBody { .. } => {
+            anonymous.insert(body.key(), ordinal).is_some()
+        }
+        Owner::AsyncApplication { .. } | Owner::FutureEntry { .. } => {
+            return Err(error(
+                "selected future operations cannot masquerade as original templates",
+            ));
+        }
         Owner::InitializerInstance { .. }
         | Owner::AnonymousInstance(_)
         | Owner::ClosureAdapter { .. } => {

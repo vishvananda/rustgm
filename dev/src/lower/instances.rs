@@ -741,6 +741,34 @@ fn publish_source_opaque_heads(
         if let Some(source) = proof.source.source()
             && let Some(&owner) = owners.get(&source)
         {
+            if let body::ir::BodyKey::AsyncBody(identity) = proof.key {
+                let (original, contract, actual) = checked.async_body(identity).ok_or((
+                    proof.source,
+                    "async publication lost its actual checked original",
+                ))?;
+                if !std::ptr::eq(actual, proof)
+                    || body::coroutines::original(facts, &original.body)
+                        .map_err(|error| (proof.source, error))?
+                        != owner
+                {
+                    return Err((
+                        proof.source,
+                        "async publication changed its actual checked family",
+                    ));
+                }
+                crate::pipeline::OriginalInput::validate_parts_charged(
+                    facts,
+                    &original.body,
+                    contract,
+                )
+                .map_err(|error| (proof.source, error))?;
+                let arena = checked
+                    .future_store(&facts.types)
+                    .map_err(|error| (proof.source, error))?;
+                facts
+                    .infer_checked_async_future(owner, arena)
+                    .map_err(|error| (proof.source, error))?;
+            }
             facts
                 .close_opaque_results(owner, &proof.hidden_regions)
                 .map_err(|error| (proof.source, error))?;

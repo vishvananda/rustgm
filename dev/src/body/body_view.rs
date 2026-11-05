@@ -33,6 +33,33 @@ pub fn write_with_origins(
     for (index, body) in program.bodies.iter().enumerate() {
         write!(out, "body {index} ")?;
         match body.owner {
+            Owner::AsyncBody {
+                identity,
+                future,
+                signature,
+            } => write!(
+                out,
+                "async-body opaque={} future={} signature={}",
+                identity.0, future.0, signature.0
+            )?,
+            Owner::AsyncApplication {
+                identity,
+                future,
+                signature,
+            } => write!(
+                out,
+                "async-application opaque={} future={} signature={}",
+                identity.0, future.0, signature.0
+            )?,
+            Owner::FutureEntry {
+                key,
+                signature,
+                execution,
+            } => write!(
+                out,
+                "future-entry future={} operation={:?} signature={} execution={}",
+                key.future.0, key.operation, signature.0, execution.0
+            )?,
             Owner::ClosureAdapter { adapter, signature } => write!(
                 out,
                 "closure-adapter instance={} receiver={} requested={} signature={}",

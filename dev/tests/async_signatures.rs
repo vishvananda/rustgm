@@ -135,7 +135,7 @@ fn trait_async_method_keeps_a_required_declaration_and_source_projection_consume
 }
 
 #[test]
-fn async_cfg_demand_fails_before_publishing_an_eager_body() -> TestResult {
+fn async_cfg_demand_retains_a_distinct_deferred_original() -> TestResult {
     let source = test_source::fixture("pa42/tests/spec/async-signatures/scalar.rs")?;
     let report = test_source::source_provider(&source, "async_cfg")?;
     let analysis = pipeline::analyze_source(&report)?;
@@ -152,18 +152,41 @@ fn async_cfg_demand_fails_before_publishing_an_eager_body() -> TestResult {
         })
         .ok_or("missing source async function")?;
     let mut prepared = rustgm::body::templates::Prepared::default();
-    let before = prepared.work();
-    let error = prepared
-        .function(&report, &facts, function)
+    let template = prepared.function(&report, &facts, function)?;
+    let rustgm::body::ir::Owner::AsyncBody {
+        identity,
+        future,
+        signature,
+    } = template.body.owner
+    else {
+        return Err("async source body lost its distinct deferred owner".into());
+    };
+    assert!(
+        matches!(facts.types.kind(future), Some(Kind::Future { identity: actual, .. }) if actual == identity)
+    );
+    assert_ne!(signature, function.signature);
+    assert!(
+        matches!(facts.types.kind(signature), Some(Kind::Function { result, .. }) if result == facts.opaques.body_results[&function.definition])
+    );
+    assert_eq!(
+        template.body.result,
+        facts.opaques.body_results[&function.definition]
+    );
+    assert_eq!(template.body.source.source(), function.body);
+    assert!(template.body.instance.is_none());
+    assert!(!template.body.const_context);
+    assert!(facts.opaques.declarations[&identity].hidden.is_none());
+    assert_eq!(std::mem::size_of::<rustgm::body::ir::Owner>(), 20);
+    assert_eq!(std::mem::size_of::<rustgm::body::ir::Body>(), 456);
+    let error = rustgm::body::build_concrete(&report, &facts)
         .err()
-        .ok_or("async body became an ordinary eager CFG")?;
+        .ok_or("deferred original entered an ordinary executable program")?;
     assert!(
         error
             .message
-            .contains("async state-machine construction is not implemented"),
+            .contains("async constructor requires its checked generated future family"),
         "{error}"
     );
-    assert_eq!(prepared.work(), before);
     Ok(())
 }
 

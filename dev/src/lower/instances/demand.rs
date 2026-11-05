@@ -80,6 +80,7 @@ impl Ordinary {
     ) -> Result<Option<Selected<'a>>, &'static str> {
         Ok(Some(match facts.types.kind(instance.ty()) {
             Some(Kind::FunctionItem { item, .. }) => {
+                crate::body::coroutines::require_ordinary_original(facts, DefId(item.0))?;
                 // Actual helpers still follow ordinary original/materialized proofs.
                 // The typed descriptor only gates their later cleanup adapter.
                 crate::sema::compiler_items::source_drop_glue(facts, instance)?;

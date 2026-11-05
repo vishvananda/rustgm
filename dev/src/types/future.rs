@@ -60,6 +60,52 @@ pub(super) struct Shape {
     budget: Rc<Budget>,
 }
 impl Store {
+    pub(crate) fn authored_future_template(
+        &self,
+        identity: OpaqueId,
+    ) -> Result<Option<(TypeId, TypeId, TypeId, TypeId)>, &'static str> {
+        let Some(shape) = self
+            .opaques
+            .as_ref()
+            .and_then(|rows| rows.get(identity.0 as usize))
+            .and_then(|entry| entry.future.as_deref())
+        else {
+            return Ok(None);
+        };
+        self.require_future_shape(identity, shape)?;
+        Ok(Some((
+            shape.application,
+            shape.signature,
+            shape.body_signature,
+            shape.output,
+        )))
+    }
+    /// Provenance for a real verifier; the handle supplies no body or runtime readiness.
+    pub(crate) fn future_proof_arena(
+        &self,
+        future: TypeId,
+    ) -> Result<super::arena::Identity, &'static str> {
+        let Some(Kind::Future {
+            identity,
+            arguments,
+        }) = self.kind(future)
+        else {
+            return Err("future proof requires its actual complete type application");
+        };
+        self.future_application(identity, arguments)?;
+        let shape = self
+            .opaques
+            .as_ref()
+            .and_then(|rows| rows.get(identity.0 as usize))
+            .and_then(|entry| entry.future.as_deref())
+            .ok_or("future proof lost its actual source shape")?;
+        shape
+            .budget
+            .charge(1, size_of::<Option<super::arena::Identity>>())?;
+        self.existing_arena_identity()
+            .cloned()
+            .ok_or("future proof requires its prepaid source type arena")
+    }
     pub(crate) const fn future_shape_allocation() -> usize {
         size_of::<Shape>() + size_of::<Budget>() + 2 * size_of::<usize>()
     }
@@ -73,7 +119,13 @@ impl Store {
         body_output: TypeId,
     ) -> Result<(), &'static str> {
         let budget = Budget::default();
-        budget.charge(1, Self::future_shape_allocation())?;
+        let arena = if self.existing_arena_identity().is_none() {
+            super::arena::Identity::allocation_bytes()
+        } else {
+            0
+        };
+        budget.charge(1, Self::future_shape_allocation().saturating_add(arena))?;
+        self.arena_identity();
         let Some(Kind::Function {
             bound_regions,
             parameters,

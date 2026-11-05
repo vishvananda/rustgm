@@ -202,6 +202,9 @@ impl<'a> Context<'a> {
             .iter()
             .map(|body| match body.owner {
                 Owner::AnonymousConstant
+                | Owner::AsyncBody { .. }
+                | Owner::AsyncApplication { .. }
+                | Owner::FutureEntry { .. }
                 | Owner::AnonymousInstance(_)
                 | Owner::InitializerInstance { .. }
                 | Owner::Closure { .. }

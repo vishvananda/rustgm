@@ -151,7 +151,16 @@ impl Engine {
                     ));
                 }
                 let contract = input.clone();
-                let template = if let Some(t) = self.originals.get(&id) {
+                let template = if self.originals.get(&id).is_some_and(|template| {
+                    matches!(
+                        template.body.owner,
+                        crate::body::ir::Owner::AsyncBody { .. }
+                    )
+                }) {
+                    self.originals
+                        .remove(&id)
+                        .ok_or_else(|| error("component lost its single owned AsyncBody"))?
+                } else if let Some(t) = self.originals.get(&id) {
                     t.clone()
                 } else {
                     self.construction.function(report, facts, &function)?

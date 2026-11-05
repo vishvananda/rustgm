@@ -300,3 +300,68 @@ fn publication_checks_real_body_and_recipe_shape_before_symbolic_exclusion() -> 
     }
     Ok(())
 }
+
+#[test]
+fn checked_authored_future_storage_cannot_be_exported_as_a_symbolic_marker() -> Result {
+    let report = source::source_provider(&fixture("unmarked")?, "authored_storage")?;
+    let identity = report
+        .package
+        .source_core()
+        .ok_or("actual provider")?
+        .provider
+        .clone();
+    let pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = pipeline::analyze_source(&report)?;
+    let function = facts
+        .functions
+        .iter()
+        .find(|function| {
+            report
+                .package
+                .names
+                .get(report.resolution.definitions[function.definition.0 as usize].name)
+                == "cleanup"
+        })
+        .ok_or("actual authored async function")?;
+    let Some(Kind::Function { result, .. }) = facts.types.kind(function.signature) else {
+        return Err("actual constructor signature".into());
+    };
+    let Some(Kind::Opaque(identity_opaque, captures)) = facts.types.kind(result) else {
+        return Err("actual future identity".into());
+    };
+    assert!(
+        facts.opaques.declarations[&identity_opaque]
+            .hidden
+            .is_none()
+    );
+    let error = build_source_library_profile(
+        &report,
+        &mut facts,
+        identity,
+        prepared,
+        SourcePublication::CompilerOperations,
+    )
+    .err()
+    .ok_or("exported an authored marker without its real body")?;
+    assert!(
+        error
+            .to_string()
+            .contains("authored async state-machine construction/storage export"),
+        "{error}"
+    );
+    let hidden = facts.opaques.declarations[&identity_opaque]
+        .hidden
+        .ok_or("actual checked deferred original did not publish its hidden future")?;
+    assert_eq!(
+        facts.types.kind(hidden),
+        Some(Kind::Future {
+            identity: identity_opaque,
+            arguments: captures
+        })
+    );
+    assert_ne!(hidden, rustgm::types::TypeId::UNIT);
+    assert!(facts.types.storage_head(result).is_ok());
+    Ok(())
+}

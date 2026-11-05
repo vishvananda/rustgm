@@ -5,19 +5,38 @@ use crate::{
     types::{RegionId, substitute::Bound},
 };
 
+/// Derived canonical argument owner only; no body, namespace or proof permission.
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub(super) enum ArgumentOwner {
+    Callable(crate::types::instance::Instance),
+    Initializer(crate::sema::values::Instance),
+    AsyncBody(crate::types::TypeId),
+}
+const _: [(); 12] = [(); size_of::<Context>()];
+const _: [(); size_of::<Context>()] = [(); size_of::<ArgumentOwner>()];
+const _: [(); 20] = [(); size_of::<CallerInstance>()];
+
 pub(super) struct Observed {
     regions: Vec<RegionId>,
 }
-fn context(facts: &Declarations, enclosing: CallerInstance) -> Result<Context, &'static str> {
-    let context = match enclosing {
-        CallerInstance::Callable(instance) => Ok(Context::Callable(instance)),
-        CallerInstance::Initializer(instance) => Ok(Context::Initializer(instance)),
-        CallerInstance::Inline(instance) => Ok(instance.enclosing()),
-        CallerInstance::Original => Err("source namespace requires an exact instance"),
-    }?;
-    Ok(match context {
-        Context::SourceInitializer(witness) => Context::Initializer(witness.identity(facts)?.0),
-        context => context,
+const _: [(); 40] = [(); size_of::<(Context, Observed)>()];
+const _: [(); size_of::<(Context, Observed)>()] = [(); size_of::<(ArgumentOwner, Observed)>()];
+fn context(facts: &Declarations, enclosing: CallerInstance) -> Result<ArgumentOwner, &'static str> {
+    Ok(match enclosing {
+        CallerInstance::AsyncBody(future) => {
+            facts.checked_future_definition(future)?;
+            ArgumentOwner::AsyncBody(future)
+        }
+        CallerInstance::Callable(instance) => ArgumentOwner::Callable(instance),
+        CallerInstance::Initializer(instance) => ArgumentOwner::Initializer(instance),
+        CallerInstance::Inline(instance) => match instance.enclosing() {
+            Context::Callable(instance) => ArgumentOwner::Callable(instance),
+            Context::Initializer(instance) => ArgumentOwner::Initializer(instance),
+            Context::SourceInitializer(witness) => {
+                ArgumentOwner::Initializer(witness.identity(facts)?.0)
+            }
+        },
+        CallerInstance::Original => return Err("source namespace requires an exact instance"),
     })
 }
 pub(super) fn regions(
@@ -55,7 +74,7 @@ pub(super) fn prepare(
     {
         return Err("source observation row count budget exceeded");
     }
-    let metadata = crate::support::retained::new_map::<Context, Observed>(1).saturating_add(
+    let metadata = crate::support::retained::new_map::<ArgumentOwner, Observed>(1).saturating_add(
         if catalog.namespaces.is_none() {
             size_of::<Namespaces>()
         } else {
@@ -69,13 +88,17 @@ pub(super) fn prepare(
     let mut fold = Bound::observe_budgeted_regions(1_000_000, bytes)?;
     let result = (|| {
         match key {
-            Context::Callable(instance) => {
+            ArgumentOwner::AsyncBody(future) => {
+                let Some(crate::types::Kind::Future { arguments, .. }) = facts.types.kind(future)
+                else {
+                    return Err("async observation lost its genuine future application");
+                };
+                fold.apply_arguments(&mut facts.types, arguments)?;
+            }
+            ArgumentOwner::Callable(instance) => {
                 fold.apply(&mut facts.types, instance.ty())?;
             }
-            Context::SourceInitializer(_) => {
-                return Err("source observation key was not canonicalized");
-            }
-            Context::Initializer(instance) => {
+            ArgumentOwner::Initializer(instance) => {
                 fold.apply_arguments(&mut facts.types, instance.arguments)?;
             }
         }

@@ -16,12 +16,30 @@ impl Engine {
         purpose: super::ProofPurpose,
     ) -> Result<CheckedInput, Error> {
         let body = &template.body;
-        let Owner::Function { definition, .. } = body.owner else {
-            return Err(identity_error("defining proof is not a function"));
+        let definition = match body.owner {
+            Owner::Function { definition, .. } => definition,
+            Owner::AsyncBody { .. } => {
+                crate::body::coroutines::original(facts, body).map_err(identity_error)?
+            }
+            _ => {
+                return Err(identity_error(
+                    "defining proof is not an authored function body",
+                ));
+            }
         };
         if !facts.opaques.owners.contains_key(&definition) {
             return self.prove(report, facts, template, contract, purpose);
         }
+        let source_arena = if let Owner::AsyncBody { future, .. } = body.owner {
+            Some(
+                facts
+                    .types
+                    .future_proof_arena(future)
+                    .map_err(identity_error)?,
+            )
+        } else {
+            None
+        };
         Original::validate_parts_charged(facts, body, contract).map_err(identity_error)?;
         let regions = Self::source_regions(report, facts, body, contract)?;
         self.prove_loans(
@@ -32,9 +50,25 @@ impl Engine {
             &template.environment,
             &regions,
         )?;
+        if matches!(body.owner, Owner::AsyncBody { .. }) {
+            let arena = source_arena.as_ref().ok_or_else(|| {
+                identity_error("async source proof lost its actual store witness")
+            })?;
+            facts
+                .infer_checked_async_future(definition, arena)
+                .map_err(|e| report.body_error(body.source, e))?;
+        }
         facts
             .close_opaque_results(definition, &regions.hidden_regions)
             .map_err(|e| report.body_error(body.source, e))?;
+        if matches!(body.owner, Owner::AsyncBody { .. }) {
+            // The real original has been proved, but it is never standalone code.
+            // Generated entries still require their actual protocol and checked family.
+            return Ok(CheckedInput {
+                retained: None,
+                code: None,
+            });
+        }
         let (code, uses) = self
             .finish_code(facts, body, contract, &regions, purpose)
             .map_err(|e| report.body_error(body.source, e))?;
@@ -61,16 +95,33 @@ pub(super) fn close_component(
     }
     for template in &templates.bodies {
         let body = &template.body;
-        let Owner::Function { definition, .. } = body.owner else {
-            continue;
+        let (definition, original, contract, regions) = match body.owner {
+            Owner::Function { definition, .. } => {
+                if !facts.opaques.owners.contains_key(&definition) {
+                    continue;
+                }
+                let (original, contract, regions) = checked
+                    .function_proof(ItemId(definition.0))
+                    .ok_or_else(|| identity_error("missing checked defining function"))?;
+                (definition, original, contract, regions)
+            }
+            Owner::AsyncBody { identity, .. } => {
+                checked
+                    .require_future_store(&facts.types)
+                    .map_err(identity_error)?;
+                let definition =
+                    crate::body::coroutines::original(facts, body).map_err(identity_error)?;
+                let (original, contract, regions) = checked
+                    .async_body(identity)
+                    .ok_or_else(|| identity_error("missing checked deferred AsyncBody"))?;
+                (definition, original, contract, regions)
+            }
+            _ => continue,
         };
         if !facts.opaques.owners.contains_key(&definition) {
             continue;
         }
         let error = identity_error;
-        let (original, contract, regions) = checked
-            .function_proof(ItemId(definition.0))
-            .ok_or_else(|| error("missing checked defining function"))?;
         if !std::ptr::eq(original, template) || regions.source != body.source {
             return Err(error("defining proof belongs to another original"));
         }
@@ -79,15 +130,35 @@ pub(super) fn close_component(
     // A Checked family seals the CFG proofs, but does not validate declaration
     // identity. Every original pairing must pass before any head is published.
     for template in &templates.bodies {
-        let Owner::Function { definition, .. } = template.body.owner else {
-            continue;
+        let (definition, regions) = match template.body.owner {
+            Owner::Function { definition, .. } => {
+                if !facts.opaques.owners.contains_key(&definition) {
+                    continue;
+                }
+                let (_, _, regions) = checked
+                    .function_proof(ItemId(definition.0))
+                    .ok_or_else(|| identity_error("missing checked defining function"))?;
+                (definition, regions)
+            }
+            Owner::AsyncBody { identity, .. } => {
+                let definition = crate::body::coroutines::original(facts, &template.body)
+                    .map_err(identity_error)?;
+                let (_, _, regions) = checked
+                    .async_body(identity)
+                    .ok_or_else(|| identity_error("missing checked deferred AsyncBody"))?;
+                (definition, regions)
+            }
+            _ => continue,
         };
         if !facts.opaques.owners.contains_key(&definition) {
             continue;
         }
-        let (_, _, regions) = checked
-            .function_proof(ItemId(definition.0))
-            .ok_or_else(|| identity_error("missing checked defining function"))?;
+        if matches!(template.body.owner, Owner::AsyncBody { .. }) {
+            let arena = checked.future_store(&facts.types).map_err(identity_error)?;
+            facts
+                .infer_checked_async_future(definition, arena)
+                .map_err(|e| report.body_error(template.body.source, e))?;
+        }
         facts
             .close_opaque_results(definition, &regions.hidden_regions)
             .map_err(|e| report.body_error(template.body.source, e))?;

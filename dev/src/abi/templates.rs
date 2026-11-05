@@ -349,6 +349,20 @@ fn children(
     {
         Kind::Pattern { base, .. } => visit(base)?,
         Kind::Closure { environment, .. } => visit(environment)?,
+        Kind::Future {
+            identity,
+            arguments,
+        } => {
+            let fields = types.future_application(identity, arguments)?.storage;
+            for &child in types
+                .list(fields)
+                .ok_or("future template lost its actual capture storage")?
+                .iter()
+                .rev()
+            {
+                visit(child)?;
+            }
+        }
         Kind::Opaque(..) => visit(types.storage_head(ty)?)?,
         Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } | Kind::Slice(element) => {
             visit(element)?;

@@ -100,8 +100,17 @@ impl Demand {
         original: Original,
         context: Option<&execution::Context>,
     ) -> Result<(), Error> {
-        let body::ir::Owner::Function { definition, .. } = original.template.body.owner else {
-            return Err(Error::unlocated("defining retention requires a function"));
+        let definition = match original.template.body.owner {
+            body::ir::Owner::Function { definition, .. } => definition,
+            body::ir::Owner::AsyncBody { .. } => {
+                body::coroutines::original(facts, &original.template.body)
+                    .map_err(Error::unlocated)?
+            }
+            _ => {
+                return Err(Error::unlocated(
+                    "defining retention requires an actual source function body",
+                ));
+            }
         };
         if facts.is_const_function(definition) {
             if let Some(context) = context {
@@ -143,7 +152,7 @@ impl Demand {
         }
         self.prepared
             .templates
-            .retain(original.template)
+            .retain_original(facts, original.template)
             .map_err(Error::unlocated)
     }
 }

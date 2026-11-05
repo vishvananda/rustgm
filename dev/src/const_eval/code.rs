@@ -78,6 +78,12 @@ impl Code {
         )
     }
     pub(crate) fn snapshot(body: &Body) -> Result<Self, &'static str> {
+        if matches!(
+            body.owner,
+            Owner::AsyncBody { .. } | Owner::AsyncApplication { .. } | Owner::FutureEntry { .. }
+        ) {
+            return Err("future bodies and generated entries have no constant execution snapshot");
+        }
         if body.assembly.is_some() {
             return Err("inline assembly has no constant execution snapshot");
         }

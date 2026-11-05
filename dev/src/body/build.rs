@@ -118,6 +118,8 @@ pub(crate) fn concrete_selected(
         {
             continue;
         }
+        super::coroutines::require_ordinary_original(facts, function.definition)
+            .map_err(|message| report.body_error(function.node, message))?;
         if let Some(body) = prepared.remove(&super::ir::BodyKey::Declaration(function.definition)) {
             program.bodies.push(body);
             continue;
@@ -170,12 +172,20 @@ fn function_body(
     query: Option<&mut crate::types::destruction::NeedsDrop>,
 ) -> Result<Body, Error> {
     crate::sema::compiler_items::require_async_glue_body(report, facts, function)?;
-    if facts.async_body_output(report, function)?.is_some() {
-        return Err(report.body_error(
-            function.node,
-            "async state-machine construction is not implemented",
-        ));
-    }
+    let asynchronous = facts
+        .async_body_output(report, function)?
+        .map(|_| {
+            facts
+                .authored_async_body(function)
+                .map_err(|error| report.body_error(function.node, error))?
+                .ok_or_else(|| {
+                    report.body_error(
+                        function.node,
+                        "async body requires its actual authored shape",
+                    )
+                })
+        })
+        .transpose()?;
     if let Some(mut body) = super::length_methods::build(facts, function)
         .map_err(|e| report.body_error(function.node, e))?
     {
@@ -191,21 +201,30 @@ fn function_body(
     let Some(Type::Function { result, .. }) = facts.types.kind(function.signature) else {
         return Err(Error::at(source.file, 0, "missing function signature"));
     };
-    let result = facts
-        .opaques
-        .body_results
-        .get(&function.definition)
-        .copied()
-        .unwrap_or(result);
-    let mut body = Body::new(
+    let result = asynchronous.as_ref().map_or_else(
+        || {
+            facts
+                .opaques
+                .body_results
+                .get(&function.definition)
+                .copied()
+                .unwrap_or(result)
+        },
+        |body| body.output,
+    );
+    let owner = asynchronous.map_or(
         Owner::Function {
             definition: function.definition,
             signature: function.signature,
             execution: None,
         },
-        source,
-        result,
+        |body| Owner::AsyncBody {
+            identity: body.identity,
+            future: body.future,
+            signature: body.signature,
+        },
     );
+    let mut body = Body::new(owner, source, result);
     body.const_context = facts.is_const_function(function.definition)
         && facts
             .source_function_context(report, function.definition, source)

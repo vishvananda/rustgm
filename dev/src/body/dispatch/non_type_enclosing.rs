@@ -68,6 +68,12 @@ fn environment(facts: &mut Declarations, body: &Body) -> Result<Option<Arc<Envir
         return imported(facts, body);
     };
     let owner = match body.owner {
+        Owner::AsyncBody { .. } => Some(crate::body::coroutines::original(facts, body)?),
+        Owner::AsyncApplication { .. } | Owner::FutureEntry { .. } => {
+            return Err(
+                "future feature environment requires its checked capture application".into(),
+            );
+        }
         Owner::Function { definition, .. }
         | Owner::Initializer { definition, .. }
         | Owner::InitializerInstance {

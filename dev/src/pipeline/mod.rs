@@ -151,13 +151,11 @@ fn complete_constants(
 }
 
 impl Demand {
-    fn close(
-        &mut self,
+    fn demanded_definition(
         report: &Report,
-        facts: &mut Declarations,
+        facts: &Declarations,
         id: OpaqueId,
-        context: Option<&execution::Context>,
-    ) -> Result<(), Error> {
+    ) -> Result<(DefId, crate::resolve::unit::NodeKey), Error> {
         let declaration = facts.opaques.declarations.get(&id).ok_or_else(|| {
             Error::at(
                 crate::resolve::unit::FileId(0),
@@ -165,12 +163,24 @@ impl Demand {
                 "missing demanded hidden result",
             )
         })?;
-        let owner = declaration.owner;
+        declaration
+            .require_current(facts, id)
+            .map_err(Error::unlocated)?;
         let source = declaration.source().map_err(|message| {
             declaration
                 .site(facts)
                 .map_or_else(Error::unlocated, |site| report.body_error(site, message))
         })?;
+        Ok((declaration.owner, source))
+    }
+    fn close(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        id: OpaqueId,
+        context: Option<&execution::Context>,
+    ) -> Result<(), Error> {
+        let (owner, source) = Self::demanded_definition(report, facts, id)?;
         let function = Self::defining_function(facts, owner)?;
         let Some(original) = self.defining_original(report, facts, &function, context)? else {
             return if facts
@@ -187,6 +197,14 @@ impl Demand {
                 ))
             };
         };
+        if matches!(
+            original.template.body.owner,
+            body::ir::Owner::AsyncBody { .. }
+        ) {
+            original
+                .validate(facts)
+                .map_err(|e| report.body_error(source, e))?;
+        }
         let original_contexts::Original {
             mut template,
             contract: mut input,
@@ -238,6 +256,14 @@ impl Demand {
             .first()
             .ok_or_else(|| report.body_error(source, "missing defining region proof"))?;
         let choices = proof.hidden_regions.clone();
+        if matches!(proof.key, body::ir::BodyKey::AsyncBody(_)) {
+            let arena = checked
+                .future_store(&facts.types)
+                .map_err(|e| report.body_error(source, e))?;
+            facts
+                .infer_checked_async_future(owner, arena)
+                .map_err(|e| report.body_error(source, e))?;
+        }
         drop(checked);
         facts
             .close_opaque_results(owner, &choices)

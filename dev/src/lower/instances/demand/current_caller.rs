@@ -75,6 +75,10 @@ fn ordinary_owner(facts: &Declarations, body: &Body) -> Result<DefId, &'static s
         .source()
         .ok_or("imported caller requires its actual checked environment")?;
     match body.owner {
+        Owner::AsyncBody { .. } => crate::body::coroutines::original(facts, body),
+        Owner::AsyncApplication { .. } | Owner::FutureEntry { .. } => {
+            Err("future caller requires its actual checked capture environment")
+        }
         Owner::Function { definition, .. } => {
             let function = facts
                 .function_indices

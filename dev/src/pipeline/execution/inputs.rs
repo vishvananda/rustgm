@@ -170,6 +170,9 @@ impl Context {
                         })
                     }
                     Owner::Initializer { .. }
+                    | Owner::AsyncBody { .. }
+                    | Owner::AsyncApplication { .. }
+                    | Owner::FutureEntry { .. }
                     | Owner::Closure { .. }
                     | Owner::ClosureAdapter { .. }
                     | Owner::AnonymousInstance(_)

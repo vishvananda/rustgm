@@ -50,6 +50,20 @@ impl Stage {
             .declarations
             .get(&id)
             .ok_or("opaque export lost its actual declaration")?;
+        if facts.types.authored_future_template(id)?.is_some() {
+            contract.require_current(facts, id)?;
+            let function = facts
+                .function_indices
+                .get(&contract.owner)
+                .and_then(|&index| facts.functions.get(index))
+                .ok_or("authored async export lost its actual source function")?;
+            facts
+                .authored_async_body(function)?
+                .ok_or("authored async export changed its actual source ownership")?;
+            return Err(
+                "authored async state-machine construction/storage export requires its complete typed ownership profile",
+            );
+        }
         let catalog = facts
             .source_bindings
             .as_deref()

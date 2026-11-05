@@ -363,6 +363,25 @@ pub struct Block {
 }
 #[derive(Clone, Copy)]
 pub enum Owner {
+    /// The single authored deferred body; it is never its public constructor.
+    AsyncBody {
+        identity: crate::types::opaque::OpaqueId,
+        future: TypeId,
+        signature: TypeId,
+    },
+    /// Transient owned materialization, consumed directly by the poll transform.
+    AsyncApplication {
+        identity: crate::types::opaque::OpaqueId,
+        future: TypeId,
+        signature: TypeId,
+    },
+    FutureEntry {
+        key: crate::types::future::EntryKey,
+        /// Actual required entry signature; not the deferred body's Output signature.
+        signature: TypeId,
+        /// The generated body's separately opened proof universe.
+        execution: TypeId,
+    },
     ClosureAdapter {
         adapter: crate::types::closure::Adapter,
         signature: TypeId,
@@ -412,12 +431,22 @@ impl Owner {
                     None => signature,
                 },
             )),
-            Self::ClosureAdapter { signature, .. } => Some((signature, signature)),
+            Self::FutureEntry {
+                signature,
+                execution,
+                ..
+            } => Some((signature, execution)),
+            Self::ClosureAdapter { signature, .. }
+            | Self::AsyncBody { signature, .. }
+            | Self::AsyncApplication { signature, .. } => Some((signature, signature)),
             _ => None,
         }
     }
     pub(crate) const fn key(self, source: BodyOrigin) -> BodyKey {
         match self {
+            Self::AsyncBody { identity, .. } => BodyKey::AsyncBody(identity),
+            Self::AsyncApplication { future, .. } => BodyKey::AsyncApplication(future),
+            Self::FutureEntry { key, .. } => BodyKey::FutureEntry(key),
             Self::ClosureAdapter { adapter, .. } => BodyKey::ClosureAdapter(adapter),
             Self::Function { definition, .. } | Self::Initializer { definition, .. } => {
                 BodyKey::Declaration(definition)
@@ -435,6 +464,9 @@ impl Owner {
 /// Declaration identity is separate from shared diagnostic provenance.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum BodyKey {
+    AsyncBody(crate::types::opaque::OpaqueId),
+    AsyncApplication(TypeId),
+    FutureEntry(crate::types::future::EntryKey),
     ClosureAdapter(crate::types::closure::Adapter),
     Declaration(DefId),
     Closure(crate::types::closure::ClosureId),

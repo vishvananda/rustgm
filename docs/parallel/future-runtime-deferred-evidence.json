@@ -1,0 +1,98 @@
+{
+  "parent": "8d1986d85",
+  "branch": "implement/future-runtime-20261105",
+  "scope": "real deferred AsyncBody source proof/publication and current-store provenance; executable future family remains required",
+  "source_map": {
+    "path": "obj/parallel/future-runtime-v1/deferred-checkpoint/source-hashes.json",
+    "files": 40,
+    "sha256": "5cfe5d33720ff9ff3b0c938df4969de701ae2e0b2e74d5d2fbd59e3c1874d509"
+  },
+  "gates": [
+    {
+      "path": "obj/qualification/fast/1793881921285261099/receipt.json",
+      "sha256": "10c54337bf530c1a4fed4fee8cc2460cb29daeb32117376ff32d0d630c66c1d4",
+      "state": "passed"
+    },
+    {
+      "path": "obj/qualification/fast/1793882576721396316/receipt.json",
+      "sha256": "829ca04599c24ef49c806cfa8b334a21e25b6d4ca525b0b22fbc3f3b89e86cbe",
+      "state": "passed"
+    }
+  ],
+  "exact_tests": 22,
+  "source_originals_checked": 5,
+  "actual_layouts": {
+    "Kind": 24,
+    "Owner": 20,
+    "Body": 456,
+    "opaque_entry": 16,
+    "Checked_State_before": 168,
+    "Checked_State_after": 176,
+    "CallerInstance": 20,
+    "Context": 12,
+    "ArgumentOwner": 12,
+    "old_and_new_observation_key_value_row": 40,
+    "materialized_Original_before_selected_join": 56,
+    "materialized_InstanceScope_before_selected_join": 80
+  },
+  "independent_foundation": {
+    "plan": "obj/parallel/future-runtime-v1/copy-foundation/predictions.json",
+    "plan_sha256": "c7b343d2836b88376d8dd0c9320f50b7b1db2ad5679b719f002266db83bfd26f",
+    "receipt": "obj/parallel/future-runtime-v1/copy-foundation/receipt.json",
+    "receipt_sha256": "4b594bf7c241e2edee4b49adf9d653ef6e59e7a3f4dc947b3960503d8219582f",
+    "missing_Copy": {
+      "expected": 1,
+      "actual": 1,
+      "cause": "E0507"
+    },
+    "real_Copy": {
+      "expected": 0,
+      "actual": 0
+    },
+    "authored_async_bytes_unchanged": true,
+    "companion_sha256": "cc81b5d1a3460c371004821b13a29b5fc426ec475838b35cd0e991742b91895d"
+  },
+  "failures_retained": [
+    {
+      "gate": "1793878868674282216",
+      "cause": "source caller105 lines"
+    },
+    {
+      "gate": "1793879449059366155",
+      "cause": "predicted CallerInstance24; actual compiler20"
+    },
+    {
+      "gate": "1793879558441512413",
+      "cause": "new loan test omitted real source Copy preparation"
+    },
+    {
+      "gate": "1793880206013959164",
+      "cause": "Demand.close109 lines and doc backticks"
+    },
+    {
+      "gate": "1793880468057597620",
+      "cause": "missing Future ABI template children eagerly demanded generic unsized pointer layout"
+    },
+    {
+      "gate": "1793881331053235692",
+      "cause": "test foundation lacked actual primitive Copy/Clone impl; borrower could not copyu8"
+    }
+  ],
+  "legacy": {
+    "historical_source_provided_bytes": "exact decode/reencode pass",
+    "v11_fresh_consumer": "pass symbolic Future Output equality only",
+    "native_link_wrapper_and_legacy_envelope_fences": "pass",
+    "candidate_future_native": null
+  },
+  "required_remaining": [
+    "actual constructor generated body and checked construction provenance",
+    "actual selected AsyncApplication substitution/clauses and materialized Copy scope",
+    "demanded actual Future::poll/Pin/Poll/Ready/Pending/Context signatures and generated family permits",
+    "real poll/drop scheduler entries and state/capture ownership with deferred body/pattern effects",
+    "native unpolled/completed, multi-input/pattern/output/borrow and auto-trait controls",
+    "full await/saved-local/self-reference/panic/cancellation states",
+    "recursive synchronous/async cleanup and genuine async_drop_in_place execution",
+    "real authored-async typed body/ownership/region metadata export",
+    "integration harness/upstream and full release/private/native/independent CI"
+  ]
+}

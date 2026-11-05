@@ -118,6 +118,7 @@ pub(crate) fn verify<'a, S: BuildHasher>(
     Ok(Checked {
         templates,
         state: State {
+            future_arena: super::future_arena(environment.types, templates, &anonymous)?,
             index,
             closures,
             anonymous,

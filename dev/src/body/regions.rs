@@ -282,6 +282,10 @@ fn function_contract(
     let owner = function.definition;
     let scheme = facts.lifetimes.functions.get(&owner);
     let mut contract = parameter_contract(facts, owner, source, Some(function.signature))?;
+    if let Some(body) = facts.authored_async_body(function)? {
+        contract.key = super::ir::BodyKey::AsyncBody(body.identity);
+        contract.signature = Some(body.signature);
+    }
     contract.universals = scheme.map_or(0, |s| s.total);
     contract.assumptions = scheme.map_or_else(Vec::new, |s| s.bounds.clone());
     super::defining_cleanups::mark_required(facts, function, &mut contract)?;

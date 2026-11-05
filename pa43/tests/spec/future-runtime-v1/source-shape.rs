@@ -10,6 +10,8 @@ impl<T:PointeeSized> LegacyReceiver for &mut T {}
 #[lang="copy"] pub trait Copy:Clone {}
 #[lang="clone"] pub trait Clone:Sized { #[lang="clone_fn"] fn clone(&self)->Self; }
 #[lang="future_trait"] pub trait Future { #[lang="future_output"] type Output; }
+impl Clone for u8 { fn clone(&self)->Self{*self} }
+impl Copy for u8 {}
 pub async fn scalar(x:u8)->u8{x}
 pub async fn raw(_: *mut u8)->u8{7}
 pub async fn output()->*mut u8{0usize as *mut u8}

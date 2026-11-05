@@ -323,6 +323,18 @@ impl Prepared {
         attempted: &mut usize,
     ) -> Result<Template, Error> {
         if let Some(template) = self.bodies.remove(&function.definition) {
+            if matches!(
+                template.body.owner,
+                crate::body::ir::Owner::AsyncBody { .. }
+            ) && crate::body::coroutines::original(facts, &template.body)
+                .map_err(|error| report.body_error(function.node, error))?
+                != function.definition
+            {
+                return Err(report.body_error(
+                    function.node,
+                    "retained AsyncBody changed its actual source owner",
+                ));
+            }
             self.reused += 1;
             return Ok(template);
         }
@@ -347,6 +359,7 @@ impl Prepared {
     }
     pub(crate) fn retain_component(
         &mut self,
+        facts: &Declarations,
         templates: Vec<Template>,
     ) -> Result<(), &'static str> {
         let mut keys = crate::support::hash::HashSet::with_capacity_and_hasher(
@@ -356,6 +369,9 @@ impl Prepared {
         for template in &templates {
             let body = &template.body;
             let present = match body.owner {
+                crate::body::ir::Owner::AsyncBody { .. } => self
+                    .bodies
+                    .contains_key(&crate::body::coroutines::original(facts, body)?),
                 crate::body::ir::Owner::Function { definition, .. }
                 | crate::body::ir::Owner::Initializer { definition, .. } => {
                     self.bodies.contains_key(&definition)
@@ -375,9 +391,31 @@ impl Prepared {
             }
         }
         for template in templates {
-            self.retain(template)?;
+            self.retain_original(facts, template)?;
         }
         Ok(())
+    }
+    pub(crate) fn retain_original(
+        &mut self,
+        facts: &Declarations,
+        template: Template,
+    ) -> Result<(), &'static str> {
+        if !matches!(
+            template.body.owner,
+            crate::body::ir::Owner::AsyncBody { .. }
+        ) {
+            return self.retain(template);
+        }
+        let definition = crate::body::coroutines::original(facts, &template.body)?;
+        match self.bodies.entry(definition) {
+            std::collections::hash_map::Entry::Vacant(entry) => {
+                entry.insert(template);
+                Ok(())
+            }
+            std::collections::hash_map::Entry::Occupied(_) => {
+                Err("defining AsyncBody was retained twice")
+            }
+        }
     }
     /// Retain a completed original function for later template qualification and lowering.
     /// # Errors

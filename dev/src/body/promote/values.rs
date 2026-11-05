@@ -150,6 +150,13 @@ impl Engine<'_, '_> {
             Rvalue::AssociatedConstant(instance) => {
                 if self.body.instance.is_none()
                     && match self.body.owner {
+                        crate::body::ir::Owner::AsyncBody { .. } => {
+                            let facts = self.evaluator.facts();
+                            facts.generics.has_parameters(
+                                crate::body::coroutines::original(facts, self.body)
+                                    .map_err(Error::from)?,
+                            )
+                        }
                         crate::body::ir::Owner::Function { definition, .. } => {
                             self.evaluator.facts().generics.has_parameters(definition)
                         }
@@ -162,6 +169,8 @@ impl Engine<'_, '_> {
                                 || self.evaluator.facts().generics.has_parameters(definition)
                         }
                         crate::body::ir::Owner::AnonymousConstant
+                        | crate::body::ir::Owner::AsyncApplication { .. }
+                        | crate::body::ir::Owner::FutureEntry { .. }
                         | crate::body::ir::Owner::ClosureAdapter { .. }
                         | crate::body::ir::Owner::AnonymousInstance(_)
                         | crate::body::ir::Owner::InitializerInstance { .. }

@@ -109,6 +109,9 @@ impl Retained {
             .state
             .as_mut()
             .ok_or_else(|| error("retained proof storage is already borrowed"))?;
+        state
+            .require_current_store(checks.environment.types)
+            .map_err(error)?;
         let template = original.template();
         let raw = original.contract();
         if template.body.source.source().is_some()

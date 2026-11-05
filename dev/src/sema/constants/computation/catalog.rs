@@ -38,6 +38,7 @@ pub(super) struct CallerOwner {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(crate) enum Enclosing {
     Original,
+    AsyncBody(TypeId),
     Callable(crate::types::instance::Instance),
     Initializer(Instance),
     Inline(InlineInstance),

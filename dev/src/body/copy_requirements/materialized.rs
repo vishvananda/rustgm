@@ -17,6 +17,10 @@ pub(in crate::body) struct InstanceScope {
     environment: Arc<Environment>,
 }
 
+// The upcoming async selection must retain these actual cold row bounds.
+const _: [(); 56] = [(); size_of::<Original>()];
+const _: [(); 80] = [(); size_of::<InstanceScope>()];
+
 pub(in crate::body) fn capture(
     facts: &mut Declarations,
     body: &Body,
