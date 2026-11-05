@@ -243,7 +243,8 @@ where
                 | Kind::Pointer { .. }
                 | Kind::Function { .. }
                 | Kind::FunctionItem { .. }
-                | Kind::Closure { .. } => Step::Complete(Term::Sized),
+                | Kind::Closure { .. }
+                | Kind::Future { .. } => Step::Complete(Term::Sized),
             },
         )
     }

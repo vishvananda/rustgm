@@ -155,7 +155,9 @@ impl Context {
     pub fn item_arguments(&mut self, store: &Store, term: TermId) -> Result<Vec<Argument>, Error> {
         let term = self.root(term)?;
         let (args, offset) = match self.materialize(store, term)? {
-            Constructor::AdtArgs(_, args) | Constructor::Opaque(_, args) => (args, 0),
+            Constructor::AdtArgs(_, args)
+            | Constructor::Opaque(_, args)
+            | Constructor::Future(_, args) => (args, 0),
             Constructor::FunctionItemArgs(_, args) => (args, 1),
             Constructor::Closure(_, args) => (args, 2),
             _ => return Err(Error::InvalidIdentity),
@@ -419,6 +421,10 @@ impl Context {
             Constructor::Opaque(id, args) => {
                 Kind::Opaque(id, self.canonical_arguments(store, args, children)?)
             }
+            Constructor::Future(identity, args) => Kind::Future {
+                identity,
+                arguments: self.canonical_arguments(store, args, children)?,
+            },
             Constructor::Dynamic {
                 shape,
                 arguments,

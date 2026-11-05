@@ -195,7 +195,9 @@ impl Uses {
                     self.push(signature, depth)?;
                     self.push(environment, depth)?;
                 }
-                Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
+                Kind::Adt(_, arguments)
+                | Kind::Opaque(_, arguments)
+                | Kind::Future { arguments, .. } => {
                     self.arguments(store, arguments, depth)?;
                 }
                 Kind::Dynamic {

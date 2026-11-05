@@ -188,6 +188,17 @@ impl Sets {
                 finish,
                 budget,
             ),
+            Kind::Future {
+                identity,
+                arguments,
+            } => self.child(
+                Key {
+                    input: Input::List(types.future_application(identity, arguments)?.captures),
+                    ..key
+                },
+                finish,
+                budget,
+            ),
             Kind::Function {
                 parameters, result, ..
             } => {

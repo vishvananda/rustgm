@@ -102,6 +102,15 @@
       "expected_status": 1,
       "expected_code": "E0503",
       "sha256": "9e6a9d4fe0def8c766c772bc32a245440276be1fa3bc28815dc3c8ce0a6ea127"
+    },
+    {
+      "name": "returned-nonsend",
+      "path": "pa43/tests/spec/future-runtime-v1/returned-nonsend.rs",
+      "mode": "metadata",
+      "expected_status": 0,
+      "expected_code": null,
+      "sha256": "af6d3523ede62095454d4527db15c4d1846fd615df6ebffcadd895bb98df8d73",
+      "contract": "Output is not a stored capture; empty-capture future stays Send+Sync despite !Send output and actual !Send Context poll input."
     }
   ],
   "required_remaining": [

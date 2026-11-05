@@ -128,7 +128,10 @@ fn needs(store: &Store, kind: Kind) -> Result<Needs, &'static str> {
             result.arguments = args(arguments)?;
             None
         }
-        Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) | Kind::Dynamic { arguments, .. } => {
+        Kind::Adt(_, arguments)
+        | Kind::Opaque(_, arguments)
+        | Kind::Future { arguments, .. }
+        | Kind::Dynamic { arguments, .. } => {
             result.arguments = args(arguments)?;
             None
         }

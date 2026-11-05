@@ -384,7 +384,9 @@ impl Interfaces<'_> {
                 }
                 self.arguments(arguments, budget)?;
             }
-            Kind::Opaque(_, arguments) => self.arguments(arguments, budget)?,
+            Kind::Opaque(_, arguments) | Kind::Future { arguments, .. } => {
+                self.arguments(arguments, budget)?;
+            }
             Kind::Closure {
                 signature,
                 arguments,

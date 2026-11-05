@@ -84,6 +84,7 @@ impl Checker<'_> {
             }
             Type::FunctionItem { arguments, .. }
             | Type::Opaque(_, arguments)
+            | Type::Future { arguments, .. }
             | Type::Dynamic { arguments, .. } => {
                 self.constant_argument_contracts(arguments)?;
             }

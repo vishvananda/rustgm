@@ -105,6 +105,8 @@ mod option_environment;
 mod pattern_editions;
 #[path = "../../pinning_contracts.rs"]
 mod pinning_contracts;
+#[path = "../../polling_source.rs"]
+mod polling_source;
 #[path = "../../prototype_contracts.rs"]
 mod prototype_contracts;
 #[path = "../../provider_traits.rs"]
@@ -123,6 +125,8 @@ pub(crate) mod resolve;
 mod selected_references;
 #[path = "../../smart_receivers.rs"]
 mod smart_receivers;
+#[path = "../../stateframe.rs"]
+mod stateframe;
 #[path = "../../syntax_transfer.rs"]
 mod syntax_transfer;
 #[path = "../../target_requests.rs"]

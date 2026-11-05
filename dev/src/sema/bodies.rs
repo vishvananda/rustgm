@@ -691,6 +691,8 @@ impl Checker<'_> {
         let progress = self.start_function(function)?;
         self.require_complete_body(progress)?;
         self.facts.typed_function_bodies.insert(function.definition);
+        self.facts
+            .prepare_authored_future_shape(self.report, &function)?;
         Ok(())
     }
     fn start_function(&mut self, function: Function) -> Result<Option<Dependency>, Error> {

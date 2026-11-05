@@ -215,7 +215,10 @@ fn source_children(store: &Store, ty: TypeId, children: &mut Vec<TypeId>) -> Res
         | Kind::Pointer {
             pointee: element, ..
         } => children.push(element),
-        Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) | Kind::Dynamic { arguments, .. } => {
+        Kind::Adt(_, arguments)
+        | Kind::Opaque(_, arguments)
+        | Kind::Future { arguments, .. }
+        | Kind::Dynamic { arguments, .. } => {
             children.extend(
                 store
                     .arguments(arguments)

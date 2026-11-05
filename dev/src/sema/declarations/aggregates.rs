@@ -67,6 +67,7 @@ impl Checker<'_> {
         // policies. All field templates and sizing prerequisites now exist;
         // constructors and executable bodies retain their later proofs.
         crate::sema::compiler_items::wrappers::complete(self.report, &mut self.facts)?;
+        crate::sema::compiler_items::polling::complete(self.report, &mut self.facts)?;
         self.validate_fields()?;
         self.nominal_defaults()?;
         self.lifetime_variances()?;

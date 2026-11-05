@@ -377,6 +377,17 @@ fn dependencies(
             }
         }
         Key::Type(ty) => match types.kind(ty).ok_or("invalid drop region type")? {
+            Kind::Future {
+                identity,
+                arguments,
+            } => {
+                for &field in types
+                    .list(types.future_application(identity, arguments)?.captures)
+                    .ok_or("missing future drop captures")?
+                {
+                    visit(Key::Type(field))?;
+                }
+            }
             Kind::Closure { environment, .. } => visit(Key::Type(environment))?,
             Kind::Opaque(id, _) => {
                 if !types

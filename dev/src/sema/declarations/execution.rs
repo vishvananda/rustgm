@@ -166,6 +166,15 @@ impl Checker<'_> {
             self.execution_bodies.active.remove(&definition);
             if initializer.is_none() {
                 self.facts.typed_function_bodies.insert(definition);
+                let function = self
+                    .facts
+                    .function_indices
+                    .get(&definition)
+                    .and_then(|&index| self.facts.functions.get(index))
+                    .copied()
+                    .ok_or_else(|| Error::unlocated("completed body lost its actual function"))?;
+                self.facts
+                    .prepare_authored_future_shape(self.report, &function)?;
             }
         }
         Ok(())

@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "scope": "ordinary Poll/Ready/Pending/Context source declaration validity; demanded poll protocol separate",
+  "baseline": "4cd080c84",
+  "cases": [
+    {
+      "name": "actual",
+      "path": "pa31/tests/spec/polling-source/actual.rs",
+      "expected_status": 0,
+      "expected_code": null,
+      "sha256": "084a1e79647c23d82b290eeee775aca6205a5b71436e0e6f9c43e8e9bca0a025"
+    },
+    {
+      "name": "alternate",
+      "path": "pa31/tests/spec/polling-source/alternate.rs",
+      "expected_status": 0,
+      "expected_code": null,
+      "sha256": "479b2437a18367a217441b126c3ff53e777120bce36ca7e0ad736fddd2d08346"
+    },
+    {
+      "name": "foreign-parent-unused",
+      "path": "pa31/tests/spec/polling-source/foreign-parent-unused.rs",
+      "expected_status": 0,
+      "expected_code": null,
+      "sha256": "11e902f6b708e99a51fd6c6ba04b9cc488fc686db428ba3842bd0db4b0f5e696"
+    },
+    {
+      "name": "invalid-unused-body",
+      "path": "pa31/tests/spec/polling-source/invalid-unused-body.rs",
+      "expected_status": 1,
+      "expected_code": "E0308",
+      "sha256": "8b3f09b758d03e79b7531a852bdd62dc9ec51880efbdd4950c5ab37ff4cd8143"
+    }
+  ],
+  "foundation_correction": "Before candidate observation, initial missing Copy and then Clone receiver required actual LegacyReceiver producers. Initial source/plan and tool observation survive; first raw receipt was overwritten by runner retry (not claimed as retained). attempt2 preserves its own raw sources/plan/receipt. Added real Clone/Copy/LegacyReceiver declarations/impls; no target-role outcome is counted from either incomplete foundation."
+}

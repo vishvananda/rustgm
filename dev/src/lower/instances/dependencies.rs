@@ -264,7 +264,6 @@ impl Discovered {
                 // The classifier returns Some only for an authenticated direct
                 // operation. Reification and unsupported declarations return None.
                 // Lowering still requires the reached body and operation proof.
-
             }
             None => self.callable(&facts.types, ty)?,
         }

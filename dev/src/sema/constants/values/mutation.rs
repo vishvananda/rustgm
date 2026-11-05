@@ -142,6 +142,9 @@ impl Inspection<'_> {
                     self.array(element, length, value)?;
                 }
                 Kind::Tuple(fields) => self.fields(fields, value, false)?,
+                Kind::Future { .. } => {
+                    return Err("authored future state is not a constant value representation");
+                }
                 Kind::Pattern {
                     base: environment, ..
                 }

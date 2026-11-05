@@ -105,6 +105,7 @@ mod binary_contract;
 pub(in crate::sema) mod for_roles;
 pub(in crate::sema) mod futures;
 mod operator_contract;
+pub(in crate::sema) mod polling;
 mod sizing;
 pub(in crate::sema) mod try_protocol;
 pub(in crate::sema) use binary_contract::pending_default as binary_pending_default;

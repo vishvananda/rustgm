@@ -202,6 +202,7 @@ impl Query {
                 },
                 Kind::FunctionItem { .. }
                 | Kind::Opaque(..)
+                | Kind::Future { .. }
                 | Kind::Dynamic { .. }
                 | Kind::Closure { .. } => Properties::default(),
                 _ => Properties::BOTH,

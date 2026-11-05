@@ -377,7 +377,9 @@ impl Bound {
                 self.argument_dependencies(store, arguments, depth)?;
                 None
             }
-            Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
+            Kind::Adt(_, arguments)
+            | Kind::Opaque(_, arguments)
+            | Kind::Future { arguments, .. } => {
                 self.argument_dependencies(store, arguments, depth)?;
                 None
             }

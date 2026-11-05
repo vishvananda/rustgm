@@ -29,30 +29,7 @@ impl Declaration {
         let Some(Kind::Opaque(_, captures)) = store.kind(self.application) else {
             return Err("invalid opaque declaration application");
         };
-        let captures = store.arguments(captures).ok_or("invalid opaque captures")?;
-        let arguments = store
-            .arguments(arguments)
-            .ok_or("invalid opaque arguments")?;
-        if captures.len() != arguments.len() {
-            return Err("opaque capture arity mismatch");
-        }
-        let mut regions = Vec::new();
-        let mut bindings = Vec::new();
-        for (parameter, actual) in captures.zip(arguments) {
-            match (parameter, actual) {
-                (Argument::Lifetime(parameter), Argument::Lifetime(actual)) => {
-                    let Some((0, slot)) = parameter.bound_parts() else {
-                        return Err("invalid opaque lifetime capture");
-                    };
-                    regions.resize(regions.len().max(usize::from(slot) + 1), RegionId::STATIC);
-                    regions[usize::from(slot)] = actual;
-                }
-                (parameter, actual) => {
-                    bindings.push((argument_id(store, parameter)?, actual));
-                }
-            }
-        }
-        Bound::parameters_captured(store, &bindings, regions)
+        Bound::captured_arguments(store, captures, arguments)
     }
 }
 

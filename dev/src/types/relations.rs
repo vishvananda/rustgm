@@ -564,6 +564,18 @@ impl<'a> Constraints<'a> {
                 self.relate_arguments(relation, left, right, None, source)?;
             }
             (
+                Kind::Future {
+                    identity: x,
+                    arguments: left,
+                },
+                Kind::Future {
+                    identity: y,
+                    arguments: right,
+                },
+            ) if x == y => {
+                self.relate_arguments(relation, left, right, None, source)?;
+            }
+            (
                 Kind::Dynamic {
                     shape: a,
                     arguments: aa,

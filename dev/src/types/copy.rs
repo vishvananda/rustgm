@@ -308,7 +308,8 @@ impl Copies {
                 .copied()
                 .unwrap_or_default()
                 .properties(),
-            Kind::Foreign(_)
+            Kind::Future { .. }
+            | Kind::Foreign(_)
             | Kind::Primitive(Primitive::Str)
             | Kind::Slice(_)
             | Kind::Dynamic { .. }
@@ -350,9 +351,11 @@ impl Copies {
             return Ok(Some(Properties::default()));
         }
         match kind {
-            Kind::Adt(..) | Kind::Parameter(_) | Kind::Opaque(..) | Kind::Closure { .. } => {
-                Ok(None)
-            }
+            Kind::Adt(..)
+            | Kind::Parameter(_)
+            | Kind::Opaque(..)
+            | Kind::Closure { .. }
+            | Kind::Future { .. } => Ok(None),
             Kind::Reference {
                 mutable: true,
                 mut referent,

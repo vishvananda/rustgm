@@ -147,6 +147,16 @@ pub(crate) trait Compare<'t> {
                 return self.arguments(a, b, depth);
             }
             (
+                Kind::Future {
+                    identity: x,
+                    arguments: a,
+                },
+                Kind::Future {
+                    identity: y,
+                    arguments: b,
+                },
+            ) if x == y => return self.arguments(a, b, depth),
+            (
                 Kind::Dynamic {
                     shape: a,
                     arguments: aa,

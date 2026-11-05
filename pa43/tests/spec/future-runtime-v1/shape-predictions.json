@@ -1,0 +1,34 @@
+{
+  "stage": "checked authored storage data; no executable future permission",
+  "source": "pa43/tests/spec/future-runtime-v1/source-shape.rs",
+  "rustc_exit": 0,
+  "captures": {
+    "scalar": [
+      "u8"
+    ],
+    "raw": [
+      "*mut u8"
+    ],
+    "output": [],
+    "generic": [
+      "T"
+    ],
+    "borrowed": [
+      "&mut u8"
+    ]
+  },
+  "structural": {
+    "all_unpin": false,
+    "all_copy": false,
+    "all_clone": false,
+    "scalar_send_sync": true,
+    "raw_send_sync": false,
+    "output_send_sync": true
+  },
+  "arity": "canonical full declaration capture list is exact",
+  "layout": "anonymous state byte plus stored raw inputs; output is not an owned field",
+  "independent_source": "pa43/tests/spec/future-runtime-v1/shape-companion.rs",
+  "raw_no_core_observation": "Missing genuine ResumeTy prerequisite, status1; no semantic parity claim. Exact authored declarations are checked independently against standard core.",
+  "sha256": "cc81b5d1a3460c371004821b13a29b5fc426ec475838b35cd0e991742b91895d",
+  "argument_kind": "a canonical type formal rejects a supplied lifetime even at equal arity"
+}

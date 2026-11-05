@@ -34,6 +34,13 @@ pub(super) fn rebuild<F: Folder>(folder: &mut F, kind: Kind, depth: u16) -> Resu
         Kind::Never | Kind::Foreign(_) | Kind::Primitive(_) | Kind::Parameter(_) => kind,
         Kind::Adt(item, args) => Kind::Adt(item, folder.arguments(args, depth)?),
         Kind::Opaque(id, args) => Kind::Opaque(id, folder.arguments(args, depth)?),
+        Kind::Future {
+            identity,
+            arguments,
+        } => Kind::Future {
+            identity,
+            arguments: folder.arguments(arguments, depth)?,
+        },
         Kind::Dynamic {
             shape,
             arguments,

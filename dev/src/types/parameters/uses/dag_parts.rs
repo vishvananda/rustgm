@@ -145,7 +145,7 @@ fn type_parts<const SET: bool, V: Summary>(
             ..
         } => region(value, depth)?.merge(edge(edges, child, Node::Type(referent), depth)?),
         Kind::Tuple(list) => edge(edges, child, Node::Types(list), depth)?,
-        Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
+        Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) | Kind::Future { arguments, .. } => {
             edge(edges, child, Node::Arguments(arguments), depth)?
         }
         Kind::Dynamic {

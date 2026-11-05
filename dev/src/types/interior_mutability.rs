@@ -151,6 +151,12 @@ impl<'a> Query<'a> {
             }
             | Kind::Closure { environment, .. } => self.child(environment)?,
             Kind::Tuple(fields) => self.fields(fields)?,
+            Kind::Future {
+                identity,
+                arguments,
+            } => {
+                self.fields(self.types.future_application(identity, arguments)?.captures)?;
+            }
             Kind::Adt(item, _) => match self.definitions.shared_mutation(item) {
                 None => return Ok(Some(Answer::Unresolved)),
                 Some(SharedMutation::Interior) => return Ok(Some(Answer::Interior)),

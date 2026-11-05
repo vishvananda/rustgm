@@ -72,7 +72,8 @@ impl Context {
                 (Constructor::Closure(x, a), Constructor::Closure(y, b)) => {
                     x == y && !self.argument_mismatch(a, b)?
                 }
-                (Constructor::Opaque(x, a), Constructor::Opaque(y, b)) => {
+                (Constructor::Opaque(x, a), Constructor::Opaque(y, b))
+                | (Constructor::Future(x, a), Constructor::Future(y, b)) => {
                     x == y && !self.argument_mismatch(a, b)?
                 }
                 (

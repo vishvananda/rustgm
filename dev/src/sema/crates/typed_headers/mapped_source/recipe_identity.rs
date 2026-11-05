@@ -65,7 +65,7 @@ pub(super) fn reserve(
         budget.reserve(
             crate::support::retained::new_map::<DefId, Vec<opaque::OpaqueId>>(1)
                 + 4 * size_of::<opaque::OpaqueId>()
-                + size_of::<opaque::Declaration>(),
+                + crate::types::Store::opaque_declaration_size(),
         )?;
         let id = facts
             .types

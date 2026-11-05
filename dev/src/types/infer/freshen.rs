@@ -201,6 +201,10 @@ impl Context {
                             id,
                             self.argument_regions(args, |r| fresh(r, depth, &mut next))?,
                         ),
+                        Constructor::Future(id, args) => Constructor::Future(
+                            id,
+                            self.argument_regions(args, |r| fresh(r, depth, &mut next))?,
+                        ),
                         Constructor::AdtArgs(item, args) => Constructor::AdtArgs(
                             item,
                             self.argument_regions(args, |r| fresh(r, depth, &mut next))?,

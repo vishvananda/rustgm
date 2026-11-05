@@ -211,7 +211,11 @@ impl<'a> Privacy<'a> {
                     self.trait_application(application.trait_application)?;
                     self.arguments(application.arguments)?;
                 }
-                Kind::Opaque(id, arguments) => {
+                Kind::Opaque(id, arguments)
+                | Kind::Future {
+                    identity: id,
+                    arguments,
+                } => {
                     self.arguments(arguments)?;
                     self.opaque_bounds(id)?;
                 }

@@ -271,6 +271,7 @@ impl Context {
             }
             Constructor::AdtArgs(_, args)
             | Constructor::Opaque(_, args)
+            | Constructor::Future(_, args)
             | Constructor::Dynamic {
                 arguments: args, ..
             }

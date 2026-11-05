@@ -367,7 +367,9 @@ impl<Q: Query> Occurrences<Q> {
                 );
                 None
             }
-            Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
+            Kind::Adt(_, arguments)
+            | Kind::Opaque(_, arguments)
+            | Kind::Future { arguments, .. } => {
                 found = self.arguments(store, arguments, depth, finish, charge)?;
                 None
             }

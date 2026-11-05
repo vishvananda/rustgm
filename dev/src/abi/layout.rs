@@ -383,6 +383,15 @@ impl Layouts {
             Kind::Pattern { base, .. } => self.work.push((base, false)),
             Kind::Opaque(..) => self.work.push((types.storage_head(ty)?, false)),
             Kind::Closure { environment, .. } => self.work.push((environment, false)),
+            Kind::Future {
+                identity,
+                arguments,
+            } => {
+                self.dependencies(
+                    types,
+                    types.future_application(identity, arguments)?.storage,
+                )?;
+            }
             Kind::Tuple(fields) => self.dependencies(types, fields)?,
             Kind::Array { element, .. } => self.work.push((element, false)),
             Kind::Adt(_, _) => {
@@ -485,31 +494,39 @@ impl Layouts {
                     },
                 })
             }
-            Kind::Tuple(fields) => {
-                let variants = Range {
-                    start: index(self.variants.len())?,
-                    end: index(self.variants.len() + 1)?,
-                };
-                let layout = self.fields(
-                    types,
-                    fields,
-                    Repr::default(),
-                    FieldStorage::Product {
-                        base: 0,
-                        discriminant: 0,
-                    },
-                    false,
-                )?;
-                Ok(Layout {
-                    shape: Shape::Aggregate {
-                        variants,
-                        tag: None,
-                    },
-                    ..layout
-                })
-            }
+            Kind::Tuple(fields) => self.anonymous_layout(types, fields),
+            Kind::Future {
+                identity,
+                arguments,
+            } => self.anonymous_layout(
+                types,
+                types.future_application(identity, arguments)?.storage,
+            ),
             Kind::Adt(..) => self.nominal_layout(types, definitions, ty, budget),
         }
+    }
+    fn anonymous_layout(&mut self, types: &Store, fields: ListId) -> Result<Layout, &'static str> {
+        let variants = Range {
+            start: index(self.variants.len())?,
+            end: index(self.variants.len() + 1)?,
+        };
+        let layout = self.fields(
+            types,
+            fields,
+            Repr::default(),
+            FieldStorage::Product {
+                base: 0,
+                discriminant: 0,
+            },
+            false,
+        )?;
+        Ok(Layout {
+            shape: Shape::Aggregate {
+                variants,
+                tag: None,
+            },
+            ..layout
+        })
     }
     fn fields(
         &mut self,

@@ -408,7 +408,10 @@ impl Graph<'_> {
                 Kind::Adt(item, args) => {
                     self.nominal(types, owner, (item, args), position, depth)?;
                 }
-                Kind::Opaque(_, args) => {
+                Kind::Opaque(_, args)
+                | Kind::Future {
+                    arguments: args, ..
+                } => {
                     let invariant = self
                         .solver
                         .compose(position, Term::constant(Variance::Invariant))?;

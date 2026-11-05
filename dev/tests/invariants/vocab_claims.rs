@@ -148,6 +148,10 @@ fn unimplemented_builtin_claims_stop_before_granting_layout_drop_or_auto_trait_s
                 | LangItem::Future
                 | LangItem::FutureOutput
                 | LangItem::FuturePoll
+                | LangItem::Poll
+                | LangItem::PollReady
+                | LangItem::PollPending
+                | LangItem::Context
                 | LangItem::AsyncDropInPlace
                 | LangItem::AsyncDrop
                 | LangItem::Mul

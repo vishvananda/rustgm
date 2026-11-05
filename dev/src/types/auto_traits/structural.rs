@@ -22,6 +22,20 @@ impl Query {
                 return Ok(Some(Step::Proof(obligation)));
             }
             Kind::Pattern { base, .. } => self.dependency(Obligation { ty: base, marker })?,
+            Kind::Future {
+                identity,
+                arguments,
+            } => {
+                if marker == AutoTrait::Unpin {
+                    self.nodes[self.cursor].value = false;
+                } else {
+                    self.fields(
+                        types,
+                        types.future_application(identity, arguments)?.captures,
+                        marker,
+                    )?;
+                }
+            }
             Kind::Closure { environment, .. } => {
                 self.dependency(Obligation {
                     ty: environment,

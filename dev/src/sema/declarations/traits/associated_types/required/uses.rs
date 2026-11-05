@@ -93,7 +93,9 @@ impl Collector {
                     self.work.push((result, depth));
                     Some((parameters, depth))
                 }
-                Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
+                Kind::Adt(_, arguments)
+                | Kind::Opaque(_, arguments)
+                | Kind::Future { arguments, .. } => {
                     self.arguments(types, arguments, depth)?;
                     None
                 }

@@ -1,0 +1,52 @@
+{
+  "base": "4cd080c84",
+  "branch": "implement/future-runtime-20261105",
+  "scope": "authored capture/storage data and polling declarations; executable state machine still fenced",
+  "source_map": {
+    "path": "obj/parallel/future-runtime-v1/data-checkpoint/source-hashes.json",
+    "files": 72,
+    "sha256": "10b77476e515368b4bafe62362ce1633915ebb56745b0f3f6ba5e1e14d88aa6b",
+    "matches_gate_production_and_tests": true
+  },
+  "gate": {
+    "path": "obj/qualification/fast/1793875308394627846/receipt.json",
+    "sha256": "62a72af673ed5a183976521d86825ae860312e0fe34a2b7798424221a810306a",
+    "state": "passed",
+    "tests": 14,
+    "binary": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/rust/dev-fast/deps/suite_frontend-96ae30d9a27bd3bd",
+      "sha256": "283fd5a8787a03c68009e041d496f225a721946cfba704ea52880f6e12d7e94d"
+    }
+  },
+  "actual_layouts": {
+    "Kind": 24,
+    "Owner": 20,
+    "Body": 456,
+    "opaque_row_before": 4,
+    "opaque_row_after": 16
+  },
+  "independent_receipts": {
+    "original": {
+      "path": "obj/parallel/future-runtime-v1/receipt.json",
+      "sha256": "2403343fa530c3677d77e81ec8280814ee61ecbd13e9143497aa37a0a73fe5b1"
+    },
+    "returned_nonsend": {
+      "path": "obj/parallel/future-runtime-v1/returned-nonsend.json",
+      "sha256": "cf0dfe952946cf22e5b77172b0f745757c60c038a81b06aa72755feeaf53287d"
+    },
+    "polling": {
+      "path": "obj/parallel/future-runtime-v1/polling/run3/receipt.json",
+      "sha256": "8f96c8f0c91be04bb9534090186c6d466b81ac8904a83da5ffc13be4faaa6a2d"
+    },
+    "shape_companion": {
+      "path": "obj/parallel/future-runtime-v1/shape.json",
+      "sha256": "3a219f64bd60256340bc7e3ea2037fb0f2e092cc643f6dc6f6e419a3eeb82e74"
+    }
+  },
+  "native_future_candidate": "none; required ctor/poll/drop/Ready/ownership consumers remain unfinished",
+  "harness_upstream": {
+    "state": "pending_integrator_join",
+    "local_attempt": "zero-wait resource admission refused while both other lane slots were live; no command executed",
+    "requested_command": "make test-harness test-upstream"
+  }
+}

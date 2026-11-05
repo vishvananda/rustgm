@@ -12,6 +12,7 @@ pub mod copy;
 pub mod destruction;
 pub mod dynamic;
 pub mod equality;
+pub mod future;
 pub mod infer;
 pub mod instance;
 pub mod interior_mutability;
@@ -195,6 +196,11 @@ pub enum Kind {
     Projection(projection::Application),
     /// Declaration identity and captured inputs; representation is private to its body.
     Opaque(opaque::OpaqueId, GenericArgs),
+    /// Actual authored future identity and complete inputs; shape grants no execution proof.
+    Future {
+        identity: opaque::OpaqueId,
+        arguments: GenericArgs,
+    },
     /// Trait inputs are inside one binder; the object lifetime is outside it.
     Dynamic {
         shape: dynamic::ShapeId,
@@ -260,7 +266,7 @@ pub struct Store {
     arguments: Option<Box<arguments::Storage>>,
     shapes: Option<Box<substitute::Bound>>,
     auto_shapes: Option<Box<substitute::Bound>>,
-    opaques: Option<Vec<opaque::Declaration>>,
+    opaques: Option<Vec<opaque::Entry>>,
     opaque_outlives: Option<Box<opaque::bounds::Declarations>>,
     storage_heads: Option<HashMap<TypeId, TypeId>>,
     shifts: Option<Box<binder_shift::Shifts>>,
@@ -519,12 +525,20 @@ impl Store {
                 };
             }
         }
+        if let Kind::Future {
+            identity,
+            arguments,
+        } = kind
+        {
+            self.prepare_future::<CHARGED>(identity, arguments, charge)?;
+        }
         if let Some(id) = self.index.get(&kind) {
             return Ok(*id);
         }
         let valid_type = |id: TypeId| self.kind(id).is_some();
         let valid = match kind {
-            Kind::Never | Kind::Primitive(_) | Kind::Foreign(_) => true,
+            // Future preparation above authenticates even an existing application.
+            Kind::Never | Kind::Primitive(_) | Kind::Foreign(_) | Kind::Future { .. } => true,
             Kind::Parameter(id) => self
                 .parameter(id)
                 .is_some_and(|p| matches!(p.kind, parameters::ParameterKind::Type { .. })),
@@ -625,6 +639,12 @@ impl Store {
                 result = self.projection_properties(application)?;
             }
             Kind::Opaque(id, arguments) => result = self.opaque_properties(id, arguments)?,
+            Kind::Future {
+                identity,
+                arguments,
+            } => {
+                result = self.future_properties(identity, arguments)?;
+            }
             Kind::Dynamic { .. } => result = self.dynamic_properties(kind)?,
             Kind::Closure {
                 arguments,

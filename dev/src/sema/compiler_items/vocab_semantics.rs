@@ -9,8 +9,13 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
     for role in LangItem::DECLARATIONS {
         if matches!(
             role,
-            LangItem::VaArgSafe | LangItem::VaList | LangItem::CVoid
+            LangItem::Poll | LangItem::PollReady | LangItem::PollPending | LangItem::Context
         ) {
+            // Actual nominal/variant producers complete after their ordinary fields.
+            // The demanded polling protocol has separate signature/ownership checks.
+            continue;
+        }
+        if matches!(role, LangItem::VaArgSafe | LangItem::VaList | LangItem::CVoid) {
             // Actual ordinary trait/nominal producers retain their headers and
             // policies. Variadic initialization and reads need their own proof.
             continue;

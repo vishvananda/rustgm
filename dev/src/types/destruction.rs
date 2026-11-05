@@ -254,6 +254,17 @@ impl NeedsDrop {
                 self.record::<BOUNDED>(ty, State::Ready(needed), limit)?;
                 continue;
             }
+            if let Kind::Future {
+                identity,
+                arguments,
+            } = kind
+            {
+                types.future_application(identity, arguments)?;
+                // The state-specific drop entry owns unstarted captures and,
+                // later, suspended locals. A field-only summary cannot elide it.
+                self.record::<BOUNDED>(ty, State::Ready(true), limit)?;
+                continue;
+            }
             if let Kind::Opaque(id, _) = kind {
                 let copy = types
                     .opaque_declaration(id)

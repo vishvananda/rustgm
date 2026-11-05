@@ -123,6 +123,9 @@ impl Occurrences {
             }
             Kind::Adt(_, args)
             | Kind::Opaque(_, args)
+            | Kind::Future {
+                arguments: args, ..
+            }
             | Kind::Dynamic {
                 arguments: args, ..
             } => {

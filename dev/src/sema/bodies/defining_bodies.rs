@@ -104,9 +104,10 @@ impl Checker<'_> {
                     }
                 }
             } else {
+                let function = self.facts.functions[index];
+                self.facts.typed_function_bodies.insert(function.definition);
                 self.facts
-                    .typed_function_bodies
-                    .insert(self.facts.functions[index].definition);
+                    .prepare_authored_future_shape(self.report, &function)?;
                 patterns[index] = self.state.pending_patterns.take();
                 self.complete_comptime(self.facts.functions[index], &mut patterns[index], close)?;
                 states[index] = Status::Checked;

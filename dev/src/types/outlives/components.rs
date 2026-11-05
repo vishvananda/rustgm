@@ -305,6 +305,15 @@ impl Walk {
                 Kind::Closure { environment, .. } => {
                     budget.push(&mut self.work, (environment, depth))?;
                 }
+                Kind::Future {
+                    identity,
+                    arguments,
+                } => self.fields(
+                    types,
+                    types.future_application(identity, arguments)?.captures,
+                    depth,
+                    budget,
+                )?,
                 Kind::Array { length: 0, .. } if kind == ComponentKind::LiveValue => {}
                 Kind::Opaque(id, args) => {
                     if matches!(kind, ComponentKind::LiveValue | ComponentKind::DropInputs) {
@@ -356,6 +365,22 @@ impl Walk {
             }
         }
         Ok((values, parameters, projections))
+    }
+    fn fields(
+        &mut self,
+        types: &Store,
+        fields: crate::types::ListId,
+        depth: u16,
+        budget: &mut Budget<'_>,
+    ) -> Result<(), &'static str> {
+        let fields = types
+            .list(fields)
+            .ok_or("missing future liveness captures")?;
+        budget.pending(self.work.len().saturating_add(fields.len()))?;
+        budget.vector(&mut self.work, fields.len())?;
+        self.work
+            .extend(fields.iter().rev().map(|&field| (field, depth)));
+        Ok(())
     }
     fn prepare_roots(
         &mut self,

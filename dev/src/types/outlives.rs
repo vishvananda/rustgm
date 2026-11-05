@@ -214,7 +214,7 @@ fn children(
                 }
             }
         }
-        Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
+        Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) | Kind::Future { arguments, .. } => {
             let arguments = types
                 .arguments(arguments)
                 .ok_or("invalid nominal outlives arguments")?;

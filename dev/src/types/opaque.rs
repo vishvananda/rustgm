@@ -21,6 +21,11 @@ pub struct Declaration {
     pub copies: copy::Properties,
 }
 
+pub(super) struct Entry {
+    pub contract: Declaration,
+    pub future: Option<Box<super::future::Shape>>,
+}
+
 impl Store {
     /// Physical storage is separate from canonical type equality and public bounds.
     /// Only the defining-context preparation publishes these fully substituted heads.
@@ -66,13 +71,25 @@ impl Store {
         }
         let declarations = self.opaques.get_or_insert_with(Default::default);
         let id = OpaqueId(u32::try_from(declarations.len()).map_err(|_| "too many opaque types")?);
-        declarations.push(declaration);
+        declarations.push(Entry {
+            contract: declaration,
+            future: None,
+        });
         Ok(id)
     }
 
     #[must_use]
     pub fn opaque_declaration(&self, id: OpaqueId) -> Option<Declaration> {
-        self.opaques.as_ref()?.get(id.0 as usize).copied()
+        self.opaques
+            .as_ref()?
+            .get(id.0 as usize)
+            .map(|entry| entry.contract)
+    }
+
+    /// Cost of one actual retained opaque row, including its optional shape handle.
+    #[must_use]
+    pub const fn opaque_declaration_size() -> usize {
+        size_of::<Entry>()
     }
 
     pub(super) fn opaque_properties(

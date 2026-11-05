@@ -145,7 +145,8 @@ fn inspect(
             | Kind::Pointer { .. }
             | Kind::Function { .. }
             | Kind::FunctionItem { .. }
-            | Kind::Closure { .. } => Step::Complete(Metadata::Thin),
+            | Kind::Closure { .. }
+            | Kind::Future { .. } => Step::Complete(Metadata::Thin),
         },
     )
 }

@@ -2,9 +2,9 @@
 use super::{Action, Bound};
 use crate::support::hash::HashMap;
 use crate::types::{
-    GenericArgs, ItemId, Store, TypeId,
+    GenericArgs, ItemId, RegionId, Store, TypeId,
     arguments::{Argument, ConstId, ConstKind},
-    parameters::{ParameterId, ParameterKind},
+    parameters::{ParameterId, ParameterKind, argument_id},
 };
 
 enum Arguments {
@@ -19,6 +19,65 @@ pub(super) struct Bindings {
     arguments: Arguments,
 }
 impl Bound {
+    /// Apply the complete canonical opaque/future capture list in one shared fold.
+    /// No stored-field transformation may rebuild this mapping independently.
+    pub(crate) fn captured_arguments(
+        store: &Store,
+        captures: GenericArgs,
+        arguments: GenericArgs,
+    ) -> Result<Self, &'static str> {
+        Self::captured_arguments_charged(store, captures, arguments, &|_, _| Ok(()))
+    }
+    pub(crate) fn captured_arguments_charged(
+        store: &Store,
+        captures: GenericArgs,
+        arguments: GenericArgs,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Self, &'static str> {
+        let capture_id = captures;
+        let captures = store.arguments(captures).ok_or("invalid opaque captures")?;
+        let arguments = store
+            .arguments(arguments)
+            .ok_or("invalid opaque arguments")?;
+        if captures.len() != arguments.len() {
+            return Err("opaque capture arity mismatch");
+        }
+        let (region_count, binding_count) = store
+            .arguments(capture_id)
+            .ok_or("invalid opaque captures")?
+            .try_fold((0_usize, 0_usize), |(count, bindings), parameter| {
+                if let Argument::Lifetime(parameter) = parameter {
+                    let Some((0, slot)) = parameter.bound_parts() else {
+                        return Err("invalid opaque lifetime capture");
+                    };
+                    Ok((count.max(usize::from(slot) + 1), bindings))
+                } else {
+                    Ok((count, bindings + 1))
+                }
+            })?;
+        charge(
+            captures.len().saturating_add(region_count),
+            region_count
+                .saturating_mul(size_of::<RegionId>())
+                .saturating_add(binding_count.saturating_mul(size_of::<(ParameterId, Argument)>())),
+        )?;
+        let mut regions = vec![RegionId::STATIC; region_count];
+        let mut bindings = Vec::with_capacity(binding_count);
+        for (parameter, actual) in captures.zip(arguments) {
+            match (parameter, actual) {
+                (Argument::Lifetime(parameter), Argument::Lifetime(actual)) => {
+                    let Some((0, slot)) = parameter.bound_parts() else {
+                        return Err("invalid opaque lifetime capture");
+                    };
+                    regions[usize::from(slot)] = actual;
+                }
+                (parameter, actual) => {
+                    bindings.push((argument_id(store, parameter)?, actual));
+                }
+            }
+        }
+        Self::parameters_captured_charged(store, &bindings, regions, charge)
+    }
     /// Replace explicit parameter identities simultaneously, preserving lifetime binders.
     /// Callable argument order need not match declaration slots containing late lifetimes.
     /// # Errors

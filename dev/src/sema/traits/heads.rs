@@ -49,6 +49,7 @@ impl Head {
             Constructor::Parameter(id) => Self::Parameter(id),
             Constructor::Closure(id, _) => Self::Closure(id),
             Constructor::Opaque(id, _) => Self::Opaque(id),
+            Constructor::Future(id, _) => Self::Future(id),
             Constructor::Dynamic { shape, .. } => Self::Dynamic(shape),
             Constructor::Projection(value) => Self::Projection(value.item()),
             Constructor::Adt(item, _) | Constructor::AdtArgs(item, _) => Self::Nominal(item),

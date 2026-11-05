@@ -390,6 +390,13 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
             write!(out, "opaque id={}", id.0)?;
             generic_arguments(store, arguments, out)
         }
+        Kind::Future {
+            identity,
+            arguments,
+        } => {
+            write!(out, "future opaque={} ", identity.0)?;
+            generic_arguments(store, arguments, out)
+        }
         kind @ Kind::Dynamic { .. } => dynamic::write(store, kind, out),
         Kind::Projection(application) => {
             let trait_ = store

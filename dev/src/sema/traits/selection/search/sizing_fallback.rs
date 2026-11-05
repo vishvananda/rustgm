@@ -88,6 +88,7 @@ impl Search<'_> {
                 | Kind::Function { .. }
                 | Kind::FunctionItem { .. }
                 | Kind::Closure { .. }
+                | Kind::Future { .. }
                 | Kind::Slice(_)
                 | Kind::Dynamic { .. } => true,
                 Kind::Foreign(_) => kind == LangItem::PointeeSized,

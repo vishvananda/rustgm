@@ -615,6 +615,21 @@ pub(super) fn complete_pin_constructor(
     record_completion(facts, LangItem::PinNewUnchecked, declaration)
 }
 
+/// Only the actual completed poll enum/context/variant producer enters this gate.
+pub(super) fn complete_polling_declaration(
+    facts: &mut Declarations,
+    role: LangItem,
+    declaration: Declaration,
+) -> Result<(), Error> {
+    if !matches!(
+        role,
+        LangItem::Poll | LangItem::PollReady | LangItem::PollPending | LangItem::Context
+    ) {
+        return Err(Error::unlocated("invalid polling declaration completion"));
+    }
+    record_completion(facts, role, declaration)
+}
+
 fn record_completion(
     facts: &mut Declarations,
     role: LangItem,

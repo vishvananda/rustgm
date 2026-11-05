@@ -222,7 +222,11 @@ impl Shapes {
                 self.child::<CHARGED, E>(Key::Type(element), finish, hash, charge)?;
             }
             Kind::Tuple(list) => self.child::<CHARGED, E>(Key::List(list), finish, hash, charge)?,
-            Kind::Opaque(id, arguments) => {
+            Kind::Opaque(id, arguments)
+            | Kind::Future {
+                identity: id,
+                arguments,
+            } => {
                 id.hash(hash);
                 self.child::<CHARGED, E>(Key::Arguments(arguments), finish, hash, charge)?;
             }

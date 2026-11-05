@@ -52,6 +52,7 @@ pub enum Constructor {
     ArrayInfer(constants::ConstTermId),
     AdtArgs(ItemId, arguments::ArgumentsId),
     Opaque(super::opaque::OpaqueId, arguments::ArgumentsId),
+    Future(super::opaque::OpaqueId, arguments::ArgumentsId),
     Dynamic {
         shape: super::dynamic::ShapeId,
         arguments: arguments::ArgumentsId,
@@ -264,9 +265,9 @@ impl Context {
     /// Rejects invalid arity, child identities and compact arena overflow.
     pub fn construct(&mut self, kind: Constructor, children: &[TermId]) -> Result<TermId, Error> {
         let valid = match kind {
-            Constructor::AdtArgs(_, id) | Constructor::Opaque(_, id) => {
-                children.len() == self.argument_arity(id)?
-            }
+            Constructor::AdtArgs(_, id)
+            | Constructor::Opaque(_, id)
+            | Constructor::Future(_, id) => children.len() == self.argument_arity(id)?,
             Constructor::Dynamic {
                 arguments,
                 lifetimes,
@@ -669,7 +670,10 @@ impl Context {
             (Constructor::Closure(x, a), Constructor::Closure(y, b)) if x == y => {
                 self.equate_arguments(a, b, record_regions)?;
             }
-            (Constructor::Opaque(x, a), Constructor::Opaque(y, b)) if x == y => {
+            (Constructor::Opaque(x, a), Constructor::Opaque(y, b))
+            | (Constructor::Future(x, a), Constructor::Future(y, b))
+                if x == y =>
+            {
                 self.equate_arguments(a, b, record_regions)?;
             }
             (Constructor::Dynamic { .. }, Constructor::Dynamic { .. }) => {
@@ -797,6 +801,13 @@ impl Context {
             Kind::Opaque(id, args) => {
                 Constructor::Opaque(id, self.materialize_arguments(store, args, &mut children)?)
             }
+            Kind::Future {
+                identity,
+                arguments,
+            } => Constructor::Future(
+                identity,
+                self.materialize_arguments(store, arguments, &mut children)?,
+            ),
             kind @ Kind::Dynamic { .. } => self.object_constructor(store, kind, &mut children)?,
             Kind::Primitive(p) => Constructor::Primitive(p),
             Kind::Parameter(id) => Constructor::Parameter(id),
@@ -999,6 +1010,7 @@ fn canonical(
         Constructor::ArrayInfer(_)
         | Constructor::Projection(_)
         | Constructor::Opaque(..)
+        | Constructor::Future(..)
         | Constructor::Dynamic { .. }
         | Constructor::AdtArgs(..)
         | Constructor::FunctionItemArgs(..)
