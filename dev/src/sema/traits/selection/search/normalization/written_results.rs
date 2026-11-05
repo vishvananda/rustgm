@@ -87,8 +87,8 @@ impl Search<'_> {
             resolution,
             Completion {
                 opened: Opened {
-                    application: opened.application,
                     goal: application.predicate,
+                    ..opened
                 },
                 node,
                 equations_start,

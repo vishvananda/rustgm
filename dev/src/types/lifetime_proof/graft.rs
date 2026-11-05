@@ -19,6 +19,7 @@ impl Obligations {
             return Ok(vec![root]);
         };
         let mut bindings = Vec::new();
+        let mut kinds = quantified.scopes.iter();
         let last =
             ScopeId(u32::try_from(quantified.scopes.len()).map_err(|_| "too many grafted scopes")?);
         map_scopes(
@@ -32,7 +33,18 @@ impl Obligations {
                         .ok_or("invalid grafted scope")?;
                 Ok((binder.parent, binder.count))
             },
-            |parent, count| self.scope(parent, count),
+            |parent, count| {
+                if kinds
+                    .next()
+                    .ok_or("missing grafted binder kind")?
+                    .callable_depth
+                    != 0
+                {
+                    self.callable_scope(parent, count)
+                } else {
+                    self.scope(parent, count)
+                }
+            },
         )?;
         let mut next = proof.regions.start;
         for (index, block) in quantified.blocks.into_iter().enumerate() {

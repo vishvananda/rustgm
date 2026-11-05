@@ -36,6 +36,7 @@ enum ResultContinuation {
 struct Opened {
     goal: Goal,
     application: Alias,
+    conditions: Option<crate::sema::projections::families::Requirements>,
 }
 struct Completion {
     opened: Opened,
@@ -80,12 +81,12 @@ impl Frame {
         floor: u32,
         suspended: &mut [Option<Frame>],
     ) -> Result<Self, String> {
-        if let Some(normalization) = &self.normalization
+        if let Some(normalization) = &mut self.normalization
             && normalization.pending()
         {
             let opened = normalization
                 .opened
-                .as_ref()
+                .as_mut()
                 .ok_or("missing normalization application")?;
             let mut child = Self::new(
                 facts,
@@ -98,7 +99,7 @@ impl Frame {
                 proof: normalization.proof,
             });
             if let Some(application) = opened.application.associated() {
-                child.prepare_formation(facts, application)?;
+                child.prepare_formation(facts, application, opened.conditions.take())?;
             }
             return Ok(child);
         }
@@ -180,6 +181,11 @@ impl Search<'_> {
             Step::Complete(value) => value,
             Step::Resolve(request) => {
                 let mut application = request.alias;
+                let mut conditions = crate::sema::projections::families::inside_callable(
+                    facts,
+                    application,
+                    request.depth,
+                )?;
                 if request.depth != 0 || normalization.scoped.is_some() {
                     let scoped = normalization.scoped.get_or_insert_with(|| {
                         Box::new(super::callable_queries::Scoped::new(
@@ -205,6 +211,7 @@ impl Search<'_> {
                                 facts,
                                 current,
                                 application,
+                                &mut conditions,
                             )?;
                             frame
                                 .inputs
@@ -238,6 +245,7 @@ impl Search<'_> {
                 });
                 normalization.opened = Some(Opened {
                     application,
+                    conditions,
                     goal: frame
                         .inputs
                         .context

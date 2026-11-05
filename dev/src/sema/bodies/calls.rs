@@ -342,6 +342,14 @@ impl Checker<'_> {
     }
 
     pub(super) fn call_signature(&mut self, node: NodeId, term: TermId) -> Result<TermId, Error> {
+        self.call_signature_expected(node, term, None)
+    }
+    pub(super) fn call_signature_expected(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+        expected: Option<TermId>,
+    ) -> Result<TermId, Error> {
         let Some(Constructor::Function { bound_regions, .. }) = self.head(node, term)? else {
             return Err(self.error(node, "call requires a known function type"));
         };
@@ -378,10 +386,15 @@ impl Checker<'_> {
         }
         self.state.call_types.opened_projection_call |=
             self.facts.types.contains_projections(ty) == Some(true);
-        let signature = self.instantiate_call(node, ty)?;
+        let signature = self.instantiate_call(node, ty, expected)?;
         self.known(node, signature)
     }
-    fn instantiate_call(&mut self, node: NodeId, signature: TypeId) -> Result<TypeId, Error> {
+    fn instantiate_call(
+        &mut self,
+        node: NodeId,
+        signature: TypeId,
+        expected: Option<TermId>,
+    ) -> Result<TypeId, Error> {
         let Some(Type::Function {
             bound_regions,
             parameters,
@@ -392,9 +405,14 @@ impl Checker<'_> {
         else {
             return Err(self.error(node, "missing callable signature"));
         };
+        let candidates = self.call_result_regions(node, result, bound_regions, expected)?;
         let mut arguments = Vec::with_capacity(bound_regions as usize);
-        for _ in 0..bound_regions {
-            arguments.push(self.body_region(node, BodyRegionOrigin::CallArgument)?);
+        for slot in 0..bound_regions as usize {
+            arguments.push(if let Some(Some(region)) = candidates.get(slot) {
+                *region
+            } else {
+                self.body_region(node, BodyRegionOrigin::CallArgument)?
+            });
         }
         let mut substitution = Bound::new(arguments);
         let count = self
@@ -434,6 +452,38 @@ impl Checker<'_> {
                 convention,
             })
             .map_err(|e| self.error(node, e))
+    }
+
+    fn call_result_regions(
+        &mut self,
+        node: NodeId,
+        result: TypeId,
+        count: u32,
+        expected: Option<TermId>,
+    ) -> Result<Vec<Option<RegionId>>, Error> {
+        if count == 0 || self.facts.types.contains_projections(result) != Some(true) {
+            return Ok(Vec::new());
+        }
+        let Some(expected) = expected else {
+            return Ok(Vec::new());
+        };
+        let expected = match self.state.infer.resolved(&mut self.facts.types, expected) {
+            Ok(ty) => ty,
+            Err(infer::Error::Unresolved) => return Ok(Vec::new()),
+            Err(error) => return Err(self.error(node, error)),
+        };
+        let candidates = crate::types::callable::late_result::candidates(
+            &self.facts.types,
+            result,
+            expected,
+            count,
+        )
+        .map_err(|e| self.error(node, e))?;
+        self.state
+            .infer
+            .account_work(candidates.steps)
+            .map_err(|e| self.error(node, e))?;
+        Ok(candidates.regions)
     }
 
     pub(super) fn function_item(

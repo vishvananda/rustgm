@@ -20,6 +20,7 @@ pub(super) struct Binder {
     pub parent: ScopeId,
     pub count: u32,
     pub depth: u16,
+    pub callable_depth: u16,
 }
 #[derive(Clone)]
 pub(super) struct Block {
@@ -181,14 +182,30 @@ impl Obligations {
     /// # Errors
     /// Rejects missing parents and exhausted scope/binder depth budgets.
     pub fn scope(&mut self, parent: ScopeId, count: u32) -> Result<ScopeId, &'static str> {
+        self.scope_kind(parent, count, false)
+    }
+    pub(crate) fn callable_scope(
+        &mut self,
+        parent: ScopeId,
+        count: u32,
+    ) -> Result<ScopeId, &'static str> {
+        self.scope_kind(parent, count, true)
+    }
+    fn scope_kind(
+        &mut self,
+        parent: ScopeId,
+        count: u32,
+        callable: bool,
+    ) -> Result<ScopeId, &'static str> {
         let q = self.quantified.get_or_insert_with(Default::default);
-        let depth = if parent == ScopeId::ROOT {
-            0
+        let (depth, callable_depth) = if parent == ScopeId::ROOT {
+            (0, 0_u16)
         } else {
-            q.scopes
+            let parent = q
+                .scopes
                 .get(parent.0 as usize - 1)
-                .ok_or("invalid proof scope parent")?
-                .depth
+                .ok_or("invalid proof scope parent")?;
+            (parent.depth, parent.callable_depth)
         };
         let depth = depth
             .checked_add(1)
@@ -201,6 +218,13 @@ impl Obligations {
             parent,
             count,
             depth,
+            callable_depth: if callable {
+                callable_depth
+                    .checked_add(1)
+                    .ok_or("callable proof nesting exhausted")?
+            } else {
+                0
+            },
         });
         Ok(ScopeId(
             u32::try_from(q.scopes.len()).map_err(|_| "too many proof scopes")?,

@@ -3,10 +3,24 @@ use super::{Contract, Declarations};
 use crate::types::{Kind, outlives::Queries, relations::Constraints};
 
 pub(super) fn prove(
-    facts: &Declarations,
+    facts: &mut Declarations,
     contract: &Contract,
     evidence: Option<&crate::sema::traits::obligations::Obligations>,
 ) -> Result<(), String> {
+    // Mapping/normalization creates new complete family applications. Prepare
+    // their input conditions before borrowing the immutable lifetime solver;
+    // this supplies no assumptions, result identity or lifetime permission.
+    for ty in [contract.actual, contract.declared]
+        .into_iter()
+        .chain(contract.inputs.iter().copied())
+        .chain(
+            evidence
+                .into_iter()
+                .flat_map(|proof| proof.type_roots().map(|(_, ty)| ty)),
+        )
+    {
+        crate::sema::callee_premises::Inputs::prepare_type(facts, ty)?;
+    }
     let mut constraints = Constraints::new(
         &facts.types,
         &facts.lifetimes.variances,
@@ -75,13 +89,13 @@ pub(super) fn prove(
     }
     for (&a, &b) in a.iter().zip(b) {
         constraints
-            .coerce(b, a, false, 0)
+            .method_subtype(b, a, 0)
             .map_err(|e| e.to_string())?;
     }
     let required = queries.symbolic_requirements(ar)?;
     constraints.require_requirements(required, crate::types::relations::ProofScope::ROOT, 0)?;
     constraints
-        .coerce(ar, br, false, 0)
+        .method_subtype(ar, br, 0)
         .map_err(|e| e.to_string())?;
     constraints
         .solve()

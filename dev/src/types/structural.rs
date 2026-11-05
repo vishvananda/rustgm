@@ -1,15 +1,76 @@
 //! Complete structural equality is shared by ordinary and quantified input checks.
 mod shapes;
+use crate::support::hash::HashSet;
 use crate::types::{
     GenericArgs, Kind, ListId, RegionId, Store, TypeId, arguments::Argument, region_graph::Error,
 };
 pub(crate) use shapes::Shapes;
+
+/// Completed normal forms may differ in lifetimes while retaining rigid shape.
+/// This view grants no input equation or lifetime permission.
+pub(crate) struct Normalized<'t, const SUBSUMPTION: bool> {
+    types: &'t Store,
+    work: Vec<(TypeId, TypeId, u16)>,
+    seen: HashSet<(TypeId, TypeId)>,
+    pub(crate) steps: usize,
+}
+impl<'t, const SUBSUMPTION: bool> Normalized<'t, SUBSUMPTION> {
+    pub(crate) fn new(types: &'t Store) -> Self {
+        Self {
+            types,
+            work: Vec::new(),
+            seen: HashSet::default(),
+            steps: 0,
+        }
+    }
+    pub(crate) fn require(&mut self, actual: TypeId, expected: TypeId) -> Result<(), Error> {
+        self.child(actual, expected, 0)?;
+        while let Some((a, b, depth)) = self.work.pop() {
+            self.charge(1)?;
+            if a == b || !self.seen.insert((a, b)) {
+                continue;
+            }
+            if !self.compare(a, b, depth)? {
+                return Err(Error::Identity);
+            }
+        }
+        Ok(())
+    }
+}
+impl<'t, const SUBSUMPTION: bool> Compare<'t> for Normalized<'t, SUBSUMPTION> {
+    fn types(&self) -> &'t Store {
+        self.types
+    }
+    fn charge(&mut self, count: usize) -> Result<(), Error> {
+        self.steps = self.steps.saturating_add(count);
+        if self.steps.saturating_add(self.work.len()) > 1_000_000 {
+            return Err(Error::Budget);
+        }
+        Ok(())
+    }
+    fn child(&mut self, a: TypeId, b: TypeId, depth: u16) -> Result<(), Error> {
+        self.charge(1)?;
+        self.work.push((a, b, depth));
+        Ok(())
+    }
+    fn regions(&mut self, _: RegionId, _: RegionId, _: u16) -> Result<bool, Error> {
+        Ok(true)
+    }
+    fn callable_binders(&self, left: u32, right: u32) -> bool {
+        SUBSUMPTION || left == right
+    }
+}
 
 pub(crate) trait Compare<'t> {
     fn types(&self) -> &'t Store;
     fn charge(&mut self, count: usize) -> Result<(), Error>;
     fn child(&mut self, a: TypeId, b: TypeId, depth: u16) -> Result<(), Error>;
     fn regions(&mut self, a: RegionId, b: RegionId, depth: u16) -> Result<bool, Error>;
+    /// Shape-only method checks defer callable quantifier subsumption to their
+    /// directed lifetime proof. Ordinary structural identity keeps exact arity.
+    fn callable_binders(&self, left: u32, right: u32) -> bool {
+        left == right
+    }
     fn arguments(&mut self, a: GenericArgs, b: GenericArgs, depth: u16) -> Result<bool, Error> {
         self.compare_arguments(a, b, depth)
     }
@@ -190,7 +251,7 @@ pub(crate) trait Compare<'t> {
                     unsafe_: bu,
                     convention: bv,
                 },
-            ) if x == y && au == bu && av == bv => {
+            ) if self.callable_binders(x, y) && au == bu && av == bv => {
                 let depth = depth.checked_add(1).ok_or(Error::Budget)?;
                 self.child(ar, br, depth)?;
                 return self.list(a, b, depth);

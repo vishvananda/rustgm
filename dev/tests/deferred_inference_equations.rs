@@ -161,6 +161,38 @@ fn equal_associated_outputs_never_merge_distinct_inputs() -> TestResult {
 }
 
 #[test]
+fn proved_opaque_shapes_defer_lifetimes_without_equating_inputs() -> TestResult {
+    use rustgm::types::infer::arguments::Argument;
+    for same_subject in [false, true] {
+        let mut store = store()?;
+        let mut context = Context::default();
+        let byte = context.known(&store, BYTE)?;
+        let other = context.known(&store, if same_subject { BYTE } else { WORD })?;
+        let first =
+            context.projected(&store, ITEM, byte, &[], &[Argument::Lifetime(RegionId(1))])?;
+        let second =
+            context.projected(&store, ITEM, other, &[], &[Argument::Lifetime(RegionId(2))])?;
+        let first_type = context.resolved(&mut store, first)?;
+        let second_type = context.resolved(&mut store, second)?;
+        let equation = pending(context.equate_deferred(&store, first, second, Relation::Shape)?)?;
+        context.apply_normalization(&mut store, first, first_type)?;
+        context.apply_normalization(&mut store, second, second_type)?;
+        assert_eq!(
+            context.resume_equation(&store, equation),
+            if same_subject {
+                Ok(Outcome::Complete)
+            } else {
+                Err(Error::Mismatch)
+            }
+        );
+        assert!(context.region_equalities.is_empty());
+        assert_eq!(context.resolved(&mut store, first)?, first_type);
+        assert_eq!(context.resolved(&mut store, second)?, second_type);
+    }
+    Ok(())
+}
+
+#[test]
 fn a_self_dependent_projection_equation_waits_without_an_ordinary_occurs_cycle() -> TestResult {
     let mut store = store()?;
     let mut context = Context::default();

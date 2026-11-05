@@ -14,6 +14,7 @@ pub(in crate::sema) struct Pending {
 /// Optional caller observers of one search.
 #[derive(Default)]
 struct Hooks<'a> {
+    formation: Option<crate::sema::projections::families::Requirements>,
     /// Completed concrete proofs shared within one fixed caller and mode.
     reuse: Option<&'a mut super::Reuse>,
     /// Receives whether no caller region identity was allocated.
@@ -99,6 +100,7 @@ pub(in crate::sema) fn begin_refining_untouched(
             reuse: None,
             untouched: Some(untouched),
             attempted: None,
+            formation: None,
         },
     )
 }
@@ -147,7 +149,11 @@ pub(in crate::sema) fn begin_normalized(
 pub(in crate::sema) fn begin_projection(
     facts: &mut Declarations,
     context: &mut Context,
-    inputs: (&Goal, crate::types::projection::Application),
+    inputs: (
+        &Goal,
+        crate::types::projection::Application,
+        Option<crate::sema::projections::families::Requirements>,
+    ),
     caller: OwnedCaller,
     availability: Availability,
 ) -> Result<Progress, String> {
@@ -158,7 +164,10 @@ pub(in crate::sema) fn begin_projection(
         caller,
         availability,
         Mode::Projection(inputs.1),
-        Hooks::default(),
+        Hooks {
+            formation: inputs.2,
+            ..Hooks::default()
+        },
     )
 }
 
@@ -182,6 +191,7 @@ pub(in crate::sema) fn begin_canonical(
             reuse,
             untouched: None,
             attempted: None,
+            formation: None,
         },
     )
 }
@@ -269,6 +279,7 @@ fn begin_with_inputs(
     hooks: Hooks<'_>,
 ) -> Result<Progress, String> {
     let Hooks {
+        formation,
         mut reuse,
         untouched,
         mut attempted,
@@ -297,7 +308,7 @@ fn begin_with_inputs(
         first.normalized_inputs = Some(super::frames::NormalizedInputs { proof: None });
     }
     if let Mode::Projection(application) = mode {
-        first.prepare_formation(facts, application)?;
+        first.prepare_formation(facts, application, formation)?;
     }
     let mut search = Search::new(caller.borrowed(), availability);
     if let Some(reuse) = reuse.as_deref_mut() {

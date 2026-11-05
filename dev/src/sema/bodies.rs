@@ -2367,7 +2367,7 @@ impl Checker<'_> {
         }
         term = if matches!(self.head(node, term)?, Some(Constructor::Function { .. })) {
             self.retain_defining_member(node, callee, receiver)?;
-            self.call_signature(node, term)?
+            self.call_signature_expected(node, term, expected)?
         } else {
             self.invocation_signature(node, callee, arguments)?
         };

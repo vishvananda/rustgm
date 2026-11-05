@@ -165,7 +165,7 @@ impl Checker<'_> {
         owner: Option<DefId>,
         parent: Option<BinderId>,
         declared: Vec<DefId>,
-    ) -> BinderId {
+    ) -> Result<BinderId, &'static str> {
         let source = owner
             .and_then(|id| self.facts.associated.owner(id))
             .and_then(|id| self.facts.associated.get(id))
@@ -177,8 +177,10 @@ impl Checker<'_> {
         };
         if let Some(owner) = owner {
             self.regions.associate(binder, owner);
+        } else {
+            self.regions.mark_callable(binder)?;
         }
-        binder
+        Ok(binder)
     }
     pub(super) fn associated_self_type(
         &mut self,
