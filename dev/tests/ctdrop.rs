@@ -66,7 +66,7 @@ fn compiled(name: &str) -> Result<(rustgm::lowir::program::Program, usize)> {
 #[test]
 fn initialized_const_drop_and_inactive_moved_borrowed_originals_compile() -> Result {
     for name in [
-        "initc", "inact", "moved", "borrow", "hold", "count2", "rtinst", "rtcnt",
+        "initc", "inact", "moved", "borrow", "hold", "count2", "rtinst", "rtcnt", "rtonce",
     ] {
         program(name).map_err(|e| format!("{name}: {e}"))?;
     }
@@ -182,11 +182,10 @@ fn actual_definition_cleanup_work_grows_with_demanded_bodies() -> Result {
 }
 
 #[test]
-fn selected_enum_and_runtime_instance_requirements_remain_named() -> Result {
+fn selected_enum_requirements_remain_named() -> Result {
     for (name, gap) in [
         ("egood", "selected const enum cleanup leaves"),
         ("empty", "selected const enum cleanup leaves"),
-        ("rtonce", "constant evaluation cannot run destructors"),
     ] {
         let error = program(name)
             .err()

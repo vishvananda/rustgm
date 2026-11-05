@@ -1,0 +1,79 @@
+{
+  "state": "qualified native runtime-instance checkpoint; enum and CTFE duties remain active",
+  "base": "1e5b5f485",
+  "source_files": {
+    "dev/src/lower/instances/demand.rs": "a87889c6863cb38c78582af0b7558ec2446d32ddcf70016e1c172776b750934b",
+    "dev/src/sema/compiler_items.rs": "84179e7491243a50a264b893e9b2adb91c07ec4a4e3eac4835648978acf889a2",
+    "dev/src/sema/compiler_items/calls.rs": "91fa645614df9018806d3cd8ae0c62939176f20ecb2540300f3dc92143ddc4fe",
+    "dev/tests/ctdrop.rs": "990467aec74d9894dabdbd7fa065d28dcc46717c0d45f588a15441d165b03e62",
+    "dev/tests/ctnext.rs": "703ad40d5b5e730e7fab9602cc1f9021eb1e4f038eef430e1ab5ccabf0a1c840",
+    "dev/tests/suites/traits/mod.rs": "c91f43a113a2372425ca949ac2a68ef9afe621580ed0a5c2b5cf3ad84fc71a3d",
+    "pa31/tests/spec/source-const-cleanup/README.md": "8510dd93cfdd20fee4491c9e870bf5188915b3a7d0ce6c7aa27e4ef34af769de",
+    "pa31/tests/spec/source-const-cleanup/badown.rs": "db5183da36bd89b2a44c1fe17d4337dae1653240126da8f9b9f603716fd1ad6d",
+    "pa31/tests/spec/source-const-cleanup/ctbad.rs": "419ec8bc466522bf3d90cadb4058f41801f3b5954d95f6c28c119694db64d3c6",
+    "pa31/tests/spec/source-const-cleanup/ctgood.rs": "0c995e1d39c20bd34b8f9bf1ca78f4b8abb0f2d40234e75082c5aa5582a944b4",
+    "pa31/tests/spec/source-const-cleanup/predictions.json": "269e258fcb6002d7c6ee84dea793e04711206c3ab26a2704578291ee3c19202a",
+    "pa31/tests/spec/source-const-cleanup/runct.c": "aa9bd3874ab58e42b19d82f4af9aaddb8cb847a90ef2bd078d2f98404022b01d",
+    "pa31/tests/spec/source-const-cleanup/runct.rs": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+    "pa31/tests/spec/source-const-cleanup/tagarg.rs": "a32fd5b650e5b1980aad55e94482bcee3dc68485d1b7c50cf1fcf124ef356bb7",
+    "pa31/tests/spec/source-const-cleanup/tagbad.rs": "1c2042759b4ccac79104815d4b80f00229a8342ad047dc0fb8a2ab0afa32c16b",
+    "pa31/tests/spec/source-const-cleanup/tagbr.rs": "bbdabf7018bcdd9ad2a44d8aee9deccca7b4df0a9914213112844a1d5b058009",
+    "pa31/tests/spec/source-const-cleanup/tagfld.rs": "db8eadf3a2219fcb84be67ebc85f8c221f03b145fde4482fadae747a9d186042",
+    "pa31/tests/spec/source-const-cleanup/taggen.rs": "6bc6fe98e332fe8dac053acd2fd0108dc0e958aa3d9eaa544fd381ce508d9329",
+    "pa31/tests/spec/source-const-cleanup/taglif.rs": "15dfa01c3c4807d77cb5ac25f5c5325f8b3da23acffa90150d95b61a94e9c415",
+    "pa31/tests/spec/source-const-cleanup/tagmv.rs": "bc75c8047d59c97ad9b2ff56fcf9ac2a3fc37a364725bff7c5fa6ff3f31bf0a8",
+    "pa31/tests/spec/source-const-cleanup/tagnst.rs": "6c239e736d9a0117b61ec352cb40a51ebf60786e114aa50c3f3e3b4f97ebec43",
+    "pa31/tests/spec/source-const-cleanup/tagout.rs": "7a081145b9d99a6454305b41ff1ca00714afc8fa5924677cb8ecf942acd162aa",
+    "pa31/tests/spec/source-const-cleanup/tagpar.rs": "0d977fa532ee35de8568cac57d9d5b8f9f369631d79883a95f6cc2ac14ccdc65",
+    "pa31/tests/spec/source-const-cleanup/tagret.rs": "ac8e55fce9d4b10cc30161f69ca8db3383bedb94d148620e96ab4b2325253904",
+    "pa31/tests/spec/source-const-cleanup/tagset.rs": "af8e0607edf97db3b3b300c75b7e6bbebdc4eabdd5449c19a835782254c46495"
+  },
+  "gate": {
+    "path": "obj/parallel/source-transport/va-cleanup/gate3/receipt.json",
+    "sha256": "2760e82f98f215a0f7b97b91728fc4952a69da2d87b5f8735dc4098abe7b6808"
+  },
+  "source_map": {
+    "path": "obj/parallel/source-transport/va-cleanup/gate3/sources.json",
+    "sha256": "b5920348306affb9b2a3bdddcf71efc24774f65eadca5cf75e3fc8da4044fedb"
+  },
+  "native_artifacts": {
+    "path": "obj/parallel/source-transport/va-cleanup/gate3/native-artifacts.json",
+    "sha256": "ed7444e89ee3da389d93cb6df32d1a53461b897de5ff143b0d7df98b65076984"
+  },
+  "reference": {
+    "path": "obj/parallel/source-transport/va-cleanup/reference-v1/receipt.json",
+    "sha256": "5f3a662a880bce2e16729a66d24a13021dc256b2f90b0bb80fa41353fa873833"
+  },
+  "history": [
+    {
+      "path": "obj/parallel/source-transport/va-cleanup/gate1/receipt.json",
+      "sha256": "4bf350b1bf9702ae1342552a1a01688dd58d3b33e8b6fe9ccad4d69f774c16b3"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-cleanup/gate2/receipt.json",
+      "sha256": "c31d9f872acc1f806be6dd387a8892ea85443e188834a60a9a526eaeaea639d6"
+    }
+  ],
+  "scope": "Function-only native demand specialization after actual from_checked_caller. Original template and public/direct instantiate and CTFE paths unchanged. Actual original, region, loan and concrete destruction proofs still required. Removes now-unused conditional-only classification helper; no effect-policy widening.",
+  "observations": {
+    "runtime_native_and_rust": 59,
+    "frozen_reference_cases": 16,
+    "new_regular_tests": 4,
+    "native_tests": 1,
+    "invalid_original": "actual nonconst Drop E0493 / genuine const Destruct rejection",
+    "genuine_const_call": "retained rtneg Rust E0277 / actual source cannot-drop diagnostic",
+    "constant_initializers": "ctgood Rust-positive; ctbad Rust E0080 null destructor write. Both candidate stop at actual initializer-owner const eligibility: const cleanup selection requires its actual source function. These are required consumer work, not parity negatives.",
+    "enum": "all12 independent variant controls frozen before candidate; no enum production change in this commit"
+  },
+  "backend_source": "b7c6b8e72595a524e1b3f147212d69c02b257dd8",
+  "backend_and_toolchain_binding": "previous docs/parallel/source-const-drop-evidence.json and va-const/qualification-v1/receipt.json; same immutable tools",
+  "boundaries": [
+    "selected enum initialization/semantic leaf producer",
+    "initializer-owned const eligibility",
+    "actual interpreter cleanup/destructor execution",
+    "VaList const cursor operations",
+    "direct/unsealed materialization fences remain"
+  ],
+  "performance": "native-only branch simplifies existing classifier, no persistent type/body/Code/wire fields or broad performance claim; full integration controls Root-owned",
+  "private_release": "Root CI pending"
+}

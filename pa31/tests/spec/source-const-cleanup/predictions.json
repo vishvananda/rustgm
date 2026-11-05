@@ -1,0 +1,101 @@
+{
+  "attribution": "New separately authored semantic consumers of exact existing source-const-drop foundation; original inputs preserved. Freeze before candidate.",
+  "cases": [
+    {
+      "file": "tagmv.rs",
+      "expected_code": 0,
+      "prediction": "known constructor survives real owned move",
+      "source_sha256": "bc75c8047d59c97ad9b2ff56fcf9ac2a3fc37a364725bff7c5fa6ff3f31bf0a8"
+    },
+    {
+      "file": "tagset.rs",
+      "expected_code": 1,
+      "prediction": "active Bad cleanup needs nonconst Drop; replacement is sequenced",
+      "source_sha256": "af8e0607edf97db3b3b300c75b7e6bbebdc4eabdd5449c19a835782254c46495"
+    },
+    {
+      "file": "tagret.rs",
+      "expected_code": 0,
+      "prediction": "returned complete value is moved, no owned cleanup",
+      "source_sha256": "ac8e55fce9d4b10cc30161f69ca8db3383bedb94d148620e96ab4b2325253904"
+    },
+    {
+      "file": "tagbr.rs",
+      "expected_code": 0,
+      "prediction": "both possible active variants have const-eligible leaves",
+      "source_sha256": "bbdabf7018bcdd9ad2a44d8aee9deccca7b4df0a9914213112844a1d5b058009"
+    },
+    {
+      "file": "tagbad.rs",
+      "expected_code": 1,
+      "prediction": "one possible incoming active variant needs nonconst Drop",
+      "source_sha256": "1c2042759b4ccac79104815d4b80f00229a8342ad047dc0fb8a2ab0afa32c16b"
+    },
+    {
+      "file": "tagarg.rs",
+      "expected_code": 1,
+      "prediction": "unknown argument can own active nonconst variant",
+      "source_sha256": "a32fd5b650e5b1980aad55e94482bcee3dc68485d1b7c50cf1fcf124ef356bb7"
+    },
+    {
+      "file": "tagout.rs",
+      "expected_code": 0,
+      "prediction": "unknown argument fully returned, no cleanup",
+      "source_sha256": "7a081145b9d99a6454305b41ff1ca00714afc8fa5924677cb8ecf942acd162aa"
+    },
+    {
+      "file": "tagfld.rs",
+      "expected_code": 0,
+      "prediction": "nested known enum constructor through struct field",
+      "source_sha256": "db8eadf3a2219fcb84be67ebc85f8c221f03b145fde4482fadae747a9d186042"
+    },
+    {
+      "file": "tagnst.rs",
+      "expected_code": 0,
+      "prediction": "nested selected nominal enum coordinates",
+      "source_sha256": "6c239e736d9a0117b61ec352cb40a51ebf60786e114aa50c3f3e3b4f97ebec43"
+    },
+    {
+      "file": "taggen.rs",
+      "expected_code": 0,
+      "prediction": "actual selected field type requires generic substitution",
+      "source_sha256": "6bc6fe98e332fe8dac053acd2fd0108dc0e958aa3d9eaa544fd381ce508d9329"
+    },
+    {
+      "file": "taglif.rs",
+      "expected_code": 0,
+      "prediction": "selected borrowed field owns no referent destruction",
+      "source_sha256": "15dfa01c3c4807d77cb5ac25f5c5325f8b3da23acffa90150d95b61a94e9c415"
+    },
+    {
+      "file": "tagpar.rs",
+      "expected_code": 1,
+      "prediction": "partial moved enum root retains static const cleanup restriction",
+      "source_sha256": "0d977fa532ee35de8568cac57d9d5b8f9f369631d79883a95f6cc2ac14ccdc65"
+    },
+    {
+      "file": "runct.rs",
+      "expected_code": 0,
+      "prediction": "unconditional const generic original runtime instance executes real operand-dependent const Drop body",
+      "source_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2"
+    },
+    {
+      "file": "ctgood.rs",
+      "expected_code": 0,
+      "prediction": "genuine reached CTFE cleanup/body writes valid local then reads53",
+      "source_sha256": "0c995e1d39c20bd34b8f9bf1ca78f4b8abb0f2d40234e75082c5aa5582a944b4"
+    },
+    {
+      "file": "ctbad.rs",
+      "expected_code": 1,
+      "prediction": "E0080 reached actual const destructor attempts invalid null write",
+      "source_sha256": "419ec8bc466522bf3d90cadb4058f41801f3b5954d95f6c28c119694db64d3c6"
+    },
+    {
+      "file": "badown.rs",
+      "expected_code": 1,
+      "prediction": "E0493 checked original cannot own nonconst Drop even when demanded only at runtime",
+      "source_sha256": "db5183da36bd89b2a44c1fe17d4337dae1653240126da8f9b9f603716fd1ad6d"
+    }
+  ]
+}

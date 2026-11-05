@@ -598,13 +598,11 @@ pub(super) fn specialize(
         cleanup,
     )
     .map_err(error)?;
-    // A runtime instance may satisfy conditional premises with an ordinary
-    // impl. Its checked original and separate CTFE materializations retain
-    // their const obligations. Unconditional const bodies remain CTFE-capable.
-    if materialized.body.const_context
-        && let body::ir::Owner::Function { definition, .. } = materialized.body.owner
-        && crate::sema::compiler_items::conditional_bounds(facts, definition).map_err(error)?
-    {
+    // This demand selects native execution only after authenticating the exact
+    // checked original, instance and caller above. Its ordinary cleanup still
+    // needs the full materialized region/loan proof. The original template and
+    // separate CTFE materializations retain their actual const obligations.
+    if matches!(materialized.body.owner, body::ir::Owner::Function { .. }) {
         materialized.body.const_context = false;
     }
     materialized.resolve(facts).map_err(|e| error(&e))?;
