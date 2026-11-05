@@ -1,6 +1,7 @@
 //! Actual source compiler declarations remain distinct from bootstrap identities.
 mod binding_views;
 mod calls;
+pub(in crate::sema) mod dereferencing;
 mod frozen_effects;
 pub(in crate::sema) mod pinning;
 pub(crate) mod pointers;

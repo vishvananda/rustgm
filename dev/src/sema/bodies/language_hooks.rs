@@ -1,4 +1,5 @@
 //! Operators select explicit library identities through ordinary trait obligations.
+mod dereferencing;
 mod mutation;
 #[path = "language_hooks/binary_operator.rs"]
 mod source_binary;

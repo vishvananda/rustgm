@@ -9,3 +9,4 @@ pa43/tests/spec/pin-receivers/wrong-self-arguments.rs	1
 pa43/tests/spec/pin-receivers/named-lifetime.rs	0
 pa43/tests/spec/pin-receivers/actual-constructor-bound.rs	0
 pa43/tests/spec/pin-receivers/missing-constructor-bound.rs	1
+pa43/tests/spec/pin-receivers/native-receiver.rs	0

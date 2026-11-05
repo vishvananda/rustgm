@@ -24,6 +24,14 @@ still requires real receiver/Deref/LegacyReceiver proof, Unpin, unsafe projectio
 future state ownership and cancellation. The real AsyncDrop source frontier is
 unchanged by establishing that prerequisite.
 
+The [Deref/receiver checkpoint](../docs/pa31-deref-receiver-checkpoint.md) now
+implements the demonstrated local receiver prerequisite with real source
+Deref/LegacyReceiver selection, Target normalization and full Self/region
+constraints. All12 receiver controls and a read/write native observer match
+pinned Rust, including ordinary wrappers and changed generic arguments. Actual
+Unpin/projection, async state/cancellation/destruction and PA29 transport remain
+required; this checkpoint does not complete AsyncDrop or this assignment.
+
 The maintainer implements compiler responsibilities in `dev/src/` and introduces
 typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust
 Reference and CPPGM's efficient representation principles. Parse once, retain

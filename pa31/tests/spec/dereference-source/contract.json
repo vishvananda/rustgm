@@ -1,0 +1,204 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "edition": 2024,
+  "cases": [
+    {
+      "name": "header",
+      "path": "pa31/tests/spec/dereference-source/header.rs",
+      "sha256": "780620398b00b9f3785699d8bbb87c78ae727691a1381423dba03eed502dbf89",
+      "rustc_status": 0
+    },
+    {
+      "name": "empty-trait",
+      "path": "pa31/tests/spec/dereference-source/empty-trait.rs",
+      "sha256": "69bc42a181745f39229ab18b5b3be3864878fcc14203bb93db6a734109c53923",
+      "rustc_status": 0
+    },
+    {
+      "name": "orphan-target",
+      "path": "pa31/tests/spec/dereference-source/orphan-target.rs",
+      "sha256": "88d635ca6713fdaacf686d90b2186c64cb7ec742b7ebf2aacc46c25cc116aa41",
+      "rustc_status": 0
+    },
+    {
+      "name": "pure-trait",
+      "path": "pa31/tests/spec/dereference-source/pure-trait.rs",
+      "sha256": "bd0bbab2b4b32c8db00f2f58211659c7e39b3f2afb1a6e7eddd18b09908e47ab",
+      "rustc_status": 0
+    },
+    {
+      "name": "wrong-target",
+      "path": "pa31/tests/spec/dereference-source/wrong-target.rs",
+      "sha256": "7ed54cad8afede28b78d1779c6227bb75fadaf246c9f82d2ea88ae56a44f83b0",
+      "rustc_status": 1
+    },
+    {
+      "name": "generic-role",
+      "path": "pa31/tests/spec/dereference-source/generic-role.rs",
+      "sha256": "5df3b0d913f3b8fd63c1c5f12b8c31f550a7f4f0ee83e781e1ffbb96d127dec0",
+      "rustc_status": 1
+    },
+    {
+      "name": "duplicate-role",
+      "path": "pa31/tests/spec/dereference-source/duplicate-role.rs",
+      "sha256": "3399a4febd232db51af4b6657721dc02f827cbf43d32aff0325823298aeb3a4d",
+      "rustc_status": 1
+    },
+    {
+      "name": "duplicate-target",
+      "path": "pa31/tests/spec/dereference-source/duplicate-target.rs",
+      "sha256": "89bb4fc25cd81d72a53bb1f6c29bd85f5470b43be439eda1b46de0255dca2e27",
+      "rustc_status": 1
+    },
+    {
+      "name": "direct-method",
+      "path": "pa31/tests/spec/dereference-source/direct-method.rs",
+      "sha256": "25a155d50609178144ab93a0ac4ab55ff5c25959b4e752b0637ab24217a146e0",
+      "rustc_status": 0
+    },
+    {
+      "name": "shared-operator",
+      "path": "pa31/tests/spec/dereference-source/shared-operator.rs",
+      "sha256": "0d1e340cadc15f8f6dd5ff5dbff2bbdf7d84f1229960f278b526887f127597bd",
+      "rustc_status": 0
+    },
+    {
+      "name": "mutable-operator",
+      "path": "pa31/tests/spec/dereference-source/mutable-operator.rs",
+      "sha256": "767690ce7bf53ac6a619f8f03c7bfb05070b26863601b6e51dec92821e56b153",
+      "rustc_status": 0
+    },
+    {
+      "name": "generic-operator",
+      "path": "pa31/tests/spec/dereference-source/generic-operator.rs",
+      "sha256": "183469ed5976f41813117b1e286cf1278ac7902b8e71abafb183a7e535ce1542",
+      "rustc_status": 0
+    },
+    {
+      "name": "generic-unbounded",
+      "path": "pa31/tests/spec/dereference-source/generic-unbounded.rs",
+      "sha256": "1d5ba3fb1f140bebbde7a5d1ee7205f5c9b12f8bcd96e43dd136a35ec720d6ca",
+      "rustc_status": 1
+    },
+    {
+      "name": "wrong-associated",
+      "path": "pa31/tests/spec/dereference-source/wrong-associated.rs",
+      "sha256": "5c7ddea157deb215b69f2d6364f9ee0518c486e4c9fc2fbfac3326d32b52471a",
+      "rustc_status": 1
+    },
+    {
+      "name": "missing-impl",
+      "path": "pa31/tests/spec/dereference-source/missing-impl.rs",
+      "sha256": "2bf3fda29ac36d746290af5e23ed4c77aa201fb599d84af78f6f2411861f9c1b",
+      "rustc_status": 1
+    },
+    {
+      "name": "ordinary-name",
+      "path": "pa31/tests/spec/dereference-source/ordinary-name.rs",
+      "sha256": "eb5d030ab396c5060174c40fe611bc8bbdaa1c6e7228f44b71ff2d08c8bfa5ca",
+      "rustc_status": 1
+    },
+    {
+      "name": "ordinary-direct",
+      "path": "pa31/tests/spec/dereference-source/ordinary-direct.rs",
+      "sha256": "7a08d376256a937cc6cb5d3a03c798d7f0016ba555f179252491ebe2ae174532",
+      "rustc_status": 0
+    },
+    {
+      "name": "missing-mut",
+      "path": "pa31/tests/spec/dereference-source/missing-mut.rs",
+      "sha256": "359903b42e8bb400928db592d4023b49747578dc6f0a02d3585716681e17df25",
+      "rustc_status": 1
+    },
+    {
+      "name": "immutable-local",
+      "path": "pa31/tests/spec/dereference-source/immutable-local.rs",
+      "sha256": "6255f175b510d5ae6b28822c46a4201ea6df7e49d1ec8295da6ee0fd2efbf230",
+      "rustc_status": 1
+    },
+    {
+      "name": "shared-place",
+      "path": "pa31/tests/spec/dereference-source/shared-place.rs",
+      "sha256": "3eeb5fed6ac32ad9ca9562f7fbeec0f1b8845b77c04f8c9edb48679b29bacf91",
+      "rustc_status": 1
+    },
+    {
+      "name": "unique-place",
+      "path": "pa31/tests/spec/dereference-source/unique-place.rs",
+      "sha256": "049f159482774551bbae19b73d02a3f085bb7de471d7e5b191f912baa7e049da",
+      "rustc_status": 0
+    },
+    {
+      "name": "borrow-conflict",
+      "path": "pa31/tests/spec/dereference-source/borrow-conflict.rs",
+      "sha256": "02c153f5b24c2b5753004abfb4d1b241f4b843360b3b4a6f783714a6f12ff476",
+      "rustc_status": 1
+    },
+    {
+      "name": "borrow-escape",
+      "path": "pa31/tests/spec/dereference-source/borrow-escape.rs",
+      "sha256": "02a308251b02fc48ac253e20ddf71cd60d5e23492fdd0243ce211a59c60b265b",
+      "rustc_status": 1
+    },
+    {
+      "name": "move-noncopy",
+      "path": "pa31/tests/spec/dereference-source/move-noncopy.rs",
+      "sha256": "848bbebb2063f4d6918d2602fdf60980e452d1fa5aa9891988d512535cc495c4",
+      "rustc_status": 1
+    },
+    {
+      "name": "builtin-reference",
+      "path": "pa31/tests/spec/dereference-source/builtin-reference.rs",
+      "sha256": "ad254450660ad0655276235cf34beefa2ba148fcc3e37c2297c6fd8e6030a066",
+      "rustc_status": 0
+    },
+    {
+      "name": "unsafe-pointer",
+      "path": "pa31/tests/spec/dereference-source/unsafe-pointer.rs",
+      "sha256": "cf32bd4dcf8adde34e95b57b76eeedd902777f41aab04168e1ef90144196f584",
+      "rustc_status": 1
+    },
+    {
+      "name": "raw-pointer",
+      "path": "pa31/tests/spec/dereference-source/raw-pointer.rs",
+      "sha256": "015925789b3d0863e67f52e2127df9a8b56db3ecd60b3e8cd196e0a2591af897",
+      "rustc_status": 0
+    },
+    {
+      "name": "wrong-method-body",
+      "path": "pa31/tests/spec/dereference-source/wrong-method-body.rs",
+      "sha256": "19d20a67103335f337e2c22a3a15eb1ed2a2c3c01e773bcabe509c45d3f5ffb9",
+      "rustc_status": 1
+    },
+    {
+      "name": "wrong-mut-impl",
+      "path": "pa31/tests/spec/dereference-source/wrong-mut-impl.rs",
+      "sha256": "c685a54130ce3e7ec0d3fff7ac1ce4b51d48292dcc6eff78df091a310147fd79",
+      "rustc_status": 1
+    },
+    {
+      "name": "owned-drop",
+      "path": "pa31/tests/spec/dereference-source/owned-drop.rs",
+      "sha256": "5195f6a9f9ab69ff05a06c5247b8183c5b77999c44ec541a5cee087c3de55685",
+      "rustc_status": 0
+    },
+    {
+      "name": "native",
+      "path": "pa31/tests/spec/dereference-source/native.rs",
+      "sha256": "97f8d428cdf6e01928a73b2eefde8169d63edf7d7fcec9bbd4cff614ea4b7179",
+      "rustc_status": 0,
+      "native_stdout": "record=1\nread=7\nrecord=2\nrecord=1\nwrite=9\nrecord=1\ngeneric=8\nrecord=3\nrecord=1\nonce=11\n"
+    }
+  ],
+  "auxiliary": [
+    {
+      "path": "pa31/tests/spec/dereference-source/foundation.rs",
+      "sha256": "3fa614b5e1fc24d9b0d4c8b15ed92ddf3de29d6ed0812649c80e2696e4271e51"
+    },
+    {
+      "path": "pa31/tests/spec/dereference-source/observer.c",
+      "sha256": "3e9dd3884223338966bdc9affeb4f37cecaef60a8fcabc6b9b87b26fc664ea1c"
+    }
+  ]
+}

@@ -80,11 +80,14 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 24] = [
+const TRAIT_ROLES: [LangItem; 27] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::UseCloned,
     LangItem::FnPtrTrait,
+    LangItem::Deref,
+    LangItem::DerefMut,
+    LangItem::DerefPure,
     LangItem::LegacyReceiver,
     LangItem::TrivialClone,
     LangItem::Tuple,
@@ -144,7 +147,10 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
             LangItem::From
             | LangItem::BikeshedGuaranteedNoDrop
             | LangItem::UseCloned
-            | LangItem::FnPtrTrait => {}
+            | LangItem::FnPtrTrait
+            | LangItem::Deref
+            | LangItem::DerefMut
+            | LangItem::DerefPure => {}
             LangItem::TransmuteTrait => {
                 super::transmutability::validate_trait(
                     report,
@@ -219,6 +225,10 @@ fn complete_dependent_roles(
     if let Some(declaration) = catalog.language(LangItem::FnPtrAddr) {
         super::pointers::validate_member(report, facts, declaration)?;
         complete.roles.insert(LangItem::FnPtrAddr);
+    }
+    if let Some(declaration) = catalog.language(LangItem::DerefTarget) {
+        super::dereferencing::validate_target(report, facts, declaration)?;
+        complete.roles.insert(LangItem::DerefTarget);
     }
     if let Some(declaration) = catalog.language(LangItem::DropGlue) {
         glue::validate(report, facts, catalog, declaration, complete.roles)?;
@@ -356,7 +366,14 @@ fn header<'a>(
 ) -> Result<super::headers::Trait<'a>, Error> {
     let error = |message| Declarations::error(report, declaration.origin, message);
     let header = super::headers::Trait::source(report, facts, declaration).map_err(error)?;
-    if matches!(role, LangItem::UseCloned | LangItem::FnPtrTrait) {
+    if matches!(
+        role,
+        LangItem::UseCloned
+            | LangItem::FnPtrTrait
+            | LangItem::Deref
+            | LangItem::DerefMut
+            | LangItem::DerefPure
+    ) {
         // Reservation already checked each role's target and generic arity.
         // Authenticate its canonical Self and source-owned inputs without inventing
         // additional flags, member or supertrait restrictions;

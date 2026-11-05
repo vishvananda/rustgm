@@ -17,6 +17,8 @@ mod crate_syntax;
 mod ctfe_selector;
 #[path = "../../declarative_macros.rs"]
 mod declarative_macros;
+#[path = "../../deref_contracts.rs"]
+mod deref_contracts;
 #[path = "../../edition_fragments.rs"]
 mod edition_fragments;
 #[path = "../../edition_origins.rs"]
@@ -105,6 +107,8 @@ mod resolution;
 pub(crate) mod resolve;
 #[path = "../../selected_references.rs"]
 mod selected_references;
+#[path = "../../smart_receivers.rs"]
+mod smart_receivers;
 #[path = "../../syntax_transfer.rs"]
 mod syntax_transfer;
 #[path = "../../target_requests.rs"]

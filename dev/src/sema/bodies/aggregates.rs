@@ -697,8 +697,14 @@ impl Checker<'_> {
         node: NodeId,
         left: NodeId,
     ) -> Result<Option<DefId>, Error> {
-        if matches!(self.kind(left), Kind::Index { .. })
-            || self.state.pending_indexes.contains_key(&left)
+        if matches!(
+            self.kind(left),
+            Kind::Index { .. }
+                | Kind::Unary {
+                    op: crate::syntax::ast::Unary::Dereference,
+                    ..
+                }
+        ) || self.state.pending_indexes.contains_key(&left)
             || self.facts.node(self.key(left)).is_some_and(|f| {
                 matches!(
                     f.operation,

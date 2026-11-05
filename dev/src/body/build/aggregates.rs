@@ -169,6 +169,9 @@ impl Builder<'_> {
             }
             | Kind::Field { value, .. } => {
                 self.scratch.work.push(Work::FinishPlace(node));
+                if matches!(self.fact(node)?.operation, Some(Operation::Call { .. })) {
+                    self.scratch.work.push(Work::LanguageReceiver(node));
+                }
                 self.scratch.work.push(Work::Place(value));
             }
             Kind::Index { value, index } => {

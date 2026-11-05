@@ -21,6 +21,14 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
             // implicit pin construction and async state-machine permission.
             continue;
         }
+        if matches!(
+            role,
+            LangItem::Deref | LangItem::DerefMut | LangItem::DerefPure | LangItem::DerefTarget
+        ) {
+            // Canonical source owners still complete below; dereference use
+            // requires ordinary trait selection and the actual method contract.
+            continue;
+        }
         if matches!(role, LangItem::CompilerMove | LangItem::CompilerCopy) {
             // These hooks keep their actual ordinary bodies. Current codegen emits no
             // profiling annotations; an invoked hook must still execute its source body.

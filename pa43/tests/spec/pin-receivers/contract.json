@@ -69,12 +69,29 @@
       "path": "pa43/tests/spec/pin-receivers/missing-constructor-bound.rs",
       "sha256": "9500bfbbbf2aa0aff637aca91a06343d955a27c0483a66208c0a6133f57b263b",
       "rustc_status": 1
+    },
+    {
+      "name": "native-receiver",
+      "path": "pa43/tests/spec/pin-receivers/native-receiver.rs",
+      "sha256": "cf973a0c704f9fa75016fc9064aeca894f5e87f4fb945507c082dc0cd43b369b",
+      "rustc_status": 0,
+      "native_stdout": "record=5\nrecord=4\nresult=9\n"
     }
   ],
-  "auxiliary": [],
+  "auxiliary": [
+    {
+      "path": "pa43/tests/spec/pin-receivers/observer.c",
+      "sha256": "3d7416c0870652c5829324ad781c2b196517709b1fd11e552dc5bb51094f2ad7"
+    }
+  ],
   "history": {
     "reference_v1": "obj/parallel/pin-source-v1/receiver-reference-v1/receipt.json",
     "reference_v1_sha256": "52c264d25416e47a355c2bc4f97a5e87bb986300f2ded6c77528bb95a0dd2b64",
     "extension": "Retain all nine outcomes; explicitly require the real Pin constructor parent Deref bound and its genuine missing-bound opponent."
+  },
+  "history_v2": {
+    "reference_v2": "obj/parallel/pin-source-v1/receiver-reference-v2/receipt.json",
+    "reference_v2_sha256": "bc5d5dcf13028d215cc47815142b016d3709fd68012e1f55bf5b635347052b9a",
+    "extension": "Retain all11 prior outcomes; add actual UFCS receiver/native execution after genuine Deref and LegacyReceiver proof."
   }
 }

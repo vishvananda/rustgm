@@ -48,6 +48,7 @@ mod primitive_constants;
 mod projections;
 mod receivers;
 mod required_features;
+mod smart_receivers;
 pub(in crate::sema) use required_features::RequiredFeatures;
 mod refined_annotations;
 mod self_constructors;

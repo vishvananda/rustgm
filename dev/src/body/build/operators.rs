@@ -264,8 +264,13 @@ impl Builder<'_> {
         let Some(Operation::Call { signature, .. }) = self.fact(node)?.operation else {
             return Err(self.error(node, "missing library index signature"));
         };
-        let super::Kind::Index { index, .. } = self.kind(node) else {
-            return Err(self.error(node, "invalid library index syntax"));
+        let index = match self.kind(node) {
+            super::Kind::Index { index, .. } => Some(index),
+            super::Kind::Unary {
+                op: crate::syntax::ast::Unary::Dereference,
+                ..
+            } => None,
+            _ => return Err(self.error(node, "invalid borrowed library place syntax")),
         };
         let receiver = self
             .scratch
@@ -274,8 +279,11 @@ impl Builder<'_> {
             .ok_or_else(|| self.error(node, "missing evaluated index receiver"))?;
         let callee = self.evaluate(node, selected.callable, Rvalue::Function(selected.method))?;
         let start = self.index(node, self.body.arguments.len())?;
-        let index = self.value(index)?;
-        self.body.arguments.extend([receiver, index]);
+        self.body.arguments.push(receiver);
+        if let Some(index) = index {
+            let index = self.value(index)?;
+            self.body.arguments.push(index);
+        }
         let end = self.index(node, self.body.arguments.len())?;
         let arguments = crate::body::ir::ValueList { start, end };
         let Some(crate::types::Kind::Function { result, .. }) = self.facts.types.kind(signature)

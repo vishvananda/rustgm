@@ -1,0 +1,25 @@
+# Actual source dereference contracts
+
+The31 complete authored inputs in `contract.json` and `cases.tsv` freeze outcomes
+before observing RustGM. Pinned Rust1.98.0 (88d9e12ae) independently confirms all31;
+`foundation.rs` and the C observer are authenticated auxiliary inputs. Preserve
+repository NOTICE and the inherited source-foundation attribution.
+
+The packet checks actual Deref/DerefMut/DerefPure/Target identity and unused
+alternate headers, shared/mutable/generic operator consumers, original method
+bodies and impl conformance, ordinary lookalikes, mutable-place permission,
+Copy/move/borrow/escape obligations and destruction. The native observer checks
+real method effects, shared/unique selection and one-time place evaluation.
+Expected stdout is literal contract data, not inferred from candidate output.
+
+The actual canonical member and signature feed existing method instantiation,
+trait goals, late-binder opening, receiver loans and selected calls. Mutable
+places refine that selection to the actual DerefMut method. Lowering consumes
+those typed calls through the existing borrowed-place path. No replacement
+source body or physical Copy fallback is involved.
+
+`deref_contracts` in the frontend maintainer suite owns execution. The
+[checkpoint](../../../../docs/pa31-deref-receiver-checkpoint.md) binds its candidate,
+independent/native controls and remaining contract. Wider demanded signatures,
+const/metadata, implicit autoderef/coercion profiles and whole PA26/31/43 release
+requirements remain required. Local source completion is not imported permission.

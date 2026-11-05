@@ -85,6 +85,14 @@ receipt is retained and later frozen inputs include it. No prediction is weakene
 
 ## Required next dependency
 
+The later [Deref/receiver checkpoint](pa31-deref-receiver-checkpoint.md) supersedes
+the prerequisite-only receiver observations below: all12 current cases and the
+native observer now qualify actual selection and exact Self/lifetime proof.
+The original11 source hashes and the earlier rejected-frontier evidence remain
+historical. Async signature/state/destruction and wider profiles/transport still
+remain required; the three-agent lane plan supersedes the root-only scheduling
+note below.
+
 The [eleven receiver controls](../pa43/tests/spec/pin-receivers/README.md) all match
 pinned Rust independently. They show that real Deref/LegacyReceiver evidence,
 including ordinary similarly named wrappers, precedes receiver admission.

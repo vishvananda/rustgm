@@ -37,6 +37,13 @@ real unsafe/const, move/borrow and field-destruction checks. Pinned receivers,
 implicit pin construction, Unpin/projection, async/future behavior and PA29
 transport remain required. This does not move the original AsyncDrop frontier.
 
+The [Deref/receiver checkpoint](../docs/pa31-deref-receiver-checkpoint.md) now
+qualifies actual source Deref/Target, real shared/mutable method/operator calls
+and exact smart-pointer receiver proof. Its31/12 source outcomes and two native
+observers match pinned Rust. Wider profiles, const, metadata, Unpin/projection
+and actual async state/destruction remain required. Original core still reaches
+the same AsyncDrop declaration.
+
 The [request-order checkpoint](../docs/pa31-request-order-checkpoint.md) extends
 the same cumulative source payer through the shared checked ordering kernel.
 Metadata and ordinary lookup keep their finite default limits. The original

@@ -275,6 +275,13 @@ impl Checker<'_> {
                     }
                     terminal = referent;
                 }
+                (Some(Type::Adt(..)), _)
+                    if crate::sema::compiler_items::dereferencing::available(&self.facts) =>
+                {
+                    // Retain the actual outer type. Full declaration validation
+                    // proves the real Deref/LegacyReceiver chain after impl headers.
+                    break;
+                }
                 _ => return Err(self.error(key, "receiver must be Self or a reference to Self")),
             }
         }

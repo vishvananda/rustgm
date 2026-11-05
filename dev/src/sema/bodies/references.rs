@@ -547,6 +547,9 @@ impl Checker<'_> {
             Some(Constructor::Pointer { .. }) => {
                 self.require_unsafe(node, "raw pointer dereference requires an unsafe context")?;
             }
+            _ if crate::sema::compiler_items::dereferencing::available(self.facts) => {
+                return self.source_dereference(node, operand, self.mutable_language_place(node));
+            }
             _ => {
                 return Err(self.error(node, "dereferencing requires a known reference or pointer"));
             }

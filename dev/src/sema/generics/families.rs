@@ -147,7 +147,15 @@ impl Declarations {
             .parameters
             .get(&member)
             .map_or(&[][..], Vec::as_slice);
-        if own == GenericArgs::EMPTY && parameters.is_empty() {
+        let captures = self
+            .associated
+            .schema(owner)
+            .ok_or("missing associated definition owner schema")?
+            .captures;
+        // Selected impl arguments prefix every lifetime capture, including
+        // anonymous slots absent from the named parameter indices. Only an
+        // uncaptured owner can use the positional substitution shortcut.
+        if captures == 0 && own == GenericArgs::EMPTY && parameters.is_empty() {
             return self
                 .generics
                 .substitute(&mut self.types, owner, parent, template);
@@ -155,11 +163,6 @@ impl Declarations {
         if self.associated.type_definition(owner, member) != Some(member) {
             return Err("associated definition does not belong to the selected owner");
         }
-        let captures = self
-            .associated
-            .schema(owner)
-            .ok_or("missing associated definition owner schema")?
-            .captures;
         let application = Application {
             owner,
             parent,

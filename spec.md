@@ -448,6 +448,19 @@ insufficient. Actual Unpin, unsafe projection, async formation, cancellation and
 destruction keep their own obligations. Unsupported metadata retains its fence;
 local declaration completion grants no imported execution permission.
 
+The [source dereference/receiver checkpoint](docs/pa31-deref-receiver-checkpoint.md)
+uses actual Deref/Target identity, ordinary selected methods and retained receiver
+loans. Open callable binders through the existing call-signature interface before
+using their children. Refine mutable places in the existing selected-call record;
+lowering evaluates the actual receiver once. Smart receivers follow a bounded,
+cycle-checked chain of genuine LegacyReceiver/Deref evidence and preserve full
+Self arguments and lifetime debts. Selected impl arguments prefix anonymous
+lifetime captures separately from named parameter slots: captured associated
+definitions use the existing identity-mapped family substitution cache. The
+positional shortcut is valid only for uncaptured owners. Broader demanded
+profiles, const, authenticated metadata and async state/destruction remain
+required; neither source completion nor receiver proof supplies those semantics.
+
 The SourceCore expansion view is `--emit-expanded-crate` (or its count form),
 which runs actual configured expansion and binding completion. The PA7
 `--emit-expanded` session has no source context and must reject source options.

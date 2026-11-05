@@ -6,7 +6,12 @@ use crate::syntax::ast::{Kind, Unary};
 struct Selected {
     method: usize,
     call: usize,
-    kind: Hook,
+    kind: Selection,
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Selection {
+    Index(Hook),
+    Dereference { mutable: bool },
 }
 #[derive(Default)]
 pub(in crate::sema::bodies) struct Places {
@@ -24,12 +29,17 @@ impl Checker<'_> {
             .builtin_traits
             .language(Hook::Index)
             .is_none()
+            && !crate::sema::compiler_items::dereferencing::available(self.facts)
         {
             return Ok(());
         }
         for _ in 0..1_000_000 {
             match self.kind(node) {
-                Kind::Index { .. } => {
+                Kind::Index { .. }
+                | Kind::Unary {
+                    op: Unary::Dereference,
+                    ..
+                } => {
                     self.state
                         .language_places
                         .get_or_insert_with(Default::default);
@@ -37,11 +47,7 @@ impl Checker<'_> {
                 }
                 Kind::Group(base)
                 | Kind::Attributed { value: base, .. }
-                | Kind::Field { value: base, .. }
-                | Kind::Unary {
-                    op: Unary::Dereference,
-                    operand: base,
-                } => node = base,
+                | Kind::Field { value: base, .. } => node = base,
                 _ => return Ok(()),
             }
         }
@@ -63,6 +69,7 @@ impl Checker<'_> {
             .builtin_traits
             .language(Hook::Index)
             .is_none()
+            && !crate::sema::compiler_items::dereferencing::available(self.facts)
         {
             return Ok(());
         }
@@ -78,7 +85,9 @@ impl Checker<'_> {
                         .get_or_insert_with(Default::default);
                     places.mutable.insert(node);
                     let previous = places.selected.get(&node).copied();
-                    if previous.is_some_and(|selected| selected.kind == Hook::Index) {
+                    if previous
+                        .is_some_and(|selected| selected.kind == Selection::Index(Hook::Index))
+                    {
                         let old = self.term(node)?;
                         let new =
                             self.language_operator(node, Hook::IndexMut, value, Some(index))?;
@@ -95,6 +104,19 @@ impl Checker<'_> {
                         .get_or_insert_with(Default::default)
                         .mutable
                         .insert(node);
+                    let previous = self
+                        .state
+                        .language_places
+                        .as_ref()
+                        .and_then(|p| p.selected.get(&node))
+                        .copied();
+                    if previous
+                        .is_some_and(|p| p.kind == (Selection::Dereference { mutable: false }))
+                    {
+                        let old = self.term(node)?;
+                        let new = self.source_dereference(node, operand, true)?;
+                        self.equate(node, old, new)?;
+                    }
                     let reference = if let Some(term) = self.state.terms.get(self.key(operand)) {
                         matches!(
                             self.head(node, term)?,
@@ -141,8 +163,41 @@ impl Checker<'_> {
         } else {
             self.state.calls.push((node, signature));
         }
-        places
-            .selected
-            .insert(node, Selected { method, call, kind });
+        places.selected.insert(
+            node,
+            Selected {
+                method,
+                call,
+                kind: Selection::Index(kind),
+            },
+        );
+    }
+
+    pub(in crate::sema::bodies) fn retain_dereference_call(
+        &mut self,
+        node: NodeId,
+        mutable: bool,
+        method: usize,
+        signature: TermId,
+    ) {
+        let places = self
+            .state
+            .language_places
+            .get_or_insert_with(Default::default);
+        let previous = places.selected.get(&node).copied();
+        let call = previous.map_or(self.state.calls.len(), |s| s.call);
+        if previous.is_some() {
+            self.state.calls[call] = (node, signature);
+        } else {
+            self.state.calls.push((node, signature));
+        }
+        places.selected.insert(
+            node,
+            Selected {
+                method,
+                call,
+                kind: Selection::Dereference { mutable },
+            },
+        );
     }
 }
