@@ -335,5 +335,25 @@
     "runtime_complete": false,
     "assignment_complete": false,
     "full_core_complete": false
+  },
+  "main_adoption": {
+    "worker_commit": "88b265722",
+    "joined_commit": "bdadb8291",
+    "worker_joined_receipt_sha256": "40718ad4da9e3808be68abb86b5e94bfe10a78799949986367b9428600d673b3",
+    "source_difference": [
+      "dev/tests/invariants/family_arguments.rs",
+      "dev/tests/invariants/selection_headers/normalization.rs",
+      "dev/tests/support/body_machine.rs"
+    ],
+    "difference_scope": "Only the three separately qualified test lint repairs; every production file and all19 worker-selected test source files match the qualified main-adoption worker source. No private execution is inferred.",
+    "all_target_clippy_harness_upstream": {
+      "path": "obj/parallel/future-const-join-v1/poll-join-v1/receipt.json",
+      "sha256": "8f5943e9b49a076c1d30b8bbdc393b1f92b75da216cc08d45f731b5dfb769fa4",
+      "seconds": 117.43711990496377
+    },
+    "harness_tests": 280,
+    "upstream_fixtures": 29,
+    "reference_files": 126,
+    "whole_library_artifacts": "none"
   }
 }

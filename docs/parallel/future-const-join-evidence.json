@@ -481,6 +481,40 @@
       "dev/tests/support/body_machine.rs": "066269e5766a38e8966a6ee5368c27f87686866ea3e14902512025d57c24d8fd",
       "dev/tests/invariants/family_arguments.rs": "b72012368d390f733eb3ead0c8dbbf66043fe6c6f0631f82f14b18845ec9a8f5",
       "dev/tests/invariants/selection_headers/normalization.rs": "48727013727bdcb6191af70bc8d34eab69a463a7e0860d076e493b7510fe26fb"
-    }
+    },
+    "final_all_target_clippy": {
+      "path": "obj/parallel/future-const-join-v1/poll-join-v1/receipt.json",
+      "sha256": "8f5943e9b49a076c1d30b8bbdc393b1f92b75da216cc08d45f731b5dfb769fa4",
+      "commands": [
+        {
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--all-targets",
+            "--all-features",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "status": 0,
+          "seconds": 103.79523561097449
+        },
+        {
+          "command": [
+            "make",
+            "test-harness",
+            "test-upstream"
+          ],
+          "status": 0,
+          "seconds": 12.84800830297172
+        }
+      ]
+    },
+    "earlier_metadata_scope": "The73s invocation selected the ordinary library and lowering integration, not cfg(test); full cfg(test) Clippy is proved only by the final all-target invocation above."
   }
 }

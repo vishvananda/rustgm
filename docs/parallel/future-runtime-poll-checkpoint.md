@@ -72,3 +72,14 @@ these phases. Full await, suspension/saved loans, panic/cancellation, recursive 
 destruction/helper execution and authenticated authored-body metadata also remain
 required. Compiler-owned symbolic helper recipes remain nonexecutable. There is no
 future-native, PA42/43 completion or full-core success claim here.
+
+Root adopted own commit88b265722 as bdadb8291. Every production file and all19
+selected worker test sources match the qualified main-adoption worker snapshot;
+only three separately qualified test-lint repairs differ. Final all-target and
+all-feature strict Clippy (including private test code), all280 harness tests,
+29 upstream fixtures and126 Reference files pass in117.44s. Retained joined
+receipt40718ad4da9e3808be68abb86b5e94bfe10a78799949986367b9428600d673b3
+binds the19 exact executions to the same recorded binaries. The root adoption
+receipt is obj/parallel/future-const-join-v1/poll-join-v1/receipt.json. Private
+execution, full native/release/debug qualification and original library artifacts
+remain required; this descriptor checkpoint provides no generated poll body.

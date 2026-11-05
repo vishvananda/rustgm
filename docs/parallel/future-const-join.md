@@ -46,10 +46,11 @@ Successor full CI42069373788 on bfef52bf6 stopped at strict test linting, before
 backend installation: the test CFG executor repeated three async owner arms, and
 two private tests exceeded the100-line limit by two and one lines. The repair
 removes duplicate arms and reuses actual application/source lookups, preserving
-every assertion. Strict Clippy including the private library and lowering test
-target passes in73s; the actual CFG execution control passes a full focused gate
-in88.20s. Two attempts to link the monolithic private harness exceeded the local
-budget; their failures are retained and private execution remains CI work.
+every assertion. Selected-target strict Clippy passes in73s; the final polling
+adoption check also passes all-target/all-feature strict Clippy, including the
+private test library, in103s. The actual CFG execution control passes a full
+focused gate in88.20s. Two attempts to link the monolithic private harness exceeded
+the local budget; their failures are retained and private execution remains CI work.
 
 Final current-source qualification:
 
