@@ -16,8 +16,10 @@ consumer pass67 exact public tests,1193 PA19 cases, strict selected Clippy and
 native operator/transport/ordinary-Drop observers. Immutable CLI a39bdeda
 advances unchanged722-input admission to LIB-158 AddAssign, ops/arith.rs768,
 file84 byte22308. Genuine async runtime and every original artifact remain due.
-Both workers have handed off and are stopped with resumable warm trees; their
-completed lanes below are history until the next scoped task is assigned.
+Both workers' preceding implementations are integrated on mainc509736bb. Full
+successor41968654685 is running; predecessor8c29aeae3 passes every full gate.
+The same warm trees now resume the next scoped lanes below. Root's two new
+private target/registration controls remain successor-CI-pending.
 
 On2026-11-05, main05185a6e8 integrates the completed source nominal lane with
 actual Future/async signatures, Deref/receivers and current CPPGM backend.
@@ -32,9 +34,9 @@ sharing the existing operator kernel avoids serial one-spelling checkpoints.
 
 | Lane | Checkout | Ownership | Executable milestone |
 | --- | --- | --- | --- |
-| Integrator | `/mnt/vizier/rustgm-scratch/rustgm-pa26-work` | Source Deref/Target, receiver proof, shared registry/pipeline joins, original core and main publication | Actual source dereference and Pin receivers with genuine Deref/LegacyReceiver, exact Self/regions and native/independent controls; then join AsyncDrop prerequisites |
-| Async signatures | `/mnt/vizier/rustgm-scratch/rustgm-async-work` | Future/Output producers, async signature and opaque capture/result formation; PA31/42 | Actual Future/Output source and async signatures retain real opaque identity, equality, lifetimes/generics and required declaration/body validation; runtime state/destruction requirements stay explicit |
-| Source operators, following completed transport | `/mnt/vizier/rustgm-scratch/rustgm-pa29-work` | PA31 actual Mul/Rem/BitXor/BitAnd/Shr declarations and ordinary typed binary consumers | Real source trait/generic/Output/method proof, default/opponent controls and current-backend native execution through the existing operator kernel; assignment/index operators remain later work |
+| Integrator | `/mnt/vizier/rustgm-scratch/rustgm-pa26-work` | Shared type/body/protocol review, CI, original core and main publication | Preserve actual helpers/opaque/Pin/trait/ownership proof and integrate real consumers; follow unchanged core admission through checking/export and executable artifacts |
+| Future/state foundation, following source contracts | `/mnt/vizier/rustgm-scratch/rustgm-async-work` | Propose real constructor/poll/capture/drop data and authentic generic compiler-operation export recipe; PA31/42/43/29 | Concrete typed API/identity joins precede central edits. Deferred symbolic recipe publication and executable state/poll are distinct. Full await/cancellation/recursive cleanup and original artifacts remain requirements |
+| Assignment operators, following five binary families | `/mnt/vizier/rustgm-scratch/rustgm-pa29-work` | PA31 ten actual assignment families and ordinary mutable-place consumers | Real &mut Self/Rhs/unit method proof, actual const/default/effect and move/loan/evaluation-once semantics, current-backend operand-dependent native effects and bounded work; no synthetic Output or scalar bypass |
 
 Workers own their new modules, fixtures and lane checkpoint documents. Propose
 central type/body enum, declaration scheduler, source-role ledger, shared
