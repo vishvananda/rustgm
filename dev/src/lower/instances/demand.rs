@@ -25,8 +25,15 @@ pub(super) use selected_originals::materialize as materialize_selected;
 enum Work {
     Adapter(body::invocation_entries::Entry, body::ir::ProofSite, Caller),
     Enter(Instance, body::ir::ProofSite, Caller),
+    Future(
+        super::dependencies::FutureDemand,
+        body::ir::ProofSite,
+        Caller,
+    ),
     Leave(BodyKey),
 }
+const _: [(); 40] = [(); size_of::<Work>()];
+
 #[derive(Default)]
 pub(super) struct Ordinary {
     functions: HashMap<ItemId, usize>,
@@ -471,12 +478,34 @@ impl Traversal<'_> {
             Work::Adapter(entry, source, caller) => {
                 return self.adapter(report, facts, templates, entry, source, caller);
             }
+            Work::Future(request, source, caller) => {
+                let error = |e: &str| diagnostic(report, Some(source), e.into());
+                let actual = caller
+                    .future_caller(facts, &self.program, source, request)
+                    .map_err(error)?;
+                actual
+                    .require_current(&facts.types, request.instance)
+                    .map_err(error)?;
+                return Err(error(
+                    "future operation requires its checked generated state family",
+                ));
+            }
             Work::Enter(instance, source, caller) => (instance, source, caller),
             Work::Leave(item) => {
                 self.budget.leave(report, item)?;
                 return Ok(());
             }
         };
+        self.selected_instance(report, facts, templates, (instance, source, caller))
+    }
+    fn selected_instance(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        templates: &Checked<'_>,
+        request: (Instance, body::ir::ProofSite, Caller),
+    ) -> Result<(), Error> {
+        let (instance, source, caller) = request;
         let error = |e: &str| diagnostic(report, Some(source), e.into());
         require_future_runtime(facts, instance).map_err(error)?;
         let fn_pointer =
@@ -770,6 +799,13 @@ impl Dependencies {
             }
         };
         let error = |e: &str| diagnostic(report, Some(source), e.into());
+        if let Some(futures) = demands.futures {
+            for future in futures.requests.into_iter().rev() {
+                budget
+                    .push_work(facts, work, Work::Future(future, source, caller))
+                    .map_err(error)?;
+            }
+        }
         for entry in demands.adapters.into_iter().rev() {
             budget
                 .push_work(facts, work, Work::Adapter(entry, source, caller))
@@ -855,6 +891,9 @@ pub(super) fn prepare_ordinary<C: Collect>(
     }
     let (mut program, bodies) =
         proof::Builder::new(program).map_err(|e| diagnostic(report, None, e.into()))?;
+    program
+        .bind_future_store(facts, templates)
+        .map_err(|e| diagnostic(report, None, e.into()))?;
     program
         .prepare_original_regions(facts, &inputs, &bodies)
         .map_err(|e| diagnostic(report, e.node, e.message))?;

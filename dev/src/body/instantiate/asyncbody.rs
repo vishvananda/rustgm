@@ -15,6 +15,7 @@ use std::cell::Cell;
 pub struct FutureApplication {
     materialized: Materialized,
     formation: Option<Box<Obligations>>,
+    input_regions: Box<Bound>,
 }
 impl FutureApplication {
     #[must_use]
@@ -24,6 +25,11 @@ impl FutureApplication {
     #[must_use]
     pub const fn contract(&self) -> &Contract {
         &self.materialized.contract
+    }
+    /// Bytes retained by the one actual capture-to-execution mapping.
+    #[must_use]
+    pub fn capture_mapping_bytes(&self) -> usize {
+        size_of::<Bound>().saturating_add(self.input_regions.retained_allocation().0)
     }
     /// These are requirements in a separate proof unit, not callee assumptions.
     #[must_use]
@@ -73,8 +79,8 @@ pub(crate) fn future_application(
         future,
     )?;
     let mut inputs = captured_inputs(facts, formal, arguments, future)?;
-    let (mut fold, mut contract) =
-        contracts::specialize(facts, original, &mut inputs, Premises::Required)?;
+    let (mut fold, mut contract, input_regions) =
+        contracts::async_body(facts, original, &mut inputs)?;
     let mut formation_fold = Bound::parameters_captured_charged(
         &facts.types,
         &inputs.bindings,
@@ -134,6 +140,7 @@ pub(crate) fn future_application(
     Ok(FutureApplication {
         materialized,
         formation,
+        input_regions: Box::new(input_regions),
     })
 }
 

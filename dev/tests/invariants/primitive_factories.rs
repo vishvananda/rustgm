@@ -110,13 +110,14 @@ fn prove(
         source_copy: facts.uses_source_copy(),
         copies: &mut facts.copies,
     };
+    let token = token.map(crate::body::factories::Permit::Primitive);
     Ok(crate::borrow::incremental::Verifier::new(None)?.prove(
         &mut environment,
         checked,
         &contract,
         body,
         None,
-        token.map(crate::body::factories::Permit::Primitive),
+        token.as_ref(),
     )?)
 }
 #[test]

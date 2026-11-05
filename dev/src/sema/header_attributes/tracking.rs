@@ -99,15 +99,25 @@ impl Declarations {
         work: usize,
         bytes: usize,
     ) -> Result<(), &'static str> {
-        let result = if self.source_bindings.is_some() {
-            super::charge_source_retention(self, work, bytes)
-        } else {
-            // Ordinary headers have a real attribute budget but do not claim
-            // the provider-wide source inventory is complete. Costs grant no
-            // header, trait selection or execution permission.
-            super::charge_attribute_retention(self, work, bytes)
-        };
-        result.map_err(|_| "caller inputs exceed source work/storage budget")
+        super::caller_payments(
+            self.must_use_contracts.as_deref(),
+            self.source_bindings.is_some(),
+        )
+        .map_err(|_| "caller inputs exceed source work/storage budget")?
+        .charge(work, bytes)
+        .map_err(|_| "caller inputs exceed source work/storage budget")
+    }
+
+    /// Disjoint typed traversal/accounting borrows, never header or body permission.
+    pub(crate) fn caller_input_store(
+        &mut self,
+    ) -> Result<(&mut crate::types::Store, super::Payments<'_>), &'static str> {
+        let payments = super::caller_payments(
+            self.must_use_contracts.as_deref(),
+            self.source_bindings.is_some(),
+        )
+        .map_err(|_| "caller inputs lack their actual source work/storage payer")?;
+        Ok((&mut self.types, payments))
     }
 
     /// Header data only; callers still prove the exact call/body/instance.

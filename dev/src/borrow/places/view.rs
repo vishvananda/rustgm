@@ -22,6 +22,7 @@ impl Index {
                 Some(Step::Dereference { mutable }) => {
                     write!(out, " dereference mutable={mutable}")?;
                 }
+                Some(Step::FutureField(index)) => write!(out, " future-field={index}")?,
                 Some(Step::Field(Selection::Tuple(index))) => write!(out, " tuple-field={index}")?,
                 Some(Step::Field(Selection::Nominal(id))) => {
                     write!(out, " nominal-field={}", id.0)?;

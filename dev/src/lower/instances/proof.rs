@@ -30,7 +30,10 @@ pub(super) struct Builder {
     adapters: bool,
     forwarding: crate::support::hash::HashMap<usize, forwarding::Bridge>,
     original_regions: Option<crate::support::hash::HashMap<crate::body::ir::BodyKey, RegionProof>>,
+    future_store: Option<crate::types::arena::Identity>,
 }
+const _: [(); 1776] = [(); size_of::<Builder>()];
+
 enum RegionProof {
     Ordinary(borrow::regions::Body),
     Parent(borrow::regions::Retained),
@@ -55,7 +58,7 @@ impl Staged {
 }
 enum Original<'a> {
     Ordinary(&'a crate::resolve::expansion::Report),
-    Factory(crate::body::factories::Permit),
+    Factory(&'a crate::body::factories::Permit),
     Adapter(usize, &'a crate::body::adapters::Template),
 }
 impl Builder {
@@ -185,9 +188,51 @@ impl Builder {
                 adapters: false,
                 forwarding: crate::support::hash::HashMap::default(),
                 original_regions: None,
+                future_store: None,
             },
             ordinary,
         ))
+    }
+    pub(super) fn bind_future_store(
+        &mut self,
+        facts: &Declarations,
+        templates: &templates::Checked<'_>,
+    ) -> Result<(), &'static str> {
+        if !self.bodies.is_empty() || self.future_store.is_some() {
+            return Err("future builder must bind its actual source arena before proved append");
+        }
+        if let Some(arena) = templates.existing_future_store(&facts.types)? {
+            facts.charge_caller_inputs(1, size_of::<Self>())?;
+            self.future_store = Some(arena.clone());
+        }
+        Ok(())
+    }
+    fn require_current_store(&self, types: &crate::types::Store) -> Result<(), &'static str> {
+        if self
+            .future_store
+            .as_ref()
+            .is_some_and(|arena| !types.has_identity(arena))
+        {
+            return Err("future builder belongs to another actual type store");
+        }
+        Ok(())
+    }
+
+    pub(super) fn future_caller(
+        &self,
+        types: &crate::types::Store,
+        index: usize,
+        request: super::dependencies::FutureDemand,
+    ) -> Result<incremental::FutureCaller<'_>, &'static str> {
+        self.require_current_store(types)?;
+        let arena = self
+            .future_store
+            .as_ref()
+            .ok_or("future caller requires its actual completed source arena")?;
+        self.bodies
+            .get(index)
+            .ok_or("future caller has no actual proved body")?
+            .future_caller(types, arena, request.site, request.instance)
     }
     pub(super) fn body(&self, index: usize) -> Result<&Body, &'static str> {
         self.bodies
@@ -394,6 +439,11 @@ impl Builder {
         facts: &mut Declarations,
         mut proof: incremental::Proved,
     ) -> Result<usize, borrow::Error> {
+        self.require_current_store(&facts.types)
+            .map_err(|message| borrow::Error {
+                node: Some(proof.body().source.into()),
+                message: message.into(),
+            })?;
         proof
             .resolve_callables(&mut facts.types)
             .map_err(|message| borrow::Error {
@@ -532,7 +582,7 @@ impl Builder {
             body,
             input,
             Some(requirements),
-            Original::Factory(permit),
+            Original::Factory(&permit),
         )?;
         self.forwarding
             .insert(index, forwarding::Bridge::Factory(permit));
@@ -603,6 +653,11 @@ impl Builder {
         requirements: Option<drops::Requirements>,
         original: Original<'_>,
     ) -> Result<usize, borrow::Error> {
+        self.require_current_store(&facts.types)
+            .map_err(|message| borrow::Error {
+                node: Some(body.source.into()),
+                message: message.into(),
+            })?;
         let contract = self.regions(facts, &body, input)?;
         if let Original::Ordinary(report) = original
             && facts.source_bindings.is_some()
@@ -873,10 +928,11 @@ impl Builder {
                 message: "unconsumed original nested region proof".into(),
             });
         }
-        incremental::assemble(
+        incremental::assemble_forwarded(
             self.program,
             self.bodies,
             self.recipes.map(glue::Cache::into_recipes),
+            self.forwarding,
         )
     }
 }

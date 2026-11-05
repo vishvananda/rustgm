@@ -1,5 +1,9 @@
 //! Owned immutable bodies let demand discovery append proofs without revisiting earlier CFGs.
+mod bridges;
+pub(crate) use bridges::{Bridge, Forwarding};
 mod completed_scope;
+mod scheduled;
+pub(crate) use scheduled::FutureCaller;
 mod cstage;
 pub(crate) use cstage::with_const_original;
 mod parents;
@@ -54,7 +58,7 @@ pub(crate) struct Verifier {
 #[derive(Clone, Copy)]
 enum Original<'a> {
     Ordinary,
-    Factory(crate::body::factories::Permit),
+    Factory(&'a crate::body::factories::Permit),
     Adapter(&'a Proved, &'a crate::body::adapters::Template),
 }
 impl Original<'_> {
@@ -63,6 +67,7 @@ impl Original<'_> {
             node: Some(body.source.into()),
             message: message.into(),
         };
+        crate::body::coroutines::require_ordinary_body(body).map_err(error)?;
         let adapter_source = match self {
             Original::Ordinary | Original::Factory(_) => None,
             Original::Adapter(source, template) => Some((source, template)),
@@ -169,7 +174,7 @@ impl Verifier {
         contract: &regions::Body,
         body: Body,
         catalog: Option<&mut glue::Catalog<'_>>,
-        factory: Option<crate::body::factories::Permit>,
+        factory: Option<&crate::body::factories::Permit>,
     ) -> Result<Proved, Error> {
         self.prove_inner(
             environment,
@@ -277,7 +282,11 @@ impl Verifier {
 pub(crate) struct Assembled {
     program: Program,
     destruction: Option<Box<destruction::Proof>>,
+    forwarding: Forwarding,
 }
+const _: [(); size_of::<Program>()
+    + size_of::<Option<Box<destruction::Proof>>>()
+    + size_of::<Forwarding>()] = [(); size_of::<Assembled>()];
 impl Assembled {
     /// Lend the existing executable token. No caller can mutate the owned
     /// bodies between proof and use.
@@ -285,6 +294,7 @@ impl Assembled {
         use_checked(&Checked {
             program: &self.program,
             destruction: self.destruction,
+            forwarding: Some(&self.forwarding),
         })
     }
     #[cfg(test)]
@@ -293,18 +303,25 @@ impl Assembled {
     }
     /// Hand the proved bodies and cleanup proof to executable lowering, which
     /// consumes each body once and never mutates it.
-    pub(crate) fn into_lowering(self) -> (Program, Option<Box<destruction::Proof>>) {
-        (self.program, self.destruction)
+    pub(crate) fn into_lowering(self) -> (Program, Option<Box<destruction::Proof>>, Forwarding) {
+        (self.program, self.destruction, self.forwarding)
     }
 }
 
 /// Consume immutable proved bodies in their final order.
-pub(crate) fn assemble(
+pub(crate) fn assemble_forwarded(
     mut program: Program,
     bodies: Vec<Proved>,
     recipes: Option<glue::Recipes>,
+    forwarding: Forwarding,
 ) -> Result<Assembled, Error> {
     let owned_cleanup = program.drops.is_some();
+    if forwarding.keys().any(|&index| index >= bodies.len()) {
+        return Err(Error {
+            node: None,
+            message: "factory forwarding has no actual proved body index".into(),
+        });
+    }
     if !program.bodies.is_empty()
         || (owned_cleanup && recipes.is_none())
         || (!owned_cleanup
@@ -346,8 +363,18 @@ pub(crate) fn assemble(
     Ok(Assembled {
         program,
         destruction,
+        forwarding,
     })
 }
+#[cfg(test)]
+fn assemble(
+    program: Program,
+    bodies: Vec<Proved>,
+    recipes: Option<glue::Recipes>,
+) -> Result<Assembled, Error> {
+    assemble_forwarded(program, bodies, recipes, Forwarding::default())
+}
+
 /// Consume immutable proved bodies in their final order, then lend the existing
 /// executable token. No caller can mutate the owned bodies between proof and use.
 #[cfg(test)]

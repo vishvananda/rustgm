@@ -1,7 +1,9 @@
 //! Genuine authored futures borrow their defining clauses and actual source protocol.
+mod creation;
 mod polling;
 mod protocol;
 mod schema;
+pub(crate) use creation::constructor_definition;
 pub(crate) use polling::FutureMethod;
 pub(in crate::sema) use polling::{concrete_self, retain};
 #[cfg(test)]

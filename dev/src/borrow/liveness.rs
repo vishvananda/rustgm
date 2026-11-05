@@ -276,6 +276,10 @@ impl<'a> Flow<'a> {
     fn action(&mut self, action: Action, live: &mut impl State) -> Result<(), &'static str> {
         self.charge(1)?;
         match action {
+            Action::FutureTake { projection, target } => {
+                self.local(target, live, false)?;
+                self.use_place(Place::Projection(projection), live)?;
+            }
             Action::CheckInitialized(place) | Action::Mention(place) => {
                 self.use_place(place, live)?;
             }

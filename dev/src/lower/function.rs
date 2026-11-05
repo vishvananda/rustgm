@@ -7,6 +7,7 @@ mod callback_dispatch;
 mod caller_location;
 mod cleanup;
 mod compare_values;
+mod coroutine;
 mod inhabited_runtime;
 mod intrinsics;
 mod invocations;
@@ -329,6 +330,7 @@ impl Lower<'_, '_, '_> {
         location: crate::body::storage::Location,
     ) -> Result<bool, &'static str> {
         match action {
+            Action::FutureTake { projection, target } => self.future_take(projection, target)?,
             Action::BindView { view, place } => self.bind_view(view, place)?,
             Action::Project(id) => self.project(id)?,
             Action::Select { projection, anchor } => self.select(projection, anchor)?,

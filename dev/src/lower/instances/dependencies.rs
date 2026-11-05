@@ -28,12 +28,29 @@ enum Work {
     Value(TypeId, Constant),
     Location(LocationId),
 }
+#[derive(Clone, Copy)]
+pub(super) struct FutureDemand {
+    pub instance: Instance,
+    /// Actual Call/Reify operation, not merely another value of the same type.
+    pub site: crate::body::ir::ValueId,
+}
+const _: [(); 8] = [(); size_of::<FutureDemand>()];
+const _: [(); 4] = [(); size_of::<Instance>()];
+
+#[derive(Default)]
+pub(super) struct FutureDemands {
+    pub requests: Vec<FutureDemand>,
+}
+
 pub(super) struct Demands {
     pub adapters: Vec<crate::body::invocation_entries::Entry>,
     pub closures: Vec<TypeId>,
     pub calls: Vec<Instance>,
     pub object_types: Vec<TypeId>,
+    pub futures: Option<Box<FutureDemands>>,
 }
+const _: [(); 104] = [(); size_of::<Demands>()];
+
 #[derive(Default)]
 struct Discovered {
     adapters: Vec<crate::body::invocation_entries::Entry>,
@@ -45,7 +62,10 @@ struct Discovered {
     captured: Vec<(TypeId, [Option<crate::body::invocation_entries::Entry>; 2])>,
     upcasts: Vec<(TypeId, TypeId)>,
     operators: Vec<(TypeId, crate::support::call_traits::CallTrait, TypeId)>,
+    futures: Option<Box<FutureDemands>>,
 }
+
+const _: [(); 224] = [(); size_of::<Discovered>()];
 
 /// Classify only an actual direct operation, never a reified/Invoke target.
 /// Registry identity and signature data do not supply its later execution proof.
@@ -265,10 +285,60 @@ impl Discovered {
                 // operation. Reification and unsupported declarations return None.
                 // Lowering still requires the reached body and operation proof.
             }
-            None => self.callable(&facts.types, ty)?,
+            None => {
+                if !self.future_operand(facts, body, index, ty)? {
+                    self.callable(&facts.types, ty)?;
+                }
+            }
         }
         Ok(())
     }
+    fn future_operand(
+        &mut self,
+        facts: &Declarations,
+        body: &Body,
+        index: usize,
+        ty: TypeId,
+    ) -> Result<bool, &'static str> {
+        if !matches!(facts.types.kind(ty), Some(Kind::FunctionItem { .. })) {
+            return Ok(false);
+        }
+        let instance = body.callable_target(Instance::new(&facts.types, ty)?);
+        let poll = facts
+            .primitive_methods
+            .as_deref()
+            .and_then(|registry| registry.get_future(instance))
+            .is_some();
+        if !poll
+            && crate::sema::coroutine_methods::constructor_definition(facts, instance)?.is_none()
+        {
+            return Ok(false);
+        }
+        let (length, capacity) = self.futures.as_deref().map_or((0, 0), |rows| {
+            (rows.requests.len(), rows.requests.capacity())
+        });
+        if length >= 100_000 {
+            return Err("future operation demand count exceeds 100000");
+        }
+        let growth = crate::support::retained::Growth::vector::<FutureDemand>(length, capacity, 1);
+        facts.charge_caller_inputs(
+            growth.work.saturating_add(1),
+            growth.bytes.saturating_add(if self.futures.is_none() {
+                size_of::<FutureDemands>() + size_of::<Discovered>() + size_of::<Demands>()
+            } else {
+                0
+            }),
+        )?;
+        let site = crate::body::ir::ValueId(
+            u32::try_from(index).map_err(|_| "too many actual future operations")?,
+        );
+        self.futures
+            .get_or_insert_default()
+            .requests
+            .push(FutureDemand { instance, site });
+        Ok(true)
+    }
+
     fn conversion(
         &mut self,
         body: &Body,
@@ -381,18 +451,17 @@ impl Dependencies {
         }
         Ok(())
     }
-    fn prepared(
+    fn layout_dependencies(
         &mut self,
         report: &crate::resolve::expansion::Report,
         facts: &mut Declarations,
         caller: Option<&Body>,
-        mut result: Discovered,
-    ) -> Result<Demands, String> {
-        let mut concrete = Vec::new();
-        let mut object_types = Vec::new();
-        if !result.layouts.is_empty() {
+        layouts: &[crate::body::ir::ValueId],
+        calls: &mut Vec<Instance>,
+    ) -> Result<(), String> {
+        if !layouts.is_empty() {
             let body = caller.ok_or("runtime layout data requires its actual caller")?;
-            for call in &result.layouts {
+            for call in layouts {
                 self.charge(1)?;
                 let Rvalue::Call { callee, .. } = body.values[call.0 as usize].kind else {
                     return Err("runtime layout dependency lost its actual Call".into());
@@ -406,10 +475,22 @@ impl Dependencies {
                     body.source,
                 )?;
                 if let Some(assertion) = plan.assertion {
-                    result.calls.push(assertion.panic.instance);
+                    calls.push(assertion.panic.instance);
                 }
             }
         }
+        Ok(())
+    }
+    fn prepared(
+        &mut self,
+        report: &crate::resolve::expansion::Report,
+        facts: &mut Declarations,
+        caller: Option<&Body>,
+        mut result: Discovered,
+    ) -> Result<Demands, String> {
+        let mut concrete = Vec::new();
+        let mut object_types = Vec::new();
+        self.layout_dependencies(report, facts, caller, &result.layouts, &mut result.calls)?;
         if !result.selectors.is_empty() {
             let body = caller.ok_or("source selector requires its actual caller body")?;
             self.selector_origins(facts, body, &result.selectors, &mut result.calls)?;
@@ -489,6 +570,7 @@ impl Dependencies {
             closures: result.closures,
             calls: concrete,
             object_types,
+            futures: result.futures,
         })
     }
     fn charge(&mut self, count: usize) -> Result<(), &'static str> {

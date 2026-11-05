@@ -454,7 +454,7 @@ impl Bound {
             });
         }
         if let Action::Universals(mapping) = &mut self.action {
-            return mapping.region(region, depth);
+            return mapping.region_observed::<CHARGED>(region, depth, charge);
         }
         if let Action::Regions(mapping) = &mut self.action {
             return mapping.region_observed::<CHARGED>(region, depth, &mut self.steps, charge);

@@ -142,7 +142,8 @@ impl Engine<'_, '_> {
             Key::Projection(id) => {
                 let projection = self.projection(id)?;
                 match projection.kind {
-                    ProjectionKind::Dereference { .. }
+                    ProjectionKind::FutureField(_)
+                    | ProjectionKind::Dereference { .. }
                     | ProjectionKind::UnionField(_)
                     | ProjectionKind::RawDereference { .. }
                     | ProjectionKind::Subarray { .. }

@@ -115,7 +115,14 @@ pub(super) fn build(
     roots: super::roots::Selected<'_>,
 ) -> Result<Program, Error> {
     let bodies = Bodies::Shared(&checked.program().bodies);
-    run(facts, bodies, checked.destruction(), None, roots)
+    run(
+        facts,
+        bodies,
+        checked.destruction(),
+        None,
+        checked.forwarding(),
+        roots,
+    )
 }
 /// Lower owned proved bodies, releasing each body and plan after emission.
 pub(super) fn build_owned(
@@ -123,17 +130,41 @@ pub(super) fn build_owned(
     bodies: Vec<ir::Body>,
     destruction: Option<&crate::borrow::destruction::Proof>,
     plans: Option<Plans>,
+    forwarding: &crate::borrow::incremental::Forwarding,
     roots: super::roots::Selected<'_>,
 ) -> Result<Program, Error> {
-    run(facts, Bodies::Owned(bodies), destruction, plans, roots)
+    run(
+        facts,
+        Bodies::Owned(bodies),
+        destruction,
+        plans,
+        Some(forwarding),
+        roots,
+    )
 }
 fn run(
     facts: &mut Declarations,
     bodies: Bodies<'_>,
     destruction: Option<&crate::borrow::destruction::Proof>,
     plans: Option<Plans>,
+    forwarding: Option<&crate::borrow::incremental::Forwarding>,
     roots: super::roots::Selected<'_>,
 ) -> Result<Program, Error> {
+    if let Some(forwarding) = forwarding {
+        for (&index, bridge) in forwarding {
+            bridge
+                .caller(&facts.types, index, |index| {
+                    bodies
+                        .as_slice()
+                        .get(index)
+                        .ok_or("factory forwarding lost its actual native body")
+                })
+                .map_err(|message| Error {
+                    node: None,
+                    message,
+                })?;
+        }
+    }
     let mut layouts = std::mem::take(&mut facts.layouts);
     let result = Context::build(facts, &mut layouts, (bodies, destruction, plans), roots);
     facts.layouts = layouts;

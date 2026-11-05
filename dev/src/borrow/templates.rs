@@ -101,6 +101,15 @@ impl Checked<'_> {
     pub fn require_future_store(&self, types: &crate::types::Store) -> Result<(), &'static str> {
         self.future_store(types).map(|_| ())
     }
+    /// Optional profile data from this already completed batch, never an absence proof.
+    pub(crate) fn existing_future_store(
+        &self,
+        types: &crate::types::Store,
+    ) -> Result<Option<&crate::types::arena::Identity>, &'static str> {
+        self.state.require_current_store(types)?;
+        Ok(self.state.future_arena.as_ref())
+    }
+
     pub(crate) fn future_store(
         &self,
         types: &crate::types::Store,

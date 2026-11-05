@@ -504,6 +504,9 @@ impl<'a, 'b> Machine<'a, 'b> {
         action: Action,
     ) -> Result<Option<(usize, Vec<Constant>, ValueId)>, Failure> {
         match action {
+            Action::FutureTake { .. } => {
+                return Err("future ownership transfer is not a constant operation".into());
+            }
             Action::Evaluate(id) => return self.evaluate(frame, id),
             Action::Store { place, value } => {
                 let value = Self::value(frame, value)?;

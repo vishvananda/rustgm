@@ -263,6 +263,9 @@ impl Lower<'_, '_, '_> {
         if let ProjectionKind::Field(field) | ProjectionKind::UnionField(field) = projection.kind {
             return self.project_field(id, base, base_type, field);
         }
+        if let ProjectionKind::FutureField(_) = projection.kind {
+            return self.project_future(id, base);
+        }
         let layout = self.context.layout(base_type)?;
         let leaf = self.context.layout(projection.ty)?;
         let retained = leaf.size != 0 || self.addresses.needs(Place::Projection(id));
@@ -277,7 +280,9 @@ impl Lower<'_, '_, '_> {
             | ProjectionKind::Subslice { .. } => {
                 return Err("reference projection escaped its typed dispatch");
             }
-            ProjectionKind::Field(_) | ProjectionKind::UnionField(_) => {
+            ProjectionKind::FutureField(_)
+            | ProjectionKind::Field(_)
+            | ProjectionKind::UnionField(_) => {
                 return Err("field projection escaped its typed dispatch");
             }
             ProjectionKind::IndexParameter { .. } => {

@@ -112,7 +112,8 @@ impl Engine<'_, '_> {
                 }
                 u64::try_from(index).map_err(|_| "promotion index exceeds target usize")?
             }
-            ProjectionKind::IndexParameter { .. }
+            ProjectionKind::FutureField(_)
+            | ProjectionKind::IndexParameter { .. }
             | ProjectionKind::UnionField(_)
             | ProjectionKind::Dereference { .. }
             | ProjectionKind::RawDereference { .. }

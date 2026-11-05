@@ -27,6 +27,23 @@ impl Caller {
             .map(|id| Self(id | GLOBAL))
             .ok_or("initializer caller exceeds compact request space")
     }
+    pub(in crate::lower::instances) fn future_caller<'a>(
+        self,
+        facts: &Declarations,
+        program: &'a proof::Builder,
+        source: ProofSite,
+        request: crate::lower::instances::dependencies::FutureDemand,
+    ) -> Result<crate::borrow::incremental::FutureCaller<'a>, &'static str> {
+        if self.0 == 0 || self.0 & GLOBAL != 0 {
+            return Err("future root or global requires independent application formation proof");
+        }
+        let index = (self.0 - 1) as usize;
+        if program.body(index)?.source.root_site() != source {
+            return Err("future request changed its actual sealed caller root");
+        }
+        facts.charge_caller_inputs(1, size_of::<crate::borrow::incremental::FutureCaller<'_>>())?;
+        program.future_caller(&facts.types, index, request)
+    }
     pub(in crate::lower::instances) fn environment(
         self,
         facts: &mut Declarations,

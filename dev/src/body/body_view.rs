@@ -221,6 +221,7 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
             ProjectionKind::RawDereference { mutable } => {
                 write!(out, " raw-dereference mutable={mutable}")?;
             }
+            ProjectionKind::FutureField(index) => write!(out, " future-field={index}")?,
             ProjectionKind::Field(field) => write!(out, " field={field:?}")?,
             ProjectionKind::UnionField(field) => write!(out, " union-field={field:?}")?,
             ProjectionKind::Index { index, length } => {
@@ -281,6 +282,9 @@ fn blocks(body: &Body, out: &mut impl Write) -> io::Result<()> {
                 Action::Select { projection, anchor } => {
                     write!(out, "select p{} anchor=", projection.0)?;
                     place(anchor, out)?;
+                }
+                Action::FutureTake { projection, target } => {
+                    write!(out, "future-take p{} target=l{}", projection.0, target.0)?;
                 }
                 Action::Project(id) => write!(out, "project p{}", id.0)?,
                 Action::StorageLive(local) => write!(out, "live l{}", local.0)?,

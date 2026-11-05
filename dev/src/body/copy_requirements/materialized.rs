@@ -16,6 +16,8 @@ pub(in crate::body) struct InstanceScope {
     original: Original,
     signatures: (TypeId, TypeId),
     universals: u32,
+    /// Private consumed transition; its full future stays in original.selected.
+    entry: Option<crate::types::future::Operation>,
     environment: Arc<Environment>,
 }
 
@@ -140,6 +142,7 @@ impl Original {
             original: self,
             signatures,
             universals: contract.universals,
+            entry: None,
             environment,
         };
         scope.check_storage(facts)?;
@@ -155,6 +158,10 @@ impl InstanceScope {
             .retain_owned_from(&self.original.environment, &mut observer);
         allocation.add(size_of::<Self>());
         allocation.add(crate::types::arena::Identity::allocation_bytes());
+        // The typed transition occupies existing row padding and owns no allocation.
+        allocation.visits = allocation
+            .visits
+            .saturating_add(usize::from(self.entry.is_some()));
         allocation
     }
     fn check_storage(&self, facts: &mut Declarations) -> Result<(), &'static str> {

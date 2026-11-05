@@ -89,6 +89,9 @@ pub enum ProjectionKind {
         start: u64,
         end: u64,
     },
+    /// Physical capture/state coordinate of the actual generated future family.
+    /// This grants no move through a reference; owned transfers use `FutureTake`.
+    FutureField(u32),
 }
 impl ProjectionKind {
     /// Both forms evaluate pointer storage before selecting a referent place.
@@ -319,6 +322,12 @@ pub enum Action {
     Store {
         place: Place,
         value: ValueId,
+    },
+    /// One generated-family ownership transfer after its checked poison transition.
+    /// The projection carries the complete actual frame/field/type coordinate.
+    FutureTake {
+        projection: ProjectionId,
+        target: LocalId,
     },
 }
 impl Action {
@@ -713,3 +722,8 @@ pub struct Program {
     pub outlives: Vec<crate::sema::model::Outlives>,
     pub body_regions: Vec<crate::sema::numbered_regions::AllocatedRegion>,
 }
+
+const _: [(); 16] = [(); size_of::<Action>()];
+const _: [(); 24] = [(); size_of::<ProjectionKind>()];
+const _: [(); 40] = [(); size_of::<Projection>()];
+const _: [(); 20] = [(); size_of::<Statement>()];
