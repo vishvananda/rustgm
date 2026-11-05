@@ -25,6 +25,9 @@ impl Builder<'_, '_, '_> {
         self.formation(original, port, site, value.ty, work)?;
         match value.kind {
             s::ValueKind::Unit => self.unit(original, value.ty, work),
+            s::ValueKind::Aggregate { fields } => {
+                self.nominal_value(original, value.ty, fields, work)
+            }
             // Domain validation checked the exact primitive type and canonical bits.
             // Formation above remains an ordinary unpaid request.
             s::ValueKind::Scalar(_) | s::ValueKind::ScalarCast(_) => Ok(()),

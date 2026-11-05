@@ -291,7 +291,8 @@ impl OwnedNamespaceCatalog {
         let header = self.snapshot.header(row).map_err(error)?;
         if !matches!(
             (raw.definition.kind, header),
-            (s::DefinitionKind::Trait, Some(s::HeaderRef::Trait(_)))
+            (s::DefinitionKind::Struct, Some(s::HeaderRef::Nominal(_)))
+                | (s::DefinitionKind::Trait, Some(s::HeaderRef::Trait(_)))
                 | (s::DefinitionKind::Function, Some(s::HeaderRef::Function(_)))
                 | (
                     s::DefinitionKind::SelfType,
@@ -332,7 +333,10 @@ impl OwnedNamespaceCatalog {
         }
         if matches!(
             raw.definition.kind,
-            s::DefinitionKind::Module | s::DefinitionKind::Trait | s::DefinitionKind::SelfType
+            s::DefinitionKind::Module
+                | s::DefinitionKind::Trait
+                | s::DefinitionKind::SelfType
+                | s::DefinitionKind::Struct
         ) && actual.members != Some(self.owners[row.0 as usize])
         {
             return Err(error("namespace owning member scope changed"));

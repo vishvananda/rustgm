@@ -135,6 +135,11 @@ pub(super) fn region(
                     .target(reference, work)?
                     .ok_or("source signature bound region has no actual ancestor")?;
                 match rewrite {
+                    Rewrite::Nominal { .. } => {
+                        return Err(
+                            "source nominal field captured an unsupported declaration binder",
+                        );
+                    }
                     Rewrite::Original => Region::Bound { binder, slot },
                     Rewrite::Public(owner) => {
                         public_region(domains, arena, owner, binder, slot, work)?

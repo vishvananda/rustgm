@@ -18,17 +18,12 @@ pub(super) fn emit(
         stage.prepare_type_arena(facts, value.ty)?;
         let kind = match value.kind {
             ir::Rvalue::Unit => s::ValueKind::Unit,
+            ir::Rvalue::Aggregate {
+                variant: Some(variant),
+                fields,
+            } if stage.nominal_transport() => aggregate(facts, value.ty, variant, fields)?,
             ir::Rvalue::Scalar(id) if stage.feature_predicates() => {
-                let scalar = body
-                    .scalars
-                    .get(id.0 as usize)
-                    .copied()
-                    .ok_or("source scalar value has no actual body scalar slot")?;
-                let ty = crate::sema::crates::export_scalar(facts, value.ty).map_err(
-                    |_| "source scalar value requires a closed supported primitive type",
-                )?;
-                let value = crate::sema::crates::export_scalar_value(ty, scalar)?;
-                s::ValueKind::Scalar(value.bits().to_le_bytes())
+                scalar(facts, body, value.ty, id)?
             }
             ir::Rvalue::Read(ir::Place::Temporary(value)) if stage.conversion_roles() => {
                 s::ValueKind::Read(s::Place::Temporary(value.0))
@@ -131,4 +126,41 @@ fn scalar_cast(
         return Err("source scalar cast changed its actual primitive conversion");
     }
     Ok(s::ValueKind::ScalarCast(operand.0))
+}
+
+fn aggregate(
+    facts: &Declarations,
+    ty: crate::types::TypeId,
+    variant: crate::sema::members::VariantId,
+    fields: ir::ValueList,
+) -> Result<s::ValueKind, &'static str> {
+    let Some(crate::types::Kind::Adt(owner, _)) = facts.types.kind(ty) else {
+        return Err("source aggregate value lacks its actual nominal type");
+    };
+    if facts.members.variants(owner) != [variant] {
+        return Err("source aggregate changed its actual nominal constructor field group");
+    }
+    Ok(s::ValueKind::Aggregate {
+        fields: g::Range {
+            start: fields.start,
+            end: fields.end,
+        },
+    })
+}
+
+fn scalar(
+    facts: &Declarations,
+    body: &Body,
+    result: crate::types::TypeId,
+    id: ir::ScalarId,
+) -> Result<s::ValueKind, &'static str> {
+    let scalar = body
+        .scalars
+        .get(id.0 as usize)
+        .copied()
+        .ok_or("source scalar value has no actual body scalar slot")?;
+    let ty = crate::sema::crates::export_scalar(facts, result)
+        .map_err(|_| "source scalar value requires a closed supported primitive type")?;
+    let value = crate::sema::crates::export_scalar_value(ty, scalar)?;
+    Ok(s::ValueKind::Scalar(value.bits().to_le_bytes()))
 }

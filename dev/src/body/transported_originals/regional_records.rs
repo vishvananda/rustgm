@@ -69,9 +69,14 @@ fn projection(
     Ok(Projection {
         base: place(view, raw.base)?,
         ty: view.ty(raw.ty, steps)?,
-        kind: ProjectionKind::Dereference {
-            region: view.region(raw.region, steps)?,
-            mutable: raw.mutable,
+        kind: match raw.kind {
+            s::ProjectionKind::Dereference { region, mutable } => ProjectionKind::Dereference {
+                region: view.region(region, steps)?,
+                mutable,
+            },
+            s::ProjectionKind::Field { owner, ordinal } => {
+                ProjectionKind::Field(view.nominal_field(owner, ordinal, steps)?)
+            }
         },
     })
 }
@@ -122,6 +127,7 @@ pub(super) fn validate(
                     mutable: bm,
                 },
             ) => a == b && am == bm,
+            (ProjectionKind::Field(a), ProjectionKind::Field(b)) => a == b,
             _ => false,
         };
         if !same || actual.base != expected.base || actual.ty != expected.ty {

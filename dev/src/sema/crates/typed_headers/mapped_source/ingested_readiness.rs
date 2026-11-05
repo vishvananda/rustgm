@@ -38,6 +38,21 @@ impl Graph {
             .get(definition.0 as usize)
             .ok_or("source readiness declaration is outside its semantic cells")?;
         match raw.definition.kind {
+            s::DefinitionKind::Struct => {
+                let Some(s::HeaderRef::Nominal(index)) = rows.header(row)? else {
+                    return Err("source nominal readiness lost its actual header");
+                };
+                if *cell
+                    != Some(
+                        self.ty(rows.nominals[index as usize].self_type)
+                            .map_err(|_| "source nominal readiness lost its mapped type")?,
+                    )
+                    || facts.aggregates.get(ItemId(definition.0)).is_none()
+                {
+                    return Err("source nominal readiness lost its completed actual shape");
+                }
+                Self::scope_ready(facts, definition)?;
+            }
             s::DefinitionKind::Module => {
                 if cell.is_some() || rows.header(row)?.is_some() {
                     return Err("source module readiness requires its actual typeless module");
@@ -323,7 +338,7 @@ impl Graph {
             .get(&definition)
             .ok_or("source function readiness omitted its actual declaration environment")?;
         if header.environment.is_none()
-            && rows.descriptor().profile() == s::Profile::Source2024ModuleConversions
+            && rows.descriptor().profile().conversion_roles()
             && let s::FunctionBody::Original(body) = raw.body
             && rows.body_inputs.get(body.0 as usize).is_some_and(|input| {
                 input.body == body

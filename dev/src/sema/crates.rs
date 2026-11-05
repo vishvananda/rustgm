@@ -149,6 +149,24 @@ pub(super) fn import(report: &Report, facts: &mut Declarations) -> Result<(), Er
     }
     let records = imported_records::prepare(imported, facts)?;
     typed_headers::import(report, imported, facts)?;
+    for artifact in imported.dependencies().artifacts() {
+        let Some(descriptor) = artifact.source_descriptor() else {
+            continue;
+        };
+        for nominal in &descriptor.rows().nominals {
+            let owner = imported
+                .generic_definition(descriptor.identity(), nominal.declaration)
+                .map_err(error)?;
+            if crate::sema::nominals::sizes::prepare(facts, ItemId(owner.0))
+                .map_err(error)?
+                .is_some()
+            {
+                return Err(error(
+                    "source nominal size depends on incomplete actual fields",
+                ));
+            }
+        }
+    }
     for (definition, function) in imported.functions() {
         let signature = records.signature(facts, function)?;
         let ty = facts

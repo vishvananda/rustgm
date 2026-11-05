@@ -161,7 +161,7 @@ impl DomainStage {
         work.charge(n.saturating_mul(3).saturating_add(u).saturating_add(1))?;
         work.reserve(persistent.saturating_add(inverse))?;
         let order = metadata(work, |budget| {
-            if rows.descriptor().profile() == s::Profile::Source2024ModuleConversions {
+            if rows.descriptor().profile().conversion_roles() {
                 rows.ordinary_allocation_ordinals(
                     self.seal.raw,
                     before.saturating_add(persistent),

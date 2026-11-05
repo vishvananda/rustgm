@@ -265,7 +265,9 @@ impl NamespaceColumns {
                 .filter(|row| row.public)
                 .ok_or("namespace export targets a private or absent declaration")?;
             let expected = match target.definition.kind {
-                s::DefinitionKind::Module | s::DefinitionKind::Trait => Namespace::Type,
+                s::DefinitionKind::Module
+                | s::DefinitionKind::Trait
+                | s::DefinitionKind::Struct => Namespace::Type,
                 s::DefinitionKind::Function => Namespace::Value,
                 _ => return Err("namespace target requires a wider declaration-kind profile"),
             };

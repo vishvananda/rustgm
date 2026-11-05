@@ -6,6 +6,7 @@ use crate::support::crates::{self, generics::Work, owner_catalog::DeclarationRef
 /// It is not an authenticated frontend mapping or permission.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DefinitionKind {
+    Struct,
     Module,
     Trait,
     SelfType,
@@ -58,7 +59,10 @@ impl<'a> ScopeIndex<'a> {
                 .ok_or("source parameter scope owner is unknown")?;
             if !matches!(
                 definition.kind,
-                DefinitionKind::Trait | DefinitionKind::SelfType | DefinitionKind::Function
+                DefinitionKind::Trait
+                    | DefinitionKind::SelfType
+                    | DefinitionKind::Function
+                    | DefinitionKind::Struct
             ) || owners[scope.owner.0 as usize].is_some()
             {
                 return Err("source parameter scope has a duplicate or invalid owner");
@@ -316,7 +320,7 @@ fn valid_parent(
     definitions: &[Definition],
 ) -> bool {
     match definition.kind {
-        DefinitionKind::SelfType => parent.is_none(),
+        DefinitionKind::SelfType | DefinitionKind::Struct => parent.is_none(),
         DefinitionKind::Trait => parent
             .and_then(|parent| definitions.get(parent.0 as usize))
             .is_some_and(|parent| {

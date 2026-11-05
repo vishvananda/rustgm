@@ -6,6 +6,8 @@ pub(super) mod environments;
 mod formal_headers;
 pub(in crate::sema::crates::typed_headers) use formal_headers::Callable;
 mod impl_headers;
+#[path = "staged_headers/mapped_records.rs"]
+mod nominal_ports;
 mod owner_packets;
 pub(super) mod rebuilt_environments;
 pub(super) mod scheme_ports;
@@ -42,6 +44,7 @@ struct Scope {
 }
 enum Inputs {
     SelfType,
+    Nominal(Arc<[Input]>),
     Trait(predicate_remap::Prepared),
     Function(Arc<[Input]>),
     Implementation(Arc<[Input]>),
@@ -51,7 +54,7 @@ impl Inputs {
         match self {
             Self::SelfType => &[],
             Self::Trait(prepared) => prepared.all(),
-            Self::Function(inputs) | Self::Implementation(inputs) => inputs,
+            Self::Function(inputs) | Self::Implementation(inputs) | Self::Nominal(inputs) => inputs,
         }
     }
 }
@@ -134,13 +137,18 @@ fn finish_inputs(
         rows.traits
             .len()
             .saturating_add(rows.implementations.len())
+            .saturating_add(rows.nominals.len())
             .saturating_mul(size_of::<Option<Arc<[Input]>>>()),
     )?;
+    let mut nominals = vec![None; rows.nominals.len()];
     let mut traits = vec![None; rows.traits.len()];
     let mut implementations = vec![None; rows.implementations.len()];
     for (raw, scope) in rows.scopes.iter().zip(scopes) {
         budget.charge(1)?;
         let (slot, inputs) = match (rows.header(raw.owner).map_err(error)?, &scope.inputs) {
+            (Some(s::HeaderRef::Nominal(index)), Inputs::Nominal(inputs)) => {
+                (&mut nominals[index as usize], inputs)
+            }
             (Some(s::HeaderRef::Trait(index)), Inputs::Trait(prepared)) => {
                 (&mut traits[index as usize], prepared.all())
             }
@@ -163,9 +171,12 @@ fn finish_inputs(
         }
     }
     budget.charge(traits.len().saturating_add(implementations.len()))?;
+    budget.observed.vector(&nominals);
     budget.observed.vector(&traits);
     budget.observed.vector(&implementations);
-    graph.finish_inputs(traits, implementations).map_err(error)
+    graph
+        .finish_inputs(nominals, traits, implementations)
+        .map_err(error)
 }
 impl Walk<'_, '_> {
     fn inputs(
@@ -186,6 +197,10 @@ impl Walk<'_, '_> {
                     budget,
                 )?))
             }
+            Some(s::HeaderRef::Nominal(_)) if raw.parent.is_none() => Ok(Inputs::Nominal(
+                self.remap
+                    .declaration_inputs(definition, &mut facts.types, budget)?,
+            )),
             Some(s::HeaderRef::Function(index)) => {
                 let header = &rows.functions[index as usize];
                 if header.parent != raw.parent || self.active.len() > 2 {

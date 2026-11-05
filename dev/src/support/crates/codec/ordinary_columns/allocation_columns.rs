@@ -48,16 +48,53 @@ pub(super) fn owned_read(read: &mut Input<'_, '_>) -> Result<s::OwnedRegion, &'s
     Ok(s::OwnedRegion { site, allocation })
 }
 pub(super) fn projection_write(out: &mut Writer, row: &s::Projection) -> Result<(), &'static str> {
+    let s::ProjectionKind::Dereference { region, mutable } = row.kind else {
+        return Err("source field projection requires its explicit version-ten profile");
+    };
     super::operation_columns::place_write(out, row.base)?;
     id(out, row.ty.0)?;
-    id(out, row.region.0)?;
-    out.u8(u8::from(row.mutable))
+    id(out, region.0)?;
+    out.u8(u8::from(mutable))
+}
+pub(super) fn nominal_projection_write(
+    out: &mut Writer,
+    row: &s::Projection,
+) -> Result<(), &'static str> {
+    super::operation_columns::place_write(out, row.base)?;
+    id(out, row.ty.0)?;
+    match row.kind {
+        s::ProjectionKind::Dereference { region, mutable } => {
+            out.u8(0)?;
+            id(out, region.0)?;
+            out.u8(u8::from(mutable))
+        }
+        s::ProjectionKind::Field { owner, ordinal } => {
+            out.u8(1)?;
+            id(out, owner.0)?;
+            id(out, ordinal)
+        }
+    }
 }
 pub(super) fn projection_read(read: &mut Input<'_, '_>) -> Result<s::Projection, &'static str> {
-    Ok(s::Projection {
-        base: super::operation_columns::place_read(read)?,
-        ty: super::g::TypeRef(read.id()?),
-        region: s::RegionRef(read.id()?),
-        mutable: read.boolean()?,
-    })
+    let base = super::operation_columns::place_read(read)?;
+    let ty = super::g::TypeRef(read.id()?);
+    let kind = if read.profile.nominals() {
+        match read.reader.u8()? {
+            0 => s::ProjectionKind::Dereference {
+                region: s::RegionRef(read.id()?),
+                mutable: read.boolean()?,
+            },
+            1 => s::ProjectionKind::Field {
+                owner: super::DeclarationRef(read.id()?),
+                ordinal: read.id()?,
+            },
+            _ => return Err("unknown source nominal projection kind"),
+        }
+    } else {
+        s::ProjectionKind::Dereference {
+            region: s::RegionRef(read.id()?),
+            mutable: read.boolean()?,
+        }
+    };
+    Ok(s::Projection { base, ty, kind })
 }

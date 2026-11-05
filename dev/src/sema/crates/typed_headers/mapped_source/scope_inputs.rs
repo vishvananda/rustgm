@@ -27,7 +27,7 @@ impl Graph {
         let parent = match rows.header(row)? {
             Some(s::HeaderRef::Function(index)) => rows.functions[index as usize].parent,
             Some(s::HeaderRef::Trait(index)) => Some(rows.traits[index as usize].self_definition),
-            Some(s::HeaderRef::Implementation(_)) => None,
+            Some(s::HeaderRef::Implementation(_) | s::HeaderRef::Nominal(_)) => None,
             None if raw.definition.kind == s::DefinitionKind::SelfType => None,
             None => return Ok(()),
         };
@@ -42,11 +42,15 @@ impl Graph {
 
     pub(in crate::sema::crates::typed_headers) fn finish_inputs(
         &mut self,
+        nominals: Vec<Option<Arc<[Input]>>>,
         traits: Vec<Option<Arc<[Input]>>>,
         implementations: Vec<Option<Arc<[Input]>>>,
     ) -> Result<(), &'static str> {
         let rows = self.descriptor(&self.origins)?.rows();
-        if !self.trait_inputs.is_empty()
+        if !self.nominal_inputs.is_empty()
+            || rows.nominals.len() != nominals.len()
+            || nominals.iter().any(Option::is_none)
+            || !self.trait_inputs.is_empty()
             || !self.impl_inputs.is_empty()
             || rows.traits.len() != traits.len()
             || rows.implementations.len() != implementations.len()
@@ -54,6 +58,7 @@ impl Graph {
         {
             return Err("source full declaration inputs have missing or duplicate typed ownership");
         }
+        self.nominal_inputs = nominals;
         self.trait_inputs = traits;
         self.impl_inputs = implementations;
         Ok(())
@@ -80,6 +85,10 @@ impl Graph {
             .ok_or("source input declaration is outside its actual owner table")?;
         catalog.validate_declaration(id, definition, slot_bindings::kind(raw.definition.kind))?;
         let (inputs, prefix) = match rows.header(row)? {
+            Some(s::HeaderRef::Nominal(index)) => (
+                self.nominal_inputs.get(index as usize),
+                rows.nominals[index as usize].declared_inputs,
+            ),
             Some(s::HeaderRef::Trait(index)) => (
                 self.trait_inputs.get(index as usize),
                 rows.traits[index as usize].declared_inputs,

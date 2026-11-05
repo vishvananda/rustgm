@@ -62,7 +62,8 @@ fn profile_has_inventory(
         | s::Profile::Source2024ModuleCompatibility
         | s::Profile::Source2024ModuleCallables
         | s::Profile::Source2024ModuleSafety
-        | s::Profile::Source2024ModuleConversions => {
+        | s::Profile::Source2024ModuleConversions
+        | s::Profile::Source2024ModuleNominals => {
             descriptor.module_contracts().map_err(Error::unlocated)?;
         }
         s::Profile::Source2024ProvidedContracts => {
@@ -84,6 +85,7 @@ fn profile_has_complete_attributes(profile: s::Profile) -> bool {
             | s::Profile::Source2024ModuleCallables
             | s::Profile::Source2024ModuleSafety
             | s::Profile::Source2024ModuleConversions
+            | s::Profile::Source2024ModuleNominals
             | s::Profile::Source2024ProvidedContracts
     )
 }
@@ -123,6 +125,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
             .iter()
             .map(|row| row.declaration)
             .chain(rows.traits.iter().map(|row| row.declaration))
+            .chain(rows.nominals.iter().map(|row| row.declaration))
         {
             headers.charge(1)?;
             bytes = bytes.saturating_add(retained::new_map::<DefId, Header>(1));
@@ -335,7 +338,8 @@ pub(super) fn caller_tracking_absent(
         | s::Profile::Source2024ModuleCompatibility
         | s::Profile::Source2024ModuleCallables
         | s::Profile::Source2024ModuleSafety
-        | s::Profile::Source2024ModuleConversions => {
+        | s::Profile::Source2024ModuleConversions
+        | s::Profile::Source2024ModuleNominals => {
             descriptor.module_contracts()?;
         }
         _ => return Err("imported caller policy requires an implemented explicit profile"),

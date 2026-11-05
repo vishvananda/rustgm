@@ -28,6 +28,15 @@ pub(super) enum Region {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(super) enum Node {
+    Nominal {
+        declaration: s::DeclarationAddress,
+        arguments: NodeId,
+    },
+    NominalEnd,
+    NominalArgument {
+        ty: NodeId,
+        next: NodeId,
+    },
     Scalar(Scalar),
     Parameter(s::SlotRef),
     Reference {
@@ -66,6 +75,10 @@ impl NodeFacts {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(super) enum Rewrite {
     Original,
+    Nominal {
+        owner: crate::support::crates::owner_catalog::DeclarationRef,
+        arguments: NodeId,
+    },
     /// Exact original-to-public relocation, not an inferred matching arity.
     Public(crate::support::crates::owner_catalog::DeclarationRef),
     Application(s::FunctionApplicationRef),
@@ -81,6 +94,8 @@ pub(super) struct Arena {
     pub nodes: Vec<Node>,
     facts: Vec<NodeFacts>,
     pub relocations: Vec<u32>,
+    pub nominal_arguments: HashMap<NodeId, Vec<NodeId>>,
+    pub nominal_argument_bytes: usize,
     interned: HashMap<Node, NodeId>,
     pub completed: HashMap<Key, NodeId>,
     pub matched: HashSet<Pair>,
@@ -111,6 +126,8 @@ impl Arena {
             nodes: Vec::new(),
             facts: Vec::new(),
             relocations: Vec::new(),
+            nominal_arguments: HashMap::default(),
+            nominal_argument_bytes: 0,
             interned: HashMap::default(),
             completed: HashMap::default(),
             matched: HashSet::default(),
@@ -229,7 +246,15 @@ impl Arena {
     fn node_facts(&self, node: Node, work: &mut Work) -> Result<NodeFacts, &'static str> {
         work.charge(1)?;
         Ok(match node {
-            Node::Scalar(_) => NodeFacts(NodeFacts::FORMED),
+            Node::Nominal { arguments, .. } => {
+                let mut facts = self.facts_of(arguments, work)?;
+                facts.0 &= !NodeFacts::FORMED;
+                facts
+            }
+            Node::NominalEnd | Node::Scalar(_) => NodeFacts(NodeFacts::FORMED),
+            Node::NominalArgument { ty, next } => {
+                self.facts_of(ty, work)?.combine(self.facts_of(next, work)?)
+            }
             // Preserve the old parameter formation rule outside Functions.
             // A Function explicitly retains opaque parameter conditionality.
             Node::Parameter(_) => NodeFacts(NodeFacts::FORMED | NodeFacts::PARAMETER),
@@ -303,6 +328,8 @@ impl Arena {
             retained::vector(&self.nodes),
             retained::vector(&self.facts),
             retained::vector(&self.relocations),
+            retained::map(&self.nominal_arguments),
+            self.nominal_argument_bytes,
             retained::map(&self.interned),
             retained::map(&self.completed),
             retained::map(&self.templates),

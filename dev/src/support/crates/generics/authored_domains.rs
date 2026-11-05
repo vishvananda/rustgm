@@ -43,6 +43,7 @@ pub(super) fn frozen_ordinals<'rows>(
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum HeaderRef {
+    Nominal(u32),
     Trait(u32),
     Implementation(u32),
     Function(u32),
@@ -97,6 +98,7 @@ impl<'a> HeaderIndex<'a> {
         let definitions = declaration_graph::validate(rows, work)?;
         let headers = header_ledger::validate(rows, work)?;
         let scopes = ScopeIndex::new(rows, &definitions, budget.scope_base, work)?;
+        super::nominal_contracts::scopes(rows, &scopes, work)?;
         for header in &rows.traits {
             scopes.complete_slots(header.scope, work)?;
             scopes.complete_slots(header.self_definition, work)?;

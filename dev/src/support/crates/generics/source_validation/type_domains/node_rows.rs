@@ -10,6 +10,13 @@ impl Builder<'_, '_> {
         let rows = self.headers.rows();
         if node < self.result.type_count {
             match rows.types[node] {
+                s::Type::Nominal { arguments, .. } => {
+                    for argument in arguments.slice(&rows.arguments)?.iter().rev() {
+                        if let s::Argument::Type(ty) = argument {
+                            self.push_type(*ty, work)?;
+                        }
+                    }
+                }
                 s::Type::Reference { referent, .. } => self.push_type(referent, work)?,
                 s::Type::Function(signature) => {
                     self.push_type(signature.result, work)?;
@@ -74,6 +81,39 @@ impl Builder<'_, '_> {
         }
         Ok(match rows.types[node] {
             s::Type::Scalar(_) => Summary::default(),
+            s::Type::Nominal {
+                declaration,
+                arguments,
+            } => {
+                if declaration.artifact.0 != 0 {
+                    return Err(
+                        "foreign source nominal requires authenticated dependency transport",
+                    );
+                }
+                let Some(HeaderRef::Nominal(index)) =
+                    self.headers.header(declaration.declaration, work)?
+                else {
+                    return Err("source nominal has no actual nominal declaration");
+                };
+                let header = &rows.nominals[index as usize];
+                let arguments = arguments.slice(&rows.arguments)?;
+                if arguments.len()
+                    != self.headers.scopes().complete_slots(header.scope, work)? as usize
+                {
+                    return Err("source nominal changed its complete generic arity");
+                }
+                let mut result = Summary::default();
+                for argument in arguments {
+                    let child = match argument {
+                        s::Argument::Type(ty) => self.child(*ty, work)?,
+                        s::Argument::Region(region) => {
+                            region_summary(self.headers, self.binders, *region, work)?
+                        }
+                    };
+                    result = self.merge(result, child, work)?;
+                }
+                result
+            }
             s::Type::Parameter(slot) => {
                 work.charge(1)?;
                 if rows

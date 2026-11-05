@@ -15,6 +15,7 @@ pub(super) fn declaration_write(
         s::DefinitionKind::RegionParameter => 5,
         s::DefinitionKind::ValueParameter => 6,
         s::DefinitionKind::Local => 7,
+        s::DefinitionKind::Struct => 8,
     })?;
     option(out, row.definition.parent.map(|r| r.0))?;
     id(out, row.ordinal)?;
@@ -42,6 +43,7 @@ pub(super) fn declaration_read(read: &mut Input<'_, '_>) -> Result<s::Declaratio
         5 => s::DefinitionKind::RegionParameter,
         6 => s::DefinitionKind::ValueParameter,
         7 => s::DefinitionKind::Local,
+        8 if read.profile.nominals() => s::DefinitionKind::Struct,
         _ => return Err("unknown source declaration kind"),
     };
     Ok(s::Declaration {

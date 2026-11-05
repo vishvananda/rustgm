@@ -11,7 +11,14 @@ impl Checker<'_> {
                 .resolution
                 .crates
                 .as_ref()
-                .is_none_or(|imported| imported.records().next().is_none())
+                .is_none_or(|imported| {
+                    imported.records().next().is_none()
+                        && imported.dependencies().artifacts().iter().all(|artifact| {
+                            artifact
+                                .source_descriptor()
+                                .is_none_or(|descriptor| descriptor.rows().nominals.is_empty())
+                        })
+                })
         {
             return Ok(());
         }

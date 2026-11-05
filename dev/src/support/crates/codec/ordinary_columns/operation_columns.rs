@@ -5,12 +5,20 @@ use super::{
 };
 
 pub(super) fn original_write(out: &mut Writer, row: &s::Original) -> Result<(), &'static str> {
-    original_profile(out, row, false)
+    original_profile(out, row, false, false)
 }
 pub(super) fn safety_write(out: &mut Writer, row: &s::Original) -> Result<(), &'static str> {
-    original_profile(out, row, true)
+    original_profile(out, row, true, false)
 }
-fn original_profile(out: &mut Writer, row: &s::Original, safety: bool) -> Result<(), &'static str> {
+pub(super) fn nominal_write(out: &mut Writer, row: &s::Original) -> Result<(), &'static str> {
+    original_profile(out, row, true, true)
+}
+fn original_profile(
+    out: &mut Writer,
+    row: &s::Original,
+    safety: bool,
+    nominals: bool,
+) -> Result<(), &'static str> {
     for value in [row.body.0, row.declaration.0, row.result.0, row.sites] {
         id(out, value)?;
     }
@@ -22,7 +30,11 @@ fn original_profile(out: &mut Writer, row: &s::Original, safety: bool) -> Result
     write(out, &row.variables, allocations::owned_write)?;
     write(out, &row.locals, storage::local_write)?;
     write(out, &row.parameter_bindings, storage::parameter_write)?;
-    write(out, &row.projections, allocations::projection_write)?;
+    if nominals {
+        write(out, &row.projections, allocations::nominal_projection_write)?;
+    } else {
+        write(out, &row.projections, allocations::projection_write)?;
+    }
     write(out, &row.values, value_write)?;
     write(out, &row.statements, statement_write)?;
     write(out, &row.blocks, storage::block_write)?;
@@ -130,6 +142,10 @@ pub(super) fn place_read(read: &mut Input<'_, '_>) -> Result<s::Place, &'static 
 fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
     id(out, row.ty.0)?;
     match row.kind {
+        s::ValueKind::Aggregate { fields } => {
+            out.u8(8)?;
+            super::range(out, fields)
+        }
         s::ValueKind::Unit => out.u8(0),
         s::ValueKind::Scalar(bits) => {
             out.u8(6)?;
@@ -171,6 +187,9 @@ fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static str> {
     let ty = g::TypeRef(read.id()?);
     let kind = match read.reader.u8()? {
         0 => s::ValueKind::Unit,
+        8 if read.profile.nominals() => s::ValueKind::Aggregate {
+            fields: read.range()?,
+        },
         6 => {
             if !read.profile.feature_predicates() {
                 return Err("source scalar operation requires its explicit v4 ordinary profile");

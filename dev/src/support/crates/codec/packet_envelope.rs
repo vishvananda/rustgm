@@ -22,6 +22,7 @@ const COMPATIBILITY_VERSION: u16 = 6;
 const CALLABLE_VERSION: u16 = 7;
 const SAFETY_VERSION: u16 = 8;
 const CONVERSIONS_VERSION: u16 = 9;
+const NOMINALS_VERSION: u16 = 10;
 const DEFINING_RUST2024: u8 = 0;
 
 pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
@@ -41,7 +42,8 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         | Profile::Source2024ModuleCompatibility
         | Profile::Source2024ModuleCallables
         | Profile::Source2024ModuleSafety
-        | Profile::Source2024ModuleConversions => TAG,
+        | Profile::Source2024ModuleConversions
+        | Profile::Source2024ModuleNominals => TAG,
         Profile::Source2024Provided
         | Profile::Source2024ProvidedContracts
         | Profile::Source2024ProvidedCurrent => PROVIDED_TAG,
@@ -67,6 +69,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         Profile::Source2024ModuleCallables => CALLABLE_VERSION,
         Profile::Source2024ModuleSafety => SAFETY_VERSION,
         Profile::Source2024ModuleConversions => CONVERSIONS_VERSION,
+        Profile::Source2024ModuleNominals => NOMINALS_VERSION,
         Profile::Source2024ModuleAvailability => AVAILABILITY_VERSION,
         Profile::Source2024ModuleContracts => MODULE_CONTRACT_VERSION,
         Profile::Source2024FunctionContracts | Profile::Source2024ProvidedContracts => {
@@ -208,6 +211,7 @@ fn availability_version(version: u16) -> bool {
             | CALLABLE_VERSION
             | SAFETY_VERSION
             | CONVERSIONS_VERSION
+            | NOMINALS_VERSION
     )
 }
 fn publish_availability(
@@ -222,6 +226,7 @@ fn publish_availability(
         CALLABLE_VERSION => Payload::from_source_module_callables,
         SAFETY_VERSION => Payload::from_source_module_safety,
         CONVERSIONS_VERSION => Payload::from_source_module_conversions,
+        NOMINALS_VERSION => Payload::from_source_module_nominals,
         DEFINITIONS_VERSION => Payload::from_source_module_definitions,
         FEATURE_PREDICATE_VERSION => Payload::from_source_module_feature_predicates,
         AVAILABILITY_VERSION => Payload::from_source_module_availability,
@@ -248,6 +253,7 @@ fn availability_packet(
         CALLABLE_VERSION => ordinary_columns::decode_module_callables(input, base),
         SAFETY_VERSION => ordinary_columns::decode_module_safety(input, base),
         CONVERSIONS_VERSION => ordinary_columns::decode_module_conversions(input, base),
+        NOMINALS_VERSION => ordinary_columns::decode_module_nominals(input, base),
         DEFINITIONS_VERSION => ordinary_columns::decode_module_definitions(input, base),
         FEATURE_PREDICATE_VERSION => {
             ordinary_columns::decode_module_feature_predicates(input, base)
@@ -277,6 +283,7 @@ fn defining_version(input: &mut Reader<'_>, provided: bool) -> Result<u16, &'sta
                     | CALLABLE_VERSION
                     | SAFETY_VERSION
                     | CONVERSIONS_VERSION
+                    | NOMINALS_VERSION
             ))
         || input.u8()? != DEFINING_RUST2024
     {

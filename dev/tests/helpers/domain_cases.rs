@@ -74,6 +74,8 @@ pub(crate) fn raw(interface: &crates::Interface) -> Result<Raw> {
 pub(crate) fn raw_rows(view: s::ValidatedView<'_>) -> s::SourceRows {
     let c = (*view).clone();
     s::SourceRows {
+        nominals: c.nominals,
+        fields: c.fields,
         body_owners: view.body_owners().to_vec(),
         policy: c.policy,
         declarations: c.declarations,

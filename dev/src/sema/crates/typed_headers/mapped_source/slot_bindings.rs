@@ -8,6 +8,7 @@ use crate::types::{
 pub(in crate::sema::crates::typed_headers) fn kind(kind: s::DefinitionKind) -> DefKind {
     match kind {
         s::DefinitionKind::Module => DefKind::Module,
+        s::DefinitionKind::Struct => DefKind::Struct,
         s::DefinitionKind::Trait => DefKind::Trait,
         s::DefinitionKind::SelfType => DefKind::SelfType,
         s::DefinitionKind::Function => DefKind::Function,

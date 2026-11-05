@@ -5,6 +5,7 @@ use super::{Context, Declarations, Key, Kind, Stage, TypeId, g, retained, s, sig
 enum Task {
     Enter(Key, Context),
     Reference(Key, Context),
+    Nominal(Key, Context),
     Function(Key, Context, signatures::Parts),
 }
 
@@ -28,6 +29,7 @@ impl Stage {
             let (key, context) = match task {
                 Task::Enter(key, context)
                 | Task::Reference(key, context)
+                | Task::Nominal(key, context)
                 | Task::Function(key, context, _) => (key, context),
             };
             if self.graph.types.contains_key(&key) {
@@ -46,13 +48,29 @@ impl Stage {
                         self.type_work(&mut pending, Task::Enter(child, context))?;
                         continue;
                     }
+                    Kind::Adt(_, arguments) if self.nominal_transport() => {
+                        self.type_work(&mut pending, Task::Nominal(key, context))?;
+                        let arguments = facts
+                            .types
+                            .arguments(arguments)
+                            .ok_or("source nominal argument list is unknown")?;
+                        for argument in arguments {
+                            if let crate::types::arguments::Argument::Type(ty) = argument {
+                                let child = self.type_key(facts, ty, context)?;
+                                self.type_work(&mut pending, Task::Enter(child, context))?;
+                            }
+                        }
+                        continue;
+                    }
                     Kind::Function { .. } => {
                         self.enter_function(facts, key, context, &mut pending)?;
                         continue;
                     }
                     _ => self.type_row(facts, key, kind, context)?,
                 },
-                Task::Reference(_, _) => self.type_row(facts, key, kind, context)?,
+                Task::Reference(_, _) | Task::Nominal(_, _) => {
+                    self.type_row(facts, key, kind, context)?
+                }
                 Task::Function(_, _, parts) => s::Type::Function(self.signature_roots(
                     facts,
                     parts,
@@ -135,6 +153,10 @@ impl Stage {
         context: Context,
     ) -> Result<s::Type, &'static str> {
         Ok(match kind {
+            Kind::Adt(item, arguments) if self.nominal_transport() => s::Type::Nominal {
+                declaration: self.address(crate::resolve::model::DefId(item.0))?,
+                arguments: self.arguments(facts, arguments, context)?,
+            },
             Kind::Parameter(parameter) => s::Type::Parameter(
                 *self
                     .graph

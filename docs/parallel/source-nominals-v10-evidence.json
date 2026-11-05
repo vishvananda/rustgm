@@ -1,0 +1,155 @@
+{
+  "schema": 1,
+  "baseline_commit": "63e06168c",
+  "profile": "Source2024ModuleNominals/tag10/version10",
+  "source_map": {
+    "path": "obj/parallel/source-transport/check26/source-hashes.json",
+    "sha256": "959d4ad8e7b085c73d766860a08a06d25240f64d810ea089b85556035a6a8f3d"
+  },
+  "candidate_cli": {
+    "bytes": 89909432,
+    "sha256": "2a479c54998f40ee7eb6a5d49f323aecedffd1119ebdca8fdcef66944641645c"
+  },
+  "fixture_manifest": {
+    "path": "pa29/tests/source-nominal-outcomes.json",
+    "sha256": "390c6c6c61b1eb19430eea39cbeafd653d596804e8c5b3792240422dda9fca7a"
+  },
+  "source_provider": {
+    "bytes": 2251,
+    "sha256": "91ea73f6be4a07ed7c4138ecc3287ad67465d4f16730385252c7d350fe6982a0"
+  },
+  "independent": {
+    "path": "obj/parallel/source-transport/reference-v4/receipt.json",
+    "sha256": "75b95816d7bda8003d264dadea84bef094f581185b9e037ce3ef157016cef8b9",
+    "state": "passed",
+    "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "native_exit": 7
+  },
+  "qualification": {
+    "public_receipt": {
+      "path": "obj/parallel/source-transport/check26/receipt.json",
+      "sha256": "22fca919dd60411835bce720617726e9a020c93401c611c0a7948900f8b09e53"
+    },
+    "artifact_fingerprints": {
+      "path": "obj/parallel/source-transport/check26/artifact-fingerprints.json",
+      "sha256": "abc76680501a04a51cb00a7dfbcb72f4d306315ef2ddeadb582c265068fd4504"
+    },
+    "harness": {
+      "path": "obj/parallel/source-transport/check25/receipt.json",
+      "sha256": "986ddc9c42ac24990a2bf35837b10edc570840f6241ac1b52978eb7aa0a8e053",
+      "python_tests": 279,
+      "state": "passed"
+    },
+    "legacy_codec_tests": 43,
+    "native_exit": 7
+  },
+  "private": {
+    "state": "execution_pending",
+    "reason": "normal300s bounded fastcheck stopped first complete strict harness build before execution; no diagnostics after test-only fixes",
+    "path": "obj/qualification/fast/1793842952671963872/receipt.json",
+    "sha256": "7df3ee9e58265bd213e08db485abf037ef1f7b9648915710364e7bae9b339675",
+    "exact_cases": [
+      "sema::members::transaction_tests::external_member_batches_reject_failure_duplicate_owner_stale_and_foreign_destinations",
+      "sema::members::transaction_tests::external_shape_batches_require_paid_unique_current_destination_frontiers",
+      "support::crates::generics::source::nominal_contracts::tests::nominal_rows_reject_foreign_stale_and_retyped_original_contracts",
+      "support::crates::codec::ordinary_columns::contract_columns::tests::from_tag_requires_version_nine_without_changing_legacy_roles",
+      "support::crates::codec::ordinary_columns::contract_columns::tests::older_role_bytes_are_identical_in_the_conversion_encoder"
+    ]
+  },
+  "performance": {
+    "path": "obj/parallel/source-transport/performance-v1/receipt.json",
+    "sha256": "f0c27d6649ddc65c19301b8c65bc5669a1f75dcb5885c697786b422f439ffafe",
+    "plan_sha256": "b78776dbd6b8ea02017cb6415446b01ff06f3a9806742f88788e50641febb893",
+    "raw_observations_sha256": "b51ddcfecaeb108a290ac8d3708833dded7f3ce06cca49b142091cf7d6feb143",
+    "groups_sha256": "f482b7fda64202729fb3676c6ce022f7c2ae82350b67ef871b412188dfc228dd",
+    "baseline_cli": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/required-rpit-v1/cli/992476748c08eb2b153b64e2489e5a5d7013ad302f1e08fe76b9e208f17a531a/rustgm",
+      "sha256": "992476748c08eb2b153b64e2489e5a5d7013ad302f1e08fe76b9e208f17a531a"
+    },
+    "candidate_cli": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/performance-v1/candidate/rustgm",
+      "sha256": "2a479c54998f40ee7eb6a5d49f323aecedffd1119ebdca8fdcef66944641645c"
+    },
+    "ordinary": {
+      "scalar": {
+        "aa_ratios": [
+          0.8775889146669433,
+          0.9792183253286433
+        ],
+        "abba_ratios": [
+          1.0052191182380272,
+          0.98287175767942,
+          0.9299547391737064
+        ],
+        "median_B_over_A": 0.98287175767942,
+        "output_sha256": "76a305d4c9de03e52e5128d6129382490188efbbaaf5ac54f45a0f1d05f34755"
+      },
+      "record": {
+        "aa_ratios": [
+          0.8785465348842634,
+          1.0284992369000228
+        ],
+        "abba_ratios": [
+          1.098289988824457,
+          0.9756342917576695,
+          0.9474669953323468
+        ],
+        "median_B_over_A": 0.9756342917576695,
+        "output_sha256": "4aca8d558f781f7bb66202ce457fa51ad0276be5815bf90741254fa07dda96ca"
+      }
+    },
+    "wide": {
+      "8": {
+        "provider": [
+          24139241,
+          24481567,
+          25435341
+        ],
+        "client": [
+          45250387,
+          47357094,
+          45887600
+        ]
+      },
+      "32": {
+        "provider": [
+          36775993,
+          40432431,
+          50968752
+        ],
+        "client": [
+          97845199,
+          100977541,
+          93603752
+        ]
+      },
+      "128": {
+        "provider": [
+          129066680,
+          191059836,
+          127577466
+        ],
+        "client": [
+          390527638,
+          351761375,
+          381333600
+        ]
+      }
+    },
+    "interpretation": "exact ordinary output equality; A/A noise precludes speedup claim; candidate wide controls exercise distinct field-formal substitutions, not native backend scaling"
+  },
+  "backend": {
+    "changed": false,
+    "lock_sha256": "6d300e6addfcd7050afef7940e8511f946f8113ad91e82901ab3f499c61757aa",
+    "core_commit": "905bd7e4412a2d77d88694fe6abc7f3e1c27bce1",
+    "object_commit": "3438f5aea24d8fcc9a0113316f7e27c890cd5ac6"
+  },
+  "remaining": [
+    "unit/tuple/enum/union and richer representation/field annotation profiles",
+    "custom Drop/Pin/fundamental source policy and actual Pin role",
+    "broader generic lifetime/default/const schemas",
+    "regular foreign-generic nominal consumer public re-export",
+    "complete original core artifact",
+    "five exact private cases require CI execution"
+  ]
+}

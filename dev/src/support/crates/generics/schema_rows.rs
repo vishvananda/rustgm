@@ -9,6 +9,8 @@ mod bodies;
 mod descriptor;
 #[path = "relation_inputs.rs"]
 mod inputs;
+#[path = "record_contracts.rs"]
+mod nominal_contracts;
 #[path = "slot_domains.rs"]
 mod scopes;
 #[path = "authored_domains.rs"]
@@ -157,6 +159,10 @@ pub enum Argument {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Type {
+    Nominal {
+        declaration: DeclarationAddress,
+        arguments: Range,
+    },
     Scalar(Scalar),
     Parameter(SlotRef),
     Reference {
@@ -344,7 +350,29 @@ pub struct RoleBinding {
 }
 /// Raw, unpublished tables. No artifact decoder/encoder accepts these yet.
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct NominalHeader {
+    pub contract: HeaderContract,
+    pub declaration: DeclarationRef,
+    pub scope: DeclarationRef,
+    pub self_type: TypeRef,
+    pub fields: Range,
+    pub inputs: Range,
+    pub declared_inputs: u32,
+    pub repr: crate::support::crates::RecordRepr,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct NominalField {
+    pub owner: DeclarationRef,
+    pub ordinal: u32,
+    pub name: String,
+    pub ty: TypeRef,
+    pub visibility: ModuleVisibility,
+    pub site: u32,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Rows {
+    pub nominals: Vec<NominalHeader>,
+    pub fields: Vec<NominalField>,
     pub policy: Policy,
     pub declarations: Vec<Declaration>,
     pub body_owners: Vec<BodyOwner>,

@@ -70,6 +70,7 @@ pub(super) fn build(
         ty: view.ty(value.ty, &mut work.steps)?,
         kind: match value.kind {
             s::ValueKind::Unit => Rvalue::Unit,
+            s::ValueKind::Aggregate {fields} => Rvalue::Aggregate {variant:Some(view.nominal_variant(value.ty,&mut work.steps)?),fields:crate::body::ir::ValueList {start:fields.start,end:fields.end}},
             s::ValueKind::Scalar(_) => encoded_literals::append(view, *value, &mut body)?,
             s::ValueKind::Read(place) => Rvalue::Read(regional_records::place(view, place)?),
             s::ValueKind::Borrow(place) => regional_records::borrow(view, place)?,
@@ -351,6 +352,17 @@ fn ports(view: &SourceOriginal<'_>, body: &Body, steps: &mut usize) -> Result<()
         *steps = steps.saturating_add(1);
         let same = match (actual.kind, record.kind) {
             (Rvalue::Unit, s::ValueKind::Unit) => true,
+            (
+                Rvalue::Aggregate {
+                    variant: Some(actual),
+                    fields,
+                },
+                s::ValueKind::Aggregate { fields: raw },
+            ) => {
+                actual == view.nominal_variant(record.ty, steps)?
+                    && fields.start == raw.start
+                    && fields.end == raw.end
+            }
             (Rvalue::Scalar(id), s::ValueKind::Scalar(_)) => {
                 encoded_literals::same(view, *record, id, body, &mut scalar)?
             }

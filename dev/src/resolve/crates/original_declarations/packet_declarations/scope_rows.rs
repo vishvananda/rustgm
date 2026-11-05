@@ -63,13 +63,16 @@ fn owners_mode(
                 || matches!(
                     row.definition.kind,
                     s::DefinitionKind::Trait
+                        | s::DefinitionKind::Struct
                         | s::DefinitionKind::SelfType
                         | s::DefinitionKind::Function
                 ) {
                 let scope = resolver.new_scope(Some(parent), ModuleId(0), true)?;
                 resolver.facts.scopes[scope.0 as usize].associated = matches!(
                     row.definition.kind,
-                    s::DefinitionKind::Trait | s::DefinitionKind::SelfType
+                    s::DefinitionKind::Trait
+                        | s::DefinitionKind::SelfType
+                        | s::DefinitionKind::Struct
                 );
                 scope
             } else {
@@ -195,7 +198,7 @@ fn assign_mode(
         actual.members = if modules && row.definition.kind == s::DefinitionKind::Module
             || matches!(
                 row.definition.kind,
-                s::DefinitionKind::Trait | s::DefinitionKind::SelfType
+                s::DefinitionKind::Trait | s::DefinitionKind::SelfType | s::DefinitionKind::Struct
             ) {
             Some(owners[index])
         } else {

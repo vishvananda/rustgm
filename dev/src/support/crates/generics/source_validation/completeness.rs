@@ -56,6 +56,7 @@ pub(super) fn validate(
             work,
         )?;
     }
+    nominal_inputs(rows, &mut headers, &mut clauses, work)?;
     for (index, header) in rows.functions.iter().enumerate() {
         insert(
             rows,
@@ -82,7 +83,7 @@ pub(super) fn validate(
         work.charge(1)?;
         if matches!(
             row.definition.kind,
-            DefinitionKind::Function | DefinitionKind::Trait
+            DefinitionKind::Function | DefinitionKind::Trait | DefinitionKind::Struct
         ) && headers[index].is_none()
         {
             return Err("source declaration has no complete typed header");
@@ -236,4 +237,25 @@ fn inputs(
 }
 fn ordinal(index: usize) -> Result<u32, &'static str> {
     u32::try_from(index).map_err(|_| "source header ordinal overflow")
+}
+
+fn nominal_inputs(
+    rows: &SourceRows,
+    headers: &mut [Option<HeaderRef>],
+    clauses: &mut [bool],
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    super::super::nominal_contracts::headers(rows, headers, work)?;
+    for header in &rows.nominals {
+        inputs(
+            rows,
+            header.declaration,
+            header.inputs,
+            header.declared_inputs,
+            None,
+            clauses,
+            work,
+        )?;
+    }
+    Ok(())
 }

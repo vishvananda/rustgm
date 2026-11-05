@@ -161,6 +161,21 @@ pub(super) fn finish(
     environment: Arc<crate::types::parameters::environment::Environment>,
 ) -> Result<Original, Error> {
     let source = body.source;
+    // Imported templates have completed declarations but their exact generic
+    // nominal applications still need the ordinary substituted-field demand.
+    // This structural preparation supplies no formation or body permission.
+    for ty in std::iter::once(body.result)
+        .chain(body.locals.iter().map(|local| local.ty))
+        .chain(body.values.iter().map(|value| value.ty))
+        .chain(body.projections.iter().map(|projection| projection.ty))
+    {
+        if matches!(facts.types.kind(ty), Some(crate::types::Kind::Adt(..))) {
+            facts
+                .aggregates
+                .prepare(&mut facts.types, ty)
+                .map_err(|error| report.body_error(source, error))?;
+        }
+    }
     let needed = crate::types::destruction::NeedsDrop::new(
         facts.destructors.implementations().iter().map(|i| i.item),
     );

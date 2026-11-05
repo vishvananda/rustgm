@@ -1,4 +1,10 @@
 //! Nominal field identities, source provenance and constructor selection.
+#[path = "prepared_members.rs"]
+mod prepared;
+#[cfg(test)]
+#[path = "../../tests/invariants/prepared_transactions.rs"]
+mod transaction_tests;
+pub(crate) use prepared::Prepared as PreparedMembers;
 #[cfg(test)]
 #[path = "../../tests/invariants/provenance_members.rs"]
 mod tests;
@@ -103,6 +109,7 @@ type ScopedNames = HashMap<ScopedKey, FieldId>;
 
 #[derive(Default)]
 pub struct Members {
+    import_identity: Option<std::sync::Arc<()>>,
     pub names: Names,
     pub constructors: HashMap<DefId, Constructor>,
     pub variants: Vec<Variant>,
@@ -202,6 +209,10 @@ impl Members {
             .any(|field| !matches!(field.name, Name::Named(_)))
         {
             return Err("external record members require named fields");
+        }
+        let mut names = HashSet::default();
+        if fields.iter().any(|field| !names.insert(field.name)) {
+            return Err("duplicate external record field");
         }
         self.publish(owner, 0, origin, Shape::Record, fields, None)
     }

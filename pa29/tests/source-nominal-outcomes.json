@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "provider": "spec/source-nominals/provider.rs",
+  "provider_sha256": "91ea73f6be4a07ed7c4138ecc3287ad67465d4f16730385252c7d350fe6982a0",
+  "expectation_frozen_before_candidate": true,
+  "cases": [
+    {
+      "file": "spec/source-nominals/client.rs",
+      "accepted": true,
+      "native_exit": 7,
+      "sha256": "6357160de0be4e75ecbae739ebcd5f37fe0c21757fd1d59a642a7a5fd983a4dc"
+    },
+    {
+      "file": "spec/source-nominals/moved.rs",
+      "accepted": false,
+      "native_exit": null,
+      "sha256": "62492ed26b989e6774a929cd994f5a1cee1ddb111f291c75610d43abf53c98e7"
+    },
+    {
+      "file": "spec/source-nominals/private.rs",
+      "accepted": false,
+      "native_exit": null,
+      "sha256": "543e09e47d43dada1f4828c5d962635611468ef3ec2552aad3c52f14b58c77f3"
+    },
+    {
+      "file": "spec/source-nominals/wrong.rs",
+      "accepted": false,
+      "native_exit": null,
+      "sha256": "760f62b3a90d9619462addc17b694b90d2f3802ac2f9f46040f4ec226bc90fc1"
+    },
+    {
+      "file": "spec/source-nominals/escape.rs",
+      "accepted": false,
+      "native_exit": null,
+      "sha256": "852ce68f9e4a2c59537953e9ac76d7cc0d91d110140b54d3a10660829c351ceb"
+    },
+    {
+      "file": "spec/source-nominals/wrong-owner.rs",
+      "accepted": false,
+      "native_exit": null,
+      "sha256": "82ebe3837bdbf1c3c542f46dea03daab8bd7a7d566729499cfb7080fe932b9f9",
+      "required_rustc_error": "E0308"
+    },
+    {
+      "file": "spec/source-nominals/escape-body.rs",
+      "accepted": false,
+      "native_exit": null,
+      "sha256": "cc9df601a091fe74c29b7ba92093350e67174be5b4c8eb773a3588511aae7add",
+      "required_rustc_error": "E0597"
+    }
+  ],
+  "remaining": [
+    "enum/union/tuple shapes",
+    "source Pin role",
+    "Drop policy and destructor method transport",
+    "early generic lifetime applications",
+    "original core artifact"
+  ],
+  "refreeze_reason": "Independent v1 positive required actual Freeze; copied complete existing Pin foundation declaration before any candidate source outcome.",
+  "additional_expectation": "Distinct same-layout nominal owners reject; frozen before candidate execution of this new client.",
+  "additional_lifetime_expectation": "Original public escape fixture remains retained; candidate hits preexisting regular export boundary there. New scalar-export body-local loan control frozen before candidate observation must independently reject E0597 and candidate must reach lifetime semantics."
+}

@@ -170,6 +170,16 @@ impl ModuleContractColumns {
         let result = Self { rows: raw, index };
         result.namespace(rows, work)?;
         result.domains(rows, headers, work)?;
+        for field in &rows.fields {
+            work.charge(1)?;
+            if let ModuleVisibility::Within(module) = field.visibility
+                && !result
+                    .index
+                    .within(result.index.module(field.owner)?, module)?
+            {
+                return Err("source field visibility is not an actual ancestor of its owner");
+            }
+        }
         Ok((result, bytes, bytes.saturating_add(scratch)))
     }
     pub(super) const fn view(&self) -> ModuleContractView<'_> {
@@ -231,7 +241,10 @@ impl ModuleContractColumns {
             work.charge(1)?;
             if matches!(
                 row.definition.kind,
-                s::DefinitionKind::Module | s::DefinitionKind::Trait | s::DefinitionKind::Function
+                s::DefinitionKind::Module
+                    | s::DefinitionKind::Trait
+                    | s::DefinitionKind::Struct
+                    | s::DefinitionKind::Function
             ) && row.definition.parent.is_some_and(|p| {
                 rows.declarations[p.0 as usize].definition.kind == s::DefinitionKind::Module
             }) && !direct[index]
@@ -253,7 +266,9 @@ impl ModuleContractColumns {
             .get(entry.target.declaration.0 as usize)
             .ok_or("module target declaration is absent")?;
         let expected = match target.definition.kind {
-            s::DefinitionKind::Module | s::DefinitionKind::Trait => Namespace::Type,
+            s::DefinitionKind::Module | s::DefinitionKind::Trait | s::DefinitionKind::Struct => {
+                Namespace::Type
+            }
             s::DefinitionKind::Function => Namespace::Value,
             _ => return Err("module binding target requires a wider declaration profile"),
         };

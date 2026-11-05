@@ -61,7 +61,7 @@ pub(in crate::sema::crates::typed_headers) trait Mapping<'rows>:
                 let raw = &rows.implementations[index as usize];
                 (raw.self_type, raw.region_captures, raw.region_bounds)
             }
-            s::HeaderRef::Function(_) => {
+            s::HeaderRef::Function(_) | s::HeaderRef::Nominal(_) => {
                 return Err("imported associated inventory lacks its actual owner header");
             }
         };
@@ -307,7 +307,7 @@ impl<'a> Mapping<'a> for Ordinary<'a> {
                 }
                 Ok(MemberRows::Declared(&[]))
             }
-            s::HeaderRef::Function(_) => {
+            s::HeaderRef::Function(_) | s::HeaderRef::Nominal(_) => {
                 Err("imported associated inventory lacks its actual owner header")
             }
         }

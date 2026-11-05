@@ -13,6 +13,8 @@ mod exposed_bindings;
 mod implementation_headers;
 mod modifier_rows;
 mod namespace_emission;
+#[path = "authored_export/record_headers.rs"]
+mod nominal_headers;
 #[path = "authored_export/versioned_sources.rs"]
 mod non_type_sources;
 mod payments;
@@ -64,6 +66,7 @@ enum ExportMode {
     Callables,
     Safety,
     Conversions,
+    Nominals,
 }
 
 impl ExportMode {
@@ -76,6 +79,7 @@ impl ExportMode {
                 | Self::Callables
                 | Self::Safety
                 | Self::Conversions
+                | Self::Nominals
         )
     }
     fn availability(self) -> bool {
@@ -88,6 +92,7 @@ impl ExportMode {
                 | Self::Callables
                 | Self::Safety
                 | Self::Conversions
+                | Self::Nominals
         )
     }
     fn module_contracts(self) -> bool {
@@ -101,6 +106,7 @@ impl ExportMode {
                 | Self::Callables
                 | Self::Safety
                 | Self::Conversions
+                | Self::Nominals
         )
     }
     fn exact(self) -> bool {
@@ -111,6 +117,7 @@ impl ExportMode {
                 | Self::Callables
                 | Self::Safety
                 | Self::Conversions
+                | Self::Nominals
         )
     }
 }
@@ -125,8 +132,12 @@ pub(crate) struct Stage {
     inputs: contract_rows::Index,
     functions: authored_functions::Index,
     role_installation_steps: usize,
+    nominal_transport: bool,
 }
 impl Stage {
+    pub(crate) const fn nominal_transport(&self) -> bool {
+        self.nominal_transport
+    }
     pub(crate) fn callable_effects(&self) -> bool {
         self.functions.callable_effects
     }
@@ -326,65 +337,20 @@ impl Stage {
     ) -> Result<Self, &'static str> {
         Self::begin_mode(report, facts, identity, ExportMode::Conversions)
     }
+    pub(crate) fn begin_module_nominals(
+        report: &Report,
+        facts: &mut Declarations,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        Self::begin_mode(report, facts, identity, ExportMode::Nominals)
+    }
     fn begin_mode(
         report: &Report,
         facts: &mut Declarations,
         identity: &CrateIdentity,
         mode: ExportMode,
     ) -> Result<Self, &'static str> {
-        facts.require_declaration_policy_transport(report)?;
-        facts.require_incoherent_target_transport(report)?;
-        facts.require_dispatch_policy_transport(report)?;
-        facts.require_optimization_transport(report)?;
-        crate::sema::coherence_policy::require_transport(facts)?;
-        facts.aggregates.require_simd_limit_transport()?;
-        if let Some(producer) = report.lint_producer() {
-            producer
-                .require_deprecation_transport(&report.package)
-                .map_err(|error| error.message)?;
-            producer
-                .require_impl_annotation_transport(&report.package, mode.feature_predicates())
-                .map_err(|error| error.message)?;
-        }
-        let provider = report
-            .package
-            .source_core()
-            .ok_or("source export requires its actual own-provider policy")?;
-        if provider.current != *identity || provider.provider != *identity {
-            return Err("source export identity differs from its actual provider");
-        }
-        if facts.members.has_contextual_fields() {
-            return Err("contextual aggregate field metadata is not implemented");
-        }
-        if report.package.library_policy().is_some() && !mode.availability() {
-            return Err("source stability contracts are outside this metadata profile");
-        }
-        if mode.availability() {
-            let library = report.package.library_policy();
-            let complete = if mode == ExportMode::Conversions {
-                library.is_none_or(|library| library.inventory().is_some())
-            } else {
-                library
-                    .and_then(crate::resolve::stability::Library::staged_inventory)
-                    .is_some()
-            };
-            if !complete {
-                return Err(
-                    "source availability export requires its completed actual library policy",
-                );
-            }
-        }
-        if report.resolution.bindings.has_contextual_items()
-            || report.package.marks.context_count() != 1
-        {
-            return Err("source macro/semantic-name provenance metadata is not implemented");
-        }
-        facts
-            .source_bindings
-            .as_deref()
-            .ok_or("source export has no actual role catalog")?
-            .require_provider_report(report)?;
-        authored_traits::require_role_transport(facts, mode == ExportMode::Conversions)?;
+        require_export_mode(report, facts, identity, mode)?;
         let unit = report
             .package
             .units
@@ -403,6 +369,7 @@ impl Stage {
             graph: canonical_nodes::Graph::default(),
             inputs: contract_rows::Index::default(),
             functions: authored_functions::Index::default(),
+            nominal_transport: mode == ExportMode::Nominals,
             role_installation_steps: facts
                 .source_bindings
                 .as_deref()
@@ -415,16 +382,23 @@ impl Stage {
             stage.inputs.selected_methods = Some(Box::default());
         }
         stage.functions.exact = mode.exact();
-        stage.functions.conversions = mode == ExportMode::Conversions;
+        stage.functions.conversions =
+            matches!(mode, ExportMode::Conversions | ExportMode::Nominals);
         stage.functions.callable_effects = matches!(
             mode,
-            ExportMode::Callables | ExportMode::Safety | ExportMode::Conversions
+            ExportMode::Callables
+                | ExportMode::Safety
+                | ExportMode::Conversions
+                | ExportMode::Nominals
         );
         stage.reserve(count.saturating_mul(size_of::<Option<DeclarationRef>>()))?;
         stage.definitions.resize(count, None);
         stage.declarations(report, facts, mode)?;
         stage.scopes(report, facts)?;
         stage.traits(report, facts, mode != ExportMode::Legacy)?;
+        if stage.nominal_transport {
+            stage.nominals(report, facts)?;
+        }
         stage.functions(report, facts)?;
         stage.implementations(facts)?;
         stage.install_private_symbols(facts, identity)?;
@@ -496,11 +470,18 @@ impl Stage {
             self.charge(1)?;
             let id =
                 DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
-            if mode == ExportMode::Conversions && definition.kind == DefKind::TypeAlias {
+            if matches!(mode, ExportMode::Conversions | ExportMode::Nominals)
+                && definition.kind == DefKind::TypeAlias
+            {
                 self.private_alias(report, facts, id)?;
                 continue;
             }
-            let Some(kind) = kind(definition.kind, definition.namespace)? else {
+            let emitted = if definition.kind == DefKind::Struct && mode == ExportMode::Nominals {
+                Some(s::DefinitionKind::Struct)
+            } else {
+                kind(definition.kind, definition.namespace)?
+            };
+            let Some(kind) = emitted else {
                 continue;
             };
             features.observe(report, facts, id, self)?;
@@ -740,6 +721,8 @@ fn find_owner(
 
 fn rows(edition: crate::support::edition::Edition) -> s::SourceRows {
     s::SourceRows {
+        nominals: Vec::new(),
+        fields: Vec::new(),
         policy: s::Policy {
             edition,
             provider: s::ArtifactRef(0),
@@ -772,4 +755,67 @@ fn rows(edition: crate::support::edition::Edition) -> s::SourceRows {
         body_units: Vec::new(),
         exact_callables: Vec::new(),
     }
+}
+
+fn require_export_mode(
+    report: &Report,
+    facts: &Declarations,
+    identity: &CrateIdentity,
+    mode: ExportMode,
+) -> Result<(), &'static str> {
+    facts.require_declaration_policy_transport(report)?;
+    facts.require_incoherent_target_transport(report)?;
+    facts.require_dispatch_policy_transport(report)?;
+    facts.require_optimization_transport(report)?;
+    crate::sema::coherence_policy::require_transport(facts)?;
+    facts.aggregates.require_simd_limit_transport()?;
+    if let Some(producer) = report.lint_producer() {
+        producer
+            .require_deprecation_transport(&report.package)
+            .map_err(|error| error.message)?;
+        producer
+            .require_impl_annotation_transport(&report.package, mode.feature_predicates())
+            .map_err(|error| error.message)?;
+    }
+    let provider = report
+        .package
+        .source_core()
+        .ok_or("source export requires its actual own-provider policy")?;
+    if provider.current != *identity || provider.provider != *identity {
+        return Err("source export identity differs from its actual provider");
+    }
+    if facts.members.has_contextual_fields() {
+        return Err("contextual aggregate field metadata is not implemented");
+    }
+    if report.package.library_policy().is_some() && !mode.availability() {
+        return Err("source stability contracts are outside this metadata profile");
+    }
+    if mode.availability() {
+        let library = report.package.library_policy();
+        let complete = if matches!(mode, ExportMode::Conversions | ExportMode::Nominals) {
+            library.is_none_or(|library| library.inventory().is_some())
+        } else {
+            library
+                .and_then(crate::resolve::stability::Library::staged_inventory)
+                .is_some()
+        };
+        if !complete {
+            return Err("source availability export requires its completed actual library policy");
+        }
+    }
+    if report.resolution.bindings.has_contextual_items()
+        || report.package.marks.context_count() != 1
+    {
+        return Err("source macro/semantic-name provenance metadata is not implemented");
+    }
+    facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source export has no actual role catalog")?
+        .require_provider_report(report)?;
+    authored_traits::require_role_transport(
+        facts,
+        matches!(mode, ExportMode::Conversions | ExportMode::Nominals),
+    )?;
+    Ok(())
 }

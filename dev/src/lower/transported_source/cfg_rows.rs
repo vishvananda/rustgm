@@ -41,10 +41,27 @@ pub(super) fn emit(
     for projection in &body.projections {
         stage.charge(1)?;
         stage.prepare_type_arena(facts, projection.ty)?;
-        let ir::ProjectionKind::Dereference { region, mutable } = projection.kind else {
-            return Err(
-                "source projection transport supports retained reference dereferences only",
-            );
+        let kind = match projection.kind {
+            ir::ProjectionKind::Dereference { region, mutable } => s::ProjectionKind::Dereference {
+                region: stage.region(region, context)?,
+                mutable,
+            },
+            ir::ProjectionKind::Field(crate::sema::members::Selection::Nominal(field))
+                if stage.nominal_transport() =>
+            {
+                let identity = facts
+                    .members
+                    .identity(field)
+                    .ok_or("source projection lost its actual nominal field identity")?;
+                if identity.variant != 0 {
+                    return Err("source nominal field requires its wider variant profile");
+                }
+                s::ProjectionKind::Field {
+                    owner: stage.declaration(identity.owner)?,
+                    ordinal: identity.field,
+                }
+            }
+            _ => return Err("source projection transport requires its wider explicit contract"),
         };
         stage.reserve(4 * size_of::<s::Projection>())?;
         raw.projections.push(s::Projection {
@@ -55,8 +72,7 @@ pub(super) fn emit(
                 base => place(base)?,
             },
             ty: stage.ty(facts, projection.ty, context)?,
-            region: stage.region(region, context)?,
-            mutable,
+            kind,
         });
     }
     value_rows::emit(stage, facts, body, context, &mut raw, sites)?;

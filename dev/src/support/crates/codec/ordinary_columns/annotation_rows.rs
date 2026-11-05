@@ -16,7 +16,7 @@ pub(super) fn decode(read: &mut Input<'_, '_>) -> Result<s::HeaderAttributeColum
         traits: read.list(MAX_FUNCTIONS, 10, row_read)?,
     })
 }
-fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(), &'static str> {
+pub(super) fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(), &'static str> {
     id(out, row.declaration.0)?;
     id(out, row.declaration_site)?;
     out.u8(u8::from(row.must_use.is_some()))?;
@@ -42,7 +42,7 @@ fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(), &'static s
     }
     Ok(())
 }
-fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'static str> {
+pub(super) fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'static str> {
     Ok(s::HeaderContract {
         declaration: DeclarationRef(read.id()?),
         declaration_site: read.id()?,

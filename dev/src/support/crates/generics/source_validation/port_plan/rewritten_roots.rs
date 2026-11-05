@@ -8,6 +8,7 @@ use super::{
 #[derive(Clone, Copy)]
 enum Recipe {
     Leaf(Node),
+    Existing(NodeId),
     Alias(Key),
     Reference {
         mutable: bool,
@@ -15,6 +16,7 @@ enum Recipe {
         child: Key,
     },
     Function(g::Signature),
+    Nominal(s::DeclarationAddress, g::Range),
 }
 #[derive(Clone, Copy)]
 enum Task {
@@ -60,15 +62,19 @@ impl Arena {
                         Recipe::Alias(child) | Recipe::Reference { child, .. } => {
                             self.push(pending, Task::Enter(child), work)?;
                         }
+                        Recipe::Nominal(_, arguments) => {
+                            self.nominal_children(domains, key, arguments, pending, work)?;
+                        }
                         Recipe::Function(signature) => {
                             self.function_children(domains, key, signature, pending, work)?;
                         }
-                        Recipe::Leaf(_) => {}
+                        Recipe::Leaf(_) | Recipe::Existing(_) => {}
                     }
                 }
                 Task::Finish(key, recipe) => {
                     let node = match recipe {
                         Recipe::Leaf(node) => self.intern(node, work)?,
+                        Recipe::Existing(node) => node,
                         Recipe::Alias(child) => self.child(child, work)?,
                         Recipe::Reference {
                             mutable,
@@ -85,6 +91,9 @@ impl Arena {
                                 work,
                             )?
                         }
+                        Recipe::Nominal(declaration, arguments) => {
+                            self.finish_nominal(domains, key, declaration, arguments, work)?
+                        }
                         Recipe::Function(signature) => {
                             self.finish_function(domains, key, signature, work)?
                         }
@@ -95,8 +104,52 @@ impl Arena {
         }
         self.child(root, work)
     }
+    fn nominal_children(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        key: Key,
+        arguments: g::Range,
+        pending: &mut Vec<Task>,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        for argument in arguments
+            .slice(&domains.headers.rows().arguments)?
+            .iter()
+            .rev()
+        {
+            let child = nominal_child(domains, key, *argument, work)?;
+            self.push(pending, Task::Enter(child), work)?;
+        }
+        Ok(())
+    }
+    fn finish_nominal(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        key: Key,
+        declaration: s::DeclarationAddress,
+        arguments: g::Range,
+        work: &mut Work,
+    ) -> Result<NodeId, &'static str> {
+        let mut tail = self.intern(Node::NominalEnd, work)?;
+        for argument in arguments
+            .slice(&domains.headers.rows().arguments)?
+            .iter()
+            .rev()
+        {
+            let child = nominal_child(domains, key, *argument, work)?;
+            let ty = self.child(child, work)?;
+            tail = self.intern(Node::NominalArgument { ty, next: tail }, work)?;
+        }
+        self.intern(
+            Node::Nominal {
+                declaration,
+                arguments: tail,
+            },
+            work,
+        )
+    }
     fn recipe(
-        &self,
+        &mut self,
         domains: &DomainIndex<'_, '_>,
         key: Key,
         work: &mut Work,
@@ -110,7 +163,21 @@ impl Arena {
                 .get(key.root.0 as usize)
                 .ok_or("source input type root is unknown")?
             {
+                s::Type::Nominal {
+                    declaration,
+                    arguments,
+                } => Recipe::Nominal(declaration, arguments),
                 s::Type::Scalar(scalar) => Recipe::Leaf(Node::Scalar(scalar)),
+                s::Type::Parameter(slot) if matches!(key.rewrite, Rewrite::Nominal { .. }) => {
+                    let Rewrite::Nominal { owner, arguments } = key.rewrite else {
+                        return Err("source nominal parameter lost its actual rewrite");
+                    };
+                    let position = domains
+                        .headers
+                        .scopes()
+                        .type_argument_position(owner, slot, work)?;
+                    Recipe::Existing(self.nominal_argument(arguments, position, work)?)
+                }
                 s::Type::Parameter(slot) => match uses::argument(domains, key, slot, work)? {
                     Some(child) => Recipe::Alias(child),
                     None => Recipe::Leaf(Node::Parameter(slot)),
@@ -242,6 +309,9 @@ fn function_domain(
     work.charge(1)?;
     let rows = domains.headers.rows();
     let (owner, context) = match key.rewrite {
+        Rewrite::Nominal { .. } => {
+            return Err("source nominal callable field requires its wider binder profile");
+        }
         Rewrite::Original => {
             let caller = key
                 .caller
@@ -291,4 +361,16 @@ fn function_domain(
         return Err("source Function input lost its exact zero-slot Rust formation domain");
     }
     domains.types.root(domains.headers, context, key.root, work)
+}
+
+fn nominal_child(
+    domains: &DomainIndex<'_, '_>,
+    key: Key,
+    argument: s::Argument,
+    work: &mut Work,
+) -> Result<Key, &'static str> {
+    let s::Argument::Type(ty) = argument else {
+        return Err("source nominal input planning requires its wider regional profile");
+    };
+    uses::key(domains, ty, key.rewrite, key.caller, work)
 }

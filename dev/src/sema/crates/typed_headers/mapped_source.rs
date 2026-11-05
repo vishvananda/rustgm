@@ -58,6 +58,7 @@ pub(in crate::sema) struct Graph {
     origins: Rc<Catalog>,
     canonical: Canonical,
     applications: Applications,
+    nominal_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
     trait_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
     impl_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
 }
@@ -125,7 +126,8 @@ impl Context<'_> {
                 | s::Profile::Source2024ModuleCompatibility
                 | s::Profile::Source2024ModuleCallables
                 | s::Profile::Source2024ModuleSafety
-                | s::Profile::Source2024ModuleConversions => {
+                | s::Profile::Source2024ModuleConversions
+                | s::Profile::Source2024ModuleNominals => {
                     actual.module_contracts().map_err(error)?;
                 }
                 _ => {
@@ -206,7 +208,7 @@ impl Graph {
             .map_err(error)?;
         // Retained maps coexist with the visiting/output vectors and a cursor
         // frontier bounded by node count, even for repeated shared children.
-        let canonical = if context.descriptor.profile() == s::Profile::Source2024ModuleConversions {
+        let canonical = if context.descriptor.profile().conversion_roles() {
             budget.reserve(size_of::<Self>())?;
             Canonical::Lazy(Box::new(ingested_domains::Lazy::prepare(
                 context, facts, root, budget,
@@ -247,6 +249,7 @@ impl Graph {
             origins,
             canonical,
             applications: Applications::Eager(Vec::new()),
+            nominal_inputs: Vec::new(),
             trait_inputs: Vec::new(),
             impl_inputs: Vec::new(),
         })

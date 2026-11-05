@@ -282,6 +282,7 @@ pub enum SourcePublication {
     ModuleCallables,
     ModuleSafety,
     ModuleConversions,
+    ModuleNominals,
 }
 
 /// Publish only an explicitly selected ordinary source row profile.
@@ -351,36 +352,9 @@ pub fn build_source_library_profile(
         |facts, assembled, roots, (source, base, modules)| {
             let program = super::build_assembled(facts, assembled, roots)
                 .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
-            let interface = match profile {
-                SourcePublication::LegacyFunctions => source.complete_payload(report, facts, base),
-                SourcePublication::FunctionContracts => {
-                    source.complete_contract_payload(report, facts, base)
-                }
-                SourcePublication::ProvidedContracts => {
-                    source.complete_provided_contract_payload(report, facts, base)
-                }
-                SourcePublication::ModuleContracts
-                | SourcePublication::ModuleAvailability
-                | SourcePublication::ModuleFeaturePredicates
-                | SourcePublication::ModuleDefinitions
-                | SourcePublication::ModuleCompatibility
-                | SourcePublication::ModuleCallables
-                | SourcePublication::ModuleSafety
-                | SourcePublication::ModuleConversions => source.complete_module_policy_payload(
-                    modules.ok_or_else(|| {
-                        diagnostic(
-                            report,
-                            None,
-                            "module namespace/domain collection is absent".into(),
-                        )
-                    })?,
-                    report,
-                    facts,
-                    base,
-                    profile,
-                ),
-            }
-            .map_err(|error| facts.retain_error_warnings(error))?;
+            let interface = source
+                .complete_publication(report, facts, base, modules, profile)
+                .map_err(|error| facts.retain_error_warnings(error))?;
             let interface = if interface.native_links().is_none() {
                 if let Some(plan) = facts
                     .foreign

@@ -257,6 +257,7 @@ fn declarations(
 pub(super) fn kind(kind: s::DefinitionKind) -> (DefKind, Namespace) {
     match kind {
         s::DefinitionKind::Module => (DefKind::Module, Namespace::Type),
+        s::DefinitionKind::Struct => (DefKind::Struct, Namespace::Type),
         s::DefinitionKind::Trait => (DefKind::Trait, Namespace::Type),
         s::DefinitionKind::SelfType => (DefKind::SelfType, Namespace::Type),
         s::DefinitionKind::Function => (DefKind::Function, Namespace::Value),

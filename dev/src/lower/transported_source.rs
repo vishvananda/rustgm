@@ -209,6 +209,19 @@ impl Source {
             modules,
         ))
     }
+    fn begin_module_nominals(
+        report: &Report,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+        let mut stage = Stage::begin_module_nominals(report, facts, identity)?;
+        let modules = stage.module_contract_rows(report, facts)?;
+        Ok((
+            Self::begin_stage(facts, checked, stage, true, None)?,
+            modules,
+        ))
+    }
     pub(super) fn begin_publication(
         report: &Report,
         facts: &mut Declarations,
@@ -261,6 +274,12 @@ impl Source {
             super::instances::SourcePublication::ModuleSafety => {
                 let (source, modules) = Self::begin_module_safety(report, facts, checked, identity)
                     .map_err(legacy_error)?;
+                Ok((source, Some(modules)))
+            }
+            super::instances::SourcePublication::ModuleNominals => {
+                let (source, modules) =
+                    Self::begin_module_nominals(report, facts, checked, identity)
+                        .map_err(legacy_error)?;
                 Ok((source, Some(modules)))
             }
             super::instances::SourcePublication::ModuleConversions => {
@@ -507,6 +526,79 @@ impl Source {
             .map_err(|message| report.diagnostic(report.body_optional_error(None, message)))
     }
 
+    pub(super) fn complete_publication(
+        self,
+        report: &Report,
+        facts: &Declarations,
+        base: crate::support::crates::Interface,
+        modules: Option<s::ModuleContractRows>,
+        profile: super::instances::SourcePublication,
+    ) -> Result<crate::support::crates::Interface, crate::resolve::package::Error> {
+        use super::instances::SourcePublication;
+        match profile {
+            SourcePublication::LegacyFunctions => self.complete_payload(report, facts, base),
+            SourcePublication::FunctionContracts => {
+                self.complete_contract_payload(report, facts, base)
+            }
+            SourcePublication::ProvidedContracts => {
+                self.complete_provided_contract_payload(report, facts, base)
+            }
+            SourcePublication::ModuleContracts
+            | SourcePublication::ModuleAvailability
+            | SourcePublication::ModuleFeaturePredicates
+            | SourcePublication::ModuleDefinitions
+            | SourcePublication::ModuleCompatibility
+            | SourcePublication::ModuleCallables
+            | SourcePublication::ModuleSafety
+            | SourcePublication::ModuleConversions
+            | SourcePublication::ModuleNominals => self.complete_module_policy_payload(
+                modules.ok_or_else(|| {
+                    crate::resolve::package::Error::unlocated(
+                        "module namespace/domain collection is absent",
+                    )
+                })?,
+                report,
+                facts,
+                base,
+                profile,
+            ),
+        }
+    }
+    fn module_availability(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        modules: &s::ModuleContractRows,
+        profile: super::instances::SourcePublication,
+    ) -> Result<Option<s::AvailabilityRows>, crate::resolve::package::Error> {
+        Ok(
+            if matches!(
+                profile,
+                super::instances::SourcePublication::ModuleAvailability
+                    | super::instances::SourcePublication::ModuleFeaturePredicates
+                    | super::instances::SourcePublication::ModuleDefinitions
+                    | super::instances::SourcePublication::ModuleCompatibility
+                    | super::instances::SourcePublication::ModuleCallables
+                    | super::instances::SourcePublication::ModuleSafety
+                    | super::instances::SourcePublication::ModuleConversions
+                    | super::instances::SourcePublication::ModuleNominals
+            ) {
+                let available = if matches!(
+                    profile,
+                    super::instances::SourcePublication::ModuleConversions
+                        | super::instances::SourcePublication::ModuleNominals
+                ) {
+                    self.stage
+                        .conversion_availability_rows(report, facts, modules)
+                } else {
+                    self.stage.availability_rows(report, facts, modules)
+                };
+                Some(available.map_err(crate::resolve::package::Error::unlocated)?)
+            } else {
+                None
+            },
+        )
+    }
     pub(super) fn complete_module_policy_payload(
         mut self,
         modules: s::ModuleContractRows,
@@ -527,28 +619,13 @@ impl Source {
         // Reuse the complete selected-header producer, including its final-header
         // fence when defaultness syntax is integrated. No absence is invented.
         let attributes = self.collect_header_columns(report, facts)?;
-        let availability = if matches!(
-            profile,
-            super::instances::SourcePublication::ModuleAvailability
-                | super::instances::SourcePublication::ModuleFeaturePredicates
-                | super::instances::SourcePublication::ModuleDefinitions
-                | super::instances::SourcePublication::ModuleCompatibility
-                | super::instances::SourcePublication::ModuleCallables
-                | super::instances::SourcePublication::ModuleSafety
-                | super::instances::SourcePublication::ModuleConversions
-        ) {
-            let available = if profile == super::instances::SourcePublication::ModuleConversions {
-                self.stage
-                    .conversion_availability_rows(report, facts, &modules)
-            } else {
-                self.stage.availability_rows(report, facts, &modules)
-            };
-            Some(available.map_err(crate::resolve::package::Error::unlocated)?)
-        } else {
-            None
-        };
+        let availability = self.module_availability(report, facts, &modules, profile)?;
         if self.numbering.is_some()
-            && profile != super::instances::SourcePublication::ModuleConversions
+            && !matches!(
+                profile,
+                super::instances::SourcePublication::ModuleConversions
+                    | super::instances::SourcePublication::ModuleNominals
+            )
         {
             return Err(crate::resolve::package::Error::unlocated(
                 "Provided numbering has no module-contract publisher",
@@ -572,7 +649,9 @@ impl Source {
             ..g::Work::default()
         };
         let payload = if let Some(availability) = availability {
-            let publish = if profile == super::instances::SourcePublication::ModuleConversions {
+            let publish = if profile == super::instances::SourcePublication::ModuleNominals {
+                g::Payload::from_source_module_nominals
+            } else if profile == super::instances::SourcePublication::ModuleConversions {
                 g::Payload::from_source_module_conversions
             } else if profile == super::instances::SourcePublication::ModuleSafety {
                 g::Payload::from_source_module_safety

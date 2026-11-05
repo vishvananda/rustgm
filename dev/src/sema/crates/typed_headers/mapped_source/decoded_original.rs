@@ -14,6 +14,8 @@ use std::sync::Arc;
 
 #[path = "callee_stability.rs"]
 mod constant_policies;
+#[path = "mapped_members.rs"]
+mod nominal_members;
 #[path = "admitted_original.rs"]
 mod selected;
 use selected::Mapping;
@@ -22,6 +24,7 @@ use selected::Mapping;
 /// Only the actual current Graph/header/catalog correspondence can construct one.
 pub(crate) struct Original<'a> {
     mapping: Mapping<'a>,
+    members: &'a crate::sema::members::Members,
     catalog: &'a Catalog,
     header: &'a super::super::Header,
     definition: DefId,
@@ -111,6 +114,7 @@ impl Graph {
         }
         let domain = self.ordinary_domain(facts, headers, definition, header, steps)?;
         let original = Original {
+            members: &facts.members,
             mapping: Mapping::Ordinary {
                 graph: self,
                 store: &facts.types,

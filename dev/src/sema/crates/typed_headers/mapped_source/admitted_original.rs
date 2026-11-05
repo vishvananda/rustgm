@@ -67,6 +67,7 @@ impl Original<'_> {
             return Err("selected original requires its actual runtime defining body environment");
         }
         let result = Original {
+            members: &facts.members,
             mapping: Mapping::Selected {
                 owner,
                 store: &facts.types,

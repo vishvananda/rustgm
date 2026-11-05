@@ -62,7 +62,7 @@ impl<'a> Context<'a> {
     ) -> Result<Vec<Option<Predicate>>, Error> {
         let count = self.applications.len();
         budget.reserve(count.saturating_mul(size_of::<Predicate>()))?;
-        for index in 0..if self.descriptor.profile() == s::Profile::Source2024ModuleConversions {
+        for index in 0..if self.descriptor.profile().conversion_roles() {
             0
         } else {
             count
@@ -164,6 +164,9 @@ impl<'a> Context<'a> {
         }
         let rows = self.descriptor.rows();
         let (kind, inputs) = match rows.header(ordinal).map_err(error)? {
+            Some(s::HeaderRef::Nominal(index)) => {
+                (DefKind::Struct, rows.nominals[index as usize].inputs)
+            }
             Some(s::HeaderRef::Function(index)) => {
                 (DefKind::Function, rows.functions[index as usize].inputs)
             }

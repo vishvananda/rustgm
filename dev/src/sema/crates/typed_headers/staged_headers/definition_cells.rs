@@ -50,6 +50,9 @@ pub(super) fn prepare(
             )?;
         }
     }
+    for header in &rows.nominals {
+        assign(&mut cells, header.declaration, graph.ty(header.self_type)?)?;
+    }
     for callable in callables {
         budget.charge(1)?;
         let id = context
@@ -67,7 +70,8 @@ pub(super) fn prepare(
         budget.charge(1)?;
         let required = matches!(
             raw.definition.kind,
-            s::DefinitionKind::Function
+            s::DefinitionKind::Struct
+                | s::DefinitionKind::Function
                 | s::DefinitionKind::SelfType
                 | s::DefinitionKind::TypeParameter
         );

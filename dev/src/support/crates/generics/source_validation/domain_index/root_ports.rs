@@ -4,6 +4,19 @@ use super::{Context, DomainIndex, HeaderRef, Types, Work, g, s};
 impl DomainIndex<'_, '_> {
     pub(super) fn header_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
         let rows = self.headers.rows();
+        for header in &rows.nominals {
+            let context = Context {
+                owner: header.scope,
+                frame: Some(self.binders.declaration(header.declaration, work)?),
+                body: None,
+            };
+            self.types
+                .root(self.headers, context, header.self_type, work)?;
+            for field in header.fields.slice(&rows.fields)? {
+                self.types.root(self.headers, context, field.ty, work)?;
+            }
+            self.requirements(context, header.inputs, work)?;
+        }
         for header in &rows.traits {
             let context = Context {
                 owner: header.scope,

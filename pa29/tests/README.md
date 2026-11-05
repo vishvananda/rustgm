@@ -32,3 +32,10 @@ provider foundation and grants no foreign permission.
 const-argument positives. The local header phase fences their metadata until the
 real index list and anonymous-constant call protocol are transported; source
 expectations are preserved as required work rather than rejection cases.
+
+`source-nominal-outcomes.json` freezes the actual source nominal constructor and
+fresh generic consumer packet under `spec/source-nominals/`, including move,
+visibility, generic identity and escaping-borrow opponents. The selected
+`crate_linking::source_nominals` integration controls consume its serialized v10
+profile. The owning checkpoint distinguishes independent, frontend, native and
+remaining transport requirements.

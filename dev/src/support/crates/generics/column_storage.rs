@@ -11,6 +11,8 @@ use crate::support::crates::owner_catalog::{BodyOwner, DeclarationRef};
 /// `SourceRows` remains the separate mutable staging/decode representation.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Columns {
+    pub nominals: Vec<super::super::NominalHeader>,
+    pub fields: Vec<super::super::NominalField>,
     pub policy: Policy,
     pub declarations: Vec<Declaration>,
     pub slots: Vec<ParameterSlot>,
@@ -41,6 +43,8 @@ pub struct Columns {
 impl Columns {
     pub(super) fn take(rows: SourceRows) -> (Vec<BodyOwner>, Self) {
         let SourceRows {
+            nominals,
+            fields,
             body_owners,
             policy,
             declarations,
@@ -72,6 +76,8 @@ impl Columns {
         (
             body_owners,
             Self {
+                nominals,
+                fields,
                 policy,
                 declarations,
                 slots,
@@ -175,6 +181,12 @@ impl<'a> ValidatedView<'a> {
                 attributes.functions.get(index as usize)
             }
             Some(super::super::HeaderRef::Trait(index)) => attributes.traits.get(index as usize),
+            Some(super::super::HeaderRef::Nominal(index)) => self
+                .source
+                .columns
+                .nominals
+                .get(index as usize)
+                .map(|header| &header.contract),
             _ => return Err("source attribute query does not name an admitted header"),
         }
         .ok_or("source header contract completion row is missing")?;
@@ -214,9 +226,7 @@ impl<'a> ValidatedView<'a> {
         work: &mut super::super::super::Work,
     ) -> Result<super::super::AllocationOrdinals<'a>, &'static str> {
         work.charge(1)?;
-        if self.source.profile != super::Profile::Source2024ModuleConversions
-            || live_base < self.source.budget.bytes
-        {
+        if !self.source.profile.conversion_roles() || live_base < self.source.budget.bytes {
             return Err("ordinary allocation inverse requires its actual version-nine live owner");
         }
         self.allocation_inverse(body, live_base, extra, work)

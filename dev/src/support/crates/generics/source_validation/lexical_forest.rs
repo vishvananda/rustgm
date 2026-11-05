@@ -26,6 +26,7 @@ pub(super) fn validate(
             if !matches!(
                 actual.definition.kind,
                 DefinitionKind::Module
+                    | DefinitionKind::Struct
                     | DefinitionKind::Trait
                     | DefinitionKind::SelfType
                     | DefinitionKind::Function

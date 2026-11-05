@@ -69,8 +69,10 @@ fn snapshot() -> s::Original {
         projections: vec![s::Projection {
             base: s::Place::Temporary(0),
             ty: g::TypeRef(0),
-            region: s::RegionRef(0),
-            mutable: false,
+            kind: s::ProjectionKind::Dereference {
+                region: s::RegionRef(0),
+                mutable: false,
+            },
         }],
         values: values(),
         statements,

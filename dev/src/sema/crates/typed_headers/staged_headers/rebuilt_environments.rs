@@ -256,7 +256,7 @@ pub(super) fn complete(
             .get(reference.0 as usize)
             .filter(|inputs| inputs.body == reference)
             .ok_or_else(|| error("source original environment omitted its actual body inputs"))?;
-        if context.descriptor.profile() == s::Profile::Source2024ModuleConversions
+        if context.descriptor.profile().conversion_roles()
             && inputs.environment == s::EnvironmentOrigin::Contract
         {
             scope

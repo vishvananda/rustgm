@@ -24,7 +24,7 @@ impl Stage {
             *enabled = self.definitions[index].is_some()
                 && matches!(
                     report.resolution.definitions[index].kind,
-                    DefKind::SelfType | DefKind::Trait | DefKind::Function
+                    DefKind::SelfType | DefKind::Trait | DefKind::Function | DefKind::Struct
                 );
         }
         let mut children = vec![Vec::new(); count];

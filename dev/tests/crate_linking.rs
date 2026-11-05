@@ -30,6 +30,8 @@ mod records;
 mod reexports;
 #[path = "crate_linking/representations.rs"]
 mod representations;
+#[path = "crate_linking/serialized_records.rs"]
+mod source_nominals;
 #[path = "crate_linking/static_transport.rs"]
 mod static_transport;
 #[path = "crate_linking/transitive.rs"]

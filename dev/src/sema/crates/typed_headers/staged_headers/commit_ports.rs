@@ -41,23 +41,15 @@ impl Stage {
             budget,
         )?;
         let rows = context.descriptor.rows();
-        budget.charge(
-            rows.traits
-                .len()
-                .saturating_add(rows.clauses.len())
-                .saturating_mul(2),
-        )?;
-        budget.reserve(
-            retained::new_map::<crate::types::ItemId, bool>(rows.traits.len()).saturating_add(
-                rows.traits
-                    .len()
-                    .saturating_add(rows.clauses.len())
-                    .saturating_mul(size_of::<(crate::types::ItemId, bool)>()),
-            ),
-        )?;
+        prepay_cycles(rows, budget)?;
         contracts
             .check_cycles(&facts.types)
             .map_err(|(_, message)| error(message))?;
+        let nominals = super::nominal_ports::prepare(context, &self.graph, facts, budget)?;
+        let nominal_count = nominals
+            .as_ref()
+            .map_or(0, |nominals| nominals.owners.len());
+        super::nominal_ports::reserve_owners(facts, nominal_count, budget)?;
         let before = table_allocation(facts, budget);
         budget.charge(before.visits.saturating_mul(2).saturating_add(1))?;
         // This shared work count is checked inside the owner installer BEFORE
@@ -73,6 +65,20 @@ impl Stage {
                     .ok_or_else(|| error("source constant effect destination disappeared"))
             })
             .transpose()?;
+        let (member_rows, shapes, nominal_owners) = if let Some(nominals) = nominals {
+            (
+                Some(nominals.members.ready(&mut facts.members).map_err(error)?),
+                Some(
+                    nominals
+                        .shapes
+                        .ready(&mut facts.aggregates)
+                        .map_err(error)?,
+                ),
+                nominals.owners,
+            )
+        } else {
+            (None, None, Vec::new())
+        };
         let installed = facts.associated.install_imported(
             &facts.types,
             crate::sema::crates::ImportedOwners::Ordinary(Rc::clone(&self.graph)),
@@ -81,6 +87,18 @@ impl Stage {
         );
         budget.work.set(work);
         installed.map_err(error)?;
+        if let Some(rows) = member_rows {
+            rows.install();
+        }
+        if let Some(shapes) = shapes {
+            shapes.install();
+        }
+        facts
+            .crates
+            .get_or_insert_default()
+            .imported_records
+            .extend(nominal_owners.iter().copied());
+        facts.generics.nominal_contracts.extend(nominal_owners);
         // Every remaining key, index and allocation bound was checked above.
         // No fallible remap, quota check or proof follows this first publication.
         for (definition, ty) in cells {
@@ -92,6 +110,19 @@ impl Stage {
         if let Some((plan, catalog)) = effects {
             plan.install(catalog);
         }
+        facts.lifetimes.callables = callables;
+        self.publish(facts, budget, functions, contracts, self_bounds, before);
+        Ok(())
+    }
+    fn publish(
+        self,
+        facts: &mut Declarations,
+        budget: &mut Headers,
+        functions: Vec<super::template_ports::Callable>,
+        contracts: crate::sema::traits::Contracts,
+        self_bounds: Vec<(DefId, crate::types::parameters::predicates::Predicate)>,
+        before: retained::Allocation,
+    ) {
         publish_scopes(self.scopes, facts, budget);
         let linkage = facts.crates.get_or_insert_default();
         for function in functions {
@@ -101,14 +132,12 @@ impl Stage {
         }
         facts.generics.traits = Some(Box::new(contracts));
         facts.generics.trait_self_bounds.extend(self_bounds);
-        facts.lifetimes.callables = callables;
         budget.source = Some(crate::sema::crates::ImportedOwners::Ordinary(self.graph));
         let after = table_allocation(facts, budget);
         budget.observed.include(retained::Allocation {
             bytes: after.bytes.saturating_sub(before.bytes),
             visits: before.visits.saturating_add(after.visits),
         });
-        Ok(())
     }
 
     fn preflight(
@@ -295,4 +324,25 @@ fn table_allocation(facts: &Declarations, headers: &Headers) -> retained::Alloca
         result.map(&linkage.symbols);
     }
     result
+}
+
+fn prepay_cycles(
+    rows: crate::support::crates::generics::source::ValidatedView<'_>,
+    budget: &mut Headers,
+) -> Result<(), Error> {
+    budget.charge(
+        rows.traits
+            .len()
+            .saturating_add(rows.clauses.len())
+            .saturating_mul(2),
+    )?;
+    budget.reserve(
+        retained::new_map::<crate::types::ItemId, bool>(rows.traits.len()).saturating_add(
+            rows.traits
+                .len()
+                .saturating_add(rows.clauses.len())
+                .saturating_mul(size_of::<(crate::types::ItemId, bool)>()),
+        ),
+    )?;
+    Ok(())
 }

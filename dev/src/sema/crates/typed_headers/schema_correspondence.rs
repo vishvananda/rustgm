@@ -161,7 +161,7 @@ impl<'rows> Mapping<'rows> for Borrowed<'rows, '_, '_> {
             s::HeaderRef::Implementation(index) => Ok(MemberRows::Implementation(
                 rows.implementation_members(rows.implementations[index as usize].members)?,
             )),
-            s::HeaderRef::Function(_) => {
+            s::HeaderRef::Function(_) | s::HeaderRef::Nominal(_) => {
                 Err("private schema requires its actual trait or implementation")
             }
         }

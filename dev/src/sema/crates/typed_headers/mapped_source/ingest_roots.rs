@@ -6,6 +6,12 @@ pub(super) fn prepare(
     rows: s::ValidatedView<'_>,
     demand: &mut impl FnMut(TypeRef) -> Result<(), Error>,
 ) -> Result<(), Error> {
+    for header in &rows.nominals {
+        demand(header.self_type)?;
+        for field in header.fields.slice(&rows.fields).map_err(error)? {
+            demand(field.ty)?;
+        }
+    }
     for header in &rows.functions {
         for signature in [header.original, header.callable] {
             for &root in signature.parameters.slice(&rows.roots).map_err(error)? {

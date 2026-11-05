@@ -368,7 +368,10 @@ impl AvailabilityRows {
         if origin != owner
             && !matches!(
                 source.definition.kind,
-                DefinitionKind::Module | DefinitionKind::Trait | DefinitionKind::SelfType
+                DefinitionKind::Module
+                    | DefinitionKind::Trait
+                    | DefinitionKind::Struct
+                    | DefinitionKind::SelfType
             )
         {
             return Err("availability inherited from a non-scope declaration");
@@ -384,6 +387,7 @@ impl AvailabilityRows {
                 source.definition.kind,
                 DefinitionKind::Module
                     | DefinitionKind::Trait
+                    | DefinitionKind::Struct
                     | DefinitionKind::SelfType
                     | DefinitionKind::Function
             )
@@ -495,7 +499,7 @@ impl Validation<'_> {
                 .implementations
                 .get(index as usize)
                 .is_some_and(|row| row.constant),
-            None => false,
+            None | Some(super::HeaderRef::Nominal(_)) => false,
         }
     }
 }

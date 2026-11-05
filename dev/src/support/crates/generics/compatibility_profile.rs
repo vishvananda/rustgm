@@ -3,10 +3,17 @@ use super::{Profile, SourceRows, ValidatedRows, Work};
 use crate::support::crates::{CrateIdentity, generics::source as s};
 
 impl Profile {
+    #[must_use]
+    pub const fn nominals(self) -> bool {
+        matches!(self, Self::Source2024ModuleNominals)
+    }
     /// The complete ordinary conversion role/header protocol is explicit v9 data.
     #[must_use]
     pub const fn conversion_roles(self) -> bool {
-        matches!(self, Self::Source2024ModuleConversions)
+        matches!(
+            self,
+            Self::Source2024ModuleConversions | Self::Source2024ModuleNominals
+        )
     }
     #[must_use]
     pub const fn unconditional_callables(self) -> bool {
@@ -15,13 +22,16 @@ impl Profile {
             Self::Source2024ModuleCallables
                 | Self::Source2024ModuleSafety
                 | Self::Source2024ModuleConversions
+                | Self::Source2024ModuleNominals
         )
     }
     #[must_use]
     pub const fn call_safety(self) -> bool {
         matches!(
             self,
-            Self::Source2024ModuleSafety | Self::Source2024ModuleConversions
+            Self::Source2024ModuleSafety
+                | Self::Source2024ModuleConversions
+                | Self::Source2024ModuleNominals
         )
     }
     #[must_use]
@@ -33,6 +43,7 @@ impl Profile {
                 | Self::Source2024ModuleCallables
                 | Self::Source2024ModuleSafety
                 | Self::Source2024ModuleConversions
+                | Self::Source2024ModuleNominals
         )
     }
     #[must_use]
@@ -43,6 +54,7 @@ impl Profile {
                 | Self::Source2024ModuleCallables
                 | Self::Source2024ModuleSafety
                 | Self::Source2024ModuleConversions
+                | Self::Source2024ModuleNominals
         )
     }
 }
@@ -82,6 +94,26 @@ impl ValidatedRows {
             attributes,
             modules,
             (availability, Profile::Source2024ModuleConversions),
+            base,
+            work,
+        )
+    }
+
+    pub(crate) fn stage_module_nominals(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        attributes: s::HeaderAttributeColumns,
+        modules: s::ModuleContractRows,
+        availability: s::AvailabilityRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        Self::stage_module_availability_with(
+            owner,
+            rows,
+            attributes,
+            modules,
+            (availability, Profile::Source2024ModuleNominals),
             base,
             work,
         )

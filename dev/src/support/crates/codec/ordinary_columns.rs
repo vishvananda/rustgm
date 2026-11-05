@@ -8,6 +8,8 @@ mod exemption_wire;
 mod header_facts;
 mod invoked_rows;
 mod namespace_rows;
+#[path = "ordinary_columns/record_wire.rs"]
+mod nominal_rows;
 mod operation_columns;
 mod owner_rows;
 #[path = "ordinary_columns/supplied_extensions.rs"]
@@ -83,7 +85,11 @@ pub(super) fn encode_module_availability(
     if rows.descriptor().profile().definitions() {
         verbatim_exports::encode(out, &rows.exact_callables)?;
     }
-    exemption_wire::encode(out, rows.availability()?.const_bodies.as_deref())
+    if rows.descriptor().profile().nominals() {
+        nominal_rows::encode(out, rows)?;
+    }
+    exemption_wire::encode(out, rows.availability()?.const_bodies.as_deref())?;
+    Ok(())
 }
 pub(super) struct AvailabilityPacket {
     pub rows: s::SourceRows,
@@ -121,6 +127,12 @@ pub(super) fn decode_module_callables(
 ) -> Result<AvailabilityPacket, &'static str> {
     decode_availability_profile(reader, base, s::Profile::Source2024ModuleCallables)
 }
+pub(super) fn decode_module_nominals(
+    reader: &mut Reader<'_>,
+    base: usize,
+) -> Result<AvailabilityPacket, &'static str> {
+    decode_availability_profile(reader, base, s::Profile::Source2024ModuleNominals)
+}
 pub(super) fn decode_module_conversions(
     reader: &mut Reader<'_>,
     base: usize,
@@ -150,6 +162,10 @@ fn decode_availability_profile(
     let mut availability = availability_wire::decode(&mut read, profile.module_compatibility())?;
     if profile.definitions() {
         rows.exact_callables = verbatim_exports::decode(&mut read)?;
+    }
+    if profile.nominals() {
+        rows.nominals = read.list(crates::MAX_COMPONENTS, 43, nominal_rows::nominal_read)?;
+        rows.fields = read.list(crates::MAX_COMPONENTS, 21, nominal_rows::field_read)?;
     }
     availability.const_bodies = exemption_wire::decode(&mut read)?;
     Ok(AvailabilityPacket {
@@ -224,7 +240,9 @@ fn encode_profile(
     } else {
         write(out, &rows.roles, contract_columns::role_write)?;
     }
-    if rows.descriptor().profile().call_safety() {
+    if rows.descriptor().profile().nominals() {
+        write(out, &rows.originals, operation_columns::nominal_write)?;
+    } else if rows.descriptor().profile().call_safety() {
         write(out, &rows.originals, operation_columns::safety_write)?;
     } else {
         write(out, &rows.originals, operation_columns::original_write)?;
@@ -326,6 +344,8 @@ fn decode_profile_with(
         profile,
     };
     let rows = s::SourceRows {
+        nominals: Vec::new(),
+        fields: Vec::new(),
         exact_callables: Vec::new(),
         policy: s::Policy {
             edition: Edition::Rust2024,

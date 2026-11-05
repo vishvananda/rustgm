@@ -69,6 +69,21 @@ impl Ports {
                 Self::place_type(original, projection.base, work)?,
                 work,
             )?;
+            let (raw_region, raw_mutable) = match projection.kind {
+                s::ProjectionKind::Field { owner, ordinal } => {
+                    builder.nominal_projection(
+                        original,
+                        Self::place_type(original, projection.base, work)?,
+                        projection.ty,
+                        owner,
+                        ordinal,
+                        work,
+                    )?;
+                    self.writable[index] = self.writable(original, projection.base, work)?;
+                    continue;
+                }
+                s::ProjectionKind::Dereference { region, mutable } => (region, mutable),
+            };
             let Node::Reference {
                 mutable,
                 region,
@@ -82,11 +97,11 @@ impl Ports {
                     != super::uses::region(
                         builder.domains,
                         &builder.arena,
-                        projection.region,
+                        raw_region,
                         super::nodes::Rewrite::Original,
                         work,
                     )?
-                || mutable != projection.mutable
+                || mutable != raw_mutable
             {
                 return Err("source dereference changed its referent, lifetime or mutability");
             }

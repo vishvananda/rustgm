@@ -20,8 +20,12 @@ pub enum Place {
 pub struct Projection {
     pub base: Place,
     pub ty: TypeRef,
-    pub region: RegionRef,
-    pub mutable: bool,
+    pub kind: ProjectionKind,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ProjectionKind {
+    Dereference { region: RegionRef, mutable: bool },
+    Field { owner: DeclarationRef, ordinal: u32 },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct OwnedRegion {
@@ -38,6 +42,9 @@ pub enum RegionAllocation {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ValueKind {
+    Aggregate {
+        fields: Range,
+    },
     Unit,
     /// Closed primitive bits in target little-endian order. The actual `Value.ty`
     /// supplies their type; no provider type ID or proof travels with these bits.

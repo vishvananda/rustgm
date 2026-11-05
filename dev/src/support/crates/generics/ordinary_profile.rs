@@ -409,7 +409,10 @@ fn originals(
             ) || features
                 && matches!(
                     value.kind,
-                    ValueKind::Function(_) | ValueKind::Call { .. } | ValueKind::Scalar(_)
+                    ValueKind::Function(_)
+                        | ValueKind::Call { .. }
+                        | ValueKind::Scalar(_)
+                        | ValueKind::Aggregate { .. }
                 )
                 || regional
                     && matches!(
@@ -608,6 +611,9 @@ pub(super) fn bindings(
                 ),
             ) => return Err("source role has a different actual declaration/header kind"),
             (_, Some(super::super::HeaderRef::Trait(_))) => {}
+            (_, Some(super::super::HeaderRef::Nominal(_))) => {
+                return Err("ordinary source roles cannot claim a nominal declaration");
+            }
         }
         declarations[role.role.index()] = Some(address.declaration);
     }

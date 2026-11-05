@@ -37,13 +37,9 @@ impl DomainIndex<'_, '_> {
                 Self::place(original, projection.base, Some(index), work)?;
                 self.types
                     .root(self.headers, context, projection.ty, work)?;
-                Types::region(
-                    self.headers,
-                    &self.binders,
-                    context,
-                    projection.region,
-                    work,
-                )?;
+                if let s::ProjectionKind::Dereference { region, .. } = projection.kind {
+                    Types::region(self.headers, &self.binders, context, region, work)?;
+                }
             }
             for (index, value) in original.values.iter().enumerate() {
                 snapshots |= matches!(value.kind, s::ValueKind::Read(s::Place::Temporary(_)));
@@ -123,6 +119,11 @@ impl DomainIndex<'_, '_> {
                 self.types.root(self.headers, context, signature, work)?;
                 prefix_value(original, callee, index, work)?;
                 for &argument in arguments.slice(&original.arguments)? {
+                    prefix_value(original, argument, index, work)?;
+                }
+            }
+            s::ValueKind::Aggregate { fields } => {
+                for &argument in fields.slice(&original.arguments)? {
                     prefix_value(original, argument, index, work)?;
                 }
             }

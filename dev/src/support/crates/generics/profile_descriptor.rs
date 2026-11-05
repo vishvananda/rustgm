@@ -73,6 +73,8 @@ pub enum Profile {
     Source2024ModuleSafety,
     /// Version-nine From identity and complete ordinary conversion method bodies.
     Source2024ModuleConversions,
+    /// Version ten source nominal declarations and original construction bodies.
+    Source2024ModuleNominals,
 }
 impl Profile {
     #[must_use]
@@ -85,6 +87,7 @@ impl Profile {
                 | Self::Source2024ModuleCallables
                 | Self::Source2024ModuleSafety
                 | Self::Source2024ModuleConversions
+                | Self::Source2024ModuleNominals
         )
     }
     #[must_use]
@@ -99,6 +102,7 @@ impl Profile {
                 | Self::Source2024ModuleCallables
                 | Self::Source2024ModuleSafety
                 | Self::Source2024ModuleConversions
+                | Self::Source2024ModuleNominals
         )
     }
     #[must_use]
@@ -119,6 +123,7 @@ impl Profile {
                 | Self::Source2024ModuleCallables
                 | Self::Source2024ModuleSafety
                 | Self::Source2024ModuleConversions
+                | Self::Source2024ModuleNominals
         )
     }
 }
@@ -396,6 +401,7 @@ impl ValidatedRows {
         profile: Profile,
     ) -> Result<Self, &'static str> {
         let start = work.steps;
+        super::nominal_contracts::require_profile(&rows, profile, work)?;
         let features = profile.feature_predicates();
         safety_profile::require_profile(&rows, profile, work)?;
         if !profile.definitions() {
@@ -500,6 +506,7 @@ impl ValidatedRows {
         extension: Option<(super::HeaderAttributeColumns, ProvidedContractRows)>,
     ) -> Result<Self, &'static str> {
         let start = work.steps;
+        super::nominal_contracts::require_profile(&rows, profile, work)?;
         safety_profile::require_profile(&rows, profile, work)?;
         exact_exports::legacy(&rows, work)?;
         predicate_contracts::legacy(&rows, work)?;
@@ -536,7 +543,8 @@ impl ValidatedRows {
             | Profile::Source2024ModuleCompatibility
             | Profile::Source2024ModuleCallables
             | Profile::Source2024ModuleSafety
-            | Profile::Source2024ModuleConversions => {
+            | Profile::Source2024ModuleConversions
+            | Profile::Source2024ModuleNominals => {
                 return Err(
                     "module contracts require their complete namespace/domain/attribute columns",
                 );
@@ -674,6 +682,20 @@ fn freeze_columns_observed(
         .iter()
         .map(|row| row.symbol.len())
         .sum::<usize>();
+    work.charge(rows.fields.len().saturating_add(rows.nominals.len()))?;
+    for field in &rows.fields {
+        names = names.saturating_add(field.name.len());
+    }
+    for nominal in &rows.nominals {
+        names = names.saturating_add(
+            nominal
+                .contract
+                .must_use
+                .as_ref()
+                .and_then(|contract| contract.reason.as_ref())
+                .map_or(0, String::len),
+        );
+    }
     for declaration in &rows.declarations {
         work.charge(1)?;
         names = names.saturating_add(declaration.name.as_ref().map_or(0, String::len));

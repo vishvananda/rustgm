@@ -121,6 +121,7 @@ impl BinderIndex<'_> {
         frame: &s::Binder,
     ) -> Result<(), &'static str> {
         let count = match owner {
+            Some(HeaderRef::Nominal(_)) => 0,
             Some(HeaderRef::Trait(index)) => self.rows.traits[index as usize].region_captures,
             Some(HeaderRef::Implementation(index)) => {
                 self.rows.implementations[index as usize].region_captures

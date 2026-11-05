@@ -132,6 +132,9 @@ impl Reader {
             ));
         }
         let prefix = match rows.header(owner).map_err(error)? {
+            Some(s::HeaderRef::Nominal(index)) => {
+                rows.nominals[index as usize].declared_inputs as usize
+            }
             Some(s::HeaderRef::Function(index)) => {
                 rows.functions[index as usize].declared_inputs as usize
             }

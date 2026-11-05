@@ -5,6 +5,8 @@ const _: [(); 80] = [(); size_of::<ScopeIndex<'static>>()];
 
 fn empty_rows(slots: Vec<ParameterSlot>, scopes: Vec<ParameterScope>) -> SourceRows {
     SourceRows {
+        nominals: Vec::new(),
+        fields: Vec::new(),
         policy: Policy {
             edition: crate::support::edition::Edition::Rust2024,
             provider: ArtifactRef(0),

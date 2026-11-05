@@ -163,6 +163,17 @@ pub(in crate::sema) fn bind_definition(
     definition: DefId,
     declaration: NodeKey,
 ) -> Result<(), Error> {
+    let actual = report
+        .resolution
+        .definitions
+        .get(definition.0 as usize)
+        .ok_or_else(|| Error::unlocated("source header definition is unknown"))?;
+    if matches!(report.package.unit(declaration.file).configured.ast.node(declaration.node).kind,
+        Kind::Item(index) if matches!(report.package.unit(declaration.file).configured.ast.items[index as usize].kind,ItemKind::Struct {..}))
+        && actual.kind != DefKind::Struct
+    {
+        return Ok(());
+    }
     let member = nonconst_members::is_trait_member(facts, definition);
     if (!admitted(report, declaration)
         && !incoherent_targets::marked(facts, declaration)
@@ -206,7 +217,7 @@ pub(in crate::sema) fn bind_definition(
     skipped_traits::bind(report, facts, definition, declaration)?;
     optimization::bind(report, facts, definition, declaration)?;
     definition_policy::bind(report, facts, definition, declaration)?;
-    if !admitted(report, declaration) {
+    if !admitted(report, declaration) || actual.kind == DefKind::Struct {
         return Ok(());
     }
     tracking::validate_intrinsic_annotations(report, facts, definition, declaration)?;
@@ -233,7 +244,7 @@ fn admitted(report: &Report, key: NodeKey) -> bool {
     unit.include_context.is_none()
         && matches!(unit.configured.ast.node(key.node).kind,
         Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind,
-            ItemKind::Function { .. } | ItemKind::Trait { .. }))
+            ItemKind::Function { .. } | ItemKind::Trait { .. } | ItemKind::Struct { .. }))
 }
 pub(super) fn query<'a>(
     facts: &'a Declarations,
@@ -334,6 +345,21 @@ fn validate_header(
                 ));
             }
         }
+        DefKind::Struct => {
+            let item = crate::types::ItemId(definition.0);
+            if facts
+                .aggregates
+                .get(item)
+                .is_none_or(|aggregate| aggregate.kind != crate::types::aggregate::Kind::Struct)
+                || !matches!(facts.definitions.get(definition.0 as usize).copied().flatten().and_then(|ty|facts.types.kind(ty)),Some(crate::types::Kind::Adt(owner,_)) if owner == item)
+            {
+                return Err(Error::at(
+                    key.file,
+                    0,
+                    "source nominal attribute header changed its completed aggregate or canonical definition",
+                ));
+            }
+        }
         DefKind::Trait => {
             if facts
                 .generics
@@ -353,7 +379,7 @@ fn validate_header(
             return Err(Error::at(
                 key.file,
                 0,
-                "source attribute query requires a function or trait",
+                "source attribute query requires an actual function, trait or struct",
             ));
         }
     }

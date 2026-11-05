@@ -159,7 +159,7 @@ impl Stage {
         }
         Ok(s::HeaderAttributeColumns { functions, traits })
     }
-    fn header_contract(
+    pub(super) fn header_contract(
         &mut self,
         declaration: crate::support::crates::owner_catalog::DeclarationRef,
         view: HeaderAttributeView<'_>,

@@ -14,7 +14,7 @@ pub(super) fn prepare(
 ) -> Result<Pending, Error> {
     let modules = rows.module_contracts().map_err(error)?;
     let names = &modules.rows().namespace;
-    let conversions = rows.descriptor().profile() == s::Profile::Source2024ModuleConversions;
+    let conversions = rows.descriptor().profile().conversion_roles();
     let count =
         names
             .bindings

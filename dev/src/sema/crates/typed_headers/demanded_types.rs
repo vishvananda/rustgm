@@ -393,6 +393,35 @@ impl<M: Storage> Worklist<M> {
         budget: &mut B,
     ) -> Result<Demand<TypeId>, Error> {
         let kind = match row {
+            s::Type::Nominal {
+                declaration,
+                arguments,
+            } => {
+                if declaration.artifact.0 != 0 {
+                    return Err(error(
+                        "source nominal requires its actual local artifact declaration",
+                    ));
+                }
+                let definition = port.definition(declaration.declaration, budget)?;
+                let rows = port.rows();
+                let arguments = arguments.slice(&rows.arguments).map_err(error)?;
+                budget.charge(arguments.len().saturating_add(1))?;
+                budget.reserve(arguments.len().saturating_mul(4 * size_of::<Argument>()))?;
+                let mut mapped = Vec::with_capacity(arguments.len());
+                for argument in arguments {
+                    mapped.push(match *argument {
+                        s::Argument::Type(ty) => Argument::Type(self.child(ty)?),
+                        s::Argument::Region(region) => match port.region(region, budget)? {
+                            Demand::Ready(region) => Argument::Lifetime(region),
+                            Demand::Blocked(dependency) => return Ok(Demand::Blocked(dependency)),
+                        },
+                    });
+                }
+                Kind::Adt(
+                    crate::types::ItemId(definition.0),
+                    store.intern_arguments(&mapped).map_err(error)?,
+                )
+            }
             s::Type::Scalar(scalar) => return Ok(Demand::Ready(super::super::scalar(scalar))),
             s::Type::Parameter(slot) => {
                 return match port.slot(store, slot, budget)? {
@@ -466,6 +495,15 @@ fn next(
 ) -> Result<Option<g::TypeRef>, Error> {
     Ok(match row {
         s::Type::Scalar(_) | s::Type::Parameter(_) => None,
+        s::Type::Nominal { arguments, .. } => arguments
+            .slice(&rows.arguments)
+            .map_err(error)?
+            .iter()
+            .filter_map(|argument| match argument {
+                s::Argument::Type(ty) => Some(*ty),
+                s::Argument::Region(_) => None,
+            })
+            .nth(cursor),
         s::Type::Reference { referent, .. } => (cursor == 0).then_some(referent),
         s::Type::Function(signature) => {
             let parameters = signature.parameters.slice(&rows.roots).map_err(error)?;

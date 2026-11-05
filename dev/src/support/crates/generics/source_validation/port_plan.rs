@@ -9,6 +9,8 @@ mod goals;
 mod matching;
 #[path = "port_plan/rewritten_nodes.rs"]
 mod nodes;
+#[path = "port_plan/construction_values.rs"]
+mod nominal_values;
 #[path = "port_plan/operation_inputs.rs"]
 mod operations;
 #[path = "port_plan/evaluation_ports.rs"]

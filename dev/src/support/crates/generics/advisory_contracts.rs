@@ -108,7 +108,7 @@ impl HeaderAttributeColumns {
         }
         Ok(bytes)
     }
-    fn check_row(
+    pub(super) fn check_row(
         contract: &HeaderContract,
         expected: DeclarationRef,
         declarations: &[super::Declaration],

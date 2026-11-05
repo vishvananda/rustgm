@@ -6,6 +6,14 @@ pub(super) fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static
     match *row {
         // Scalar has a permanent repr(u8) shared by all existing wire profiles.
         s::Type::Scalar(scalar) => out.bytes(&[0, scalar as u8]),
+        s::Type::Nominal {
+            declaration,
+            arguments,
+        } => {
+            out.u8(6)?;
+            address_write(out, declaration)?;
+            range(out, arguments)
+        }
         s::Type::Parameter(slot) => {
             out.u8(1)?;
             id(out, slot.0)
@@ -37,6 +45,10 @@ pub(super) fn type_read(read: &mut Input<'_, '_>) -> Result<s::Type, &'static st
     Ok(match read.reader.u8()? {
         0 => s::Type::Scalar(read.reader.scalar()?),
         1 => s::Type::Parameter(s::SlotRef(read.id()?)),
+        6 if read.profile.nominals() => s::Type::Nominal {
+            declaration: address_read(read)?,
+            arguments: read.range()?,
+        },
         2 => s::Type::Reference {
             mutable: read.boolean()?,
             region: s::RegionRef(read.id()?),

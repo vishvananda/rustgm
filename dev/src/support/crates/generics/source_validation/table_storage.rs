@@ -45,6 +45,9 @@ pub(super) fn preflight(
     };
     columns(rows, &mut count, work)?;
     let mut names = 0_usize;
+    count.vector(&rows.nominals, work)?;
+    count.vector(&rows.fields, work)?;
+    nominal_names(rows, &mut count, &mut names, work)?;
     count.vector(&rows.exact_callables, work)?;
     for row in &rows.exact_callables {
         work.charge(row.symbol.len().saturating_add(1))?;
@@ -93,7 +96,8 @@ pub(super) fn preflight(
         .len()
         .saturating_mul(size_of::<super::super::Definition>() + 3 * size_of::<u32>() + 1)
         .saturating_add(rows.body_owners.len().saturating_mul(2 * size_of::<u32>()))
-        .saturating_add(count.components.saturating_mul(2));
+        .saturating_add(count.components.saturating_mul(2))
+        .saturating_add(retained::new_map::<&str, ()>(rows.fields.len()));
     let ledger = rows
         .declarations
         .len()
@@ -220,6 +224,32 @@ fn inputs(
         if let Some(copy) = &builtins.source_copy {
             count.vector(&copy.goals, work)?;
         }
+    }
+    Ok(())
+}
+
+fn nominal_names(
+    rows: &SourceRows,
+    count: &mut Count,
+    names: &mut usize,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    for nominal in &rows.nominals {
+        if let Some(reason) = nominal
+            .contract
+            .must_use
+            .as_ref()
+            .and_then(|contract| contract.reason.as_ref())
+        {
+            work.charge(reason.len().saturating_add(1))?;
+            *names = names.saturating_add(reason.len());
+            count.bytes = count.bytes.saturating_add(reason.capacity());
+        }
+    }
+    for field in &rows.fields {
+        work.charge(field.name.len().saturating_add(1))?;
+        *names = names.saturating_add(field.name.len());
+        count.bytes = count.bytes.saturating_add(field.name.capacity());
     }
     Ok(())
 }
