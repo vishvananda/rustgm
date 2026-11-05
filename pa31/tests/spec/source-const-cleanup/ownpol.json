@@ -1,0 +1,46 @@
+{
+  "cases": [
+    {
+      "file": "cpok.rs",
+      "expected_code": 0,
+      "prediction": "real declared conditional Destruct in addition to ordinary Copy",
+      "source_sha256": "52e294005bde15bf845b21b64c3ebcdf76b5eafdbe2191d38708c1b7e77e4364"
+    },
+    {
+      "file": "ownref.rs",
+      "expected_code": 0,
+      "prediction": "borrowed field requires no owned referent const destruction; full lifetime substitution",
+      "source_sha256": "12cacd0a35a6cbd56fb2a1a9987a257eea0eedc0030f42981d9d5ed689e1ee7d"
+    },
+    {
+      "file": "uncopy.rs",
+      "expected_code": 1,
+      "prediction": "unused union const Drop still validates its declared field const premise; uncertain",
+      "source_sha256": "f8ba951adca877ae0e1d0dff445cf8a1969e7c77b18e885ca2b418b11be28bd9"
+    },
+    {
+      "file": "uncond.rs",
+      "expected_code": 0,
+      "prediction": "union const Drop declared actual conditional field premise",
+      "source_sha256": "fe300f7728f073bb9ae659f6c02288b8f5f844a9c74a6520a42b0e5b2a68b9d1"
+    },
+    {
+      "file": "ownbad.rs",
+      "expected_code": 1,
+      "prediction": "invalid const Drop owner rejected even without a cleanup consumer",
+      "source_sha256": "bd2db5c371e404f12d967cc6c89fd6e9fb5fe4051a84fb2834b37e72f3e6128c"
+    },
+    {
+      "file": "owngud.rs",
+      "expected_code": 0,
+      "prediction": "valid const Drop owner unused with genuine const field destructors",
+      "source_sha256": "615c6ba97159cc63ad4b067b2c598f1e53d93e53fabf255ae660c7116a424eab"
+    },
+    {
+      "file": "ownman.rs",
+      "expected_code": 0,
+      "prediction": "actual ManuallyDrop source policy suppresses field ownership, with genuine const own Drop",
+      "source_sha256": "4f3c4c7d3b642433ab330be9febc06da20d1a231d88bbccc8f16d9e4c16d835c"
+    }
+  ]
+}

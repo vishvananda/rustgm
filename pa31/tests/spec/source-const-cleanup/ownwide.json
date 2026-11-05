@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "file": "ownw0.rs",
+      "expected_code": 0,
+      "prediction": "unused actual const Drop owner; one base field plus repeated shared semantic parameter fields; each full substitution memo and scoped premise is reused",
+      "source_sha256": "8007b38001da7ead326f41ea5cc12d9c9a741e1df0efaf12e3eb7d8547debbe6"
+    },
+    {
+      "file": "ownw8.rs",
+      "expected_code": 0,
+      "prediction": "unused actual const Drop owner; one base field plus repeated shared semantic parameter fields; each full substitution memo and scoped premise is reused",
+      "source_sha256": "21fa9e0e9fe56354b937137d6f56b93d3855a3ef65206a1868f2fb6dfaecf93b"
+    },
+    {
+      "file": "ownw32.rs",
+      "expected_code": 0,
+      "prediction": "unused actual const Drop owner; one base field plus repeated shared semantic parameter fields; each full substitution memo and scoped premise is reused",
+      "source_sha256": "240488ba3beec529dafde6bf645425691f40120ff5ceb98c35c1f6aa6f02e4ea"
+    },
+    {
+      "file": "own128.rs",
+      "expected_code": 0,
+      "prediction": "unused actual const Drop owner; one base field plus repeated shared semantic parameter fields; each full substitution memo and scoped premise is reused",
+      "source_sha256": "c4a5790a366210c0380446402dd08e9d0fed79f6212b9dedb9f82ba26deb628e"
+    }
+  ]
+}

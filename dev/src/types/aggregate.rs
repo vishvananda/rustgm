@@ -1,5 +1,7 @@
 //! Completed nominal shapes are separate from canonical, potentially recursive identity.
 mod field_forms;
+mod fields;
+pub(crate) use fields::SemanticFields;
 pub mod finiteness;
 mod instances;
 mod metadata;

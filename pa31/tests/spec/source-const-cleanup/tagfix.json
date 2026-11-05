@@ -1,0 +1,58 @@
+{
+  "reference_receipt": "obj/parallel/source-transport/va-cleanup/reference-v2/receipt.json",
+  "reference_sha256": "d46b913b240ce56b860146289231e78d80fd017ac783789fb5b3d132f0e3aca0",
+  "corrections": [
+    {
+      "file": "tagown.rs",
+      "expected_code": 0,
+      "code": 1,
+      "prediction": "actual const own Drop plus selected eligible payload",
+      "source_sha256": "77b118a78314ecbf72a12f4508256f65a0ec6843c5ff497fdefc920a63a8c56c",
+      "errors": [
+        [
+          "E0367",
+          "`N` does not implement `[const] Destruct`"
+        ],
+        [
+          "",
+          "aborting due to 1 previous error"
+        ]
+      ]
+    },
+    {
+      "file": "tagmut.rs",
+      "expected_code": 0,
+      "code": 1,
+      "prediction": "unused mutable borrow does not itself mutate known active variant",
+      "source_sha256": "046f03b983f09df914f654531e557a33d7b76071ffa671fae6005dcbab3361a2",
+      "errors": [
+        [
+          "E0493",
+          "destructor of `E` cannot be evaluated at compile-time"
+        ],
+        [
+          "",
+          "aborting due to 1 previous error"
+        ]
+      ]
+    },
+    {
+      "file": "tagraw.rs",
+      "expected_code": 0,
+      "code": 1,
+      "prediction": "forming an unused raw address does not itself mutate known active variant",
+      "source_sha256": "f3f6c4b36774e7d13c902e192c9a4d5f9a0a5385177983185a642845cbe8441f",
+      "errors": [
+        [
+          "E0493",
+          "destructor of `E` cannot be evaluated at compile-time"
+        ],
+        [
+          "",
+          "aborting due to 1 previous error"
+        ]
+      ]
+    }
+  ],
+  "note": "Original tags2 predictions and source bytes retained. Actual const own Drop requires fields const Destruct; unused mutable/raw exposure genuinely loses precise const enum knowledge in Rust."
+}

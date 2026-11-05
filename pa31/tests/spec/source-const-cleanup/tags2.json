@@ -1,0 +1,47 @@
+{
+  "attribution": "Additional independent constructor/borrow/own-Drop obligations frozen before any enum candidate. Unused borrow conservatism must remain required work, never a Rust semantic rejection.",
+  "cases": [
+    {
+      "file": "tagown.rs",
+      "expected_code": 0,
+      "prediction": "actual const own Drop plus selected eligible payload",
+      "source_sha256": "77b118a78314ecbf72a12f4508256f65a0ec6843c5ff497fdefc920a63a8c56c"
+    },
+    {
+      "file": "tagonc.rs",
+      "expected_code": 1,
+      "prediction": "nonconst own Drop cannot be hidden by known const payload",
+      "source_sha256": "164a33b8ee8a8e3ef262b9e92b3c8d1b5f5a11b7c0dd33ffd654284efb0e1d5b"
+    },
+    {
+      "file": "tagshr.rs",
+      "expected_code": 0,
+      "prediction": "shared borrow of noninterior value changes no active variant",
+      "source_sha256": "de0108bf79458263bb388a8f7346c825e307eef9c0895deafe2a0b3d6f0e617c"
+    },
+    {
+      "file": "tagmut.rs",
+      "expected_code": 0,
+      "prediction": "unused mutable borrow does not itself mutate known active variant",
+      "source_sha256": "046f03b983f09df914f654531e557a33d7b76071ffa671fae6005dcbab3361a2"
+    },
+    {
+      "file": "tagraw.rs",
+      "expected_code": 0,
+      "prediction": "forming an unused raw address does not itself mutate known active variant",
+      "source_sha256": "f3f6c4b36774e7d13c902e192c9a4d5f9a0a5385177983185a642845cbe8441f"
+    },
+    {
+      "file": "taguni.rs",
+      "expected_code": 0,
+      "prediction": "conditionally uninitialized root has only eligible possibly active variant",
+      "source_sha256": "9e0eb945a0504c047d6dc4f8b67615428882235590d2835b9c68debd29759aa6"
+    },
+    {
+      "file": "tagrep.rs",
+      "expected_code": 0,
+      "prediction": "replacement drops old eligible payload before publishing new tag",
+      "source_sha256": "ba51ccc933b33beae070cd83f6741ac7c30d6c71321339e77e5ebe0eb6451854"
+    }
+  ]
+}
