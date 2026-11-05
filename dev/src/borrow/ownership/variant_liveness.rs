@@ -1,6 +1,12 @@
 //! Fresh variant decisions exclude inactive payloads from possible cleanup only.
+mod index;
+mod locate;
+mod parts;
+mod tags;
+mod trans;
 use super::initialization::Maybe;
 use super::{PathId, Paths, paths::Access, state::State};
+use crate::types::{ItemId, aggregate::Definitions};
 use crate::{
     body::{
         drops::{MemberPosition, MemberQuery},
@@ -23,6 +29,8 @@ pub(super) struct Refinements {
     ranges: Vec<(u32, u32)>,
     pub steps: usize,
     byte_limit: usize,
+    partition: Option<Box<index::Partition>>,
+    physical: bool,
 }
 impl Refinements {
     pub(super) fn new(
@@ -31,6 +39,8 @@ impl Refinements {
         types: &Store,
         position: &impl Fn(TypeId, MemberQuery) -> Result<MemberPosition, &'static str>,
         byte_limit: usize,
+        eligibility: Option<(&Definitions, &dyn Fn(ItemId) -> bool)>,
+        physical: bool,
     ) -> Result<Self, &'static str> {
         let mut result = Self {
             rules: HashMap::default(),
@@ -38,12 +48,34 @@ impl Refinements {
             ranges: Vec::new(),
             steps: 0,
             byte_limit,
+            partition: None,
+            physical,
         };
-        result.index_rules(body, paths, types, position)?;
-        if result.rules.is_empty() {
-            return Ok(result);
+        let seeded = result.index_rules(
+            body,
+            paths,
+            types,
+            position,
+            eligibility.map(|(definitions, _)| definitions),
+        )?;
+        if physical && !result.rules.is_empty() {
+            result.index_fields(paths, types, position)?;
         }
-        result.index_fields(paths, types, position)?;
+        if seeded && let Some((definitions, custom)) = eligibility {
+            let partition = index::Partition::new(
+                index::Inputs {
+                    types,
+                    definitions,
+                    paths,
+                    body,
+                    limit: byte_limit,
+                },
+                custom,
+                position,
+            )?;
+            result.charge(partition.tags.parts.steps.get())?;
+            result.partition = Some(Box::new(partition));
+        }
         Ok(result)
     }
     fn index_rules(
@@ -52,9 +84,27 @@ impl Refinements {
         paths: &Paths,
         types: &Store,
         position: &impl Fn(TypeId, MemberQuery) -> Result<MemberPosition, &'static str>,
-    ) -> Result<(), &'static str> {
+        definitions: Option<&Definitions>,
+    ) -> Result<bool, &'static str> {
+        let mut seeded = false;
         self.charge(body.blocks.len())?;
         for (index, block) in body.blocks.iter().enumerate() {
+            if let Some(definitions) = definitions {
+                for statement in &body.statements[block.start as usize..block.end as usize] {
+                    self.charge(1)?;
+                    let ty = match statement.action {
+                        Action::StorageLive(local) => {
+                            body.locals.get(local.0 as usize).map(|local| local.ty)
+                        }
+                        Action::Evaluate(value) => {
+                            body.values.get(value.0 as usize).map(|value| value.ty)
+                        }
+                        _ => None,
+                    };
+                    seeded|=ty.is_some_and(|ty|matches!(types.kind(ty),Some(Kind::Adt(item,_))
+                        if definitions.get(item).is_some_and(|d|d.kind==crate::types::aggregate::Kind::Enum)));
+                }
+            }
             let Terminator::Branch { condition, yes, no } = block.terminator else {
                 continue;
             };
@@ -99,7 +149,7 @@ impl Refinements {
                 },
             );
         }
-        Ok(())
+        Ok(seeded)
     }
     fn index_fields(
         &mut self,
@@ -190,7 +240,7 @@ impl Refinements {
             .map_err(|_| "cleanup refinement rule allocation failed")
     }
     pub(super) fn is_empty(&self) -> bool {
-        self.rules.is_empty()
+        (!self.physical || self.rules.is_empty()) && self.partition.is_none()
     }
     pub(super) fn has(&self, block: usize) -> bool {
         self.rules.contains_key(&block)
@@ -206,6 +256,12 @@ impl Refinements {
         let Some(rule) = self.rules.get(&block) else {
             return Ok(());
         };
+        if let Some(partition) = &self.partition {
+            partition.edge(rule.parent, rule.variant, target == rule.yes, state)?;
+        }
+        if !self.physical {
+            return Ok(());
+        }
         let ranges = self
             .groups
             .get(&(rule.parent, rule.variant))
@@ -228,5 +284,45 @@ impl Refinements {
             return Err("cleanup refinement belongs to another successor");
         }
         Ok(())
+    }
+}
+
+impl Refinements {
+    pub(super) fn bits(&self, physical: u32) -> u32 {
+        self.partition.as_ref().map_or(physical, |p| p.tags.bits)
+    }
+    pub(super) fn scratch(&self) -> Result<Vec<u8>, &'static str> {
+        self.partition
+            .as_ref()
+            .map_or_else(|| Ok(Vec::new()), |p| p.scratch())
+    }
+    pub(super) fn before<I: Maybe>(
+        &self,
+        location: crate::body::storage::Location,
+        state: &mut State<I>,
+        scratch: &mut [u8],
+    ) -> Result<(), &'static str> {
+        self.partition
+            .as_ref()
+            .map_or(Ok(()), |p| p.before(location, state, scratch))
+    }
+    pub(super) fn after<I: Maybe>(
+        &self,
+        location: crate::body::storage::Location,
+        state: &mut State<I>,
+        scratch: &[u8],
+    ) -> Result<(), &'static str> {
+        self.partition
+            .as_ref()
+            .map_or(Ok(()), |p| p.after(location, state, scratch))
+    }
+    pub(super) fn transition<I: Maybe>(
+        &self,
+        event: super::initialization::Transition,
+        state: &mut State<I>,
+    ) -> Result<(), &'static str> {
+        self.partition
+            .as_ref()
+            .map_or(Ok(()), |p| p.transition(event, state))
     }
 }

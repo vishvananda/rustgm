@@ -1,0 +1,46 @@
+{
+  "cases": [
+    {
+      "file": "fulcpy.rs",
+      "expected_code": 0,
+      "prediction": "active cleanup can skip ordinary Copy field while executing C destructor; prediction uncertain",
+      "source_sha256": "e930eb6d32d5659db97334b18003a881fc7b5dfe4fd772c511bb3f805d86697d"
+    },
+    {
+      "file": "fulbnd.rs",
+      "expected_code": 1,
+      "prediction": "explicit whole const Destruct bound remains distinct from dropless field cleanup",
+      "source_sha256": "9d9682fc0683de32ce773aff40e0225b0422b4fa1a58156267b5a525946835df"
+    },
+    {
+      "file": "cppart.rs",
+      "expected_code": 0,
+      "prediction": "partly moved Struct with only dropless/const fields; prediction uncertain",
+      "source_sha256": "71240789f9dbd815601d6b750ea01de4e03aa7f01180bcf1072b199b0afab6b8"
+    },
+    {
+      "file": "epart.rs",
+      "expected_code": 1,
+      "prediction": "unreachable Bad binding cleanup is still checked; setup/control negative",
+      "source_sha256": "d904eb82b1bc06f2b391e172ab7b1c61297dd230982fd74089f2dcb46945861f"
+    },
+    {
+      "file": "epart2.rs",
+      "expected_code": 0,
+      "prediction": "known eligible variant survives partial enum payload moves; prediction uncertain",
+      "source_sha256": "1b370c1f40a42da76e10ab25b1ea56a2f0fca5167c0ba5206d59678d515983e8"
+    },
+    {
+      "file": "snest.rs",
+      "expected_code": 0,
+      "prediction": "moved nested known variant leaves historical parent eligibility; prediction uncertain",
+      "source_sha256": "49da3fed267d9f3c5812ba09c3abf1da0b7a1156c0edfe9f720a0b2344597c3f"
+    },
+    {
+      "file": "eunk.rs",
+      "expected_code": 1,
+      "prediction": "unknown partially moved root retains nonconst qualifier despite variant branch; prediction uncertain",
+      "source_sha256": "cbfe454118765563eb2e3061ad99497d3bfc82652a06e79040ae4bd34909cab1"
+    }
+  ]
+}

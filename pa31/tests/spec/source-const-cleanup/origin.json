@@ -1,0 +1,47 @@
+{
+  "prediction": "frozen before reference/candidate; own Drop and field qualification are distinct",
+  "cases": [
+    {
+      "file": "dself.rs",
+      "source_sha256": "61fb1a3172fd910482df23984999735ba06b4109baad458318d11595ad7ab58a",
+      "expected_code": 1,
+      "cause": "E0493 freshly constructed wrapper own Drop remains active"
+    },
+    {
+      "file": "dstrct.rs",
+      "source_sha256": "7eb13b605067c82937b0107c68994ef898b6f4740f198e2b59ca07dc71e014ce",
+      "expected_code": 0,
+      "cause": "ordinary wrapper carries only impossible field qualification"
+    },
+    {
+      "file": "dsib.rs",
+      "source_sha256": "549f01ddbbbdd10c27ff4d2df374acc3f56926e385565146ba48c26414aa549d",
+      "expected_code": 1,
+      "cause": "E0493 independent sibling cannot borrow impossible field provenance"
+    },
+    {
+      "file": "dother.rs",
+      "source_sha256": "bf695a9f9d8803907f64a01185a48a0923bdb8f51e4d881fc623ab2abfad8e1c",
+      "expected_code": 1,
+      "cause": "E0493 unrelated preexisting owner remains active"
+    },
+    {
+      "file": "dowmv.rs",
+      "source_sha256": "91fcdaddb75128d89993df7300ccb7050f08161fe21784e11765d0b123d76690",
+      "expected_code": 0,
+      "cause": "actual impossible own-Drop payload move retains false qualification"
+    },
+    {
+      "file": "drep.rs",
+      "source_sha256": "8d71d0737c43dca4ee4d4b84268e78e2496baba6d7ed6cf20d28ba9fb8186782",
+      "expected_code": 1,
+      "cause": "E0493 old replacement value remains active before new constructor publication"
+    },
+    {
+      "file": "dunk.rs",
+      "source_sha256": "be7b436905efa2180a9fe2b3e07ee1c11d699a99361104ad8169e27487d6a35d",
+      "expected_code": 1,
+      "cause": "E0493 unknown call result carries no constructor promise"
+    }
+  ]
+}

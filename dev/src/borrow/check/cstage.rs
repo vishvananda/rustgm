@@ -71,7 +71,7 @@ pub(super) fn prepare<'body, 'slot, S: std::hash::BuildHasher>(
         environment.source_copy,
     )
     .map_err(error)?;
-    let init = if let Some(shared) = shared {
+    let mut init = if let Some(shared) = shared {
         initialization::analyze_shared(
             environment.types,
             environment.definitions,
@@ -95,6 +95,16 @@ pub(super) fn prepare<'body, 'slot, S: std::hash::BuildHasher>(
         node: Some(e.node),
         message: e.message.into(),
     })?;
+    if owner.is_some() {
+        init.refine_variants(
+            environment.types,
+            environment.definitions,
+            &|item| catalog.custom(item),
+            initialization::Refinement::EligibilityOnly,
+            &|ty, query| catalog.member_position(ty, query),
+        )
+        .map_err(error)?;
+    }
     let plan =
         destruction::select_reusing(catalog, &init, &mut reused.transitions).map_err(|e| {
             Error {

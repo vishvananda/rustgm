@@ -1,0 +1,97 @@
+{
+  "reference": "obj/parallel/source-transport/va-cleanup/reference-v8/receipt.json",
+  "sha256": "3c58c581ea385f1644af30b4fae38e35319fe6ae4b585cac5ba634538548bd9b",
+  "corrections": [
+    {
+      "file": "fulcpy.rs",
+      "expected_code": 0,
+      "prediction": "active cleanup can skip ordinary Copy field while executing C destructor; prediction uncertain",
+      "source_sha256": "e930eb6d32d5659db97334b18003a881fc7b5dfe4fd772c511bb3f805d86697d",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--emit=metadata",
+        "--crate-name",
+        "fulcpy",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/fulcpy.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v8/fulcpy.rmeta",
+        "--error-format=json"
+      ],
+      "code": 1,
+      "seconds": 0.032173510000575334,
+      "matches": false,
+      "errors": [
+        [
+          "E0493",
+          "destructor of `S<T>` cannot be evaluated at compile-time"
+        ],
+        [
+          "",
+          "aborting due to 1 previous error"
+        ]
+      ]
+    },
+    {
+      "file": "cppart.rs",
+      "expected_code": 0,
+      "prediction": "partly moved Struct with only dropless/const fields; prediction uncertain",
+      "source_sha256": "71240789f9dbd815601d6b750ea01de4e03aa7f01180bcf1072b199b0afab6b8",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--emit=metadata",
+        "--crate-name",
+        "cppart",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/cppart.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v8/cppart.rmeta",
+        "--error-format=json"
+      ],
+      "code": 1,
+      "seconds": 0.030405447003431618,
+      "matches": false,
+      "errors": [
+        [
+          "E0493",
+          "destructor of `S<T>` cannot be evaluated at compile-time"
+        ],
+        [
+          "",
+          "aborting due to 1 previous error"
+        ]
+      ]
+    },
+    {
+      "file": "epart.rs",
+      "expected_code": 1,
+      "prediction": "unreachable Bad binding cleanup is still checked; setup/control negative",
+      "source_sha256": "d904eb82b1bc06f2b391e172ab7b1c61297dd230982fd74089f2dcb46945861f",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--emit=metadata",
+        "--crate-name",
+        "epart",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/epart.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v8/epart.rmeta",
+        "--error-format=json"
+      ],
+      "code": 0,
+      "seconds": 0.03338060399983078,
+      "matches": false,
+      "errors": []
+    }
+  ],
+  "note": "No-enum whole-root restrictions retained; known-constructor unreachable implicit cleanup differs from ordinary CFG validity."
+}

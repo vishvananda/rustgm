@@ -1,0 +1,11 @@
+{
+  "prediction": "frozen before reference/candidate; forged in-memory query opponents are invariant tests, not source verdicts",
+  "cases": [
+    {
+      "file": "qctor.rs",
+      "source_sha256": "971cdcd017fe6bc5c4ffe6d595755885206dc04bf5ffbb70cb9259da23520ea0",
+      "expected_code": 0,
+      "cause": "actual ordinary struct/enum/union declaration and independent const Drop source foundation"
+    }
+  ]
+}

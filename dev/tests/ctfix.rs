@@ -78,7 +78,7 @@ fn active_enum_selection_remains_required_beyond_the_no_access_repair() -> Resul
     for name in ["prknow", "prmove", "prunk"] {
         let error = cleanup(name)
             .err()
-            .ok_or("qualify actual selected enum cleanup")?;
+            .ok_or_else(|| format!("{name}: qualify actual selected enum cleanup"))?;
         assert!(
             error
                 .to_string()

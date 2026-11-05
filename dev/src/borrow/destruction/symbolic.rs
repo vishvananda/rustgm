@@ -61,8 +61,51 @@ pub fn select(
         crate::body::drops::MemberQuery,
     ) -> Result<crate::body::drops::MemberPosition, &'static str>,
 ) -> Result<Plan, Error> {
+    select_inside(
+        types,
+        definitions,
+        needed,
+        facts,
+        custom,
+        position,
+        initialization::Refinement::Physical,
+    )
+}
+pub(crate) fn select_defining(
+    types: &Store,
+    definitions: &Definitions,
+    needed: &mut NeedsDrop,
+    facts: &mut initialization::Facts<'_>,
+    custom: impl Fn(ItemId) -> bool,
+    position: impl Fn(
+        TypeId,
+        crate::body::drops::MemberQuery,
+    ) -> Result<crate::body::drops::MemberPosition, &'static str>,
+) -> Result<Plan, Error> {
+    select_inside(
+        types,
+        definitions,
+        needed,
+        facts,
+        custom,
+        position,
+        initialization::Refinement::Defining,
+    )
+}
+fn select_inside(
+    types: &Store,
+    definitions: &Definitions,
+    needed: &mut NeedsDrop,
+    facts: &mut initialization::Facts<'_>,
+    custom: impl Fn(ItemId) -> bool,
+    position: impl Fn(
+        TypeId,
+        crate::body::drops::MemberQuery,
+    ) -> Result<crate::body::drops::MemberPosition, &'static str>,
+    mode: initialization::Refinement,
+) -> Result<Plan, Error> {
     let refinement_steps = facts
-        .refine_variants(types, &position)
+        .refine_variants(types, definitions, &custom, mode, &position)
         .map_err(|message| Error {
             node: facts.body().source.into(),
             message,

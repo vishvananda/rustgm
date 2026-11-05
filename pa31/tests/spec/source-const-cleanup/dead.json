@@ -1,0 +1,40 @@
+{
+  "cases": [
+    {
+      "file": "dborrow.rs",
+      "expected_code": 1,
+      "prediction": "E0506: impossible const cleanup arm still has normal live mutable-loan conflict",
+      "source_sha256": "82ec345e67b7479e4e38344952429bafa7190e8d910666c34392b432f92fa1bb"
+    },
+    {
+      "file": "dread.rs",
+      "expected_code": 1,
+      "prediction": "E0381: impossible const cleanup arm still has uninitialized read",
+      "source_sha256": "7eff58ba10721b1f473df370dd6f46c10ac3a37bd2de23a123bc24fc7ae45f81"
+    },
+    {
+      "file": "dmove.rs",
+      "expected_code": 1,
+      "prediction": "E0382: impossible const cleanup arm still has moved non-Copy value use",
+      "source_sha256": "41ee1a91ea7866d5f37c66cce6656ec22152fd887e73fc625d5f139879cada1f"
+    },
+    {
+      "file": "dunsafe.rs",
+      "expected_code": 1,
+      "prediction": "E0133: genuine lexical raw-pointer unsafe permission is still required",
+      "source_sha256": "f47e1d16401334a3ae644b17059c91349c33522167b3c5a82ab4270afafa938d"
+    },
+    {
+      "file": "dcall.rs",
+      "expected_code": 1,
+      "prediction": "E0015: explicit nonconst call remains invalid even when cleanup eligibility edge is impossible",
+      "source_sha256": "02365ecdefc31b8984ac590d1109fc73a125289fc83c4aedd1e7be7bff1979a2"
+    },
+    {
+      "file": "dbound.rs",
+      "expected_code": 1,
+      "prediction": "E0277: explicit const call trait debt is not cleanup eligibility",
+      "source_sha256": "6f27aae16356d134a0bb1b85249c9b6489af9d21b8f32865067ae23b5c56dd65"
+    }
+  ]
+}

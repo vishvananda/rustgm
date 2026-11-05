@@ -19,6 +19,21 @@ use crate::{
 };
 use std::hash::BuildHasher;
 
+/// Physical cleanup refinement and const eligibility have independent activation.
+#[derive(Clone, Copy)]
+pub(crate) enum Refinement {
+    Physical,
+    Defining,
+    EligibilityOnly,
+}
+impl Refinement {
+    pub(super) const fn physical(self) -> bool {
+        !matches!(self, Self::EligibilityOnly)
+    }
+    pub(super) const fn eligibility(self) -> bool {
+        !matches!(self, Self::Physical)
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Status {
     /// No bit in the queried range is initialized on any incoming path.
@@ -172,6 +187,9 @@ impl Facts<'_> {
     pub(crate) fn refine_variants(
         &mut self,
         types: &Store,
+        definitions: &Definitions,
+        custom: &dyn Fn(ItemId) -> bool,
+        mode: Refinement,
         position: &impl Fn(
             crate::types::TypeId,
             crate::body::drops::MemberQuery,
@@ -192,6 +210,8 @@ impl Facts<'_> {
             types,
             position,
             available,
+            mode.eligibility().then_some((definitions, custom)),
+            mode.physical(),
         )?;
         if refinements.is_empty() {
             return Ok(refinements.steps);
@@ -213,6 +233,7 @@ impl Facts<'_> {
             Some(&refinements),
         )
         .map_err(|e| e.message)?;
+        self.words = (refinements.bits(self.ownership.paths.bits) as usize).div_ceil(64);
         let steps = refinements.steps;
         self.refinements = Some(Box::new(refinements));
         Ok(steps)
@@ -363,14 +384,21 @@ pub(super) trait Maybe: Copy + Default + PartialEq {
     const TRACK_VALUES: bool;
     fn assign(&mut self, mask: u64, initialized: bool);
     fn join(self, other: Self) -> Self;
+    fn bits(self) -> u64;
 }
 impl Maybe for () {
     const TRACK_VALUES: bool = false;
     fn assign(&mut self, _: u64, _: bool) {}
     fn join(self, (): Self) -> Self {}
+    fn bits(self) -> u64 {
+        0
+    }
 }
 impl Maybe for u64 {
     const TRACK_VALUES: bool = true;
+    fn bits(self) -> u64 {
+        self
+    }
     fn assign(&mut self, mask: u64, initialized: bool) {
         if initialized {
             *self |= mask;

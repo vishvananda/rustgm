@@ -223,8 +223,19 @@ impl Verifier {
             None
         } else {
             let mut needed = self.needed.scoped(std::sync::Arc::clone(&parameters));
+            let select = if environment.source_copy
+                && (body.const_context
+                    || contract
+                        .builtins
+                        .as_deref()
+                        .is_some_and(|r| r.defining().is_some()))
+            {
+                symbolic::select_defining
+            } else {
+                symbolic::select
+            };
             Some(
-                symbolic::select(
+                select(
                     environment.types,
                     environment.definitions,
                     &mut needed,

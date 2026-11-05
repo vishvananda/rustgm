@@ -278,6 +278,7 @@ fn place_needs(
 pub enum MemberQuery {
     Field(super::ir::Selection),
     Variant(super::ir::VariantId),
+    Constructor(super::ir::VariantId),
 }
 #[derive(Clone, Copy)]
 pub enum MemberPosition {
@@ -317,7 +318,7 @@ pub(crate) fn member_position(
         MemberQuery::Field(super::ir::Selection::Nominal(field)) => members
             .variant(field)
             .ok_or("missing instance cleanup variant")?,
-        MemberQuery::Variant(variant) => variant,
+        MemberQuery::Variant(variant) | MemberQuery::Constructor(variant) => variant,
         MemberQuery::Field(_) => return Err("invalid instance cleanup field selection"),
     };
     let variant = members
@@ -327,6 +328,12 @@ pub(crate) fn member_position(
     if variant.owner != item {
         return Err("instance cleanup member belongs to another type");
     }
+    if matches!(query, MemberQuery::Constructor(_)) {
+        validate_constructor_inventory(types, definitions, members, item)?;
+        if members.variants(item).get(variant.ordinal as usize) != Some(&id) {
+            return Err("cleanup constructor is not in its actual nominal inventory");
+        }
+    }
     match query {
         MemberQuery::Field(super::ir::Selection::Nominal(field)) => Ok(MemberPosition::Field {
             variant: variant.ordinal,
@@ -334,7 +341,43 @@ pub(crate) fn member_position(
                 .ordinal(field)
                 .ok_or("missing instance cleanup field")?,
         }),
-        MemberQuery::Variant(_) => Ok(MemberPosition::Variant(variant.ordinal)),
+        MemberQuery::Variant(_) | MemberQuery::Constructor(_) => {
+            Ok(MemberPosition::Variant(variant.ordinal))
+        }
         MemberQuery::Field(_) => Err("invalid instance cleanup field selection"),
     }
+}
+
+fn validate_constructor_inventory(
+    types: &crate::types::Store,
+    definitions: &crate::types::aggregate::Definitions,
+    members: &crate::sema::members::Members,
+    item: crate::types::ItemId,
+) -> Result<(), &'static str> {
+    let definition = definitions
+        .get(item)
+        .ok_or("cleanup constructor nominal is pending")?;
+    let variants = definitions.variants(definition);
+    let actual = members.variants(item);
+    if actual.len() != variants.len() {
+        return Err("cleanup constructor has incomplete nominal variant inventory");
+    }
+    for (ordinal, (&id, declared)) in actual.iter().zip(variants).enumerate() {
+        let variant = members
+            .variants
+            .get(id.0 as usize)
+            .ok_or("cleanup constructor variant is missing")?;
+        let fields = types
+            .list(declared.fields)
+            .ok_or("cleanup constructor fields are pending")?;
+        if variant.owner != item
+            || variant.ordinal as usize != ordinal
+            || variant.end.checked_sub(variant.start).map(|n| n as usize) != Some(fields.len())
+        {
+            return Err(
+                "cleanup constructor inventory changed its actual owner, ordinal or fields",
+            );
+        }
+    }
+    Ok(())
 }
