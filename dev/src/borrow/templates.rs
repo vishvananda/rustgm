@@ -261,6 +261,22 @@ impl Checked<'_> {
             &self.state.regions.bodies[index],
         ))
     }
+    /// Borrow this checked batch's existing owner index. The walk includes
+    /// other anonymous originals; its length is the actual accounting bound.
+    pub(crate) fn async_body_identities(
+        &self,
+    ) -> (
+        usize,
+        impl Iterator<Item = crate::types::opaque::OpaqueId> + '_,
+    ) {
+        (
+            self.state.anonymous.len(),
+            self.state.anonymous.keys().filter_map(|key| match key {
+                BodyKey::AsyncBody(identity) => Some(*identity),
+                _ => None,
+            }),
+        )
+    }
     pub(crate) fn async_body(
         &self,
         identity: crate::types::opaque::OpaqueId,

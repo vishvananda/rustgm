@@ -110,7 +110,9 @@ impl Original<'_> {
         };
         if let Self::Factory(factory) = self {
             if factory.instance() != body.instance {
-                return Err(error("factory proof requires its exact selected identity"));
+                return Err(error(
+                    "factory proof belongs to a different selected instance",
+                ));
             }
             if let Some(future) = factory.future() {
                 future_family(types, templates, body, future).map_err(error)?;
