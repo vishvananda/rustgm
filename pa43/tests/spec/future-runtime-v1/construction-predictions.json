@@ -1,0 +1,26 @@
+{
+  "scope": "parameterless dormant construction first stage; full capture/poll/drop remain required",
+  "basis": "genuine async constructor retains the authored diverging body for poll; unused invalid Output still checks",
+  "cases": [
+    {
+      "name": "construction",
+      "source": "pa43/tests/spec/future-runtime-v1/construction-source.rs",
+      "source_sha256": "8fe9d4fbb0ec6e8aa28749c6ba100f8eca6a8ba75650cf5aafbf725439f4ed14",
+      "companion": "pa43/tests/spec/future-runtime-v1/construction-companion.rs",
+      "companion_sha256": "8eb5ba1126e550d9615b5ae39ed958ae5d1bacdcebca91d9da7c0722862326ce",
+      "expected_compile": 0,
+      "required_rust_diagnostic": null,
+      "expected_native_status": 0
+    },
+    {
+      "name": "construction-wrong",
+      "source": "pa43/tests/spec/future-runtime-v1/construction-wrong-source.rs",
+      "source_sha256": "d27a6135b6308d9db9985f742b72bfe681000ff7081780409bb73c7ed393601d",
+      "companion": "pa43/tests/spec/future-runtime-v1/construction-wrong-companion.rs",
+      "companion_sha256": "12b04f17e8ecb67ac8f8bc1d08106d6a6ab8222569affc293ee46571d2739ef9",
+      "expected_compile": 1,
+      "required_rust_diagnostic": "E0308",
+      "expected_native_status": null
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 //! Iterative candidate search; each child proof commits only its resolved goal.
 mod allocations;
+mod asynchronous;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/auto_cycle_work.rs"]
 mod auto_cycle_tests;
@@ -523,6 +524,9 @@ impl Search<'_> {
         if let Some(action) = self.start_callable(facts, frame)? {
             return Ok(action);
         }
+        if let Some(action) = self.start_async_callable(facts, frame)? {
+            return Ok(action);
+        }
         let Some(registry) = &mut facts.generics.implementations else {
             return self.language_result(facts, frame);
         };
@@ -610,6 +614,12 @@ impl Search<'_> {
         }
         if frame.normalizing() {
             return self.accept_normalization(facts, frame, decision);
+        }
+        if matches!(
+            frame.language.as_deref(),
+            Some(mechanical::Pending::Async(_))
+        ) {
+            return Self::accept_async_callable(frame, decision);
         }
         if matches!(
             frame.language.as_deref(),

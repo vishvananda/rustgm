@@ -600,6 +600,7 @@ fn validate_substitution(
 enum Entry {
     Primitive(Selected),
     Future(crate::sema::coroutine_methods::FutureMethod),
+    Lending(crate::sema::lending_methods::Method),
 }
 // Actual cold scalar payload stays12; the shared discriminated row is measured.
 const _: [(); 12] = [(); size_of::<Selected>()];
@@ -616,7 +617,7 @@ impl Registry {
     pub(crate) fn get(&self, instance: Instance) -> Option<Selected> {
         match self.selected.get(&instance).copied() {
             Some(Entry::Primitive(selected)) => Some(selected),
-            Some(Entry::Future(_)) | None => None,
+            Some(Entry::Future(_) | Entry::Lending(_)) | None => None,
         }
     }
     pub(crate) fn get_future(
@@ -625,7 +626,16 @@ impl Registry {
     ) -> Option<crate::sema::coroutine_methods::FutureMethod> {
         match self.selected.get(&instance).copied() {
             Some(Entry::Future(selected)) => Some(selected),
-            Some(Entry::Primitive(_)) | None => None,
+            Some(Entry::Primitive(_) | Entry::Lending(_)) | None => None,
+        }
+    }
+    pub(crate) fn get_lending(
+        &self,
+        instance: Instance,
+    ) -> Option<crate::sema::lending_methods::Method> {
+        match self.selected.get(&instance).copied() {
+            Some(Entry::Lending(selected)) => Some(selected),
+            Some(Entry::Primitive(_) | Entry::Future(_)) | None => None,
         }
     }
     pub(crate) fn is_empty(&self) -> bool {
@@ -648,7 +658,7 @@ pub(in crate::sema) fn retain(
         .get(&instance)
         .is_some_and(|old| match old {
             Entry::Primitive(old) => old.descriptor != descriptor,
-            Entry::Future(_) => true,
+            Entry::Future(_) | Entry::Lending(_) => true,
         })
     {
         return Err("primitive method instance has conflicting descriptors");
@@ -670,12 +680,32 @@ pub(in crate::sema) fn retain_future(
         .get(&instance)
         .is_some_and(|old| match old {
             Entry::Future(old) => *old != selected,
-            Entry::Primitive(_) => true,
+            Entry::Primitive(_) | Entry::Lending(_) => true,
         })
     {
         return Err("future method instance has conflicting actual entry descriptors");
     }
     registry.selected.insert(instance, Entry::Future(selected));
+    Ok(())
+}
+
+pub(in crate::sema) fn retain_lending(
+    facts: &mut Declarations,
+    selected: crate::sema::lending_methods::Method,
+) -> Result<(), &'static str> {
+    let instance = selected.instance();
+    let registry = prepay(facts, instance)?;
+    if registry
+        .selected
+        .get(&instance)
+        .is_some_and(|old| match old {
+            Entry::Lending(old) => *old != selected,
+            Entry::Primitive(_) | Entry::Future(_) => true,
+        })
+    {
+        return Err("async method instance has conflicting actual entry descriptors");
+    }
+    registry.selected.insert(instance, Entry::Lending(selected));
     Ok(())
 }
 

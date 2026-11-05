@@ -12,6 +12,7 @@ pub(crate) enum Bridge {
 pub(crate) type Forwarding = HashMap<usize, Bridge>;
 const _: [(); 16] = [(); size_of::<Bridge>()];
 const _: [(); 32] = [(); size_of::<Forwarding>()];
+const _: [(); 24] = [(); size_of::<(usize, Bridge)>()];
 impl Bridge {
     pub(crate) fn caller<'a>(
         &self,
@@ -22,8 +23,15 @@ impl Bridge {
         let body = get(index)?;
         match self {
             Self::Factory(permit) => {
-                if body.instance != Some(permit.instance())
-                    || !matches!((body.owner, types.kind(permit.instance().ty())),
+                if let Some(future) = permit.future() {
+                    future.require_current(types, body)?;
+                    return Ok(None);
+                }
+                let instance = permit
+                    .instance()
+                    .ok_or("ordinary factory lost its actual selected instance")?;
+                if body.instance != Some(instance)
+                    || !matches!((body.owner, types.kind(instance.ty())),
                         (Owner::Function { definition, signature, .. }, Some(Kind::FunctionItem { item, signature: actual, .. }))
                         if definition.0 == item.0 && signature == actual)
                 {

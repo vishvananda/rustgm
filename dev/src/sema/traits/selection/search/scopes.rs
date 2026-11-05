@@ -472,21 +472,30 @@ impl Scopes {
         predicate: Predicate,
         first: u32,
     ) -> Result<(Predicate, u32, usize), &'static str> {
-        self.open_observed::<false>(facts, scope, predicate, first, &|_, _| Ok(()))
+        self.open_observed::<false>(&mut facts.types, scope, predicate, first, &|_, _| Ok(()))
     }
     pub(super) fn open_counted(
         &mut self,
-        facts: &mut Declarations,
+        types: &mut crate::types::Store,
         scope: ScopeId,
         predicate: Predicate,
         first: u32,
         charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<(Predicate, u32, usize), &'static str> {
-        self.open_observed::<true>(facts, scope, predicate, first, charge)
+        self.open_observed::<true>(types, scope, predicate, first, charge)
+    }
+    pub(super) fn open_types(
+        &mut self,
+        types: &mut crate::types::Store,
+        scope: ScopeId,
+        predicate: Predicate,
+        first: u32,
+    ) -> Result<(Predicate, u32, usize), &'static str> {
+        self.open_observed::<false>(types, scope, predicate, first, &|_, _| Ok(()))
     }
     fn open_observed<const CHARGED: bool>(
         &mut self,
-        facts: &mut Declarations,
+        types: &mut crate::types::Store,
         scope: ScopeId,
         predicate: Predicate,
         first: u32,
@@ -501,7 +510,7 @@ impl Scopes {
             use crate::types::parameters::clauses::Clause;
             universe
                 .opening
-                .clause_charged(&mut facts.types, Clause::Predicate(predicate), charge)
+                .clause_charged(types, Clause::Predicate(predicate), charge)
                 .and_then(|clause| match clause {
                     Clause::UnstableFeature(_) => {
                         Err("opened member predicate changed to a non-type condition")
@@ -510,7 +519,7 @@ impl Scopes {
                     Clause::ForAll(_) => Err("opened member predicate changed clause kind"),
                 })
         } else {
-            universe.opening.predicate(&mut facts.types, predicate)
+            universe.opening.predicate(types, predicate)
         };
         if CHARGED {
             charge(

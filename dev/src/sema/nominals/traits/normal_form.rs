@@ -220,16 +220,15 @@ impl Query {
                     .obligations
                     .resume_at(self.frontier.max(self.state.obligations.regions.end))?;
             }
-            if let Some(
-                source @ (selection::Source::Callable { .. } | selection::Source::Future { .. }),
-            ) = selected
+            if let Some(source) = selected.as_ref()
+                && source.callable_result()
             {
                 self.source = Some(source.clone());
                 let definition = crate::sema::projections::Definition::alias(
                     facts,
                     self.alias,
                     self.alias.arguments(),
-                    source,
+                    source.clone(),
                 )?
                 .ok_or("callable evidence has no associated output")?;
                 let result = definition.result(facts)?.ok_or("missing callable output")?;

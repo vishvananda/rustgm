@@ -114,6 +114,7 @@ pub(in crate::sema) enum Source {
     Callable {
         output: TypeId,
     },
+    AsyncCallable(Arc<super::callables::asynchronous::Selected>),
     /// Actual checked authored owner; formation debts remain in this proof.
     Future {
         future: TypeId,
@@ -143,6 +144,14 @@ pub(in crate::sema) enum Source {
     },
 }
 impl Source {
+    /// These selections own a direct language result, separately from an impl
+    /// definition or the normalizer's intrinsic metadata continuation.
+    pub(in crate::sema) fn callable_result(&self) -> bool {
+        matches!(
+            self,
+            Self::Callable { .. } | Self::Future { .. } | Self::AsyncCallable(_)
+        )
+    }
     fn result(evidence: &ScopedEvidence) -> Result<Self, infer::Error> {
         Ok(match Self::assumed(evidence)? {
             Self::Assumption(value) => Self::ResultBound(value),

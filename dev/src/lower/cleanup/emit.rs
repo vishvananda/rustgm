@@ -98,6 +98,17 @@ impl Emitter<'_, '_> {
                 glue::Method::Unresolved(_) => {
                     return Err("generic destructor requires a selected instance");
                 }
+                glue::Method::Future(future) => {
+                    if recipe.ty != future {
+                        return Err(
+                            "future cleanup changed its actual complete recipe application",
+                        );
+                    }
+                    self.context.future_drop(crate::types::future::EntryKey {
+                        future,
+                        operation: crate::types::future::Operation::Drop,
+                    })?
+                }
             };
             let signature = self.context.output.symbols[symbol.0 as usize].signature;
             let pointer = base.pointer(self.builder)?;

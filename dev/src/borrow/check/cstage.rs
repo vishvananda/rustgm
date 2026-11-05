@@ -46,6 +46,28 @@ pub(super) fn prepare<'body, 'slot, S: std::hash::BuildHasher>(
     structure: structure::Use<'body, 'slot>,
     owner: Option<Arc<()>>,
 ) -> Result<Prepared<'body, 'slot>, Error> {
+    prepare_using(
+        environment,
+        reused,
+        body,
+        contract,
+        catalog,
+        (structure, None),
+        owner,
+    )
+}
+pub(super) fn prepare_using<'body, 'slot, S: std::hash::BuildHasher>(
+    environment: &mut Environment<'_, S>,
+    reused: &mut Reused,
+    body: &'body Body,
+    contract: &regions::Body,
+    catalog: &mut glue::Catalog<'_>,
+    (structure, future): (
+        structure::Use<'body, 'slot>,
+        Option<&'body crate::body::coroutines::Permit>,
+    ),
+    owner: Option<Arc<()>>,
+) -> Result<Prepared<'body, 'slot>, Error> {
     let parameters = super::super::permissions::check(environment, contract)?;
     let mut copies = parameters
         .as_ref()
@@ -70,6 +92,7 @@ pub(super) fn prepare<'body, 'slot, S: std::hash::BuildHasher>(
         contract,
         environment.source_copy,
     )
+    .and_then(|view| view.generated(environment.types, body, future))
     .map_err(error)?;
     let mut init = if let Some(shared) = shared {
         initialization::analyze_shared(

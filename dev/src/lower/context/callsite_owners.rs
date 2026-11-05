@@ -46,7 +46,9 @@ impl Context<'_> {
                 if body.instance != Some(adapter.instance()) {
                     return Err("reached adapter has another full instance");
                 }
-                self.adapter_indices.get(&adapter).copied()
+                self.adapter_indices
+                    .get(&super::Generated::Adapter(adapter))
+                    .copied()
             }
             Owner::Closure { .. } | Owner::Function { .. } if body.instance.is_some() => body
                 .instance

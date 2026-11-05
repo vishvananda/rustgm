@@ -80,7 +80,7 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 29] = [
+const TRAIT_ROLES: [LangItem; 33] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::UseCloned,
@@ -110,6 +110,10 @@ const TRAIT_ROLES: [LangItem; 29] = [
     LangItem::TransmuteTrait,
     LangItem::VaArgSafe,
     LangItem::Receiver,
+    LangItem::AsyncFn,
+    LangItem::AsyncFnMut,
+    LangItem::AsyncFnOnce,
+    LangItem::AsyncFnKindHelper,
 ];
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -146,15 +150,8 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         let header = header(report, facts, declaration, role)?;
         let self_type = header.self_type;
         match role {
-            LangItem::From
-            | LangItem::BikeshedGuaranteedNoDrop
-            | LangItem::UseCloned
-            | LangItem::FnPtrTrait
-            | LangItem::Deref
-            | LangItem::DerefMut
-            | LangItem::DerefPure
-            | LangItem::Receiver
-            | LangItem::VaArgSafe => {}
+            role if canonical_header_only(role) => {}
+            LangItem::From | LangItem::BikeshedGuaranteedNoDrop => {}
             LangItem::TransmuteTrait => {
                 super::transmutability::validate_trait(
                     report,
@@ -242,9 +239,16 @@ fn complete_dependent_roles(
         super::pointers::validate_member(report, facts, declaration)?;
         complete.roles.insert(LangItem::FnPtrAddr);
     }
-    for role in [LangItem::DerefTarget, LangItem::ReceiverTarget] {
+    for role in [
+        LangItem::DerefTarget,
+        LangItem::ReceiverTarget,
+        LangItem::AsyncFnOnceOutput,
+        LangItem::CallOnceFuture,
+        LangItem::CallRefFuture,
+        LangItem::AsyncFnKindUpvars,
+    ] {
         if let Some(declaration) = catalog.language(role) {
-            super::dereferencing::validate_target(report, facts, declaration)?;
+            super::headers::associated_type(report, facts, declaration)?;
             complete.roles.insert(role);
         }
     }
@@ -376,15 +380,8 @@ fn validate_owned_members(report: &Report, catalog: &Catalog, roles: RoleSet) ->
     Ok(())
 }
 
-fn header<'a>(
-    report: &Report,
-    facts: &'a Declarations,
-    declaration: Declaration,
-    role: LangItem,
-) -> Result<super::headers::Trait<'a>, Error> {
-    let error = |message| Declarations::error(report, declaration.origin, message);
-    let header = super::headers::Trait::source(report, facts, declaration).map_err(error)?;
-    if matches!(
+fn canonical_header_only(role: LangItem) -> bool {
+    matches!(
         role,
         LangItem::UseCloned
             | LangItem::FnPtrTrait
@@ -393,7 +390,22 @@ fn header<'a>(
             | LangItem::DerefPure
             | LangItem::VaArgSafe
             | LangItem::Receiver
-    ) {
+            | LangItem::AsyncFn
+            | LangItem::AsyncFnMut
+            | LangItem::AsyncFnOnce
+            | LangItem::AsyncFnKindHelper
+    )
+}
+
+fn header<'a>(
+    report: &Report,
+    facts: &'a Declarations,
+    declaration: Declaration,
+    role: LangItem,
+) -> Result<super::headers::Trait<'a>, Error> {
+    let error = |message| Declarations::error(report, declaration.origin, message);
+    let header = super::headers::Trait::source(report, facts, declaration).map_err(error)?;
+    if canonical_header_only(role) {
         // Reservation already checked each role's target and generic arity.
         // Authenticate its canonical Self and source-owned inputs without inventing
         // additional flags, member or supertrait restrictions;
@@ -500,18 +512,9 @@ fn validate_marker(
     facts: &Declarations,
     declaration: Declaration,
 ) -> Result<(), Error> {
-    if !report
-        .resolution
-        .source_bindings
-        .as_deref()
-        .is_some_and(|r| r.denies_implementation(declaration.definition))
-    {
-        return Err(Declarations::error(
-            report,
-            declaration.origin,
-            "source compiler marker requires its declared implementation restriction",
-        ));
-    }
+    // Explicit implementation policy belongs to the actual declared attributes.
+    // An ordinary empty Tuple declaration need not carry the standard marker's
+    // implementation restriction merely to establish its source identity.
     let owner = facts
         .associated
         .owner(declaration.definition)

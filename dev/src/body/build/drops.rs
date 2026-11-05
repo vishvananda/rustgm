@@ -11,11 +11,62 @@ pub(super) fn finish(
     report: &crate::resolve::expansion::Report,
     facts: &crate::sema::model::Declarations,
     program: &mut crate::body::ir::Program,
+    origin: Option<super::NodeKey>,
     query: Option<&mut crate::types::destruction::NeedsDrop>,
 ) -> Result<(), Error> {
-    program.drops = crate::body::drops::collect(facts, program, query)
+    program.drops = crate::body::drops::collect(facts, program, origin, query)
         .map_err(|(source, message)| report.diagnostic(report.body_error(source, message)))?;
     Ok(())
+}
+
+/// One existing owner-index pass activates possible cleanup independently of Drop impls.
+pub(super) fn origin(
+    report: &crate::resolve::expansion::Report,
+    facts: &crate::sema::model::Declarations,
+) -> Result<Option<super::NodeKey>, Error> {
+    if let Some(implementation) = facts.destructors.implementations().first() {
+        return Ok(Some(implementation.source));
+    }
+    for (&owner, identities) in &facts.opaques.owners {
+        let Some(&identity) = identities.last() else {
+            continue;
+        };
+        if facts
+            .types
+            .authored_future_template(identity)
+            .map_err(Error::unlocated)?
+            .is_none()
+        {
+            continue;
+        }
+        let function = facts
+            .function_indices
+            .get(&owner)
+            .and_then(|&index| facts.functions.get(index))
+            .ok_or_else(|| Error::unlocated("future cleanup lost its actual function ordinal"))?;
+        facts
+            .charge_caller_inputs(1, 0)
+            .map_err(|e| report.body_error(function.node, e))?;
+        let body = facts
+            .authored_async_body(function)
+            .map_err(|e| report.body_error(function.node, e))?
+            .ok_or_else(|| {
+                report.body_error(
+                    function.node,
+                    "future cleanup lost its actual authored owner",
+                )
+            })?;
+        if body.identity != identity {
+            return Err(report.body_error(
+                function.node,
+                "future cleanup changed its actual primary ordinal",
+            ));
+        }
+        return function.body.map(Some).ok_or_else(|| {
+            report.body_error(function.node, "future cleanup lost its actual source body")
+        });
+    }
+    Ok(None)
 }
 
 impl Builder<'_> {

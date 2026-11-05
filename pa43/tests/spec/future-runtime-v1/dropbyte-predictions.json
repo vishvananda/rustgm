@@ -1,0 +1,28 @@
+{
+  "scope": "compiler-state byte permission and ordinary borrowed-move opposition, frozen before observation",
+  "cases": [
+    {
+      "source": "dropbyte.rs",
+      "sha256": "a4c36fb1beb190ba2d5abfa2df83ba63dc7f46863aff997e23080c8dbfb69e03",
+      "expected_compile": 0,
+      "expected_native_status": 0,
+      "independent_companion": "construction-companion.rs",
+      "independent_companion_sha256": "8eb5ba1126e550d9615b5ae39ed958ae5d1bacdcebca91d9da7c0722862326ce",
+      "basis": "byte-identical authored async/main; source-only prelude has no u8 Clone/Copy implementations; exact no_core async still lacks ResumeTy infrastructure"
+    },
+    {
+      "source": "dropmove.rs",
+      "sha256": "15894f556e26c27e69a721fc4e322bd99dbf1eaff16c8763730d600c6e3859c5",
+      "expected_compile": 1,
+      "required_diagnostic": "E0507",
+      "required_cause": "Token cannot move out of a mutable reference without Copy",
+      "oracle_kind": "exact no_core metadata"
+    },
+    {
+      "source": "dropowned.rs",
+      "sha256": "363edc0e096b5ec2cc22fa58eb33f3100198cab04168ffb44da50be066ad2bec",
+      "expected_compile": 0,
+      "oracle_kind": "exact no_core metadata"
+    }
+  ]
+}

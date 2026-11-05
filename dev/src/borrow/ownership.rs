@@ -201,10 +201,11 @@ fn prepare<S: BuildHasher>(
     };
     let mut uses = vec![Use::Other; body.values.len()];
     for (index, value) in body.values.iter().enumerate() {
-        if matches!(value.kind, Rvalue::Read(_)) {
-            uses[index] = if copies
-                .demand(types, definitions, derives, value.ty)
-                .map_err(error)?
+        if let Rvalue::Read(place) = value.kind {
+            uses[index] = if copies.state_read(types, body, place).map_err(error)?
+                || copies
+                    .demand(types, definitions, derives, value.ty)
+                    .map_err(error)?
             {
                 Use::Copy
             } else {

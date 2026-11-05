@@ -1,5 +1,30 @@
 # Parallel library bootstrap implementation
 
+The [AsyncFn callable checkpoint](parallel/lending-callable-checkpoint.md) now
+passes60 source/body outcomes,8 exact public tests and9 actual native observers.
+Immutable CLI5fc8c666 advances unchanged original core past AsyncFn to **LIB-170,
+FusedIterator**, marker.rs32/file176:1220, in23.3937s/375opens. All722 original
+hashes, pins, configuration, options/capAllow and finite limits remain unchanged.
+Core still exits1; no original library artifact or whole PA after24 is complete.
+
+Current/predecessor immutable pins are5fc8c666/292c96f2. All54 A/A+ABBA samples
+and output equality remain retained, including the ordinary1024 overhead/noise.
+The [method-shape repair](parallel/method-shape-checkpoint.md) passes its focused
+controls and1389 PA20 cases. The [batch preparation repair](parallel/future-batch-checkpoint.md)
+fixes ordinary/mixed RPIT preparation using the actual checked-batch index.
+Full42121019144 exposed that regression and an old factory diagnostic assertion;
+push42127913033 on59e passes after both fixes. Private/full successor CI for these
+changes and the AsyncFn graph/header opponents remains pending.
+
+Scratch capacity is recovered. Root continues actual source-role/ordinary
+consumers; the two existing6.1-sol/high workers continue bounded poll and precise
+const cleanup work in their existing warm trees. No worker publishes main. Keep
+two heavy jobs globally,16GiB caps,150GiB reserve and five-minute local batches.
+Poll, capture/await/cancellation, wider callable and cleanup semantics, CTFE and
+authenticated body/metadata transport remain required.
+
+## Earlier checkpoint record
+
 The [future/const integration](parallel/future-const-join.md) now joins selected
 authored Future/Output proof, actual const destruction and native runtime-instance
 consumers. Current31 public/1957 PA19/21 cases,11 native tests, upstream/harness
@@ -8,8 +33,8 @@ configuration and limits and still reaches LIB-169 AsyncFn in19.04s/375opens.
 Eight canonical atomic native regressions from full42059682528 are repaired by
 the actual enum parameter ABI; template/concrete diagnostic sites are preserved.
 Full successor and new private controls remain pending. No original library
-artifact or whole assignment after24 is complete. The current/predecessor pins
-are292c96f2/70b47; older pins and failed candidates are retired.
+artifact or whole assignment after24 is complete. That checkpoint
+retained292c96f2/70b47; older pins and failed candidates are retired.
 
 The preceding [enum/deferred join](parallel/enum-deferred-join.md) qualifies
 actual fieldless enum ABI, authored deferred originals and canonical-inventory/

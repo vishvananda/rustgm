@@ -1,0 +1,33 @@
+{
+  "scope": "current checked-batch future preparation and legacy factory diagnostic",
+  "gate": "obj/parallel/async-call-source-v1/implicit-gate-v13",
+  "gate_sha256": "f9da3033ea6aee6809262fe8b32ffe9f3fb200890a0d05bc59870b0ea6c72e6e",
+  "sources": {
+    "dev/src/borrow/templates.rs": "a694c65fa8af3c15e35a604fd5a1789b0559b946c135a05c2338b91970879461",
+    "dev/src/pipeline/asyncbody.rs": "0444db0ecccb08aa59f15eb8d48f6c57430a230adc1c245828435d37ba5a93e1",
+    "dev/src/borrow/check/incremental.rs": "2973490de4d243cfae810a597bbe3255f9ad449fc2f542622060754848dc3977",
+    "dev/tests/stateframe.rs": "0d8c603b83b0d09daa1cb9ced4525d98f444dfc39e7b17ea7afc5add3aca0f06"
+  },
+  "selected": {
+    "suite_memory": [
+      "hidden_values::opaque_storage_source_contracts",
+      "hidden_values::opaque_storage_scaling_sources"
+    ],
+    "suite_frontend": [
+      "lending_calls::actual_async_call_headers_and_bodies_match_frozen_language_outcomes",
+      "lending_calls::automatic_async_calls_require_real_future_capture_abi_and_lifetime_proofs",
+      "future_source::actual_future_roles_preserve_unused_alternatives_and_projection_consumers",
+      "stateframe::ordinary_opaque_results_do_not_request_authored_future_preparation",
+      "stateframe::mixed_future_and_ordinary_results_publish_only_actual_checked_batch_families",
+      "stateframe::unpolled_constructor_and_drop_defer_divergent_body_and_check_unused_output"
+    ]
+  },
+  "seconds": 121.30823380808579,
+  "state": "passed",
+  "ci_predecessor": 42121019144,
+  "pending": [
+    "full successor CI including old private wrong-factory diagnostic control",
+    "wider private batch ownership/cache opponents",
+    "original library artifacts"
+  ]
+}

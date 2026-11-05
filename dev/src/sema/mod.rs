@@ -36,6 +36,7 @@ mod insignificant_drop;
 pub(crate) mod invocations;
 pub(crate) mod iteration;
 pub mod layout_view;
+pub(crate) mod lending_methods;
 pub mod lifetimes;
 mod link_dependencies;
 mod marker_traits;

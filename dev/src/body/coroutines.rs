@@ -1,11 +1,20 @@
 //! Deferred originals and generated entry ownership are distinct phase identities.
+mod creation;
+mod disposal;
 mod framing;
+mod permit;
+#[cfg(test)]
+#[path = "../../tests/invariants/statepermit.rs"]
+mod tests;
 use crate::{
     body::ir::{Body, Owner},
     resolve::model::DefId,
     sema::model::Declarations,
 };
+pub(crate) use creation::{Constructed, constructor};
+pub(crate) use disposal::build as drop_entry;
 pub(crate) use framing::{field, transfer};
+pub(crate) use permit::Permit;
 
 /// Ordinary proof cannot publish an entry whose generated factory is absent.
 pub(crate) fn require_ordinary_body(body: &Body) -> Result<(), &'static str> {

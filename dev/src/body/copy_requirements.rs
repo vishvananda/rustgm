@@ -94,7 +94,7 @@ pub(in crate::body) fn prepare_scoped(
     contract: &mut Contract,
     scope: Option<&materialized::InstanceScope>,
 ) -> Result<(), String> {
-    prepare_using(facts, body, contract, scope, None)
+    prepare_using(facts, body, contract, scope, None, None)
         .map_err(crate::sema::dispatch::Failure::message)
 }
 pub(crate) fn prepare_original_selected(
@@ -103,7 +103,7 @@ pub(crate) fn prepare_original_selected(
     contract: &mut Contract,
     preparation: &mut dyn crate::sema::dispatch::Preparation,
 ) -> Result<(), crate::sema::dispatch::Failure> {
-    prepare_using(facts, body, contract, None, Some(preparation))
+    prepare_using(facts, body, contract, None, Some(preparation), None)
 }
 
 pub(in crate::body) fn prepare_selected(
@@ -113,7 +113,18 @@ pub(in crate::body) fn prepare_selected(
     scope: Option<&materialized::InstanceScope>,
     preparation: &mut dyn crate::sema::dispatch::Preparation,
 ) -> Result<(), crate::sema::dispatch::Failure> {
-    prepare_using(facts, body, contract, scope, Some(preparation))
+    prepare_using(facts, body, contract, scope, Some(preparation), None)
+}
+pub(crate) fn prepare_generated(
+    facts: &mut Declarations,
+    body: &Body,
+    contract: &mut Contract,
+    permit: &super::coroutines::Permit,
+) -> Result<(), String> {
+    permit.require_current(&facts.types, body)?;
+    facts.checked_future_definition(permit.future())?;
+    prepare_using(facts, body, contract, None, None, Some(permit))
+        .map_err(crate::sema::dispatch::Failure::message)
 }
 fn prepare_using(
     facts: &mut Declarations,
@@ -121,6 +132,7 @@ fn prepare_using(
     contract: &mut Contract,
     scope: Option<&materialized::InstanceScope>,
     mut preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
+    future: Option<&super::coroutines::Permit>,
 ) -> Result<(), crate::sema::dispatch::Failure> {
     if scope.is_some() && facts.source_bindings.is_none() {
         return Err("instance Copy scope lost its current source catalog".into());
@@ -137,7 +149,7 @@ fn prepare_using(
         return Err("source Copy contract belongs to another body".into());
     }
     let (declaration, goals) = if let Some(service) = &mut preparation {
-        let types = read_types(facts, body)?;
+        let types = read_types(facts, body, future)?;
         let declaration = if types.is_empty() {
             crate::sema::compiler_items::reserved_copy_declaration(facts)?
         } else {
@@ -149,7 +161,10 @@ fn prepare_using(
         (declaration, read_goals(facts, types, declaration)?)
     } else {
         let declaration = crate::sema::compiler_items::copy_declaration(facts)?;
-        (declaration, read_requirements(facts, body, declaration)?)
+        (
+            declaration,
+            read_requirements(facts, body, declaration, future)?,
+        )
     };
     let requirements = Arc::new(SourceCopyRequirements { declaration, goals });
     let environment = contract
@@ -223,11 +238,16 @@ fn read_requirements(
     facts: &mut Declarations,
     body: &Body,
     declaration: Option<crate::resolve::model::DefId>,
+    future: Option<&super::coroutines::Permit>,
 ) -> Result<Vec<Predicate>, String> {
-    let types = read_types(facts, body)?;
+    let types = read_types(facts, body, future)?;
     read_goals(facts, types, declaration)
 }
-fn read_types(facts: &mut Declarations, body: &Body) -> Result<Vec<TypeId>, String> {
+fn read_types(
+    facts: &mut Declarations,
+    body: &Body,
+    future: Option<&super::coroutines::Permit>,
+) -> Result<Vec<TypeId>, String> {
     facts.body_work.canonical_steps = facts
         .body_work
         .canonical_steps
@@ -235,7 +255,12 @@ fn read_types(facts: &mut Declarations, body: &Body) -> Result<Vec<TypeId>, Stri
         .ok_or("source Copy read discovery work exhausted")?;
     let mut types = HashSet::default();
     for value in &body.values {
-        if matches!(value.kind, Rvalue::Read(_)) {
+        if let Rvalue::Read(place) = value.kind
+            && !future
+                .map(|permit| permit.state_read(&facts.types, body, place))
+                .transpose()?
+                .unwrap_or(false)
+        {
             types.insert(value.ty);
         }
         if let Rvalue::Repeat {

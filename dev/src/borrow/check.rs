@@ -298,6 +298,18 @@ fn prove_body<const RECORD: bool, S: BuildHasher>(
     contract: &regions::Body,
     structure: structure::Use<'_, '_>,
 ) -> Result<(ownership::BodyFacts, loans::Report), Error> {
+    prove_body_using::<RECORD, S>(environment, reused, body, contract, (structure, None))
+}
+fn prove_body_using<const RECORD: bool, S: BuildHasher>(
+    environment: &mut Environment<'_, S>,
+    reused: &mut Reused,
+    body: &Body,
+    contract: &regions::Body,
+    (structure, future): (
+        structure::Use<'_, '_>,
+        Option<&crate::body::coroutines::Permit>,
+    ),
+) -> Result<(ownership::BodyFacts, loans::Report), Error> {
     let mut copies = super::permissions::check(environment, contract)?.map(Copies::in_environment);
     let local;
     let (order, storage) = match structure {
@@ -317,6 +329,7 @@ fn prove_body<const RECORD: bool, S: BuildHasher>(
         contract,
         environment.source_copy,
     )
+    .and_then(|view| view.generated(environment.types, body, future))
     .map_err(|message| Error {
         node: Some(body.source.into()),
         message: message.into(),
@@ -366,15 +379,30 @@ fn prove_cleanup<S: BuildHasher>(
     catalog: &mut super::destruction::glue::Catalog<'_>,
     structure: structure::Use<'_, '_>,
 ) -> Result<Option<super::destruction::Plan>, Error> {
-    let prepared = cstage::prepare(
+    prove_cleanup_using(
         environment,
         reused,
+        drop_regions,
         body,
         contract,
         catalog,
-        structure,
-        None,
-    )?;
+        (structure, None),
+    )
+}
+fn prove_cleanup_using<S: BuildHasher>(
+    environment: &mut Environment<'_, S>,
+    reused: &mut Reused,
+    drop_regions: &mut crate::types::destruction::regions::Regions,
+    body: &Body,
+    contract: &regions::Body,
+    catalog: &mut super::destruction::glue::Catalog<'_>,
+    scope: (
+        structure::Use<'_, '_>,
+        Option<&crate::body::coroutines::Permit>,
+    ),
+) -> Result<Option<super::destruction::Plan>, Error> {
+    let prepared =
+        cstage::prepare_using(environment, reused, body, contract, catalog, scope, None)?;
     cstage::finish(
         environment,
         reused,

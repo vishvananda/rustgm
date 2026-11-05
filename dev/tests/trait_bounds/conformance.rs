@@ -2,6 +2,34 @@
 use super::cases;
 
 #[test]
+fn rigid_projected_signatures_preserve_equality_and_report_real_mismatches()
+-> Result<(), Box<dyn std::error::Error>> {
+    cases(&[(
+        "conformance-identical-opaque-signature",
+        "trait A{type Out;}trait Use<T:A>{fn take(x:T::Out)->T::Out;}impl<T:A>Use<T>for u32{fn take(x:T::Out)->T::Out{x}}fn main(){}",
+        true,
+    )])?;
+    let source = crate::resolve::fixture(
+        "pa20/tests/spec/selection/overrides/lowir/invalid-unused-signature.rs",
+    )?;
+    crate::qualify::qualify(
+        "conformance-rigid-projection-result-mismatch",
+        &source,
+        false,
+    )?;
+    let Err(error) = super::prove(&source) else {
+        return Err("accepted the invalid projected method result".into());
+    };
+    assert!(
+        error
+            .to_string()
+            .contains("implementation method signature does not match its trait declaration"),
+        "{error}"
+    );
+    Ok(())
+}
+
+#[test]
 fn method_contracts_0() -> Result<(), Box<dyn std::error::Error>> {
     cases(&[
         (

@@ -30,6 +30,7 @@ enum Work {
         body::ir::ProofSite,
         Caller,
     ),
+    FutureDrop(crate::types::TypeId, body::ir::ProofSite),
     Leave(BodyKey),
 }
 const _: [(); 40] = [(); size_of::<Work>()];
@@ -268,6 +269,62 @@ impl Budget {
             .ok_or_else(|| error("unbalanced instance stack"))?;
         Ok(())
     }
+    fn future_constructor(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        templates: &Checked<'_>,
+        program: &mut proof::Builder,
+        instance: Instance,
+    ) -> Result<usize, Error> {
+        let prepared = crate::pipeline::future_constructor(facts, templates, instance)
+            .map_err(|e| diagnostic(report, None, e))?;
+        let family = prepared.body.key();
+        self.enter(family, &prepared.body, &prepared.contract)
+            .map_err(|e| diagnostic(report, Some(prepared.body.source.into()), e.into()))?;
+        let index = program
+            .push_future_factory(facts, templates, prepared, &mut self.bytes)
+            .map_err(|e| diagnostic(report, e.node, e.message))?;
+        self.leave(report, family)?;
+        Ok(index)
+    }
+    fn future_drop(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        templates: &Checked<'_>,
+        program: &mut proof::Builder,
+        future: crate::types::TypeId,
+    ) -> Result<(), Error> {
+        program
+            .require_current_store(&facts.types)
+            .map_err(|e| diagnostic(report, None, e.into()))?;
+        facts
+            .checked_future_definition(future)
+            .map_err(|e| diagnostic(report, None, e.into()))?;
+        let key = BodyKey::FutureEntry(crate::types::future::EntryKey {
+            future,
+            operation: crate::types::future::Operation::Drop,
+        });
+        if self.active.get(&key) == Some(&0) {
+            return Ok(());
+        }
+        let prepared = crate::pipeline::future_drop(facts, templates, future)
+            .map_err(|e| diagnostic(report, None, e))?;
+        if prepared.body.key() != key {
+            return Err(diagnostic(
+                report,
+                None,
+                "future Drop changed its complete scheduled family".into(),
+            ));
+        }
+        self.enter(key, &prepared.body, &prepared.contract)
+            .map_err(|e| diagnostic(report, Some(prepared.body.source.into()), e.into()))?;
+        program
+            .push_future_factory(facts, templates, prepared, &mut self.bytes)
+            .map_err(|e| diagnostic(report, e.node, e.message))?;
+        self.leave(report, key)
+    }
     fn factory(
         &mut self,
         report: &Report,
@@ -299,6 +356,23 @@ impl Budget {
             .map_err(|e| diagnostic(report, Some(body.source.into()), e.into()))?;
         let index = program
             .push_fn_pointer_factory(facts, templates, selected, body, &input, &mut self.bytes)
+            .map_err(|e| diagnostic(report, e.node, e.message))?;
+        Ok((index, family))
+    }
+    fn lending_factory(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        templates: &Checked<'_>,
+        program: &mut proof::Builder,
+        selected: crate::sema::lending_methods::Method,
+    ) -> Result<(usize, BodyKey), Error> {
+        let (body, input) = body::lending::build(report, facts, selected)?;
+        let family = body.key();
+        self.enter(family, &body, &input)
+            .map_err(|e| diagnostic(report, Some(body.source.into()), e.into()))?;
+        let index = program
+            .push_lending_factory(facts, templates, selected, body, input, &mut self.bytes)
             .map_err(|e| diagnostic(report, e.node, e.message))?;
         Ok((index, family))
     }
@@ -475,6 +549,12 @@ impl Traversal<'_> {
         action: Work,
     ) -> Result<(), Error> {
         let (instance, source, caller) = match action {
+            Work::FutureDrop(future, source) => {
+                self.budget
+                    .future_drop(report, facts, templates, &mut self.program, future)
+                    .map_err(|e| diagnostic(report, Some(source), e.to_string()))?;
+                return Ok(());
+            }
             Work::Adapter(entry, source, caller) => {
                 return self.adapter(report, facts, templates, entry, source, caller);
             }
@@ -483,9 +563,36 @@ impl Traversal<'_> {
                 let actual = caller
                     .future_caller(facts, &self.program, source, request)
                     .map_err(error)?;
-                actual
+                let signature = actual
                     .require_current(&facts.types, request.instance)
                     .map_err(error)?;
+                if crate::sema::coroutine_methods::constructor_definition(facts, request.instance)
+                    .map_err(error)?
+                    .is_some()
+                {
+                    let Some(Kind::FunctionItem {
+                        signature: public, ..
+                    }) = facts.types.kind(request.instance.ty())
+                    else {
+                        return Err(error("future constructor lost its actual public item"));
+                    };
+                    if public != signature {
+                        return Err(error(
+                            "future constructor requires its actual opened input transport",
+                        ));
+                    }
+                    if !self.instances.contains_key(&request.instance) {
+                        let index = self.budget.future_constructor(
+                            report,
+                            facts,
+                            templates,
+                            &mut self.program,
+                            request.instance,
+                        )?;
+                        self.instances.insert(request.instance, index);
+                    }
+                    return Ok(());
+                }
                 return Err(error(
                     "future operation requires its checked generated state family",
                 ));
@@ -505,7 +612,7 @@ impl Traversal<'_> {
         templates: &Checked<'_>,
         request: (Instance, body::ir::ProofSite, Caller),
     ) -> Result<(), Error> {
-        let (instance, source, caller) = request;
+        let (instance, source, _) = request;
         let error = |e: &str| diagnostic(report, Some(source), e.into());
         require_future_runtime(facts, instance).map_err(error)?;
         let fn_pointer =
@@ -542,47 +649,31 @@ impl Traversal<'_> {
                 .push_work(facts, &mut self.work, Work::Leave(family))
                 .map_err(error)?;
             index
+        } else if let Some(selected) = facts
+            .primitive_methods
+            .as_deref()
+            .and_then(|registry| registry.get_lending(instance))
+        {
+            if self.instances.contains_key(&instance) {
+                return Ok(());
+            }
+            let (index, family) = self.budget.lending_factory(
+                report,
+                facts,
+                templates,
+                &mut self.program,
+                selected,
+            )?;
+            self.instances.insert(instance, index);
+            self.budget
+                .push_work(facts, &mut self.work, Work::Leave(family))
+                .map_err(error)?;
+            index
         } else {
-            let Some(selected) = self
-                .ordinary
-                .select(facts, templates, instance)
-                .map_err(error)?
-            else {
+            let Some(index) = self.ordinary_instance(report, facts, templates, request)? else {
                 return Ok(());
             };
-            if let Some((template, input)) = selected.template {
-                if self.instances.contains_key(&instance) {
-                    return Ok(());
-                }
-                self.budget
-                    .enter(selected.family, &template.body, input)
-                    .map_err(error)?;
-                let request = Specialization {
-                    template,
-                    input,
-                    instance,
-                    source,
-                    caller,
-                };
-                let index = specialize(
-                    report,
-                    facts,
-                    templates,
-                    &mut self.program,
-                    &mut self.cleanup,
-                    request,
-                )?;
-                self.instances.insert(instance, index);
-                self.budget
-                    .push_work(facts, &mut self.work, Work::Leave(selected.family))
-                    .map_err(error)?;
-                index
-            } else {
-                let Some(index) = selected.concrete(&mut self.visited).map_err(error)? else {
-                    return Ok(());
-                };
-                index
-            }
+            index
         };
         self.dependencies.schedule(
             report,
@@ -593,6 +684,54 @@ impl Traversal<'_> {
             &mut self.budget,
         )?;
         Ok(())
+    }
+    /// Ordinary source demand keeps its checked template and lexical caller;
+    /// compiler factories use their separate validated body/permit path above.
+    fn ordinary_instance(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        templates: &Checked<'_>,
+        request: (Instance, body::ir::ProofSite, Caller),
+    ) -> Result<Option<usize>, Error> {
+        let (instance, source, caller) = request;
+        let error = |message: &str| diagnostic(report, Some(source), message.into());
+        let Some(selected) = self
+            .ordinary
+            .select(facts, templates, instance)
+            .map_err(error)?
+        else {
+            return Ok(None);
+        };
+        let Some((template, input)) = selected.template else {
+            return selected.concrete(&mut self.visited).map_err(error);
+        };
+        if self.instances.contains_key(&instance) {
+            return Ok(None);
+        }
+        self.budget
+            .enter(selected.family, &template.body, input)
+            .map_err(error)?;
+        let request = Specialization {
+            template,
+            input,
+            instance,
+            source,
+            caller,
+        };
+        let index = specialize(
+            report,
+            facts,
+            templates,
+            &mut self.program,
+            &mut self.cleanup,
+            request,
+        )?;
+        self.instances.insert(instance, index);
+        self.budget
+            .push_work(facts, &mut self.work, Work::Leave(selected.family))
+            .map_err(error)?;
+        Ok(Some(index))
     }
 }
 
@@ -745,16 +884,22 @@ impl Dependencies {
         }
         Ok(dependencies)
     }
-    fn schedule(
+    fn inputs(
         &mut self,
         report: &Report,
         facts: &mut Declarations,
         program: &mut proof::Builder,
         root: DependencyRoot,
-        work: &mut Vec<Work>,
-        budget: &mut Budget,
-    ) -> Result<(), Error> {
-        let (source, demands, cleanup, caller) = match root {
+    ) -> Result<
+        (
+            body::ir::ProofSite,
+            super::dependencies::Demands,
+            proof::CleanupCalls,
+            Caller,
+        ),
+        Error,
+    > {
+        Ok(match root {
             DependencyRoot::Body(index) => {
                 let body = program
                     .body(index)
@@ -792,12 +937,23 @@ impl Dependencies {
                 (
                     source.into(),
                     demands,
-                    Vec::new(),
+                    proof::CleanupCalls::default(),
                     Caller::global(definition)
                         .map_err(|e| diagnostic(report, Some(source.into()), e.into()))?,
                 )
             }
-        };
+        })
+    }
+    fn schedule(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        program: &mut proof::Builder,
+        root: DependencyRoot,
+        work: &mut Vec<Work>,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        let (source, demands, cleanup, caller) = self.inputs(report, facts, program, root)?;
         let error = |e: &str| diagnostic(report, Some(source), e.into());
         if let Some(futures) = demands.futures {
             for future in futures.requests.into_iter().rev() {
@@ -817,13 +973,19 @@ impl Dependencies {
                 .push_work(facts, work, Work::Enter(instance, source, caller))
                 .map_err(error)?;
         }
+        let objects = program
+            .object_dependencies(facts, &demands.object_types)
+            .map_err(error)?;
+        for requests in [cleanup.futures, objects.futures].into_iter().flatten() {
+            for future in requests.types.into_iter().rev() {
+                budget
+                    .push_work(facts, work, Work::FutureDrop(future, source))
+                    .map_err(error)?;
+            }
+        }
         let mut next = demands.calls;
-        next.extend(
-            program
-                .object_dependencies(facts, &demands.object_types)
-                .map_err(error)?,
-        );
-        next.extend(cleanup);
+        next.extend(objects.ordinary);
+        next.extend(cleanup.ordinary);
         for instance in next.into_iter().rev() {
             budget
                 .push_work(facts, work, Work::Enter(instance, source, caller))
@@ -843,10 +1005,12 @@ pub(super) fn prepare_ordinary<C: Collect>(
     globals: &[DefId],
 ) -> Result<(proof::Builder, Ordinary), Error> {
     let templates = originals.checked;
+    crate::pipeline::checked_future_storage(facts, templates)
+        .map_err(|e| diagnostic(report, None, e))?;
     let mut program = body::concrete_selected(
         report,
         facts,
-        |owner| templates.get(ItemId(owner.0)).is_some(),
+        |owner| checked_callable(facts, templates, owner),
         concrete,
         originals.selection,
     )?;
@@ -936,6 +1100,23 @@ pub(super) fn prepare_ordinary<C: Collect>(
         }
     }
     Ok((program, ordinary))
+}
+
+fn checked_callable(facts: &Declarations, templates: &Checked<'_>, owner: DefId) -> bool {
+    if templates.get(ItemId(owner.0)).is_some() {
+        return true;
+    }
+    facts
+        .opaques
+        .owners
+        .get(&owner)
+        .and_then(|identities| identities.last())
+        .and_then(|&identity| templates.async_body(identity))
+        .is_some_and(|(template, original, _)| {
+            templates.future_store(&facts.types).is_ok()
+                && crate::body::coroutines::original_template(facts, template, original)
+                    == Ok(owner)
+        })
 }
 
 fn resolve_ordinary(

@@ -326,6 +326,7 @@ impl Checker<'_> {
                 Some(
                     Source::Implementation { .. }
                     | Source::Callable { .. }
+                    | Source::AsyncCallable(_)
                     | Source::Future { .. }
                     | Source::LanguageOperation { .. },
                 ) => continue,

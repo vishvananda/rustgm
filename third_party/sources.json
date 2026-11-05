@@ -274,6 +274,15 @@
       "adaptation": "none; full original bytes retained separately from finite required-member authored controls",
       "oracle": "required full provided Drop/Pin source closure; not a passing consumer claim",
       "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/ops/async_function.rs",
+      "destination": "pa31/tests/spec/async-calls/original.rs",
+      "sha256": "fcda67887e19c20fd7b26db4a94ec7d5e42a38fcccac04cf16fad564e0b2ece1",
+      "adaptation": "none; original bytes retained, whole.rs embeds them after the authored no_core provider foundation",
+      "oracle": "check-pass",
+      "owning_assignment": "pa31"
     }
   ]
 }

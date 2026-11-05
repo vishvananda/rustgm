@@ -9,6 +9,30 @@ use rustgm::{
 mod checks;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
+#[test]
+fn ordinary_opaque_results_do_not_request_authored_future_preparation() -> Result {
+    let mut report = source::resolve("fn value()->impl Copy{3u8}fn main(){let _=value();}", true)?;
+    let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
+    assert!(!facts.uses_source_copy());
+    let entry = sema::entry::select(&mut report, &facts)?;
+    rustgm::lower::instances::build(&report, &mut facts, entry)?;
+    assert_eq!(size_of::<types::Store>(), 472);
+    Ok(())
+}
+
+#[test]
+fn mixed_future_and_ordinary_results_publish_only_actual_checked_batch_families() -> Result {
+    let mut text = source::fixture("pa43/tests/spec/future-runtime-v1/construction-source.rs")?;
+    text.push_str("\nfn ordinary()->impl Copy{3u8}\n");
+    let report = source::source_provider(&text, "mixed_future_results")?;
+    let rustgm::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = rustgm::pipeline::analyze_source(&report)?;
+    rustgm::lower::instances::inspect_prepared(&report, &mut facts, prepared, |_, _| ())?;
+    Ok(())
+}
+
 fn marker(
     facts: &mut sema::model::Declarations,
     ty: TypeId,
@@ -654,5 +678,179 @@ fn selected_authored_poll_calls_keep_the_real_member_and_independent_public_sign
     );
     let repeated = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
     assert_eq!(application.body().source, repeated.body().source);
+    Ok(())
+}
+
+#[test]
+fn unpolled_constructor_and_drop_defer_divergent_body_and_check_unused_output() -> Result {
+    let companion = source::fixture("pa43/tests/spec/future-runtime-v1/construction-companion.rs")?;
+    for file in ["construction-source.rs", "dropbyte.rs"] {
+        let text = source::fixture(&format!("pa43/tests/spec/future-runtime-v1/{file}"))?;
+        assert!(text.ends_with(&companion));
+        let mut report = source::source_provider(&text, "unpolled_constructor")?;
+        let rustgm::pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = rustgm::pipeline::analyze_source(&report)?;
+        let definition = facts
+            .functions
+            .iter()
+            .find(|f| {
+                report
+                    .package
+                    .names
+                    .get(report.resolution.definitions[f.definition.0 as usize].name)
+                    == "never"
+            })
+            .ok_or("actual constructor source owner")?
+            .definition;
+        let entry = sema::entry::select(&mut report, &facts)?;
+        let program =
+            rustgm::lower::instances::build_prepared(&report, &mut facts, entry, prepared)?;
+        let drop = program
+            .symbols
+            .iter()
+            .find(|s| s.name.contains("rg.future.drop.i"))
+            .ok_or("actual generated Drop symbol")?;
+        assert_eq!(
+            drop.body.as_ref().ok_or("actual Drop CFG")?.blocks.len(),
+            5,
+            "actual state dispatch"
+        );
+        assert_eq!(
+            program.parameters(drop.signature)?,
+            [rustgm::lowir::vocabulary::Type::Ptr]
+        );
+        let prefix = format!("rg.{}.i", definition.0);
+        let constructor = program
+            .symbols
+            .iter()
+            .find(|s| s.name.contains(&prefix))
+            .ok_or("actual public constructor symbol")?;
+        assert_eq!(
+            constructor
+                .body
+                .as_ref()
+                .ok_or("actual constructor CFG")?
+                .blocks
+                .len(),
+            1,
+            "deferred source loop executed as constructor"
+        );
+    }
+    let text = source::fixture("pa43/tests/spec/future-runtime-v1/construction-wrong-source.rs")?;
+    let report = source::source_provider(&text, "wrong_deferred_output")?;
+    let error = rustgm::pipeline::analyze_source(&report)
+        .err()
+        .ok_or("unused wrong async Output accepted")?
+        .to_string();
+    assert!(
+        error.contains("incompatible types") || error.contains("mismatched type"),
+        "{error}"
+    );
+    Ok(())
+}
+
+#[test]
+fn ordinary_borrowed_moves_cannot_use_generated_state_copy_permission() -> Result {
+    let valid = source::fixture("pa43/tests/spec/future-runtime-v1/dropowned.rs")?;
+    ordinary_program(&valid, "ordinary_owned_move")?;
+    let invalid = source::fixture("pa43/tests/spec/future-runtime-v1/dropmove.rs")?;
+    let error = ordinary_program(&invalid, "ordinary_borrowed_move")
+        .err()
+        .ok_or("ordinary borrowed move acquired compiler state permission")?
+        .to_string();
+    assert!(
+        error.contains("borrowed") || error.contains("cannot move"),
+        "{error}"
+    );
+    Ok(())
+}
+
+fn ordinary_program(text: &str, name: &str) -> Result<rustgm::lowir::program::Program> {
+    let mut report = source::source_provider(text, name)?;
+    let rustgm::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = rustgm::pipeline::analyze_source(&report)?;
+    let entry = sema::entry::select(&mut report, &facts)?;
+    Ok(rustgm::lower::instances::build_prepared(
+        &report, &mut facts, entry, prepared,
+    )?)
+}
+
+#[test]
+fn future_drop_recipes_keep_full_applications_and_own_capture_cleanup() -> Result {
+    use rustgm::body::drops::glue::{Catalog, Method, Recipe, Shape};
+    let text = source::fixture("pa43/tests/spec/future-runtime-v1/source-shape.rs")?;
+    let report = source::source_provider(&text, "future_drop_data")?;
+    let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
+    let function = facts
+        .functions
+        .iter()
+        .find(|function| {
+            report
+                .package
+                .names
+                .get(report.resolution.definitions[function.definition.0 as usize].name)
+                == "generic"
+        })
+        .ok_or("actual generic async function")?;
+    let Some(Kind::Function { result, .. }) = facts.types.kind(function.signature) else {
+        return Err("actual generic constructor signature".into());
+    };
+    let Some(Kind::Opaque(identity, _)) = facts.types.kind(result) else {
+        return Err("actual primary opaque".into());
+    };
+    let byte = TypeId::primitive(types::Primitive::U8);
+    let pointer = facts.types.intern(Kind::Pointer {
+        mutable: true,
+        pointee: byte,
+    })?;
+    let mut futures = Vec::new();
+    for input in [byte, pointer] {
+        let arguments = facts
+            .types
+            .intern_arguments(&[types::arguments::Argument::Type(input)])?;
+        futures.push(facts.types.intern(Kind::Future {
+            identity,
+            arguments,
+        })?);
+    }
+    let mut catalog = Catalog::new(&facts.types, &facts.aggregates, &facts.members, &[])?;
+    let mut previous = None;
+    for future in futures {
+        let id = catalog
+            .demand(future)?
+            .ok_or("actual future cleanup obligation")?;
+        assert_ne!(
+            previous,
+            Some(id),
+            "distinct capture applications shared a method"
+        );
+        previous = Some(id);
+        assert_eq!(
+            catalog.demand(future)?,
+            Some(id),
+            "warm recipe changed identity"
+        );
+        let recipe = catalog
+            .recipes()
+            .get(id.0 as usize)
+            .ok_or("actual recipe")?;
+        assert_eq!(recipe.ty, future);
+        assert_eq!(recipe.method, Some(Method::Future(future)));
+        assert!(
+            matches!(recipe.kind, Shape::Fields(range) if range.start == range.end),
+            "capture cleanup duplicated outside its state entry"
+        );
+    }
+    assert_eq!(catalog.recipes().len(), 2);
+    assert!(
+        facts.opaques.declarations[&identity].hidden.is_none(),
+        "cleanup data granted publication"
+    );
+    assert_eq!(size_of::<Method>(), 8);
+    assert_eq!(size_of::<Recipe>(), 32);
     Ok(())
 }

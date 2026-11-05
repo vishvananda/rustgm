@@ -61,6 +61,39 @@ enum Original<'a> {
     Factory(&'a crate::body::factories::Permit),
     Adapter(usize, &'a crate::body::adapters::Template),
 }
+impl<'a> Original<'a> {
+    fn defining_report(
+        &self,
+        facts: &Declarations,
+        body: &Body,
+        cleanup: bool,
+    ) -> Option<&'a crate::resolve::expansion::Report> {
+        let Self::Ordinary(report) = self else {
+            return None;
+        };
+        (facts.source_bindings.is_some()
+            && body.const_context
+            && body.instance.is_none()
+            && matches!(
+                body.owner,
+                crate::body::ir::Owner::Function {
+                    execution: None,
+                    ..
+                }
+            )
+            && cleanup)
+            .then_some(*report)
+    }
+}
+#[derive(Default)]
+pub(super) struct FutureCleanup {
+    pub types: Vec<crate::types::TypeId>,
+}
+#[derive(Default)]
+pub(super) struct CleanupCalls {
+    pub ordinary: Vec<Instance>,
+    pub futures: Option<Box<FutureCleanup>>,
+}
 impl Builder {
     pub(super) fn append_selected_template(
         &mut self,
@@ -207,7 +240,10 @@ impl Builder {
         }
         Ok(())
     }
-    fn require_current_store(&self, types: &crate::types::Store) -> Result<(), &'static str> {
+    pub(super) fn require_current_store(
+        &self,
+        types: &crate::types::Store,
+    ) -> Result<(), &'static str> {
         if self
             .future_store
             .as_ref()
@@ -477,6 +513,28 @@ impl Builder {
             Original::Ordinary(report),
         )
     }
+    pub(super) fn push_future_factory(
+        &mut self,
+        facts: &mut Declarations,
+        templates: &templates::Checked<'_>,
+        prepared: crate::body::coroutines::Constructed,
+        budget: &mut usize,
+    ) -> Result<usize, borrow::Error> {
+        facts
+            .charge_caller_inputs(1, size_of::<crate::body::coroutines::Permit>())
+            .map_err(|message| borrow::Error {
+                node: Some(prepared.body.source.into()),
+                message: message.into(),
+            })?;
+        self.push_validated_factory(
+            facts,
+            templates,
+            prepared.body,
+            &prepared.contract,
+            budget,
+            crate::body::factories::Permit::Future(Box::new(prepared.permit)),
+        )
+    }
     pub(super) fn push_factory(
         &mut self,
         facts: &mut Declarations,
@@ -525,6 +583,34 @@ impl Builder {
             crate::body::factories::Permit::FunctionPointer(permit),
         )
     }
+    pub(super) fn push_lending_factory(
+        &mut self,
+        facts: &mut Declarations,
+        templates: &templates::Checked<'_>,
+        selected: crate::sema::lending_methods::Method,
+        mut body: Body,
+        mut input: Contract,
+        budget: &mut usize,
+    ) -> Result<usize, borrow::Error> {
+        let source = body.source;
+        let error = |message: &str| borrow::Error {
+            node: Some(source.into()),
+            message: message.into(),
+        };
+        let permit =
+            crate::body::lending::validate(facts, selected, &body, &input).map_err(error)?;
+        // The graph is now immutable. Ordinary captured-entry selection only
+        // adds its own lifetime debts and selected execution metadata.
+        crate::body::invocation_entries::select(facts, &mut body, &mut input).map_err(error)?;
+        self.push_validated_factory(
+            facts,
+            templates,
+            body,
+            &input,
+            budget,
+            crate::body::factories::Permit::Lending(permit),
+        )
+    }
     fn push_validated_factory(
         &mut self,
         facts: &mut Declarations,
@@ -538,12 +624,19 @@ impl Builder {
         // its compiler permit is not physical Copy or caller-scope permission.
         let prepared = if facts.uses_source_copy() {
             let mut prepared = input.clone();
-            crate::body::copy_requirements::prepare(facts, &body, &mut prepared).map_err(
-                |message| borrow::Error {
-                    node: Some(body.source.into()),
-                    message,
-                },
-            )?;
+            match permit.future() {
+                Some(future) => crate::body::copy_requirements::prepare_generated(
+                    facts,
+                    &body,
+                    &mut prepared,
+                    future,
+                ),
+                None => crate::body::copy_requirements::prepare(facts, &body, &mut prepared),
+            }
+            .map_err(|message| borrow::Error {
+                node: Some(body.source.into()),
+                message,
+            })?;
             *budget = budget.saturating_add(
                 prepared
                     .retained_bytes()
@@ -653,20 +746,13 @@ impl Builder {
         requirements: Option<drops::Requirements>,
         original: Original<'_>,
     ) -> Result<usize, borrow::Error> {
+        self.require_current_store(&facts.types)
+            .map_err(|message| borrow::Error {
+                node: Some(body.source.into()),
+                message: message.into(),
+            })?;
         let contract = self.regions(facts, &body, input)?;
-        if let Original::Ordinary(report) = original
-            && facts.source_bindings.is_some()
-            && body.const_context
-            && body.instance.is_none()
-            && matches!(
-                body.owner,
-                crate::body::ir::Owner::Function {
-                    execution: None,
-                    ..
-                }
-            )
-            && self.recipes.is_some()
-        {
+        if let Some(report) = original.defining_report(facts, &body, self.recipes.is_some()) {
             let mut proof = crate::pipeline::cdrop::ordinary(
                 report,
                 facts,
@@ -809,9 +895,9 @@ impl Builder {
         &mut self,
         facts: &mut Declarations,
         index: usize,
-    ) -> Result<Vec<Instance>, &'static str> {
+    ) -> Result<CleanupCalls, &'static str> {
         let Some(plan) = self.bodies.get(index).and_then(incremental::Proved::plan) else {
-            return Ok(Vec::new());
+            return Ok(CleanupCalls::default());
         };
         let cache = self
             .recipes
@@ -824,9 +910,9 @@ impl Builder {
         &mut self,
         facts: &mut Declarations,
         types: &[crate::types::TypeId],
-    ) -> Result<Vec<Instance>, &'static str> {
+    ) -> Result<CleanupCalls, &'static str> {
         if types.is_empty() {
-            return Ok(Vec::new());
+            return Ok(CleanupCalls::default());
         }
         if let Some(source) = facts.source_bindings.as_deref() {
             source.require_source_destructors_prepared()?;
@@ -860,12 +946,13 @@ impl Builder {
         &mut self,
         facts: &mut Declarations,
         requests: &[glue::Id],
-    ) -> Result<Vec<Instance>, &'static str> {
+    ) -> Result<CleanupCalls, &'static str> {
         let cache = self
             .recipes
             .as_mut()
             .ok_or("missing selected destruction recipes")?;
         let mut methods = Vec::with_capacity(requests.len());
+        let mut futures: Option<Box<FutureCleanup>> = None;
         for &id in requests {
             let recipe = *cache
                 .recipes()
@@ -888,11 +975,38 @@ impl Builder {
                     instance
                 }
                 Some(glue::Method::Instance(instance)) => instance,
+                Some(glue::Method::Future(future)) => {
+                    facts.checked_future_definition(future)?;
+                    if recipe.ty != future {
+                        return Err(
+                            "future cleanup recipe changed its complete selected application",
+                        );
+                    }
+                    let (length, capacity) = futures
+                        .as_deref()
+                        .map_or((0, 0), |v| (v.types.len(), v.types.capacity()));
+                    let growth = crate::support::retained::Growth::vector::<crate::types::TypeId>(
+                        length, capacity, 1,
+                    );
+                    facts.charge_caller_inputs(
+                        growth.work.saturating_add(1),
+                        growth.bytes.saturating_add(if futures.is_none() {
+                            size_of::<FutureCleanup>() + size_of::<CleanupCalls>()
+                        } else {
+                            0
+                        }),
+                    )?;
+                    futures.get_or_insert_with(Box::default).types.push(future);
+                    continue;
+                }
                 None => return Err("cleanup dependency has no method"),
             };
             methods.push(instance);
         }
-        Ok(methods)
+        Ok(CleanupCalls {
+            ordinary: methods,
+            futures,
+        })
     }
     #[cfg(test)]
     pub(super) fn observe_original(

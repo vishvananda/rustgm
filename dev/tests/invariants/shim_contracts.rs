@@ -34,7 +34,7 @@ fn exact_shim_passes_and_forged_body_or_lifetime_contract_cannot_get_a_permit() 
     let permit = validate(&mut facts, selected, &body, &input)?;
     assert_eq!(
         super::super::factories::Permit::FunctionPointer(permit).instance(),
-        selected.instance
+        Some(selected.instance)
     );
     for case in 0..8 {
         let (mut body, mut input) = build(&report, &mut facts, selected)?;

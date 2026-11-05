@@ -1,0 +1,74 @@
+{
+  "scope": "genuine zero-capture unpolled construction and state-dependent Drop; full poll/capture runtime remains required",
+  "parent": "b98f321c6468da094bcc0ac9155d337baf4e2320",
+  "sources": {
+    "dev/src/body/copy_requirements.rs": "bdbe990a46b111257b6a38df5dc0d6b8124c0382849a3deb0a106742a436544b",
+    "dev/src/body/coroutines.rs": "4b2f0b2d0577c8a3cdbac6888bbabeb7c0afa9aaaaeff34c6bc94f87a56dcdeb",
+    "dev/src/body/coroutines/creation.rs": "6969489c9f2e0d92b23d5179bd120c161a76068c51f47ce2536e5f733d7d67f4",
+    "dev/src/body/coroutines/disposal.rs": "d7ced494c88d3082dda82936dd39b06883fa804803fc58ccaae9b48192f2e8a4",
+    "dev/src/body/coroutines/permit.rs": "80482d07b5c497607fe74a8fd2def587212a686fb9b99124b8d609a9e5b7a085",
+    "dev/src/body/factories.rs": "e41bb7119fa98aae2ec887cb2849028005ec3d5ecb8f15f7d16df4a9f638fd7c",
+    "dev/src/borrow/check.rs": "51c1779e790607571559c5f8f7321ecec924736ed5f60f02fd379fb1faf9873f",
+    "dev/src/borrow/check/cstage.rs": "fad98cc1788b6c7579fa82e4884063f41bac180e73b616a885114a354d8cdcc3",
+    "dev/src/borrow/check/incremental.rs": "c929ac2ee3040bc0c4e6e67b91efc654af9915b4d01acdce74f630ae49ac0d79",
+    "dev/src/borrow/check/incremental/bridges.rs": "f84276f76770141d779f3ebeeb0d0194bf46e264d9f03cc8857bd1c176536bba",
+    "dev/src/borrow/copy_view.rs": "316fc552b8e94eaa17c8e875daf8c9526fc0dd78508ba8ab950029c523c0937f",
+    "dev/src/borrow/ownership.rs": "3f7397beb1b83d5e887f573752938e4b4bf0717388782aa475794d20a39f21d5",
+    "dev/src/lower/cleanup/emit.rs": "17119641da80aeeb4efe27eeed78c78d963fe7908d05f7f09bff961edf6f18db",
+    "dev/src/lower/context.rs": "2d91875944954cc2f1e22c2057604cc268971811bbffd2231df52346db502785",
+    "dev/src/lower/context/adapters.rs": "031f85dadf0c2692480cfa2e9bf6a2a660c4fb98e6b64aa0bd44a122b228dae7",
+    "dev/src/lower/context/callsite_owners.rs": "b0e7741268409437fdd0d05032224ecc70517cd91e14311e7ee8f366633fcbc2",
+    "dev/src/lower/context/disposal.rs": "a7da358aa1f1cecdc71a71ab3a01646c2c9d67852d29ec7064bf6ff899232ffc",
+    "dev/src/lower/instances/demand.rs": "b50588bb92f05880850ff2c1604842229d056d995c579d8fe5be34a093bf90ff",
+    "dev/src/lower/instances/proof.rs": "2d0baec21258bbae2c392efb6dccb8de2175f37e7efabdf22bafc20d36d03bce",
+    "dev/src/pipeline/asyncbody.rs": "d714bd7a91715162d0566d8ca7cc112720ad09ca1aa88c0f61094e9fa4f5e692",
+    "dev/src/pipeline/mod.rs": "bb6b39e79ffea48873ca83eb025b0ea26ac9f74acdca0ef0d35b14e7a01ac849",
+    "dev/tests/invariants/shim_contracts.rs": "89ea8baac445128862e4c327a52cdfdebb6fc3868d6f262b808aee8acaa8fedc",
+    "dev/tests/invariants/statepermit.rs": "074369846744cc93fc69a0f60f050eefc1215067e2f93d919bc8d04b234407f5",
+    "dev/tests/stateframe.rs": "970eec52dda7a64e39432975d87fa33313691033dc0adc879d3da4336d3cc99b",
+    "pa43/tests/spec/future-runtime-v1/README.md": "253e331db7a63595c7a3bb714880c93356a1f5b5d9edf189db428d71f26af0fa",
+    "pa43/tests/spec/future-runtime-v1/dropbyte-predictions.json": "869023d9ce3501b6dd04877c82d1adfbe5f19195d2e5c59312372bb680c659c4",
+    "pa43/tests/spec/future-runtime-v1/dropbyte.rs": "a4c36fb1beb190ba2d5abfa2df83ba63dc7f46863aff997e23080c8dbfb69e03",
+    "pa43/tests/spec/future-runtime-v1/dropmove.rs": "15894f556e26c27e69a721fc4e322bd99dbf1eaff16c8763730d600c6e3859c5",
+    "pa43/tests/spec/future-runtime-v1/dropowned.rs": "363edc0e096b5ec2cc22fa58eb33f3100198cab04168ffb44da50be066ad2bec"
+  },
+  "receipts": {
+    "obj/qualification/fast/1793914454535655591/receipt.json": "209ce47a0f125125faa375428bbfa0da8ad24e466b17c573f0095221c9b7b3c8",
+    "obj/parallel/future-runtime-v1/dropstate/oracle.json": "8fcc55b2908eff4bcfbd9f7afd6c3fb7c608390e2a90346721898c470108b5f9",
+    "obj/parallel/future-runtime-v1/dropstate/native.json": "bd84325e8670954bfcf96dfa9f3d60994f359f0b8b4a854790f6e22de608ae8a",
+    "obj/qualification/fast/1793912215194050401/receipt.json": "0cfb6a0c0910ee89a5b7b7244f0e85fe416881c479740ef432ad4030f6d18ad9",
+    "obj/qualification/fast/1793912973764562582/receipt.json": "b0ce440aca564895557ee50196000dddcb8cc516da269b478c258c694b89e03e",
+    "obj/qualification/fast/1793913486782798822/receipt.json": "6f47b80c39a999390467f7e7cc41dbaf92cd590c5e5075faaff93b30e2b4ed66"
+  },
+  "qualified_gate": "obj/qualification/fast/1793914454535655591",
+  "tests": 24,
+  "gate_seconds": 115.28,
+  "native": {
+    "cases": 2,
+    "seconds": 2.3814888980123214,
+    "path": "obj/parallel/future-runtime-v1/dropstate/native.json",
+    "scope": "unpolled zero-capture state0 only"
+  },
+  "independent_exact_no_core": [
+    {
+      "source": "dropowned.rs",
+      "status": 0
+    },
+    {
+      "source": "dropmove.rs",
+      "status": 1,
+      "required_code": "E0507"
+    }
+  ],
+  "post_gate_differences": {
+    "dev/tests/invariants/statepermit.rs": "one cfg(test)-only CopyView32 size assertion; private compilation/execution remains pending"
+  },
+  "pending": [
+    "private compilation/execution including11 forgeries andcapture-profile controls",
+    "actual Future::poll, complete capture/body/pattern ownership and native traces",
+    "completed/poisoned/repeated poll runtime paths",
+    "full await/cancellation/unwind/recursive async cleanup/helper execution",
+    "authored-body metadata/export",
+    "meaningful performance checkpoint/full CI"
+  ]
+}

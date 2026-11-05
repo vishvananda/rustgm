@@ -3,6 +3,9 @@
 #[cfg(test)]
 extern crate self as rustgm;
 pub mod abi;
+#[cfg(test)]
+#[path = "../tests/helpers/asynccheck.rs"]
+mod async_checks;
 pub mod body;
 pub mod borrow;
 pub mod const_eval;

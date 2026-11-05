@@ -1,8 +1,7 @@
 //! Selected language proof cannot authorize a different projection or stale schema.
 use super::*;
+use crate::async_checks as checks;
 use crate::{pipeline, sema, test_source};
-#[path = "../helpers/asynccheck.rs"]
-mod checks;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[test]

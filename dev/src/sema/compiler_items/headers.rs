@@ -2,8 +2,14 @@
 mod authored;
 mod clone_signature;
 use crate::{
-    resolve::{body_origin::DeclarationOrigin, model::DefId},
-    sema::{declaration_inputs::Inputs, generics::Parameter},
+    resolve::{
+        bindings::Declaration,
+        body_origin::DeclarationOrigin,
+        expansion::Report,
+        model::{DefId, DefKind},
+        package::Error,
+    },
+    sema::{declaration_inputs::Inputs, generics::Parameter, model::Declarations},
     support::constness::Constness,
     types::{
         ItemId, Kind, Store, TypeId,
@@ -156,6 +162,53 @@ impl Trait<'_> {
             })
         })
     }
+}
+
+pub(super) fn associated_type(
+    report: &Report,
+    facts: &Declarations,
+    declaration: Declaration,
+) -> Result<(), Error> {
+    let error = |message| Declarations::error(report, declaration.origin, message);
+    let parent = declaration
+        .parent
+        .ok_or_else(|| error("source associated type lacks its actual trait owner"))?;
+    let source = report
+        .resolution
+        .definitions
+        .get(parent.0 as usize)
+        .and_then(|d| d.node)
+        .ok_or_else(|| error("source associated type lacks its actual owner source"))?;
+    let header = Trait::source(
+        report,
+        facts,
+        Declaration {
+            definition: parent,
+            parent: None,
+            origin: source,
+        },
+    )
+    .map_err(error)?;
+    header.canonical_inputs(facts).map_err(error)?;
+    let definition = report
+        .resolution
+        .definitions
+        .get(declaration.definition.0 as usize)
+        .ok_or_else(|| error("source associated type lost its actual definition"))?;
+    if definition.node != Some(declaration.origin)
+        || definition.kind != DefKind::TypeAlias
+        || facts.associated.trait_owner(declaration.definition) != Some(parent)
+        || !header.members.contains(&declaration.definition)
+        || facts
+            .types
+            .projection_schema(ItemId(declaration.definition.0))
+            .is_none_or(|schema| schema.trait_item.0 != parent.0)
+    {
+        return Err(error(
+            "source associated type differs from its canonical associated declaration",
+        ));
+    }
+    Ok(())
 }
 
 /// Authenticate the actual rigid Self declaration; this establishes no trait proof.

@@ -26,3 +26,24 @@ panic=abort, overflow checks, two compiler threads and two codegen units.
 There is no candidate runtime/native evidence yet. Compiler-owned
 async_drop_in_place, arbitrary authored async metadata, full await/cancellation,
 self references and recursive async destruction remain separate requirements.
+
+The construction packet freezes a parameterless unpolled divergent body and an
+unused wrong-Output opponent. Its standard-core companions preserve the authored
+async declaration/main bytes. Pinned Rust accepts and executes the first with
+status0 without entering its loop, and rejects the second with E0308. This finite
+constructor step does not replace required capture/poll/drop and suspension work.
+
+An initial candidate dormant-constructor executable returned0, but investigation
+found that cleanup planning was omitted without a synchronous Drop impl. This is
+retained as infrastructure evidence only. The repaired candidate now requires a
+real generated future Drop entry before native publication; construction remains
+a named Rust-positive runtime gap until that entry and actual poll/capture cleanup
+are proved. The independently frozen source expectations remain unchanged.
+
+The genuine zero-capture Drop join now executes that same dormant case and the
+dropbyte variant without source u8 Clone/Copy implementations. Actual state
+projection/read/completion and scope-exit calls are present; the deferred loop
+does not execute. dropmove/dropowned independently preserve E0507 versus legal
+owned movement. This qualifies unpolled construction/cleanup only; actual poll,
+completed and captured destruction, await/cancellation and recursive cleanup
+remain required. See docs/parallel/state-drop-checkpoint.md for scoped evidence.

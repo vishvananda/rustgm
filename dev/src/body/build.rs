@@ -96,7 +96,8 @@ pub(crate) fn concrete_selected(
     mut prepared: HashMap<super::ir::BodyKey, Body>,
     selection: super::Selection,
 ) -> Result<Program, Error> {
-    let mut drop_query = (!facts.destructors.implementations().is_empty()).then(|| {
+    let cleanup_origin = drops::origin(report, facts)?;
+    let mut drop_query = cleanup_origin.is_some().then(|| {
         crate::types::destruction::NeedsDrop::new(
             facts.destructors.implementations().iter().map(|i| i.item),
         )
@@ -161,7 +162,13 @@ pub(crate) fn concrete_selected(
     if let Some(body) = prepared.values().next() {
         return Err(report.body_error(body.source, "retained constant CFG owner was not consumed"));
     }
-    drops::finish(report, facts, &mut program, drop_query.as_mut())?;
+    drops::finish(
+        report,
+        facts,
+        &mut program,
+        cleanup_origin,
+        drop_query.as_mut(),
+    )?;
     Ok(program)
 }
 fn function_body(

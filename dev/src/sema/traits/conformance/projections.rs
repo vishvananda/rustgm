@@ -31,12 +31,16 @@ pub(super) fn require_shape(
             .map_err(|e| e.to_string());
     }
     let mut shape = crate::types::structural::Normalized::<true>::new(&facts.types);
-    let result = shape.require(actual, expected);
+    let result = shape.matches(actual, expected);
     if facts.source_bindings.is_some() {
         crate::sema::header_attributes::charge_source_contract_query(facts, shape.steps)
             .map_err(|e| e.to_string())?;
     }
-    result.map_err(|e| e.to_string())
+    if result.map_err(|e| e.to_string())? {
+        Ok(())
+    } else {
+        Err("implementation method signature does not match its trait declaration".into())
+    }
 }
 
 /// Construct only after every associated definition has passed impl conformance.

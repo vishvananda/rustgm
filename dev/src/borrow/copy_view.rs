@@ -12,12 +12,14 @@ use std::hash::BuildHasher;
 pub(crate) struct CopyView<'a> {
     ordinary: &'a mut Copies,
     source: Option<(&'a crate::body::regions::BuiltinRequirements, &'a Body)>,
+    future: Option<&'a crate::body::coroutines::Permit>,
 }
 impl<'a> CopyView<'a> {
     pub(crate) fn ordinary(copies: &'a mut Copies) -> Self {
         Self {
             ordinary: copies,
             source: None,
+            future: None,
         }
     }
     pub(crate) fn checked(
@@ -44,7 +46,44 @@ impl<'a> CopyView<'a> {
                 .builtins
                 .as_deref()
                 .map(|requirements| (requirements, body)),
+            future: None,
         })
+    }
+    pub(crate) fn generated(
+        mut self,
+        types: &Store,
+        body: &'a Body,
+        permit: Option<&'a crate::body::coroutines::Permit>,
+    ) -> Result<Self, &'static str> {
+        if let Some(permit) = permit {
+            if self
+                .source
+                .is_none_or(|(_, actual)| !std::ptr::eq(actual, body))
+            {
+                return Err("generated Copy view changed its actual proved body");
+            }
+            permit.require_current(types, body)?;
+        }
+        self.future = permit;
+        Ok(self)
+    }
+    pub(crate) fn state_read(
+        &self,
+        types: &Store,
+        body: &Body,
+        place: crate::body::ir::Place,
+    ) -> Result<bool, &'static str> {
+        if self.future.is_some()
+            && self
+                .source
+                .is_none_or(|(_, actual)| !std::ptr::eq(actual, body))
+        {
+            return Err("compiler state read changed its actual proved body");
+        }
+        self.future
+            .map(|permit| permit.state_read(types, body, place))
+            .transpose()
+            .map(|v| v.unwrap_or(false))
     }
     pub(crate) fn demand<S: BuildHasher>(
         &mut self,
