@@ -145,6 +145,7 @@ impl Frame {
             .as_ref()
             .map_or(first, |autos| first.max(autos.end));
         match self.language.as_deref() {
+            Some(super::mechanical::Pending::Async(pending)) => first.max(pending.regions().end),
             Some(super::mechanical::Pending::Unsize(pending)) => first.max(pending.end),
             _ => first,
         }
@@ -415,6 +416,7 @@ impl Search<'_> {
         let resolution = match source {
             Source::Implementation { .. }
             | Source::Callable { .. }
+            | Source::AsyncCallable(_)
             | Source::Future { .. }
             | Source::LanguageOperation { .. } => {
                 if let Some(application) = opened.application.associated() {

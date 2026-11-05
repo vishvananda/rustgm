@@ -74,7 +74,18 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
         }
         if matches!(
             role,
-            LangItem::Future | LangItem::FutureOutput | LangItem::FuturePoll | LangItem::AsyncDrop
+            LangItem::Future
+                | LangItem::FutureOutput
+                | LangItem::FuturePoll
+                | LangItem::AsyncDrop
+                | LangItem::AsyncFn
+                | LangItem::AsyncFnMut
+                | LangItem::AsyncFnOnce
+                | LangItem::AsyncFnOnceOutput
+                | LangItem::CallOnceFuture
+                | LangItem::CallRefFuture
+                | LangItem::AsyncFnKindHelper
+                | LangItem::AsyncFnKindUpvars
         ) {
             // Genuine ordinary declarations are completed by the Future producer.
             // Polling and future state machines remain separate demanded consumers.

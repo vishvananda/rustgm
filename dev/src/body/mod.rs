@@ -23,6 +23,7 @@ pub mod instantiate;
 pub mod invocation_entries;
 pub mod ir;
 pub(crate) mod iterator_factories;
+pub(crate) mod lending;
 pub(crate) mod length_methods;
 pub(crate) mod pointers;
 pub(crate) mod primitive_methods;

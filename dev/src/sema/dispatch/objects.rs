@@ -20,6 +20,10 @@ pub(super) enum Method {
         future: TypeId,
         proof: Obligations,
     },
+    AsyncCallable {
+        selected: std::sync::Arc<crate::sema::traits::callables::asynchronous::Selected>,
+        proof: Obligations,
+    },
     Language {
         descriptor: crate::sema::primitive_methods::Descriptor,
         proof: Obligations,
@@ -79,9 +83,18 @@ impl Dispatcher {
             .and_then(|(id, _)| facts.types.trait_application(id))
             .is_some_and(|application| future_role == Some(DefId(application.item.0)));
         let fn_pointer = crate::sema::compiler_items::pointers::application(facts, predicate)?;
+        let asynchronous = predicate
+            .bound
+            .trait_parts()
+            .and_then(|(id, _)| facts.types.trait_application(id))
+            .map(|a| crate::sema::traits::callables::asynchronous::kind(facts, a.item))
+            .transpose()?
+            .flatten()
+            .is_some();
         if !language
             && !future
             && !fn_pointer
+            && !asynchronous
             && !matches!(facts.types.kind(predicate.ty), Some(Kind::Dynamic { .. }))
         {
             return self
@@ -134,6 +147,10 @@ impl Dispatcher {
             }
             selection::Source::Future { future } => Ok(Method::Future {
                 future,
+                proof: evidence.proof,
+            }),
+            selection::Source::AsyncCallable(selected) => Ok(Method::AsyncCallable {
+                selected,
                 proof: evidence.proof,
             }),
             selection::Source::LanguageOperation { descriptor } => Ok(Method::Language {

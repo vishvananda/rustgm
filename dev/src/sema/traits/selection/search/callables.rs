@@ -158,6 +158,9 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Action, String> {
+        if matches!(frame.language.as_deref(), Some(Pending::Async(_))) {
+            return self.complete_async_callable(facts, frame);
+        }
         if matches!(frame.language.as_deref(), Some(Pending::Components(_))) {
             return self.complete_component_markers(facts, frame);
         }

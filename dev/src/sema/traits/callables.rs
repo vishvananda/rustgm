@@ -1,4 +1,5 @@
 //! Callable equations preserve unresolved inputs and instantiate one signature binder.
+pub(in crate::sema) mod asynchronous;
 mod eligibility;
 mod output;
 use crate::{
@@ -67,12 +68,27 @@ pub(in crate::sema) fn match_signature(
     goal: &Predicate,
     first: u32,
 ) -> Result<Matched, infer::Error> {
-    let (item, arguments) = goal
+    let (item, _) = goal
         .trait_arguments()
         .ok_or(infer::Error::InvalidIdentity)?;
     let kind = facts
         .associated
         .callable(DefId(item.0))
+        .ok_or(infer::Error::InvalidIdentity)?;
+    match_signature_as(facts, context, goal, kind, first)
+}
+
+/// The signature equations are shared; the selecting protocol owns its actual
+/// trait identity, capture permission and result obligations independently.
+pub(in crate::sema) fn match_signature_as(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Predicate,
+    kind: CallTrait,
+    first: u32,
+) -> Result<Matched, infer::Error> {
+    let (_, arguments) = goal
+        .trait_arguments()
         .ok_or(infer::Error::InvalidIdentity)?;
     let [Argument::Type(arguments)] = arguments else {
         return Err(infer::Error::InvalidIdentity);

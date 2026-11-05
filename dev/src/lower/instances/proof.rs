@@ -583,6 +583,34 @@ impl Builder {
             crate::body::factories::Permit::FunctionPointer(permit),
         )
     }
+    pub(super) fn push_lending_factory(
+        &mut self,
+        facts: &mut Declarations,
+        templates: &templates::Checked<'_>,
+        selected: crate::sema::lending_methods::Method,
+        mut body: Body,
+        mut input: Contract,
+        budget: &mut usize,
+    ) -> Result<usize, borrow::Error> {
+        let source = body.source;
+        let error = |message: &str| borrow::Error {
+            node: Some(source.into()),
+            message: message.into(),
+        };
+        let permit =
+            crate::body::lending::validate(facts, selected, &body, &input).map_err(error)?;
+        // The graph is now immutable. Ordinary captured-entry selection only
+        // adds its own lifetime debts and selected execution metadata.
+        crate::body::invocation_entries::select(facts, &mut body, &mut input).map_err(error)?;
+        self.push_validated_factory(
+            facts,
+            templates,
+            body,
+            &input,
+            budget,
+            crate::body::factories::Permit::Lending(permit),
+        )
+    }
     fn push_validated_factory(
         &mut self,
         facts: &mut Declarations,

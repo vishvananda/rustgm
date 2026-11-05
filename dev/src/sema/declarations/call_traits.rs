@@ -105,6 +105,30 @@ impl Checker<'_> {
             .source_bindings
             .as_deref()
             .is_some_and(|r| r.callable(definition).is_some())
+            || self.declared_async_callable(definition)
+    }
+
+    /// Reservation selects only the syntax family. Async proof never enters
+    /// the synchronous Fn registry or borrows its Output identity.
+    pub(in crate::sema::declarations) fn declared_async_callable(&self, definition: DefId) -> bool {
+        use crate::support::bindings::LangItem;
+        self.report
+            .resolution
+            .source_bindings
+            .as_deref()
+            .is_some_and(|catalog| {
+                [
+                    LangItem::AsyncFnOnce,
+                    LangItem::AsyncFnMut,
+                    LangItem::AsyncFn,
+                ]
+                .into_iter()
+                .any(|role| {
+                    catalog
+                        .language(role)
+                        .is_some_and(|declaration| declaration.definition == definition)
+                })
+            })
     }
     /// Attribute presence affects language call permission independently of the
     /// function's safe signature. Consume configured ownership once per declaration.

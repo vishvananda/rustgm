@@ -105,9 +105,18 @@ impl Frame {
         goal: &Goal,
         first: u32,
     ) -> Result<Self, String> {
+        Self::with_types(&facts.types, source, goal, first)
+    }
+
+    pub(super) fn with_types(
+        types: &crate::types::Store,
+        source: &mut Context,
+        goal: &Goal,
+        first: u32,
+    ) -> Result<Self, String> {
         let mut inputs = infer::refinement::Refinement::default();
         let goal = inputs
-            .initialize_predicate(&facts.types, source, goal)
+            .initialize_predicate(types, source, goal)
             .map_err(inference)?;
         Ok(Self {
             language: None,

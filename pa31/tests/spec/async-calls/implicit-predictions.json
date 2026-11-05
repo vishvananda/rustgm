@@ -1,0 +1,133 @@
+{
+  "status": "Rust-independent matrix before candidate observation",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_prefix_sha256": "0ce3e59b6dcbda10ed287da94a9d48def7b877ca17a4c14bf47088755a9de771",
+  "cases": [
+    {
+      "file": "implicit-function-pointer.rs",
+      "sha256": "647fdfb4788cb4928e6eb8680783a5628ecc251acac96e34ef05cbb24751c75e",
+      "expected_status": 0
+    },
+    {
+      "file": "implicit-foreign-function.rs",
+      "sha256": "93f605fade62d4ac5da69854b936f0fc72eef8cec4a9b779faf2683c11020963",
+      "expected_status": 1
+    },
+    {
+      "file": "implicit-foreign-pointer.rs",
+      "sha256": "7b5f370c7b7548525e440bb633053eda1a7c2d9b9dd2f192fdcf2a38d7c97641",
+      "expected_status": 1
+    },
+    {
+      "file": "implicit-not-future.rs",
+      "sha256": "ea4e71eda6beb24e57c1eed956184ecfd8241145100d43a242808a5143128b25",
+      "expected_status": 1
+    },
+    {
+      "file": "implicit-wrong-output.rs",
+      "sha256": "5f7927be8268b35e0581d9ff2f9cd9d7f26127920090b79a615cc889eba56f6b",
+      "expected_status": 1
+    },
+    {
+      "file": "implicit-wrong-arguments.rs",
+      "sha256": "d42df0e111f9a290a9e5be400ce6056e30cba49e41f9f32c85e16d29131dad45",
+      "expected_status": 1
+    },
+    {
+      "file": "implicit-unsafe-function.rs",
+      "sha256": "127040979ac196b4a359d0f1e789ea9867d7a53d2b4c06dbd79d60f5df6ac304",
+      "expected_status": 1
+    },
+    {
+      "file": "implicit-once-closure.rs",
+      "sha256": "2ae9a0c80577738630ed19669ff14cc9c1ae08ab559bd9bcc2107d92267359a5",
+      "expected_status": 0
+    },
+    {
+      "file": "implicit-once-not-mutable.rs",
+      "sha256": "dbb17a3504aa81effb74fe450b557897487f2cea208d4e6185fc543d6de986fa",
+      "expected_status": 1
+    },
+    {
+      "file": "implicit-mutable-closure.rs",
+      "sha256": "d849bc2906b187902b0ff93f0b5778f986eda07501fee5672e51aa5bd87e2c97",
+      "expected_status": 0
+    },
+    {
+      "file": "implicit-mutable-not-shared.rs",
+      "sha256": "d494f46153e809b2650f0eaee26b47073018f9595b85c9854f026b4c7065d82d",
+      "expected_status": 1
+    },
+    {
+      "file": "implicit-shared-closure.rs",
+      "sha256": "dfcb3a4de1c2434e0a3d218d8080d72a0a65db034eb5ed6f8817e0cb3715a96f",
+      "expected_status": 0
+    },
+    {
+      "file": "implicit-borrowed-future.rs",
+      "sha256": "3bd9172f4098dc4673fcb1a94bad2f1ad8349b920805c41f34c9d6b5b214c0f0",
+      "expected_status": 0
+    },
+    {
+      "file": "implicit-quantified-future.rs",
+      "sha256": "5cdcb3ca7184f860b2da814d203e331e015c616982124f0c0c75fc0760f4979c",
+      "expected_status": 0
+    },
+    {
+      "file": "implicit-static-only.rs",
+      "sha256": "f1f2db74ffcdcaac702cf6171f7253d31ef0cd5379a08ecde43465287e488d0d",
+      "expected_status": 1
+    },
+    {
+      "file": "implicit-method-function.rs",
+      "sha256": "b8517dc825856715e58c8f7ae6b04fd2d61f65ff16eb933a5f862e1f139b047e",
+      "expected_status": 0
+    },
+    {
+      "file": "implicit-method-pointer.rs",
+      "sha256": "4dc3b6f1aef350c7a95b4ad53502ac7733c92de5ab688b1b1449fb2b2be4cd14",
+      "expected_status": 0
+    },
+    {
+      "file": "implicit-method-closure.rs",
+      "sha256": "6d0d6e70a6d0153526dc5a019769afd8115ff939d7d0689d3ccd5b9283f2bd4d",
+      "expected_status": 0
+    },
+    {
+      "file": "implicit-method-shared.rs",
+      "sha256": "971a31f83798ba1e6baae67a082c57b14f86522a0bf049fba18fb45ea431b119",
+      "expected_status": 0
+    },
+    {
+      "file": "implicit-method-mutable.rs",
+      "sha256": "edc8fcab37c0edaf86a17127ab3583955917f13ca507cb43a62f3fc4c40a56cd",
+      "expected_status": 0
+    },
+    {
+      "file": "implicit-parenthesized.rs",
+      "sha256": "d31f9b28a841e1c42e22f014c08c8e0e6f311d82a0354656f441b9913c20df4e",
+      "expected_status": 0
+    }
+  ],
+  "independent_receipt": "obj/parallel/async-call-source-v1/implicit-matrix-v1/receipt.json",
+  "prediction_correction": {
+    "cases": [
+      "foreign-function",
+      "foreign-pointer"
+    ],
+    "initial_prediction": 0,
+    "corrected_prediction": 1,
+    "reason": "Independent pinned Rust reports E0277 for C ABI functions and pointers, so retain them as actual ABI opponents. Initial predictions and observations remain unchanged in the original receipt."
+  },
+  "native_required": {
+    "files": [
+      "implicit-method-function.rs",
+      "implicit-method-pointer.rs",
+      "implicit-method-closure.rs",
+      "implicit-method-shared.rs",
+      "implicit-method-mutable.rs"
+    ],
+    "stdout": "23\n",
+    "status": 0
+  }
+}

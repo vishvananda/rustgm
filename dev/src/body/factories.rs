@@ -4,6 +4,7 @@ pub(crate) enum Permit {
     Primitive(super::primitive_methods::Permit),
     FunctionPointer(super::pointers::Permit),
     Future(Box<super::coroutines::Permit>),
+    Lending(super::lending::Permit),
 }
 impl Permit {
     pub(crate) const fn instance(&self) -> Option<Instance> {
@@ -11,6 +12,7 @@ impl Permit {
             Self::Primitive(permit) => Some(permit.instance()),
             Self::FunctionPointer(permit) => Some(permit.instance()),
             Self::Future(permit) => permit.instance(),
+            Self::Lending(permit) => Some(permit.instance()),
         }
     }
     pub(crate) fn future(&self) -> Option<&super::coroutines::Permit> {

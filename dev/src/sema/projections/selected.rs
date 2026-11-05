@@ -23,6 +23,12 @@ impl Definition {
     ) -> Result<Self, &'static str> {
         let item = application.item;
         let family = application.arguments;
+        if let Source::AsyncCallable(selected) = source {
+            return Ok(Self {
+                id: DefId(item.0),
+                value: Value::Ready(selected.output(facts, application)?),
+            });
+        }
         if let Source::Future { future } = source {
             return Ok(Self {
                 id: DefId(item.0),
