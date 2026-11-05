@@ -3656,6 +3656,13 @@ Projection input well-formedness retains the surrounding callable depth. Input
 lifetime requirements are not the opaque result's outlives or live-value
 components; result properties still need their own proofs.
 
+Rigid method shape comparison distinguishes a completed type mismatch from an
+invalid identity or exhausted work. Publish a cached positive pair only after
+all its children complete. A mismatch or error discards pending work while
+retaining completed subgraphs; repeated small failures must not scan or clear
+the capacity of a large historical cache. Finish markers reuse work-record
+padding and keep the iterative traversal proportional to the visited DAG.
+
 Associated result contracts do not expand recursively into caller environments.
 Close ordinary Self supertraits first, then their immediate owned result clauses
 and those clauses' ordinary implications. Retain their finite equality, builtin

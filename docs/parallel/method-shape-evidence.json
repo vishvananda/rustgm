@@ -1,0 +1,28 @@
+{
+  "scope": "PA20 real method mismatch and completed structural comparison pairs",
+  "baseline": "c3e9be5ef8d1ee1331c8b60d5ee4748aec915b90",
+  "sources": {
+    "dev/src/sema/traits/conformance/projections.rs": "c70923bba89fa0cbf094e162feac4324a7665d90329075c28bac44732c1bb475",
+    "dev/src/types/structural.rs": "581e4f80b0a2e45660892ffdd17a7ccc69ca4c6f2e8fb6fd7648f45e27525695",
+    "dev/tests/trait_bounds/conformance.rs": "9c201dd84ce6dba2a7fb442db3fe4ce0d5b76be99f945c3b654d7d8efae49747",
+    "pa20/tests/spec/selection/overrides/lowir/invalid-unused-signature.rs.ref.stderr": "0c88e5b9686b7785ea1eaaa7b959e3b29118203f17ba94d53695acc5dd0e53f3",
+    "spec.md": "236f12a6e8f335630845e3800afbbb3407834ec3ae8d1c86f95a863f39d4873e",
+    "dev/tests/invariants/mismatch_answers.rs": "0910f8bd0f81ae73de99856fb1abdd5384d8b22a582709b5027fc29d1dfbfc95",
+    "pa20/reference-batches/1793917831709359315-d8fbcdf9f552.json": "d8fbcdf9f5524d269ab9cee6eb5371c253267d542f736c9a5857c46319e0f421"
+  },
+  "receipts": {
+    "obj/parallel/shape-diagnostic-20261105/qualification-v3/receipt.json": "f045258aa2fee0d8116667785132e9ce7da30772c26a0a9828005e33b477c92a",
+    "obj/parallel/shape-diagnostic-20261105/qualification-v3/followup.json": "2d2cb1d74b3d39d596a2be1d287fa0eb4248c52e4aa92fd78e550607477afddd",
+    "obj/parallel/shape-diagnostic-20261105/qualification-v3/followup-completion.json": "4faec242f82f4b6dde743bd3a100adb962c9e7c4054713a79b4b0ec638687c6c"
+  },
+  "focused_gate": "passed",
+  "affected_text_cases": 1389,
+  "followup_seconds": 24.133596854982898,
+  "combined_attempt": "timed out after successful focused gate and scoped oracle generation; full PA20 completed separately",
+  "pending": [
+    "two private controls compilation/execution",
+    "successor full CI",
+    "meaningful wall-time performance checkpoint",
+    "AsyncFn execution and original core/alloc/std artifacts"
+  ]
+}
