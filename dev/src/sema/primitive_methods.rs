@@ -596,13 +596,37 @@ fn validate_substitution(
     }
     Ok(())
 }
+#[derive(Clone, Copy)]
+enum Entry {
+    Primitive(Selected),
+    Future(crate::sema::coroutine_methods::FutureMethod),
+}
+// Actual cold scalar payload stays12; the shared discriminated row is measured.
+const _: [(); 12] = [(); size_of::<Selected>()];
+const _: [(); 16] = [(); size_of::<Entry>()];
+const _: [(); 20] = [(); size_of::<(Instance, Entry)>()];
 #[derive(Default)]
 pub(crate) struct Registry {
-    selected: HashMap<Instance, Selected>,
+    selected: HashMap<Instance, Entry>,
+    work: usize,
+    bytes: usize,
 }
+const _: [(); 48] = [(); size_of::<Registry>()];
 impl Registry {
     pub(crate) fn get(&self, instance: Instance) -> Option<Selected> {
-        self.selected.get(&instance).copied()
+        match self.selected.get(&instance).copied() {
+            Some(Entry::Primitive(selected)) => Some(selected),
+            Some(Entry::Future(_)) | None => None,
+        }
+    }
+    pub(crate) fn get_future(
+        &self,
+        instance: Instance,
+    ) -> Option<crate::sema::coroutine_methods::FutureMethod> {
+        match self.selected.get(&instance).copied() {
+            Some(Entry::Future(selected)) => Some(selected),
+            Some(Entry::Primitive(_)) | None => None,
+        }
     }
     pub(crate) fn is_empty(&self) -> bool {
         self.selected.is_empty()
@@ -618,17 +642,83 @@ pub(in crate::sema) fn retain(
         descriptor,
     };
     selected.validate(facts)?;
-    let registry = facts.primitive_methods.get_or_insert_default();
-    if registry.selected.len() >= 100_000 {
-        return Err("primitive method selection count exceeds 100000");
-    }
+    let registry = prepay(facts, instance)?;
     if registry
         .selected
         .get(&instance)
-        .is_some_and(|old| old.descriptor != descriptor)
+        .is_some_and(|old| match old {
+            Entry::Primitive(old) => old.descriptor != descriptor,
+            Entry::Future(_) => true,
+        })
     {
         return Err("primitive method instance has conflicting descriptors");
     }
-    registry.selected.insert(instance, selected);
+    registry
+        .selected
+        .insert(instance, Entry::Primitive(selected));
     Ok(())
+}
+
+pub(in crate::sema) fn retain_future(
+    facts: &mut Declarations,
+    selected: crate::sema::coroutine_methods::FutureMethod,
+) -> Result<(), &'static str> {
+    let instance = selected.instance();
+    let registry = prepay(facts, instance)?;
+    if registry
+        .selected
+        .get(&instance)
+        .is_some_and(|old| match old {
+            Entry::Future(old) => *old != selected,
+            Entry::Primitive(_) => true,
+        })
+    {
+        return Err("future method instance has conflicting actual entry descriptors");
+    }
+    registry.selected.insert(instance, Entry::Future(selected));
+    Ok(())
+}
+
+fn prepay(facts: &mut Declarations, instance: Instance) -> Result<&mut Registry, &'static str> {
+    let registry = facts.primitive_methods.as_deref();
+    let (length, capacity, additional, old_work, old_bytes) =
+        registry.map_or((0, 0, 1, 0, 0), |registry| {
+            (
+                registry.selected.len(),
+                registry.selected.capacity(),
+                usize::from(!registry.selected.contains_key(&instance)),
+                registry.work,
+                registry.bytes,
+            )
+        });
+    if length.saturating_add(additional) > 100_000 {
+        return Err("generated method selection count exceeds 100000");
+    }
+    let growth =
+        crate::support::retained::Growth::map::<Instance, Entry>(length, capacity, additional);
+    let work = growth.work.saturating_add(1);
+    let bytes = growth.bytes.saturating_add(if registry.is_none() {
+        size_of::<Registry>()
+    } else {
+        0
+    });
+    let total_work = old_work.saturating_add(work);
+    let total_bytes = old_bytes.saturating_add(bytes);
+    if let Some(registry) = facts.primitive_methods.as_deref_mut() {
+        registry.work = total_work;
+        registry.bytes = total_bytes;
+    }
+    // Saturating cumulative counters remain over-limit after a failed request.
+    if total_work > crate::support::crates::MAX_COMPONENTS
+        || total_bytes > crate::support::crates::MAX_BYTES
+    {
+        return Err("generated method registry work/storage budget exceeded");
+    }
+    if facts.source_bindings.is_some() {
+        facts.charge_caller_inputs(work, bytes)?;
+    }
+    let registry = facts.primitive_methods.get_or_insert_default();
+    registry.work = total_work;
+    registry.bytes = total_bytes;
+    Ok(registry)
 }

@@ -1,0 +1,26 @@
+{
+  "scope": "Genuine no_core poll protocol and actual required poll function-item coercion with three independently quantified public lifetime slots; no authored async/ResumeTy requirement",
+  "cases": [
+    {
+      "path": "pa31/tests/spec/polling-source/protocol.rs",
+      "sha256": "c70ae5bf0e0a8bae6dfb6f71078d2fd258519a0cafee4ac317e447381286ead3",
+      "status": 0,
+      "cause": null
+    }
+  ],
+  "corrections": [
+    {
+      "prior_plan_sha256": "fcc23ab0acdf7ac25a397a02fe2f93c84b1f964f9505dcc11791fe74fdcb20d2",
+      "prior_source_sha256": "b47390de1c7f6784ee561ec966e99f1ca64f21d4dad6d5ae1d9adb2173019023",
+      "actual_status": 1,
+      "cause": "requires destruct lang_item at the genuine const Pin constructor; corrected the actual foundation, no semantic parity claim"
+    },
+    {
+      "prior_plan_sha256": "e75f9a6a31f728ec2c4d72983481b2e1120f3f7cbc8a8b1331ae3953941983dd",
+      "prior_source_sha256": "772067edbb383b1edbfd7918649ff6429f494b425ad40aa88677633e038c2409",
+      "actual_status": 1,
+      "cause": "requires freeze lang_item at the genuine const Pin constructor; added real Freeze declaration, no helper implementation"
+    }
+  ],
+  "prior_header_receipt_sha256": "2208ee9232707dd5cd001524d18acf9b416f05fcd021bfbf8e7e73d526052dc3"
+}

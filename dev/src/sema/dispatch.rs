@@ -1,8 +1,8 @@
 //! Concrete trait callables select checked overrides while retaining their lifetime proof.
 mod allocation;
 mod arguments;
-pub(in crate::sema) use arguments::callable_substitution;
 pub(in crate::sema) use arguments::instantiate_charged as instantiate_callable;
+pub(in crate::sema) use arguments::{callable_substitution, callable_substitution_paid};
 mod consteval_defaults;
 mod dependencies;
 mod effect_requirements;
@@ -233,6 +233,52 @@ impl Dispatcher {
     ) -> Result<TypeId, Failure> {
         self.select_using(facts, ty, Some(preparation))
     }
+    fn cached_method(
+        &self,
+        facts: &mut Declarations,
+        ty: TypeId,
+    ) -> Result<Option<TypeId>, &'static str> {
+        let Some(&selected) = self.selected.get(&ty) else {
+            return Ok(None);
+        };
+        let instance = crate::types::instance::Instance::new(&facts.types, selected)?;
+        if let Some(method) = facts
+            .primitive_methods
+            .as_deref()
+            .and_then(|registry| registry.get_future(instance))
+        {
+            method.validate(facts)?;
+        }
+        Ok(Some(selected))
+    }
+    fn selection_subject(
+        &mut self,
+        facts: &mut Declarations,
+        predicate: &mut crate::types::parameters::predicates::Predicate,
+    ) -> Result<(), &'static str> {
+        let future_role = super::coroutine_methods::future_role(facts)?;
+        let future_query = predicate
+            .bound
+            .trait_parts()
+            .and_then(|(id, _)| facts.types.trait_application(id))
+            .is_some_and(|application| future_role == Some(DefId(application.item.0)));
+        if future_query
+            && let Some(future) = super::coroutine_methods::concrete_self(facts, predicate.ty)?
+        {
+            predicate.ty = future;
+        }
+        if self.caller.is_none()
+            && matches!(
+                self.availability,
+                super::traits::implementations::Availability::Validated
+            )
+            && matches!(facts.types.kind(predicate.ty), Some(Kind::Opaque(..)))
+        {
+            facts.prepare_opaque_storage()?;
+            predicate.ty = facts.types.storage_head(predicate.ty)?;
+        }
+        Ok(())
+    }
     fn select_using(
         &mut self,
         facts: &mut Declarations,
@@ -242,7 +288,7 @@ impl Dispatcher {
         if let Some(actual) = &mut preparation {
             actual.prepay(facts, 1, 0).map_err(Failure::Preparation)?;
         }
-        if let Some(&selected) = self.selected.get(&ty) {
+        if let Some(selected) = self.cached_method(facts, ty)? {
             return Ok(selected);
         }
         let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(ty) else {
@@ -257,16 +303,7 @@ impl Dispatcher {
         }
         let arguments = arguments::Arguments::new(facts, ty)?;
         let mut predicate = arguments.goal(facts, trait_owner)?;
-        if self.caller.is_none()
-            && matches!(
-                self.availability,
-                super::traits::implementations::Availability::Validated
-            )
-            && matches!(facts.types.kind(predicate.ty), Some(Kind::Opaque(..)))
-        {
-            facts.prepare_opaque_storage()?;
-            predicate.ty = facts.types.storage_head(predicate.ty)?;
-        }
+        self.selection_subject(facts, &mut predicate)?;
         let (owner, implementation, evidence) =
             match self.method_implementation_using(facts, predicate, preparation)? {
                 objects::Method::Implementation {
@@ -283,6 +320,16 @@ impl Dispatcher {
                     let instance = crate::types::instance::Instance::new(&facts.types, ty)?;
                     crate::sema::compiler_items::pointers::address(facts, instance)?.ok_or(
                         "source function-pointer dispatch lacks its actual address member",
+                    )?;
+                    self.extend_evidence(proof)?;
+                    self.selected.insert(ty, ty);
+                    return Ok(ty);
+                }
+                objects::Method::Future { future, proof } => {
+                    crate::sema::coroutine_methods::retain(
+                        facts,
+                        crate::types::instance::Instance::new(&facts.types, ty)?,
+                        future,
                     )?;
                     self.extend_evidence(proof)?;
                     self.selected.insert(ty, ty);

@@ -258,16 +258,14 @@ fn selected_definition_retains_both_argument_groups_and_member_identity() -> Tes
         .ok_or("missing impl")?;
     let owner = implementation.owner;
     let subject = implementation.predicate.ty;
+    let (application, _) = implementation
+        .predicate
+        .bound
+        .trait_parts()
+        .ok_or("actual implementation trait")?;
     let trait_item = facts
         .types
-        .trait_application(
-            implementation
-                .predicate
-                .bound
-                .trait_parts()
-                .ok_or("actual implementation trait")?
-                .0,
-        )
+        .trait_application(application)
         .ok_or("actual trait application")?
         .item;
     let members = implementation.types.clone();

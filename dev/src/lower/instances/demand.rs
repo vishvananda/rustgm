@@ -478,6 +478,7 @@ impl Traversal<'_> {
             }
         };
         let error = |e: &str| diagnostic(report, Some(source), e.into());
+        require_future_runtime(facts, instance).map_err(error)?;
         let fn_pointer =
             crate::sema::compiler_items::pointers::address(facts, instance).map_err(error)?;
         let index = if let Some(selected) = fn_pointer {
@@ -564,6 +565,24 @@ impl Traversal<'_> {
         )?;
         Ok(())
     }
+}
+
+fn require_future_runtime(
+    facts: &mut Declarations,
+    instance: Instance,
+) -> Result<(), &'static str> {
+    let Some(selected) = facts
+        .primitive_methods
+        .as_deref()
+        .and_then(|registry| registry.get_future(instance))
+    else {
+        return Ok(());
+    };
+    selected.validate(facts)?;
+    if selected.key().operation != crate::types::future::Operation::Poll {
+        return Err("future method demand has a different generated operation");
+    }
+    Err("future poll requires its checked generated runtime family and state ownership")
 }
 
 #[derive(Clone, Copy)]

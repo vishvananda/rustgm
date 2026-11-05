@@ -10,12 +10,15 @@ pub fn prepare(
     body::promote::analyze_templates(report, facts, &mut templates)?;
     let mut inputs = body::regions::collect(facts)?.bodies;
     for template in &templates.bodies {
-        let body::ir::Owner::AsyncBody { identity, .. } = template.body.owner else {
+        if !matches!(
+            template.body.owner,
+            body::ir::Owner::AsyncBody { .. } | body::ir::Owner::Function { .. }
+        ) {
             return Err("source template has another actual owner".into());
-        };
+        }
         let contract = inputs
             .iter_mut()
-            .find(|input| input.key == body::ir::BodyKey::AsyncBody(identity))
+            .find(|input| input.key == template.body.key())
             .ok_or("deferred original lost its real input contract")?;
         body::prepare_source_copy(facts, &template.body, contract)?;
         contract.prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)?;
@@ -46,7 +49,7 @@ pub fn verify<'a>(
         &contracts,
         templates,
         &[],
-        |_, _| Err("unexpected nominal field in source async packet"),
+        |ty, member| body::drops::nominal_position(facts, ty, member),
     )?)
 }
 

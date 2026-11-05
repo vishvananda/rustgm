@@ -331,18 +331,16 @@ fn closed_projection_fallback_keeps_assumptions_and_discarded_trials_separate() 
         };
         assert_eq!(waits, if base == "u8" { 10 } else { 9 });
         assert_eq!(Arc::strong_count(&environment), 1);
+        let source = projected.source.as_ref().ok_or("missing selected source")?;
         if base == "u8" {
-            assert!(matches!(
-                projected.source,
-                Some(Source::Implementation { .. })
-            ));
+            assert!(matches!(source, Source::Implementation { .. }));
             let definition = Definition::select(
                 &f.facts,
                 crate::types::projection::Application {
                     arguments: projected.family,
                     ..application
                 },
-                projected.source.as_ref().ok_or("missing implementation")?,
+                source,
             )?;
             let ty = definition.result(&mut f.facts)?.ok_or("missing result")?;
             assert_eq!(
@@ -353,7 +351,7 @@ fn closed_projection_fallback_keeps_assumptions_and_discarded_trials_separate() 
                 f.expected
             );
         } else {
-            assert!(matches!(projected.source, Some(Source::Assumption(p)) if p == root));
+            assert!(matches!(source, Source::Assumption(p) if *p == root));
             assert_eq!(projected.resolution, Some(Resolution::Opaque));
         }
         if template {

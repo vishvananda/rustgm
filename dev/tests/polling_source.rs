@@ -7,6 +7,7 @@ type Result = std::result::Result<(), Box<dyn std::error::Error>>;
 fn ordinary_polling_roles_preserve_unused_shapes_and_all_body_checks() -> Result {
     for (name, valid) in [
         ("actual", true),
+        ("protocol", true),
         ("alternate", true),
         ("foreign-parent-unused", true),
         ("invalid-unused-body", false),

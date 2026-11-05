@@ -453,5 +453,68 @@
       "sha256": "ae07b2f6c4f0e0ad9f8d0a7f2cc7819900e8ff824cb39a329495b02e3600e5c7",
       "cause": "All7 ordinary native suites and3 const/Va tests pass; interference stops at stale expected address-load shape. Updated checker requires direct tag comparisons and preserves all CAS/old-value/backedge invariants; final all11 pass."
     }
+  },
+  "ci_test_lint_repair": {
+    "failed_run": 42069373788,
+    "failure": "three duplicate Owner arms and private tests102/101lines; no backend stage reached",
+    "changes": "remove unreachable duplicate arms, retain and reuse typed source/application lookups; all assertions preserved",
+    "private_execution": "pending CI: both full private harness links exceeded local deadline; neither is counted as passing",
+    "evidence": {
+      "obj/qualification/fast/1793898904430516072/receipt.json": {
+        "sha256": "cf1b8246ddd55d7d06859fe23a897831ddc54a573d49399bf3c929d8b7da9e7b",
+        "state": "failed"
+      },
+      "obj/qualification/fast/1793899174718024004/receipt.json": {
+        "sha256": "10b06676cf34b13c1e78978248e53bbcf95901c58166c700a9c38c5c7d27cdca",
+        "state": "failed"
+      },
+      "obj/parallel/future-const-join-v1/test-lints-v1/receipt.json": {
+        "sha256": "260956b92df7e93f6e827b376ab3fb8154d93544277c1ff667143162d35d302d",
+        "state": "passed"
+      },
+      "obj/qualification/fast/1793899627228149758/receipt.json": {
+        "sha256": "cb0c396d54c27bfa354d4dc5de3e65b8419643e99ab77b3250a9f86720cfda83",
+        "state": "passed"
+      }
+    },
+    "source_sha256": {
+      "dev/tests/support/body_machine.rs": "066269e5766a38e8966a6ee5368c27f87686866ea3e14902512025d57c24d8fd",
+      "dev/tests/invariants/family_arguments.rs": "b72012368d390f733eb3ead0c8dbbf66043fe6c6f0631f82f14b18845ec9a8f5",
+      "dev/tests/invariants/selection_headers/normalization.rs": "48727013727bdcb6191af70bc8d34eab69a463a7e0860d076e493b7510fe26fb"
+    },
+    "final_all_target_clippy": {
+      "path": "obj/parallel/future-const-join-v1/poll-join-v1/receipt.json",
+      "sha256": "8f5943e9b49a076c1d30b8bbdc393b1f92b75da216cc08d45f731b5dfb769fa4",
+      "commands": [
+        {
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--all-targets",
+            "--all-features",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "status": 0,
+          "seconds": 103.79523561097449
+        },
+        {
+          "command": [
+            "make",
+            "test-harness",
+            "test-upstream"
+          ],
+          "status": 0,
+          "seconds": 12.84800830297172
+        }
+      ]
+    },
+    "earlier_metadata_scope": "The73s invocation selected the ordinary library and lowering integration, not cfg(test); full cfg(test) Clippy is proved only by the final all-target invocation above."
   }
 }
