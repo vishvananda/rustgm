@@ -182,19 +182,26 @@ fn rmw_registry_and_effectful_shims_grow_by_identity() -> Result<(), Box<dyn std
                     Operation::AtomicExchange { .. } | Operation::AtomicAddFetch { .. }
                 )
             });
-            let mut tags = 0;
+            let mut ordering_tests = 0;
             for instruction in &body.instructions {
                 if rmw {
                     match instruction.operation {
-                        Operation::Load { ty, address, .. } => {
-                            assert_eq!(ty, rustgm::lowir::vocabulary::Type::U8);
+                        Operation::Compare {
+                            predicate, left, ..
+                        } => {
                             assert!(matches!(
-                                address,
+                                predicate,
+                                rustgm::lowir::vocabulary::Predicate::Eq
+                            ));
+                            assert_eq!(left.ty, rustgm::lowir::vocabulary::Type::U8);
+                            assert!(matches!(
+                                left.operand,
                                 rustgm::lowir::program::Operand::Parameter(2)
                             ));
-                            tags += 1;
+                            ordering_tests += 1;
                         }
-                        Operation::Store { .. }
+                        Operation::Load { .. }
+                        | Operation::Store { .. }
                         | Operation::AtomicLoad { .. }
                         | Operation::AtomicStore { .. }
                         | Operation::CopyObject { .. } => {
@@ -216,8 +223,8 @@ fn rmw_registry_and_effectful_shims_grow_by_identity() -> Result<(), Box<dyn std
             }
             if rmw {
                 assert_eq!(
-                    tags, 1,
-                    "only the Ordering argument is loaded outside the atomic operation"
+                    ordering_tests, 5,
+                    "all order choices use the actual scalar Ordering parameter directly"
                 );
             }
         }

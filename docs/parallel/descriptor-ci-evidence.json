@@ -1,0 +1,102 @@
+{
+  "scope": "test-only CI42075839657 owned failures",
+  "gate": {
+    "path": "obj/qualification/fast/1793902943960158076/receipt.json",
+    "sha256": "cfafd44e94436250dd0642452b81eab871d0f179c1716dcbb0da8fbcdc436cf5",
+    "state": "passed",
+    "selected": {
+      "suite_memory": [
+        "cas_intrinsics::compare_exchange_identity_layout_and_shims_scale",
+        "rmw_intrinsics::rmw_registry_and_effectful_shims_grow_by_identity",
+        "subtract_intrinsics::subtraction_shares_one_typed_effectful_shim"
+      ]
+    },
+    "step_seconds": 51.6095679050195
+  },
+  "files": {
+    "dev/tests/invariants/primitive_factories.rs": "97f64093edddb316743a5f681158eb2351f2133e11c047181877baab149c44db",
+    "dev/tests/cas_intrinsics.rs": "5236c5420a710df37cc257d921d0284762ee3f0ce66fa93b9e006c45b3180a1a",
+    "dev/tests/rmw_intrinsics.rs": "b7a52a3e8e138ea5f48f6f67d2f61a6c81a1f92b3ff4cee98bc8aa56c954cdb8",
+    "dev/tests/subtract_intrinsics.rs": "5bca12b80ee9b4ba8423ebb94cb25bd8fe941a210798e219060cff6fe9802f9e"
+  },
+  "probe": {
+    "plan_sha256": "a28e7b97e9fa27ba687a59d6cbc224f494bbe187edb4404ddc0260dab41702be",
+    "rust": [
+      {
+        "name": "bare",
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--emit=metadata",
+          "-Zthreads=2",
+          "-Ccodegen-units=2",
+          "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/descriptor-repair/bare.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/descriptor-repair/bare.rmeta"
+        ],
+        "status": 0
+      },
+      {
+        "name": "ufcs",
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--emit=metadata",
+          "-Zthreads=2",
+          "-Ccodegen-units=2",
+          "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/descriptor-repair/ufcs.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/descriptor-repair/ufcs.rmeta"
+        ],
+        "status": 0
+      }
+    ],
+    "producer": "obj/qualification/fast/1793902943960158076/build.stdout",
+    "rlib_sha256": "958f18a0fde017d17a0adeca795cf7411818227d0ffa873983381ea3895b4c34",
+    "probe_sha256": "b6e35a48d92e718f2a8d34b5506cbe76788965d869603346f8ceba20e8580124",
+    "command": [
+      "rustc",
+      "+1.98.0",
+      "--edition=2024",
+      "-Zthreads=2",
+      "-Ccodegen-units=2",
+      "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/descriptor-repair/typed.rs",
+      "--extern",
+      "rustgm=/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/rust/dev-fast/deps/librustgm-47cd2068569bec25.rlib",
+      "-L",
+      "dependency=/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/rust/dev-fast/deps",
+      "-o",
+      "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/descriptor-repair/typed"
+    ],
+    "build_status": 0,
+    "run_status": 0,
+    "stdout": "bare: canonical typed shims=[]\nufcs: canonical typed shims=[U8, U16, U32, I64]\n",
+    "stderr": "",
+    "seconds": 5.547230387979653,
+    "private_counter_execution": "pending full CI; no private harness compilation"
+  },
+  "predictions": {
+    "profile": "Rust1.98 metadata; both valid sources, distinct genuine compiler producer paths",
+    "cases": [
+      {
+        "name": "bare",
+        "path": "obj/parallel/future-runtime-v1/descriptor-repair/bare.rs",
+        "sha256": "ffeb14d7384b97247caaee4e10786b4687fde4eb7b5beb49eb62e12ae663c5de",
+        "expected_status": 0,
+        "expected_generated_methods": 0
+      },
+      {
+        "name": "ufcs",
+        "path": "obj/parallel/future-runtime-v1/descriptor-repair/ufcs.rs",
+        "sha256": "89bccfedb77eea2d64767aac3b4ade38d6aad894078f095862124082477f5d36",
+        "expected_status": 0,
+        "expected_generated_methods": 4
+      }
+    ],
+    "private_requirements": "four real canonical member selections plus retained cold/warm/work/byte-limit assertions; no registry expectation waiver"
+  },
+  "private_counter_execution": "pending full CI; all assertions retained",
+  "runtime_stash": "d2961a553585d05f798556f103942389abbbd69b"
+}

@@ -734,7 +734,7 @@ fn generated_registry_prepays_cold_growth_warm_hits_and_sticky_limits() -> Resul
         selected,
         ..
     } = fixture_for(
-        "fn main(){let mut a=1u8;a+=2;let mut b=3u16;b+=4;let mut c=5u32;c+=6;let mut d=7u64;d+=8;}",
+        "fn main(){let mut a=1u8;<u8 as core::ops::AddAssign>::add_assign(&mut a,2);let mut b=3u16;<u16 as core::ops::AddAssign>::add_assign(&mut b,4);let mut c=5u32;<u32 as core::ops::AddAssign>::add_assign(&mut c,6);let mut d=7u64;<u64 as core::ops::AddAssign>::add_assign(&mut d,8);}",
     )?;
     assert_eq!(selected.len(), 4);
     assert!(facts.source_bindings.is_none());
