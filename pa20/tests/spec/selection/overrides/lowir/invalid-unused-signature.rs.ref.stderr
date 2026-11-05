@@ -1,1 +1,1 @@
-ERROR: file 0: 147: associated type projection requires normalization
+ERROR: file 0: 147: implementation method signature does not match its trait declaration

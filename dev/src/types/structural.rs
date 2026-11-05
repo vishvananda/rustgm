@@ -10,10 +10,14 @@ pub(crate) use shapes::Shapes;
 /// This view grants no input equation or lifetime permission.
 pub(crate) struct Normalized<'t, const SUBSUMPTION: bool> {
     types: &'t Store,
-    work: Vec<(TypeId, TypeId, u16)>,
+    work: Vec<(TypeId, TypeId, u32)>,
     seen: HashSet<(TypeId, TypeId)>,
     pub(crate) steps: usize,
 }
+// All real depths are u16. A finish marker uses the existing tuple padding,
+// preserving the12-byte work record and publishing only completed DAG pairs.
+const FINISHED: u32 = u32::MAX;
+const _: [(); 12] = [(); size_of::<(TypeId, TypeId, u32)>()];
 impl<'t, const SUBSUMPTION: bool> Normalized<'t, SUBSUMPTION> {
     pub(crate) fn new(types: &'t Store) -> Self {
         Self {
@@ -24,19 +28,45 @@ impl<'t, const SUBSUMPTION: bool> Normalized<'t, SUBSUMPTION> {
         }
     }
     pub(crate) fn require(&mut self, actual: TypeId, expected: TypeId) -> Result<(), Error> {
+        if self.matches(actual, expected)? {
+            Ok(())
+        } else {
+            Err(Error::Identity)
+        }
+    }
+    /// A completed rigid mismatch is distinct from malformed type identities
+    /// or exhausted comparison work. The caller supplies its semantic diagnostic.
+    pub(crate) fn matches(&mut self, actual: TypeId, expected: TypeId) -> Result<bool, Error> {
+        let result = self.compare_all(actual, expected);
+        if !matches!(result, Ok(true)) {
+            self.work.clear();
+        }
+        result
+    }
+    fn compare_all(&mut self, actual: TypeId, expected: TypeId) -> Result<bool, Error> {
         self.child(actual, expected, 0)?;
         while let Some((a, b, depth)) = self.work.pop() {
             self.charge(1)?;
-            if a == b || !self.seen.insert((a, b)) {
+            if depth == FINISHED {
+                self.seen.insert((a, b));
                 continue;
             }
-            if !self.compare(a, b, depth)? {
-                return Err(Error::Identity);
+            if a == b || self.seen.contains(&(a, b)) {
+                continue;
+            }
+            self.charge(1)?;
+            self.work.push((a, b, FINISHED));
+            if !self.compare(a, b, u16::try_from(depth).map_err(|_| Error::Identity)?)? {
+                return Ok(false);
             }
         }
-        Ok(())
+        Ok(true)
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/mismatch_answers.rs"]
+mod mismatch_tests;
 impl<'t, const SUBSUMPTION: bool> Compare<'t> for Normalized<'t, SUBSUMPTION> {
     fn types(&self) -> &'t Store {
         self.types
@@ -50,7 +80,7 @@ impl<'t, const SUBSUMPTION: bool> Compare<'t> for Normalized<'t, SUBSUMPTION> {
     }
     fn child(&mut self, a: TypeId, b: TypeId, depth: u16) -> Result<(), Error> {
         self.charge(1)?;
-        self.work.push((a, b, depth));
+        self.work.push((a, b, u32::from(depth)));
         Ok(())
     }
     fn regions(&mut self, _: RegionId, _: RegionId, _: u16) -> Result<bool, Error> {
