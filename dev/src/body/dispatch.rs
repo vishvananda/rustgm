@@ -217,6 +217,9 @@ fn rewrite(
     {
         *signature = fold.apply(&mut facts.types, *signature)?;
     }
+    if let super::ir::Owner::AsyncApplication { signature, .. } = &mut body.owner {
+        *signature = fold.apply(&mut facts.types, *signature)?;
+    }
     body.result = fold.apply(&mut facts.types, body.result)?;
     for local in &mut body.locals {
         local.ty = fold.apply(&mut facts.types, local.ty)?;

@@ -18,6 +18,12 @@ enum Arguments {
 pub(super) struct Bindings {
     arguments: Arguments,
 }
+/// Canonical capture coordinates, shared by storage folding and checked body opening.
+/// These arguments are substitution data, never formation or execution evidence.
+pub(crate) struct CapturedInputs {
+    pub bindings: Vec<(ParameterId, Argument)>,
+    pub regions: Vec<RegionId>,
+}
 impl Bound {
     /// Apply the complete canonical opaque/future capture list in one shared fold.
     /// No stored-field transformation may rebuild this mapping independently.
@@ -34,6 +40,15 @@ impl Bound {
         arguments: GenericArgs,
         charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<Self, &'static str> {
+        let inputs = Self::captured_inputs_charged(store, captures, arguments, charge)?;
+        Self::parameters_captured_charged(store, &inputs.bindings, inputs.regions, charge)
+    }
+    pub(crate) fn captured_inputs_charged(
+        store: &Store,
+        captures: GenericArgs,
+        arguments: GenericArgs,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<CapturedInputs, &'static str> {
         let capture_id = captures;
         let captures = store.arguments(captures).ok_or("invalid opaque captures")?;
         let arguments = store
@@ -76,7 +91,7 @@ impl Bound {
                 }
             }
         }
-        Self::parameters_captured_charged(store, &bindings, regions, charge)
+        Ok(CapturedInputs { bindings, regions })
     }
     /// Replace explicit parameter identities simultaneously, preserving lifetime binders.
     /// Callable argument order need not match declaration slots containing late lifetimes.

@@ -32,7 +32,10 @@ fn declaration(owner: Owner) -> Option<DefId> {
         Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
             Some(definition)
         }
-        Owner::AnonymousConstant
+        Owner::AsyncBody { .. }
+        | Owner::AsyncApplication { .. }
+        | Owner::FutureEntry { .. }
+        | Owner::AnonymousConstant
         | Owner::AnonymousInstance(_)
         | Owner::InitializerInstance { .. }
         | Owner::Closure { .. }

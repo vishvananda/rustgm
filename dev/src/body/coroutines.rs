@@ -61,3 +61,51 @@ pub(crate) fn original(facts: &Declarations, body: &Body) -> Result<DefId, &'sta
     }
     Ok(definition)
 }
+
+/// Borrowed original proof inputs share the actual source body's signature/frame.
+pub(crate) fn original_contract(
+    facts: &Declarations,
+    body: &Body,
+    contract: &super::regions::Contract,
+) -> Result<DefId, &'static str> {
+    let definition = original(facts, body)?;
+    let header = facts
+        .function_header(definition)?
+        .ok_or("deferred original lost its actual callable contract")?;
+    let expected = body.source.source().and_then(|source| {
+        facts
+            .nested_outputs
+            .as_deref()
+            .and_then(|rows| rows.get(&source))
+    });
+    let same_output = match (&contract.output, expected) {
+        (Some(actual), Some(expected)) => std::sync::Arc::ptr_eq(actual, expected),
+        (None, None) => true,
+        _ => false,
+    };
+    if contract.key != body.key()
+        || contract.source != body.source
+        || contract.signature != body.owner.signatures().map(|(_, signature)| signature)
+        || contract.universals != header.universals
+        || !same_output
+    {
+        return Err("deferred original changed its actual signature, binder or output link");
+    }
+    Ok(definition)
+}
+
+pub(crate) fn original_template(
+    facts: &Declarations,
+    template: &super::templates::Template,
+    contract: &super::regions::Contract,
+) -> Result<DefId, &'static str> {
+    let definition = original_contract(facts, &template.body, contract)?;
+    if let Some(environment) = facts
+        .function_header(definition)?
+        .and_then(|header| header.environment)
+        && !std::sync::Arc::ptr_eq(environment, &template.environment)
+    {
+        return Err("deferred original changed its actual declaration environment");
+    }
+    Ok(definition)
+}

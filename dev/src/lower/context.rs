@@ -182,6 +182,20 @@ impl Representation {
         }
     }
 }
+fn require_runtime_entries(bodies: &[crate::body::ir::Body]) -> Result<(), Error> {
+    if let Some(body) = bodies.iter().find(|body| {
+        matches!(
+            body.owner,
+            Owner::AsyncBody { .. } | Owner::AsyncApplication { .. } | Owner::FutureEntry { .. }
+        )
+    }) {
+        return Err(Error {
+            node: Some(body.source.root_site()),
+            message: "future body requires its checked generated runtime entry before native lowering",
+        });
+    }
+    Ok(())
+}
 impl<'a> Context<'a> {
     fn build(
         facts: &'a Declarations,
@@ -193,6 +207,7 @@ impl<'a> Context<'a> {
         ),
         roots: super::roots::Selected<'_>,
     ) -> Result<Program, Error> {
+        require_runtime_entries(bodies.as_slice())?;
         let source = bodies
             .as_slice()
             .first()

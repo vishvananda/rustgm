@@ -1,12 +1,14 @@
 //! Original aliases authenticate transport; concrete instances reselect their own reads.
 use super::{Arc, Body, BodyKey, Contract, Declarations, Environment, Instance, TypeId};
 use crate::{body::ir::BodyOrigin, types::substitute::Bound};
+mod target_scope;
+use target_scope::Selected;
 
 pub(in crate::body) struct Original {
     key: BodyKey,
     source: BodyOrigin,
     environment: Arc<Environment>,
-    instance: Instance,
+    selected: Selected,
     arena: crate::types::arena::Identity,
 }
 
@@ -17,7 +19,7 @@ pub(in crate::body) struct InstanceScope {
     environment: Arc<Environment>,
 }
 
-// The upcoming async selection must retain these actual cold row bounds.
+// Both selected identities retain the same actual cold row bounds.
 const _: [(); 56] = [(); size_of::<Original>()];
 const _: [(); 80] = [(); size_of::<InstanceScope>()];
 
@@ -26,6 +28,24 @@ pub(in crate::body) fn capture(
     body: &Body,
     contract: &Contract,
     instance: Instance,
+) -> Result<Option<Original>, &'static str> {
+    capture_selected(facts, body, contract, Selected::Callable(instance))
+}
+
+pub(in crate::body) fn capture_async(
+    facts: &mut Declarations,
+    body: &Body,
+    contract: &Contract,
+    future: TypeId,
+) -> Result<Option<Original>, &'static str> {
+    capture_selected(facts, body, contract, Selected::AsyncBody(future))
+}
+
+fn capture_selected(
+    facts: &mut Declarations,
+    body: &Body,
+    contract: &Contract,
+    selected: Selected,
 ) -> Result<Option<Original>, &'static str> {
     if facts.source_bindings.is_none() {
         return Ok(None);
@@ -66,21 +86,8 @@ pub(in crate::body) fn capture(
         .cloned()
         .ok_or("instance lost its original alias environment")?;
     super::carrier::check(facts, body, contract, Some(&environment))?;
+    selected.original(facts, body, contract, aliases)?;
     if !aliases {
-        let crate::body::ir::Owner::Function {
-            definition,
-            signature,
-            execution: None,
-        } = body.owner
-        else {
-            return Err("ordinary trait instance scope requires its actual function original");
-        };
-        let header = facts
-            .function_header(definition)?
-            .ok_or("instance trait scope lost its original function header")?;
-        if header.signature != signature || header.universals != contract.universals {
-            return Err("instance trait scope changed its original signature or universals");
-        }
         let current = original_environment(facts, body.key(), body.source, false)?;
         if !Arc::ptr_eq(current, &environment) {
             return Err("instance trait scope changed its original environment");
@@ -98,7 +105,7 @@ pub(in crate::body) fn capture(
         key: body.key(),
         source: body.source,
         environment,
-        instance,
+        selected,
         arena,
     }))
 }
@@ -117,26 +124,8 @@ impl Original {
             .owner
             .signatures()
             .ok_or("instance lost its signature pair")?;
-        if body.instance != Some(self.instance)
-            || body.source != self.source
-            || body.key() != self.key
-            || contract.key != self.key
-            || contract.source != self.source
-            || contract.signature != Some(signatures.1)
-        {
-            return Err("materialization changed its authenticated original identity");
-        }
-        let Some(crate::types::Kind::FunctionItem {
-            item, signature, ..
-        }) = facts.types.kind(self.instance.ty())
-        else {
-            return Err("alias materialization requires a full function item");
-        };
-        if self.key != BodyKey::Declaration(crate::resolve::model::DefId(item.0))
-            || signature != signatures.0
-        {
-            return Err("alias materialization changed its selected public signature");
-        }
+        self.selected
+            .body(facts, &self, body, contract, signatures)?;
         let environment = super::reproof::fresh(facts, contract)?;
         let pending = contract
             .builtins
@@ -200,21 +189,13 @@ impl InstanceScope {
         if !facts.types.has_identity(&self.original.arena) {
             return Err("instance Copy scope belongs to another materialization or environment");
         }
+        self.original
+            .selected
+            .body(facts, &self.original, body, contract, self.signatures)?;
         let aliases = self.original.environment.body_aliases().is_some();
         let actual = original_environment(facts, self.original.key, self.original.source, aliases)?;
         if facts.source_bindings.is_none()
-            || body.instance != Some(self.original.instance)
-            || body.key() != self.original.key
-            || body.source != self.original.source
             || body.owner.signatures() != Some(self.signatures)
-            || !matches!(
-                body.owner,
-                crate::body::ir::Owner::Function {
-                    execution: Some(_),
-                    ..
-                }
-            )
-            || contract.key != self.original.key
             || contract.source != self.original.source
             || contract.signature != Some(self.signatures.1)
             || contract.universals != self.universals
@@ -287,9 +268,7 @@ fn original_environment(
     if aliases {
         return Err("instance source scope lost its actual alias ledger");
     }
-    let BodyKey::Declaration(definition) = key else {
-        return Err("nonalias trait scope requires its actual function owner");
-    };
+    let definition = target_scope::owner(facts, key, source)?;
     let header = facts
         .function_header(definition)?
         .ok_or("instance source scope lost its original header")?;

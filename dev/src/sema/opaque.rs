@@ -5,6 +5,7 @@ mod asyncshape;
 pub(crate) use applications::StorageFailure;
 mod captures;
 mod future_contract;
+mod futureform;
 pub(crate) use future_contract::check as check_future_contract;
 mod closing;
 pub(in crate::sema) mod overrides;

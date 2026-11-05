@@ -17,6 +17,10 @@ use crate::{
 #[derive(Clone, Copy)]
 pub(super) enum Selection {
     Callable(Instance),
+    AsyncBody {
+        future: crate::types::TypeId,
+        signature: crate::types::TypeId,
+    },
     Anonymous(InlineInstance),
     Initializer(crate::sema::values::Instance),
     SourceInitializer(crate::sema::values::execution::SourceComputation),
@@ -28,6 +32,25 @@ impl Selection {
         source: &Body,
     ) -> Result<(Owner, DefId, Option<Instance>), &'static str> {
         match self {
+            Self::AsyncBody { future, signature } => {
+                let definition = crate::body::coroutines::original(facts, source)?;
+                let Some(crate::types::Kind::Future { identity, .. }) = facts.types.kind(future)
+                else {
+                    return Err("async application lost its actual future identity");
+                };
+                if facts.checked_future_definition(future)? != definition {
+                    return Err("async application selects another actual authored body");
+                }
+                Ok((
+                    Owner::AsyncApplication {
+                        identity,
+                        future,
+                        signature,
+                    },
+                    definition,
+                    None,
+                ))
+            }
             Self::Callable(instance) => {
                 let (owner, definition) = inputs::owner(facts, source, instance)?;
                 Ok((owner, definition, Some(instance)))
@@ -88,6 +111,7 @@ impl Selection {
         use crate::sema::values::execution::CallerInstance;
         Ok(match self {
             Self::Callable(instance) => CallerInstance::Callable(instance),
+            Self::AsyncBody { future, .. } => CallerInstance::AsyncBody(future),
             Self::Anonymous(instance) => CallerInstance::Inline(instance),
             Self::Initializer(instance) => CallerInstance::Initializer(instance),
             Self::SourceInitializer(witness) => {
@@ -95,13 +119,16 @@ impl Selection {
             }
         })
     }
-    fn context(self) -> Context {
-        match self {
+    fn context(self) -> Result<Context, &'static str> {
+        Ok(match self {
+            Self::AsyncBody { .. } => {
+                return Err("async inline operands require their actual captured source context");
+            }
             Self::Callable(instance) => Context::Callable(instance),
             Self::Anonymous(instance) => instance.enclosing(),
             Self::Initializer(instance) => Context::Initializer(instance),
             Self::SourceInitializer(witness) => Context::SourceInitializer(witness),
-        }
+        })
     }
 }
 pub(super) fn operands(
@@ -114,7 +141,7 @@ pub(super) fn operands(
     }
     for value in &mut body.values {
         if let Rvalue::InlineInstance(instance) = value.kind {
-            let selected = InlineInstance::select(facts, instance.source(), selection.context())?;
+            let selected = InlineInstance::select(facts, instance.source(), selection.context()?)?;
             if selected != instance {
                 return Err("copied inline operand belongs to another enclosing context");
             }
@@ -129,7 +156,7 @@ pub(super) fn operands(
                 value.kind = Rvalue::InlineInstance(InlineInstance::select(
                     facts,
                     source,
-                    selection.context(),
+                    selection.context()?,
                 )?);
             }
         }

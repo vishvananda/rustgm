@@ -1,5 +1,8 @@
 //! Substitute retained typed CFGs; the result still requires an instance proof.
 mod allocated_owners;
+mod asyncbody;
+pub use asyncbody::FutureApplication;
+pub(crate) use asyncbody::future_application;
 mod anonymous;
 mod caller_transport;
 mod initializers;

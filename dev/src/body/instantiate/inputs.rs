@@ -21,6 +21,13 @@ pub(super) fn finish_owner(
     let signature = contract.and_then(|input| input.signature);
     match owner {
         Owner::Function { execution, .. } => *execution = signature,
+        Owner::AsyncApplication {
+            signature: execution,
+            ..
+        } => {
+            *execution =
+                signature.ok_or("async application requires its actual specialized contract")?;
+        }
         Owner::Closure {
             execution: Some(execution),
             ..

@@ -1,0 +1,48 @@
+{
+  "scope": "Genuine std-core async declarations/defining Copy requirement and actual unsized capture legality; no candidate observations yet",
+  "source_sha256": "f739ffc3b1483f5ee6d58f119f61c3a8708e0a3cf542561c92891cc0439555f5",
+  "cases": [
+    {
+      "name": "declarations",
+      "path": "pa43/tests/spec/future-runtime-v1/formation-companion.rs",
+      "sha256": "49ed2ad0ed76dd8a5f3be52a886b3dce5e4594d1048c8247175892dc0caedf8d",
+      "status": 0,
+      "cause": null
+    },
+    {
+      "name": "copy-bound",
+      "path": "obj/parallel/future-runtime-v1/formation/copy-bound.rs",
+      "sha256": "f481b55ee0b30a089ccae56669bd7deb4b5ba985e0de79f815f463460ade5c1f",
+      "status": 1,
+      "cause": "E0277"
+    },
+    {
+      "name": "unsized-by-value",
+      "path": "obj/parallel/future-runtime-v1/formation/unsized-by-value.rs",
+      "sha256": "3accbba077eb92afa876b1ec9351bbb1c76c66dd28c8669d60b9ebfaed769765",
+      "status": 1,
+      "cause": "E0277"
+    },
+    {
+      "name": "unsized-feature",
+      "path": "obj/parallel/future-runtime-v1/formation/unsized-feature.rs",
+      "sha256": "d40dd4b84374f66183ce58ad6d984b0021fcfd3387cdc9dd5840505b30b5a55f",
+      "status": 1,
+      "cause": "E0277"
+    },
+    {
+      "name": "unsized-reference",
+      "path": "obj/parallel/future-runtime-v1/formation/unsized-reference.rs",
+      "sha256": "9e87dc7f761df4bb6dc8a78fcaabd7886c9b2c735801e1b520bb1e5183da11ac",
+      "status": 0,
+      "cause": null
+    },
+    {
+      "name": "unsized-bounded",
+      "path": "obj/parallel/future-runtime-v1/formation/unsized-bounded.rs",
+      "sha256": "8757f17676a1ff01627d0143465693f9b31d6b21a9937f7502023be2c9ac8b7b",
+      "status": 0,
+      "cause": null
+    }
+  ]
+}

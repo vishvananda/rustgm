@@ -161,12 +161,9 @@ impl Original {
             .source()
             .ok_or("source-free original requires its authenticated imported header")?;
         let valid = match body.owner {
-            Owner::AsyncBody { signature, .. } => {
-                let definition = crate::body::coroutines::original(facts, body)?;
-                contract.signature == Some(signature)
-                    && facts
-                        .function_header(definition)?
-                        .is_some_and(|header| contract.universals == header.universals)
+            Owner::AsyncBody { .. } => {
+                crate::body::coroutines::original_contract(facts, body, contract)?;
+                true
             }
             Owner::Function {
                 definition,

@@ -69,7 +69,8 @@ fn environment(facts: &mut Declarations, body: &Body) -> Result<Option<Arc<Envir
     };
     let owner = match body.owner {
         Owner::AsyncBody { .. } => Some(crate::body::coroutines::original(facts, body)?),
-        Owner::AsyncApplication { .. } | Owner::FutureEntry { .. } => {
+        Owner::AsyncApplication { future, .. } => Some(facts.checked_future_definition(future)?),
+        Owner::FutureEntry { .. } => {
             return Err(
                 "future feature environment requires its checked capture application".into(),
             );

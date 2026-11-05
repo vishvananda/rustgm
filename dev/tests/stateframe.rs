@@ -5,6 +5,8 @@ use rustgm::{
     sema,
     types::{self, Kind, TypeId, auto_traits},
 };
+#[path = "helpers/asynccheck.rs"]
+mod checks;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 fn marker(
@@ -191,45 +193,12 @@ fn complete_generic_applications_reuse_one_identity_and_reject_argument_kind_for
 
 #[test]
 fn authored_async_originals_keep_their_real_output_through_region_and_loan_checks() -> Result {
-    use rustgm::{body, borrow};
+    use rustgm::body;
     let text = source::fixture("pa43/tests/spec/future-runtime-v1/source-shape.rs")?;
     let report = source::source_provider(&text, "deferred_originals")?;
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
-    let mut templates = body::templates::build(&report, &facts)?;
-    body::promote::analyze_templates(&report, &mut facts, &mut templates)?;
-    let mut inputs = body::regions::collect(&facts)?.bodies;
-    for template in &templates.bodies {
-        let body::ir::Owner::AsyncBody { identity, .. } = template.body.owner else {
-            return Err("source template has another actual owner".into());
-        };
-        let contract = inputs
-            .iter_mut()
-            .find(|input| input.key == body::ir::BodyKey::AsyncBody(identity))
-            .ok_or("deferred original lost its real input contract")?;
-        body::prepare_source_copy(&mut facts, &template.body, contract)?;
-        contract.prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)?;
-    }
-    let contracts = body::regions::Contracts {
-        callables: &facts.lifetimes.callables,
-        nominal_requirements: &facts.lifetimes.nominal_requirements,
-        bodies: inputs,
-    };
-    let mut copies = types::copy::Copies::default();
-    let mut environment = borrow::Environment {
-        types: &facts.types,
-        definitions: &facts.aggregates,
-        derives: &facts.derives,
-        source_copy: facts.uses_source_copy(),
-        copies: &mut copies,
-    };
-    let checked = borrow::templates::verify(
-        &mut environment,
-        &facts.lifetimes.variances,
-        &contracts,
-        &templates,
-        &[],
-        |_, _| Err("unexpected nominal field in source shape"),
-    )?;
+    let (templates, inputs) = checks::prepare(&report, &mut facts)?;
+    let checked = checks::verify(&facts, &templates, inputs)?;
     assert_eq!(checked.regions().bodies.len(), 5);
     assert_eq!(checked.loans().len(), 5);
     checked.require_future_store(&facts.types)?;
@@ -367,6 +336,186 @@ fn generic_future_templates_defer_unknown_capture_layout_until_real_application(
                 .size,
             expected
         );
+    }
+    Ok(())
+}
+
+#[test]
+fn selected_future_applications_use_actual_checked_bodies_and_complete_capture_frames() -> Result {
+    use rustgm::{body, types::arguments::Argument};
+    let text = source::fixture("pa43/tests/spec/future-runtime-v1/source-shape.rs")?;
+    let report = source::source_provider(&text, "selected_async")?;
+    let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
+    let (templates, inputs) = checks::prepare(&report, &mut facts)?;
+    let checked = checks::verify(&facts, &templates, inputs)?;
+    for (name, argument) in [
+        (
+            "generic",
+            Argument::Type(TypeId::primitive(types::Primitive::U8)),
+        ),
+        ("borrowed", Argument::Lifetime(types::RegionId::STATIC)),
+    ] {
+        let function = facts
+            .functions
+            .iter()
+            .find(|function| {
+                report
+                    .package
+                    .names
+                    .get(report.resolution.definitions[function.definition.0 as usize].name)
+                    == name
+            })
+            .ok_or("actual async function")?;
+        let Some(Kind::Function { result, .. }) = facts.types.kind(function.signature) else {
+            return Err("actual source signature".into());
+        };
+        let Some(Kind::Opaque(identity, _)) = facts.types.kind(result) else {
+            return Err("actual source identity".into());
+        };
+        let arguments = facts.types.intern_arguments(&[argument])?;
+        let future = facts.types.intern(Kind::Future {
+            identity,
+            arguments,
+        })?;
+        let application = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+        assert!(
+            matches!(application.body().owner, body::ir::Owner::AsyncApplication { identity: actual, future: ty, signature }
+            if actual == identity && ty == future && Some(signature) == application.contract().signature)
+        );
+        assert!(application.body().instance.is_none());
+        assert_eq!(
+            application.contract().key,
+            body::ir::BodyKey::AsyncApplication(future)
+        );
+        assert_eq!(
+            application.body().result,
+            TypeId::primitive(types::Primitive::U8)
+        );
+        assert!(
+            !facts
+                .types
+                .contains_parameters(application.body().result)
+                .ok_or("actual body output")?
+        );
+        let repeated = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+        assert_eq!(application.body().source, repeated.body().source);
+        assert_eq!(
+            application.body().blocks.len(),
+            repeated.body().blocks.len()
+        );
+        assert!(facts.opaques.declarations[&identity].hidden.is_some());
+    }
+    assert!(rustgm::pipeline::future_application(&mut facts, &checked, TypeId::UNIT).is_err());
+    Ok(())
+}
+
+#[test]
+fn selected_future_applications_revalidate_store_and_warm_publication() -> Result {
+    use rustgm::{body, types::arguments::Argument};
+    let text = source::fixture("pa43/tests/spec/future-runtime-v1/source-shape.rs")?;
+    let report = source::source_provider(&text, "selected_authentication")?;
+    let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
+    let (templates, inputs) = checks::prepare(&report, &mut facts)?;
+    let checked = checks::verify(&facts, &templates, inputs)?;
+    let future = checks::future(
+        &report,
+        &mut facts,
+        "generic",
+        &[Argument::Type(TypeId::primitive(types::Primitive::U8))],
+    )?;
+    let _ = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+    let mut foreign = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
+    let foreign_future = checks::future(
+        &report,
+        &mut foreign,
+        "generic",
+        &[Argument::Type(TypeId::primitive(types::Primitive::U8))],
+    )?;
+    let failure = rustgm::pipeline::future_application(&mut foreign, &checked, foreign_future)
+        .err()
+        .ok_or("accepted checked source from another store")?;
+    assert!(failure.contains("another actual type store"), "{failure}");
+    let Some(Kind::Future { identity, .. }) = facts.types.kind(future) else {
+        return Err("actual selected future identity".into());
+    };
+    facts
+        .opaques
+        .declarations
+        .get_mut(&identity)
+        .ok_or("actual owner")?
+        .hidden = Some(TypeId::UNIT);
+    let failure = rustgm::pipeline::future_application(&mut facts, &checked, future)
+        .err()
+        .ok_or("accepted stale warm defining publication")?;
+    assert!(
+        failure.contains("actual future representation"),
+        "{failure}"
+    );
+    assert_eq!(
+        size_of::<body::instantiate::FutureApplication>(),
+        size_of::<body::instantiate::Materialized>() + size_of::<usize>()
+    );
+    println!(
+        "actual cold Materialized={} FutureApplication={}",
+        size_of::<body::instantiate::Materialized>(),
+        size_of::<body::instantiate::FutureApplication>()
+    );
+    Ok(())
+}
+
+#[test]
+fn future_formation_proves_closed_bounds_and_retains_unpaid_lifetime_requirements() -> Result {
+    use types::arguments::Argument;
+    let text = source::fixture("pa43/tests/spec/future-runtime-v1/formation-source.rs")?;
+    let companion = source::fixture("pa43/tests/spec/future-runtime-v1/formation-companion.rs")?;
+    assert!(text.ends_with(&companion));
+    let report = source::source_provider(&text, "future_formation")?;
+    let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
+    let (templates, inputs) = checks::prepare(&report, &mut facts)?;
+    let checked = checks::verify(&facts, &templates, inputs)?;
+    let valid = checks::future(
+        &report,
+        &mut facts,
+        "copy_bound",
+        &[Argument::Type(TypeId::primitive(types::Primitive::U8))],
+    )?;
+    let application = rustgm::pipeline::future_application(&mut facts, &checked, valid)?;
+    assert!(application.formation_requirements().is_none());
+    let definition = report
+        .resolution
+        .definitions
+        .iter()
+        .position(|definition| report.package.names.get(definition.name) == "NonCopy")
+        .ok_or("actual NonCopy declaration")?;
+    let non_copy = facts.definitions[definition].ok_or("actual NonCopy nominal type")?;
+    let invalid = checks::future(
+        &report,
+        &mut facts,
+        "copy_bound",
+        &[Argument::Type(non_copy)],
+    )?;
+    let failure = rustgm::pipeline::future_application(&mut facts, &checked, invalid)
+        .err()
+        .ok_or("accepted an application violating its defining Copy premise")?;
+    assert!(failure.contains("defining input clause"), "{failure}");
+    for (regions, debt) in [
+        ([types::RegionId::STATIC; 2], false),
+        (
+            [types::RegionId::bound(0, 0)?, types::RegionId::bound(0, 1)?],
+            true,
+        ),
+    ] {
+        let future = checks::future(
+            &report,
+            &mut facts,
+            "related",
+            &regions.map(Argument::Lifetime),
+        )?;
+        let application = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+        assert_eq!(application.formation_requirements().is_some(), debt);
+        if let Some(proof) = application.formation_requirements() {
+            assert!(!proof.outlives.is_empty());
+        }
     }
     Ok(())
 }

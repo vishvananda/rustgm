@@ -1,0 +1,118 @@
+{
+  "parent": "2a9dd3c6ee357f9e897f9639321da2fad1f549b2",
+  "scope": "Checked source-selected AsyncApplication, never constructor/poll/drop/native authority",
+  "source_map": {
+    "path": "obj/parallel/future-runtime-v1/selected-checkpoint/source-hashes.json",
+    "sha256": "65a657a9edf5ab13563d654826fb62ca57d6beb7be5cc2ed629597b64ec6dfea",
+    "files": 22
+  },
+  "source_hashes": {
+    "dev/src/body/copy_requirements/materialized.rs": "73f4b1f01c99bc1ad6f43db000451720bf7c5a706824751ed3562eca8ec0ef4e",
+    "dev/src/body/copy_requirements/materialized/target_scope.rs": "71d9b4b51e11f88db0b6754ccf3b79498857569a3d0885509974ffa2545e8f5a",
+    "dev/src/body/coroutines.rs": "b6a666b9c654f2a574eb16bc766197b5b320caa9142504d2301024e9791da2e5",
+    "dev/src/body/dispatch.rs": "1b10208dbe5702de02fc65688a4e00b3ee31c61706a501273317cf8af32e18e4",
+    "dev/src/body/dispatch/non_type_enclosing.rs": "d56e98565b7371eda7f73146e224f8436347a3b861591ae343b9e02725ba3403",
+    "dev/src/body/instantiate.rs": "8fc3ddb047dca72254e9453441a6a44a98b6419828083b78193d4755db892c96",
+    "dev/src/body/instantiate/anonymous.rs": "ea912e1bb257cde7bebaf166e10df043df5a7b0226659277de2d15af4eddfc29",
+    "dev/src/body/instantiate/asyncbody.rs": "df52a95eca0c0edbc6feca656266f6cd069a7c8c135e805a098e6d8429f0c86e",
+    "dev/src/body/instantiate/inputs.rs": "4ca8ccaacbe9013db016f57ce6adf691a9f01984e819b3d2cbb5fbad6795979a",
+    "dev/src/lower/context.rs": "83f35191eaf7685b17fa4fde3ebc6dd1dfde10cb0c1073316fa25c3a0928fe81",
+    "dev/src/pipeline/asyncbody.rs": "0460c5bdcb6fa81b1c443f69241cbcaa741480736fb8c85a8796bc0d95c4766f",
+    "dev/src/pipeline/mod.rs": "63ba58174064ac66bf3d2e03bdba2673e46c445c1f04fc794931b2d95c85ca8b",
+    "dev/src/pipeline/original_contexts.rs": "4a33668885e2d2745d0bd289dd8612049f08ff1db7f635bd535d7a53760d9c38",
+    "dev/src/sema/opaque.rs": "4ecff4d262799d175a7e60dd5078243b3c5bd62da35b4ab18bcb071abd9edf0e",
+    "dev/src/sema/opaque/futureform.rs": "75c0b595ae788d72a7ffcb59c89c5401b7f5eccee94e725b9e844f81e15271bf",
+    "dev/src/types/substitute/parameters.rs": "ff3af9ea45eb986c07862ad090cb04b5cc502166dbc4f2bb304a6a19d4d63e60",
+    "dev/tests/helpers/asynccheck.rs": "460c5da659c5ecdc15f75931f21a875a4b5739986c5d99a6b5338e3072f29012",
+    "dev/tests/stateframe.rs": "c280aca12cde8d2c7b5c8d0538b7ecd1a995f5536411024fd793ddd2d238c0d1",
+    "dev/tests/support/body_machine.rs": "066269e5766a38e8966a6ee5368c27f87686866ea3e14902512025d57c24d8fd",
+    "pa43/tests/spec/future-runtime-v1/formation-companion.rs": "49ed2ad0ed76dd8a5f3be52a886b3dce5e4594d1048c8247175892dc0caedf8d",
+    "pa43/tests/spec/future-runtime-v1/formation-predictions.json": "fb10a0bc0f2958beae2a3ebe2b85c6f0f7f8c5591402f6f29e8b76f6b8a975fb",
+    "pa43/tests/spec/future-runtime-v1/formation-source.rs": "f739ffc3b1483f5ee6d58f119f61c3a8708e0a3cf542561c92891cc0439555f5"
+  },
+  "focused": [
+    {
+      "path": "obj/qualification/fast/1793886967842634119",
+      "sha256": "9ae260d93e4b2feb8dc6647b562f3667afe2eb708ddaeb237be30aeb99ae618c",
+      "status": 0,
+      "tests": 18,
+      "seconds": 116.98,
+      "note": "first selected-body/Copy/lifetime proof snapshot"
+    },
+    {
+      "path": "obj/qualification/fast/1793887338242979880",
+      "sha256": "6627b76ec29fb8a59c12c5bb291f64a1c4e977db89564636628a53d5202beb9b",
+      "status": 2,
+      "seconds": 83.85,
+      "note": "all production checks pass; 17/18 frontend + 1 ordinary lowering pass; added foreign-store test incorrectly reused a foreign numeric TypeId before interning actual application"
+    },
+    {
+      "path": "obj/qualification/fast/1793887505898589728",
+      "sha256": "8321a3a85a3b8a7734c64719ede1c742bb43a0874ad5f584fbeddd9348f30079",
+      "status": 0,
+      "tests": 2,
+      "seconds": 26.13,
+      "note": "corrected same-shaped foreign application, warm stale publication, defining Copy and separate lifetime debts"
+    }
+  ],
+  "independent": {
+    "plan": "pa43/tests/spec/future-runtime-v1/formation-predictions.json",
+    "plan_sha256": "fb10a0bc0f2958beae2a3ebe2b85c6f0f7f8c5591402f6f29e8b76f6b8a975fb",
+    "receipt": "obj/parallel/future-runtime-v1/formation/receipt.json",
+    "receipt_sha256": "a31741f5c281fe9bada46ea4fd90e6a67ed5e0cf1f4912b5a171efd25c315d3b",
+    "outcomes": [
+      0,
+      1,
+      1,
+      1,
+      0,
+      0
+    ],
+    "causes": [
+      null,
+      "E0277",
+      "E0277",
+      "E0277",
+      null,
+      null
+    ],
+    "runtime_claim": false
+  },
+  "layout": {
+    "receipt": "obj/parallel/future-runtime-v1/formation/layout.json",
+    "sha256": "540de3b8e78fb7804315fa659c25b15dbbc351f2253f4463e376db8ba1988439",
+    "Kind": 24,
+    "Owner": 20,
+    "Body": 456,
+    "opaque_entry": 16,
+    "cold_original": 56,
+    "cold_instance_scope": 80,
+    "Materialized": 744,
+    "FutureApplication": 752
+  },
+  "harness_upstream": {
+    "terminal_status": 0,
+    "exec_session": 35254,
+    "script_tests": 280,
+    "suites": 419,
+    "binaries": 13,
+    "pinned_fixtures": 28,
+    "reference_files": 126,
+    "note": "guarded make test-harness test-upstream; terminal output observed, not separately saved"
+  },
+  "failed_development": [
+    "1793885739950373071: body-to-borrow phase dependency rejected; moved actual coordinator into pipeline (no exception)",
+    "1793886180080359158: seventh application filename prefix rejected; cohesive target_scope module rename",
+    "1793886645798824396: native precondition made Context::build109lines; factored typed precondition",
+    "1793886761198686466: old test-only body_machine exhaustive Owner match repaired"
+  ],
+  "remaining": [
+    "actual caller formation-debt discharge before executable permit",
+    "genuine Future/Output language candidate and poll dispatch",
+    "typed constructor/poll/drop factories and genuine state ownership",
+    "native first-poll/deferred-pattern/capture-drop/completion/Ready consumers",
+    "await/saved locals/self-reference/cancellation/panic",
+    "recursive async cleanup and actual compiler helper runtime",
+    "owned authored-body metadata and full independent/private/release qualification"
+  ]
+}
