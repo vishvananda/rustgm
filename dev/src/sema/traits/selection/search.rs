@@ -434,18 +434,19 @@ impl Search<'_> {
         if needs_normalization {
             return Ok(Action::Complete(Decision::Deferred));
         }
-        let declared = (!facts.opaques.declarations.is_empty() || facts.types.has_dynamic_shapes())
-            && matches!(
-                frame
-                    .inputs
-                    .context
-                    .head(&facts.types, frame.goal.subject())
-                    .map_err(inference)?,
-                Some(infer::Constructor::Opaque(..) | infer::Constructor::Dynamic { .. })
-            );
-        if (frame.normalized_inputs.is_some() || declared)
-            && let Some(action) = self.derive_result(facts, frame)?
-        {
+        // The enclosing normalizer already owns projected input evidence. Its
+        // opaque result need not expose a head in this fresh inference context.
+        let declared = frame.normalized_inputs.is_some()
+            || ((!facts.opaques.declarations.is_empty() || facts.types.has_dynamic_shapes())
+                && matches!(
+                    frame
+                        .inputs
+                        .context
+                        .head(&facts.types, frame.goal.subject())
+                        .map_err(inference)?,
+                    Some(infer::Constructor::Opaque(..) | infer::Constructor::Dynamic { .. })
+                ));
+        if declared && let Some(action) = self.derive_result(facts, frame)? {
             return Ok(action);
         }
         self.candidates(facts, frame)

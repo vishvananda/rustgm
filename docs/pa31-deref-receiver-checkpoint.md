@@ -88,5 +88,5 @@ Receipts remain under the warm btrfs root:
 Full CI41929736419 is green for the preceding FnPtr checkpoint. Pin full
 41936708120 failed one stale diagnostic assertion (2702 private tests and all
 integration suites passed); published4af6e5f10 repairs that exact expectation.
-Its successor41939550904 is pending. These earlier runs do not qualify new
+Its successor41939550904 is terminal success in every gate. These runs do not qualify new
 Deref/receiver private execution or a full successor; that remains CI work.

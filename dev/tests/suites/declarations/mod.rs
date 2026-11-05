@@ -47,6 +47,8 @@ mod representation_templates;
 pub(crate) mod resolve;
 #[path = "../../return_types.rs"]
 mod return_types;
+#[path = "../../rpit_calls.rs"]
+mod rpit_calls;
 #[path = "../../support/semantic.rs"]
 pub(crate) mod semantic;
 #[path = "../../semantic_view.rs"]

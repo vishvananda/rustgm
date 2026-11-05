@@ -457,7 +457,7 @@ cycle-checked chain of genuine LegacyReceiver/Deref evidence and preserve full
 Self arguments and lifetime debts. Selected impl arguments prefix anonymous
 lifetime captures separately from named parameter slots: captured associated
 definitions use the existing identity-mapped family substitution cache. The
-positional shortcut is valid only for uncaptured owners. Broader demanded
+positional shortcut is valid only for uncaptured owners. Trait selection short-circuits on its existing normalized-input evidence before inspecting a declared opaque head: a fresh inference context does not inherit that structural marker. Preserve the enclosing normalizer's actual formation/lifetime proof; semantic views retaining region obligations are not full acceptance. Broader demanded
 profiles, const, authenticated metadata and async state/destruction remain
 required; neither source completion nor receiver proof supplies those semantics.
 

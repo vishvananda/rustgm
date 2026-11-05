@@ -1,0 +1,6 @@
+pa21/tests/spec/opaque/required-results/borrowed.rs	0
+pa21/tests/spec/opaque/required-results/value.rs	0
+pa21/tests/spec/opaque/required-results/wrong-output.rs	1
+pa21/tests/spec/opaque/required-results/distinct-methods.rs	1
+pa21/tests/spec/opaque/required-results/distinct-self.rs	1
+pa21/tests/spec/opaque/required-results/escape.rs	1
