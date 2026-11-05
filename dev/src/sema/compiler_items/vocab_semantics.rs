@@ -55,6 +55,12 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
             // storage and cleanup execution have a separate demanded boundary.
             continue;
         }
+        if role == LangItem::FusedIterator {
+            // Ordinary implementations retain their actual Iterator/supertrait
+            // proof. Only gen coroutines have the separate compiler builtin;
+            // declaration completion grants no blanket impl or generated body.
+            continue;
+        }
         if matches!(
             role,
             LangItem::Mul | LangItem::Rem | LangItem::BitXor | LangItem::BitAnd | LangItem::Shr
