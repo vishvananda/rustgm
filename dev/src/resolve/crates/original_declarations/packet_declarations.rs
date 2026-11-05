@@ -258,6 +258,7 @@ pub(super) fn kind(kind: s::DefinitionKind) -> (DefKind, Namespace) {
     match kind {
         s::DefinitionKind::Module => (DefKind::Module, Namespace::Type),
         s::DefinitionKind::Struct => (DefKind::Struct, Namespace::Type),
+        s::DefinitionKind::AssociatedType => (DefKind::TypeAlias, Namespace::Type),
         s::DefinitionKind::Trait => (DefKind::Trait, Namespace::Type),
         s::DefinitionKind::SelfType => (DefKind::SelfType, Namespace::Type),
         s::DefinitionKind::Function => (DefKind::Function, Namespace::Value),
@@ -367,6 +368,19 @@ fn body_sites(
             .ok_or_else(|| error("source original site count has an unknown actual body"))?;
         if slot.replace(body.sites).is_some() {
             return Err(error("source original site count was mapped twice"));
+        }
+    }
+    for operation in &rows.compiler_operations {
+        work.charge(1)?;
+        let slot = counts.get_mut(operation.body.0 as usize).ok_or_else(|| {
+            error("compiler operation diagnostic site has an unknown actual body")
+        })?;
+        // This typed opcode owns one semantic diagnostic root. It supplies no
+        // ordinary AST site, local scope, original code or executable readiness.
+        if slot.replace(1).is_some() {
+            return Err(error(
+                "compiler operation cannot coexist with ordinary body diagnostic sites",
+            ));
         }
     }
     let mut bindings = Vec::with_capacity(counts.len());

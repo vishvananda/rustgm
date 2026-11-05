@@ -2,6 +2,7 @@
 mod allocation_columns;
 mod availability_wire;
 mod cfg_columns;
+mod compiler_wire;
 mod contract_columns;
 mod exemption_wire;
 #[path = "ordinary_columns/annotation_rows.rs"]
@@ -88,7 +89,14 @@ pub(super) fn encode_module_availability(
     if rows.descriptor().profile().nominals() {
         nominal_rows::encode(out, rows)?;
     }
-    exemption_wire::encode(out, rows.availability()?.const_bodies.as_deref())?;
+    let const_bodies = rows.availability()?.const_bodies.as_deref();
+    if rows.descriptor().profile().compiler_operations() {
+        out.u8(u8::from(const_bodies.is_some()))?;
+    }
+    exemption_wire::encode(out, const_bodies)?;
+    if rows.descriptor().profile().compiler_operations() {
+        compiler_wire::encode(out, rows)?;
+    }
     Ok(())
 }
 pub(super) struct AvailabilityPacket {
@@ -126,6 +134,12 @@ pub(super) fn decode_module_callables(
     base: usize,
 ) -> Result<AvailabilityPacket, &'static str> {
     decode_availability_profile(reader, base, s::Profile::Source2024ModuleCallables)
+}
+pub(super) fn decode_compiler_operations(
+    reader: &mut Reader<'_>,
+    base: usize,
+) -> Result<AvailabilityPacket, &'static str> {
+    decode_availability_profile(reader, base, s::Profile::Source2024ModuleCompilerOperations)
 }
 pub(super) fn decode_module_nominals(
     reader: &mut Reader<'_>,
@@ -167,7 +181,21 @@ fn decode_availability_profile(
         rows.nominals = read.list(crates::MAX_COMPONENTS, 43, nominal_rows::nominal_read)?;
         rows.fields = read.list(crates::MAX_COMPONENTS, 21, nominal_rows::field_read)?;
     }
-    availability.const_bodies = exemption_wire::decode(&mut read)?;
+    availability.const_bodies = if profile.compiler_operations() {
+        match read.reader.u8()? {
+            0 => None,
+            1 => Some(
+                exemption_wire::decode(&mut read)?
+                    .ok_or("compiler-operation const-body trailer is missing")?,
+            ),
+            _ => return Err("invalid compiler-operation const-body trailer presence"),
+        }
+    } else {
+        exemption_wire::decode(&mut read)?
+    };
+    if profile.compiler_operations() {
+        compiler_wire::decode(&mut read, &mut rows)?;
+    }
     Ok(AvailabilityPacket {
         rows,
         attributes,
@@ -344,6 +372,10 @@ fn decode_profile_with(
         profile,
     };
     let rows = s::SourceRows {
+        associated_types: Vec::new(),
+        projections: Vec::new(),
+        opaque_futures: Vec::new(),
+        compiler_operations: Vec::new(),
         nominals: Vec::new(),
         fields: Vec::new(),
         exact_callables: Vec::new(),

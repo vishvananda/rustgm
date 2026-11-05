@@ -30,7 +30,8 @@ impl Graph {
             | s::Profile::Source2024ModuleCallables
             | s::Profile::Source2024ModuleSafety
             | s::Profile::Source2024ModuleConversions
-            | s::Profile::Source2024ModuleNominals => {
+            | s::Profile::Source2024ModuleNominals
+            | s::Profile::Source2024ModuleCompilerOperations => {
                 let domain = descriptor
                     .module_contracts()?
                     .trait_domain(index as usize, row)?;
@@ -76,7 +77,8 @@ impl Graph {
             | s::Profile::Source2024ModuleCallables
             | s::Profile::Source2024ModuleSafety
             | s::Profile::Source2024ModuleConversions
-            | s::Profile::Source2024ModuleNominals => {}
+            | s::Profile::Source2024ModuleNominals
+            | s::Profile::Source2024ModuleCompilerOperations => {}
             _ => return Err("imported conformance has no complete admitted source profile"),
         }
         descriptor

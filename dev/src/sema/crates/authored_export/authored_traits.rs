@@ -14,15 +14,23 @@ use crate::{
 pub(super) fn require_role_transport(
     facts: &Declarations,
     conversions: bool,
+    compiler_operations: bool,
 ) -> Result<(), &'static str> {
     let catalog = facts
         .source_bindings
         .as_deref()
         .ok_or("source header graph has no role catalog")?;
-    if LangItem::DECLARATIONS
-        .into_iter()
-        .any(|role| catalog.language(role).is_some())
-    {
+    if LangItem::DECLARATIONS.into_iter().any(|role| {
+        catalog.language(role).is_some()
+            && !(compiler_operations
+                && matches!(
+                    role,
+                    LangItem::Future
+                        | LangItem::FutureOutput
+                        | LangItem::FuturePoll
+                        | LangItem::AsyncDropInPlace
+                ))
+    }) {
         return Err("source compiler language contract transport is not implemented");
     }
     if [LangItem::TypeInfo, LangItem::TypeId]
@@ -108,6 +116,11 @@ impl Stage {
                         *slot = true;
                     }
                 }
+                DefKind::TypeAlias
+                    if role == LangItem::FutureOutput && self.compiler_operations => {}
+                DefKind::Function
+                    if role == LangItem::AsyncDropInPlace && self.compiler_operations => {}
+                DefKind::Function if role == LangItem::FuturePoll && self.compiler_operations => {}
                 DefKind::Function if role == LangItem::CloneFn => {}
                 _ => return Err("source role form is outside the complete first transport family"),
             }
@@ -159,7 +172,7 @@ impl Stage {
             .as_deref()
             .and_then(|traits| traits.header(ItemId(header.definition.0)))
             .ok_or("source trait has no complete canonical header")?;
-        if !canonical.results.is_empty() {
+        if !self.compiler_operations && !canonical.results.is_empty() {
             return Err("source associated result transport is not implemented");
         }
         let inventory =

@@ -99,9 +99,8 @@ pub fn analyze(report: &Report, facts: Declarations) -> Result<Declarations, Err
             .declarations
             .get(&id)
             .ok_or_else(|| Error::at(FileId(0), 0, "missing opaque declaration"))?;
-        Err(Declarations::error(
-            report,
-            declaration.source,
+        Err(report.body_error(
+            declaration.site(facts).map_err(Error::unlocated)?,
             "opaque hidden lifetimes require the defining body's region proof",
         ))
     })

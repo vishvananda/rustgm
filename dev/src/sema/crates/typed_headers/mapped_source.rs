@@ -4,6 +4,7 @@ mod dag_recipes;
 mod ingest_roots;
 mod ingested_domains;
 mod lending_originals;
+mod recipe_identity;
 pub(crate) use lending_originals::prepare as prepare_original;
 mod decoded_original;
 #[cfg(test)]
@@ -59,6 +60,7 @@ pub(in crate::sema) struct Graph {
     canonical: Canonical,
     applications: Applications,
     nominal_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
+    associated_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
     trait_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
     impl_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
 }
@@ -127,7 +129,8 @@ impl Context<'_> {
                 | s::Profile::Source2024ModuleCallables
                 | s::Profile::Source2024ModuleSafety
                 | s::Profile::Source2024ModuleConversions
-                | s::Profile::Source2024ModuleNominals => {
+                | s::Profile::Source2024ModuleNominals
+                | s::Profile::Source2024ModuleCompilerOperations => {
                     actual.module_contracts().map_err(error)?;
                 }
                 _ => {
@@ -208,7 +211,10 @@ impl Graph {
             .map_err(error)?;
         // Retained maps coexist with the visiting/output vectors and a cursor
         // frontier bounded by node count, even for repeated shared children.
-        let canonical = if context.descriptor.profile().conversion_roles() {
+        recipe_identity::reserve(context, facts, budget)?;
+        let canonical = if context.descriptor.profile().conversion_roles()
+            && !context.descriptor.profile().compiler_operations()
+        {
             budget.reserve(size_of::<Self>())?;
             Canonical::Lazy(Box::new(ingested_domains::Lazy::prepare(
                 context, facts, root, budget,
@@ -250,6 +256,7 @@ impl Graph {
             canonical,
             applications: Applications::Eager(Vec::new()),
             nominal_inputs: Vec::new(),
+            associated_inputs: Vec::new(),
             trait_inputs: Vec::new(),
             impl_inputs: Vec::new(),
         })

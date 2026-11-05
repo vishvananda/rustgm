@@ -32,6 +32,7 @@ struct Ordinary<'a, 'rows> {
     slots: &'a [Argument],
     regions: &'a [RegionId],
     root: ImportedDeclarationId,
+    opaques: &'a crate::sema::opaque::Opaques,
 }
 impl sealed::Sealed for Ordinary<'_, '_> {}
 impl<'rows> Port<'rows, Headers> for Ordinary<'_, 'rows> {
@@ -62,6 +63,20 @@ impl<'rows> Port<'rows, Headers> for Ordinary<'_, 'rows> {
         Err(error(
             "source callable application needs its wider explicit remap profile",
         ))
+    }
+    fn opaque(
+        &self,
+        owner: DeclarationRef,
+        ordinal: u32,
+        budget: &mut Headers,
+    ) -> Result<crate::types::opaque::OpaqueId, Error> {
+        let owner = self.context.definition(owner, budget)?;
+        self.opaques
+            .owners
+            .get(&owner)
+            .and_then(|ids| ids.get(ordinal as usize))
+            .copied()
+            .ok_or_else(|| error("imported opaque requires its actual reserved owner/ordinal"))
     }
     fn availability(&self) -> Availability {
         Availability::Functions
@@ -127,6 +142,16 @@ pub(super) trait Port<'rows, B: Budget>: sealed::Sealed {
         row: s::FunctionApplicationRef,
         budget: &mut B,
     ) -> Result<Dependency, Error>;
+    fn opaque(
+        &self,
+        _: DeclarationRef,
+        _: u32,
+        _: &mut B,
+    ) -> Result<crate::types::opaque::OpaqueId, Error> {
+        Err(error(
+            "opaque result requires its actual imported declaration reservation",
+        ))
+    }
     fn mapped_applications(&self) -> bool {
         false
     }
@@ -385,6 +410,94 @@ impl<M: Storage> Worklist<M> {
             )),
         }
     }
+    fn arguments<'rows, B: Budget, P: Port<'rows, B>>(
+        &self,
+        port: &mut P,
+        store: &mut Store,
+        range: g::Range,
+        budget: &mut B,
+    ) -> Result<Demand<crate::types::GenericArgs>, Error> {
+        let rows = port.rows();
+        let raw = range.slice(&rows.arguments).map_err(error)?;
+        budget.charge(raw.len())?;
+        budget.reserve(raw.len() * size_of::<Argument>())?;
+        let mut args = Vec::with_capacity(raw.len());
+        for argument in raw {
+            args.push(match *argument {
+                s::Argument::Type(ty) => Argument::Type(self.child(ty)?),
+                s::Argument::Region(region) => match port.region(region, budget)? {
+                    Demand::Ready(region) => Argument::Lifetime(region),
+                    Demand::Blocked(dependency) => return Ok(Demand::Blocked(dependency)),
+                },
+            });
+        }
+        store
+            .intern_arguments(&args)
+            .map(Demand::Ready)
+            .map_err(error)
+    }
+    fn opaque_type<'rows, B: Budget, P: Port<'rows, B>>(
+        &self,
+        port: &mut P,
+        store: &mut Store,
+        reference: s::OpaqueFutureRef,
+        budget: &mut B,
+    ) -> Result<Demand<TypeId>, Error> {
+        let row = *port
+            .rows()
+            .opaque_futures
+            .get(reference.0 as usize)
+            .ok_or_else(|| error("unknown imported opaque future recipe"))?;
+        let id = port.opaque(row.declaration, row.ordinal, budget)?;
+        let captures = match self.arguments(port, store, row.captures, budget)? {
+            Demand::Ready(args) => args,
+            Demand::Blocked(dependency) => return Ok(Demand::Blocked(dependency)),
+        };
+        let kind = Kind::Opaque(id, captures);
+
+        store.intern(kind).map(Demand::Ready).map_err(error)
+    }
+    fn projection_type<'rows, B: Budget, P: Port<'rows, B>>(
+        &self,
+        port: &mut P,
+        store: &mut Store,
+        reference: s::ProjectionRef,
+        budget: &mut B,
+    ) -> Result<Demand<TypeId>, Error> {
+        let rows = port.rows();
+        let row = *rows
+            .projections
+            .get(reference.0 as usize)
+            .ok_or_else(|| error("unknown imported projection recipe"))?;
+        let application = *rows
+            .trait_applications
+            .get(row.trait_application.0 as usize)
+            .ok_or_else(|| error("unknown imported projection trait application"))?;
+        let item = port.definition(row.declaration.declaration, budget)?;
+        let trait_item = port.definition(application.declaration.declaration, budget)?;
+        let arguments = match self.arguments(port, store, application.arguments, budget)? {
+            Demand::Ready(args) => args,
+            Demand::Blocked(dependency) => return Ok(Demand::Blocked(dependency)),
+        };
+        let trait_application = store
+            .intern_trait_application(crate::types::traits::Application {
+                item: crate::types::ItemId(trait_item.0),
+                arguments,
+            })
+            .map_err(error)?;
+        let arguments = match self.arguments(port, store, row.arguments, budget)? {
+            Demand::Ready(args) => args,
+            Demand::Blocked(dependency) => return Ok(Demand::Blocked(dependency)),
+        };
+        let kind = Kind::Projection(crate::types::projection::Application {
+            item: crate::types::ItemId(item.0),
+            subject: self.child(row.subject)?,
+            trait_application,
+            arguments,
+        });
+
+        store.intern(kind).map(Demand::Ready).map_err(error)
+    }
     fn intern<'rows, B: Budget, P: Port<'rows, B>>(
         &self,
         port: &mut P,
@@ -393,6 +506,12 @@ impl<M: Storage> Worklist<M> {
         budget: &mut B,
     ) -> Result<Demand<TypeId>, Error> {
         let kind = match row {
+            s::Type::OpaqueFuture(reference) => {
+                return self.opaque_type(port, store, reference, budget);
+            }
+            s::Type::Projection(reference) => {
+                return self.projection_type(port, store, reference, budget);
+            }
             s::Type::Nominal {
                 declaration,
                 arguments,
@@ -494,6 +613,49 @@ fn next(
     rows: s::ValidatedView<'_>,
 ) -> Result<Option<g::TypeRef>, Error> {
     Ok(match row {
+        s::Type::OpaqueFuture(reference) => {
+            let row = rows
+                .opaque_futures
+                .get(reference.0 as usize)
+                .ok_or_else(|| error("unknown opaque future dependencies"))?;
+            row.captures
+                .slice(&rows.arguments)
+                .map_err(error)?
+                .iter()
+                .filter_map(|arg| {
+                    if let s::Argument::Type(ty) = arg {
+                        Some(*ty)
+                    } else {
+                        None
+                    }
+                })
+                .chain(std::iter::once(row.output))
+                .nth(cursor)
+        }
+        s::Type::Projection(reference) => {
+            let row = rows
+                .projections
+                .get(reference.0 as usize)
+                .ok_or_else(|| error("unknown projection dependencies"))?;
+            let application = rows
+                .trait_applications
+                .get(row.trait_application.0 as usize)
+                .ok_or_else(|| error("unknown projection trait dependencies"))?;
+            let args = application
+                .arguments
+                .slice(&rows.arguments)
+                .map_err(error)?
+                .iter()
+                .chain(row.arguments.slice(&rows.arguments).map_err(error)?)
+                .filter_map(|arg| {
+                    if let s::Argument::Type(ty) = arg {
+                        Some(*ty)
+                    } else {
+                        None
+                    }
+                });
+            std::iter::once(row.subject).chain(args).nth(cursor)
+        }
         s::Type::Scalar(_) | s::Type::Parameter(_) => None,
         s::Type::Nominal { arguments, .. } => arguments
             .slice(&rows.arguments)
@@ -563,6 +725,7 @@ pub(super) fn prepare_functions(
         slots,
         regions,
         root,
+        opaques: &facts.opaques,
     };
     for index in 0..context.descriptor.rows().types.len() {
         let root = g::TypeRef(

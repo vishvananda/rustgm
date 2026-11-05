@@ -98,7 +98,8 @@ impl Graph {
                 | s::Profile::Source2024ModuleCallables
                 | s::Profile::Source2024ModuleSafety
                 | s::Profile::Source2024ModuleConversions
-                | s::Profile::Source2024ModuleNominals => {
+                | s::Profile::Source2024ModuleNominals
+                | s::Profile::Source2024ModuleCompilerOperations => {
                     descriptor.module_contracts()?;
                 }
                 _ => return Err("source header profile is unsupported"),
@@ -163,6 +164,17 @@ pub(in crate::sema::crates::typed_headers) fn require_function(
             let actual = catalog.definition_at(owner, parent)?;
             let parent = catalog.declaration(actual)?;
             catalog.validate_declaration(parent, actual, DefKind::Trait)?;
+        }
+        (s::FunctionBody::CompilerOperation(reference), Some(body)) => {
+            let operation = rows
+                .compiler_operations
+                .get(reference.0 as usize)
+                .ok_or("compiler operation lost its actual recipe")?;
+            let id = catalog.body_at(owner, operation.body)?;
+            if operation.declaration != ordinal || catalog.origin(id)? != body {
+                return Err("compiler operation changed its actual body/declaration origin");
+            }
+            catalog.validate_function_origin(definition, body)?;
         }
         (s::FunctionBody::Original(reference), Some(body)) => {
             let id = catalog.body_at(owner, reference)?;

@@ -15,6 +15,7 @@ pub enum DefinitionKind {
     RegionParameter,
     ValueParameter,
     Local,
+    AssociatedType,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Definition {
@@ -63,6 +64,7 @@ impl<'a> ScopeIndex<'a> {
                     | DefinitionKind::SelfType
                     | DefinitionKind::Function
                     | DefinitionKind::Struct
+                    | DefinitionKind::AssociatedType
             ) || owners[scope.owner.0 as usize].is_some()
             {
                 return Err("source parameter scope has a duplicate or invalid owner");
@@ -326,6 +328,7 @@ fn valid_parent(
             .is_some_and(|parent| {
                 parent.kind == DefinitionKind::SelfType && parent.parent == Some(owner)
             }),
+        DefinitionKind::AssociatedType => parent == definition.parent,
         DefinitionKind::Function => {
             match definition.parent {
                 None => parent.is_none(),

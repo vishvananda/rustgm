@@ -365,6 +365,11 @@ fn header_port(
     }
     let body = match raw.body {
         s::FunctionBody::Original(reference) => Some(port.body(reference, work)?),
+        s::FunctionBody::CompilerOperation(_) => {
+            return Err(error(
+                "compiler-operation execution requires genuine future state ownership",
+            ));
+        }
         s::FunctionBody::Absent => {
             let parent = raw
                 .parent

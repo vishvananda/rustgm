@@ -185,7 +185,7 @@ impl Builder<'_, '_, '_> {
             .headers
             .rows()
             .body_inputs
-            .get(original.body.0 as usize)
+            .get(self.domains.headers.original_index(original.body)?)
             .ok_or("source nominal operation lost its actual original frame")?;
         Ok(Context {
             owner: original.declaration,

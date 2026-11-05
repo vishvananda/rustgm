@@ -88,6 +88,17 @@ fn begin<const CHARGED: bool>(
     if CHARGED {
         charge(1, 0)?;
     }
+    if let ResultId::Opaque(id) = item {
+        if CHARGED {
+            charge(48, 0)?;
+        }
+        facts
+            .opaques
+            .declarations
+            .get(&id)
+            .ok_or("missing opaque result contract")?
+            .require_current(facts, id)?;
+    }
     if let Some(index) = facts
         .generics
         .traits

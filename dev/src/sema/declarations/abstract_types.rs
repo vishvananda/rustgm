@@ -101,7 +101,7 @@ impl Checker<'_> {
             id,
             Declaration {
                 owner: pending.owner,
-                source: key,
+                origin: key.into(),
                 application,
                 bounds,
                 hidden: None,

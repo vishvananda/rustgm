@@ -61,7 +61,9 @@ pub(in crate::sema::crates::typed_headers) trait Mapping<'rows>:
                 let raw = &rows.implementations[index as usize];
                 (raw.self_type, raw.region_captures, raw.region_bounds)
             }
-            s::HeaderRef::Function(_) | s::HeaderRef::Nominal(_) => {
+            s::HeaderRef::Function(_)
+            | s::HeaderRef::Nominal(_)
+            | s::HeaderRef::AssociatedType(_) => {
                 return Err("imported associated inventory lacks its actual owner header");
             }
         };
@@ -256,7 +258,17 @@ fn require_member(
     let actual =
         actual.ok_or("imported associated schema omitted members or full region relations")?;
     let id = catalog.declaration(actual)?;
-    catalog.validate_declaration(id, actual, DefKind::Function)?;
+    let kind = super::slot_bindings::kind(
+        rows.declarations
+            .get(raw.0 as usize)
+            .ok_or("imported member has no actual declaration")?
+            .definition
+            .kind,
+    );
+    if !matches!(kind, DefKind::Function | DefKind::TypeAlias) {
+        return Err("imported associated member has another actual kind");
+    }
+    catalog.validate_declaration(id, actual, kind)?;
     if expected != actual
         || rows
             .declarations
@@ -307,7 +319,9 @@ impl<'a> Mapping<'a> for Ordinary<'a> {
                 }
                 Ok(MemberRows::Declared(&[]))
             }
-            s::HeaderRef::Function(_) | s::HeaderRef::Nominal(_) => {
+            s::HeaderRef::Function(_)
+            | s::HeaderRef::Nominal(_)
+            | s::HeaderRef::AssociatedType(_) => {
                 Err("imported associated inventory lacks its actual owner header")
             }
         }

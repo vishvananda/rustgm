@@ -99,15 +99,11 @@ fn opaques(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     let mut declarations: Vec<_> = facts.opaques.declarations.iter().collect();
     declarations.sort_unstable_by_key(|(id, _)| id.0);
     for (id, declaration) in declarations {
-        write!(
-            out,
-            "opaque {} owner={} source={}:{} application={} hidden=",
-            id.0,
-            declaration.owner.0,
-            declaration.source.file.0,
-            declaration.source.node.get(),
-            declaration.application.0
-        )?;
+        write!(out, "opaque {} owner={} source=", id.0, declaration.owner.0)?;
+        facts
+            .body_origins()
+            .proof(declaration.site(facts).map_err(io::Error::other)?, out)?;
+        write!(out, " application={} hidden=", declaration.application.0)?;
         if let Some(hidden) = declaration.hidden {
             write!(out, "{}", hidden.0)?;
         } else {

@@ -49,6 +49,10 @@ impl Inventory {
         result.vector(&self.owner_members);
         result.map(&self.declarations);
         result.map(&self.schemas);
+        result.map(&self.types);
+        for contract in self.types.values() {
+            result.vector(&contract.bounds);
+        }
         if let Some(language) = &self.language {
             result.boxed(language.as_ref());
         }

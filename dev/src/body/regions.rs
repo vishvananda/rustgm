@@ -226,7 +226,7 @@ fn opaque_members(
             return Err("invalid opaque capture application");
         };
         for &region in &declaration.free_regions {
-            add(declaration.source, Kind::Membership { region, captures })?;
+            add(declaration.source()?, Kind::Membership { region, captures })?;
         }
     }
     Ok(())

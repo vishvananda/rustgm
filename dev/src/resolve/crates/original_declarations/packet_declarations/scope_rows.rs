@@ -66,6 +66,7 @@ fn owners_mode(
                         | s::DefinitionKind::Struct
                         | s::DefinitionKind::SelfType
                         | s::DefinitionKind::Function
+                        | s::DefinitionKind::AssociatedType
                 ) {
                 let scope = resolver.new_scope(Some(parent), ModuleId(0), true)?;
                 resolver.facts.scopes[scope.0 as usize].associated = matches!(
@@ -116,6 +117,17 @@ pub(super) fn bodies(
             .ok_or_else(|| error("source original scope has an unknown actual body"))?;
         if slot.replace(scopes).is_some() {
             return Err(error("source original scope was mapped twice"));
+        }
+    }
+    for operation in &rows.compiler_operations {
+        work.charge(1)?;
+        let slot = result
+            .get_mut(operation.body.0 as usize)
+            .ok_or_else(|| error("compiler-operation scope has an unknown actual body"))?;
+        if slot.replace(Vec::new()).is_some() {
+            return Err(error(
+                "compiler operation cannot coexist with ordinary lexical scopes",
+            ));
         }
     }
     result

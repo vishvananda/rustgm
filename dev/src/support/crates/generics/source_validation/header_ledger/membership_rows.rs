@@ -39,12 +39,15 @@ impl<'a> Members<'a> {
     fn traits(&mut self, work: &mut Work) -> Result<(), &'static str> {
         for trait_ in &self.rows.traits {
             for (offset, &member) in trait_.members.slice(&self.rows.members)?.iter().enumerate() {
-                declaration(self.rows, member, DefinitionKind::Function, work)?;
-                let Some(HeaderRef::Function(index)) = self.headers[member.0 as usize] else {
-                    return Err("source trait member has no actual function header");
+                work.charge(1)?;
+                let parent = match self.headers.get(member.0 as usize).copied().flatten() {
+                    Some(HeaderRef::Function(index)) => self.rows.functions[index as usize].parent,
+                    Some(HeaderRef::AssociatedType(index)) => {
+                        Some(self.rows.associated_types[index as usize].parent)
+                    }
+                    _ => return Err("source trait member has no actual complete typed header"),
                 };
-                let function = &self.rows.functions[index as usize];
-                if function.parent != Some(trait_.declaration)
+                if parent != Some(trait_.declaration)
                     || self.rows.declarations[member.0 as usize].definition.parent
                         != Some(trait_.declaration)
                     || std::mem::replace(&mut self.traits[member.0 as usize], true)
@@ -184,6 +187,12 @@ impl<'a> Members<'a> {
         work.charge(self.listed.len().saturating_add(self.links.len()))?;
         if self.listed.iter().chain(&self.links).any(|used| !used) {
             return Err("source associated member ranges leave uncovered rows");
+        }
+        for header in &self.rows.associated_types {
+            work.charge(1)?;
+            if !self.traits[header.declaration.0 as usize] {
+                return Err("source associated type omitted from its actual trait members");
+            }
         }
         for function in &self.rows.functions {
             work.charge(1)?;

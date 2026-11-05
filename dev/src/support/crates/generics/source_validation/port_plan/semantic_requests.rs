@@ -89,6 +89,7 @@ impl<'a, 'index, 'rows> Builder<'a, 'index, 'rows> {
         self.arena.observe(observed.steps);
         Ok(OriginalInputPlan {
             rows,
+            bodies: self.domains.headers.bodymap(),
             ranges: self.ranges,
             requests: self.requests,
             observed,
@@ -117,7 +118,11 @@ impl<'a, 'index, 'rows> Builder<'a, 'index, 'rows> {
     ) -> Result<NodeId, &'static str> {
         let context = Context {
             owner: original.declaration,
-            frame: Some(self.domains.headers.rows().body_inputs[original.body.0 as usize].frame),
+            frame: Some(
+                self.domains.headers.rows().body_inputs
+                    [self.domains.headers.original_index(original.body)?]
+                .frame,
+            ),
             body: Some(original.body),
         };
         let key = uses::key(self.domains, root, Rewrite::Original, Some(context), work)?;
@@ -129,7 +134,7 @@ impl<'a, 'index, 'rows> Builder<'a, 'index, 'rows> {
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let rows = self.domains.headers.rows();
-        let input = &rows.body_inputs[original.body.0 as usize];
+        let input = &rows.body_inputs[self.domains.headers.original_index(original.body)?];
         let header = self.domains.function(original.declaration, work)?;
         for (ordinal, &slot) in input.parameters.iter().enumerate() {
             work.charge(1)?;

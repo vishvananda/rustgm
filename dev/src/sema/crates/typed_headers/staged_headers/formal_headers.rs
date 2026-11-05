@@ -111,6 +111,17 @@ pub(super) fn header(
         budget,
     )?;
     let body = match raw.body {
+        s::FunctionBody::CompilerOperation(reference) => {
+            let operation = rows
+                .compiler_operations
+                .get(reference.0 as usize)
+                .ok_or_else(|| error("compiler operation lost its actual body recipe"))?;
+            let id = context
+                .imported
+                .generic_body(context.descriptor.identity(), operation.body)
+                .map_err(error)?;
+            Some(context.catalog.origin(id).map_err(error)?)
+        }
         s::FunctionBody::Absent => None,
         s::FunctionBody::Original(reference) => {
             let id = context

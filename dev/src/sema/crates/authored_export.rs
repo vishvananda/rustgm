@@ -17,6 +17,7 @@ mod namespace_emission;
 mod nominal_headers;
 #[path = "authored_export/versioned_sources.rs"]
 mod non_type_sources;
+mod operation_exports;
 mod payments;
 mod scoped_parameters;
 mod self_requests;
@@ -67,6 +68,7 @@ enum ExportMode {
     Safety,
     Conversions,
     Nominals,
+    CompilerOperations,
 }
 
 impl ExportMode {
@@ -80,6 +82,7 @@ impl ExportMode {
                 | Self::Safety
                 | Self::Conversions
                 | Self::Nominals
+                | Self::CompilerOperations
         )
     }
     fn availability(self) -> bool {
@@ -93,6 +96,7 @@ impl ExportMode {
                 | Self::Safety
                 | Self::Conversions
                 | Self::Nominals
+                | Self::CompilerOperations
         )
     }
     fn module_contracts(self) -> bool {
@@ -107,6 +111,7 @@ impl ExportMode {
                 | Self::Safety
                 | Self::Conversions
                 | Self::Nominals
+                | Self::CompilerOperations
         )
     }
     fn exact(self) -> bool {
@@ -118,6 +123,7 @@ impl ExportMode {
                 | Self::Safety
                 | Self::Conversions
                 | Self::Nominals
+                | Self::CompilerOperations
         )
     }
 }
@@ -133,6 +139,7 @@ pub(crate) struct Stage {
     functions: authored_functions::Index,
     role_installation_steps: usize,
     nominal_transport: bool,
+    compiler_operations: bool,
 }
 impl Stage {
     pub(crate) const fn nominal_transport(&self) -> bool {
@@ -241,13 +248,25 @@ impl Stage {
 
     pub(crate) fn into_rows(mut self) -> Result<(s::SourceRows, SourceWork), &'static str> {
         self.charge(self.functions.originals.len())?;
-        if self.functions.originals.iter().any(Option::is_none)
+        let mut operations = self.rows.compiler_operations.iter().peekable();
+        for (index, slot) in self.functions.originals.iter().enumerate() {
+            let operation = operations
+                .peek()
+                .is_some_and(|operation| operation.body.0 as usize == index);
+            if operation {
+                operations.next();
+            }
+            if operation == slot.is_some() {
+                return Err(
+                    "source body reservation lost exclusive ordinary/compiler-operation coverage",
+                );
+            }
+        }
+        if operations.next().is_some()
             || !self.rows.originals.is_empty()
             || !self.rows.body_inputs.is_empty()
         {
-            return Err(
-                "source metadata is missing an actual provided original or its complete inputs",
-            );
+            return Err("source body reservation has foreign or duplicate publication rows");
         }
         self.charge(self.rows.exact_callables.len().saturating_mul(
             self.rows.exact_callables.len().checked_ilog2().unwrap_or(0) as usize + 1,
@@ -256,9 +275,8 @@ impl Stage {
             .exact_callables
             .sort_unstable_by_key(|row| row.declaration.0);
         let work = self.work();
-        for slot in self.functions.originals {
-            let (body, inputs) =
-                slot.ok_or("source original coverage changed during final staging")?;
+        for slot in self.functions.originals.into_iter().flatten() {
+            let (body, inputs) = slot;
             self.rows.originals.push(body);
             self.rows.body_inputs.push(inputs);
         }
@@ -337,6 +355,13 @@ impl Stage {
     ) -> Result<Self, &'static str> {
         Self::begin_mode(report, facts, identity, ExportMode::Conversions)
     }
+    pub(crate) fn begin_compiler_operations(
+        report: &Report,
+        facts: &mut Declarations,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        Self::begin_mode(report, facts, identity, ExportMode::CompilerOperations)
+    }
     pub(crate) fn begin_module_nominals(
         report: &Report,
         facts: &mut Declarations,
@@ -369,7 +394,11 @@ impl Stage {
             graph: canonical_nodes::Graph::default(),
             inputs: contract_rows::Index::default(),
             functions: authored_functions::Index::default(),
-            nominal_transport: mode == ExportMode::Nominals,
+            nominal_transport: matches!(
+                mode,
+                ExportMode::Nominals | ExportMode::CompilerOperations
+            ),
+            compiler_operations: mode == ExportMode::CompilerOperations,
             role_installation_steps: facts
                 .source_bindings
                 .as_deref()
@@ -382,8 +411,10 @@ impl Stage {
             stage.inputs.selected_methods = Some(Box::default());
         }
         stage.functions.exact = mode.exact();
-        stage.functions.conversions =
-            matches!(mode, ExportMode::Conversions | ExportMode::Nominals);
+        stage.functions.conversions = matches!(
+            mode,
+            ExportMode::Conversions | ExportMode::Nominals | ExportMode::CompilerOperations
+        );
         stage.functions.callable_effects = matches!(
             mode,
             ExportMode::Callables
@@ -398,6 +429,9 @@ impl Stage {
         stage.traits(report, facts, mode != ExportMode::Legacy)?;
         if stage.nominal_transport {
             stage.nominals(report, facts)?;
+        }
+        if stage.compiler_operations {
+            stage.associated_headers(report, facts)?;
         }
         stage.functions(report, facts)?;
         stage.implementations(facts)?;
@@ -440,6 +474,34 @@ impl Stage {
             .ok_or("source header names an unreserved actual declaration")
     }
 
+    fn exported_kind(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        id: DefId,
+        mode: ExportMode,
+    ) -> Result<Option<s::DefinitionKind>, &'static str> {
+        let definition = &report.resolution.definitions[id.0 as usize];
+        let associated =
+            mode == ExportMode::CompilerOperations && facts.associated.type_contract(id).is_some();
+        if associated {
+            return Ok(Some(s::DefinitionKind::AssociatedType));
+        }
+        if matches!(
+            mode,
+            ExportMode::Conversions | ExportMode::Nominals | ExportMode::CompilerOperations
+        ) && definition.kind == DefKind::TypeAlias
+        {
+            self.private_alias(report, facts, id)?;
+            return Ok(None);
+        }
+        if definition.kind == DefKind::Struct
+            && matches!(mode, ExportMode::Nominals | ExportMode::CompilerOperations)
+        {
+            return Ok(Some(s::DefinitionKind::Struct));
+        }
+        kind(definition.kind, definition.namespace)
+    }
     fn declarations(
         &mut self,
         report: &Report,
@@ -470,18 +532,7 @@ impl Stage {
             self.charge(1)?;
             let id =
                 DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
-            if matches!(mode, ExportMode::Conversions | ExportMode::Nominals)
-                && definition.kind == DefKind::TypeAlias
-            {
-                self.private_alias(report, facts, id)?;
-                continue;
-            }
-            let emitted = if definition.kind == DefKind::Struct && mode == ExportMode::Nominals {
-                Some(s::DefinitionKind::Struct)
-            } else {
-                kind(definition.kind, definition.namespace)?
-            };
-            let Some(kind) = emitted else {
+            let Some(kind) = self.exported_kind(report, facts, id, mode)? else {
                 continue;
             };
             features.observe(report, facts, id, self)?;
@@ -721,6 +772,10 @@ fn find_owner(
 
 fn rows(edition: crate::support::edition::Edition) -> s::SourceRows {
     s::SourceRows {
+        associated_types: Vec::new(),
+        projections: Vec::new(),
+        opaque_futures: Vec::new(),
+        compiler_operations: Vec::new(),
         nominals: Vec::new(),
         fields: Vec::new(),
         policy: s::Policy {
@@ -792,7 +847,10 @@ fn require_export_mode(
     }
     if mode.availability() {
         let library = report.package.library_policy();
-        let complete = if matches!(mode, ExportMode::Conversions | ExportMode::Nominals) {
+        let complete = if matches!(
+            mode,
+            ExportMode::Conversions | ExportMode::Nominals | ExportMode::CompilerOperations
+        ) {
             library.is_none_or(|library| library.inventory().is_some())
         } else {
             library
@@ -815,7 +873,11 @@ fn require_export_mode(
         .require_provider_report(report)?;
     authored_traits::require_role_transport(
         facts,
-        matches!(mode, ExportMode::Conversions | ExportMode::Nominals),
+        matches!(
+            mode,
+            ExportMode::Conversions | ExportMode::Nominals | ExportMode::CompilerOperations
+        ),
+        mode == ExportMode::CompilerOperations,
     )?;
     Ok(())
 }

@@ -204,8 +204,8 @@ impl Checker<'_> {
             let projected = self.call_output(origin, definition, output, self_type, arguments)?;
             header.results.push((
                 ItemId(output.0),
-                Located {
-                    source: origin,
+                crate::sema::declaration_inputs::Input {
+                    source: origin.into(),
                     value: Predicate {
                         ty: projected,
                         bound: Bound::Sized,

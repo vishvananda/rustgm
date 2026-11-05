@@ -201,7 +201,13 @@ fn append_members(
 ) -> Result<(), Error> {
     for header in &rows.functions {
         work.charge(1)?;
-        if let Some(binding) = member_binding(resolver, rows, definitions, header)? {
+        if let Some(binding) = member_binding(
+            resolver,
+            rows,
+            definitions,
+            header.declaration,
+            header.parent,
+        )? {
             bindings.push(binding);
         }
     }
@@ -211,9 +217,10 @@ fn member_binding(
     resolver: &Resolver<'_>,
     rows: s::ValidatedView<'_>,
     definitions: &[DefId],
-    header: &s::FunctionHeader,
+    declaration: crate::support::crates::owner_catalog::DeclarationRef,
+    parent: Option<crate::support::crates::owner_catalog::DeclarationRef>,
 ) -> Result<Option<PendingBinding>, Error> {
-    let Some(parent) = header.parent else {
+    let Some(parent) = parent else {
         return Ok(None);
     };
     if !matches!(
@@ -224,7 +231,7 @@ fn member_binding(
     ) {
         return Err(error("named member has an unsupported actual owner"));
     }
-    let target = definitions[header.declaration.0 as usize];
+    let target = definitions[declaration.0 as usize];
     let actual = &resolver.facts.definitions[target.0 as usize];
     if resolver
         .facts

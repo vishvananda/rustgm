@@ -16,7 +16,7 @@ impl super::super::Header {
         for index in 0..predicates.len() {
             let predicate = predicates[index];
             if let Some(member) = self.owned_result(store, owner, predicate.value)? {
-                self.results.push((member, predicate));
+                self.results.push((member, (&predicate).into()));
             } else {
                 predicates[retained] = predicate;
                 retained += 1;

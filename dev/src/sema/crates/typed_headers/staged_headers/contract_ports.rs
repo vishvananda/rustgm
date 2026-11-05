@@ -12,6 +12,32 @@ use crate::{
     },
 };
 
+type Results =
+    crate::support::hash::HashMap<DefId, Vec<(ItemId, crate::sema::declaration_inputs::Input)>>;
+fn associated_results(scopes: &[Scope], budget: &mut Headers) -> Result<Results, Error> {
+    budget.reserve(crate::support::retained::new_map::<
+        DefId,
+        Vec<(ItemId, crate::sema::declaration_inputs::Input)>,
+    >(scopes.len()))?;
+    let mut results = Results::default();
+    for scope in scopes {
+        budget.charge(1)?;
+        if let super::Inputs::Associated { bounds, .. } = &scope.inputs {
+            let parent = scope
+                .parent
+                .ok_or_else(|| error("associated result lost its actual trait parent"))?;
+            budget.reserve(
+                bounds.len() * 4 * size_of::<(ItemId, crate::sema::declaration_inputs::Input)>(),
+            )?;
+            results.entry(parent).or_default().extend(
+                bounds
+                    .iter()
+                    .map(|&input| (ItemId(scope.definition.0), input)),
+            );
+        }
+    }
+    Ok(results)
+}
 pub(super) fn prepare(
     context: &mapped_source::Context<'_>,
     graph: &mapped_source::Graph,
@@ -31,6 +57,7 @@ pub(super) fn prepare(
                 rows.traits.len(),
             )),
     )?;
+    let mut associated_results = associated_results(scopes, budget)?;
     let mut contracts = Contracts::default();
     let mut self_bounds = Vec::with_capacity(rows.traits.len());
     for (raw, scope) in rows.scopes.iter().zip(scopes) {
@@ -76,13 +103,7 @@ pub(super) fn prepare(
                         .saturating_mul(size_of::<crate::types::outlives::Pair>()),
                 ),
         )?;
-        let regions = bounds
-            .iter()
-            .map(|bound| {
-                budget.charge(1)?;
-                Ok((graph.region(bound.longer)?, graph.region(bound.shorter)?))
-            })
-            .collect::<Result<Vec<_>, Error>>()?;
+        let regions = region_pairs(graph, bounds, budget)?;
         let parameters = scope.parameters.clone();
         budget.observed.vector(&parameters);
         budget.observed.vector(&regions);
@@ -103,11 +124,18 @@ pub(super) fn prepare(
                     self_type,
                     parameters,
                     inputs,
-                    results: Vec::new(),
+                    results: associated_results
+                        .remove(&scope.definition)
+                        .unwrap_or_default(),
                     regions,
                 },
             )
             .map_err(error)?;
+    }
+    if !associated_results.is_empty() {
+        return Err(error(
+            "associated result bounds have no actual canonical trait header",
+        ));
     }
     budget.observed.add(size_of::<Contracts>());
     let allocation = contracts.header_table_allocation();
@@ -161,4 +189,18 @@ pub(in crate::sema::crates::typed_headers) fn implicit_self(
         ));
     }
     Ok(predicate)
+}
+
+fn region_pairs(
+    graph: &mapped_source::Graph,
+    bounds: &[super::s::RegionBound],
+    budget: &mut Headers,
+) -> Result<Vec<crate::types::outlives::Pair>, Error> {
+    bounds
+        .iter()
+        .map(|bound| {
+            budget.charge(1)?;
+            Ok((graph.region(bound.longer)?, graph.region(bound.shorter)?))
+        })
+        .collect::<Result<Vec<_>, Error>>()
 }

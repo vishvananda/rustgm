@@ -132,10 +132,11 @@ fn unresolved_applications_register_once_without_revealing_inferred_heads() -> R
         id,
         super::super::Declaration {
             owner: DefId(7),
-            source: NodeKey {
+            origin: NodeKey {
                 file: FileId(0),
                 node: report.package.unit(FileId(0)).configured.ast.root,
-            },
+            }
+            .into(),
             application,
             bounds: Vec::new(),
             hidden: None,
@@ -222,10 +223,11 @@ fn failed_wakeup_remains_an_error_after_the_checked_head_closes() -> Result<(), 
         id,
         super::super::Declaration {
             owner,
-            source: NodeKey {
+            origin: NodeKey {
                 file: FileId(0),
                 node: report.package.unit(FileId(0)).configured.ast.root,
-            },
+            }
+            .into(),
             application,
             bounds: Vec::new(),
             hidden: None,

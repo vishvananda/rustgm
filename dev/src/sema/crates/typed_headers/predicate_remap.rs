@@ -62,7 +62,9 @@ impl<'a> Context<'a> {
     ) -> Result<Vec<Option<Predicate>>, Error> {
         let count = self.applications.len();
         budget.reserve(count.saturating_mul(size_of::<Predicate>()))?;
-        for index in 0..if self.descriptor.profile().conversion_roles() {
+        for index in 0..if self.descriptor.profile().conversion_roles()
+            && !self.descriptor.profile().compiler_operations()
+        {
             0
         } else {
             count
@@ -164,6 +166,10 @@ impl<'a> Context<'a> {
         }
         let rows = self.descriptor.rows();
         let (kind, inputs) = match rows.header(ordinal).map_err(error)? {
+            Some(s::HeaderRef::AssociatedType(index)) => (
+                DefKind::TypeAlias,
+                rows.associated_types[index as usize].inputs,
+            ),
             Some(s::HeaderRef::Nominal(index)) => {
                 (DefKind::Struct, rows.nominals[index as usize].inputs)
             }
@@ -199,6 +205,52 @@ impl<'a> Context<'a> {
                 .saturating_mul(size_of::<Input>())
                 .saturating_add(2 * size_of::<usize>()),
         );
+        Ok(inputs)
+    }
+    pub(super) fn associated_bounds(
+        &mut self,
+        definition: DefId,
+        store: &mut Store,
+        budget: &mut Headers,
+    ) -> Result<Arc<[Input]>, Error> {
+        let declaration = self.catalog.declaration(definition).map_err(error)?;
+        self.catalog
+            .validate_declaration(declaration, definition, DefKind::TypeAlias)
+            .map_err(error)?;
+        let (owner, row, _) = self
+            .catalog
+            .declaration_coordinate(declaration)
+            .map_err(error)?;
+        if owner != self.descriptor.identity()
+            || self
+                .imported
+                .generic_definition(owner, row)
+                .map_err(error)?
+                != definition
+        {
+            return Err(error(
+                "associated bounds changed their actual imported owner",
+            ));
+        }
+        let rows = self.descriptor.rows();
+        let Some(s::HeaderRef::AssociatedType(index)) = rows.header(row).map_err(error)? else {
+            return Err(error(
+                "associated bounds lack their actual canonical header",
+            ));
+        };
+        let mut port = self.port(Some((row, declaration)));
+        let (inputs, _) = translation::inputs(
+            &mut port,
+            &mut self.applications,
+            row,
+            rows.associated_types[index as usize].bounds,
+            None,
+            store,
+            budget,
+        )?;
+        budget
+            .observed
+            .add(inputs.len() * size_of::<Input>() + 2 * size_of::<usize>());
         Ok(inputs)
     }
     fn port(

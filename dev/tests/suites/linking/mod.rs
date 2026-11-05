@@ -1,4 +1,6 @@
 //! Maintainer integration suites for linking.
+#[path = "../../compiler_recipes.rs"]
+mod compiler_recipes;
 #[path = "../../crate_linking.rs"]
 mod crate_linking;
 #[path = "../../ffi_dependencies.rs"]

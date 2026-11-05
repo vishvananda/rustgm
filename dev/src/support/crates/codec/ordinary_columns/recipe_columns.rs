@@ -5,6 +5,14 @@ use crate::support::constness::Constness;
 pub(super) fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static str> {
     match *row {
         // Scalar has a permanent repr(u8) shared by all existing wire profiles.
+        s::Type::Projection(reference) => {
+            out.u8(7)?;
+            id(out, reference.0)
+        }
+        s::Type::OpaqueFuture(reference) => {
+            out.u8(8)?;
+            id(out, reference.0)
+        }
         s::Type::Scalar(scalar) => out.bytes(&[0, scalar as u8]),
         s::Type::Nominal {
             declaration,
@@ -43,6 +51,12 @@ pub(super) fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static
 }
 pub(super) fn type_read(read: &mut Input<'_, '_>) -> Result<s::Type, &'static str> {
     Ok(match read.reader.u8()? {
+        7 if read.profile.compiler_operations() => {
+            s::Type::Projection(s::ProjectionRef(read.id()?))
+        }
+        8 if read.profile.compiler_operations() => {
+            s::Type::OpaqueFuture(s::OpaqueFutureRef(read.id()?))
+        }
         0 => s::Type::Scalar(read.reader.scalar()?),
         1 => s::Type::Parameter(s::SlotRef(read.id()?)),
         6 if read.profile.nominals() => s::Type::Nominal {

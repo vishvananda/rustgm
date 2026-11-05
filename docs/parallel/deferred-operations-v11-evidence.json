@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "baseline": "c509736bb23b7e7918c6c2e04f588c1c7bd130af",
+  "branch": "design/async-state-recipe-20261105",
+  "scope": "symbolic compiler-operation/opaque Output transport; no executable future permission",
+  "source_map": {
+    "path": "obj/parallel/future-recipe-v1/final/source-hashes.json",
+    "files": 110,
+    "sha256": "309d07d4591823fdb59cf4624d3c5994e61d36b86ca100bbd326c1b6eb066732",
+    "matches_final_gate_production_sources": true
+  },
+  "fixtures": {
+    "path": "pa43/tests/spec/deferred-compiler-op/predictions.json",
+    "sha256": "b7d730c78584d198f1f9beb3e8bc96e6547d70c475d341d4a02a0b568d1c4364",
+    "source_files": 8
+  },
+  "final_gate": {
+    "path": "obj/qualification/fast/1793865195901812583/receipt.json",
+    "sha256": "ac82e5cbaf212d549d19dc3099dac3da29f617b3db6cd5edb5f2ec5eb7f366cd",
+    "state": "passed",
+    "exact_tests": 49,
+    "binary": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/rust/dev-fast/deps/suite_linking-313e7e78142d8122",
+      "sha256": "e08b4cc6ef4ef93d67152d9bd5e14e05e5eaaa74aa25efb71aef68ad9127cf6b"
+    }
+  },
+  "final_checks": {
+    "path": "obj/parallel/future-recipe-v1/final/receipt.json",
+    "sha256": "49e5b249a2d6e98e333497337bb4b66d3a965e0d35f688f87e659dd6e25d0680",
+    "state": "passed",
+    "python_tests": 280,
+    "v10": {
+      "current": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/source-transport/frontend-1551445/base.rgcrate",
+      "old": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/frontend-979089/base.rgcrate",
+      "bytes": 7118,
+      "sha256": "86b0e0a80de3160fbc18973e3ea9cf781513a6206547f55a35b78e2df636f03b",
+      "expected_sha256": "86b0e0a80de3160fbc18973e3ea9cf781513a6206547f55a35b78e2df636f03b"
+    }
+  },
+  "actual_layouts": {
+    "baseline": {
+      "path": "obj/parallel/future-recipe-v1/layout-baseline.json",
+      "sha256": "8c855dc8d106154b25c9411639a3ff44e1b041bc57170eb3ee81790b2ed7ce72"
+    },
+    "post": {
+      "path": "obj/parallel/future-recipe-v1/layout-post.json",
+      "sha256": "2d6e8f45b7c77d9fcbee5a4f1ebe923269d07d29576e098c9ccaaec43a53926e"
+    },
+    "unchanged": {
+      "Kind": 24,
+      "BodyOwner": 20,
+      "FunctionBody": 8,
+      "SourceType": 20,
+      "Body": 456,
+      "IRowner": 20
+    }
+  },
+  "private": {
+    "state": "execution_pending_for_CI_no_local_cold_compile_or_link",
+    "path": "dev/tests/invariants/opclaims.rs",
+    "sha256": "306d6682cc97411cdbb0224a43b1023217a2e0e8b7fcaee190c430464abd4a13",
+    "typed_row_opponents": 14,
+    "cold_and_warm_opponents": 7,
+    "warm_queries_each": 32,
+    "exact_cases": [
+      "sema::opaque::symbolic_tests::serialized_recipes_reject_ordinal_capture_schema_projection_and_body_forgery",
+      "sema::opaque::symbolic_tests::cold_and_warm_result_queries_reject_changed_actual_owner_and_promises",
+      "sema::opaque::symbolic_tests::actual_symbolic_body_cannot_supply_an_executable_original"
+    ]
+  },
+  "remaining": [
+    "actual future state and capture/drop ownership",
+    "distinct typed poll/drop scheduler and real signatures",
+    "deferred input/body effects and Ready/completion",
+    "await/regions/cancellation/recursive cleanup",
+    "!Unpin and capture auto traits",
+    "real authored async typed body export",
+    "wider associated/family/member/application profiles",
+    "CLI/core profile routing and full original core/alloc/std"
+  ],
+  "native_future_evidence": "none; symbolic operations remain fenced"
+}

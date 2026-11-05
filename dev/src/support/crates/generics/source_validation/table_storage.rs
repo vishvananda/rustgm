@@ -98,6 +98,14 @@ pub(super) fn preflight(
         .saturating_add(rows.body_owners.len().saturating_mul(2 * size_of::<u32>()))
         .saturating_add(count.components.saturating_mul(2))
         .saturating_add(retained::new_map::<&str, ()>(rows.fields.len()));
+    let body_index = if rows.compiler_operations.is_empty() {
+        0
+    } else {
+        rows.body_owners
+            .len()
+            .saturating_mul(size_of::<u32>())
+            .saturating_add(size_of::<super::super::bodymap::Lookup>() + 2 * size_of::<usize>())
+    };
     let ledger = rows
         .declarations
         .len()
@@ -106,7 +114,8 @@ pub(super) fn preflight(
         .bytes
         .saturating_add(size_of::<HeaderIndex<'_>>())
         .saturating_add(scratch)
-        .saturating_add(ledger);
+        .saturating_add(ledger)
+        .saturating_add(body_index);
     let peak = scope_base
         .saturating_add(size_of::<super::super::ScopeIndex<'_>>())
         .saturating_add(
@@ -126,6 +135,10 @@ pub(super) fn preflight(
 }
 
 fn columns(rows: &SourceRows, count: &mut Count, work: &mut Work) -> Result<(), &'static str> {
+    count.vector(&rows.associated_types, work)?;
+    count.vector(&rows.projections, work)?;
+    count.vector(&rows.opaque_futures, work)?;
+    count.vector(&rows.compiler_operations, work)?;
     count.vector(&rows.declarations, work)?;
     count.vector(&rows.body_owners, work)?;
     count.vector(&rows.slots, work)?;

@@ -5,8 +5,14 @@ mod attributes;
 mod availability;
 #[path = "operation_rows.rs"]
 mod bodies;
+#[path = "bodymap.rs"]
+pub(crate) mod bodymap;
+#[path = "compiler_rows.rs"]
+mod compiler_rows;
 #[path = "profile_descriptor.rs"]
 mod descriptor;
+mod operation_contracts;
+pub use compiler_rows::*;
 #[path = "relation_inputs.rs"]
 mod inputs;
 #[path = "record_contracts.rs"]
@@ -36,9 +42,9 @@ pub use bodies::*;
 pub(crate) use descriptor::canonical_order;
 pub(crate) use descriptor::canonical_order_paid;
 pub use descriptor::{
-    BindingSource, Columns, Descriptor, ImplementationDomain, ModuleBindingRow, ModuleContractRows,
-    ModuleContractView, ModuleNamespace, ModuleRow, ModuleVisibility, Profile, TraitDomainRow,
-    ValidatedRows, ValidatedView,
+    BindingSource, Columns, CompilerOperationView, Descriptor, ImplementationDomain,
+    ModuleBindingRow, ModuleContractRows, ModuleContractView, ModuleNamespace, ModuleRow,
+    ModuleVisibility, Profile, TraitDomainRow, ValidatedRows, ValidatedView,
 };
 pub(crate) use descriptor::{
     ExportBinding, HeaderModifierColumns, HeaderModifierPolicy, HeaderModifierRecord,
@@ -46,6 +52,7 @@ pub(crate) use descriptor::{
 };
 pub use inputs::*;
 pub use scopes::{Definition, DefinitionKind, ScopeIndex};
+pub(crate) use validation::HeaderRows;
 pub use validation::{
     AllocationOrdinals, DomainIndex, DomainWork, HeaderIndex, HeaderRef, InputWork, NumberingUnits,
     OperationPort, OriginalInputPlan, RequiredInput, RequiredKind,
@@ -173,6 +180,8 @@ pub enum Type {
     Function(Signature),
     FunctionItem(FunctionApplicationRef),
     ApplicationSignature(FunctionApplicationRef),
+    Projection(ProjectionRef),
+    OpaqueFuture(OpaqueFutureRef),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TraitApplication {
@@ -288,6 +297,7 @@ pub struct MemberLink {
 pub enum FunctionBody {
     Absent,
     Original(BodyRef),
+    CompilerOperation(CompilerOperationRef),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Formal {
@@ -371,6 +381,10 @@ pub struct NominalField {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Rows {
+    pub associated_types: Vec<AssociatedTypeHeader>,
+    pub projections: Vec<ProjectionRecipe>,
+    pub opaque_futures: Vec<OpaqueFuture>,
+    pub compiler_operations: Vec<CompilerOperation>,
     pub nominals: Vec<NominalHeader>,
     pub fields: Vec<NominalField>,
     pub policy: Policy,

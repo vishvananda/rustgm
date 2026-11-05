@@ -499,7 +499,9 @@ impl Validation<'_> {
                 .implementations
                 .get(index as usize)
                 .is_some_and(|row| row.constant),
-            None | Some(super::HeaderRef::Nominal(_)) => false,
+            None | Some(super::HeaderRef::Nominal(_) | super::HeaderRef::AssociatedType(_)) => {
+                false
+            }
         }
     }
 }

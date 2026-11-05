@@ -58,7 +58,30 @@ impl Payload {
         .map(Self::from)
     }
     /// # Errors
-    /// Rejects incomplete version-ten nominal contracts and foreign policy origins.
+    /// Rejects incomplete compiler-operation recipes and foreign owners.
+    pub fn from_source_compiler_operations(
+        owner: &CrateIdentity,
+        rows: source::SourceRows,
+        attributes: source::HeaderAttributeColumns,
+        modules: source::ModuleContractRows,
+        availability: source::AvailabilityRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        let overhead = size_of::<Self>().saturating_sub(size_of::<source::ValidatedRows>());
+        source::ValidatedRows::stage_compiler_operations(
+            owner,
+            rows,
+            attributes,
+            modules,
+            availability,
+            base.saturating_add(overhead),
+            work,
+        )
+        .map(Self::from)
+    }
+    /// # Errors
+    /// Rejects incomplete version-ten source nominal contracts.
     pub fn from_source_module_nominals(
         owner: &CrateIdentity,
         rows: source::SourceRows,

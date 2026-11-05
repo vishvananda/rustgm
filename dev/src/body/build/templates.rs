@@ -439,6 +439,16 @@ impl Prepared {
     ) -> Result<Templates, Error> {
         let mut bodies = Vec::new();
         for function in &facts.functions {
+            if matches!(selection, crate::body::Selection::CompilerOperations)
+                && crate::sema::compiler_items::async_operation_recipe(
+                    report,
+                    facts,
+                    function.definition,
+                )?
+                .is_some()
+            {
+                continue;
+            }
             if (function.body.is_some()
                 || facts
                     .methods

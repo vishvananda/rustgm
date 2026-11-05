@@ -31,6 +31,19 @@ impl ImportedOwners {
             Self::Provided(owner) => owner.require_store(store),
         }
     }
+    pub(in crate::sema) fn require_opaque(
+        &self,
+        facts: &crate::sema::model::Declarations,
+        id: crate::types::opaque::OpaqueId,
+        declaration: &crate::sema::opaque::Declaration,
+    ) -> Result<(), &'static str> {
+        match self {
+            Self::Ordinary(graph) => graph.require_opaque(facts, id, declaration),
+            Self::Provided(_) => {
+                Err("Provided profiles do not own deferred opaque operation contracts")
+            }
+        }
+    }
     pub(in crate::sema) fn owner(&self, owner: Owner) -> Result<(), &'static str> {
         match self {
             Self::Ordinary(graph) => graph.owner(owner),
@@ -62,6 +75,20 @@ impl ImportedOwners {
         match self {
             Self::Ordinary(graph) => graph.role_origin(role),
             Self::Provided(mapping) => mapping.role_origin(role),
+        }
+    }
+    pub(in crate::sema) fn compiler_operation_role(
+        &self,
+        facts: &crate::sema::model::Declarations,
+        role: Role,
+        kind: crate::support::bindings::LangItem,
+        steps: &mut usize,
+    ) -> Result<(), &'static str> {
+        match self {
+            Self::Ordinary(graph) => graph.compiler_operation_role(facts, role, kind, steps),
+            Self::Provided(_) => {
+                Err("private Provided profiles do not own declared compiler-operation roles")
+            }
         }
     }
     pub(in crate::sema) fn conversion_role(

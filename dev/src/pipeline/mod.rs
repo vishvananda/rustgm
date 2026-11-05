@@ -166,7 +166,11 @@ impl Demand {
             )
         })?;
         let owner = declaration.owner;
-        let source = declaration.source;
+        let source = declaration.source().map_err(|message| {
+            declaration
+                .site(facts)
+                .map_or_else(Error::unlocated, |site| report.body_error(site, message))
+        })?;
         let function = Self::defining_function(facts, owner)?;
         let Some(original) = self.defining_original(report, facts, &function, context)? else {
             return if facts

@@ -36,11 +36,12 @@ impl Builder<'_, '_, '_> {
                 self.exact_relation(original, port, site, value.ty, expected, work)?;
                 let node = self.node(original, value.ty, work)?;
                 self.coverage.copy(original.body, node, work)?;
-                let copy = self.domains.headers.rows().body_inputs[original.body.0 as usize]
-                    .builtins
-                    .as_ref()
-                    .and_then(|b| b.source_copy.as_ref())
-                    .ok_or("source Read lost its active Copy query carrier")?;
+                let copy = self.domains.headers.rows().body_inputs
+                    [self.domains.headers.original_index(original.body)?]
+                .builtins
+                .as_ref()
+                .and_then(|b| b.source_copy.as_ref())
+                .ok_or("source Read lost its active Copy query carrier")?;
                 self.emit(
                     port,
                     s::InputSite::Body(site),

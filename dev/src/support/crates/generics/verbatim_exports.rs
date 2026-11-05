@@ -80,7 +80,7 @@ pub(super) fn validate(
             || body.ordinal != 0
             || rows
                 .originals
-                .get(row.body.0 as usize)
+                .get(headers.original_index(row.body)?)
                 .is_none_or(|original| {
                     original.body != row.body || original.declaration != row.declaration
                 })

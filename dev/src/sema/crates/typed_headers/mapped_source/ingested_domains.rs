@@ -65,7 +65,7 @@ impl Lazy {
         let rows = view.rows()?;
         let original = rows
             .originals
-            .get(raw.0 as usize)
+            .get(rows.original_index(raw).map_err(error)?)
             .ok_or_else(|| error("ordinary original lost its current raw body"))?;
         let mut port = Recorded::ordinary(
             Reserved::new(view, &self.maps, &facts.types, work)?,

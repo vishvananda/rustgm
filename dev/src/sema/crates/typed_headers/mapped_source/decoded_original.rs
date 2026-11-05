@@ -30,7 +30,7 @@ pub(crate) struct Original<'a> {
     definition: DefId,
     body: ImportedBodyId,
     rows: s::ValidatedView<'a>,
-    reference: crate::support::crates::owner_catalog::BodyRef,
+    row: u32,
 }
 impl Graph {
     pub(in crate::sema::crates::typed_headers) fn owns_original(
@@ -70,19 +70,18 @@ impl Graph {
         };
         let function = &rows.functions[index as usize];
         let s::FunctionBody::Original(reference) = function.body else {
-            return Err("source original cannot reconstruct an absent required method");
+            return Err(
+                "compiler-operation execution requires genuine future state ownership; required methods have no original",
+            );
         };
+        let original_index = rows.original_index(reference)?;
         let body = catalog.body_at(descriptor.identity(), reference)?;
         let raw = rows
             .originals
-            .get(reference.0 as usize)
+            .get(original_index)
             .filter(|raw| raw.body == reference && raw.declaration == row)
             .ok_or("source provided body omitted its actual complete original row")?;
-        let inputs = rows
-            .body_inputs
-            .get(reference.0 as usize)
-            .filter(|input| input.body == reference)
-            .ok_or("source provided body omitted its actual raw input row")?;
+        let inputs = rows.body_input(reference)?;
         let constant = function.constness == crate::support::constness::Constness::Const;
         let context = if constant {
             s::CallContext::ConstDefinition
@@ -125,7 +124,7 @@ impl Graph {
             definition,
             body,
             rows,
-            reference,
+            row: u32::try_from(original_index).map_err(|_| "source original row overflow")?,
         };
         original.check_locals(steps)?;
         Ok(Some(original))
@@ -194,10 +193,10 @@ impl Original<'_> {
         self.rows
     }
     pub(crate) fn raw(&self) -> &s::Original {
-        &self.rows.originals[self.reference.0 as usize]
+        &self.rows.originals[self.row as usize]
     }
     pub(crate) fn inputs(&self) -> &s::BodyInputs {
-        &self.rows.body_inputs[self.reference.0 as usize]
+        &self.rows.body_inputs[self.row as usize]
     }
     pub(crate) const fn definition(&self) -> DefId {
         self.definition

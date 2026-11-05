@@ -664,8 +664,8 @@ impl Checker<'_> {
                         .declarations
                         .get(&id)
                         .ok_or_else(|| Error::at(FileId(0), 0, "missing opaque declaration"))?;
-                    return Err(self.error(
-                        declaration.source,
+                    return Err(self.report.body_error(
+                        declaration.site(&self.facts).map_err(Error::unlocated)?,
                         "opaque hidden type requires its completed defining body",
                     ));
                 }

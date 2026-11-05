@@ -209,6 +209,19 @@ impl Source {
             modules,
         ))
     }
+    fn begin_compiler_operations(
+        report: &Report,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+        let mut stage = Stage::begin_compiler_operations(report, facts, identity)?;
+        let modules = stage.module_contract_rows(report, facts)?;
+        Ok((
+            Self::begin_stage(facts, checked, stage, true, None)?,
+            modules,
+        ))
+    }
     fn begin_module_nominals(
         report: &Report,
         facts: &mut Declarations,
@@ -274,6 +287,12 @@ impl Source {
             super::instances::SourcePublication::ModuleSafety => {
                 let (source, modules) = Self::begin_module_safety(report, facts, checked, identity)
                     .map_err(legacy_error)?;
+                Ok((source, Some(modules)))
+            }
+            super::instances::SourcePublication::CompilerOperations => {
+                let (source, modules) =
+                    Self::begin_compiler_operations(report, facts, checked, identity)
+                        .map_err(crate::resolve::package::Error::unlocated)?;
                 Ok((source, Some(modules)))
             }
             super::instances::SourcePublication::ModuleNominals => {
@@ -461,8 +480,24 @@ impl Source {
         let (mut rows, work) = self.stage.into_rows()?;
         if let Some(numbering) = self.numbering {
             let mut units = Vec::with_capacity(numbering.len());
-            for unit in numbering {
-                units.push(unit.ok_or("source numbering omitted an actual original")?);
+            let mut operations = rows.compiler_operations.iter().peekable();
+            for (index, unit) in numbering.into_iter().enumerate() {
+                if operations
+                    .peek()
+                    .is_some_and(|operation| operation.body.0 as usize == index)
+                {
+                    operations.next();
+                    if unit.is_some() {
+                        return Err(
+                            "compiler operation cannot publish ordinary numbering/CFG ownership",
+                        );
+                    }
+                } else {
+                    units.push(unit.ok_or("source numbering omitted an actual original")?);
+                }
+            }
+            if operations.next().is_some() {
+                return Err("compiler operation has a foreign numbering owner");
             }
             rows.body_units = units;
         }
@@ -551,7 +586,8 @@ impl Source {
             | SourcePublication::ModuleCallables
             | SourcePublication::ModuleSafety
             | SourcePublication::ModuleConversions
-            | SourcePublication::ModuleNominals => self.complete_module_policy_payload(
+            | SourcePublication::ModuleNominals
+            | SourcePublication::CompilerOperations => self.complete_module_policy_payload(
                 modules.ok_or_else(|| {
                     crate::resolve::package::Error::unlocated(
                         "module namespace/domain collection is absent",
@@ -582,11 +618,13 @@ impl Source {
                     | super::instances::SourcePublication::ModuleSafety
                     | super::instances::SourcePublication::ModuleConversions
                     | super::instances::SourcePublication::ModuleNominals
+                    | super::instances::SourcePublication::CompilerOperations
             ) {
                 let available = if matches!(
                     profile,
                     super::instances::SourcePublication::ModuleConversions
                         | super::instances::SourcePublication::ModuleNominals
+                        | super::instances::SourcePublication::CompilerOperations
                 ) {
                     self.stage
                         .conversion_availability_rows(report, facts, modules)
@@ -625,6 +663,7 @@ impl Source {
                 profile,
                 super::instances::SourcePublication::ModuleConversions
                     | super::instances::SourcePublication::ModuleNominals
+                    | super::instances::SourcePublication::CompilerOperations
             )
         {
             return Err(crate::resolve::package::Error::unlocated(
@@ -649,7 +688,9 @@ impl Source {
             ..g::Work::default()
         };
         let payload = if let Some(availability) = availability {
-            let publish = if profile == super::instances::SourcePublication::ModuleNominals {
+            let publish = if profile == super::instances::SourcePublication::CompilerOperations {
+                g::Payload::from_source_compiler_operations
+            } else if profile == super::instances::SourcePublication::ModuleNominals {
                 g::Payload::from_source_module_nominals
             } else if profile == super::instances::SourcePublication::ModuleConversions {
                 g::Payload::from_source_module_conversions

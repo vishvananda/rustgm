@@ -1,5 +1,6 @@
 //! Compiler-owned async cleanup never executes the helper's written placeholder.
 mod demand;
+mod recipes;
 use super::Catalog;
 use crate::{
     resolve::{expansion::Report, model::DefKind, package::Error},
@@ -8,6 +9,7 @@ use crate::{
     types::{Kind, TypeId, arguments::Argument, callable::Convention},
 };
 pub(crate) use demand::target as source_async_drop_glue;
+pub(crate) use recipes::recipe;
 
 /// Unused alternate helper declarations retain ordinary source validity. Exact
 /// constructor/poll requirements belong to the selected generated operation.

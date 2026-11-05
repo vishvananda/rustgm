@@ -45,6 +45,11 @@ struct Scope {
 enum Inputs {
     SelfType,
     Nominal(Arc<[Input]>),
+    Associated {
+        inputs: Arc<[Input]>,
+        bounds: Arc<[Input]>,
+        projection: crate::types::TypeId,
+    },
     Trait(predicate_remap::Prepared),
     Function(Arc<[Input]>),
     Implementation(Arc<[Input]>),
@@ -54,7 +59,10 @@ impl Inputs {
         match self {
             Self::SelfType => &[],
             Self::Trait(prepared) => prepared.all(),
-            Self::Function(inputs) | Self::Implementation(inputs) | Self::Nominal(inputs) => inputs,
+            Self::Associated { inputs, .. }
+            | Self::Function(inputs)
+            | Self::Implementation(inputs)
+            | Self::Nominal(inputs) => inputs,
         }
     }
 }
@@ -79,6 +87,7 @@ impl Stage {
         budget: &mut Headers,
     ) -> Result<Self, Error> {
         let mut graph = mapped_source::Graph::prepare(context, facts, budget)?;
+        graph.finish_opaques(context, facts, budget)?;
         let rows = context.descriptor.rows();
         budget.reserve(
             rows.scopes
@@ -141,11 +150,15 @@ fn finish_inputs(
             .saturating_mul(size_of::<Option<Arc<[Input]>>>()),
     )?;
     let mut nominals = vec![None; rows.nominals.len()];
+    let mut associated = vec![None; rows.associated_types.len()];
     let mut traits = vec![None; rows.traits.len()];
     let mut implementations = vec![None; rows.implementations.len()];
     for (raw, scope) in rows.scopes.iter().zip(scopes) {
         budget.charge(1)?;
         let (slot, inputs) = match (rows.header(raw.owner).map_err(error)?, &scope.inputs) {
+            (Some(s::HeaderRef::AssociatedType(index)), Inputs::Associated { inputs, .. }) => {
+                (&mut associated[index as usize], inputs)
+            }
             (Some(s::HeaderRef::Nominal(index)), Inputs::Nominal(inputs)) => {
                 (&mut nominals[index as usize], inputs)
             }
@@ -175,7 +188,7 @@ fn finish_inputs(
     budget.observed.vector(&traits);
     budget.observed.vector(&implementations);
     graph
-        .finish_inputs(nominals, traits, implementations)
+        .finish_inputs(nominals, traits, implementations, associated)
         .map_err(error)
 }
 impl Walk<'_, '_> {
@@ -196,6 +209,23 @@ impl Walk<'_, '_> {
                     &mut facts.types,
                     budget,
                 )?))
+            }
+            Some(s::HeaderRef::AssociatedType(index)) => {
+                let header = &rows.associated_types[index as usize];
+                if raw.parent != Some(header.parent) {
+                    return Err(error(
+                        "associated type scope changed its actual trait parent",
+                    ));
+                }
+                Ok(Inputs::Associated {
+                    inputs: self
+                        .remap
+                        .declaration_inputs(definition, &mut facts.types, budget)?,
+                    bounds: self
+                        .remap
+                        .associated_bounds(definition, &mut facts.types, budget)?,
+                    projection: self.graph.ty(header.projection)?,
+                })
             }
             Some(s::HeaderRef::Nominal(_)) if raw.parent.is_none() => Ok(Inputs::Nominal(
                 self.remap

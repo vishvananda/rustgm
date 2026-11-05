@@ -17,6 +17,36 @@ impl Builder<'_, '_> {
                         }
                     }
                 }
+                s::Type::Projection(reference) => {
+                    let row = rows
+                        .projections
+                        .get(reference.0 as usize)
+                        .ok_or("unknown source projection recipe")?;
+                    self.push_type(row.subject, work)?;
+                    let application = rows
+                        .trait_applications
+                        .get(row.trait_application.0 as usize)
+                        .ok_or("unknown projection trait application")?;
+                    for range in [application.arguments, row.arguments] {
+                        for argument in range.slice(&rows.arguments)?.iter().rev() {
+                            if let s::Argument::Type(ty) = argument {
+                                self.push_type(*ty, work)?;
+                            }
+                        }
+                    }
+                }
+                s::Type::OpaqueFuture(reference) => {
+                    let row = rows
+                        .opaque_futures
+                        .get(reference.0 as usize)
+                        .ok_or("unknown source opaque future recipe")?;
+                    self.push_type(row.output, work)?;
+                    for argument in row.captures.slice(&rows.arguments)?.iter().rev() {
+                        if let s::Argument::Type(ty) = argument {
+                            self.push_type(*ty, work)?;
+                        }
+                    }
+                }
                 s::Type::Reference { referent, .. } => self.push_type(referent, work)?,
                 s::Type::Function(signature) => {
                     self.push_type(signature.result, work)?;
@@ -80,6 +110,8 @@ impl Builder<'_, '_> {
             };
         }
         Ok(match rows.types[node] {
+            s::Type::Projection(reference) => self.projection_summary(reference, work)?,
+            s::Type::OpaqueFuture(reference) => self.opaque_summary(reference, work)?,
             s::Type::Scalar(_) => Summary::default(),
             s::Type::Nominal {
                 declaration,
@@ -149,6 +181,60 @@ impl Builder<'_, '_> {
             s::Type::ApplicationSignature(_) => {
                 return Err("source application signature recipe is unsupported");
             }
+        })
+    }
+    fn projection_summary(
+        &self,
+        reference: s::ProjectionRef,
+        work: &mut Work,
+    ) -> Result<Summary, &'static str> {
+        let rows = self.headers.rows();
+        Ok({
+            let row = rows
+                .projections
+                .get(reference.0 as usize)
+                .ok_or("unknown source projection recipe")?;
+            let application = rows
+                .trait_applications
+                .get(row.trait_application.0 as usize)
+                .ok_or("unknown projection trait application")?;
+            let mut result = self.child(row.subject, work)?;
+            for range in [application.arguments, row.arguments] {
+                for argument in range.slice(&rows.arguments)? {
+                    let child = match argument {
+                        s::Argument::Type(ty) => self.child(*ty, work)?,
+                        s::Argument::Region(region) => {
+                            region_summary(self.headers, self.binders, *region, work)?
+                        }
+                    };
+                    result = self.merge(result, child, work)?;
+                }
+            }
+            result
+        })
+    }
+    fn opaque_summary(
+        &self,
+        reference: s::OpaqueFutureRef,
+        work: &mut Work,
+    ) -> Result<Summary, &'static str> {
+        let rows = self.headers.rows();
+        Ok({
+            let row = rows
+                .opaque_futures
+                .get(reference.0 as usize)
+                .ok_or("unknown source opaque future recipe")?;
+            let mut result = self.child(row.output, work)?;
+            for argument in row.captures.slice(&rows.arguments)? {
+                let child = match argument {
+                    s::Argument::Type(ty) => self.child(*ty, work)?,
+                    s::Argument::Region(region) => {
+                        region_summary(self.headers, self.binders, *region, work)?
+                    }
+                };
+                result = self.merge(result, child, work)?;
+            }
+            result
         })
     }
     fn application(&self, node: usize, work: &mut Work) -> Result<Summary, &'static str> {
@@ -293,7 +379,7 @@ pub(super) fn region_summary(
                 let original = headers
                     .rows()
                     .originals
-                    .get(body.0 as usize)
+                    .get(headers.original_index(*body)?)
                     .ok_or("source free region has a foreign original owner")?;
                 if *slot as usize >= original.variables.len() {
                     return Err("source free region has no exact original allocation slot");

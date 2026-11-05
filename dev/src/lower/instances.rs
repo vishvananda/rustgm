@@ -283,6 +283,7 @@ pub enum SourcePublication {
     ModuleSafety,
     ModuleConversions,
     ModuleNominals,
+    CompilerOperations,
 }
 
 /// Publish only an explicitly selected ordinary source row profile.
@@ -372,7 +373,11 @@ pub fn build_source_library_profile(
             };
             Ok((program, interface))
         },
-        Construction::Complete,
+        if matches!(profile, SourcePublication::CompilerOperations) {
+            Construction::CompilerOperations
+        } else {
+            Construction::Complete
+        },
     )?
 }
 
@@ -481,12 +486,15 @@ fn require_source_session(report: &Report, facts: &Declarations) -> Result<(), E
 
 enum Construction<'a> {
     Complete,
+    CompilerOperations,
     Imported(&'a mut dyn crate::sema::dispatch::Preparation),
     Local,
 }
 impl<'a> Construction<'a> {
     fn selection(&self) -> body::Selection {
-        if matches!(self, Self::Local) {
+        if matches!(self, Self::CompilerOperations) {
+            body::Selection::CompilerOperations
+        } else if matches!(self, Self::Local) {
             body::Selection::Typed
         } else {
             body::Selection::Complete
@@ -495,7 +503,7 @@ impl<'a> Construction<'a> {
     fn preparation(self) -> Option<&'a mut dyn crate::sema::dispatch::Preparation> {
         match self {
             Self::Imported(service) => Some(service),
-            Self::Complete | Self::Local => None,
+            Self::Complete | Self::CompilerOperations | Self::Local => None,
         }
     }
 }
@@ -665,6 +673,19 @@ fn prepare_template_inputs(
     }
     .map_err(|e| diagnostic(report, None, e.into()))?
     .bodies;
+    if matches!(selection, body::Selection::CompilerOperations)
+        && let Some(definition) = facts
+            .source_bindings
+            .as_deref()
+            .and_then(|catalog| {
+                catalog.language(crate::support::bindings::LangItem::AsyncDropInPlace)
+            })
+            .map(|declaration| declaration.definition)
+        && crate::sema::compiler_items::async_operation_recipe(report, facts, definition)?.is_some()
+    {
+        inputs.retain(|contract| contract.key != body::ir::BodyKey::Declaration(definition));
+    }
+
     let mut contexts = if let Some(originals) = prepared.original_contexts.take() {
         originals
             .apply(&templates, &mut inputs)

@@ -47,18 +47,30 @@ pub enum HeaderRef {
     Trait(u32),
     Implementation(u32),
     Function(u32),
+    AssociatedType(u32),
 }
 
+pub(crate) type HeaderRows = (Vec<Option<HeaderRef>>, usize, super::bodymap::Shared);
 /// One borrowed ownership/header view. Type, operation and semantic validation
 /// remain separate mandatory passes; this index is not `ValidatedRows`.
 pub struct HeaderIndex<'a> {
     rows: &'a SourceRows,
     headers: Vec<Option<HeaderRef>>,
+    bodies: Option<std::sync::Arc<super::bodymap::Lookup>>,
     scopes: ScopeIndex<'a>,
     bytes: usize,
     peak: usize,
 }
 impl<'a> HeaderIndex<'a> {
+    pub(crate) fn bodymap(&self) -> Option<std::sync::Arc<super::bodymap::Lookup>> {
+        self.bodies.clone()
+    }
+    pub(crate) fn original_index(
+        &self,
+        body: crate::support::crates::owner_catalog::BodyRef,
+    ) -> Result<usize, &'static str> {
+        super::bodymap::original(self.bodies.as_deref(), body)
+    }
     /// Check complete raw numbering data without constructing frontend regions,
     /// defining environments, imported identities or any paid proof.
     /// # Errors
@@ -96,7 +108,7 @@ impl<'a> HeaderIndex<'a> {
     ) -> Result<Self, &'static str> {
         let budget = table_storage::preflight(rows, base_bytes, work)?;
         let definitions = declaration_graph::validate(rows, work)?;
-        let headers = header_ledger::validate(rows, work)?;
+        let (headers, bodies) = header_ledger::validate(rows, work)?;
         let scopes = ScopeIndex::new(rows, &definitions, budget.scope_base, work)?;
         super::nominal_contracts::scopes(rows, &scopes, work)?;
         for header in &rows.traits {
@@ -117,9 +129,11 @@ impl<'a> HeaderIndex<'a> {
                 );
             }
         }
+        let body_bytes = bodies.as_deref().map_or(0, super::bodymap::Lookup::bytes);
         let bytes = budget
             .rows
             .saturating_add(size_of::<Self>())
+            .saturating_add(body_bytes)
             .saturating_add(
                 headers
                     .capacity()
@@ -133,13 +147,14 @@ impl<'a> HeaderIndex<'a> {
         Ok(Self {
             rows,
             headers,
+            bodies,
             scopes,
             bytes,
             peak: budget.peak,
         })
     }
 
-    pub(super) fn into_header_rows(self) -> Result<(Vec<Option<HeaderRef>>, usize), &'static str> {
+    pub(super) fn into_header_rows(self) -> Result<HeaderRows, &'static str> {
         let scope_payload = self
             .scopes
             .retained_bytes()
@@ -151,7 +166,7 @@ impl<'a> HeaderIndex<'a> {
             .bytes
             .checked_sub(indexes)
             .ok_or("source header storage decomposition is inconsistent")?;
-        Ok((self.headers, rows))
+        Ok((self.headers, rows, self.bodies))
     }
 
     /// # Errors

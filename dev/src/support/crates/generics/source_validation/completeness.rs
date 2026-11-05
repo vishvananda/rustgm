@@ -11,10 +11,8 @@ use crate::support::crates::{
     owner_catalog::DeclarationRef,
 };
 
-pub(super) fn validate(
-    rows: &SourceRows,
-    work: &mut Work,
-) -> Result<Vec<Option<HeaderRef>>, &'static str> {
+type Ledger = (Vec<Option<HeaderRef>>, s::bodymap::Shared);
+pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<Ledger, &'static str> {
     work.charge(
         rows.declarations
             .len()
@@ -57,33 +55,16 @@ pub(super) fn validate(
         )?;
     }
     nominal_inputs(rows, &mut headers, &mut clauses, work)?;
-    for (index, header) in rows.functions.iter().enumerate() {
-        insert(
-            rows,
-            &mut headers,
-            header.declaration,
-            DefinitionKind::Function,
-            HeaderRef::Function(ordinal(index)?),
-            work,
-        )?;
-        if header.scope != header.declaration {
-            return Err("source function scope differs from its actual declaration");
-        }
-        inputs(
-            rows,
-            header.declaration,
-            header.inputs,
-            header.declared_inputs,
-            None,
-            &mut clauses,
-            work,
-        )?;
-    }
+    associated_headers(rows, &mut headers, &mut clauses, work)?;
+    function_headers(rows, &mut headers, &mut clauses, work)?;
     for (index, row) in rows.declarations.iter().enumerate() {
         work.charge(1)?;
         if matches!(
             row.definition.kind,
-            DefinitionKind::Function | DefinitionKind::Trait | DefinitionKind::Struct
+            DefinitionKind::Function
+                | DefinitionKind::Trait
+                | DefinitionKind::Struct
+                | DefinitionKind::AssociatedType
         ) && headers[index].is_none()
         {
             return Err("source declaration has no complete typed header");
@@ -108,9 +89,10 @@ pub(super) fn validate(
         return Err("source clauses have incomplete owning header coverage");
     }
     member_rows::validate(rows, &headers, work)?;
-    body_coverage::validate(rows, &headers, work)?;
-    formal_rows::validate(rows, work)?;
-    Ok(headers)
+    let bodies = s::bodymap::Lookup::build(rows, work)?;
+    body_coverage::validate(rows, &headers, bodies.as_deref(), work)?;
+    formal_rows::validate(rows, bodies.as_deref(), work)?;
+    Ok((headers, bodies))
 }
 
 fn trait_header(
@@ -247,6 +229,86 @@ fn nominal_inputs(
 ) -> Result<(), &'static str> {
     super::super::nominal_contracts::headers(rows, headers, work)?;
     for header in &rows.nominals {
+        inputs(
+            rows,
+            header.declaration,
+            header.inputs,
+            header.declared_inputs,
+            None,
+            clauses,
+            work,
+        )?;
+    }
+    Ok(())
+}
+
+fn associated_headers(
+    rows: &SourceRows,
+    headers: &mut [Option<HeaderRef>],
+    clauses: &mut [bool],
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    for (index, header) in rows.associated_types.iter().enumerate() {
+        insert(
+            rows,
+            headers,
+            header.declaration,
+            DefinitionKind::AssociatedType,
+            HeaderRef::AssociatedType(ordinal(index)?),
+            work,
+        )?;
+        if header.scope != header.declaration
+            || rows.declarations[header.declaration.0 as usize]
+                .definition
+                .parent
+                != Some(header.parent)
+            || !matches!(
+                headers.get(header.parent.0 as usize),
+                Some(Some(HeaderRef::Trait(_)))
+            )
+        {
+            return Err("associated type header lost its actual trait/scope ownership");
+        }
+        inputs(
+            rows,
+            header.declaration,
+            header.inputs,
+            header.declared_inputs,
+            None,
+            clauses,
+            work,
+        )?;
+        inputs(
+            rows,
+            header.declaration,
+            header.bounds,
+            header.bounds.end.saturating_sub(header.bounds.start),
+            None,
+            clauses,
+            work,
+        )?;
+    }
+    Ok(())
+}
+
+fn function_headers(
+    rows: &SourceRows,
+    headers: &mut [Option<HeaderRef>],
+    clauses: &mut [bool],
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    for (index, header) in rows.functions.iter().enumerate() {
+        insert(
+            rows,
+            headers,
+            header.declaration,
+            DefinitionKind::Function,
+            HeaderRef::Function(ordinal(index)?),
+            work,
+        )?;
+        if header.scope != header.declaration {
+            return Err("source function scope differs from its actual declaration");
+        }
         inputs(
             rows,
             header.declaration,

@@ -175,6 +175,25 @@ impl Stage {
             ));
         }
         prepay_tables(facts, rows.scopes.len(), rows.functions.len(), budget)?;
+        budget.reserve(
+            retained::new_map::<DefId, crate::sema::associated::TypeContract>(
+                facts
+                    .associated
+                    .types
+                    .len()
+                    .saturating_add(rows.associated_types.len()),
+            )
+            .saturating_add(
+                self.scopes
+                    .iter()
+                    .filter_map(|scope| match &scope.inputs {
+                        super::Inputs::Associated { bounds, .. } => Some(bounds.len()),
+                        _ => None,
+                    })
+                    .sum::<usize>()
+                    .saturating_mul(size_of::<crate::types::parameters::clauses::Clause>()),
+            ),
+        )?;
         let mut constants = 0usize;
         for scope in &self.scopes {
             budget.charge(1)?;
@@ -275,6 +294,18 @@ fn prepay_tables(
 
 fn publish_scopes(scopes: Vec<super::Scope>, facts: &mut Declarations, budget: &mut Headers) {
     for scope in scopes {
+        if let super::Inputs::Associated {
+            bounds, projection, ..
+        } = &scope.inputs
+        {
+            facts.associated.types.insert(
+                scope.definition,
+                crate::sema::associated::TypeContract {
+                    projection: *projection,
+                    bounds: bounds.iter().map(|input| input.value).collect(),
+                },
+            );
+        }
         if let Some(parent) = scope.parent {
             facts.generics.parents.insert(scope.definition, parent);
         }

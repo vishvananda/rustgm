@@ -212,6 +212,9 @@ impl OrdinaryDomain {
     ) -> Result<crate::support::crates::owner_catalog::BodyRef, Error> {
         match self.record.expected().header.body {
             s::FunctionBody::Original(body) => Ok(body),
+            s::FunctionBody::CompilerOperation(_) => Err(error(
+                "compiler-operation execution requires genuine future state ownership",
+            )),
             s::FunctionBody::Absent => Err(error("ordinary domain cannot invent an absent body")),
         }
     }

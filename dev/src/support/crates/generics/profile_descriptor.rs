@@ -75,6 +75,8 @@ pub enum Profile {
     Source2024ModuleConversions,
     /// Version ten source nominal declarations and original construction bodies.
     Source2024ModuleNominals,
+    /// Version eleven symbolic compiler operations, with no executable future grant.
+    Source2024ModuleCompilerOperations,
 }
 impl Profile {
     #[must_use]
@@ -88,6 +90,7 @@ impl Profile {
                 | Self::Source2024ModuleSafety
                 | Self::Source2024ModuleConversions
                 | Self::Source2024ModuleNominals
+                | Self::Source2024ModuleCompilerOperations
         )
     }
     #[must_use]
@@ -103,6 +106,7 @@ impl Profile {
                 | Self::Source2024ModuleSafety
                 | Self::Source2024ModuleConversions
                 | Self::Source2024ModuleNominals
+                | Self::Source2024ModuleCompilerOperations
         )
     }
     #[must_use]
@@ -124,6 +128,7 @@ impl Profile {
                 | Self::Source2024ModuleSafety
                 | Self::Source2024ModuleConversions
                 | Self::Source2024ModuleNominals
+                | Self::Source2024ModuleCompilerOperations
         )
     }
 }
@@ -402,6 +407,7 @@ impl ValidatedRows {
     ) -> Result<Self, &'static str> {
         let start = work.steps;
         super::nominal_contracts::require_profile(&rows, profile, work)?;
+        super::operation_contracts::require_profile(&rows, profile, work)?;
         let features = profile.feature_predicates();
         safety_profile::require_profile(&rows, profile, work)?;
         if !profile.definitions() {
@@ -417,7 +423,10 @@ impl ValidatedRows {
         let indexed = HeaderIndex::new(&rows, extended_base, work)?;
         if profile.definitions() {
             exact_exports::validate(&rows, &indexed, work)?;
-            if profile.conversion_roles() {
+            if profile.compiler_operations() {
+                functions::validate_compiler_operations(&rows, &indexed, work)?;
+                super::operation_contracts::validate(&rows, &indexed, work)?;
+            } else if profile.conversion_roles() {
                 functions::validate_module_conversions(&rows, &indexed, work)?;
             } else if profile.call_safety() {
                 functions::validate_module_safety(&rows, &indexed, work)?;
@@ -507,6 +516,7 @@ impl ValidatedRows {
     ) -> Result<Self, &'static str> {
         let start = work.steps;
         super::nominal_contracts::require_profile(&rows, profile, work)?;
+        super::operation_contracts::require_profile(&rows, profile, work)?;
         safety_profile::require_profile(&rows, profile, work)?;
         exact_exports::legacy(&rows, work)?;
         predicate_contracts::legacy(&rows, work)?;
@@ -544,7 +554,8 @@ impl ValidatedRows {
             | Profile::Source2024ModuleCallables
             | Profile::Source2024ModuleSafety
             | Profile::Source2024ModuleConversions
-            | Profile::Source2024ModuleNominals => {
+            | Profile::Source2024ModuleNominals
+            | Profile::Source2024ModuleCompilerOperations => {
                 return Err(
                     "module contracts require their complete namespace/domain/attribute columns",
                 );
@@ -642,7 +653,7 @@ type FrozenColumns = (
 fn freeze_columns(
     owner: &CrateIdentity,
     rows: SourceRows,
-    indexed: (Vec<Option<super::HeaderRef>>, usize),
+    indexed: super::HeaderRows,
     base: usize,
     previous_peak: usize,
     work: &mut Work,
@@ -660,13 +671,13 @@ fn freeze_columns(
 fn freeze_columns_observed(
     owner: &CrateIdentity,
     rows: SourceRows,
-    indexed: (Vec<Option<super::HeaderRef>>, usize),
+    indexed: super::HeaderRows,
     base: usize,
     previous_peak: usize,
     work: &mut Work,
     observe: &mut impl FnMut(usize, usize),
 ) -> Result<FrozenColumns, &'static str> {
-    let (headers, raw_bytes) = indexed;
+    let (headers, raw_bytes, bodies) = indexed;
     let mut budget = freeze_budget(
         &rows,
         &headers,
@@ -713,7 +724,7 @@ fn freeze_columns_observed(
         );
     }
     work.charge(rows.body_owners.len().saturating_mul(2))?;
-    let (body_owners, columns) = Columns::take(rows);
+    let (body_owners, columns) = Columns::take(rows, bodies);
     let owners = BodyCatalog::new(owner.clone(), &kinds, body_owners)?;
     budget.names = names;
     Ok((
@@ -788,7 +799,57 @@ fn freeze_budget(
 pub struct Descriptor<'a> {
     source: &'a ValidatedRows,
 }
+/// Read-only semantic-operation data. It grants no body proof or execution.
+#[derive(Clone, Copy)]
+pub struct CompilerOperationView<'a> {
+    source: &'a ValidatedRows,
+}
+impl<'a> CompilerOperationView<'a> {
+    #[must_use]
+    pub fn operations(self) -> &'a [super::CompilerOperation] {
+        &self.source.columns.compiler_operations
+    }
+    #[must_use]
+    pub fn ordinary_bodies(
+        self,
+    ) -> impl ExactSizeIterator<Item = crate::support::crates::owner_catalog::BodyRef> + 'a {
+        self.source.columns.originals.iter().map(|row| row.body)
+    }
+    #[must_use]
+    pub fn ordinary_input_count(self) -> usize {
+        self.source.columns.body_inputs.len()
+    }
+    /// # Errors
+    /// Rejects declarations without an actual function header in this artifact.
+    pub fn function_body(
+        self,
+        declaration: crate::support::crates::owner_catalog::DeclarationRef,
+    ) -> Result<super::FunctionBody, &'static str> {
+        let Some(Some(super::HeaderRef::Function(index))) =
+            self.source.headers.get(declaration.0 as usize)
+        else {
+            return Err("compiler-operation view requires its actual function declaration");
+        };
+        self.source
+            .columns
+            .functions
+            .get(*index as usize)
+            .map(|header| header.body)
+            .ok_or("compiler-operation function header is absent")
+    }
+}
 impl<'a> Descriptor<'a> {
+    /// # Errors
+    /// Earlier profiles cannot expose symbolic compiler-operation semantics.
+    pub fn compiler_operations(self) -> Result<CompilerOperationView<'a>, &'static str> {
+        if !self.source.profile.compiler_operations() {
+            return Err("compiler-operation data requires the explicit version-eleven profile");
+        }
+        Ok(CompilerOperationView {
+            source: self.source,
+        })
+    }
+
     pub(crate) const fn rows(self) -> ValidatedView<'a> {
         self.source.view()
     }

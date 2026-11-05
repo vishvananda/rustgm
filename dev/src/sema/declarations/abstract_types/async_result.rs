@@ -89,7 +89,7 @@ impl Checker<'_> {
             id,
             Declaration {
                 owner,
-                source: key,
+                origin: key.into(),
                 application,
                 bounds,
                 hidden: None,

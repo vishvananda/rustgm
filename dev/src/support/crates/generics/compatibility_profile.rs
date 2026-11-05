@@ -4,15 +4,24 @@ use crate::support::crates::{CrateIdentity, generics::source as s};
 
 impl Profile {
     #[must_use]
+    pub const fn compiler_operations(self) -> bool {
+        matches!(self, Self::Source2024ModuleCompilerOperations)
+    }
+    #[must_use]
     pub const fn nominals(self) -> bool {
-        matches!(self, Self::Source2024ModuleNominals)
+        matches!(
+            self,
+            Self::Source2024ModuleNominals | Self::Source2024ModuleCompilerOperations
+        )
     }
     /// The complete ordinary conversion role/header protocol is explicit v9 data.
     #[must_use]
     pub const fn conversion_roles(self) -> bool {
         matches!(
             self,
-            Self::Source2024ModuleConversions | Self::Source2024ModuleNominals
+            Self::Source2024ModuleConversions
+                | Self::Source2024ModuleNominals
+                | Self::Source2024ModuleCompilerOperations
         )
     }
     #[must_use]
@@ -23,6 +32,7 @@ impl Profile {
                 | Self::Source2024ModuleSafety
                 | Self::Source2024ModuleConversions
                 | Self::Source2024ModuleNominals
+                | Self::Source2024ModuleCompilerOperations
         )
     }
     #[must_use]
@@ -32,6 +42,7 @@ impl Profile {
             Self::Source2024ModuleSafety
                 | Self::Source2024ModuleConversions
                 | Self::Source2024ModuleNominals
+                | Self::Source2024ModuleCompilerOperations
         )
     }
     #[must_use]
@@ -44,6 +55,7 @@ impl Profile {
                 | Self::Source2024ModuleSafety
                 | Self::Source2024ModuleConversions
                 | Self::Source2024ModuleNominals
+                | Self::Source2024ModuleCompilerOperations
         )
     }
     #[must_use]
@@ -55,6 +67,7 @@ impl Profile {
                 | Self::Source2024ModuleSafety
                 | Self::Source2024ModuleConversions
                 | Self::Source2024ModuleNominals
+                | Self::Source2024ModuleCompilerOperations
         )
     }
 }
@@ -99,6 +112,25 @@ impl ValidatedRows {
         )
     }
 
+    pub(crate) fn stage_compiler_operations(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        attributes: s::HeaderAttributeColumns,
+        modules: s::ModuleContractRows,
+        availability: s::AvailabilityRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        Self::stage_module_availability_with(
+            owner,
+            rows,
+            attributes,
+            modules,
+            (availability, Profile::Source2024ModuleCompilerOperations),
+            base,
+            work,
+        )
+    }
     pub(crate) fn stage_module_nominals(
         owner: &CrateIdentity,
         rows: SourceRows,

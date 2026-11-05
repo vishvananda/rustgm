@@ -10,6 +10,8 @@ use crate::support::{
     edition::Edition,
 };
 pub(super) const TAG: u8 = 10;
+pub(super) const OPERATIONS_TAG: u8 = 13;
+const OPERATIONS_VERSION: u16 = 11;
 pub(super) const PROVIDED_TAG: u8 = 11;
 const ROW_VERSION: u16 = 0;
 const CONTRACT_VERSION: u16 = 1;
@@ -44,6 +46,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         | Profile::Source2024ModuleSafety
         | Profile::Source2024ModuleConversions
         | Profile::Source2024ModuleNominals => TAG,
+        Profile::Source2024ModuleCompilerOperations => OPERATIONS_TAG,
         Profile::Source2024Provided
         | Profile::Source2024ProvidedContracts
         | Profile::Source2024ProvidedCurrent => PROVIDED_TAG,
@@ -70,6 +73,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         Profile::Source2024ModuleSafety => SAFETY_VERSION,
         Profile::Source2024ModuleConversions => CONVERSIONS_VERSION,
         Profile::Source2024ModuleNominals => NOMINALS_VERSION,
+        Profile::Source2024ModuleCompilerOperations => OPERATIONS_VERSION,
         Profile::Source2024ModuleAvailability => AVAILABILITY_VERSION,
         Profile::Source2024ModuleContracts => MODULE_CONTRACT_VERSION,
         Profile::Source2024FunctionContracts | Profile::Source2024ProvidedContracts => {
@@ -99,13 +103,20 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     Ok(out.finish())
 }
 pub(super) fn decode(input: &mut Reader<'_>) -> Result<Interface, &'static str> {
-    decode_profile(input, false)
+    decode_profile(input, false, false)
 }
 pub(super) fn decode_provided(input: &mut Reader<'_>) -> Result<Interface, &'static str> {
-    decode_profile(input, true)
+    decode_profile(input, true, false)
 }
-fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &'static str> {
-    let version = defining_version(input, provided)?;
+pub(super) fn decode_operations(input: &mut Reader<'_>) -> Result<Interface, &'static str> {
+    decode_profile(input, false, true)
+}
+fn decode_profile(
+    input: &mut Reader<'_>,
+    provided: bool,
+    operations: bool,
+) -> Result<Interface, &'static str> {
+    let version = defining_version(input, provided, operations)?;
     let identity = input.identity()?;
     let dependencies = decode_dependencies(input)?;
     let interface = Interface::new(identity, dependencies, Vec::new())?;
@@ -212,6 +223,7 @@ fn availability_version(version: u16) -> bool {
             | SAFETY_VERSION
             | CONVERSIONS_VERSION
             | NOMINALS_VERSION
+            | OPERATIONS_VERSION
     )
 }
 fn publish_availability(
@@ -227,6 +239,7 @@ fn publish_availability(
         SAFETY_VERSION => Payload::from_source_module_safety,
         CONVERSIONS_VERSION => Payload::from_source_module_conversions,
         NOMINALS_VERSION => Payload::from_source_module_nominals,
+        OPERATIONS_VERSION => Payload::from_source_compiler_operations,
         DEFINITIONS_VERSION => Payload::from_source_module_definitions,
         FEATURE_PREDICATE_VERSION => Payload::from_source_module_feature_predicates,
         AVAILABILITY_VERSION => Payload::from_source_module_availability,
@@ -254,6 +267,7 @@ fn availability_packet(
         SAFETY_VERSION => ordinary_columns::decode_module_safety(input, base),
         CONVERSIONS_VERSION => ordinary_columns::decode_module_conversions(input, base),
         NOMINALS_VERSION => ordinary_columns::decode_module_nominals(input, base),
+        OPERATIONS_VERSION => ordinary_columns::decode_compiler_operations(input, base),
         DEFINITIONS_VERSION => ordinary_columns::decode_module_definitions(input, base),
         FEATURE_PREDICATE_VERSION => {
             ordinary_columns::decode_module_feature_predicates(input, base)
@@ -263,8 +277,18 @@ fn availability_packet(
     }
 }
 
-fn defining_version(input: &mut Reader<'_>, provided: bool) -> Result<u16, &'static str> {
+fn defining_version(
+    input: &mut Reader<'_>,
+    provided: bool,
+    operations: bool,
+) -> Result<u16, &'static str> {
     let version = input.u16()?;
+    if operations {
+        if version != OPERATIONS_VERSION || input.u8()? != DEFINING_RUST2024 {
+            return Err("unsupported compiler-operation version or edition");
+        }
+        return Ok(version);
+    }
     if (provided
         && !matches!(
             version,

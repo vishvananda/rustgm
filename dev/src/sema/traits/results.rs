@@ -77,6 +77,14 @@ pub(in crate::sema) fn traits(
     ty: TypeId,
     item: ItemId,
 ) -> Result<Option<(Arc<Assumptions>, usize)>, String> {
+    if let Some(Kind::Opaque(id, _)) = facts.types.kind(ty) {
+        facts
+            .opaques
+            .declarations
+            .get(&id)
+            .ok_or("missing opaque result contract")?
+            .require_current(facts, id)?;
+    }
     if let Some(rules) = facts
         .generics
         .traits

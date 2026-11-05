@@ -59,6 +59,20 @@ impl DomainIndex<'_, '_> {
             self.requirements(context, header.inputs, work)?;
             self.bounds(context, header.region_bounds, work)?;
         }
+        for header in &rows.associated_types {
+            let context = Context {
+                owner: header.scope,
+                frame: Some(self.binders.declaration(header.declaration, work)?),
+                body: None,
+            };
+            self.types
+                .root(self.headers, context, header.projection, work)?;
+            self.requirements(context, header.inputs, work)?;
+            self.requirements(context, header.bounds, work)?;
+        }
+        for projection in &rows.projections {
+            self.used_traits[projection.trait_application.0 as usize] = true;
+        }
         for header in &rows.functions {
             let context = Context {
                 owner: header.scope,

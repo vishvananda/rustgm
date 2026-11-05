@@ -295,6 +295,10 @@ impl OwnedNamespaceCatalog {
                 | (s::DefinitionKind::Trait, Some(s::HeaderRef::Trait(_)))
                 | (s::DefinitionKind::Function, Some(s::HeaderRef::Function(_)))
                 | (
+                    s::DefinitionKind::AssociatedType,
+                    Some(s::HeaderRef::AssociatedType(_))
+                )
+                | (
                     s::DefinitionKind::SelfType,
                     Some(s::HeaderRef::Implementation(_))
                 )

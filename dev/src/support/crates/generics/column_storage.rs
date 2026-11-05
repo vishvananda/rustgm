@@ -11,6 +11,11 @@ use crate::support::crates::owner_catalog::{BodyOwner, DeclarationRef};
 /// `SourceRows` remains the separate mutable staging/decode representation.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Columns {
+    bodies: Option<std::sync::Arc<super::super::bodymap::Lookup>>,
+    pub associated_types: Vec<super::super::AssociatedTypeHeader>,
+    pub projections: Vec<super::super::ProjectionRecipe>,
+    pub opaque_futures: Vec<super::super::OpaqueFuture>,
+    pub compiler_operations: Vec<super::super::CompilerOperation>,
     pub nominals: Vec<super::super::NominalHeader>,
     pub fields: Vec<super::super::NominalField>,
     pub policy: Policy,
@@ -41,8 +46,37 @@ pub struct Columns {
     pub exact_callables: Vec<super::super::ExactCallableExport>,
 }
 impl Columns {
-    pub(super) fn take(rows: SourceRows) -> (Vec<BodyOwner>, Self) {
+    pub(crate) fn original_index(
+        &self,
+        body: super::super::BodyRef,
+    ) -> Result<usize, &'static str> {
+        super::super::bodymap::original(self.bodies.as_deref(), body)
+    }
+    pub(crate) fn original(&self, body: super::super::BodyRef) -> Result<&Original, &'static str> {
+        self.originals
+            .get(self.original_index(body)?)
+            .filter(|row| row.body == body)
+            .ok_or("source original has a foreign body owner")
+    }
+    pub(crate) fn body_input(
+        &self,
+        body: super::super::BodyRef,
+    ) -> Result<&BodyInputs, &'static str> {
+        self.body_inputs
+            .get(self.original_index(body)?)
+            .filter(|row| row.body == body)
+            .ok_or("source body inputs have a foreign body owner")
+    }
+
+    pub(super) fn take(
+        rows: SourceRows,
+        bodies: Option<std::sync::Arc<super::super::bodymap::Lookup>>,
+    ) -> (Vec<BodyOwner>, Self) {
         let SourceRows {
+            associated_types,
+            projections,
+            opaque_futures,
+            compiler_operations,
             nominals,
             fields,
             body_owners,
@@ -76,6 +110,11 @@ impl Columns {
         (
             body_owners,
             Self {
+                bodies,
+                associated_types,
+                projections,
+                opaque_futures,
+                compiler_operations,
                 nominals,
                 fields,
                 policy,
@@ -242,14 +281,14 @@ impl<'a> ValidatedView<'a> {
             .source
             .columns
             .body_units
-            .get(body.0 as usize)
+            .get(self.source.columns.original_index(body)?)
             .filter(|unit| unit.body == body)
             .ok_or("frozen allocation inverse lost its actual body unit")?;
         let original = self
             .source
             .columns
             .originals
-            .get(body.0 as usize)
+            .get(self.source.columns.original_index(body)?)
             .filter(|original| original.body == body)
             .ok_or("frozen allocation inverse lost its actual original")?;
         if unit.allocation_order.len() != original.variables.len() {

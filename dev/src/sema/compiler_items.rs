@@ -16,7 +16,8 @@ pub(in crate::sema) mod async_cleanup;
 mod async_glue;
 mod async_registration;
 pub(crate) use async_glue::{
-    require_runtime_body as require_async_glue_body, source_async_drop_glue,
+    recipe as async_operation_recipe, require_runtime_body as require_async_glue_body,
+    source_async_drop_glue,
 };
 pub(crate) mod const_payments;
 mod copying;

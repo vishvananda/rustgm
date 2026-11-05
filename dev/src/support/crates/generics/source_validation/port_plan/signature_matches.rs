@@ -173,7 +173,7 @@ fn opened_region(
     let rows = domains.headers.rows();
     let original = rows
         .originals
-        .get(body.0 as usize)
+        .get(domains.headers.original_index(body)?)
         .ok_or("source signature comparison has an unknown caller body")?;
     let request = original
         .calls

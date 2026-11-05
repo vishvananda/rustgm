@@ -109,7 +109,7 @@ impl BinderIndex<'_> {
                 }
             }
             s::BinderKind::CallSignature { body, value } => {
-                self.call_frame(reference, frame, body, value)?;
+                self.call_frame(headers, reference, frame, body, value)?;
             }
         }
         Ok(())
@@ -121,7 +121,7 @@ impl BinderIndex<'_> {
         frame: &s::Binder,
     ) -> Result<(), &'static str> {
         let count = match owner {
-            Some(HeaderRef::Nominal(_)) => 0,
+            Some(HeaderRef::Nominal(_) | HeaderRef::AssociatedType(_)) => 0,
             Some(HeaderRef::Trait(index)) => self.rows.traits[index as usize].region_captures,
             Some(HeaderRef::Implementation(index)) => {
                 self.rows.implementations[index as usize].region_captures
@@ -140,6 +140,7 @@ impl BinderIndex<'_> {
     }
     fn call_frame(
         &self,
+        headers: &HeaderIndex<'_>,
         reference: g::BinderRef,
         frame: &s::Binder,
         body: crate::support::crates::owner_catalog::BodyRef,
@@ -148,9 +149,9 @@ impl BinderIndex<'_> {
         let original = self
             .rows
             .originals
-            .get(body.0 as usize)
+            .get(headers.original_index(body)?)
             .ok_or("source Call binder has an unknown original body")?;
-        let input = &self.rows.body_inputs[body.0 as usize];
+        let input = &self.rows.body_inputs[headers.original_index(body)?];
         let call = original
             .values
             .get(value as usize)

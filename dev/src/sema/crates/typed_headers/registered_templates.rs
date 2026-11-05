@@ -173,6 +173,11 @@ impl Prepared {
         }
         let body = match header.body {
             s::FunctionBody::Original(body) => Some(view.body(body, work)?),
+            s::FunctionBody::CompilerOperation(_) => {
+                return Err(error(
+                    "compiler-operation execution requires genuine future state ownership",
+                ));
+            }
             s::FunctionBody::Absent => None,
         };
         if body != pair.body {

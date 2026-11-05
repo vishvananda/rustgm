@@ -234,7 +234,7 @@ pub(super) fn allocation<'a>(
         work.charge(1)?;
         let input = rows
             .body_inputs
-            .get(raw.body.0 as usize)
+            .get(rows.original_index(raw.body)?)
             .filter(|input| input.body == raw.body)
             .ok_or("source original preflight omitted its actual raw input owner")?;
         let Some(s::HeaderRef::Function(index)) = rows.header(raw.declaration)? else {

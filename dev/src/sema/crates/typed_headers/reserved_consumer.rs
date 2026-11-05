@@ -586,7 +586,7 @@ impl SelectedConsumer<'_> {
                 Some(s::HeaderRef::Implementation(_)) => self
                     .selected
                     .implementation_owner(facts, &authority, owner, self.work)?,
-                Some(s::HeaderRef::Nominal(_)) => {
+                Some(s::HeaderRef::Nominal(_) | s::HeaderRef::AssociatedType(_)) => {
                     return Err(Error::unlocated(
                         "unpaid provided profiles do not own source nominal declarations",
                     ));

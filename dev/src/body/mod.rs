@@ -44,6 +44,7 @@ pub(crate) enum Selection {
     #[default]
     Complete,
     Typed,
+    CompilerOperations,
 }
 impl Selection {
     pub(crate) fn includes(
@@ -51,7 +52,8 @@ impl Selection {
         facts: &crate::sema::model::Declarations,
         owner: crate::resolve::model::DefId,
     ) -> bool {
-        matches!(self, Self::Complete) || facts.typed_function_bodies.contains(&owner)
+        matches!(self, Self::Complete | Self::CompilerOperations)
+            || facts.typed_function_bodies.contains(&owner)
     }
 }
 

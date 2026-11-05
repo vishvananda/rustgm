@@ -45,15 +45,15 @@ impl EmptyContract {
         };
         let original = rows
             .originals
-            .get(body.0 as usize)
+            .get(rows.original_index(body).map_err(error)?)
             .ok_or_else(|| error("empty Contract lost its actual original"))?;
         let input = rows
             .body_inputs
-            .get(body.0 as usize)
+            .get(rows.original_index(body).map_err(error)?)
             .ok_or_else(|| error("empty Contract lost its actual raw inputs"))?;
         let unit = rows
             .body_units
-            .get(body.0 as usize)
+            .get(rows.original_index(body).map_err(error)?)
             .ok_or_else(|| error("empty Contract lost its actual numbering domain"))?;
         if original.body != body
             || original.declaration != header.declaration
@@ -240,10 +240,21 @@ pub(super) fn complete(
                 "source original environment lacks its actual function header",
             ));
         };
-        let s::FunctionBody::Original(reference) = rows.functions[index as usize].body else {
-            return Err(error(
-                "source required method cannot acquire an original environment",
-            ));
+        let (reference, original) = match rows.functions[index as usize].body {
+            s::FunctionBody::Original(reference) => (reference, true),
+            s::FunctionBody::CompilerOperation(reference) => {
+                let operation = rows
+                    .compiler_operations
+                    .get(reference.0 as usize)
+                    .filter(|operation| operation.declaration == row)
+                    .ok_or_else(|| error("compiler operation lost its actual body owner"))?;
+                (operation.body, false)
+            }
+            s::FunctionBody::Absent => {
+                return Err(error(
+                    "source required method cannot acquire an original environment",
+                ));
+            }
         };
         let id = context.catalog.body_at(owner, reference).map_err(error)?;
         if context.catalog.origin(id).map_err(error)? != body {
@@ -251,12 +262,18 @@ pub(super) fn complete(
                 "source original environment changed its actual body mapping",
             ));
         }
+        // The authenticated symbolic operation keeps its real declaration Arc;
+        // it has no ordinary Contract, defining locals or executable environment.
+        if !original {
+            continue;
+        }
         let inputs = rows
             .body_inputs
-            .get(reference.0 as usize)
+            .get(rows.original_index(reference).map_err(error)?)
             .filter(|inputs| inputs.body == reference)
             .ok_or_else(|| error("source original environment omitted its actual body inputs"))?;
         if context.descriptor.profile().conversion_roles()
+            && !context.descriptor.profile().compiler_operations()
             && inputs.environment == s::EnvironmentOrigin::Contract
         {
             scope

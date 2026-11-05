@@ -50,6 +50,9 @@ pub(super) fn prepare(
             )?;
         }
     }
+    for header in &rows.associated_types {
+        assign(&mut cells, header.declaration, graph.ty(header.projection)?)?;
+    }
     for header in &rows.nominals {
         assign(&mut cells, header.declaration, graph.ty(header.self_type)?)?;
     }
@@ -71,6 +74,7 @@ pub(super) fn prepare(
         let required = matches!(
             raw.definition.kind,
             s::DefinitionKind::Struct
+                | s::DefinitionKind::AssociatedType
                 | s::DefinitionKind::Function
                 | s::DefinitionKind::SelfType
                 | s::DefinitionKind::TypeParameter

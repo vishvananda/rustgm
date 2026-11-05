@@ -58,7 +58,7 @@ impl Coverage {
         }
         for input in &rows.body_inputs {
             work.charge(1)?;
-            let original = &rows.originals[input.body.0 as usize];
+            let original = &rows.originals[domains.headers.original_index(input.body)?];
             let context = Context {
                 owner: original.declaration,
                 frame: Some(input.frame),

@@ -349,6 +349,12 @@ fn role_parent(
     work: &mut usize,
 ) -> Result<Option<DeclarationRef>, &'static str> {
     charge(work, 1)?;
+    if role == LangItem::FutureOutput {
+        let Some(s::HeaderRef::AssociatedType(index)) = rows.header(declaration)? else {
+            return Err("imported Output role lacks its actual associated header");
+        };
+        return Ok(Some(rows.associated_types[index as usize].parent));
+    }
     if role_kind(role) != DefKind::Function {
         return Ok(None);
     }
@@ -370,7 +376,9 @@ fn role_kind(role: LangItem) -> DefKind {
         return crate::resolve::bindings::language_kind(profile.target);
     }
     match role {
-        LangItem::RangeSub
+        LangItem::FuturePoll
+        | LangItem::AsyncDropInPlace
+        | LangItem::RangeSub
         | LangItem::CloneFn
         | LangItem::DropGlue
         | LangItem::Panic
@@ -414,9 +422,10 @@ fn role_kind(role: LangItem) -> DefKind {
         | LangItem::MemAlignConst
         | LangItem::RangeMin
         | LangItem::RangeMax => DefKind::Const,
-        LangItem::FnOnceOutput | LangItem::MetadataType | LangItem::DiscriminantType => {
-            DefKind::TypeAlias
-        }
+        LangItem::FutureOutput
+        | LangItem::FnOnceOutput
+        | LangItem::MetadataType
+        | LangItem::DiscriminantType => DefKind::TypeAlias,
         _ => DefKind::Trait,
     }
 }

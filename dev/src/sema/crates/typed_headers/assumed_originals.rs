@@ -216,15 +216,18 @@ fn body_origin(
     };
     let original = rows
         .originals
-        .get(body.0 as usize)
+        .get(rows.original_index(body).map_err(error)?)
         .ok_or_else(|| error("private defining environment lost its actual original"))?;
     let input = rows
         .body_inputs
-        .get(body.0 as usize)
+        .get(rows.original_index(body).map_err(error)?)
         .ok_or_else(|| error("private defining environment lost its record body inputs"))?;
-    let unit = rows.body_units.get(body.0 as usize).ok_or_else(|| {
-        error("private defining environment lost its complete actual numbering unit")
-    })?;
+    let unit = rows
+        .body_units
+        .get(rows.original_index(body).map_err(error)?)
+        .ok_or_else(|| {
+            error("private defining environment lost its complete actual numbering unit")
+        })?;
     if original.body != body
         || original.declaration != expected.header.declaration
         || input.body != body
@@ -329,7 +332,7 @@ pub(super) fn finish(
             "private defining environment requires its later regional producer",
         ));
     }
-    let input = &rows.body_inputs[body.0 as usize];
+    let input = &rows.body_inputs[rows.original_index(body).map_err(error)?];
     work.charge(input.parameters.len().saturating_add(1))?;
     let before = work.retained;
     let (body_environment, bytes) = body_environment(facts, scope, demand, work)?;

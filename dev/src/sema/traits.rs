@@ -29,7 +29,7 @@ pub(super) struct Header {
     pub self_type: TypeId,
     pub parameters: Vec<Parameter>,
     pub inputs: inherited_inputs::HeaderInputs,
-    pub results: Vec<(ItemId, Located)>,
+    pub results: Vec<(ItemId, crate::sema::declaration_inputs::Input)>,
     pub regions: Vec<crate::types::outlives::Pair>,
 }
 
@@ -171,7 +171,7 @@ impl Contracts {
                 .ok_or("missing binding trait header")?;
             for predicate in predicates {
                 if let Some(member) = header.owned_result(store, item, predicate.value)? {
-                    header.results.push((member, predicate));
+                    header.results.push((member, (&predicate).into()));
                     self.result_bounds
                         .entry(member)
                         .or_default()

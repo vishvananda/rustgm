@@ -7,7 +7,7 @@ pub(in crate::sema) mod range_contracts;
 use super::{Checker, DefId, Error, ItemId, State, Type};
 use crate::{
     resolve::model::{BuiltinIteration, BuiltinIterationDeclaration},
-    sema::{associated::TypeContract, generics::Predicate as Written, traits::Header},
+    sema::{associated::TypeContract, traits::Header},
     support::iteration::Trait,
     types::{
         GenericArgs, RegionId, TypeId,
@@ -117,8 +117,8 @@ impl Checker<'_> {
             for value in bounds {
                 results.push((
                     ItemId(member.0),
-                    Written {
-                        source,
+                    crate::sema::declaration_inputs::Input {
+                        source: source.into(),
                         value: value.into(),
                     },
                 ));

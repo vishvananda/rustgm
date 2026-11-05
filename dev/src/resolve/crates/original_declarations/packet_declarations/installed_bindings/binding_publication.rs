@@ -15,11 +15,11 @@ pub(super) fn prepare(
     let modules = rows.module_contracts().map_err(error)?;
     let names = &modules.rows().namespace;
     let conversions = rows.descriptor().profile().conversion_roles();
-    let count =
-        names
-            .bindings
-            .len()
-            .saturating_add(if conversions { rows.functions.len() } else { 0 });
+    let count = names
+        .bindings
+        .len()
+        .saturating_add(if conversions { rows.functions.len() } else { 0 })
+        .saturating_add(rows.associated_types.len());
     work.charge(names.bindings.len().saturating_add(rows.declarations.len()))?;
     work.reserve(
         retained::new_map::<(ScopeId, NameId, Namespace), ()>(count)
@@ -37,7 +37,14 @@ pub(super) fn prepare(
     module_bindings(resolver, names, definitions, &mut keys, &mut bindings, work)?;
     for header in &rows.functions {
         if conversions
-            && let Some(binding) = conversion_member(resolver, rows, definitions, header, work)?
+            && let Some(binding) = member(
+                resolver,
+                rows,
+                definitions,
+                header.declaration,
+                header.parent,
+                work,
+            )?
         {
             if !keys.insert((binding.scope, binding.name, binding.namespace)) {
                 return Err(error(
@@ -75,28 +82,44 @@ pub(super) fn prepare(
         }
         external.push((identity, definitions[header.declaration.0 as usize]));
     }
+    for header in &rows.associated_types {
+        let binding = member(
+            resolver,
+            rows,
+            definitions,
+            header.declaration,
+            Some(header.parent),
+            work,
+        )?
+        .ok_or_else(|| error("associated type lost its actual parent binding"))?;
+        if !keys.insert((binding.scope, binding.name, binding.namespace)) {
+            return Err(error("associated type duplicates a pending namespace key"));
+        }
+        bindings.push(binding);
+    }
     Ok(Pending { bindings, external })
 }
-fn conversion_member(
+fn member(
     resolver: &Resolver<'_>,
     rows: s::ValidatedView<'_>,
     definitions: &[DefId],
-    header: &s::FunctionHeader,
+    declaration: crate::support::crates::owner_catalog::DeclarationRef,
+    parent: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     work: &mut Work,
 ) -> Result<Option<PendingBinding>, Error> {
     work.charge(1)?;
-    let Some(parent) = header.parent else {
+    let Some(parent) = parent else {
         return Ok(None);
     };
     work.charge(7)?;
-    let binding = super::member_binding(resolver, rows, definitions, header)?
+    let binding = super::member_binding(resolver, rows, definitions, declaration, Some(parent))?
         .ok_or_else(|| error("v9 actual member lost its parent"))?;
     let owner = &resolver.facts.definitions[definitions[parent.0 as usize].0 as usize];
     let actual = &resolver.facts.definitions[binding.binding.target.0 as usize];
     if owner.members != Some(binding.scope)
         || owner.kind != kind(rows.declarations[parent.0 as usize].definition.kind).0
-        || actual.kind != crate::resolve::model::DefKind::Function
-        || actual.namespace != Namespace::Value
+        || (actual.kind, actual.namespace)
+            != kind(rows.declarations[declaration.0 as usize].definition.kind)
     {
         return Err(error(
             "v9 member changed its actual parent scope, kind or namespace",

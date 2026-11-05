@@ -1,0 +1,163 @@
+{
+  "schema": 1,
+  "baseline": "c509736bb23b7e7918c6c2e04f588c1c7bd130af",
+  "scope": "Authenticated symbolic compiler-operation publication, not executable futures",
+  "sources": [
+    {
+      "path": "pa43/tests/spec/deferred-compiler-op/consumer.rs",
+      "sha256": "4a584a9147560a212b7ebe3e356fa5a1f34e872b244d2ba23593631a32203ce7"
+    },
+    {
+      "path": "pa43/tests/spec/deferred-compiler-op/invalid-body.rs",
+      "sha256": "7ba6103e23ccf9460cc6f3de5c8a0e65ead88c216d78e5c7592a715aeeae70db"
+    },
+    {
+      "path": "pa43/tests/spec/deferred-compiler-op/provider.rs",
+      "sha256": "d238d34a1422bab7fa73168704c900b751a1d21e3967d5c1d3cdbf65f6e9b825"
+    },
+    {
+      "path": "pa43/tests/spec/deferred-compiler-op/unmarked.rs",
+      "sha256": "7b734df3d3164325cfb2fb3f3a8027bc0351edbd617faca66ac822be0983a581"
+    },
+    {
+      "path": "pa43/tests/spec/deferred-compiler-op/unsafe-consumer.rs",
+      "sha256": "46a1caef30611185310d8c5d6da9d3fcb43166f23e3e23ea21667fb91755d634"
+    },
+    {
+      "path": "pa43/tests/spec/deferred-compiler-op/wrong-output-consumer.rs",
+      "sha256": "d3a1071056bd1bc5e22b79e8c23898ad66cfaf6ae80c782b4b59e9d1ac0af389"
+    },
+    {
+      "path": "pa43/tests/spec/deferred-compiler-op/wrong-output.rs",
+      "sha256": "851ee01f520f99f1968b03bd8598a6c4169585335a49542c1d080402a2ab9205"
+    },
+    {
+      "path": "pa43/tests/spec/deferred-compiler-op/wrong-unsafe.rs",
+      "sha256": "8520451e7e2ed5c609efee8d67acb7cd0bfe7a2f67d0dfd460b9c469123146de"
+    }
+  ],
+  "source_expectations": {
+    "provider": {
+      "analysis": 0,
+      "v11_publication": 0,
+      "v10_publication": 1
+    },
+    "wrong-output": {
+      "analysis": 0,
+      "v11_publication": 1
+    },
+    "invalid-body": {
+      "analysis": 1
+    },
+    "unmarked": {
+      "analysis": 0,
+      "v11_publication": 1
+    },
+    "wrong-unsafe": {
+      "analysis": 0,
+      "v11_publication": 1
+    },
+    "consumer": {
+      "analysis": 0,
+      "operation_data": 0,
+      "executable_demand": 1
+    },
+    "wrong-output-consumer": {
+      "analysis": 1
+    },
+    "unsafe-consumer": {
+      "analysis": 1
+    }
+  },
+  "positive_invariants": [
+    "one_opaque_identity_per_actual_declaration_ordinal",
+    "complete_applications_distinguish_u8_u16_and_regions",
+    "no_original_locals_cfg_for_compiler_operation",
+    "no_hidden_storage_or_auto_trait_permission",
+    "serialized_provider_fresh_store_consumer"
+  ],
+  "rejections": [
+    "code_and_operation_same_body",
+    "missing_body_coverage",
+    "foreign_body_declaration",
+    "foreign_catalog_same_ordinal",
+    "stale_store",
+    "untyped_source_body",
+    "operation_target_formal_out_of_bounds",
+    "operation_shared_borrow",
+    "operation_unsafe_flag_changed",
+    "operation_nonunit_output",
+    "opaque_owner_changed",
+    "opaque_ordinal_gap",
+    "opaque_capture_arity",
+    "opaque_capture_kind",
+    "opaque_late_frame_changed",
+    "opaque_early_frame_changed",
+    "output_member_foreign_trait",
+    "projection_subject_foreign_self",
+    "projection_trait_application_foreign",
+    "projection_own_arguments_unpaid",
+    "unknown_operation_opcode",
+    "v10_operation_tag",
+    "v10_future_tag",
+    "v10_associated_header",
+    "executable_template_demand"
+  ],
+  "oracle_basis": "Reuse qualified AsyncDrop investigation37 and actual helper9 source/body observations; no new broad oracle investigation. no_core authored async bodies require ResumeTy and are not status parity.",
+  "sparse_owner_control": "Helper precedes real ordinary()->u8 body: actual BodyRef differs from ordinary-row index; operation owns no ordinary locals/CFG.",
+  "sizing_opponent": "Flip an associated schema sized bit independently of its genuine direct Sized-role bound: reject before consumer proof; wider transitive Copy/Clone sizing is explicitly fenced.",
+  "envelope": {
+    "tag": 13,
+    "version": 11,
+    "correction": "Draft tag12 collided with existing native-link envelope12; observed gate1793861023086465931 unknown native dependency metadata version. Root reviewed unused13; old source10/Provided11/native12 unchanged.",
+    "native_wrapper": "Existing envelope12/version1 wraps inner13/version11 unchanged; decoded symbolic operation remains one, roundtrip bytes equal. No native execution claim.",
+    "reject": {
+      "forged_tags": [
+        10,
+        11,
+        12,
+        14
+      ],
+      "forged_versions": [
+        9,
+        10,
+        12
+      ],
+      "truncation_and_trailing": true
+    },
+    "const_body_tail": "v11 alone has explicit optional const-body trailer presence before compiler rows. Legacy EOF-based optional trailers and bytes stay unchanged; gate1793862512577215096 exposed the old EOF ambiguity."
+  },
+  "consumer_causes": {
+    "wrong-output-consumer": "incompatible types",
+    "unsafe-consumer": "call to unsafe function requires an unsafe context"
+  },
+  "wire_opcode_tail_opponents": [
+    "ordinary body collision",
+    "foreign owner",
+    "wrong constructor future",
+    "nonunit Output",
+    "wrong target formal",
+    "unknown opcode",
+    "missing operation coverage"
+  ],
+  "legacy_packets": {
+    "functions-v0": "de282b0f5ea6ff53e2940b241c30bc32c366dc9f0dd6f69bb0ce8ebde924281d",
+    "contracts-v1": "ea02659788cb20c47cb6404097ca5476636e61610a8d9ecdf68efec48bde7250",
+    "contracts-marked-v1": "f88226526e5a43553d2cdb0cc58cf03b61801ff8ecbeca5a3567a6028472ddb6",
+    "modules-v2": "5c72014b61abaa9e5a20d9e70fb2e6425daceb0caae6d9b89b64eaaf66e5b1d7",
+    "provided-v0": "1ca1459e2c28d7a45ac832820fb74cbef58eadabb440e1d3bcaf665e5b0ff051"
+  },
+  "legacy_v10": {
+    "fixture": "pa29/tests/spec/source-nominals/provider.rs",
+    "identity": "base@nominal_v10",
+    "expected_bytes": 7118,
+    "expected_sha256": "86b0e0a80de3160fbc18973e3ea9cf781513a6206547f55a35b78e2df636f03b",
+    "provenance": "docs/parallel/source-nominals-v10.md check26 immutable artifact"
+  },
+  "private_pending": [
+    "sema::opaque::symbolic_tests::serialized_recipes_reject_ordinal_capture_schema_projection_and_body_forgery",
+    "sema::opaque::symbolic_tests::cold_and_warm_result_queries_reject_changed_actual_owner_and_promises",
+    "sema::opaque::symbolic_tests::actual_symbolic_body_cannot_supply_an_executable_original"
+  ],
+  "bounded_dependencies": "Authenticated v11 opaque capture arity exactly2 and associated parent Self-only/no own projection args; wider captures/args require indexed dependency-cursor migration before admission."
+}

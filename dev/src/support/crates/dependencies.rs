@@ -72,7 +72,8 @@ impl Dependencies {
                 | super::generics::source::Profile::Source2024ModuleCallables
                 | super::generics::source::Profile::Source2024ModuleSafety
                 | super::generics::source::Profile::Source2024ModuleConversions
-                | super::generics::source::Profile::Source2024ModuleNominals => {
+                | super::generics::source::Profile::Source2024ModuleNominals
+                | super::generics::source::Profile::Source2024ModuleCompilerOperations => {
                     descriptor.module_contracts()?;
                 }
                 _ => return Err("source client provider profile is unsupported"),

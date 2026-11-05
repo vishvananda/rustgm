@@ -13,7 +13,7 @@ impl DomainIndex<'_, '_> {
     ) -> Result<(), &'static str> {
         let rows = self.headers.rows();
         for original in &rows.originals {
-            let input = &rows.body_inputs[original.body.0 as usize];
+            let input = &rows.body_inputs[self.headers.original_index(original.body)?];
             let header = self.function(original.declaration, work)?;
             let context = Context {
                 owner: original.declaration,

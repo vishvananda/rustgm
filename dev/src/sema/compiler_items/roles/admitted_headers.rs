@@ -234,6 +234,17 @@ fn trait_headers(
                 free_marker(report, facts, catalog, role, declaration, steps)?;
                 complete.insert(role);
             }
+            LangItem::Future
+            | LangItem::FutureOutput
+            | LangItem::FuturePoll
+            | LangItem::AsyncDropInPlace => {
+                facts
+                    .associated
+                    .imported_owner()
+                    .ok_or("imported compiler role lost its actual owner/schema graph")?
+                    .compiler_operation_role(facts, declaration, role, steps)?;
+                complete.insert(role);
+            }
             LangItem::From => {
                 conversion(report, facts, declaration, steps)?;
                 complete.insert(role);

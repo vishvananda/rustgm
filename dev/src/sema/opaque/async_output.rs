@@ -49,7 +49,8 @@ impl Declarations {
             .declarations
             .get(&id)
             .is_none_or(|declaration| {
-                declaration.owner != function.definition || declaration.source != function.node
+                declaration.owner != function.definition
+                    || declaration.origin.source() != Some(function.node)
             })
         {
             return Err(error("async future belongs to another source function"));

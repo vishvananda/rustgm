@@ -109,6 +109,10 @@ pub(super) fn function_write(
     }
     super::recipe_columns::effect_write(out, row.constness)?;
     match row.body {
+        s::FunctionBody::CompilerOperation(reference) => {
+            out.u8(2)?;
+            id(out, reference.0)
+        }
         s::FunctionBody::Absent => out.u8(0),
         s::FunctionBody::Original(body) => {
             out.u8(1)?;
@@ -147,6 +151,9 @@ pub(super) fn function_read(read: &mut Input<'_, '_>) -> Result<s::FunctionHeade
         "source callable effect requires a wider source profile",
     )?;
     let body = match read.reader.u8()? {
+        2 if read.profile.compiler_operations() => {
+            s::FunctionBody::CompilerOperation(s::CompilerOperationRef(read.id()?))
+        }
         0 => s::FunctionBody::Absent,
         1 => s::FunctionBody::Original(BodyRef(read.id()?)),
         _ => return Err("invalid source required/provided body tag"),
@@ -197,7 +204,21 @@ pub(super) fn conversion_role_write(
     out: &mut Writer,
     row: &s::RoleBinding,
 ) -> Result<(), &'static str> {
-    if row.role == LangItem::From {
+    if matches!(
+        row.role,
+        LangItem::Future
+            | LangItem::FutureOutput
+            | LangItem::FuturePoll
+            | LangItem::AsyncDropInPlace
+    ) {
+        out.u8(match row.role {
+            LangItem::Future => 10,
+            LangItem::FutureOutput => 11,
+            LangItem::FuturePoll => 12,
+            _ => 13,
+        })?;
+        address_write(out, row.declaration)
+    } else if row.role == LangItem::From {
         out.u8(9)?;
         address_write(out, row.declaration)
     } else {
@@ -240,6 +261,10 @@ pub(super) fn role_read(read: &mut Input<'_, '_>) -> Result<s::RoleBinding, &'st
             }
         }
         9 if read.profile.conversion_roles() => LangItem::From,
+        10 if read.profile.compiler_operations() => LangItem::Future,
+        11 if read.profile.compiler_operations() => LangItem::FutureOutput,
+        12 if read.profile.compiler_operations() => LangItem::FuturePoll,
+        13 if read.profile.compiler_operations() => LangItem::AsyncDropInPlace,
         _ => return Err("unknown source function role ID"),
     };
     Ok(s::RoleBinding {

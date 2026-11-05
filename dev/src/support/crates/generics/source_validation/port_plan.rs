@@ -152,6 +152,7 @@ pub struct InputWork {
 /// proof, and import must still authenticate headers and re-prove every original.
 pub struct OriginalInputPlan<'rows> {
     rows: &'rows s::SourceRows,
+    bodies: Option<std::sync::Arc<s::bodymap::Lookup>>,
     ranges: Vec<g::Range>,
     requests: Vec<RequiredInput>,
     observed: InputWork,
@@ -169,7 +170,7 @@ impl OriginalInputPlan<'_> {
         work.charge(1)?;
         let range = *self
             .ranges
-            .get(body.0 as usize)
+            .get(s::bodymap::original(self.bodies.as_deref(), body)?)
             .ok_or("source required-input query has a foreign original body")?;
         let result = range.slice(&self.requests)?;
         work.charge(result.len())?;
@@ -183,7 +184,7 @@ impl OriginalInputPlan<'_> {
         work.charge(1)?;
         self.rows
             .body_inputs
-            .get(body.0 as usize)
+            .get(s::bodymap::original(self.bodies.as_deref(), body)?)
             .ok_or("source input-plan body has no actual raw inputs")
     }
     /// Complete header, application and qualifier data remain borrowed. A Call

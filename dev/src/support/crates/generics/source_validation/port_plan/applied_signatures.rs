@@ -27,6 +27,9 @@ impl Arena {
         let rows = domains.headers.rows();
         for header in &rows.functions {
             work.charge(1)?;
+            if s::operation_contracts::function_signatures(rows, domains.headers, header, work)? {
+                continue;
+            }
             same_flags(header.original, header.callable)?;
             let original = header.original.parameters.slice(&rows.roots)?;
             let public = header.callable.parameters.slice(&rows.roots)?;
@@ -76,7 +79,7 @@ impl Arena {
         for original in &rows.originals {
             let caller = Context {
                 owner: original.declaration,
-                frame: Some(rows.body_inputs[original.body.0 as usize].frame),
+                frame: Some(rows.body_inputs[domains.headers.original_index(original.body)?].frame),
                 body: Some(original.body),
             };
             for (ordinal, request) in original.calls.iter().enumerate() {

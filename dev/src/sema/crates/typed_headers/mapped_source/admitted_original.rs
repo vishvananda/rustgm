@@ -62,7 +62,7 @@ impl Original<'_> {
                 .as_ref()
                 .is_none_or(|current| !Arc::ptr_eq(current, body.environment()))
             || header.constant
-            || rows.originals[reference.0 as usize].context != s::CallContext::Runtime
+            || rows.original(reference)?.context != s::CallContext::Runtime
         {
             return Err("selected original requires its actual runtime defining body environment");
         }
@@ -79,7 +79,8 @@ impl Original<'_> {
             definition,
             body: actual,
             rows,
-            reference,
+            row: u32::try_from(rows.original_index(reference)?)
+                .map_err(|_| "source original row overflow")?,
         };
         result.check_locals(steps)?;
         Ok(result)

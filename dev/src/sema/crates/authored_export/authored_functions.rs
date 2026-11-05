@@ -172,26 +172,17 @@ impl Stage {
         let regions = self.function_regions(scheme, context)?;
         let inputs = self.function_inputs(facts, function.definition, context)?;
         let (formals, receiver) = self.formals(report, facts, function, context)?;
-        let body = self.function_body(function, declaration, context)?;
+        let body = self.function_body(
+            report,
+            facts,
+            function,
+            declaration,
+            context,
+            original.result,
+        )?;
         // Lexical containment is already in Declaration.definition.parent.
         // This is the distinct actual associated owner, not the root module.
-        let parent = facts
-            .associated
-            .owner(function.definition)
-            .and_then(|owner| facts.associated.get(owner))
-            .map(|owner| {
-                let owner = owner.source_owner()?;
-                match owner.kind {
-                    OwnerKind::Trait { definition, .. } => Ok(definition),
-                    OwnerKind::Impl { .. } => Ok(owner.self_definition),
-                    OwnerKind::ImportedImpl(_) => {
-                        Err("source function cannot acquire imported syntax ownership")
-                    }
-                }
-            })
-            .transpose()?
-            .map(|owner| self.declaration(owner))
-            .transpose()?;
+        let parent = self.associated_parent(facts, function.definition)?;
         let header = s::FunctionHeader {
             declaration,
             scope: declaration,
@@ -235,6 +226,29 @@ impl Stage {
         Ok(())
     }
 
+    fn associated_parent(
+        &mut self,
+        facts: &Declarations,
+        definition: DefId,
+    ) -> Result<Option<DeclarationRef>, &'static str> {
+        facts
+            .associated
+            .owner(definition)
+            .and_then(|owner| facts.associated.get(owner))
+            .map(|owner| {
+                let owner = owner.source_owner()?;
+                match owner.kind {
+                    OwnerKind::Trait { definition, .. } => Ok(definition),
+                    OwnerKind::Impl { .. } => Ok(owner.self_definition),
+                    OwnerKind::ImportedImpl(_) => {
+                        Err("source function cannot acquire imported syntax ownership")
+                    }
+                }
+            })
+            .transpose()?
+            .map(|owner| self.declaration(owner))
+            .transpose()
+    }
     fn function_inputs(
         &mut self,
         facts: &Declarations,
@@ -259,9 +273,12 @@ impl Stage {
 
     fn function_body(
         &mut self,
+        report: &Report,
+        facts: &Declarations,
         function: &crate::sema::model::Function,
         declaration: DeclarationRef,
         context: Context,
+        future: g::TypeRef,
     ) -> Result<s::FunctionBody, &'static str> {
         if function.body.is_some() {
             self.reserve(
@@ -293,6 +310,29 @@ impl Stage {
                 ..context
             });
             self.functions.originals.push(None);
+            if self.compiler_operations && let Some(recipe) = crate::sema::compiler_items::async_operation_recipe(
+                    report,
+                    facts,
+                    function.definition,
+                )
+                .map_err(|_| "source compiler operation failed its authenticated declaration/body contract")?
+                {
+                    if recipe.function.definition!=function.definition || recipe.body!=function.body.ok_or("compiler operation lost its source body")? || recipe.parameters.len()!=1 || facts.types.kind(recipe.future)!=Some(Kind::Opaque(recipe.opaque,recipe.captures)) || self.ty(facts,recipe.future,context)?!=future { return Err("compiler operation changed its genuine checked body/constructor identity"); }
+                    let output = self.ty(facts, recipe.output, context)?;
+                    self.reserve(4 * size_of::<s::CompilerOperation>())?;
+                    let operation = s::CompilerOperationRef(
+                        u32::try_from(self.rows.compiler_operations.len())
+                            .map_err(|_| "compiler operation table overflow")?,
+                    );
+                    self.rows.compiler_operations.push(s::CompilerOperation {
+                        body: id,
+                        declaration,
+                        future,
+                        output,
+                        kind: s::CompilerOperationKind::AsyncDropInPlace { target_formal: 0 },
+                    });
+                    return Ok(s::FunctionBody::CompilerOperation(operation));
+            }
             Ok(s::FunctionBody::Original(id))
         } else {
             Ok(s::FunctionBody::Absent)

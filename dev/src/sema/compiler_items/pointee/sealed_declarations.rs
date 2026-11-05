@@ -56,7 +56,7 @@ pub(in crate::sema::compiler_items) struct Contracts {
     nominal: Option<State>,
     inputs: Vec<Input>,
     trait_regions: Vec<Pair>,
-    canonical_results: Vec<(ItemId, Predicate)>,
+    canonical_results: Vec<(ItemId, crate::sema::declaration_inputs::Input)>,
     family_identity: Option<(u32, u32)>,
     requirements: Vec<Clause>,
     regions: Vec<Pair>,

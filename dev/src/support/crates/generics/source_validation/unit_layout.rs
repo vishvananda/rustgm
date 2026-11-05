@@ -6,6 +6,7 @@ use crate::support::crates::{MAX_BYTES, generics::source as s, owner_catalog::Bo
 /// their actual catalog, arena, body, signatures and required alias presence.
 pub struct NumberingUnits<'rows> {
     rows: &'rows SourceRows,
+    bodies: Option<std::sync::Arc<s::bodymap::Lookup>>,
     peak: usize,
 }
 impl<'rows> NumberingUnits<'rows> {
@@ -30,7 +31,7 @@ impl<'rows> NumberingUnits<'rows> {
         work.charge(1)?;
         self.rows
             .body_units
-            .get(body.0 as usize)
+            .get(s::bodymap::original(self.bodies.as_deref(), body)?)
             .ok_or("source numbering unit has an unknown actual body")
     }
     #[must_use]
@@ -62,8 +63,8 @@ pub(super) fn validate<'rows>(
             .binders
             .get(function.original.binder.0 as usize)
             .ok_or("source numbering unit lacks its actual original binder")?;
-        if unit.body != original.body
-            || unit.body.0 as usize != index
+        if headers.original_index(unit.body)? != index
+            || unit.body != original.body
             || function.body != s::FunctionBody::Original(unit.body)
             || input.frame != function.original.binder
             || unit.universals != function.regions.total
@@ -92,7 +93,11 @@ pub(super) fn validate<'rows>(
         peak = peak.max(next);
         validate_unit(rows, original, input, unit, function.original.binder, work)?;
     }
-    Ok(NumberingUnits { rows, peak })
+    Ok(NumberingUnits {
+        rows,
+        bodies: headers.bodymap(),
+        peak,
+    })
 }
 
 fn validate_unit(

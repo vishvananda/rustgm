@@ -1,7 +1,11 @@
 //! Header formals remain genuine declarations even when a required body is absent.
 use super::{DefinitionKind, SourceRows, Work, g, s};
 
-pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<(), &'static str> {
+pub(super) fn validate(
+    rows: &SourceRows,
+    index: Option<&s::bodymap::Lookup>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
     work.charge(rows.declarations.len().saturating_add(rows.formals.len()))?;
     let mut seen = vec![false; rows.declarations.len()];
     let mut covered = vec![false; rows.formals.len()];
@@ -27,7 +31,7 @@ pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<(), &'stati
                 if row.definition.kind != DefinitionKind::ValueParameter
                     || row.definition.parent != Some(header.declaration)
                     || std::mem::replace(&mut seen[declaration.0 as usize], true)
-                    || matches!(header.body, s::FunctionBody::Absent) && row.local.is_some()
+                    || !matches!(header.body, s::FunctionBody::Original(_)) && row.local.is_some()
                 {
                     return Err(
                         "source formal has duplicate, foreign or fabricated body ownership",
@@ -36,7 +40,12 @@ pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<(), &'stati
             }
         }
         if let s::FunctionBody::Original(body) = header.body {
-            bindings(rows, &rows.originals[body.0 as usize], formals, work)?;
+            bindings(
+                rows,
+                &rows.originals[s::bodymap::original(index, body)?],
+                formals,
+                work,
+            )?;
         }
     }
     work.charge(rows.declarations.len().saturating_add(covered.len()))?;

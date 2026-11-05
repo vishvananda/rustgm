@@ -5,10 +5,15 @@ use crate::support::crates::owner_catalog::{BodyKind, DeclarationRef};
 pub(super) fn validate(
     rows: &SourceRows,
     headers: &[Option<HeaderRef>],
+    lookup: Option<&s::bodymap::Lookup>,
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    if rows.body_owners.len() != rows.originals.len()
-        || rows.body_owners.len() != rows.body_inputs.len()
+    if rows.body_owners.len()
+        != rows
+            .originals
+            .len()
+            .saturating_add(rows.compiler_operations.len())
+        || rows.originals.len() != rows.body_inputs.len()
     {
         return Err("source original/body/input tables have different complete coverage");
     }
@@ -24,6 +29,28 @@ pub(super) fn validate(
                     .is_none_or(|header| !matches!(header, Some(HeaderRef::Trait(_))))
                 {
                     return Err("source body absence is not an actual required trait method");
+                }
+            }
+            s::FunctionBody::CompilerOperation(reference) => {
+                let operation = rows
+                    .compiler_operations
+                    .get(reference.0 as usize)
+                    .ok_or("source compiler operation reference is unknown")?;
+                let owner = rows
+                    .body_owners
+                    .get(operation.body.0 as usize)
+                    .ok_or("source compiler operation body owner is unknown")?;
+                if operation.declaration != function.declaration
+                    || owner.declaration != function.declaration
+                    || owner.parent.is_some()
+                    || owner.kind != BodyKind::Function
+                    || owner.ordinal != 0
+                    || std::mem::replace(&mut seen[operation.body.0 as usize], true)
+                    || lookup.is_some_and(|lookup| lookup.original(operation.body).is_some())
+                {
+                    return Err(
+                        "compiler operation has duplicate, foreign or ordinary code ownership",
+                    );
                 }
             }
             s::FunctionBody::Original(body) => {
@@ -45,12 +72,15 @@ pub(super) fn validate(
         }
     }
     let mut previous = None;
-    for (index, owner) in rows.body_owners.iter().enumerate() {
+    for (index, original) in rows.originals.iter().enumerate() {
         work.charge(1)?;
-        let original = &rows.originals[index];
+        let owner = rows
+            .body_owners
+            .get(original.body.0 as usize)
+            .ok_or("unknown original body owner")?;
         let input = &rows.body_inputs[index];
-        if !seen[index]
-            || original.body.0 as usize != index
+        if lookup.is_none() && original.body.0 as usize != index
+            || !seen[original.body.0 as usize]
             || input.body != original.body
             || original.declaration != owner.declaration
             || original.sites == 0
@@ -60,6 +90,18 @@ pub(super) fn validate(
         }
         previous = Some(owner.declaration.0);
     }
+    if seen.contains(&false) {
+        return Err("source bodies have incomplete exclusive representation coverage");
+    }
+    local_declarations(rows, lookup, work)?;
+    Ok(())
+}
+
+fn local_declarations(
+    rows: &SourceRows,
+    lookup: Option<&s::bodymap::Lookup>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
     for (index, row) in rows.declarations.iter().enumerate() {
         work.charge(1)?;
         let Some(local) = row.local else {
@@ -67,7 +109,7 @@ pub(super) fn validate(
         };
         let body = rows
             .originals
-            .get(local.body.0 as usize)
+            .get(s::bodymap::original(lookup, local.body)?)
             .ok_or("source local declaration body is unknown")?;
         let value = body
             .locals

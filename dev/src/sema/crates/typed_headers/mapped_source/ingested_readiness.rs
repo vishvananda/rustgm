@@ -38,6 +38,9 @@ impl Graph {
             .get(definition.0 as usize)
             .ok_or("source readiness declaration is outside its semantic cells")?;
         match raw.definition.kind {
+            s::DefinitionKind::AssociatedType => {
+                self.associated_ready(catalog, facts, definition, row, *cell)?;
+            }
             s::DefinitionKind::Struct => {
                 let Some(s::HeaderRef::Nominal(index)) = rows.header(row)? else {
                     return Err("source nominal readiness lost its actual header");
@@ -109,6 +112,47 @@ impl Graph {
         Ok(Readiness::Declaration)
     }
 
+    fn associated_ready(
+        &self,
+        catalog: &Catalog,
+        facts: &Declarations,
+        definition: DefId,
+        row: crate::support::crates::owner_catalog::DeclarationRef,
+        cell: Option<crate::types::TypeId>,
+    ) -> Result<(), &'static str> {
+        let descriptor = self.descriptor(catalog)?;
+        let rows = descriptor.rows();
+        let owner = descriptor.identity();
+
+        let Some(s::HeaderRef::AssociatedType(index)) = rows.header(row)? else {
+            return Err("associated type readiness lost its actual header");
+        };
+        let header = &rows.associated_types[index as usize];
+        let projection = self
+            .ty(header.projection)
+            .map_err(|_| "associated type readiness lost its canonical projection")?;
+        let contract = facts
+            .associated
+            .type_contract(definition)
+            .ok_or("associated type readiness lacks its actual completed contract")?;
+        let schema = facts
+            .types
+            .projection_schema(ItemId(definition.0))
+            .ok_or("associated type readiness lacks its actual schema")?;
+        if cell != Some(projection)
+            || contract.projection != projection
+            || schema.trait_item.0 != catalog.definition_at(owner, header.parent)?.0
+            || schema.sized != header.sized
+            || schema.copies.copy != header.copy
+            || schema.copies.clone_ != header.clone_
+            || facts.associated.trait_owner(definition)
+                != Some(crate::resolve::model::DefId(schema.trait_item.0))
+        {
+            return Err("associated type readiness changed its actual owner/projection");
+        }
+        Self::scope_ready(facts, definition)?;
+        Ok(())
+    }
     fn value_binding_ready(
         binding: &s::Declaration,
         rows: s::ValidatedView<'_>,
@@ -126,7 +170,10 @@ impl Graph {
         // The sealed formal ledger established unique membership once. Only a
         // required method's genuine formal may lack original-local coverage.
         if binding.definition.kind != s::DefinitionKind::ValueParameter
-            || rows.functions[index as usize].body != s::FunctionBody::Absent
+            || !matches!(
+                rows.functions[index as usize].body,
+                s::FunctionBody::Absent | s::FunctionBody::CompilerOperation(_)
+            )
         {
             return Err("source provided value binding omitted its actual original local");
         }
@@ -339,12 +386,16 @@ impl Graph {
             .ok_or("source function readiness omitted its actual declaration environment")?;
         if header.environment.is_none()
             && rows.descriptor().profile().conversion_roles()
+            && !rows.descriptor().profile().compiler_operations()
             && let s::FunctionBody::Original(body) = raw.body
-            && rows.body_inputs.get(body.0 as usize).is_some_and(|input| {
-                input.body == body
-                    && input.frame == raw.original.binder
-                    && input.environment == s::EnvironmentOrigin::Contract
-            })
+            && rows
+                .body_inputs
+                .get(rows.original_index(body)?)
+                .is_some_and(|input| {
+                    input.body == body
+                        && input.frame == raw.original.binder
+                        && input.environment == s::EnvironmentOrigin::Contract
+                })
         {
             // This query exposes declaration facts only. The v9 original port
             // separately requires its recorded domain and exact defining Arc.
@@ -361,7 +412,7 @@ impl Graph {
             s::FunctionBody::Original(body) => {
                 let input = rows
                     .body_inputs
-                    .get(body.0 as usize)
+                    .get(rows.original_index(body)?)
                     .filter(|input| input.body == body)
                     .ok_or("source function readiness omitted its actual original input owner")?;
                 match input.environment {
@@ -381,7 +432,12 @@ impl Graph {
                     }
                 }
             }
-            s::FunctionBody::Absent => {}
+            s::FunctionBody::CompilerOperation(_)
+                if !std::sync::Arc::ptr_eq(environment, defining) =>
+            {
+                return Err("compiler operation changed its actual declaration environment");
+            }
+            s::FunctionBody::CompilerOperation(_) | s::FunctionBody::Absent => {}
         }
         Ok(())
     }

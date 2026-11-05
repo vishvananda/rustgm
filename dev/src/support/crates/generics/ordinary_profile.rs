@@ -37,10 +37,17 @@ enum NamespaceProfile {
     Callables,
     Safety,
     Conversions,
+    CompilerOperations,
 }
 impl NamespaceProfile {
+    fn conversions(self) -> bool {
+        matches!(self, Self::Conversions | Self::CompilerOperations)
+    }
     fn callables(self) -> bool {
-        matches!(self, Self::Callables | Self::Safety | Self::Conversions)
+        matches!(
+            self,
+            Self::Callables | Self::Safety | Self::Conversions | Self::CompilerOperations
+        )
     }
 }
 pub(super) fn validate_module_contracts(
@@ -85,6 +92,13 @@ pub(super) fn validate_module_conversions(
 ) -> Result<(), &'static str> {
     validate_mode(rows, headers, work, NamespaceProfile::Conversions)
 }
+pub(super) fn validate_compiler_operations(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    validate_mode(rows, headers, work, NamespaceProfile::CompilerOperations)
+}
 fn validate_mode(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
@@ -92,7 +106,7 @@ fn validate_mode(
     profile: NamespaceProfile,
 ) -> Result<(), &'static str> {
     work.charge(1)?;
-    if profile != NamespaceProfile::Conversions && !rows.body_units.is_empty() {
+    if !profile.conversions() && !rows.body_units.is_empty() {
         return Err("source numbering units require their wider explicit profile");
     }
     if rows.policy.edition != Edition::Rust2024 || rows.policy.provider.0 != 0 {
@@ -102,8 +116,12 @@ fn validate_mode(
         rows,
         headers,
         work,
-        if profile == NamespaceProfile::Conversions {
-            BindingProfile::Conversions
+        if profile.conversions() {
+            if profile == NamespaceProfile::CompilerOperations {
+                BindingProfile::CompilerOperations
+            } else {
+                BindingProfile::Conversions
+            }
         } else if profile.callables() {
             BindingProfile::Callables
         } else {
@@ -117,13 +135,9 @@ fn validate_mode(
             | NamespaceProfile::Callables
             | NamespaceProfile::Safety
             | NamespaceProfile::Conversions
+            | NamespaceProfile::CompilerOperations
     );
-    recipes(
-        rows,
-        work,
-        features,
-        profile == NamespaceProfile::Conversions,
-    )?;
+    recipes(rows, work, features, profile.conversions())?;
     trait_headers(rows, headers, work, profile, &roles)?;
     functions(rows, headers, work, profile, &roles)?;
     for header in &rows.implementations {
@@ -144,7 +158,7 @@ fn validate_mode(
         work,
         features,
         profile.callables(),
-        profile == NamespaceProfile::Conversions,
+        profile.conversions(),
     )
 }
 fn trait_headers(
@@ -181,14 +195,14 @@ fn trait_headers(
                     | NamespaceProfile::Callables
                     | NamespaceProfile::Safety
                     | NamespaceProfile::Conversions
+                    | NamespaceProfile::CompilerOperations
             )
         {
             return Err(
                 "restricted trait requires version-two complete implementation-domain columns",
             );
         }
-        let conversion = profile == NamespaceProfile::Conversions
-            && roles.conversion == Some(header.declaration);
+        let conversion = profile.conversions() && roles.conversion == Some(header.declaration);
         if conversion {
             conversions::trait_header(rows, headers, header, work)?;
         }
@@ -236,7 +250,7 @@ fn functions(
     for header in &rows.functions {
         work.charge(1 + 2 * rows.exact_callables.len().checked_ilog2().unwrap_or(0) as usize)?;
         let free_effects = profile.callables() && header.parent.is_none();
-        let required = profile == NamespaceProfile::Conversions
+        let required = profile.conversions()
             && conversions::required_member(rows, headers, header, roles.conversion, work)?;
         if (!free_effects && !required && header.constness != Constness::Ordinary)
             || !required && header.constness == Constness::Conditional
@@ -276,10 +290,10 @@ fn functions(
                 | NamespaceProfile::Callables
                 | NamespaceProfile::Safety
                 | NamespaceProfile::Conversions
+                | NamespaceProfile::CompilerOperations
         ) && primitive_method(rows, headers, header, work)?;
         let associated = primitive_method
-            || profile == NamespaceProfile::Conversions
-                && conversions::method(rows, headers, header, work)?;
+            || profile.conversions() && conversions::method(rows, headers, header, work)?;
         if matches!(header.body, FunctionBody::Original(_))
             && header.parent.is_some()
             && !associated
@@ -288,7 +302,7 @@ fn functions(
         }
         if matches!(header.body, FunctionBody::Original(_))
             && header.regions.total != 0
-            && !(profile == NamespaceProfile::Conversions && associated)
+            && !(profile.conversions() && associated)
         {
             return Err("source original region formals require their complete wider body profile");
         }
@@ -555,12 +569,43 @@ pub(super) enum BindingProfile {
     Provided,
     Callables,
     Conversions,
+    CompilerOperations,
 }
 pub(super) struct Bindings {
     sizing: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 3],
     destruct: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     freeze: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     conversion: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+}
+fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
+    matches!(
+        role,
+        LangItem::Sized
+            | LangItem::MetaSized
+            | LangItem::PointeeSized
+            | LangItem::LegacyReceiver
+            | LangItem::Clone
+            | LangItem::CloneFn
+            | LangItem::Copy
+    ) || (matches!(
+        profile,
+        BindingProfile::Provided
+            | BindingProfile::Callables
+            | BindingProfile::Conversions
+            | BindingProfile::CompilerOperations
+    ) && matches!(role, LangItem::Destruct | LangItem::Freeze))
+        || matches!(
+            profile,
+            BindingProfile::Conversions | BindingProfile::CompilerOperations
+        ) && role == LangItem::From
+        || profile == BindingProfile::CompilerOperations
+            && matches!(
+                role,
+                LangItem::Future
+                    | LangItem::FutureOutput
+                    | LangItem::FuturePoll
+                    | LangItem::AsyncDropInPlace
+            )
 }
 pub(super) fn bindings(
     rows: &SourceRows,
@@ -575,20 +620,7 @@ pub(super) fn bindings(
     let mut declarations = [None; LangItem::ALL.len()];
     for role in &rows.roles {
         work.charge(declarations.len())?;
-        let allowed = matches!(
-            role.role,
-            LangItem::Sized
-                | LangItem::MetaSized
-                | LangItem::PointeeSized
-                | LangItem::LegacyReceiver
-                | LangItem::Clone
-                | LangItem::CloneFn
-                | LangItem::Copy
-        ) || (matches!(
-            profile,
-            BindingProfile::Provided | BindingProfile::Callables | BindingProfile::Conversions
-        ) && matches!(role.role, LangItem::Destruct | LangItem::Freeze))
-            || profile == BindingProfile::Conversions && role.role == LangItem::From;
+        let allowed = role_allowed(profile, role.role);
         if !allowed {
             return Err("source role requires a wider explicit source profile");
         }
@@ -600,7 +632,15 @@ pub(super) fn bindings(
             return Err("source role binding is duplicated or belongs to a foreign provider");
         }
         match (role.role, headers.header(address.declaration, work)?) {
-            (LangItem::CloneFn, Some(super::super::HeaderRef::Function(_))) => {}
+            (
+                LangItem::CloneFn | LangItem::FuturePoll | LangItem::AsyncDropInPlace,
+                Some(super::super::HeaderRef::Function(_)),
+            ) => {}
+            (LangItem::FutureOutput, Some(super::super::HeaderRef::AssociatedType(_)))
+                if profile == BindingProfile::CompilerOperations => {}
+            (_, Some(super::super::HeaderRef::AssociatedType(_))) => {
+                return Err("source associated role has a different actual member kind");
+            }
             (LangItem::CloneFn, _)
             | (
                 _,
@@ -647,9 +687,12 @@ pub(super) fn bindings(
         }
     }
     Ok(Bindings {
-        conversion: (profile == BindingProfile::Conversions)
-            .then_some(declarations[LangItem::From.index()])
-            .flatten(),
+        conversion: (matches!(
+            profile,
+            BindingProfile::Conversions | BindingProfile::CompilerOperations
+        ))
+        .then_some(declarations[LangItem::From.index()])
+        .flatten(),
         sizing,
         destruct: if matches!(
             profile,
@@ -683,6 +726,7 @@ fn admitted_convention(
                 | NamespaceProfile::Callables
                 | NamespaceProfile::Safety
                 | NamespaceProfile::Conversions
+                | NamespaceProfile::CompilerOperations
         ) && convention == Convention::C
             && rows
                 .exact_callables

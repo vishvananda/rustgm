@@ -278,8 +278,8 @@ impl LibraryContracts<'_> {
                     output.definition().map(|member| {
                         (
                             ItemId(member.0),
-                            crate::sema::generics::Predicate {
-                                source: origin,
+                            crate::sema::declaration_inputs::Input {
+                                source: origin.into(),
                                 value,
                             },
                         )

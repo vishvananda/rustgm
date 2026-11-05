@@ -126,7 +126,9 @@ impl Checker<'_> {
             let declaration = self.facts.opaques.declarations.get(&id).ok_or_else(|| {
                 self.error(self.state.body.node, "missing opaque result declaration")
             })?;
-            let source = declaration.source;
+            let source = declaration
+                .source()
+                .map_err(|e| self.error(self.state.body.node, e))?;
             let bounds = declaration.bounds.clone();
             let mut substitution = crate::types::substitute::Bound::defining_results(
                 &self.facts.types,

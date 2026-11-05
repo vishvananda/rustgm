@@ -167,6 +167,11 @@ impl Arena {
                     declaration,
                     arguments,
                 } => Recipe::Nominal(declaration, arguments),
+                s::Type::Projection(_) | s::Type::OpaqueFuture(_) => {
+                    return Err(
+                        "declared result in ordinary body operations requires its complete application transport",
+                    );
+                }
                 s::Type::Scalar(scalar) => Recipe::Leaf(Node::Scalar(scalar)),
                 s::Type::Parameter(slot) if matches!(key.rewrite, Rewrite::Nominal { .. }) => {
                     let Rewrite::Nominal { owner, arguments } = key.rewrite else {
