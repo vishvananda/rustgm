@@ -44,8 +44,8 @@
     "native_exit": 7
   },
   "private": {
-    "state": "execution_pending",
-    "reason": "normal300s bounded fastcheck stopped first complete strict harness build before execution; no diagnostics after test-only fixes",
+    "state": "qualified_in_failed_full_ci",
+    "reason": "All five exact private controls pass in CI41960117386; complete successor remains required after the other13 expectation repairs",
     "path": "obj/qualification/fast/1793842952671963872/receipt.json",
     "sha256": "7df3ee9e58265bd213e08db485abf037ef1f7b9648915710364e7bae9b339675",
     "exact_cases": [
@@ -54,7 +54,24 @@
       "support::crates::generics::source::nominal_contracts::tests::nominal_rows_reject_foreign_stale_and_retyped_original_contracts",
       "support::crates::codec::ordinary_columns::contract_columns::tests::from_tag_requires_version_nine_without_changing_legacy_roles",
       "support::crates::codec::ordinary_columns::contract_columns::tests::older_role_bytes_are_identical_in_the_conversion_encoder"
-    ]
+    ],
+    "ci_execution": {
+      "state": "passed_all_five_selected",
+      "run": "https://github.com/vishvananda/rustgm/actions/runs/41960117386",
+      "commit": "05185a6e848ee094e44264c393cdbf9c6270f87c",
+      "overall_conclusion": "failure",
+      "reason": "Twelve exact layout expectations and one earlier Unknown struct-header expectation; selected new transaction/forgery/legacy controls pass",
+      "private_passed": 2693,
+      "private_failed": 13,
+      "retained_log": "obj/parallel/source-integration-v1/full-ci-41960117386/failed.log",
+      "log_sha256": "1a2d9930a5c398a88f84a0b5f617a84728f8adecddcb085d7929e97a3809acdd"
+    },
+    "previous_local_attempt": {
+      "state": "execution_pending",
+      "reason": "normal300s bounded fastcheck stopped first complete strict harness build before execution; no diagnostics after test-only fixes",
+      "path": "obj/qualification/fast/1793842952671963872/receipt.json",
+      "sha256": "7df3ee9e58265bd213e08db485abf037ef1f7b9648915710364e7bae9b339675"
+    }
   },
   "performance": {
     "path": "obj/parallel/source-transport/performance-v1/receipt.json",

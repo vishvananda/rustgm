@@ -101,14 +101,28 @@ fn actual_member_nominal_and_result_obligations_remain_bound_to_the_provider() -
             .flatten()
         {
             let view = facts.header_attribute_contracts(&report, declaration.definition)?;
-            assert!(matches!(
-                view.must_use,
-                header_attributes::ContractKnowledge::Unknown
-            ));
-            assert!(matches!(
-                view.inline,
-                header_attributes::ContractKnowledge::Unknown
-            ));
+            if report.resolution.definitions[declaration.definition.0 as usize].kind
+                == DefKind::Struct
+            {
+                // The actual struct header now completes both advisory queries.
+                assert!(matches!(
+                    view.must_use,
+                    header_attributes::ContractKnowledge::KnownAbsent
+                ));
+                assert!(matches!(
+                    view.inline,
+                    header_attributes::ContractKnowledge::KnownAbsent
+                ));
+            } else {
+                assert!(matches!(
+                    view.must_use,
+                    header_attributes::ContractKnowledge::Unknown
+                ));
+                assert!(matches!(
+                    view.inline,
+                    header_attributes::ContractKnowledge::Unknown
+                ));
+            }
         }
         let wrong = projection::Application {
             item: ItemId(parent.definition.0),

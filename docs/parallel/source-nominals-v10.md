@@ -169,3 +169,17 @@ All722 original input hashes and six pins remain intact. Core still stops at
 the actual AsyncDrop declaration, file246 byte1138,375 opens,19.4295s; this is a
 concurrent bounded observation, not an isolated speed measurement. The five
 private transaction/forgery/legacy-role checks await the full CI successor.
+
+Full CI41960117386 on05185a6e8 executes all five selected private checks
+successfully: paid/current/foreign Members and aggregate transactions, forged
+nominal contracts, and both legacy role-byte controls. Overall qualification
+fails with2693 private passes and13 failures. Twelve assertions retain the old
+compilation-owner or cold source-column size; the other still expects an unknown
+DynMetadata struct header after the actual Struct header producer was added.
+The corrected exact sizes are7112 for Declarations,688 for SourceRows and664
+for Columns. The new owner word is optional Members destination identity; the
+two cold vectors hold nominal and field columns. Dense Node/Body/Type records
+and unknown associated-type headers retain their exact checks. The actual
+unannotated Struct has KnownAbsent advisory facts only after source/semantic
+owner authentication. These are test expectation repairs; compiler behavior and
+reference bytes remain unchanged. Complete successor qualification remains due.

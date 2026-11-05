@@ -185,9 +185,10 @@ fn scope_walk_rejects_unknown_definition_sites_and_counts_failed_work() -> TestR
     assert!(index.steps > 1_000_000);
     assert_eq!(size_of::<crate::sema::methods::Methods>(), 312);
     // Includes the sparse SIMD and coherence owners once per compilation.
+    // Source member transactions retain one optional destination identity.
     assert_eq!(
         size_of::<Declarations>(),
-        7048 + size_of::<Vec<()>>() + 4 * size_of::<usize>()
+        7048 + size_of::<Vec<()>>() + 5 * size_of::<usize>()
     );
     assert_eq!(size_of::<crate::resolve::model::Scope>(), 32);
     Ok(())

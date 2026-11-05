@@ -285,8 +285,8 @@ fn c_callable_safety_privacy_and_nominal_boundaries_remain_independent() -> Resu
         "{error}"
     );
     assert_eq!(size_of::<s::ExactCallableExport>(), 24);
-    assert_eq!(size_of::<s::SourceRows>(), 640);
-    assert_eq!(size_of::<s::Columns>(), 616);
+    assert_eq!(size_of::<s::SourceRows>(), 688);
+    assert_eq!(size_of::<s::Columns>(), 664);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     Ok(())

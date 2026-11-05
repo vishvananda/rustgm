@@ -307,9 +307,10 @@ fn collection_layout_preserves_scalar_owners_and_padded_derive_entries() {
     );
     // The compilation-wide owner has an interned-policy Vec and cold request,
     // SIMD and coherence pointers; dense nodes and body rows are unchanged.
+    // Source member transactions retain one optional destination identity.
     assert_eq!(
         size_of::<crate::sema::model::Declarations>(),
-        7048 + size_of::<Vec<()>>() + 4 * size_of::<usize>()
+        7048 + size_of::<Vec<()>>() + 5 * size_of::<usize>()
     );
     assert_eq!(size_of::<Type>(), 24);
     assert_eq!(
