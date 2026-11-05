@@ -12,50 +12,30 @@ pub(crate) fn checked_future_storage(
     facts: &mut Declarations,
     checked: &Checked<'_>,
 ) -> Result<(), String> {
-    if facts.opaques.owners.is_empty() {
+    // A completed batch without a deferred family publishes nothing here.
+    // This is not global absence or permission to use an unchecked future.
+    let Some(arena) = checked.existing_future_store(&facts.types)? else {
         return Ok(());
-    }
-    let count = facts.opaques.owners.len();
-    facts.charge_caller_inputs(
-        count,
-        count
-            .saturating_mul(size_of::<(
-                crate::resolve::model::DefId,
-                crate::types::opaque::OpaqueId,
-            )>())
-            .saturating_add(size_of::<
-                Vec<(crate::resolve::model::DefId, crate::types::opaque::OpaqueId)>,
-            >()),
-    )?;
-    let mut owners = Vec::with_capacity(count);
-    for (&owner, identities) in &facts.opaques.owners {
-        if let Some(&identity) = identities.last() {
-            owners.push((owner, identity));
-        }
-    }
+    };
+    let (count, identities) = checked.async_body_identities();
+    facts.charge_caller_inputs(count, 0)?;
     let mut published = false;
-    for (owner, identity) in owners {
-        if facts.types.authored_future_template(identity)?.is_none() {
-            continue;
-        }
-        let arena = checked.future_store(&facts.types)?;
+    for identity in identities {
         let (template, original, regions) = checked
             .async_body(identity)
             .ok_or("future storage requires its actual checked deferred original")?;
-        if coroutines::original_template(facts, template, original)? != owner
-            || regions.key != original.key
-            || regions.source != template.body.source
-        {
+        let owner = coroutines::original_template(facts, template, original)?;
+        if regions.key != original.key || regions.source != template.body.source {
             return Err("future storage changed its actual checked source family".into());
         }
         facts.infer_checked_async_future(owner, arena)?;
         facts.close_opaque_results(owner, &regions.hidden_regions)?;
         published = true;
     }
-    if published {
-        facts.prepare_opaque_storage().map_err(String::from)?;
+    if !published {
+        return Err("checked future storage lost its actual batch owner index".into());
     }
-    Ok(())
+    facts.prepare_opaque_storage().map_err(String::from)
 }
 
 /// Open the actual checked deferred body for this full future application.

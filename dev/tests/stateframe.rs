@@ -9,6 +9,30 @@ use rustgm::{
 mod checks;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
+#[test]
+fn ordinary_opaque_results_do_not_request_authored_future_preparation() -> Result {
+    let mut report = source::resolve("fn value()->impl Copy{3u8}fn main(){let _=value();}", true)?;
+    let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
+    assert!(!facts.uses_source_copy());
+    let entry = sema::entry::select(&mut report, &facts)?;
+    rustgm::lower::instances::build(&report, &mut facts, entry)?;
+    assert_eq!(size_of::<types::Store>(), 472);
+    Ok(())
+}
+
+#[test]
+fn mixed_future_and_ordinary_results_publish_only_actual_checked_batch_families() -> Result {
+    let mut text = source::fixture("pa43/tests/spec/future-runtime-v1/construction-source.rs")?;
+    text.push_str("\nfn ordinary()->impl Copy{3u8}\n");
+    let report = source::source_provider(&text, "mixed_future_results")?;
+    let rustgm::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = rustgm::pipeline::analyze_source(&report)?;
+    rustgm::lower::instances::inspect_prepared(&report, &mut facts, prepared, |_, _| ())?;
+    Ok(())
+}
+
 fn marker(
     facts: &mut sema::model::Declarations,
     ty: TypeId,
