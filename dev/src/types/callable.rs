@@ -1,4 +1,5 @@
 //! Function-item templates preserve formal early arguments across inferred uses.
+pub(crate) mod late_result;
 use super::parameters::ParameterId;
 use super::{ItemId, Kind, RegionId, Store, TypeId, outlives::Pair};
 use crate::support::hash::HashMap;

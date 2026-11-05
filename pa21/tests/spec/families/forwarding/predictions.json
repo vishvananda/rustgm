@@ -1,0 +1,98 @@
+{
+  "cases": [
+    {
+      "file": "forward.rs",
+      "sha256": "8fc1bb543976512f9f185f150368740cc1c2bf226ea7f91f37490c95b238ad07",
+      "expected_status": 0
+    },
+    {
+      "file": "inherited.rs",
+      "sha256": "435b6fa26d7e25fbaefd9e790884e9f5a0a8e59489fc1233981a6c22796a6989",
+      "expected_status": 0
+    },
+    {
+      "file": "mutable.rs",
+      "sha256": "e99df12d20d1b3c55d2b7ca17fad4bfe7ad3f32aa0dcd004b55855d716cb2cb6",
+      "expected_status": 0
+    },
+    {
+      "file": "no-parent.rs",
+      "sha256": "8d19d12be0d8799e60b12ebee09ff0b22517cc14db78e617040dac7ff117c7c3",
+      "expected_status": 1
+    },
+    {
+      "file": "no-outlives.rs",
+      "sha256": "8987ef05b8b025ca9f57fe226d1ede532f02a19d449336172e8f89ee167ab62f",
+      "expected_status": 1
+    },
+    {
+      "file": "lookalike.rs",
+      "sha256": "5190916e1489205c8f78510d65d0166d23d84cb8682de0b2ab175a4995f3fd5f",
+      "expected_status": 1
+    },
+    {
+      "file": "method.rs",
+      "sha256": "5f845cd4ae0a34a633c5a0dc095c313040126536f71f62a04578673e7158f07f",
+      "expected_status": 0
+    },
+    {
+      "file": "method-inherited.rs",
+      "sha256": "a7e94a26bc953abba8ab33c8f25b80ea17e57318a57a02095c031f79819f4212",
+      "expected_status": 0
+    },
+    {
+      "file": "method-mutability.rs",
+      "sha256": "c19d8b00d85f6722669c47dbcb573edec4b6dbbdf84885acebb7e69c15b8605a",
+      "expected_status": 1
+    },
+    {
+      "file": "method-result.rs",
+      "sha256": "481ae3bbb82ae91e4c75d9b584b6e2e6926c18003117e7d13ffeb97f392feff7",
+      "expected_status": 1
+    },
+    {
+      "file": "method-static.rs",
+      "sha256": "a9731546ece4b96c5a1557bc446573d15dbb811e76e1d865f9b113a698cf0261",
+      "expected_status": 1
+    },
+    {
+      "file": "method-noninjective.rs",
+      "sha256": "4c8ccad852e262f98a0354484c82b910e7c0005fd796e6041988297ffd0a5ab8",
+      "expected_status": 0
+    },
+    {
+      "file": "method-nested.rs",
+      "sha256": "581ebbd10b298b2e0f9f021994a6f238bf14d1dd839b1b5f2223924b35fd8837",
+      "expected_status": 0
+    },
+    {
+      "file": "method-nested-capture.rs",
+      "sha256": "cddf15f24ec8cddafd5b091dfdcc81d0035b7688ce79799510ae4630f468de6b",
+      "expected_status": 1
+    },
+    {
+      "file": "method-distinct-universals.rs",
+      "sha256": "cdff162d601618f5122b4f4dbf433b3bd90c6d14031386ad847a149dd40ccf95",
+      "expected_status": 1
+    },
+    {
+      "file": "method-distinct-preserved.rs",
+      "sha256": "9b058e0c658b3ca0db7efa9d2f35211d21d4f2eb3b70bd4771eefebaf459bd68",
+      "expected_status": 0
+    }
+  ],
+  "context": "Ordinary source GAT forwarding with real caller/outlives assumptions; no async/source language role.",
+  "reference": {
+    "path": "obj/parallel/async-call-source-v1/ordinary-family-reference-v1/receipt.json",
+    "sha256": "67ad57861cb3cc118d4fa5a812ff3b251ce57f58ddbeea7d687f99b0f4d79c7b"
+  },
+  "method_reference": {
+    "path": "obj/parallel/async-call-source-v1/ordinary-family-reference-v2/receipt.json",
+    "sha256": "349ee7e03e2b0af247be8adca93dd90e61a5b5ce4f104f0a721768b55a9ede5b"
+  },
+  "scope_reference": {
+    "path": "obj/parallel/async-call-source-v1/ordinary-family-reference-v4/receipt.json",
+    "sha256": "adb6b88ae3ddbdf83248e3bac7bf9857e4cb22ae32f41a7a7436147e7cb74a53",
+    "setup_correction": "Retain v3 required-bound failure and original bytes. Supply genuine required T: a on trait and forwarded family; authored method bodies/expected outcomes unchanged."
+  }
+}

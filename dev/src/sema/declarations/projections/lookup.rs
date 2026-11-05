@@ -114,7 +114,7 @@ impl Checker<'_> {
             seeds.retain(|seed| {
                 self.report.resolution.definitions[seed.definition.0 as usize].kind
                     == crate::resolve::model::DefKind::TraitAlias
-                    || headers.reachable[&name].contains(&seed.definition)
+                    || headers.may_name(seed.definition, name)
             });
         }
         for seed in seeds.iter().rev() {

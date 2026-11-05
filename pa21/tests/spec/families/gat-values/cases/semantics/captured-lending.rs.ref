@@ -144,5 +144,4 @@ proof-owned proof=0 start=3 end=4
 proof-block proof=0 index=0 scope=0 aliases=false source=0 start=3 end=4
 proof-block proof=0 index=1 scope=1 aliases=false source=0 start=3 end=4
 proof-relation proof=0 block=1 kind=equal left=region:3 right=bound:0:0
-proof-type proof=0 block=1 type=51 shorter=region:3
-eof owners=2 members=4 parameters=5 predicates=3 impls=1 calls=1 paths=0 impl-uses=1 type-members=2 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=3 normalized-definitions=0 quantifiers=0 families=2 family-bounds=2 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=1 proof-scopes=1 proof-blocks=2 proof-sources=0 proof-owned=1 proof-relations=1 proof-types=1
+eof owners=2 members=4 parameters=5 predicates=3 impls=1 calls=1 paths=0 impl-uses=1 type-members=2 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=3 normalized-definitions=0 quantifiers=0 families=2 family-bounds=2 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=1 proof-scopes=1 proof-blocks=2 proof-sources=0 proof-owned=1 proof-relations=1 proof-types=0

@@ -143,7 +143,7 @@ impl Pending {
         self.data
             .get_or_insert_with(Default::default)
             .scopes
-            .scope(parent, count)
+            .callable_scope(parent, count)
     }
     fn insert(&mut self, watch: WatchId, query: Query) {
         self.data

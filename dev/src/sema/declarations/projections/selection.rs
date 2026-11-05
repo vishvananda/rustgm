@@ -127,10 +127,10 @@ impl Checker<'_> {
             return Ok(None);
         }
         let (environment, first) = self.scoped_projection_environment(key, request, context)?;
-        let progress = normal_form::begin(
+        let progress = normal_form::begin_with_scope(
             &mut self.facts,
             environment,
-            request,
+            (request, self.regions.callable_depth(context.binder)),
             first,
             deferred,
             Availability::Declarations,

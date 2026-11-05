@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "basis": "Declared before candidate/independent observation. Real shared/inherited getter observes17; mutable forwarding writes29, with scoped actual borrows and unchanged source bodies.",
+  "cases": [
+    {
+      "path": "execute-shared.rs",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "sha256": "e0bba2d158344d78c9bc81c7abbb38ea4002f18fd6b22a6491b70b340b96454f"
+    },
+    {
+      "path": "execute-inherited.rs",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "sha256": "45b665f9c26b827512b0adf6d741b3b7b26acfd0ec85f1d0652aaf1757c7975d"
+    },
+    {
+      "path": "execute-mutable.rs",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "sha256": "7e69549f632ad3a12c53e9a985bccef05f94b8c8ba01d0a80e6e02272d956172"
+    }
+  ]
+}

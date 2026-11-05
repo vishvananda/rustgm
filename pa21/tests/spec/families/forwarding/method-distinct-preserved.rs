@@ -1,0 +1,1 @@
+trait Lending{type Ref<'a,'b>where Self:'a,Self:'b;fn get<'a,'b>(&'a self,other:&'b Self)->Self::Ref<'a,'b>;}impl<F:Lending+?Sized>Lending for &F{type Ref<'a,'b>=F::Ref<'a,'b>where Self:'a,Self:'b;fn get<'a,'b>(&'a self,other:&'b Self)->Self::Ref<'a,'b>{loop{}}}fn main(){}

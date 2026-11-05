@@ -1,4 +1,4 @@
-//! Conditional equality compares complete typed inputs without constraining inference.
+//! Complete projection inputs support verification and local method lifetime choices.
 use super::{Constraints, Error, Region, RegionId, Relation, Scope, TypeId, structural::Compare};
 use crate::support::hash::HashSet;
 use crate::types::{outlives::Projection, region_graph::VerificationId};
@@ -8,18 +8,19 @@ pub(super) struct View {
     pub projection: Projection,
     pub scope: Scope,
 }
-struct Match<'a, 't> {
+struct Match<'a, 't, const CHOOSE: bool> {
     proof: &'a mut Constraints<'t>,
     left: View,
     right: View,
     work: Vec<(TypeId, TypeId, u16)>,
     seen: HashSet<(TypeId, TypeId, u16)>,
     guards: Vec<VerificationId>,
+    source: u32,
 }
 impl Constraints<'_> {
     /// Equal complete inputs suffice for opaque result identity. Their equality
     /// is a condition to verify, never an equation inferred from equal results.
-    pub(super) fn relate_projection(
+    pub(super) fn relate_projection<const METHOD: bool>(
         &mut self,
         relation: Relation,
         source: u32,
@@ -29,9 +30,10 @@ impl Constraints<'_> {
             scope,
         };
         let guards = self
-            .projection_guards(
+            .projection_inputs::<METHOD>(
                 view(relation.actual, relation.left),
                 view(relation.expected, relation.right),
+                source,
             )?
             .ok_or(Error::Identity)?;
         if !guards.is_empty() {
@@ -45,13 +47,23 @@ impl Constraints<'_> {
         left: View,
         right: View,
     ) -> Result<Option<Vec<VerificationId>>, Error> {
-        let mut query = Match {
+        self.projection_inputs::<false>(left, right, 0)
+    }
+
+    fn projection_inputs<const CHOOSE: bool>(
+        &mut self,
+        left: View,
+        right: View,
+        source: u32,
+    ) -> Result<Option<Vec<VerificationId>>, Error> {
+        let mut query = Match::<CHOOSE> {
             proof: self,
             left,
             right,
             work: vec![(left.projection.ty, right.projection.ty, 0)],
             seen: HashSet::default(),
             guards: Vec::new(),
+            source,
         };
         while let Some((a, b, depth)) = query.work.pop() {
             query.charge(1)?;
@@ -69,7 +81,7 @@ impl Constraints<'_> {
         Ok(Some(query.guards))
     }
 }
-impl Match<'_, '_> {
+impl<const CHOOSE: bool> Match<'_, '_, CHOOSE> {
     fn charge(&mut self, count: usize) -> Result<(), Error> {
         self.proof.steps = self.proof.steps.saturating_add(count);
         if self.proof.steps.saturating_add(self.work.len()) > self.proof.limit {
@@ -103,13 +115,18 @@ impl Match<'_, '_> {
         let b = self.resolve(b, self.right, nested)?;
         if a != b {
             self.charge(2)?;
-            self.guards.push(self.proof.graph.verify_outlives(a, b)?);
-            self.guards.push(self.proof.graph.verify_outlives(b, a)?);
+            if CHOOSE {
+                self.proof.graph.require(a, b, self.source)?;
+                self.proof.graph.require(b, a, self.source)?;
+            } else {
+                self.guards.push(self.proof.graph.verify_outlives(a, b)?);
+                self.guards.push(self.proof.graph.verify_outlives(b, a)?);
+            }
         }
         Ok(true)
     }
 }
-impl<'t> super::structural::Compare<'t> for Match<'_, 't> {
+impl<'t, const CHOOSE: bool> super::structural::Compare<'t> for Match<'_, 't, CHOOSE> {
     fn types(&self) -> &'t crate::types::Store {
         self.proof.types
     }

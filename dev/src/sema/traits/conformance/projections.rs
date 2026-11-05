@@ -8,6 +8,37 @@ use crate::types::{
     substitute::{self, Request},
 };
 
+/// Only completed semantic normal forms reach this structural comparison.
+/// Projection inputs are compared without inference or injectivity; their
+/// lifetime equality and every caller permission remain duties of `regions::prove`.
+pub(super) fn require_shape(
+    facts: &Declarations,
+    actual: TypeId,
+    expected: TypeId,
+) -> Result<(), String> {
+    if facts.types.contains_projections(actual) == Some(false)
+        && facts.types.contains_projections(expected) == Some(false)
+    {
+        let mut shape = crate::types::infer::Context::default();
+        let actual = shape
+            .known(&facts.types, actual)
+            .map_err(|e| e.to_string())?;
+        let expected = shape
+            .known(&facts.types, expected)
+            .map_err(|e| e.to_string())?;
+        return shape
+            .equate_shape(&facts.types, actual, expected)
+            .map_err(|e| e.to_string());
+    }
+    let mut shape = crate::types::structural::Normalized::<true>::new(&facts.types);
+    let result = shape.require(actual, expected);
+    if facts.source_bindings.is_some() {
+        crate::sema::header_attributes::charge_source_contract_query(facts, shape.steps)
+            .map_err(|e| e.to_string())?;
+    }
+    result.map_err(|e| e.to_string())
+}
+
 /// Construct only after every associated definition has passed impl conformance.
 pub(in crate::sema) struct Definitions {
     parent: Predicate,

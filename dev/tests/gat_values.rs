@@ -191,6 +191,37 @@ fn public_family_applications_preserve_argument_kinds_and_input_debts()
 }
 
 #[test]
+fn forwarded_families_keep_original_implementation_and_member_environments()
+-> Result<(), Box<dyn std::error::Error>> {
+    let cases = crate::resolve::fixture("pa21/tests/spec/families/forwarding/cases.tsv")?;
+    let mut failures = Vec::new();
+    let mut count = 0;
+    for line in cases.lines() {
+        let (name, status) = line.split_once('\t').ok_or("case columns")?;
+        let source =
+            crate::resolve::fixture(&format!("pa21/tests/spec/families/forwarding/{name}"))?;
+        let accepted = match status {
+            "0" => true,
+            "1" => false,
+            _ => return Err("case status".into()),
+        };
+        rustc::qualify(
+            &format!("parallel/family-forwarding/{name}"),
+            &source,
+            accepted,
+        )?;
+        let result = lower(&source);
+        if result.is_ok() != accepted {
+            failures.push(format!("{name}: {result:?}"));
+        }
+        count += 1;
+    }
+    assert_eq!(count, 19);
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+#[test]
 #[ignore = "requires the qualified external CPPGM LowIR backend"]
 fn generic_family_values_and_equalities_execute() -> Result<(), Box<dyn std::error::Error>> {
     let cases: Vec<_> = CASES
@@ -199,4 +230,71 @@ fn generic_family_values_and_equalities_execute() -> Result<(), Box<dyn std::err
         .map(|&(name, source, _)| (name, source, false))
         .collect();
     native::check_cases("family-values/native", &cases)
+}
+
+#[test]
+fn callable_family_conditions_defer_only_actual_local_inputs()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut failures = Vec::new();
+    let cases = crate::resolve::fixture("pa21/tests/spec/families/callable-formation/cases.tsv")?;
+    for line in cases.lines() {
+        let (name, status) = line.split_once('\t').ok_or("case columns")?;
+        let source = crate::resolve::fixture(&format!(
+            "pa21/tests/spec/families/callable-formation/{name}"
+        ))?;
+        let accepted = match status {
+            "0" => true,
+            "1" => false,
+            _ => return Err("case status".into()),
+        };
+        rustc::qualify(
+            &format!("parallel/family-callable/{name}"),
+            &source,
+            accepted,
+        )?;
+        let result = lower(&source);
+        if result.is_ok() != accepted
+            || result.as_ref().err().is_some_and(|message| {
+                message.contains("not implemented") || message.contains("unsupported")
+            })
+        {
+            failures.push(format!("{name}: {result:?}"));
+        }
+    }
+    assert_eq!(cases.lines().count(), 18);
+    let source = crate::resolve::fixture(
+        "pa21/tests/spec/families/local-family-contracts/cases/lowir/nested-local-no-permission.rs",
+    )?;
+    rustc::qualify(
+        "parallel/family-callable/explicit-local-regions",
+        &source,
+        false,
+    )?;
+    if lower(&source).is_ok() {
+        failures.push("nested callable locals gained an unproved lifetime ordering".into());
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the qualified external CPPGM LowIR backend"]
+fn forwarded_family_bodies_execute_with_real_borrows() -> Result<(), Box<dyn std::error::Error>> {
+    let names = [
+        ("shared", "execute-shared.rs"),
+        ("inherited", "execute-inherited.rs"),
+        ("mutable", "execute-mutable.rs"),
+    ];
+    let inputs = names
+        .iter()
+        .map(|(_, name)| {
+            crate::resolve::fixture(&format!("pa21/tests/spec/families/forwarding/{name}"))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let cases = names
+        .iter()
+        .zip(&inputs)
+        .map(|(&(name, _), source)| (name, source.as_str(), false))
+        .collect::<Vec<_>>();
+    native::check_literal_cases("family-forwarding/native", &cases)
 }

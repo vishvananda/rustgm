@@ -193,5 +193,4 @@ proof-block proof=2 index=0 scope=0 aliases=false source=0 start=3 end=6
 proof-block proof=2 index=1 scope=1 aliases=false source=0 start=3 end=6
 proof-relation proof=2 block=1 kind=equal left=region:3 right=bound:0:0
 proof-relation proof=2 block=1 kind=equal left=region:3 right=region:5
-proof-type proof=2 block=1 type=38 shorter=region:3
-eof owners=4 members=6 parameters=4 predicates=3 impls=2 calls=1 paths=1 impl-uses=1 type-members=2 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=1 normalized-definitions=0 quantifiers=8 families=2 family-bounds=1 family-regions=0 opaques=2 opaque-bounds=4 hidden-types=1 opaque-body-results=1 opaque-implementations=1 proofs=3 proof-scopes=3 proof-blocks=10 proof-sources=2 proof-owned=2 proof-relations=2 proof-types=2
+eof owners=4 members=6 parameters=4 predicates=3 impls=2 calls=1 paths=1 impl-uses=1 type-members=2 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=1 normalized-definitions=0 quantifiers=8 families=2 family-bounds=1 family-regions=0 opaques=2 opaque-bounds=4 hidden-types=1 opaque-body-results=1 opaque-implementations=1 proofs=3 proof-scopes=3 proof-blocks=10 proof-sources=2 proof-owned=2 proof-relations=2 proof-types=1

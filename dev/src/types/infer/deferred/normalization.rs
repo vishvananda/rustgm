@@ -2,6 +2,23 @@
 use super::super::{Context, Error, Store, TermId, TypeId, Value};
 
 impl Context {
+    /// A shape relation compares independently proved opaque normal forms. The
+    /// existing directed lifetime proof must verify their complete input identity.
+    pub(in crate::types::infer) fn opaque_shape(
+        &mut self,
+        store: &Store,
+        left: TypeId,
+        right: TypeId,
+    ) -> Result<(), Error> {
+        let mut shape = crate::types::structural::Normalized::<false>::new(store);
+        let result = shape.require(left, right);
+        self.account_work(shape.steps)?;
+        result.map_err(|e| match e {
+            crate::types::region_graph::Error::Budget => Error::Budget,
+            _ => Error::Mismatch,
+        })
+    }
+
     /// Retain an independent operation for an occurrence's formation proof.
     /// A determined application keeps its original canonical inputs even when
     /// another occurrence subsequently publishes a result through the shared graph.

@@ -41,14 +41,19 @@ impl Checker<'_> {
                     && !self.projections.raw_environments.contains_key(&owner)
                 {
                     match self.report.resolution.definitions[owner.0 as usize].kind {
-                        DefKind::Function => self.work.push(Work::ProjectionEnvironment(
-                            owner,
-                            regions::Context {
-                                binder: Some(current),
-                                position: regions::Position::Output,
-                            },
-                            false,
-                        )),
+                        kind @ (DefKind::Function | DefKind::TypeAlias)
+                            if kind == DefKind::Function
+                                || self.facts.associated.owner(owner).is_some() =>
+                        {
+                            self.work.push(Work::ProjectionEnvironment(
+                                owner,
+                                regions::Context {
+                                    binder: Some(current),
+                                    position: regions::Position::Output,
+                                },
+                                false,
+                            ));
+                        }
                         DefKind::Struct | DefKind::Enum => self
                             .work
                             .push(Work::NominalContract(crate::types::ItemId(owner.0), false)),

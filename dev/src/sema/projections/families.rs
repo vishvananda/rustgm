@@ -15,10 +15,79 @@ use crate::{
     },
 };
 
+#[derive(Clone)]
 pub(in crate::sema) struct Requirements {
     pub clauses: Vec<Clause>,
     pub regions: Vec<Pair>,
     pub steps: usize,
+}
+
+impl Requirements {
+    /// Keep original coordinates: a later opening maps the surviving clauses
+    /// together with the actual projection. Deferred clauses grant no premise.
+    fn defer_callable_locals(
+        &mut self,
+        store: &crate::types::Store,
+        depth: u16,
+    ) -> Result<(), &'static str> {
+        if depth == 0 {
+            return Ok(());
+        }
+        let mut captures = crate::types::bound_uses::captures::Captures::new(depth);
+        let mut kept = 0;
+        for index in 0..self.clauses.len() {
+            let clause = self.clauses[index];
+            if !captures.clause(store, clause)? {
+                self.clauses[kept] = clause;
+                kept += 1;
+            }
+        }
+        self.steps = self
+            .steps
+            .saturating_add(captures.steps)
+            .saturating_add(self.clauses.len())
+            .saturating_add(self.regions.len());
+        self.clauses.truncate(kept);
+        // Explicit lifetime relations still need proof in the callable scope.
+        // A binder alone cannot establish an ordering between independent locals.
+        Ok(())
+    }
+
+    /// The caller charges the shared folder's work once with its other roots.
+    pub(in crate::sema) fn substitute(
+        &mut self,
+        store: &mut crate::types::Store,
+        fold: &mut crate::types::substitute::Bound,
+    ) -> Result<(), &'static str> {
+        for clause in &mut self.clauses {
+            *clause = fold.clause(store, *clause)?;
+        }
+        for (a, b) in &mut self.regions {
+            *a = fold.region(*a, 0)?;
+            *b = fold.region(*b, 0)?;
+        }
+        Ok(())
+    }
+}
+
+/// RFC1214 formation defers only complete input conditions capturing an actual
+/// surrounding callable local. Parent implementation selection is unchanged.
+pub(in crate::sema) fn inside_callable(
+    facts: &mut Declarations,
+    alias: crate::types::substitute::Alias,
+    depth: u16,
+) -> Result<Option<Requirements>, &'static str> {
+    if depth == 0 {
+        return Ok(None);
+    }
+    let Some(application) = alias.associated() else {
+        return Ok(None);
+    };
+    let mut conditions = requirements(facts, application)?;
+    if let Some(conditions) = &mut conditions {
+        conditions.defer_callable_locals(&facts.types, depth)?;
+    }
+    Ok(conditions)
 }
 
 /// The enclosing normalizer retains formation of the request's type inputs.

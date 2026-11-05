@@ -1469,7 +1469,9 @@ impl Checker<'_> {
         match phase {
             SignaturePhase::Begin(parent) => {
                 let declared = self.declared_regions(key, signature.binders)?;
-                let binder = self.signature_binder(owner, parent.binder, declared);
+                let binder = self
+                    .signature_binder(owner, parent.binder, declared)
+                    .map_err(|e| self.error(key, e))?;
                 if owner.is_none() {
                     self.inherit_alias_scope(key, parent, binder)?;
                 }
