@@ -1,0 +1,25 @@
+{
+  "prediction": "frozen correction before second reference or candidate",
+  "original_prediction": "impred.json",
+  "original_failure": "improv E0493 explicitly requires const_destruct feature; not oracle drift",
+  "cases": [
+    {
+      "file": "impro2.rs",
+      "source_sha256": "515f0c13f2333d3cb041e83ebe4e2fd36e8252122ecb3a7bd1df9485938dabeb",
+      "expected_code": 0,
+      "cause": "corrected genuine const_destruct request retained, full conditional struct premises"
+    },
+    {
+      "file": "impcn2.rs",
+      "source_sha256": "26ae45d24954c637f46b6982a7c37ace75903442c8da39fd6efde037d59d3cdb",
+      "expected_code": 0,
+      "cause": "corrected genuine const_destruct request retained, full conditional struct premises"
+    },
+    {
+      "file": "impcp2.rs",
+      "source_sha256": "10c9100b9d98c6c80fa9b43b2c8d6001311397769466e9a6e2167eab2d6183b9",
+      "expected_code": 0,
+      "cause": "corrected genuine const_destruct request retained, full conditional struct premises"
+    }
+  ]
+}

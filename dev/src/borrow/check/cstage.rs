@@ -8,7 +8,7 @@ use crate::{
         order::Order,
         ownership::initialization,
     },
-    types::{TypeId, copy::Copies, destruction::regions::Regions},
+    types::{copy::Copies, destruction::regions::Regions},
 };
 use std::sync::Arc;
 pub(crate) struct Prepared<'body, 'slot> {
@@ -23,11 +23,18 @@ impl Prepared<'_, '_> {
     pub(super) fn body(&self) -> &Body {
         self.facts.body()
     }
-    pub(crate) fn eligibility(&self) -> impl Iterator<Item = Result<TypeId, &'static str>> + '_ {
-        self.plan
-            .cleanups
-            .iter()
-            .filter_map(|cleanup| cleanup.live_type.map(Ok))
+    pub(crate) fn eligibility(
+        &self,
+    ) -> impl Iterator<Item = Result<crate::body::defining_cleanups::Subject, &'static str>> + '_
+    {
+        self.plan.cleanups.iter().filter_map(|cleanup| {
+            cleanup.live_type.map(|ty| {
+                Ok(crate::body::defining_cleanups::Subject {
+                    ty,
+                    access: cleanup.node.is_some(),
+                })
+            })
+        })
     }
 }
 pub(super) fn prepare<'body, 'slot, S: std::hash::BuildHasher>(
@@ -131,14 +138,26 @@ pub(super) fn finish<S: std::hash::BuildHasher>(
         RegionUse::Reproved => super::super::permissions::check(environment, contract)?,
     };
     let mut scoped = parameters.map(|p| drop_regions.scoped(p));
-    loans::check_destruction(
+    if owner.is_none() {
+        loans::require_no_const_cleanup(
+            prepared.body(),
+            destruction::schedule::Schedule::concrete(&prepared.plan),
+        )
+        .map_err(|e| Error {
+            node: Some(e.node),
+            message: e.message.into(),
+        })?;
+    }
+    // Only this exact sealed source-original plan reaches concrete native loans.
+    // The public concrete-plan API retains its independent CTFE fence.
+    loans::check_schedule(
         environment.types,
         environment.definitions,
         &mut reused.components,
         scoped.as_mut().unwrap_or(drop_regions),
         &prepared.facts,
         contract,
-        &prepared.plan,
+        destruction::schedule::Schedule::concrete(&prepared.plan),
     )
     .map_err(|e| Error {
         node: Some(e.node),

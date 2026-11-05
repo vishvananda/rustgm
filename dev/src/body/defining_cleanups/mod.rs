@@ -3,6 +3,11 @@ mod claims;
 mod preparation;
 mod proofs;
 pub(crate) use proofs::select;
+/// One eligibility subject borrowed from the actual initialized cleanup plan.
+pub(crate) struct Subject {
+    pub(crate) ty: crate::types::TypeId,
+    pub(crate) access: bool,
+}
 #[cfg(test)]
 #[path = "../../../tests/invariants/destruct_contracts.rs"]
 mod tests;

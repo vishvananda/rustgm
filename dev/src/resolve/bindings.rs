@@ -346,6 +346,12 @@ impl super::package::Package {
         )
     }
     /// Permission for a C-variadic definition, never its list layout or body proof.
+    pub(crate) fn requested_const_precise_live_drops(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::ConstPreciseLiveDrops,
+            "const precise live drops client identity changed",
+        )
+    }
     pub(crate) fn requested_c_variadic(&self) -> Result<bool, &'static str> {
         self.requested_expression_feature(
             policy::Feature::CVariadic,

@@ -1,0 +1,28 @@
+{
+  "prediction": "frozen before reference/candidate",
+  "required_originals": [
+    "impro3.rs",
+    "impro4.rs",
+    "impro5.rs"
+  ],
+  "cases": [
+    {
+      "file": "impro6.rs",
+      "source_sha256": "401f3cb243c3ef5ba0871aaf70ee8502c65e03b6aed4eba5ed2ae31a6477d8fd",
+      "expected_code": 0,
+      "cause": "one-field unwrap with actual pinned closed Destruct marker attributes; all earlier alternative-profile positives retained"
+    },
+    {
+      "file": "impcn6.rs",
+      "source_sha256": "1429bc7a98cd468e171ce782f746f2deb30084f080013edd417e965f88b8614b",
+      "expected_code": 0,
+      "cause": "one-field unwrap with actual pinned closed Destruct marker attributes; all earlier alternative-profile positives retained"
+    },
+    {
+      "file": "impcp6.rs",
+      "source_sha256": "651e2b4a269f0d74c39425ba9c9b901713560730b9cff46c4e53fbecbd10d2be",
+      "expected_code": 0,
+      "cause": "one-field unwrap with actual pinned closed Destruct marker attributes; all earlier alternative-profile positives retained"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "prediction": "frozen before reference/candidate",
+  "prior": "impfr2.json",
+  "prior_harness_failure": "provider metadata filename base.rmeta lacked required lib prefix; consumer is unqualified infrastructure, not a language rejection",
+  "cases": [
+    {
+      "file": "impro3.rs",
+      "source_sha256": "515f0c13f2333d3cb041e83ebe4e2fd36e8252122ecb3a7bd1df9485938dabeb",
+      "expected_code": 0,
+      "cause": "valid raw source and ordinary runtime demand for actual generic original; imported precision policy remains a named transport requirement"
+    },
+    {
+      "file": "impcn3.rs",
+      "source_sha256": "1b9e0134364c89cfd463bb5d7b70bc2519d4cbdf0b907ec1c9e344368f4afac4",
+      "expected_code": 0,
+      "cause": "valid raw source and ordinary runtime demand for actual generic original; imported precision policy remains a named transport requirement"
+    },
+    {
+      "file": "impcp3.rs",
+      "source_sha256": "c70c265ac046eeaaa5af4ac994cb7e1a121bd9a8f2e14ecd9c539afb92be1188",
+      "expected_code": 0,
+      "cause": "valid raw source and ordinary runtime demand for actual generic original; imported precision policy remains a named transport requirement"
+    }
+  ]
+}

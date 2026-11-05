@@ -568,7 +568,7 @@ fn inspect_staged<S, R>(
         .map(|i| i.item)
         .collect::<Vec<_>>();
     let (checked, inputs) =
-        crate::pipeline::cdrop::templates(facts, inputs, &templates, &contexts, &custom)
+        crate::pipeline::cdrop::templates(report, facts, inputs, &templates, &contexts, &custom)
             .map_err(|e| diagnostic(report, e.node, e.message))?;
     publish_closure_conditions(facts, &checked).map_err(|e| diagnostic(report, None, e.into()))?;
     publish_source_opaque_heads(facts, &checked)

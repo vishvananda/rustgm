@@ -1,0 +1,59 @@
+{
+  "prediction": "frozen before candidate and reference",
+  "cases": [
+    {
+      "file": "prstr.rs",
+      "source_sha256": "81a17316bffbe307063257ad608963c5fd39edb96780217349e44329c2d6888c",
+      "expected_code": 0,
+      "cause": "actual requested precise cleanup permits moved fields"
+    },
+    {
+      "file": "nrstr.rs",
+      "source_sha256": "d354b3d038fa1caa4e6d33ad9991db3ad9713715cd32300b602bb8ec197e743f",
+      "expected_code": 1,
+      "cause": "E0493 default partial struct root remains live"
+    },
+    {
+      "file": "pract.rs",
+      "source_sha256": "552b7c7848dd2fe7b5978e5861c0b75d6b9577eb8b36683556c983e886989afa",
+      "expected_code": 1,
+      "cause": "E0493 actual nonconst field cleanup remains active"
+    },
+    {
+      "file": "prunk.rs",
+      "source_sha256": "37efcc7e8f6175319f8572234e919441a2be437a6be8ab0ae4f7616085c0f110",
+      "expected_code": 1,
+      "cause": "E0493 unknown active nonconst variant"
+    },
+    {
+      "file": "prmove.rs",
+      "source_sha256": "fecf94adb9fd724af1581b18af3dd4ed1364168c12c3a26a65df9ce95d2a8816",
+      "expected_code": 0,
+      "cause": "actual requested precise cleanup with all enum payloads moved"
+    },
+    {
+      "file": "prknow.rs",
+      "source_sha256": "7510c32c79448413ea0da2dabf4ec8123573084986d7151af6cf3bfd4944493c",
+      "expected_code": 0,
+      "cause": "known good active variant requires pending selected-leaf producer"
+    },
+    {
+      "file": "macreq.rs",
+      "source_sha256": "690fb4ea9e6182256b22889bf9272b298241000041000a504a43d4a09de7a62e",
+      "expected_code": 1,
+      "cause": "macro allowance is not the crate precise cleanup request"
+    },
+    {
+      "file": "sealok.rs",
+      "source_sha256": "cd29f6986ddf9e225b685919027404fc14d30563bf56836ac0f14b51c2852ad6",
+      "expected_code": 0,
+      "cause": "dropless semantic struct has actual const Destruct"
+    },
+    {
+      "file": "sealno.rs",
+      "source_sha256": "1c6c43b82e5da58a027b72fed967fa6c54ec75a39a4cb4171a3d6ef94c6105a9",
+      "expected_code": 1,
+      "cause": "E0277 ordinary Destruct is not const Drop permission"
+    }
+  ]
+}

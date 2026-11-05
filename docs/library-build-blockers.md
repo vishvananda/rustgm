@@ -1778,6 +1778,26 @@ rendering. Successful default warnings and primary selected-trait messages must
 still work in the current consumer slice. Neither success nor complete
 `on_unimplemented` diagnostic parity is claimed before qualification.
 
+## Required composite conditional const cleanup
+
+PA25 `const-callables` and PA31 `source-runtime` retain the actual conditional
+composite definition prerequisite separately from the CI no-drop repair. The
+ordinary source `pa31/tests/spec/source-const-cleanup/impro3.rs` has real
+`T: [const] Destruct` and `U: [const] Destruct` premises and moves both actual
+`Pair<T,U>` fields into its tuple result. Source SHA-256
+`515f0c13f2333d3cb041e83ebe4e2fd36e8252122ecb3a7bd1df9485938dabeb`
+is independently accepted by pinned Rust, as are both actual client sources in
+`impfr3.json`. Candidate `repair-public4` stops before export at file0 byte2155:
+`active cleanup requires const Destruct in its actual defining environment`.
+This is a required positive, not an import result or a parity negative. The
+[repair evidence](parallel/source-const-repair.md) binds the original prediction,
+setup corrections, reference receipts and candidate diagnostics. Explicit
+unconditional const premises in `impro4.rs` are a separate control; they do not
+replace the conditional requirement. Close it through genuine defining
+conditional/field eligibility and normal source/region/loan proof, without
+relaxing generic conformance or the interpreter cleanup fence. Selected enum
+leaves, actual CTFE cleanup and provider-policy transport remain separate work.
+
 ## Work and qualification rules
 
 Keep the two existing GPT-6.1-Sol/high workers. A worker can carry multiple
