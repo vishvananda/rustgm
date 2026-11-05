@@ -114,7 +114,7 @@ impl Machine<'_> {
                     Action::GuardStart(_) | Action::GuardUse(_) | Action::BindView { .. } => {
                         return Err("guard views require the native executor".into());
                     }
-                    Action::Project(_) | Action::Select { .. } => {
+                    Action::Project(_) | Action::Select { .. } | Action::FutureTake { .. } => {
                         return Err(
                             "scalar test executor does not implement aggregate places".into()
                         );

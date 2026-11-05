@@ -8,10 +8,11 @@ pub(super) struct Mapping {
     replacements: HashMap<RegionId, RegionId>,
 }
 impl Mapping {
-    pub(super) fn region(
+    pub(super) fn region_observed<const CHARGED: bool>(
         &mut self,
         original: RegionId,
         depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<RegionId, &'static str> {
         if original == RegionId::STATIC {
             return Ok(original);
@@ -44,6 +45,14 @@ impl Mapping {
             );
             let index = u16::try_from(next).map_err(|_| "too many instance lifetimes")?;
             let region = RegionId::bound(0, index)?;
+            if CHARGED {
+                let growth = crate::support::retained::Growth::map::<RegionId, RegionId>(
+                    self.replacements.len(),
+                    self.replacements.capacity(),
+                    1,
+                );
+                charge(growth.work, growth.bytes)?;
+            }
             self.replacements.insert(free, region);
             region
         };
@@ -65,6 +74,15 @@ impl Bound {
             replacements: HashMap::default(),
         }));
         bound
+    }
+
+    /// Retain the same input mapping under the actual source allocation payer.
+    pub(crate) fn universals_charged(
+        first: u32,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Self, &'static str> {
+        charge(1, size_of::<Self>() + size_of::<Mapping>())?;
+        Ok(Self::universals(first))
     }
 
     /// Renumber appended locals while preserving a parent binder's fixed prefix.
@@ -111,5 +129,48 @@ impl Mapping {
         let mut total = crate::support::retained::Allocation::default();
         total.map(&self.replacements);
         total
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::cell::Cell;
+
+    #[test]
+    fn paid_universal_import_keeps_warm_identity_and_rejects_unpaid_growth()
+    -> Result<(), &'static str> {
+        let bytes = Cell::new(0usize);
+        let limit = Cell::new(usize::MAX);
+        let pay = |_: usize, growth: usize| {
+            if bytes.get().saturating_add(growth) > limit.get() {
+                return Err("actual input mapping budget");
+            }
+            bytes.set(bytes.get().saturating_add(growth));
+            Ok(())
+        };
+        let mut fold = Bound::universals_charged(3, &pay)?;
+        let initial = bytes.get();
+        limit.set(initial);
+        assert!(fold.region_observed::<true>(RegionId(42), 0, &pay).is_err());
+        assert_eq!(fold.universal_count(), 0);
+        limit.set(usize::MAX);
+        let first = fold.region_observed::<true>(RegionId(42), 0, &pay)?;
+        assert_eq!(first, RegionId::bound(0, 3)?);
+        let cold = bytes.get();
+        assert!(cold > initial);
+        assert_eq!(fold.region_observed::<true>(RegionId(42), 0, &pay)?, first);
+        assert_eq!(bytes.get(), cold);
+        assert_eq!(
+            fold.region_observed::<true>(RegionId::bound(0, 0)?, 1, &pay)?,
+            RegionId::bound(0, 0)?
+        );
+        assert_eq!(
+            fold.region_observed::<true>(RegionId::STATIC, 0, &pay)?,
+            RegionId::STATIC
+        );
+        assert_eq!(fold.universal_count(), 1);
+        assert!(Bound::universals_charged(0, &|_, _| Err("reject before construction")).is_err());
+        Ok(())
     }
 }

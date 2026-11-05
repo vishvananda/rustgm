@@ -78,6 +78,7 @@ impl Bound {
             Action::Remove
                 | Action::Shift(_)
                 | Action::Lower(_)
+                | Action::Universals(_)
                 | Action::Shape { .. }
                 | Action::Regions(_)
         ) {

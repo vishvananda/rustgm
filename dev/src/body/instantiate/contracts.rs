@@ -20,7 +20,7 @@ pub(super) fn specialize(
     inputs: &mut Inputs,
     premises: super::Premises,
 ) -> Result<(Bound, Contract), &'static str> {
-    let (bound, contract, _) = prepare(
+    let (bound, contract, _, _) = prepare::<false>(
         facts,
         original,
         inputs,
@@ -30,6 +30,23 @@ pub(super) fn specialize(
         None,
     )?;
     Ok((bound, contract))
+}
+/// Retain the actual input mapping for the single consumed generated-poll preparation.
+pub(super) fn async_body(
+    facts: &mut Declarations,
+    original: &Contract,
+    inputs: &mut Inputs,
+) -> Result<(Bound, Contract, Bound), &'static str> {
+    let (bound, contract, _, regions) = prepare::<true>(
+        facts,
+        original,
+        inputs,
+        super::Premises::Required,
+        ResultRequest::None,
+        false,
+        None,
+    )?;
+    Ok((bound, contract, regions))
 }
 pub(super) fn initializer(
     facts: &mut Declarations,
@@ -41,7 +58,7 @@ pub(super) fn initializer(
             .captures
             .iter()
             .all(|&region| region == RegionId::STATIC);
-    let (bound, contract, _) = prepare(
+    let (bound, contract, _, _) = prepare::<false>(
         facts,
         original,
         inputs,
@@ -58,7 +75,7 @@ pub(super) fn source_result(
     inputs: &mut Inputs,
     requested: crate::types::TypeId,
 ) -> Result<(Bound, Contract, crate::types::TypeId), &'static str> {
-    let (bound, contract, imported) = prepare(
+    let (bound, contract, imported, _) = prepare::<false>(
         facts,
         original,
         inputs,
@@ -79,7 +96,7 @@ pub(super) fn conditional_result(
     inputs: &mut Inputs,
     requested: crate::types::TypeId,
 ) -> Result<(Bound, Contract, crate::types::TypeId), &'static str> {
-    let (bound, contract, imported) = prepare(
+    let (bound, contract, imported, _) = prepare::<false>(
         facts,
         original,
         inputs,
@@ -100,7 +117,7 @@ pub(super) fn rigid_initializer(
     inputs: &mut Inputs,
     parameters: Vec<crate::types::parameters::ParameterId>,
 ) -> Result<(Bound, Contract), &'static str> {
-    let (bound, contract, _) = prepare(
+    let (bound, contract, _, _) = prepare::<false>(
         facts,
         original,
         inputs,
@@ -111,7 +128,7 @@ pub(super) fn rigid_initializer(
     )?;
     Ok((bound, contract))
 }
-fn prepare(
+fn prepare<const CAPTURES: bool>(
     facts: &mut Declarations,
     original: &Contract,
     inputs: &mut Inputs,
@@ -119,7 +136,7 @@ fn prepare(
     request: ResultRequest,
     close_static: bool,
     parameters: Option<Vec<crate::types::parameters::ParameterId>>,
-) -> Result<(Bound, Contract, Option<crate::types::TypeId>), &'static str> {
+) -> Result<(Bound, Contract, Option<crate::types::TypeId>, Bound), &'static str> {
     let retain_output = matches!(request, ResultRequest::Conditional(_));
     let mut requested = match request {
         ResultRequest::None => None,
@@ -138,7 +155,7 @@ fn prepare(
     } else {
         super::caller_transport::contract(facts, &mut contract, inputs.caller)?;
     }
-    let regions = import_regions(facts, inputs, original.universals, &mut requested)?;
+    let regions = import_regions::<CAPTURES>(facts, inputs, original.universals, &mut requested)?;
     let mut bound = if close_static {
         Bound::parameters_captured(&facts.types, &inputs.bindings, inputs.captures.clone())?
     } else {
@@ -221,7 +238,7 @@ fn prepare(
         )?;
     }
     argument_assumptions(facts, inputs, &mut contract)?;
-    Ok((bound, contract, requested))
+    Ok((bound, contract, requested, regions))
 }
 
 /// Selected argument formation is caller evidence, including erased arguments.
@@ -281,27 +298,53 @@ fn argument_assumptions(
 }
 
 /// Import all source identities through one folder before specializing body facts.
-fn import_regions(
+fn import_regions<const CHARGED: bool>(
     facts: &mut Declarations,
     inputs: &mut Inputs,
     universals: u32,
     requested: &mut Option<crate::types::TypeId>,
 ) -> Result<Bound, &'static str> {
-    let mut regions = Bound::universals(universals);
+    let mut regions = if CHARGED {
+        Bound::universals_charged(universals, &|work, bytes| {
+            facts.charge_caller_inputs(work, bytes)
+        })?
+    } else {
+        Bound::universals(universals)
+    };
     for capture in &mut inputs.captures {
-        *capture = regions.region(*capture, 0)?;
+        *capture = regions.region_observed::<CHARGED>(*capture, 0, &|work, bytes| {
+            facts.charge_caller_inputs(work, bytes)
+        })?;
     }
     if let Some(connections) = &mut inputs.connections {
         for (_, actual) in &mut connections.slots {
-            *actual = regions.region(*actual, 0)?;
+            *actual = regions.region_observed::<CHARGED>(*actual, 0, &|work, bytes| {
+                facts.charge_caller_inputs(work, bytes)
+            })?;
         }
         for (a, b) in &mut connections.equalities {
-            *a = regions.region(*a, 0)?;
-            *b = regions.region(*b, 0)?;
+            *a = regions.region_observed::<CHARGED>(*a, 0, &|work, bytes| {
+                facts.charge_caller_inputs(work, bytes)
+            })?;
+            *b = regions.region_observed::<CHARGED>(*b, 0, &|work, bytes| {
+                facts.charge_caller_inputs(work, bytes)
+            })?;
         }
     }
     for (_, argument) in &mut inputs.bindings {
-        *argument = regions.apply_argument(&mut facts.types, *argument)?;
+        *argument = if CHARGED {
+            let (types, payments) = facts.caller_input_store()?;
+            regions.apply_argument_charged(types, *argument, &|work, bytes| {
+                payments.charge(work, bytes)
+            })?
+        } else {
+            regions.apply_argument(&mut facts.types, *argument)?
+        };
+    }
+    if CHARGED
+        && (inputs.comparison.is_some() || inputs.connections.is_some() || requested.is_some())
+    {
+        return Err("async capture import has an unexpected callable result or receiver context");
     }
     if let Some((expected, actual)) = &mut inputs.comparison {
         *expected = regions.apply(&mut facts.types, *expected)?;

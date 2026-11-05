@@ -164,6 +164,11 @@ impl Paths {
             let info = paths.project(body, types, projection, &mut fields, &mut arrays)?;
             paths.projections.push(info);
         }
+        for statement in &body.statements {
+            if let crate::body::ir::Action::FutureTake { projection, target } = statement.action {
+                crate::body::coroutines::transfer(types, body, projection, target)?;
+            }
+        }
         for value in &body.values {
             if let Rvalue::Read(Place::Temporary(id))
             | Rvalue::Address(Place::Temporary(id))
@@ -240,6 +245,13 @@ impl Paths {
             }
             ProjectionKind::RawDereference { mutable } => {
                 info = PlaceInfo::raw(mutable);
+                None
+            }
+            ProjectionKind::FutureField(_) => {
+                crate::body::coroutines::field(types, body, projection)?;
+                if info.access != Access::Mutable {
+                    return Err("future frame field requires its actual exclusive receiver");
+                }
                 None
             }
             ProjectionKind::Field(field) => Some(Component::Field(field)),

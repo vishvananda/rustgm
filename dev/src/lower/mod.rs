@@ -73,10 +73,17 @@ pub(crate) fn build_assembled(
     assembled: crate::borrow::incremental::Assembled,
     roots: roots::Selected<'_>,
 ) -> Result<program::Program, Error> {
-    let (program, mut destruction) = assembled.into_lowering();
+    let (program, mut destruction, forwarding) = assembled.into_lowering();
     alignment::check(facts, &program)?;
     let plans = destruction
         .as_deref_mut()
         .map(crate::borrow::destruction::Proof::take_plans);
-    context::build_owned(facts, program.bodies, destruction.as_deref(), plans, roots)
+    context::build_owned(
+        facts,
+        program.bodies,
+        destruction.as_deref(),
+        plans,
+        &forwarding,
+        roots,
+    )
 }

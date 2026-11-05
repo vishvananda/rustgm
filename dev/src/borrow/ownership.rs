@@ -244,6 +244,11 @@ impl BodyFacts {
         action: Action,
     ) -> Result<(), &'static str> {
         match action {
+            Action::FutureTake { target, .. } => {
+                let path = &self.paths.entries[target.0 as usize];
+                state.fill(path, true)?;
+                state.written(path.start, true);
+            }
             Action::BindView { view, .. } => {
                 let path = &self.paths.entries[view.0 as usize];
                 state.fill(path, true)?;
@@ -313,6 +318,22 @@ impl BodyFacts {
         action: Action,
     ) -> Result<(), &'static str> {
         match action {
+            Action::FutureTake { projection, target } => {
+                crate::body::coroutines::transfer(types, body, projection, target)?;
+                let source = self.paths.place(Place::Projection(projection))?;
+                if source.access != Access::Mutable {
+                    return Err("future transfer requires its actual exclusive frame");
+                }
+                if let Some(path) = source.path
+                    && !state.initialized(&self.paths.entries[path.0 as usize])?
+                {
+                    return Err("future transfer receiver may be uninitialized or moved");
+                }
+                let target = &self.paths.entries[target.0 as usize];
+                if state.was_written(target.start) {
+                    return Err("future transfer target was already initialized");
+                }
+            }
             Action::CheckInitialized(place) => {
                 let info = self.paths.place(place)?;
                 if let Some(path) = info.path

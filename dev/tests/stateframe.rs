@@ -423,7 +423,10 @@ fn selected_future_applications_revalidate_store_and_warm_publication() -> Resul
         "generic",
         &[Argument::Type(TypeId::primitive(types::Primitive::U8))],
     )?;
-    let _ = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+    let first = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+    let warm = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+    assert!(first.capture_mapping_bytes() > 0);
+    assert_eq!(first.capture_mapping_bytes(), warm.capture_mapping_bytes());
     let mut foreign = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
     let foreign_future = checks::future(
         &report,
@@ -453,7 +456,7 @@ fn selected_future_applications_revalidate_store_and_warm_publication() -> Resul
     );
     assert_eq!(
         size_of::<body::instantiate::FutureApplication>(),
-        size_of::<body::instantiate::Materialized>() + size_of::<usize>()
+        size_of::<body::instantiate::Materialized>() + 2 * size_of::<usize>()
     );
     println!(
         "actual cold Materialized={} FutureApplication={}",

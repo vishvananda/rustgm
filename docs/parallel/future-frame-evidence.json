@@ -1,0 +1,215 @@
+{
+  "scope": "infrastructure only; generated future execution remains fenced",
+  "base": "c3eae7a63",
+  "separate_ci_repair": "3075592ae2062e9d7b5805d4cf28935c7a9d27ec",
+  "files": {
+    "dev/src/body/body_view.rs": "09fdd69ff1d162405b139adc5cca18b8135ff93e18cab6a9dc2a88108a5e596f",
+    "dev/src/body/copy_requirements/materialized.rs": "660f2d1cfb108336e00d85735e95fd566d45bbd80b4a6b69631b5af1435993a6",
+    "dev/src/body/coroutines.rs": "76fc51e472a9049267a782c3c1a7a60cfdf338a8f02ff25e1c64966cf2230089",
+    "dev/src/body/coroutines/framing.rs": "56ee8e3d1a2ee306c8ff015b3f0afcaf91f596eb6189d2a4a340f29fe05a405f",
+    "dev/src/body/factories.rs": "94c82885863f49065ee9d62c743e590fdad727dbf7f7ab6167c69f0df573428a",
+    "dev/src/body/instantiate/asyncbody.rs": "52169031a2cc560309bb9517957ff913711b200ecd0240d2ecfa045037be5c61",
+    "dev/src/body/instantiate/contracts.rs": "3df61273cf8ccbe9bd7bb79d35b149ad6417792d8d1f1922f2ccb6c70d2960f2",
+    "dev/src/body/ir.rs": "0c480ad206a3dc931a454057bac6da04fe9562bb097f712bd03d3ea5fb50e42c",
+    "dev/src/body/promote/places.rs": "96915b7fac3c8d42c583ec5d1730978e04267de7193d2e5e815c0bc5a605099b",
+    "dev/src/body/promote/queries.rs": "f9dbf9d48b82f33bfbd79d720127645f2ffd5c007ef9663791fdfaac28e1ff37",
+    "dev/src/borrow/check.rs": "25fd24d59d9a7985f1dda86237b31508953eb05963b30a0c1e5458dfb4100811",
+    "dev/src/borrow/check/incremental.rs": "af52cc0fd36505fb79a29b4babbf2ec283ce9af1ce7ceed40ff49e39e9c7b8bc",
+    "dev/src/borrow/check/incremental/bridges.rs": "188f85930bd3512e034fb51f2942d400abeeedef03cd06cf13fa4bb2738b2811",
+    "dev/src/borrow/check/incremental/scheduled.rs": "623ba0e7af629239c7d5fa64a5b48da0c8ab79648b10291dd9b01ac68fe25bb4",
+    "dev/src/borrow/liveness.rs": "90310cb6cea9ae77998133a6d638df7194c3d4aa595f5c5df29c41e093af1f16",
+    "dev/src/borrow/loans.rs": "1ec632f7f6dd521ad32972ebd30b6ae1e0f2fce41d7c85c1bd338ac4eed6f22a",
+    "dev/src/borrow/ownership.rs": "4cf9534c346433bb3c0a0654ce89f3cbc89b3f6384b2cf7d763183dd3b194f86",
+    "dev/src/borrow/ownership/guards.rs": "ae57605f2be5b81c115f1e0e9ec0d750f32c207c686c306c4dad8cbbecad51b0",
+    "dev/src/borrow/ownership/paths.rs": "80c27af042cc78933f34b7298e988a515b55212ec49295ea1fc215412a860bda",
+    "dev/src/borrow/places.rs": "db1398450c0fa401fe631cde8a9dc91223457b2650c79182581e94f67d833650",
+    "dev/src/borrow/places/view.rs": "dd8d51680552136aba1eaa4c44a16c279652a5795eadf955a7277cd4b6b8a1e6",
+    "dev/src/borrow/storage.rs": "e108f4b67d119efec12ec9914c0308a48d4a957624ef485eab9aa6c251c4db10",
+    "dev/src/borrow/templates.rs": "945e566c68559791134b3d837bb5a21717a667c51c5c1420ca18188ee87a42fc",
+    "dev/src/const_eval/memory.rs": "ab31e9faaefeaddaf4bbd3650e2c7b054561ff0afb03c8995033980e4c38b227",
+    "dev/src/const_eval/mod.rs": "412acb49b1aab2a11290ec10785a20b00455a4959ca9f794a4f2ea4e4c4c8c04",
+    "dev/src/lower/context.rs": "86d62d08a37bcccc0be226144350c97a3a794bc64b8ca4e2eade10e6a98f15ad",
+    "dev/src/lower/function.rs": "3ba4a16e75784bdbfd54c18c44a6f1dd656518b1c147e95e0a0faf7126c1e488",
+    "dev/src/lower/function/aggregate.rs": "ac05d0a29da343311b8a9170694fc3f8e585830e023b15bf4bd524612574fa9d",
+    "dev/src/lower/function/coroutine.rs": "b2cfaa38c4fe5d0d2af15095971c3a7f4e5b418323e89681a5c597ec02c62ad9",
+    "dev/src/lower/function/selections.rs": "5e5e776825bc28e01f894373aa62c98ae84ba0f0129b58b1a1784167739ac12e",
+    "dev/src/lower/instances/demand.rs": "60ac3dbf411a000e594ff835bf7da20a874ba1ea97bc5fa0ee855d922fa98731",
+    "dev/src/lower/instances/demand/current_caller.rs": "152aa6f283dee4f3d33a699fb87ad9fac1b492f7085b0466ee2e48fe4203ee9f",
+    "dev/src/lower/instances/demand/paid_owners.rs": "dfe5e5905617b92e3cefccf03efb5b3010f1137b30579b4e2e8e24e7ea18e4f8",
+    "dev/src/lower/instances/dependencies.rs": "92fe3ccb5202f6ae9ee219ec025db87527b05cd3e6d457d25bcb20a487e73574",
+    "dev/src/lower/instances/proof.rs": "6e54be8eb379e7780c58208b63ab4b2a322a05773f4a47889313c2c0abeb88d0",
+    "dev/src/lower/instances/proof/forwarding.rs": "b160b0a56c67f65e21e655a36c181a98847a0139dc7f82ef1d24f929c474f848",
+    "dev/src/lower/mod.rs": "a78a6934b65490cc74144bd2087d21894d757478fe416b4ca6d5a4b87b7bd598",
+    "dev/src/lower/transported_source/cfg_rows.rs": "616030ff2c13795b15e93f641b759caf05c6cac43b0e85fa53787a8c59808dfe",
+    "dev/src/sema/coroutine_methods.rs": "46d0f680d9f43cf97440963a39c97878f5a68c48ca7595669d4c5c8de68606da",
+    "dev/src/sema/coroutine_methods/creation.rs": "a58856e1e6450d00d81a1031f07dfeb6cef3bcf4066bd5ec36826cb4b9dcf03a",
+    "dev/src/sema/header_attributes/declared_origins.rs": "cc9e841066f7519cc54f87699e6c6df0a586034669a60d023c0fcdf67cbb1e44",
+    "dev/src/sema/header_attributes/tracking.rs": "23c625123c912f5e66d2123328e24b5e8578665b25b0f92c90b8135169550298",
+    "dev/src/types/substitute.rs": "3175b5db885d2681f8006dcc261ec48b1bc24beebae2763cd13b290e9315467a",
+    "dev/src/types/substitute/charged.rs": "313d0031bf46b556051ad1664818767388e76d536ea2dc40425002251e004098",
+    "dev/src/types/substitute/universals.rs": "209ebddd1dbc40dab08e318bef09c2b44595123a1a904e2eef15db3851c69b72",
+    "dev/tests/invariants/exposure_proofs.rs": "79839abf3049d9400f9239fd48011fbc821ebd10455b031ddcc9be96451c6e80",
+    "dev/tests/invariants/primitive_factories.rs": "c9276cc6b2f30fc6b4d7e529c68d4b1a0869efaf1ec4f867b23580de8bd8aa88",
+    "dev/tests/stateframe.rs": "b90e65a0884045974c2958705e7c8250ca78088660e221026a43a6da7e64708f"
+  },
+  "gates": [
+    {
+      "path": "obj/qualification/fast/1793903845819546365/receipt.json",
+      "sha256": "5477c4e38c7f437b8396bf328d7ac8b68f5a51adf35d06f6c10edaf380bc20ad",
+      "state": "passed",
+      "selected": {
+        "suite_linking": [
+          "compiler_recipes::checked_authored_future_storage_cannot_be_exported_as_a_symbolic_marker",
+          "compiler_recipes::historical_source_and_provided_packets_keep_exact_bytes",
+          "compiler_recipes::operation_envelope_preserves_native_wrapper_and_rejects_legacy_dispatch",
+          "compiler_recipes::publication_checks_real_body_and_recipe_shape_before_symbolic_exclusion",
+          "compiler_recipes::serialized_operation_keeps_real_owner_and_fresh_output_proof",
+          "compiler_recipes::wire_operation_rejects_changed_body_owner_result_target_and_opcode"
+        ],
+        "suite_frontend": [
+          "stateframe::actual_typed_future_shapes_preserve_capture_identity_and_do_not_capture_output",
+          "stateframe::authored_async_by_value_unsized_input_cannot_publish_sized_future_storage",
+          "stateframe::authored_async_originals_keep_their_real_output_through_region_and_loan_checks",
+          "stateframe::complete_generic_applications_reuse_one_identity_and_reject_argument_kind_forgery",
+          "stateframe::future_formation_proves_closed_bounds_and_retains_unpaid_lifetime_requirements",
+          "stateframe::generic_future_templates_defer_unknown_capture_layout_until_real_application",
+          "stateframe::selected_authored_poll_calls_keep_the_real_member_and_independent_public_signature",
+          "stateframe::selected_future_applications_revalidate_store_and_warm_publication",
+          "stateframe::selected_future_applications_use_actual_checked_bodies_and_complete_capture_frames",
+          "stateframe::selected_future_bounds_consume_genuine_future_and_actual_output_equality",
+          "polling_source::ordinary_polling_roles_preserve_unused_shapes_and_all_body_checks"
+        ],
+        "suite_traits": [
+          "language_operators::methods::selected_dot_methods"
+        ]
+      }
+    },
+    {
+      "path": "obj/qualification/fast/1793905122491164009/receipt.json",
+      "sha256": "522d66c8a3604f7ba6f3252c83e39f5e64f4a959734647f20394e9aaac5655ff",
+      "state": "passed",
+      "selected": {
+        "suite_traits": [
+          "language_operators::methods::selected_dot_methods"
+        ],
+        "suite_linking": [
+          "compiler_recipes::checked_authored_future_storage_cannot_be_exported_as_a_symbolic_marker",
+          "compiler_recipes::historical_source_and_provided_packets_keep_exact_bytes",
+          "compiler_recipes::operation_envelope_preserves_native_wrapper_and_rejects_legacy_dispatch",
+          "compiler_recipes::publication_checks_real_body_and_recipe_shape_before_symbolic_exclusion",
+          "compiler_recipes::serialized_operation_keeps_real_owner_and_fresh_output_proof",
+          "compiler_recipes::wire_operation_rejects_changed_body_owner_result_target_and_opcode"
+        ],
+        "suite_frontend": [
+          "stateframe::actual_typed_future_shapes_preserve_capture_identity_and_do_not_capture_output",
+          "stateframe::authored_async_by_value_unsized_input_cannot_publish_sized_future_storage",
+          "stateframe::authored_async_originals_keep_their_real_output_through_region_and_loan_checks",
+          "stateframe::complete_generic_applications_reuse_one_identity_and_reject_argument_kind_forgery",
+          "stateframe::future_formation_proves_closed_bounds_and_retains_unpaid_lifetime_requirements",
+          "stateframe::generic_future_templates_defer_unknown_capture_layout_until_real_application",
+          "stateframe::selected_authored_poll_calls_keep_the_real_member_and_independent_public_signature",
+          "stateframe::selected_future_applications_revalidate_store_and_warm_publication",
+          "stateframe::selected_future_applications_use_actual_checked_bodies_and_complete_capture_frames",
+          "stateframe::selected_future_bounds_consume_genuine_future_and_actual_output_equality",
+          "polling_source::ordinary_polling_roles_preserve_unused_shapes_and_all_body_checks"
+        ]
+      }
+    },
+    {
+      "path": "obj/qualification/fast/1793905671956979568/receipt.json",
+      "sha256": "ca2afa54e4e193005ea6d8ceef17a8e9ecf10df87b0cb4d10d71babcefd30498",
+      "state": "passed",
+      "selected": {
+        "suite_linking": [
+          "compiler_recipes::historical_source_and_provided_packets_keep_exact_bytes"
+        ],
+        "suite_frontend": [
+          "stateframe::selected_future_applications_revalidate_store_and_warm_publication",
+          "stateframe::selected_authored_poll_calls_keep_the_real_member_and_independent_public_signature"
+        ]
+      }
+    },
+    {
+      "path": "obj/qualification/fast/1793906375202274786/receipt.json",
+      "sha256": "94ac17292f3dfd4b6bb872e60eac026d37cd3eaafeb788583f04af313d860824",
+      "state": "passed",
+      "selected": {
+        "suite_linking": [
+          "compiler_recipes::checked_authored_future_storage_cannot_be_exported_as_a_symbolic_marker",
+          "compiler_recipes::historical_source_and_provided_packets_keep_exact_bytes",
+          "compiler_recipes::operation_envelope_preserves_native_wrapper_and_rejects_legacy_dispatch",
+          "compiler_recipes::publication_checks_real_body_and_recipe_shape_before_symbolic_exclusion",
+          "compiler_recipes::serialized_operation_keeps_real_owner_and_fresh_output_proof",
+          "compiler_recipes::wire_operation_rejects_changed_body_owner_result_target_and_opcode"
+        ],
+        "suite_traits": [
+          "language_operators::methods::selected_dot_methods"
+        ],
+        "suite_memory": [
+          "cas_intrinsics::compare_exchange_identity_layout_and_shims_scale",
+          "rmw_intrinsics::rmw_registry_and_effectful_shims_grow_by_identity",
+          "subtract_intrinsics::subtraction_shares_one_typed_effectful_shim"
+        ],
+        "suite_frontend": [
+          "stateframe::actual_typed_future_shapes_preserve_capture_identity_and_do_not_capture_output",
+          "stateframe::authored_async_by_value_unsized_input_cannot_publish_sized_future_storage",
+          "stateframe::authored_async_originals_keep_their_real_output_through_region_and_loan_checks",
+          "stateframe::complete_generic_applications_reuse_one_identity_and_reject_argument_kind_forgery",
+          "stateframe::future_formation_proves_closed_bounds_and_retains_unpaid_lifetime_requirements",
+          "stateframe::generic_future_templates_defer_unknown_capture_layout_until_real_application",
+          "stateframe::selected_authored_poll_calls_keep_the_real_member_and_independent_public_signature",
+          "stateframe::selected_future_applications_revalidate_store_and_warm_publication",
+          "stateframe::selected_future_applications_use_actual_checked_bodies_and_complete_capture_frames",
+          "stateframe::selected_future_bounds_consume_genuine_future_and_actual_output_equality",
+          "polling_source::ordinary_polling_roles_preserve_unused_shapes_and_all_body_checks"
+        ]
+      }
+    }
+  ],
+  "layouts": {
+    "Kind": 24,
+    "Owner": 20,
+    "Body": 456,
+    "Action": 16,
+    "ProjectionKind": 24,
+    "Projection": 40,
+    "Statement": 20,
+    "Original": 56,
+    "InstanceScope": 80,
+    "Materialized": 744,
+    "FutureApplication": 760,
+    "FutureCaller": 32,
+    "Instance": 4,
+    "FutureDemand": 8,
+    "Demands": 104,
+    "Discovered": 224,
+    "Work": 40,
+    "Builder": 1776,
+    "Permit": 8,
+    "Bridge": 16,
+    "Forwarding": 32,
+    "BorrowChecked": 24,
+    "Assembled": "actual sizeof(Program)+40, previous sizeof(Program)+8"
+  },
+  "failures": [
+    {
+      "gate": "1793903633717192813",
+      "cause": "five lints: documentation, function lengths, boxed Vec owner"
+    },
+    {
+      "gate": "1793904222174798575",
+      "cause": "payer closure borrowed facts alongside mutable Store; disjoint borrowed adapter added"
+    },
+    {
+      "gate": "1793904576691129177",
+      "cause": "three existing ordinary attribute wrapper consumers missed; original wrapper restored"
+    },
+    {
+      "gate": "1793906198547526389",
+      "cause": "actual Forwarding handle32 disagreed with24 estimate; accounting already used sizeof"
+    }
+  ],
+  "private_execution": "pending CI; no cold private harness link attempted",
+  "runtime": "constructor/poll/drop factories, consumed transition and state read permit, poisoning, actual transfer/completion/Ready/cleanup, native observers all still required",
+  "full_requirements": "await/suspension/saved loans/self references/unwind/cancellation/recursive async destruction and helper execution/authored-body metadata remain required"
+}

@@ -270,6 +270,10 @@ fn inspect_action(
     action: Action,
 ) -> Result<(), &'static str> {
     match action {
+        Action::FutureTake { projection, target } => {
+            inspect_place(index, state, Place::Projection(projection))?;
+            inspect_place(index, state, Place::Local(target))?;
+        }
         Action::Project(id) | Action::Select { projection: id, .. } => {
             let projection = body
                 .projections

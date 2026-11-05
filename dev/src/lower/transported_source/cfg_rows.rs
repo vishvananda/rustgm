@@ -42,6 +42,11 @@ pub(super) fn emit(
         stage.charge(1)?;
         stage.prepare_type_arena(facts, projection.ty)?;
         let kind = match projection.kind {
+            ir::ProjectionKind::FutureField(_) => {
+                return Err(
+                    "generated future frame fields require authenticated authored-state transport",
+                );
+            }
             ir::ProjectionKind::Dereference { region, mutable } => s::ProjectionKind::Dereference {
                 region: stage.region(region, context)?,
                 mutable,
@@ -232,6 +237,11 @@ pub(super) fn place(place: ir::Place) -> Result<s::Place, &'static str> {
 }
 fn action(action: ir::Action) -> Result<s::Action, &'static str> {
     Ok(match action {
+        ir::Action::FutureTake { .. } => {
+            return Err(
+                "generated future ownership transfers require authenticated authored-state transport",
+            );
+        }
         ir::Action::StorageLive(local) => s::Action::StorageLive(local.0),
         ir::Action::StorageDead(local) => s::Action::StorageDead(local.0),
         ir::Action::StorageEnd { first, last } => s::Action::StorageEnd {

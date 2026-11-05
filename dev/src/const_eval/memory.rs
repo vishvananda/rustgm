@@ -536,6 +536,9 @@ impl Machine<'_, '_> {
             address.union = None;
         }
         let result = match projection.kind {
+            ProjectionKind::FutureField(_) => {
+                return Err("future frame execution is not a constant operation".into());
+            }
             ProjectionKind::CaptureBoundary { .. } => {
                 return Err("captured closure execution is not implemented in constants".into());
             }

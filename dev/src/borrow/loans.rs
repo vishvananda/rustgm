@@ -258,6 +258,22 @@ impl Flow<'_> {
     }
     fn inspect(&mut self, state: &Set, action: Action) -> Result<(), &'static str> {
         match action {
+            Action::FutureTake { projection, target } => {
+                self.access(
+                    state,
+                    Place::Projection(projection),
+                    Mode::Mutable,
+                    Depth::Deep,
+                    None,
+                )?;
+                self.access(
+                    state,
+                    Place::Local(target),
+                    Mode::Mutable,
+                    Depth::Shallow,
+                    None,
+                )?;
+            }
             Action::Evaluate(id) => match self.body.values[id.0 as usize].kind {
                 Rvalue::Read(place) => self.access(
                     state,

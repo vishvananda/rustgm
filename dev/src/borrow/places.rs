@@ -11,6 +11,7 @@ pub(super) struct Id(pub usize);
 enum Step {
     Dereference { mutable: bool },
     Field(Selection),
+    FutureField(u32),
     UnionField(Selection),
     Element(u64),
     Range(u64, u64),
@@ -103,6 +104,12 @@ impl Index {
                 ProjectionKind::Dereference { mutable, .. } => Step::Dereference { mutable },
                 ProjectionKind::RawDereference { .. } => {
                     return Err("raw loan root escaped dispatch");
+                }
+                ProjectionKind::FutureField(field) => {
+                    if !matches!(body.owner, crate::body::ir::Owner::FutureEntry { .. }) {
+                        return Err("future loan field requires its actual generated family");
+                    }
+                    Step::FutureField(field)
                 }
                 ProjectionKind::Field(field) => Step::Field(field),
                 ProjectionKind::UnionField(field) => Step::UnionField(field),
@@ -401,6 +408,7 @@ impl Index {
 fn disjoint(a: Step, b: Step) -> bool {
     match (a, b) {
         (Step::Field(a), Step::Field(b)) => a != b,
+        (Step::FutureField(a), Step::FutureField(b)) => a != b,
         (Step::Element(i), Step::Range(a, b)) | (Step::Range(a, b), Step::Element(i)) => {
             i < a || i >= b
         }

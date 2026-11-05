@@ -431,26 +431,34 @@ pub(in crate::sema) fn charge_source_retention(
         .map_err(Error::unlocated)
 }
 
-/// Retained attribute policy may exist for an ordinary crate. This accounts
-/// against its pre-existing producer without declaring any header complete.
+/// Select the same existing source or ordinary accounting owner without creating one.
+pub(in crate::sema) fn caller_payments(
+    contracts: Option<&crate::sema::must_use::Contracts>,
+    source: bool,
+) -> Result<Payments<'_>, Error> {
+    if source {
+        return source_payments(contracts);
+    }
+    let headers = contracts
+        .and_then(|owner| owner.headers.as_deref())
+        .map(|ledger| &ledger.local)
+        .ok_or_else(|| Error::unlocated("attribute retention lacks its actual producer budget"))?;
+    Ok(Payments(headers))
+}
+
+/// Preserve ordinary attribute accounting for callers that do not request source readiness.
 pub(in crate::sema) fn charge_attribute_retention(
     facts: &Declarations,
     steps: usize,
     bytes: usize,
 ) -> Result<(), Error> {
-    let headers = facts
-        .must_use_contracts
-        .as_deref()
-        .and_then(|owner| owner.headers.as_deref())
-        .map(|ledger| &ledger.local)
-        .ok_or_else(|| Error::unlocated("attribute retention lacks its actual producer budget"))?;
-    Payments(headers)
+    caller_payments(facts.must_use_contracts.as_deref(), false)?
         .charge(steps, bytes)
         .map_err(Error::unlocated)
 }
 
 /// A disjoint accounting borrow, not permission to read or publish a header.
-pub(in crate::sema) struct Payments<'a>(&'a Headers);
+pub(crate) struct Payments<'a>(&'a Headers);
 pub(in crate::sema) fn source_payments(
     contracts: Option<&crate::sema::must_use::Contracts>,
 ) -> Result<Payments<'_>, Error> {
@@ -464,7 +472,7 @@ pub(in crate::sema) fn source_payments(
     Ok(payments)
 }
 impl Payments<'_> {
-    pub(in crate::sema) fn charge(&self, steps: usize, bytes: usize) -> Result<(), &'static str> {
+    pub(crate) fn charge(&self, steps: usize, bytes: usize) -> Result<(), &'static str> {
         self.0.steps.set(self.0.steps.get().saturating_add(steps));
         self.0.bytes.set(self.0.bytes.get().saturating_add(bytes));
         if self.0.steps.get() > crate::support::crates::MAX_COMPONENTS

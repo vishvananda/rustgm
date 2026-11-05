@@ -26,6 +26,7 @@ impl Lower<'_, '_, '_> {
         let projection = &self.body.projections[id.0 as usize];
         match projection.kind {
             ProjectionKind::CaptureBoundary { .. } => Ok(Step::Offset(0)),
+            ProjectionKind::FutureField(_) => self.future_offset(id).map(Step::Offset),
             ProjectionKind::Dereference { .. }
             | ProjectionKind::RawDereference { .. }
             | ProjectionKind::FromEnd { .. }

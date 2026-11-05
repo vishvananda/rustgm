@@ -1,0 +1,143 @@
+{
+  "state": "passed",
+  "worker_checkpoints": [
+    "2a363e689",
+    "3b2151a2d8ee7035da54b37efc5f0d1ff7c3f46a",
+    "86824eef01c6a8ce91ca892e7a933f35bdcfd7c5"
+  ],
+  "qualification": {
+    "path": "obj/parallel/std-join-20261105/qualification-v3/receipt.json",
+    "sha256": "37f72d9b1955d755e8fdeb05a9c657bebd9d0fd03fe2083c7beca2636a72fe30",
+    "seconds": 136.66505964798853
+  },
+  "partial_fast_gate": {
+    "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/qualification/fast/1793907204720792009/receipt.json",
+    "sha256": "1427c66edc16af3f6e6ad8719f8a540d8ca7a30c66c7287ddb9a65cc763ed65f",
+    "state": "failed",
+    "reason": "PA21 timed out after all60 public tests and PA19 passed"
+  },
+  "completed_public_tests": 60,
+  "text_cases": {
+    "pa19": 1193,
+    "pa21": 801
+  },
+  "cli": {
+    "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/rustgm",
+    "sha256": "ed2bc80a44231c080542fcdd10903a994e513ff4989d9e5ff1219ec043298684"
+  },
+  "private_test_source_difference": [
+    "dev/src/lower/instances/proof/tests.rs",
+    "dev/tests/invariants/adapter_contracts.rs",
+    "dev/tests/invariants/sealed_permissions.rs",
+    "dev/tests/support/body_machine.rs"
+  ],
+  "commands": [
+    {
+      "label": "all-target-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": 0,
+      "seconds": 107.68807657895377
+    },
+    {
+      "label": "pa21",
+      "command": [
+        "/usr/bin/python3",
+        "scripts/course.py",
+        "pa21",
+        "--app",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/rustgm",
+        "--jobs",
+        "2",
+        "--evidence-root",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/std-join-20261105/qualification-v3/course"
+      ],
+      "status": 0,
+      "seconds": 6.421575249987654
+    },
+    {
+      "label": "harness-upstream",
+      "command": [
+        "make",
+        "test-harness",
+        "test-upstream"
+      ],
+      "status": 0,
+      "seconds": 15.345069292001426
+    },
+    {
+      "label": "native",
+      "command": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/deps/suite_traits-fa9094dfb74f5d37",
+        "--ignored",
+        "--exact",
+        "ctdrop::actual_const_drop_runtime_body_writes_the_runtime_operand",
+        "ctnext::genuine_unconditional_const_drop_native_body_consumes_runtime_data",
+        "vactx::actual_source_cursor_reads_clones_and_scope_cleanup_execute_natively"
+      ],
+      "status": 0,
+      "seconds": 3.5685540710110217
+    }
+  ],
+  "native_tests": [
+    "ctdrop::actual_const_drop_runtime_body_writes_the_runtime_operand",
+    "ctnext::genuine_unconditional_const_drop_native_body_consumes_runtime_data",
+    "vactx::actual_source_cursor_reads_clones_and_scope_cleanup_execute_natively"
+  ],
+  "source_fingerprint_sha256": "96b068e36bd338b8bcd4de0652310c7d95feb263bcfccaab951ec2054154783b",
+  "pending": [
+    "full release/private/native/debug/independent successor CI",
+    "selected enum cleanup and qualified original transport",
+    "actual future polling/capture/drop/cancellation",
+    "automatic AsyncFn callable consumers",
+    "original core/alloc/std builds"
+  ],
+  "final_static": {
+    "path": "obj/parallel/std-join-20261105/final-static/receipt.json",
+    "sha256": "1e9c7e21a53f30a8eac5bdfcd117d2365305eb91ac4fc35760505d498435dfbb",
+    "result": {
+      "state": "passed",
+      "commands": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all",
+            "--",
+            "--check"
+          ],
+          "status": 0,
+          "seconds": 16.04960242001107
+        },
+        {
+          "name": "architecture",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "status": 0,
+          "seconds": 2.570949741988443
+        }
+      ]
+    }
+  }
+}

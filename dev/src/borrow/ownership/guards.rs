@@ -148,6 +148,10 @@ impl<'a> Proof<'a> {
     fn transfer(&mut self, action: Action, live: &mut [u64]) -> Result<(), &'static str> {
         self.charge(1)?;
         match action {
+            Action::FutureTake { projection, target } => {
+                self.mark_view(target, live, false)?;
+                self.read(Place::Projection(projection), live)?;
+            }
             Action::GuardStart(id) => self.group(id, live, false)?,
             Action::GuardUse(id) => self.group(id, live, true)?,
             Action::BindView { view, place } => {

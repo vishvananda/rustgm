@@ -20,11 +20,16 @@ use std::hash::BuildHasher;
 pub struct Checked<'a> {
     program: &'a Program,
     destruction: Option<Box<super::destruction::Proof>>,
+    forwarding: Option<&'a incremental::Forwarding>,
 }
+const _: [(); 24] = [(); size_of::<Checked<'_>>()];
 impl Checked<'_> {
     #[must_use]
     pub const fn program(&self) -> &Program {
         self.program
+    }
+    pub(crate) const fn forwarding(&self) -> Option<&incremental::Forwarding> {
+        self.forwarding
     }
     #[must_use]
     pub fn destruction(&self) -> Option<&super::destruction::Proof> {
@@ -157,6 +162,10 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
     };
     let mut reused = Reused::default();
     for (ordinal, body) in program.bodies.iter().enumerate() {
+        crate::body::coroutines::require_ordinary_body(body).map_err(|message| Error {
+            node: Some(body.source.into()),
+            message: message.into(),
+        })?;
         let contract = if let Some(templates) = templates {
             if body.instance.is_some() && templates.contract(body).is_none() {
                 return Err(Error {
@@ -188,6 +197,7 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
     Ok(Checked {
         program,
         destruction: None,
+        forwarding: None,
     })
 }
 
@@ -218,6 +228,8 @@ pub fn verify_destruction<'a, S: BuildHasher>(
     let by_key: HashMap<_, _> = contracts.bodies.iter().map(|b| (b.key, b)).collect();
     let mut plans = Vec::with_capacity(program.bodies.len());
     for body in &program.bodies {
+        crate::body::coroutines::require_ordinary_body(body)
+            .map_err(|message| error(Some(body.source.into()), message))?;
         if body.instance.is_some() {
             return Err(error(
                 Some(body.source.into()),
@@ -246,6 +258,7 @@ pub fn verify_destruction<'a, S: BuildHasher>(
             plans,
             recipes: catalog.into_recipes(),
         })),
+        forwarding: None,
     })
 }
 

@@ -1,9 +1,19 @@
 //! Deferred originals and generated entry ownership are distinct phase identities.
+mod framing;
 use crate::{
     body::ir::{Body, Owner},
     resolve::model::DefId,
     sema::model::Declarations,
 };
+pub(crate) use framing::{field, transfer};
+
+/// Ordinary proof cannot publish an entry whose generated factory is absent.
+pub(crate) fn require_ordinary_body(body: &Body) -> Result<(), &'static str> {
+    if matches!(body.owner, Owner::FutureEntry { .. }) {
+        return Err("future entry requires its actual checked generated factory proof");
+    }
+    Ok(())
+}
 
 /// A declaration's deferred original cannot service its constructor demand.
 pub(crate) fn require_ordinary_original(
