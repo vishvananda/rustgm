@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0-88d9e12ae",
+  "edition": 2024,
+  "scope": "Actual Pin/Deref/LegacyReceiver composed with genuine Future/Output async required signatures; no AsyncDrop role/runtime claim",
+  "cases": [
+    {
+      "path": "pa43/tests/spec/pin-async-signatures/actual-receiver.rs",
+      "status": 0,
+      "sha256": "80ca1c5cea7a7effaae6b971867f8bc7c9228af64d012eedce12e2761fe14346"
+    },
+    {
+      "path": "pa43/tests/spec/pin-async-signatures/missing-legacy.rs",
+      "status": 1,
+      "sha256": "8e1865e68447d0cb50313f91887ee8913b08e333c8ea18919c97b7f83ec193fc"
+    },
+    {
+      "path": "pa43/tests/spec/pin-async-signatures/wrong-self.rs",
+      "status": 1,
+      "sha256": "9b90420b9c8b7008a7e4aa83e9c4edc935c14c6ee8b513f6266e182f8d87921c"
+    }
+  ]
+}

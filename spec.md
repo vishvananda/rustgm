@@ -470,6 +470,16 @@ positional shortcut is valid only for uncaptured owners. Trait selection short-c
 profiles, const, authenticated metadata and async state/destruction remain
 required; neither source completion nor receiver proof supplies those semantics.
 
+Actual source Future/Output/poll roles authenticate their canonical declarations.
+Async signatures create genuine opaque identity, capture Self/lifetimes/type/const
+inputs and retain the authored Output equality separately from future storage.
+Ordinary nested RPIT hidden inference remains active; the final async future is
+not an authored hidden value. Required methods remain bodyless and authored
+bodies check their declared output/effects. CFG demand rejects unsupported async
+state construction before publication; it never executes the body eagerly or
+substitutes a unit/empty future. Actual Pin receiver proof composes with those
+same signatures. See the [joined checkpoint](docs/pa42-async-signatures-checkpoint.md).
+
 The SourceCore expansion view is `--emit-expanded-crate` (or its count form),
 which runs actual configured expansion and binding completion. The PA7
 `--emit-expanded` session has no source context and must reject source options.

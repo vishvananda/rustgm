@@ -294,3 +294,61 @@ fn required_unsized_output_declarations_preserve_the_actual_source_schema() -> T
     assert_eq!(count, 3);
     Ok(())
 }
+
+#[test]
+fn source_pin_and_async_signatures_require_real_receiver_proof() -> TestResult {
+    let mut count = 0;
+    for line in test_source::fixture("pa43/tests/spec/pin-async-signatures/cases.tsv")?.lines() {
+        let (path, status) = line.split_once('\t').ok_or("case columns")?;
+        match (status, analyze(path)) {
+            ("0", Ok(facts)) => {
+                let declaration = facts
+                    .opaques
+                    .declarations
+                    .values()
+                    .next()
+                    .ok_or("actual required async future")?;
+                let function = facts
+                    .functions
+                    .iter()
+                    .find(|f| f.definition == declaration.owner)
+                    .ok_or("actual required method")?;
+                assert!(function.body.is_none());
+                assert!(declaration.hidden.is_none());
+                assert_eq!(
+                    facts.opaques.body_results.get(&function.definition),
+                    Some(&rustgm::types::TypeId::UNIT)
+                );
+                let Some(Kind::Opaque(_, arguments)) = facts.types.kind(declaration.application)
+                else {
+                    return Err("actual future application".into());
+                };
+                let arguments = facts
+                    .types
+                    .arguments(arguments)
+                    .ok_or("actual captures")?
+                    .collect::<Vec<_>>();
+                assert!(
+                    arguments
+                        .iter()
+                        .any(|a| matches!(a, rustgm::types::arguments::Argument::Lifetime(_)))
+                );
+                assert!(arguments.iter().any(|a| matches!(a, rustgm::types::arguments::Argument::Type(t) if matches!(facts.types.kind(*t),Some(Kind::Parameter(_))))));
+            }
+            ("0", Err(error)) => return Err(format!("{path}: {error}").into()),
+            ("1", Ok(_)) => return Err(format!("accepted {path}").into()),
+            ("1", Err(error)) => {
+                let message = error.to_string();
+                assert!(
+                    !message.contains("not implemented")
+                        && !message.contains("invalid or exhausted"),
+                    "{path}: {message}"
+                );
+            }
+            _ => return Err("invalid declared outcome".into()),
+        }
+        count += 1;
+    }
+    assert_eq!(count, 3);
+    Ok(())
+}

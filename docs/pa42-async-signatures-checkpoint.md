@@ -138,3 +138,40 @@ compiler-owned async_drop_in_place implementation and complete original
 core/alloc/std artifacts remain required. This isolated component does not claim
 to clear unchanged original core's LIB-154 boundary. The full assignment and
 original-library goal is preserved.
+
+## Joined main qualification
+
+The integrator joins this implementation with the published Deref/receiver and
+required-RPIT repairs plus the current CPPGM backend. Both central merge
+conflicts preserve the union of genuine source roles; neither predecessor
+repair is duplicated. Three additional authored PA43 controls compose an actual
+`Pin<&mut Self>` required async receiver with source Future/Output: the positive
+passes, while missing LegacyReceiver and wrong Self reject. Pinned Rust confirms
+all three before candidate observation. The positive retains actual Self and
+lifetime captures, required-method/body-output identity and hidden=None.
+This is an ordinary authored trait composition, not AsyncDrop role/runtime
+admission or an edited original-core source.
+
+The final combined gate1793842781823360234 passes17 exact public tests across
+three targets plus1193 PA19 cases in65.81s, with formatting, architecture and
+strict selected Clippy. It includes all worker source-signature matrices,
+Deref/receiver, full PA21 opaque/region opponents and the exact-carrier control.
+The actual ordinary Future/Output observer again matches pinned Rust through
+new CPPGM b7c6b8e72, printing7. Ordinary/value LowIR and all15 configuration values
+remain byte-identical to the backend integration baseline.
+
+Unchanged original core still stops at AsyncDrop, file246 byte1138, after
+26.2730s/375 source opens with all722 inputs and existing options/cap/finite limits.
+That concurrent development observation is not an isolated performance estimate.
+No state machine, poll/await, async loan/cancellation/destruction, compiler-replaced
+helper, wider generated Future proof, authenticated metadata or library artifact
+is supplied by this signature checkpoint.
+
+Joined CLI SHA256: `e551c9670df664b82bcd0fc78a1d238a9392040db9292d72d49034b8c482d261`. Combined gate receipt SHA256:
+`7051ca831867975d7f4b76af589bbe871765847f8c4ef8b24e94b16dca3f4b2b`. Native/config/original-core receipt
+`obj/parallel/async-integration-v1/qualification-v1/receipt.json`:
+`5ea62bea2fe19e5e3f11250495788deffa565db57d3f7c0b50ef577d3610e4cd`. Composed receiver reference:
+`d9ef54b7696e87760c6416a9192874453a9a7d23060b676e316dab7aa82a563f`. Worker receipts above remain historical
+and explicitly bind the old backend; the joined receipt binds the current pin.
+Full backend CI41948482651 is running on2185cbd74 and precedes these joined
+frontend changes. A full successor remains pending.

@@ -1,0 +1,3 @@
+pa43/tests/spec/pin-async-signatures/actual-receiver.rs	0
+pa43/tests/spec/pin-async-signatures/missing-legacy.rs	1
+pa43/tests/spec/pin-async-signatures/wrong-self.rs	1
