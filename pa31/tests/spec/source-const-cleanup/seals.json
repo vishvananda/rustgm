@@ -1,0 +1,41 @@
+{
+  "prediction": "frozen before oracle/candidate; stronger proof must not reuse ordinary warmed evidence; explicit const syntax uncertain",
+  "cases": [
+    {
+      "file": "seord.rs",
+      "source_sha256": "27d1b28b2d74c0f04393823ed567f7c8effcca09c664574d1424c7149f528288",
+      "expected_code": 0,
+      "cause": "ordinary Destruct accepts actual nonconst Drop"
+    },
+    {
+      "file": "serun.rs",
+      "source_sha256": "1e4bc537b2be8a703d012ed3ab0b2aff557858343d218ec6e17e75db45b82cce",
+      "expected_code": 0,
+      "cause": "conditional bound discharged ordinarily at runtime"
+    },
+    {
+      "file": "senom.rs",
+      "source_sha256": "ae99ffe256b0c844e13e22510ef7007d93391b8c2cb0cb16a8aab86a2fbba86b",
+      "expected_code": 1,
+      "cause": "E0277 actual nonconst Drop cannot pay reached const Destruct"
+    },
+    {
+      "file": "secnst.rs",
+      "source_sha256": "6d58a32d0ff7fbfaf0bae46394057b757ae352d5062f91371f6693f5605600b7",
+      "expected_code": 0,
+      "cause": "actual const Drop pays const Destruct"
+    },
+    {
+      "file": "senod.rs",
+      "source_sha256": "3f73ddb5478406826a97c82df03617fabcff077e15648057d93950f72ef5762b",
+      "expected_code": 0,
+      "cause": "dropless actual fields pay const Destruct"
+    },
+    {
+      "file": "sestrg.rs",
+      "source_sha256": "06a7021e35b58e56783afae741cb3d393676c4b1ab7fda642b6f3c9389858204",
+      "expected_code": 1,
+      "cause": "predicted explicit const predicate valid syntax, E0277 absent const Drop"
+    }
+  ]
+}

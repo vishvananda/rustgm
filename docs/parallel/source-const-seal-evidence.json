@@ -1,0 +1,321 @@
+{
+  "checkpoint": "completed const Destruct absence is distinct from unsupported proof",
+  "base": "29e387f4980a7b6141d93b0233dc682a42be3229",
+  "reference": {
+    "path": "obj/parallel/source-transport/va-cleanup/reference-v14/receipt.json",
+    "sha256": "0d52b32febfdcc684821835ac4aad512d3690ef844ed4b26794c648ede80f55b",
+    "data": {
+      "rustc": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+      "prediction_sha256": "bd24964c778a876f0f2f7948a2d2acb4bd4ce072e6712dccce05d8e6f1eef21e",
+      "observations": [
+        {
+          "file": "seord.rs",
+          "source_sha256": "27d1b28b2d74c0f04393823ed567f7c8effcca09c664574d1424c7149f528288",
+          "expected_code": 0,
+          "cause": "ordinary Destruct accepts actual nonconst Drop",
+          "argv": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--crate-name",
+            "seord",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/seord.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v14/seord.rmeta",
+            "--error-format=json"
+          ],
+          "code": 0,
+          "seconds": 0.031682695960626006,
+          "matches": true,
+          "errors": []
+        },
+        {
+          "file": "serun.rs",
+          "source_sha256": "1e4bc537b2be8a703d012ed3ab0b2aff557858343d218ec6e17e75db45b82cce",
+          "expected_code": 0,
+          "cause": "conditional bound discharged ordinarily at runtime",
+          "argv": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--crate-name",
+            "serun",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/serun.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v14/serun.rmeta",
+            "--error-format=json"
+          ],
+          "code": 0,
+          "seconds": 0.03202561096986756,
+          "matches": true,
+          "errors": []
+        },
+        {
+          "file": "senom.rs",
+          "source_sha256": "ae99ffe256b0c844e13e22510ef7007d93391b8c2cb0cb16a8aab86a2fbba86b",
+          "expected_code": 1,
+          "cause": "E0277 actual nonconst Drop cannot pay reached const Destruct",
+          "argv": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--crate-name",
+            "senom",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/senom.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v14/senom.rmeta",
+            "--error-format=json"
+          ],
+          "code": 1,
+          "seconds": 0.031362296955194324,
+          "matches": true,
+          "errors": [
+            [
+              "E0277",
+              "the trait bound `Nominal: const Destruct` is not satisfied"
+            ],
+            [
+              "",
+              "aborting due to 1 previous error"
+            ]
+          ]
+        },
+        {
+          "file": "secnst.rs",
+          "source_sha256": "6d58a32d0ff7fbfaf0bae46394057b757ae352d5062f91371f6693f5605600b7",
+          "expected_code": 0,
+          "cause": "actual const Drop pays const Destruct",
+          "argv": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--crate-name",
+            "secnst",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/secnst.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v14/secnst.rmeta",
+            "--error-format=json"
+          ],
+          "code": 0,
+          "seconds": 0.028826560999732465,
+          "matches": true,
+          "errors": []
+        },
+        {
+          "file": "senod.rs",
+          "source_sha256": "3f73ddb5478406826a97c82df03617fabcff077e15648057d93950f72ef5762b",
+          "expected_code": 0,
+          "cause": "dropless actual fields pay const Destruct",
+          "argv": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--crate-name",
+            "senod",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/senod.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v14/senod.rmeta",
+            "--error-format=json"
+          ],
+          "code": 0,
+          "seconds": 0.028927596984431148,
+          "matches": true,
+          "errors": []
+        },
+        {
+          "file": "sestrg.rs",
+          "source_sha256": "06a7021e35b58e56783afae741cb3d393676c4b1ab7fda642b6f3c9389858204",
+          "expected_code": 1,
+          "cause": "predicted explicit const predicate valid syntax, E0277 absent const Drop",
+          "argv": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--crate-name",
+            "sestrg",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/sestrg.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v14/sestrg.rmeta",
+            "--error-format=json"
+          ],
+          "code": 1,
+          "seconds": 0.03077827300876379,
+          "matches": true,
+          "errors": [
+            [
+              "E0277",
+              "the trait bound `Nominal: const Destruct` is not satisfied"
+            ],
+            [
+              "",
+              "aborting due to 1 previous error"
+            ]
+          ]
+        }
+      ]
+    },
+    "driver": {
+      "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so",
+      "sha256": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+    }
+  },
+  "typed_cause": [
+    "State::prove maps absent selected source to Ok(false)",
+    "const Destruct recursively selects actual const/conditional Drop plus semantic fields",
+    "ordinary nonconst Drop yields an absent stronger-effect implementation",
+    "private warmed ordinary opponent now requires exact Ok(false); Ok(true) remains a hard failure"
+  ],
+  "local_private_execution": "not run; no cold monolithic private link",
+  "candidate": {
+    "state": "passed",
+    "receipt": "obj/parallel/source-transport/va-cleanup/seal-gate1/receipt.json",
+    "receipt_sha256": "6bfd34fc075e2e7371b2c6794eaab2711cc74c08cd48ed56eb288428e98117da",
+    "source_map": "obj/parallel/source-transport/va-cleanup/seal-gate1/sources.json",
+    "source_map_sha256": "86c383f914a9e095d216a6e72dde2fb25617d112509adc880ed37968f153bfc3",
+    "commands": [
+      {
+        "name": "format",
+        "command": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--all"
+        ],
+        "code": 0,
+        "seconds": 17.34290210501058
+      },
+      {
+        "name": "audit",
+        "command": [
+          "obj/audit-venv/bin/python",
+          "scripts/rust_audit.py",
+          "--root",
+          ".",
+          "--cache",
+          "obj/fast-audit.json"
+        ],
+        "code": 0,
+        "seconds": 2.926178520952817
+      },
+      {
+        "name": "clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_traits",
+          "--bin",
+          "rustgm",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "code": 0,
+        "seconds": 66.87121762899915
+      },
+      {
+        "name": "ctseal",
+        "command": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_traits",
+          "ctseal::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 102.94172726699617
+      },
+      {
+        "name": "ctfix",
+        "command": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_traits",
+          "ctfix::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 1.079936677007936
+      },
+      {
+        "name": "requirements",
+        "command": [
+          "python3",
+          "scripts/assignment_plan.py"
+        ],
+        "code": 0,
+        "seconds": 0.08108695800183341
+      },
+      {
+        "name": "registration",
+        "command": [
+          "python3",
+          "scripts/maintainer_suites.py",
+          "check"
+        ],
+        "code": 0,
+        "seconds": 0.08728406496811658
+      },
+      {
+        "name": "upstream",
+        "command": [
+          "python3",
+          "scripts/upstream.py",
+          "--verify"
+        ],
+        "code": 0,
+        "seconds": 0.14402236102614552
+      }
+    ],
+    "public_tests": 10,
+    "production_changes": false,
+    "private_execution": "CI pending; monolithic private harness deliberately not linked locally"
+  },
+  "admission_failures": [
+    {
+      "session": 37311,
+      "free_gib": 164.8,
+      "required_gib": 176.4,
+      "state": "refused before commands; no semantic verdict"
+    }
+  ]
+}

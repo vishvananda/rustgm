@@ -203,10 +203,11 @@ fn ordinary_destruct_evidence_does_not_pay_const_or_conditional_goals() -> Resul
             &facts,
             Predicate { ty: nominal, bound }
         )?);
-        assert!(
-            state
-                .prove(&mut facts, Predicate { ty: nominal, bound }, false)
-                .is_err()
+        // Recursive const Drop selection now completes the negative. A warm
+        // ordinary proof must still never authorize either stronger effect.
+        assert_eq!(
+            state.prove(&mut facts, Predicate { ty: nominal, bound }, false),
+            Ok(false)
         );
     }
     Ok(())
