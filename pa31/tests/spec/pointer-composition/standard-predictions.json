@@ -1,0 +1,7 @@
+{
+  "source_sha256": "a743e3775cdf4fbfbe56aa20fdf0359a0a3cdbee5e3dab0f37277621b9ebe46e",
+  "observer_sha256": "5441229a84891da62fbf51835c603d22687f008bb309724e5936a3661db75abb",
+  "metadata_expected": 0,
+  "object_expected": 0,
+  "expected_stdout": "9 91\n"
+}

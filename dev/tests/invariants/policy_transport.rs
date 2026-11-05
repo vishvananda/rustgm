@@ -248,8 +248,9 @@ fn legacy_availability_remains_unknown_and_hot_records_do_not_grow() -> Result {
     let source = crate::test_source::resolve("fn main(){}", true)?;
     assert!(source.resolution.crates.is_none());
     assert_eq!(size_of::<crate::sema::model::NodeFacts>(), 80);
-    assert_eq!(size_of::<s::Columns>(), 664);
-    assert_eq!(size_of::<s::SourceRows>(), 688);
+    // The cold v11 family adds four columns and the sparse original-body index.
+    assert_eq!(size_of::<s::Columns>(), 768);
+    assert_eq!(size_of::<s::SourceRows>(), 784);
     assert_eq!(size_of::<s::ValidatedRows>(), 144);
     assert_eq!(size_of::<crate::resolve::crates::Imported>(), 160);
     assert_eq!(size_of::<crate::resolve::lookup::Observations>(), 64);

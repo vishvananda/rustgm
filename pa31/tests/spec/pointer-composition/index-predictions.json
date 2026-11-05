@@ -1,0 +1,39 @@
+{
+  "status": "Authored source and expected outcomes frozen before candidate/independent observation; actual no_core rustc ICE retained as unqualified.",
+  "inputs": [
+    {
+      "file": "index-foundation.rs",
+      "sha256": "72feefca05b47088f6a548752969b89a064c7683ca302ad48072967799c74439"
+    },
+    {
+      "file": "slice-indices.rs",
+      "sha256": "a58662106e58dc889929681005dbc7306931a543a35fff741a88136a090a6e99"
+    },
+    {
+      "file": "standard-companion.rs",
+      "sha256": "a743e3775cdf4fbfbe56aa20fdf0359a0a3cdbee5e3dab0f37277621b9ebe46e"
+    },
+    {
+      "file": "standard-observer.c",
+      "sha256": "5441229a84891da62fbf51835c603d22687f008bb309724e5936a3661db75abb"
+    }
+  ],
+  "candidate": {
+    "constant_read": 9,
+    "constant_write": 91
+  },
+  "independent_standard_companion": {
+    "source_sha256": "a743e3775cdf4fbfbe56aa20fdf0359a0a3cdbee5e3dab0f37277621b9ebe46e",
+    "observer_sha256": "5441229a84891da62fbf51835c603d22687f008bb309724e5936a3661db75abb",
+    "metadata_expected": 0,
+    "object_expected": 0,
+    "expected_stdout": "9 91\n"
+  },
+  "no_core_reference": {
+    "status": 101,
+    "qualification": "upstream-ice-unqualified",
+    "diagnostic": "fully_perform",
+    "attempts": "obj/parallel/index-foundation-repair-v1/reference-v1 through reference-v6",
+    "required": "Full no_core original-source indexing/const/borrow/metadata parity remains required; standard-core companion is narrower evidence."
+  }
+}

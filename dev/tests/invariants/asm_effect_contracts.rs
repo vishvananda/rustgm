@@ -5,10 +5,14 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 mod vectors;
 const DECL: &str = "#[rustc_builtin_macro(asm)]macro_rules!actual{($($t:tt)*)=>{9u8};}";
 fn source(program: &str) -> Result<String> {
-    let mut prefix = crate::test_source::fixture(
+    let mut prefix = String::from("#![feature(const_index)]\n");
+    prefix.push_str(&crate::test_source::fixture(
         "pa31/tests/spec/source-header-transport/semantic-provider-qualified.rs",
-    )?;
+    )?);
     prefix.push_str("impl Clone for usize{fn clone(&self)->Self{*self}}impl Copy for usize{} ");
+    prefix.push_str(&crate::test_source::fixture(
+        "pa31/tests/spec/pointer-composition/index-foundation.rs",
+    )?);
     prefix.push_str(DECL);
     prefix.push_str(program);
     Ok(prefix)

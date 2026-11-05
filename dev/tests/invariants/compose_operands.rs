@@ -7,8 +7,16 @@ use crate::{
 };
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn source(name: &str) -> TestResult<String> {
-    let mut prefix =
-        crate::test_source::fixture("pa31/tests/spec/pointer-composition/source-provider.rs")?;
+    let mut prefix = String::from("#![feature(const_index)]\n");
+    prefix.push_str(&crate::test_source::fixture(
+        "pa31/tests/spec/pointer-composition/source-provider.rs",
+    )?);
+    prefix.push_str(&crate::test_source::fixture(
+        "pa31/tests/spec/pointer-composition/index-foundation.rs",
+    )?);
+    prefix.push_str(&crate::test_source::fixture(
+        "pa31/tests/spec/pointer-composition/slice-indices.rs",
+    )?);
     let input =
         crate::test_source::fixture(&format!("pa31/tests/spec/pointer-composition/{name}.rs"))?;
     for line in input

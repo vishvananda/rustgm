@@ -164,6 +164,38 @@ fn actual_index_demand_has_bounded_canonical_work() -> Result {
     assert!(growth[2] <= growth[1].saturating_mul(5), "{growth:?}");
     Ok(())
 }
+#[test]
+fn source_fixture_index_foundation_retains_real_constant_slice_access() -> Result {
+    let mut source = String::from("#![feature(const_index)]\n");
+    source.push_str(&test_source::fixture(
+        "pa31/tests/spec/pointer-composition/source-provider.rs",
+    )?);
+    source.push_str(&test_source::fixture(
+        "pa31/tests/spec/pointer-composition/index-foundation.rs",
+    )?);
+    source.push_str(&test_source::fixture(
+        "pa31/tests/spec/pointer-composition/slice-indices.rs",
+    )?);
+    source.push_str("const READ:usize={let a=[7u8,8u8,9u8];let p=ptr::slice_from_raw_parts(&a as *const [u8;3] as *const u8,3);let s=unsafe{&*p};s[2] as usize};const WRITE:usize={let mut a=[7u8,8u8,9u8];let p=ptr::slice_from_raw_parts_mut(&mut a as *mut [u8;3] as *mut u8,3);let s=unsafe{&mut *p};s[1]=91;s[1] as usize};");
+    let report = test_source::source_provider(&source, "fixture_index_foundation")?;
+    let analysis = pipeline::analyze_source(&report)?;
+    let reader = rustgm::sema::values::Reader::new(&analysis.facts);
+    for (name, expected) in [("READ", 9), ("WRITE", 91)] {
+        let id = report
+            .resolution
+            .definitions
+            .iter()
+            .position(|d| report.package.names.get(d.name) == name)
+            .ok_or("constant")?;
+        let constant = reader
+            .definition(DefId(u32::try_from(id)?))
+            .ok_or("constant value")?;
+        assert!(
+            matches!(reader.view(constant)?,rustgm::sema::values::View::Scalar(rustgm::sema::model::Scalar::Integer(n))if n==expected)
+        );
+    }
+    Ok(())
+}
 fn checked(label: &str, command: &mut Command, folder: &Path) -> Result<Vec<u8>> {
     let output = command.output()?;
     std::fs::write(folder.join(format!("{label}.stderr")), &output.stderr)?;
