@@ -8,6 +8,11 @@ in2.38s. Construction leaves the real deferred body dormant; genuine stateful
 Drop handles the empty-capture unpolled profile. Poll, capture transfer, await,
 cancellation, wider cleanup and authored-body transport remain required.
 Private cfg(test) compilation/execution and successor full CI remain pending.
+Full42120382061 stops in private compilation: the shared async helper was
+loaded twice and three exposure assertions expected the old cleanup Vec API.
+The test successor registers the helper once and explicitly checks both ordinary
+and generated-future dependency lists. Production behavior is unchanged; its
+private successor qualification remains pending.
 The current qualified original-core observation remains CLI292c96f2/LIB-169;
 this runtime checkpoint does not itself establish a new original-core result.
 

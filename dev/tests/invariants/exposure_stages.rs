@@ -16,7 +16,9 @@ fn first_vtable_batch_retains_exposure_before_later_dynamic_helper_demand() -> R
     let (mut builder, _) = Builder::new(program)?;
     assert!(builder.program.drops.is_none());
     assert!(builder.recipes.is_none());
-    assert!(builder.object_dependencies(&mut facts, &[])?.is_empty());
+    let empty = builder.object_dependencies(&mut facts, &[])?;
+    assert!(empty.ordinary.is_empty());
+    assert!(empty.futures.is_none());
     assert!(
         builder.recipes.is_none(),
         "no exposure must allocate no recipe cache"
@@ -42,7 +44,9 @@ fn first_vtable_batch_retains_exposure_before_later_dynamic_helper_demand() -> R
                 .ok_or("table")
         })
         .collect::<std::result::Result<Vec<_>, _>>()?;
-    assert!(builder.object_dependencies(&mut facts, &roots)?.is_empty());
+    let empty = builder.object_dependencies(&mut facts, &roots)?;
+    assert!(empty.ordinary.is_empty());
+    assert!(empty.futures.is_none());
     assert!(sema::vtable_plans::complete_tables(&mut facts)?.is_empty());
     let before = builder
         .recipes
@@ -51,11 +55,9 @@ fn first_vtable_batch_retains_exposure_before_later_dynamic_helper_demand() -> R
         .recipes()
         .exposed(concrete)?;
     assert_eq!(before, None);
-    assert!(
-        builder
-            .object_dependencies(&mut facts, &[object])?
-            .is_empty()
-    );
+    let empty = builder.object_dependencies(&mut facts, &[object])?;
+    assert!(empty.ordinary.is_empty());
+    assert!(empty.futures.is_none());
     let recipes = builder
         .recipes
         .as_ref()

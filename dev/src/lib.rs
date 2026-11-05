@@ -2,6 +2,9 @@
 // Shared source-loading helpers also serve library invariant tests.
 #[cfg(test)]
 extern crate self as rustgm;
+#[cfg(test)]
+#[path = "../tests/helpers/asynccheck.rs"]
+mod async_checks;
 pub mod abi;
 pub mod body;
 pub mod borrow;

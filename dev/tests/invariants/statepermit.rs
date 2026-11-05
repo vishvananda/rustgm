@@ -7,8 +7,7 @@ use crate::{
     pipeline, sema, test_source,
     types::{self, Kind, TypeId},
 };
-#[path = "../helpers/asynccheck.rs"]
-mod checks;
+use crate::async_checks as checks;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[test]
