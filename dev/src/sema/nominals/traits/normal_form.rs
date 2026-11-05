@@ -190,7 +190,10 @@ impl Query {
                     .obligations
                     .resume_at(self.frontier.max(self.state.obligations.regions.end))?;
             }
-            if let Some(source @ selection::Source::Callable { .. }) = selected {
+            if let Some(
+                source @ (selection::Source::Callable { .. } | selection::Source::Future { .. }),
+            ) = selected
+            {
                 self.source = Some(source.clone());
                 let definition = crate::sema::projections::Definition::alias(
                     facts,

@@ -8,6 +8,9 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Action, String> {
+        if let Some(action) = self.source_future_result(facts, frame)? {
+            return Ok(action);
+        }
         if let Some(action) = self.source_fn_pointer_result(facts, frame)? {
             return Ok(action);
         }

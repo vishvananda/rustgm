@@ -9,6 +9,7 @@ mod callable_queries;
 mod callables;
 mod cloning;
 mod component_markers;
+mod coroutine_inputs;
 mod no_drop;
 mod pointers;
 mod transmutability;

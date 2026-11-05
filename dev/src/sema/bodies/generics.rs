@@ -326,6 +326,7 @@ impl Checker<'_> {
                 Some(
                     Source::Implementation { .. }
                     | Source::Callable { .. }
+                    | Source::Future { .. }
                     | Source::LanguageOperation { .. },
                 ) => continue,
                 Some(Source::QuantifiedAssumption {

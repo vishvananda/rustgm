@@ -239,12 +239,13 @@ fn declaration_projection_templates_restore_results_before_fresh_rebasing() -> T
     };
     let definition = Definition::select(
         &f.facts,
-        request
-            .alias
-            .associated()
-            .ok_or("expected associated projection")?
-            .item,
-        projected.family,
+        crate::types::projection::Application {
+            arguments: projected.family,
+            ..request
+                .alias
+                .associated()
+                .ok_or("expected associated projection")?
+        },
         projected
             .source
             .as_ref()
@@ -337,8 +338,10 @@ fn closed_projection_fallback_keeps_assumptions_and_discarded_trials_separate() 
             ));
             let definition = Definition::select(
                 &f.facts,
-                application.item,
-                projected.family,
+                crate::types::projection::Application {
+                    arguments: projected.family,
+                    ..application
+                },
                 projected.source.as_ref().ok_or("missing implementation")?,
             )?;
             let ty = definition.result(&mut f.facts)?.ok_or("missing result")?;

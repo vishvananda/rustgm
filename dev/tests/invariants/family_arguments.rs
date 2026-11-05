@@ -257,6 +257,19 @@ fn selected_definition_retains_both_argument_groups_and_member_identity() -> Tes
         .next()
         .ok_or("missing impl")?;
     let owner = implementation.owner;
+    let subject = implementation.predicate.ty;
+    let trait_item = facts
+        .types
+        .trait_application(
+            implementation
+                .predicate
+                .bound
+                .trait_parts()
+                .ok_or("actual implementation trait")?
+                .0,
+        )
+        .ok_or("actual trait application")?
+        .item;
     let members = implementation.types.clone();
     let mut selections = Vec::new();
     let mut templates = Vec::new();
@@ -276,10 +289,21 @@ fn selected_definition_retains_both_argument_groups_and_member_identity() -> Tes
                 let family = facts.types.intern_arguments(&[Argument::Type(own)])?;
                 let list = facts.types.intern_list(&[parent, own])?;
                 let expected = facts.types.intern(Kind::Tuple(list))?;
+                let trait_application =
+                    facts
+                        .types
+                        .intern_trait_application(crate::types::traits::Application {
+                            item: trait_item,
+                            arguments,
+                        })?;
                 let selected = Definition::select(
                     &facts,
-                    ItemId(declared.0),
-                    family,
+                    crate::types::projection::Application {
+                        item: ItemId(declared.0),
+                        subject,
+                        trait_application,
+                        arguments: family,
+                    },
                     &Source::Implementation { owner, arguments },
                 )?;
                 assert_eq!(selected.result(&mut facts)?, None);

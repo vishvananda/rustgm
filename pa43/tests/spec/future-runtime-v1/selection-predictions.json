@@ -1,0 +1,49 @@
+{
+  "scope": "Actual authored Future/Output defining-bound consumer; frozen before candidate compile",
+  "source_sha256": "827681feb2aa4f59ace6445ac89a41abcb22b169a247174217f1e43423a190f3",
+  "cases": [
+    {
+      "path": "pa43/tests/spec/future-runtime-v1/selection-companion.rs",
+      "sha256": "8e7014f52846a9d19c4b58a4f04a0bf84b347411646eacc85b8297bd7917a8b7",
+      "status": 0,
+      "cause": null
+    },
+    {
+      "path": "obj/parallel/future-runtime-v1/selection/wrong-output.rs",
+      "sha256": "ffe3da2854b0bdd9ba2a0a671ebd312b150cf17bbe09545c6ea6f22fb8f2c003",
+      "status": 1,
+      "cause": "E0271"
+    }
+  ],
+  "source_opponents": [
+    {
+      "path": "pa43/tests/spec/future-runtime-v1/unsized-source.rs",
+      "sha256": "083cc212ba9a89e6e159e5e796ad7591d6a86e15f8733b44c974969cf60ef51e",
+      "status": 1,
+      "cause": "by-value input Sized requirement",
+      "independent_source": "obj/parallel/future-runtime-v1/formation/unsized-by-value.rs",
+      "independent_sha256": "3accbba077eb92afa876b1ec9351bbb1c76c66dd28c8669d60b9ebfaed769765",
+      "independent_status": 1,
+      "independent_cause": "E0277",
+      "independent_receipt": "obj/parallel/future-runtime-v1/formation/receipt.json"
+    }
+  ],
+  "typed_opponents": {
+    "status": "authored; exact private execution deferred to integration CI",
+    "actual_future_output_rejects_foreign_full_projection_inputs_on_cold_and_warm_reads": [
+      "cold unpublished: reject",
+      "actual checked full projection: u8",
+      "foreign actual Future subject: reject",
+      "actual Clone trait/member in Future projection: reject",
+      "nonempty own family: reject",
+      "32 warm reads preserve all outcomes"
+    ],
+    "output_schema_requires_actual_bounds_and_completed_own_family_after_warm_selection": [
+      "missing canonical Sized bound despite promise bit: reject",
+      "stronger unproved result Copy bound: reject",
+      "present unfinished family: reject",
+      "nonzero own family: reject",
+      "restored actual rows: u8"
+    ]
+  }
+}

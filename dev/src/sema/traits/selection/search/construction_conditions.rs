@@ -23,7 +23,11 @@ impl Frame {
         facts: &Declarations,
         ty: TypeId,
     ) -> Result<(), String> {
-        if facts.types.contains_nominals(ty) != Some(false)
+        if (facts.types.contains_nominals(ty) != Some(false)
+            || matches!(
+                facts.types.kind(ty),
+                Some(crate::types::Kind::Future { .. })
+            ))
             && !self.formation.as_ref().is_some_and(|f| {
                 matches!(f.purpose, Purpose::Select(subject) if subject == ty)
                     && f.finished
@@ -57,7 +61,8 @@ impl Search<'_> {
         // Actual source marker roles share formation independently of their
         // effect eligibility. Item arguments retain their formation duties;
         // their declaration signature was proved before forming the item.
-        let source_rule = Self::source_auto_goal(facts, &frame.goal)?
+        let source_rule = Self::source_future_goal(facts, frame)?
+            || Self::source_auto_goal(facts, &frame.goal)?
             || matches!(
                 Self::source_sizing_kind(facts, &frame.goal)?,
                 Some(LangItem::Sized | LangItem::MetaSized | LangItem::PointeeSized)
@@ -79,12 +84,17 @@ impl Search<'_> {
             Err(crate::types::infer::Error::Unresolved) => return Ok(false),
             Err(error) => return Err(inference(error)),
         };
-        if facts.types.contains_nominals(goal.ty) == Some(false) {
+        if facts.types.contains_nominals(goal.ty) == Some(false)
+            && !matches!(
+                facts.types.kind(goal.ty),
+                Some(crate::types::Kind::Future { .. })
+            )
+        {
             return Ok(false);
         }
         self.begin_nominal_formation(facts, frame, goal.ty, 0, true)
     }
-    fn begin_nominal_formation(
+    pub(super) fn begin_nominal_formation(
         &mut self,
         facts: &mut Declarations,
         frame: &mut Frame,
@@ -103,6 +113,12 @@ impl Search<'_> {
             Some(Entry::Completed(node)) => Some(*node),
             None => None,
         };
+        if matches!(
+            facts.types.kind(ty),
+            Some(crate::types::Kind::Future { .. })
+        ) {
+            return self.begin_future_formation(facts, frame, ty, depth, select, cached);
+        }
         let mut checked = nominals::Requirements::default();
         let mut nominals = Vec::new();
         let result = if cached.is_none() {

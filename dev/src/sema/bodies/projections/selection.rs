@@ -419,6 +419,25 @@ impl Opened {
         self.select_member_result(facts, availability)
     }
 
+    fn selected_application(
+        &self,
+        predicate: Predicate,
+    ) -> Result<crate::types::projection::Application, &'static str> {
+        if !self.application.arguments.is_empty() {
+            return Err("selected projection requires its actual family input continuation");
+        }
+        Ok(crate::types::projection::Application {
+            item: self.application.item,
+            subject: predicate.ty,
+            trait_application: predicate
+                .bound
+                .trait_parts()
+                .ok_or("selected projection lost its actual trait application")?
+                .0,
+            arguments: GenericArgs::EMPTY,
+        })
+    }
+
     fn select_member_result(
         &mut self,
         facts: &mut Declarations,
@@ -481,6 +500,7 @@ impl Opened {
             .map(|equality| equality.append_to(&mut self.proof))
             .transpose()?;
         let mut restoration = self.proof.body_restoration()?;
+        let selected_predicate = predicate;
         let predicate = restoration.predicate(&mut facts.types, predicate)?;
         if !self.application.arguments.is_empty() {
             return FamilyInputs::new(
@@ -497,8 +517,7 @@ impl Opened {
         } else {
             let definition = Definition::select(
                 facts,
-                self.application.item,
-                crate::types::GenericArgs::EMPTY,
+                self.selected_application(selected_predicate)?,
                 &source,
             )?;
             if let Some(ty) = definition.result(facts)? {

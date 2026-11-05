@@ -519,3 +519,56 @@ fn future_formation_proves_closed_bounds_and_retains_unpaid_lifetime_requirement
     }
     Ok(())
 }
+
+#[test]
+fn selected_future_bounds_consume_genuine_future_and_actual_output_equality() -> Result {
+    use types::arguments::Argument;
+    let text = source::fixture("pa43/tests/spec/future-runtime-v1/selection-source.rs")?;
+    let companion = source::fixture("pa43/tests/spec/future-runtime-v1/selection-companion.rs")?;
+    assert!(text.ends_with(&companion));
+    let report = source::source_provider(&text, "future_output_selection")?;
+    let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
+    let (templates, inputs) = checks::prepare(&report, &mut facts)?;
+    let checked = checks::verify(&facts, &templates, inputs)?;
+    for (name, valid) in [("value", true), ("wide", false)] {
+        let inner = checks::future(&report, &mut facts, name, &[])?;
+        let _ = rustgm::pipeline::future_application(&mut facts, &checked, inner)?;
+        let future = checks::future(
+            &report,
+            &mut facts,
+            "require_future",
+            &[Argument::Type(inner)],
+        )?;
+        let selected = rustgm::pipeline::future_application(&mut facts, &checked, future);
+        if valid {
+            let application = selected?;
+            assert_eq!(
+                application.body().result,
+                TypeId::primitive(types::Primitive::U8)
+            );
+            assert!(application.formation_requirements().is_none());
+            let _ = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+        } else {
+            let error = selected
+                .err()
+                .ok_or("accepted wrong actual future Output")?;
+            assert!(error.contains("defining input clause"), "{error}");
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn authored_async_by_value_unsized_input_cannot_publish_sized_future_storage() -> Result {
+    let text = source::fixture("pa43/tests/spec/future-runtime-v1/unsized-source.rs")?;
+    let report = source::source_provider(&text, "unsized_async_input")?;
+    let error = sema::declarations::analyze(&report)
+        .and_then(|facts| sema::bodies::analyze(&report, facts))
+        .err()
+        .ok_or("accepted by-value str and fabricated sized future storage")?;
+    assert!(
+        error.message.to_ascii_lowercase().contains("sized"),
+        "{error:?}"
+    );
+    Ok(())
+}

@@ -114,6 +114,10 @@ pub(in crate::sema) enum Source {
     Callable {
         output: TypeId,
     },
+    /// Actual checked authored owner; formation debts remain in this proof.
+    Future {
+        future: TypeId,
+    },
     LanguageOperation {
         descriptor: crate::sema::primitive_methods::Descriptor,
     },

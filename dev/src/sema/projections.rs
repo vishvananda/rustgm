@@ -43,7 +43,7 @@ pub(super) fn implementation_result(
     application: crate::types::projection::Application,
     source: &Source,
 ) -> Result<TypeId, &'static str> {
-    Definition::select(facts, application.item, application.arguments, source)?
+    Definition::select(facts, application, source)?
         .result(facts)?
         .ok_or("missing completed associated type definition")
 }

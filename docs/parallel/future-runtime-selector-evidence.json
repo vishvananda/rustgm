@@ -1,0 +1,142 @@
+{
+  "parent": "f189332ef",
+  "scope": "Genuine source Future language evidence, defining formation proof and full-Application Output consumer; no executable family",
+  "source_map": {
+    "path": "obj/parallel/future-runtime-v1/selector-checkpoint/source-hashes.json",
+    "sha256": "598c51c5b430e29effe55beffac94c1b32484f71ed47134b773027ca4f8613f0",
+    "files": 23
+  },
+  "source_hashes": {
+    "dev/src/sema/bodies/generics.rs": "2195b3d1f3f29d5e7eeae959db947cb748e0edb3d8836766f5fd0256e6f046c8",
+    "dev/src/sema/bodies/projections/selection.rs": "e9f96992c9a7d8a4866355b90f1d585dc602113d1aec521409dbe82c9cb09c4e",
+    "dev/src/sema/coroutine_methods.rs": "510696ce327263d4c826e5973db38e82a1bfe97b04d4d7943c08eea90d8002f1",
+    "dev/src/sema/coroutine_methods/schema.rs": "1ae279706ea4994c423f554bc777ba78d28ccfb5f1bf65802e9143ceb9785f13",
+    "dev/src/sema/mod.rs": "7dd05e53d3a761ff89dc23e21e2895fde7997fbdf197b3071d41fcbaebdfde21",
+    "dev/src/sema/nominals/traits/normal_form.rs": "b9aae13557c8d7c9e81717e6b85519e6ff1044bbec49dd296875bc5f6691347e",
+    "dev/src/sema/opaque/futureform.rs": "498e49bf59ca85c82818fcd243d1961c3b089a07ed6adf3377ad8ea0cd231ee1",
+    "dev/src/sema/projections.rs": "dbcb54c0c1c41248e5c371782081f94d4d5455b606b4f46814396e936076d196",
+    "dev/src/sema/projections/selected.rs": "13b02c7cf030891dabf48c854933141b3ed47cbee8227905ae9be6ecac7342cd",
+    "dev/src/sema/traits/selection.rs": "b424eaea7ac0ce74bb0f69549332bf62db72798d7114325df88c8b0fceee16e9",
+    "dev/src/sema/traits/selection/search.rs": "469ede47e01e9e02b058bd394e091c623c42971e3071c1f065af1a77bdd28374",
+    "dev/src/sema/traits/selection/search/construction_conditions.rs": "db492700f06c3f3cc92e2b7d61fee842e4ac647f884dae790e20c11736ef14e6",
+    "dev/src/sema/traits/selection/search/coroutine_inputs.rs": "e01de205d72ebc784c7e6d66c74186fdb568b952638eddd3b43d95d648c5e478",
+    "dev/src/sema/traits/selection/search/normalization.rs": "59d125fabddc58481d49f92951f8aaaca171825c9c0edfaa9e8d0a97baafb868",
+    "dev/src/sema/traits/selection/search/primitive_methods.rs": "5e1eb2af59f567a987a51b8f00250fea68895c074371acb03cbe1a10e54724a2",
+    "dev/tests/invariants/coroutine_evidence.rs": "c4cd29a4e621acb6b4d483711830cc9b2aae377df0e23ac9435aaf002de813e8",
+    "dev/tests/invariants/family_arguments.rs": "7a9c47a7724dfa6fe02303c1ac7c28e498e26b4d6bdcd29979c9ee4760190e12",
+    "dev/tests/invariants/selection_headers/normalization.rs": "09b0a9f9d01eb78f124509de8441db8be0c10e71e280a5e11510d2db08b8bf4e",
+    "dev/tests/stateframe.rs": "1aaf5b7b6bc565c6e9f987926bd02b612114d4a3cd83b547bf70aded8f46e517",
+    "pa43/tests/spec/future-runtime-v1/selection-companion.rs": "8e7014f52846a9d19c4b58a4f04a0bf84b347411646eacc85b8297bd7917a8b7",
+    "pa43/tests/spec/future-runtime-v1/selection-predictions.json": "b83b18bb3f9e7cac693363828e5a9a27e4f674c4048c836b7791b248689d2fc5",
+    "pa43/tests/spec/future-runtime-v1/selection-source.rs": "827681feb2aa4f59ace6445ac89a41abcb22b169a247174217f1e43423a190f3",
+    "pa43/tests/spec/future-runtime-v1/unsized-source.rs": "083cc212ba9a89e6e159e5e796ad7591d6a86e15f8733b44c974969cf60ef51e"
+  },
+  "gates": [
+    {
+      "path": "obj/qualification/fast/1793890287698067049/receipt.json",
+      "sha256": "68b6ffd5645ff3e4be623848c4af9f07f74f1ecb9ec6f1962f54b5292f94c4d3",
+      "status": 0,
+      "tests": 26,
+      "seconds": 81.29
+    },
+    {
+      "path": "obj/qualification/fast/1793890946299924869/receipt.json",
+      "sha256": "3f38708c5fe366d7e3b40abf8cbbe482eadd811fee7f5ce69c94d1bf488409e5",
+      "status": 0,
+      "tests": 2,
+      "seconds": 77.85
+    }
+  ],
+  "independent": {
+    "raw_frozen_plan": "obj/parallel/future-runtime-v1/selection/predictions.json",
+    "raw_plan_sha256": "c008aa03426f2452f6ddc1ed526f3bad226cac5bcca398a610dc763fd519ba8f",
+    "tracked_packet": "pa43/tests/spec/future-runtime-v1/selection-predictions.json",
+    "tracked_packet_sha256": "b83b18bb3f9e7cac693363828e5a9a27e4f674c4048c836b7791b248689d2fc5",
+    "receipt": "obj/parallel/future-runtime-v1/selection/receipt.json",
+    "receipt_sha256": "c4cae2514e8e023ad3caf930e7a189cdf9f4e099446773aa6b3c827e7a28b980",
+    "outcomes": [
+      0,
+      1
+    ],
+    "required_negative_cause": "E0271",
+    "note": "tracked packet preserves exact two independently frozen cases and adds already-frozen unsized source opponent plus pending private typed controls"
+  },
+  "unsized": {
+    "receipt": "obj/parallel/future-runtime-v1/formation/receipt.json",
+    "sha256": "a31741f5c281fe9bada46ea4fd90e6a67ed5e0cf1f4912b5a171efd25c315d3b",
+    "std_source": "obj/parallel/future-runtime-v1/formation/unsized-by-value.rs",
+    "source_sha256": "3accbba077eb92afa876b1ec9351bbb1c76c66dd28c8669d60b9ebfaed769765",
+    "status": 1,
+    "cause": "E0277",
+    "candidate_source_rejects_actual_by_value_Sized_requirement": true
+  },
+  "private": {
+    "status": "authored; not locally compiled/linked/executed, integration CI required",
+    "exact": [
+      "sema::coroutine_methods::tests::actual_future_output_rejects_foreign_full_projection_inputs_on_cold_and_warm_reads",
+      "sema::coroutine_methods::tests::output_schema_requires_actual_bounds_and_completed_own_family_after_warm_selection"
+    ],
+    "existing_api_adaptations": {
+      "dev/tests/invariants/family_arguments.rs": 1,
+      "dev/tests/invariants/selection_headers/normalization.rs": 2
+    },
+    "observed_arguments": "unchanged; Root owns its separate adaptation"
+  },
+  "harness": {
+    "receipt": "obj/parallel/future-runtime-v1/selection/harness.json",
+    "sha256": "4aabb45554f5350fe175c4e9a3a203181defce4e6462e5466c00f8aa7d2f5be9",
+    "stdout_sha256": "6caf9cc9ea3f29a745c945edb2f19b1c8e066a602188462821a7a036e41ed0db",
+    "stderr_sha256": "5fd38336baf5b1d0ee6cd3bf89f6e513d287893ccd8b41447ee19ff4fcdbd67b",
+    "status": 2,
+    "passed": 278,
+    "total": 280,
+    "cause": "two storage self-tests mock ROOT below own btrfs TMPDIR and inherit real ancestor shared-controller discovery; mocked root is unregistered",
+    "remaining": "Root integration harness configuration; no policy bypass/harness mutation"
+  },
+  "upstream": {
+    "status": 0,
+    "pinned_fixtures": 28,
+    "reference_files": 126,
+    "guarded_exec_chunk": "a933ed",
+    "storage_record": "obj/cleanup/1793891411461572308.jsonl"
+  },
+  "failed_gates": [
+    {
+      "id": "1793888472243697343",
+      "cause": "Clippy projection selection function105lines after complete Application construction; factored actual selected_application constructor"
+    },
+    {
+      "id": "1793889309968371443",
+      "cause": "new schema check incorrectly compared member_owner Self-definition with trait declaration; corrected to actual trait_owner producer",
+      "gdb_receipt": "obj/parallel/future-runtime-v1/selection/schema.json",
+      "gdb_stdout_sha256": "fd89d0191395bb25264aa2cb03eb36f41bb9a48ce371810e4340b56e36f870b5"
+    }
+  ],
+  "layout": {
+    "Kind": 24,
+    "Owner": 20,
+    "Body": 456,
+    "opaque_entry": 16,
+    "note": "existing actual layout assertions pass; no new dense record fields or pending-language variant"
+  },
+  "shared_joins": [
+    "sema/traits/selection.rs Source::Future",
+    "sema/traits/selection/search.rs module",
+    "search/construction_conditions.rs existing Formation/Select branch",
+    "search/primitive_methods.rs future result hook",
+    "search/normalization.rs Source arm",
+    "nominals/traits/normal_form.rs Source arm",
+    "bodies/generics.rs proven source arm",
+    "projections.rs and projections/selected.rs full Application API",
+    "bodies/projections/selection.rs pre-restoration complete application"
+  ],
+  "limitations": [
+    "nested callable-depth future formation transport explicitly fenced",
+    "extra Future supertrait/result promises and unsupported members explicitly fenced on demanded language proof; unused declarations unchanged",
+    "actual Future::poll dispatch/generated-method registry joining remains required",
+    "constructor/poll/drop body factories, state ownership and native observers remain required",
+    "actual caller formation debt discharge before executable permission",
+    "await/saved locals/self-reference/panic/cancellation/recursive cleanup/helper runtime",
+    "owned authored-body metadata, integrated performance/private/full release qualification"
+  ]
+}

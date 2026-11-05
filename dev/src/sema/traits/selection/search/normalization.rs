@@ -407,6 +407,7 @@ impl Search<'_> {
         let resolution = match source {
             Source::Implementation { .. }
             | Source::Callable { .. }
+            | Source::Future { .. }
             | Source::LanguageOperation { .. } => {
                 if let Some(application) = opened.application.associated() {
                     Resolution::Type(crate::sema::projections::implementation_result(

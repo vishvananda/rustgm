@@ -13,8 +13,39 @@ impl Declarations {
         fold: &mut Bound,
         universals: u32,
     ) -> Result<Obligations, &'static str> {
+        let inputs = self.authored_future_inputs(future, fold)?;
+        let mut state = if inputs.clauses.is_empty() {
+            None
+        } else {
+            Some(State::instance(self, universals)?)
+        };
+        for clause in inputs.clauses {
+            let state = state
+                .as_mut()
+                .ok_or("future formation lost its canonical selection")?;
+            let before = state.selection_steps();
+            let proven = state.prove_clause(self, clause, true);
+            self.body_work.canonical_steps = self
+                .body_work
+                .canonical_steps
+                .saturating_add(state.selection_steps().saturating_sub(before));
+            if !proven? {
+                return Err("future application does not satisfy its actual defining input clause");
+            }
+        }
+        let mut proof = state.map_or_else(|| Obligations::new(1), State::finish);
+        proof.outlives.extend(inputs.regions);
+        Ok(proof)
+    }
+
+    /// Actual defining inputs in the supplied captured frame, never assumptions.
+    pub(in crate::sema) fn authored_future_inputs(
+        &mut self,
+        future: TypeId,
+        fold: &mut Bound,
+    ) -> Result<crate::sema::projections::families::Requirements, &'static str> {
         let owner = self.checked_future_definition(future)?;
-        let clauses = inputs(self, owner)?;
+        let mut clauses = inputs(self, owner)?;
         let count = self
             .lifetimes
             .functions
@@ -25,7 +56,7 @@ impl Declarations {
         crate::sema::header_attributes::reserve_source_contracts(
             self,
             clauses.len().saturating_add(count),
-            count.saturating_mul(size_of::<crate::types::outlives::Pair>()),
+            count.saturating_mul(2 * size_of::<crate::types::outlives::Pair>()),
         )
         .map_err(|_| "future formation source storage budget exhausted")?;
         let bounds = self
@@ -35,39 +66,28 @@ impl Declarations {
             .ok_or("future formation lost its actual function lifetime schema")?
             .bounds
             .clone();
-        let mut state = if clauses.is_empty() {
-            None
-        } else {
-            Some(State::instance(self, universals)?)
-        };
         let before = fold.steps;
         let result = (|| {
-            for clause in clauses {
-                let clause = fold.clause(&mut self.types, clause)?;
-                let state = state
-                    .as_mut()
-                    .ok_or("future formation lost its canonical selection")?;
-                let before = state.selection_steps();
-                let proven = state.prove_clause(self, clause, true);
-                self.body_work.canonical_steps = self
-                    .body_work
-                    .canonical_steps
-                    .saturating_add(state.selection_steps().saturating_sub(before));
-                if !proven? {
-                    return Err(
-                        "future application does not satisfy its actual defining input clause",
-                    );
-                }
+            for clause in &mut clauses {
+                *clause = fold.clause(&mut self.types, *clause)?;
             }
-            let mut proof = state.map_or_else(|| Obligations::new(1), State::finish);
+            let mut regions = Vec::with_capacity(bounds.len());
             for (longer, shorter) in bounds {
                 let longer = fold.region(longer, 0)?;
                 let shorter = fold.region(shorter, 0)?;
                 if longer != shorter && longer != crate::types::RegionId::STATIC {
-                    proof.outlives.push((longer, shorter));
+                    regions.push((longer, shorter));
                 }
             }
-            Ok(proof)
+            Ok(crate::sema::projections::families::Requirements {
+                steps: fold
+                    .steps
+                    .saturating_sub(before)
+                    .saturating_add(clauses.len())
+                    .saturating_add(count),
+                clauses,
+                regions,
+            })
         })();
         self.body_work.canonical_steps = self
             .body_work

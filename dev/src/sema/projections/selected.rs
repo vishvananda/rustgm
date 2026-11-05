@@ -1,5 +1,5 @@
 //! A selected member keeps its owner and complete arguments while its definition finishes.
-use super::{Declarations, DefId, ItemId, Source, TypeId};
+use super::{Declarations, DefId, Source, TypeId};
 use crate::types::{GenericArgs, opaque::OpaqueId, substitute::Alias};
 
 pub(in crate::sema) struct Definition {
@@ -18,10 +18,21 @@ enum Value {
 impl Definition {
     pub fn select(
         facts: &Declarations,
-        item: ItemId,
-        family: GenericArgs,
+        application: crate::types::projection::Application,
         source: &Source,
     ) -> Result<Self, &'static str> {
+        let item = application.item;
+        let family = application.arguments;
+        if let Source::Future { future } = source {
+            return Ok(Self {
+                id: DefId(item.0),
+                value: Value::Ready(crate::sema::coroutine_methods::output(
+                    facts,
+                    application,
+                    *future,
+                )?),
+            });
+        }
         if let Source::LanguageOperation { descriptor } = source {
             return Ok(Self {
                 id: DefId(item.0),
@@ -62,8 +73,10 @@ impl Definition {
         let Alias::TraitResult(id, _) = alias else {
             return Self::select(
                 facts,
-                alias.associated().ok_or("missing associated alias")?.item,
-                family,
+                crate::types::projection::Application {
+                    arguments: family,
+                    ..alias.associated().ok_or("missing associated alias")?
+                },
                 &source,
             )
             .map(Some);
