@@ -69,3 +69,11 @@ Full CI41964272575 on8c29aeae3 is terminal success with every gate, including
 all source transport transaction/forgery/layout repairs, native, debug,
 independent Rust and const-machine qualification. It precedes this joined async
 and operator implementation; a separate full successor remains required.
+
+Joined full successor41968654685 on c509736bb executes both new private helper
+controls successfully.2702 private tests pass; six fail only their old exact
+Catalog size. The additional async registration identity is one cold word,
+making Catalog3760 bytes rather than3752. All six expectations are updated
+exactly; dense Node/NodeFacts/Body sizes and every other assertion remain.
+The retained failed log is obj/parallel/async-glue-v1/full-ci-41968654685/failed.log.
+Complete corrected successor qualification remains required.

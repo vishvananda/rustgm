@@ -159,7 +159,7 @@ fn declaration_roles_keep_actual_function_identity_and_ordinary_record_sizes() -
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::sema::model::NodeFacts>(), 80);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
-    assert_eq!(size_of::<Catalog>(), 3752);
+    assert_eq!(size_of::<Catalog>(), 3760);
     assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 5208);
     println!(
         "contract-role layouts Catalog={} Reservations={} banks={:?}",
