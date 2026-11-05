@@ -1,0 +1,215 @@
+{
+  "cases": [
+    {
+      "file": "runtime.rs",
+      "expected": 0,
+      "object_expected": 0,
+      "sha256": "deb28d89e375dce029f5a9e55613c8b352c6e35a2a6448fc11a679670e4a0183",
+      "native_observer": "observer.c"
+    },
+    {
+      "file": "wrong-safety.rs",
+      "expected": 1,
+      "sha256": "7ac921ae67696c5427cdc7a448526a771a36a6eff74b8ad4d09aa0a0b8f178fa"
+    },
+    {
+      "file": "wrong-output.rs",
+      "expected": 1,
+      "sha256": "82a354e25b60979eb67069f6718b100b0cd1370c845b079d9889b92d104a9ebc"
+    },
+    {
+      "file": "wrong-arity.rs",
+      "expected": 1,
+      "sha256": "037441227c1ad6750a94d07cfa1074a6b664d7c5b680759d8530a7796acd0376"
+    },
+    {
+      "file": "ordinary.rs",
+      "expected": 0,
+      "object_expected": 0,
+      "sha256": "25d757d16c451ac3e4d6c9a46ae97a568fee604e6131cbf8855080ce701bd50f",
+      "native_observer": "ordinary-observer.c"
+    },
+    {
+      "file": "float.rs",
+      "expected": 0,
+      "object_expected": 0,
+      "sha256": "79b637e7bec0303a1d05908d20f2fdcbcba1ca6d447653d42a1a1ccb40f2868e",
+      "native_observer": "float-observer.c"
+    },
+    {
+      "file": "generic-forward.rs",
+      "expected": 0,
+      "object_qualification": "upstream-ice-unqualified",
+      "expected_candidate": 0,
+      "sha256": "e457ba85bd3b49903ded155e8500da92fef6439b125f7ce7d3c1a6aa4224d11f"
+    }
+  ],
+  "constants": [
+    {
+      "constant": "VALUE_add_u8",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_sub_u8",
+      "bits": "255"
+    },
+    {
+      "constant": "VALUE_mul_u8",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_add_u16",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_sub_u16",
+      "bits": "65535"
+    },
+    {
+      "constant": "VALUE_mul_u16",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_add_u32",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_sub_u32",
+      "bits": "4294967295"
+    },
+    {
+      "constant": "VALUE_mul_u32",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_add_u64",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_sub_u64",
+      "bits": "18446744073709551615"
+    },
+    {
+      "constant": "VALUE_mul_u64",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_add_u128",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_sub_u128",
+      "bits": "340282366920938463463374607431768211455"
+    },
+    {
+      "constant": "VALUE_mul_u128",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_add_usize",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_sub_usize",
+      "bits": "18446744073709551615"
+    },
+    {
+      "constant": "VALUE_mul_usize",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_add_i8",
+      "bits": "128"
+    },
+    {
+      "constant": "VALUE_sub_i8",
+      "bits": "127"
+    },
+    {
+      "constant": "VALUE_mul_i8",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_add_i16",
+      "bits": "32768"
+    },
+    {
+      "constant": "VALUE_sub_i16",
+      "bits": "32767"
+    },
+    {
+      "constant": "VALUE_mul_i16",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_add_i32",
+      "bits": "2147483648"
+    },
+    {
+      "constant": "VALUE_sub_i32",
+      "bits": "2147483647"
+    },
+    {
+      "constant": "VALUE_mul_i32",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_add_i64",
+      "bits": "9223372036854775808"
+    },
+    {
+      "constant": "VALUE_sub_i64",
+      "bits": "9223372036854775807"
+    },
+    {
+      "constant": "VALUE_mul_i64",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_add_i128",
+      "bits": "170141183460469231731687303715884105728"
+    },
+    {
+      "constant": "VALUE_sub_i128",
+      "bits": "170141183460469231731687303715884105727"
+    },
+    {
+      "constant": "VALUE_mul_i128",
+      "bits": "0"
+    },
+    {
+      "constant": "VALUE_add_isize",
+      "bits": "9223372036854775808"
+    },
+    {
+      "constant": "VALUE_sub_isize",
+      "bits": "9223372036854775807"
+    },
+    {
+      "constant": "VALUE_mul_isize",
+      "bits": "0"
+    }
+  ],
+  "observers": [
+    {
+      "file": "observer.c",
+      "sha256": "317138aec4e5b82b8e2d30a8e14b61e5e1fba3848de33bba632bbfa67bfa23eb",
+      "expected_stdout": "72 wrapping cases\n"
+    },
+    {
+      "file": "ordinary-observer.c",
+      "sha256": "dfc41708afffba442c784d26efea7974fab5d2513897fb272cf5c824d2f69825",
+      "expected_stdout": "23\n"
+    },
+    {
+      "file": "generic-observer.c",
+      "sha256": "3475f78a1f19ddeb549963cd2fef8bbad7c00ef610070ee9bafb40c57b3947d3",
+      "expected_stdout": "73 wrapping cases\n"
+    },
+    {
+      "file": "float-observer.c",
+      "sha256": "25644ce177bd391b332fcae30dc92ca86f431e80b6da5607f5f8919562cca49a",
+      "expected_stdout": "3.0\n"
+    }
+  ]
+}

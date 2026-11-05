@@ -41,6 +41,11 @@ impl Machine<'_, '_> {
             return Ok(Selected::Unrelated);
         };
         match catalog.intrinsic_kind(crate::resolve::model::DefId(item.0))? {
+            Some(kind) if crate::sema::compiler_items::wrapping_operator(kind).is_some() => {
+                // The reached direct-call arithmetic owner authenticates and
+                // executes this operation; it is not a callback selector.
+                return Ok(Selected::Unrelated);
+            }
             Some(crate::support::bindings::SourceIntrinsic::Declaration(_)) => {
                 return Err("source intrinsic constant execution is not implemented".into());
             }

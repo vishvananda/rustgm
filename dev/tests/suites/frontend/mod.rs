@@ -1,6 +1,8 @@
 //! Maintainer integration suites for frontend.
 #[path = "../../applicable_contracts.rs"]
 mod applicable_contracts;
+#[path = "../../arbitrary_methods.rs"]
+mod arbitrary_methods;
 #[path = "../../async_signatures.rs"]
 mod async_signatures;
 #[path = "../../asynccleanup.rs"]
@@ -87,6 +89,8 @@ mod macro_rules;
 mod macro_session;
 #[path = "../../macro_transcription.rs"]
 mod macro_transcription;
+#[path = "../../modular_primitives.rs"]
+mod modular_primitives;
 #[path = "../../modules.rs"]
 mod modules;
 #[path = "../../name_storage.rs"]

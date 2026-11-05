@@ -4,6 +4,30 @@ use crate::sema::traits::{
     assumptions::Assumptions, implementations::Availability, selection::Caller,
 };
 
+impl Search<'_> {
+    /// Open nested goals remain possible in a compatible downstream crate.
+    /// Reuse Deferred so neither this frame nor an ancestor caches false absence.
+    pub(super) fn coherence_absence(
+        &self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+        decision: Decision,
+    ) -> Result<Decision, String> {
+        if decision == Decision::Absent
+            && self.query.purpose != crate::sema::traits::implementations::Purpose::Use
+            && frame.goal.trait_arguments().is_some()
+            && !crate::sema::traits::implementations::overlap::absence_closed(
+                facts,
+                &mut frame.inputs.context,
+                &frame.goal,
+            )?
+        {
+            return Ok(Decision::Deferred);
+        }
+        Ok(decision)
+    }
+}
+
 pub(in crate::sema) fn may_overlap(
     facts: &mut Declarations,
     context: &mut Context,

@@ -1,0 +1,347 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "frozen_before_candidate_execution": true,
+  "cases": [
+    {
+      "file": "actual-header.rs",
+      "sha256": "2b92464cd2c496c26e3eda875ad30b30ef001fa8c3efe52c492d92ade95c9b98",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "ordinary-use.rs",
+      "sha256": "411ba3572042bf792045fca0e6455b954ce87648adf282ce25b9df973210a4b4",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "unused-unsafe.rs",
+      "sha256": "5c0097248dd850152076c071deef37f90a83e00b7d47a17ce4d60f9c9852a735",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "unused-no-parent.rs",
+      "sha256": "733b41a06f3688aab583aeca27a99e0c124748ff0e6d5813a7f2fa691fa26ebe",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "unused-sized-output.rs",
+      "sha256": "49933fecc799684dc551026eebd37df9ed2c8665602a5665fd93214286594b93",
+      "expected_status": 1,
+      "cause": "Sized",
+      "native": null
+    },
+    {
+      "file": "unused-renamed.rs",
+      "sha256": "ad1183f10930b6b0a3ed55b677a234cd8ff49251d95be55d5a9ac0767f68e697",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "wrong-role-target.rs",
+      "sha256": "1abc1871ab340f1feb1b74eaef7e0888a21910704ab3f124cddbf3dbde50e376",
+      "expected_status": 1,
+      "cause": "cannot be used",
+      "native": null
+    },
+    {
+      "file": "unused-generic.rs",
+      "sha256": "ff1b397f5471268cf7cd4356619ac34ec9d4ef9787223d5ffdb01893046079aa",
+      "expected_status": 0,
+      "cause": "",
+      "native": null,
+      "prior_file": "wrong-role-arity.rs"
+    },
+    {
+      "file": "wrong-member-target.rs",
+      "sha256": "72e47c03e047d4b5e75bc471bdb5f3984d9f9a198035d2f01b64616f5b0162f9",
+      "expected_status": 1,
+      "cause": "cannot be used",
+      "native": null
+    },
+    {
+      "file": "duplicate-role.rs",
+      "sha256": "166e0996b4e0868fa3cdde09b0066ef3397377982f58fc9880fccb68d47333a9",
+      "expected_status": 1,
+      "cause": "duplicate lang item",
+      "native": null
+    },
+    {
+      "file": "no-feature.rs",
+      "sha256": "1f106744c9c05f03f4836ab3ef323f4064b356ea9ece40262f8b4f28dcef659e",
+      "expected_status": 1,
+      "cause": "arbitrary_self_types",
+      "native": null
+    },
+    {
+      "file": "explicit.rs",
+      "sha256": "bcbfe97bb9f3b728b29e214993387ec566ee5aa94b1027d52bb1a8bea44b42d1",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "dot.rs",
+      "sha256": "52611cd58ff5fda2ee9a73ee0839c58dddc5549523c1d237ac3acd26bccf8960",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "borrowed.rs",
+      "sha256": "acee2b1d5fff252b57a1ca200fe43fbe458a93955f5bccc8668d33a81c41131a",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "nested.rs",
+      "sha256": "0ca1d098fadbfcd8c30508cb55c402d5167f0f64dd7fde9d8df66af0182f04f0",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "missing-impl.rs",
+      "sha256": "070e34e2c8d67b049d7e9db98637d09a9cb28cea2968855589908133711ebd0f",
+      "expected_status": 1,
+      "cause": "receiver",
+      "native": null
+    },
+    {
+      "file": "no-data-access.rs",
+      "sha256": "26c5367b85f132526f109e130ec341b08b72341d239bcbb84ddd3d512f9c0619",
+      "expected_status": 1,
+      "cause": "cannot be dereferenced",
+      "native": null
+    },
+    {
+      "file": "no-target-fields.rs",
+      "sha256": "913a4eae040da36981bdcd604bfc79126fe624d898869b3740c44421b3f4554f",
+      "expected_status": 1,
+      "cause": "no field",
+      "native": null
+    },
+    {
+      "file": "missing-role.rs",
+      "sha256": "96f7ff592fce17ae3cc86c0bcbe16bb22cc996ef9b8d019931805ca52547e9b4",
+      "expected_status": 1,
+      "cause": "receiver",
+      "native": null
+    },
+    {
+      "file": "missing-member-role.rs",
+      "sha256": "cbbefe646ae22443478d8b4e23318dca74b24b2f254d902b1cb89acdad789a0a",
+      "expected_status": 1,
+      "cause": "receiver",
+      "native": null
+    },
+    {
+      "file": "by-value-no-role.rs",
+      "sha256": "e2b5ac8fdb77a8e1fb0a6973d871cdd6bd9338519d75b280e05c448d231c25f1",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "method-formal.rs",
+      "sha256": "6348f2047c9668eff9531b164055dcdae89a2b4a377d71be46208e9a7329acee",
+      "expected_status": 1,
+      "cause": "receiver",
+      "native": null
+    },
+    {
+      "file": "cycle.rs",
+      "sha256": "2040872f3675557ff209606a46d684ad530832464b9608580ee8204ba28399ec",
+      "expected_status": 1,
+      "cause": "receiver",
+      "native": null
+    },
+    {
+      "file": "generic.rs",
+      "sha256": "af3f9be5a3b09c481b5e8092498b0b56fe11a00d2ff3d094e52176bfa0a60aa0",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "wrong-generic.rs",
+      "sha256": "53db29734b7745a2aa852ebe4cf49968998a0da0de298161071bf97bdc9f42e6",
+      "expected_status": 1,
+      "cause": "receiver",
+      "native": null
+    },
+    {
+      "file": "renamed.rs",
+      "sha256": "f930b1af0f16289288ecf792395b4e7fb1628e8e0283fc98953b0099e904b19f",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "raw.rs",
+      "sha256": "7c3ed2284a182f0957641d0556a5521485de63f511686ee2da985b04e5788650",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "raw-basic-only.rs",
+      "sha256": "e021cd7d20077d660e51f4bf9d51f73c0a8c364d4b4bef7cefe19517a22b67e9",
+      "expected_status": 1,
+      "cause": "arbitrary_self_types_pointers",
+      "native": null
+    },
+    {
+      "file": "raw-unsafe.rs",
+      "sha256": "63d8852bd6e87a173e21db38165993c88aff8ad12488864d497d59dd7d7d299b",
+      "expected_status": 1,
+      "cause": "unsafe",
+      "native": null
+    },
+    {
+      "file": "receiver-unsafe-call.rs",
+      "sha256": "2954889b08889758885355968575181d248783891349f1f3046b6fb0b135204e",
+      "expected_status": 1,
+      "cause": "unsafe",
+      "native": null
+    },
+    {
+      "file": "runtime.rs",
+      "sha256": "c8755a19ad6b9a35eeaf98d6eefd896e2e560e8a907304997c58ca456eb53aee",
+      "expected_status": 0,
+      "cause": "",
+      "native": "runtime"
+    },
+    {
+      "file": "unused-sized-header.rs",
+      "sha256": "c6b4bc3b81e7ad85c65a3cf3e5c5eb9451fa4e991c3882bee812c89a1cfba4e8",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "generic-native.rs",
+      "sha256": "d74904982e346f38ec0f355e59f30590ac47f90b0b04664609810ca77b396d43",
+      "expected_status": 0,
+      "cause": "",
+      "native": "generic-native"
+    },
+    {
+      "file": "raw-native.rs",
+      "sha256": "3b13c1f716e63aa1c4662c70a8fc220495a7ded09ae7eb5735e1caaed41f7d9f",
+      "expected_status": 0,
+      "cause": "",
+      "native": "raw-native"
+    },
+    {
+      "file": "coherence-closed.rs",
+      "sha256": "bb23bdc758ffbd33a8ab5250f855af08939d6d0f20a2381e05fcb1e17c21ec36",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "coherence-implemented.rs",
+      "sha256": "4f08676b5f0e91df77fa2bc023959b329ee3f9e10e0df3c6eaca2be085b84972",
+      "expected_status": 1,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "coherence-argument.rs",
+      "sha256": "810d54181960dc8c68ee6d62729ad7affac0824402a33d5124e322110cdf4fdc",
+      "expected_status": 1,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "coherence-fundamental.rs",
+      "sha256": "fca19fa118bd085370ded25d47dbb03ddfe77b2a0215934269077dbce737be68",
+      "expected_status": 1,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "coherence-reference.rs",
+      "sha256": "a4bfb0cd736911798edb8dc09d68dd347c1859c6a17f047fe1ac12656bdc3aaf",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "coherence-cycle.rs",
+      "sha256": "e57ae424367542f8dec110bfb2d90e30d3453a430b0c2c454f001ee8c13ae781",
+      "expected_status": 1,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "bound-8.rs",
+      "sha256": "a0538ef8f71dd5c84b45ff8115f7c0b6fa066e301390fd3f966a664ed8e88c2d",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "bound-32.rs",
+      "sha256": "4b8b8c5b4d98e5192fb88f14ddc7fd186f14aa88f8879974e981dcb83b45bc73",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "bound-128.rs",
+      "sha256": "3b1493543be71eaab7b4bbffd0098a6e40ba08666f379641255706c26c4035f4",
+      "expected_status": 0,
+      "cause": "",
+      "native": null
+    },
+    {
+      "file": "coherence-nested.rs",
+      "sha256": "4cfdc33b66f99d28d286b6676787249f6d57bf7442d649166afb0f7582158ff1",
+      "expected_status": 1,
+      "cause": "downstream",
+      "native": null
+    }
+  ],
+  "observers": {
+    "runtime": {
+      "file": "observer.c",
+      "sha256": "68ea68f519c9fb4ddc91eb7effdc94da45378a39b0f9a3c88fe63625183d87be",
+      "expected_stdout": "23 17 11 29 32\n"
+    },
+    "generic-native": {
+      "file": "generic-native-observer.c",
+      "sha256": "0c7b932b6ea23a75d582cc102a3d6d17db80384c5f47e22dc3c2454a17666d7f",
+      "expected_stdout": "23\n"
+    },
+    "raw-native": {
+      "file": "raw-native-observer.c",
+      "sha256": "fac77ea6971c7fea41dd71fe719a3b4e6343d40b457c054681a4f6a12c96200c",
+      "expected_stdout": "23\n"
+    }
+  },
+  "pre_candidate_correction": {
+    "prior_manifest": "obj/parallel/receiver-source-v1/reference-v1/predictions.json",
+    "reason": "Reference foundation needs T:?Sized, not mere PointeeSized, for actual ?Sized Deref Target. Runtime counter uses real wrapping_add intrinsic rather than an absent Add declaration. Receiver GenericRequirement::None means unrestricted unused arity; corrected generic header positive before candidate. All failed sources/diagnostics retained."
+  },
+  "pre_candidate_followup": {
+    "prior_manifest": "obj/parallel/receiver-source-v1/reference-v2/predictions.json",
+    "reason": "Stronger Output:Sized with original blanket T:?Sized has a real unpaid impl debt, corrected to negative; separate header-only positive preserves legal altered declarations. Fixed unintended Deref member rename; runtime intrinsic foundation supplies actual Freeze role. All pre-candidate failed sources retained."
+  },
+  "native_foundation_correction": {
+    "prior_manifest": "obj/parallel/receiver-source-v1/reference-v3/predictions.json",
+    "reason": "Object generation independently requires genuine Destruct/drop_glue declaration foundation. Existing source outcomes retained; add separate actual generic/raw native sources before any candidate."
+  }
+}

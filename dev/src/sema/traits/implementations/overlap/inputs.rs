@@ -322,29 +322,10 @@ impl Inputs {
     ) -> Result<bool, String> {
         for goal in &self.traits {
             context.account_work(1).map_err(|e| e.to_string())?;
-            let predicate = match context.resolved_predicate(&mut facts.types, goal) {
-                Ok(value) => value,
-                Err(infer::Error::Unresolved | infer::Error::Normalization) => continue,
-                Err(error) => return Err(error.to_string()),
-            };
-            if !predicate.is_concrete(&facts.types)? || predicate.contains_opaques(&facts.types)? {
+            if !super::absence_closed(facts, context, goal)? {
                 continue;
             }
-            let (application, _) = predicate
-                .bound
-                .trait_parts()
-                .ok_or("coherence trait condition lost its application")?;
-            let item = facts
-                .types
-                .trait_application(application)
-                .ok_or("coherence trait application is missing")?
-                .item;
-            let local = facts.associated.owner(DefId(item.0)).and_then(|id| facts.associated.get(id))
-                .is_some_and(|owner| owner.source.is_some() && matches!(owner.kind,
-                    crate::sema::associated::OwnerKind::Trait { definition, .. } if definition == DefId(item.0)));
-            if (local || crate::sema::header_attributes::fundamental_policy(facts, DefId(item.0))?)
-                && !crate::sema::traits::selection::may_overlap(facts, context, goal)?
-            {
+            if !crate::sema::traits::selection::may_overlap(facts, context, goal)? {
                 return Ok(true);
             }
         }

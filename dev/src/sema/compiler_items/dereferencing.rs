@@ -20,13 +20,13 @@ pub(super) fn validate_target(
     let error = |message| Declarations::error(report, declaration.origin, message);
     let parent = declaration
         .parent
-        .ok_or_else(|| error("source deref_target lacks its actual trait owner"))?;
+        .ok_or_else(|| error("source target lacks its actual trait owner"))?;
     let source = report
         .resolution
         .definitions
         .get(parent.0 as usize)
         .and_then(|d| d.node)
-        .ok_or_else(|| error("source deref_target lacks its actual owner source"))?;
+        .ok_or_else(|| error("source target lacks its actual owner source"))?;
     let header = super::headers::Trait::source(
         report,
         facts,
@@ -42,7 +42,7 @@ pub(super) fn validate_target(
         .resolution
         .definitions
         .get(declaration.definition.0 as usize)
-        .ok_or_else(|| error("source deref_target lost its actual definition"))?;
+        .ok_or_else(|| error("source target lost its actual definition"))?;
     if definition.node != Some(declaration.origin)
         || definition.kind != DefKind::TypeAlias
         || facts.associated.trait_owner(declaration.definition) != Some(parent)
@@ -53,7 +53,7 @@ pub(super) fn validate_target(
             .is_none_or(|schema| schema.trait_item.0 != parent.0)
     {
         return Err(error(
-            "source deref_target differs from its canonical associated declaration",
+            "source target differs from its canonical associated declaration",
         ));
     }
     Ok(())

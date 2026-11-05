@@ -369,6 +369,19 @@ impl super::package::Package {
             "unsized parameter client identity changed",
         )
     }
+    pub(crate) fn requested_arbitrary_receivers(
+        &self,
+        pointers: bool,
+    ) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            if pointers {
+                policy::Feature::ArbitrarySelfTypesPointers
+            } else {
+                policy::Feature::ArbitrarySelfTypes
+            },
+            "arbitrary receiver client identity changed",
+        )
+    }
     pub(crate) fn requested_llvm_linkage(&self) -> Result<bool, &'static str> {
         self.requested_expression_feature(
             policy::Feature::LinkLlvmIntrinsics,

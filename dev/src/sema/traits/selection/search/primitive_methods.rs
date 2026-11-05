@@ -94,14 +94,15 @@ impl Search<'_> {
             ) => frame.deferred = true,
             Err(error) => return Err(inference(error)),
         }
+        let decision = if frame.deferred || frame.partial.is_some() {
+            Decision::Deferred
+        } else {
+            frame
+                .selected
+                .map_or(Decision::Absent, super::frames::Chosen::decision)
+        };
         Ok(Action::Complete(
-            if frame.deferred || frame.partial.is_some() {
-                Decision::Deferred
-            } else {
-                frame
-                    .selected
-                    .map_or(Decision::Absent, super::frames::Chosen::decision)
-            },
+            self.coherence_absence(facts, frame, decision)?,
         ))
     }
 }

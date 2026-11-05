@@ -282,6 +282,11 @@ impl Checker<'_> {
                     // proves the real Deref/LegacyReceiver chain after impl headers.
                     break;
                 }
+                _ if crate::sema::compiler_items::arbitrary_self::level(self.report, key)?
+                    != crate::sema::compiler_items::arbitrary_self::Level::Legacy =>
+                {
+                    break;
+                }
                 _ => return Err(self.error(key, "receiver must be Self or a reference to Self")),
             }
         }

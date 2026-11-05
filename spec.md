@@ -491,6 +491,19 @@ positional shortcut is valid only for uncaptured owners. Trait selection short-c
 profiles, const, authenticated metadata and async state/destruction remain
 required; neither source completion nor receiver proof supplies those semantics.
 
+Actual Receiver/Target roles share ordinary trait/associated-owner completion;
+they are distinct from Deref and LegacyReceiver. Unused alternate headers keep
+their source legality. Demanded arbitrary self types authenticate the actual
+feature context, completed implementation, parent Target and full Self arguments.
+Use one bounded, paid, cycle-checked type chain for declaration validation and
+method owner discovery. Discovery queries existing owner/name indexes and matches
+the method against the original outer receiver; its proof is no executable
+dereference, target-field access, loan or adjustment permission. Selected calls
+still consume their actual signature, full arguments, region and safety proof,
+and evaluate the real receiver exactly once. Raw pointers retain their separate
+feature and unsafe-call obligations. Broader shadowing, trait discovery, const
+and authenticated imported bodies remain required.
+
 Actual source Future/Output/poll roles authenticate their canonical declarations.
 Async signatures create genuine opaque identity, capture Self/lifetimes/type/const
 inputs and retain the authored Output equality separately from future storage.
@@ -3154,6 +3167,17 @@ Coherence asks whether a compatible instantiation can exist, separately from
 whether a generic body may perform an operation. Local conditional derive
 contracts constrain this possibility; absence of Copy/Clone on a foreign type
 head is not itself a negative coherence fact.
+
+Implicit absence additionally needs a local/fundamental trait and orphan-closed
+inputs at every ordinary nested trait goal. A nonfundamental nominal root stays
+upstream regardless of its unknown arguments: inspect that root once, rather
+than materializing and recursively walking every generic subtree. References
+retain their actual referent locality; unknown/fundamental/open roots remain
+conservative. A matching impl may depend on an open nested trait argument that
+a downstream crate can make local. Reuse the existing Deferred answer so such
+absence cannot be cached or propagated as disjointness. Explicit negative proof
+and cycle cutoffs retain their separate rules. No Receiver-specific exception,
+name waiver or extra permission/cache table is involved.
 
 Share each owner-pair proof across method names. Partition closed targets by
 canonical lifetime-erased shape, including callable binder erasure, before

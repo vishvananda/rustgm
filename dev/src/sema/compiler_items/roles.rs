@@ -80,7 +80,7 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 28] = [
+const TRAIT_ROLES: [LangItem; 29] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::UseCloned,
@@ -109,6 +109,7 @@ const TRAIT_ROLES: [LangItem; 28] = [
     LangItem::BikeshedGuaranteedNoDrop,
     LangItem::TransmuteTrait,
     LangItem::VaArgSafe,
+    LangItem::Receiver,
 ];
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -152,6 +153,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
             | LangItem::Deref
             | LangItem::DerefMut
             | LangItem::DerefPure
+            | LangItem::Receiver
             | LangItem::VaArgSafe => {}
             LangItem::TransmuteTrait => {
                 super::transmutability::validate_trait(
@@ -240,9 +242,11 @@ fn complete_dependent_roles(
         super::pointers::validate_member(report, facts, declaration)?;
         complete.roles.insert(LangItem::FnPtrAddr);
     }
-    if let Some(declaration) = catalog.language(LangItem::DerefTarget) {
-        super::dereferencing::validate_target(report, facts, declaration)?;
-        complete.roles.insert(LangItem::DerefTarget);
+    for role in [LangItem::DerefTarget, LangItem::ReceiverTarget] {
+        if let Some(declaration) = catalog.language(role) {
+            super::dereferencing::validate_target(report, facts, declaration)?;
+            complete.roles.insert(role);
+        }
     }
     if let Some(declaration) = catalog.language(LangItem::DropGlue) {
         glue::validate(report, facts, catalog, declaration, complete.roles)?;
@@ -388,6 +392,7 @@ fn header<'a>(
             | LangItem::DerefMut
             | LangItem::DerefPure
             | LangItem::VaArgSafe
+            | LangItem::Receiver
     ) {
         // Reservation already checked each role's target and generic arity.
         // Authenticate its canonical Self and source-owned inputs without inventing

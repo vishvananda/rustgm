@@ -62,6 +62,13 @@ impl Machine<'_, '_> {
             return Err("source subtraction changed its actual argument types".into());
         }
         let (left, right) = (Self::value(frame, *left)?, Self::value(frame, *right)?);
+        if let Some(operator) = crate::sema::compiler_items::wrapping_operator(selected.kind) {
+            let result =
+                self.evaluator
+                    .binary(operator, selected.input, left, right, Overflow::Wrapping)?;
+            self.work.calls += 1;
+            return Ok(Some(Answer::Ready(result)));
+        }
         let checked = self.evaluator.binary(
             Punctuation::Minus,
             selected.input,

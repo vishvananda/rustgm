@@ -76,7 +76,12 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
         }
         if matches!(
             role,
-            LangItem::Deref | LangItem::DerefMut | LangItem::DerefPure | LangItem::DerefTarget
+            LangItem::Deref
+                | LangItem::DerefMut
+                | LangItem::DerefPure
+                | LangItem::DerefTarget
+                | LangItem::Receiver
+                | LangItem::ReceiverTarget
         ) {
             // Canonical source owners still complete below; dereference use
             // requires ordinary trait selection and the actual method contract.

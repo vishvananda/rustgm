@@ -77,7 +77,7 @@ fn source_call(
             layout_call(report, facts, body, value, ty, (signature, arguments))?;
             Ok(Some(kind))
         }
-        Some(kind @ (SourceIntrinsic::UncheckedSub | SourceIntrinsic::SubWithOverflow)) => {
+        Some(kind) if crate::sema::compiler_items::scalar_arithmetic(kind) => {
             subtraction_dependencies::require(report, facts, body, value, ty).map(|()| Some(kind))
         }
         Some(SourceIntrinsic::ArithOffset) => {
@@ -251,24 +251,12 @@ impl Discovered {
                     u32::try_from(index).map_err(|_| "too many source selector values")?,
                 ));
             }
-            Some(
-                SourceIntrinsic::UbChecks
-                | SourceIntrinsic::Abort
-                | SourceIntrinsic::Transmute
-                | SourceIntrinsic::TransmuteUnchecked
-                | SourceIntrinsic::CallerLocation
-                | SourceIntrinsic::PtrMetadata
-                | SourceIntrinsic::AggregateRawPtr
-                | SourceIntrinsic::DiscriminantValue
-                | SourceIntrinsic::ThreeWayCompare
-                | SourceIntrinsic::ArithOffset
-                | SourceIntrinsic::UncheckedSub
-                | SourceIntrinsic::SubWithOverflow,
-            ) => {
-                // Only this authenticated direct Call omits callable-body demand.
-                // Lowering still proves and consumes its reached operation.
+            Some(_) => {
+                // The classifier returns Some only for an authenticated direct
+                // operation. Reification and unsupported declarations return None.
+                // Lowering still requires the reached body and operation proof.
             }
-            _ => self.callable(&facts.types, ty)?,
+            None => self.callable(&facts.types, ty)?,
         }
         Ok(())
     }

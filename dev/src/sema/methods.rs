@@ -7,6 +7,7 @@ pub(crate) mod pointers;
 pub(super) mod receiver;
 pub(super) mod selection;
 pub(crate) mod slices;
+mod target_chain;
 mod visible;
 use crate::support::hash::{HashMap, HashSet};
 use crate::{

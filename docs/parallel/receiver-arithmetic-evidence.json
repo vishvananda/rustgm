@@ -1,0 +1,33 @@
+{
+  "state": "focused qualification; joined native/core/performance/full CI pending",
+  "gates": [
+    {
+      "path": "obj/qualification/fast/1793879895653700652/receipt.json",
+      "sha256": "5d16b93905c3fcd845bba161fa2a55f2c5bdad31d1d53ae43015da1c74fab423",
+      "state": "passed"
+    },
+    {
+      "path": "obj/qualification/fast/1793879644601072298/receipt.json",
+      "sha256": "e85de9efa4907e67a826ca4ebf30d17668ac048ca2dc2d9916c6a17ea3b4382d",
+      "state": "passed"
+    },
+    {
+      "path": "obj/parallel/receiver-source-v1/reference-v9/receipt.json",
+      "sha256": "8f927399fb24031f11a319d03acbbe3044a17d61ed98491c3ee95c4585426f35",
+      "state": "passed"
+    },
+    {
+      "path": "obj/parallel/source-wrapping-v1/reference-v3/receipt.json",
+      "sha256": "b7432c422861e1801a19de01b528368ec289d256b12a31290b7b0d768975d6a5",
+      "state": "passed"
+    },
+    {
+      "path": "obj/parallel/index-foundation-repair-v1/standard-v1/receipt.json",
+      "sha256": "04c2d841fb170eee1cac3ccded4f649a1ee23c14438f4c7aa996323ea811278d",
+      "state": "passed"
+    }
+  ],
+  "receiver_manifest_sha256": "5c4b46140795536a2cd869b761c5e5a2d9595cb8cbd509aac9ae996d33bf6a2c",
+  "wrapping_manifest_sha256": "4b7d78cb09614aa327b0761838a2bb2a427fb15928dc1e86fab29f1d998adcf9",
+  "caveat": "Native gate precedes final generic nested-coherence change; joined successor required. No original core artifact or whole PA release."
+}

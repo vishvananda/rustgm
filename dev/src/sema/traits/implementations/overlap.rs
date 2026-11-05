@@ -1,5 +1,6 @@
 //! Structural impl disjointness uses simultaneous existential type/const equations.
 mod disjointness;
+pub(in crate::sema) use disjointness::absence_closed;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/overlap_headers.rs"]
 mod head_tests;

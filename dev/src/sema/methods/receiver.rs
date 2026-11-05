@@ -67,8 +67,18 @@ pub(in crate::sema) fn choose(
         .head(&facts.types, base)
         .map_err(inference)
         .map_err(error)?;
-    let inherent = inherent_candidates(report, facts, source, (term, base), head, site, identifier)
-        .map_err(error)?;
+    let mut inherent =
+        inherent_candidates(report, facts, source, (term, base), head, site, identifier)
+            .map_err(error)?;
+    super::target_chain::collect(
+        report,
+        facts,
+        source,
+        (key, term),
+        (site.name, identifier),
+        caller,
+        &mut inherent,
+    )?;
     if pending_definition(facts, source, &inherent.members, caller.availability)
         .map_err(error)?
         .is_some()
@@ -270,7 +280,11 @@ impl Search<'_> {
                         borrow,
                         unsize,
                         from_bound: matches!(lane, Lane::Bound) && !self.object,
-                        self_term: matches!(lane, Lane::Inherent).then_some(self.base),
+                        self_term: if matches!(lane, Lane::Inherent) {
+                            self.owner_prefix(method)?
+                        } else {
+                            None
+                        },
                     }));
                 }
             }
@@ -284,6 +298,27 @@ impl Search<'_> {
             Lane::Bound => &self.traits[0],
             Lane::Lexical => &self.traits[1],
         }
+    }
+    fn owner_prefix(&mut self, method: DefId) -> Result<Option<TermId>, &'static str> {
+        let ty = self
+            .facts
+            .associated
+            .schema(method)
+            .ok_or("selected receiver lacks its actual owner")?
+            .self_type;
+        if let Some(crate::types::Kind::Adt(owner, _)) = self.facts.types.kind(ty) {
+            let head = self
+                .source
+                .head(&self.facts.types, self.base)
+                .map_err(inference)?;
+            if !matches!(head, Some(Constructor::Adt(actual, _) | Constructor::AdtArgs(actual, _)) if actual == owner)
+            {
+                // The real receiver equations infer the selected impl's inputs.
+                // Receiver::Target is never an executable conversion to Self.
+                return Ok(None);
+            }
+        }
+        Ok(Some(self.base))
     }
     fn select(
         &mut self,

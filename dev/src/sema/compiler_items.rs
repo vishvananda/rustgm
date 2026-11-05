@@ -1,4 +1,5 @@
 //! Actual source compiler declarations remain distinct from bootstrap identities.
+pub(in crate::sema) mod arbitrary_self;
 mod binding_views;
 mod calls;
 pub(in crate::sema) mod dereferencing;
@@ -45,6 +46,7 @@ mod cold_fallback;
 mod subtraction_contract;
 mod wrapping_contract;
 pub(crate) use subtraction_contract::SubtractionSelection;
+pub(crate) use subtraction_contract::{scalar_arithmetic, wrapping_operator};
 pub(crate) use wrapping_contract::WrappingOffsetSelection;
 pub(in crate::sema) mod reflection;
 pub(in crate::sema) mod transmutability;

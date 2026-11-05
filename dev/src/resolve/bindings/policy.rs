@@ -82,6 +82,8 @@ pub(in crate::resolve) enum Feature {
     UnsizedFnParams = 65,
     NegativeCoherence = 66,
     AsyncDrop = 67,
+    ArbitrarySelfTypes = 70,
+    ArbitrarySelfTypesPointers = 71,
 }
 
 #[cfg(test)]
@@ -138,6 +140,10 @@ impl Request {
             "rustdoc_internals" => Self::Capability(Feature::RustdocInternals),
             "link_llvm_intrinsics" => Self::Capability(Feature::LinkLlvmIntrinsics),
             "unsized_fn_params" => Self::Capability(Feature::UnsizedFnParams),
+            "arbitrary_self_types" => Self::Capability(Feature::ArbitrarySelfTypes),
+            "arbitrary_self_types_pointers" => {
+                Self::Capability(Feature::ArbitrarySelfTypesPointers)
+            }
             "with_negative_coherence" => Self::Capability(Feature::NegativeCoherence),
             "link_cfg" => Self::Capability(Feature::LinkCfg),
             "doc_cfg" => Self::Capability(Feature::DocCfg),

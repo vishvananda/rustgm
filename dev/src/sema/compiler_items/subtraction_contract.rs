@@ -1,5 +1,6 @@
-//! Subtraction descriptors bind real source declarations, never unsafe/const permission.
+//! Integer arithmetic binds real source declarations, never unsafe/const permission.
 use super::Catalog;
+use crate::lex::token::Punctuation;
 use crate::{
     resolve::{body_origin::BodyOrigin, expansion::Report, model::DefId},
     sema::{
@@ -12,6 +13,25 @@ use crate::{
         parameters::ParameterKind,
     },
 };
+
+pub(crate) fn wrapping_operator(kind: SourceIntrinsic) -> Option<Punctuation> {
+    let SourceIntrinsic::Declaration(identity) = kind else {
+        return None;
+    };
+    match identity.name() {
+        "wrapping_add" => Some(Punctuation::Plus),
+        "wrapping_sub" => Some(Punctuation::Minus),
+        "wrapping_mul" => Some(Punctuation::Star),
+        _ => None,
+    }
+}
+
+pub(crate) fn scalar_arithmetic(kind: SourceIntrinsic) -> bool {
+    matches!(
+        kind,
+        SourceIntrinsic::UncheckedSub | SourceIntrinsic::SubWithOverflow
+    ) || wrapping_operator(kind).is_some()
+}
 
 pub(crate) struct SubtractionSelection {
     pub definition: DefId,
@@ -112,6 +132,7 @@ fn signature(
         SourceIntrinsic::SubWithOverflow => {
             matches!(facts.types.kind(result), Some(Kind::Tuple(fields)) if facts.types.list(fields)==Some(&[input,TypeId::primitive(Primitive::Bool)]))
         }
+        kind if wrapping_operator(kind).is_some() => result == input,
         _ => false,
     };
     if !valid {
@@ -138,10 +159,7 @@ impl Catalog {
         let Some((declaration, kind, original)) = self.intrinsic_record(definition)? else {
             return Ok(None);
         };
-        if !matches!(
-            kind,
-            SourceIntrinsic::UncheckedSub | SourceIntrinsic::SubWithOverflow
-        ) {
+        if !scalar_arithmetic(kind) {
             return Ok(None);
         }
         crate::sema::header_attributes::charge_source_contract_query(facts, 32)
@@ -175,8 +193,10 @@ impl Catalog {
         let (Some(Argument::Type(input)), None) = (args.next(), args.next()) else {
             return Err("source subtraction requires its complete single-type instance");
         };
-        if !matches!(facts.types.kind(input),Some(Kind::Primitive(p)) if p.integer().is_some()) {
-            return Err("source subtraction execution requires its closed integer scalar type");
+        if !matches!(facts.types.kind(input),Some(Kind::Primitive(p)) if p.integer().is_some()
+            || wrapping_operator(kind).is_some() && matches!(p, Primitive::F32 | Primitive::F64))
+        {
+            return Err("source arithmetic execution requires its supported closed scalar type");
         }
         let output = signature(facts, selected_signature, input, kind)?;
         let roots =

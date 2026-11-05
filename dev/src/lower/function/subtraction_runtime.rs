@@ -64,6 +64,9 @@ impl Lower<'_, '_, '_> {
             return Err("source subtraction differs from its actual checked direct call");
         }
         let (left, right) = (self.value(left)?.runtime()?, self.value(right)?.runtime()?);
+        if let Some(operator) = crate::sema::compiler_items::wrapping_operator(selected.kind) {
+            return self.modular_binary(operator, left, right).map(Some);
+        }
         let Some(Kind::Primitive(primitive)) = self.context.types.kind(selected.input) else {
             return Err("source subtraction lost its integer input");
         };
@@ -107,5 +110,23 @@ impl Lower<'_, '_, '_> {
             TypeId::primitive(crate::types::Primitive::Bool),
         )?;
         Ok(Some(Selected::Object(address)))
+    }
+    /// Modular operations never acquire the checked arithmetic panic path or
+    /// C++ overflow assumptions. The builder still validates the scalar types.
+    fn modular_binary(
+        &mut self,
+        operator: crate::lex::token::Punctuation,
+        left: crate::lowir::program::Value,
+        right: crate::lowir::program::Value,
+    ) -> Result<Selected, &'static str> {
+        let binary = match operator {
+            crate::lex::token::Punctuation::Plus => Binary::Add,
+            crate::lex::token::Punctuation::Minus => Binary::Sub,
+            crate::lex::token::Punctuation::Star => Binary::Mul,
+            _ => return Err("wrapping scalar descriptor has an invalid operation"),
+        };
+        self.builder
+            .binary(binary, left, right)
+            .map(Selected::Runtime)
     }
 }

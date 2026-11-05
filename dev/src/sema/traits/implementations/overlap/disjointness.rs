@@ -43,6 +43,89 @@ pub(super) fn has_unsized(
     Ok(false)
 }
 
+/// Only local/fundamental traits with orphan-closed inputs permit implicit
+/// absence. Apply this at every ordinary trait child, not just the outer goal:
+/// a matching conditional impl may depend on a downstream-local trait argument.
+pub(in crate::sema) fn absence_closed(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &infer::predicates::Predicate,
+) -> Result<bool, String> {
+    let Some((item, _)) = goal.trait_arguments() else {
+        return Ok(false);
+    };
+    let definition = crate::resolve::model::DefId(item.0);
+    let local = facts
+        .associated
+        .owner(definition)
+        .and_then(|id| facts.associated.get(id))
+        .is_some_and(|owner| {
+            owner.source.is_some()
+                && matches!(owner.kind,
+                    crate::sema::associated::OwnerKind::Trait { definition: id, .. }
+                    if id == definition)
+        });
+    if !(local || crate::sema::header_attributes::fundamental_policy(facts, definition)?) {
+        return Ok(false);
+    }
+    if closed_inputs(facts, context, goal)? {
+        return Ok(true);
+    }
+    let predicate = match context.resolved_predicate(&mut facts.types, goal) {
+        Ok(value) => value,
+        Err(infer::Error::Unresolved | infer::Error::Normalization) => return Ok(false),
+        Err(error) => return Err(error.to_string()),
+    };
+    Ok(predicate.is_concrete(&facts.types)? && !predicate.contains_opaques(&facts.types)?)
+}
+
+/// A downstream crate cannot make a nonfundamental upstream nominal local by
+/// choosing one of its arguments. Check only orphan-relevant roots; walking
+/// every nested generic argument both loses this fact and repeats shared work.
+fn closed_inputs(
+    facts: &Declarations,
+    context: &mut Context,
+    goal: &infer::predicates::Predicate,
+) -> Result<bool, String> {
+    for mut term in goal.input_roots() {
+        loop {
+            context.account_work(1).map_err(|e| e.to_string())?;
+            match context.head(&facts.types, term) {
+                Ok(Some(Constructor::Reference { .. })) => {
+                    term = context
+                        .child(&facts.types, term, 0)
+                        .map_err(|e| e.to_string())?;
+                }
+                Ok(Some(Constructor::Adt(item, _) | Constructor::AdtArgs(item, _))) => {
+                    if crate::sema::header_attributes::fundamental_policy(
+                        facts,
+                        crate::resolve::model::DefId(item.0),
+                    )? {
+                        return Ok(false);
+                    }
+                    break;
+                }
+                Ok(Some(
+                    Constructor::Primitive(_)
+                    | Constructor::Pointer { .. }
+                    | Constructor::Tuple
+                    | Constructor::Array(_)
+                    | Constructor::ArrayTerm(_)
+                    | Constructor::ArrayInfer(_)
+                    | Constructor::Slice
+                    | Constructor::Function { .. }
+                    | Constructor::Never,
+                )) => break,
+                Ok(_) | Err(infer::Error::Unresolved | infer::Error::Normalization) => {
+                    return Ok(false);
+                }
+                Err(error) => return Err(error.to_string()),
+            }
+        }
+    }
+    Ok(true)
+}
+
 impl Storage {
     fn demand(
         &mut self,
