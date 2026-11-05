@@ -18,6 +18,10 @@
     "performance": {
       "path": "obj/parallel/fused-iterator-v1/performance-v1/receipt.json",
       "sha256": "ba4aeb25b886ba0a6eb6644485305a98174f412dcfcbc33855b0fac29f67cc29"
+    },
+    "performance_cpu_followup": {
+      "path": "obj/parallel/fused-iterator-v1/performance-cpu-v1/receipt.json",
+      "sha256": "604955095bf4a273ceb10ff7f21edfe448137dc358d24e2f6e6f59d86b9d3fbe"
     }
   },
   "sources": {
@@ -155,12 +159,67 @@
       }
     ],
     "output_equality": true,
-    "interpretation": "All wall observations retained, including4096 B/A1.229 and AA.786. Regression/noise unresolved; no speedup or regression-absence claim."
+    "interpretation": "All54 initial plus24 follow-up observations retained. Initial4096 B/A1.229 did not reproduce in four further paired blocks (wall.9805/CPU.9805); ordinary source-free path does not execute the changed source-role admission functions. Timing variability remains, with no broad speedup or regression-absence claim.",
+    "cpu_followup": {
+      "observations": 24,
+      "summary": {
+        "wall_seconds": {
+          "candidate_median_seconds": 0.8992842534789816,
+          "paired_median_B_over_A": 0.9805449139839862
+        },
+        "cpu_seconds": {
+          "candidate_median_seconds": 0.8988169999999998,
+          "paired_median_B_over_A": 0.9804789979777815
+        }
+      },
+      "blocks": [
+        {
+          "wall_seconds": {
+            "AA_second_over_first": 0.9806325185709263,
+            "ABBA_B_over_A": 0.9557935924838612
+          },
+          "cpu_seconds": {
+            "AA_second_over_first": 0.9804959139269511,
+            "ABBA_B_over_A": 0.9557860276128443
+          }
+        },
+        {
+          "wall_seconds": {
+            "AA_second_over_first": 1.1389409928515664,
+            "ABBA_B_over_A": 0.974513027696362
+          },
+          "cpu_seconds": {
+            "AA_second_over_first": 1.1388569432823734,
+            "ABBA_B_over_A": 0.9744892480371984
+          }
+        },
+        {
+          "wall_seconds": {
+            "AA_second_over_first": 1.0583321776939416,
+            "ABBA_B_over_A": 0.9865768002716104
+          },
+          "cpu_seconds": {
+            "AA_second_over_first": 1.0571329183931468,
+            "ABBA_B_over_A": 0.9864687479183647
+          }
+        },
+        {
+          "wall_seconds": {
+            "AA_second_over_first": 1.0138251160877363,
+            "ABBA_B_over_A": 0.9990640721465032
+          },
+          "cpu_seconds": {
+            "AA_second_over_first": 1.0139481672262318,
+            "ABBA_B_over_A": 0.9992014367601639
+          }
+        }
+      ],
+      "output_equality": true
+    }
   },
   "pending": [
     "private vocabulary fence update and successor full CI",
     "genuine gen coroutine builtin/state/exhaustion/cancellation and complete transport",
-    "stable-host follow-up of noisy4096 wall-time ratio at next meaningful performance checkpoint",
     "whole assignment releases and original core/alloc/std artifacts"
   ]
 }
