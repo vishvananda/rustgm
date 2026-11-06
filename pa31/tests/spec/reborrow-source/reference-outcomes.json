@@ -1,0 +1,2201 @@
+{
+  "schema": 1,
+  "purpose": "reference-only observed manifest; original predictions and inputs retained separately",
+  "cases": [
+    {
+      "file": "alias-direct.rs",
+      "sha256": "5c469a1dc1bbd0536e753aca6e9f29cea028a208bfd1b2d0bdcadd0b59f26a8f",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "single changed outer field-type spelling opponent; prediction may be disproved",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-alias-v1.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-alias-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0277",
+            "explanation": "You tried to use a type which doesn't implement some trait in a place which\nexpected that trait.\n\nErroneous code example:\n\n```compile_fail,E0277\n// here we declare the Foo trait with a bar method\ntrait Foo {\n    fn bar(&self);\n}\n\n// we now declare a function which takes an object implementing the Foo trait\nfn some_func<T: Foo>(foo: T) {\n    foo.bar();\n}\n\nfn main() {\n    // we now call the method with the i32 type, which doesn't implement\n    // the Foo trait\n    some_func(5i32); // error: the trait bound `i32 : Foo` is not satisfied\n}\n```\n\nIn order to fix this error, verify that the type you're using does implement\nthe trait. Example:\n\n```\ntrait Foo {\n    fn bar(&self);\n}\n\n// we implement the trait on the i32 type\nimpl Foo for i32 {\n    fn bar(&self) {}\n}\n\nfn some_func<T: Foo>(foo: T) {\n    foo.bar(); // we can now use this method since i32 implements the\n               // Foo trait\n}\n\nfn main() {\n    some_func(5i32); // ok!\n}\n```\n\nOr in a generic context, an erroneous code example would look like:\n\n```compile_fail,E0277\nfn some_func<T>(foo: T) {\n    println!(\"{:?}\", foo); // error: the trait `core::fmt::Debug` is not\n                           //        implemented for the type `T`\n}\n\nfn main() {\n    // We now call the method with the i32 type,\n    // which *does* implement the Debug trait.\n    some_func(5i32);\n}\n```\n\nNote that the error here is in the definition of the generic function. Although\nwe only call it with a parameter that does implement `Debug`, the compiler\nstill rejects the function. It must work with all possible input types. In\norder to make this example compile, we need to restrict the generic type we're\naccepting:\n\n```\nuse std::fmt;\n\n// Restrict the input type to types that implement Debug.\nfn some_func<T: fmt::Debug>(foo: T) {\n    println!(\"{:?}\", foo);\n}\n\nfn main() {\n    // Calling the method is still fine, as i32 implements Debug.\n    some_func(5i32);\n\n    // This would fail to compile now:\n    // struct WithoutDebug;\n    // some_func(WithoutDebug);\n}\n```\n\nRust only looks at the signature of the called function, as such it must\nalready specify all requirements that will be used for every type parameter.\n"
+          },
+          "message": "the trait bound `&'a mut u32: CoerceShared<&'a u32>` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "alias-simple.rs",
+      "sha256": "b05cb380a8d5b7bd25e69a9a817683f16bc3967d6f095f9ad0f5aeb0baa76a83",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "simple transparent alias without associated projection",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-simple-alias-v1.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-simple-alias-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "conflict.rs",
+      "sha256": "b0da6a075272633efbfe9ad60d54df3d818dc62917d23eca6f9ca32d504ba417",
+      "expected_code": 1,
+      "expected_error_text": [
+        "conflicting implementations"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0119",
+            "explanation": "There are conflicting trait implementations for the same type.\n\nErroneous code example:\n\n```compile_fail,E0119\ntrait MyTrait {\n    fn get(&self) -> usize;\n}\n\nimpl<T> MyTrait for T {\n    fn get(&self) -> usize { 0 }\n}\n\nstruct Foo {\n    value: usize\n}\n\nimpl MyTrait for Foo { // error: conflicting implementations of trait\n                       //        `MyTrait` for type `Foo`\n    fn get(&self) -> usize { self.value }\n}\n```\n\nWhen looking for the implementation for the trait, the compiler finds\nboth the `impl<T> MyTrait for T` where T is all types and the `impl\nMyTrait for Foo`. Since a trait cannot be implemented multiple times,\nthis is an error. So, when you write:\n\n```\ntrait MyTrait {\n    fn get(&self) -> usize;\n}\n\nimpl<T> MyTrait for T {\n    fn get(&self) -> usize { 0 }\n}\n```\n\nThis makes the trait implemented on all types in the scope. So if you\ntry to implement it on another one after that, the implementations will\nconflict. Example:\n\n```\ntrait MyTrait {\n    fn get(&self) -> usize;\n}\n\nimpl<T> MyTrait for T {\n    fn get(&self) -> usize { 0 }\n}\n\nstruct Foo;\n\nfn main() {\n    let f = Foo;\n\n    f.get(); // the trait is implemented so we can use it\n}\n```\n"
+          },
+          "message": "conflicting implementations of trait `Reborrow` for type `Exclusive<'_>`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "const-impl.rs",
+      "sha256": "30b9642bf46427600204ea52373ccf2ee4200410ffbbaa2a5d2e7ddac4e3dd1c",
+      "expected_code": 1,
+      "expected_error_text": [
+        "const"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "expected a trait, found type"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "obsolete-syntax-setup-only",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "const-owner.rs",
+      "sha256": "d0e6f190be5cb973733f63f186b68212a8630f8b9c4f7b84bd72347471a401d2",
+      "expected_code": 1,
+      "expected_error_text": [
+        "not `const`"
+      ],
+      "profile": "authored-followup; independent freeze",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-followup-v1.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-followup-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "const `impl` for trait `Reborrow` which is not `const`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "const-syntax.rs",
+      "sha256": "8952b499e029dff8667c0da92797d4218a6dc241267a2e1188320f625afad46e",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-followup; independent freeze",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-followup-v1.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-followup-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "copy-field-matching.rs",
+      "sha256": "db42b581b2c2c1cb41589b6492f19bd016ab14d4062fa71b3104608d83f8038c",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-followup; independent freeze",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-followup-v1.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-followup-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "copy-field-static-use.rs",
+      "sha256": "552ba1bde1760f8e2db871f60973087a19ed103b2ed2b5e0fd1d412a6042c0fb",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "authored-followup; independent freeze",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-followup-v1.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-followup-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0597",
+            "explanation": "This error occurs because a value was dropped while it was still borrowed.\n\nErroneous code example:\n\n```compile_fail,E0597\nstruct Foo<'a> {\n    x: Option<&'a u32>,\n}\n\nlet mut x = Foo { x: None };\n{\n    let y = 0;\n    x.x = Some(&y); // error: `y` does not live long enough\n}\nprintln!(\"{:?}\", x.x);\n```\n\nHere, `y` is dropped at the end of the inner scope, but it is borrowed by\n`x` until the `println`. To fix the previous example, just remove the scope\nso that `y` isn't dropped until after the println\n\n```\nstruct Foo<'a> {\n    x: Option<&'a u32>,\n}\n\nlet mut x = Foo { x: None };\n\nlet y = 0;\nx.x = Some(&y);\n\nprintln!(\"{:?}\", x.x);\n```\n"
+          },
+          "message": "`value` does not live long enough"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "copy-field-static.rs",
+      "sha256": "1e098cb3193615b9e94c617188bd4dd784a00b4dbb521779f570af532fc8265c",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-followup; independent freeze",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-followup-v1.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-followup-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "copy-static-use.rs",
+      "sha256": "d770cf62f7ca4d88d902b19fbc536178d22eaa9c1b5fc62ac924b4f3d4ff03d3",
+      "expected_code": 1,
+      "expected_error_text": [
+        "does not live long enough"
+      ],
+      "profile": "authored-demanded-impl-law; NOT executed",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0597",
+            "explanation": "This error occurs because a value was dropped while it was still borrowed.\n\nErroneous code example:\n\n```compile_fail,E0597\nstruct Foo<'a> {\n    x: Option<&'a u32>,\n}\n\nlet mut x = Foo { x: None };\n{\n    let y = 0;\n    x.x = Some(&y); // error: `y` does not live long enough\n}\nprintln!(\"{:?}\", x.x);\n```\n\nHere, `y` is dropped at the end of the inner scope, but it is borrowed by\n`x` until the `println`. To fix the previous example, just remove the scope\nso that `y` isn't dropped until after the println\n\n```\nstruct Foo<'a> {\n    x: Option<&'a u32>,\n}\n\nlet mut x = Foo { x: None };\n\nlet y = 0;\nx.x = Some(&y);\n\nprintln!(\"{:?}\", x.x);\n```\n"
+          },
+          "message": "`source` does not live long enough"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "copy-static.rs",
+      "sha256": "48500f972a563b2c0f4d07694988ed492789b23cdf8f1faf98412c852f40d617",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-unused-impl-law",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "enum.rs",
+      "sha256": "2067f8473887d35d1e74a4ddc9d40cc0f4b31e0deb6a5238869915c180a2c45a",
+      "expected_code": 1,
+      "expected_error_text": [
+        "struct"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0377",
+            "explanation": "`CoerceUnsized` or `DispatchFromDyn` may only be implemented between structs\nof the same type.\n\nExample of erroneous code:\n\n```compile_fail,E0377\n#![feature(coerce_unsized)]\nuse std::ops::CoerceUnsized;\n\npub struct Foo<T: ?Sized> {\n    field_with_unsized_type: T,\n}\n\npub struct Bar<T: ?Sized> {\n    field_with_unsized_type: T,\n}\n\n// error: the trait `CoerceUnsized` may only be implemented for a coercion\n//        between structures with the same definition\nimpl<T, U> CoerceUnsized<Bar<U>> for Foo<T> where T: CoerceUnsized<U> {}\n```\n\n`CoerceUnsized` is used to coerce structs that have a field that can be unsized,\nlike a custom `MyBox<T>` being unsized to `MyBox<dyn Trait>`. `DispatchFromDyn`\nis used to dispatch from `MyBox<dyn Trait>` to `MyBox<Self>` in a dyn-compatible\ntrait.\n\nThe compiler cannot support coercions between structs of different types, so\na valid implementation of `CoerceUnsized` or `DispatchFromDyn` should be\nimplemented between the same struct with different generic parameters.\n\nNote that `CoerceUnsized` and `DispatchFromDyn` is mainly used by smart pointers\nlike `Box`, `Rc` and `Arc` to be able to mark that they can coerce unsized types\nthat they are pointing at.\n"
+          },
+          "message": "the trait `Reborrow` may only be implemented for a coercion between structures"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "escape.rs",
+      "sha256": "d83f3cd58f040d04a1d2915e0293a829224407b299e50da49dc6fb377c5ece14",
+      "expected_code": 1,
+      "expected_error_text": [
+        "does not live long enough"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0597",
+            "explanation": "This error occurs because a value was dropped while it was still borrowed.\n\nErroneous code example:\n\n```compile_fail,E0597\nstruct Foo<'a> {\n    x: Option<&'a u32>,\n}\n\nlet mut x = Foo { x: None };\n{\n    let y = 0;\n    x.x = Some(&y); // error: `y` does not live long enough\n}\nprintln!(\"{:?}\", x.x);\n```\n\nHere, `y` is dropped at the end of the inner scope, but it is borrowed by\n`x` until the `println`. To fix the previous example, just remove the scope\nso that `y` isn't dropped until after the println\n\n```\nstruct Foo<'a> {\n    x: Option<&'a u32>,\n}\n\nlet mut x = Foo { x: None };\n\nlet y = 0;\nx.x = Some(&y);\n\nprintln!(\"{:?}\", x.x);\n```\n"
+          },
+          "message": "`value` does not live long enough"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "exclusive.rs",
+      "sha256": "c28ba70eef77b1ba64075235bd3d8b5e9beda1dc883bd8c8f8c9bf278c7ae374",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "fake.rs",
+      "sha256": "fb6ae48f17933cceb81a6cf266b4b51cccf44069a2c8f6c1d7fc9fa69c0d53e3",
+      "expected_code": 1,
+      "expected_error_text": [
+        "moved value"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0382",
+            "explanation": "A variable was used after its contents have been moved elsewhere.\n\nErroneous code example:\n\n```compile_fail,E0382\nstruct MyStruct { s: u32 }\n\nfn main() {\n    let mut x = MyStruct{ s: 5u32 };\n    let y = x;\n    x.s = 6;\n    println!(\"{}\", x.s);\n}\n```\n\nSince `MyStruct` is a type that is not marked `Copy`, the data gets moved out\nof `x` when we set `y`. This is fundamental to Rust's ownership system: outside\nof workarounds like `Rc`, a value cannot be owned by more than one variable.\n\nSometimes we don't need to move the value. Using a reference, we can let another\nfunction borrow the value without changing its ownership. In the example below,\nwe don't actually have to move our string to `calculate_length`, we can give it\na reference to it with `&` instead.\n\n```\nfn main() {\n    let s1 = String::from(\"hello\");\n\n    let len = calculate_length(&s1);\n\n    println!(\"The length of '{}' is {}.\", s1, len);\n}\n\nfn calculate_length(s: &String) -> usize {\n    s.len()\n}\n```\n\nA mutable reference can be created with `&mut`.\n\nSometimes we don't want a reference, but a duplicate. All types marked `Clone`\ncan be duplicated by calling `.clone()`. Subsequent changes to a clone do not\naffect the original variable.\n\nMost types in the standard library are marked `Clone`. The example below\ndemonstrates using `clone()` on a string. `s1` is first set to \"many\", and then\ncopied to `s2`. Then the first character of `s1` is removed, without affecting\n`s2`. \"any many\" is printed to the console.\n\n```\nfn main() {\n    let mut s1 = String::from(\"many\");\n    let s2 = s1.clone();\n    s1.remove(0);\n    println!(\"{} {}\", s1, s2);\n}\n```\n\nIf we control the definition of a type, we can implement `Clone` on it ourselves\nwith `#[derive(Clone)]`.\n\nSome types have no ownership semantics at all and are trivial to duplicate. An\nexample is `i32` and the other number types. We don't have to call `.clone()` to\nclone them, because they are marked `Copy` in addition to `Clone`. Implicit\ncloning is more convenient in this case. We can mark our own types `Copy` if\nall their members also are marked `Copy`.\n\nIn the example below, we implement a `Point` type. Because it only stores two\nintegers, we opt-out of ownership semantics with `Copy`. Then we can\n`let p2 = p1` without `p1` being moved.\n\n```\n#[derive(Copy, Clone)]\nstruct Point { x: i32, y: i32 }\n\nfn main() {\n    let mut p1 = Point{ x: -1, y: 2 };\n    let p2 = p1;\n    p1.x = 1;\n    println!(\"p1: {}, {}\", p1.x, p1.y);\n    println!(\"p2: {}, {}\", p2.x, p2.y);\n}\n```\n\nAlternatively, if we don't control the struct's definition, or mutable shared\nownership is truly required, we can use `Rc` and `RefCell`:\n\n```\nuse std::cell::RefCell;\nuse std::rc::Rc;\n\nstruct MyStruct { s: u32 }\n\nfn main() {\n    let mut x = Rc::new(RefCell::new(MyStruct{ s: 5u32 }));\n    let y = x.clone();\n    x.borrow_mut().s = 6;\n    println!(\"{}\", x.borrow().s);\n}\n```\n\nWith this approach, x and y share ownership of the data via the `Rc` (reference\ncount type). `RefCell` essentially performs runtime borrow checking: ensuring\nthat at most one writer or multiple readers can access the data at any one time.\n\nIf you wish to learn more about ownership in Rust, start with the\n[Understanding Ownership][understanding-ownership] chapter in the Book.\n\n[understanding-ownership]: https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html\n"
+          },
+          "message": "use of moved value: `value`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "feature.rs",
+      "sha256": "ba8aeab42aadc46832ab3dbbfd7e09756874b39ecb5e245911aaa05140cd493e",
+      "expected_code": 1,
+      "expected_error_text": [
+        "unstable"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0658",
+            "explanation": "An unstable feature was used.\n\nErroneous code example:\n\n```compile_fail,E0658\nuse std::intrinsics; // error: use of unstable library feature `core_intrinsics`\n```\n\nIf you're using a stable or a beta version of rustc, you won't be able to use\nany unstable features. In order to do so, please switch to a nightly version of\nrustc (by using [rustup]).\n\nIf you're using a nightly version of rustc, just add the corresponding feature\nto be able to use it:\n\n```\n#![feature(core_intrinsics)]\n\nuse std::intrinsics; // ok!\n```\n\n[rustup]: https://rust-lang.github.io/rustup/concepts/channels.html\n"
+          },
+          "message": "use of unstable library feature `reborrow`"
+        },
+        {
+          "code": {
+            "code": "E0658",
+            "explanation": "An unstable feature was used.\n\nErroneous code example:\n\n```compile_fail,E0658\nuse std::intrinsics; // error: use of unstable library feature `core_intrinsics`\n```\n\nIf you're using a stable or a beta version of rustc, you won't be able to use\nany unstable features. In order to do so, please switch to a nightly version of\nrustc (by using [rustup]).\n\nIf you're using a nightly version of rustc, just add the corresponding feature\nto be able to use it:\n\n```\n#![feature(core_intrinsics)]\n\nuse std::intrinsics; // ok!\n```\n\n[rustup]: https://rust-lang.github.io/rustup/concepts/channels.html\n"
+          },
+          "message": "use of unstable library feature `reborrow`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 2 previous errors"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "header-arity.rs",
+      "sha256": "a088a6b739c39d3e55de9abbbf6c29c08b96e30c77511a379e4672691b8095d3",
+      "expected_code": 1,
+      "expected_error_text": [
+        "generic"
+      ],
+      "profile": "altered-unused-header",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0718",
+            "explanation": "#### Note: this error code is no longer emitted by the compiler.\n\nA `#[lang = \"..\"]` attribute was placed on the wrong item type.\n\nErroneous code example:\n\n```compile_fail\n#![feature(lang_items)]\n\n#[lang = \"owned_box\"]\nstatic X: u32 = 42;\n```\n"
+          },
+          "message": "`reborrow` lang item must be applied to a trait with 0 generic arguments"
+        },
+        {
+          "code": {
+            "code": "E0107",
+            "explanation": "An incorrect number of generic arguments was provided.\n\nErroneous code example:\n\n```compile_fail,E0107\nstruct Foo<T> { x: T }\n\nstruct Bar { x: Foo }             // error: wrong number of type arguments:\n                                  //        expected 1, found 0\nstruct Baz<S, T> { x: Foo<S, T> } // error: wrong number of type arguments:\n                                  //        expected 1, found 2\n\nfn foo<T, U>(x: T, y: U) {}\nfn f() {}\n\nfn main() {\n    let x: bool = true;\n    foo::<bool>(x);                 // error: wrong number of type arguments:\n                                    //        expected 2, found 1\n    foo::<bool, i32, i32>(x, 2, 4); // error: wrong number of type arguments:\n                                    //        expected 2, found 3\n    f::<'static>();                 // error: wrong number of lifetime arguments\n                                    //        expected 0, found 1\n}\n```\n\nWhen using/declaring an item with generic arguments, you must provide the exact\nsame number:\n\n```\nstruct Foo<T> { x: T }\n\nstruct Bar<T> { x: Foo<T> }               // ok!\nstruct Baz<S, T> { x: Foo<S>, y: Foo<T> } // ok!\n\nfn foo<T, U>(x: T, y: U) {}\nfn f() {}\n\nfn main() {\n    let x: bool = true;\n    foo::<bool, u32>(x, 12);              // ok!\n    f();                                  // ok!\n}\n```\n"
+          },
+          "message": "missing generics for trait `Reborrow`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 2 previous errors"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "header-extra.rs",
+      "sha256": "ec2a9db56659d05502e48097c1f9bfcb1dd32c5d9943fa1ea364c672d9de8dfa",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "altered-unused-header",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "header-unsafe.rs",
+      "sha256": "5bd1d53671b09732dfaabd32e6291a28e8d7b0fa99918dd44d453b42b0953fe3",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "altered-unused-header",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "inner-static-use.rs",
+      "sha256": "b3da07a8c36af7d3dcc74513c5a9b8d19233213c9e4142d4207e2c8384bff2b9",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "authored-demanded-impl-law; NOT executed",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 101,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "unqualified-infrastructure",
+      "corrected_expected_code": null
+    },
+    {
+      "file": "inner-static.rs",
+      "sha256": "459169db186b5244754883087561e3bdc29e4030e4cebd05c719ef2a26c378d1",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-unused-impl-law",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "known-bugs/coerce-shared-alias-projection.rs",
+      "sha256": "c2661f023bf70c193af0afc23959b3f082bef4570f34ae235ef78f725b907659",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 101,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        },
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 2 previous errors"
+        }
+      ],
+      "qualification": "unqualified-infrastructure",
+      "corrected_expected_code": null
+    },
+    {
+      "file": "known-bugs/coerce-shared-different-layout.rs",
+      "sha256": "4eaae464485bc0fa9e095e6b9441033812427c45d0edc13132f20ca9b0301423",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 101,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "unqualified-infrastructure",
+      "corrected_expected_code": null
+    },
+    {
+      "file": "known-bugs/coerce-shared-marker-no-target-lifetime.rs",
+      "sha256": "ca6f8efcc831623fdedcd72c2767aad098149878557b99acbfc323b889b02de6",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 101,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 2 previous errors"
+        }
+      ],
+      "qualification": "unqualified-infrastructure",
+      "corrected_expected_code": null
+    },
+    {
+      "file": "known-bugs/coerce-shared-multi-field.rs",
+      "sha256": "931db757d0b35dfc32e88c354165aafd8094abadd991bce595fb485a9f89c98c",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 101,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "unqualified-infrastructure",
+      "corrected_expected_code": null
+    },
+    {
+      "file": "known-bugs/coerce-shared-nested.rs",
+      "sha256": "abbbeb7d901c9ba85bd7ee8464ba6610584bca57e9a7a6fffe69496dcba645c5",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 101,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "unqualified-infrastructure",
+      "corrected_expected_code": null
+    },
+    {
+      "file": "known-bugs/coerce-shared-tuple-phantom-position.rs",
+      "sha256": "295e6195b26791c947bf2d136074643e6ed597984fc301f8a580f77934c96298",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 101,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "unqualified-infrastructure",
+      "corrected_expected_code": null
+    },
+    {
+      "file": "known-bugs/corrected-field-mismatch-coerce-shared-issue-156315.rs",
+      "sha256": "bed9158f3bff4bbf7933f7e5a076c4da8af166c9cf475be4ef3cf829f8f0915b",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 101,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0277",
+            "explanation": "You tried to use a type which doesn't implement some trait in a place which\nexpected that trait.\n\nErroneous code example:\n\n```compile_fail,E0277\n// here we declare the Foo trait with a bar method\ntrait Foo {\n    fn bar(&self);\n}\n\n// we now declare a function which takes an object implementing the Foo trait\nfn some_func<T: Foo>(foo: T) {\n    foo.bar();\n}\n\nfn main() {\n    // we now call the method with the i32 type, which doesn't implement\n    // the Foo trait\n    some_func(5i32); // error: the trait bound `i32 : Foo` is not satisfied\n}\n```\n\nIn order to fix this error, verify that the type you're using does implement\nthe trait. Example:\n\n```\ntrait Foo {\n    fn bar(&self);\n}\n\n// we implement the trait on the i32 type\nimpl Foo for i32 {\n    fn bar(&self) {}\n}\n\nfn some_func<T: Foo>(foo: T) {\n    foo.bar(); // we can now use this method since i32 implements the\n               // Foo trait\n}\n\nfn main() {\n    some_func(5i32); // ok!\n}\n```\n\nOr in a generic context, an erroneous code example would look like:\n\n```compile_fail,E0277\nfn some_func<T>(foo: T) {\n    println!(\"{:?}\", foo); // error: the trait `core::fmt::Debug` is not\n                           //        implemented for the type `T`\n}\n\nfn main() {\n    // We now call the method with the i32 type,\n    // which *does* implement the Debug trait.\n    some_func(5i32);\n}\n```\n\nNote that the error here is in the definition of the generic function. Although\nwe only call it with a parameter that does implement `Debug`, the compiler\nstill rejects the function. It must work with all possible input types. In\norder to make this example compile, we need to restrict the generic type we're\naccepting:\n\n```\nuse std::fmt;\n\n// Restrict the input type to types that implement Debug.\nfn some_func<T: fmt::Debug>(foo: T) {\n    println!(\"{:?}\", foo);\n}\n\nfn main() {\n    // Calling the method is still fine, as i32 implements Debug.\n    some_func(5i32);\n\n    // This would fail to compile now:\n    // struct WithoutDebug;\n    // some_func(WithoutDebug);\n}\n```\n\nRust only looks at the signature of the called function, as such it must\nalready specify all requirements that will be used for every type parameter.\n"
+          },
+          "message": "the trait bound `&'a mut T: CoerceShared<&'a CustomMut<'a, T>>` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "unqualified-infrastructure",
+      "corrected_expected_code": null
+    },
+    {
+      "file": "known-bugs/malformed-marker-coerce-shared-issue-156309.rs",
+      "sha256": "aed062a0764983ea37f5ccf0421fe952cc3aec70cae86eb19d66dc515831bf17",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 101,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "expected type, found lifetime"
+        },
+        {
+          "code": {
+            "code": "E0573",
+            "explanation": "Something other than a type has been used when one was expected.\n\nErroneous code examples:\n\n```compile_fail,E0573\nenum Dragon {\n    Born,\n}\n\nfn oblivion() -> Dragon::Born { // error!\n    Dragon::Born\n}\n\nconst HOBBIT: u32 = 2;\nimpl HOBBIT {} // error!\n\nenum Wizard {\n    Gandalf,\n    Saruman,\n}\n\ntrait Isengard {\n    fn wizard(_: Wizard::Saruman); // error!\n}\n```\n\nIn all these errors, a type was expected. For example, in the first error, if\nwe want to return the `Born` variant from the `Dragon` enum, we must set the\nfunction to return the enum and not its variant:\n\n```\nenum Dragon {\n    Born,\n}\n\nfn oblivion() -> Dragon { // ok!\n    Dragon::Born\n}\n```\n\nIn the second error, you can't implement something on an item, only on types.\nWe would need to create a new type if we wanted to do something similar:\n\n```\nstruct Hobbit(u32); // we create a new type\n\nconst HOBBIT: Hobbit = Hobbit(2);\nimpl Hobbit {} // ok!\n```\n\nIn the third case, we tried to only expect one variant of the `Wizard` enum,\nwhich is not possible. To make this work, we need to using pattern matching\nover the `Wizard` enum:\n\n```\nenum Wizard {\n    Gandalf,\n    Saruman,\n}\n\ntrait Isengard {\n    fn wizard(w: Wizard) { // ok!\n        match w {\n            Wizard::Saruman => {\n                // do something\n            }\n            _ => {} // ignore everything else\n        }\n    }\n}\n```\n"
+          },
+          "message": "expected type, found derive macro `Debug`"
+        },
+        {
+          "code": {
+            "code": "E0782",
+            "explanation": "Trait objects must include the `dyn` keyword.\n\nErroneous code example:\n\n```edition2021,compile_fail,E0782\ntrait Foo {}\nfn test(arg: Box<Foo>) {} // error!\n```\n\nTrait objects are a way to call methods on types that are not known until\nruntime but conform to some trait.\n\nTrait objects should be formed with `Box<dyn Foo>`, but in the code above\n`dyn` is left off.\n\nThis makes it harder to see that `arg` is a trait object and not a\nsimply a heap allocated type called `Foo`.\n\nTo fix this issue, add `dyn` before the trait name.\n\n```edition2021\ntrait Foo {}\nfn test(arg: Box<dyn Foo>) {} // ok!\n```\n\nThis used to be allowed before edition 2021, but is now an error.\n"
+          },
+          "message": "expected a type, found a trait"
+        },
+        {
+          "code": {
+            "code": "E0782",
+            "explanation": "Trait objects must include the `dyn` keyword.\n\nErroneous code example:\n\n```edition2021,compile_fail,E0782\ntrait Foo {}\nfn test(arg: Box<Foo>) {} // error!\n```\n\nTrait objects are a way to call methods on types that are not known until\nruntime but conform to some trait.\n\nTrait objects should be formed with `Box<dyn Foo>`, but in the code above\n`dyn` is left off.\n\nThis makes it harder to see that `arg` is a trait object and not a\nsimply a heap allocated type called `Foo`.\n\nTo fix this issue, add `dyn` before the trait name.\n\n```edition2021\ntrait Foo {}\nfn test(arg: Box<dyn Foo>) {} // ok!\n```\n\nThis used to be allowed before edition 2021, but is now an error.\n"
+          },
+          "message": "expected a type, found a trait"
+        },
+        {
+          "code": {
+            "code": "E0277",
+            "explanation": "You tried to use a type which doesn't implement some trait in a place which\nexpected that trait.\n\nErroneous code example:\n\n```compile_fail,E0277\n// here we declare the Foo trait with a bar method\ntrait Foo {\n    fn bar(&self);\n}\n\n// we now declare a function which takes an object implementing the Foo trait\nfn some_func<T: Foo>(foo: T) {\n    foo.bar();\n}\n\nfn main() {\n    // we now call the method with the i32 type, which doesn't implement\n    // the Foo trait\n    some_func(5i32); // error: the trait bound `i32 : Foo` is not satisfied\n}\n```\n\nIn order to fix this error, verify that the type you're using does implement\nthe trait. Example:\n\n```\ntrait Foo {\n    fn bar(&self);\n}\n\n// we implement the trait on the i32 type\nimpl Foo for i32 {\n    fn bar(&self) {}\n}\n\nfn some_func<T: Foo>(foo: T) {\n    foo.bar(); // we can now use this method since i32 implements the\n               // Foo trait\n}\n\nfn main() {\n    some_func(5i32); // ok!\n}\n```\n\nOr in a generic context, an erroneous code example would look like:\n\n```compile_fail,E0277\nfn some_func<T>(foo: T) {\n    println!(\"{:?}\", foo); // error: the trait `core::fmt::Debug` is not\n                           //        implemented for the type `T`\n}\n\nfn main() {\n    // We now call the method with the i32 type,\n    // which *does* implement the Debug trait.\n    some_func(5i32);\n}\n```\n\nNote that the error here is in the definition of the generic function. Although\nwe only call it with a parameter that does implement `Debug`, the compiler\nstill rejects the function. It must work with all possible input types. In\norder to make this example compile, we need to restrict the generic type we're\naccepting:\n\n```\nuse std::fmt;\n\n// Restrict the input type to types that implement Debug.\nfn some_func<T: fmt::Debug>(foo: T) {\n    println!(\"{:?}\", foo);\n}\n\nfn main() {\n    // Calling the method is still fine, as i32 implements Debug.\n    some_func(5i32);\n\n    // This would fail to compile now:\n    // struct WithoutDebug;\n    // some_func(WithoutDebug);\n}\n```\n\nRust only looks at the signature of the called function, as such it must\nalready specify all requirements that will be used for every type parameter.\n"
+          },
+          "message": "the trait bound `CustomMarkerRef<'a>: Copy` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 5 previous errors"
+        }
+      ],
+      "qualification": "unqualified-infrastructure",
+      "corrected_expected_code": null
+    },
+    {
+      "file": "known-bugs/missing-generic-args-coerce-shared-issue-156315.rs",
+      "sha256": "3a2acb376e4fe533c0101caf56cd4ca9733a105d52367ee03bcff1bcfae179d6",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 101,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0106",
+            "explanation": "This error indicates that a lifetime is missing from a type. If it is an error\ninside a function signature, the problem may be with failing to adhere to the\nlifetime elision rules (see below).\n\nErroneous code examples:\n\n```compile_fail,E0106\nstruct Foo1 { x: &bool }\n              // ^ expected lifetime parameter\nstruct Foo2<'a> { x: &'a bool } // correct\n\nstruct Bar1 { x: Foo2 }\n              // ^^^^ expected lifetime parameter\nstruct Bar2<'a> { x: Foo2<'a> } // correct\n\nenum Baz1 { A(u8), B(&bool), }\n                  // ^ expected lifetime parameter\nenum Baz2<'a> { A(u8), B(&'a bool), } // correct\n\ntype MyStr1 = &str;\n           // ^ expected lifetime parameter\ntype MyStr2<'a> = &'a str; // correct\n```\n\nLifetime elision is a special, limited kind of inference for lifetimes in\nfunction signatures which allows you to leave out lifetimes in certain cases.\nFor more background on lifetime elision see [the book][book-le].\n\nThe lifetime elision rules require that any function signature with an elided\noutput lifetime must either have:\n\n - exactly one input lifetime\n - or, multiple input lifetimes, but the function must also be a method with a\n   `&self` or `&mut self` receiver\n\nIn the first case, the output lifetime is inferred to be the same as the unique\ninput lifetime. In the second case, the lifetime is instead inferred to be the\nsame as the lifetime on `&self` or `&mut self`.\n\nHere are some examples of elision errors:\n\n```compile_fail,E0106\n// error, no input lifetimes\nfn foo() -> &str { }\n\n// error, `x` and `y` have distinct lifetimes inferred\nfn bar(x: &str, y: &str) -> &str { }\n\n// error, `y`'s lifetime is inferred to be distinct from `x`'s\nfn baz<'a>(x: &'a str, y: &str) -> &str { }\n```\n\n[book-le]: https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html#lifetime-elision\n"
+          },
+          "message": "missing lifetime specifier"
+        },
+        {
+          "code": {
+            "code": "E0107",
+            "explanation": "An incorrect number of generic arguments was provided.\n\nErroneous code example:\n\n```compile_fail,E0107\nstruct Foo<T> { x: T }\n\nstruct Bar { x: Foo }             // error: wrong number of type arguments:\n                                  //        expected 1, found 0\nstruct Baz<S, T> { x: Foo<S, T> } // error: wrong number of type arguments:\n                                  //        expected 1, found 2\n\nfn foo<T, U>(x: T, y: U) {}\nfn f() {}\n\nfn main() {\n    let x: bool = true;\n    foo::<bool>(x);                 // error: wrong number of type arguments:\n                                    //        expected 2, found 1\n    foo::<bool, i32, i32>(x, 2, 4); // error: wrong number of type arguments:\n                                    //        expected 2, found 3\n    f::<'static>();                 // error: wrong number of lifetime arguments\n                                    //        expected 0, found 1\n}\n```\n\nWhen using/declaring an item with generic arguments, you must provide the exact\nsame number:\n\n```\nstruct Foo<T> { x: T }\n\nstruct Bar<T> { x: Foo<T> }               // ok!\nstruct Baz<S, T> { x: Foo<S>, y: Foo<T> } // ok!\n\nfn foo<T, U>(x: T, y: U) {}\nfn f() {}\n\nfn main() {\n    let x: bool = true;\n    foo::<bool, u32>(x, 12);              // ok!\n    f();                                  // ok!\n}\n```\n"
+          },
+          "message": "missing generics for struct `CustomMut`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 2 previous errors"
+        }
+      ],
+      "qualification": "unqualified-infrastructure",
+      "corrected_expected_code": null
+    },
+    {
+      "file": "missing.rs",
+      "sha256": "a3f0825b6f13f089131a562f0e812438b7b40567a55cf72709c1b57294e65d5e",
+      "expected_code": 1,
+      "expected_error_text": [
+        "Reborrow"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0277",
+            "explanation": "You tried to use a type which doesn't implement some trait in a place which\nexpected that trait.\n\nErroneous code example:\n\n```compile_fail,E0277\n// here we declare the Foo trait with a bar method\ntrait Foo {\n    fn bar(&self);\n}\n\n// we now declare a function which takes an object implementing the Foo trait\nfn some_func<T: Foo>(foo: T) {\n    foo.bar();\n}\n\nfn main() {\n    // we now call the method with the i32 type, which doesn't implement\n    // the Foo trait\n    some_func(5i32); // error: the trait bound `i32 : Foo` is not satisfied\n}\n```\n\nIn order to fix this error, verify that the type you're using does implement\nthe trait. Example:\n\n```\ntrait Foo {\n    fn bar(&self);\n}\n\n// we implement the trait on the i32 type\nimpl Foo for i32 {\n    fn bar(&self) {}\n}\n\nfn some_func<T: Foo>(foo: T) {\n    foo.bar(); // we can now use this method since i32 implements the\n               // Foo trait\n}\n\nfn main() {\n    some_func(5i32); // ok!\n}\n```\n\nOr in a generic context, an erroneous code example would look like:\n\n```compile_fail,E0277\nfn some_func<T>(foo: T) {\n    println!(\"{:?}\", foo); // error: the trait `core::fmt::Debug` is not\n                           //        implemented for the type `T`\n}\n\nfn main() {\n    // We now call the method with the i32 type,\n    // which *does* implement the Debug trait.\n    some_func(5i32);\n}\n```\n\nNote that the error here is in the definition of the generic function. Although\nwe only call it with a parameter that does implement `Debug`, the compiler\nstill rejects the function. It must work with all possible input types. In\norder to make this example compile, we need to restrict the generic type we're\naccepting:\n\n```\nuse std::fmt;\n\n// Restrict the input type to types that implement Debug.\nfn some_func<T: fmt::Debug>(foo: T) {\n    println!(\"{:?}\", foo);\n}\n\nfn main() {\n    // Calling the method is still fine, as i32 implements Debug.\n    some_func(5i32);\n\n    // This would fail to compile now:\n    // struct WithoutDebug;\n    // some_func(WithoutDebug);\n}\n```\n\nRust only looks at the signature of the called function, as such it must\nalready specify all requirements that will be used for every type parameter.\n"
+          },
+          "message": "the trait bound `Exclusive<'a>: Reborrow` is not satisfied"
+        },
+        {
+          "code": {
+            "code": "E0382",
+            "explanation": "A variable was used after its contents have been moved elsewhere.\n\nErroneous code example:\n\n```compile_fail,E0382\nstruct MyStruct { s: u32 }\n\nfn main() {\n    let mut x = MyStruct{ s: 5u32 };\n    let y = x;\n    x.s = 6;\n    println!(\"{}\", x.s);\n}\n```\n\nSince `MyStruct` is a type that is not marked `Copy`, the data gets moved out\nof `x` when we set `y`. This is fundamental to Rust's ownership system: outside\nof workarounds like `Rc`, a value cannot be owned by more than one variable.\n\nSometimes we don't need to move the value. Using a reference, we can let another\nfunction borrow the value without changing its ownership. In the example below,\nwe don't actually have to move our string to `calculate_length`, we can give it\na reference to it with `&` instead.\n\n```\nfn main() {\n    let s1 = String::from(\"hello\");\n\n    let len = calculate_length(&s1);\n\n    println!(\"The length of '{}' is {}.\", s1, len);\n}\n\nfn calculate_length(s: &String) -> usize {\n    s.len()\n}\n```\n\nA mutable reference can be created with `&mut`.\n\nSometimes we don't want a reference, but a duplicate. All types marked `Clone`\ncan be duplicated by calling `.clone()`. Subsequent changes to a clone do not\naffect the original variable.\n\nMost types in the standard library are marked `Clone`. The example below\ndemonstrates using `clone()` on a string. `s1` is first set to \"many\", and then\ncopied to `s2`. Then the first character of `s1` is removed, without affecting\n`s2`. \"any many\" is printed to the console.\n\n```\nfn main() {\n    let mut s1 = String::from(\"many\");\n    let s2 = s1.clone();\n    s1.remove(0);\n    println!(\"{} {}\", s1, s2);\n}\n```\n\nIf we control the definition of a type, we can implement `Clone` on it ourselves\nwith `#[derive(Clone)]`.\n\nSome types have no ownership semantics at all and are trivial to duplicate. An\nexample is `i32` and the other number types. We don't have to call `.clone()` to\nclone them, because they are marked `Copy` in addition to `Clone`. Implicit\ncloning is more convenient in this case. We can mark our own types `Copy` if\nall their members also are marked `Copy`.\n\nIn the example below, we implement a `Point` type. Because it only stores two\nintegers, we opt-out of ownership semantics with `Copy`. Then we can\n`let p2 = p1` without `p1` being moved.\n\n```\n#[derive(Copy, Clone)]\nstruct Point { x: i32, y: i32 }\n\nfn main() {\n    let mut p1 = Point{ x: -1, y: 2 };\n    let p2 = p1;\n    p1.x = 1;\n    println!(\"p1: {}, {}\", p1.x, p1.y);\n    println!(\"p2: {}, {}\", p2.x, p2.y);\n}\n```\n\nAlternatively, if we don't control the struct's definition, or mutable shared\nownership is truly required, we can use `Rc` and `RefCell`:\n\n```\nuse std::cell::RefCell;\nuse std::rc::Rc;\n\nstruct MyStruct { s: u32 }\n\nfn main() {\n    let mut x = Rc::new(RefCell::new(MyStruct{ s: 5u32 }));\n    let y = x.clone();\n    x.borrow_mut().s = 6;\n    println!(\"{}\", x.borrow().s);\n}\n```\n\nWith this approach, x and y share ownership of the data via the `Rc` (reference\ncount type). `RefCell` essentially performs runtime borrow checking: ensuring\nthat at most one writer or multiple readers can access the data at any one time.\n\nIf you wish to learn more about ownership in Rust, start with the\n[Understanding Ownership][understanding-ownership] chapter in the Book.\n\n[understanding-ownership]: https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html\n"
+          },
+          "message": "use of moved value: `value`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 2 previous errors"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "multi-concrete.rs",
+      "sha256": "799b049a76ff908c221f2f153ca633ea5d1ab1afa3a1424c296ec0cb37d180e3",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-multiple-fields/contextual target positive",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-multi-v1.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-multi-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "multi-explicit.rs",
+      "sha256": "a82a1553218323d9e3c2c02fd43aa0500c14cd496560da15214d5986909893f7",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-multiple-fields/contextual target positive",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-multi-v1.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-multi-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "multi-impl.rs",
+      "sha256": "8cef3deff8c893203add6f90c7c08daf5db706dd03e09207d348598769758081",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-multiple-fields/contextual target positive",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-multi-v1.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-multi-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "multi.rs",
+      "sha256": "084e95075299d4c2a700ce9646093652ca435f43f6c1def06238b90e86fc0c77",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-followup; independent freeze",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-followup-v1.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-followup-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0382",
+            "explanation": "A variable was used after its contents have been moved elsewhere.\n\nErroneous code example:\n\n```compile_fail,E0382\nstruct MyStruct { s: u32 }\n\nfn main() {\n    let mut x = MyStruct{ s: 5u32 };\n    let y = x;\n    x.s = 6;\n    println!(\"{}\", x.s);\n}\n```\n\nSince `MyStruct` is a type that is not marked `Copy`, the data gets moved out\nof `x` when we set `y`. This is fundamental to Rust's ownership system: outside\nof workarounds like `Rc`, a value cannot be owned by more than one variable.\n\nSometimes we don't need to move the value. Using a reference, we can let another\nfunction borrow the value without changing its ownership. In the example below,\nwe don't actually have to move our string to `calculate_length`, we can give it\na reference to it with `&` instead.\n\n```\nfn main() {\n    let s1 = String::from(\"hello\");\n\n    let len = calculate_length(&s1);\n\n    println!(\"The length of '{}' is {}.\", s1, len);\n}\n\nfn calculate_length(s: &String) -> usize {\n    s.len()\n}\n```\n\nA mutable reference can be created with `&mut`.\n\nSometimes we don't want a reference, but a duplicate. All types marked `Clone`\ncan be duplicated by calling `.clone()`. Subsequent changes to a clone do not\naffect the original variable.\n\nMost types in the standard library are marked `Clone`. The example below\ndemonstrates using `clone()` on a string. `s1` is first set to \"many\", and then\ncopied to `s2`. Then the first character of `s1` is removed, without affecting\n`s2`. \"any many\" is printed to the console.\n\n```\nfn main() {\n    let mut s1 = String::from(\"many\");\n    let s2 = s1.clone();\n    s1.remove(0);\n    println!(\"{} {}\", s1, s2);\n}\n```\n\nIf we control the definition of a type, we can implement `Clone` on it ourselves\nwith `#[derive(Clone)]`.\n\nSome types have no ownership semantics at all and are trivial to duplicate. An\nexample is `i32` and the other number types. We don't have to call `.clone()` to\nclone them, because they are marked `Copy` in addition to `Clone`. Implicit\ncloning is more convenient in this case. We can mark our own types `Copy` if\nall their members also are marked `Copy`.\n\nIn the example below, we implement a `Point` type. Because it only stores two\nintegers, we opt-out of ownership semantics with `Copy`. Then we can\n`let p2 = p1` without `p1` being moved.\n\n```\n#[derive(Copy, Clone)]\nstruct Point { x: i32, y: i32 }\n\nfn main() {\n    let mut p1 = Point{ x: -1, y: 2 };\n    let p2 = p1;\n    p1.x = 1;\n    println!(\"p1: {}, {}\", p1.x, p1.y);\n    println!(\"p2: {}, {}\", p2.x, p2.y);\n}\n```\n\nAlternatively, if we don't control the struct's definition, or mutable shared\nownership is truly required, we can use `Rc` and `RefCell`:\n\n```\nuse std::cell::RefCell;\nuse std::rc::Rc;\n\nstruct MyStruct { s: u32 }\n\nfn main() {\n    let mut x = Rc::new(RefCell::new(MyStruct{ s: 5u32 }));\n    let y = x.clone();\n    x.borrow_mut().s = 6;\n    println!(\"{}\", x.borrow().s);\n}\n```\n\nWith this approach, x and y share ownership of the data via the `Rc` (reference\ncount type). `RefCell` essentially performs runtime borrow checking: ensuring\nthat at most one writer or multiple readers can access the data at any one time.\n\nIf you wish to learn more about ownership in Rust, start with the\n[Understanding Ownership][understanding-ownership] chapter in the Book.\n\n[understanding-ownership]: https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html\n"
+          },
+          "message": "use of moved value: `value`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "native.rs",
+      "sha256": "c6a24845f534c1f13975e55bd25498fc597b1fbaceb46c0320d57b90d567010d",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "actual-declaration-cutout",
+      "crate_type": "lib",
+      "execute": false,
+      "native": {
+        "observer": "observer.c",
+        "stdout": "reborrow 23 23 47 47 0 99 31\n",
+        "observer_sha256": "71b559b2b057f8d1c0179334a0ccd7d1c3b41567886da08c74b7637a778171c5"
+      },
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "no-life.rs",
+      "sha256": "70a2654e2d04ab99f8e057af88f3f998525bd82b32f414c6b22e0c67914035f0",
+      "expected_code": 1,
+      "expected_error_text": [
+        "single lifetime"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `Reborrow` requires that a single lifetime parameter is passed between source and target"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "noncopy.rs",
+      "sha256": "3ade0064b702b4e8a33b1a17367b6685580211573b5b1696ada08544d326b4f0",
+      "expected_code": 1,
+      "expected_error_text": [
+        "Copy"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0277",
+            "explanation": "You tried to use a type which doesn't implement some trait in a place which\nexpected that trait.\n\nErroneous code example:\n\n```compile_fail,E0277\n// here we declare the Foo trait with a bar method\ntrait Foo {\n    fn bar(&self);\n}\n\n// we now declare a function which takes an object implementing the Foo trait\nfn some_func<T: Foo>(foo: T) {\n    foo.bar();\n}\n\nfn main() {\n    // we now call the method with the i32 type, which doesn't implement\n    // the Foo trait\n    some_func(5i32); // error: the trait bound `i32 : Foo` is not satisfied\n}\n```\n\nIn order to fix this error, verify that the type you're using does implement\nthe trait. Example:\n\n```\ntrait Foo {\n    fn bar(&self);\n}\n\n// we implement the trait on the i32 type\nimpl Foo for i32 {\n    fn bar(&self) {}\n}\n\nfn some_func<T: Foo>(foo: T) {\n    foo.bar(); // we can now use this method since i32 implements the\n               // Foo trait\n}\n\nfn main() {\n    some_func(5i32); // ok!\n}\n```\n\nOr in a generic context, an erroneous code example would look like:\n\n```compile_fail,E0277\nfn some_func<T>(foo: T) {\n    println!(\"{:?}\", foo); // error: the trait `core::fmt::Debug` is not\n                           //        implemented for the type `T`\n}\n\nfn main() {\n    // We now call the method with the i32 type,\n    // which *does* implement the Debug trait.\n    some_func(5i32);\n}\n```\n\nNote that the error here is in the definition of the generic function. Although\nwe only call it with a parameter that does implement `Debug`, the compiler\nstill rejects the function. It must work with all possible input types. In\norder to make this example compile, we need to restrict the generic type we're\naccepting:\n\n```\nuse std::fmt;\n\n// Restrict the input type to types that implement Debug.\nfn some_func<T: fmt::Debug>(foo: T) {\n    println!(\"{:?}\", foo);\n}\n\nfn main() {\n    // Calling the method is still fine, as i32 implements Debug.\n    some_func(5i32);\n\n    // This would fail to compile now:\n    // struct WithoutDebug;\n    // some_func(WithoutDebug);\n}\n```\n\nRust only looks at the signature of the called function, as such it must\nalready specify all requirements that will be used for every type parameter.\n"
+          },
+          "message": "the trait bound `String: Copy` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "overlap.rs",
+      "sha256": "5004e841451323c9cc42a7acb3832e3e25ede6e79e153a72b80397d2a8f0a299",
+      "expected_code": 1,
+      "expected_error_text": [
+        "more than once"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0499",
+            "explanation": "A variable was borrowed as mutable more than once.\n\nErroneous code example:\n\n```compile_fail,E0499\nlet mut i = 0;\nlet mut x = &mut i;\nlet mut a = &mut i;\nx;\n// error: cannot borrow `i` as mutable more than once at a time\n```\n\nPlease note that in Rust, you can either have many immutable references, or one\nmutable reference. For more details you may want to read the\n[References & Borrowing][references-and-borrowing] section of the Book.\n\n[references-and-borrowing]: https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html\n\nExample:\n\n```\nlet mut i = 0;\nlet mut x = &mut i; // ok!\n\n// or:\nlet mut i = 0;\nlet a = &i; // ok!\nlet b = &i; // still ok!\nlet c = &i; // still ok!\nb;\na;\n```\n"
+          },
+          "message": "cannot borrow `value` as mutable more than once at a time"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "peel-use.rs",
+      "sha256": "82aa0db34d45231a9c94bda9dfeeb383635bcfd863c2897e4533cbd9a6693fce",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "authored-demanded-impl-law; NOT executed",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0597",
+            "explanation": "This error occurs because a value was dropped while it was still borrowed.\n\nErroneous code example:\n\n```compile_fail,E0597\nstruct Foo<'a> {\n    x: Option<&'a u32>,\n}\n\nlet mut x = Foo { x: None };\n{\n    let y = 0;\n    x.x = Some(&y); // error: `y` does not live long enough\n}\nprintln!(\"{:?}\", x.x);\n```\n\nHere, `y` is dropped at the end of the inner scope, but it is borrowed by\n`x` until the `println`. To fix the previous example, just remove the scope\nso that `y` isn't dropped until after the println\n\n```\nstruct Foo<'a> {\n    x: Option<&'a u32>,\n}\n\nlet mut x = Foo { x: None };\n\nlet y = 0;\nx.x = Some(&y);\n\nprintln!(\"{:?}\", x.x);\n```\n"
+          },
+          "message": "`source` does not live long enough"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "peel.rs",
+      "sha256": "06a63e6c2adf59e515ef456bd7888ad7e8f5255fe10fc0954575bddf265cddac",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-unused-impl-law",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "shared-move.rs",
+      "sha256": "6eb81ac16a72f2a7626bfc7b1cdcb2dc70d066c50a92a2f1cb47549e9a063abc",
+      "expected_code": 1,
+      "expected_error_text": [
+        "cannot move"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0505",
+            "explanation": "A value was moved out while it was still borrowed.\n\nErroneous code example:\n\n```compile_fail,E0505\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: Value) {}\n\nfn main() {\n    let x = Value{};\n    let _ref_to_val: &Value = &x;\n    eat(x);\n    borrow(_ref_to_val);\n}\n```\n\nHere, the function `eat` takes ownership of `x`. However,\n`x` cannot be moved because the borrow to `_ref_to_val`\nneeds to last till the function `borrow`.\nTo fix that you can do a few different things:\n\n* Try to avoid moving the variable.\n* Release borrow before move.\n* Implement the `Copy` trait on the type.\n\nExamples:\n\n```\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: &Value) {}\n\nfn main() {\n    let x = Value{};\n\n    let ref_to_val: &Value = &x;\n    eat(&x); // pass by reference, if it's possible\n    borrow(ref_to_val);\n}\n```\n\nOr:\n\n```\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: Value) {}\n\nfn main() {\n    let x = Value{};\n\n    let ref_to_val: &Value = &x;\n    borrow(ref_to_val);\n    // ref_to_val is no longer used.\n    eat(x);\n}\n```\n\nOr:\n\n```\n#[derive(Clone, Copy)] // implement Copy trait\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: Value) {}\n\nfn main() {\n    let x = Value{};\n    let ref_to_val: &Value = &x;\n    eat(x); // it will be copied here.\n    borrow(ref_to_val);\n}\n```\n\nFor more information on Rust's ownership system, take a look at the\n[References & Borrowing][references-and-borrowing] section of the Book.\n\n[references-and-borrowing]: https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html\n"
+          },
+          "message": "cannot move out of `value` because it is borrowed"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "shared-write.rs",
+      "sha256": "d4effd025d7e3edfc232669e2c72f16457b359dca63ecf96691428ab653e3dbc",
+      "expected_code": 1,
+      "expected_error_text": [
+        "borrow"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0506",
+            "explanation": "An attempt was made to assign to a borrowed value.\n\nErroneous code example:\n\n```compile_fail,E0506\nstruct FancyNum {\n    num: u8,\n}\n\nlet mut fancy_num = FancyNum { num: 5 };\nlet fancy_ref = &fancy_num;\nfancy_num = FancyNum { num: 6 };\n// error: cannot assign to `fancy_num` because it is borrowed\n\nprintln!(\"Num: {}, Ref: {}\", fancy_num.num, fancy_ref.num);\n```\n\nBecause `fancy_ref` still holds a reference to `fancy_num`, `fancy_num` can't\nbe assigned to a new value as it would invalidate the reference.\n\nAlternatively, we can move out of `fancy_num` into a second `fancy_num`:\n\n```\nstruct FancyNum {\n    num: u8,\n}\n\nlet mut fancy_num = FancyNum { num: 5 };\nlet moved_num = fancy_num;\nfancy_num = FancyNum { num: 6 };\n\nprintln!(\"Num: {}, Moved num: {}\", fancy_num.num, moved_num.num);\n```\n\nIf the value has to be borrowed, try limiting the lifetime of the borrow using\na scoped block:\n\n```\nstruct FancyNum {\n    num: u8,\n}\n\nlet mut fancy_num = FancyNum { num: 5 };\n\n{\n    let fancy_ref = &fancy_num;\n    println!(\"Ref: {}\", fancy_ref.num);\n}\n\n// Works because `fancy_ref` is no longer in scope\nfancy_num = FancyNum { num: 6 };\nprintln!(\"Num: {}\", fancy_num.num);\n```\n\nOr by moving the reference into a function:\n\n```\nstruct FancyNum {\n    num: u8,\n}\n\nfn print_fancy_ref(fancy_ref: &FancyNum){\n    println!(\"Ref: {}\", fancy_ref.num);\n}\n\nlet mut fancy_num = FancyNum { num: 5 };\n\nprint_fancy_ref(&fancy_num);\n\n// Works because function borrow has ended\nfancy_num = FancyNum { num: 6 };\nprintln!(\"Num: {}\", fancy_num.num);\n```\n"
+          },
+          "message": "cannot assign to `*value.value` because it is borrowed"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "shared.rs",
+      "sha256": "db49ad427246b413d60035d33dc49d3404cd50ec6f2be9def308df6496151da7",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "source.rs",
+      "sha256": "b1bfcec687a83bfa567acb2d33db86ae1cda47affe9b2e93b9ce7810cfbac619",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "actual-declaration-cutout",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "std-native.rs",
+      "sha256": "8e551edc2880f1b9c1063ad27d7aadc5d6d089007d68cd9bc1424d968c8105a6",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-std; genuine Rust runtime staticlib",
+      "crate_type": "lib",
+      "execute": false,
+      "native": {
+        "observer": "observer.c",
+        "stdout": "reborrow 23 23 47 47 0 99 31\n",
+        "observer_sha256": "71b559b2b057f8d1c0179334a0ccd7d1c3b41567886da08c74b7637a778171c5",
+        "staticlib": true
+      },
+      "prediction": "predictions-followup-v1.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-followup-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "target-copy.rs",
+      "sha256": "e59d235ffdba92c40737a41d938e1a0002bf4bb39d17d0c29e1efe3491147251",
+      "expected_code": 1,
+      "expected_error_text": [
+        "Copy"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0277",
+            "explanation": "You tried to use a type which doesn't implement some trait in a place which\nexpected that trait.\n\nErroneous code example:\n\n```compile_fail,E0277\n// here we declare the Foo trait with a bar method\ntrait Foo {\n    fn bar(&self);\n}\n\n// we now declare a function which takes an object implementing the Foo trait\nfn some_func<T: Foo>(foo: T) {\n    foo.bar();\n}\n\nfn main() {\n    // we now call the method with the i32 type, which doesn't implement\n    // the Foo trait\n    some_func(5i32); // error: the trait bound `i32 : Foo` is not satisfied\n}\n```\n\nIn order to fix this error, verify that the type you're using does implement\nthe trait. Example:\n\n```\ntrait Foo {\n    fn bar(&self);\n}\n\n// we implement the trait on the i32 type\nimpl Foo for i32 {\n    fn bar(&self) {}\n}\n\nfn some_func<T: Foo>(foo: T) {\n    foo.bar(); // we can now use this method since i32 implements the\n               // Foo trait\n}\n\nfn main() {\n    some_func(5i32); // ok!\n}\n```\n\nOr in a generic context, an erroneous code example would look like:\n\n```compile_fail,E0277\nfn some_func<T>(foo: T) {\n    println!(\"{:?}\", foo); // error: the trait `core::fmt::Debug` is not\n                           //        implemented for the type `T`\n}\n\nfn main() {\n    // We now call the method with the i32 type,\n    // which *does* implement the Debug trait.\n    some_func(5i32);\n}\n```\n\nNote that the error here is in the definition of the generic function. Although\nwe only call it with a parameter that does implement `Debug`, the compiler\nstill rejects the function. It must work with all possible input types. In\norder to make this example compile, we need to restrict the generic type we're\naccepting:\n\n```\nuse std::fmt;\n\n// Restrict the input type to types that implement Debug.\nfn some_func<T: fmt::Debug>(foo: T) {\n    println!(\"{:?}\", foo);\n}\n\nfn main() {\n    // Calling the method is still fine, as i32 implements Debug.\n    some_func(5i32);\n\n    // This would fail to compile now:\n    // struct WithoutDebug;\n    // some_func(WithoutDebug);\n}\n```\n\nRust only looks at the signature of the called function, as such it must\nalready specify all requirements that will be used for every type parameter.\n"
+          },
+          "message": "the trait bound `Shared<'a>: Copy` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "target-type.rs",
+      "sha256": "6ab7cb517f73c487fd7981b8cbd816e53bdff97d4cb6a5158df55f7c2fb2ea54",
+      "expected_code": 1,
+      "expected_error_text": [
+        "CoerceShared"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0277",
+            "explanation": "You tried to use a type which doesn't implement some trait in a place which\nexpected that trait.\n\nErroneous code example:\n\n```compile_fail,E0277\n// here we declare the Foo trait with a bar method\ntrait Foo {\n    fn bar(&self);\n}\n\n// we now declare a function which takes an object implementing the Foo trait\nfn some_func<T: Foo>(foo: T) {\n    foo.bar();\n}\n\nfn main() {\n    // we now call the method with the i32 type, which doesn't implement\n    // the Foo trait\n    some_func(5i32); // error: the trait bound `i32 : Foo` is not satisfied\n}\n```\n\nIn order to fix this error, verify that the type you're using does implement\nthe trait. Example:\n\n```\ntrait Foo {\n    fn bar(&self);\n}\n\n// we implement the trait on the i32 type\nimpl Foo for i32 {\n    fn bar(&self) {}\n}\n\nfn some_func<T: Foo>(foo: T) {\n    foo.bar(); // we can now use this method since i32 implements the\n               // Foo trait\n}\n\nfn main() {\n    some_func(5i32); // ok!\n}\n```\n\nOr in a generic context, an erroneous code example would look like:\n\n```compile_fail,E0277\nfn some_func<T>(foo: T) {\n    println!(\"{:?}\", foo); // error: the trait `core::fmt::Debug` is not\n                           //        implemented for the type `T`\n}\n\nfn main() {\n    // We now call the method with the i32 type,\n    // which *does* implement the Debug trait.\n    some_func(5i32);\n}\n```\n\nNote that the error here is in the definition of the generic function. Although\nwe only call it with a parameter that does implement `Debug`, the compiler\nstill rejects the function. It must work with all possible input types. In\norder to make this example compile, we need to restrict the generic type we're\naccepting:\n\n```\nuse std::fmt;\n\n// Restrict the input type to types that implement Debug.\nfn some_func<T: fmt::Debug>(foo: T) {\n    println!(\"{:?}\", foo);\n}\n\nfn main() {\n    // Calling the method is still fine, as i32 implements Debug.\n    some_func(5i32);\n\n    // This would fail to compile now:\n    // struct WithoutDebug;\n    // some_func(WithoutDebug);\n}\n```\n\nRust only looks at the signature of the called function, as such it must\nalready specify all requirements that will be used for every type parameter.\n"
+          },
+          "message": "the trait bound `&'a mut u8: CoerceShared<&'a u16>` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "two-life.rs",
+      "sha256": "d683305602befe67f904ffe7bbb9e03cbfb6ebf7083684b3b5dc0ba11bd510b3",
+      "expected_code": 1,
+      "expected_error_text": [
+        "single lifetime"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `Reborrow` requires that a single lifetime parameter is passed between source and target"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "unsafe-impl.rs",
+      "sha256": "42f9d6b4458c7c7660ffc0508f81272b3802c3b849e53c339c15da3ebd1c35a3",
+      "expected_code": 1,
+      "expected_error_text": [
+        "not unsafe"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0199",
+            "explanation": "A trait implementation was marked as unsafe while the trait is safe.\n\nErroneous code example:\n\n```compile_fail,E0199\nstruct Foo;\n\ntrait Bar { }\n\nunsafe impl Bar for Foo { } // error!\n```\n\nSafe traits should not have unsafe implementations, therefore marking an\nimplementation for a safe trait unsafe will cause a compiler error. Removing\nthe unsafe marker on the trait noted in the error will resolve this problem:\n\n```\nstruct Foo;\n\ntrait Bar { }\n\nimpl Bar for Foo { } // ok!\n```\n"
+          },
+          "message": "implementing the trait `Reborrow` is not unsafe"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "unsafe-source.rs",
+      "sha256": "a49b939343bbf8dd4155a45479bd9282e283a618801932aa0a5f1bc25761d837",
+      "expected_code": 1,
+      "expected_error_text": [
+        "unsafe"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0133",
+            "explanation": "Unsafe code was used outside of an unsafe block.\n\nErroneous code example:\n\n```compile_fail,E0133\nunsafe fn f() { return; } // This is the unsafe code\n\nfn main() {\n    f(); // error: call to unsafe function requires unsafe function or block\n}\n```\n\nUsing unsafe functionality is potentially dangerous and disallowed by safety\nchecks. Examples:\n\n* Dereferencing raw pointers\n* Calling functions via FFI\n* Calling functions marked unsafe\n\nThese safety checks can be relaxed for a section of the code by wrapping the\nunsafe instructions with an `unsafe` block. For instance:\n\n```\nunsafe fn f() { return; }\n\nfn main() {\n    unsafe { f(); } // ok!\n}\n```\n\nSee the [unsafe section][unsafe-section] of the Book for more details.\n\n#### Unsafe code in functions\n\nUnsafe code is currently accepted in unsafe functions, but that is being phased\nout in favor of requiring unsafe blocks here too.\n\n```\nunsafe fn f() { return; }\n\nunsafe fn g() {\n    f(); // Is accepted, but no longer recommended\n    unsafe { f(); } // Recommended way to write this\n}\n```\n\nLinting against this is controlled via the `unsafe_op_in_unsafe_fn` lint, which\nis `warn` by default in the 2024 edition and `allow` by default in earlier\neditions.\n\n[unsafe-section]: https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html\n"
+          },
+          "message": "call to unsafe function `std::ptr::read` is unsafe and requires unsafe function or block"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/coerce-shared-associated-type-field.rs",
+      "sha256": "900c380d1464b6b892877b00ba74d268bdf1fef2aec4755b79c91e7ec548bfad",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/coerce-shared-decl-macro-hygiene.rs",
+      "sha256": "f821926514eb78deaff90d0cb8dc873002bd23cc55a2d8e49735dc3bc4a1bf77",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/coerce-shared-extra-marker.rs",
+      "sha256": "e2d13bc7361d567c47dac24abb686b7051efa1dab1c62435fe4cc2ba5a7d732d",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "upstream/coerce-shared-field-lifetime-swap.rs",
+      "sha256": "87d1acae940cea4bc43eff8a3da14fa8f859bb86fd833ff6ba7916767d4c75ce",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/coerce-shared-field-relations.rs",
+      "sha256": "3b1226d0d0db2902354299fbb4fc09668fe99c6664494e885bc0a09c07151a1c",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0277",
+            "explanation": "You tried to use a type which doesn't implement some trait in a place which\nexpected that trait.\n\nErroneous code example:\n\n```compile_fail,E0277\n// here we declare the Foo trait with a bar method\ntrait Foo {\n    fn bar(&self);\n}\n\n// we now declare a function which takes an object implementing the Foo trait\nfn some_func<T: Foo>(foo: T) {\n    foo.bar();\n}\n\nfn main() {\n    // we now call the method with the i32 type, which doesn't implement\n    // the Foo trait\n    some_func(5i32); // error: the trait bound `i32 : Foo` is not satisfied\n}\n```\n\nIn order to fix this error, verify that the type you're using does implement\nthe trait. Example:\n\n```\ntrait Foo {\n    fn bar(&self);\n}\n\n// we implement the trait on the i32 type\nimpl Foo for i32 {\n    fn bar(&self) {}\n}\n\nfn some_func<T: Foo>(foo: T) {\n    foo.bar(); // we can now use this method since i32 implements the\n               // Foo trait\n}\n\nfn main() {\n    some_func(5i32); // ok!\n}\n```\n\nOr in a generic context, an erroneous code example would look like:\n\n```compile_fail,E0277\nfn some_func<T>(foo: T) {\n    println!(\"{:?}\", foo); // error: the trait `core::fmt::Debug` is not\n                           //        implemented for the type `T`\n}\n\nfn main() {\n    // We now call the method with the i32 type,\n    // which *does* implement the Debug trait.\n    some_func(5i32);\n}\n```\n\nNote that the error here is in the definition of the generic function. Although\nwe only call it with a parameter that does implement `Debug`, the compiler\nstill rejects the function. It must work with all possible input types. In\norder to make this example compile, we need to restrict the generic type we're\naccepting:\n\n```\nuse std::fmt;\n\n// Restrict the input type to types that implement Debug.\nfn some_func<T: fmt::Debug>(foo: T) {\n    println!(\"{:?}\", foo);\n}\n\nfn main() {\n    // Calling the method is still fine, as i32 implements Debug.\n    some_func(5i32);\n\n    // This would fail to compile now:\n    // struct WithoutDebug;\n    // some_func(WithoutDebug);\n}\n```\n\nRust only looks at the signature of the called function, as such it must\nalready specify all requirements that will be used for every type parameter.\n"
+          },
+          "message": "the trait bound `&'a mut T: CoerceShared<&'a u32>` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/coerce-shared-foreign-private-field.rs",
+      "sha256": "89c44c56cb38ac68786f406afbf5d0c33a69bed3f7422b48cd7529d66852f363",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "auxiliary": [
+        "upstream/auxiliary/reborrow_foreign_private.rs"
+      ],
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "upstream/coerce-shared-foreign-private-tuple-field.rs",
+      "sha256": "daa3dc7f0c774be20eaf329cd9e2a4a6eebfa5ccfc2ad39328da97e43cae975e",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "upstream/coerce-shared-generics.rs",
+      "sha256": "337d31e542900a1ab0b909855105e0fe875ffc88c2c97c2815e7210d7024f1b2",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/coerce-shared-lifetime-mismatch.rs",
+      "sha256": "f7b37ed00eb56364748ee92d940a8efbdf2c1d852fad03c053eaf0d2ee85aa76",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0597",
+            "explanation": "This error occurs because a value was dropped while it was still borrowed.\n\nErroneous code example:\n\n```compile_fail,E0597\nstruct Foo<'a> {\n    x: Option<&'a u32>,\n}\n\nlet mut x = Foo { x: None };\n{\n    let y = 0;\n    x.x = Some(&y); // error: `y` does not live long enough\n}\nprintln!(\"{:?}\", x.x);\n```\n\nHere, `y` is dropped at the end of the inner scope, but it is borrowed by\n`x` until the `println`. To fix the previous example, just remove the scope\nso that `y` isn't dropped until after the println\n\n```\nstruct Foo<'a> {\n    x: Option<&'a u32>,\n}\n\nlet mut x = Foo { x: None };\n\nlet y = 0;\nx.x = Some(&y);\n\nprintln!(\"{:?}\", x.x);\n```\n"
+          },
+          "message": "`a` does not live long enough"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/coerce-shared-missing-target-field.rs",
+      "sha256": "173a3c39dd044068b6bdc036292e67f27dc438a50b12b0e42e2f5d384dd4861f",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/coerce-shared-mut-ref-field-validation.rs",
+      "sha256": "b08d5c143515b47925c51576ac96664a82989a7fc13cbac88755e5f3275013ec",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0277",
+            "explanation": "You tried to use a type which doesn't implement some trait in a place which\nexpected that trait.\n\nErroneous code example:\n\n```compile_fail,E0277\n// here we declare the Foo trait with a bar method\ntrait Foo {\n    fn bar(&self);\n}\n\n// we now declare a function which takes an object implementing the Foo trait\nfn some_func<T: Foo>(foo: T) {\n    foo.bar();\n}\n\nfn main() {\n    // we now call the method with the i32 type, which doesn't implement\n    // the Foo trait\n    some_func(5i32); // error: the trait bound `i32 : Foo` is not satisfied\n}\n```\n\nIn order to fix this error, verify that the type you're using does implement\nthe trait. Example:\n\n```\ntrait Foo {\n    fn bar(&self);\n}\n\n// we implement the trait on the i32 type\nimpl Foo for i32 {\n    fn bar(&self) {}\n}\n\nfn some_func<T: Foo>(foo: T) {\n    foo.bar(); // we can now use this method since i32 implements the\n               // Foo trait\n}\n\nfn main() {\n    some_func(5i32); // ok!\n}\n```\n\nOr in a generic context, an erroneous code example would look like:\n\n```compile_fail,E0277\nfn some_func<T>(foo: T) {\n    println!(\"{:?}\", foo); // error: the trait `core::fmt::Debug` is not\n                           //        implemented for the type `T`\n}\n\nfn main() {\n    // We now call the method with the i32 type,\n    // which *does* implement the Debug trait.\n    some_func(5i32);\n}\n```\n\nNote that the error here is in the definition of the generic function. Although\nwe only call it with a parameter that does implement `Debug`, the compiler\nstill rejects the function. It must work with all possible input types. In\norder to make this example compile, we need to restrict the generic type we're\naccepting:\n\n```\nuse std::fmt;\n\n// Restrict the input type to types that implement Debug.\nfn some_func<T: fmt::Debug>(foo: T) {\n    println!(\"{:?}\", foo);\n}\n\nfn main() {\n    // Calling the method is still fine, as i32 implements Debug.\n    some_func(5i32);\n\n    // This would fail to compile now:\n    // struct WithoutDebug;\n    // some_func(WithoutDebug);\n}\n```\n\nRust only looks at the signature of the called function, as such it must\nalready specify all requirements that will be used for every type parameter.\n"
+          },
+          "message": "the trait bound `&'a mut u32: CoerceShared<&'a u32>` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/coerce-shared-omitted-reborrow-field-after-dead.rs",
+      "sha256": "0cab3fd6c201fdceaf39d61b2eed9688df39d0d62864f67e4f4a7b020cdb83f6",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/coerce-shared-omitted-reborrow-field-locked.rs",
+      "sha256": "8c4e8acd5edee19f55d0736a5991052911fb31d00227dbd532bd7a3f6573583d",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        },
+        {
+          "code": {
+            "code": "E0506",
+            "explanation": "An attempt was made to assign to a borrowed value.\n\nErroneous code example:\n\n```compile_fail,E0506\nstruct FancyNum {\n    num: u8,\n}\n\nlet mut fancy_num = FancyNum { num: 5 };\nlet fancy_ref = &fancy_num;\nfancy_num = FancyNum { num: 6 };\n// error: cannot assign to `fancy_num` because it is borrowed\n\nprintln!(\"Num: {}, Ref: {}\", fancy_num.num, fancy_ref.num);\n```\n\nBecause `fancy_ref` still holds a reference to `fancy_num`, `fancy_num` can't\nbe assigned to a new value as it would invalidate the reference.\n\nAlternatively, we can move out of `fancy_num` into a second `fancy_num`:\n\n```\nstruct FancyNum {\n    num: u8,\n}\n\nlet mut fancy_num = FancyNum { num: 5 };\nlet moved_num = fancy_num;\nfancy_num = FancyNum { num: 6 };\n\nprintln!(\"Num: {}, Moved num: {}\", fancy_num.num, moved_num.num);\n```\n\nIf the value has to be borrowed, try limiting the lifetime of the borrow using\na scoped block:\n\n```\nstruct FancyNum {\n    num: u8,\n}\n\nlet mut fancy_num = FancyNum { num: 5 };\n\n{\n    let fancy_ref = &fancy_num;\n    println!(\"Ref: {}\", fancy_ref.num);\n}\n\n// Works because `fancy_ref` is no longer in scope\nfancy_num = FancyNum { num: 6 };\nprintln!(\"Num: {}\", fancy_num.num);\n```\n\nOr by moving the reference into a function:\n\n```\nstruct FancyNum {\n    num: u8,\n}\n\nfn print_fancy_ref(fancy_ref: &FancyNum){\n    println!(\"Ref: {}\", fancy_ref.num);\n}\n\nlet mut fancy_num = FancyNum { num: 5 };\n\nprint_fancy_ref(&fancy_num);\n\n// Works because function borrow has ended\nfancy_num = FancyNum { num: 6 };\nprintln!(\"Num: {}\", fancy_num.num);\n```\n"
+          },
+          "message": "cannot assign to `*wrapped.extra.value` because it is borrowed"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 2 previous errors"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/coerce-shared-omitted-reborrow-field.rs",
+      "sha256": "dbe34d0ac0395117972bac9ba44c1207ac715bab9bf661bdf0ca6faed2354915",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/coerce-shared-reordered-field.rs",
+      "sha256": "ea4e5e5bbcc56b959b411fdaef285f075acd17c510c4cf228c7aa40f660a203d",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/coerce-shared-wrong-generic.rs",
+      "sha256": "3ea6350ccd4717e58267abbe4631c6f47a121e8879cb7547880142c20e9c8726",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0277",
+            "explanation": "You tried to use a type which doesn't implement some trait in a place which\nexpected that trait.\n\nErroneous code example:\n\n```compile_fail,E0277\n// here we declare the Foo trait with a bar method\ntrait Foo {\n    fn bar(&self);\n}\n\n// we now declare a function which takes an object implementing the Foo trait\nfn some_func<T: Foo>(foo: T) {\n    foo.bar();\n}\n\nfn main() {\n    // we now call the method with the i32 type, which doesn't implement\n    // the Foo trait\n    some_func(5i32); // error: the trait bound `i32 : Foo` is not satisfied\n}\n```\n\nIn order to fix this error, verify that the type you're using does implement\nthe trait. Example:\n\n```\ntrait Foo {\n    fn bar(&self);\n}\n\n// we implement the trait on the i32 type\nimpl Foo for i32 {\n    fn bar(&self) {}\n}\n\nfn some_func<T: Foo>(foo: T) {\n    foo.bar(); // we can now use this method since i32 implements the\n               // Foo trait\n}\n\nfn main() {\n    some_func(5i32); // ok!\n}\n```\n\nOr in a generic context, an erroneous code example would look like:\n\n```compile_fail,E0277\nfn some_func<T>(foo: T) {\n    println!(\"{:?}\", foo); // error: the trait `core::fmt::Debug` is not\n                           //        implemented for the type `T`\n}\n\nfn main() {\n    // We now call the method with the i32 type,\n    // which *does* implement the Debug trait.\n    some_func(5i32);\n}\n```\n\nNote that the error here is in the definition of the generic function. Although\nwe only call it with a parameter that does implement `Debug`, the compiler\nstill rejects the function. It must work with all possible input types. In\norder to make this example compile, we need to restrict the generic type we're\naccepting:\n\n```\nuse std::fmt;\n\n// Restrict the input type to types that implement Debug.\nfn some_func<T: fmt::Debug>(foo: T) {\n    println!(\"{:?}\", foo);\n}\n\nfn main() {\n    // Calling the method is still fine, as i32 implements Debug.\n    some_func(5i32);\n\n    // This would fail to compile now:\n    // struct WithoutDebug;\n    // some_func(WithoutDebug);\n}\n```\n\nRust only looks at the signature of the called function, as such it must\nalready specify all requirements that will be used for every type parameter.\n"
+          },
+          "message": "the trait bound `&'a mut T: CoerceShared<&'a U>` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/coerce_shared_consteval.rs",
+      "sha256": "200e0114fd5422c5d7a2c8a97f1b8028bf422caee13890e475301c45eca3c404",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "upstream/custom_marker.rs",
+      "sha256": "5bd91d4e852b268b8d72ab850ebe2f03362c07d7308f3ba004a0606bd8b0678f",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "upstream/custom_marker_assign_deref.rs",
+      "sha256": "09b610077a5644a1df6f5405a1e9d2f8016e0a5d91a7e19db5957905130a034f",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "upstream/custom_marker_coerce_shared.rs",
+      "sha256": "9b4f1cffd306c45b61ba6dc1250589943564eed58948970236ab9c5f9235e557",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "upstream/custom_marker_coerce_shared_copy.rs",
+      "sha256": "508cd8e89556462415919b143f532ae6df8be58ddf551fb793f1bc5dd322d21c",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "upstream/custom_marker_coerce_shared_move.rs",
+      "sha256": "81fdec51a389d076d31585d26ecd3379be80e190933d58223c304dde617ac769",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0505",
+            "explanation": "A value was moved out while it was still borrowed.\n\nErroneous code example:\n\n```compile_fail,E0505\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: Value) {}\n\nfn main() {\n    let x = Value{};\n    let _ref_to_val: &Value = &x;\n    eat(x);\n    borrow(_ref_to_val);\n}\n```\n\nHere, the function `eat` takes ownership of `x`. However,\n`x` cannot be moved because the borrow to `_ref_to_val`\nneeds to last till the function `borrow`.\nTo fix that you can do a few different things:\n\n* Try to avoid moving the variable.\n* Release borrow before move.\n* Implement the `Copy` trait on the type.\n\nExamples:\n\n```\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: &Value) {}\n\nfn main() {\n    let x = Value{};\n\n    let ref_to_val: &Value = &x;\n    eat(&x); // pass by reference, if it's possible\n    borrow(ref_to_val);\n}\n```\n\nOr:\n\n```\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: Value) {}\n\nfn main() {\n    let x = Value{};\n\n    let ref_to_val: &Value = &x;\n    borrow(ref_to_val);\n    // ref_to_val is no longer used.\n    eat(x);\n}\n```\n\nOr:\n\n```\n#[derive(Clone, Copy)] // implement Copy trait\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: Value) {}\n\nfn main() {\n    let x = Value{};\n    let ref_to_val: &Value = &x;\n    eat(x); // it will be copied here.\n    borrow(ref_to_val);\n}\n```\n\nFor more information on Rust's ownership system, take a look at the\n[References & Borrowing][references-and-borrowing] section of the Book.\n\n[references-and-borrowing]: https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html\n"
+          },
+          "message": "cannot move out of `a` because it is borrowed"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/custom_marker_deref.rs",
+      "sha256": "8ab1a2aae5fbb577636696c3a44a1ea08ccff476c73967edb4034da2189603ec",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "upstream/custom_marker_mut_a_b.rs",
+      "sha256": "cdd232e859bdfd2aebe2494f6302160acd7becdd5259e148203b4fe0d1d3ab71",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0499",
+            "explanation": "A variable was borrowed as mutable more than once.\n\nErroneous code example:\n\n```compile_fail,E0499\nlet mut i = 0;\nlet mut x = &mut i;\nlet mut a = &mut i;\nx;\n// error: cannot borrow `i` as mutable more than once at a time\n```\n\nPlease note that in Rust, you can either have many immutable references, or one\nmutable reference. For more details you may want to read the\n[References & Borrowing][references-and-borrowing] section of the Book.\n\n[references-and-borrowing]: https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html\n\nExample:\n\n```\nlet mut i = 0;\nlet mut x = &mut i; // ok!\n\n// or:\nlet mut i = 0;\nlet a = &i; // ok!\nlet b = &i; // still ok!\nlet c = &i; // still ok!\nb;\na;\n```\n"
+          },
+          "message": "cannot borrow `a` as mutable more than once at a time"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/custom_marker_mut_self.rs",
+      "sha256": "92786a21af734ac601749165a8ed19538bd9b89af7ca7d922b74b2bf13efa4e4",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0505",
+            "explanation": "A value was moved out while it was still borrowed.\n\nErroneous code example:\n\n```compile_fail,E0505\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: Value) {}\n\nfn main() {\n    let x = Value{};\n    let _ref_to_val: &Value = &x;\n    eat(x);\n    borrow(_ref_to_val);\n}\n```\n\nHere, the function `eat` takes ownership of `x`. However,\n`x` cannot be moved because the borrow to `_ref_to_val`\nneeds to last till the function `borrow`.\nTo fix that you can do a few different things:\n\n* Try to avoid moving the variable.\n* Release borrow before move.\n* Implement the `Copy` trait on the type.\n\nExamples:\n\n```\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: &Value) {}\n\nfn main() {\n    let x = Value{};\n\n    let ref_to_val: &Value = &x;\n    eat(&x); // pass by reference, if it's possible\n    borrow(ref_to_val);\n}\n```\n\nOr:\n\n```\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: Value) {}\n\nfn main() {\n    let x = Value{};\n\n    let ref_to_val: &Value = &x;\n    borrow(ref_to_val);\n    // ref_to_val is no longer used.\n    eat(x);\n}\n```\n\nOr:\n\n```\n#[derive(Clone, Copy)] // implement Copy trait\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: Value) {}\n\nfn main() {\n    let x = Value{};\n    let ref_to_val: &Value = &x;\n    eat(x); // it will be copied here.\n    borrow(ref_to_val);\n}\n```\n\nFor more information on Rust's ownership system, take a look at the\n[References & Borrowing][references-and-borrowing] section of the Book.\n\n[references-and-borrowing]: https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html\n"
+          },
+          "message": "cannot move out of `a` because it is borrowed"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/custom_marker_mut_self_a.rs",
+      "sha256": "6ca9ba4f9a04bafcd8581e0f6906cf25e28e42b6f53667cb4af1634be3215cf8",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0499",
+            "explanation": "A variable was borrowed as mutable more than once.\n\nErroneous code example:\n\n```compile_fail,E0499\nlet mut i = 0;\nlet mut x = &mut i;\nlet mut a = &mut i;\nx;\n// error: cannot borrow `i` as mutable more than once at a time\n```\n\nPlease note that in Rust, you can either have many immutable references, or one\nmutable reference. For more details you may want to read the\n[References & Borrowing][references-and-borrowing] section of the Book.\n\n[references-and-borrowing]: https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html\n\nExample:\n\n```\nlet mut i = 0;\nlet mut x = &mut i; // ok!\n\n// or:\nlet mut i = 0;\nlet a = &i; // ok!\nlet b = &i; // still ok!\nlet c = &i; // still ok!\nb;\na;\n```\n"
+          },
+          "message": "cannot borrow `a` as mutable more than once at a time"
+        },
+        {
+          "code": {
+            "code": "E0505",
+            "explanation": "A value was moved out while it was still borrowed.\n\nErroneous code example:\n\n```compile_fail,E0505\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: Value) {}\n\nfn main() {\n    let x = Value{};\n    let _ref_to_val: &Value = &x;\n    eat(x);\n    borrow(_ref_to_val);\n}\n```\n\nHere, the function `eat` takes ownership of `x`. However,\n`x` cannot be moved because the borrow to `_ref_to_val`\nneeds to last till the function `borrow`.\nTo fix that you can do a few different things:\n\n* Try to avoid moving the variable.\n* Release borrow before move.\n* Implement the `Copy` trait on the type.\n\nExamples:\n\n```\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: &Value) {}\n\nfn main() {\n    let x = Value{};\n\n    let ref_to_val: &Value = &x;\n    eat(&x); // pass by reference, if it's possible\n    borrow(ref_to_val);\n}\n```\n\nOr:\n\n```\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: Value) {}\n\nfn main() {\n    let x = Value{};\n\n    let ref_to_val: &Value = &x;\n    borrow(ref_to_val);\n    // ref_to_val is no longer used.\n    eat(x);\n}\n```\n\nOr:\n\n```\n#[derive(Clone, Copy)] // implement Copy trait\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: Value) {}\n\nfn main() {\n    let x = Value{};\n    let ref_to_val: &Value = &x;\n    eat(x); // it will be copied here.\n    borrow(ref_to_val);\n}\n```\n\nFor more information on Rust's ownership system, take a look at the\n[References & Borrowing][references-and-borrowing] section of the Book.\n\n[references-and-borrowing]: https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html\n"
+          },
+          "message": "cannot move out of `a` because it is borrowed"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 2 previous errors"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/custom_marker_mut_self_b.rs",
+      "sha256": "88b86a78bc49bfec8f5f8f0dc95bf07ef92fdbe8821ac18635bea59eccb0d742",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0505",
+            "explanation": "A value was moved out while it was still borrowed.\n\nErroneous code example:\n\n```compile_fail,E0505\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: Value) {}\n\nfn main() {\n    let x = Value{};\n    let _ref_to_val: &Value = &x;\n    eat(x);\n    borrow(_ref_to_val);\n}\n```\n\nHere, the function `eat` takes ownership of `x`. However,\n`x` cannot be moved because the borrow to `_ref_to_val`\nneeds to last till the function `borrow`.\nTo fix that you can do a few different things:\n\n* Try to avoid moving the variable.\n* Release borrow before move.\n* Implement the `Copy` trait on the type.\n\nExamples:\n\n```\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: &Value) {}\n\nfn main() {\n    let x = Value{};\n\n    let ref_to_val: &Value = &x;\n    eat(&x); // pass by reference, if it's possible\n    borrow(ref_to_val);\n}\n```\n\nOr:\n\n```\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: Value) {}\n\nfn main() {\n    let x = Value{};\n\n    let ref_to_val: &Value = &x;\n    borrow(ref_to_val);\n    // ref_to_val is no longer used.\n    eat(x);\n}\n```\n\nOr:\n\n```\n#[derive(Clone, Copy)] // implement Copy trait\nstruct Value {}\n\nfn borrow(val: &Value) {}\n\nfn eat(val: Value) {}\n\nfn main() {\n    let x = Value{};\n    let ref_to_val: &Value = &x;\n    eat(x); // it will be copied here.\n    borrow(ref_to_val);\n}\n```\n\nFor more information on Rust's ownership system, take a look at the\n[References & Borrowing][references-and-borrowing] section of the Book.\n\n[references-and-borrowing]: https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html\n"
+          },
+          "message": "cannot move out of `a` because it is borrowed"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/custom_marker_two_lifetimes.rs",
+      "sha256": "211e11b4f8b10882c841405d956f5471fb4fd8eb8551929c219f31d7338b1d77",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": null,
+          "message": "implementing `Reborrow` requires that a single lifetime parameter is passed between source and target"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/custom_mut.rs",
+      "sha256": "3a19cecf372713dbb5440a3a39b417c5948b7408d870fa804ae721a65c67f79a",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "upstream/custom_mut_coerce_shared.rs",
+      "sha256": "fd1538e6e24aa889b4f78c4aa2951bcf46e4d6e9f3af4dcacd6d6171db2ccd1e",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "upstream/generic-reborrow-expr-use-visitor-closure.rs",
+      "sha256": "45d016e2da42cddc55726cd09a0cc952c55653d6a5c9eec166bd360c24f926d5",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "upstream/generic-reborrow-expr-use-visitor.rs",
+      "sha256": "205dab997e81111b1d9c7c48580af97e87cebe3da4a7c2e7d27e4c15e66c0f2d",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "upstream/generic-reborrow-rvalue-contract.rs",
+      "sha256": "1787cb16ebcad23321eff801da3855559d785b05282bf21795c34f9ec3bcdef8",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "upstream/option_mut.rs",
+      "sha256": "e8f1b6821f1066aaf79b31ef813e8d3f707fdde070d2df6839ae86b6270150c4",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0382",
+            "explanation": "A variable was used after its contents have been moved elsewhere.\n\nErroneous code example:\n\n```compile_fail,E0382\nstruct MyStruct { s: u32 }\n\nfn main() {\n    let mut x = MyStruct{ s: 5u32 };\n    let y = x;\n    x.s = 6;\n    println!(\"{}\", x.s);\n}\n```\n\nSince `MyStruct` is a type that is not marked `Copy`, the data gets moved out\nof `x` when we set `y`. This is fundamental to Rust's ownership system: outside\nof workarounds like `Rc`, a value cannot be owned by more than one variable.\n\nSometimes we don't need to move the value. Using a reference, we can let another\nfunction borrow the value without changing its ownership. In the example below,\nwe don't actually have to move our string to `calculate_length`, we can give it\na reference to it with `&` instead.\n\n```\nfn main() {\n    let s1 = String::from(\"hello\");\n\n    let len = calculate_length(&s1);\n\n    println!(\"The length of '{}' is {}.\", s1, len);\n}\n\nfn calculate_length(s: &String) -> usize {\n    s.len()\n}\n```\n\nA mutable reference can be created with `&mut`.\n\nSometimes we don't want a reference, but a duplicate. All types marked `Clone`\ncan be duplicated by calling `.clone()`. Subsequent changes to a clone do not\naffect the original variable.\n\nMost types in the standard library are marked `Clone`. The example below\ndemonstrates using `clone()` on a string. `s1` is first set to \"many\", and then\ncopied to `s2`. Then the first character of `s1` is removed, without affecting\n`s2`. \"any many\" is printed to the console.\n\n```\nfn main() {\n    let mut s1 = String::from(\"many\");\n    let s2 = s1.clone();\n    s1.remove(0);\n    println!(\"{} {}\", s1, s2);\n}\n```\n\nIf we control the definition of a type, we can implement `Clone` on it ourselves\nwith `#[derive(Clone)]`.\n\nSome types have no ownership semantics at all and are trivial to duplicate. An\nexample is `i32` and the other number types. We don't have to call `.clone()` to\nclone them, because they are marked `Copy` in addition to `Clone`. Implicit\ncloning is more convenient in this case. We can mark our own types `Copy` if\nall their members also are marked `Copy`.\n\nIn the example below, we implement a `Point` type. Because it only stores two\nintegers, we opt-out of ownership semantics with `Copy`. Then we can\n`let p2 = p1` without `p1` being moved.\n\n```\n#[derive(Copy, Clone)]\nstruct Point { x: i32, y: i32 }\n\nfn main() {\n    let mut p1 = Point{ x: -1, y: 2 };\n    let p2 = p1;\n    p1.x = 1;\n    println!(\"p1: {}, {}\", p1.x, p1.y);\n    println!(\"p2: {}, {}\", p2.x, p2.y);\n}\n```\n\nAlternatively, if we don't control the struct's definition, or mutable shared\nownership is truly required, we can use `Rc` and `RefCell`:\n\n```\nuse std::cell::RefCell;\nuse std::rc::Rc;\n\nstruct MyStruct { s: u32 }\n\nfn main() {\n    let mut x = Rc::new(RefCell::new(MyStruct{ s: 5u32 }));\n    let y = x.clone();\n    x.borrow_mut().s = 6;\n    println!(\"{}\", x.borrow().s);\n}\n```\n\nWith this approach, x and y share ownership of the data via the `Rc` (reference\ncount type). `RefCell` essentially performs runtime borrow checking: ensuring\nthat at most one writer or multiple readers can access the data at any one time.\n\nIf you wish to learn more about ownership in Rust, start with the\n[Understanding Ownership][understanding-ownership] chapter in the Book.\n\n[understanding-ownership]: https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html\n"
+          },
+          "message": "use of moved value: `a`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/option_mut_coerce_shared.rs",
+      "sha256": "71dd1c5df11381b83ab57ef2fd448cb17fbefa96c44429f398df48892092dc13",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0308",
+            "explanation": "Expected type did not match the received type.\n\nErroneous code examples:\n\n```compile_fail,E0308\nfn plus_one(x: i32) -> i32 {\n    x + 1\n}\n\nplus_one(\"Not a number\");\n//       ^^^^^^^^^^^^^^ expected `i32`, found `&str`\n\nif \"Not a bool\" {\n// ^^^^^^^^^^^^ expected `bool`, found `&str`\n}\n\nlet x: f32 = \"Not a float\";\n//     ---   ^^^^^^^^^^^^^ expected `f32`, found `&str`\n//     |\n//     expected due to this\n```\n\nThis error occurs when an expression was used in a place where the compiler\nexpected an expression of a different type. It can occur in several cases, the\nmost common being when calling a function and passing an argument which has a\ndifferent type than the matching type in the function declaration.\n"
+          },
+          "message": "mismatched types"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/pin_mut.rs",
+      "sha256": "b397a7345da4d4185bc10ba09ce821778047a30361b8b533c758dcb201490f30",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0382",
+            "explanation": "A variable was used after its contents have been moved elsewhere.\n\nErroneous code example:\n\n```compile_fail,E0382\nstruct MyStruct { s: u32 }\n\nfn main() {\n    let mut x = MyStruct{ s: 5u32 };\n    let y = x;\n    x.s = 6;\n    println!(\"{}\", x.s);\n}\n```\n\nSince `MyStruct` is a type that is not marked `Copy`, the data gets moved out\nof `x` when we set `y`. This is fundamental to Rust's ownership system: outside\nof workarounds like `Rc`, a value cannot be owned by more than one variable.\n\nSometimes we don't need to move the value. Using a reference, we can let another\nfunction borrow the value without changing its ownership. In the example below,\nwe don't actually have to move our string to `calculate_length`, we can give it\na reference to it with `&` instead.\n\n```\nfn main() {\n    let s1 = String::from(\"hello\");\n\n    let len = calculate_length(&s1);\n\n    println!(\"The length of '{}' is {}.\", s1, len);\n}\n\nfn calculate_length(s: &String) -> usize {\n    s.len()\n}\n```\n\nA mutable reference can be created with `&mut`.\n\nSometimes we don't want a reference, but a duplicate. All types marked `Clone`\ncan be duplicated by calling `.clone()`. Subsequent changes to a clone do not\naffect the original variable.\n\nMost types in the standard library are marked `Clone`. The example below\ndemonstrates using `clone()` on a string. `s1` is first set to \"many\", and then\ncopied to `s2`. Then the first character of `s1` is removed, without affecting\n`s2`. \"any many\" is printed to the console.\n\n```\nfn main() {\n    let mut s1 = String::from(\"many\");\n    let s2 = s1.clone();\n    s1.remove(0);\n    println!(\"{} {}\", s1, s2);\n}\n```\n\nIf we control the definition of a type, we can implement `Clone` on it ourselves\nwith `#[derive(Clone)]`.\n\nSome types have no ownership semantics at all and are trivial to duplicate. An\nexample is `i32` and the other number types. We don't have to call `.clone()` to\nclone them, because they are marked `Copy` in addition to `Clone`. Implicit\ncloning is more convenient in this case. We can mark our own types `Copy` if\nall their members also are marked `Copy`.\n\nIn the example below, we implement a `Point` type. Because it only stores two\nintegers, we opt-out of ownership semantics with `Copy`. Then we can\n`let p2 = p1` without `p1` being moved.\n\n```\n#[derive(Copy, Clone)]\nstruct Point { x: i32, y: i32 }\n\nfn main() {\n    let mut p1 = Point{ x: -1, y: 2 };\n    let p2 = p1;\n    p1.x = 1;\n    println!(\"p1: {}, {}\", p1.x, p1.y);\n    println!(\"p2: {}, {}\", p2.x, p2.y);\n}\n```\n\nAlternatively, if we don't control the struct's definition, or mutable shared\nownership is truly required, we can use `Rc` and `RefCell`:\n\n```\nuse std::cell::RefCell;\nuse std::rc::Rc;\n\nstruct MyStruct { s: u32 }\n\nfn main() {\n    let mut x = Rc::new(RefCell::new(MyStruct{ s: 5u32 }));\n    let y = x.clone();\n    x.borrow_mut().s = 6;\n    println!(\"{}\", x.borrow().s);\n}\n```\n\nWith this approach, x and y share ownership of the data via the `Rc` (reference\ncount type). `RefCell` essentially performs runtime borrow checking: ensuring\nthat at most one writer or multiple readers can access the data at any one time.\n\nIf you wish to learn more about ownership in Rust, start with the\n[Understanding Ownership][understanding-ownership] chapter in the Book.\n\n[understanding-ownership]: https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html\n"
+          },
+          "message": "use of moved value: `a`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/pin_mut_coerce_shared.rs",
+      "sha256": "eb701e2e79c1c48a0cf38344ec7ffbcb77610ad7f4ebc8694d2543c494cf90e8",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0308",
+            "explanation": "Expected type did not match the received type.\n\nErroneous code examples:\n\n```compile_fail,E0308\nfn plus_one(x: i32) -> i32 {\n    x + 1\n}\n\nplus_one(\"Not a number\");\n//       ^^^^^^^^^^^^^^ expected `i32`, found `&str`\n\nif \"Not a bool\" {\n// ^^^^^^^^^^^^ expected `bool`, found `&str`\n}\n\nlet x: f32 = \"Not a float\";\n//     ---   ^^^^^^^^^^^^^ expected `f32`, found `&str`\n//     |\n//     expected due to this\n```\n\nThis error occurs when an expression was used in a place where the compiler\nexpected an expression of a different type. It can occur in several cases, the\nmost common being when calling a function and passing an argument which has a\ndifferent type than the matching type in the function declaration.\n"
+          },
+          "message": "mismatched types"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/reborrow-mutable-reference.rs",
+      "sha256": "f6ecb4d3b110188c6df537d02c1ce11a5949bea6c3d73ed08388532a4e7e7b2a",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "upstream/reborrow-promotion-rejected.rs",
+      "sha256": "df4c0b52645d0b8dedeb70a97df8aa333763738834db792f5a43377ea2c84b4c",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0716",
+            "explanation": "A temporary value is being dropped while a borrow is still in active use.\n\nErroneous code example:\n\n```compile_fail,E0716\nfn foo() -> i32 { 22 }\nfn bar(x: &i32) -> &i32 { x }\nlet p = bar(&foo());\n         // ------ creates a temporary\nlet q = *p;\n```\n\nHere, the expression `&foo()` is borrowing the expression `foo()`. As `foo()` is\na call to a function, and not the name of a variable, this creates a\n**temporary** -- that temporary stores the return value from `foo()` so that it\ncan be borrowed. You could imagine that `let p = bar(&foo());` is equivalent to\nthe following, which uses an explicit temporary variable.\n\nErroneous code example:\n\n```compile_fail,E0597\n# fn foo() -> i32 { 22 }\n# fn bar(x: &i32) -> &i32 { x }\nlet p = {\n  let tmp = foo(); // the temporary\n  bar(&tmp) // error: `tmp` does not live long enough\n}; // <-- tmp is freed as we exit this block\nlet q = p;\n```\n\nWhenever a temporary is created, it is automatically dropped (freed) according\nto fixed rules. Ordinarily, the temporary is dropped at the end of the enclosing\nstatement -- in this case, after the `let p`. This is illustrated in the example\nabove by showing that `tmp` would be freed as we exit the block.\n\nTo fix this problem, you need to create a local variable to store the value in\nrather than relying on a temporary. For example, you might change the original\nprogram to the following:\n\n```\nfn foo() -> i32 { 22 }\nfn bar(x: &i32) -> &i32 { x }\nlet value = foo(); // dropped at the end of the enclosing block\nlet p = bar(&value);\nlet q = *p;\n```\n\nBy introducing the explicit `let value`, we allocate storage that will last\nuntil the end of the enclosing block (when `value` goes out of scope). When we\nborrow `&value`, we are borrowing a local variable that already exists, and\nhence no temporary is created.\n\nTemporaries are not always dropped at the end of the enclosing statement. In\nsimple cases where the `&` expression is immediately stored into a variable, the\ncompiler will automatically extend the lifetime of the temporary until the end\nof the enclosing block. Therefore, an alternative way to fix the original\nprogram is to write `let tmp = &foo()` and not `let tmp = foo()`:\n\n```\nfn foo() -> i32 { 22 }\nfn bar(x: &i32) -> &i32 { x }\nlet value = &foo();\nlet p = bar(value);\nlet q = *p;\n```\n\nHere, we are still borrowing `foo()`, but as the borrow is assigned directly\ninto a variable, the temporary will not be dropped until the end of the\nenclosing block. Similar rules apply when temporaries are stored into aggregate\nstructures like a tuple or struct:\n\n```\n// Here, two temporaries are created, but\n// as they are stored directly into `value`,\n// they are not dropped until the end of the\n// enclosing block.\nfn foo() -> i32 { 22 }\nlet value = (&foo(), &foo());\n```\n"
+          },
+          "message": "temporary value dropped while borrowed"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/reborrow-source-unsafety.rs",
+      "sha256": "cf66a4b891e14151d62212f3c533046b988fc3369a3a3d2a36587695dcef79d7",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0133",
+            "explanation": "Unsafe code was used outside of an unsafe block.\n\nErroneous code example:\n\n```compile_fail,E0133\nunsafe fn f() { return; } // This is the unsafe code\n\nfn main() {\n    f(); // error: call to unsafe function requires unsafe function or block\n}\n```\n\nUsing unsafe functionality is potentially dangerous and disallowed by safety\nchecks. Examples:\n\n* Dereferencing raw pointers\n* Calling functions via FFI\n* Calling functions marked unsafe\n\nThese safety checks can be relaxed for a section of the code by wrapping the\nunsafe instructions with an `unsafe` block. For instance:\n\n```\nunsafe fn f() { return; }\n\nfn main() {\n    unsafe { f(); } // ok!\n}\n```\n\nSee the [unsafe section][unsafe-section] of the Book for more details.\n\n#### Unsafe code in functions\n\nUnsafe code is currently accepted in unsafe functions, but that is being phased\nout in favor of requiring unsafe blocks here too.\n\n```\nunsafe fn f() { return; }\n\nunsafe fn g() {\n    f(); // Is accepted, but no longer recommended\n    unsafe { f(); } // Recommended way to write this\n}\n```\n\nLinting against this is controlled via the `unsafe_op_in_unsafe_fn` lint, which\nis `warn` by default in the 2024 edition and `allow` by default in earlier\neditions.\n\n[unsafe-section]: https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html\n"
+          },
+          "message": "call to unsafe function `std::ptr::read` is unsafe and requires unsafe function or block"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    },
+    {
+      "file": "upstream/reborrow_let_match.rs",
+      "sha256": "06b5b6959e60e2d06cc47f51dcc405660ee9e0b48c86b44cf346085bce02a265",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 0,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 0
+    },
+    {
+      "file": "upstream/reborrow_multi_field_validation.rs",
+      "sha256": "395e3c1a46601381a2e6b5c50e45e437dc6658041d250c919a8ec497b9069970",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "prediction": "predictions-v2.json",
+      "observed_code": 1,
+      "reference_receipt": "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json",
+      "observed_errors": [
+        {
+          "code": {
+            "code": "E0277",
+            "explanation": "You tried to use a type which doesn't implement some trait in a place which\nexpected that trait.\n\nErroneous code example:\n\n```compile_fail,E0277\n// here we declare the Foo trait with a bar method\ntrait Foo {\n    fn bar(&self);\n}\n\n// we now declare a function which takes an object implementing the Foo trait\nfn some_func<T: Foo>(foo: T) {\n    foo.bar();\n}\n\nfn main() {\n    // we now call the method with the i32 type, which doesn't implement\n    // the Foo trait\n    some_func(5i32); // error: the trait bound `i32 : Foo` is not satisfied\n}\n```\n\nIn order to fix this error, verify that the type you're using does implement\nthe trait. Example:\n\n```\ntrait Foo {\n    fn bar(&self);\n}\n\n// we implement the trait on the i32 type\nimpl Foo for i32 {\n    fn bar(&self) {}\n}\n\nfn some_func<T: Foo>(foo: T) {\n    foo.bar(); // we can now use this method since i32 implements the\n               // Foo trait\n}\n\nfn main() {\n    some_func(5i32); // ok!\n}\n```\n\nOr in a generic context, an erroneous code example would look like:\n\n```compile_fail,E0277\nfn some_func<T>(foo: T) {\n    println!(\"{:?}\", foo); // error: the trait `core::fmt::Debug` is not\n                           //        implemented for the type `T`\n}\n\nfn main() {\n    // We now call the method with the i32 type,\n    // which *does* implement the Debug trait.\n    some_func(5i32);\n}\n```\n\nNote that the error here is in the definition of the generic function. Although\nwe only call it with a parameter that does implement `Debug`, the compiler\nstill rejects the function. It must work with all possible input types. In\norder to make this example compile, we need to restrict the generic type we're\naccepting:\n\n```\nuse std::fmt;\n\n// Restrict the input type to types that implement Debug.\nfn some_func<T: fmt::Debug>(foo: T) {\n    println!(\"{:?}\", foo);\n}\n\nfn main() {\n    // Calling the method is still fine, as i32 implements Debug.\n    some_func(5i32);\n\n    // This would fail to compile now:\n    // struct WithoutDebug;\n    // some_func(WithoutDebug);\n}\n```\n\nRust only looks at the signature of the called function, as such it must\nalready specify all requirements that will be used for every type parameter.\n"
+          },
+          "message": "the trait bound `String: Copy` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ],
+      "qualification": "qualified-reference-outcome",
+      "corrected_expected_code": 1
+    }
+  ],
+  "history": [
+    {
+      "file": "multi.rs",
+      "prediction": 0,
+      "observed": 1,
+      "receipt": "obj/parallel/source-transport/reborrow-reference/reference-followup-v1/receipt.json",
+      "errors": [
+        "use of moved value: `value`",
+        "aborting due to 1 previous error"
+      ]
+    },
+    {
+      "file": "alias-direct.rs",
+      "prediction": 0,
+      "observed": 1,
+      "receipt": "obj/parallel/source-transport/reborrow-reference/reference-alias-v1/receipt.json",
+      "errors": [
+        "the trait bound `&'a mut u32: CoerceShared<&'a u32>` is not satisfied",
+        "aborting due to 1 previous error"
+      ]
+    }
+  ]
+}

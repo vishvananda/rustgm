@@ -1,0 +1,32 @@
+{
+  "cases": [
+    {
+      "file": "multi-concrete.rs",
+      "sha256": "799b049a76ff908c221f2f153ca633ea5d1ab1afa3a1424c296ec0cb37d180e3",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-multiple-fields/contextual target positive",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "multi-explicit.rs",
+      "sha256": "a82a1553218323d9e3c2c02fd43aa0500c14cd496560da15214d5986909893f7",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-multiple-fields/contextual target positive",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "multi-impl.rs",
+      "sha256": "8cef3deff8c893203add6f90c7c08daf5db706dd03e09207d348598769758081",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-multiple-fields/contextual target positive",
+      "crate_type": "lib",
+      "execute": false
+    }
+  ],
+  "reason": "Original generic take<T> had unknown target at first input and moved; concrete/explicit contextual targets and unused impl are separate frozen positives, preserving original negative/source."
+}

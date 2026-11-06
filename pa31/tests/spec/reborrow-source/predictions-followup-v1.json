@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": [
+    {
+      "file": "copy-field-static.rs",
+      "sha256": "1e098cb3193615b9e94c617188bd4dd784a00b4dbb521779f570af532fc8265c",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-followup; independent freeze",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "copy-field-matching.rs",
+      "sha256": "db42b581b2c2c1cb41589b6492f19bd016ab14d4062fa71b3104608d83f8038c",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-followup; independent freeze",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "copy-field-static-use.rs",
+      "sha256": "552ba1bde1760f8e2db871f60973087a19ed103b2ed2b5e0fd1d412a6042c0fb",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "authored-followup; independent freeze",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "const-owner.rs",
+      "sha256": "d0e6f190be5cb973733f63f186b68212a8630f8b9c4f7b84bd72347471a401d2",
+      "expected_code": 1,
+      "expected_error_text": [
+        "not `const`"
+      ],
+      "profile": "authored-followup; independent freeze",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "const-syntax.rs",
+      "sha256": "8952b499e029dff8667c0da92797d4218a6dc241267a2e1188320f625afad46e",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-followup; independent freeze",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "multi.rs",
+      "sha256": "084e95075299d4c2a700ce9646093652ca435f43f6c1def06238b90e86fc0c77",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-followup; independent freeze",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "std-native.rs",
+      "sha256": "8e551edc2880f1b9c1063ad27d7aadc5d6d089007d68cd9bc1424d968c8105a6",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-std; genuine Rust runtime staticlib",
+      "crate_type": "lib",
+      "execute": false,
+      "native": {
+        "observer": "observer.c",
+        "stdout": "reborrow 23 23 47 47 0 99 31\n",
+        "observer_sha256": "71b559b2b057f8d1c0179334a0ccd7d1c3b41567886da08c74b7637a778171c5",
+        "staticlib": true
+      }
+    }
+  ],
+  "reason": "Exact copy-field lifetime pair requested by Root/Async; corrected actual const-owner syntax separated from obsolete parse input; positive multi-field Reborrow; std native links genuine runtime after retained null-panic dependency failure. All new inputs frozen before Rust observations."
+}

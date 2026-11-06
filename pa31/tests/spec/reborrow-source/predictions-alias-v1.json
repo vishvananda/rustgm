@@ -1,0 +1,22 @@
+{
+  "cases": [
+    {
+      "file": "alias-direct.rs",
+      "sha256": "5c469a1dc1bbd0536e753aca6e9f29cea028a208bfd1b2d0bdcadd0b59f26a8f",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "single changed outer field-type spelling opponent; prediction may be disproved",
+      "crate_type": "lib",
+      "execute": false
+    }
+  ],
+  "origin": {
+    "file": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-mut-ref-field-validation.rs",
+    "sha256": "b08d5c143515b47925c51576ac96664a82989a7fc13cbac88755e5f3275013ec",
+    "changes": [
+      "AliasMut.value replaces AliasMutField with literal outer mutable reference to SAME associated projection",
+      "AliasRef.value replaces AliasRefField with literal shared reference to SAME u32"
+    ],
+    "preserved": "All alias definitions, other fields, bodies, comments and original upstream source remain intact."
+  }
+}

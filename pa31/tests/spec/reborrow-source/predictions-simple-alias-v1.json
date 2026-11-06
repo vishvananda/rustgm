@@ -1,0 +1,14 @@
+{
+  "cases": [
+    {
+      "file": "alias-simple.rs",
+      "sha256": "b05cb380a8d5b7bd25e69a9a817683f16bc3967d6f095f9ad0f5aeb0baa76a83",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "simple transparent alias without associated projection",
+      "crate_type": "lib",
+      "execute": false
+    }
+  ],
+  "reason": "Single precise ordinary alias control requested by coherence worker; no AST alias flag authorized by prior projection failure. Frozen before independent Rust, no candidate."
+}

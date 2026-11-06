@@ -1,0 +1,803 @@
+{
+  "schema": 1,
+  "rust": "1.98.0 88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "cap_lints": "allow",
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": [
+    {
+      "file": "upstream/coerce-shared-associated-type-field.rs",
+      "sha256": "900c380d1464b6b892877b00ba74d268bdf1fef2aec4755b79c91e7ec548bfad",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/coerce-shared-decl-macro-hygiene.rs",
+      "sha256": "f821926514eb78deaff90d0cb8dc873002bd23cc55a2d8e49735dc3bc4a1bf77",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/coerce-shared-extra-marker.rs",
+      "sha256": "e2d13bc7361d567c47dac24abb686b7051efa1dab1c62435fe4cc2ba5a7d732d",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true
+    },
+    {
+      "file": "upstream/coerce-shared-field-lifetime-swap.rs",
+      "sha256": "87d1acae940cea4bc43eff8a3da14fa8f859bb86fd833ff6ba7916767d4c75ce",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/coerce-shared-field-relations.rs",
+      "sha256": "3b1226d0d0db2902354299fbb4fc09668fe99c6664494e885bc0a09c07151a1c",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/coerce-shared-foreign-private-field.rs",
+      "sha256": "89c44c56cb38ac68786f406afbf5d0c33a69bed3f7422b48cd7529d66852f363",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false,
+      "auxiliary": [
+        "upstream/auxiliary/reborrow_foreign_private.rs"
+      ]
+    },
+    {
+      "file": "upstream/coerce-shared-foreign-private-tuple-field.rs",
+      "sha256": "daa3dc7f0c774be20eaf329cd9e2a4a6eebfa5ccfc2ad39328da97e43cae975e",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/coerce-shared-generics.rs",
+      "sha256": "337d31e542900a1ab0b909855105e0fe875ffc88c2c97c2815e7210d7024f1b2",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/coerce-shared-lifetime-mismatch.rs",
+      "sha256": "f7b37ed00eb56364748ee92d940a8efbdf2c1d852fad03c053eaf0d2ee85aa76",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/coerce-shared-missing-target-field.rs",
+      "sha256": "173a3c39dd044068b6bdc036292e67f27dc438a50b12b0e42e2f5d384dd4861f",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/coerce-shared-mut-ref-field-validation.rs",
+      "sha256": "b08d5c143515b47925c51576ac96664a82989a7fc13cbac88755e5f3275013ec",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/coerce-shared-omitted-reborrow-field-after-dead.rs",
+      "sha256": "0cab3fd6c201fdceaf39d61b2eed9688df39d0d62864f67e4f4a7b020cdb83f6",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/coerce-shared-omitted-reborrow-field-locked.rs",
+      "sha256": "8c4e8acd5edee19f55d0736a5991052911fb31d00227dbd532bd7a3f6573583d",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/coerce-shared-omitted-reborrow-field.rs",
+      "sha256": "dbe34d0ac0395117972bac9ba44c1207ac715bab9bf661bdf0ca6faed2354915",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/coerce-shared-reordered-field.rs",
+      "sha256": "ea4e5e5bbcc56b959b411fdaef285f075acd17c510c4cf228c7aa40f660a203d",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/coerce-shared-wrong-generic.rs",
+      "sha256": "3ea6350ccd4717e58267abbe4631c6f47a121e8879cb7547880142c20e9c8726",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/coerce_shared_consteval.rs",
+      "sha256": "200e0114fd5422c5d7a2c8a97f1b8028bf422caee13890e475301c45eca3c404",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true
+    },
+    {
+      "file": "upstream/custom_marker.rs",
+      "sha256": "5bd91d4e852b268b8d72ab850ebe2f03362c07d7308f3ba004a0606bd8b0678f",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true
+    },
+    {
+      "file": "upstream/custom_marker_assign_deref.rs",
+      "sha256": "09b610077a5644a1df6f5405a1e9d2f8016e0a5d91a7e19db5957905130a034f",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true
+    },
+    {
+      "file": "upstream/custom_marker_coerce_shared.rs",
+      "sha256": "9b4f1cffd306c45b61ba6dc1250589943564eed58948970236ab9c5f9235e557",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true
+    },
+    {
+      "file": "upstream/custom_marker_coerce_shared_copy.rs",
+      "sha256": "508cd8e89556462415919b143f532ae6df8be58ddf551fb793f1bc5dd322d21c",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true
+    },
+    {
+      "file": "upstream/custom_marker_coerce_shared_move.rs",
+      "sha256": "81fdec51a389d076d31585d26ecd3379be80e190933d58223c304dde617ac769",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/custom_marker_deref.rs",
+      "sha256": "8ab1a2aae5fbb577636696c3a44a1ea08ccff476c73967edb4034da2189603ec",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true
+    },
+    {
+      "file": "upstream/custom_marker_mut_a_b.rs",
+      "sha256": "cdd232e859bdfd2aebe2494f6302160acd7becdd5259e148203b4fe0d1d3ab71",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/custom_marker_mut_self.rs",
+      "sha256": "92786a21af734ac601749165a8ed19538bd9b89af7ca7d922b74b2bf13efa4e4",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/custom_marker_mut_self_a.rs",
+      "sha256": "6ca9ba4f9a04bafcd8581e0f6906cf25e28e42b6f53667cb4af1634be3215cf8",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/custom_marker_mut_self_b.rs",
+      "sha256": "88b86a78bc49bfec8f5f8f0dc95bf07ef92fdbe8821ac18635bea59eccb0d742",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/custom_marker_two_lifetimes.rs",
+      "sha256": "211e11b4f8b10882c841405d956f5471fb4fd8eb8551929c219f31d7338b1d77",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/custom_mut.rs",
+      "sha256": "3a19cecf372713dbb5440a3a39b417c5948b7408d870fa804ae721a65c67f79a",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true
+    },
+    {
+      "file": "upstream/custom_mut_coerce_shared.rs",
+      "sha256": "fd1538e6e24aa889b4f78c4aa2951bcf46e4d6e9f3af4dcacd6d6171db2ccd1e",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true
+    },
+    {
+      "file": "upstream/generic-reborrow-expr-use-visitor-closure.rs",
+      "sha256": "45d016e2da42cddc55726cd09a0cc952c55653d6a5c9eec166bd360c24f926d5",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/generic-reborrow-expr-use-visitor.rs",
+      "sha256": "205dab997e81111b1d9c7c48580af97e87cebe3da4a7c2e7d27e4c15e66c0f2d",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/generic-reborrow-rvalue-contract.rs",
+      "sha256": "1787cb16ebcad23321eff801da3855559d785b05282bf21795c34f9ec3bcdef8",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/option_mut.rs",
+      "sha256": "e8f1b6821f1066aaf79b31ef813e8d3f707fdde070d2df6839ae86b6270150c4",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/option_mut_coerce_shared.rs",
+      "sha256": "71dd1c5df11381b83ab57ef2fd448cb17fbefa96c44429f398df48892092dc13",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/pin_mut.rs",
+      "sha256": "b397a7345da4d4185bc10ba09ce821778047a30361b8b533c758dcb201490f30",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/pin_mut_coerce_shared.rs",
+      "sha256": "eb701e2e79c1c48a0cf38344ec7ffbcb77610ad7f4ebc8694d2543c494cf90e8",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/reborrow-mutable-reference.rs",
+      "sha256": "f6ecb4d3b110188c6df537d02c1ce11a5949bea6c3d73ed08388532a4e7e7b2a",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": true
+    },
+    {
+      "file": "upstream/reborrow-promotion-rejected.rs",
+      "sha256": "df4c0b52645d0b8dedeb70a97df8aa333763738834db792f5a43377ea2c84b4c",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/reborrow-source-unsafety.rs",
+      "sha256": "cf66a4b891e14151d62212f3c533046b988fc3369a3a3d2a36587695dcef79d7",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/reborrow_let_match.rs",
+      "sha256": "06b5b6959e60e2d06cc47f51dcc405660ee9e0b48c86b44cf346085bce02a265",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "upstream/reborrow_multi_field_validation.rs",
+      "sha256": "395e3c1a46601381a2e6b5c50e45e437dc6658041d250c919a8ec497b9069970",
+      "expected_code": 1,
+      "expected_error_text": [],
+      "profile": "unchanged-upstream-ui",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "known-bugs/coerce-shared-alias-projection.rs",
+      "sha256": "c2661f023bf70c193af0afc23959b3f082bef4570f34ae235ef78f725b907659",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "known-bugs/coerce-shared-different-layout.rs",
+      "sha256": "4eaae464485bc0fa9e095e6b9441033812427c45d0edc13132f20ca9b0301423",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "known-bugs/coerce-shared-marker-no-target-lifetime.rs",
+      "sha256": "ca6f8efcc831623fdedcd72c2767aad098149878557b99acbfc323b889b02de6",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "known-bugs/coerce-shared-multi-field.rs",
+      "sha256": "931db757d0b35dfc32e88c354165aafd8094abadd991bce595fb485a9f89c98c",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "known-bugs/coerce-shared-nested.rs",
+      "sha256": "abbbeb7d901c9ba85bd7ee8464ba6610584bca57e9a7a6fffe69496dcba645c5",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "known-bugs/coerce-shared-tuple-phantom-position.rs",
+      "sha256": "295e6195b26791c947bf2d136074643e6ed597984fc301f8a580f77934c96298",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "known-bugs/corrected-field-mismatch-coerce-shared-issue-156315.rs",
+      "sha256": "bed9158f3bff4bbf7933f7e5a076c4da8af166c9cf475be4ef3cf829f8f0915b",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "known-bugs/malformed-marker-coerce-shared-issue-156309.rs",
+      "sha256": "aed062a0764983ea37f5ccf0421fe952cc3aec70cae86eb19d66dc515831bf17",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "known-bugs/missing-generic-args-coerce-shared-issue-156315.rs",
+      "sha256": "3a2acb376e4fe533c0101caf56cd4ca9733a105d52367ee03bcff1bcfae179d6",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "unchanged-known-bug; observations unqualified",
+      "crate_type": "bin",
+      "execute": false
+    },
+    {
+      "file": "source.rs",
+      "sha256": "b1bfcec687a83bfa567acb2d33db86ae1cda47affe9b2e93b9ce7810cfbac619",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "actual-declaration-cutout",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "native.rs",
+      "sha256": "c6a24845f534c1f13975e55bd25498fc597b1fbaceb46c0320d57b90d567010d",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "actual-declaration-cutout",
+      "crate_type": "lib",
+      "execute": false,
+      "native": {
+        "observer": "observer.c",
+        "stdout": "reborrow 23 23 47 47 0 99 31\n",
+        "observer_sha256": "71b559b2b057f8d1c0179334a0ccd7d1c3b41567886da08c74b7637a778171c5"
+      }
+    },
+    {
+      "file": "std-native.rs",
+      "sha256": "8e551edc2880f1b9c1063ad27d7aadc5d6d089007d68cd9bc1424d968c8105a6",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false,
+      "native": {
+        "observer": "observer.c",
+        "stdout": "reborrow 23 23 47 47 0 99 31\n",
+        "observer_sha256": "71b559b2b057f8d1c0179334a0ccd7d1c3b41567886da08c74b7637a778171c5"
+      }
+    },
+    {
+      "file": "exclusive.rs",
+      "sha256": "c28ba70eef77b1ba64075235bd3d8b5e9beda1dc883bd8c8f8c9bf278c7ae374",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "shared.rs",
+      "sha256": "db49ad427246b413d60035d33dc49d3404cd50ec6f2be9def308df6496151da7",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "overlap.rs",
+      "sha256": "5004e841451323c9cc42a7acb3832e3e25ede6e79e153a72b80397d2a8f0a299",
+      "expected_code": 1,
+      "expected_error_text": [
+        "more than once"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "shared-write.rs",
+      "sha256": "d4effd025d7e3edfc232669e2c72f16457b359dca63ecf96691428ab653e3dbc",
+      "expected_code": 1,
+      "expected_error_text": [
+        "borrow"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "shared-move.rs",
+      "sha256": "6eb81ac16a72f2a7626bfc7b1cdcb2dc70d066c50a92a2f1cb47549e9a063abc",
+      "expected_code": 1,
+      "expected_error_text": [
+        "cannot move"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "escape.rs",
+      "sha256": "d83f3cd58f040d04a1d2915e0293a829224407b299e50da49dc6fb377c5ece14",
+      "expected_code": 1,
+      "expected_error_text": [
+        "does not live long enough"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "missing.rs",
+      "sha256": "a3f0825b6f13f089131a562f0e812438b7b40567a55cf72709c1b57294e65d5e",
+      "expected_code": 1,
+      "expected_error_text": [
+        "Reborrow"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "fake.rs",
+      "sha256": "fb6ae48f17933cceb81a6cf266b4b51cccf44069a2c8f6c1d7fc9fa69c0d53e3",
+      "expected_code": 1,
+      "expected_error_text": [
+        "moved value"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "enum.rs",
+      "sha256": "2067f8473887d35d1e74a4ddc9d40cc0f4b31e0deb6a5238869915c180a2c45a",
+      "expected_code": 1,
+      "expected_error_text": [
+        "struct"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "no-life.rs",
+      "sha256": "70a2654e2d04ab99f8e057af88f3f998525bd82b32f414c6b22e0c67914035f0",
+      "expected_code": 1,
+      "expected_error_text": [
+        "single lifetime"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "two-life.rs",
+      "sha256": "d683305602befe67f904ffe7bbb9e03cbfb6ebf7083684b3b5dc0ba11bd510b3",
+      "expected_code": 1,
+      "expected_error_text": [
+        "single lifetime"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "noncopy.rs",
+      "sha256": "3ade0064b702b4e8a33b1a17367b6685580211573b5b1696ada08544d326b4f0",
+      "expected_code": 1,
+      "expected_error_text": [
+        "Copy"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "target-copy.rs",
+      "sha256": "e59d235ffdba92c40737a41d938e1a0002bf4bb39d17d0c29e1efe3491147251",
+      "expected_code": 1,
+      "expected_error_text": [
+        "Copy"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "target-type.rs",
+      "sha256": "6ab7cb517f73c487fd7981b8cbd816e53bdff97d4cb6a5158df55f7c2fb2ea54",
+      "expected_code": 1,
+      "expected_error_text": [
+        "CoerceShared"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "unsafe-impl.rs",
+      "sha256": "42f9d6b4458c7c7660ffc0508f81272b3802c3b849e53c339c15da3ebd1c35a3",
+      "expected_code": 1,
+      "expected_error_text": [
+        "not unsafe"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "const-impl.rs",
+      "sha256": "30b9642bf46427600204ea52373ccf2ee4200410ffbbaa2a5d2e7ddac4e3dd1c",
+      "expected_code": 1,
+      "expected_error_text": [
+        "const"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "conflict.rs",
+      "sha256": "b0da6a075272633efbfe9ad60d54df3d818dc62917d23eca6f9ca32d504ba417",
+      "expected_code": 1,
+      "expected_error_text": [
+        "conflicting implementations"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "unsafe-source.rs",
+      "sha256": "a49b939343bbf8dd4155a45479bd9282e283a618801932aa0a5f1bc25761d837",
+      "expected_code": 1,
+      "expected_error_text": [
+        "unsafe"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "feature.rs",
+      "sha256": "ba8aeab42aadc46832ab3dbbfd7e09756874b39ecb5e245911aaa05140cd493e",
+      "expected_code": 1,
+      "expected_error_text": [
+        "unstable"
+      ],
+      "profile": "authored-std",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "header-unsafe.rs",
+      "sha256": "5bd1d53671b09732dfaabd32e6291a28e8d7b0fa99918dd44d453b42b0953fe3",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "altered-unused-header",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "header-extra.rs",
+      "sha256": "ec2a9db56659d05502e48097c1f9bfcb1dd32c5d9943fa1ea364c672d9de8dfa",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "altered-unused-header",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "header-arity.rs",
+      "sha256": "a088a6b739c39d3e55de9abbbf6c29c08b96e30c77511a379e4672691b8095d3",
+      "expected_code": 1,
+      "expected_error_text": [
+        "generic"
+      ],
+      "profile": "altered-unused-header",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "peel.rs",
+      "sha256": "06a63e6c2adf59e515ef456bd7888ad7e8f5255fe10fc0954575bddf265cddac",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-unused-impl-law",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "inner-static.rs",
+      "sha256": "459169db186b5244754883087561e3bdc29e4030e4cebd05c719ef2a26c378d1",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-unused-impl-law",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "copy-static.rs",
+      "sha256": "48500f972a563b2c0f4d07694988ed492789b23cdf8f1faf98412c852f40d617",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "authored-unused-impl-law",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "peel-use.rs",
+      "sha256": "82aa0db34d45231a9c94bda9dfeeb383635bcfd863c2897e4533cbd9a6693fce",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "authored-demanded-impl-law; NOT executed",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "inner-static-use.rs",
+      "sha256": "b3da07a8c36af7d3dcc74513c5a9b8d19233213c9e4142d4207e2c8384bff2b9",
+      "expected_code": null,
+      "expected_error_text": [],
+      "profile": "authored-demanded-impl-law; NOT executed",
+      "crate_type": "lib",
+      "execute": false
+    },
+    {
+      "file": "copy-static-use.rs",
+      "sha256": "d770cf62f7ca4d88d902b19fbc536178d22eaa9c1b5fc62ac924b4f3d4ff03d3",
+      "expected_code": 1,
+      "expected_error_text": [
+        "does not live long enough"
+      ],
+      "profile": "authored-demanded-impl-law; NOT executed",
+      "crate_type": "lib",
+      "execute": false
+    }
+  ],
+  "pre_observation_review": "Trimmed unrelated read return-type fault from target-type opponent. Added three impl-law pairs from pinned peel_refs and actual single-lifetime rules; uncertain demanded cases are observations, never semantic negatives or native executions. No reference/candidate observed before this freeze."
+}

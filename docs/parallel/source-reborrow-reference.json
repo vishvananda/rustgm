@@ -1,0 +1,616 @@
+{
+  "schema": 1,
+  "base": "45c1b6d2058425606cce7ea1425175668aee919c",
+  "kind": "independent reference research only; no RustGM candidate or frontend changes",
+  "files": {
+    "pa31/tests/spec/reborrow-source/README.md": "24f3fdd35a69317557f4d66552948530a2b5c48a4102919b8ce9c28c555c92e8",
+    "pa31/tests/spec/reborrow-source/alias-direct.rs": "5c469a1dc1bbd0536e753aca6e9f29cea028a208bfd1b2d0bdcadd0b59f26a8f",
+    "pa31/tests/spec/reborrow-source/alias-simple.rs": "b05cb380a8d5b7bd25e69a9a817683f16bc3967d6f095f9ad0f5aeb0baa76a83",
+    "pa31/tests/spec/reborrow-source/conflict.rs": "b0da6a075272633efbfe9ad60d54df3d818dc62917d23eca6f9ca32d504ba417",
+    "pa31/tests/spec/reborrow-source/const-impl.rs": "30b9642bf46427600204ea52373ccf2ee4200410ffbbaa2a5d2e7ddac4e3dd1c",
+    "pa31/tests/spec/reborrow-source/const-owner.rs": "d0e6f190be5cb973733f63f186b68212a8630f8b9c4f7b84bd72347471a401d2",
+    "pa31/tests/spec/reborrow-source/const-syntax.rs": "8952b499e029dff8667c0da92797d4218a6dc241267a2e1188320f625afad46e",
+    "pa31/tests/spec/reborrow-source/copy-field-matching.rs": "db42b581b2c2c1cb41589b6492f19bd016ab14d4062fa71b3104608d83f8038c",
+    "pa31/tests/spec/reborrow-source/copy-field-static-use.rs": "552ba1bde1760f8e2db871f60973087a19ed103b2ed2b5e0fd1d412a6042c0fb",
+    "pa31/tests/spec/reborrow-source/copy-field-static.rs": "1e098cb3193615b9e94c617188bd4dd784a00b4dbb521779f570af532fc8265c",
+    "pa31/tests/spec/reborrow-source/copy-static-use.rs": "d770cf62f7ca4d88d902b19fbc536178d22eaa9c1b5fc62ac924b4f3d4ff03d3",
+    "pa31/tests/spec/reborrow-source/copy-static.rs": "48500f972a563b2c0f4d07694988ed492789b23cdf8f1faf98412c852f40d617",
+    "pa31/tests/spec/reborrow-source/enum.rs": "2067f8473887d35d1e74a4ddc9d40cc0f4b31e0deb6a5238869915c180a2c45a",
+    "pa31/tests/spec/reborrow-source/escape.rs": "d83f3cd58f040d04a1d2915e0293a829224407b299e50da49dc6fb377c5ece14",
+    "pa31/tests/spec/reborrow-source/exclusive.rs": "c28ba70eef77b1ba64075235bd3d8b5e9beda1dc883bd8c8f8c9bf278c7ae374",
+    "pa31/tests/spec/reborrow-source/fake.rs": "fb6ae48f17933cceb81a6cf266b4b51cccf44069a2c8f6c1d7fc9fa69c0d53e3",
+    "pa31/tests/spec/reborrow-source/feature.rs": "ba8aeab42aadc46832ab3dbbfd7e09756874b39ecb5e245911aaa05140cd493e",
+    "pa31/tests/spec/reborrow-source/header-arity.rs": "a088a6b739c39d3e55de9abbbf6c29c08b96e30c77511a379e4672691b8095d3",
+    "pa31/tests/spec/reborrow-source/header-extra.rs": "ec2a9db56659d05502e48097c1f9bfcb1dd32c5d9943fa1ea364c672d9de8dfa",
+    "pa31/tests/spec/reborrow-source/header-unsafe.rs": "5bd1d53671b09732dfaabd32e6291a28e8d7b0fa99918dd44d453b42b0953fe3",
+    "pa31/tests/spec/reborrow-source/inner-static-use.rs": "b3da07a8c36af7d3dcc74513c5a9b8d19233213c9e4142d4207e2c8384bff2b9",
+    "pa31/tests/spec/reborrow-source/inner-static.rs": "459169db186b5244754883087561e3bdc29e4030e4cebd05c719ef2a26c378d1",
+    "pa31/tests/spec/reborrow-source/known-bugs/coerce-shared-alias-projection.rs": "c2661f023bf70c193af0afc23959b3f082bef4570f34ae235ef78f725b907659",
+    "pa31/tests/spec/reborrow-source/known-bugs/coerce-shared-different-layout.rs": "4eaae464485bc0fa9e095e6b9441033812427c45d0edc13132f20ca9b0301423",
+    "pa31/tests/spec/reborrow-source/known-bugs/coerce-shared-marker-no-target-lifetime.rs": "ca6f8efcc831623fdedcd72c2767aad098149878557b99acbfc323b889b02de6",
+    "pa31/tests/spec/reborrow-source/known-bugs/coerce-shared-multi-field.rs": "931db757d0b35dfc32e88c354165aafd8094abadd991bce595fb485a9f89c98c",
+    "pa31/tests/spec/reborrow-source/known-bugs/coerce-shared-nested.rs": "abbbeb7d901c9ba85bd7ee8464ba6610584bca57e9a7a6fffe69496dcba645c5",
+    "pa31/tests/spec/reborrow-source/known-bugs/coerce-shared-tuple-phantom-position.rs": "295e6195b26791c947bf2d136074643e6ed597984fc301f8a580f77934c96298",
+    "pa31/tests/spec/reborrow-source/known-bugs/corrected-field-mismatch-coerce-shared-issue-156315.rs": "bed9158f3bff4bbf7933f7e5a076c4da8af166c9cf475be4ef3cf829f8f0915b",
+    "pa31/tests/spec/reborrow-source/known-bugs/malformed-marker-coerce-shared-issue-156309.rs": "aed062a0764983ea37f5ccf0421fe952cc3aec70cae86eb19d66dc515831bf17",
+    "pa31/tests/spec/reborrow-source/known-bugs/missing-generic-args-coerce-shared-issue-156315.rs": "3a2acb376e4fe533c0101caf56cd4ca9733a105d52367ee03bcff1bcfae179d6",
+    "pa31/tests/spec/reborrow-source/missing.rs": "a3f0825b6f13f089131a562f0e812438b7b40567a55cf72709c1b57294e65d5e",
+    "pa31/tests/spec/reborrow-source/multi-concrete.rs": "799b049a76ff908c221f2f153ca633ea5d1ab1afa3a1424c296ec0cb37d180e3",
+    "pa31/tests/spec/reborrow-source/multi-explicit.rs": "a82a1553218323d9e3c2c02fd43aa0500c14cd496560da15214d5986909893f7",
+    "pa31/tests/spec/reborrow-source/multi-impl.rs": "8cef3deff8c893203add6f90c7c08daf5db706dd03e09207d348598769758081",
+    "pa31/tests/spec/reborrow-source/multi.rs": "084e95075299d4c2a700ce9646093652ca435f43f6c1def06238b90e86fc0c77",
+    "pa31/tests/spec/reborrow-source/native.rs": "c6a24845f534c1f13975e55bd25498fc597b1fbaceb46c0320d57b90d567010d",
+    "pa31/tests/spec/reborrow-source/no-life.rs": "70a2654e2d04ab99f8e057af88f3f998525bd82b32f414c6b22e0c67914035f0",
+    "pa31/tests/spec/reborrow-source/noncopy.rs": "3ade0064b702b4e8a33b1a17367b6685580211573b5b1696ada08544d326b4f0",
+    "pa31/tests/spec/reborrow-source/observer.c": "71b559b2b057f8d1c0179334a0ccd7d1c3b41567886da08c74b7637a778171c5",
+    "pa31/tests/spec/reborrow-source/original-declarations.rs": "2dddefefdd14c613106d2fb8217c5b57bdba25d97b410cc3bd0ac6db3f7e2b1c",
+    "pa31/tests/spec/reborrow-source/original-marker.rs": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+    "pa31/tests/spec/reborrow-source/overlap.rs": "5004e841451323c9cc42a7acb3832e3e25ede6e79e153a72b80397d2a8f0a299",
+    "pa31/tests/spec/reborrow-source/peel-use.rs": "82aa0db34d45231a9c94bda9dfeeb383635bcfd863c2897e4533cbd9a6693fce",
+    "pa31/tests/spec/reborrow-source/peel.rs": "06a63e6c2adf59e515ef456bd7888ad7e8f5255fe10fc0954575bddf265cddac",
+    "pa31/tests/spec/reborrow-source/predictions-alias-v1.json": "9014d0c133c085801c4ddc9fc7b2bae0cf7074aeaae8f8bc3842384ddce84d17",
+    "pa31/tests/spec/reborrow-source/predictions-followup-v1.json": "bf7560af6d3adde2755cb68a12efd86fcae67e60e60fc579a20a93c394a03b5e",
+    "pa31/tests/spec/reborrow-source/predictions-multi-v1.json": "6f6918215ca7fd5a8b210f263ae0fcdacd58757d0158053e5ca04e2c13a49c55",
+    "pa31/tests/spec/reborrow-source/predictions-simple-alias-v1.json": "51d12d3457cbb5832b146eaf0ada214e7307149e2cfc64e5f659145f1d60a5e1",
+    "pa31/tests/spec/reborrow-source/predictions-v1.json": "6c5645ef133214f1c35d13f6ccc253400637acaade143c900241954e22009a95",
+    "pa31/tests/spec/reborrow-source/predictions-v2.json": "6212ee0bba80a2621401621d9a019bf01c824e7bfe9674bce4bb5a2f3e7ad4e3",
+    "pa31/tests/spec/reborrow-source/reference-outcomes.json": "212bbaef1432a05d733cff6b25a52c2e96f4accbed0e3cd1b648bf0e25ff043f",
+    "pa31/tests/spec/reborrow-source/shared-move.rs": "6eb81ac16a72f2a7626bfc7b1cdcb2dc70d066c50a92a2f1cb47549e9a063abc",
+    "pa31/tests/spec/reborrow-source/shared-write.rs": "d4effd025d7e3edfc232669e2c72f16457b359dca63ecf96691428ab653e3dbc",
+    "pa31/tests/spec/reborrow-source/shared.rs": "db49ad427246b413d60035d33dc49d3404cd50ec6f2be9def308df6496151da7",
+    "pa31/tests/spec/reborrow-source/source-intervals.json": "2e103812f780234d3d73e75b63b8d487584a3180746b69014390ee8cae1435a6",
+    "pa31/tests/spec/reborrow-source/source.rs": "b1bfcec687a83bfa567acb2d33db86ae1cda47affe9b2e93b9ce7810cfbac619",
+    "pa31/tests/spec/reborrow-source/std-native.rs": "8e551edc2880f1b9c1063ad27d7aadc5d6d089007d68cd9bc1424d968c8105a6",
+    "pa31/tests/spec/reborrow-source/target-copy.rs": "e59d235ffdba92c40737a41d938e1a0002bf4bb39d17d0c29e1efe3491147251",
+    "pa31/tests/spec/reborrow-source/target-type.rs": "6ab7cb517f73c487fd7981b8cbd816e53bdff97d4cb6a5158df55f7c2fb2ea54",
+    "pa31/tests/spec/reborrow-source/two-life.rs": "d683305602befe67f904ffe7bbb9e03cbfb6ebf7083684b3b5dc0ba11bd510b3",
+    "pa31/tests/spec/reborrow-source/unsafe-impl.rs": "42f9d6b4458c7c7660ffc0508f81272b3802c3b849e53c339c15da3ebd1c35a3",
+    "pa31/tests/spec/reborrow-source/unsafe-source.rs": "a49b939343bbf8dd4155a45479bd9282e283a618801932aa0a5f1bc25761d837",
+    "pa31/tests/spec/reborrow-source/upstream/auxiliary/reborrow_foreign_private.rs": "ae0c5448fd81516b9005a0b8be93a21d8772980517cb7360cfac286ce7516518",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-associated-type-field.rs": "900c380d1464b6b892877b00ba74d268bdf1fef2aec4755b79c91e7ec548bfad",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-associated-type-field.stderr": "af8324dccc6458359919750333e3af62b6a09fef617503cc310144c6ccf78160",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-decl-macro-hygiene.rs": "f821926514eb78deaff90d0cb8dc873002bd23cc55a2d8e49735dc3bc4a1bf77",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-decl-macro-hygiene.stderr": "305980469d2a481391ef4e696cbaa0329794873df346025483be3f6c330c72af",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-extra-marker.rs": "e2d13bc7361d567c47dac24abb686b7051efa1dab1c62435fe4cc2ba5a7d732d",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-field-lifetime-swap.rs": "87d1acae940cea4bc43eff8a3da14fa8f859bb86fd833ff6ba7916767d4c75ce",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-field-lifetime-swap.stderr": "9c196d0d37ac6da24e8608c18df55463b1405643aa6bdb79975e3af9f8c314c7",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-field-relations.rs": "3b1226d0d0db2902354299fbb4fc09668fe99c6664494e885bc0a09c07151a1c",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-field-relations.stderr": "aa28b4d5f0fc829de16190158a5613a4b17fe9cbd5a981a898f1c3032a72c82d",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-foreign-private-field.rs": "89c44c56cb38ac68786f406afbf5d0c33a69bed3f7422b48cd7529d66852f363",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-foreign-private-tuple-field.rs": "daa3dc7f0c774be20eaf329cd9e2a4a6eebfa5ccfc2ad39328da97e43cae975e",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-generics.rs": "337d31e542900a1ab0b909855105e0fe875ffc88c2c97c2815e7210d7024f1b2",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-generics.stderr": "7262818bcef8d2f48a5ac6d57c95f9f23bb08a20552d38259065942cff35ec43",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-lifetime-mismatch.rs": "f7b37ed00eb56364748ee92d940a8efbdf2c1d852fad03c053eaf0d2ee85aa76",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-lifetime-mismatch.stderr": "ef5cec073746405d0736ab279b48ac5264c06667aa7054f87b1cf620c11497f5",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-missing-target-field.rs": "173a3c39dd044068b6bdc036292e67f27dc438a50b12b0e42e2f5d384dd4861f",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-missing-target-field.stderr": "d6e56bb65c613cb16830aca140a56c3612897957d94967fbf2c2b96135b671c3",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-mut-ref-field-validation.rs": "b08d5c143515b47925c51576ac96664a82989a7fc13cbac88755e5f3275013ec",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-mut-ref-field-validation.stderr": "573addde56f4cc4ba9d4d7663821c6dbbe6546299a00d85b86118f5fd8275c55",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-omitted-reborrow-field-after-dead.rs": "0cab3fd6c201fdceaf39d61b2eed9688df39d0d62864f67e4f4a7b020cdb83f6",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-omitted-reborrow-field-after-dead.stderr": "d3e19fa54605e519a7b8ee01cce9268113bbbbb92e8e521ddb74c42d043016c8",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-omitted-reborrow-field-locked.rs": "8c4e8acd5edee19f55d0736a5991052911fb31d00227dbd532bd7a3f6573583d",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-omitted-reborrow-field-locked.stderr": "f340ab3b7f9e4f6f6271ba108d77abc2398202b0a90a4ccacea8a0a05e0f13fb",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-omitted-reborrow-field.rs": "dbe34d0ac0395117972bac9ba44c1207ac715bab9bf661bdf0ca6faed2354915",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-omitted-reborrow-field.stderr": "5862d50212d63414292a274999a49ca27b73b7736e1d2bf2de7bf45ba60d0fe5",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-reordered-field.rs": "ea4e5e5bbcc56b959b411fdaef285f075acd17c510c4cf228c7aa40f660a203d",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-reordered-field.stderr": "fafef7c6ede30575126daa196a9e9a2e4190561861bfabdd738f6f24a0b3a706",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-wrong-generic.rs": "3ea6350ccd4717e58267abbe4631c6f47a121e8879cb7547880142c20e9c8726",
+    "pa31/tests/spec/reborrow-source/upstream/coerce-shared-wrong-generic.stderr": "3637ac02ca5b506a879f8c5333192430b3f172bc52e1f45351ff6055d89c467e",
+    "pa31/tests/spec/reborrow-source/upstream/coerce_shared_consteval.rs": "200e0114fd5422c5d7a2c8a97f1b8028bf422caee13890e475301c45eca3c404",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker.rs": "5bd91d4e852b268b8d72ab850ebe2f03362c07d7308f3ba004a0606bd8b0678f",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker_assign_deref.rs": "09b610077a5644a1df6f5405a1e9d2f8016e0a5d91a7e19db5957905130a034f",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker_coerce_shared.rs": "9b4f1cffd306c45b61ba6dc1250589943564eed58948970236ab9c5f9235e557",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker_coerce_shared_copy.rs": "508cd8e89556462415919b143f532ae6df8be58ddf551fb793f1bc5dd322d21c",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker_coerce_shared_move.rs": "81fdec51a389d076d31585d26ecd3379be80e190933d58223c304dde617ac769",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker_coerce_shared_move.stderr": "573df45963ef84522b45b999a4aaec7b790475cb65369cf025254d0389460d84",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker_deref.rs": "8ab1a2aae5fbb577636696c3a44a1ea08ccff476c73967edb4034da2189603ec",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker_mut_a_b.rs": "cdd232e859bdfd2aebe2494f6302160acd7becdd5259e148203b4fe0d1d3ab71",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker_mut_a_b.stderr": "c938d2122121f415a2fef615e23cae4e1eb5098041a32459454f4b2e18417fe2",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker_mut_self.rs": "92786a21af734ac601749165a8ed19538bd9b89af7ca7d922b74b2bf13efa4e4",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker_mut_self.stderr": "614b774686bf886d6c750ca029d49b07f1cad90cd2dc149ecd876291cebcfece",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker_mut_self_a.rs": "6ca9ba4f9a04bafcd8581e0f6906cf25e28e42b6f53667cb4af1634be3215cf8",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker_mut_self_a.stderr": "a4296b267a322aa0ed75d062f598f1d453bdcda5405cc1fd88d8b2e96babfe47",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker_mut_self_b.rs": "88b86a78bc49bfec8f5f8f0dc95bf07ef92fdbe8821ac18635bea59eccb0d742",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker_mut_self_b.stderr": "204639428f9d38545de4fcf1ef785da91e407796ac4b4a1d3c1626f4841efc77",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker_two_lifetimes.rs": "211e11b4f8b10882c841405d956f5471fb4fd8eb8551929c219f31d7338b1d77",
+    "pa31/tests/spec/reborrow-source/upstream/custom_marker_two_lifetimes.stderr": "1e04d1fb2994b8dee13094c47834a11bb6a787c9e3c2f7a5b3614638e0c62ec8",
+    "pa31/tests/spec/reborrow-source/upstream/custom_mut.rs": "3a19cecf372713dbb5440a3a39b417c5948b7408d870fa804ae721a65c67f79a",
+    "pa31/tests/spec/reborrow-source/upstream/custom_mut_coerce_shared.rs": "fd1538e6e24aa889b4f78c4aa2951bcf46e4d6e9f3af4dcacd6d6171db2ccd1e",
+    "pa31/tests/spec/reborrow-source/upstream/generic-reborrow-expr-use-visitor-closure.rs": "45d016e2da42cddc55726cd09a0cc952c55653d6a5c9eec166bd360c24f926d5",
+    "pa31/tests/spec/reborrow-source/upstream/generic-reborrow-expr-use-visitor.rs": "205dab997e81111b1d9c7c48580af97e87cebe3da4a7c2e7d27e4c15e66c0f2d",
+    "pa31/tests/spec/reborrow-source/upstream/generic-reborrow-rvalue-contract.rs": "1787cb16ebcad23321eff801da3855559d785b05282bf21795c34f9ec3bcdef8",
+    "pa31/tests/spec/reborrow-source/upstream/option_mut.rs": "e8f1b6821f1066aaf79b31ef813e8d3f707fdde070d2df6839ae86b6270150c4",
+    "pa31/tests/spec/reborrow-source/upstream/option_mut.stderr": "6222a40d00ce1dc4551c35cb568c965cdb94f5a4e377674bee5998a2a4c3e060",
+    "pa31/tests/spec/reborrow-source/upstream/option_mut_coerce_shared.rs": "71dd1c5df11381b83ab57ef2fd448cb17fbefa96c44429f398df48892092dc13",
+    "pa31/tests/spec/reborrow-source/upstream/option_mut_coerce_shared.stderr": "10f378bd6b00685b584a8d3b253bd29f938082318d27faeab928d39056b7c4be",
+    "pa31/tests/spec/reborrow-source/upstream/pin_mut.rs": "b397a7345da4d4185bc10ba09ce821778047a30361b8b533c758dcb201490f30",
+    "pa31/tests/spec/reborrow-source/upstream/pin_mut.stderr": "25bf990b8f40a045266b60dba9a9b1a3b680c263feccd1af474cc45abec7ae9f",
+    "pa31/tests/spec/reborrow-source/upstream/pin_mut_coerce_shared.rs": "eb701e2e79c1c48a0cf38344ec7ffbcb77610ad7f4ebc8694d2543c494cf90e8",
+    "pa31/tests/spec/reborrow-source/upstream/pin_mut_coerce_shared.stderr": "e64d8dfb40ee8652dfb2b2a6152644689ae23e3e9c14bae9aa9bae2075011ba6",
+    "pa31/tests/spec/reborrow-source/upstream/reborrow-mutable-reference.rs": "f6ecb4d3b110188c6df537d02c1ce11a5949bea6c3d73ed08388532a4e7e7b2a",
+    "pa31/tests/spec/reborrow-source/upstream/reborrow-promotion-rejected.rs": "df4c0b52645d0b8dedeb70a97df8aa333763738834db792f5a43377ea2c84b4c",
+    "pa31/tests/spec/reborrow-source/upstream/reborrow-promotion-rejected.stderr": "d44aeb974f74a887369425b675ff1e8a794f45bd3f15fd64bc7e525160b8afa5",
+    "pa31/tests/spec/reborrow-source/upstream/reborrow-source-unsafety.rs": "cf66a4b891e14151d62212f3c533046b988fc3369a3a3d2a36587695dcef79d7",
+    "pa31/tests/spec/reborrow-source/upstream/reborrow-source-unsafety.stderr": "c588d0b91cfe21d852cf250930400957df1eb91ec63459cc92461c43da6fc0d0",
+    "pa31/tests/spec/reborrow-source/upstream/reborrow_let_match.rs": "06b5b6959e60e2d06cc47f51dcc405660ee9e0b48c86b44cf346085bce02a265",
+    "pa31/tests/spec/reborrow-source/upstream/reborrow_multi_field_validation.rs": "395e3c1a46601381a2e6b5c50e45e437dc6658041d250c919a8ec497b9069970",
+    "pa31/tests/spec/reborrow-source/upstream/reborrow_multi_field_validation.stderr": "88df8749aabb3554630feae411f82cc1308c588e3b19373da9e089fc15205251"
+  },
+  "receipts": {
+    "obj/parallel/source-transport/reborrow-reference/reference-v1/receipt.json": "30badc9eebc584987bf5d83201689820c7ca44ed6fde0e4448c5d71dff93f650",
+    "obj/parallel/source-transport/reborrow-reference/reference-followup-v1/receipt.json": "18cdc0f97ea733c8119b5911b50f5cbdc16503a1425434fadc80a252fbab2a49",
+    "obj/parallel/source-transport/reborrow-reference/reference-multi-v1/receipt.json": "66ef5ed4cf68696858e412c59759e060efe54d8d20b2e965c88993c0e329e156",
+    "obj/parallel/source-transport/reborrow-reference/reference-alias-v1/receipt.json": "5db3d0cfc7686536ca848e36b6c7647b22e909d4c6cc4f0b13d1151c13ead399",
+    "obj/parallel/source-transport/reborrow-reference/reference-simple-alias-v1/receipt.json": "7e3feed8f18c793924cd8eddf1989b1c6dcfe7033ec5e05383ac35468cba3ad0"
+  },
+  "tool": {
+    "rustc": {
+      "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+      "version": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n"
+    },
+    "driver": {
+      "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so",
+      "sha256": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+    },
+    "sysroot": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu",
+    "libraries": {
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcore-a6075fd9c05de416.rlib": "37559e4d9488546d92cb19b74bcee17f7396c10a2a781c8a24e7464f836e7e51",
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd-2e38004a9ef1deab.rlib": "c72b308614b215194d09d3bb7369dfd9acd33225333dd44b85574d7af726403f",
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/liballoc-ca14532e0afe7a5d.rlib": "2730ec537c47f62737c175c0fa8f43c60636c5887da80933be1b3c91ac708401",
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libpanic_abort-0d311229c3300097.rlib": "9d55a53552cc14de6b79771cdb128210a6fc0b64433567d18421b24026a25c47",
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcompiler_builtins-b8411246c6de4c7a.rlib": "92804424c98ac58c1f9621d4b1ed891c7a865f0fe93301bcdd2231a658e5aad9"
+    }
+  },
+  "primary_implementation": {
+    "compiler/rustc_hir_analysis/src/coherence/builtin.rs": "7367f1f3a8e4f31c398f17300c24061589ef30de04aaa98d51df368539ec7c4d",
+    "compiler/rustc_hir_typeck/src/coercion.rs": "c9575e9c8ecf8504241d7493b762edcbba747284dd0e4a0a3ed0acb4a930b7e6",
+    "compiler/rustc_mir_build/src/builder/expr/as_rvalue.rs": "49cf21b077afadfd30f061233743c622874f15fe218d1c07d1cdedb999f257a6",
+    "compiler/rustc_mir_build/src/builder/expr/into.rs": "a5670fad686ff04cb4efd67efff85f29453cc089a0124ad37e1a6bb5f2a51b5f",
+    "compiler/rustc_borrowck/src/borrow_set.rs": "ab16418ae1a958345a18114798c1e5030b6ead8786af3c8a6d8c5a00e8793635",
+    "compiler/rustc_borrowck/src/type_check/mod.rs": "eab316c16e3b9d7e1c49470a5e549dee8d029f1544ada6356a097988a7e88ec8",
+    "compiler/rustc_mir_transform/src/promote_consts.rs": "60e425bc9c09db7b0d98429e462a595e94c8fb665bd19eea79f03aaa23be47bb"
+  },
+  "counts": {
+    "unique_sources": 93,
+    "qualified_reference_outcomes": 82,
+    "qualified_accepts": 33,
+    "qualified_rejections": 49,
+    "unqualified_infrastructure": 10,
+    "obsolete_syntax_setup_only": 1,
+    "unchanged_upstream_ui": 42,
+    "native_executions_passed": 12
+  },
+  "natives": {
+    "upstream/coerce-shared-extra-marker.rs": {
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=bin",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "--emit=link",
+        "--crate-name",
+        "fixture_2",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/reborrow-source/upstream/coerce-shared-extra-marker.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case2.exe"
+      ],
+      "code": 0,
+      "seconds": 0.09771656902739778,
+      "timed_out": false,
+      "artifact_sha256": "edf50030fee193ffafa13c686364cbe7ca6698887b4b7a1eb7370e0400f53849",
+      "executable_sha256": "edf50030fee193ffafa13c686364cbe7ca6698887b4b7a1eb7370e0400f53849",
+      "execution": {
+        "argv": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case2.exe"
+        ],
+        "code": 0,
+        "seconds": 0.0030091989901848137,
+        "timed_out": false,
+        "stdout": "",
+        "matches": true
+      }
+    },
+    "upstream/coerce_shared_consteval.rs": {
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=bin",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "--emit=link",
+        "--crate-name",
+        "fixture_16",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/reborrow-source/upstream/coerce_shared_consteval.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case16.exe"
+      ],
+      "code": 0,
+      "seconds": 0.09688775101676583,
+      "timed_out": false,
+      "artifact_sha256": "9066cd0cb83a336d4126ef9d81ffa4ca4ab055bf80f9f3dfc9a5a0e3bc43b867",
+      "executable_sha256": "9066cd0cb83a336d4126ef9d81ffa4ca4ab055bf80f9f3dfc9a5a0e3bc43b867",
+      "execution": {
+        "argv": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case16.exe"
+        ],
+        "code": 0,
+        "seconds": 0.002252207021228969,
+        "timed_out": false,
+        "stdout": "",
+        "matches": true
+      }
+    },
+    "upstream/custom_marker.rs": {
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=bin",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "--emit=link",
+        "--crate-name",
+        "fixture_17",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/reborrow-source/upstream/custom_marker.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case17.exe"
+      ],
+      "code": 0,
+      "seconds": 0.09475757600739598,
+      "timed_out": false,
+      "artifact_sha256": "20e3bbf4e6c263e77e9d9f4a23326d47d2d38480fd3dbae423708361303a8113",
+      "executable_sha256": "20e3bbf4e6c263e77e9d9f4a23326d47d2d38480fd3dbae423708361303a8113",
+      "execution": {
+        "argv": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case17.exe"
+        ],
+        "code": 0,
+        "seconds": 0.002900042978581041,
+        "timed_out": false,
+        "stdout": "",
+        "matches": true
+      }
+    },
+    "upstream/custom_marker_assign_deref.rs": {
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=bin",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "--emit=link",
+        "--crate-name",
+        "fixture_18",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/reborrow-source/upstream/custom_marker_assign_deref.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case18.exe"
+      ],
+      "code": 0,
+      "seconds": 0.09857216698583215,
+      "timed_out": false,
+      "artifact_sha256": "65d78e9da2c02f2c185cf739a621adf11f2e7620200108daeb909e5e0b8fa309",
+      "executable_sha256": "65d78e9da2c02f2c185cf739a621adf11f2e7620200108daeb909e5e0b8fa309",
+      "execution": {
+        "argv": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case18.exe"
+        ],
+        "code": 0,
+        "seconds": 0.0018460130086168647,
+        "timed_out": false,
+        "stdout": "",
+        "matches": true
+      }
+    },
+    "upstream/custom_marker_coerce_shared.rs": {
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=bin",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "--emit=link",
+        "--crate-name",
+        "fixture_19",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/reborrow-source/upstream/custom_marker_coerce_shared.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case19.exe"
+      ],
+      "code": 0,
+      "seconds": 0.10636198904830962,
+      "timed_out": false,
+      "artifact_sha256": "2bf38927bb824dcc963509456d90668f719db456c938626bca11f8270f75800b",
+      "executable_sha256": "2bf38927bb824dcc963509456d90668f719db456c938626bca11f8270f75800b",
+      "execution": {
+        "argv": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case19.exe"
+        ],
+        "code": 0,
+        "seconds": 0.002588961971923709,
+        "timed_out": false,
+        "stdout": "",
+        "matches": true
+      }
+    },
+    "upstream/custom_marker_coerce_shared_copy.rs": {
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=bin",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "--emit=link",
+        "--crate-name",
+        "fixture_20",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/reborrow-source/upstream/custom_marker_coerce_shared_copy.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case20.exe"
+      ],
+      "code": 0,
+      "seconds": 0.10141428402857855,
+      "timed_out": false,
+      "artifact_sha256": "27b1ec732e9850e4a6661f683cad905d3d59068908cf5d97a553a77ff3355881",
+      "executable_sha256": "27b1ec732e9850e4a6661f683cad905d3d59068908cf5d97a553a77ff3355881",
+      "execution": {
+        "argv": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case20.exe"
+        ],
+        "code": 0,
+        "seconds": 0.002744802040979266,
+        "timed_out": false,
+        "stdout": "",
+        "matches": true
+      }
+    },
+    "upstream/custom_marker_deref.rs": {
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=bin",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "--emit=link",
+        "--crate-name",
+        "fixture_22",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/reborrow-source/upstream/custom_marker_deref.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case22.exe"
+      ],
+      "code": 0,
+      "seconds": 0.08867269195616245,
+      "timed_out": false,
+      "artifact_sha256": "cd1d251eb1b51afd33fcf784240fe0f025dba8e7134abc4b3e10eff00225a327",
+      "executable_sha256": "cd1d251eb1b51afd33fcf784240fe0f025dba8e7134abc4b3e10eff00225a327",
+      "execution": {
+        "argv": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case22.exe"
+        ],
+        "code": 0,
+        "seconds": 0.0016509289853274822,
+        "timed_out": false,
+        "stdout": "",
+        "matches": true
+      }
+    },
+    "upstream/custom_mut.rs": {
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=bin",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "--emit=link",
+        "--crate-name",
+        "fixture_28",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/reborrow-source/upstream/custom_mut.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case28.exe"
+      ],
+      "code": 0,
+      "seconds": 0.08969134202925488,
+      "timed_out": false,
+      "artifact_sha256": "b13ca5951ce6f82a9d8b2b696d3bd86df48cc1af6e3af0f860b748199543ffe0",
+      "executable_sha256": "b13ca5951ce6f82a9d8b2b696d3bd86df48cc1af6e3af0f860b748199543ffe0",
+      "execution": {
+        "argv": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case28.exe"
+        ],
+        "code": 0,
+        "seconds": 0.0024789489689283073,
+        "timed_out": false,
+        "stdout": "",
+        "matches": true
+      }
+    },
+    "upstream/custom_mut_coerce_shared.rs": {
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=bin",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "--emit=link",
+        "--crate-name",
+        "fixture_29",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/reborrow-source/upstream/custom_mut_coerce_shared.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case29.exe"
+      ],
+      "code": 0,
+      "seconds": 0.09525205503450707,
+      "timed_out": false,
+      "artifact_sha256": "f18c939346f775c6e3357a0b634b377f74faee1f224e104dd8f749699a4fc912",
+      "executable_sha256": "f18c939346f775c6e3357a0b634b377f74faee1f224e104dd8f749699a4fc912",
+      "execution": {
+        "argv": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case29.exe"
+        ],
+        "code": 0,
+        "seconds": 0.0023445190163329244,
+        "timed_out": false,
+        "stdout": "",
+        "matches": true
+      }
+    },
+    "upstream/reborrow-mutable-reference.rs": {
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=bin",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "--emit=link",
+        "--crate-name",
+        "fixture_37",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/reborrow-source/upstream/reborrow-mutable-reference.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case37.exe"
+      ],
+      "code": 0,
+      "seconds": 0.09878441202454269,
+      "timed_out": false,
+      "artifact_sha256": "6183ead42c5de2279d3873a0f871ac9c3c3bfe22ae442f19cb3a296aa6021453",
+      "executable_sha256": "6183ead42c5de2279d3873a0f871ac9c3c3bfe22ae442f19cb3a296aa6021453",
+      "execution": {
+        "argv": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case37.exe"
+        ],
+        "code": 0,
+        "seconds": 0.0017472750041633844,
+        "timed_out": false,
+        "stdout": "",
+        "matches": true
+      }
+    },
+    "native.rs": {
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "--emit=obj",
+        "--crate-name",
+        "fixture_52",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/reborrow-source/native.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case52.o"
+      ],
+      "code": 0,
+      "seconds": 0.0423043739865534,
+      "timed_out": false,
+      "artifact_sha256": "55e607dfc7419c3a038b53c644c0d9273b137102e86bc307b670314e22219cde",
+      "link": {
+        "argv": [
+          "cc",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/reborrow-source/observer.c",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case52.o",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case52.observer"
+        ],
+        "code": 0,
+        "seconds": 0.05736417800653726,
+        "timed_out": false
+      },
+      "executable_sha256": "49b446b4956cb3b8fecc84ee4deeba05d263d13fecd4814cc8d2142dab142998",
+      "execution": {
+        "argv": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-v1/case52.observer"
+        ],
+        "code": 0,
+        "seconds": 0.002148653962649405,
+        "timed_out": false,
+        "stdout": "reborrow 23 23 47 47 0 99 31\n",
+        "matches": true
+      }
+    },
+    "std-native.rs": {
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=staticlib",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "--emit=link",
+        "--crate-name",
+        "fixture_6",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/reborrow-source/std-native.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-followup-v1/case6.a"
+      ],
+      "code": 0,
+      "seconds": 0.08773161802673712,
+      "timed_out": false,
+      "artifact_sha256": "b2dd2cebdfebc4de2e7fce1dd3f23557a58dae9d9378cf40fb145a8b15a720f6",
+      "link": {
+        "argv": [
+          "cc",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/reborrow-source/observer.c",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-followup-v1/case6.a",
+          "-ldl",
+          "-lpthread",
+          "-lm",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-followup-v1/case6.observer"
+        ],
+        "code": 0,
+        "seconds": 0.22147303499514237,
+        "timed_out": false
+      },
+      "executable_sha256": "eb65595a8760f23fa96135eecdb582fce0e4653d7275bce5eeb5ea0033eb4c84",
+      "execution": {
+        "argv": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/reborrow-reference/reference-followup-v1/case6.observer"
+        ],
+        "code": 0,
+        "seconds": 0.002344071981497109,
+        "timed_out": false,
+        "stdout": "reborrow 23 23 47 47 0 99 31\n",
+        "matches": true
+      }
+    }
+  },
+  "harness": {
+    "argv": [
+      "make",
+      "test-harness"
+    ],
+    "code": 0,
+    "seconds": 13.320131876971573
+  },
+  "upstream": {
+    "code": 0,
+    "seconds": 0.17952449095901102
+  },
+  "remaining": [
+    "full declared-source macro/CloneCopy/PhantomData graph",
+    "all operation scopes/Drop/lifetime/structural/generic/evaluation-order profiles",
+    "CTFE and authenticated metadata",
+    "known upstream ICE forms remain unqualified; never semantic parity negatives",
+    "source implementation and candidate verification intentionally not attempted"
+  ],
+  "ice_reports": {
+    "obj/parallel/source-transport/reborrow-reference/reference-v1/ice-reports/rustc-ice-2026-11-06T17_59_04-1025557.txt": "8e739fce5f849784ba25dc87faefd052c1860676d37f386e9fa8ef0ad9e2fc80",
+    "obj/parallel/source-transport/reborrow-reference/reference-v1/ice-reports/rustc-ice-2026-11-06T17_59_04-1025565.txt": "2f1c6c9cff96c4ceb18909af38fdd41536f8e07d863a2f21cbb2c670b2e0f575",
+    "obj/parallel/source-transport/reborrow-reference/reference-v1/ice-reports/rustc-ice-2026-11-06T17_59_04-1025577.txt": "72bb169ecb52aa6f6d59b839478f2bb6effe23b7c8fe3de8f33353cdb8f1fd52",
+    "obj/parallel/source-transport/reborrow-reference/reference-v1/ice-reports/rustc-ice-2026-11-06T17_59_04-1025585.txt": "f8d1b0a8cf28fdd0dac5ae0344bdfe1be7cf286f798350c80a7232c0186d210c",
+    "obj/parallel/source-transport/reborrow-reference/reference-v1/ice-reports/rustc-ice-2026-11-06T17_59_04-1025597.txt": "3d3627abb2c383c38e3b88a25711d6118ce7b1da496b6cd620f5c4633fad464e",
+    "obj/parallel/source-transport/reborrow-reference/reference-v1/ice-reports/rustc-ice-2026-11-06T17_59_04-1025608.txt": "e4e9e3409e9da8baddc5f16d637a4ad20d570d92140f0c441065257c0ab95ad6",
+    "obj/parallel/source-transport/reborrow-reference/reference-v1/ice-reports/rustc-ice-2026-11-06T17_59_05-1025617.txt": "08d13d22bb8f9140380098579661fdf0b5bbd116a40d52a83baa230ae508ca45",
+    "obj/parallel/source-transport/reborrow-reference/reference-v1/ice-reports/rustc-ice-2026-11-06T17_59_05-1025634.txt": "daf3a4dcef546c10a36bc5cd19596abe5c2bfcff04662a9d3927ccc42696e269",
+    "obj/parallel/source-transport/reborrow-reference/reference-v1/ice-reports/rustc-ice-2026-11-06T17_59_05-1025640.txt": "c1275b89e3caa158d9799692cfee529dd03c9ba16c1e1498c89f156563a1aed7",
+    "obj/parallel/source-transport/reborrow-reference/reference-v1/ice-reports/rustc-ice-2026-11-06T17_59_06-1026195.txt": "18962ec58a9d77a3be2bd6189a3194cb81560b7f6de9e522aba6f14d8aeb20ec"
+  }
+}

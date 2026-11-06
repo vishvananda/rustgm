@@ -453,6 +453,735 @@
       "adaptation": "exact lines821-829 helper declaration/body plus existing trailing newline; complete original module/interval hashes in source-intervals.json; compiler-owned synchronous drop glue, not authored replacement",
       "oracle": "source-fragment",
       "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/marker.rs",
+      "destination": "pa31/tests/spec/reborrow-source/original-marker.rs",
+      "sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/marker.rs",
+      "destination": "pa31/tests/spec/reborrow-source/original-declarations.rs",
+      "sha256": "2dddefefdd14c613106d2fb8217c5b57bdba25d97b410cc3bd0ac6db3f7e2b1c",
+      "adaptation": "exact final Reborrow and CoerceShared documentation/attributes/declarations; byte interval and whole module checksum in source-intervals.json",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/auxiliary/reborrow_foreign_private.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/auxiliary/reborrow_foreign_private.rs",
+      "sha256": "ae0c5448fd81516b9005a0b8be93a21d8772980517cb7360cfac286ce7516518",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-associated-type-field.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-associated-type-field.rs",
+      "sha256": "900c380d1464b6b892877b00ba74d268bdf1fef2aec4755b79c91e7ec548bfad",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-associated-type-field.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-associated-type-field.stderr",
+      "sha256": "af8324dccc6458359919750333e3af62b6a09fef617503cc310144c6ccf78160",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-decl-macro-hygiene.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-decl-macro-hygiene.rs",
+      "sha256": "f821926514eb78deaff90d0cb8dc873002bd23cc55a2d8e49735dc3bc4a1bf77",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-decl-macro-hygiene.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-decl-macro-hygiene.stderr",
+      "sha256": "305980469d2a481391ef4e696cbaa0329794873df346025483be3f6c330c72af",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-extra-marker.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-extra-marker.rs",
+      "sha256": "e2d13bc7361d567c47dac24abb686b7051efa1dab1c62435fe4cc2ba5a7d732d",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-field-lifetime-swap.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-field-lifetime-swap.rs",
+      "sha256": "87d1acae940cea4bc43eff8a3da14fa8f859bb86fd833ff6ba7916767d4c75ce",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-field-lifetime-swap.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-field-lifetime-swap.stderr",
+      "sha256": "9c196d0d37ac6da24e8608c18df55463b1405643aa6bdb79975e3af9f8c314c7",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-field-relations.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-field-relations.rs",
+      "sha256": "3b1226d0d0db2902354299fbb4fc09668fe99c6664494e885bc0a09c07151a1c",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-field-relations.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-field-relations.stderr",
+      "sha256": "aa28b4d5f0fc829de16190158a5613a4b17fe9cbd5a981a898f1c3032a72c82d",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-foreign-private-field.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-foreign-private-field.rs",
+      "sha256": "89c44c56cb38ac68786f406afbf5d0c33a69bed3f7422b48cd7529d66852f363",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-foreign-private-tuple-field.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-foreign-private-tuple-field.rs",
+      "sha256": "daa3dc7f0c774be20eaf329cd9e2a4a6eebfa5ccfc2ad39328da97e43cae975e",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-generics.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-generics.rs",
+      "sha256": "337d31e542900a1ab0b909855105e0fe875ffc88c2c97c2815e7210d7024f1b2",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-generics.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-generics.stderr",
+      "sha256": "7262818bcef8d2f48a5ac6d57c95f9f23bb08a20552d38259065942cff35ec43",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-lifetime-mismatch.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-lifetime-mismatch.rs",
+      "sha256": "f7b37ed00eb56364748ee92d940a8efbdf2c1d852fad03c053eaf0d2ee85aa76",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-lifetime-mismatch.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-lifetime-mismatch.stderr",
+      "sha256": "ef5cec073746405d0736ab279b48ac5264c06667aa7054f87b1cf620c11497f5",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-missing-target-field.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-missing-target-field.rs",
+      "sha256": "173a3c39dd044068b6bdc036292e67f27dc438a50b12b0e42e2f5d384dd4861f",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-missing-target-field.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-missing-target-field.stderr",
+      "sha256": "d6e56bb65c613cb16830aca140a56c3612897957d94967fbf2c2b96135b671c3",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-mut-ref-field-validation.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-mut-ref-field-validation.rs",
+      "sha256": "b08d5c143515b47925c51576ac96664a82989a7fc13cbac88755e5f3275013ec",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-mut-ref-field-validation.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-mut-ref-field-validation.stderr",
+      "sha256": "573addde56f4cc4ba9d4d7663821c6dbbe6546299a00d85b86118f5fd8275c55",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-omitted-reborrow-field-after-dead.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-omitted-reborrow-field-after-dead.rs",
+      "sha256": "0cab3fd6c201fdceaf39d61b2eed9688df39d0d62864f67e4f4a7b020cdb83f6",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-omitted-reborrow-field-after-dead.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-omitted-reborrow-field-after-dead.stderr",
+      "sha256": "d3e19fa54605e519a7b8ee01cce9268113bbbbb92e8e521ddb74c42d043016c8",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-omitted-reborrow-field-locked.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-omitted-reborrow-field-locked.rs",
+      "sha256": "8c4e8acd5edee19f55d0736a5991052911fb31d00227dbd532bd7a3f6573583d",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-omitted-reborrow-field-locked.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-omitted-reborrow-field-locked.stderr",
+      "sha256": "f340ab3b7f9e4f6f6271ba108d77abc2398202b0a90a4ccacea8a0a05e0f13fb",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-omitted-reborrow-field.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-omitted-reborrow-field.rs",
+      "sha256": "dbe34d0ac0395117972bac9ba44c1207ac715bab9bf661bdf0ca6faed2354915",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-omitted-reborrow-field.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-omitted-reborrow-field.stderr",
+      "sha256": "5862d50212d63414292a274999a49ca27b73b7736e1d2bf2de7bf45ba60d0fe5",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-reordered-field.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-reordered-field.rs",
+      "sha256": "ea4e5e5bbcc56b959b411fdaef285f075acd17c510c4cf228c7aa40f660a203d",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-reordered-field.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-reordered-field.stderr",
+      "sha256": "fafef7c6ede30575126daa196a9e9a2e4190561861bfabdd738f6f24a0b3a706",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-wrong-generic.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-wrong-generic.rs",
+      "sha256": "3ea6350ccd4717e58267abbe4631c6f47a121e8879cb7547880142c20e9c8726",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-wrong-generic.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce-shared-wrong-generic.stderr",
+      "sha256": "3637ac02ca5b506a879f8c5333192430b3f172bc52e1f45351ff6055d89c467e",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce_shared_consteval.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/coerce_shared_consteval.rs",
+      "sha256": "200e0114fd5422c5d7a2c8a97f1b8028bf422caee13890e475301c45eca3c404",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker.rs",
+      "sha256": "5bd91d4e852b268b8d72ab850ebe2f03362c07d7308f3ba004a0606bd8b0678f",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker_assign_deref.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker_assign_deref.rs",
+      "sha256": "09b610077a5644a1df6f5405a1e9d2f8016e0a5d91a7e19db5957905130a034f",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker_coerce_shared.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker_coerce_shared.rs",
+      "sha256": "9b4f1cffd306c45b61ba6dc1250589943564eed58948970236ab9c5f9235e557",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker_coerce_shared_copy.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker_coerce_shared_copy.rs",
+      "sha256": "508cd8e89556462415919b143f532ae6df8be58ddf551fb793f1bc5dd322d21c",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker_coerce_shared_move.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker_coerce_shared_move.rs",
+      "sha256": "81fdec51a389d076d31585d26ecd3379be80e190933d58223c304dde617ac769",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker_coerce_shared_move.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker_coerce_shared_move.stderr",
+      "sha256": "573df45963ef84522b45b999a4aaec7b790475cb65369cf025254d0389460d84",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker_deref.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker_deref.rs",
+      "sha256": "8ab1a2aae5fbb577636696c3a44a1ea08ccff476c73967edb4034da2189603ec",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker_mut_a_b.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker_mut_a_b.rs",
+      "sha256": "cdd232e859bdfd2aebe2494f6302160acd7becdd5259e148203b4fe0d1d3ab71",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker_mut_a_b.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker_mut_a_b.stderr",
+      "sha256": "c938d2122121f415a2fef615e23cae4e1eb5098041a32459454f4b2e18417fe2",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker_mut_self.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker_mut_self.rs",
+      "sha256": "92786a21af734ac601749165a8ed19538bd9b89af7ca7d922b74b2bf13efa4e4",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker_mut_self.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker_mut_self.stderr",
+      "sha256": "614b774686bf886d6c750ca029d49b07f1cad90cd2dc149ecd876291cebcfece",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker_mut_self_a.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker_mut_self_a.rs",
+      "sha256": "6ca9ba4f9a04bafcd8581e0f6906cf25e28e42b6f53667cb4af1634be3215cf8",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker_mut_self_a.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker_mut_self_a.stderr",
+      "sha256": "a4296b267a322aa0ed75d062f598f1d453bdcda5405cc1fd88d8b2e96babfe47",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker_mut_self_b.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker_mut_self_b.rs",
+      "sha256": "88b86a78bc49bfec8f5f8f0dc95bf07ef92fdbe8821ac18635bea59eccb0d742",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker_mut_self_b.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker_mut_self_b.stderr",
+      "sha256": "204639428f9d38545de4fcf1ef785da91e407796ac4b4a1d3c1626f4841efc77",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker_two_lifetimes.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker_two_lifetimes.rs",
+      "sha256": "211e11b4f8b10882c841405d956f5471fb4fd8eb8551929c219f31d7338b1d77",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_marker_two_lifetimes.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_marker_two_lifetimes.stderr",
+      "sha256": "1e04d1fb2994b8dee13094c47834a11bb6a787c9e3c2f7a5b3614638e0c62ec8",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_mut.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_mut.rs",
+      "sha256": "3a19cecf372713dbb5440a3a39b417c5948b7408d870fa804ae721a65c67f79a",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/custom_mut_coerce_shared.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/custom_mut_coerce_shared.rs",
+      "sha256": "fd1538e6e24aa889b4f78c4aa2951bcf46e4d6e9f3af4dcacd6d6171db2ccd1e",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/generic-reborrow-expr-use-visitor-closure.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/generic-reborrow-expr-use-visitor-closure.rs",
+      "sha256": "45d016e2da42cddc55726cd09a0cc952c55653d6a5c9eec166bd360c24f926d5",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/generic-reborrow-expr-use-visitor.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/generic-reborrow-expr-use-visitor.rs",
+      "sha256": "205dab997e81111b1d9c7c48580af97e87cebe3da4a7c2e7d27e4c15e66c0f2d",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/generic-reborrow-rvalue-contract.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/generic-reborrow-rvalue-contract.rs",
+      "sha256": "1787cb16ebcad23321eff801da3855559d785b05282bf21795c34f9ec3bcdef8",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/option_mut.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/option_mut.rs",
+      "sha256": "e8f1b6821f1066aaf79b31ef813e8d3f707fdde070d2df6839ae86b6270150c4",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/option_mut.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/option_mut.stderr",
+      "sha256": "6222a40d00ce1dc4551c35cb568c965cdb94f5a4e377674bee5998a2a4c3e060",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/option_mut_coerce_shared.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/option_mut_coerce_shared.rs",
+      "sha256": "71dd1c5df11381b83ab57ef2fd448cb17fbefa96c44429f398df48892092dc13",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/option_mut_coerce_shared.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/option_mut_coerce_shared.stderr",
+      "sha256": "10f378bd6b00685b584a8d3b253bd29f938082318d27faeab928d39056b7c4be",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/pin_mut.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/pin_mut.rs",
+      "sha256": "b397a7345da4d4185bc10ba09ce821778047a30361b8b533c758dcb201490f30",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/pin_mut.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/pin_mut.stderr",
+      "sha256": "25bf990b8f40a045266b60dba9a9b1a3b680c263feccd1af474cc45abec7ae9f",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/pin_mut_coerce_shared.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/pin_mut_coerce_shared.rs",
+      "sha256": "eb701e2e79c1c48a0cf38344ec7ffbcb77610ad7f4ebc8694d2543c494cf90e8",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/pin_mut_coerce_shared.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/pin_mut_coerce_shared.stderr",
+      "sha256": "e64d8dfb40ee8652dfb2b2a6152644689ae23e3e9c14bae9aa9bae2075011ba6",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/reborrow-mutable-reference.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/reborrow-mutable-reference.rs",
+      "sha256": "f6ecb4d3b110188c6df537d02c1ce11a5949bea6c3d73ed08388532a4e7e7b2a",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/reborrow-promotion-rejected.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/reborrow-promotion-rejected.rs",
+      "sha256": "df4c0b52645d0b8dedeb70a97df8aa333763738834db792f5a43377ea2c84b4c",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/reborrow-promotion-rejected.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/reborrow-promotion-rejected.stderr",
+      "sha256": "d44aeb974f74a887369425b675ff1e8a794f45bd3f15fd64bc7e525160b8afa5",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/reborrow-source-unsafety.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/reborrow-source-unsafety.rs",
+      "sha256": "cf66a4b891e14151d62212f3c533046b988fc3369a3a3d2a36587695dcef79d7",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/reborrow-source-unsafety.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/reborrow-source-unsafety.stderr",
+      "sha256": "c588d0b91cfe21d852cf250930400957df1eb91ec63459cc92461c43da6fc0d0",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/reborrow_let_match.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/reborrow_let_match.rs",
+      "sha256": "06b5b6959e60e2d06cc47f51dcc405660ee9e0b48c86b44cf346085bce02a265",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/reborrow_multi_field_validation.rs",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/reborrow_multi_field_validation.rs",
+      "sha256": "395e3c1a46601381a2e6b5c50e45e437dc6658041d250c919a8ec497b9069970",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/reborrow_multi_field_validation.stderr",
+      "destination": "pa31/tests/spec/reborrow-source/upstream/reborrow_multi_field_validation.stderr",
+      "sha256": "88df8749aabb3554630feae411f82cc1308c588e3b19373da9e089fc15205251",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/crashes/reborrow/coerce-shared-alias-projection.rs",
+      "destination": "pa31/tests/spec/reborrow-source/known-bugs/coerce-shared-alias-projection.rs",
+      "sha256": "c2661f023bf70c193af0afc23959b3f082bef4570f34ae235ef78f725b907659",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/crashes/reborrow/coerce-shared-different-layout.rs",
+      "destination": "pa31/tests/spec/reborrow-source/known-bugs/coerce-shared-different-layout.rs",
+      "sha256": "4eaae464485bc0fa9e095e6b9441033812427c45d0edc13132f20ca9b0301423",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/crashes/reborrow/coerce-shared-marker-no-target-lifetime.rs",
+      "destination": "pa31/tests/spec/reborrow-source/known-bugs/coerce-shared-marker-no-target-lifetime.rs",
+      "sha256": "ca6f8efcc831623fdedcd72c2767aad098149878557b99acbfc323b889b02de6",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/crashes/reborrow/coerce-shared-multi-field.rs",
+      "destination": "pa31/tests/spec/reborrow-source/known-bugs/coerce-shared-multi-field.rs",
+      "sha256": "931db757d0b35dfc32e88c354165aafd8094abadd991bce595fb485a9f89c98c",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/crashes/reborrow/coerce-shared-nested.rs",
+      "destination": "pa31/tests/spec/reborrow-source/known-bugs/coerce-shared-nested.rs",
+      "sha256": "abbbeb7d901c9ba85bd7ee8464ba6610584bca57e9a7a6fffe69496dcba645c5",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/crashes/reborrow/coerce-shared-tuple-phantom-position.rs",
+      "destination": "pa31/tests/spec/reborrow-source/known-bugs/coerce-shared-tuple-phantom-position.rs",
+      "sha256": "295e6195b26791c947bf2d136074643e6ed597984fc301f8a580f77934c96298",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/crashes/reborrow/corrected-field-mismatch-coerce-shared-issue-156315.rs",
+      "destination": "pa31/tests/spec/reborrow-source/known-bugs/corrected-field-mismatch-coerce-shared-issue-156315.rs",
+      "sha256": "bed9158f3bff4bbf7933f7e5a076c4da8af166c9cf475be4ef3cf829f8f0915b",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/crashes/reborrow/malformed-marker-coerce-shared-issue-156309.rs",
+      "destination": "pa31/tests/spec/reborrow-source/known-bugs/malformed-marker-coerce-shared-issue-156309.rs",
+      "sha256": "aed062a0764983ea37f5ccf0421fe952cc3aec70cae86eb19d66dc515831bf17",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/crashes/reborrow/missing-generic-args-coerce-shared-issue-156315.rs",
+      "destination": "pa31/tests/spec/reborrow-source/known-bugs/missing-generic-args-coerce-shared-issue-156315.rs",
+      "sha256": "3a2acb376e4fe533c0101caf56cd4ca9733a105d52367ee03bcff1bcfae179d6",
+      "adaptation": "none; complete original bytes retained in reference-only Reborrow/CoerceShared packet",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/reborrow/coerce-shared-mut-ref-field-validation.rs",
+      "destination": "pa31/tests/spec/reborrow-source/alias-direct.rs",
+      "sha256": "5c469a1dc1bbd0536e753aca6e9f29cea028a208bfd1b2d0bdcadd0b59f26a8f",
+      "adaptation": "authored exact opponent: only two field-type aliases replaced by literal outer reference syntax while original aliases/other fields/bodies/comments remain; original copied unchanged separately",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
     }
   ]
 }
