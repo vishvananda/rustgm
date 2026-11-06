@@ -1,5 +1,7 @@
 //! Iterative candidate search; each child proof commits only its resolved goal.
 mod allocations;
+mod conjunction;
+pub(in crate::sema) use conjunction::{Conjunction, prove_conjunction};
 mod asynchronous;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/auto_cycle_work.rs"]
@@ -708,19 +710,25 @@ impl Search<'_> {
             .finish(self.query.nodes[root].end),
             sized: Vec::new(),
         };
-        self.collect_graph(facts, root, None, &mut evidence.proof, &mut evidence.sized)?;
+        self.collect_graph(
+            facts,
+            [root],
+            None,
+            &mut evidence.proof,
+            &mut evidence.sized,
+        )?;
         Ok(evidence)
     }
     fn collect_graph(
         &mut self,
         facts: &Declarations,
-        root: usize,
+        roots: impl IntoIterator<Item = usize>,
         negative: Option<(crate::resolve::model::DefId, crate::types::GenericArgs)>,
         proof: &mut super::Obligations,
         sized: &mut Vec<super::TypeId>,
     ) -> Result<(), String> {
         let mut scopes = self.query.scopes.take();
-        let mut work = vec![root];
+        let mut work: Vec<_> = roots.into_iter().collect();
         let mut visited = self
             .query
             .reused

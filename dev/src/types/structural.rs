@@ -8,11 +8,12 @@ pub(crate) use shapes::Shapes;
 
 /// Completed normal forms may differ in lifetimes while retaining rigid shape.
 /// This view grants no input equation or lifetime permission.
-pub(crate) struct Normalized<'t, const SUBSUMPTION: bool> {
+pub(crate) struct Normalized<'t, const SUBSUMPTION: bool, C: Cost = ()> {
     types: &'t Store,
     work: Vec<(TypeId, TypeId, u32)>,
     seen: HashSet<(TypeId, TypeId)>,
     pub(crate) steps: usize,
+    cost: C,
 }
 // All real depths are u16. A finish marker uses the existing tuple padding,
 // preserving the12-byte work record and publishing only completed DAG pairs.
@@ -25,7 +26,47 @@ impl<'t, const SUBSUMPTION: bool> Normalized<'t, SUBSUMPTION> {
             work: Vec::new(),
             seen: HashSet::default(),
             steps: 0,
+            cost: (),
         }
+    }
+    /// Reuse the same completed-pair memo within one current-store query.
+    pub(crate) fn new_charged<'p>(
+        types: &'t Store,
+        payment: crate::support::retained::Payment<'p>,
+        memo: Memo,
+    ) -> Normalized<'t, SUBSUMPTION, PaidCost<'p>> {
+        Normalized {
+            types,
+            work: memo.work,
+            seen: memo.seen,
+            steps: memo.steps,
+            cost: PaidCost {
+                payment,
+                failure: None,
+            },
+        }
+    }
+}
+impl<const SUBSUMPTION: bool, C: Cost> Normalized<'_, SUBSUMPTION, C> {
+    pub(crate) fn into_memo(self) -> Memo {
+        Memo {
+            work: self.work,
+            seen: self.seen,
+            steps: self.steps,
+        }
+    }
+    fn push(&mut self, item: (TypeId, TypeId, u32)) -> Result<(), Error> {
+        if C::PAID {
+            let growth = crate::support::retained::Growth::vector::<(TypeId, TypeId, u32)>(
+                self.work.len(),
+                self.work.capacity(),
+                1,
+            );
+            self.cost.charge(growth.work, growth.bytes)?;
+            self.work.try_reserve(1).map_err(|_| Error::Budget)?;
+        }
+        self.work.push(item);
+        Ok(())
     }
     pub(crate) fn require(&mut self, actual: TypeId, expected: TypeId) -> Result<(), Error> {
         if self.matches(actual, expected)? {
@@ -48,6 +89,15 @@ impl<'t, const SUBSUMPTION: bool> Normalized<'t, SUBSUMPTION> {
         while let Some((a, b, depth)) = self.work.pop() {
             self.charge(1)?;
             if depth == FINISHED {
+                if C::PAID && !self.seen.contains(&(a, b)) {
+                    let growth = crate::support::retained::Growth::map::<(TypeId, TypeId), ()>(
+                        self.seen.len(),
+                        self.seen.capacity(),
+                        1,
+                    );
+                    self.cost.charge(growth.work, growth.bytes)?;
+                    self.seen.try_reserve(1).map_err(|_| Error::Budget)?;
+                }
                 self.seen.insert((a, b));
                 continue;
             }
@@ -55,7 +105,7 @@ impl<'t, const SUBSUMPTION: bool> Normalized<'t, SUBSUMPTION> {
                 continue;
             }
             self.charge(1)?;
-            self.work.push((a, b, FINISHED));
+            self.push((a, b, FINISHED))?;
             if !self.compare(a, b, u16::try_from(depth).map_err(|_| Error::Identity)?)? {
                 return Ok(false);
             }
@@ -67,7 +117,7 @@ impl<'t, const SUBSUMPTION: bool> Normalized<'t, SUBSUMPTION> {
 #[cfg(test)]
 #[path = "../../tests/invariants/mismatch_answers.rs"]
 mod mismatch_tests;
-impl<'t, const SUBSUMPTION: bool> Compare<'t> for Normalized<'t, SUBSUMPTION> {
+impl<'t, const SUBSUMPTION: bool, C: Cost> Compare<'t> for Normalized<'t, SUBSUMPTION, C> {
     fn types(&self) -> &'t Store {
         self.types
     }
@@ -76,11 +126,11 @@ impl<'t, const SUBSUMPTION: bool> Compare<'t> for Normalized<'t, SUBSUMPTION> {
         if self.steps.saturating_add(self.work.len()) > 1_000_000 {
             return Err(Error::Budget);
         }
-        Ok(())
+        self.cost.charge(count, 0)
     }
     fn child(&mut self, a: TypeId, b: TypeId, depth: u16) -> Result<(), Error> {
         self.charge(1)?;
-        self.work.push((a, b, u32::from(depth)));
+        self.push((a, b, u32::from(depth)))?;
         Ok(())
     }
     fn regions(&mut self, _: RegionId, _: RegionId, _: u16) -> Result<bool, Error> {
@@ -322,3 +372,56 @@ pub(crate) trait Compare<'t> {
         Ok(true)
     }
 }
+
+/// Query-local candidate data only; the caller retains the actual current store.
+/// It does not carry any input equation, region assumption or declaration proof.
+#[derive(Default)]
+pub(crate) struct Memo {
+    work: Vec<(TypeId, TypeId, u32)>,
+    seen: HashSet<(TypeId, TypeId)>,
+    steps: usize,
+}
+pub(crate) trait Cost {
+    const PAID: bool;
+    fn charge(&mut self, work: usize, bytes: usize) -> Result<(), Error>;
+}
+impl Cost for () {
+    const PAID: bool = false;
+    fn charge(&mut self, _: usize, _: usize) -> Result<(), Error> {
+        Ok(())
+    }
+}
+pub(crate) struct PaidCost<'p> {
+    payment: crate::support::retained::Payment<'p>,
+    failure: Option<&'static str>,
+}
+impl Cost for PaidCost<'_> {
+    const PAID: bool = true;
+    fn charge(&mut self, work: usize, bytes: usize) -> Result<(), Error> {
+        if self.failure.is_some() {
+            return Err(Error::Budget);
+        }
+        if let Err(message) = (self.payment)(work, bytes) {
+            self.failure = Some(message);
+            return Err(Error::Budget);
+        }
+        Ok(())
+    }
+}
+impl<const SUBSUMPTION: bool> Normalized<'_, SUBSUMPTION, PaidCost<'_>> {
+    pub(crate) fn matches_charged(
+        &mut self,
+        actual: TypeId,
+        expected: TypeId,
+    ) -> Result<bool, &'static str> {
+        self.matches(actual, expected).map_err(|error| {
+            self.cost.failure.unwrap_or(match error {
+                Error::Budget => "complete structural comparison work budget exceeded",
+                _ => "invalid complete structural comparison identity",
+            })
+        })
+    }
+}
+const _: [(); 72] = [(); size_of::<Normalized<'_, false>>()];
+const _: [(); 104] = [(); size_of::<Normalized<'_, false, PaidCost<'_>>>()];
+const _: [(); 64] = [(); size_of::<Memo>()];

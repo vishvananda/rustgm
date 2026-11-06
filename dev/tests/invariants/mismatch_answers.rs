@@ -65,3 +65,107 @@ fn repeated_small_failures_preserve_large_completed_subgraphs() -> Result<(), Er
     assert!(shape.matches(left, right)?);
     Ok(())
 }
+
+#[test]
+fn paid_correspondence_preserves_cold_growth_warm_pairs_and_real_sticky_failures()
+-> Result<(), &'static str> {
+    use std::cell::Cell;
+    let mut store = Store::default();
+    let byte = TypeId::primitive(crate::types::Primitive::U8);
+    let left = store.intern(Kind::Reference {
+        mutable: false,
+        region: RegionId(1),
+        referent: byte,
+    })?;
+    let right = store.intern(Kind::Reference {
+        mutable: false,
+        region: RegionId(2),
+        referent: byte,
+    })?;
+    let bytes = Cell::new(0usize);
+    let pay = |_: usize, amount: usize| {
+        bytes.set(bytes.get().saturating_add(amount));
+        Ok(())
+    };
+    let mut shape = Normalized::<false>::new_charged(&store, &pay, Memo::default());
+    assert!(shape.matches_charged(left, right)?);
+    let cold = bytes.get();
+    assert!(cold > 0);
+    for _ in 0..8 {
+        assert!(shape.matches_charged(left, right)?);
+    }
+    assert_eq!(bytes.get(), cold);
+    assert!(shape.matches_charged(TypeId(u32::MAX), left).is_err());
+    let mut resumed = Normalized::<false>::new_charged(&store, &pay, shape.into_memo());
+    assert!(resumed.matches_charged(left, right)?);
+    assert_eq!(bytes.get(), cold);
+    let refuse = |_: usize, amount: usize| {
+        if amount == 0 {
+            Ok(())
+        } else {
+            Err("actual test payer exhausted")
+        }
+    };
+    let mut denied = Normalized::<false>::new_charged(&store, &refuse, Memo::default());
+    assert_eq!(
+        denied.matches_charged(left, right),
+        Err("actual test payer exhausted")
+    );
+    assert!(denied.work.is_empty());
+    assert!(denied.seen.is_empty());
+    assert_eq!(
+        denied.matches_charged(byte, byte),
+        Err("actual test payer exhausted")
+    );
+    assert_eq!(size_of::<Normalized<'_, false>>(), 72);
+    assert_eq!(size_of::<Normalized<'_, false, PaidCost<'_>>>(), 104);
+    Ok(())
+}
+
+#[test]
+fn shared_prefix_correspondence_work_grows_with_unique_pairs() -> Result<(), &'static str> {
+    for depth in [8, 32, 128] {
+        let mut store = Store::default();
+        let byte = TypeId::primitive(crate::types::Primitive::U8);
+        let mut left = store.intern(Kind::Reference {
+            mutable: false,
+            region: RegionId(1),
+            referent: byte,
+        })?;
+        let mut right = store.intern(Kind::Reference {
+            mutable: false,
+            region: RegionId(2),
+            referent: byte,
+        })?;
+        for _ in 0..depth {
+            let a = store.intern_list(&[left, left])?;
+            let b = store.intern_list(&[right, right])?;
+            left = store.intern(Kind::Tuple(a))?;
+            right = store.intern(Kind::Tuple(b))?;
+        }
+        let work = std::cell::Cell::new(0usize);
+        let pay = |amount: usize, _: usize| {
+            work.set(work.get().saturating_add(amount));
+            Ok(())
+        };
+        let mut fingerprints = Shapes::default();
+        assert_eq!(
+            fingerprints.get_charged(&store, left, &pay)?,
+            fingerprints.get_charged(&store, right, &pay)?
+        );
+        let mut shape = Normalized::<false>::new_charged(&store, &pay, Memo::default());
+        assert!(shape.matches_charged(left, right)?);
+        assert!(
+            shape.steps <= 12 * depth + 32,
+            "depth{depth}: {}",
+            shape.steps
+        );
+        assert!(fingerprints.steps <= 128 * depth + 128);
+        let before = work.get();
+        for _ in 0..8 {
+            assert!(shape.matches_charged(left, right)?);
+        }
+        assert!(work.get() - before <= 8 * 8);
+    }
+    Ok(())
+}

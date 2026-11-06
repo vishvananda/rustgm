@@ -30,3 +30,8 @@ pa31/tests/spec/dereference-source/wrong-mut-impl.rs	1
 pa31/tests/spec/dereference-source/owned-drop.rs	0
 pa31/tests/spec/dereference-source/native.rs	0
 pa31/tests/spec/dereference-source/nested-borrow.rs	0
+pa31/tests/spec/dereference-source/receiver-alias-depth.rs	0
+pa31/tests/spec/dereference-source/conjunction-bound.rs	0
+pa31/tests/spec/dereference-source/conjunction-missing.rs	1
+pa31/tests/spec/dereference-source/conjunction-static.rs	0
+pa31/tests/spec/dereference-source/conjunction-escape.rs	1

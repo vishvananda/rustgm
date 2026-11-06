@@ -41,9 +41,7 @@ impl Checker<'_> {
         let Some((key, mut receiver, target)) = self.actual_method_receiver(function) else {
             return Ok(());
         };
-        if receiver.base != target
-            && !matches!((self.facts.types.kind(receiver.base),self.facts.types.kind(target)),(Some(Type::Adt(a,_)),Some(Type::Adt(b,_))) if a==b)
-        {
+        if receiver.base != target {
             receiver.base = self.validate_smart_receiver(function, key, receiver.base, target)?;
         }
         if receiver.base != target {

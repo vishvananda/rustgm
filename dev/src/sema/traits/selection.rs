@@ -40,6 +40,7 @@ pub(in crate::sema) use search::callable_layouts;
 pub(crate) use search::copy_trace;
 #[cfg(test)]
 pub(in crate::sema) use search::specialization_layouts;
+pub(in crate::sema) use search::{Conjunction, prove_conjunction};
 pub(in crate::sema) use search::{
     Pending, Progress, Reuse, begin, begin_canonical, begin_canonical_counted,
     begin_declaration_counted, begin_executable_counted, begin_normalized, begin_projection,

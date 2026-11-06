@@ -4751,6 +4751,21 @@ normalize during inference or infer input bounds from a result requirement.
 Captured callable predicates lift to the owning scope, while predicates involving
 callable locals remain deferred.
 
+Prove related canonical nominal roots in one actual caller query when their
+complete predicates are ready. Reuse completed formation and child selections
+inside that query, preserving fresh witness intervals for each sibling root.
+Finish with one union traversal of the real proof graph so shared suffixes do
+not incur a fresh traversal for every root. Retain every root's region, equality,
+sizing and selected-implementation debts; a failed or deferred root grants no
+partial satisfaction. Builtin Sized keeps its existing shape producer. Body
+queries use their actual alias substitution, caller assumptions, environment and
+region start; declaration proof cannot stand in for body permission. Ordinary
+single-root, quantified, pending and unsupported profiles retain their existing
+producers. Query-local reuse never widens cross-caller evidence eligibility or
+raises work/storage limits. Rigid receiver correspondence compares complete
+arguments through the shared paid structural matcher; item identity alone is
+insufficient, and the final directed lifetime proof remains mandatory.
+
 Prepare projected requirements for requested canonical roots before immutable
 lifetime proofs, including generated constructor and specialized body contracts.
 Cache substitutions by complete nominal arguments and charge traversal, capture

@@ -1,7 +1,7 @@
 # Actual source dereference contracts
 
-The 32 complete authored inputs in `contract.json` and `cases.tsv` freeze outcomes
-before observing RustGM. Pinned Rust1.98.0 (88d9e12ae) independently confirms all 32;
+The 37 complete authored inputs in `contract.json` and `cases.tsv` freeze outcomes
+before observing RustGM. Pinned Rust1.98.0 (88d9e12ae) independently confirms the original 32 and five added controls;
 `foundation.rs` and the C observer are authenticated auxiliary inputs. Preserve
 repository NOTICE and the inherited source-foundation attribution.
 
@@ -28,3 +28,10 @@ requirements remain required. Local source completion is not imported permission
 regression. Its callback borrows the real nested operand, mutates the referent,
 and ends the borrow locally; the expected C observer output is `23\n`. It uses
 existing Pin/Deref/DerefMut roles and no AsyncIterator declarations.
+
+`receiver-alias-depth.rs` retains 128 named receiver layers without introducing
+a parser nesting limit. Its full body-proof test checks depths8/16/32/64/128 and
+requires canonical work to grow by at most two for each doubled depth. The four
+conjunction controls preserve genuine missing-bound and escaping-lifetime
+rejections alongside their independently accepted counterparts. Shared roots
+retain every formation and lifetime obligation in their actual caller scope.

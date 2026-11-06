@@ -1,0 +1,201 @@
+{
+  "state": "focused checkpoint passed; main join pending",
+  "analysis_only": false,
+  "base_commit": "a2fba47f17e4896f2d9ab5365f3a542a40abbef7",
+  "independent": {
+    "state": "passed",
+    "toolchain": "1.98.0",
+    "analysis_only": false,
+    "cases": [
+      {
+        "name": "receiver-alias-depth",
+        "path": "pa31/tests/spec/dereference-source/receiver-alias-depth.rs",
+        "sha256": "5bcb9a6f144c0f5cdf022672bbd79e771a4e41c1659afd7f0864dcdf55f0f252",
+        "rustc_status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--emit=metadata",
+          "-Zthreads=2",
+          "pa31/tests/spec/dereference-source/receiver-alias-depth.rs",
+          "-o",
+          "obj/parallel/receiver-alias-kernel/oracle-v1/receiver-alias-depth.rmeta"
+        ],
+        "status": 0,
+        "matches": true
+      },
+      {
+        "name": "conjunction-bound",
+        "path": "pa31/tests/spec/dereference-source/conjunction-bound.rs",
+        "sha256": "0367d2101de70c0c0ca78ec54955589d40f0745c720b7ada65b2880e46a7c09a",
+        "rustc_status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--emit=metadata",
+          "-Zthreads=2",
+          "pa31/tests/spec/dereference-source/conjunction-bound.rs",
+          "-o",
+          "obj/parallel/receiver-alias-kernel/oracle-v1/conjunction-bound.rmeta"
+        ],
+        "status": 0,
+        "matches": true
+      },
+      {
+        "name": "conjunction-missing",
+        "path": "pa31/tests/spec/dereference-source/conjunction-missing.rs",
+        "sha256": "4a04a7920f319705451a8c94f07f932bc6e1c2a4a15ebe6514b394fcd1505461",
+        "rustc_status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--emit=metadata",
+          "-Zthreads=2",
+          "pa31/tests/spec/dereference-source/conjunction-missing.rs",
+          "-o",
+          "obj/parallel/receiver-alias-kernel/oracle-v1/conjunction-missing.rmeta"
+        ],
+        "status": 1,
+        "matches": true
+      },
+      {
+        "name": "conjunction-static",
+        "path": "pa31/tests/spec/dereference-source/conjunction-static.rs",
+        "sha256": "5e3485b020d54a565f1ce323a34a0a7d0f7d3a3cdcf2ffb5dffaaa1015e1bab7",
+        "rustc_status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--emit=metadata",
+          "-Zthreads=2",
+          "pa31/tests/spec/dereference-source/conjunction-static.rs",
+          "-o",
+          "obj/parallel/receiver-alias-kernel/oracle-v1/conjunction-static.rmeta"
+        ],
+        "status": 0,
+        "matches": true
+      },
+      {
+        "name": "conjunction-escape",
+        "path": "pa31/tests/spec/dereference-source/conjunction-escape.rs",
+        "sha256": "3feff13cc3729a794a52525618f8147cf5d8e22fa68e63d9c4ded2085190ad66",
+        "rustc_status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--emit=metadata",
+          "-Zthreads=2",
+          "pa31/tests/spec/dereference-source/conjunction-escape.rs",
+          "-o",
+          "obj/parallel/receiver-alias-kernel/oracle-v1/conjunction-escape.rmeta"
+        ],
+        "status": 1,
+        "matches": true
+      }
+    ],
+    "seconds": 0.3410930300015025
+  },
+  "depths": [
+    8,
+    16,
+    32,
+    64,
+    128
+  ],
+  "canonical_work": [
+    2249,
+    3337,
+    5509,
+    9849,
+    18525
+  ],
+  "public_exact": 4,
+  "complete_source_cases": 37,
+  "native_programs": 2,
+  "private_execution": "pending CI",
+  "receipts": {
+    "obj/qualification/fast/1793947237485523873/receipt.json": {
+      "sha256": "60a143c180bf98fa332b56e03adba9db700cb13fc3d8bb5ff1572f2e0fa5e73f"
+    },
+    "obj/parallel/receiver-alias-kernel/qualification-v1/receipt.json": {
+      "sha256": "b452c14827d1aa18710c82f2947c75e5a7b796ac77f024758a2870faafac938b"
+    },
+    "obj/parallel/receiver-alias-kernel/private-metadata-v1/receipt.json": {
+      "sha256": "bf828448bd3cc7a9f5a0bde2b7ba50d9af190dc07137482670518d4029d8ea79"
+    }
+  },
+  "private_metadata_steps": [
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--all",
+        "--check"
+      ],
+      "status": 0,
+      "seconds": 17.774882494995836
+    },
+    {
+      "name": "strict",
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--lib",
+        "--tests",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": 0,
+      "seconds": 107.61054629797582
+    }
+  ],
+  "changed_sources": {
+    "dev/src/sema/bodies/trait_goals/conjunction.rs": "c9c375d3d90721f33322881c4af4daab62fe2f9f0ff3badddedb1e6c43f71d7d",
+    "dev/src/sema/nominals/traits/conjunction.rs": "fae399ad4a5bdb500c41b0b97ff0579027efc9fe25213428b58dc2fed02321aa",
+    "dev/src/sema/traits/selection/search/conjunction.rs": "ec21979542de0e05ac01c807dfee651e78c7e52e21781b7aa58eb81638f5dbd0",
+    "pa31/tests/spec/dereference-source/conjunction-bound.rs": "0367d2101de70c0c0ca78ec54955589d40f0745c720b7ada65b2880e46a7c09a",
+    "pa31/tests/spec/dereference-source/conjunction-escape.rs": "3feff13cc3729a794a52525618f8147cf5d8e22fa68e63d9c4ded2085190ad66",
+    "pa31/tests/spec/dereference-source/conjunction-missing.rs": "4a04a7920f319705451a8c94f07f932bc6e1c2a4a15ebe6514b394fcd1505461",
+    "pa31/tests/spec/dereference-source/conjunction-static.rs": "5e3485b020d54a565f1ce323a34a0a7d0f7d3a3cdcf2ffb5dffaaa1015e1bab7",
+    "pa31/tests/spec/dereference-source/receiver-alias-depth.rs": "5bcb9a6f144c0f5cdf022672bbd79e771a4e41c1659afd7f0864dcdf55f0f252",
+    "dev/src/sema/annotated_headers.rs": "dfbc344def59bdbf11524aff6b516535dad4c21637eb8f60b887a4ecd64a6b68",
+    "dev/src/sema/bodies/bounds.rs": "d933e0141381eee45ad0138340cdba8e5e1bf20e1010612dc484bbb5dad75cf0",
+    "dev/src/sema/bodies/trait_goals.rs": "477e27b7eaf1b34a58735cd2cb0fcecade1e019b025ac89a72d8ffe67c8680f6",
+    "dev/src/sema/declarations/methods.rs": "8fc556bf0bf9ef3856dae62db9c86fbe0965a6cb99658cfbb7f97e59039b88ee",
+    "dev/src/sema/declarations/smart_receivers.rs": "232d11cb4bc63ea815a88b8801dc290e0ce1ee5eddfd097d4c5f1b76f5d0e92f",
+    "dev/src/sema/nominals.rs": "dd380dacb05863887704e25f13269bfb2233fa825f8ec968032d26b36c93af36",
+    "dev/src/sema/nominals/traits.rs": "06971599d215a19d47446f48bf27b768adecd559f8c35cd958179b49b258e298",
+    "dev/src/sema/traits/selection.rs": "fc208ec7d630fe0057587795eb3a95f5d8099d02f7612df8e457e04f3c9c766c",
+    "dev/src/sema/traits/selection/search.rs": "d5868b57f665aa9a902a8f9cb70e9cef20dd0b37900b30473a78d7486f822e97",
+    "dev/src/sema/traits/selection/search/continuation.rs": "9b3e14406897ceeb0392c77d9de46ad4a60670b071302d5bfd1c836a473921fd",
+    "dev/src/sema/traits/selection/search/refutations.rs": "e3ce02a35067eea67a1dce219e617ba805946be013db7031d962887822b97036",
+    "dev/src/types/structural.rs": "ee7dae05a3f822b12873510c887514e179137dc9c8fc356e484f4375d42a7b7d",
+    "dev/tests/deref_contracts.rs": "92a2b7efcfd332d7d5d18cc194ac3c7862bf26cd39c656216bbc9a93d20988d3",
+    "dev/tests/invariants/coercion_formation.rs": "7689c6a2d4b7867f0dff6d04a424e4f43619503444fe6f4231074628d0af1c5c",
+    "dev/tests/invariants/mismatch_answers.rs": "85597d158cf111fa0f4a7641c8d9cc9e4127963a0d21c6ff2b93e74f67ce33c0",
+    "pa31/tests/spec/dereference-source/README.md": "694784cef82e3c8d175c6d00772a99821b88c44dbea07ad2c8fd0c06edd4d605",
+    "pa31/tests/spec/dereference-source/cases.tsv": "2b5e7bc2985538a1e8e79bd1fd97f193a99de8ac10c02032256859a9dc58f63b",
+    "pa31/tests/spec/dereference-source/contract.json": "99f6afe866c1509e7775a70ed8f3b4cb0dcf43cf3852ab00fe0072f76aa3b492",
+    "spec.md": "fae989e10bc6c0b53963eb4fc4f8deebb1df83e53593f933990bb6bf0f252dbf"
+  }
+}

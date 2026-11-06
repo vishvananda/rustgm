@@ -280,13 +280,30 @@ impl Proof {
             .nominal_requirements
             .prepare(&mut facts.types, ty)?;
         if facts.generics.has_nominal_requirements {
-            for requirement in requirements::requirements_inside(
+            let requirements = requirements::requirements_inside(
                 facts,
                 ty,
                 u16::from(count.is_some()),
                 &mut self.checked,
-            )? {
-                let valid = self.prove_clause(facts, requirement)?;
+            )?;
+            let failed = if self.scope.is_none()
+                || requirements.len() < 2
+                || !requirements.iter().all(traits::conjunction_supported)
+            {
+                None
+            } else {
+                self.trait_state(facts)?
+                    .prove_conjunction(facts, &requirements)?
+            };
+            for requirement in requirements {
+                let disproven = matches!(failed, Some(traits::Completion::Unproven(p)) if requirement == Clause::Predicate(p));
+                if failed.is_some()
+                    && !disproven
+                    && matches!(requirement, Clause::Predicate(p) if p.bound.trait_parts().is_some())
+                {
+                    continue;
+                }
+                let valid = !disproven && self.prove_clause(facts, requirement)?;
                 if !valid {
                     let Clause::Predicate(requirement) = requirement else {
                         return Err("nominal type argument must satisfy its quantified bound");

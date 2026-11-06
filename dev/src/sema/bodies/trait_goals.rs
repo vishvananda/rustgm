@@ -1,5 +1,6 @@
 //! Resolve call goals before inference completion, retaining actual assumption evidence.
 mod canonical;
+mod conjunction;
 mod diagnostics;
 mod inference;
 use super::{Checker, Error, NodeId};

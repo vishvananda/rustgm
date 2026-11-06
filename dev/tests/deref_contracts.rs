@@ -42,7 +42,7 @@ fn actual_source_deref_and_mutable_places_keep_real_bodies_and_proofs() -> TestR
         }
         count += 1;
     }
-    assert_eq!(count, 32);
+    assert_eq!(count, 37);
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }
@@ -76,5 +76,23 @@ fn nested_pin_borrow_mutates_the_actual_operand_before_directed_conversion() -> 
         &test_source::fixture("pa31/tests/spec/dereference-source/nested-observer.c")?,
         "23\n",
     )?;
+    Ok(())
+}
+
+#[test]
+fn generic_receiver_requirements_share_one_current_caller_proof_graph() -> TestResult {
+    let source =
+        test_source::fixture("pa31/tests/spec/dereference-source/receiver-alias-depth.rs")?;
+    let mut steps = Vec::new();
+    for depth in [8, 16, 32, 64, 128] {
+        let text = source.replace("self:Layer128", &format!("self:Layer{depth}"));
+        let report = test_source::source_provider(&text, "receiver_scaling")?;
+        let analysis = pipeline::analyze_source(&report)
+            .map_err(|e| format!("depth {depth}; preceding work {steps:?}: {e}"))?;
+        steps.push(analysis.facts.body_work.canonical_steps);
+    }
+    eprintln!("receiver canonical work: {steps:?}");
+    assert!(steps.iter().all(|&work| work > 0));
+    assert!(steps.windows(2).all(|pair| pair[1] <= pair[0] * 2));
     Ok(())
 }

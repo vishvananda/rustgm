@@ -71,8 +71,11 @@ impl Checker<'_> {
         let requirements =
             crate::sema::nominals::requirements(self.facts, ty, &mut checked.ordinary)
                 .map_err(|e| self.error(node, e))?;
+        let joined = self.prove_sizing_conjunction(node, &requirements)?;
         for requirement in requirements {
             match requirement {
+                crate::types::parameters::clauses::Clause::Predicate(p)
+                    if joined && p.bound.trait_parts().is_some() => {}
                 crate::types::parameters::clauses::Clause::UnstableFeature(id) => {
                     self.prove_feature_bound(node, id)?;
                 }

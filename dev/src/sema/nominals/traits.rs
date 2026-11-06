@@ -1,4 +1,6 @@
 //! Canonical declaration goals enter inference only after their outer binder becomes free.
+mod conjunction;
+pub(in crate::sema::nominals) use conjunction::{Completion, supported as conjunction_supported};
 pub(in crate::sema) mod normal_form;
 mod normalization;
 mod quantified;

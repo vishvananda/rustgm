@@ -80,7 +80,7 @@ fn source_unsize_shape_absence_does_not_skip_nominal_or_region_inputs() -> Resul
                 // Canonical PointeeSized formation is trait-only. The Unsize
                 // consumer must still demand the separate nominal lifetime facts.
                 assert!(search.query.nodes[root].debt_free);
-                search.query.resume_sibling_for_test()?;
+                search.query.resume_sibling()?;
             }
             let (mut context, goal) = helpers::instantiate(&mut facts, predicate)?;
             let frame = Frame::new(&facts, &mut context, &goal, 3)?;
@@ -233,7 +233,7 @@ fn completed_unsizing_absence_does_not_erase_a_new_projection_prefix() -> Result
             search.query.completed.get(&predicate),
             Some(Decision::Absent)
         ));
-        search.query.resume_sibling_for_test()?;
+        search.query.resume_sibling()?;
         let pointee = facts
             .source_bindings
             .as_deref()
@@ -256,7 +256,7 @@ fn completed_unsizing_absence_does_not_erase_a_new_projection_prefix() -> Result
             .first()
             .ok_or("retained normalization prefix")?;
         assert!(!search.query.nodes[prefix].debt_free);
-        search.query.resume_sibling_for_test()?;
+        search.query.resume_sibling()?;
         let (mut context, goal) = helpers::instantiate(&mut facts, predicate)?;
         let mut frame = Frame::new(&facts, &mut context, &goal, 3)?;
         frame.normalized_inputs = Some(super::super::frames::NormalizedInputs {

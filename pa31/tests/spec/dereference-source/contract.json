@@ -197,6 +197,36 @@
       "rustc_status": 0,
       "native_stdout": "23\n",
       "purpose": "Actual Pin<&mut &mut S> operand borrow retains its own nested lifetimes before the directed opened receiver conversion"
+    },
+    {
+      "name": "receiver-alias-depth",
+      "path": "pa31/tests/spec/dereference-source/receiver-alias-depth.rs",
+      "sha256": "5bcb9a6f144c0f5cdf022672bbd79e771a4e41c1659afd7f0864dcdf55f0f252",
+      "rustc_status": 0
+    },
+    {
+      "name": "conjunction-bound",
+      "path": "pa31/tests/spec/dereference-source/conjunction-bound.rs",
+      "sha256": "0367d2101de70c0c0ca78ec54955589d40f0745c720b7ada65b2880e46a7c09a",
+      "rustc_status": 0
+    },
+    {
+      "name": "conjunction-missing",
+      "path": "pa31/tests/spec/dereference-source/conjunction-missing.rs",
+      "sha256": "4a04a7920f319705451a8c94f07f932bc6e1c2a4a15ebe6514b394fcd1505461",
+      "rustc_status": 1
+    },
+    {
+      "name": "conjunction-static",
+      "path": "pa31/tests/spec/dereference-source/conjunction-static.rs",
+      "sha256": "5e3485b020d54a565f1ce323a34a0a7d0f7d3a3cdcf2ffb5dffaaa1015e1bab7",
+      "rustc_status": 0
+    },
+    {
+      "name": "conjunction-escape",
+      "path": "pa31/tests/spec/dereference-source/conjunction-escape.rs",
+      "sha256": "3feff13cc3729a794a52525618f8147cf5d8e22fa68e63d9c4ded2085190ad66",
+      "rustc_status": 1
     }
   ],
   "auxiliary": [

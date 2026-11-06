@@ -50,7 +50,7 @@ impl Search<'_> {
         let mut sized = Vec::new();
         self.collect_graph(
             facts,
-            root,
+            [root],
             Some((owner, arguments)),
             &mut proof,
             &mut sized,
