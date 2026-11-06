@@ -1,9 +1,6 @@
 //! Full symbolic ownership, region and cleanup checking for source regressions.
 use super::semantic;
-use rustgm::{
-    body, borrow,
-    types::{Kind, copy::Copies},
-};
+use rustgm::{body, borrow, types::copy::Copies};
 
 pub fn check(source: &str) -> Result<Vec<borrow::loans::Analysis>, Box<dyn std::error::Error>> {
     let (report, mut facts) = semantic::analyze(source).map_err(|e| format!("semantics: {e}"))?;
@@ -45,49 +42,6 @@ pub fn verify(
         templates,
         contracts,
         &custom,
-        |ty, selected| {
-            use body::drops::{MemberPosition, MemberQuery};
-            let Some(Kind::Adt(owner, _)) = facts.types.kind(ty) else {
-                return Err("invalid selected nominal owner");
-            };
-            let id = match selected {
-                MemberQuery::Field(body::ir::Selection::Nominal(field)) => facts
-                    .members
-                    .variant(field)
-                    .ok_or("missing field variant")?,
-                MemberQuery::Variant(variant) => {
-                    if facts
-                        .aggregates
-                        .get(owner)
-                        .is_none_or(|d| d.kind != rustgm::types::aggregate::Kind::Enum)
-                    {
-                        return Err("selected variant has no enum owner");
-                    }
-                    variant
-                }
-                MemberQuery::Field(_) => return Err("invalid selected nominal field"),
-            };
-            let variant = facts
-                .members
-                .variants
-                .get(id.0 as usize)
-                .ok_or("missing variant")?;
-            if variant.owner != owner {
-                return Err("foreign selected member");
-            }
-            match selected {
-                MemberQuery::Field(body::ir::Selection::Nominal(field)) => {
-                    Ok(MemberPosition::Field {
-                        variant: variant.ordinal,
-                        field: facts
-                            .members
-                            .ordinal(field)
-                            .ok_or("missing field ordinal")?,
-                    })
-                }
-                MemberQuery::Variant(_) => Ok(MemberPosition::Variant(variant.ordinal)),
-                MemberQuery::Field(_) => Err("invalid selected nominal field"),
-            }
-        },
+        |ty, selected| body::drops::nominal_position(facts, ty, selected),
     )?)
 }

@@ -47,17 +47,43 @@ pub(super) fn one(
     }
     facts.types.arena_identity();
     facts.aggregates.arena_identity();
-    let plan = with_environment(facts, &mut copies, |environment| {
-        verifier.prepare(
+    let mut initial = with_environment(facts, &mut copies, |environment| {
+        verifier.begin(environment, body, parameters, regions)
+    })
+    .map_err(|e| e.message)?;
+    if function_qualification_body(facts, body) {
+        with_environment(facts, &mut copies, |environment| {
+            verifier.begin_qualification(
+                environment,
+                &mut initial,
+                regions,
+                destruction,
+                &|ty, field| body::drops::nominal_position(facts, ty, field),
+            )
+        })?;
+        if let Some(questions) = initial.questions(&mut facts.types, &facts.aggregates)? {
+            let answers =
+                body::defining_cleanups::qualify(facts, body, contract.to_mut(), questions)?;
+            **regions = recheck(facts, body, contract)?;
+            with_environment(facts, &mut copies, |environment| {
+                verifier.accept_qualification(environment, &mut initial, regions, &answers)
+            })?;
+        }
+    }
+    let mut plan = with_environment(facts, &mut copies, |environment| {
+        verifier.select_initial(
             environment,
-            body,
+            initial,
             destruction,
-            parameters,
             regions,
-            &|ty, field| body::drops::nominal_position(facts, ty, field),
+            (
+                borrow::ownership::initialization::Refinement::Defining,
+                &|ty, field| body::drops::nominal_position(facts, ty, field),
+            ),
         )
     })
     .map_err(|e| e.message)?;
+    plan.resolve_selected(&mut facts.types, &facts.aggregates)?;
     let precise = precise_live_drops(report, facts)?;
     let active = plan.active().next().is_some();
     let eligible = plan.active_const()?;
@@ -68,6 +94,7 @@ pub(super) fn one(
             contract.to_mut(),
             plan.eligibility(),
             precise,
+            active,
         )?;
         **regions = recheck(facts, body, contract)?;
     }
@@ -145,14 +172,17 @@ pub(crate) fn templates<'a>(
         message,
     })?;
     loop {
-        let row = with_environment(facts, &mut copies, |environment| {
-            batch.next(environment, &|ty, field| {
+        let initial = with_environment(facts, &mut copies, |environment| batch.begin(environment))?;
+        let Some(mut initial) = initial else {
+            break;
+        };
+        qualify_row(facts, &mut copies, &mut initial)?;
+        let mut row = with_environment(facts, &mut copies, |environment| {
+            initial.select(environment, &|ty, field| {
                 body::drops::nominal_position(facts, ty, field)
             })
         })?;
-        let Some(mut row) = row else {
-            break;
-        };
+        row.resolve_selected(&mut facts.types, &facts.aggregates)?;
         if row.active()? {
             let (plan, contract) = row.input();
             let error = |message| borrow::Error {
@@ -165,6 +195,7 @@ pub(crate) fn templates<'a>(
                 contract,
                 plan.eligibility(),
                 precise,
+                plan.active().next().is_some(),
             )
             .map_err(error)?;
             contract
@@ -180,6 +211,44 @@ pub(crate) fn templates<'a>(
         with_environment(facts, &mut copies, |environment| row.finish(environment))?;
     }
     batch.finish(&facts.types).map(|checked| (checked, inputs))
+}
+fn qualify_row(
+    facts: &mut Declarations,
+    copies: &mut Copies,
+    row: &mut borrow::templates::InitialRow<'_, '_>,
+) -> std::result::Result<(), borrow::Error> {
+    if !function_qualification_body(facts, row.body()) {
+        return Ok(());
+    }
+    with_environment(facts, copies, |environment| {
+        row.begin_qualification(environment, &|ty, field| {
+            body::drops::nominal_position(facts, ty, field)
+        })
+    })?;
+    let Some(input) = row.qualification_input(&mut facts.types, &facts.aggregates)? else {
+        return Ok(());
+    };
+    let body = input.body;
+    let questions = input.questions;
+    let contract = input.contract;
+    let error = |message: String| borrow::Error {
+        node: Some(body.source.into()),
+        message,
+    };
+    let answers =
+        body::defining_cleanups::qualify(facts, body, contract, questions).map_err(error)?;
+    contract
+        .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
+        .map_err(|message| error(message.into()))?;
+    let mut queries = crate::types::outlives::Queries::new(
+        &facts.types,
+        &facts.lifetimes.nominal_requirements,
+        &facts.lifetimes.callables,
+    );
+    row.refresh(&facts.types, &facts.lifetimes.variances, &mut queries)?;
+    with_environment(facts, copies, |environment| {
+        row.accept_qualification(environment, &answers)
+    })
 }
 pub(super) fn recheck(
     facts: &mut Declarations,
@@ -220,7 +289,7 @@ pub(crate) fn ordinary(
     report: &crate::resolve::expansion::Report,
     facts: &mut Declarations,
     body: Body,
-    input: &Contract,
+    (input, requirements): (&Contract, Option<&body::drops::Requirements>),
     mut regions: regions::Body,
     verifier: &mut borrow::incremental::Verifier,
     cache: &mut Option<borrow::destruction::glue::Cache>,
@@ -233,25 +302,39 @@ pub(crate) fn ordinary(
         facts.types.arena_identity();
         facts.aggregates.arena_identity();
         let mut copies = Copies::default();
+        let mut initial = with_environment(facts, &mut copies, |environment| {
+            verifier.begin_const_original(environment, body, &regions)
+        })?;
+        let mut selected = qualify_native(
+            facts,
+            input,
+            &mut regions,
+            verifier,
+            (cache, requirements),
+            &mut copies,
+            &mut initial,
+        )?;
         let recipes = cache
             .take()
             .ok_or_else(|| error("const original lost its actual recipe cache"))?;
         let mut catalog = recipes.attach(&facts.types, &facts.aggregates, &facts.members);
         let plan = with_environment(facts, &mut copies, |environment| {
-            verifier.prepare_const_original(environment, body, &regions, &mut catalog)
+            verifier.select_const_original(environment, initial, &regions, &mut catalog)
         });
         *cache = Some(catalog.into_cache());
-        let plan = plan?;
+        let mut plan = plan?;
+        plan.resolve_selected(&mut facts.types, &facts.aggregates)
+            .map_err(error)?;
         let precise = precise_live_drops(report, facts).map_err(|message| error(&message))?;
-        let mut selected = None;
-        if plan.eligibility().next().is_some() {
-            let mut contract = input.clone();
+        if plan.eligibility().next().is_some() || plan.active() {
+            let mut contract = selected.take().unwrap_or_else(|| input.clone());
             body::defining_cleanups::select(
                 facts,
                 body,
                 &mut contract,
                 plan.eligibility(),
                 precise,
+                plan.active(),
             )
             .map_err(|e| error(&e))?;
             regions = recheck(facts, body, &contract).map_err(|e| error(&e))?;
@@ -265,6 +348,56 @@ pub(crate) fn ordinary(
     })
 }
 
+fn qualify_native(
+    facts: &mut Declarations,
+    input: &Contract,
+    regions: &mut regions::Body,
+    verifier: &borrow::incremental::Verifier,
+    (cache, requirements): (
+        &mut Option<borrow::destruction::glue::Cache>,
+        Option<&body::drops::Requirements>,
+    ),
+    copies: &mut Copies,
+    initial: &mut borrow::incremental::ConstInitial<'_>,
+) -> std::result::Result<Option<Contract>, borrow::Error> {
+    let body = initial.body();
+    if !function_qualification_body(facts, body) {
+        return Ok(None);
+    }
+    let error = |message: String| borrow::Error {
+        node: Some(body.source.into()),
+        message,
+    };
+    let recipes = cache
+        .take()
+        .ok_or_else(|| error("const qualification lost its recipe cache".into()))?;
+    let catalog = recipes.attach(&facts.types, &facts.aggregates, &facts.members);
+    let result = with_environment(facts, copies, |environment| {
+        verifier.begin_const_qualification(environment, initial, regions, (&catalog, requirements))
+    });
+    *cache = Some(catalog.into_cache());
+    result?;
+    let Some(questions) = initial
+        .questions(&mut facts.types, &facts.aggregates)
+        .map_err(|message| error(message.into()))?
+    else {
+        return Ok(None);
+    };
+    let mut input = input.clone();
+    let answers =
+        body::defining_cleanups::qualify(facts, body, &mut input, questions).map_err(error)?;
+    *regions = recheck(facts, body, &input).map_err(error)?;
+    with_environment(facts, copies, |environment| {
+        verifier.accept_const_qualification(environment, initial, regions, &answers)
+    })?;
+    Ok(Some(input))
+}
+/// Factories and other body owners retain their existing sealed proof paths.
+/// Skipping a new function-only query does not pay active cleanup eligibility.
+fn function_qualification_body(facts: &Declarations, body: &Body) -> bool {
+    matches!(body.owner, body::ir::Owner::Function {definition, execution: None, ..}
+        if facts.members.constructor(definition).is_none())
+}
 fn precise_live_drops(
     report: &crate::resolve::expansion::Report,
     facts: &Declarations,

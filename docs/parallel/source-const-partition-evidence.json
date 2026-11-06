@@ -1,0 +1,1068 @@
+{
+  "checkpoint": "sparse initialization eligibility producer; semantic selected leaves not connected",
+  "base": "c5252f215 (joined29e) plus independent d1f6 CI repair",
+  "candidate": {
+    "state": "passed",
+    "receipt": "obj/parallel/source-transport/va-cleanup/leaves-static6/receipt.json",
+    "receipt_sha256": "da1f6dd10084a1aa8a8aa26f4f5293418869582f2dae5288695ece722fdb4d6c",
+    "source_map": "obj/parallel/source-transport/va-cleanup/leaves-static6/sources.json",
+    "source_map_sha256": "fc6abe91c3be63095dd25e6c2175466c99e9199e585f9dab1631ff43d57a0f9d",
+    "commands": [
+      {
+        "name": "format",
+        "command": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--all"
+        ],
+        "code": 0,
+        "seconds": 15.203275358013343
+      },
+      {
+        "name": "audit",
+        "command": [
+          "obj/audit-venv/bin/python",
+          "scripts/rust_audit.py",
+          "--root",
+          ".",
+          "--cache",
+          "obj/fast-audit.json"
+        ],
+        "code": 0,
+        "seconds": 2.907628721965011
+      },
+      {
+        "name": "clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_traits",
+          "--bin",
+          "rustgm",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "code": 0,
+        "seconds": 70.94996654998977
+      },
+      {
+        "name": "seal",
+        "command": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_traits",
+          "ctseal::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 109.90122167998925
+      },
+      {
+        "name": "constructor",
+        "command": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_traits",
+          "ctleaf::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 0.33723533496959135
+      },
+      {
+        "name": "repair",
+        "command": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_traits",
+          "ctfix::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 1.8974846029886976
+      },
+      {
+        "name": "registration",
+        "command": [
+          "python3",
+          "scripts/maintainer_suites.py",
+          "check"
+        ],
+        "code": 0,
+        "seconds": 0.17074268602300435
+      },
+      {
+        "name": "upstream",
+        "command": [
+          "make",
+          "test-upstream"
+        ],
+        "code": 0,
+        "seconds": 0.22831544000655413
+      }
+    ],
+    "public_tests": 13
+  },
+  "reference_packets": {
+    "obj/parallel/source-transport/va-cleanup/reference-v8/receipt.json": {
+      "sha256": "3c58c581ea385f1644af30b4fae38e35319fe6ae4b585cac5ba634538548bd9b",
+      "data": {
+        "rustc": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+        "prediction_sha256": "191bb437896106702d29991833679d08cd5b9105d6546f19bb8754b86522be93",
+        "observations": [
+          {
+            "file": "fulcpy.rs",
+            "expected_code": 0,
+            "prediction": "active cleanup can skip ordinary Copy field while executing C destructor; prediction uncertain",
+            "source_sha256": "e930eb6d32d5659db97334b18003a881fc7b5dfe4fd772c511bb3f805d86697d",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "fulcpy",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/fulcpy.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v8/fulcpy.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.032173510000575334,
+            "matches": false,
+            "errors": [
+              [
+                "E0493",
+                "destructor of `S<T>` cannot be evaluated at compile-time"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error"
+              ]
+            ]
+          },
+          {
+            "file": "fulbnd.rs",
+            "expected_code": 1,
+            "prediction": "explicit whole const Destruct bound remains distinct from dropless field cleanup",
+            "source_sha256": "9d9682fc0683de32ce773aff40e0225b0422b4fa1a58156267b5a525946835df",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "fulbnd",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/fulbnd.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v8/fulbnd.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.03279457299504429,
+            "matches": true,
+            "errors": [
+              [
+                "E0277",
+                "the trait bound `T: [const] Destruct` is not satisfied"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error"
+              ]
+            ]
+          },
+          {
+            "file": "cppart.rs",
+            "expected_code": 0,
+            "prediction": "partly moved Struct with only dropless/const fields; prediction uncertain",
+            "source_sha256": "71240789f9dbd815601d6b750ea01de4e03aa7f01180bcf1072b199b0afab6b8",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "cppart",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/cppart.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v8/cppart.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.030405447003431618,
+            "matches": false,
+            "errors": [
+              [
+                "E0493",
+                "destructor of `S<T>` cannot be evaluated at compile-time"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error"
+              ]
+            ]
+          },
+          {
+            "file": "epart.rs",
+            "expected_code": 1,
+            "prediction": "unreachable Bad binding cleanup is still checked; setup/control negative",
+            "source_sha256": "d904eb82b1bc06f2b391e172ab7b1c61297dd230982fd74089f2dcb46945861f",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "epart",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/epart.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v8/epart.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.03338060399983078,
+            "matches": false,
+            "errors": []
+          },
+          {
+            "file": "epart2.rs",
+            "expected_code": 0,
+            "prediction": "known eligible variant survives partial enum payload moves; prediction uncertain",
+            "source_sha256": "1b370c1f40a42da76e10ab25b1ea56a2f0fca5167c0ba5206d59678d515983e8",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "epart2",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/epart2.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v8/epart2.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.030288275971543044,
+            "matches": true,
+            "errors": []
+          },
+          {
+            "file": "snest.rs",
+            "expected_code": 0,
+            "prediction": "moved nested known variant leaves historical parent eligibility; prediction uncertain",
+            "source_sha256": "49da3fed267d9f3c5812ba09c3abf1da0b7a1156c0edfe9f720a0b2344597c3f",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "snest",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/snest.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v8/snest.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.02786992897745222,
+            "matches": true,
+            "errors": []
+          },
+          {
+            "file": "eunk.rs",
+            "expected_code": 1,
+            "prediction": "unknown partially moved root retains nonconst qualifier despite variant branch; prediction uncertain",
+            "source_sha256": "cbfe454118765563eb2e3061ad99497d3bfc82652a06e79040ae4bd34909cab1",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "eunk",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/eunk.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v8/eunk.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.02681601297808811,
+            "matches": true,
+            "errors": [
+              [
+                "E0493",
+                "destructor of `E` cannot be evaluated at compile-time"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    "obj/parallel/source-transport/va-cleanup/reference-v9/receipt.json": {
+      "sha256": "9ec9c6d886fc6cda688fc8a0a5e72e10e379aa002fa5e716fd68dbd13533bd6d",
+      "data": {
+        "rustc": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+        "prediction_sha256": "74fe5bc9737c8a0a0b77a4541d9fc14fd234f0301fb96281e7cdc036bd5b56e2",
+        "observations": [
+          {
+            "file": "dborrow.rs",
+            "expected_code": 1,
+            "prediction": "E0506: impossible const cleanup arm still has normal live mutable-loan conflict",
+            "source_sha256": "82ec345e67b7479e4e38344952429bafa7190e8d910666c34392b432f92fa1bb",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dborrow",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dborrow.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v9/dborrow.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.06002571003045887,
+            "matches": true,
+            "errors": [
+              [
+                "E0506",
+                "cannot assign to `x` because it is borrowed"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error; 1 warning emitted"
+              ]
+            ]
+          },
+          {
+            "file": "dread.rs",
+            "expected_code": 1,
+            "prediction": "E0381: impossible const cleanup arm still has uninitialized read",
+            "source_sha256": "7eff58ba10721b1f473df370dd6f46c10ac3a37bd2de23a123bc24fc7ae45f81",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dread",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dread.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v9/dread.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.037949894031044096,
+            "matches": true,
+            "errors": [
+              [
+                "E0381",
+                "used binding `x` isn't initialized"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error"
+              ]
+            ]
+          },
+          {
+            "file": "dmove.rs",
+            "expected_code": 1,
+            "prediction": "E0382: impossible const cleanup arm still has moved non-Copy value use",
+            "source_sha256": "41ee1a91ea7866d5f37c66cce6656ec22152fd887e73fc625d5f139879cada1f",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dmove",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dmove.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v9/dmove.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.03410628600977361,
+            "matches": true,
+            "errors": [
+              [
+                "E0382",
+                "use of moved value: `moved`"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error"
+              ]
+            ]
+          },
+          {
+            "file": "dunsafe.rs",
+            "expected_code": 1,
+            "prediction": "E0133: genuine lexical raw-pointer unsafe permission is still required",
+            "source_sha256": "f47e1d16401334a3ae644b17059c91349c33522167b3c5a82ab4270afafa938d",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dunsafe",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dunsafe.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v9/dunsafe.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.03358452604152262,
+            "matches": true,
+            "errors": [
+              [
+                "E0133",
+                "dereference of raw pointer is unsafe and requires unsafe block"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error"
+              ]
+            ]
+          },
+          {
+            "file": "dcall.rs",
+            "expected_code": 1,
+            "prediction": "E0015: explicit nonconst call remains invalid even when cleanup eligibility edge is impossible",
+            "source_sha256": "02365ecdefc31b8984ac590d1109fc73a125289fc83c4aedd1e7be7bff1979a2",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dcall",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dcall.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v9/dcall.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.03743468498578295,
+            "matches": true,
+            "errors": [
+              [
+                "E0015",
+                "cannot call non-const function `ordinary` in constant functions"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error"
+              ]
+            ]
+          },
+          {
+            "file": "dbound.rs",
+            "expected_code": 1,
+            "prediction": "E0277: explicit const call trait debt is not cleanup eligibility",
+            "source_sha256": "6f27aae16356d134a0bb1b85249c9b6489af9d21b8f32865067ae23b5c56dd65",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dbound",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dbound.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v9/dbound.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.04392503702547401,
+            "matches": true,
+            "errors": [
+              [
+                "E0277",
+                "the trait bound `N: [const] Destruct` is not satisfied"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    "obj/parallel/source-transport/va-cleanup/reference-v10/receipt.json": {
+      "sha256": "1275139a93983083af119774a9385f12828f5e00d324c3dbe128dca49c19ce63",
+      "data": {
+        "rustc": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+        "prediction_sha256": "0dc0de53b05620068c3de58bada0d96ecfa0f6e419380e6c7d425694576102d7",
+        "observations": [
+          {
+            "file": "dfresh.rs",
+            "source_sha256": "4a82d7941922cc304786abbeb38557164413f4580ea97d97db3321c38f3bedbb",
+            "expected_code": 1,
+            "cause": "E0493 independent fresh nonconst value remains demanded",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dfresh",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dfresh.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v10/dfresh.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.03010953200282529,
+            "matches": true,
+            "errors": [
+              [
+                "E0493",
+                "destructor of `N` cannot be evaluated at compile-time"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error"
+              ]
+            ]
+          },
+          {
+            "file": "denum.rs",
+            "source_sha256": "bec2e9a7ec4629788f36641e1a57f82730bd08ea31fcbfc960c887bbe56e3441",
+            "expected_code": 1,
+            "cause": "E0493 independent fresh enum remains demanded",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "denum",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/denum.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v10/denum.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.02838839398464188,
+            "matches": true,
+            "errors": [
+              [
+                "E0493",
+                "destructor of `E` cannot be evaluated at compile-time"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error"
+              ]
+            ]
+          },
+          {
+            "file": "dfarr.rs",
+            "source_sha256": "d3f604dba799eab0f8d0f0f002212c262590e05a7faf67c24cddfa2e248139cc",
+            "expected_code": 1,
+            "cause": "E0493 independent fresh array remains demanded",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dfarr",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dfarr.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v10/dfarr.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.02582937403349206,
+            "matches": true,
+            "errors": [
+              [
+                "E0493",
+                "destructor of `[N; 1]` cannot be evaluated at compile-time"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error"
+              ]
+            ]
+          },
+          {
+            "file": "dwrap.rs",
+            "source_sha256": "e4014245165ed59e338f1abbd9a156e0d15ef6c3b1ce835eac31b6f4ba3ec837",
+            "expected_code": 0,
+            "cause": "impossible source payload is preserved through actual constructor",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dwrap",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dwrap.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v10/dwrap.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.028406132012605667,
+            "matches": true,
+            "errors": []
+          },
+          {
+            "file": "dpass.rs",
+            "source_sha256": "9e8d72b24c5ef794674931e9965d04d91e425a871c1b0cb38e294f3567637f86",
+            "expected_code": 0,
+            "cause": "impossible source payload move retains its qualification",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dpass",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dpass.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v10/dpass.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.02809073100797832,
+            "matches": true,
+            "errors": []
+          }
+        ]
+      }
+    },
+    "obj/parallel/source-transport/va-cleanup/reference-v11/receipt.json": {
+      "sha256": "4153e37da7165f46b125ca28237a6718cd759f707f3624dbfc309c980d945adc",
+      "data": {
+        "rustc": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+        "prediction_sha256": "400b37ad8028753a657086f6e413783b0e288687f4e759ab526d40d8b93b6b7c",
+        "observations": [
+          {
+            "file": "dself.rs",
+            "source_sha256": "61fb1a3172fd910482df23984999735ba06b4109baad458318d11595ad7ab58a",
+            "expected_code": 1,
+            "cause": "E0493 freshly constructed wrapper own Drop remains active",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dself",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dself.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v11/dself.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.029274588043335825,
+            "matches": true,
+            "errors": [
+              [
+                "E0493",
+                "destructor of `W` cannot be evaluated at compile-time"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error"
+              ]
+            ]
+          },
+          {
+            "file": "dstrct.rs",
+            "source_sha256": "7eb13b605067c82937b0107c68994ef898b6f4740f198e2b59ca07dc71e014ce",
+            "expected_code": 0,
+            "cause": "ordinary wrapper carries only impossible field qualification",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dstrct",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dstrct.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v11/dstrct.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.02895316999638453,
+            "matches": true,
+            "errors": []
+          },
+          {
+            "file": "dsib.rs",
+            "source_sha256": "549f01ddbbbdd10c27ff4d2df374acc3f56926e385565146ba48c26414aa549d",
+            "expected_code": 1,
+            "cause": "E0493 independent sibling cannot borrow impossible field provenance",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dsib",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dsib.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v11/dsib.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.03023855300853029,
+            "matches": true,
+            "errors": [
+              [
+                "E0493",
+                "destructor of `W` cannot be evaluated at compile-time"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error"
+              ]
+            ]
+          },
+          {
+            "file": "dother.rs",
+            "source_sha256": "bf695a9f9d8803907f64a01185a48a0923bdb8f51e4d881fc623ab2abfad8e1c",
+            "expected_code": 1,
+            "cause": "E0493 unrelated preexisting owner remains active",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dother",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dother.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v11/dother.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.03502925200155005,
+            "matches": true,
+            "errors": [
+              [
+                "E0493",
+                "destructor of `N` cannot be evaluated at compile-time"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error"
+              ]
+            ]
+          },
+          {
+            "file": "dowmv.rs",
+            "source_sha256": "91fcdaddb75128d89993df7300ccb7050f08161fe21784e11765d0b123d76690",
+            "expected_code": 0,
+            "cause": "actual impossible own-Drop payload move retains false qualification",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dowmv",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dowmv.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v11/dowmv.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.03410176595207304,
+            "matches": true,
+            "errors": []
+          },
+          {
+            "file": "drep.rs",
+            "source_sha256": "8d71d0737c43dca4ee4d4b84268e78e2496baba6d7ed6cf20d28ba9fb8186782",
+            "expected_code": 1,
+            "cause": "E0493 old replacement value remains active before new constructor publication",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "drep",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/drep.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v11/drep.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.031691658950876445,
+            "matches": true,
+            "errors": [
+              [
+                "E0493",
+                "destructor of `E` cannot be evaluated at compile-time"
+              ],
+              [
+                "E0493",
+                "destructor of `E` cannot be evaluated at compile-time"
+              ],
+              [
+                "",
+                "aborting due to 2 previous errors"
+              ]
+            ]
+          },
+          {
+            "file": "dunk.rs",
+            "source_sha256": "be7b436905efa2180a9fe2b3e07ee1c11d699a99361104ad8169e27487d6a35d",
+            "expected_code": 1,
+            "cause": "E0493 unknown call result carries no constructor promise",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dunk",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dunk.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v11/dunk.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.029774173977784812,
+            "matches": true,
+            "errors": [
+              [
+                "E0428",
+                "the name `identity` is defined multiple times"
+              ],
+              [
+                "E0493",
+                "destructor of `E` cannot be evaluated at compile-time"
+              ],
+              [
+                "",
+                "aborting due to 2 previous errors"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    "obj/parallel/source-transport/va-cleanup/reference-v12/receipt.json": {
+      "sha256": "b80544b147a587e3d47bb7844ea493ccc194487eebc555c4b168c8ddffb6ff88",
+      "data": {
+        "rustc": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+        "prediction_sha256": "7f1765eb118ae5d23d0de8955dde332b2ab08ef4a5e25608953896149f8f1243",
+        "observations": [
+          {
+            "file": "dunk2.rs",
+            "source_sha256": "6080bf07eea5cac494590d23415934b34f9ea1664ea5cddd8a2810994730b41d",
+            "expected_code": 1,
+            "cause": "E0493 genuine unknown call result without duplicate declaration",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dunk2",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/dunk2.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v12/dunk2.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.03296614298596978,
+            "matches": true,
+            "errors": [
+              [
+                "E0493",
+                "destructor of `E` cannot be evaluated at compile-time"
+              ],
+              [
+                "",
+                "aborting due to 1 previous error"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    "obj/parallel/source-transport/va-cleanup/reference-v13/receipt.json": {
+      "sha256": "30e9b7fe55aa6397251b3b03dbca82b69ed46bc1c832e6b0e0b03a5cbb771840",
+      "data": {
+        "rustc": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+        "prediction_sha256": "8c0c0c85a6ca37582538abe6c325b376b7ad6e834f339539557a87d6e8ab4a68",
+        "observations": [
+          {
+            "file": "qctor.rs",
+            "source_sha256": "971cdcd017fe6bc5c4ffe6d595755885206dc04bf5ffbb70cb9259da23520ea0",
+            "expected_code": 0,
+            "cause": "actual ordinary struct/enum/union declaration and independent const Drop source foundation",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "qctor",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/qctor.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v13/qctor.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.0329890429857187,
+            "matches": true,
+            "errors": []
+          }
+        ]
+      }
+    }
+  },
+  "widths_bytes": {
+    "Facts": 664,
+    "Point": 24,
+    "Refinements": 120,
+    "Refinements_baseline": 104,
+    "Partition": 416,
+    "Tags": 296,
+    "Parts": 152,
+    "Node": 76,
+    "Row": 36,
+    "Copy": 24,
+    "Release": 20,
+    "Part": 20,
+    "Root": 20,
+    "Field": 12,
+    "Fill": 12,
+    "Variant": 8,
+    "Child": 8,
+    "Located": 8
+  },
+  "local_failures": [
+    "static1: eight routine lint issues; no candidate outcome",
+    "static2: two missed Parts.entries renames; no candidate outcome",
+    "static3: verify_iterative102/100 lines; shared block join factored",
+    "static4: ctor3 pass, ctfix6/7; native staging had accidentally activated old physical variant exclusion",
+    "static5: symbolic select_inside105/100 lines after typed mode; no candidate outcome",
+    "static6: all13 public controls, strict,format,audit,registration,upstream pass"
+  ],
+  "activation": {
+    "Physical": "existing symbolic physical rules only",
+    "Defining": "existing symbolic physical rules plus cold eligibility metadata",
+    "EligibilityOnly": "native source-original metadata; never activates old physical exclusion"
+  },
+  "remaining": [
+    "owned transient Selected coordinates and rows under cold Partition",
+    "full semantic field substitution and exact (TypeId,Purpose) claims",
+    "actual OwnDrop scoped/effect/where/region proof, distinct from whole Destruct",
+    "selected loan eligibility with unchanged physical live_type/drop-check",
+    "known/prmove/nested/partial/unknown/alias consumer qualification",
+    "large shared-declaration/many-local/noise and sparse-array work controls",
+    "real CTFE cleanup scheduling/execution; Code activity fence retained",
+    "broader imported policy and original full source obligations retained"
+  ]
+}

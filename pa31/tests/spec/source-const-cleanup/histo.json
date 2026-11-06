@@ -1,0 +1,117 @@
+{
+  "state": "predictions frozen before independent reference and candidate observations",
+  "compiler_law": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_const_eval/src/check_consts/resolver.rs": "bbaf1e7acb128c8c72054e8fd945e8966a621455f1b7fe74f24cab973f93277f",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_const_eval/src/check_consts/qualifs.rs": "5904e933416c62c641e5d935f4422aded95d6499c08e54af1d8d11f2af2d7233"
+  },
+  "cases": [
+    {
+      "file": "hmov.rs",
+      "expected_code": 0,
+      "prediction": "whole moves clear an unborrowed source and returned destination has no cleanup",
+      "source_sha256": "fd491bcd9a0f8a146b0e0db3ec9188535ace7d2ab0713b9842fecba3b2ab2b5e"
+    },
+    {
+      "file": "hmvk.rs",
+      "expected_code": 0,
+      "prediction": "destination inherits the known Good value qualification",
+      "source_sha256": "229554c9a44995bd6237f0f8c201585aa4c6a6aa88ccbcbd3ecc8dedb3904546"
+    },
+    {
+      "file": "hmvn.rs",
+      "expected_code": 1,
+      "prediction": "destination inherits possibly nonconst qualification",
+      "source_sha256": "f5b5586ab732671d632d6da050b6b45dd9e18c2d1d9475cc699ee299181da09c"
+    },
+    {
+      "file": "hcop.rs",
+      "expected_code": 0,
+      "prediction": "Copy projected-type filter on a constructed aggregate does not invent whole Destruct(T)",
+      "source_sha256": "6c2299088ce210af0b30ef05e464a7fd549ac63ef0d8398413a2adbc728d5335"
+    },
+    {
+      "file": "hcpn.rs",
+      "expected_code": 1,
+      "prediction": "an unknown composite parameter retains its whole-value qualification",
+      "source_sha256": "13457040aea57b2db753de21e95014a16702caef3489eb3b15d68454bee3e281"
+    },
+    {
+      "file": "hjoin.rs",
+      "expected_code": 0,
+      "prediction": "opposite branches join two Good-only values",
+      "source_sha256": "9cd1732c8406996cdfdc5cccc9f8ace73d5730847bf17b7ba3b50696b2d50b3d"
+    },
+    {
+      "file": "hjbad.rs",
+      "expected_code": 1,
+      "prediction": "opposite branches join a possibly nonconst value",
+      "source_sha256": "978b646ab7164da5132e28ce89742d8755ce7d2662c20ac41b004ff8ae8d5084"
+    },
+    {
+      "file": "hmraw.rs",
+      "expected_code": 1,
+      "prediction": "sticky raw exposure retains qualification even through a whole source move",
+      "source_sha256": "946beb28eae54d917d0b8281f7c3cbc920a1e6ccda79d27d845e8799cadbaf96"
+    },
+    {
+      "file": "hmshr.rs",
+      "expected_code": 0,
+      "prediction": "a shared Freeze borrow does not introduce mutable-exposure qualification",
+      "source_sha256": "52339b8948c6caa0853ebe86d8d80e0a05a4750ba45921a6bcb07dc0437ed412"
+    },
+    {
+      "file": "hrnew.rs",
+      "expected_code": 0,
+      "prediction": "both initial and replacement root values are unqualified",
+      "source_sha256": "eab55a33694d2e1efc138d5abb5ea9835380fb228dd0db251646bb8d201ade1a"
+    },
+    {
+      "file": "hrold.rs",
+      "expected_code": 1,
+      "prediction": "root replacement retains qualified source history after partial payload move",
+      "source_sha256": "92222c04185ada405d0929148622699b792793903d082909c088d973b96eacdd"
+    },
+    {
+      "file": "hrpre.rs",
+      "expected_code": 1,
+      "prediction": "precise policy does not clear qualification of the actually dropped replacement root",
+      "source_sha256": "ec52326dc1b4512e468dcef402bacd96154bee629f18c0552d8fe64ef13e5b46"
+    },
+    {
+      "file": "hcont.rs",
+      "expected_code": 1,
+      "prediction": "qualified sibling contaminates a projection whose type may qualify",
+      "source_sha256": "2bf24b0d32a96a6f37c002fd094c50e3720b7dcf1d8a6e5feb51b0fdaf31952b"
+    },
+    {
+      "file": "hcntp.rs",
+      "expected_code": 1,
+      "prediction": "precise policy does not authorize dropping a contaminated projected value",
+      "source_sha256": "62c7a620edbb5adb5d9c6df37c41f09d90a45965678023664ca51224300d129c"
+    },
+    {
+      "file": "hsub.rs",
+      "expected_code": 1,
+      "prediction": "subfield reinitialization retains qualification and projection correlations",
+      "source_sha256": "0e52b2f7bf0ba92c81c477736a853fec83372be2d5430447477fb894cd6eb602"
+    },
+    {
+      "file": "hsubp.rs",
+      "expected_code": 1,
+      "prediction": "precise subfield replacement does not reset sticky value qualification",
+      "source_sha256": "85fc1990367a8e5e9deccbdba3df1ee31e2e351f2e19ee49b8e8a84aff093c95"
+    },
+    {
+      "file": "hwrap.rs",
+      "expected_code": 0,
+      "prediction": "known nested Good qualification survives ordinary wrapper moves",
+      "source_sha256": "40db72bda5f5bfc68a587d836ec520c302e799b431be9883f6b2d7a9d8c427de"
+    },
+    {
+      "file": "harray.rs",
+      "expected_code": 0,
+      "prediction": "merged array paths retain a union of only const-eligible values",
+      "source_sha256": "a8718c41008eb74521c43595419b2c54d799f6175e71fa6ca783fa664c95de4f"
+    }
+  ]
+}

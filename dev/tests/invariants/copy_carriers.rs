@@ -137,6 +137,70 @@ fn source_copy_missing_carrier_and_wrong_owner_never_fall_back() -> Result {
     Ok(())
 }
 #[test]
+fn optional_qualifier_lookup_preserves_the_actual_selected_copy_owner() -> Result {
+    let (mut facts, templates, mut contracts) = fixture()?;
+    let body = &templates.bodies.first().ok_or("template")?.body;
+    let input = contracts
+        .iter_mut()
+        .find(|c| c.key == body.key())
+        .ok_or("contract")?;
+    prepare(&mut facts, body, input)?;
+    let builtins = input.builtins.as_ref().ok_or("builtins")?;
+    let source = builtins.source_copy.as_ref().ok_or("source Copy")?;
+    let prepared = builtins.prepared_for_test()?;
+    let (&ty, &expected) = prepared.decisions.iter().next().ok_or("selected Copy")?;
+    assert_eq!(builtins.copy_qualification(body, ty)?, Some(expected));
+    assert!(
+        prepared
+            .lookup(
+                body,
+                &Arc::new(source.as_ref().clone()),
+                builtins.environment.as_ref(),
+                ty
+            )
+            .is_err()
+    );
+    let environment = Arc::new(
+        builtins
+            .environment
+            .as_ref()
+            .ok_or("environment")?
+            .as_ref()
+            .clone(),
+    );
+    assert!(
+        prepared
+            .lookup(body, source, Some(&environment), ty)
+            .is_err()
+    );
+    let mut wrong = body.clone();
+    wrong.owner = crate::body::ir::Owner::AnonymousConstant;
+    assert!(builtins.copy_qualification(&wrong, ty).is_err());
+    let mut absent = prepared.clone();
+    absent.decisions.remove(&ty);
+    assert_eq!(
+        absent.lookup(body, source, builtins.environment.as_ref(), ty)?,
+        None
+    );
+    assert!(
+        absent
+            .decision(body, source, builtins.environment.as_ref(), ty)
+            .is_err()
+    );
+    let mut missing = source.as_ref().clone();
+    missing.declaration = None;
+    let missing = Arc::new(missing);
+    absent.requirements = Arc::clone(&missing);
+    assert_eq!(
+        absent.lookup(body, &missing, builtins.environment.as_ref(), ty)?,
+        None
+    );
+    let mut unpaid = builtins.as_ref().clone();
+    unpaid.clear_source_copy();
+    assert!(unpaid.copy_qualification(body, ty).is_err());
+    Ok(())
+}
+#[test]
 fn source_copy_unmatched_original_contract_is_an_error() -> Result {
     let (mut facts, templates, mut contracts) = fixture()?;
     let body = &templates.bodies.first().ok_or("template")?.body;

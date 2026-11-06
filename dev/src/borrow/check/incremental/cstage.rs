@@ -5,6 +5,7 @@ use crate::{
     types::substitute::Bound,
 };
 use std::{ptr::NonNull, sync::Arc};
+pub(crate) type ConstInitial<'a> = cstage::Initial<'a, 'static>;
 pub(crate) type ConstOriginal<'a> = cstage::Prepared<'a, 'static>;
 pub(crate) struct Completed {
     pub(super) body: NonNull<Body>,
@@ -35,13 +36,12 @@ pub(crate) fn with_const_original(
     })
 }
 impl Verifier {
-    pub(crate) fn prepare_const_original<'a, S: std::hash::BuildHasher>(
+    pub(crate) fn begin_const_original<'a, S: std::hash::BuildHasher>(
         &mut self,
         environment: &mut Environment<'_, S>,
         body: &'a Body,
         contract: &regions::Body,
-        catalog: &mut glue::Catalog<'_>,
-    ) -> Result<ConstOriginal<'a>, Error> {
+    ) -> Result<cstage::Initial<'a, 'static>, Error> {
         let error = |message: &str| Error {
             node: Some(body.source.into()),
             message: message.into(),
@@ -68,14 +68,76 @@ impl Verifier {
         }
         super::super::require_body_promotions(body)?;
         let owner = self.const_owner.get_or_insert_with(|| Arc::new(()));
-        cstage::prepare(
+        cstage::initialize_using(
             environment,
-            &mut self.reused,
             body,
             contract,
-            catalog,
-            super::super::structure::Use::Own,
+            (super::super::structure::Use::Own, None),
             Some(Arc::clone(owner)),
+        )
+    }
+    pub(crate) fn begin_const_qualification<S: std::hash::BuildHasher>(
+        &self,
+        environment: &Environment<'_, S>,
+        initial: &mut cstage::Initial<'_, 'static>,
+        contract: &regions::Body,
+        (catalog, requirements): (
+            &glue::Catalog<'_>,
+            Option<&crate::body::drops::Requirements>,
+        ),
+    ) -> Result<(), Error> {
+        let owner = self.const_owner.as_ref().ok_or_else(|| Error {
+            node: Some(initial.body().source.into()),
+            message: "const qualification lost its actual verifier".into(),
+        })?;
+        cstage::begin_qualification(
+            environment,
+            initial,
+            contract,
+            (catalog, requirements),
+            Some(owner),
+        )
+        .map_err(|message| Error {
+            node: Some(initial.body().source.into()),
+            message: message.into(),
+        })
+    }
+    pub(crate) fn accept_const_qualification<S: std::hash::BuildHasher>(
+        &self,
+        environment: &Environment<'_, S>,
+        initial: &mut cstage::Initial<'_, 'static>,
+        contract: &regions::Body,
+        answers: &crate::body::defining_cleanups::Qualification<'_>,
+    ) -> Result<(), Error> {
+        let owner = self.const_owner.as_ref().ok_or_else(|| Error {
+            node: Some(initial.body().source.into()),
+            message: "const qualification lost its actual verifier".into(),
+        })?;
+        cstage::accept_qualification(environment, initial, contract, answers, Some(owner)).map_err(
+            |message| Error {
+                node: Some(initial.body().source.into()),
+                message: message.into(),
+            },
+        )
+    }
+    pub(crate) fn select_const_original<'a, S: std::hash::BuildHasher>(
+        &mut self,
+        environment: &mut Environment<'_, S>,
+        initial: cstage::Initial<'a, 'static>,
+        contract: &regions::Body,
+        catalog: &mut glue::Catalog<'_>,
+    ) -> Result<ConstOriginal<'a>, Error> {
+        let owner = self.const_owner.as_ref().ok_or_else(|| Error {
+            node: Some(initial.body().source.into()),
+            message: "const initializer lost its actual verifier".into(),
+        })?;
+        cstage::select_initial(
+            environment,
+            &mut self.reused,
+            initial,
+            contract,
+            catalog,
+            Some(owner),
         )
     }
     pub(crate) fn finish_const_original<S: std::hash::BuildHasher>(

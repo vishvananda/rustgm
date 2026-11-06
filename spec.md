@@ -4327,6 +4327,25 @@ unused impl lifetimes remain existential. Inherited method environments retain
 each parameter's original declaration identity. Classify such bodies as templates
 until demanded concrete instances and their destruction plans are available.
 
+Source const-definition qualification keeps one paid sparse partition in the
+existing initialization fixed point and replay. Preserve root qualification,
+selected semantic field coordinates, constructor tags and sticky qualifying
+borrows independently of physical initialization, read/move access and loans.
+A completed scoped Copy decision can seed a fresh runtime NeedsDrop cache before
+compound demands; it cannot establish whole const Destruct. Retain the real Copy
+and cleanup proof debts, refresh actual region contracts, and authenticate the
+exact published defining state before accepting qualification, including empty
+answers. Existing preparation/finalization paths keep the same initialization
+owner and Seal. Original Bodies move with their genuine paired Requirements
+rows; verify coverage/extents and prepay assembly overlap instead of guessing
+body indices or cloning payloads. The bounded destruction query borrows the same
+builtin matcher/radix DAG, counts growth once and keeps failure costs spent.
+Unpaid warm reuse cannot bypass a bound. The
+[selected-cleanup checkpoint](docs/parallel/source-cleanup-main-join.md) records
+source/native and scaling evidence. Unit-result calls, interpreter cleanup,
+conditional-parent history and wider authenticated transport remain separate
+required consumers; qualification does not grant their execution permissions.
+
 Template loan checking consumes complete scoped destruction requirements. When
 no local, value or projection can need destruction and no cleanup sites remain,
 reuse the checked initialization and storage facts with the ordinary loan checker.

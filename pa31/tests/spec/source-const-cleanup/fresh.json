@@ -1,0 +1,35 @@
+{
+  "prediction": "frozen before reference and candidate; global eligibility-deadness must not hide independent values",
+  "cases": [
+    {
+      "file": "dfresh.rs",
+      "source_sha256": "4a82d7941922cc304786abbeb38557164413f4580ea97d97db3321c38f3bedbb",
+      "expected_code": 1,
+      "cause": "E0493 independent fresh nonconst value remains demanded"
+    },
+    {
+      "file": "denum.rs",
+      "source_sha256": "bec2e9a7ec4629788f36641e1a57f82730bd08ea31fcbfc960c887bbe56e3441",
+      "expected_code": 1,
+      "cause": "E0493 independent fresh enum remains demanded"
+    },
+    {
+      "file": "dfarr.rs",
+      "source_sha256": "d3f604dba799eab0f8d0f0f002212c262590e05a7faf67c24cddfa2e248139cc",
+      "expected_code": 1,
+      "cause": "E0493 independent fresh array remains demanded"
+    },
+    {
+      "file": "dwrap.rs",
+      "source_sha256": "e4014245165ed59e338f1abbd9a156e0d15ef6c3b1ce835eac31b6f4ba3ec837",
+      "expected_code": 0,
+      "cause": "impossible source payload is preserved through actual constructor"
+    },
+    {
+      "file": "dpass.rs",
+      "source_sha256": "9e8d72b24c5ef794674931e9965d04d91e425a871c1b0cb38e294f3567637f86",
+      "expected_code": 0,
+      "cause": "impossible source payload move retains its qualification"
+    }
+  ]
+}

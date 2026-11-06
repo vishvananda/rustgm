@@ -1,0 +1,63 @@
+{
+  "state": "passed",
+  "worker_commit": "dfe087421ae16264fac98e0cc8f6bc323105f3dc",
+  "main_commit": "84b0a32ca1bea0ae1f612ff68a3ba0c0503da3de",
+  "source_manifest_sha256": "67c2d99d2fedb4894772a9fe57146a213f603f53c6b7f903b5fe776e2cf982f8",
+  "runs": [
+    {
+      "name": "originals",
+      "command": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/rust/dev-fast/deps/suite_linking-f26e83065cdff922",
+        "crate_linking::instantiable::actual_generic_originals_execute_runtime_and_constant_instances_after_roundtrip",
+        "--nocapture",
+        "--exact"
+      ],
+      "binary_sha256": "68c00efddf7c681ce7347c844dcef98194089bf57a2a9514b4b80c1c3e985d08",
+      "status": 0,
+      "seconds": 0.506268565019127,
+      "expected_passes": 1
+    },
+    {
+      "name": "required",
+      "command": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/rust/dev-fast/deps/suite_linking-f26e83065cdff922",
+        "crate_linking::packet_libraries::cli_required_trait_methods_accept_fresh_local_implementations",
+        "--nocapture",
+        "--exact"
+      ],
+      "binary_sha256": "68c00efddf7c681ce7347c844dcef98194089bf57a2a9514b4b80c1c3e985d08",
+      "status": 0,
+      "seconds": 0.5353580210357904,
+      "expected_passes": 1
+    },
+    {
+      "name": "unit",
+      "command": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/rust/dev-fast/deps/suite_traits-1eb52380c4060d30",
+        "ctdrop::",
+        "--nocapture"
+      ],
+      "binary_sha256": "50f4d4b3e36c8fedae21336389d3d12d2aa32ee50b523130ce9c0fba0cc01f8e",
+      "status": 0,
+      "seconds": 1.2955145060550421,
+      "expected_passes": 9
+    },
+    {
+      "name": "primitive",
+      "command": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/rust/dev-fast/deps/suite_frontend-042f6bb45eb72a91",
+        "provider_traits::const_contexts::",
+        "--nocapture"
+      ],
+      "binary_sha256": "3735f0c5ad3d60b8ad0d20ac9f47ce0832aef6451f1da8783a46f6981bdbcc71",
+      "status": 0,
+      "seconds": 0.6307998080155812,
+      "expected_passes": 3
+    }
+  ],
+  "matched_source_files": 3544,
+  "seconds": 5.216591221978888,
+  "receipt_path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-unit-main-join/receipt.json",
+  "receipt_sha256": "9aabb6b860ae96c5f713591e5e5ee490fe4b8cfcec0722bb6c4d84b55cc4c055",
+  "private_execution": "pending successor CI"
+}

@@ -159,6 +159,13 @@ impl<'a> Catalog<'a> {
     pub(crate) const fn types(&self) -> &Store {
         self.types
     }
+    pub(crate) fn member_position(
+        &self,
+        ty: TypeId,
+        query: super::MemberQuery,
+    ) -> Result<super::MemberPosition, &'static str> {
+        super::member_position(self.types, self.definitions, self.members, ty, query)
+    }
     pub(crate) fn custom(&self, item: ItemId) -> bool {
         self.cache.methods.contains_key(&item)
     }

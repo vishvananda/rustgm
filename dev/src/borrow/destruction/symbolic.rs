@@ -61,15 +61,59 @@ pub fn select(
         crate::body::drops::MemberQuery,
     ) -> Result<crate::body::drops::MemberPosition, &'static str>,
 ) -> Result<Plan, Error> {
+    select_inside(
+        types,
+        definitions,
+        needed,
+        facts,
+        custom,
+        position,
+        initialization::Refinement::Physical,
+    )
+}
+pub(crate) fn select_defining(
+    types: &Store,
+    definitions: &Definitions,
+    needed: &mut NeedsDrop,
+    facts: &mut initialization::Facts<'_>,
+    custom: impl Fn(ItemId) -> bool,
+    position: impl Fn(
+        TypeId,
+        crate::body::drops::MemberQuery,
+    ) -> Result<crate::body::drops::MemberPosition, &'static str>,
+) -> Result<Plan, Error> {
+    select_inside(
+        types,
+        definitions,
+        needed,
+        facts,
+        custom,
+        position,
+        initialization::Refinement::Defining,
+    )
+}
+fn select_inside(
+    types: &Store,
+    definitions: &Definitions,
+    needed: &mut NeedsDrop,
+    facts: &mut initialization::Facts<'_>,
+    custom: impl Fn(ItemId) -> bool,
+    position: impl Fn(
+        TypeId,
+        crate::body::drops::MemberQuery,
+    ) -> Result<crate::body::drops::MemberPosition, &'static str>,
+    mode: initialization::Refinement,
+) -> Result<Plan, Error> {
     let refinement_steps = facts
-        .refine_variants(types, &position)
+        .refine_variants(types, definitions, &custom, mode, &position)
         .map_err(|message| Error {
             node: facts.body().source.into(),
             message,
         })?;
     facts.destructor_moves(types, &custom)?;
+    let source = facts.body().source;
     let error = |message| Error {
-        node: facts.body().source.into(),
+        node: source.into(),
         message,
     };
     let mut builder = Builder {
@@ -117,11 +161,11 @@ pub fn select(
         }
     }
     let mut recording = super::flags::Recording::for_body(facts.body(), Vec::new());
-    facts
-        .visit_transfers(|transition, point| {
+    let selected = facts
+        .visit_selected(|transition, point| {
             recording.push(transition);
             let initialization::Transition::Observe(event) = transition else {
-                return Ok(());
+                return Ok(None);
             };
             builder.charge(1)?;
             if let initialization::Event::Cleanup(candidate) = event {
@@ -136,13 +180,15 @@ pub fn select(
                     && builder.needed.demand(types, definitions, ty)?;
                 let access = live && builder.access(ty, tracked, point)?;
                 builder.retain(size_of::<Cleanup>())?;
-                builder.plan.cleanups.push(Cleanup {
+                let cleanup = Cleanup {
                     candidate,
                     access,
                     live_type: live.then_some(ty),
-                });
+                };
+                builder.plan.cleanups.push(cleanup);
+                return Ok(Some(cleanup));
             }
-            Ok(())
+            Ok(None)
         })
         .map_err(error)?;
     Recorder {
@@ -157,7 +203,9 @@ pub fn select(
         builder.plan.cleanups.iter().map(|c| c.candidate),
     )
     .map_err(error)?;
-    Ok(builder.plan)
+    let plan = builder.plan;
+    facts.install_selected(selected).map_err(error)?;
+    Ok(plan)
 }
 impl<C: Fn(ItemId) -> bool> Builder<'_, C> {
     fn charge(&mut self, count: usize) -> Result<(), &'static str> {

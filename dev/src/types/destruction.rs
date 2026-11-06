@@ -7,6 +7,22 @@ use super::{ItemId, Kind, Store, TypeId, aggregate::Definitions};
 use crate::support::hash::{HashMap, HashSet};
 use std::sync::Arc;
 
+/// A const eligibility request purpose, never an initialization or proof fact.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub(crate) enum Eligibility {
+    Body,
+    Whole,
+    OwnDrop,
+}
+
+/// A scoped value filter; positive trait evidence remains in its source Contract.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Qualif {
+    NoDrop,
+    Destruct,
+    MayQualify,
+}
+
 #[derive(Clone, Copy, Default)]
 enum State {
     #[default]
@@ -18,6 +34,7 @@ enum State {
 struct Scope {
     environment: Option<Arc<Environment>>,
     builtins: Option<Box<BuiltinQuery>>,
+    builtin_bytes: usize,
     binding: Option<Box<catalogue::Binding>>,
     states: HashMap<TypeId, State>,
 }
@@ -49,6 +66,7 @@ impl NeedsDrop {
         query.scope = Some(Box::new(Scope {
             environment: None,
             builtins: None,
+            builtin_bytes: 0,
             binding: None,
             states: HashMap::default(),
         }));
@@ -70,6 +88,7 @@ impl NeedsDrop {
             scope: Some(Box::new(Scope {
                 environment: Some(environment),
                 builtins: None,
+                builtin_bytes: 0,
                 binding: None,
                 states: HashMap::default(),
             })),
@@ -201,21 +220,36 @@ impl NeedsDrop {
             _ => None,
         })
     }
-    fn assumed_requirement(
+    fn assumed_requirement<const BOUNDED: bool>(
         &mut self,
         types: &Store,
         ty: TypeId,
         kind: Kind,
+        limit: usize,
     ) -> Result<Option<bool>, &'static str> {
-        if let Some(scope) = &mut self.scope
+        let copy = if BOUNDED {
+            self.assumed_bounded(types, ty, limit)?
+        } else if let Some(scope) = &mut self.scope
             && let Some(environment) = &scope.environment
         {
-            if environment
-                .assumed_with(types, ty, &mut scope.builtins)?
-                .copy
-            {
+            // An unobserved reuse cannot keep a prior bounded allocation claim.
+            // Existing ordinary scopes retain their old zero-counter fast path.
+            if scope.builtin_bytes != 0 {
+                scope.builtin_bytes = usize::MAX;
+            }
+            Some(environment.assumed_with(types, ty, &mut scope.builtins)?)
+        } else {
+            None
+        };
+        if let Some(abilities) = copy {
+            if abilities.copy {
                 return Ok(Some(false));
             }
+            let environment = self
+                .scope
+                .as_ref()
+                .and_then(|s| s.environment.as_ref())
+                .ok_or("destruction assumption lost its actual scope")?;
             if let Kind::Parameter(id) = kind {
                 return Ok(Some(
                     !environment
@@ -250,7 +284,7 @@ impl NeedsDrop {
                 self.record::<BOUNDED>(ty, State::Ready(true), limit)?;
                 continue;
             }
-            if let Some(needed) = self.assumed_requirement(types, ty, kind)? {
+            if let Some(needed) = self.assumed_requirement::<BOUNDED>(types, ty, kind, limit)? {
                 self.record::<BOUNDED>(ty, State::Ready(needed), limit)?;
                 continue;
             }

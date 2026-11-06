@@ -1,0 +1,916 @@
+{
+  "schema": 1,
+  "status": "qualified finite source-definition checkpoint; private execution/CTFE/general library artifact remain unqualified",
+  "root_base": "cbe6b25b2",
+  "worktree_head": "f6b08c3496d53497e678c773783d212757cc51f1",
+  "production": {
+    "dev/src/body/copy_requirements.rs": "b8ac052e51ba55c98eee839f2f952c1bf36cb3e347f6970feea20b6826b9411f",
+    "dev/src/body/defining_cleanups/claims.rs": "3e158f5702fbc1d5d01fe61bd8a92dfa59a4f50ee443bdd59c28f309c3702263",
+    "dev/src/body/defining_cleanups/mod.rs": "7aaaa37b1ca57e84e63125b6c28d62d766ed29ab4f6ff889e7e1f37d667021dc",
+    "dev/src/body/defining_cleanups/proofs.rs": "9476f2a85300805de5f894e277a3daf0edbd444c7b8bc53e9a67ad6271ed5f84",
+    "dev/src/body/defining_cleanups/qualify.rs": "3354798461922ed59b6f4ab291a6d8d8e693b506ba9c11ad8709fde3742d42a4",
+    "dev/src/body/defining_cleanups/qualify/copies.rs": "0736f80f035f002604b97635ebd16894d2ad324e8244ec854b14ac8e02be6510",
+    "dev/src/body/drops.rs": "9b889d63d7c08f2165de8440ce515f17823394663c92ccf577f99fde9c9c9890",
+    "dev/src/body/regions/builtins.rs": "9e6b25e7a8c7ce554ef2e819bd926c4b9ea8f6e69d37419e8dd90d961b167b4a",
+    "dev/src/borrow/check/cstage.rs": "c6cfdf5082ac818c33162fdd00ad0deae9b4a68b2579352ea265ac63dd6b039b",
+    "dev/src/borrow/check/incremental.rs": "61d7d7b1b22648b83b6f5e78724d1bc6e3ab9dca7eb21546ad6041505fa07517",
+    "dev/src/borrow/check/incremental/cstage.rs": "d236157ce54a8afdff799c04a76708efa980daf0b8d44411e8f75566c1cf54f0",
+    "dev/src/borrow/destruction.rs": "15230cc9ee4ed71ed87c3c854a60f5470721c138b7ab82a7073ed06bbfbeadf5",
+    "dev/src/borrow/destruction/schedule.rs": "900ea09190ae3e8339ad7eb075bad3e768bc81c9fed8147e57423936dda74f12",
+    "dev/src/borrow/destruction/select.rs": "2b4027b6f53ae225951a6c81a1ec2a9731229942f17ea1c07ce03920ae53f668",
+    "dev/src/borrow/destruction/symbolic.rs": "eadfe49886ad0854631fc09d676f03a9896ab766751d63cab8605ea88f79688d",
+    "dev/src/borrow/loans/formed.rs": "d6f2907f92458452d5b8cd5d2c51f3d58e0e869fd3551f19e269de522cc5e8d2",
+    "dev/src/borrow/loans/legality.rs": "17b2ed099f985b03836fd0a29b37ec84c8cd4955333e053995507ce2215c1f36",
+    "dev/src/borrow/loans/templates.rs": "7dc85c3b6d0c3e5351ee0a3460ffed955545ce0337fb5d35d68423eab113511c",
+    "dev/src/borrow/loans/templates/staged.rs": "bb715fb4fb1e1e438bdf2e0bf80a39bbc174222ca2046876aef208d5d4237e81",
+    "dev/src/borrow/ownership.rs": "5ab3c46a4dfbb188c256fcb8984d17c078d168a27b23c921040787ee11ff0585",
+    "dev/src/borrow/ownership/initialization.rs": "47047bc19e04b5a049200e81a95f3516a67fb70ce535bf4063f4c7d62e20dbce",
+    "dev/src/borrow/ownership/variant_liveness.rs": "6a2e43a3cca4ce090f3025042496e184f8b82cb162ba9da41b600439004f0958",
+    "dev/src/borrow/ownership/variant_liveness/index.rs": "b34ae674152281797be4db0ab11b0f9ed630b13b2877bf1a2dcb93ebc3215850",
+    "dev/src/borrow/ownership/variant_liveness/picked.rs": "c785d865fa8de4bde39b04eff3a6c94b4e63438b991391a519806a2574664ec1",
+    "dev/src/borrow/ownership/variant_liveness/picked/ctor.rs": "93bc611e2877115e095870029b82c283b6df7c7748cacc902969bdbe0019e20f",
+    "dev/src/borrow/ownership/variant_liveness/picked/rooted.rs": "0129a02296b5f249eb85a5052e1eefc2c847a42b3e2992c616e8024dbb06e29c",
+    "dev/src/borrow/ownership/variant_liveness/qterm.rs": "9a8239583fd4818b2d5f313dacb52fc30e09e206ec9a8da541d876b77f35ed6a",
+    "dev/src/borrow/ownership/variant_liveness/query.rs": "df53a36472c46e427dc78764465e4c828af64950284ec3e7e6e05d1334a06628",
+    "dev/src/borrow/ownership/variant_liveness/tags.rs": "e6050e6a025177ad27c980209fb588d4bd698d3179a3cfc0bd03cdcb61fdc996",
+    "dev/src/borrow/ownership/variant_liveness/trans.rs": "38e24880a3f51732638ca9b0e658a6bafb8996ff9c4c2126cde47061a1bc17d3",
+    "dev/src/borrow/templates.rs": "11837bf90604438ef6f32cb11572e3ae09f524b97187ffd83e79f47ee2f627b8",
+    "dev/src/borrow/templates/staged.rs": "e6bfddd3346cd7b894211d582470d609db80e14f223b5b51f0592d5c1094a522",
+    "dev/src/lower/instances/demand.rs": "177b8d1bb93094eb24e4ee884e1081429b4c88ba739bfb5bb5bdb38eaadd7dad",
+    "dev/src/lower/instances/demand/paid_owners.rs": "b707fbeb3dade3503a096c29bf5524c7de8aaf4399ba0b0f48751c5505daf2f1",
+    "dev/src/lower/instances/proof.rs": "7f954c18c7d6593e3a84c6d6f774800fa1c39f4062ce41e09ca2379566ccaaee",
+    "dev/src/lower/instances/proof/origins.rs": "541c47ca4bf16e8080529e5a6df9b180a69e60cfdfdd71aa578829a96cead5e2",
+    "dev/src/lower/instances/proof/tests.rs": "aa44efc864b33a5736fc0f622a33f45d6c05341b21cf8e710657266441bd0f91",
+    "dev/src/pipeline/cdrop.rs": "c44041cf0bc65d38efe69625f8f89055f8887e7e282feaffc5b4073cafafae2b",
+    "dev/src/sema/compiler_items.rs": "03348410621ce0a155a711475bf45aa8e8155a1616f81197aba33b8af3a9dda8",
+    "dev/src/sema/compiler_items/cdrop.rs": "d114e850fc51b48516e9330f4e8de9874c9ea2dfaad8c40570c2cb3fb62b34fe",
+    "dev/src/sema/nominals/traits.rs": "18fc33737f509bcc69838f522e8459760c073cd424dc9690be6e5c8d8dac1918",
+    "dev/src/sema/nominals/traits/decide.rs": "730ebc869984a20d97368db489a7bc0143ff96b59b0d7572ccd595b310e1779b",
+    "dev/src/types/aggregate/fields.rs": "5c0a5f14babd5ce3e32b55ce86d4f8459fbd2870d4800245c9083722f6871a51",
+    "dev/src/types/destruction.rs": "df8ae0b3bf08387e04edf36f602151b00918510b44d047633ee171daa14fd233",
+    "dev/src/types/destruction/bounded.rs": "b3d30e7b3c559444033bb2cfa06a716d59e391af10b8c2527485e6d029010f68"
+  },
+  "tests": {
+    "dev/tests/ctdrop.rs": "1d97120176eff344e81e84ec15c175c0dd3f0a4b200678107ccedce5e129edbc",
+    "dev/tests/ctfix.rs": "c4b3d2857be564b07642820e2abc1f6aaa56879f47d58cdf73c03171d4131ffa",
+    "dev/tests/ctsel.rs": "a3fb2b797af4ed81d4fd18ddaafe19b2ab7bc46ef2bbb2c3a7e0906fc3ae4734",
+    "dev/tests/ctwire.rs": "09a11833214089aeb429dae3bbf27b1e347c736685b1499c30b6b81d01c0f1f2",
+    "dev/tests/invariants/adapter_contracts.rs": "0781670e50e5c3129b80a388d53bbab1bbbdd096986a5340b543d93cc42fd7b2",
+    "dev/tests/invariants/concrete_destruction/budgets.rs": "5a557ebb4691550cc3d1ba30b4bf66132c890b2747ff320b2be6ff4fe571436c",
+    "dev/tests/invariants/concrete_destruction/qcost.rs": "c7694516cde4b0ca89a7f77a2d90c74d2f36f7fb1aa66fc04d95b57411d62867",
+    "dev/tests/invariants/copy_carriers.rs": "9c7c6267eb9d9f688bb9fb5afcc133352726eb8cecb1c97a8135ceedc9006021",
+    "dev/tests/invariants/ctopen.rs": "4b48b94a42576c534ec9bdd43ede6d4ef7a1de86f5a2a658fd3a92144fa5cf96",
+    "dev/tests/invariants/ctqdc.rs": "3d5b04ca972f942f804741fc15893670ee499940f10f6a6971f285004fa2bdd5",
+    "dev/tests/invariants/ctqual.rs": "1fe87c93e3e5e3b6131a619d94e3c447d292276299fd5c7e8aa7797f3ade0c55",
+    "dev/tests/invariants/destruct_contracts.rs": "1a643438981d3b3545d79fd87c62c680f2ec5ed4c70130493b736781518a1489",
+    "dev/tests/invariants/destruct_projections.rs": "c75bfed081b8e1e39429ded24f13179aff5b3b0ac47820b4f2664ceb013dccc3",
+    "dev/tests/invariants/exposure_stages.rs": "a4edd27e1b8b07352ced3f79dcc4394dd50c65dcc0d73e745530af6481abb4f8",
+    "dev/tests/invariants/origrow.rs": "961373c19cd9de2e00d3a24e47b578d78d7222e8ed0334eac48cbf5934e75e04",
+    "dev/tests/invariants/sealed_permissions.rs": "02c12e6893a019b3ac906e3ed30512b23050cc1cce31ada18bda851f8fe8ea97",
+    "dev/tests/suites/traits/mod.rs": "03e179980a08a8f21f376d82303794a9fdce686efcc8682aaeed0b96da29d84c"
+  },
+  "fixtures": {
+    "pa31/tests/spec/source-const-cleanup/arybad.rs": "adcb9f5258eabb0a62febb22028c9ee44ebf5381a4f48125c3cad5b6c5882f45",
+    "pa31/tests/spec/source-const-cleanup/arybig.rs": "ad16ca61e84ab5b973fea5dd29a67c9f28941c7805e422c1c50734f4c4011c57",
+    "pa31/tests/spec/source-const-cleanup/arymov.rs": "e99b124aba79da8cf5fd65035bd59e0b1faa937be70891d99de3cb9a38d6b8dc",
+    "pa31/tests/spec/source-const-cleanup/aryone.rs": "176202d737600d501042686d9591ff838ee819893e6c681959d94af26194b243",
+    "pa31/tests/spec/source-const-cleanup/arysm.rs": "c0e28ed4a26b8326df1bee32e6f1c811c0e8b92ebbebe30d461d3cd34191ef09",
+    "pa31/tests/spec/source-const-cleanup/badown.rs": "db5183da36bd89b2a44c1fe17d4337dae1653240126da8f9b9f603716fd1ad6d",
+    "pa31/tests/spec/source-const-cleanup/cpbad.rs": "b01079e52184b4b2325babdc3b7b70d3b49a0160bd0aef7387d73c7bb90d5768",
+    "pa31/tests/spec/source-const-cleanup/cpfld.rs": "1def4af745c5fa80deac0f6b1e35ce5379c9e9ebbce4b3e2131991b3a60061f8",
+    "pa31/tests/spec/source-const-cleanup/cpmiss.rs": "6852d50eeca48eb3736ce5223da5dd76e3dbb975a50676c0738a04967f6f9b33",
+    "pa31/tests/spec/source-const-cleanup/cpok.rs": "52e294005bde15bf845b21b64c3ebcdf76b5eafdbe2191d38708c1b7e77e4364",
+    "pa31/tests/spec/source-const-cleanup/cppart.rs": "71240789f9dbd815601d6b750ea01de4e03aa7f01180bcf1072b199b0afab6b8",
+    "pa31/tests/spec/source-const-cleanup/cpwhol.rs": "1a8dd95fdf897f408b469101658e6992b7a31616456f1e4365a6e0d88a48b406",
+    "pa31/tests/spec/source-const-cleanup/ctbad.rs": "419ec8bc466522bf3d90cadb4058f41801f3b5954d95f6c28c119694db64d3c6",
+    "pa31/tests/spec/source-const-cleanup/ctgood.rs": "0c995e1d39c20bd34b8f9bf1ca78f4b8abb0f2d40234e75082c5aa5582a944b4",
+    "pa31/tests/spec/source-const-cleanup/dborrow.rs": "82ec345e67b7479e4e38344952429bafa7190e8d910666c34392b432f92fa1bb",
+    "pa31/tests/spec/source-const-cleanup/dbound.rs": "6f27aae16356d134a0bb1b85249c9b6489af9d21b8f32865067ae23b5c56dd65",
+    "pa31/tests/spec/source-const-cleanup/dcall.rs": "02365ecdefc31b8984ac590d1109fc73a125289fc83c4aedd1e7be7bff1979a2",
+    "pa31/tests/spec/source-const-cleanup/denum.rs": "bec2e9a7ec4629788f36641e1a57f82730bd08ea31fcbfc960c887bbe56e3441",
+    "pa31/tests/spec/source-const-cleanup/dfarr.rs": "d3f604dba799eab0f8d0f0f002212c262590e05a7faf67c24cddfa2e248139cc",
+    "pa31/tests/spec/source-const-cleanup/dfresh.rs": "4a82d7941922cc304786abbeb38557164413f4580ea97d97db3321c38f3bedbb",
+    "pa31/tests/spec/source-const-cleanup/dmove.rs": "41ee1a91ea7866d5f37c66cce6656ec22152fd887e73fc625d5f139879cada1f",
+    "pa31/tests/spec/source-const-cleanup/dother.rs": "bf695a9f9d8803907f64a01185a48a0923bdb8f51e4d881fc623ab2abfad8e1c",
+    "pa31/tests/spec/source-const-cleanup/dowmv.rs": "91fcdaddb75128d89993df7300ccb7050f08161fe21784e11765d0b123d76690",
+    "pa31/tests/spec/source-const-cleanup/dpass.rs": "9e8d72b24c5ef794674931e9965d04d91e425a871c1b0cb38e294f3567637f86",
+    "pa31/tests/spec/source-const-cleanup/dread.rs": "7eff58ba10721b1f473df370dd6f46c10ac3a37bd2de23a123bc24fc7ae45f81",
+    "pa31/tests/spec/source-const-cleanup/drep.rs": "8d71d0737c43dca4ee4d4b84268e78e2496baba6d7ed6cf20d28ba9fb8186782",
+    "pa31/tests/spec/source-const-cleanup/dself.rs": "61fb1a3172fd910482df23984999735ba06b4109baad458318d11595ad7ab58a",
+    "pa31/tests/spec/source-const-cleanup/dsib.rs": "549f01ddbbbdd10c27ff4d2df374acc3f56926e385565146ba48c26414aa549d",
+    "pa31/tests/spec/source-const-cleanup/dstrct.rs": "7eb13b605067c82937b0107c68994ef898b6f4740f198e2b59ca07dc71e014ce",
+    "pa31/tests/spec/source-const-cleanup/dunk.rs": "be7b436905efa2180a9fe2b3e07ee1c11d699a99361104ad8169e27487d6a35d",
+    "pa31/tests/spec/source-const-cleanup/dunk2.rs": "6080bf07eea5cac494590d23415934b34f9ea1664ea5cddd8a2810994730b41d",
+    "pa31/tests/spec/source-const-cleanup/dunsafe.rs": "f47e1d16401334a3ae644b17059c91349c33522167b3c5a82ab4270afafa938d",
+    "pa31/tests/spec/source-const-cleanup/dwrap.rs": "e4014245165ed59e338f1abbd9a156e0d15ef6c3b1ce835eac31b6f4ba3ec837",
+    "pa31/tests/spec/source-const-cleanup/epart.rs": "d904eb82b1bc06f2b391e172ab7b1c61297dd230982fd74089f2dcb46945861f",
+    "pa31/tests/spec/source-const-cleanup/epart2.rs": "1b370c1f40a42da76e10ab25b1ea56a2f0fca5167c0ba5206d59678d515983e8",
+    "pa31/tests/spec/source-const-cleanup/eunk.rs": "cbfe454118765563eb2e3061ad99497d3bfc82652a06e79040ae4bd34909cab1",
+    "pa31/tests/spec/source-const-cleanup/fulbnd.rs": "9d9682fc0683de32ce773aff40e0225b0422b4fa1a58156267b5a525946835df",
+    "pa31/tests/spec/source-const-cleanup/fulcpy.rs": "e930eb6d32d5659db97334b18003a881fc7b5dfe4fd772c511bb3f805d86697d",
+    "pa31/tests/spec/source-const-cleanup/gcon.rs": "43caee655cf0a7afa8c262c0a7b25ed370161889ac6e1521105a06a36d18bc2e",
+    "pa31/tests/spec/source-const-cleanup/gmiss.rs": "b3dbba1c8d753d86adaaef93e5959727d6f2eef07f9fc44dd7df2e3bc4fa970a",
+    "pa31/tests/spec/source-const-cleanup/harray.rs": "a8718c41008eb74521c43595419b2c54d799f6175e71fa6ca783fa664c95de4f",
+    "pa31/tests/spec/source-const-cleanup/hcntp.rs": "62c7a620edbb5adb5d9c6df37c41f09d90a45965678023664ca51224300d129c",
+    "pa31/tests/spec/source-const-cleanup/hcont.rs": "2bf24b0d32a96a6f37c002fd094c50e3720b7dcf1d8a6e5feb51b0fdaf31952b",
+    "pa31/tests/spec/source-const-cleanup/hcop.rs": "6c2299088ce210af0b30ef05e464a7fd549ac63ef0d8398413a2adbc728d5335",
+    "pa31/tests/spec/source-const-cleanup/hcpn.rs": "13457040aea57b2db753de21e95014a16702caef3489eb3b15d68454bee3e281",
+    "pa31/tests/spec/source-const-cleanup/hjbad.rs": "978b646ab7164da5132e28ce89742d8755ce7d2662c20ac41b004ff8ae8d5084",
+    "pa31/tests/spec/source-const-cleanup/hjoin.rs": "9cd1732c8406996cdfdc5cccc9f8ace73d5730847bf17b7ba3b50696b2d50b3d",
+    "pa31/tests/spec/source-const-cleanup/hmov.rs": "fd491bcd9a0f8a146b0e0db3ec9188535ace7d2ab0713b9842fecba3b2ab2b5e",
+    "pa31/tests/spec/source-const-cleanup/hmraw.rs": "946beb28eae54d917d0b8281f7c3cbc920a1e6ccda79d27d845e8799cadbaf96",
+    "pa31/tests/spec/source-const-cleanup/hmshr.rs": "52339b8948c6caa0853ebe86d8d80e0a05a4750ba45921a6bcb07dc0437ed412",
+    "pa31/tests/spec/source-const-cleanup/hmvk.rs": "229554c9a44995bd6237f0f8c201585aa4c6a6aa88ccbcbd3ecc8dedb3904546",
+    "pa31/tests/spec/source-const-cleanup/hmvn.rs": "f5b5586ab732671d632d6da050b6b45dd9e18c2d1d9475cc699ee299181da09c",
+    "pa31/tests/spec/source-const-cleanup/hrnew.rs": "eab55a33694d2e1efc138d5abb5ea9835380fb228dd0db251646bb8d201ade1a",
+    "pa31/tests/spec/source-const-cleanup/hrold.rs": "92222c04185ada405d0929148622699b792793903d082909c088d973b96eacdd",
+    "pa31/tests/spec/source-const-cleanup/hrpre.rs": "ec52326dc1b4512e468dcef402bacd96154bee629f18c0552d8fe64ef13e5b46",
+    "pa31/tests/spec/source-const-cleanup/hsub.rs": "0e52b2f7bf0ba92c81c477736a853fec83372be2d5430447477fb894cd6eb602",
+    "pa31/tests/spec/source-const-cleanup/hsubp.rs": "85fc1990367a8e5e9deccbdba3df1ee31e2e351f2e19ee49b8e8a84aff093c95",
+    "pa31/tests/spec/source-const-cleanup/hwrap.rs": "40db72bda5f5bfc68a587d836ec520c302e799b431be9883f6b2d7a9d8c427de",
+    "pa31/tests/spec/source-const-cleanup/impcn.rs": "91a6673bbca99fe3b32d174f9da005c54e570866a38548f0e3d85583de1757d3",
+    "pa31/tests/spec/source-const-cleanup/impcn2.rs": "26ae45d24954c637f46b6982a7c37ace75903442c8da39fd6efde037d59d3cdb",
+    "pa31/tests/spec/source-const-cleanup/impcn3.rs": "1b9e0134364c89cfd463bb5d7b70bc2519d4cbdf0b907ec1c9e344368f4afac4",
+    "pa31/tests/spec/source-const-cleanup/impcn4.rs": "48a9aec447cd3c515d620ad094efeed5ec6fe3ee49b54d1e9e9df0b8a9e4e39c",
+    "pa31/tests/spec/source-const-cleanup/impcn5.rs": "1429bc7a98cd468e171ce782f746f2deb30084f080013edd417e965f88b8614b",
+    "pa31/tests/spec/source-const-cleanup/impcn6.rs": "1429bc7a98cd468e171ce782f746f2deb30084f080013edd417e965f88b8614b",
+    "pa31/tests/spec/source-const-cleanup/impcp.rs": "3232117b90200905dabe8dae5b2662268c6dd2ae3aa711a336dbb50d2418e417",
+    "pa31/tests/spec/source-const-cleanup/impcp2.rs": "10c9100b9d98c6c80fa9b43b2c8d6001311397769466e9a6e2167eab2d6183b9",
+    "pa31/tests/spec/source-const-cleanup/impcp3.rs": "c70c265ac046eeaaa5af4ac994cb7e1a121bd9a8f2e14ecd9c539afb92be1188",
+    "pa31/tests/spec/source-const-cleanup/impcp4.rs": "ffaddf0be7901804af559187641f41413e54d6d423c0aa1334c5b39b4e8e9581",
+    "pa31/tests/spec/source-const-cleanup/impcp5.rs": "651e2b4a269f0d74c39425ba9c9b901713560730b9cff46c4e53fbecbd10d2be",
+    "pa31/tests/spec/source-const-cleanup/impcp6.rs": "651e2b4a269f0d74c39425ba9c9b901713560730b9cff46c4e53fbecbd10d2be",
+    "pa31/tests/spec/source-const-cleanup/impro2.rs": "515f0c13f2333d3cb041e83ebe4e2fd36e8252122ecb3a7bd1df9485938dabeb",
+    "pa31/tests/spec/source-const-cleanup/impro3.rs": "515f0c13f2333d3cb041e83ebe4e2fd36e8252122ecb3a7bd1df9485938dabeb",
+    "pa31/tests/spec/source-const-cleanup/impro4.rs": "66660faff050f637006f99296e179320bb9d86000b236d58a49ba7484ede5fc0",
+    "pa31/tests/spec/source-const-cleanup/impro5.rs": "4c72d82ae83ba89a7dc6c861ab512d448c7ae688204cb6d2296a833624fb6c98",
+    "pa31/tests/spec/source-const-cleanup/impro6.rs": "401f3cb243c3ef5ba0871aaf70ee8502c65e03b6aed4eba5ed2ae31a6477d8fd",
+    "pa31/tests/spec/source-const-cleanup/improv.rs": "49cabbf56c8cf48eb48d342a839c4c9fa4eaf5798f4e25a10dd58b16bce8f4b5",
+    "pa31/tests/spec/source-const-cleanup/macreq.rs": "690fb4ea9e6182256b22889bf9272b298241000041000a504a43d4a09de7a62e",
+    "pa31/tests/spec/source-const-cleanup/mfield.rs": "ab1a7ef998d5b7f3871a7842b131540f73170ebf56402d28be7524968a829a57",
+    "pa31/tests/spec/source-const-cleanup/nrstr.rs": "d354b3d038fa1caa4e6d33ad9991db3ad9713715cd32300b602bb8ec197e743f",
+    "pa31/tests/spec/source-const-cleanup/own128.rs": "c4a5790a366210c0380446402dd08e9d0fed79f6212b9dedb9f82ba26deb628e",
+    "pa31/tests/spec/source-const-cleanup/ownar0.rs": "87c63bfaeb08699f681b5f3989c32874b037077d78e3c73f217af1928b219ae6",
+    "pa31/tests/spec/source-const-cleanup/ownar1.rs": "1e1fe0886cbcdd58b3a6d8ea763713da9b2f30d60bf38298e5d71e7a5135c018",
+    "pa31/tests/spec/source-const-cleanup/ownbad.rs": "bd2db5c371e404f12d967cc6c89fd6e9fb5fe4051a84fb2834b37e72f3e6128c",
+    "pa31/tests/spec/source-const-cleanup/owncnd.rs": "f1a61553d2e91ad279a7754fa43729c7316f60c6d1bebc77b1a14ad736be03cb",
+    "pa31/tests/spec/source-const-cleanup/owncp.rs": "357766cb360203ad6ccb8c39ef0e0eaaa7cb9c5c732f47dc48204b3ebec5d3c0",
+    "pa31/tests/spec/source-const-cleanup/owngud.rs": "615c6ba97159cc63ad4b067b2c598f1e53d93e53fabf255ae660c7116a424eab",
+    "pa31/tests/spec/source-const-cleanup/ownman.rs": "4f3c4c7d3b642433ab330be9febc06da20d1a231d88bbccc8f16d9e4c16d835c",
+    "pa31/tests/spec/source-const-cleanup/ownref.rs": "12cacd0a35a6cbd56fb2a1a9987a257eea0eedc0030f42981d9d5ed689e1ee7d",
+    "pa31/tests/spec/source-const-cleanup/ownunc.rs": "7b474394867898bebbe7bf49fbefa186d23f4e01fac2d111d3ed9498626ced34",
+    "pa31/tests/spec/source-const-cleanup/ownw0.rs": "8007b38001da7ead326f41ea5cc12d9c9a741e1df0efaf12e3eb7d8547debbe6",
+    "pa31/tests/spec/source-const-cleanup/ownw32.rs": "240488ba3beec529dafde6bf645425691f40120ff5ceb98c35c1f6aa6f02e4ea",
+    "pa31/tests/spec/source-const-cleanup/ownw8.rs": "21fa9e0e9fe56354b937137d6f56b93d3855a3ef65206a1868f2fb6dfaecf93b",
+    "pa31/tests/spec/source-const-cleanup/pract.rs": "552b7c7848dd2fe7b5978e5861c0b75d6b9577eb8b36683556c983e886989afa",
+    "pa31/tests/spec/source-const-cleanup/prknow.rs": "7510c32c79448413ea0da2dabf4ec8123573084986d7151af6cf3bfd4944493c",
+    "pa31/tests/spec/source-const-cleanup/prmove.rs": "fecf94adb9fd724af1581b18af3dd4ed1364168c12c3a26a65df9ce95d2a8816",
+    "pa31/tests/spec/source-const-cleanup/prstr.rs": "81a17316bffbe307063257ad608963c5fd39edb96780217349e44329c2d6888c",
+    "pa31/tests/spec/source-const-cleanup/prunk.rs": "37efcc7e8f6175319f8572234e919441a2be437a6be8ab0ae4f7616085c0f110",
+    "pa31/tests/spec/source-const-cleanup/qctor.rs": "971cdcd017fe6bc5c4ffe6d595755885206dc04bf5ffbb70cb9259da23520ea0",
+    "pa31/tests/spec/source-const-cleanup/rfield.rs": "afbfee28d5648bca4e0b1762935917b19221a01bac647f5300e3c12fe2083046",
+    "pa31/tests/spec/source-const-cleanup/rlocal.rs": "bfd694d000f47b65429fc060a073c3042af6406b2b29e7e9aa49423d7540c023",
+    "pa31/tests/spec/source-const-cleanup/runct.rs": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+    "pa31/tests/spec/source-const-cleanup/sealno.rs": "1c6c43b82e5da58a027b72fed967fa6c54ec75a39a4cb4171a3d6ef94c6105a9",
+    "pa31/tests/spec/source-const-cleanup/sealok.rs": "cd29f6986ddf9e225b685919027404fc14d30563bf56836ac0f14b51c2852ad6",
+    "pa31/tests/spec/source-const-cleanup/secnst.rs": "6d58a32d0ff7fbfaf0bae46394057b757ae352d5062f91371f6693f5605600b7",
+    "pa31/tests/spec/source-const-cleanup/senod.rs": "3f73ddb5478406826a97c82df03617fabcff077e15648057d93950f72ef5762b",
+    "pa31/tests/spec/source-const-cleanup/senom.rs": "ae99ffe256b0c844e13e22510ef7007d93391b8c2cb0cb16a8aab86a2fbba86b",
+    "pa31/tests/spec/source-const-cleanup/seord.rs": "27d1b28b2d74c0f04393823ed567f7c8effcca09c664574d1424c7149f528288",
+    "pa31/tests/spec/source-const-cleanup/serun.rs": "1e4bc537b2be8a703d012ed3ab0b2aff557858343d218ec6e17e75db45b82cce",
+    "pa31/tests/spec/source-const-cleanup/sestrg.rs": "06a7021e35b58e56783afae741cb3d393676c4b1ab7fda642b6f3c9389858204",
+    "pa31/tests/spec/source-const-cleanup/snest.rs": "49da3fed267d9f3c5812ba09c3abf1da0b7a1156c0edfe9f720a0b2344597c3f",
+    "pa31/tests/spec/source-const-cleanup/tagarg.rs": "a32fd5b650e5b1980aad55e94482bcee3dc68485d1b7c50cf1fcf124ef356bb7",
+    "pa31/tests/spec/source-const-cleanup/tagbad.rs": "1c2042759b4ccac79104815d4b80f00229a8342ad047dc0fb8a2ab0afa32c16b",
+    "pa31/tests/spec/source-const-cleanup/tagbr.rs": "bbdabf7018bcdd9ad2a44d8aee9deccca7b4df0a9914213112844a1d5b058009",
+    "pa31/tests/spec/source-const-cleanup/tagfld.rs": "db8eadf3a2219fcb84be67ebc85f8c221f03b145fde4482fadae747a9d186042",
+    "pa31/tests/spec/source-const-cleanup/taggen.rs": "6bc6fe98e332fe8dac053acd2fd0108dc0e958aa3d9eaa544fd381ce508d9329",
+    "pa31/tests/spec/source-const-cleanup/taglif.rs": "15dfa01c3c4807d77cb5ac25f5c5325f8b3da23acffa90150d95b61a94e9c415",
+    "pa31/tests/spec/source-const-cleanup/tagmut.rs": "046f03b983f09df914f654531e557a33d7b76071ffa671fae6005dcbab3361a2",
+    "pa31/tests/spec/source-const-cleanup/tagmv.rs": "bc75c8047d59c97ad9b2ff56fcf9ac2a3fc37a364725bff7c5fa6ff3f31bf0a8",
+    "pa31/tests/spec/source-const-cleanup/tagnst.rs": "6c239e736d9a0117b61ec352cb40a51ebf60786e114aa50c3f3e3b4f97ebec43",
+    "pa31/tests/spec/source-const-cleanup/tagonc.rs": "164a33b8ee8a8e3ef262b9e92b3c8d1b5f5a11b7c0dd33ffd654284efb0e1d5b",
+    "pa31/tests/spec/source-const-cleanup/tagout.rs": "7a081145b9d99a6454305b41ff1ca00714afc8fa5924677cb8ecf942acd162aa",
+    "pa31/tests/spec/source-const-cleanup/tagow2.rs": "a4aa82cf81f136a7f9e642824fe131d5a03f520137d45f07accb4e194652dfe6",
+    "pa31/tests/spec/source-const-cleanup/tagown.rs": "77b118a78314ecbf72a12f4508256f65a0ec6843c5ff497fdefc920a63a8c56c",
+    "pa31/tests/spec/source-const-cleanup/tagpar.rs": "0d977fa532ee35de8568cac57d9d5b8f9f369631d79883a95f6cc2ac14ccdc65",
+    "pa31/tests/spec/source-const-cleanup/tagraw.rs": "f3f6c4b36774e7d13c902e192c9a4d5f9a0a5385177983185a642845cbe8441f",
+    "pa31/tests/spec/source-const-cleanup/tagrep.rs": "ba51ccc933b33beae070cd83f6741ac7c30d6c71321339e77e5ebe0eb6451854",
+    "pa31/tests/spec/source-const-cleanup/tagret.rs": "ac8e55fce9d4b10cc30161f69ca8db3383bedb94d148620e96ab4b2325253904",
+    "pa31/tests/spec/source-const-cleanup/tagset.rs": "af8e0607edf97db3b3b300c75b7e6bbebdc4eabdd5449c19a835782254c46495",
+    "pa31/tests/spec/source-const-cleanup/tagshr.rs": "de0108bf79458263bb388a8f7346c825e307eef9c0895deafe2a0b3d6f0e617c",
+    "pa31/tests/spec/source-const-cleanup/taguni.rs": "9e0eb945a0504c047d6dc4f8b67615428882235590d2835b9c68debd29759aa6",
+    "pa31/tests/spec/source-const-cleanup/uncond.rs": "fe300f7728f073bb9ae659f6c02288b8f5f844a9c74a6520a42b0e5b2a68b9d1",
+    "pa31/tests/spec/source-const-cleanup/uncopy.rs": "f8ba951adca877ae0e1d0dff445cf8a1969e7c77b18e885ca2b418b11be28bd9",
+    "pa31/tests/spec/source-const-cleanup/whoar0.rs": "d196f46f9dbde3cc36cafbdd17f58f4f477c8b559ca245c659ad2c1b36791ba1",
+    "pa31/tests/spec/source-const-cleanup/whocp.rs": "6d25fef436ca24365b72d1fa6d9bf311386678df5ab33f35e3f096fc17d68762",
+    "pa31/tests/spec/source-const-cleanup/whon0.rs": "41fde3324bc8b23ef041e86274a5b59783e1fa1c8f2e132a73343d465e76a8ba",
+    "pa31/tests/spec/source-const-drop/array0.rs": "92fc880a4d1300dcee820d39ba2e70cb43452346d693bc2825b6ac82074063f6",
+    "pa31/tests/spec/source-const-drop/arrayc.rs": "bdc7e35cf4fc01929271e9592a6631838a4ac01f6cd0619c681f5651af3e97fb",
+    "pa31/tests/spec/source-const-drop/arrayn.rs": "d4acd44e81484cbbd9f1a3f31153b5b499b40ed660c5d0e09b0ceeace349f96d",
+    "pa31/tests/spec/source-const-drop/borrow.rs": "cebc50db6ada9698632520c1f04ee286cf83d9bfe8958144aecd700eeef8c213",
+    "pa31/tests/spec/source-const-drop/clone.rs": "8100f012e41c68010336faebb68a7f4dadd659450e7eba113d1e759c3b43899b",
+    "pa31/tests/spec/source-const-drop/clone2.rs": "a80d327bf8a7488645c47ac9fec4c8026df1c4e9c06bed3cb1bc5cee8e04d539",
+    "pa31/tests/spec/source-const-drop/cond.rs": "cdd2ee3efea98d6a6ef2a107b5e9345b5c1daa610a8e8e75d7e8ab1fe091c9bd",
+    "pa31/tests/spec/source-const-drop/cond2.rs": "1bb547971adc0e80816cab2be8028edb1982f81314938b0d2d3b99f66c9a5c0f",
+    "pa31/tests/spec/source-const-drop/cond3.rs": "a895bce9d029a73532f7ac0e85927ac97e3ae456babebae413614d2587a24bc6",
+    "pa31/tests/spec/source-const-drop/count.rs": "bbc22af8eb42f0d7cc05af5c686fc31d3b6d26a129d6b655167afcda4ff1a892",
+    "pa31/tests/spec/source-const-drop/count2.rs": "a8f2ba8d677d2a1f49ca9e0633d4a242954a868739ec70750008b30b96420896",
+    "pa31/tests/spec/source-const-drop/cpbnd.rs": "9236e75edaebd1a5d9ddb17be8a73573167a87cbf2ac8924d9851f02c3ade024",
+    "pa31/tests/spec/source-const-drop/ctinst.rs": "e9167137707c46a04a7c35a4a5d7134a471236f01442176d40b74d0e35a5b848",
+    "pa31/tests/spec/source-const-drop/ebad.rs": "6ca898aa87faccf3de62c70c1bff035f7487c7ac0855402e266c5de4f61c3862",
+    "pa31/tests/spec/source-const-drop/egood.rs": "b483e3974d5046cb34c5dceae055df8cbf3c8f7c9c000d91b33182accd05219c",
+    "pa31/tests/spec/source-const-drop/empty.rs": "b3883c330b27bda461aae086c58e778efba23b82308cfbe20e249144d4ca537a",
+    "pa31/tests/spec/source-const-drop/evinit.rs": "30e7f56e366f561847df298ec226e1173281581dbff92d18b55a09cb5086776d",
+    "pa31/tests/spec/source-const-drop/fake.rs": "68c509e6b241b66674dc5523b27cef5bbb07d4a1e4225a6b2ceacab7f68e17a5",
+    "pa31/tests/spec/source-const-drop/field2.rs": "c2a2856dd20372780df58513303cffb18ea394b77f36d6640d3f729ea7527f4b",
+    "pa31/tests/spec/source-const-drop/fieldc.rs": "b8451a96cf897365f6e41a6d0aa779ab223000e60b56a6a3a5f9991070fd6f1a",
+    "pa31/tests/spec/source-const-drop/fieldn.rs": "41f7de8e24ee0dc3ef0f7d9ac341ceb7af8f6f6eab0adc51f27ed25255111a08",
+    "pa31/tests/spec/source-const-drop/flneg2.rs": "43cca00d7a01c5911ca57e7c838ec44ab7893bffa4552fbe0af6eab9834315ee",
+    "pa31/tests/spec/source-const-drop/foo.rs": "fc9b863a145a9b690e9de67e3de68fa1ea189ec045dc914dccb976f58c2c91d6",
+    "pa31/tests/spec/source-const-drop/foo2.rs": "3b8576d7dad1b3b3c43e70a9aee375496fac5184d7874c677e31f50c6cd8b22f",
+    "pa31/tests/spec/source-const-drop/fstrg2.rs": "d6f2ad841d51965aa916a60d2b8bda1e7fe24948a929575149c77c482793139a",
+    "pa31/tests/spec/source-const-drop/fstrng.rs": "b2ed37266d9f2c167cb48950613f536d05b3ec265b6b9f7ff54e51c760962211",
+    "pa31/tests/spec/source-const-drop/hold.rs": "2db4c70418a73a5cc0305eb4889baca32bd3dd92384a3375826b53e2a3d829b7",
+    "pa31/tests/spec/source-const-drop/inact.rs": "b8998b003dbec3e5beaec82f338bb26bb6b9d8e806757ecb5cb1011feac182e9",
+    "pa31/tests/spec/source-const-drop/initc.rs": "5b97614bafd71de4c5a6042931a7d2bd7b8c5e720ffad8fbf1d2c12b3329677c",
+    "pa31/tests/spec/source-const-drop/initn.rs": "89721e863cf1d4cd4222c635d327c835fd8ddbbb164cc555ccd3a3295478d8fb",
+    "pa31/tests/spec/source-const-drop/manual.rs": "6781d802d4990596276229d6200eb3505483c40c2d85dedf93ced1f2d712ef85",
+    "pa31/tests/spec/source-const-drop/moved.rs": "1e9ce9d25a68cd67e7a6237f34b60b385c16aba9caa34cfa6ac77c042704bad9",
+    "pa31/tests/spec/source-const-drop/noncal.rs": "f4c40a353601c79ea45874eaf5d1e6d9e8856cd6ab8e7a0ee53b55a80dd5fafc",
+    "pa31/tests/spec/source-const-drop/ord.rs": "f9ba939cdf7bae91c4ff932473984ec1c725e61858ab1a40e031bec486fe0c64",
+    "pa31/tests/spec/source-const-drop/othr.rs": "3a0fb55c5cbb0aabdc851f8065dd298fa03427b644c061729f41dd3ae33c1f2e",
+    "pa31/tests/spec/source-const-drop/ownc.rs": "56ef2b073965c49756444643cd896615777a86e90954d6584688d47eab92e1f3",
+    "pa31/tests/spec/source-const-drop/ownc2.rs": "4b30a1a20c8f904e511aacfa4c9ebff2bcdf5ca1401450d4c5aced1e700162ba",
+    "pa31/tests/spec/source-const-drop/ownn.rs": "04ed299b97d7ed6372906bbae363ba31d6b866fa12ade847b27ab7b5e1b0b264",
+    "pa31/tests/spec/source-const-drop/ownn2.rs": "053d115f2e3965d828563034ecf50b09e7d2e934190d72aa5315ec3ed8259569",
+    "pa31/tests/spec/source-const-drop/part.rs": "d354b3d038fa1caa4e6d33ad9991db3ad9713715cd32300b602bb8ec197e743f",
+    "pa31/tests/spec/source-const-drop/plain.rs": "4eec9b1785c88b247bd60916017def1abb69f3bc99a7d56fbf9cb27fadd4ec67",
+    "pa31/tests/spec/source-const-drop/plain2.rs": "1211eb44d499d38ea04c583fb229c270de8ecc9f5ebe57ed757dcbdf0a3aa2d0",
+    "pa31/tests/spec/source-const-drop/reach.rs": "ab179140d95dbe17f5ee0c47581b9b4f43574e53c41287aaaf48ed16f1660654",
+    "pa31/tests/spec/source-const-drop/rtcnt.rs": "2cfe99057f74ac5bbcc0325f0ec442a53d51755e82b22839bde5ad8f04169899",
+    "pa31/tests/spec/source-const-drop/rtinst.rs": "1fb8339881390b0c6cdfef5c2d9eaa05a63a7f968d4366c92e14d297c4c776dc",
+    "pa31/tests/spec/source-const-drop/rtneg.rs": "4fc26102430d900865914dbb21719a4aca169f7b149218f6fbce950577f7d4d5",
+    "pa31/tests/spec/source-const-drop/rtonce.rs": "e943ea955d34e9adf3919b6131f3ae3cc81f83ca39bb436f64e923568aabbc60",
+    "pa31/tests/spec/source-const-drop/strng2.rs": "1aa00902beb66a96cb8aba25e9078d6e02d1e1e40898ed850297e7382200b34a",
+    "pa31/tests/spec/source-const-drop/strong.rs": "0797b6c82a7ad9397082eadcd8b66e51e5661d758ac49c1e828cb74945e95e6a",
+    "pa31/tests/spec/source-const-drop/tuplec.rs": "dde2aa221c5a8c13174981d1c48bbdf4f930ea5fdbb4efebef995a0a9203bff1",
+    "pa31/tests/spec/source-const-drop/tuplen.rs": "c046f02706b9bead1fc458be54c21302d75b6adca1244262719631e46ad86e7d",
+    "pa31/tests/spec/source-const-drop/unco.rs": "2b8aa20112294c1179f7cb4ac73f5585b4f16c7d8ef1cd5d8cfddbff27923fa4",
+    "pa31/tests/spec/source-const-drop/unco2.rs": "75f73ca3cf93b0c15023338f24630b35f8420a329cb0c9646451b166453c847b",
+    "pa31/tests/spec/source-const-drop/union.rs": "053932c7e82e94fd57f9c102faa32390cf38b82da8121825078c329dc1de60f1",
+    "pa31/tests/spec/source-const-drop/work0.rs": "25adbe4297c018dc90d543419225636fcc9beaaa32d04ef7300406482ddaa619",
+    "pa31/tests/spec/source-const-drop/work128.rs": "756cedf3b119f352238fefc6e44d06d076166eee4fc08a94da515c4c5063c0c4",
+    "pa31/tests/spec/source-const-drop/work32.rs": "cf4f67861b3ab81de4eb654991e2e03730d8435444427436528f2adb2bbfecb6",
+    "pa31/tests/spec/source-const-drop/work8.rs": "ac8986feb8d8498eb9983df9eb2a01eb42bc1d2eb8b48f38e27c765a66c95a8e"
+  },
+  "independent_receipts": {
+    "obj/parallel/source-transport/va-cleanup/reference-v15/receipt.json": {
+      "sha256": "93755b85997ef0a6412e7ec0bbdb4c66d586d48ab197098560014234bde587a7"
+    },
+    "obj/parallel/source-transport/va-cleanup/reference-v16/receipt.json": {
+      "sha256": "4c635460f5de26ea85c6e35388b0d2707bc1809b7073882f81697e81ba2ed5ee"
+    },
+    "obj/parallel/source-transport/va-cleanup/reference-v17/receipt.json": {
+      "sha256": "9a0a3e58525de236a4801ab512a4a651074230fe64b93439e6f88f1f0edc2ad7"
+    },
+    "obj/parallel/source-transport/va-const/reference-v5/receipt.json": {
+      "sha256": "7305e37ed324316312d56b1c3da5c5f53a3bb6b546b061d201361174471d174b"
+    },
+    "obj/parallel/source-transport/va-const/reference-v2/receipt.json": {
+      "sha256": "53b642f24161d1f56ae5c88b76f5f09edadbdde0a6b04037db29d15038c14db9"
+    }
+  },
+  "gates": {
+    "qualify-badsem8": {
+      "path": "obj/parallel/source-transport/va-cleanup/qualify-badsem8/receipt.json",
+      "sha256": "e5cab5e99008a17663f4bddd86749c953fa71faa11dfff0f06a30c368573e488",
+      "runs": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 18.456877486023586
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.9859379840199836
+        },
+        {
+          "name": "selected",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctsel::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 148.8568164689932
+        }
+      ]
+    },
+    "qualify-cost4": {
+      "path": "obj/parallel/source-transport/va-cleanup/qualify-cost4/receipt.json",
+      "sha256": "744dd2a659779a613042b66e8bfa4a3be7adf2b42b7e4da041e5f8617be3a253",
+      "runs": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 17.276090037019458
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.742385241028387
+        },
+        {
+          "name": "clippy",
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--lib",
+            "--tests",
+            "--all-features",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "code": 0,
+          "seconds": 111.64460789301665
+        }
+      ]
+    },
+    "qualify-final1": {
+      "path": "obj/parallel/source-transport/va-cleanup/qualify-final1/receipt.json",
+      "sha256": "4c70900f872a453dced1322f8c54a2d34856981cd940e88dbdba91239b5f1bcb",
+      "runs": [
+        {
+          "name": "ctseal",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctseal::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 135.39130611001747
+        },
+        {
+          "name": "ctfix",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctfix::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 101,
+          "seconds": 0.9982491899863817
+        }
+      ]
+    },
+    "qualify-final2": {
+      "path": "obj/parallel/source-transport/va-cleanup/qualify-final2/receipt.json",
+      "sha256": "5308152df4891399e9bd4cdc921ac412dc7f8526c8676b72fad270a2ed497df8",
+      "runs": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 16.711898383975495
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.5408749660127796
+        },
+        {
+          "name": "ctseal",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctseal::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 9.672293491021264
+        },
+        {
+          "name": "ctfix",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctfix::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 1.0662157180486247
+        },
+        {
+          "name": "ctown",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctown::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.27430186700075865
+        },
+        {
+          "name": "ctleaf",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctleaf::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.12418812396936119
+        },
+        {
+          "name": "ctwire",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctwire::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 101,
+          "seconds": 0.11604616796830669
+        }
+      ]
+    },
+    "qualify-final3": {
+      "path": "obj/parallel/source-transport/va-cleanup/qualify-final3/receipt.json",
+      "sha256": "59515dc4bf084eec52983e330dafc46c86038450ee482b8b025cb1ec4bc7c10e",
+      "runs": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 17.240556916047353
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.6529369489871897
+        },
+        {
+          "name": "ctwire",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctwire::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 9.399298020987771
+        },
+        {
+          "name": "ctnext",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctnext::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.16071001603268087
+        },
+        {
+          "name": "ctdrop",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctdrop::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 101,
+          "seconds": 0.6726472300360911
+        }
+      ]
+    },
+    "qualify-final4": {
+      "path": "obj/parallel/source-transport/va-cleanup/qualify-final4/receipt.json",
+      "sha256": "d923f17173959933b24c9e057f28cb3a0a2507814681492dc210968c8ffa503b",
+      "runs": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 17.138649215979967
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.8809134630137123
+        },
+        {
+          "name": "ctdrop",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctdrop::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 10.01156902499497
+        },
+        {
+          "name": "ctsel",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctsel::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 1.4025098420097493
+        },
+        {
+          "name": "registration",
+          "command": [
+            "python3",
+            "scripts/maintainer_suites.py",
+            "check"
+          ],
+          "code": 0,
+          "seconds": 0.08684132702182978
+        },
+        {
+          "name": "upstream",
+          "command": [
+            "python3",
+            "scripts/upstream.py",
+            "--verify"
+          ],
+          "code": 0,
+          "seconds": 0.13600909803062677
+        },
+        {
+          "name": "native",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctdrop::actual_const_drop_runtime_body_writes_the_runtime_operand",
+            "--",
+            "--exact",
+            "--ignored",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.5377611260046251
+        },
+        {
+          "name": "runtime-native",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctnext::genuine_unconditional_const_drop_native_body_consumes_runtime_data",
+            "--",
+            "--exact",
+            "--ignored",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.28872125199995935
+        }
+      ]
+    },
+    "qualify-strict1": {
+      "path": "obj/parallel/source-transport/va-cleanup/qualify-strict1/receipt.json",
+      "sha256": "f5d59dba16447a1f5d6f4bd69ac8178bc151570629c10e9d6971dfe33367821e",
+      "runs": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 17.20678955799667
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.635140665981453
+        },
+        {
+          "name": "clippy",
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--lib",
+            "--test",
+            "suite_traits",
+            "--bin",
+            "rustgm",
+            "--all-features",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "code": 0,
+          "seconds": 3.2029582649702206
+        }
+      ]
+    }
+  },
+  "native": [
+    {
+      "folder": "obj/parallel/source-transport/va-const/native-count2-2868495",
+      "stdout": "41\n",
+      "files": {
+        "obj/parallel/source-transport/va-const/native-count2-2868495/backend.command": "6cd0f527982fa6d2cfc212620822c656f3c951c2753348995e98041dc58c5d40",
+        "obj/parallel/source-transport/va-const/native-count2-2868495/backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "obj/parallel/source-transport/va-const/native-count2-2868495/backend.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "obj/parallel/source-transport/va-const/native-count2-2868495/link.command": "decdba56618596cd6b305a795951014e0a81ec55d9e79be6aafda1f9e6dcc4be",
+        "obj/parallel/source-transport/va-const/native-count2-2868495/link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "obj/parallel/source-transport/va-const/native-count2-2868495/link.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "obj/parallel/source-transport/va-const/native-count2-2868495/native.command": "9de1294f225a83752dfd782dca03af73b27825a0d9e9f941c94eacf1ed32c4a6",
+        "obj/parallel/source-transport/va-const/native-count2-2868495/native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "obj/parallel/source-transport/va-const/native-count2-2868495/native.stdout": "040316eca5e77dbb2212c1efe8b81cb23bc67ce0ac8cb5c9d902d98bd45ddfa1",
+        "obj/parallel/source-transport/va-const/native-count2-2868495/source.lowir": "182a88c8346deb18301e992e3ce1756db95b0cbe48d02e8e0c70f2288e23f183"
+      }
+    },
+    {
+      "folder": "obj/parallel/source-transport/va-const/native-rtcnt-2868495",
+      "stdout": "47\n",
+      "files": {
+        "obj/parallel/source-transport/va-const/native-rtcnt-2868495/backend.command": "2c8399338229595af6a0a7d6388036ff45dabbd293fd36516a9247e90090f0f6",
+        "obj/parallel/source-transport/va-const/native-rtcnt-2868495/backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "obj/parallel/source-transport/va-const/native-rtcnt-2868495/backend.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "obj/parallel/source-transport/va-const/native-rtcnt-2868495/link.command": "2cfa2e355e9e31739fc39b80f1ad3303149fe651e5e88b370f43bb745b62d643",
+        "obj/parallel/source-transport/va-const/native-rtcnt-2868495/link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "obj/parallel/source-transport/va-const/native-rtcnt-2868495/link.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "obj/parallel/source-transport/va-const/native-rtcnt-2868495/native.command": "df02f11e40e7e860590e42803e8b59e10b4630339805a79a388f54bcf0448aca",
+        "obj/parallel/source-transport/va-const/native-rtcnt-2868495/native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "obj/parallel/source-transport/va-const/native-rtcnt-2868495/native.stdout": "e3667f7d8c030260bf49046f955ec9bebdb9a4cb8a66b812fd498ded5431a821",
+        "obj/parallel/source-transport/va-const/native-rtcnt-2868495/source.lowir": "8e506e53280ec9fa9230699fe6d734b3a1a70b4766b064999957a4254f986702"
+      }
+    },
+    {
+      "folder": "obj/parallel/source-transport/va-cleanup/native-2868725",
+      "stdout": "59\n",
+      "files": {
+        "obj/parallel/source-transport/va-cleanup/native-2868725/backend.command": "5ee87694ab6e577c9771890847ae0e55e67fa05f13fec2a7f95e88b1f2a64460",
+        "obj/parallel/source-transport/va-cleanup/native-2868725/backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "obj/parallel/source-transport/va-cleanup/native-2868725/backend.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "obj/parallel/source-transport/va-cleanup/native-2868725/link.command": "f4eca4339352723f94be399011d6374811aef1e4bad2e6f428ad5cd9378e207d",
+        "obj/parallel/source-transport/va-cleanup/native-2868725/link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "obj/parallel/source-transport/va-cleanup/native-2868725/link.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "obj/parallel/source-transport/va-cleanup/native-2868725/native.command": "d0a767b56022581a2a20b4cf1ae622fbaa3a823279c0525bc428534fa809d969",
+        "obj/parallel/source-transport/va-cleanup/native-2868725/native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "obj/parallel/source-transport/va-cleanup/native-2868725/native.stdout": "be4ba010e48e7d5c7c60457e7f40538407a26f4ead94b392beff67a3a5546b8a",
+        "obj/parallel/source-transport/va-cleanup/native-2868725/source.lowir": "29164fc53e5571f3a86d0d108c2d7feda6defc30c9a6676e689048d704bb3ac3"
+      }
+    }
+  ],
+  "public_regular_count": 44,
+  "new_independent_cases": 27,
+  "work": {
+    "array8": 1328,
+    "array1048576": 1328,
+    "fields_base": 422,
+    "fields_8_32_128_growth": [
+      28,
+      124,
+      508
+    ],
+    "bodies_base": 768,
+    "bodies_8_32_128_growth": [
+      1473,
+      5889,
+      23553
+    ]
+  },
+  "layouts": {
+    "Scope": 64,
+    "Scope_previous": 56,
+    "Qualification": 56,
+    "Root": 28,
+    "Node": 68,
+    "Row": 60,
+    "Queries": 136,
+    "Partition": 480,
+    "Origins": 48,
+    "Builder": 1776
+  },
+  "remaining": [
+    "actual CTFE cleanup/unit-result const payment",
+    "conditional-parent value-history",
+    "general imported precision/type/body profiles",
+    "private hostile execution and broad release/performance/core integration"
+  ]
+}

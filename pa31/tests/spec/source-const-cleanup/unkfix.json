@@ -1,0 +1,11 @@
+{
+  "correction": "dunk retained duplicate inherited convert_identity helper (E0428), so only corrected unique helper qualifies intended E0493 cause",
+  "cases": [
+    {
+      "file": "dunk2.rs",
+      "source_sha256": "6080bf07eea5cac494590d23415934b34f9ea1664ea5cddd8a2810994730b41d",
+      "expected_code": 1,
+      "cause": "E0493 genuine unknown call result without duplicate declaration"
+    }
+  ]
+}

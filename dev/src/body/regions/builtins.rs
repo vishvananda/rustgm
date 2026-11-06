@@ -131,6 +131,9 @@ impl BuiltinRequirements {
     pub(crate) fn defining(&self) -> Option<&super::super::defining_cleanups::State> {
         self.defining.as_deref()
     }
+    pub(crate) fn defining_owner(&self) -> Option<&Arc<super::super::defining_cleanups::State>> {
+        self.defining.as_ref()
+    }
     pub(super) fn replace_source(
         target: &mut Option<Arc<Self>>,
         source: &crate::sema::model::BuiltinRequirements,
@@ -140,6 +143,23 @@ impl BuiltinRequirements {
             .as_ref()
             .and_then(|previous| previous.defining.clone());
         *target = Some(Arc::new(updated));
+    }
+    /// Completed source Copy can filter a value qualifier for this exact owner.
+    pub(crate) fn copy_qualification(
+        &self,
+        body: &crate::body::ir::Body,
+        ty: crate::types::TypeId,
+    ) -> Result<Option<bool>, &'static str> {
+        let Some(requirements) = &self.source_copy else {
+            if self.prepared_copy.is_some() {
+                return Err("source Copy qualifier lost its actual requirement owner");
+            }
+            return Ok(None);
+        };
+        self.prepared_copy
+            .as_deref()
+            .ok_or("source Copy requires prepared body-local selection")?
+            .lookup(body, requirements, self.environment.as_ref(), ty)
     }
     pub(crate) fn copy_decision(
         &self,

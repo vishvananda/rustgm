@@ -1095,22 +1095,26 @@ pub(super) fn prepare_ordinary<C: Collect>(
     } else {
         body::constants::analyze_bodies(report, facts, program.bodies.iter(), globals)?;
     }
-    let (mut program, bodies) =
-        proof::Builder::new(program).map_err(|e| diagnostic(report, None, e.into()))?;
+    let (mut program, mut bodies) =
+        proof::Builder::new(facts, program).map_err(|e| diagnostic(report, None, e.into()))?;
     program
         .bind_future_store(facts, templates)
         .map_err(|e| diagnostic(report, None, e.into()))?;
     program
-        .prepare_original_regions(facts, &inputs, &bodies)
+        .prepare_original_regions(facts, &inputs, bodies.bodies())
         .map_err(|e| diagnostic(report, e.node, e.message))?;
     let mut ordinary = Ordinary::default();
     // Prove in program order while releasing the moved-from body records.
-    let mut bodies = bodies;
-    bodies.reverse();
-    while let Some(body) = bodies.pop() {
-        if bodies.len() < bodies.capacity() / 2 {
-            bodies.shrink_to_fit();
-        }
+    bodies
+        .reverse(facts)
+        .map_err(|e| diagnostic(report, None, e.into()))?;
+    while let Some((body, requirements)) = bodies
+        .pop()
+        .map_err(|e| diagnostic(report, None, e.into()))?
+    {
+        bodies
+            .shrink(facts)
+            .map_err(|e| diagnostic(report, None, e.into()))?;
         let source = body.source;
         let closure = if let Owner::Closure { identity, .. } = body.owner {
             Some(identity)
@@ -1129,7 +1133,8 @@ pub(super) fn prepare_ordinary<C: Collect>(
                 "missing ordinary body contract".into(),
             )
         })?;
-        let index = program.push_original(report, facts, originals, body, &input)?;
+        let index =
+            program.push_original(report, facts, originals, (body, requirements), &input)?;
         #[cfg(test)]
         program
             .observe_original(facts, index, &input)

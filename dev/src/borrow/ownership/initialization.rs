@@ -19,6 +19,21 @@ use crate::{
 };
 use std::hash::BuildHasher;
 
+/// Physical cleanup refinement and const eligibility have independent activation.
+#[derive(Clone, Copy)]
+pub(crate) enum Refinement {
+    Physical,
+    Defining,
+    EligibilityOnly,
+}
+impl Refinement {
+    pub(super) const fn physical(self) -> bool {
+        !matches!(self, Self::EligibilityOnly)
+    }
+    pub(super) const fn eligibility(self) -> bool {
+        !matches!(self, Self::Physical)
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Status {
     /// No bit in the queried range is initialized on any incoming path.
@@ -63,7 +78,7 @@ pub struct Facts<'a> {
     words: usize,
     refinements: Option<Box<super::variant_liveness::Refinements>>,
 }
-impl Facts<'_> {
+impl<'a> Facts<'a> {
     /// Check non-Copy field moves against resolved custom destructor identities.
     /// Whole-object moves and Copy field reads remain valid.
     /// # Errors
@@ -75,7 +90,7 @@ impl Facts<'_> {
     ) -> Result<(), Error> {
         self.destructor_moves(types, |item| custom.contains(&item))
     }
-    pub(crate) const fn body(&self) -> &Body {
+    pub(crate) const fn body(&self) -> &'a Body {
         self.body
     }
     pub(crate) fn destructor_moves(
@@ -168,15 +183,128 @@ impl Facts<'_> {
             },
         )
     }
+    pub(crate) fn visit_selected(
+        &self,
+        mut visitor: impl FnMut(
+            Transition,
+            &mut Point<'_>,
+        ) -> Result<
+            Option<crate::borrow::destruction::schedule::Cleanup>,
+            &'static str,
+        >,
+    ) -> Result<Option<Box<super::Selected>>, &'static str> {
+        if let Some(refinements) = &self.refinements {
+            return refinements.visit_selected(self, visitor);
+        }
+        self.visit_transfers(|event, point| visitor(event, point).map(|_| ()))?;
+        Ok(None)
+    }
+    pub(crate) fn install_selected(
+        &mut self,
+        selected: Option<Box<super::Selected>>,
+    ) -> Result<(), &'static str> {
+        if let Some(selected) = selected {
+            self.refinements
+                .as_mut()
+                .ok_or("selected cleanup has no refinement owner")?
+                .install_selected(self.body, selected)?;
+        }
+        Ok(())
+    }
+    pub(crate) fn resolve_selected(
+        &mut self,
+        types: &mut Store,
+        definitions: &Definitions,
+    ) -> Result<(), &'static str> {
+        if let Some(refinements) = &mut self.refinements {
+            refinements.resolve_selected(types, definitions, self.body)?;
+        }
+        Ok(())
+    }
+    pub(crate) fn selected(&self) -> Option<&super::Selected> {
+        self.refinements.as_deref()?.selected()
+    }
     /// Refine possible payload cleanup without changing read or move permission.
     pub(crate) fn refine_variants(
         &mut self,
         types: &Store,
+        definitions: &Definitions,
+        custom: &dyn Fn(ItemId) -> bool,
+        mode: Refinement,
         position: &impl Fn(
             crate::types::TypeId,
             crate::body::drops::MemberQuery,
         ) -> Result<crate::body::drops::MemberPosition, &'static str>,
     ) -> Result<usize, &'static str> {
+        let refinements = if let Some(mut pending) = self.refinements.take() {
+            pending.apply_queries()?;
+            *pending
+        } else {
+            self.prepare_variants(types, definitions, custom, (mode, None), position)?
+        };
+        self.finish_variants(types, refinements)
+    }
+    pub(crate) fn begin_qualification(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        custom: &dyn Fn(ItemId) -> bool,
+        (mode, requirements): (Refinement, Option<&crate::body::drops::Requirements>),
+        position: &impl Fn(
+            crate::types::TypeId,
+            crate::body::drops::MemberQuery,
+        ) -> Result<crate::body::drops::MemberPosition, &'static str>,
+    ) -> Result<(), &'static str> {
+        if let Some(requirements) = requirements
+            && (requirements.locals.len() != self.body.locals.len()
+                || requirements.values.len() != self.body.values.len()
+                || requirements.projections.len() != self.body.projections.len())
+        {
+            return Err("const qualification requirements belong to another body extent");
+        }
+        let refinements =
+            self.prepare_variants(types, definitions, custom, (mode, requirements), position)?;
+        if refinements.has_partition() {
+            self.refinements = Some(Box::new(refinements));
+        }
+        Ok(())
+    }
+    pub(crate) fn qualification_questions(
+        &mut self,
+        types: &mut Store,
+        definitions: &Definitions,
+    ) -> Result<Option<&[crate::types::TypeId]>, &'static str> {
+        self.refinements
+            .as_deref_mut()
+            .map(|refinements| {
+                refinements.prepare_queries(types, definitions, self.body, &self.ownership.paths)
+            })
+            .transpose()
+            .map(Option::flatten)
+    }
+    pub(crate) fn accept_qualification(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        regions: &crate::borrow::regions::Body,
+        answers: &crate::body::defining_cleanups::Qualification<'_>,
+    ) -> Result<(), &'static str> {
+        self.refinements
+            .as_deref_mut()
+            .ok_or("const qualification lost its initialized owner")?
+            .accept_queries(self.body, types, definitions, regions, answers)
+    }
+    fn prepare_variants(
+        &self,
+        types: &Store,
+        definitions: &Definitions,
+        custom: &dyn Fn(ItemId) -> bool,
+        (mode, requirements): (Refinement, Option<&crate::body::drops::Requirements>),
+        position: &impl Fn(
+            crate::types::TypeId,
+            crate::body::drops::MemberQuery,
+        ) -> Result<crate::body::drops::MemberPosition, &'static str>,
+    ) -> Result<super::variant_liveness::Refinements, &'static str> {
         if self.refinements.is_some() {
             return Err("cleanup variant refinement was repeated");
         }
@@ -186,13 +314,26 @@ impl Facts<'_> {
             .saturating_add(self.words.saturating_mul(2))
             .saturating_mul(size_of::<state::Word<u64>>());
         let available = 64_000_000_usize.saturating_sub(occupied);
-        let refinements = super::variant_liveness::Refinements::new(
+        super::variant_liveness::Refinements::new(
             self.body,
             &self.ownership.paths,
             types,
             position,
             available,
-        )?;
+            mode.eligibility()
+                .then_some(super::variant_liveness::EligibilityInput {
+                    definitions,
+                    custom,
+                    requirements,
+                }),
+            mode.physical(),
+        )
+    }
+    fn finish_variants(
+        &mut self,
+        types: &Store,
+        refinements: super::variant_liveness::Refinements,
+    ) -> Result<usize, &'static str> {
         if refinements.is_empty() {
             return Ok(refinements.steps);
         }
@@ -213,10 +354,12 @@ impl Facts<'_> {
             Some(&refinements),
         )
         .map_err(|e| e.message)?;
+        self.words = (refinements.bits(self.ownership.paths.bits) as usize).div_ceil(64);
         let steps = refinements.steps;
         self.refinements = Some(Box::new(refinements));
         Ok(steps)
     }
+
     fn flow(&self) -> Flow<'_> {
         Flow {
             body: self.body,
@@ -233,6 +376,18 @@ pub struct Point<'a> {
     words: usize,
 }
 impl Point<'_> {
+    pub(super) fn possible(&mut self, bit: u32) -> Result<bool, &'static str> {
+        self.state.possible(bit)
+    }
+    /// Eligibility history distinguishes an actually partial value from a
+    /// conditional whole value. This reads physical facts and grants no access.
+    pub(super) fn eligibility_partial(&mut self, path: &Path) -> Result<bool, &'static str> {
+        if path.start == path.end {
+            return Ok(false);
+        }
+        Ok(self.state.classify_bit(path.start)? == Status::Always
+            && !self.state.initialized(path)?)
+    }
     /// # Errors
     /// Rejects invalid bits and charges one word to the replay budget.
     pub fn bit(&mut self, bit: u32) -> Result<Status, &'static str> {
@@ -363,14 +518,21 @@ pub(super) trait Maybe: Copy + Default + PartialEq {
     const TRACK_VALUES: bool;
     fn assign(&mut self, mask: u64, initialized: bool);
     fn join(self, other: Self) -> Self;
+    fn bits(self) -> u64;
 }
 impl Maybe for () {
     const TRACK_VALUES: bool = false;
     fn assign(&mut self, _: u64, _: bool) {}
     fn join(self, (): Self) -> Self {}
+    fn bits(self) -> u64 {
+        0
+    }
 }
 impl Maybe for u64 {
     const TRACK_VALUES: bool = true;
+    fn bits(self) -> u64 {
+        self
+    }
     fn assign(&mut self, mask: u64, initialized: bool) {
         if initialized {
             *self |= mask;

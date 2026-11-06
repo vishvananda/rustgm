@@ -1,3 +1,21 @@
+The [unit/payment main join](parallel/source-unit-main-join.md) integrates actual
+unit-result const calls and the ordinary-original-row CI payer repair. Root
+matches all3544 qualified source files and reruns14 exact public controls. Full
+42169539998 is terminal failure; its two smoke regressions pass locally after
+repair, while successor private/full qualification remains pending. Original
+core stays LIB171; actual interpreter cleanup and conditional-parent history
+remain required. Existing two workers and resource guards are unchanged.
+
+The [selected-cleanup main join](parallel/source-cleanup-main-join.md) integrates
+actual scoped qualification and original-row producers after44 exact public and3
+native controls pass. CLI98313b1b preserves original core at LIB171 in18.7041s /
+375opens/all722 inputs unchanged. Predecessor full42165808549 passes every gate;
+new private/full successor remains pending. Root owns the Rust-positive alias128
+quadratic nominal-root investigation; the two existing workers own actual Field
+consumers and finite unit-result const payments. Interpreter cleanup and parent
+history fences stay required. No whole PA after24 or library artifact is done.
+Keep existing warm btrfs trees,2heavy/16GiB/150GiB/<=300s guards and exact host flags.
+
 The [Index-row successor](parallel/index-row-successor.md) repairs the six
 shared-cause failures in terminal full42163466614: source Index now always
 retains its existing pending-row index for same-Solved authentication. Six exact

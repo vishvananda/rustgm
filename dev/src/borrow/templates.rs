@@ -1,7 +1,7 @@
 //! A sealed proof retains the exact immutable templates checked under their assumptions.
 mod context;
 mod staged;
-pub(crate) use staged::Batch;
+pub(crate) use staged::{Batch, InitialRow};
 mod owners;
 #[path = "templates/suspended.rs"]
 mod retained;

@@ -51,6 +51,34 @@ impl Prepared {
         environment: Option<&Arc<Environment>>,
         ty: TypeId,
     ) -> Result<bool, &'static str> {
+        self.check(body, requirements, environment)?;
+        if requirements.declaration.is_none() {
+            return Err("source Copy language item is missing");
+        }
+        self.decisions
+            .get(&ty)
+            .copied()
+            .ok_or("source Copy read has no exact selected requirement")
+    }
+    /// Optional qualification consumes the same selected read proof, never a premise.
+    pub(crate) fn lookup(
+        &self,
+        body: &Body,
+        requirements: &Arc<SourceCopyRequirements>,
+        environment: Option<&Arc<Environment>>,
+        ty: TypeId,
+    ) -> Result<Option<bool>, &'static str> {
+        self.check(body, requirements, environment)?;
+        Ok(requirements
+            .declaration
+            .and_then(|_| self.decisions.get(&ty).copied()))
+    }
+    fn check(
+        &self,
+        body: &Body,
+        requirements: &Arc<SourceCopyRequirements>,
+        environment: Option<&Arc<Environment>>,
+    ) -> Result<(), &'static str> {
         if self.source != body.source
             || self.key != body.key()
             || self.instance != body.instance
@@ -60,13 +88,7 @@ impl Prepared {
         {
             return Err("source Copy decisions belong to another body or environment");
         }
-        if requirements.declaration.is_none() {
-            return Err("source Copy language item is missing");
-        }
-        self.decisions
-            .get(&ty)
-            .copied()
-            .ok_or("source Copy read has no exact selected requirement")
+        Ok(())
     }
 }
 fn signatures(body: &Body) -> Option<(TypeId, TypeId)> {

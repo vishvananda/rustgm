@@ -9,12 +9,27 @@ use crate::body::{
     storage::Location,
 };
 use std::collections::VecDeque;
+mod tags;
 
 #[derive(Clone, Copy, Default)]
 pub(super) struct Word<I: Maybe> {
     must: u64,
     may: u64,
     initialized: I,
+}
+impl<I: Maybe> Word<I> {
+    fn merge(&mut self, new: Self) -> bool {
+        let joined = Self {
+            must: self.must & new.must,
+            may: self.may | new.may,
+            initialized: self.initialized.join(new.initialized),
+        };
+        let changed = joined.must != self.must
+            || joined.may != self.may
+            || joined.initialized != self.initialized;
+        *self = joined;
+        changed
+    }
 }
 pub(super) struct State<I: Maybe> {
     words: Vec<Word<I>>,
@@ -50,13 +65,13 @@ pub(super) fn change<I: Maybe>(
     )?;
     state.fill(path, initialized)
 }
-struct Replay<'a, V> {
-    state: &'a mut State<u64>,
+struct Replay<'a, I: Maybe, V> {
+    state: &'a mut State<I>,
     location: Location,
     visitor: V,
 }
-impl<V: FnMut(Transition, &mut State<u64>) -> Result<(), &'static str>> Mutations
-    for Replay<'_, V>
+impl<I: Maybe, V: FnMut(Transition, &mut State<I>) -> Result<(), &'static str>> Mutations
+    for Replay<'_, I, V>
 {
     fn fill(&mut self, path: &Path, initialized: bool) -> Result<(), &'static str> {
         change(
@@ -72,6 +87,17 @@ impl<V: FnMut(Transition, &mut State<u64>) -> Result<(), &'static str>> Mutation
     }
 }
 impl<I: Maybe> State<I> {
+    fn join(&self, target: &mut [Word<I>], reached: bool) -> bool {
+        if !reached {
+            target.copy_from_slice(&self.words);
+            return true;
+        }
+        let mut changed = false;
+        for (old, new) in target.iter_mut().zip(&self.words) {
+            changed |= old.merge(*new);
+        }
+        changed
+    }
     pub(super) fn charge(&mut self, cost: usize) -> Result<(), &'static str> {
         self.remaining = self
             .remaining
@@ -166,7 +192,8 @@ pub(super) fn verify<I: Maybe>(
     if body.blocks.is_empty() {
         return Err(error("body has no ownership entry"));
     }
-    let words = (facts.paths.bits as usize).div_ceil(64);
+    let bits = refinements.map_or(facts.paths.bits, |r| r.bits(facts.paths.bits));
+    let words = (bits as usize).div_ceil(64);
     let size = words
         .checked_mul(body.blocks.len())
         .filter(|n| *n <= 64_000_000 / std::mem::size_of::<Word<I>>())
@@ -207,6 +234,12 @@ fn verify_iterative<I: Maybe>(
     };
     let mut incoming = vec![Word::<I>::default(); size];
     let mut outgoing = vec![Word::<I>::default(); if flow.is_some() { words } else { 0 }];
+    let mut scratch = refinements
+        .map_or_else(
+            || Ok(Vec::new()),
+            super::variant_liveness::Refinements::scratch,
+        )
+        .map_err(error)?;
     let mut state = State {
         words: vec![Word::default(); words],
         remaining: 32_000_000,
@@ -228,7 +261,15 @@ fn verify_iterative<I: Maybe>(
             .words
             .copy_from_slice(&incoming[index * words..(index + 1) * words]);
         if flow.is_some() {
-            transfer_block(body, facts, &mut state, index, None, flow)?;
+            transfer_block(
+                body,
+                facts,
+                &mut state,
+                index,
+                None,
+                flow,
+                refinements.map(|r| (r, scratch.as_mut_slice())),
+            )?;
         } else {
             transfer_plain(body, facts, &mut state, index, None)?;
         }
@@ -250,22 +291,7 @@ fn verify_iterative<I: Maybe>(
             .map_err(error)?;
             let next = target.0 as usize;
             let target = &mut incoming[next * words..(next + 1) * words];
-            let mut changed = !reached[next];
-            if reached[next] {
-                for (old, new) in target.iter_mut().zip(&state.words) {
-                    let must = old.must & new.must;
-                    let may = old.may | new.may;
-                    let initialized = old.initialized.join(new.initialized);
-                    changed |= must != old.must || may != old.may || initialized != old.initialized;
-                    *old = Word {
-                        must,
-                        may,
-                        initialized,
-                    };
-                }
-            } else {
-                target.copy_from_slice(&state.words);
-            }
+            let changed = state.join(target, reached[next]);
             reached[next] = true;
             if changed && !queued[next] {
                 queued[next] = true;
@@ -284,7 +310,15 @@ fn verify_iterative<I: Maybe>(
             .words
             .copy_from_slice(&incoming[index * words..(index + 1) * words]);
         if flow.is_some() {
-            transfer_block(body, facts, &mut state, index, Some(types), flow)?;
+            transfer_block(
+                body,
+                facts,
+                &mut state,
+                index,
+                Some(types),
+                flow,
+                refinements.map(|r| (r, scratch.as_mut_slice())),
+            )?;
         } else {
             transfer_plain(body, facts, &mut state, index, Some(types))?;
         }
@@ -314,6 +348,12 @@ fn verify_acyclic<I: Maybe>(
     };
     let mut incoming = vec![Word::<I>::default(); size];
     let mut outgoing = vec![Word::<I>::default(); if flow.is_some() { words } else { 0 }];
+    let mut scratch = refinements
+        .map_or_else(
+            || Ok(Vec::new()),
+            super::variant_liveness::Refinements::scratch,
+        )
+        .map_err(error)?;
     let mut state = State {
         words: vec![Word::default(); words],
         remaining: 32_000_000,
@@ -331,7 +371,15 @@ fn verify_acyclic<I: Maybe>(
         // Inspection only reads the state, so the inspected transfer leaves
         // exactly the state of the uninspected fixed-point transfer.
         if flow.is_some() {
-            transfer_block(body, facts, &mut state, index, Some(types), flow)?;
+            transfer_block(
+                body,
+                facts,
+                &mut state,
+                index,
+                Some(types),
+                flow,
+                refinements.map(|r| (r, scratch.as_mut_slice())),
+            )?;
         } else {
             transfer_plain(body, facts, &mut state, index, Some(types))?;
         }
@@ -353,18 +401,8 @@ fn verify_acyclic<I: Maybe>(
             .map_err(error)?;
             let next = target.0 as usize;
             let target = &mut incoming[next * words..(next + 1) * words];
-            if reached[next] {
-                for (old, new) in target.iter_mut().zip(&state.words) {
-                    *old = Word {
-                        must: old.must & new.must,
-                        may: old.may | new.may,
-                        initialized: old.initialized.join(new.initialized),
-                    };
-                }
-            } else {
-                target.copy_from_slice(&state.words);
-                reached[next] = true;
-            }
+            state.join(target, reached[next]);
+            reached[next] = true;
         }
     }
     facts.reachable = reached;
@@ -395,7 +433,7 @@ fn transfer_edge<I: Maybe>(
                 block: BlockId(u32::try_from(index).map_err(|_| "too many ownership blocks")?),
                 target,
             },
-            |_, _| Ok(()),
+            |event, state| refinements.map_or(Ok(()), |r| r.transition(event, state)),
         )?;
     }
     Ok(())
@@ -433,6 +471,7 @@ fn transfer_block<I: Maybe>(
     index: usize,
     types: Option<&crate::types::Store>,
     flow: Option<&Flow<'_>>,
+    mut refinement: Option<(&super::variant_liveness::Refinements, &mut [u8])>,
 ) -> Result<(), Error> {
     let block = &body.blocks[index];
     let error = |source, message| {
@@ -461,7 +500,11 @@ fn transfer_block<I: Maybe>(
                     state,
                     location,
                     types.is_some(),
-                    |_, _| Ok(()),
+                    |event, state| {
+                        refinement
+                            .as_ref()
+                            .map_or(Ok(()), |(r, _)| r.transition(event, state))
+                    },
                 )
                 .map_err(error)?;
         }
@@ -472,17 +515,41 @@ fn transfer_block<I: Maybe>(
         if let Some(types) = types {
             facts.inspect(body, types, state, action).map_err(error)?;
         }
+        if let Some((r, scratch)) = refinement.as_mut() {
+            r.before(location, state, scratch).map_err(error)?;
+        }
         if let Some(flow) = flow {
             flow.statement(
                 &facts.paths,
                 state,
                 location,
                 types.is_some(),
-                |_, _| Ok(()),
+                |event, state| {
+                    refinement
+                        .as_ref()
+                        .map_or(Ok(()), |(r, _)| r.transition(event, state))
+                },
             )
             .map_err(error)?;
         }
-        facts.transfer(body, state, action).map_err(error)?;
+        facts
+            .transfer(
+                body,
+                &mut Replay {
+                    state,
+                    location,
+                    visitor: |event, state: &mut State<I>| {
+                        refinement
+                            .as_ref()
+                            .map_or(Ok(()), |(r, _)| r.transition(event, state))
+                    },
+                },
+                action,
+            )
+            .map_err(error)?;
+        if let Some((r, scratch)) = refinement.as_mut() {
+            r.after(location, state, scratch).map_err(error)?;
+        }
     }
     Ok(())
 }
@@ -542,6 +609,16 @@ pub(super) fn replay(
     refinements: Option<&super::variant_liveness::Refinements>,
     mut visitor: impl FnMut(Transition, &mut State<u64>) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
+    let mut scratch = refinements.map_or_else(
+        || Ok(Vec::new()),
+        super::variant_liveness::Refinements::scratch,
+    )?;
+    let mut observe = |event, state: &mut State<u64>| {
+        if let Some(r) = refinements {
+            r.transition(event, state)?;
+        }
+        visitor(event, state)
+    };
     let mut state = State {
         words: vec![Word::default(); words],
         remaining: 32_000_000,
@@ -564,20 +641,26 @@ pub(super) fn replay(
                 block: block_id,
                 before,
             };
-            cursor.point(&facts.paths, &mut state, location, false, &mut visitor)?;
-            visitor(Transition::Observe(Event::Point(location)), &mut state)?;
+            cursor.point(&facts.paths, &mut state, location, false, &mut observe)?;
+            observe(Transition::Observe(Event::Point(location)), &mut state)?;
             if before < block.end {
-                flow.statement(&facts.paths, &mut state, location, false, &mut visitor)?;
-                visitor(Transition::Statement(location), &mut state)?;
+                if let Some(r) = refinements {
+                    r.before(location, &mut state, &mut scratch)?;
+                }
+                flow.statement(&facts.paths, &mut state, location, false, &mut observe)?;
+                observe(Transition::Statement(location), &mut state)?;
                 facts.transfer(
                     body,
                     &mut Replay {
                         state: &mut state,
                         location,
-                        visitor: &mut visitor,
+                        visitor: &mut observe,
                     },
                     body.statements[before as usize].action,
                 )?;
+                if let Some(r) = refinements {
+                    r.after(location, &mut state, &scratch)?;
+                }
             }
         }
         if flow.storage.has_edge_ends(index) {
@@ -596,7 +679,7 @@ pub(super) fn replay(
                         block: block_id,
                         target,
                     },
-                    &mut visitor,
+                    &mut observe,
                 )?;
             }
         }

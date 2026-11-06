@@ -61,14 +61,14 @@ fn inspect(
             selector: call.selector(),
         }
     } else {
-        let (definition, _, _, primitive) = const_payments::profile(facts, target, charge)?;
+        let (definition, _, _, result) = const_payments::profile(facts, target, charge)?;
         super::argument_witness::checked_call(
             facts,
             body,
             frame,
             position,
             target,
-            (definition, primitive),
+            (definition, result),
             charge,
         )?;
         super::function_calls::Form::Direct

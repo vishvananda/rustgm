@@ -17,7 +17,7 @@ use crate::{
         outlives::LiveRegions,
     },
 };
-pub(crate) use staged::Prepared;
+pub(crate) use staged::{Initial, Prepared};
 
 /// Prove moves, initialization, abstract destruction and loans in every template.
 /// Provenance and promotion must already be checked on these retained bodies.
@@ -139,32 +139,20 @@ impl Verifier {
             destruction,
             parameters,
             contract,
-            position,
+            (initialization::Refinement::Physical, position),
         )?;
         self.finish_initial(environment, prepared, contract)
     }
-    pub(crate) fn prepare<'a, S: std::hash::BuildHasher>(
+    pub(crate) fn begin<'a, S: std::hash::BuildHasher>(
         &mut self,
         environment: &mut crate::borrow::Environment<'_, S>,
         body: &'a crate::body::ir::Body,
-        destruction: &crate::body::drops::Requirements,
         parameters: &std::sync::Arc<crate::types::parameters::environment::Environment>,
         contract: &regions::Body,
-        position: &impl Fn(
-            crate::types::TypeId,
-            crate::body::drops::MemberQuery,
-        ) -> Result<crate::body::drops::MemberPosition, &'static str>,
-    ) -> Result<Prepared<'a>, Error> {
+    ) -> Result<Initial<'a>, Error> {
         staged::require_arenas(environment, body)?;
         self.owner.get_or_insert_with(|| std::sync::Arc::new(()));
-        self.prepare_body(
-            environment,
-            body,
-            destruction,
-            parameters,
-            contract,
-            position,
-        )
+        self.initialize(environment, body, parameters, contract)
     }
     fn prepare_body<'a, S: std::hash::BuildHasher>(
         &mut self,
@@ -173,11 +161,30 @@ impl Verifier {
         destruction: &crate::body::drops::Requirements,
         parameters: &std::sync::Arc<crate::types::parameters::environment::Environment>,
         contract: &regions::Body,
-        position: &impl Fn(
-            crate::types::TypeId,
-            crate::body::drops::MemberQuery,
-        ) -> Result<crate::body::drops::MemberPosition, &'static str>,
+        (mode, position): (
+            initialization::Refinement,
+            &impl Fn(
+                crate::types::TypeId,
+                crate::body::drops::MemberQuery,
+            ) -> Result<crate::body::drops::MemberPosition, &'static str>,
+        ),
     ) -> Result<Prepared<'a>, Error> {
+        let initial = self.initialize(environment, body, parameters, contract)?;
+        self.select_initial(
+            environment,
+            initial,
+            destruction,
+            contract,
+            (mode, position),
+        )
+    }
+    pub(crate) fn initialize<'a, S: std::hash::BuildHasher>(
+        &mut self,
+        environment: &mut crate::borrow::Environment<'_, S>,
+        body: &'a crate::body::ir::Body,
+        parameters: &std::sync::Arc<crate::types::parameters::environment::Environment>,
+        contract: &regions::Body,
+    ) -> Result<Initial<'a>, Error> {
         let mut defining = crate::body::defining_cleanups::Work::new(1_000_000);
         if let Some(state) = contract.builtins.as_deref().and_then(|r| r.defining()) {
             state
@@ -201,7 +208,7 @@ impl Verifier {
             message: message.into(),
         })?;
         let order = crate::borrow::order::Order::new(body);
-        let mut facts = initialization::analyze_ordered(
+        let facts = initialization::analyze_ordered(
             environment.types,
             environment.definitions,
             environment.derives,
@@ -213,6 +220,38 @@ impl Verifier {
             node: Some(e.node),
             message: e.message.into(),
         })?;
+        Ok(Initial::new(
+            environment,
+            facts,
+            parameters,
+            contract,
+            self.owner.clone(),
+            defining.steps,
+        ))
+    }
+    pub(crate) fn select_initial<'a, S: std::hash::BuildHasher>(
+        &mut self,
+        environment: &mut crate::borrow::Environment<'_, S>,
+        mut initial: Initial<'a>,
+        destruction: &crate::body::drops::Requirements,
+        contract: &regions::Body,
+        (mode, position): (
+            initialization::Refinement,
+            &impl Fn(
+                crate::types::TypeId,
+                crate::body::drops::MemberQuery,
+            ) -> Result<crate::body::drops::MemberPosition, &'static str>,
+        ),
+    ) -> Result<Prepared<'a>, Error> {
+        initial
+            .require(environment, contract, self.owner.as_ref())
+            .map_err(|message| Error {
+                node: Some(initial.body().source.into()),
+                message: message.into(),
+            })?;
+        let body = initial.body();
+        let parameters = &initial.parameters;
+        let facts = &mut initial.facts;
         let plan = if no_cleanup(destruction) {
             facts
                 .destructor_moves(environment.types, |item| self.custom.contains(&item))
@@ -222,13 +261,25 @@ impl Verifier {
                 })?;
             None
         } else {
-            let mut needed = self.needed.scoped(std::sync::Arc::clone(&parameters));
+            let mut needed = self.needed.scoped(std::sync::Arc::clone(parameters));
+            let select = if matches!(mode, initialization::Refinement::Defining)
+                && environment.source_copy
+                && (body.const_context
+                    || contract
+                        .builtins
+                        .as_deref()
+                        .is_some_and(|r| r.defining().is_some()))
+            {
+                symbolic::select_defining
+            } else {
+                symbolic::select
+            };
             Some(
-                symbolic::select(
+                select(
                     environment.types,
                     environment.definitions,
                     &mut needed,
-                    &mut facts,
+                    facts,
                     |item| self.custom.contains(&item),
                     position,
                 )
@@ -238,15 +289,7 @@ impl Verifier {
                 })?,
             )
         };
-        Ok(Prepared::new(
-            environment,
-            facts,
-            plan,
-            parameters,
-            contract,
-            self.owner.clone(),
-            defining.steps,
-        ))
+        Ok(initial.select(plan))
     }
 }
 

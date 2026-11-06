@@ -1,5 +1,5 @@
 //! Immutable promises refine defining demand; they grant no reads or const execution.
-use super::{Declarations, DefId, Environment, TypeId, Work};
+use super::{Declarations, DefId, Environment, Purpose, TypeId, Work};
 use crate::{
     support::{bindings::LangItem, hash::HashMap},
     types::{
@@ -53,7 +53,7 @@ impl Role {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Claim {
     NoDrop,
-    SelectedDestruct(crate::support::constness::Constness),
+    Selected(crate::support::constness::Constness),
     ConditionalDestruct,
     ProjectedDestruct,
     PendingCopy,
@@ -64,12 +64,12 @@ impl Claim {
             Self::PendingCopy => 0,
             Self::ConditionalDestruct | Self::ProjectedDestruct => 1,
             Self::NoDrop => 2,
-            Self::SelectedDestruct(_) => 3,
+            Self::Selected(_) => 3,
         }
     }
 }
 pub(super) struct Claims {
-    values: HashMap<TypeId, Claim>,
+    values: HashMap<(TypeId, Purpose), Claim>,
     pub(super) unsupported: bool,
     selected: Option<crate::types::arena::Identity>,
 }
@@ -100,7 +100,7 @@ impl Claims {
             let Some((ty, claim)) = result.classify(facts, clause, role, copy_role, work)? else {
                 continue;
             };
-            result.insert(ty, claim, work)?;
+            result.insert(ty, Purpose::Body, claim, work)?;
         }
         Ok(result)
     }
@@ -177,7 +177,7 @@ impl Claims {
         work: &mut Work,
     ) -> Result<(), &'static str> {
         work.charge(1)?;
-        if self.values.get(&ty) == Some(&Claim::ProjectedDestruct) {
+        if self.values.get(&(ty, Purpose::Body)) == Some(&Claim::ProjectedDestruct) {
             return Ok(());
         }
         work.charge(12)?;
@@ -208,18 +208,26 @@ impl Claims {
     pub(super) fn insert(
         &mut self,
         ty: TypeId,
+        purpose: Purpose,
         claim: Claim,
         work: &mut Work,
     ) -> Result<(), &'static str> {
         work.charge(1)?;
-        if let Some(old) = self.values.get_mut(&ty) {
+        if purpose != Purpose::Body && matches!(claim, Claim::NoDrop | Claim::PendingCopy) {
+            return Err("Copy cleanup eligibility belongs only to the original body purpose");
+        }
+        if purpose == Purpose::OwnDrop && !matches!(claim, Claim::Selected(_)) {
+            return Err("own Drop eligibility requires its actual selected application");
+        }
+        if let Some(old) = self.values.get_mut(&(ty, purpose)) {
             if claim.priority() > old.priority() {
                 *old = claim;
             }
             return Ok(());
         }
-        if crate::support::retained::new_map::<TypeId, Claim>(self.values.len().saturating_add(1))
-            > 8 * 1024 * 1024
+        if crate::support::retained::new_map::<(TypeId, Purpose), Claim>(
+            self.values.len().saturating_add(1),
+        ) > 8 * 1024 * 1024
         {
             return Err("defining cleanup claims exceed storage budget");
         }
@@ -229,9 +237,26 @@ impl Claims {
         self.values
             .try_reserve(1)
             .map_err(|_| "defining cleanup claim allocation failed")?;
-        self.values.insert(ty, claim);
+        self.values.insert((ty, purpose), claim);
         if self.retained_bytes() > 8 * 1024 * 1024 {
             return Err("defining cleanup claims exceed storage budget");
+        }
+        Ok(())
+    }
+    /// Retain a genuine scoped whole-type clause for this actual field demand.
+    /// Body Copy/NoDrop and selected owner-only promises cannot be promoted.
+    pub(super) fn retain_declared(
+        &mut self,
+        ty: TypeId,
+        purpose: Purpose,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        if purpose == Purpose::Whole
+            && self.get(ty, purpose).is_none()
+            && let Some(claim @ (Claim::ConditionalDestruct | Claim::ProjectedDestruct)) =
+                self.get(ty, Purpose::Body)
+        {
+            self.insert(ty, purpose, claim, work)?;
         }
         Ok(())
     }
@@ -239,10 +264,11 @@ impl Claims {
         &mut self,
         types: &mut crate::types::Store,
         ty: TypeId,
+        purpose: Purpose,
         effect: crate::support::constness::Constness,
         work: &mut Work,
     ) -> Result<(), &'static str> {
-        self.insert(ty, Claim::SelectedDestruct(effect), work)?;
+        self.insert(ty, purpose, Claim::Selected(effect), work)?;
         self.selected = Some(types.arena_identity());
         Ok(())
     }
@@ -262,8 +288,24 @@ impl Claims {
         }
         Ok(())
     }
-    pub(super) fn get(&self, ty: TypeId) -> Option<Claim> {
-        self.values.get(&ty).copied()
+    pub(super) fn retain_selected(
+        &mut self,
+        types: &mut crate::types::Store,
+        prior: &Self,
+        effect: crate::support::constness::Constness,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        work.charge(prior.values.len())?;
+        for (&(ty, purpose), &claim) in &prior.values {
+            if let Claim::Selected(actual) = claim {
+                prior.require_selected(types, actual, effect)?;
+                self.select(types, ty, purpose, effect, work)?;
+            }
+        }
+        Ok(())
+    }
+    pub(super) fn get(&self, ty: TypeId, purpose: Purpose) -> Option<Claim> {
+        self.values.get(&(ty, purpose)).copied()
     }
     pub(super) fn retained_bytes(&self) -> usize {
         crate::support::retained::map(&self.values)
@@ -274,8 +316,8 @@ impl Claims {
     }
     #[cfg(test)]
     pub(super) fn projected_subjects(&self) -> impl Iterator<Item = TypeId> + '_ {
-        self.values
-            .iter()
-            .filter_map(|(&ty, &claim)| (claim == Claim::ProjectedDestruct).then_some(ty))
+        self.values.iter().filter_map(|(&(ty, purpose), &claim)| {
+            (purpose == Purpose::Body && claim == Claim::ProjectedDestruct).then_some(ty)
+        })
     }
 }

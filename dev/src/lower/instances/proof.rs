@@ -4,6 +4,7 @@ mod asyncproof;
 #[path = "../../../tests/invariants/exposure_stages.rs"]
 mod exposure_stages;
 mod forwarding;
+mod origins;
 #[cfg(test)]
 #[path = "../../../tests/invariants/resumeverify.rs"]
 mod resumeverify;
@@ -192,19 +193,22 @@ impl Builder {
         report: &crate::resolve::expansion::Report,
         facts: &mut Declarations,
         originals: &mut super::staged_originals::Context<'_, '_, '_, C>,
-        body: Body,
+        (body, requirements): (Body, Option<drops::Requirements>),
         input: &Contract,
     ) -> Result<usize, crate::resolve::package::Error> {
         let index = self
-            .push(report, facts, originals.checked, body, input, None)
+            .push(report, facts, originals.checked, body, input, requirements)
             .map_err(|e| super::diagnostic(report, e.node, e.message))?;
         let proved = &self.bodies[index];
         originals.collector.original(facts, proved, input)?;
         Ok(index)
     }
 
-    pub(super) fn new(mut program: Program) -> Result<(Self, Vec<Body>), &'static str> {
-        let ordinary = std::mem::take(&mut program.bodies);
+    pub(super) fn new(
+        facts: &Declarations,
+        mut program: Program,
+    ) -> Result<(Self, origins::Originals), &'static str> {
+        let ordinary = origins::Originals::take(facts, &mut program)?;
         // Whole-program region tables exist only for body inspection views;
         // proofs and lowering read the per-body contracts instead.
         program.region_equalities = Vec::new();
@@ -217,7 +221,7 @@ impl Builder {
         Ok((
             Self {
                 program,
-                bodies: Vec::with_capacity(ordinary.len()),
+                bodies: Vec::with_capacity(ordinary.bodies().len()),
                 queries: QueryCache::default(),
                 verifier,
                 recipes,
@@ -416,7 +420,7 @@ impl Builder {
         &mut self,
         facts: &mut Declarations,
         templates: &templates::Checked<'_>,
-        body: Body,
+        (body, requirements): (Body, Option<drops::Requirements>),
         pending: Option<crate::body::conditional_inputs::Pending>,
     ) -> Result<Staged, borrow::Error> {
         let source = body.source;
@@ -434,6 +438,8 @@ impl Builder {
                 message: "conditional parent has an ordinary region cache row".into(),
             });
         };
+        let history_gap =
+            origins::parent_history_gap(facts, &body, retained.input(), requirements.as_ref())?;
         let owned_cleanup = self.program.drops.is_some();
         let mut catalog = owned_cleanup
             .then(|| self.recipes.take())
@@ -472,7 +478,18 @@ impl Builder {
         if owned_cleanup {
             self.recipes = catalog.map(glue::Catalog::into_cache);
         }
-        proved
+        let proved = proved?;
+        if history_gap {
+            return Err(borrow::Error {
+                node: Some(source.into()),
+                message: "const conditional parent value-history qualification is not implemented"
+                    .into(),
+            });
+        }
+        if let (Some(pending), Some(requirements)) = (&mut self.program.drops, requirements) {
+            pending.bodies.push(requirements);
+        }
+        Ok(proved)
     }
     pub(super) fn append_proved(
         &mut self,
@@ -761,7 +778,7 @@ impl Builder {
                 report,
                 facts,
                 body,
-                input,
+                (input, requirements.as_ref()),
                 contract,
                 &mut self.verifier,
                 &mut self.recipes,

@@ -19,7 +19,9 @@ fn genuine_const_destruct_proves_fields_and_selected_const_drop() -> Result {
 }
 #[test]
 fn nonconst_drop_in_self_or_semantic_generic_field_is_rejected() {
-    for name in ["ownn2", "flneg2", "tuplen", "arrayn", "array0"] {
+    for name in [
+        "ownn", "fieldn", "ownn2", "flneg2", "tuplen", "arrayn", "array0",
+    ] {
         let error = analyze(name).err().map(|e| e.to_string());
         assert!(
             error
@@ -182,15 +184,11 @@ fn actual_definition_cleanup_work_grows_with_demanded_bodies() -> Result {
 }
 
 #[test]
-fn selected_enum_requirements_remain_named() -> Result {
-    for (name, gap) in [
-        ("egood", "selected const enum cleanup leaves"),
-        ("empty", "selected const enum cleanup leaves"),
-    ] {
-        let error = program(name)
-            .err()
-            .ok_or_else(|| format!("{name}: boundary changed; qualify it"))?;
-        assert!(error.to_string().contains(gap), "{name}: {error}");
+fn actual_selected_good_and_empty_payload_definitions_compile() -> Result {
+    // Both unchanged inputs were independently Rust-positive before the old
+    // named selected-leaf fence. Their real bodies now pass the producer.
+    for name in ["egood", "empty"] {
+        program(name).map_err(|error| format!("{name}: {error}"))?;
     }
     Ok(())
 }
@@ -204,15 +202,50 @@ fn ordinary_copy_does_not_forge_a_const_destruct_call_premise() -> Result {
     Ok(())
 }
 #[test]
-fn original_unit_result_const_payment_is_still_explicit_required_work() -> Result {
-    for name in ["plain", "ownc", "fieldc", "cond2"] {
-        let error = analyze(name)
-            .err()
-            .ok_or("unit payment boundary changed; qualify it")?;
-        assert!(
-            error.to_string().contains("primitive result"),
-            "{name}: {error}"
-        );
+fn original_unit_result_const_calls_pay_their_actual_destruct_premises() -> Result {
+    for (name, primitive) in [
+        ("plain", "plain2"),
+        ("ownc", "ownc2"),
+        ("fieldc", "field2"),
+        ("cond2", "cond3"),
+    ] {
+        let (report, analysis) = analyze(name).map_err(|error| format!("{name}: {error}"))?;
+        let definition = analysis
+            .facts
+            .initializers
+            .iter()
+            .find(|initializer| {
+                report
+                    .package
+                    .names
+                    .get(report.resolution.definitions[initializer.definition.0 as usize].name)
+                    == "CHECK"
+            })
+            .ok_or("actual CHECK initializer")?
+            .definition;
+        let reader = rustgm::sema::values::Reader::new(&analysis.facts);
+        let value = reader
+            .definition(definition)
+            .ok_or("completed unit value")?;
+        assert!(matches!(
+            reader.view(value)?,
+            rustgm::sema::values::View::Product {
+                length: 0,
+                variant: None
+            }
+        ));
+        assert!(analysis.facts.constant_work.frames_started >= 2);
+        let (_, scalar) = analyze(primitive)?;
+        for (profile, facts) in [(name, &analysis.facts), (primitive, &scalar.facts)] {
+            eprintln!(
+                "const_payment={profile} canonical={} frames={} steps={} code_bytes={} source_context_bytes={}",
+                facts.body_work.canonical_steps,
+                facts.constant_work.frames_started,
+                facts.constant_work.steps,
+                facts.constant_work.code_bytes,
+                facts.constant_work.source_context_bytes,
+            );
+        }
     }
     Ok(())
 }

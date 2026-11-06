@@ -2,7 +2,7 @@
 use super::{Frame, Machine, code::Code};
 use crate::{
     sema::{model::Declarations, values::Reader},
-    types::{Kind, Primitive, instance::Instance},
+    types::{Kind, instance::Instance},
 };
 pub(super) fn checked_call(
     facts: &Declarations,
@@ -10,7 +10,10 @@ pub(super) fn checked_call(
     frame: &Frame,
     position: u32,
     target: Instance,
-    contract: (crate::resolve::model::DefId, Primitive),
+    contract: (
+        crate::resolve::model::DefId,
+        crate::sema::compiler_items::const_payments::ResultProfile,
+    ),
     charge: &mut impl FnMut(usize) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
     charge(16)?;
@@ -20,7 +23,7 @@ pub(super) fn checked_call(
         frame,
         position,
         target,
-        (contract.0, crate::types::TypeId::primitive(contract.1)),
+        (contract.0, contract.1.ty()),
     )?;
     let Some(Kind::FunctionItem { signature, .. }) = facts.types.kind(target.ty()) else {
         return Err("paid call target is not an item");

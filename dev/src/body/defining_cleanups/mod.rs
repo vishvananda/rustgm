@@ -2,11 +2,16 @@
 mod claims;
 mod preparation;
 mod proofs;
+mod qualify;
+pub(crate) use crate::types::destruction::Eligibility as Purpose;
 pub(crate) use proofs::select;
+pub(crate) use qualify::{Qualification, qualify};
 /// One eligibility subject borrowed from the actual initialized cleanup plan.
+#[derive(Clone, Copy)]
 pub(crate) struct Subject {
     pub(crate) ty: crate::types::TypeId,
     pub(crate) access: bool,
+    pub(crate) purpose: Purpose,
 }
 #[cfg(test)]
 #[path = "../../../tests/invariants/destruct_contracts.rs"]
@@ -126,7 +131,7 @@ impl Prepared {
         ty: TypeId,
         work: &mut Work,
     ) -> Result<(), &'static str> {
-        match self.requirement(types, ty, work)? {
+        match self.requirement(types, ty, Purpose::Body, work)? {
             Requirement::Declared => Ok(()),
             Requirement::ProjectedDestruct => {
                 Err("projected defining cleanup requires completed region formation")
@@ -137,16 +142,24 @@ impl Prepared {
         &self,
         types: &crate::types::Store,
         ty: TypeId,
+        purpose: Purpose,
         work: &mut Work,
     ) -> Result<Requirement, &'static str> {
         work.charge(1)?;
-        match self.claims.get(ty) {
-            Some(claims::Claim::SelectedDestruct(effect)) => {
+        match self.claims.get(ty, purpose) {
+            Some(claims::Claim::Selected(effect)) => {
                 self.claims.require_selected(types, effect, self.effect())?;
-                self.role.require()?;
+                if purpose != Purpose::OwnDrop {
+                    self.role.require()?;
+                }
                 return Ok(Requirement::Declared);
             }
-            Some(claims::Claim::NoDrop) => return Ok(Requirement::Declared),
+            Some(claims::Claim::NoDrop) if purpose == Purpose::Body => {
+                return Ok(Requirement::Declared);
+            }
+            Some(claims::Claim::NoDrop) => {
+                return Err("Copy cannot pay selected whole-field or own Drop eligibility");
+            }
             Some(claims::Claim::ConditionalDestruct) => {
                 self.role.require()?;
                 return Ok(Requirement::Declared);
@@ -160,6 +173,9 @@ impl Prepared {
                 return Err("defining cleanup Copy premise changed its readiness");
             }
             None => {}
+        }
+        if purpose == Purpose::OwnDrop {
+            return Err("own Drop eligibility requires its actual selected const application");
         }
         work.charge(1)?;
         self.role.require()?;

@@ -109,11 +109,15 @@ mod cetags;
 mod ctdrop;
 #[path = "../../ctfix.rs"]
 mod ctfix;
+#[path = "../../ctleaf.rs"]
+mod ctleaf;
 #[path = "../../ctnext.rs"]
 mod ctnext;
 #[path = "../../ctown.rs"]
 mod ctown;
 #[path = "../../ctseal.rs"]
 mod ctseal;
+#[path = "../../ctsel.rs"]
+mod ctsel;
 #[path = "../../ctwire.rs"]
 mod ctwire;

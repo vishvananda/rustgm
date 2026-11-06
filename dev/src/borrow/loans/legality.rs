@@ -18,13 +18,22 @@ pub(super) fn check(
     };
     let prepared = super::Formed::new(state, body, proof, work)?;
     if let Some(schedule) = schedule {
-        for cleanup in schedule.cleanups() {
+        for (index, cleanup) in schedule.cleanups().enumerate() {
             work.charge(1)?;
             if cleanup.access {
                 let ty = cleanup
                     .live_type
                     .ok_or("active defining cleanup has no proved live subject")?;
-                prepared.check(types, ty, work)?;
+                if let Some(selected) = schedule.selected() {
+                    for subject in selected.for_cleanup(index)? {
+                        if !subject.access {
+                            continue;
+                        }
+                        prepared.check_for(types, subject.ty, subject.purpose, work)?;
+                    }
+                } else {
+                    prepared.check(types, ty, work)?;
+                }
             }
         }
     }

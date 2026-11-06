@@ -37,6 +37,20 @@ impl<'a> Formed<'a> {
         ty: crate::types::TypeId,
         work: &mut Work,
     ) -> Result<(), &'static str> {
+        self.check_for(
+            types,
+            ty,
+            crate::body::defining_cleanups::Purpose::Body,
+            work,
+        )
+    }
+    pub(super) fn check_for(
+        &self,
+        types: &Store,
+        ty: crate::types::TypeId,
+        purpose: crate::body::defining_cleanups::Purpose,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
         // The actual source producer may give a const panic declaration an
         // effective runtime body. State::checked seals this flag to its prepared
         // owner; Code entry independently rejects executing a runtime body in CTFE.
@@ -45,6 +59,8 @@ impl<'a> Formed<'a> {
             return Ok(());
         }
         // Both declaration forms are usable only after this view's actual proof check.
-        self.prepared.requirement(types, ty, work).map(|_| ())
+        self.prepared
+            .requirement(types, ty, purpose, work)
+            .map(|_| ())
     }
 }
