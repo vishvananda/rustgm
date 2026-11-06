@@ -1,0 +1,58 @@
+{
+  "state": "focused-main-qualified-full-successor-pending",
+  "compiler_commit": "f9ef1b9d4c1420c5693ebc64fe1bbfae3e1ede1b",
+  "worker_evidence_sha256": "b24956470dbfb4b3671f4204ea01bc7be870e8ea34f68053c26be2c408468ef8",
+  "integration": {
+    "receipt_path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-cleanup-main-integration/v3/receipt.json",
+    "receipt_sha256": "bf94b96c6aba0dbd4356c7db758f47f9c50797467214e9766ec1ff09d36a288f",
+    "source_identity": "Full main/worker fingerprints equal before and after execution; every changed production hash matches committed worker evidence.",
+    "regular_exact": 44,
+    "native_programs": 3,
+    "regular_native_receipt_sha256": "501d866d4d8f899bc952c00d4896be873af0ae6027cd22f5872dede5e6248521",
+    "cli_and_core_seconds": 20.90771991200745
+  },
+  "cli_sha256": "98313b1bd3067a625a93ebe47534d0e73c60823a31928fe40b4c2c5caaeb15cd",
+  "cli_pin": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-cleanup-main-integration/cli/98313b1bd3067a625a93ebe47534d0e73c60823a31928fe40b4c2c5caaeb15cd/rustgm",
+  "original_core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "98313b1bd3067a625a93ebe47534d0e73c60823a31928fe40b4c2c5caaeb15cd",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 108: 636: source compiler language item semantic contract is not implemented",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 18.70408559095813,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "15b46f1fc63061c8fff4dcef98d5d48a90d931b6b9b0555455355fd9ede273e9",
+      "whole-core.openat": "fd955bdf58d98bff622d434db9cce238b3ccaff2170b7f7b434c0cb03353ae50",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    }
+  },
+  "failed_attempts": {
+    "v1": "44 public and3 native programs passed; unnecessary cold CLI build timed out at100s.",
+    "v2": "Owned supervisor stopped to align worker host settings; build finished just before termination but observer/whole qualification did not complete.",
+    "v3": "Same warm worker RUSTFLAGS=-Zprint-type-sizes and CARGO_INCREMENTAL=0; fresh CLI/core passed. These flags print host compile-time layout diagnostics; no frontend runtime tracing."
+  },
+  "predecessor_full_ci": {
+    "run": 42165808549,
+    "head": "cbe6b25b2b3443fad7d928e8505fadfceb6edb50",
+    "conclusion": "success"
+  },
+  "pending": [
+    "new private qualifier/budget/origin adversaries execution",
+    "full successor CI",
+    "unit-result const payments",
+    "actual interpreter cleanup scheduling",
+    "conditional-parent value history",
+    "general authenticated precision/type/body transport",
+    "original core/alloc/std artifacts"
+  ]
+}
