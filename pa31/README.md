@@ -2,6 +2,14 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [IntoFuture/range integration](../docs/parallel/source-future-range-main-join.md)
+qualifies full original Future/IntoFuture ordinary calls and both forwarders,
+shared projected-bound production and source range records. Original core now
+reaches CStr. The [CStr reference packet](../docs/parallel/source-cstr-reference.md)
+freezes24 Rust outcomes and three native observers; its candidate literal/static
+storage and actual method implementation remains required. Whole library graphs,
+derives/modules, async, const and authenticated transport remain incomplete.
+
 The [range/nominal-value checkpoint](../docs/parallel/source-range-main-join.md)
 qualifies actual source range records and real nominal CoerceUnsized value
 conversion. Ordinary type, region, move/Drop and selected implementation proofs

@@ -1,3 +1,18 @@
+The [IntoFuture/range main integration](parallel/source-future-range-main-join.md)
+now reaches LIB184 CStr at c_str.rs102/file120:3736 using immutable repaired
+CLIb9c47bb9,18.1829s/375 opens. All722 inputs/profile values/budgets are unchanged;
+only the explicitly audited nominal-CTFE rejection arm changes a tracked source
+hash.26 public controls, all-target strict metadata, seven native executables and
+all2229 PA20/21 cases pass after the callable freshening repair. Full42255186438
+is running; private execution remains pending and a bounded local private link
+attempt did not execute tests. The reference-only CStr packet is published with
+24 Rust cases and three native observers. Root implements actual CStr literal,
+static backing/view and real method consumers next; both workers are idle after
+handoff, available only for useful independent work.433 historical main archive
+files/2,324,448,665 bytes moved to btrfs with verified copies and preserved paths.
+Keep existing warm trees,2heavy/16GiB/150GiB/<=300s guards and scoped cleanup.
+No original library artifact or additional whole PA is complete.
+
 The [source-range/nominal-value join](parallel/source-range-main-join.md) is
 published on main1514aa9a4. All3651 input hashes match:29 public tests243.55s,
 four native groups/fullPA18 55.46s and strict all-target metadata113.57s pass.

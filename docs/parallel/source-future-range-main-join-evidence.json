@@ -1,0 +1,154 @@
+{
+  "state": "qualified development integration; original core still exits1",
+  "main_compiler_commit": "def741d53",
+  "reference_only_commit": "762de59e0",
+  "source_snapshot": {
+    "count": 3658,
+    "sha256": "5c603d441c3a331742d52d2185355762f4bee612048e51e89ec9a51c5c27822e"
+  },
+  "regular": {
+    "receipt": "obj/qualification/fast/1793982328398831953/receipt.json",
+    "sha256": "8f4373263f6f9623581f2c7af659fcfa12ca650855430b5810f9ec839bb10dd3",
+    "count": 26,
+    "seconds": 110.9,
+    "selected": {
+      "suite_frontend": [
+        "interval_sources::inferred_range_work_tracks_nested_inputs_without_catalog_scans",
+        "interval_sources::old_inclusive_syntax_retains_its_required_actual_constructor_call_gap",
+        "interval_sources::original_constructor_and_fields_remain_exact_source_fragments",
+        "interval_sources::source_range_fields_and_constructors_keep_real_generic_and_body_rules",
+        "into_future::complete_modules_and_original_blanket_reach_real_ordinary_calls",
+        "into_future::diagnostic_companions_keep_real_ordinary_impl_contracts",
+        "into_future::source_outputs_moves_borrows_and_real_const_unsafe_body_rules_remain",
+        "into_future::uncapped_original_documentation_is_a_separate_rust_positive_required_gap"
+      ],
+      "suite_inference": [
+        "opaque_inference::distinct_results_never_infer_equations_between_their_inputs",
+        "opaque_inference::inferred_opaque_values_do_not_freshen_operation_inputs",
+        "opaque_inference::member_lookup_skips_deep_or_unresolved_inputs_without_proving_formation",
+        "opaque_inference::projected_arguments_retain_work_even_with_unprojected_callable_templates",
+        "opaque_inference::rebuilt_callable_results_need_fresh_occurrence_proofs_without_new_lifetimes",
+        "opaque_inference::resolution_observes_later_projection_publication",
+        "opaque_inference::retained_occurrences_require_independent_normalization",
+        "opaque_inference::transformed_lifetime_inputs_receive_no_normalization_authority",
+        "opaque_inference::unchanged_opaque_roots_wake_their_suspended_equations",
+        "inference_dependencies::const_unions_and_updates_before_the_first_poll_are_observed",
+        "inference_dependencies::edition_fallback_changes_only_unconstrained_never_coercion_roots",
+        "inference_dependencies::empty_known_invalid_and_exhausted_queries_have_explicit_outcomes",
+        "inference_dependencies::fallback_wakes_types_but_does_not_default_const_inputs",
+        "inference_dependencies::imported_probe_constraints_do_not_wake_the_source_body",
+        "inference_dependencies::merging_watched_roots_coalesces_waits_and_reports_each_query_once",
+        "inference_dependencies::projected_inputs_wait_for_every_mixed_argument_without_proving_a_result",
+        "inference_dependencies::unrelated_queries_stay_asleep_when_one_input_changes",
+        "inference_dependencies::watches_follow_newly_exposed_children_without_rescanning_ancestors"
+      ]
+    }
+  },
+  "native_metadata": {
+    "receipt": "obj/parallel/source-future-range-core-v2/qualification/receipt.json",
+    "sha256": "e9aa51465a1328f7cabd641090278354d76708dcdf1c75edad2b7b71cc592433",
+    "native_tests": 4,
+    "native_executables": 7,
+    "strict_all_target_seconds": 90.89,
+    "private_runtime": "pendingCI; targeted local private linking exceededguard beforeexecution"
+  },
+  "source_worker": {
+    "receipt": "docs/parallel/source-into-future-checkpoint.json",
+    "sha256": "7b601204d4547f697463e6d1c52ece39f63b9a3b44b74046e38d3423ccc8914d",
+    "intentional_join_unions": [
+      "dev/src/sema/compiler_items/vocab_semantics.rs",
+      "dev/tests/invariants/vocab_claims.rs",
+      "dev/tests/suites/frontend/mod.rs",
+      "third_party/sources.json"
+    ]
+  },
+  "initial_course_join": {
+    "receipt": "obj/qualification/fast/1793981199933791599/receipt.json",
+    "sha256": "f4bec5e6a0d627d1a291ec42b92bd1692f145627dec6242f9a23d25e26fda870",
+    "seconds": 77.87,
+    "pa20": 1421,
+    "pa21": 808,
+    "after_callable_repair": {
+      "receipt": "obj/qualification/fast/1793983711841247260/receipt.json",
+      "sha256": "d2d65ff420a767d8d7efa2648ccc8c887b2eb0b0da8d46d02b8d59ba3a56c2d9",
+      "seconds": 77.27,
+      "pa20": 1421,
+      "pa21": 808,
+      "selector_tests": 2
+    }
+  },
+  "core": {
+    "state": "passed observation",
+    "binding": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-future-range-core-v2/join-binding.json",
+    "binding_sha256": "4a1bc5d1d66bab167bc1deffb9203fe74f7db02c0f18ff820bf76e940a1a06b1",
+    "cli_sha256": "b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51",
+    "source": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+    "status": 0,
+    "core": {
+      "infrastructure_failure": false,
+      "classification": "observed original-core blocker",
+      "lint_cap": "allow",
+      "source_contract_limits": {
+        "work": 14500624,
+        "attempted_bytes": 1073741824,
+        "retained_bytes": 67108864
+      },
+      "expected_cli_sha256": "b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51",
+      "expected_cli_source": "explicit caller input",
+      "status": 1,
+      "first_error": "ERROR: file 120: 3736: source compiler language item semantic contract is not implemented",
+      "inputs_unchanged": true,
+      "opened_source_count": 375,
+      "total_seconds": 18.182911772979423,
+      "raw_sha256": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "f8564e871b271e1c75482a3d178cd2173b2f56ac6b088a937e11b30670e01cbf",
+        "whole-core.openat": "e3c7857ab5c81295d6a7bf47b002cfe09e3be1c8df7275324f71f099f92fb25d",
+        "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+      }
+    },
+    "seconds": 19.011958067014348
+  },
+  "observer_manifest_sha256": "f9f14966dcfc1c14545b1312bcfc34fc694035666c260f90995275ede67a7e86",
+  "configuration_source_binding_review": {
+    "state": "setup failure; core not invoked",
+    "reason": "prior compiler source binding differs only by newly qualified nominal CTFE rejection arm",
+    "changes": {
+      "dev/src/const_eval/values.rs": {
+        "before": "8f617613c3ea8b30c4af0741b9e79e7ce610da73c553b3395cbb367edd5e66e0",
+        "after": "2ec7b5daf8f8c0357c0e8e05805c34313cb41c96a839e84c18b6b02352e8754e"
+      }
+    },
+    "diff": "diff --git a/dev/src/const_eval/values.rs b/dev/src/const_eval/values.rs\nindex 3dcea6720..3631ad7d6 100644\n--- a/dev/src/const_eval/values.rs\n+++ b/dev/src/const_eval/values.rs\n@@ -356,6 +356,9 @@ impl Machine<'_, '_> {\n                     crate::types::unsizing::Conversion::Upcast { target, .. } => {\n                         value.upcast(target)?\n                     }\n+                    crate::types::unsizing::Conversion::Nominal { .. } => {\n+                        return Err(\"constant nominal coercion requires its checked aggregate conversion plan\".into());\n+                    }\n                 }\n             }\n             Rvalue::Validate(place) => {\n",
+    "review": "No configuration evaluator, cfg value, source options, source list, cap or budget changes; five other configuration-source pins remain byte-identical"
+  },
+  "ci": {
+    "failed_run": 42244995375,
+    "private_passed": 2772,
+    "private_failed": 3,
+    "public_failed": 2,
+    "fixes": [
+      "callable template mustrebuild projection occurrences after current signature normalization",
+      "linear watch-work assertion includes new charged completion edges",
+      "body-local sizing certificate storage follows demanded goals",
+      "actual ResolvedCallables64 layout",
+      "concrete selected fixture bodies preservegeneric templates"
+    ],
+    "successor": 42255186438,
+    "successor_state": "running"
+  },
+  "storage": {
+    "main_archive_files": 433,
+    "main_archive_bytes_relocated": 2324448665,
+    "record": "obj/cleanup/main-archive-relocation.jsonl",
+    "record_sha256": "941770f1f97d38716e2b91bf04ae16b95d4b19ed772b7b680762ad1940897e4d",
+    "retains_original_paths": true
+  },
+  "pending": [
+    "LIB184CStr actual declaration/literal/static views and real methods",
+    "full originalPin/Poll/Context/derives/macro closure",
+    "generalCTFE andauthenticatedmetadata",
+    "fullsuccessorprivate/runtime/releasechecks",
+    "wholePA25through44andcore/alloc/stdartifacts"
+  ]
+}
