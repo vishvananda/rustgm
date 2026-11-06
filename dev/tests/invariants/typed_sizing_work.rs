@@ -1,7 +1,7 @@
 //! Whole typed calls include argument formation, unlike the isolated Freeze query.
 use super::*;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
-fn observe(source: &str) -> Result<(usize, usize, usize, usize)> {
+fn observe(source: &str) -> Result<(usize, usize)> {
     let report = crate::test_source::source_provider(source, "freeze_perf_v1")?;
     let mut facts = crate::sema::declarations::analyze(&report)?;
     let functions = facts.functions.clone();
@@ -19,17 +19,20 @@ fn observe(source: &str) -> Result<(usize, usize, usize, usize)> {
             .get(report.resolution.definitions[function.definition.0 as usize].name)
             == "observe"
         {
-            let cache = checker
-                .state
-                .canonical_trait_proofs
-                .as_deref()
-                .ok_or("missing source sizing reuse")?;
-            let (entries, bytes) = cache.observations();
+            // Ready sibling roots share one query's formation DAG. Its storage
+            // dies with that query; these calls need no cross-query cache owner.
+            assert!(
+                checker.state.canonical_trait_proofs.is_none(),
+                "conjunction retained cross-query storage: {:?}",
+                checker
+                    .state
+                    .canonical_trait_proofs
+                    .as_deref()
+                    .map(|reuse| reuse.observations())
+            );
             observed = Some((
                 checker.facts.body_work.inference_steps - first.0,
                 checker.facts.body_work.canonical_steps - first.1,
-                entries,
-                bytes,
             ));
         }
     }
@@ -37,7 +40,7 @@ fn observe(source: &str) -> Result<(usize, usize, usize, usize)> {
 }
 #[test]
 fn original_full_call_alias_depths_reuse_sizing_without_unrelated_nominal_growth() -> Result {
-    let mut previous: Option<(usize, usize, usize, usize, usize)> = None;
+    let mut previous: Option<(usize, usize, usize)> = None;
     for depth in [8, 32, 128] {
         let mut measured = None;
         for noise in [0, 128] {
@@ -46,12 +49,11 @@ fn original_full_call_alias_depths_reuse_sizing_without_unrelated_nominal_growth
             ))?;
             let current = observe(&source)?;
             println!(
-                "typed_depth={depth} noise={noise} inference={} canonical={} entries={} bytes={}",
-                current.0, current.1, current.2, current.3
+                "typed_depth={depth} noise={noise} inference={} canonical={}",
+                current.0, current.1
             );
-            assert!(current.2 > 0);
-            assert!(current.2 <= 32 * depth + 32);
-            assert!(current.3 <= 8192 * depth + 8192);
+            assert!(current.0 > 0);
+            assert!(current.1 > 0);
             if let Some(old) = measured {
                 assert_eq!(
                     old, current,
@@ -61,8 +63,8 @@ fn original_full_call_alias_depths_reuse_sizing_without_unrelated_nominal_growth
                 measured = Some(current);
             }
         }
-        let (inference, canonical, entries, bytes) = measured.ok_or("measurement")?;
-        if let Some((old_depth, old_inference, old_canonical, old_entries, old_bytes)) = previous {
+        let (inference, canonical) = measured.ok_or("measurement")?;
+        if let Some((old_depth, old_inference, old_canonical)) = previous {
             let ratio = depth / old_depth;
             assert!(
                 inference <= ratio * old_inference + 4096,
@@ -72,10 +74,8 @@ fn original_full_call_alias_depths_reuse_sizing_without_unrelated_nominal_growth
                 canonical <= ratio * old_canonical + 4096,
                 "canonical proof prefix work is not bounded"
             );
-            assert!(entries <= ratio * old_entries + 32);
-            assert!(bytes <= 2 * ratio * old_bytes + 4096);
         }
-        previous = Some((depth, inference, canonical, entries, bytes));
+        previous = Some((depth, inference, canonical));
     }
     Ok(())
 }

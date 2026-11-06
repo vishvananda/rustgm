@@ -55,7 +55,7 @@ fn suspended_candidate_headers_keep_linear_work_and_existing_hot_widths() -> Tes
         ));
         assert!(checker.state.work.is_empty());
     }
-    assert_eq!(size_of::<Work>(), 40);
-    assert_eq!(size_of::<super::super::calls::CallTypes>(), 720);
+    assert_eq!(size_of::<Work>(), 24);
+    assert_eq!(size_of::<super::super::calls::CallTypes>(), 728);
     Ok(())
 }
