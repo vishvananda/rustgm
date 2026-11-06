@@ -5,6 +5,47 @@ use crate::{
     sema::values::{Origin, StoredShape},
 };
 impl Machine<'_, '_> {
+    pub(super) fn validate_cstr_word_reference(
+        &mut self,
+        value: Constant,
+        referent: TypeId,
+        profile: crate::sema::compiler_items::c_strings::LiteralProfile,
+        mutable: bool,
+    ) -> Result<Read<Constant>, Failure> {
+        self.charge(1)?;
+        self.path(value)?;
+        let (target, metadata) = self.evaluator.pointer_words(value)?;
+        let crate::sema::values::WordTarget::Value(pointer) = target else {
+            return Err("CStr reference lacks its actual data word".into());
+        };
+        let Some(crate::sema::values::Metadata::Length(length)) = metadata else {
+            return Err("CStr reference lacks its actual length metadata".into());
+        };
+        let (address, work) = self
+            .evaluator
+            .word_address(pointer, self.limits.steps.saturating_sub(self.work.steps))?;
+        self.charge(work)?;
+        // Authenticate the same finite nominal/backing relation before validating
+        // its actual slice field. The internal slice is not the returned type.
+        self.evaluator
+            .word_sequence_range(address, length, referent)?;
+        let slice = Reader::new(self.evaluator.facts()).stored_child(profile.referent, None, 0)?;
+        if !matches!(self.evaluator.facts().types.kind(slice), Some(crate::types::Kind::Slice(element)) if element == profile.element)
+        {
+            return Err("CStr reference differs from its actual character-slice field".into());
+        }
+        let selected = self.evaluator.word_sequence_range(address, length, slice)?;
+        Ok(
+            match self.validate_sequence_word_reference(selected, slice, mutable)? {
+                Read::Pending => Read::Pending,
+                Read::Value(_) => Read::Value(if mutable {
+                    value
+                } else {
+                    value.restrict_shared()
+                }),
+            },
+        )
+    }
     pub(in crate::const_eval) fn checked_sequence_reference(
         &mut self,
         place: crate::const_eval::memory::Resolved,

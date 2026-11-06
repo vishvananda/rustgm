@@ -55,6 +55,22 @@ impl Evaluator<'_> {
         }
         let mut pointer = super::super::references::Pointer::new(address.root.0);
         pointer.write = address.write;
+        if let Some(profile) =
+            crate::sema::compiler_items::c_strings::storage_profile(self.facts(), target)?
+        {
+            if address.offset != 0 || length != bound || stride != 1 || element != profile.element {
+                return Err(
+                    "CStr word requires its exact zero-offset character-array backing".into(),
+                );
+            }
+            let tail = reader.stored_child(target, None, 0)?;
+            if !matches!(reader.literal_tail_storage(target, root, 0, tail, super::super::Metadata::Length(length))?,
+                Some(super::super::TailStorage::Backing(actual)) if actual == root)
+            {
+                return Err("CStr word lacks its actual prepared byte-tail storage".into());
+            }
+            return Constant(Value::Reference(pointer)).unsize(length);
+        }
         self.sequence_view::<true>(Constant(Value::Reference(pointer)), from, length, target)
     }
     pub(crate) fn word_address(

@@ -297,6 +297,11 @@ impl Machine<'_, '_> {
         ty: TypeId,
         mutable: bool,
     ) -> Result<Read<Constant>, Failure> {
+        if let Some(profile) =
+            crate::sema::compiler_items::c_strings::storage_profile(self.evaluator.facts(), ty)?
+        {
+            return self.validate_cstr_word_reference(address, ty, profile, mutable);
+        }
         if matches!(
             self.evaluator.facts().types.kind(ty),
             Some(
