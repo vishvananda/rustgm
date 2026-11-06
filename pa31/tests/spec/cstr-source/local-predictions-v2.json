@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "profile": "Same pinned no_core actual source cutout as predictions-v4, cap_lints=allow. Authored local companions do not claim full std graph.",
+  "cases": [
+    {
+      "file": "local-storage-v2.rs",
+      "expected_code": 0,
+      "native": {
+        "observer": "local-storage.c",
+        "stdout": "storage 8 65 0\n",
+        "crate_type": "lib",
+        "observer_sha256": "c65b8b0ada6c3e20afdc997a91a91b8125ced3033bc162cee94f2a8011452c7e"
+      },
+      "sha256": "0e832425735ae0d96719088968dc0048b28ce601703f53d36c4408c08a443df4",
+      "prediction_status": "predicted-before-candidate-observation"
+    },
+    {
+      "file": "local-type.rs",
+      "expected_code": 1,
+      "expected_cause": "mismatched types",
+      "sha256": "d5247e737bf3d0f94985b34017367c3f6f49f96d77411aa03515e3db2025a327",
+      "prediction_status": "predicted-before-candidate-observation"
+    },
+    {
+      "file": "local-mutable.rs",
+      "expected_code": 1,
+      "expected_cause": "mutability",
+      "sha256": "eef90f26a24a51aa7fcd86458c8910d8fdc5ef9938bed82c87f7efb394dc638b",
+      "prediction_status": "predicted-before-candidate-observation"
+    },
+    {
+      "file": "local-pointer.rs",
+      "expected_code": 1,
+      "expected_cause": "mutability",
+      "sha256": "51b09dc558e03d0c4ad8ed5ac51c567c95e1104e2016ea4008d34cf10c1dc3d7",
+      "prediction_status": "predicted-before-candidate-observation"
+    },
+    {
+      "file": "local-const.rs",
+      "expected_code": 1,
+      "expected_cause": "non-const",
+      "sha256": "a2dfa40b77f64813d3b23b583f665512061b5ffed2619983db4cbed9eb9dc3c1",
+      "prediction_status": "predicted-before-candidate-observation"
+    },
+    {
+      "file": "local-reinterpret.rs",
+      "expected_code": 1,
+      "expected_cause": "mismatched types",
+      "sha256": "8b640d65feecd8f7b08003c6f652d3f57b637107b71bdf9c16ab94c2efb55361",
+      "prediction_status": "predicted-before-candidate-observation"
+    },
+    {
+      "file": "local-nul.rs",
+      "expected_code": 1,
+      "expected_cause": "null characters",
+      "sha256": "e2fa692f372c764a0cb4318081268d0f25eebd91b7fd4c429a298021b7f0f1f5",
+      "prediction_status": "predicted-before-candidate-observation"
+    },
+    {
+      "file": "local-safe.rs",
+      "expected_code": 1,
+      "expected_cause": "unsafe",
+      "sha256": "04655ce5ea176b34e2b31b63358d7dc4887465cc5f64b3a9246395e6e46d0439",
+      "prediction_status": "predicted-before-candidate-observation"
+    }
+  ],
+  "correction_from_v1": "Independent rustc found missing coerce_unsized language support only at authored byte-array as_ptr receiver unsizing. Keep original v1 bytes; v2 uses explicit ordinary raw array pointer casts for those two controls. Actual CStr/slice methods and all const/static calls unchanged."
+}
