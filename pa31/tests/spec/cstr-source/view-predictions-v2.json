@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "profile": "Same pinned no_core source profile as views-v1; run metadata and object to distinguish final demanded values. Preserve all v1 inputs.",
+  "correction_from_v1": "Original overread reaches non-Copy array move before bounds; new version reads copied scalar through real borrowed array. Original UTF8 const metadata unexpectedly accepts; separately probe exported static without asserting that original rejection prediction was correct.",
+  "cases": [
+    {
+      "file": "local-overread-v2.rs",
+      "sha256": "3c944e8eaed241a334f9bdef90621565dd8345d29440c88c668242caf5705ebe",
+      "expected_code": 1,
+      "expected_cause": "bounds",
+      "prediction_status": "unconfirmed-revised-reference-hypothesis"
+    },
+    {
+      "file": "local-utf8-static.rs",
+      "sha256": "ce4683652feac83522754c0d1ecb9ea9211425b1683dc45e9a43b7772ec0ee21",
+      "expected_code": 1,
+      "expected_cause": "UTF-8",
+      "prediction_status": "unconfirmed-revised-reference-hypothesis"
+    }
+  ]
+}
