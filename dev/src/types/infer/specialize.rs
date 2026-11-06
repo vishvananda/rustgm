@@ -12,16 +12,26 @@ enum Work {
 impl Context {
     /// Inspect the current graph without resolving holes or interning types.
     /// Unknown inputs do not establish the presence of a callable binder.
+    /// Retain completed subgraphs during this walk so later roots can reuse them.
     ///
     /// # Errors
     /// Rejects invalid identities and exhausted inference work.
     pub fn contains_late_callables(&mut self, store: &Store, root: TermId) -> Result<bool, Error> {
-        let mut current = root;
-        let mut work = Vec::new();
+        let mut work = vec![(root, false)];
         let mut seen = HashSet::default();
-        loop {
+        while let Some((current, finish)) = work.pop() {
             self.step()?;
             let id = self.root(current)?;
+            if finish {
+                self.remember_structure(store, id)?;
+                continue;
+            }
+            if self
+                .completed(store, id)?
+                .is_some_and(|facts| !facts.callables)
+            {
+                continue;
+            }
             let term = self.terms[id.0 as usize];
             match term.value {
                 Value::Known(ty) => {
@@ -35,17 +45,19 @@ impl Context {
                 Value::Construct(kind) if self.binder_regions(kind)?.is_some_and(|n| n != 0) => {
                     return Ok(true);
                 }
-                Value::Construct(_) if term.start != term.end && seen.insert(id) => {
+                Value::Construct(_) if seen.insert(id) => {
                     self.account_work((term.end - term.start) as usize)?;
-                    work.extend_from_slice(&self.edges[term.start as usize..term.end as usize]);
+                    work.push((id, true));
+                    work.extend(
+                        self.edges[term.start as usize..term.end as usize]
+                            .iter()
+                            .map(|&child| (child, false)),
+                    );
                 }
                 _ => {}
             }
-            let Some(next) = work.pop() else {
-                return Ok(false);
-            };
-            current = next;
         }
+        Ok(false)
     }
 
     /// Infer holes inside a callable using free source-binder instances. A hole

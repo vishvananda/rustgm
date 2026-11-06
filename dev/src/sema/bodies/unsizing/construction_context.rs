@@ -47,6 +47,14 @@ impl Checker<'_> {
                         // the enclosing coercion will prove their actual field relation.
                         return self.projected_constructor_context(node, actual, expected, item);
                     };
+                    if self
+                        .facts
+                        .unsizing_rules
+                        .as_ref()
+                        .is_some_and(|rules| rules.sized_parameter(&self.facts.types, item))
+                    {
+                        return Ok(Some(expected));
+                    }
                     let arguments = self
                         .state
                         .infer

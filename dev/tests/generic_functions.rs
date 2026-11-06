@@ -245,3 +245,41 @@ fn nominal_factory_context_reaches_inputs_before_reference_coercion() -> std::io
     }
     Ok(())
 }
+
+#[test]
+fn nominal_factory_context_work_tracks_nested_inputs_without_catalog_scans() -> Result<(), String> {
+    for borrowed in [false, true] {
+        let mut previous = None;
+        for depth in [8, 16, 32, 64] {
+            let tail = if borrowed { "&'a u8" } else { "u8" };
+            let ty = format!("{}{}{}", "W<".repeat(depth), tail, ">".repeat(depth));
+            let value = format!("{}value{}", "wrap(".repeat(depth), ")".repeat(depth));
+            let signature = if borrowed {
+                "fn observe<'a>(value:&'a mut u8)"
+            } else {
+                "fn observe(value:u8)"
+            };
+            let source = format!(
+                "struct W<T>(T);fn wrap<T>(value:T)->W<T>{{W(value)}}\n\
+                 {signature}->{ty}{{{value}}}"
+            );
+            let (_, facts) = crate::semantic::analyze(&source)?;
+            let work = facts.body_work.inference_steps;
+            if let Some(previous) = previous {
+                assert!(
+                    work <= 2 * previous + 256,
+                    "depth{depth}: {previous}->{work}"
+                );
+            }
+            previous = Some(work);
+            let mut unrelated = source;
+            for index in 0..128 {
+                write!(unrelated, "\nstruct Unrelated{index}<T>(T);")
+                    .map_err(|error| error.to_string())?;
+            }
+            let (_, facts) = crate::semantic::analyze(&unrelated)?;
+            assert_eq!(facts.body_work.inference_steps, work);
+        }
+    }
+    Ok(())
+}

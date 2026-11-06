@@ -4765,6 +4765,14 @@ inputs retain their actual type and may use a separate result coercion. Preserve
 normal lifetime, formation and final coercion proofs; a result hint supplies none
 of those permissions. Do not specialize this rule to Pin or replay arguments.
 
+Stop a construction-context tail walk at its actual completed Sized parameter:
+a sized tail cannot need an array/object input hint. Partial callable detection
+uses the existing inference Completed ledger, retaining stable subgraphs during
+its own postorder traversal without early type interning or a second graph pass.
+Unresolved type/const inputs and projections never receive a completed absence
+certificate. Later equations can still expose a callable binder. Preserve ordinary
+region, subsumption and conversion proof; cached shape facts grant none of them.
+
 Before freshening a nominal value's lifetime inputs, preserve its existing identity
 when completed raw projected fields prove every input invariant. Reuse the variance
 solver for that conservative hint; unfinished external nominal edges grant no

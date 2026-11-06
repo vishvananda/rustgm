@@ -51,6 +51,18 @@ pub struct Rules {
     pub steps: usize,
 }
 impl Rules {
+    /// A completed sized tail cannot need an array/object constructor hint.
+    /// Missing declarations keep the ordinary contextual walk; this supplies no
+    /// argument relation or conversion permission.
+    pub(crate) fn sized_parameter(&self, types: &Store, item: ItemId) -> bool {
+        self.completed
+            .get(&Key::Item(item))
+            .copied()
+            .flatten()
+            .and_then(|id| types.parameter(id))
+            .is_some_and(|p| p.kind == (super::parameters::ParameterKind::Type { sized: true }))
+    }
+
     /// Find the only argument that can change under built-in struct unsizing.
     /// This supplies structural eligibility, not an argument relation or proof.
     /// # Errors

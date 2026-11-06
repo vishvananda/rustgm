@@ -161,3 +161,54 @@ fn a_shape_fold_still_erases_unused_callable_binders() -> Result<(), Error> {
     ));
     Ok(())
 }
+
+#[test]
+fn callable_queries_reuse_completed_subgraphs_without_interning() -> Result<(), Error> {
+    for depth in [8, 32, 128] {
+        let store = Store::default();
+        let mut context = Context::default();
+        let byte = context.known(&store, TypeId::primitive(Primitive::U8))?;
+        let mut roots = vec![byte];
+        let mut root = byte;
+        for _ in 0..depth {
+            root = context.construct(Constructor::Tuple, &[root, byte])?;
+            roots.push(root);
+        }
+        let types = store.len();
+        let before = context.steps;
+        assert!(!context.contains_late_callables(&store, root)?);
+        assert!(context.steps - before <= 8 * depth + 32);
+        assert!(context.completed(&store, root)?.is_some());
+        assert!(context.settled_type(root).is_none());
+        let before = context.steps;
+        for root in roots {
+            assert!(!context.contains_late_callables(&store, root)?);
+        }
+        assert!(context.steps - before <= 2 * (depth + 1));
+        assert_eq!(store.len(), types);
+    }
+    Ok(())
+}
+
+#[test]
+fn callable_query_does_not_freeze_an_unresolved_child_as_absent() -> Result<(), Error> {
+    let store = Store::default();
+    let mut context = Context::default();
+    let hole = context.variable(Domain::Any)?;
+    let tuple = context.construct(Constructor::Tuple, &[hole])?;
+    assert!(!context.contains_late_callables(&store, tuple)?);
+    assert!(context.completed(&store, tuple)?.is_none());
+    let byte = context.known(&store, TypeId::primitive(Primitive::U8))?;
+    let callable = context.construct(
+        Constructor::Function {
+            bound_regions: 1,
+            parameters: 1,
+            unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
+        },
+        &[byte, byte],
+    )?;
+    context.equate_shape(&store, hole, callable)?;
+    assert!(context.contains_late_callables(&store, tuple)?);
+    Ok(())
+}
