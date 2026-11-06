@@ -2376,11 +2376,15 @@ impl Checker<'_> {
                 && let Some(expected) =
                     self.unsizing_constructor_context(node, result, Some(expected))?
                 && (constructor
-                    || !self
+                    || match self
                         .state
                         .infer
                         .incompatible(&self.facts.types, result, expected)
-                        .map_err(|error| self.error(node, error))?)
+                    {
+                        Ok(false) => true,
+                        Ok(true) | Err(crate::types::infer::Error::Normalization) => false,
+                        Err(error) => return Err(self.error(node, error)),
+                    })
             {
                 self.shape_equation(node, result, expected)?;
             }

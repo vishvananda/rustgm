@@ -1,0 +1,12 @@
+whole.rs	0
+explicit.rs	0
+missing-bound.rs	1
+wrong-input.rs	1
+escaping-borrow.rs	1
+const-nonconst.rs	1
+invalid-unused-body.rs	1
+duplicate.rs	1
+alternative.rs	0
+unsafe-alternative.rs	0
+unsafe-call.rs	1
+associated-owner.rs	1

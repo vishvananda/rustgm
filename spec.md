@@ -4757,11 +4757,20 @@ same owner can supply those input lifetimes before field substitution. Preserve
 explicit written lifetimes and prove the usual formation and coercion debts.
 An associated output equality cannot invent equations between its inputs.
 
+The source from_yeet helper completes through the shared ordinary defined-function
+header adapter. Retain its actual generic bounds, caller tracking, signature,
+source body and FromResidual dispatch; a language tag grants no implementation,
+const, unsafe or lifetime permission. Valid unused alternative headers remain
+ordinary functions. Implicit yeet operations and imported consumers require their
+separate actual operation/signature and transport contracts.
+
 An ordinary generic factory returning a nominal with the expected owner uses the
 same construction context before scheduling its arguments. Reuse the existing
 unsizing-tail hint so an expected slice/object does not become a sized input.
 Check equation compatibility without binding first: written or already fixed
-inputs retain their actual type and may use a separate result coercion. Preserve
+inputs retain their actual type and may use a separate result coercion. A pending
+associated projection supplies no early compatibility hint; leave it to the
+ordinary deferred equations and projection proof. Preserve
 normal lifetime, formation and final coercion proofs; a result hint supplies none
 of those permissions. Do not specialize this rule to Pin or replay arguments.
 

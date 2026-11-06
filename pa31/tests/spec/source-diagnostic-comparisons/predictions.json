@@ -1,0 +1,7 @@
+{
+  "source": "pa31/tests/spec/source-diagnostic-comparisons/diagnostic-only-default.rs",
+  "sha256": "cd4aa555ab23491d2f6bed2259c8556967a61623009d8f63125d4518cf816949",
+  "rustc_status": 0,
+  "contract": "Complete original diagnostic comparison trait/default body without lang eq; genuine Freeze added to no_core reference foundation. No operator authority.",
+  "receipt": "obj/parallel/factory-ci-42214520487/reference-v2/reference-receipt.json"
+}

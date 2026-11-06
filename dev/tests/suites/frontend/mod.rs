@@ -55,6 +55,8 @@ pub(crate) mod ffi_program;
 mod forced_dyn_contracts;
 #[path = "../../fragments.rs"]
 mod fragments;
+#[path = "../../from_yeet_sources.rs"]
+mod from_yeet_sources;
 #[path = "../../fundamental_contracts.rs"]
 mod fundamental_contracts;
 #[path = "../../fused_sources.rs"]

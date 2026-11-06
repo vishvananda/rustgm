@@ -1,0 +1,83 @@
+{
+  "contract": "Frozen independent outcomes before any modified candidate; exact original function body for8 cases, ordinary unused alternate header legality for4 controls. Shared genuine existing Location source foundation; no whole Try module claim.",
+  "inputs": [
+    {
+      "case": "whole",
+      "path": "pa31/tests/spec/from-yeet-source/whole.rs",
+      "sha256": "b4b7088af2a29526a771413ebcd6b4e7beacbf0ec2ffb2ba479ac1130795b47b",
+      "status": 0
+    },
+    {
+      "case": "explicit",
+      "path": "pa31/tests/spec/from-yeet-source/explicit.rs",
+      "sha256": "95536480df1be714df3209c80bc2c7c10c90373d351d5b4610c11bedec44c599",
+      "status": 0
+    },
+    {
+      "case": "missing-bound",
+      "path": "pa31/tests/spec/from-yeet-source/missing-bound.rs",
+      "sha256": "4797a7f338700da31a675cfdfd4507e23c587ec42788538c1c63658a100fa3f1",
+      "status": 1
+    },
+    {
+      "case": "wrong-input",
+      "path": "pa31/tests/spec/from-yeet-source/wrong-input.rs",
+      "sha256": "2b4633ce6552f02bc2b57dedfb1a751f9c41dcb2bb7c08d43dd8e43792e9c201",
+      "status": 1
+    },
+    {
+      "case": "escaping-borrow",
+      "path": "pa31/tests/spec/from-yeet-source/escaping-borrow.rs",
+      "sha256": "717ee8f9f7a38f582b61ab482e6771f3a33e3e8676a95069919237e2268770b0",
+      "status": 1
+    },
+    {
+      "case": "const-nonconst",
+      "path": "pa31/tests/spec/from-yeet-source/const-nonconst.rs",
+      "sha256": "102d03b1462f51974b2db1ae4099f65e8136b83d03cff6fb9fb0c1f6e21437f6",
+      "status": 1
+    },
+    {
+      "case": "invalid-unused-body",
+      "path": "pa31/tests/spec/from-yeet-source/invalid-unused-body.rs",
+      "sha256": "923aa7aca377434297d44906baf0395352f961979613559cc3a3bcb88a661743",
+      "status": 1
+    },
+    {
+      "case": "duplicate",
+      "path": "pa31/tests/spec/from-yeet-source/duplicate.rs",
+      "sha256": "6af3f9da1532fcd5b831d0a869da6de0deb45c999b6c405da014a39591ee499f",
+      "status": 1
+    },
+    {
+      "case": "alternative",
+      "path": "pa31/tests/spec/from-yeet-source/alternative.rs",
+      "sha256": "7263041536a109fdc121eef8a5d36fbc4c6c1c8c987ec9cd2109e97a4217d0dc",
+      "status": 0
+    },
+    {
+      "case": "unsafe-alternative",
+      "path": "pa31/tests/spec/from-yeet-source/unsafe-alternative.rs",
+      "sha256": "f6130e8cddf3ea5393978cdbc0aa87b738462951be6d6ee406334d901bb0c545",
+      "status": 0
+    },
+    {
+      "case": "unsafe-call",
+      "path": "pa31/tests/spec/from-yeet-source/unsafe-call.rs",
+      "sha256": "057db1168217e8d52ac875652026aabe25d3bfaaaf464cc464321b9385c7acaa",
+      "status": 1
+    },
+    {
+      "case": "associated-owner",
+      "path": "pa31/tests/spec/from-yeet-source/associated-owner.rs",
+      "sha256": "c025547366829715280da37eb065fd5a02331db223bc1c5f17648b25e8ff500c",
+      "status": 1
+    }
+  ],
+  "native": {
+    "source": "explicit.rs",
+    "expected": "23 47\n"
+  },
+  "reference_receipt": "obj/parallel/from-yeet-reference/receipt.json",
+  "reference_sha256": "5d5c7af24f09d2848dd8c5d8338a793126014b38d5df06368a3c328e7b3aa343"
+}

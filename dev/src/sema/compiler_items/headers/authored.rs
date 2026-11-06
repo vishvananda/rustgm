@@ -7,6 +7,31 @@ use crate::{
     types::arguments::Argument,
 };
 
+pub(super) fn function(
+    report: &Report,
+    declaration: Declaration,
+    header: &crate::sema::function_headers::FunctionHeader<'_>,
+) -> Result<(), &'static str> {
+    let actual = report
+        .resolution
+        .definitions
+        .get(declaration.definition.0 as usize)
+        .ok_or("source compiler function lost its declaration identity")?;
+    if actual.kind != DefKind::Function || actual.node != Some(declaration.origin) {
+        return Err("source compiler function changed its actual declaration");
+    }
+    let ast = &report.package.unit(declaration.origin.file).configured.ast;
+    if !matches!(ast.node(declaration.origin.node).kind,
+        Kind::Item(index) if matches!(ast.items[index as usize].kind,
+            ItemKind::Function { body: Some(body), .. }
+                if header.body.and_then(crate::resolve::body_origin::BodyOrigin::source)
+                    == Some(crate::resolve::unit::NodeKey { file: declaration.origin.file, node: body })))
+    {
+        return Err("source compiler function requires its actual defined function");
+    }
+    Ok(())
+}
+
 impl<'a> Trait<'a> {
     /// Borrow a genuine prepared source trait without assigning a language role.
     pub(in crate::sema) fn source_owner_with_bounds<'r>(

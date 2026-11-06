@@ -119,7 +119,7 @@ fn source_comparison_prefix() -> Result<String, Box<dyn std::error::Error>> {
     let destruct =
         crate::test_source::fixture("pa31/tests/spec/source-location/neg-destruct-declaration.rs")?;
     Ok(format!(
-        "#![feature(staged_api,const_trait_impl)]#![unstable(feature=\"comparison_fixture\",issue=\"none\")]\n{foundation}\n{destruct}\nimpl Clone for bool{{fn clone(&self)->Self{{*self}}}}impl Copy for bool{{}}\n#[lang=\"not\"]#[rustc_const_unstable(feature=\"const_ops\",issue=\"143802\")]pub const trait Not{{type Output;fn not(self)->Self::Output;}}#[rustc_const_unstable(feature=\"const_ops\",issue=\"143802\")]const impl Not for bool{{type Output=bool;fn not(self)->bool{{!self}}}}"
+        "#![feature(staged_api,const_trait_impl,auto_traits)]#![unstable(feature=\"comparison_fixture\",issue=\"none\")]\n{foundation}\n{destruct}\nimpl Clone for bool{{fn clone(&self)->Self{{*self}}}}impl Copy for bool{{}}\n#[lang=\"not\"]#[rustc_const_unstable(feature=\"const_ops\",issue=\"143802\")]pub const trait Not{{type Output;fn not(self)->Self::Output;}}#[rustc_const_unstable(feature=\"const_ops\",issue=\"143802\")]const impl Not for bool{{type Output=bool;fn not(self)->bool{{!self}}}}\n#[lang=\"freeze\"]pub unsafe auto trait Freeze{{}}"
     ))
 }
 
@@ -160,8 +160,21 @@ fn actual_source_partial_eq_default_body_keeps_its_real_call_without_bootstrap_p
         .ok_or("actual ne body")?;
     assert!(analysis.facts.typed_function_bodies.contains(&ne));
     assert_ne!(actual_owner.definition, ne);
+    let diagnostic_only = actual.replace("#[lang = \"eq\"]", "");
+    let report = crate::test_source::source_provider(
+        &(source_comparison_prefix()? + &diagnostic_only),
+        "diagnostic_only_comparison",
+    )?;
+    assert!(
+        report
+            .resolution
+            .source_bindings
+            .as_deref()
+            .and_then(|rows| rows.language(crate::support::bindings::LangItem::PartialEq))
+            .is_none()
+    );
+    crate::pipeline::analyze_source(&report)?;
     for malformed in [
-        actual.replace("#[lang = \"eq\"]", ""),
         String::from("#[lang=\"eq\"]struct Wrong;"),
         String::from("#[rustc_diagnostic_item=\"cmp_partialeq_eq\"]fn wrong(){}"),
     ] {

@@ -1,6 +1,7 @@
 //! Borrow actual trait declarations; structural validation grants no role or proof.
 mod authored;
 mod clone_signature;
+pub(super) mod functions;
 use crate::{
     resolve::{
         bindings::Declaration,

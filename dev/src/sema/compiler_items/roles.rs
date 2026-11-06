@@ -251,6 +251,11 @@ fn complete_dependent_roles(
     {
         complete.roles.insert(role);
     }
+    if let Some(role) =
+        super::headers::functions::complete(report, facts, catalog, LangItem::TryTraitFromYeet)?
+    {
+        complete.roles.insert(role);
+    }
     if let Some(role) = super::async_glue::complete(report, facts, catalog)? {
         complete.roles.insert(role);
     }

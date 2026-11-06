@@ -1,0 +1,9 @@
+{
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "path": "library/core/src/ops/try_trait.rs",
+  "sha256": "61bc75cb647e8fae3812dfda5bbc2a88f4dc54372dc64108a713d87191202ee7",
+  "start_byte": 13646,
+  "end_byte_exclusive": 14082,
+  "fragment_sha256": "df6ca58d41bb18d2ebc116edf118dcb35c54a43deebcadebbe2346ef84d95401",
+  "contract": "Exact source function bytes; full module remains separately required."
+}

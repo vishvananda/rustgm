@@ -283,3 +283,13 @@ fn nominal_factory_context_work_tracks_nested_inputs_without_catalog_scans() -> 
     }
     Ok(())
 }
+
+#[test]
+fn source_factory_context_preserves_pending_associated_outputs() -> Result<(), String> {
+    let source =
+        crate::resolve::fixture("pa31/tests/spec/source-iteration/alternate-next-parent.rs")
+            .map_err(|error| error.to_string())?;
+    let report = crate::resolve::source_provider(&source, "projected_factory_result")?;
+    rustgm::pipeline::analyze_source(&report).map_err(|error| error.to_string())?;
+    Ok(())
+}

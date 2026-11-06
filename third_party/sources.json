@@ -335,6 +335,15 @@
         "sha256": "16d65565c187e3b10e8b189ed8690dcd053d999abd10ab5944be0d90f9e1ace6",
         "expected_status": 0
       }
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/ops/try_trait.rs",
+      "destination": "pa31/tests/spec/from-yeet-source/original-module.rs",
+      "sha256": "61bc75cb647e8fae3812dfda5bbc2a88f4dc54372dc64108a713d87191202ee7",
+      "adaptation": "none; full original bytes retained as reference; exact from_yeet function slice and explicit-call companions independently qualified; whole module qualification remains required",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
     }
   ]
 }

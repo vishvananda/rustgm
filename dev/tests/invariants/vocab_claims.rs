@@ -134,6 +134,7 @@ fn unimplemented_builtin_claims_stop_before_granting_layout_drop_or_auto_trait_s
         if matches!(
             role,
             LangItem::CompilerMove
+                | LangItem::TryTraitFromYeet
                 | LangItem::CompilerCopy
                 | LangItem::UseCloned
                 | LangItem::FnPtrTrait

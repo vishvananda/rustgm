@@ -16,6 +16,7 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
             // Generated state, implicit operations and executable calls still
             // require their separate typed contracts and ordinary body proofs.
             LangItem::CoroutineState
+            | LangItem::TryTraitFromYeet
             | LangItem::Coroutine
             | LangItem::CoroutineYield
             | LangItem::CoroutineReturn

@@ -183,3 +183,17 @@ fn original_pin_and_reference_forwarders_execute_actual_provided_bodies() -> Res
     )?;
     Ok(())
 }
+
+#[test]
+fn diagnostic_only_comparison_default_body_keeps_ordinary_method_proof() -> Result {
+    let text = source::fixture(
+        "pa31/tests/spec/source-diagnostic-comparisons/diagnostic-only-default.rs",
+    )?;
+    let report = source::source_provider(&text, "diagnostic_comparison_default")?;
+    let rustgm::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = rustgm::pipeline::analyze_source(&report)?;
+    rustgm::lower::instances::inspect_prepared(&report, &mut facts, prepared, |_, _| ())?;
+    Ok(())
+}
