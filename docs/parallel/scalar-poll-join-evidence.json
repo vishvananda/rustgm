@@ -1,0 +1,146 @@
+{
+  "scope": "joined actual scalar Future poll and ordinary AsyncFn/Fused consumers plus faithful Destruct declaration policy test",
+  "worker_commit": "c869bbb55",
+  "integration_commit": "ca50958dd",
+  "cli_sha256": "15ac6c1cbf53caaa949eadddb255a31cdc3a91dcb0655c5535c707b05dbe9c32",
+  "receipts": {
+    "public": {
+      "path": "obj/parallel/scalar-poll-join-v1/gate-v1/receipt.json",
+      "sha256": "551c6767bef9d07c792158f237299c7ccc8af6aab410974a44d334d2c631b2b5"
+    },
+    "native": {
+      "path": "obj/parallel/scalar-poll-join-v1/native-gate-v3/receipt.json",
+      "sha256": "8f568313b1e04d4615b8516c22017ee4672e775e6c41723140d2c02dc1db5845"
+    },
+    "qualification": {
+      "path": "obj/parallel/scalar-poll-join-v1/qualification-v1/receipt.json",
+      "sha256": "a1e0d28e72bfe1e1e0790ff89a31c69198be8fd02715e973e5e44226c50d85fe"
+    },
+    "header_reference": {
+      "path": "obj/parallel/scalar-poll-join-v1/header-reference-v2/receipt.json",
+      "sha256": "0c90545cfa6764896fc53ea68b5b48ad3226ea52e135947a4141fae1398aef98"
+    }
+  },
+  "additional_sources": {
+    "dev/tests/provider_traits/destructibility.rs": "b3ee9d673ab37789fe6a73b60a1604264730251c6c64b273afd5d57afdecfbd0",
+    "dev/tests/stateframe.rs": "580ea0e92970e926661a261a2c0d28963dfde98d2f3ebd159edf8403511d0c0c",
+    "dev/tests/stateframe/poll_observers.rs": "9c5f7f0e415b04ba578fcbe7326b1706ffb235cec240c4d9ee22cc0384aa5227",
+    "pa31/tests/spec/destruct-header/README.md": "dbe976f38e3120d9af55201b6fed61577afeb7b33ef087af92b8a4e54959e7d0",
+    "pa31/tests/spec/destruct-header/bare.rs": "ec81a81bb7e3f8a4430bfefc004408f9735575c2521f160db92c54f1d575d225",
+    "pa31/tests/spec/destruct-header/by-value.rs": "3dd98b430e1817780406b4e60efabdfe2fd6a6806c037688b3ac7d1636b1149f",
+    "pa31/tests/spec/destruct-header/cases.tsv": "690689b44ece7cc696ff6122882ebe3e33c56ecf177f399da3cc16cfb4d9adb1",
+    "pa31/tests/spec/destruct-header/not-trait.rs": "403c46b7855a19a0308ba6be02baf26f0c4f4b8d9e15b7f0e424b1551dab5f60",
+    "pa31/tests/spec/destruct-header/predictions.json": "048647208f7f71030ff392191f3643c8cb1f956739a0aab842a8d752cdd94804",
+    "pa31/tests/spec/destruct-header/required-cases.tsv": "5f2aeda93b019c83f001b5fb52ec1aab8dddaf88a1209d0f4eb47ac2dad80660",
+    "pa31/tests/spec/destruct-header/wrong-result.rs": "825605e538ad70ad2313593746f09e9bd04050876ad5f729774eddda9535543d",
+    "pa43/tests/spec/future-runtime-v1/poll-native-predictions.json": "98ee66e30c8ade840015eefee888df13eaed2e24d400f95532f44f2c6397caa4",
+    "pa43/tests/spec/future-runtime-v1/poll-observer.c": "c6bf28cd2035266f5aa923ea71e88d907495fcc6c560a7589c7fd3a8541ca99d",
+    "pa43/tests/spec/future-runtime-v1/poll-repeat-observer.c": "9cdaab5ef6dc2cf7b341dd61235c18dc09138b620be34c034ee4ae4ef8e23981"
+  },
+  "public": {
+    "tests": 34,
+    "targets": 4,
+    "selected": {
+      "suite_linking": [
+        "compiler_recipes::checked_authored_future_storage_cannot_be_exported_as_a_symbolic_marker",
+        "compiler_recipes::historical_source_and_provided_packets_keep_exact_bytes",
+        "compiler_recipes::operation_envelope_preserves_native_wrapper_and_rejects_legacy_dispatch",
+        "compiler_recipes::publication_checks_real_body_and_recipe_shape_before_symbolic_exclusion",
+        "compiler_recipes::serialized_operation_keeps_real_owner_and_fresh_output_proof",
+        "compiler_recipes::wire_operation_rejects_changed_body_owner_result_target_and_opcode"
+      ],
+      "suite_frontend": [
+        "stateframe::actual_required_poll_keeps_checked_source_output_and_completed_drop",
+        "stateframe::actual_typed_future_shapes_preserve_capture_identity_and_do_not_capture_output",
+        "stateframe::authored_async_by_value_unsized_input_cannot_publish_sized_future_storage",
+        "stateframe::authored_async_originals_keep_their_real_output_through_region_and_loan_checks",
+        "stateframe::compiler_poll_state_copy_requires_no_user_u8_copy_and_grants_no_borrowed_move",
+        "stateframe::complete_generic_applications_reuse_one_identity_and_reject_argument_kind_forgery",
+        "stateframe::future_drop_recipes_keep_full_applications_and_own_capture_cleanup",
+        "stateframe::future_formation_proves_closed_bounds_and_retains_unpaid_lifetime_requirements",
+        "stateframe::generic_future_templates_defer_unknown_capture_layout_until_real_application",
+        "stateframe::mixed_future_and_ordinary_results_publish_only_actual_checked_batch_families",
+        "stateframe::ordinary_borrowed_moves_cannot_use_generated_state_copy_permission",
+        "stateframe::ordinary_opaque_results_do_not_request_authored_future_preparation",
+        "stateframe::selected_authored_poll_calls_keep_the_real_member_and_independent_public_signature",
+        "stateframe::selected_future_applications_revalidate_store_and_warm_publication",
+        "stateframe::selected_future_applications_use_actual_checked_bodies_and_complete_capture_frames",
+        "stateframe::selected_future_bounds_consume_genuine_future_and_actual_output_equality",
+        "stateframe::unpolled_constructor_and_drop_defer_divergent_body_and_check_unused_output",
+        "lending_calls::actual_async_call_headers_and_bodies_match_frozen_language_outcomes",
+        "lending_calls::automatic_async_calls_require_real_future_capture_abi_and_lifetime_proofs",
+        "fused_sources::fused_source_roles_and_consumers_match_actual_language_outcomes",
+        "provider_traits::destructibility::source_drop_targets_validate_and_wider_unused_signatures_stay_fenced",
+        "provider_traits::destructibility::unused_destruct_declaration_keeps_its_actual_attribute_policy",
+        "provider_traits::destructibility::ordinary_destruct_is_not_const_or_a_lookalike_implementation"
+      ],
+      "suite_memory": [
+        "cas_intrinsics::compare_exchange_identity_layout_and_shims_scale",
+        "rmw_intrinsics::rmw_registry_and_effectful_shims_grow_by_identity",
+        "subtract_intrinsics::subtraction_shares_one_typed_effectful_shim"
+      ],
+      "suite_traits": [
+        "language_operators::methods::selected_dot_methods",
+        "language_operators::primitives::primitive_contracts_match_independent_outcomes"
+      ]
+    }
+  },
+  "native": {
+    "persistent_test": "stateframe::poll_observers::scalar_poll_executes_source_without_user_copy_and_rejects_completed_reentry",
+    "programs": 14,
+    "new_programs": 3,
+    "poll": "3 LF",
+    "no_user_copy": "3 LF",
+    "completed_reentry": "child SIGILL, parent exits0 with empty output; exact Rust panic/unwind parity not claimed"
+  },
+  "original_core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "15ac6c1cbf53caaa949eadddb255a31cdc3a91dcb0655c5535c707b05dbe9c32",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 108: 636: source compiler language item semantic contract is not implemented",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 18.833917556970846,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "15b46f1fc63061c8fff4dcef98d5d48a90d931b6b9b0555455355fd9ede273e9",
+      "whole-core.openat": "c0b1563770a7a1611b60f15672773a902775ded331ec83af5b02b70f4e559488",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    }
+  },
+  "ci_predecessor": {
+    "run": 42131050558,
+    "state": "terminal failure",
+    "private": {
+      "pass": 2725,
+      "fail": 1,
+      "ignored": 3,
+      "failure": "stale unsupported vocabulary expectation already updated by466df9660"
+    },
+    "public_failure": "bare Destruct declaration was incorrectly expected to require deny_explicit_impl; pinned Rust independently accepts it",
+    "qualified_private_controls": [
+      "both actual lending wrapper graph/header invariants",
+      "both completed-pair/mismatch cache invariants",
+      "primitive wrong-factory diagnostic"
+    ]
+  },
+  "remaining": [
+    "original core/alloc/std artifacts",
+    "private scalar-poll invariant execution and full successor CI",
+    "wider bodies/captures/await/cancel/unwind/recursive async drop and authored metadata",
+    "root-local const qualification false-acceptance repairs and remaining positive/CTFE/accounting duties",
+    "two legal unused alternate Drop signatures in required-cases.tsv (LIB-172)"
+  ],
+  "pin": {
+    "path": "obj/parallel/scalar-poll-join-v1/pin.json",
+    "sha256": "055d589a5587e9763dd3b16ae74ab476cf81473b6555b2d15b42245c87c47801"
+  }
+}

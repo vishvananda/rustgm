@@ -555,6 +555,18 @@ body/region/loan/cleanup/lowering pipeline proves execution. Keep authored async
 lending, state/poll/drop and imported body authority separate. See the
 [finite callable checkpoint](docs/parallel/lending-callable-checkpoint.md).
 
+Generated poll publication consumes one actual selected source materialization
+and its verifier completion while the real body remains borrowed. Move the same
+physical/region/loan seal through the existing finish boundary; a const completion
+cannot substitute for it. Retain authored storage scope/source identities and
+ordered exits, remapping only checked CFG coordinates. Authenticate the complete
+actual poll Instance, three public binder slots, execution signature and canonical
+Pin/Poll/Ready fields; prepare newly formed nominal applications through the
+existing aggregate producer before immutable layout/ownership queries. Reprove
+the generated graph before publication. Compiler-owned state access grants no
+ordinary user Copy permission. The [finite scalar stage](docs/parallel/scalar-poll-join.md)
+retains capture/await/cancellation/unwind/recursive cleanup/metadata requirements.
+
 The SourceCore expansion view is `--emit-expanded-crate` (or its count form),
 which runs actual configured expansion and binding completion. The PA7
 `--emit-expanded` session has no source context and must reject source options.
