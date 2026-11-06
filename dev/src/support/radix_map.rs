@@ -1,5 +1,6 @@
 //! Canonical radix maps share matching requirements without copying growing prefixes.
 use crate::support::hash::HashMap;
+use crate::support::retained::Growth;
 use std::hash::Hash;
 #[cfg(test)]
 #[path = "../../tests/invariants/outlives_maps.rs"]
@@ -67,7 +68,13 @@ impl<V> Default for Map<V> {
     }
 }
 impl<V: Copy + Eq + Hash> Map<V> {
-    fn charge(&mut self) -> Result<(), Error> {
+    fn charge<const CHARGED: bool>(
+        &mut self,
+        pay: &impl Fn(usize, usize) -> Result<(), Error>,
+    ) -> Result<(), Error> {
+        if CHARGED {
+            pay(1, 0)?;
+        }
         self.steps = self.steps.saturating_add(1);
         if self.steps > 1_000_000 {
             return Err(Error::Budget);
@@ -80,22 +87,43 @@ impl<V: Copy + Eq + Hash> Map<V> {
             .copied()
             .ok_or(Error::Identity)
     }
-    fn intern(&mut self, node: Node<V>) -> Result<Id, Error> {
-        self.charge()?;
+    fn intern<const CHARGED: bool>(
+        &mut self,
+        node: Node<V>,
+        pay: &impl Fn(usize, usize) -> Result<(), Error>,
+    ) -> Result<Id, Error> {
+        self.charge::<CHARGED>(pay)?;
         if let Some(&id) = self.index.get(&node) {
             return Ok(id);
         }
         let id = Id(u32::try_from(self.nodes.len() + 1).map_err(|_| Error::Budget)?);
+        if CHARGED {
+            let mut growth = Growth::vector::<Node<V>>(self.nodes.len(), self.nodes.capacity(), 1);
+            growth.include(Growth::map::<Node<V>, Id>(
+                self.index.len(),
+                self.index.capacity(),
+                1,
+            ));
+            pay(growth.work, growth.bytes)?;
+        }
         self.nodes.push(node);
         self.index.insert(node, id);
         Ok(id)
     }
     pub fn singleton(&mut self, key: u32, value: V) -> Result<Id, Error> {
-        self.intern(Node::Leaf(key, value))
+        self.intern::<false>(Node::Leaf(key, value), &|_, _| Ok(()))
+    }
+    pub(crate) fn singleton_charged(
+        &mut self,
+        key: u32,
+        value: V,
+        pay: &impl Fn(usize, usize) -> Result<(), Error>,
+    ) -> Result<Id, Error> {
+        self.intern::<true>(Node::Leaf(key, value), pay)
     }
     pub fn get(&mut self, mut root: Id, key: u32) -> Result<Option<V>, Error> {
         while root != Id::EMPTY {
-            self.charge()?;
+            self.charge::<false>(&|_, _| Ok(()))?;
             match self.node(root)? {
                 Node::Leaf(found, value) => return Ok((found == key).then_some(value)),
                 Node::Branch {
@@ -113,7 +141,13 @@ impl<V: Copy + Eq + Hash> Map<V> {
         }
         Ok(None)
     }
-    fn branch(&mut self, height: u8, left: Id, right: Id) -> Result<Id, Error> {
+    fn branch<const CHARGED: bool>(
+        &mut self,
+        height: u8,
+        left: Id,
+        right: Id,
+        pay: &impl Fn(usize, usize) -> Result<(), Error>,
+    ) -> Result<Id, Error> {
         if left == Id::EMPTY {
             return Ok(right);
         }
@@ -132,17 +166,36 @@ impl<V: Copy + Eq + Hash> Map<V> {
         {
             return Err(Error::Identity);
         }
-        self.intern(Node::Branch {
-            prefix: prefix_of(a.prefix(), height),
-            height,
-            left,
-            right,
-        })
+        self.intern::<CHARGED>(
+            Node::Branch {
+                prefix: prefix_of(a.prefix(), height),
+                height,
+                left,
+                right,
+            },
+            pay,
+        )
     }
     /// A conflicting value rejects the complete match; no trial binding is committed.
     /// Recursion consumes a radix level at each descent and is bounded by 32.
     pub fn union(&mut self, a: Id, b: Id) -> Result<Option<Id>, Error> {
-        self.charge()?;
+        self.union_observed::<false>(a, b, &|_, _| Ok(()))
+    }
+    pub(crate) fn union_charged(
+        &mut self,
+        a: Id,
+        b: Id,
+        pay: &impl Fn(usize, usize) -> Result<(), Error>,
+    ) -> Result<Option<Id>, Error> {
+        self.union_observed::<true>(a, b, pay)
+    }
+    fn union_observed<const CHARGED: bool>(
+        &mut self,
+        a: Id,
+        b: Id,
+        pay: &impl Fn(usize, usize) -> Result<(), Error>,
+    ) -> Result<Option<Id>, Error> {
+        self.charge::<CHARGED>(pay)?;
         if a == b || b == Id::EMPTY {
             return Ok(Some(a));
         }
@@ -153,11 +206,21 @@ impl<V: Copy + Eq + Hash> Map<V> {
         if let Some(&found) = self.unions.get(&key) {
             return Ok(found);
         }
-        let result = self.combine(a, b)?;
+        let result = self.combine::<CHARGED>(a, b, pay)?;
+        if CHARGED {
+            let growth =
+                Growth::map::<(Id, Id), Option<Id>>(self.unions.len(), self.unions.capacity(), 1);
+            pay(growth.work, growth.bytes)?;
+        }
         self.unions.insert(key, result);
         Ok(result)
     }
-    fn combine(&mut self, a: Id, b: Id) -> Result<Option<Id>, Error> {
+    fn combine<const CHARGED: bool>(
+        &mut self,
+        a: Id,
+        b: Id,
+        pay: &impl Fn(usize, usize) -> Result<(), Error>,
+    ) -> Result<Option<Id>, Error> {
         let left = self.node(a)?;
         let right = self.node(b)?;
         let divergence = u8::try_from(32 - (left.prefix() ^ right.prefix()).leading_zeros())
@@ -168,10 +231,10 @@ impl<V: Copy + Eq + Hash> Map<V> {
             } else {
                 (a, b)
             };
-            return self.branch(divergence, low, high).map(Some);
+            return self.branch::<CHARGED>(divergence, low, high, pay).map(Some);
         }
         if left.height() < right.height() {
-            return self.combine(b, a);
+            return self.combine::<CHARGED>(b, a, pay);
         }
         let Node::Branch {
             height,
@@ -192,14 +255,17 @@ impl<V: Copy + Eq + Hash> Map<V> {
         } = right
             && height == other
         {
-            self.union(low, left)?.zip(self.union(high_child, right)?)
+            self.union_observed::<CHARGED>(low, left, pay)?
+                .zip(self.union_observed::<CHARGED>(high_child, right, pay)?)
         } else if high(right.prefix(), height) {
-            self.union(high_child, b)?.map(|child| (low, child))
+            self.union_observed::<CHARGED>(high_child, b, pay)?
+                .map(|child| (low, child))
         } else {
-            self.union(low, b)?.map(|child| (child, high_child))
+            self.union_observed::<CHARGED>(low, b, pay)?
+                .map(|child| (child, high_child))
         };
         children
-            .map(|(low, high)| self.branch(height, low, high))
+            .map(|(low, high)| self.branch::<CHARGED>(height, low, high, pay))
             .transpose()
     }
 }

@@ -4915,6 +4915,20 @@ not quantified substitution slots. Include that distinction in candidate and
 recipe identity and preserve it through substitution. Exhausted query budgets
 are errors, never failed-bound answers.
 
+Bounded source consumers borrow a payer through the same builtin query,
+fingerprint table, full matcher and persistent slot-map DAG. Prepay query-box,
+work-vector, pending-child, memo-table and radix-node/union growth before
+allocation, including table replacement and copy work. Do not clone growing
+binding prefixes, construct a parallel solver or add a payer to ordinary bodies.
+Cached results still pay their actual query work without charging fresh storage.
+Keep the query's first failure unusable, including when a caller later asks
+through its ordinary API; a wrong environment cannot poison another owner's
+query. Return budget failures as errors, never Copy absence or a cleanup answer.
+Payment grants no premise or directed lifetime equality. The
+[paid-query checkpoint](docs/parallel/paid-builtin-query-checkpoint.md) records
+the shared adapter separately from its pending symbolic cleanup consumer and
+private execution checks.
+
 A failed builtin query on an inferred lifetime-bearing argument may retain a
 typed pending requirement with its source and immutable caller environment. It
 does not establish Copy, Clone or Sized. Transfer those requirements with the

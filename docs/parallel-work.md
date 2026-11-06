@@ -1,3 +1,17 @@
+The [paid shared-query checkpoint](parallel/paid-builtin-query-checkpoint.md)
+qualifies16 public controls,3 actual radix-module tests,4 native Drop traces and
+unchanged original core on CLI984a1fff (19.1974s/375opens, LIB-171 AsyncIterator).
+All722 inputs/configuration/limits remain fixed. The same matcher/radix DAG now
+has borrowed pre-growth accounting; its actual bounded cleanup hook is pending.
+The cold private link hit its deadline: no private pass is claimed, and the two
+new query-budget controls await CI. All96 AA/ABBA/follow-up observations retain
+output equality, with initial6.8% quantified128 overhead not reproduced (1.0044
+follow-up). No broad speedup/regression-absence claim. Pins984a1fff/9ebf8ae5;
+15ac is retired/pruned. No whole PA after24 or original library artifact is done.
+Workers continue actual borrowed-operand/const-index forwarding and authentic
+original Body/Requirements pairing; mfield remains a hard blocker until retried.
+Keep existing warm trees,2heavy,16GiB caps,150GiB reserve, <=300s local batches.
+
 The [PA17 diagnostic successor](parallel/pa17-drop-signature-successor.md) records
 terminal full42156026578: all2727 private controls and every public target pass;
 only two course diagnostic sidecars are stale after the actual pin_drop contract.

@@ -1,0 +1,230 @@
+{
+  "scope": "Borrowed cost adapter for same builtin matcher/persistent map; symbolic consumer is pending and no std artifact claimed",
+  "source_sha256": {
+    "dev/src/support/radix_map.rs": "2421de85926ff180b7b9edcab90724ebebc792a9da709c1de0ecdc5ba3c02a63",
+    "dev/src/types/parameters/environment/instantiation.rs": "037e5fa2b2a6aa9a2e35b69a5ac045e51d14a632cbab21c5a84494b2aae851bb",
+    "dev/src/types/parameters/environment/permissions.rs": "cdf39d110e4b0603dc3a84529f6cb55cc2b999c3afd6fd6b0f2c25222d5cc230",
+    "dev/tests/invariants/builtin_permissions.rs": "dc1a06ca898ddc7cdea451042c98e96ef1b189329fc80758a0cd5a631124ecb3",
+    "dev/tests/invariants/outlives_maps.rs": "402165261a5a8711cc61e2c993c5eebbcd1479f44191f59fdfdf23193c98bf3c",
+    "spec.md": "23925e44465d22641a6323ec625bc3a8934f2357fd889b5a08e7135d4360deb4"
+  },
+  "receipts": {
+    "gate-v1/receipt.json": {
+      "path": "obj/parallel/paid-builtin-query-v1/gate-v1/receipt.json",
+      "sha256": "7b3e899bd53e309ec360194b5eee552381e4e67fa477c1e41a706baa07575872",
+      "state": "failed"
+    },
+    "public-v1/receipt.json": {
+      "path": "obj/parallel/paid-builtin-query-v1/public-v1/receipt.json",
+      "sha256": "b881c09311142d43f058fbfd60ef30e1f4b86b98a81465bbf3cf9ba78683f1cc",
+      "state": "passed"
+    },
+    "radix-v1/receipt.json": {
+      "path": "obj/parallel/paid-builtin-query-v1/radix-v1/receipt.json",
+      "sha256": "67d38dbe93e843e5cf0b86f06704d76ed6c17b1472fc407731da70427fb2524d",
+      "state": "passed"
+    },
+    "qualification-v1/receipt.json": {
+      "path": "obj/parallel/paid-builtin-query-v1/qualification-v1/receipt.json",
+      "sha256": "17f4f5b9ee0b0f6f2865a2a942cb644ef6c13249fea3879730e0dfe9416e2601",
+      "state": "observed"
+    },
+    "performance-v1/receipt.json": {
+      "path": "obj/parallel/paid-builtin-query-v1/performance-v1/receipt.json",
+      "sha256": "105e5740c3f2a2bdbeaccf32870403c430f6686e8d97dcd0704aa4cc52ad9c8c",
+      "state": "passed"
+    },
+    "performance-cpu-v1/receipt.json": {
+      "path": "obj/parallel/paid-builtin-query-v1/performance-cpu-v1/receipt.json",
+      "sha256": "090af4d659162d4afdd5c94f1f3eadcec4c7197b034108fa27cfefd2dac48fd9",
+      "state": "passed"
+    }
+  },
+  "selected_public": {
+    "suite_traits": [
+      "quantified_predicates::canonical_binders_validate_all_local_uses_without_claiming_a_proof",
+      "quantified_predicates::empty_quantifier_retains_capture_depth_and_missing_arguments_are_errors",
+      "quantified_predicates::joint_substitution_preserves_quantified_subject_and_complete_mixed_arguments",
+      "quantified_predicates::ordinary_and_quantified_application_caches_never_alias_in_either_order",
+      "quantified_predicates::quantified_equality_maps_projection_inputs_and_result_without_capture",
+      "quantified_predicates::repeated_wide_quantified_applications_reuse_completed_substitution_work",
+      "premise_contracts::implementation_and_receiver_premises_require_complete_proofs"
+    ],
+    "suite_frontend": [
+      "pinned_drop::complete_drop_source_and_consumers_match_pinned_language_outcomes"
+    ],
+    "suite_regions": [
+      "quantified_lifetime_proofs::an_outer_variable_cannot_equal_every_younger_placeholder",
+      "quantified_lifetime_proofs::body_relations_can_use_retained_witnesses_without_granting_their_debts",
+      "quantified_lifetime_proofs::deep_captures_resolve_the_exact_ancestor_without_flattening_scopes",
+      "quantified_lifetime_proofs::each_local_placeholder_can_have_its_own_private_witness",
+      "quantified_lifetime_proofs::empty_binders_still_charge_the_scope_budget",
+      "quantified_lifetime_proofs::extending_independent_proofs_remaps_scopes_and_retains_caller_substitution",
+      "quantified_lifetime_proofs::nested_captures_need_the_outer_assumption_and_not_an_identically_numbered_local",
+      "quantified_lifetime_proofs::nested_evidence_and_noncontiguous_intervals_are_rejected"
+    ]
+  },
+  "new_private_query_tests": "NOT EXECUTED: cold private harness deadline before link; awaiting full CI",
+  "actual_module_radix_tests": 3,
+  "native_programs": 4,
+  "original_core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "984a1fff7a33793ff985c19f89b4e1cec4a0c1cb915748c0dffbc4e32516de88",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 108: 636: source compiler language item semantic contract is not implemented",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 19.19736951397499,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "15b46f1fc63061c8fff4dcef98d5d48a90d931b6b9b0555455355fd9ede273e9",
+      "whole-core.openat": "fd18358015067010eb0cc92bbdb398147a3dff08e2819c1a44d102fccb26f04f",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    }
+  },
+  "current_cli": "984a1fff7a33793ff985c19f89b4e1cec4a0c1cb915748c0dffbc4e32516de88",
+  "predecessor_cli": "9ebf8ae50fa4c54aa9fd2ed59bd5f2e0fd6728621b42271c1b723f8a193e5415",
+  "retired_cli": "15ac6c1cbf53caaa949eadddb255a31cdc3a91dcb0655c5535c707b05dbe9c32",
+  "performance": {
+    "samples": 96,
+    "scales": [
+      {
+        "family": "quantified",
+        "width": 8,
+        "source_sha256": "5633cf5bc79d6462ace93de0e7bf5b962475299413724856f9521422947f5c75",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.1261563967917445,
+            "AA_cpu_second_over_first": 1.130121341898644,
+            "ABBA_cpu_B_over_A": 1.1272313467058441,
+            "ABBA_B_over_A": 1.1278653022450007
+          },
+          {
+            "AA_second_over_first": 0.9266892869872623,
+            "AA_cpu_second_over_first": 0.9256839771058701,
+            "ABBA_cpu_B_over_A": 0.866741780190516,
+            "ABBA_B_over_A": 0.8682720834410765
+          },
+          {
+            "AA_second_over_first": 0.9726490111559664,
+            "AA_cpu_second_over_first": 0.9700368530684197,
+            "ABBA_cpu_B_over_A": 1.0147785547785544,
+            "ABBA_B_over_A": 1.0260326747490192
+          }
+        ],
+        "candidate_median_seconds": 0.0324082215083763,
+        "paired_median_cpu_B_over_A": 1.0147785547785544,
+        "paired_median_B_over_A": 1.0260326747490192
+      },
+      {
+        "family": "quantified",
+        "width": 32,
+        "source_sha256": "f4aad9abb2ef29ee1047c3e5fc2984e01c9d1988fb6499667b37337cd2f69b3f",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.4060835002050946,
+            "AA_cpu_second_over_first": 1.4094972885827368,
+            "ABBA_cpu_B_over_A": 1.0626921634795663,
+            "ABBA_B_over_A": 1.0621759041774346
+          },
+          {
+            "AA_second_over_first": 1.3200888178745458,
+            "AA_cpu_second_over_first": 1.3223180407036883,
+            "ABBA_cpu_B_over_A": 1.0226641722572423,
+            "ABBA_B_over_A": 1.0232956140017209
+          },
+          {
+            "AA_second_over_first": 1.1732023702699106,
+            "AA_cpu_second_over_first": 1.1747442700071107,
+            "ABBA_cpu_B_over_A": 1.0118116149823175,
+            "ABBA_B_over_A": 1.0121142884344936
+          }
+        ],
+        "candidate_median_seconds": 0.07707813498564065,
+        "paired_median_cpu_B_over_A": 1.0226641722572423,
+        "paired_median_B_over_A": 1.0232956140017209
+      },
+      {
+        "family": "quantified",
+        "width": 128,
+        "source_sha256": "9ea43d73ca587f22edc6ac22b978bdb72052cf0aec5592a1dad9aaba16428789",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.1022039968767952,
+            "AA_cpu_second_over_first": 1.1009919015395733,
+            "ABBA_cpu_B_over_A": 1.0064044062600248,
+            "ABBA_B_over_A": 1.0050968323943668
+          },
+          {
+            "AA_second_over_first": 0.9731349767286752,
+            "AA_cpu_second_over_first": 0.9734342854845986,
+            "ABBA_cpu_B_over_A": 1.1447935688428066,
+            "ABBA_B_over_A": 1.1646096219376034
+          },
+          {
+            "AA_second_over_first": 0.9707697759298983,
+            "AA_cpu_second_over_first": 0.9702990928237086,
+            "ABBA_cpu_B_over_A": 1.068559605918889,
+            "ABBA_B_over_A": 1.068208305096357
+          }
+        ],
+        "candidate_median_seconds": 0.2812598099990282,
+        "paired_median_cpu_B_over_A": 1.068559605918889,
+        "paired_median_B_over_A": 1.068208305096357
+      },
+      {
+        "family": "ordinary",
+        "width": 4096,
+        "source_sha256": "9f5ca894e474569a5033b27b8508936790ca745d34c1e370abe066fbf4086bba",
+        "blocks": [
+          {
+            "AA_second_over_first": 0.7059872216740024,
+            "AA_cpu_second_over_first": 0.7058282077082336,
+            "ABBA_cpu_B_over_A": 1.0000765312581275,
+            "ABBA_B_over_A": 1.0000250081076183
+          },
+          {
+            "AA_second_over_first": 1.0589555345475303,
+            "AA_cpu_second_over_first": 1.0590690237976492,
+            "ABBA_cpu_B_over_A": 0.9928351932531703,
+            "ABBA_B_over_A": 0.9926518442280263
+          },
+          {
+            "AA_second_over_first": 1.0109925438432086,
+            "AA_cpu_second_over_first": 1.0109194172455096,
+            "ABBA_cpu_B_over_A": 1.0308212677101496,
+            "ABBA_B_over_A": 1.0307549243790741
+          }
+        ],
+        "candidate_median_seconds": 0.8934470689855516,
+        "paired_median_cpu_B_over_A": 1.0000765312581275,
+        "paired_median_B_over_A": 1.0000250081076183
+      }
+    ],
+    "followup": {
+      "wall_seconds": {
+        "candidate_median_seconds": 0.2740543370018713,
+        "paired_median_B_over_A": 1.0044104521180621
+      },
+      "cpu_seconds": {
+        "candidate_median_seconds": 0.27341450000000006,
+        "paired_median_B_over_A": 1.0043742353679936
+      }
+    },
+    "interpretation": "All complete outputs equal; initial quantified128 slowdown does not reproduce; no broad speedup or regression-absence claim"
+  },
+  "pending": [
+    "Actual bounded symbolic cleanup consumer and genuine value-history correctness",
+    "New private query-budget controls and full CI",
+    "General CTFE/async/body metadata/unfinished PA requirements",
+    "Original core/alloc/std artifacts and consumers"
+  ]
+}
