@@ -158,10 +158,12 @@ impl Checker<'_> {
         method: usize,
         signature: TermId,
     ) {
-        let Some(places) = self.state.language_places.as_mut() else {
-            self.state.calls.push((node, signature));
-            return;
-        };
+        // Every selected index call retains its actual inference row, including
+        // a shared const use with no earlier mutable-place preparation.
+        let places = self
+            .state
+            .language_places
+            .get_or_insert_with(Default::default);
         let previous = places.selected.get(&node).copied();
         let call = previous.map_or(self.state.calls.len(), |selected| selected.call);
         if previous.is_some() {
