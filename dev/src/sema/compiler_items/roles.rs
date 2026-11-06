@@ -689,6 +689,7 @@ pub(super) fn complete_value_declaration(
             | LangItem::Context
             | LangItem::CoroutineState
             | LangItem::ResumeTy
+            | LangItem::CStr
     ) && !super::interval_values::NOMINALS.contains(&role)
     {
         return Err(Error::unlocated(

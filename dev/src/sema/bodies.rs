@@ -1846,9 +1846,7 @@ impl Checker<'_> {
             Value::Byte(_) => Primitive::U8,
             Value::String(bytes) => return self.text_literal_type(node, &bytes, true),
             Value::ByteString(bytes) => return self.text_literal_type(node, &bytes, false),
-            Value::CString(_) => {
-                return Err(self.error(node, "C string values require the library type assignment"));
-            }
+            Value::CString(bytes) => return self.c_string_literal_type(node, &bytes),
         };
         self.known(node, TypeId::primitive(primitive))
     }

@@ -6,6 +6,55 @@ use crate::{
 };
 
 impl Checker<'_> {
+    pub(super) fn c_string_literal_type(
+        &mut self,
+        node: NodeId,
+        bytes: &[u8],
+    ) -> Result<TermId, Error> {
+        let catalog = self.facts.source_bindings.as_deref().ok_or_else(|| {
+            self.error(
+                node,
+                "C string literals require their actual source declaration",
+            )
+        })?;
+        catalog
+            .require_provider_report(self.report)
+            .map_err(|e| self.error(node, e))?;
+        let declaration = catalog
+            .validated_language(crate::support::bindings::LangItem::CStr)
+            .map_err(|e| self.error(node, e))?
+            .ok_or_else(|| {
+                self.error(
+                    node,
+                    "C string literals require their completed source declaration",
+                )
+            })?;
+        let referent = self
+            .facts
+            .definitions
+            .get(declaration.definition.0 as usize)
+            .copied()
+            .flatten()
+            .ok_or_else(|| self.error(node, "C string source type is incomplete"))?;
+        // Rust's literal rule uses the declared item type (skip_binder), not a
+        // lexical application or an inferred constructor argument list.
+        let ty = self
+            .facts
+            .types
+            .intern(Type::Reference {
+                mutable: false,
+                region: RegionId::STATIC,
+                referent,
+            })
+            .map_err(|e| self.error(node, e))?;
+        let text = self
+            .facts
+            .texts
+            .intern_c_string(bytes)
+            .map_err(|e| self.error(node, e))?;
+        self.facts.text_literals.insert(self.key(node), text);
+        self.known(node, ty)
+    }
     pub(super) fn text_literal_type(
         &mut self,
         node: NodeId,
