@@ -1261,6 +1261,29 @@ source reparse, retained range map or wider dense node is required. Legacy
 inclusive syntax still requires the real ordinary constructor-call plan, and
 full module/derive/iteration and metadata closure remain acceptance requirements.
 
+C string literals use the completed actual `CStr` language declaration's item
+type and a static immutable reference. Unused alternate headers retain ordinary
+legality; literal typing does not invent constructor arguments or validate a
+storage shape prematurely. Materialization consumes the actual transparent
+single byte-slice field, its prepared ABI offset and length metadata. Keep a real
+sized array of the actual signed or unsigned character element as immutable
+backing, with the nominal reference retained as its logical view. Key literal
+locations by canonical bytes and physical type; equal bytes do not replace typed
+storage identity. Intern the implicit NUL in the existing byte arena without a
+temporary payload copy, preserving ordinary interning across word boundaries.
+
+Runtime, promotion and CTFE consume those same typed text facts and one storage
+producer. Real source methods retain normal const, unsafe, lifetime and loan
+checks. Completed ABI cache readers neither run a second solver nor invent thin
+metadata on a miss; their requesting producers pay the real query work. Byte-word
+reconstruction retains initialized provenance fragments and the original static,
+write, alignment and extent checks. The finite zero-offset full-byte-tail view
+uses the genuine source field and sized backing, with signed/unsigned byte views
+admitted only by the existing checked raw conversion. It grants no ordinary
+slice coercion, arbitrary nominal DST interpretation or authenticated metadata
+transport. Whole modules, derives, constructors and library artifacts remain
+separate required qualification.
+
 Growing constructor inputs must share completed inference prefixes. Reuse the
 existing postorder occurs/freshening walks to record immutable graph facts;
 holes, projections, lifetime-bearing fresh positions and callable-template
