@@ -4,7 +4,7 @@ mod polling;
 mod protocol;
 mod schema;
 pub(crate) use creation::constructor_definition;
-pub(crate) use polling::FutureMethod;
+pub(crate) use polling::{Entry, FutureMethod};
 pub(in crate::sema) use polling::{concrete_self, retain};
 #[cfg(test)]
 #[path = "../../tests/invariants/coroutine_evidence.rs"]

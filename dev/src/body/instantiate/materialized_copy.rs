@@ -2,6 +2,21 @@
 use super::{Declarations, Materialized};
 
 impl Materialized {
+    pub(in crate::body) fn into_empty_async_parts(
+        self,
+    ) -> Result<(super::Body, super::super::regions::Contract), &'static str> {
+        if self.copy_scope.is_some()
+            || self.destruction.locals.iter().any(|&needed| needed)
+            || self.destruction.values.iter().any(|&needed| needed)
+            || self.destruction.projections.iter().any(|&needed| needed)
+        {
+            return Err(
+                "future poll requires its actual scoped inputs and owned cleanup transform",
+            );
+        }
+        Ok((self.body, self.contract))
+    }
+
     #[cfg(test)]
     pub(crate) fn has_instance_copy_scope_for_test(&self) -> bool {
         self.copy_scope.is_some()

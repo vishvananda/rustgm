@@ -5,7 +5,8 @@ mod completed_scope;
 mod scheduled;
 pub(crate) use scheduled::FutureCaller;
 mod cstage;
-pub(crate) use cstage::with_const_original;
+mod loaned;
+pub(crate) use cstage::{Completed, with_const_original};
 mod parents;
 use super::{Checked, Environment, Error};
 use crate::{
@@ -124,6 +125,12 @@ impl Original<'_> {
                     }
                     return Ok(());
                 }
+                if future
+                    .entry()
+                    .is_some_and(|key| key.operation == crate::types::future::Operation::Poll)
+                {
+                    return Ok(());
+                }
             } else if body.instance.is_none() {
                 return Err(error("factory proof requires its exact selected instance"));
             }
@@ -198,6 +205,7 @@ fn future_family(
     {
         return Err("future permit changed its actual checked source family");
     }
+    future.require_original(&template.body, body)?;
     Ok(())
 }
 impl Verifier {
