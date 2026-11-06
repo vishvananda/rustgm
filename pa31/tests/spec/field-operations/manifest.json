@@ -1,0 +1,1254 @@
+{
+  "schema": 1,
+  "kind": "independent-reference-packet",
+  "owning_assignment": "pa31",
+  "cases": [
+    {
+      "file": "proof-only.rs",
+      "sha256": "13736284f48c8a923fa92df348f0d718f41ce1fe686f00150d73fa70b4f5a6e9",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "expected_classification": "semantic",
+      "hypothesis": "Concrete actual representing application proves Field and normalizes full Base/Type without demanding OFFSET.",
+      "observations": [
+        {
+          "file": "proof-only.rs",
+          "sha256": "13736284f48c8a923fa92df348f0d718f41ce1fe686f00150d73fa70b4f5a6e9",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v2.json",
+          "mode": "metadata",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "52d5e5bc4e70af0de7a6e2dc22336ede60168e680588bb9100ce29b4af6e366e"
+        },
+        {
+          "file": "proof-only.rs",
+          "sha256": "13736284f48c8a923fa92df348f0d718f41ce1fe686f00150d73fa70b4f5a6e9",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v2.json",
+          "mode": "obj",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "dad525b25d458a178d48897598193b11b513bae77b93f00efb4346073bf7d170"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "native.rs",
+      "sha256": "ad5347785d3d8260a3ee094bcdf52a6e74c004f0acbdff511bbb90fbef98472c",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Real default OFFSET/projection for repr(C), Rust, tuple, generic and lifetime-bearing applications; actual pointer intrinsic and operand-dependent bodies.",
+      "expected_classification": "semantic",
+      "native": {
+        "observer": "native.c",
+        "observer_sha256": "38f8a99a2924eb73326ec275613f3fa8ca0475f694a1096080d61ba99887a286",
+        "expected_stdout": "field 4 23 29 37 41 47 31 1\n"
+      },
+      "observations": [
+        {
+          "file": "native.rs",
+          "sha256": "ad5347785d3d8260a3ee094bcdf52a6e74c004f0acbdff511bbb90fbef98472c",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "403764c33f5a4d455928d4422f1cf49b31010cdc8233b1e508598cb65610e9ba"
+        },
+        {
+          "file": "native.rs",
+          "sha256": "ad5347785d3d8260a3ee094bcdf52a6e74c004f0acbdff511bbb90fbef98472c",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "6ad947ca5f617954b5dd5ed028f0a917bd3670cbc6edcd9347d1ad006b23bcd2"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "generic-premises.rs",
+      "sha256": "5c5ced98218bee302d79a665516089faeec4df84217975d52eefddeedd5d5546",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Real abstract premise and concrete generic field substitution, complete Base/Type equalities.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "generic-premises.rs",
+          "sha256": "5c5ced98218bee302d79a665516089faeec4df84217975d52eefddeedd5d5546",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "48749770608e16fdb21835849ebc2eecb34dfa49458016c3546b44b6873e0d66"
+        },
+        {
+          "file": "generic-premises.rs",
+          "sha256": "5c5ced98218bee302d79a665516089faeec4df84217975d52eefddeedd5d5546",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "50f8bc881b7f5489a4486dc380f564477063533e35251f6c8cdcac9e1dcfb74c"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "generic-missing.rs",
+      "sha256": "31bf5425e6e0f608150584e6126265e55cdc8e8cbbe186df8b961db40f7442cb",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Projection requires actual Field parent premise.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "generic-missing.rs",
+          "sha256": "31bf5425e6e0f608150584e6126265e55cdc8e8cbbe186df8b961db40f7442cb",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0277"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `F: Field` is not satisfied"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2592a57a0b2b0dc3e1e7f5e4325dc8d37a64a88152137cb3e117f1dea0bc17d9"
+        },
+        {
+          "file": "generic-missing.rs",
+          "sha256": "31bf5425e6e0f608150584e6126265e55cdc8e8cbbe186df8b961db40f7442cb",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0277"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `F: Field` is not satisfied"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2592a57a0b2b0dc3e1e7f5e4325dc8d37a64a88152137cb3e117f1dea0bc17d9"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "wrong-full-application.rs",
+      "sha256": "b2c98246d59e9fe3c3c7d6eeee62fe126debbe6e0128ac6684ac193b773554e6",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0308"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Same nominal owner/field ordinal cannot erase distinct complete generic applications.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "wrong-full-application.rs",
+          "sha256": "b2c98246d59e9fe3c3c7d6eeee62fe126debbe6e0128ac6684ac193b773554e6",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0308"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0308",
+              "message": "mismatched types"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c6d7be1fc19dd59abac6b63609b78dd3815ba67fc3cd5259a4b03be64e39cfb7"
+        },
+        {
+          "file": "wrong-full-application.rs",
+          "sha256": "b2c98246d59e9fe3c3c7d6eeee62fe126debbe6e0128ac6684ac193b773554e6",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0308"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0308",
+              "message": "mismatched types"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c6d7be1fc19dd59abac6b63609b78dd3815ba67fc3cd5259a4b03be64e39cfb7"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "lifetime-positive.rs",
+      "sha256": "4d6cdc908b15a98d7d8bc91b47dcfaa8d6e5ff38596be106826ad7cf733e57cc",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Associated field result preserves actual captured lifetime.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "lifetime-positive.rs",
+          "sha256": "4d6cdc908b15a98d7d8bc91b47dcfaa8d6e5ff38596be106826ad7cf733e57cc",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "9f02271f62b91b0657061ada21140918e5c79faee89708880e55b5aa0260d13f"
+        },
+        {
+          "file": "lifetime-positive.rs",
+          "sha256": "4d6cdc908b15a98d7d8bc91b47dcfaa8d6e5ff38596be106826ad7cf733e57cc",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "79f226d26ddd5a4856a83ce14af5d2cc6ce3c3fd7f9e26d2570abcc0499f8c4c"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "lifetime-escape.rs",
+      "sha256": "0850492fcb6aa86bc3b9ec3c3f07659d009e5cbc322c98476bac48c44daddcec",
+      "expected_code": 1,
+      "expected_error_codes": [],
+      "expected_messages": [
+        "lifetime may not live long enough"
+      ],
+      "hypothesis": "Field result proof grants no lifetime extension.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "lifetime-escape.rs",
+          "sha256": "0850492fcb6aa86bc3b9ec3c3f07659d009e5cbc322c98476bac48c44daddcec",
+          "expected_code": 1,
+          "expected_error_codes": [],
+          "expected_messages": [
+            "lifetime may not live long enough"
+          ],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": null,
+              "message": "lifetime may not live long enough"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4ff39f6feab830a834777039020aafce75fb5ec1a8065a79ea46084f41c93f91"
+        },
+        {
+          "file": "lifetime-escape.rs",
+          "sha256": "0850492fcb6aa86bc3b9ec3c3f07659d009e5cbc322c98476bac48c44daddcec",
+          "expected_code": 1,
+          "expected_error_codes": [],
+          "expected_messages": [
+            "lifetime may not live long enough"
+          ],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": null,
+              "message": "lifetime may not live long enough"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4ff39f6feab830a834777039020aafce75fb5ec1a8065a79ea46084f41c93f91"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "sized-field-unsized-base.rs",
+      "sha256": "1cdef1b3af72cdd9209706b9b377a37111c19ba2313ee95179e11f21fd33669b",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Sized selected field does not remove actual base Sized requirement.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "sized-field-unsized-base.rs",
+          "sha256": "1cdef1b3af72cdd9209706b9b377a37111c19ba2313ee95179e11f21fd33669b",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0277"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `field_of!(Tail, first): Field` is not satisfied"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9fbf1e16b8b6849460293fdde1e808b4429e9c6b91845690981525f6b02eb844"
+        },
+        {
+          "file": "sized-field-unsized-base.rs",
+          "sha256": "1cdef1b3af72cdd9209706b9b377a37111c19ba2313ee95179e11f21fd33669b",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0277"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `field_of!(Tail, first): Field` is not satisfied"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9fbf1e16b8b6849460293fdde1e808b4429e9c6b91845690981525f6b02eb844"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "unsized-field.rs",
+      "sha256": "40ddb237866a73d7a48fecfa418eeead190a31b65ffbdbb8c1272fa235a2e454",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Unsized selected tail/base cannot supply original Sized Base/Type contract.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "unsized-field.rs",
+          "sha256": "40ddb237866a73d7a48fecfa418eeead190a31b65ffbdbb8c1272fa235a2e454",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0277"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `field_of!(Tail, tail): Field` is not satisfied"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c3e9821349964b9ddbaf62007cb6d0e961656081b346373504c9a29f7f0638f0"
+        },
+        {
+          "file": "unsized-field.rs",
+          "sha256": "40ddb237866a73d7a48fecfa418eeead190a31b65ffbdbb8c1272fa235a2e454",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0277"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `field_of!(Tail, tail): Field` is not satisfied"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c3e9821349964b9ddbaf62007cb6d0e961656081b346373504c9a29f7f0638f0"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "packed.rs",
+      "sha256": "fc542ce98626da05ef63e554ca25905afd067c80187c9470c7ece03509f20392",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Packed nominal field does not qualify builtin Field evidence.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "packed.rs",
+          "sha256": "fc542ce98626da05ef63e554ca25905afd067c80187c9470c7ece03509f20392",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0277"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `field_of!(Packed, word): Field` is not satisfied"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "773efed73b3e7ef16311562aac2b57f1051c6ac5e13a9d5a28ce0c1501e01872"
+        },
+        {
+          "file": "packed.rs",
+          "sha256": "fc542ce98626da05ef63e554ca25905afd067c80187c9470c7ece03509f20392",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0277"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `field_of!(Packed, word): Field` is not satisfied"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "773efed73b3e7ef16311562aac2b57f1051c6ac5e13a9d5a28ce0c1501e01872"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "enum-union-unused.rs",
+      "sha256": "b78fae574599c3f6c998541c016b6e78227449bc2a4f78e505fc5584a1d7c505",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Raw enum/union descriptions are legal unused; no builtin Field evidence demanded.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "enum-union-unused.rs",
+          "sha256": "b78fae574599c3f6c998541c016b6e78227449bc2a4f78e505fc5584a1d7c505",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "5e8aac7a9e83849713db161266a163c4b86b50805f7b722625742300a2c646c8"
+        },
+        {
+          "file": "enum-union-unused.rs",
+          "sha256": "b78fae574599c3f6c998541c016b6e78227449bc2a4f78e505fc5584a1d7c505",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "8e43a415b2d5eac348e332d4d7a37902c6bb015365c75f2c42b008f4ab86dba7"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "enum-demand.rs",
+      "sha256": "fcc985d6ccb43f5ec1df600bdc7b956e50750c6fb0c9f91944b9916da334c856",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Enum raw description does not implement builtin Field.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "enum-demand.rs",
+          "sha256": "fcc985d6ccb43f5ec1df600bdc7b956e50750c6fb0c9f91944b9916da334c856",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0277"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `field_of!(Enum, One.value): Field` is not satisfied"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6cc60a8d5400aecb73a4205b435e5137f041b9189c1b76955e45b714b1a54a9d"
+        },
+        {
+          "file": "enum-demand.rs",
+          "sha256": "fcc985d6ccb43f5ec1df600bdc7b956e50750c6fb0c9f91944b9916da334c856",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0277"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `field_of!(Enum, One.value): Field` is not satisfied"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6cc60a8d5400aecb73a4205b435e5137f041b9189c1b76955e45b714b1a54a9d"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "union-demand.rs",
+      "sha256": "6cc7728eef32814cd148fd16acda70bf7f2d390a87ce70ca7c1cc3d2a43dfb2e",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Union raw description does not implement builtin Field.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "union-demand.rs",
+          "sha256": "6cc7728eef32814cd148fd16acda70bf7f2d390a87ce70ca7c1cc3d2a43dfb2e",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0277"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `field_of!(Union, left): Field` is not satisfied"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "41235b9ec2e9d8cdc3834e11cc6f0629221bd8e38c276de906611f31d44e79be"
+        },
+        {
+          "file": "union-demand.rs",
+          "sha256": "6cc7728eef32814cd148fd16acda70bf7f2d390a87ce70ca7c1cc3d2a43dfb2e",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0277"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `field_of!(Union, left): Field` is not satisfied"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "41235b9ec2e9d8cdc3834e11cc6f0629221bd8e38c276de906611f31d44e79be"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "invalid-raw-unused.rs",
+      "sha256": "6dab782f15ba63ee8191f5e909ea1906b74c7d3c10727a08e223ba49a2c2313f",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Raw invalid coordinate/base applications may remain ordinary unused phantom-backed types; no lookup demanded.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "invalid-raw-unused.rs",
+          "sha256": "6dab782f15ba63ee8191f5e909ea1906b74c7d3c10727a08e223ba49a2c2313f",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "eb874f53772d7687f7904ff0a45e833aa8c4854bc03c5d483f2f8a8d8fa497cc"
+        },
+        {
+          "file": "invalid-raw-unused.rs",
+          "sha256": "6dab782f15ba63ee8191f5e909ea1906b74c7d3c10727a08e223ba49a2c2313f",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "981860c06e22c364a172a3e05786b4af44439966dee286383d16ac7e99357bd0"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "invalid-field-demand.rs",
+      "sha256": "7e5ed6357e06bb312e3893b8970ba8c5c1c01dfb6e9568d108b8a9b34b4bd87b",
+      "expected_code": 101,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Pinned unchecked field indexing may ICE on demanded invalid raw index.",
+      "expected_classification": "unqualified-compiler-ICE-hypothesis; never negative parity",
+      "observations": [
+        {
+          "file": "invalid-field-demand.rs",
+          "sha256": "7e5ed6357e06bb312e3893b8970ba8c5c1c01dfb6e9568d108b8a9b34b4bd87b",
+          "expected_code": 101,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "unqualified-compiler-ICE-hypothesis; never negative parity",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": -6,
+          "errors": [
+            {
+              "code": null,
+              "message": "the compiler unexpectedly panicked. This is a bug"
+            }
+          ],
+          "prediction_matches": false,
+          "qualified_status": false,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "dae0bb95f8c7f9e45482e4320790b323c99819509074ad4ecba8755b14c1831d"
+        },
+        {
+          "file": "invalid-field-demand.rs",
+          "sha256": "7e5ed6357e06bb312e3893b8970ba8c5c1c01dfb6e9568d108b8a9b34b4bd87b",
+          "expected_code": 101,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "unqualified-compiler-ICE-hypothesis; never negative parity",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": -6,
+          "errors": [
+            {
+              "code": null,
+              "message": "the compiler unexpectedly panicked. This is a bug"
+            }
+          ],
+          "prediction_matches": false,
+          "qualified_status": false,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "585c74404e2c127ade3a957831a2fd7aa5030c0a0f5b1b62961d316066730b7f"
+        }
+      ],
+      "qualification": "unqualified compiler abort; no semantic negative"
+    },
+    {
+      "file": "invalid-variant-demand.rs",
+      "sha256": "b432b9f75937f5fdd524e5d5a167bad6afb54e2c0796272c8dc3e2d9213c3986",
+      "expected_code": 101,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Pinned unchecked variant indexing may ICE on demanded invalid raw variant.",
+      "expected_classification": "unqualified-compiler-ICE-hypothesis; never negative parity",
+      "observations": [
+        {
+          "file": "invalid-variant-demand.rs",
+          "sha256": "b432b9f75937f5fdd524e5d5a167bad6afb54e2c0796272c8dc3e2d9213c3986",
+          "expected_code": 101,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "unqualified-compiler-ICE-hypothesis; never negative parity",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": -6,
+          "errors": [
+            {
+              "code": null,
+              "message": "the compiler unexpectedly panicked. This is a bug"
+            }
+          ],
+          "prediction_matches": false,
+          "qualified_status": false,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8966afb25b6791ad109218081fdcc4904196da896ffa26d76017af9e608ee4d3"
+        },
+        {
+          "file": "invalid-variant-demand.rs",
+          "sha256": "b432b9f75937f5fdd524e5d5a167bad6afb54e2c0796272c8dc3e2d9213c3986",
+          "expected_code": 101,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "unqualified-compiler-ICE-hypothesis; never negative parity",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": -6,
+          "errors": [
+            {
+              "code": null,
+              "message": "the compiler unexpectedly panicked. This is a bug"
+            }
+          ],
+          "prediction_matches": false,
+          "qualified_status": false,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "205787c868f48a885af0af21d0555d07db5f275dfbfcb45206adefb43d347376"
+        }
+      ],
+      "qualification": "unqualified compiler abort; no semantic negative"
+    },
+    {
+      "file": "invalid-base-demand.rs",
+      "sha256": "32d9bd26ffa23190007cce10175e531a9594cf99998c8225c743cdac52cbcd93",
+      "expected_code": 101,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Pinned field-info routine may ICE on demanded nonaggregate raw base.",
+      "expected_classification": "unqualified-compiler-ICE-hypothesis; never negative parity",
+      "observations": [
+        {
+          "file": "invalid-base-demand.rs",
+          "sha256": "32d9bd26ffa23190007cce10175e531a9594cf99998c8225c743cdac52cbcd93",
+          "expected_code": 101,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "unqualified-compiler-ICE-hypothesis; never negative parity",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": -6,
+          "errors": [
+            {
+              "code": null,
+              "message": "the compiler unexpectedly panicked. This is a bug"
+            }
+          ],
+          "prediction_matches": false,
+          "qualified_status": false,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9c86bf9a96b83ce3335951c362adb12f33455d7d0a2ee95659ad21fa18e2c365"
+        },
+        {
+          "file": "invalid-base-demand.rs",
+          "sha256": "32d9bd26ffa23190007cce10175e531a9594cf99998c8225c743cdac52cbcd93",
+          "expected_code": 101,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "unqualified-compiler-ICE-hypothesis; never negative parity",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": -6,
+          "errors": [
+            {
+              "code": null,
+              "message": "the compiler unexpectedly panicked. This is a bug"
+            }
+          ],
+          "prediction_matches": false,
+          "qualified_status": false,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3936aaaf5f99a2222f79ad0e67ccb3d86c439efba304c6b883e8368c730de24e"
+        }
+      ],
+      "qualification": "unqualified compiler abort; no semantic negative"
+    },
+    {
+      "file": "noncopy-result.rs",
+      "sha256": "179049d16de055e1f617bf3a7059fea9bada4730b9b8cdb195650d9481bdb26e",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0507"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Field Self:Copy does not confer Copy on the reflected field type.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "noncopy-result.rs",
+          "sha256": "179049d16de055e1f617bf3a7059fea9bada4730b9b8cdb195650d9481bdb26e",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0507"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0507",
+              "message": "cannot move out of `*value` which is behind a shared reference"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "91b6c40c48fdceb6e2b17f679c99b545a9e4a52620fd4f88243bc9347528312e"
+        },
+        {
+          "file": "noncopy-result.rs",
+          "sha256": "179049d16de055e1f617bf3a7059fea9bada4730b9b8cdb195650d9481bdb26e",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0507"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0507",
+              "message": "cannot move out of `*value` which is behind a shared reference"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "91b6c40c48fdceb6e2b17f679c99b545a9e4a52620fd4f88243bc9347528312e"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "alternate-unused.rs",
+      "sha256": "f639f203789994dd0aed44327e7981fe43e738d6d444921fbc6e1fff67f77192",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Unused safe/no-supertrait Field with differently typed ordinary OFFSET remains legal.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "alternate-unused.rs",
+          "sha256": "f639f203789994dd0aed44327e7981fe43e738d6d444921fbc6e1fff67f77192",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "6850713c418b5ad0c173b3bfb00539de22b342ba2303ca562e0cfe9066f6b045"
+        },
+        {
+          "file": "alternate-unused.rs",
+          "sha256": "f639f203789994dd0aed44327e7981fe43e738d6d444921fbc6e1fff67f77192",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "b911d199c700b281a4eb8cde73779c7c1b98e2e01e6b7dd3377f10bbcaec2321"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "alternate-demand.rs",
+      "sha256": "4eb6172e684bc43b2346df413721a9b0edfe7d7d5ee5c891df9d92b664c6a9bb",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Pinned builtin Base/Type proof and actual alternate ordinary default value may be demanded; this profile is a separate implementation requirement, not a Rust negative.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "alternate-demand.rs",
+          "sha256": "4eb6172e684bc43b2346df413721a9b0edfe7d7d5ee5c891df9d92b664c6a9bb",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "2349dddcd964339e1b291d9bde09f88dc9bdc113563a35e452fc5ee56249e224"
+        },
+        {
+          "file": "alternate-demand.rs",
+          "sha256": "4eb6172e684bc43b2346df413721a9b0edfe7d7d5ee5c891df9d92b664c6a9bb",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "651c1b6615bc0d5469ac99614e64c5fd5913ae2f023360f45762de370be727a1"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "foreign-members-unused.rs",
+      "sha256": "3fc6305554cf820891b9e5c771e41a9690536d2f804f15c57b881eadf9eb51e0",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Unused genuine roles on another trait do not change ordinary Field headers.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "foreign-members-unused.rs",
+          "sha256": "3fc6305554cf820891b9e5c771e41a9690536d2f804f15c57b881eadf9eb51e0",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "d5570520fea6f830f39c1d162c298e10319ae6e9c28156613501f8accd06d386"
+        },
+        {
+          "file": "foreign-members-unused.rs",
+          "sha256": "3fc6305554cf820891b9e5c771e41a9690536d2f804f15c57b881eadf9eb51e0",
+          "expected_code": 0,
+          "expected_error_codes": [],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "56ea4b92e671daf9583e078b1efa7ca8ee4ddb3fac4aa5ac867fafe6748f3325"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "foreign-members-demand.rs",
+      "sha256": "b4ce8e8873b79e98877b341c064e1daeeaebb0c0a003733ae4a63dcce5fc7941",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Field evidence cannot authorize an unrelated tagged member owner.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "foreign-members-demand.rs",
+          "sha256": "b4ce8e8873b79e98877b341c064e1daeeaebb0c0a003733ae4a63dcce5fc7941",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0277"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `field_of!(Record, word): Unrelated` is not satisfied"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "eacc0de2fe593874ed0aca90b396eb0813677bb56d21d7a5d32a7ac0aee507a2"
+        },
+        {
+          "file": "foreign-members-demand.rs",
+          "sha256": "b4ce8e8873b79e98877b341c064e1daeeaebb0c0a003733ae4a63dcce5fc7941",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0277"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `field_of!(Record, word): Unrelated` is not satisfied"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "eacc0de2fe593874ed0aca90b396eb0813677bb56d21d7a5d32a7ac0aee507a2"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "nominal-impostor.rs",
+      "sha256": "2fa99ce3c00ee6e613e1e1a0c8bd3ecc286390b137c8e7a99f9637aa1c82577a",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Identical fields/arguments without actual representing nominal identity confer no builtin evidence.",
+      "expected_classification": "semantic",
+      "observations": [
+        {
+          "file": "nominal-impostor.rs",
+          "sha256": "2fa99ce3c00ee6e613e1e1a0c8bd3ecc286390b137c8e7a99f9637aa1c82577a",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0277"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `Impostor<Record, 0, 1>: Field` is not satisfied"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d73c587a11cc2498b0cb55973f0094d8c288c7945dd611f997eed5610ec654d1"
+        },
+        {
+          "file": "nominal-impostor.rs",
+          "sha256": "2fa99ce3c00ee6e613e1e1a0c8bd3ecc286390b137c8e7a99f9637aa1c82577a",
+          "expected_code": 1,
+          "expected_error_codes": [
+            "E0277"
+          ],
+          "expected_messages": [],
+          "expected_classification": "semantic",
+          "prediction_file": "predictions-v1.json",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `Impostor<Record, 0, 1>: Field` is not satisfied"
+            }
+          ],
+          "prediction_matches": true,
+          "qualified_status": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d73c587a11cc2498b0cb55973f0094d8c288c7945dd611f997eed5610ec654d1"
+        }
+      ],
+      "qualification": "qualified metadata/object outcome"
+    }
+  ],
+  "native_observer": {
+    "path": "native.c",
+    "sha256": "38f8a99a2924eb73326ec275613f3fa8ca0475f694a1096080d61ba99887a286"
+  },
+  "candidate_status": "not observed; compiler/public-suite integration remains Root-owned",
+  "required_scope": "Proof-only is an initial implementation stage, not a replacement for genuine default OFFSET/native/field access/transport requirements."
+}

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "upstream_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "license": "MIT OR Apache-2.0",
+  "foundation": {
+    "file": "../field-source/original-headers-v4.rs",
+    "sha256": "ab91867580ba0a57eb6b3f22c5bed8126636fb2d9eac88906905da7115c02afd"
+  },
+  "original_source": {
+    "file": "../field-source/original-field.rs",
+    "sha256": "2255c3352e8496a805e189b283dffd14e5e3d3678c0ac94606cefeae0f7a202f"
+  },
+  "adaptation": "All ordinary-profile sources retain exact original Field/CopyClone intervals and genuine Send diagnostic. Add only real ordinary primitive Clone/Copy dependencies and authored consumer bodies. Explicit alternate-profile sources intentionally change Field safety/supertraits and OFFSET type/body; foreign-member controls move only member role attributes to a genuine unrelated trait.",
+  "arith_offset": {
+    "path": "library/core/src/intrinsics/mod.rs",
+    "lines": [
+      912,
+      916
+    ],
+    "sha256": "15d0fb8d0d9690a51e05ecd2c528f072df506162462f26f278afdb5fb6e2b723",
+    "bytes_half_open": [
+      37925,
+      38155
+    ]
+  },
+  "prediction_sha256": "c571e25bf2f73d54ae2c3f0ef0b856ae39bb548e6a8d2a3d6082cef6701a6ff3"
+}

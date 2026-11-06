@@ -1,0 +1,241 @@
+{
+  "schema": 1,
+  "state": "frozen-before-any-Rust-or-candidate-observation",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "scope": "Finite demanded Field reference/real native, preserving legal unused vs demanded profiles and unqualified raw-invalid ICE hypotheses.",
+  "cases": [
+    {
+      "file": "native.rs",
+      "sha256": "ad5347785d3d8260a3ee094bcdf52a6e74c004f0acbdff511bbb90fbef98472c",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Real default OFFSET/projection for repr(C), Rust, tuple, generic and lifetime-bearing applications; actual pointer intrinsic and operand-dependent bodies.",
+      "expected_classification": "semantic",
+      "native": {
+        "observer": "native.c",
+        "observer_sha256": "38f8a99a2924eb73326ec275613f3fa8ca0475f694a1096080d61ba99887a286",
+        "expected_stdout": "field 4 23 29 37 41 47 31 1\n"
+      }
+    },
+    {
+      "file": "generic-premises.rs",
+      "sha256": "5c5ced98218bee302d79a665516089faeec4df84217975d52eefddeedd5d5546",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Real abstract premise and concrete generic field substitution, complete Base/Type equalities.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "generic-missing.rs",
+      "sha256": "31bf5425e6e0f608150584e6126265e55cdc8e8cbbe186df8b961db40f7442cb",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Projection requires actual Field parent premise.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "wrong-full-application.rs",
+      "sha256": "b2c98246d59e9fe3c3c7d6eeee62fe126debbe6e0128ac6684ac193b773554e6",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0308"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Same nominal owner/field ordinal cannot erase distinct complete generic applications.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "lifetime-positive.rs",
+      "sha256": "4d6cdc908b15a98d7d8bc91b47dcfaa8d6e5ff38596be106826ad7cf733e57cc",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Associated field result preserves actual captured lifetime.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "lifetime-escape.rs",
+      "sha256": "0850492fcb6aa86bc3b9ec3c3f07659d009e5cbc322c98476bac48c44daddcec",
+      "expected_code": 1,
+      "expected_error_codes": [],
+      "expected_messages": [
+        "lifetime may not live long enough"
+      ],
+      "hypothesis": "Field result proof grants no lifetime extension.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "sized-field-unsized-base.rs",
+      "sha256": "1cdef1b3af72cdd9209706b9b377a37111c19ba2313ee95179e11f21fd33669b",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Sized selected field does not remove actual base Sized requirement.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "unsized-field.rs",
+      "sha256": "40ddb237866a73d7a48fecfa418eeead190a31b65ffbdbb8c1272fa235a2e454",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Unsized selected tail/base cannot supply original Sized Base/Type contract.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "packed.rs",
+      "sha256": "fc542ce98626da05ef63e554ca25905afd067c80187c9470c7ece03509f20392",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Packed nominal field does not qualify builtin Field evidence.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "enum-union-unused.rs",
+      "sha256": "b78fae574599c3f6c998541c016b6e78227449bc2a4f78e505fc5584a1d7c505",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Raw enum/union descriptions are legal unused; no builtin Field evidence demanded.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "enum-demand.rs",
+      "sha256": "fcc985d6ccb43f5ec1df600bdc7b956e50750c6fb0c9f91944b9916da334c856",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Enum raw description does not implement builtin Field.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "union-demand.rs",
+      "sha256": "6cc7728eef32814cd148fd16acda70bf7f2d390a87ce70ca7c1cc3d2a43dfb2e",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Union raw description does not implement builtin Field.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "invalid-raw-unused.rs",
+      "sha256": "6dab782f15ba63ee8191f5e909ea1906b74c7d3c10727a08e223ba49a2c2313f",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Raw invalid coordinate/base applications may remain ordinary unused phantom-backed types; no lookup demanded.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "invalid-field-demand.rs",
+      "sha256": "7e5ed6357e06bb312e3893b8970ba8c5c1c01dfb6e9568d108b8a9b34b4bd87b",
+      "expected_code": 101,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Pinned unchecked field indexing may ICE on demanded invalid raw index.",
+      "expected_classification": "unqualified-compiler-ICE-hypothesis; never negative parity"
+    },
+    {
+      "file": "invalid-variant-demand.rs",
+      "sha256": "b432b9f75937f5fdd524e5d5a167bad6afb54e2c0796272c8dc3e2d9213c3986",
+      "expected_code": 101,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Pinned unchecked variant indexing may ICE on demanded invalid raw variant.",
+      "expected_classification": "unqualified-compiler-ICE-hypothesis; never negative parity"
+    },
+    {
+      "file": "invalid-base-demand.rs",
+      "sha256": "32d9bd26ffa23190007cce10175e531a9594cf99998c8225c743cdac52cbcd93",
+      "expected_code": 101,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Pinned field-info routine may ICE on demanded nonaggregate raw base.",
+      "expected_classification": "unqualified-compiler-ICE-hypothesis; never negative parity"
+    },
+    {
+      "file": "noncopy-result.rs",
+      "sha256": "179049d16de055e1f617bf3a7059fea9bada4730b9b8cdb195650d9481bdb26e",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0507"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Field Self:Copy does not confer Copy on the reflected field type.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "alternate-unused.rs",
+      "sha256": "f639f203789994dd0aed44327e7981fe43e738d6d444921fbc6e1fff67f77192",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Unused safe/no-supertrait Field with differently typed ordinary OFFSET remains legal.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "alternate-demand.rs",
+      "sha256": "4eb6172e684bc43b2346df413721a9b0edfe7d7d5ee5c891df9d92b664c6a9bb",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Pinned builtin Base/Type proof and actual alternate ordinary default value may be demanded; this profile is a separate implementation requirement, not a Rust negative.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "foreign-members-unused.rs",
+      "sha256": "3fc6305554cf820891b9e5c771e41a9690536d2f804f15c57b881eadf9eb51e0",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Unused genuine roles on another trait do not change ordinary Field headers.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "foreign-members-demand.rs",
+      "sha256": "b4ce8e8873b79e98877b341c064e1daeeaebb0c0a003733ae4a63dcce5fc7941",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Field evidence cannot authorize an unrelated tagged member owner.",
+      "expected_classification": "semantic"
+    },
+    {
+      "file": "nominal-impostor.rs",
+      "sha256": "2fa99ce3c00ee6e613e1e1a0c8bd3ecc286390b137c8e7a99f9637aa1c82577a",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Identical fields/arguments without actual representing nominal identity confer no builtin evidence.",
+      "expected_classification": "semantic"
+    }
+  ]
+}

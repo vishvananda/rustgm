@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "state": "frozen-before-any-proof-only-Rust-or-candidate-observation",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "scope": "Actual Field evidence and Base/Type typed consumer only; exact default OFFSET declaration remains but no OFFSET demand, static initializer or native operation. Full offset/native consumers remain required.",
+  "cases": [
+    {
+      "file": "proof-only.rs",
+      "sha256": "13736284f48c8a923fa92df348f0d718f41ce1fe686f00150d73fa70b4f5a6e9",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "expected_classification": "semantic",
+      "hypothesis": "Concrete actual representing application proves Field and normalizes full Base/Type without demanding OFFSET."
+    }
+  ]
+}
