@@ -1,5 +1,16 @@
 # Parallel library bootstrap implementation
 
+The [PA21 signature successor](parallel/pa21-signature-successor.md) records full
+42146747956: all2727 private checks and every public integration target pass,
+including actual poll/foreign-store invariants. Only two stale PA21 diagnostic
+sidecars fail. Both unchanged sources independently reject with Rust E0053;
+scoped generation and all801 PA21 cases/all44 layouts now pass. Full successor
+native/debug/independent qualification remains pending. No library artifact or
+whole PA after24 is complete. Root continues full original Drop/pin_drop source
+and execution; the two existing workers continue AsyncIterator receiver/owner
+inference and genuine const value history. Current immutable CLI remains15ac6c1c
+at original-core AsyncIterator with all722 inputs/configuration/limits fixed.
+
 The [joined scalar-poll checkpoint](parallel/scalar-poll-join.md) now passes34
 exact controls across4 targets and14 real native observers, including actual
 required poll/Ready3, state access without user Copy and completed-reentry

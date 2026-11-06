@@ -11,7 +11,10 @@ do not reproduce it (.9805/.9805).
 Source admission still exits1; no original core/alloc/std artifact or whole PA
 after24 is complete. Current/predecessor pins are15ac6c1c/8d4a4ff3;5fc and292c are retired.
 The [joined poll checkpoint](parallel/scalar-poll-join.md) passes34 public controls
-and14 actual natives. Private poll invariants/full successor CI remain pending.
+and14 actual natives. Full42146747956 executes all2727 private checks and every public integration
+target successfully; only two stale PA21 diagnostic references fail. Their
+[scoped successor](parallel/pa21-signature-successor.md) passes801/801 and all44
+layouts; full successor native/debug/independent gates remain pending.
 
 Earlier checkpoint observations follow; their historic CLI pins are not current.
 
