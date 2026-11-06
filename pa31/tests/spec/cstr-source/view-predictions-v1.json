@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "profile": "Pinned Rust1.98 actual no_core CStr source cutout, same flags as local-predictions-v2. Raw reference-slot identity, constant readonly/bounds/UTF8 controls; all raw access remains explicit unsafe source.",
+  "cases": [
+    {
+      "file": "local-roundtrip.rs",
+      "expected_code": 0,
+      "sha256": "58d29c5ce855f1e8f913b13f8ad4d9252a8c8049e8dc9fe9ff5e4759a1b941ce",
+      "prediction_status": "predicted-before-candidate-observation",
+      "native": {
+        "observer": "local-roundtrip.c",
+        "stdout": "roundtrip 255 0\n",
+        "crate_type": "lib",
+        "observer_sha256": "83baf41a18d2cb624d958e72849de98fb74bc9834f8bd71a37ac5cb0b856e7b2"
+      }
+    },
+    {
+      "file": "local-write.rs",
+      "expected_code": 1,
+      "sha256": "7b30eec40b96d6bd9242f2f4a2c63ae09549468b3689a856732c728036fe2ce9",
+      "prediction_status": "predicted-before-candidate-observation",
+      "expected_cause": "read-only"
+    },
+    {
+      "file": "local-overread.rs",
+      "expected_code": 1,
+      "sha256": "9d99c11155afa09e96007fad491d9c8bede59b1505342d61bf61ed6b6697f1f9",
+      "prediction_status": "predicted-before-candidate-observation",
+      "expected_cause": "uninitialized"
+    },
+    {
+      "file": "local-utf8.rs",
+      "expected_code": 1,
+      "sha256": "5d6204c117b7e8f4d323cbab65fd5059e397179aff128e9ae7d2339454b2dc72",
+      "prediction_status": "predicted-before-candidate-observation",
+      "expected_cause": "UTF-8"
+    }
+  ]
+}
