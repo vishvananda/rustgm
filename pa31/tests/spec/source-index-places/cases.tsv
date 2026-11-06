@@ -66,8 +66,8 @@ unsafe-fn-expect.rs	0	positive	actual unsafe method use discharges exact expecte
 primitive-unsafe-fn-deny.rs	0	positive	proved erased builtin forms no unsafe method call even in denied unsafe function
 primitive-unsafe-expect-unfulfilled.rs	1	lint	erased builtin does not falsely discharge an unsafe-call lint expectation
 unsafe-after-block.rs	1	unsafe	paid first use cannot lend unsafe permission to a later actual site
-raw-implicit.rs	1	source_policy	marked raw pointer implicit index borrow obeys dangerous_implicit_autorefs policy
+raw-implicit.rs	1	lint	marked raw pointer implicit index borrow obeys dangerous_implicit_autorefs policy
 raw-explicit.rs	0	positive	explicit reference pays physical borrow before actual index method
-raw-policy-allow.rs	1	source_policy	allowed marked raw implicit borrowing is genuine required policy work
-raw-cap-allow.rs	1	source_policy	cap-lints=allow cannot be substituted by a compiler semantic/profile fence
+raw-policy-allow.rs	0	positive	allowed marked raw implicit borrowing is genuine required policy work
+raw-cap-allow.rs	0	positive	cap-lints=allow cannot be substituted by a compiler semantic/profile fence
 primitive-raw.rs	0	positive	proved builtin indexing through an explicit raw dereference forms no implicit method borrow

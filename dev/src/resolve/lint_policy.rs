@@ -24,6 +24,7 @@ impl Level {
 pub(crate) struct Policy {
     pub(crate) operation: Level,
     pub(crate) reference: Level,
+    pub(crate) dangerous_autorefs: Level,
     pub(crate) atomic_ordering: Level,
     pub(crate) unreachable_patterns: Level,
     pub(crate) must_use: Level,
@@ -36,7 +37,7 @@ pub(crate) struct Policy {
     pub(crate) unfulfilled: Level,
     pub(crate) hidden_glob_reexports: Level,
     pub(crate) ineffective_unstable_trait_impl: Level,
-    expectations: [Option<ExpectationId>; 16],
+    expectations: [Option<ExpectationId>; 17],
     pub(crate) deprecated_origin: Option<producer::Tail>,
     pub(crate) deprecation_explicit: bool,
 }
@@ -50,6 +51,7 @@ impl Policy {
         Self {
             operation: Level::Allow,
             reference: Level::Allow,
+            dangerous_autorefs: Level::Allow,
             atomic_ordering: Level::Allow,
             unreachable_patterns: Level::Allow,
             must_use: Level::Allow,
@@ -68,6 +70,7 @@ impl Policy {
     pub(crate) const DEFAULT: Self = Self {
         operation: Level::Warn,
         reference: Level::Deny,
+        dangerous_autorefs: Level::Deny,
         atomic_ordering: Level::Deny,
         unreachable_patterns: Level::Warn,
         must_use: Level::Warn,
@@ -80,7 +83,7 @@ impl Policy {
         unfulfilled: Level::Warn,
         hidden_glob_reexports: Level::Warn,
         ineffective_unstable_trait_impl: Level::Deny,
-        expectations: [None; 16],
+        expectations: [None; 17],
         deprecated_origin: None,
         deprecation_explicit: false,
     };
@@ -106,6 +109,7 @@ pub(crate) enum Lint {
     UnfulfilledExpectations,
     HiddenGlobReexports,
     IneffectiveUnstableTraitImpl,
+    DangerousImplicitAutorefs,
 }
 pub(crate) struct Change {
     pub(crate) lint: Lint,
@@ -142,6 +146,7 @@ impl Policy {
             Lint::UnfulfilledExpectations => &mut self.unfulfilled,
             Lint::Operation => &mut self.operation,
             Lint::Reference => &mut self.reference,
+            Lint::DangerousImplicitAutorefs => &mut self.dangerous_autorefs,
             Lint::AtomicOrdering => &mut self.atomic_ordering,
             Lint::UnreachablePatterns => &mut self.unreachable_patterns,
             Lint::MustUse => &mut self.must_use,
@@ -170,6 +175,9 @@ impl Policy {
                         }
                         Lint::UnfulfilledExpectations => {
                             "forbidden unfulfilled_lint_expectations lint cannot be weakened"
+                        }
+                        Lint::DangerousImplicitAutorefs => {
+                            "forbidden dangerous_implicit_autorefs lint cannot be weakened"
                         }
                         Lint::AtomicOrdering => "forbidden atomic ordering lint cannot be weakened",
                         Lint::UnreachablePatterns => {
@@ -222,6 +230,7 @@ impl Lint {
             Self::UnfulfilledExpectations => 13,
             Self::HiddenGlobReexports => 14,
             Self::IneffectiveUnstableTraitImpl => 15,
+            Self::DangerousImplicitAutorefs => 16,
         }
     }
 }
@@ -254,13 +263,16 @@ impl Lint {
             W::MisplacedDiagnosticAttributes => Self::DiagnosticAttributes(2),
             W::UnsafeOpInUnsafeFn => Self::Operation,
             W::StaticMutRefs => Self::Reference,
+            W::DangerousImplicitAutorefs => Self::DangerousImplicitAutorefs,
             W::UnstableSyntaxPreExpansion => return None,
         })
     }
 }
 
 impl Lint {
-    pub(super) fn mask(self) -> Option<u16> {
-        1_u16.checked_shl(u32::try_from(self.index()).ok()?)
+    pub(super) fn mask(self) -> Option<u32> {
+        1_u32.checked_shl(u32::try_from(self.index()).ok()?)
     }
 }
+
+const _: [(); 160] = [(); size_of::<Policy>()];

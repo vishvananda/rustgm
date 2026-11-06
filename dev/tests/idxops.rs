@@ -105,8 +105,7 @@ fn cause_matches(kind: &str, error: &str) -> bool {
         "move" => &["move", "initialized", "copy"],
         "const" => &["const", "indexed", "implementation", "trait"],
         "alignment" => &["align", "packed"],
-        "source_policy" => &["source marked raw-pointer implicit receiver use is not implemented"],
-        "lint" => &["expect", "lint", "unfulfilled"],
+        "lint" => &["expect", "lint", "unfulfilled", "implicit autoref"],
         "inference" => &["infer", "ambiguous", "trait", "implementation"],
         _ => &[],
     };

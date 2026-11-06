@@ -167,15 +167,15 @@ impl Checker<'_> {
         Ok(None)
     }
 
-    /// This slice supports safe-reference source methods, not the still-required
-    /// `dangerous_implicit_autorefs` lint on a synthesized raw-pointer borrow.
+    /// Method syntax consults the actual diagnostic marker independently of
+    /// unsafe permission; projections below have a real generated borrow.
     pub(in crate::sema::bodies) fn check_raw_implicit_receiver(
         &mut self,
         call: NodeId,
         receiver: NodeId,
         method: DefId,
     ) -> Result<(), Error> {
-        self.raw_implicit_receiver(call, receiver, method, false)
+        self.raw_implicit_receiver(call, receiver, method, false, false)
     }
     pub(in crate::sema::bodies) fn check_published_raw_receiver(
         &mut self,
@@ -183,7 +183,16 @@ impl Checker<'_> {
         receiver: NodeId,
         method: DefId,
     ) -> Result<(), Error> {
-        self.raw_implicit_receiver(call, receiver, method, true)
+        self.check_raw_projection_borrow(call, receiver, method, true)
+    }
+    pub(in crate::sema::bodies) fn check_raw_projection_borrow(
+        &mut self,
+        call: NodeId,
+        receiver: NodeId,
+        method: DefId,
+        published: bool,
+    ) -> Result<(), Error> {
+        self.raw_implicit_receiver(call, receiver, method, published, true)
     }
     fn raw_implicit_receiver(
         &mut self,
@@ -191,6 +200,7 @@ impl Checker<'_> {
         mut receiver: NodeId,
         method: DefId,
         published: bool,
+        projection: bool,
     ) -> Result<(), Error> {
         use crate::syntax::ast::{Kind, Unary};
         loop {
@@ -217,12 +227,31 @@ impl Checker<'_> {
                         matches!(self.head(call, term)?, Some(Constructor::Pointer { .. }))
                     };
                     if pointer {
-                        if !matches!(
-                            self.facts.no_implicit_autorefs(self.report, method)?,
-                            crate::sema::header_attributes::ContractKnowledge::KnownAbsent
-                        ) {
-                            return Err(self.error(call,
-                                "source marked raw-pointer implicit receiver use is not implemented"));
+                        let marked = if projection {
+                            true
+                        } else {
+                            match self.facts.no_implicit_autorefs(self.report, method)? {
+                                crate::sema::header_attributes::ContractKnowledge::KnownPresent(()) => true,
+                                crate::sema::header_attributes::ContractKnowledge::KnownAbsent => false,
+                                crate::sema::header_attributes::ContractKnowledge::Unknown => return Err(self.error(call,
+                                    "source raw-pointer receiver lacks its actual diagnostic contract")),
+                            }
+                        };
+                        if marked {
+                            let key = self.key(call);
+                            let offset = self
+                                .report
+                                .package
+                                .unit(key.file)
+                                .configured
+                                .ast
+                                .node(call)
+                                .span
+                                .start;
+                            self.facts.must_use_diagnostic(self.report, key, offset, 0,
+                                crate::support::diagnostics::WarningCode::DangerousImplicitAutorefs,
+                                "implicit autoref creates a reference to the dereference of a raw pointer".to_owned(),
+                            )?;
                         }
                         return Ok(());
                     }

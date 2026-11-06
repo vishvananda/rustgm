@@ -39,6 +39,7 @@ pub enum WarningCode {
     MisplacedDiagnosticAttributes,
     UnsafeOpInUnsafeFn,
     StaticMutRefs,
+    DangerousImplicitAutorefs,
 }
 impl WarningCode {
     #[must_use]
@@ -61,6 +62,7 @@ impl WarningCode {
             Self::MisplacedDiagnosticAttributes => "misplaced_diagnostic_attributes",
             Self::UnsafeOpInUnsafeFn => "unsafe_op_in_unsafe_fn",
             Self::StaticMutRefs => "static_mut_refs",
+            Self::DangerousImplicitAutorefs => "dangerous_implicit_autorefs",
         }
     }
 }

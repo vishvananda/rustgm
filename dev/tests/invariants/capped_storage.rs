@@ -32,7 +32,7 @@ fn caps_preserve_retained_attribute_debt_and_compact_records() -> Result {
     assert_eq!(size_of::<crate::resolve::expansion::Report>(), 3096);
     assert_eq!(size_of::<Producer>(), 368);
     assert_eq!(size_of::<Owner>(), 160);
-    assert_eq!(size_of::<Policy>(), 152);
+    assert_eq!(size_of::<Policy>(), 160);
     assert_eq!(size_of::<crate::sema::model::NodeFacts>(), 80);
     assert_eq!(size_of::<super::super::expectations::Domain>(), 8);
     let initial = producer.work();

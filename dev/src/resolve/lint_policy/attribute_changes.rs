@@ -426,7 +426,7 @@ fn register(
         lint: selected[0],
         members: selected
             .iter()
-            .try_fold(0_u16, |mask, lint| lint.mask().map(|member| mask | member))
+            .try_fold(0_u32, |mask, lint| lint.mask().map(|member| mask | member))
             .ok_or_else(|| invalid(key, attribute, "invalid lint expectation member"))?,
         reason: None,
         early: std::cell::Cell::new(false),
@@ -577,6 +577,7 @@ fn lints(forest: &Forest, source: &str, index: u32) -> &'static [Lint] {
         Some("unfulfilled_lint_expectations") => &[Lint::UnfulfilledExpectations],
         Some("unsafe_op_in_unsafe_fn") => &[Lint::Operation],
         Some("static_mut_refs") => &[Lint::Reference],
+        Some("dangerous_implicit_autorefs") => &[Lint::DangerousImplicitAutorefs],
         Some("invalid_atomic_ordering") => &[Lint::AtomicOrdering],
         Some("unreachable_patterns") => &[Lint::UnreachablePatterns],
         Some("unused_must_use") => &[Lint::MustUse],

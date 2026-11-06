@@ -50,3 +50,11 @@ marked raw-pointer implicit-borrow fences remain required source-policy work;
 explicit references and proved erased primitive indexing retain their separate
 valid paths. Broader demanded signatures, imported policy/body transport,
 primitive panic-runtime closure and whole core/std artifacts remain separate.
+
+The Field-call successor replaces the three historical marked-raw profile fences
+with the actual lexical dangerous-implicit-autoref lint. The existing independent
+source outcomes remain unchanged: default deny rejects, explicit references and
+allow/capped requests accept, and proved builtin raw indexing takes no implicit
+method borrow. Historical candidate observations remain in predictions.json;
+new execution evidence belongs to the successor handoff, not a reinterpreted
+semantic rejection at the old guard.

@@ -216,7 +216,7 @@ fn retained_marker_checks_forms_incarnation_and_raw_implicit_receiver_boundary()
     assert!(
         error
             .to_string()
-            .contains("source marked raw-pointer implicit receiver use is not implemented"),
+            .contains("implicit autoref creates a reference to the dereference of a raw pointer"),
         "{error}"
     );
     let input = input.replace("#[rustc_no_implicit_autorefs]", "");

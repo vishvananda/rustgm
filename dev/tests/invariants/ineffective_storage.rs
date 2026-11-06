@@ -51,7 +51,7 @@ fn cold_annotations_keep_hot_owners_and_validate_current_impl_incarnations() -> 
     assert_eq!(producer.work().bytes, warm.bytes);
     assert!(warm.steps > cold.steps);
     assert_eq!(size_of::<super::super::producer::Owner>(), 160);
-    assert_eq!(size_of::<super::super::Policy>(), 152);
+    assert_eq!(size_of::<super::super::Policy>(), 160);
     assert_eq!(size_of::<super::super::Level>(), 1);
     let original = producer
         .ineffective_headers

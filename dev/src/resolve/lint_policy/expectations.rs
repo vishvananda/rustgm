@@ -23,7 +23,7 @@ pub(super) struct Expectation {
     pub ordinal: u32,
     pub span: Span,
     pub lint: Lint,
-    pub members: u16,
+    pub members: u32,
     pub reason: Option<Box<str>>,
     pub early: Cell<bool>,
 }
@@ -486,3 +486,5 @@ impl Producer {
         Ok(())
     }
 }
+
+const _: [(); 40] = [(); size_of::<Expectation>()];

@@ -361,6 +361,9 @@ impl Policies {
     pub(super) fn operation(&self, key: NodeKey) -> Level {
         self.at(key).operation
     }
+    pub(super) fn dangerous_autorefs(&self, key: NodeKey) -> Level {
+        self.at(key).dangerous_autorefs
+    }
     pub(super) fn reference(&self, key: NodeKey) -> Level {
         self.at(key).reference
     }

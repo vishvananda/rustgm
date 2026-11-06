@@ -265,6 +265,7 @@ impl Declarations {
             }
             WarningCode::UnsafeOpInUnsafeFn => self.safety_policies.operation(key),
             WarningCode::StaticMutRefs => self.safety_policies.reference(key),
+            WarningCode::DangerousImplicitAutorefs => self.safety_policies.dangerous_autorefs(key),
         };
         if level == Level::Expect {
             let lint = crate::resolve::lint_policy::Lint::warning(code).ok_or_else(|| {
