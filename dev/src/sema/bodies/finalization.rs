@@ -276,7 +276,7 @@ impl Checker<'_> {
         self.validate_operations()?;
         self.validate_assignments()?;
         self.validate_values()?;
-        self.publish_reference_alignment()?;
+        self.publish_reference_alignment(&solved)?;
         self.finish_patterns()?;
         // Canonical nominal checks may allocate universal aliases after the main
         // inference graph has finished. Publish them under this body's identity.

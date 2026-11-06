@@ -1,3 +1,17 @@
+The [actual-operand borrow join](parallel/operand-borrow-join.md) passes 25 public
+controls on actual main dependencies, 25 native programs, PA19 1193/1193,
+PA21 801/801, PA24 482/482, harness 282 and upstream31/126. CLI ae15b1d5 keeps
+original 722-input core at LIB-171 AsyncIterator (32.4451 s concurrent wall;
+no throughput claim), with all configuration/pins/limits fixed. Pins ae15/984a;
+9eb is retired/pruned. All 78 ABBA/follow-up observations preserve output equality;
+initial 9.1% sourceDeref overhead does not repeat (1.0047 wall/1.0038 CPU).
+New private cost/const-index checks and full successor remain pending. Source's
+frozen mfield/all 8 semantic batch now passes after genuine original-row pairing;
+final costs/native/hostiles and CPF4 candidate observations remain required.
+Async worker owns full 35 Field/manual/native and alias128 gaps. No whole PA
+past 24 or original core/alloc/std artifact is complete. Existing 2 heavy / 16 GiB /
+150GiB/<=300s guards and warm btrfs trees remain.
+
 The [paid shared-query checkpoint](parallel/paid-builtin-query-checkpoint.md)
 qualifies16 public controls,3 actual radix-module tests,4 native Drop traces and
 unchanged original core on CLI984a1fff (19.1974s/375opens, LIB-171 AsyncIterator).

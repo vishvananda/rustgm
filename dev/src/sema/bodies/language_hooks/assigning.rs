@@ -71,7 +71,12 @@ impl Checker<'_> {
         let expected_rhs = self.child(node, signature, 1)?;
         self.shape_equation(node, rhs, expected_rhs)?;
         let result = self.child(node, signature, 2)?;
-        self.retain_language_borrow(node, left, selected.method, callable, subject, receiver);
+        let actual = self.operand_borrow(node, subject, receiver, true)?;
+        let pending =
+            self.retain_language_borrow(node, left, selected.method, callable, subject, actual);
+        self.state.call_types.methods[pending]
+            .1
+            .expect_receiver(receiver);
         self.state.calls.push((node, signature));
         Ok(result)
     }

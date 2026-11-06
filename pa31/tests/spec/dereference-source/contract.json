@@ -189,6 +189,14 @@
       "sha256": "97f8d428cdf6e01928a73b2eefde8169d63edf7d7fcec9bbd4cff614ea4b7179",
       "rustc_status": 0,
       "native_stdout": "record=1\nread=7\nrecord=2\nrecord=1\nwrite=9\nrecord=1\ngeneric=8\nrecord=3\nrecord=1\nonce=11\n"
+    },
+    {
+      "name": "nested-borrow",
+      "path": "pa31/tests/spec/dereference-source/nested-borrow.rs",
+      "sha256": "0889de320b09aa07250b5d186b961eed43a13a813ed0714438bef149649b98a1",
+      "rustc_status": 0,
+      "native_stdout": "23\n",
+      "purpose": "Actual Pin<&mut &mut S> operand borrow retains its own nested lifetimes before the directed opened receiver conversion"
     }
   ],
   "auxiliary": [
@@ -199,6 +207,10 @@
     {
       "path": "pa31/tests/spec/dereference-source/observer.c",
       "sha256": "3e9dd3884223338966bdc9affeb4f37cecaef60a8fcabc6b9b87b26fc664ea1c"
+    },
+    {
+      "path": "pa31/tests/spec/dereference-source/nested-observer.c",
+      "sha256": "eb4fd6aabd9683553211c89161be74f1794d4a6b542de31e3692d5377ed03ba2"
     }
   ]
 }

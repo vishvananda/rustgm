@@ -1,0 +1,214 @@
+{
+  "scope": "Joined actual-operand borrow producer +same-Solved index/const validation, without uncommitted AsyncIterator roles/Field protocol",
+  "worker_commit": "50cfff42ea978195888f6ff99734a2e262a7bd44",
+  "root_commit": "10415633e",
+  "receipts": {
+    "public-v1/receipt.json": {
+      "path": "obj/parallel/operand-borrow-join-v1/public-v1/receipt.json",
+      "sha256": "f5b65d48fe787340979f1048fe23c828ef05f31ddd558addb7d642ce8dfee827",
+      "state": "passed"
+    },
+    "qualification-v1/receipt.json": {
+      "path": "obj/parallel/operand-borrow-join-v1/qualification-v1/receipt.json",
+      "sha256": "afc296af312e9cd5165b1d83de212ea3bb988deb7d39da2f2a36e4b021a70dc9",
+      "state": "observed"
+    },
+    "performance-v1/receipt.json": {
+      "path": "obj/parallel/operand-borrow-join-v1/performance-v1/receipt.json",
+      "sha256": "76767ba81e12b61ff2d2ff095ee0ce74b266e79414aa8c640c5269caba171853",
+      "state": "passed"
+    },
+    "performance-cpu-v1/receipt.json": {
+      "path": "obj/parallel/operand-borrow-join-v1/performance-cpu-v1/receipt.json",
+      "sha256": "d238a381b8b90df62bd1dcd10252e2d72a05d55f5c24261bd2884fcb6b3d4da0",
+      "state": "passed"
+    }
+  },
+  "sources_sha256": {
+    "dev/src/body/constants/provided_calls.rs": "c626a6ff975797f9fe5844aa0044b3030d8083f0f68103bebe1de2cca7ebd314",
+    "dev/src/sema/bodies/alignment.rs": "74dc2f0954d03b1c7a5041dde9045a0db808446bbad4f001496f4fa7fad8e3e9",
+    "dev/src/sema/bodies/comparisons.rs": "465908971fb8646d0b7e7bcf380699775de09e38d2ad512e7468d4b46c1858f4",
+    "dev/src/sema/bodies/finalization.rs": "57bbc0ea70a62f88740cb2a7a565f8e3174f166b593a946d0f04a16c2aa7ba27",
+    "dev/src/sema/bodies/language_hooks.rs": "23543d13307ec8e2063213ed45fafdfe8d614e1923ef3779bef036e265488b8e",
+    "dev/src/sema/bodies/language_hooks/assigning.rs": "d78f0bb3c80adfdc91223cb39a16c792ef7a997ede25dd5ecca9a978b37c98d4",
+    "dev/src/sema/bodies/language_hooks/dereferencing.rs": "d5c77592f976347d518eb984f7db58c164f60f538b66443e99b544d3c44abc58",
+    "dev/src/sema/bodies/language_hooks/indexing.rs": "e40617cf5b438baca5863bffb8936d57b1dcb4c5ea46a0dc766a6a84b43a8aef",
+    "dev/tests/deref_contracts.rs": "cc6767a460df6039de7676971cec1d66e18f299740c23b4f11de1472c1133d40",
+    "dev/tests/invariants/initializer_members.rs": "858cb12e9c57fb6929c71a00c7152fea226992c791c7b5208e8e0dab536f2d29",
+    "docs/parallel/actual-operand-borrow-checkpoint.md": "00de5f6000a5ec885638b46fc45e4a084a560c77b2252444ddccc373ab3693c8",
+    "pa31/tests/spec/dereference-source/README.md": "027baab94751787c7447ced15c11d8374174d3cd96bd0fb44f39a7551851d5c1",
+    "pa31/tests/spec/dereference-source/cases.tsv": "2dd7d8a34168b1fda26f322b01f893e3c208fbae69bcbff6b3ff65d7c6e30051",
+    "pa31/tests/spec/dereference-source/contract.json": "903cb0adb0224397037147d0ead7240bcb07b8a5403325bad6be85667221adee",
+    "pa31/tests/spec/dereference-source/nested-borrow.rs": "0889de320b09aa07250b5d186b961eed43a13a813ed0714438bef149649b98a1",
+    "pa31/tests/spec/dereference-source/nested-observer.c": "eb4fd6aabd9683553211c89161be74f1794d4a6b542de31e3692d5377ed03ba2"
+  },
+  "public_tests": {
+    "suite_traits": [
+      "idxops::actual_index_places_keep_signature_effect_and_borrow_causes",
+      "mutops::all_ten_assignments_keep_declared_semantic_causes_and_normal_borrow_proof",
+      "language_operators::operator_contracts_match_independent_language_outcomes",
+      "language_operators::comparison::comparison_outcomes",
+      "premise_contracts::implementation_and_receiver_premises_require_complete_proofs"
+    ],
+    "suite_frontend": [
+      "deref_contracts::actual_source_deref_and_mutable_places_keep_real_bodies_and_proofs",
+      "deref_contracts::ordinary_deref_method_effects_and_one_time_place_evaluation_reach_native",
+      "pinned_drop::complete_drop_source_and_consumers_match_pinned_language_outcomes",
+      "stateframe::actual_required_poll_keeps_checked_source_output_and_completed_drop",
+      "stateframe::actual_typed_future_shapes_preserve_capture_identity_and_do_not_capture_output",
+      "stateframe::authored_async_by_value_unsized_input_cannot_publish_sized_future_storage",
+      "stateframe::authored_async_originals_keep_their_real_output_through_region_and_loan_checks",
+      "stateframe::compiler_poll_state_copy_requires_no_user_u8_copy_and_grants_no_borrowed_move",
+      "stateframe::complete_generic_applications_reuse_one_identity_and_reject_argument_kind_forgery",
+      "stateframe::future_drop_recipes_keep_full_applications_and_own_capture_cleanup",
+      "stateframe::future_formation_proves_closed_bounds_and_retains_unpaid_lifetime_requirements",
+      "stateframe::generic_future_templates_defer_unknown_capture_layout_until_real_application",
+      "stateframe::mixed_future_and_ordinary_results_publish_only_actual_checked_batch_families",
+      "stateframe::ordinary_borrowed_moves_cannot_use_generated_state_copy_permission",
+      "stateframe::ordinary_opaque_results_do_not_request_authored_future_preparation",
+      "stateframe::selected_authored_poll_calls_keep_the_real_member_and_independent_public_signature",
+      "stateframe::selected_future_applications_revalidate_store_and_warm_publication",
+      "stateframe::selected_future_applications_use_actual_checked_bodies_and_complete_capture_frames",
+      "stateframe::selected_future_bounds_consume_genuine_future_and_actual_output_equality",
+      "stateframe::unpolled_constructor_and_drop_defer_divergent_body_and_check_unused_output"
+    ]
+  },
+  "native_programs": 25,
+  "course": {
+    "pa19": "1193/1193",
+    "pa21": "801/801",
+    "pa24": "482/482"
+  },
+  "harness": "282 pass",
+  "upstream": "31 fixture originals /126 Reference files",
+  "cli_sha256": "ae15b1d57a915ffe3f7a4513dffa63b00cfd4e443da062b12309850feee9a7a8",
+  "original_core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "ae15b1d57a915ffe3f7a4513dffa63b00cfd4e443da062b12309850feee9a7a8",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 108: 636: source compiler language item semantic contract is not implemented",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 32.44505861296784,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "15b46f1fc63061c8fff4dcef98d5d48a90d931b6b9b0555455355fd9ede273e9",
+      "whole-core.openat": "7b96087fd35a0c5daf997131c849e1238fc3e05b36cbb57b122a5c1dced7358e",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    }
+  },
+  "performance": {
+    "observations": 78,
+    "scales": [
+      {
+        "family": "ordinary",
+        "width": 4096,
+        "source_sha256": "9f5ca894e474569a5033b27b8508936790ca745d34c1e370abe066fbf4086bba",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.0230515822947548,
+            "AA_cpu_second_over_first": 1.023172177171138,
+            "ABBA_cpu_B_over_A": 1.0238806066929884,
+            "ABBA_B_over_A": 1.0241766822910696
+          },
+          {
+            "AA_second_over_first": 0.9517974984764257,
+            "AA_cpu_second_over_first": 0.9483835051428063,
+            "ABBA_cpu_B_over_A": 0.9728078560299426,
+            "ABBA_B_over_A": 0.9717087465457381
+          },
+          {
+            "AA_second_over_first": 1.0851944420483377,
+            "AA_cpu_second_over_first": 1.084944445657592,
+            "ABBA_cpu_B_over_A": 1.041532160626547,
+            "ABBA_B_over_A": 1.041593757509841
+          }
+        ],
+        "candidate_median_seconds": 0.9304530209919903,
+        "paired_median_cpu_B_over_A": 1.0238806066929884,
+        "paired_median_B_over_A": 1.0241766822910696
+      },
+      {
+        "family": "source-deref",
+        "width": 1,
+        "source_sha256": "a8d1ba6308aec550d17a0bf8223d03d2b3f7e36a45f078b9f5e06aaf050b54fe",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.006658961503096,
+            "AA_cpu_second_over_first": 1.0065473810475425,
+            "ABBA_cpu_B_over_A": 1.092784858801561,
+            "ABBA_B_over_A": 1.090673369476762
+          },
+          {
+            "AA_second_over_first": 0.8088372230861941,
+            "AA_cpu_second_over_first": 0.8091716220000186,
+            "ABBA_cpu_B_over_A": 0.9637322459541884,
+            "ABBA_B_over_A": 0.9649832277852535
+          },
+          {
+            "AA_second_over_first": 1.2429546292028855,
+            "AA_cpu_second_over_first": 1.2468368479466827,
+            "ABBA_cpu_B_over_A": 1.1068404375302645,
+            "ABBA_B_over_A": 1.1085430122211213
+          }
+        ],
+        "candidate_median_seconds": 0.05664979401626624,
+        "paired_median_cpu_B_over_A": 1.092784858801561,
+        "paired_median_B_over_A": 1.090673369476762
+      },
+      {
+        "family": "quantified",
+        "width": 128,
+        "source_sha256": "9ea43d73ca587f22edc6ac22b978bdb72052cf0aec5592a1dad9aaba16428789",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.0219671832893913,
+            "AA_cpu_second_over_first": 1.0210454526922292,
+            "ABBA_cpu_B_over_A": 1.1576063257652924,
+            "ABBA_B_over_A": 1.1564696995947106
+          },
+          {
+            "AA_second_over_first": 1.0556605632035174,
+            "AA_cpu_second_over_first": 1.0557950642688407,
+            "ABBA_cpu_B_over_A": 0.9887518675231958,
+            "ABBA_B_over_A": 0.9883614226322083
+          },
+          {
+            "AA_second_over_first": 0.995666632112108,
+            "AA_cpu_second_over_first": 0.9958512139311638,
+            "ABBA_cpu_B_over_A": 1.0016035076043237,
+            "ABBA_B_over_A": 1.0014280031788385
+          }
+        ],
+        "candidate_median_seconds": 0.27640965351019986,
+        "paired_median_cpu_B_over_A": 1.0016035076043237,
+        "paired_median_B_over_A": 1.0014280031788385
+      }
+    ],
+    "followup": {
+      "wall_seconds": {
+        "candidate_median_seconds": 0.05413797398796305,
+        "paired_median_B_over_A": 1.0046855782113975
+      },
+      "cpu_seconds": {
+        "candidate_median_seconds": 0.05349500000000004,
+        "paired_median_B_over_A": 1.003766699720124
+      }
+    },
+    "interpretation": "Every complete output equal; initial sourceDeref slowdown does not reproduce in24-sample followup; no broad speedup or regression-absence claim"
+  },
+  "pending": [
+    "Private query-budget and const-index forgeries execution/fullCI",
+    "AsyncIterator full35/manual Field consumers and independent alias128 gap",
+    "Real const cleanup consumer final costs/native/hostiles/CPF4 observations",
+    "All original core/alloc/std artifacts and unfinished PA scope"
+  ]
+}
