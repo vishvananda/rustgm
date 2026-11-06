@@ -1,0 +1,71 @@
+{
+  "state": "passed focused joined qualification; full CI pending",
+  "joined_compiler_commit": "94dc8162bb6a757f828e45b104746ebfc8d3e3c4",
+  "matched_qualification_inputs": 3608,
+  "public_exact": 57,
+  "native_observers": 13,
+  "private_execution": "pending full CI",
+  "cli_sha256": "d9be1cf224f60765d32885eca9c1f0f329f373d9be1d35e963876fe2dab5ff7e",
+  "cli_pin": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/async-iterator-v1/pins/d9be1cf224f60765d32885eca9c1f0f329f373d9be1d35e963876fe2dab5ff7e/rustgm",
+  "core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "d9be1cf224f60765d32885eca9c1f0f329f373d9be1d35e963876fe2dab5ff7e",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 88: 454: source compiler language item semantic contract is not implemented",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 17.91207892401144,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "02ccedb974281def38e9de2a67e28566544d1250435dbb872e4d93716c151a16",
+      "whole-core.openat": "df2bbc85aa9cf2cc3e341112936cb1ac95f0d228a7fbb8c6baf0cc092df35bd2",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    }
+  },
+  "receipts": {
+    "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/qualification/fast/1793953685558804332/receipt.json": {
+      "sha256": "7af9fc10e09bf2828e304bf0dd4a11b16e308855bec0fac4aab31b135c19e069"
+    },
+    "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/async-iterator-v1/joined-736-natives/receipt.json": {
+      "sha256": "3cd8d35d0f9f0f26210653297a866291fc2010c5298d10fed0791eba52a1102a"
+    },
+    "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/async-iterator-v1/joined-736-metadata/receipt.json": {
+      "sha256": "b18a3d5ac296bb9649869447549b34b28023dfb1cbf7d88538df962f0fe15a55"
+    },
+    "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/async-iterator-v1/pins/d9be1cf224f60765d32885eca9c1f0f329f373d9be1d35e963876fe2dab5ff7e/binding.json": {
+      "sha256": "d685a287a5d6cdba6d35bc52a9884277babe83c2213930582e72d5098887d3b4"
+    },
+    "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-iterator-core-v3/receipt.json": {
+      "sha256": "4edcbbe267dd6871ca826cb352122dabc19bc85666a075243669d507e5486ac6"
+    },
+    "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-iterator-core-v2/receipt.json": {
+      "sha256": "ba2c96bf184c0991be2fbd5ad61772cb94a3e9beca436f912dd03ce0827b42ce"
+    },
+    "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-iterator-core-v1/receipt.json": {
+      "sha256": "5cb74ea9f5103aadb20bfa486a5616a266946b9f3e9cab78ecfd99ae10f82e26"
+    }
+  },
+  "actual_layouts": {
+    "Policy": 160,
+    "Expectation": 40,
+    "OpenStep": 24,
+    "checked_Field_Step": 40,
+    "Work": 24,
+    "CallTypes": 728,
+    "Contexts": 96,
+    "Operation": 16,
+    "Node": 80,
+    "Body": 456,
+    "Owner": 20,
+    "Kind": 24
+  },
+  "old_failed_wrapper": "First409 core observer inner succeeded but145s outer exited137 during final accounting; retained unchanged. Clean409 confirmation and joined d9 confirmation both exit0. No throughput comparison."
+}

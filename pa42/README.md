@@ -15,15 +15,22 @@ implementations use normal source trait/supertrait proof in PA19/20/31; recogniz
 that language role grants no gen state, poll/next body or blanket implementation.
 Cancellation and cleanup compose with PA43, and imported bodies with PA29.
 
-The unchanged original-core probe now reaches LIB-154, the real AsyncDrop trait
-in `library/core/src/future/async_drop.rs:29`. Its required async method takes
-`Pin<&mut Self>`, and the same file declares `async_drop_in_place`. PA31 owns
-source role/header authority; this assignment owns actual async signatures,
-future identity and state-machine behavior; PA43 owns their pinning, cancellation
-and destruction. These source prerequisites can block the initial core profile
-before the broad async release. Preserve real signatures and required bodies;
-an accepted attribute or empty future is not implementation. See the
-[probe evidence](../docs/pa31-function-pointer-checkpoint.md).
+Original core requires the genuine `CoroutineState<Y, R>` enum and `Coroutine<R>`
+trait, including their actual Yield/Return associated items and pinned resume
+method. PA31 owns their source declaration identities and ordinary typed/native
+consumers. This assignment owns compiler-generated coroutine identity, input,
+yield, return, suspension and resumption; PA43 owns captured storage, Pin, loans,
+cancellation and destruction. Keep manual source implementations distinct from
+compiler-generated implementations. An enum marker or trait declaration grants
+no generated state or blanket implementation.
+
+The original-source probe clears AsyncIterator and reaches `coroutine_state` in
+`library/core/src/ops/coroutine.rs:11`. Earlier AsyncDrop, callable and iterator
+source checkpoints remain prerequisites, not whole async completion. Preserve
+all actual signatures and required bodies, including `async_drop_in_place`;
+an accepted attribute or empty future cannot supply their implementation. The
+[live blocker tracker](../docs/library-build-blockers.md) records the qualified
+compiler, immutable inputs and current frontier.
 
 The maintainer implements compiler responsibilities in `dev/src/` and introduces
 typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust
@@ -46,6 +53,9 @@ the configured CPPGM backend; text output alone is insufficient.
 - Stored locals.
 - Readiness.
 - Suspension state.
+- Real CoroutineState variants and generic Yield/Return/input identities.
+- Manual resume effects versus generated yield/return state transitions.
+- Reentry, opposite lifetimes, capture/cancellation and exact source ownership.
 
 Place each fixture in the earliest assignment owning all features it exercises.
 Keep original upstream bytes, attribution and checksums. Declare expected outcomes

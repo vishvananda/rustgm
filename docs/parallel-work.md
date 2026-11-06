@@ -1,3 +1,13 @@
+The [published AsyncIterator/Field join](parallel/async-iterator-main-join.md)
+combines the complete payer repair with genuine source calls and lexical raw
+borrows. Joined57 public/13 native/all-target metadata pass, matching3608 frozen
+qualification inputs. Immutable d9 advances unchanged original core to LIB178
+CoroutineState at ops/coroutine.rs11/file88:454 in17.9121s/375opens; no library
+artifact or whole PA release. Root owns the new coroutine source/runtime work.
+The existing two workers own real Field capture prefixes and concrete CTFE
+cleanup; both start compiler edits from this joined foundation. Keep2heavy,
+16GiB caps,150GiB reserve and<=300s guards. Full successor CI remains separate.
+
 The [complete cleanup-row payer main join](parallel/source-row-payer-main-join.md)
 repairs both ordinary Some-row and prior None-row paths while preserving actual
 SourceCore checks. Source54 public controls and Root4 cached/harness controls

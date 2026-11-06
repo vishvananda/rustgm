@@ -602,3 +602,14 @@ The successor [MaybeUninit constant checkpoint](../docs/pa31-maybe-uninit-const-
 clears that original role boundary and reaches transmute_trait in
 mem/transmutability.rs87. Runtime panic, imported storage/validity consumers and
 all original library artifacts stay required.
+
+The actual source coroutine family retains `CoroutineState`, `Coroutine`, Yield,
+Return and resume declaration identities independently of their ordinary names.
+Accept unused legal alternate declarations according to pinned Rust; compiler
+consumers require the exact selected schema and full arguments at demand. Ordinary
+enum construction, projection, trait selection and manual native resume calls use
+the existing typed producers. Generated coroutine input/yield/return/state belongs
+to PA42, and captured loans, Pin, cancellation/drop to PA43; no role supplies those
+operations or a blanket implementation. Preserve the complete original coroutine
+module and independent wrong-owner/shape/argument/lifetime opponents when closing
+this source prerequisite.
