@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "state": "frozen after V1 independent discrepancies, before V2 observations; V1 retained unchanged",
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "bootstrap": "1",
+    "threads": 2,
+    "emit": [
+      "metadata",
+      "obj"
+    ]
+  },
+  "cases": [
+    {
+      "file": "conditional-call-v2.rs",
+      "sha256": "6a5eb83187f7f733f6b736b06fcc5651af9f6d3766cf3809a98f3628fe6c14c3",
+      "expected_code": 0,
+      "hypothesis": "real conditional FnMut AND Destruct premises permit closure call and owned cleanup",
+      "predecessor": {
+        "path": "conditional-call.rs",
+        "sha256": "1eb6915b4b6d3e6e088372362612d5d1217d7812fc48335f4e7fefc365488118"
+      }
+    },
+    {
+      "file": "source-execution-v2.rs",
+      "sha256": "47389886cf31137d14922afb7007b998349583822e3e9c54fa9ae5de8b729d89",
+      "expected_code": 0,
+      "hypothesis": "actual const_destruct request enables the already-declared cleanup premise; no_core source methods unchanged",
+      "predecessor": {
+        "path": "source-execution.rs",
+        "sha256": "46a7b7884e2907182891f8c44d639e19f5e49b58f31f7e95825bd859791ce31f"
+      },
+      "native": {
+        "observer": "source-execution.c",
+        "observer_sha256": "181b231387d4ab38a077558b6232742c4aa94379990799148da8c6f481258113",
+        "stdout": "closure 2 23 25\n",
+        "status": 0
+      }
+    }
+  ]
+}

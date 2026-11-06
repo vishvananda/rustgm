@@ -1,0 +1,127 @@
+{
+  "schema": 1,
+  "owner": "PA25 const closure semantics extending PA24 capture/call machinery; source roles PA31",
+  "mode": "reference-only until actual compiler/runtime qualification",
+  "cases": [
+    {
+      "path": "captures-mutable.rs",
+      "sha256": "f9d7ce0b6954acb05165e70580df35d9f0e5289b5c1938dc9b0a6e73b1aa81b8"
+    },
+    {
+      "path": "captures-once.rs",
+      "sha256": "3096642d60df1140beef91feb3b1b018672389c976ca39859a4a9bc5523c3ab8"
+    },
+    {
+      "path": "captures-shared.rs",
+      "sha256": "1e8636dd0e77549d2818015da9dfcae3dfe4e4eae1cfc30722df6258a5971fa0"
+    },
+    {
+      "path": "conditional-call-v2.rs",
+      "sha256": "6a5eb83187f7f733f6b736b06fcc5651af9f6d3766cf3809a98f3628fe6c14c3"
+    },
+    {
+      "path": "conditional-call.rs",
+      "sha256": "1eb6915b4b6d3e6e088372362612d5d1217d7812fc48335f4e7fefc365488118"
+    },
+    {
+      "path": "const-drop.rs",
+      "sha256": "6383d8fc4af7ee59a82b49a568d45ec608fbc85488e65ff77ef1efaa1123293f"
+    },
+    {
+      "path": "constant.rs",
+      "sha256": "39217cb84a2826a2edf1372f4813ea4871bc0c16d3aa2e3bbd442edc513fad59"
+    },
+    {
+      "path": "escaping-capture.rs",
+      "sha256": "73bba6eb81cca5167558191ab370044ac61b8b5a6a1653e63fb5d9fe1d5228db"
+    },
+    {
+      "path": "missing-feature.rs",
+      "sha256": "6495dd7fd1399cddbf5d5f07ced26397fedfbfa109cfb476ce6513f0c19ba468"
+    },
+    {
+      "path": "moved-capture.rs",
+      "sha256": "32d930d49ef0b3dbd4d05e0fa9c52f2d7c1f3dffca687c7915c5c68779fc4cc8"
+    },
+    {
+      "path": "mutable-binding.rs",
+      "sha256": "adff5d04c71fe118901b2a0f3706f52b21b50b4a3c2630d98995e4ffcfb73df7"
+    },
+    {
+      "path": "nested-runtime-creation.rs",
+      "sha256": "01afc26c13cd610d65d40708b3aab80c5c34b464332d82a0b9711f4596cfea32"
+    },
+    {
+      "path": "nonconst-drop.rs",
+      "sha256": "05832c4713e249502e498e33266517e1fcd832f2f69c8317cb2b56becefedbbd"
+    },
+    {
+      "path": "ordinary-bound.rs",
+      "sha256": "ab7e32ac9f0e5068502986d99c47376e0cbc7478400beee1a6219ef31af1fd42"
+    },
+    {
+      "path": "ordinary-closure.rs",
+      "sha256": "ec239196c10b4e81f6f02c989b6cfab8580a8d65885103b6f73577ab0b21fc15"
+    },
+    {
+      "path": "overlap.rs",
+      "sha256": "58ad4b981ed677af58432ea63948ca22e54a147d839ddfcb39e3de48fc4bfca7"
+    },
+    {
+      "path": "runtime-from-const-fn.rs",
+      "sha256": "33c0bacdace619af0fd7ac3b999fbc2fa9c229299dd34e337c0064f19d5e8d57"
+    },
+    {
+      "path": "runtime.rs",
+      "sha256": "6a58201acf4358c34be566ff4eedf61aa9671bc7c1f3afda8e842b1c43911375"
+    },
+    {
+      "path": "semantics-native.rs",
+      "sha256": "65896e23c1550f96ed7b8b859956c8fbcf71a78ffc9a15bdab0a0f042c07d18a"
+    },
+    {
+      "path": "source-execution-v2.rs",
+      "sha256": "47389886cf31137d14922afb7007b998349583822e3e9c54fa9ae5de8b729d89"
+    },
+    {
+      "path": "source-execution-v3.rs",
+      "sha256": "4192a1c0508d04851eec682553d66dbd9a3b43a775b36bbca853ac7743ab55af"
+    },
+    {
+      "path": "source-execution.rs",
+      "sha256": "46a7b7884e2907182891f8c44d639e19f5e49b58f31f7e95825bd859791ce31f"
+    },
+    {
+      "path": "unused-runtime-effect.rs",
+      "sha256": "400237cb77b605628317def7653c0605e1a3c75a12e4b8d5d8fb37481de811e5"
+    }
+  ],
+  "auxiliary": [
+    {
+      "path": "source-execution.c",
+      "sha256": "181b231387d4ab38a077558b6232742c4aa94379990799148da8c6f481258113"
+    }
+  ],
+  "predictions": [
+    {
+      "path": "semantics-predictions-v1.json",
+      "sha256": "14ac0600bc5ecc95d3c2a687ec27fb51bd388c8f6f8012bb49a5a3c3956d07d8"
+    },
+    {
+      "path": "semantics-predictions-v2.json",
+      "sha256": "7a8b347756c9ea85006632df35d89c4c8d6b95df06ef23f26941e6a563faeeef"
+    },
+    {
+      "path": "semantics-predictions-v3.json",
+      "sha256": "cdfd994601ca2e2cb49a32993d7e257c535b193b8ecefd58948e31fc882534c2"
+    },
+    {
+      "path": "semantics-predictions-v4.json",
+      "sha256": "25d8d54912e6591a5eab987a79c9f1c6544e2259edb7372851c523656f33b5fa"
+    }
+  ],
+  "reference": {
+    "path": "semantics-reference-v1.json",
+    "sha256": "8c5588249c5f8b7ff98cd9db7c3f52f3259acb73d3912419a5b1d32e87cf068e"
+  }
+}

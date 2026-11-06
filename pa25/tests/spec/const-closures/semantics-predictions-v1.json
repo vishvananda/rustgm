@@ -1,0 +1,152 @@
+{
+  "schema": 1,
+  "state": "frozen before independent or RustGM candidate observations",
+  "owner": "PA25 callable constness/CTFE using PA24 closure bodies and PA31 actual callable source roles",
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "bootstrap": "1",
+    "threads": 2,
+    "emit": [
+      "metadata",
+      "obj"
+    ]
+  },
+  "reuse": [
+    {
+      "path": "pa25/tests/spec/const-closures/constant.rs",
+      "sha256": "39217cb84a2826a2edf1372f4813ea4871bc0c16d3aa2e3bbd442edc513fad59",
+      "status": 0,
+      "reason": "already independently qualified; do not duplicate invocation"
+    },
+    {
+      "path": "pa25/tests/spec/const-closures/runtime-from-const-fn.rs",
+      "sha256": "33c0bacdace619af0fd7ac3b999fbc2fa9c229299dd34e337c0064f19d5e8d57",
+      "status": 0,
+      "reason": "already independently qualified; do not duplicate invocation"
+    },
+    {
+      "path": "pa25/tests/spec/const-closures/runtime.rs",
+      "sha256": "6a58201acf4358c34be566ff4eedf61aa9671bc7c1f3afda8e842b1c43911375",
+      "status": 1,
+      "reason": "already independently qualified; do not duplicate invocation"
+    },
+    {
+      "path": "pa25/tests/spec/const-closures/missing-feature.rs",
+      "sha256": "6495dd7fd1399cddbf5d5f07ced26397fedfbfa109cfb476ce6513f0c19ba468",
+      "status": 1,
+      "reason": "already independently qualified; do not duplicate invocation"
+    }
+  ],
+  "foundation": {
+    "path": "pa31/tests/spec/inherited-overflow/const-closure-v3.rs",
+    "source_sha256": "b35806dd21be5377039374160d5f4a11723c1116314b87df4fba9ea7e09018dc",
+    "interval": [
+      0,
+      1732
+    ],
+    "interval_sha256": "7df65288d4f0e1006ba80bb3c0e181a5244fcc4563665feae9af95074209345a",
+    "scope": "exact existing authored support prefix; original source word and callable identities preserved; complete original Iterator remains required"
+  },
+  "cases": [
+    {
+      "file": "captures-shared.rs",
+      "sha256": "1e8636dd0e77549d2818015da9dfcae3dfe4e4eae1cfc30722df6258a5971fa0",
+      "expected_code": 0,
+      "hypothesis": "actual shared capture and arithmetic execute in CTFE"
+    },
+    {
+      "file": "captures-mutable.rs",
+      "sha256": "f9d7ce0b6954acb05165e70580df35d9f0e5289b5c1938dc9b0a6e73b1aa81b8",
+      "expected_code": 0,
+      "hypothesis": "actual mutable capture implements FnMut and updates the same storage"
+    },
+    {
+      "file": "captures-once.rs",
+      "sha256": "3096642d60df1140beef91feb3b1b018672389c976ca39859a4a9bc5523c3ab8",
+      "expected_code": 0,
+      "hypothesis": "non-Copy owned capture is consumed once by an actual const FnOnce call"
+    },
+    {
+      "file": "conditional-call.rs",
+      "sha256": "1eb6915b4b6d3e6e088372362612d5d1217d7812fc48335f4e7fefc365488118",
+      "expected_code": 0,
+      "hypothesis": "conditional const caller premise is retained through the actual captured callable"
+    },
+    {
+      "file": "ordinary-bound.rs",
+      "sha256": "ab7e32ac9f0e5068502986d99c47376e0cbc7478400beee1a6219ef31af1fd42",
+      "expected_code": 1,
+      "hypothesis": "ordinary Fn bound does not grant a const call"
+    },
+    {
+      "file": "ordinary-closure.rs",
+      "sha256": "ec239196c10b4e81f6f02c989b6cfab8580a8d65885103b6f73577ab0b21fc15",
+      "expected_code": 1,
+      "hypothesis": "ordinary closure is not made const by its creation context"
+    },
+    {
+      "file": "unused-runtime-effect.rs",
+      "sha256": "400237cb77b605628317def7653c0605e1a3c75a12e4b8d5d8fb37481de811e5",
+      "expected_code": 1,
+      "hypothesis": "unused const closure body still rejects a non-const function call"
+    },
+    {
+      "file": "nested-runtime-creation.rs",
+      "sha256": "01afc26c13cd610d65d40708b3aab80c5c34b464332d82a0b9711f4596cfea32",
+      "expected_code": 1,
+      "hypothesis": "ordinary nested closure is the immediate non-const creation context"
+    },
+    {
+      "file": "mutable-binding.rs",
+      "sha256": "adff5d04c71fe118901b2a0f3706f52b21b50b4a3c2630d98995e4ffcfb73df7",
+      "expected_code": 1,
+      "hypothesis": "FnMut capture does not grant mutation through an immutable closure binding"
+    },
+    {
+      "file": "overlap.rs",
+      "sha256": "58ad4b981ed677af58432ea63948ca22e54a147d839ddfcb39e3de48fc4bfca7",
+      "expected_code": 1,
+      "hypothesis": "actual mutable capture loan prevents overlapping use before invocation"
+    },
+    {
+      "file": "moved-capture.rs",
+      "sha256": "32d930d49ef0b3dbd4d05e0fa9c52f2d7c1f3dffca687c7915c5c68779fc4cc8",
+      "expected_code": 1,
+      "hypothesis": "move capture consumes a non-Copy value in the enclosing body"
+    },
+    {
+      "file": "escaping-capture.rs",
+      "sha256": "73bba6eb81cca5167558191ab370044ac61b8b5a6a1653e63fb5d9fe1d5228db",
+      "expected_code": 1,
+      "hypothesis": "callable qualification cannot extend a captured reference to static"
+    },
+    {
+      "file": "nonconst-drop.rs",
+      "sha256": "05832c4713e249502e498e33266517e1fcd832f2f69c8317cb2b56becefedbbd",
+      "expected_code": 1,
+      "hypothesis": "const captured environment cannot acquire const destruction from syntax"
+    },
+    {
+      "file": "const-drop.rs",
+      "sha256": "6383d8fc4af7ee59a82b49a568d45ec608fbc85488e65ff77ef1efaa1123293f",
+      "expected_code": 0,
+      "hypothesis": "actual const Drop of moved environment field occurs once"
+    },
+    {
+      "file": "source-execution.rs",
+      "sha256": "46a7b7884e2907182891f8c44d639e19f5e49b58f31f7e95825bd859791ce31f",
+      "expected_code": 0,
+      "hypothesis": "actual no_core const FnMut and captured closures execute source CTFE plus ordinary runtime call",
+      "native": {
+        "observer": "source-execution.c",
+        "observer_sha256": "181b231387d4ab38a077558b6232742c4aa94379990799148da8c6f481258113",
+        "stdout": "closure 2 23 25\n",
+        "status": 0
+      }
+    }
+  ],
+  "unqualified_policy": "setup errors, ICEs, signals and timeouts are unqualified; preserve inputs and revise only through a separate frozen successor"
+}

@@ -1,0 +1,561 @@
+{
+  "schema": 1,
+  "state": "independently observed; no RustGM const-closure candidate observed",
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "bootstrap": "1",
+    "threads": 2,
+    "emit": [
+      "metadata",
+      "obj"
+    ]
+  },
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "predictions": [
+    {
+      "path": "semantics-predictions-v1.json",
+      "sha256": "14ac0600bc5ecc95d3c2a687ec27fb51bd388c8f6f8012bb49a5a3c3956d07d8"
+    },
+    {
+      "path": "semantics-predictions-v2.json",
+      "sha256": "7a8b347756c9ea85006632df35d89c4c8d6b95df06ef23f26941e6a563faeeef"
+    },
+    {
+      "path": "semantics-predictions-v3.json",
+      "sha256": "cdfd994601ca2e2cb49a32993d7e257c535b193b8ecefd58948e31fc882534c2"
+    },
+    {
+      "path": "semantics-predictions-v4.json",
+      "sha256": "25d8d54912e6591a5eab987a79c9f1c6544e2259edb7372851c523656f33b5fa"
+    }
+  ],
+  "receipts": [
+    {
+      "path": "obj/parallel/const-closure-reference/v1/receipt.json",
+      "sha256": "d2d0806287564a01a28cb7bb7dddeef00e1bb29dd0421fb68fe58298a6dea575",
+      "runner_sha256": "53987456cddeffe4317c74af2eae7132d8c242c7b51b69962044f39dd69f0844",
+      "state": "observed",
+      "seconds": 1.4554309719242156,
+      "outer_status": 0,
+      "observations": [
+        {
+          "file": "captures-shared.rs",
+          "mode": "metadata",
+          "status": 0,
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "captures-shared.rs",
+          "mode": "obj",
+          "status": 0,
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "captures-mutable.rs",
+          "mode": "metadata",
+          "status": 0,
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "captures-mutable.rs",
+          "mode": "obj",
+          "status": 0,
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "captures-once.rs",
+          "mode": "metadata",
+          "status": 0,
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "captures-once.rs",
+          "mode": "obj",
+          "status": 0,
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "conditional-call.rs",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0493",
+              "message": "destructor of `F` cannot be evaluated at compile-time"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "72e871f25084ddabee328253893ae311843cf3ea62f3d5021a28225929976244"
+        },
+        {
+          "file": "conditional-call.rs",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0493",
+              "message": "destructor of `F` cannot be evaluated at compile-time"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "72e871f25084ddabee328253893ae311843cf3ea62f3d5021a28225929976244"
+        },
+        {
+          "file": "ordinary-bound.rs",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `F: [const] Fn(u8)` is not satisfied"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0a4b1d13f2981efb36595bb11eebb2f8b56bc009f511024765024454df3169a1"
+        },
+        {
+          "file": "ordinary-bound.rs",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `F: [const] Fn(u8)` is not satisfied"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0a4b1d13f2981efb36595bb11eebb2f8b56bc009f511024765024454df3169a1"
+        },
+        {
+          "file": "ordinary-closure.rs",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0015",
+              "message": "cannot call non-const closure in constants"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "64ba7b18d47adb94aa140859d498e8fe30e4fcb8e6cc78c4491a50c1cb50715d"
+        },
+        {
+          "file": "ordinary-closure.rs",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0015",
+              "message": "cannot call non-const closure in constants"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "64ba7b18d47adb94aa140859d498e8fe30e4fcb8e6cc78c4491a50c1cb50715d"
+        },
+        {
+          "file": "unused-runtime-effect.rs",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0015",
+              "message": "cannot call non-const function `runtime` in constant functions"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "f4f5092f9ed94c9e50da9f05fdfc0b7c3c0dd806f847562772a19c3a2d79b323"
+        },
+        {
+          "file": "unused-runtime-effect.rs",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0015",
+              "message": "cannot call non-const function `runtime` in constant functions"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "f4f5092f9ed94c9e50da9f05fdfc0b7c3c0dd806f847562772a19c3a2d79b323"
+        },
+        {
+          "file": "nested-runtime-creation.rs",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": null,
+              "message": "cannot use `const` closures outside of const contexts"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "600a3a81d623b8108c6c703689f8da1fc8ef5d3c22b36592e1e0e355ca2789f6"
+        },
+        {
+          "file": "nested-runtime-creation.rs",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": null,
+              "message": "cannot use `const` closures outside of const contexts"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "600a3a81d623b8108c6c703689f8da1fc8ef5d3c22b36592e1e0e355ca2789f6"
+        },
+        {
+          "file": "mutable-binding.rs",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0596",
+              "message": "cannot borrow `call` as mutable, as it is not declared as mutable"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a1eff1774c6ad2b64df32b148706c63e4ed335814d4d86fcc7e9bdafadf64725"
+        },
+        {
+          "file": "mutable-binding.rs",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0596",
+              "message": "cannot borrow `call` as mutable, as it is not declared as mutable"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a1eff1774c6ad2b64df32b148706c63e4ed335814d4d86fcc7e9bdafadf64725"
+        },
+        {
+          "file": "overlap.rs",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0506",
+              "message": "cannot assign to `value` because it is borrowed"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "70b762a663dae037dc8ca7bdb00feb6afd580bf034bd2c1074409e79809b8f7a"
+        },
+        {
+          "file": "overlap.rs",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0506",
+              "message": "cannot assign to `value` because it is borrowed"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "70b762a663dae037dc8ca7bdb00feb6afd580bf034bd2c1074409e79809b8f7a"
+        },
+        {
+          "file": "moved-capture.rs",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0382",
+              "message": "use of moved value: `value`"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a8bae819ac0588e602e6937008ae966c3e5ac6dccb3b1abb5ed50590176f4614"
+        },
+        {
+          "file": "moved-capture.rs",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0382",
+              "message": "use of moved value: `value`"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a8bae819ac0588e602e6937008ae966c3e5ac6dccb3b1abb5ed50590176f4614"
+        },
+        {
+          "file": "escaping-capture.rs",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": null,
+              "message": "lifetime may not live long enough"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a6d4e62ee2a38d2ff32be5bcbcfa97d0edfd8e69bec90f3464ace72aa17c88f4"
+        },
+        {
+          "file": "escaping-capture.rs",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": null,
+              "message": "lifetime may not live long enough"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a6d4e62ee2a38d2ff32be5bcbcfa97d0edfd8e69bec90f3464ace72aa17c88f4"
+        },
+        {
+          "file": "nonconst-drop.rs",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0493",
+              "message": "destructor of `Owned` cannot be evaluated at compile-time"
+            },
+            {
+              "code": "E0493",
+              "message": "destructor of `{closure@nonconst-drop.rs:4:47}` cannot be evaluated at compile-time"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "70f7bdaaa21421072b886cdf381421ccbb5c4bdd583e00534b3ec4e1ddfda3b0"
+        },
+        {
+          "file": "nonconst-drop.rs",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0493",
+              "message": "destructor of `Owned` cannot be evaluated at compile-time"
+            },
+            {
+              "code": "E0493",
+              "message": "destructor of `{closure@nonconst-drop.rs:4:47}` cannot be evaluated at compile-time"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4004a5f5042b8eb5ce4b6675346243322d5b7e657b6f73a22983548838a1042c"
+        },
+        {
+          "file": "const-drop.rs",
+          "mode": "metadata",
+          "status": 0,
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "const-drop.rs",
+          "mode": "obj",
+          "status": 0,
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "source-execution.rs",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0493",
+              "message": "destructor of `F` cannot be evaluated at compile-time"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bc695a6b2dfa2085e53ab75060597c12fa86bf6ff0954a1824a8d5c55c9e4879"
+        },
+        {
+          "file": "source-execution.rs",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0493",
+              "message": "destructor of `F` cannot be evaluated at compile-time"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bc695a6b2dfa2085e53ab75060597c12fa86bf6ff0954a1824a8d5c55c9e4879"
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/const-closure-reference/v2/receipt.json",
+      "sha256": "97c3d499b34bdab3a3d352f92dbc14ef471f262a30062011223bc6dbeee99903",
+      "runner_sha256": "474e3d1deb2c2727eab5d801091f4c879109e5f85c177c678d6061dd05aa16b1",
+      "state": "observed",
+      "seconds": 0.17390472500119358,
+      "outer_status": 0,
+      "observations": [
+        {
+          "file": "conditional-call-v2.rs",
+          "mode": "metadata",
+          "status": 0,
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "conditional-call-v2.rs",
+          "mode": "obj",
+          "status": 0,
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "source-execution-v2.rs",
+          "mode": "metadata",
+          "status": 1,
+          "errors": [
+            {
+              "code": null,
+              "message": "requires `drop_glue` lang_item"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a63d054cc7c58b257c6783b6c3e2a667af074ac87a6a0eeb1223e4419dd030f7"
+        },
+        {
+          "file": "source-execution-v2.rs",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": null,
+              "message": "requires `drop_glue` lang_item"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a63d054cc7c58b257c6783b6c3e2a667af074ac87a6a0eeb1223e4419dd030f7"
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/const-closure-reference/v3/receipt.json",
+      "sha256": "7868d7c58473fbdea4aad83b2c51e37ad2300b7171f3b0613a06ff55a71b8c5b",
+      "runner_sha256": "f460a66ca5b822a6025713ec17290f0b3672a85b2364cc697094b8b6e0248583",
+      "state": "observed",
+      "seconds": 0.10168103908654302,
+      "outer_status": 0,
+      "observations": [
+        {
+          "file": "source-execution-v3.rs",
+          "mode": "metadata",
+          "status": 0,
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "source-execution-v3.rs",
+          "mode": "obj",
+          "status": 1,
+          "errors": [
+            {
+              "code": null,
+              "message": "requires `panic_const_add_overflow` lang_item"
+            },
+            {
+              "code": null,
+              "message": "requires `panic_const_add_overflow` lang_item"
+            },
+            {
+              "code": null,
+              "message": "requires `panic_const_add_overflow` lang_item"
+            },
+            {
+              "code": null,
+              "message": "requires `panic_const_add_overflow` lang_item"
+            }
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "84b837341af8bd890e3009129dc3064274566a957fd3ca7cd1677bc3aacc750d"
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/const-closure-reference/v4/receipt.json",
+      "sha256": "3fff57e3c8af7e1a4470cecde0f0c20faeaa15862746e326962545dba58451bd",
+      "runner_sha256": "083cb1f75b08f5f33f08cd4435a136cbdbc4b4e2d4336035e477852050ed22fb",
+      "state": "observed",
+      "seconds": 0.3644660860300064,
+      "outer_status": 0,
+      "observations": [
+        {
+          "file": "semantics-native.rs",
+          "mode": "metadata",
+          "status": 0,
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "semantics-native.rs",
+          "mode": "obj",
+          "status": 0,
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "semantics-native.rs",
+          "mode": "link",
+          "status": 0,
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "native": {
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v4/native",
+          "23"
+        ],
+        "status": 0,
+        "stdout": "closure 23 26 23 1 25\n",
+        "stdout_sha256": "e81535d675f04b7ce5fb40f387f669aa3d0cf4b8821c0a2702afc1d3f9aa9ef5",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "prediction_matches": true
+      }
+    }
+  ],
+  "classification": {
+    "conditional-call.rs": "genuine E0493 ordinary negative; predicted positive disproved because cleanup premise was missing",
+    "conditional-call-v2.rs": "metadata/object0 after real F:[const]core::marker::Destruct premise",
+    "source-execution.rs": "unqualified native setup: missing const_destruct crate request",
+    "source-execution-v2.rs": "unqualified native setup: missing actual drop_glue language item",
+    "source-execution-v3.rs": "metadata0; object unqualified: requires real panic_const_add_overflow support; no execution",
+    "semantics-native.rs": "metadata/object/link0; actual native execution0 stdout closure 23 26 23 1 25"
+  },
+  "boundaries": [
+    "No compiler edits or candidate success from this reference checkpoint",
+    "Exact original Iterator module/default methods, source panic routing, const closure transport and full language profile remain required",
+    "Existing four-case contract.json and all predictions/inputs retained unchanged"
+  ]
+}

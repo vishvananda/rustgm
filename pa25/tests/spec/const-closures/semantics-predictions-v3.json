@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "state": "frozen after V2 missing drop_glue infrastructure observation, before V3 observations; predecessors retained",
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "bootstrap": "1",
+    "threads": 2,
+    "emit": [
+      "metadata",
+      "obj"
+    ]
+  },
+  "cases": [
+    {
+      "file": "source-execution-v3.rs",
+      "sha256": "4192a1c0508d04851eec682553d66dbd9a3b43a775b36bbca853ac7743ab55af",
+      "expected_code": 0,
+      "hypothesis": "exact already-vendored compiler-owned drop_glue supplies the missing real generic cleanup dependency; no authored replacement",
+      "predecessor": {
+        "path": "source-execution-v2.rs",
+        "sha256": "47389886cf31137d14922afb7007b998349583822e3e9c54fa9ae5de8b729d89"
+      },
+      "native": {
+        "observer": "source-execution.c",
+        "observer_sha256": "181b231387d4ab38a077558b6232742c4aa94379990799148da8c6f481258113",
+        "stdout": "closure 2 23 25\n",
+        "status": 0
+      }
+    }
+  ],
+  "reused_original": {
+    "path": "pa31/tests/spec/cstr-source/original-drop-glue.rs",
+    "sha256": "5a60a9b1a527f153e485e5d7cc760531d7cd28ea055e539b645271ea559d10af",
+    "origin": "pinned core/ptr/mod.rs821-829; already registered original fragment; compiler replaces this exact real helper body"
+  }
+}
