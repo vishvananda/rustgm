@@ -1,0 +1,22 @@
+{
+  "scope": "PA21 precise method-signature diagnostic successor",
+  "ci_predecessor": 42146747956,
+  "ci_result": "all2727 private and all public integration targets pass; course fails only two stale PA21 diagnostic sidecars",
+  "receipt": {
+    "path": "obj/parallel/pa21-signature-references/qualification-v1/receipt.json",
+    "sha256": "5ae030e56334cb61ed9dadfda97671d439001a7715facfa3d7334a34196fdf8a"
+  },
+  "sources": {
+    "tests/spec/families/forwarding/method-mutability.rs": "c19d8b00d85f6722669c47dbcb573edec4b6dbbdf84885acebb7e69c15b8605a",
+    "tests/spec/families/forwarding/method-result.rs": "481ae3bbb82ae91e4c75d9b584b6e2e6926c18003117e7d13ffeb97f392feff7"
+  },
+  "cli_sha256": "15ac6c1cbf53caaa949eadddb255a31cdc3a91dcb0655c5535c707b05dbe9c32",
+  "independent_rust": "both original unchanged cases reject with E0053",
+  "course": "801/801 PA21 pass",
+  "layout": "all44 assignment layouts pass",
+  "generation": "only two stderr references and tracked scoped provenance batch changed",
+  "pending": [
+    "full successor native/debug/independent/release gates",
+    "original core/alloc/std artifacts"
+  ]
+}
