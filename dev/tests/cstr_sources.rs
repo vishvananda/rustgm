@@ -48,6 +48,11 @@ fn real_source_methods_and_const_static_views_lower() -> Result {
     Ok(())
 }
 #[test]
+fn cstr_and_nominal_references_reconstruct_from_actual_symbolic_byte_words() -> Result {
+    program("byte-word")?;
+    Ok(())
+}
+#[test]
 fn ordinary_type_privacy_body_const_and_unsafe_checks_remain() -> Result {
     for (name, causes) in [
         ("privacy", &["private"][..]),
@@ -89,7 +94,7 @@ fn ordinary_type_privacy_body_const_and_unsafe_checks_remain() -> Result {
 fn original_nominal_and_method_intervals_are_preserved() -> Result {
     let cstr = source::fixture(&format!("{PACKET}/original-cstr.rs"))?;
     let slice = source::fixture(&format!("{PACKET}/original-slice.rs"))?;
-    for name in ["source", "native", "local-storage-v2"] {
+    for name in ["source", "native", "local-storage-v2", "byte-word"] {
         let actual = source::fixture(&format!("{PACKET}/{name}.rs"))?;
         for (original, start, end) in [
             (&cstr, 3180, 4083),
@@ -145,6 +150,7 @@ fn actual_methods_and_both_literal_storage_views_execute_natively() -> Result {
         ("native", "observer.c", "CStr 65 2 0 195 169 255 92 1\n"),
         ("local-storage-v2", "local-storage.c", "storage 8 65 0\n"),
         ("local-roundtrip", "local-roundtrip.c", "roundtrip 255 0\n"),
+        ("byte-word", "byte-word.c", "byte-word 255 0 17 23\n"),
     ] {
         crate::ffi_program::check(
             &root,
