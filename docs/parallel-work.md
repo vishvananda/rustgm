@@ -1,3 +1,11 @@
+The [Coroutine/panic/CTFE main join](parallel/coroutine-panic-ctfe-main-join.md)
+passes19 public and4 native tests/eight executables plus fullPA18. CLI12836562
+clears the28-hook ordinary declaration frontier and reaches LIB180 from_yeet
+on unchanged original722-input core in18.8136s. No artifact or wholePA release.
+Root owns that next producer; the same two workers own actual nominal
+CoerceUnsized and conditional CTFE cleanup. Keep warm trees,2heavy/16GiB/
+150GiB/<=300s guards. Predecessor full42204489503 passed; successor remains due.
+
 The [Coroutine/capture main join](parallel/coroutine-source-checkpoint.md) qualifies
 20 exact public tests across two targets in202.46s and two native tests covering
 ten observer contracts in33.37s. All3615 recorded input hashes match main. Joined

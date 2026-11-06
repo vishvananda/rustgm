@@ -1,0 +1,64 @@
+{
+  "main_implementation": "d5f9c9f87",
+  "cli_sha256": "128365621497c018683452278dab23d28abaff1c4c3af4ce6963badb7febdf5f",
+  "qualified_inputs": 3630,
+  "qualified_inputs_match_main": true,
+  "regular_tests": 19,
+  "native_tests": 4,
+  "native_executables": 8,
+  "regular_seconds": 232.51,
+  "native_seconds": 39.71,
+  "core_observation": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "128365621497c018683452278dab23d28abaff1c4c3af4ce6963badb7febdf5f",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 95: 13957: source compiler language item semantic contract is not implemented",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 18.813628414995037,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "0005a876c65c8f384bba775699dbdfc92315b66e759523c2e9d904a52590a668",
+      "whole-core.openat": "67e723744636938b900705202a71a7ab2bba4b93290eeaddfb1772a63bbee04b",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    }
+  },
+  "frontier": {
+    "blocker": "LIB-180",
+    "file": 95,
+    "byte": 13957,
+    "path": "library/core/src/ops/try_trait.rs",
+    "line": 345,
+    "source_sha256": "61bc75cb647e8fae3812dfda5bbc2a88f4dc54372dc64108a713d87191202ee7"
+  },
+  "receipts": [
+    {
+      "path": "obj/qualification/fast/1793965967765638334/receipt.json",
+      "sha256": "2b6076d71c3811f01b19d4f5c01fe7befc62d138e155d3c4ef37bde30d3c4f09"
+    },
+    {
+      "path": "obj/qualification/fast/1793966206668697289/receipt.json",
+      "sha256": "1c4fe2aea64e23513721b6a89e2ca0876aca9c02db3c2de3a42db2b5700c3359"
+    },
+    {
+      "path": "obj/parallel/coroutine-core-v3/join-binding.json",
+      "sha256": "fc50c8fca727b49dfea212dd3d8e5af37a038859b3035c2e1f0759345f939a1b"
+    },
+    {
+      "path": "obj/parallel/coroutine-core-v3/receipt.json",
+      "sha256": "3a94225e7f37c178fb6460a0ddc120c20df5d6450841d556daff2f5445542af6"
+    },
+    {
+      "path": "obj/parallel/coroutine-core-v3/core/result.json",
+      "sha256": "0279f3d2d3365744136cb9c679cd84fd38094bbacc4386ffd713dd7b9ebcd5d7"
+    }
+  ]
+}
