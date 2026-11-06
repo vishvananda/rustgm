@@ -1,0 +1,111 @@
+{
+  "schema": 1,
+  "owning_assignment": "pa31",
+  "maintainer_origin": "dev/tests/overflow_words.rs",
+  "scope": "ordinary authenticated attribute/header target only; actual const closure semantics remain required",
+  "qualified": [
+    {
+      "file": "const-closure-v3.rs",
+      "sha256": "b35806dd21be5377039374160d5f4a11723c1116314b87df4fba9ea7e09018dc",
+      "expected": 0,
+      "hypothesis": "unused original attributed const-closure word and genuine addition body"
+    },
+    {
+      "file": "ordinary-closure-v3.rs",
+      "sha256": "5b97645a077cea06670f97895fb93cadf026e4e19e15656fe048dcffb5b3139b",
+      "expected": 0,
+      "hypothesis": "same ordinary closure remains valid"
+    },
+    {
+      "file": "missing-closure-feature-v3.rs",
+      "sha256": "50447019354c5c1a47b67a0e3b5d49d747a37255f373beec14c410e8dd819a53",
+      "expected": 1,
+      "hypothesis": "const closure still needs actual feature"
+    },
+    {
+      "file": "missing-internal-feature-v3.rs",
+      "sha256": "bf86abb3aa2bc29245d0b319f27b858328406358f61cb643db59489b937f27da",
+      "expected": 1,
+      "hypothesis": "internal attribute still needs actual feature"
+    },
+    {
+      "file": "wrong-target-v3.rs",
+      "sha256": "2429822d42e790a130fc361be1c39fde8c170ccccef97ee452489edc3eb572b8",
+      "expected": 1,
+      "hypothesis": "constant block is not a function or closure"
+    },
+    {
+      "file": "checked-function.rs",
+      "sha256": "39e0652749efb7c3a6bfdde3af8daf3dc23195aa04cc125b2ff7ce2b479e1b92",
+      "expected": 0,
+      "hypothesis": "actual checked function and const nonoverflow continue ordinary eligibility"
+    },
+    {
+      "file": "const-overflow.rs",
+      "sha256": "503baa81e99862103d585ab5be86187f59acd82e8bf706dc3f089bf652350a61",
+      "expected": 1,
+      "hypothesis": "real const arithmetic overflow remains rejected"
+    }
+  ],
+  "auxiliary": [
+    {
+      "file": "const-closure-v2.rs",
+      "sha256": "bff4562f59a8236eba97d52218e08b950711e56eb39844009c82583e3df0599b",
+      "status": "preserved upstream excerpt or earlier unqualified setup"
+    },
+    {
+      "file": "const-closure.rs",
+      "sha256": "b92f364171662b8c232ea303ec56790e2113c00fa16b82063b65b36fba792e91",
+      "status": "preserved upstream excerpt or earlier unqualified setup"
+    },
+    {
+      "file": "iterator-count.excerpt.rs",
+      "sha256": "09d09eecce09a7de66abfd6155e6603c5256c09748453994ad3b2682324402a4",
+      "status": "preserved upstream excerpt or earlier unqualified setup"
+    },
+    {
+      "file": "missing-closure-feature-v2.rs",
+      "sha256": "e733a6985750a238e1cd688dd45d2dabf7d2f24c8a8ceb0c3f7d4f40d1c91415",
+      "status": "preserved upstream excerpt or earlier unqualified setup"
+    },
+    {
+      "file": "missing-closure-feature.rs",
+      "sha256": "8aaea0784da47e5617abfbbcecffe97b7339ed39a90798b1f88b28226c051455",
+      "status": "preserved upstream excerpt or earlier unqualified setup"
+    },
+    {
+      "file": "missing-internal-feature-v2.rs",
+      "sha256": "17bd8d6a8affd4e3815eff9752e5c2fb05145d6b71a5c5dfe1c9ab1873772ae9",
+      "status": "preserved upstream excerpt or earlier unqualified setup"
+    },
+    {
+      "file": "missing-internal-feature.rs",
+      "sha256": "7206bc8ad07cdfc0554f039f86ea79c094aa3180e8af816b2d04aee03d3e42a3",
+      "status": "preserved upstream excerpt or earlier unqualified setup"
+    },
+    {
+      "file": "ordinary-closure-v2.rs",
+      "sha256": "156904cb162d3b5694bef0659795323bb0d3a35ff25e8695b9c85024e456187c",
+      "status": "preserved upstream excerpt or earlier unqualified setup"
+    },
+    {
+      "file": "ordinary-closure.rs",
+      "sha256": "7681a3738fbcddc442c4743aeddb1df1266700f4b5c054083106aaced46341c7",
+      "status": "preserved upstream excerpt or earlier unqualified setup"
+    },
+    {
+      "file": "wrong-target-v2.rs",
+      "sha256": "9bd7ff6d68e46aa1786f94fe3c35e377db1946ec85d3aff2fddcd51ae8145f16",
+      "status": "preserved upstream excerpt or earlier unqualified setup"
+    },
+    {
+      "file": "wrong-target.rs",
+      "sha256": "6142e1788fd4b77379cf7b22048f9b88aa5a67e748bac484588fa018fec89bb7",
+      "status": "preserved upstream excerpt or earlier unqualified setup"
+    }
+  ],
+  "independent_reference": {
+    "path": "reference-v3.json",
+    "sha256": "8ba0a7342cc1901ece5662d43cf01362f3b22859bee943b9df824997c442c25b"
+  }
+}

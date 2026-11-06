@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "owner": "pa31",
+  "correction": "Preserve v1/v2; ordinary non-staged support declarations need no const stability annotations; no unused library feature request.",
+  "cases": [
+    {
+      "file": "const-closure-v3.rs",
+      "sha256": "b35806dd21be5377039374160d5f4a11723c1116314b87df4fba9ea7e09018dc",
+      "expected": 0,
+      "hypothesis": "unused original attributed const-closure word and genuine addition body"
+    },
+    {
+      "file": "ordinary-closure-v3.rs",
+      "sha256": "5b97645a077cea06670f97895fb93cadf026e4e19e15656fe048dcffb5b3139b",
+      "expected": 0,
+      "hypothesis": "same ordinary closure remains valid"
+    },
+    {
+      "file": "missing-closure-feature-v3.rs",
+      "sha256": "50447019354c5c1a47b67a0e3b5d49d747a37255f373beec14c410e8dd819a53",
+      "expected": 1,
+      "hypothesis": "const closure still needs actual feature"
+    },
+    {
+      "file": "missing-internal-feature-v3.rs",
+      "sha256": "bf86abb3aa2bc29245d0b319f27b858328406358f61cb643db59489b937f27da",
+      "expected": 1,
+      "hypothesis": "internal attribute still needs actual feature"
+    },
+    {
+      "file": "wrong-target-v3.rs",
+      "sha256": "2429822d42e790a130fc361be1c39fde8c170ccccef97ee452489edc3eb572b8",
+      "expected": 1,
+      "hypothesis": "constant block is not a function or closure"
+    },
+    {
+      "file": "checked-function.rs",
+      "sha256": "39e0652749efb7c3a6bfdde3af8daf3dc23195aa04cc125b2ff7ce2b479e1b92",
+      "expected": 0,
+      "hypothesis": "actual checked function and const nonoverflow continue ordinary eligibility"
+    },
+    {
+      "file": "const-overflow.rs",
+      "sha256": "503baa81e99862103d585ab5be86187f59acd82e8bf706dc3f089bf652350a61",
+      "expected": 1,
+      "hypothesis": "real const arithmetic overflow remains rejected"
+    }
+  ]
+}

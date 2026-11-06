@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "owner": "pa31",
+  "correction": "Preserve v1; real const closure context, staged API owner and no irrelevant local const_ops request; isolate missing rustc_attrs to marker.",
+  "cases": [
+    {
+      "file": "const-closure-v2.rs",
+      "sha256": "bff4562f59a8236eba97d52218e08b950711e56eb39844009c82583e3df0599b",
+      "expected": 0,
+      "hypothesis": "unused original attributed const-closure word and genuine addition body"
+    },
+    {
+      "file": "ordinary-closure-v2.rs",
+      "sha256": "156904cb162d3b5694bef0659795323bb0d3a35ff25e8695b9c85024e456187c",
+      "expected": 0,
+      "hypothesis": "same ordinary closure remains valid"
+    },
+    {
+      "file": "missing-closure-feature-v2.rs",
+      "sha256": "e733a6985750a238e1cd688dd45d2dabf7d2f24c8a8ceb0c3f7d4f40d1c91415",
+      "expected": 1,
+      "hypothesis": "const closure still needs actual feature"
+    },
+    {
+      "file": "missing-internal-feature-v2.rs",
+      "sha256": "17bd8d6a8affd4e3815eff9752e5c2fb05145d6b71a5c5dfe1c9ab1873772ae9",
+      "expected": 1,
+      "hypothesis": "internal attribute still needs actual feature"
+    },
+    {
+      "file": "wrong-target-v2.rs",
+      "sha256": "9bd7ff6d68e46aa1786f94fe3c35e377db1946ec85d3aff2fddcd51ae8145f16",
+      "expected": 1,
+      "hypothesis": "constant block is not a function or closure"
+    },
+    {
+      "file": "checked-function.rs",
+      "sha256": "39e0652749efb7c3a6bfdde3af8daf3dc23195aa04cc125b2ff7ce2b479e1b92",
+      "expected": 0,
+      "hypothesis": "actual checked function and const nonoverflow continue ordinary eligibility"
+    },
+    {
+      "file": "const-overflow.rs",
+      "sha256": "503baa81e99862103d585ab5be86187f59acd82e8bf706dc3f089bf652350a61",
+      "expected": 1,
+      "hypothesis": "real const arithmetic overflow remains rejected"
+    }
+  ]
+}

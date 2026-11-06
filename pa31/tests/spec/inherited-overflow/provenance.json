@@ -1,0 +1,11 @@
+{
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source": {
+    "path": "library/core/src/iter/traits/iterator.rs",
+    "bytes": 144253,
+    "sha256": "db43b7acc33fca53d85fef3ddea29ec9f8c1e768df428676fe2de160f21d5f6b"
+  },
+  "existing_excerpt": "pa31/tests/spec/trait-default-effects/projections/iterator-count.excerpt.rs",
+  "excerpt_sha256": "09d09eecce09a7de66abfd6155e6603c5256c09748453994ad3b2682324402a4",
+  "source_scope": "Original count excerpt retained unchanged; authored support declarations isolate the attribute target, not the whole Iterator module."
+}

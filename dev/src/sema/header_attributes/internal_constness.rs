@@ -151,6 +151,15 @@ pub(in crate::sema) fn consume_inherited_overflow(
     let ast = &report.package.unit(declaration.file).configured.ast;
     let valid = match ast.node(declaration.node).kind {
         Kind::Closure { .. } => true,
+        Kind::ConstClosure { closure, gate } => {
+            let site = ast.expression_gate(gate).ok_or_else(|| {
+                error("inherited overflow policy lost its actual const closure gate")
+            })?;
+            site.node == declaration.node
+                && site.validate(ast, gate).map_err(|failure| {
+                    Error::at(declaration.file, failure.offset, failure.message)
+                })? == closure
+        }
         Kind::Item(index) => matches!(
             ast.items[index as usize].kind,
             ItemKind::Function { body: Some(_), .. }

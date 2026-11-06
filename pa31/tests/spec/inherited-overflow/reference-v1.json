@@ -1,0 +1,273 @@
+{
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "version": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+    "driver": {
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+    }
+  },
+  "predictions_sha256": "cbe0f9aa1700d667b6acaa028729f8a22d2857dbe77992b7a1c09135525ff222",
+  "observations": [
+    {
+      "file": "const-closure.rs",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "overflow_word",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/inherited-overflow/const-closure.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/reference-v1/const-closure.rmeta"
+      ],
+      "code": 1,
+      "expected": 0,
+      "seconds": 0.028156641055829823,
+      "errors": [
+        {
+          "code": "E0658",
+          "message": "stability attributes may not be used outside of the standard library"
+        },
+        {
+          "code": "E0635",
+          "message": "unknown feature `const_ops`"
+        },
+        {
+          "code": null,
+          "message": "cannot use `const` closures outside of const contexts"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 3 previous errors"
+        }
+      ]
+    },
+    {
+      "file": "ordinary-closure.rs",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "overflow_word",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/inherited-overflow/ordinary-closure.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/reference-v1/ordinary-closure.rmeta"
+      ],
+      "code": 1,
+      "expected": 0,
+      "seconds": 0.03150291391648352,
+      "errors": [
+        {
+          "code": "E0658",
+          "message": "stability attributes may not be used outside of the standard library"
+        },
+        {
+          "code": "E0635",
+          "message": "unknown feature `const_ops`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 2 previous errors"
+        }
+      ]
+    },
+    {
+      "file": "missing-closure-feature.rs",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "overflow_word",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/inherited-overflow/missing-closure-feature.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/reference-v1/missing-closure-feature.rmeta"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.02833712298888713,
+      "errors": [
+        {
+          "code": "E0658",
+          "message": "const closures are experimental"
+        },
+        {
+          "code": "E0658",
+          "message": "stability attributes may not be used outside of the standard library"
+        },
+        {
+          "code": "E0635",
+          "message": "unknown feature `const_ops`"
+        },
+        {
+          "code": null,
+          "message": "cannot use `const` closures outside of const contexts"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 4 previous errors"
+        }
+      ]
+    },
+    {
+      "file": "missing-internal-feature.rs",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "overflow_word",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/inherited-overflow/missing-internal-feature.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/reference-v1/missing-internal-feature.rmeta"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.02878860500641167,
+      "errors": [
+        {
+          "code": "E0658",
+          "message": "use of an internal attribute"
+        },
+        {
+          "code": "E0658",
+          "message": "use of an internal attribute"
+        },
+        {
+          "code": "E0658",
+          "message": "stability attributes may not be used outside of the standard library"
+        },
+        {
+          "code": "E0658",
+          "message": "use of an internal attribute"
+        },
+        {
+          "code": "E0635",
+          "message": "unknown feature `const_ops`"
+        },
+        {
+          "code": null,
+          "message": "cannot use `const` closures outside of const contexts"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 6 previous errors"
+        }
+      ]
+    },
+    {
+      "file": "wrong-target.rs",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "overflow_word",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/inherited-overflow/wrong-target.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/reference-v1/wrong-target.rmeta"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.027262003044597805,
+      "errors": [
+        {
+          "code": "E0658",
+          "message": "stability attributes may not be used outside of the standard library"
+        },
+        {
+          "code": null,
+          "message": "`#[rustc_inherit_overflow_checks]` attribute cannot be used on expressions"
+        },
+        {
+          "code": "E0635",
+          "message": "unknown feature `const_ops`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 3 previous errors"
+        }
+      ]
+    },
+    {
+      "file": "checked-function.rs",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "overflow_word",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/inherited-overflow/checked-function.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/reference-v1/checked-function.rmeta"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.02695054793730378,
+      "errors": []
+    },
+    {
+      "file": "const-overflow.rs",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "overflow_word",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/inherited-overflow/const-overflow.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/reference-v1/const-overflow.rmeta"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.026818699087016284,
+      "errors": [
+        {
+          "code": "E0080",
+          "message": "attempt to negate `isize::MIN`, which would overflow"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    }
+  ]
+}

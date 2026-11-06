@@ -218,3 +218,6 @@ mod qualified_types;
 mod reborrow_sources;
 #[path = "../../weak_symbols.rs"]
 mod weak_symbols;
+
+#[path = "../../overflow_words.rs"]
+mod overflow_words;

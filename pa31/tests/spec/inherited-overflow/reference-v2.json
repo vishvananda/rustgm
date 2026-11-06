@@ -1,0 +1,333 @@
+{
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "version": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+    "driver": {
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+    }
+  },
+  "predictions_sha256": "c78f0d4831aff6d8064ff73a3e3ce2cac7ffea789525e7376a42c996f37066d9",
+  "observations": [
+    {
+      "file": "const-closure-v2.rs",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "overflow_word",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/inherited-overflow/const-closure-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/reference-v2/const-closure-v2.rmeta"
+      ],
+      "code": 1,
+      "expected": 0,
+      "seconds": 0.03171196300536394,
+      "errors": [
+        {
+          "code": null,
+          "message": "const stability on the impl does not match the const stability on the trait"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 6 previous errors"
+        }
+      ]
+    },
+    {
+      "file": "ordinary-closure-v2.rs",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "overflow_word",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/inherited-overflow/ordinary-closure-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/reference-v2/ordinary-closure-v2.rmeta"
+      ],
+      "code": 1,
+      "expected": 0,
+      "seconds": 0.02881350403185934,
+      "errors": [
+        {
+          "code": null,
+          "message": "const stability on the impl does not match the const stability on the trait"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 6 previous errors"
+        }
+      ]
+    },
+    {
+      "file": "missing-closure-feature-v2.rs",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "overflow_word",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/inherited-overflow/missing-closure-feature-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/reference-v2/missing-closure-feature-v2.rmeta"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.031760925077833235,
+      "errors": [
+        {
+          "code": "E0658",
+          "message": "const closures are experimental"
+        },
+        {
+          "code": null,
+          "message": "const stability on the impl does not match the const stability on the trait"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 7 previous errors"
+        }
+      ]
+    },
+    {
+      "file": "missing-internal-feature-v2.rs",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "overflow_word",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/inherited-overflow/missing-internal-feature-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/reference-v2/missing-internal-feature-v2.rmeta"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.030577825964428484,
+      "errors": [
+        {
+          "code": "E0658",
+          "message": "use of an internal attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 7 previous errors"
+        }
+      ]
+    },
+    {
+      "file": "wrong-target-v2.rs",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "overflow_word",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/inherited-overflow/wrong-target-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/reference-v2/wrong-target-v2.rmeta"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.03285820898599923,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[rustc_inherit_overflow_checks]` attribute cannot be used on expressions"
+        },
+        {
+          "code": null,
+          "message": "const stability on the impl does not match the const stability on the trait"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "trait has missing const stability attribute"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 7 previous errors"
+        }
+      ]
+    },
+    {
+      "file": "checked-function.rs",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "overflow_word",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/inherited-overflow/checked-function.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/reference-v2/checked-function.rmeta"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.029329230077564716,
+      "errors": []
+    },
+    {
+      "file": "const-overflow.rs",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "overflow_word",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/inherited-overflow/const-overflow.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/reference-v2/const-overflow.rmeta"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.03405326697975397,
+      "errors": [
+        {
+          "code": "E0080",
+          "message": "attempt to negate `isize::MIN`, which would overflow"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    }
+  ]
+}

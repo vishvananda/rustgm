@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "owning_assignment": "pa31",
+  "profile": "Rust1.98 edition2024 x86_64 panicabort overflowchecks=true capallow bootstrap1 metadata",
+  "cases": [
+    {
+      "file": "const-closure.rs",
+      "sha256": "b92f364171662b8c232ea303ec56790e2113c00fa16b82063b65b36fba792e91",
+      "expected": 0,
+      "hypothesis": "unused original attributed const-closure word and genuine addition body"
+    },
+    {
+      "file": "ordinary-closure.rs",
+      "sha256": "7681a3738fbcddc442c4743aeddb1df1266700f4b5c054083106aaced46341c7",
+      "expected": 0,
+      "hypothesis": "same ordinary closure remains valid"
+    },
+    {
+      "file": "missing-closure-feature.rs",
+      "sha256": "8aaea0784da47e5617abfbbcecffe97b7339ed39a90798b1f88b28226c051455",
+      "expected": 1,
+      "hypothesis": "const closure still needs actual feature"
+    },
+    {
+      "file": "missing-internal-feature.rs",
+      "sha256": "7206bc8ad07cdfc0554f039f86ea79c094aa3180e8af816b2d04aee03d3e42a3",
+      "expected": 1,
+      "hypothesis": "internal attribute still needs actual feature"
+    },
+    {
+      "file": "wrong-target.rs",
+      "sha256": "6142e1788fd4b77379cf7b22048f9b88aa5a67e748bac484588fa018fec89bb7",
+      "expected": 1,
+      "hypothesis": "constant block is not a function or closure"
+    },
+    {
+      "file": "checked-function.rs",
+      "sha256": "39e0652749efb7c3a6bfdde3af8daf3dc23195aa04cc125b2ff7ce2b479e1b92",
+      "expected": 0,
+      "hypothesis": "actual checked function and const nonoverflow continue ordinary eligibility"
+    },
+    {
+      "file": "const-overflow.rs",
+      "sha256": "503baa81e99862103d585ab5be86187f59acd82e8bf706dc3f089bf652350a61",
+      "expected": 1,
+      "hypothesis": "real const arithmetic overflow remains rejected"
+    }
+  ]
+}
