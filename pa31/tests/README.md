@@ -470,3 +470,11 @@ payload and actual source destructor trace; inactive None must not run Drop.
 The exact source intervals and authored protocol boundaries are retained in
 `source-provenance.json`. These fixtures do not replace the original generic
 NonZero/ZeroablePrimitive or full Option/Drop source graphs.
+
+`spec/cstr-source/` retains the original CStr nominal/method intervals and
+independently predicted literal, header, ordinary-error and native cases. Local
+source companions add real constant/static typed backing, fat-reference slot
+roundtrip and immutable/end-of-allocation controls, with all failed hypotheses
+and no_core setup predecessors preserved. See its README and `local-reference.json`.
+Grouped `cstr_sources` owns candidate coverage; neither this preparation nor finite
+source qualification activates PA31 or claims an original library artifact.

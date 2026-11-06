@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "profile": "Rust1.98.0 / edition2024 / x86_64-unknown-linux-gnu / panicabort / cap-lintsallow / RUSTC_BOOTSTRAP1",
+  "candidate_observation": false,
+  "receipts": [
+    {
+      "label": "local-v1",
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/cstr-local-reference/receipt.json",
+      "sha256": "b5b34261cd4ff2f27671e9193b1e7c33cf5800c9bbbc2e8fef2ad76157ee9958"
+    },
+    {
+      "label": "local-v2",
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/cstr-local-reference/v2/receipt.json",
+      "sha256": "7b3e2fb2ed73dbb2356a3b778117990713190b31c299f32e907a2fd90202063a"
+    },
+    {
+      "label": "views-v1",
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/cstr-local-reference/views-v1/receipt.json",
+      "sha256": "b9df110ad93591339b29ef3ee323d3f7588612a0e9f6b75c075482d2365ed5f1"
+    },
+    {
+      "label": "views-v2",
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/cstr-local-reference/views-v2/receipt.json",
+      "sha256": "5559733472103b784969c02c96db287ca7b50cf9546ac17e3e48d5a3a73fbcae"
+    }
+  ],
+  "local_v2": "Eight metadata statuses and seven ordinary rejection causes match; real Rust object+cc+native prints storage 8 65 0. Actual CStr/slice methods and const/static calls unchanged.",
+  "raw_reference_slot": "local-roundtrip.rs accepts and actual Rust native prints roundtrip 255 0; local-write.rs rejects read-only allocation.",
+  "bounds": "local-overread-v2.rs rejects metadata and object E0080 accessing alloc1+0x2 beyond size2. The original move-array input instead fails missing array Copy; predicted literal keyword bounds was absent, actual allocation-end diagnostic retained.",
+  "utf8": "Both original local-utf8.rs (metadata+object) and exported local-utf8-static.rs (metadata+object) ACCEPT in this pinned no_core profile. The rejection hypothesis is disproved, neither source was executed, and these are not negative candidate controls. No general UTF8 validity or std claim.",
+  "setup_history": "local-storage.rs original v1 fails only authored byte-array as_ptr receiver unsizing because minimal setup has no coerce_unsized. Original bytes retained; local-storage-v2.rs uses explicit ordinary raw array pointer casts for those two controls.",
+  "sources": {
+    "local-const.rs": "a2dfa40b77f64813d3b23b583f665512061b5ffed2619983db4cbed9eb9dc3c1",
+    "local-mutable.rs": "eef90f26a24a51aa7fcd86458c8910d8fdc5ef9938bed82c87f7efb394dc638b",
+    "local-nul.rs": "e2fa692f372c764a0cb4318081268d0f25eebd91b7fd4c429a298021b7f0f1f5",
+    "local-overread-v2.rs": "3c944e8eaed241a334f9bdef90621565dd8345d29440c88c668242caf5705ebe",
+    "local-overread.rs": "9d99c11155afa09e96007fad491d9c8bede59b1505342d61bf61ed6b6697f1f9",
+    "local-pointer.rs": "51b09dc558e03d0c4ad8ed5ac51c567c95e1104e2016ea4008d34cf10c1dc3d7",
+    "local-predictions-v1.json": "46ed749b7d4ffeb886b168eb939f560db5dfee0d341a7a11c8796a13313a4dcf",
+    "local-predictions-v2.json": "f668be68592c364430a7d644bbd3abd2c92cd903a39c420c00c97a0f534d6bf5",
+    "local-reinterpret.rs": "8b640d65feecd8f7b08003c6f652d3f57b637107b71bdf9c16ab94c2efb55361",
+    "local-roundtrip.c": "83baf41a18d2cb624d958e72849de98fb74bc9834f8bd71a37ac5cb0b856e7b2",
+    "local-roundtrip.rs": "58d29c5ce855f1e8f913b13f8ad4d9252a8c8049e8dc9fe9ff5e4759a1b941ce",
+    "local-safe.rs": "04655ce5ea176b34e2b31b63358d7dc4887465cc5f64b3a9246395e6e46d0439",
+    "local-storage-v2.rs": "0e832425735ae0d96719088968dc0048b28ce601703f53d36c4408c08a443df4",
+    "local-storage.c": "c65b8b0ada6c3e20afdc997a91a91b8125ced3033bc162cee94f2a8011452c7e",
+    "local-storage.rs": "0fd06ed890dc74dd0d3abea00aed34995c5450720883b510c2c29ef9457db2a3",
+    "local-type.rs": "d5247e737bf3d0f94985b34017367c3f6f49f96d77411aa03515e3db2025a327",
+    "local-utf8-static.rs": "ce4683652feac83522754c0d1ecb9ea9211425b1683dc45e9a43b7772ec0ee21",
+    "local-utf8.rs": "5d6204c117b7e8f4d323cbab65fd5059e397179aff128e9ae7d2339454b2dc72",
+    "local-write.rs": "7b30eec40b96d6bd9242f2f4a2c63ae09549468b3689a856732c728036fe2ce9"
+  }
+}

@@ -38,7 +38,7 @@ fn source_nominal_and_unused_alternative_headers_retain_ordinary_legality() -> R
 }
 #[test]
 fn real_source_methods_and_const_static_views_lower() -> Result {
-    for name in ["native", "local-storage-v2"] {
+    for name in ["native", "local-storage-v2", "local-roundtrip"] {
         let program = program(name)?;
         assert!(
             program.symbols.iter().any(|symbol| symbol.body.is_some()),
@@ -62,6 +62,11 @@ fn ordinary_type_privacy_body_const_and_unsafe_checks_remain() -> Result {
         ("local-reinterpret", &["type", "mismatch"][..]),
         ("local-nul", &["null", "NUL", "zero", "c-string"][..]),
         ("local-safe", &["unsafe"][..]),
+        ("local-write", &["immutable", "read-only", "shared"][..]),
+        (
+            "local-overread-v2",
+            &["bounds", "outside", "out of", "exceeds", "extent", "range"][..],
+        ),
     ] {
         let error = program(name)
             .err()
@@ -139,6 +144,11 @@ fn actual_methods_and_both_literal_storage_views_execute_natively() -> Result {
     for (name, observer, expected) in [
         ("native", "observer.c", "CStr 65 2 0 195 169 255 92 1\n"),
         ("local-storage-v2", "local-storage.c", "storage 8 65 0\n"),
+        (
+            "local-roundtrip",
+            "local-roundtrip.c",
+            "roundtrip 255 0\n",
+        ),
     ] {
         crate::ffi_program::check(
             &root,

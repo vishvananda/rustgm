@@ -47,3 +47,21 @@ Their static libraries retain the real standard runtime dependencies. Initial
 standalone-object link failures are preserved, as are missing Copy/const-stability
 and drop_glue setup errors. Harness and upstream verification pass. See
 ../../../../docs/parallel/source-cstr-reference.md for exact evidence bindings.
+
+The local-source extension is frozen in `local-predictions-v1/v2.json` and
+`view-predictions-v1/v2.json`; [local-reference.json](local-reference.json) binds
+the independent observations and retained discrepancies. The v2 storage companion
+preserves the actual CStr and slice method bodies and exercises byte/CStr constants,
+statics, const `as_ptr`/`to_bytes_with_nul`, and signed high-byte views. Its real
+Rust native output is `storage 8 65 0`. The raw fat-reference slot/aggregate
+roundtrip prints `roundtrip 255 0`; raw literal writes and scalar overreads reject
+for actual immutable-allocation and end-of-allocation causes. These companions
+do not substitute for compiling the full original core or std graph.
+
+Original failed setup and hypotheses remain intact: byte-array method unsizing
+needs additional no_core support, the first array overread stops at missing Copy,
+and both UTF8 view hypotheses are accepted through object generation in this
+profile. UTF8 sources were never executed and are not candidate negative controls.
+The independent literal keyword `bounds` was absent from the successful allocation
+end diagnostic; the actual E0080 cause is retained. Maintainer candidate tests are
+registered as `cstr_sources`; candidate implementation qualification is separate.
