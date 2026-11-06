@@ -349,6 +349,12 @@ impl Checker<'_> {
             .infer
             .reference_target(&self.facts.types, original.receiver)
             .map_err(|e| self.error(node, e))?;
+        let crate::syntax::ast::Kind::Field { value, .. } = self.kind(node) else {
+            return Err(self.error(node, "field receiver read lost its actual source"));
+        };
+        if dereferences != 0 {
+            self.check_union_receiver(node, value)?;
+        }
         let field = super::aggregates::Field {
             receiver,
             name: original.name,
@@ -374,6 +380,12 @@ impl Checker<'_> {
             }
             self.schedule_expression_completion(node, term)?;
             return Ok(None);
+        }
+        // Discovery establishes that this is a call-time receiver borrow, not
+        // a direct field store. Check its real lexical unsafe context now;
+        // final method selection happens after mutable-place discovery settles.
+        if dereferences == 0 && self.field_plan(node).is_none() {
+            self.check_union_receiver(node, value)?;
         }
         let (index, target) = self.discover_field_target(node, receiver, dereferences)?;
         self.extend_field_discovery(node, index)?;

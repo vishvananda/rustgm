@@ -561,6 +561,9 @@ impl Checker<'_> {
     ) -> Result<TermId, Error> {
         let mut field = self.prepare_field(node, value, name)?;
         field.receiver = self.autoderef(node, field.receiver)?;
+        if self.facts.autoderefs.contains_key(&self.key(node)) {
+            self.check_union_receiver(node, value)?;
+        }
         self.complete_field(node, field)
     }
     pub(super) fn prepare_field(
@@ -571,7 +574,6 @@ impl Checker<'_> {
     ) -> Result<Field, Error> {
         let name = self.member_name(node, name)?;
         let receiver = self.term(value)?;
-        self.check_union_receiver(node, value)?;
         Ok(Field { receiver, name })
     }
     pub(super) fn field_dependency(&self, kind: Constructor) -> Option<crate::types::ItemId> {

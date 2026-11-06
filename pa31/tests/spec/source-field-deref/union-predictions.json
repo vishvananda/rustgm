@@ -1,0 +1,15 @@
+{
+  "scope": "actual source DerefMut borrows a union field; predictions frozen before candidate observations",
+  "cases": [
+    {
+      "file": "union-borrow-safe.rs",
+      "sha256": "d749c5de94829ed0765e40126ab9f838bc05be1d405d2fa642b9de2bec20550a",
+      "rustc_status": 1
+    },
+    {
+      "file": "union-borrow-unsafe.rs",
+      "sha256": "55ad7f7c8c9098048bb2cf6762d63c478b6710b33084a6616da1fb2aa7c6c2d4",
+      "rustc_status": 0
+    }
+  ]
+}

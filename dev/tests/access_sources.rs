@@ -151,3 +151,30 @@ fn field_call_order_temporary_once_shadow_and_const_mutability_reach_native() ->
     }
     Ok(())
 }
+
+#[test]
+fn source_field_receiver_borrow_reads_union_storage_in_its_lexical_context() -> Result {
+    for (name, accepted) in [("union-borrow-safe", false), ("union-borrow-unsafe", true)] {
+        let text = source::fixture(&format!("pa31/tests/spec/source-field-deref/{name}.rs"))?;
+        let report = source::source_provider(&text, "union_field_receiver")?;
+        let result = rustgm::pipeline::analyze_source(&report);
+        if accepted {
+            let rustgm::pipeline::Analysis {
+                mut facts,
+                prepared,
+            } = result?;
+            rustgm::lower::instances::inspect_prepared(&report, &mut facts, prepared, |_, _| ())?;
+        } else {
+            let error = result
+                .err()
+                .ok_or("unsafe union receiver borrow accepted")?;
+            assert!(
+                error
+                    .to_string()
+                    .contains("union field access requires an unsafe context"),
+                "{error}"
+            );
+        }
+    }
+    Ok(())
+}

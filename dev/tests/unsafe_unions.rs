@@ -222,6 +222,26 @@ const CASES: &[(&str, bool, &str)] = &[
         "struct S{x:u32}union U<'a>{r:(&'a mut S,),x:u32}fn f(mut u:U){u.r.0.x=7;}",
     ),
     (
+        "unsafe-reference-field-store",
+        true,
+        "struct S{x:u32}union U<'a>{r:&'a mut S,x:u32}fn f(mut u:U){unsafe{u.r.x=7;}}",
+    ),
+    (
+        "unsafe-tuple-reference-field-store",
+        true,
+        "struct S{x:u32}union U<'a>{r:(&'a mut S,),x:u32}fn f(mut u:U){unsafe{u.r.0.x=7;}}",
+    ),
+    (
+        "direct-nested-union-field-store",
+        true,
+        "#[derive(Copy,Clone)]struct S{x:u32}union U{s:S,x:u32}fn f(mut u:U){u.s.x=7;}",
+    ),
+    (
+        "ordinary-reference-field-store",
+        true,
+        "struct S{x:u32}struct U<'a>{r:&'a mut S}fn f(mut u:U){u.r.x=7;}",
+    ),
+    (
         "clone-without-copy",
         false,
         "#[derive(Clone)]union U{x:u32,y:u32}",

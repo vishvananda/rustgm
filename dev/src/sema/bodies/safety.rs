@@ -46,9 +46,9 @@ impl Checker<'_> {
         node: NodeId,
         mut place: NodeId,
     ) -> Result<(), Error> {
-        if !self.facts.aggregates.has_unions()
-            || !self.facts.autoderefs.contains_key(&self.key(node))
-        {
+        // Called only when a typed receiver operation actually reads/borrows
+        // this place. A direct union field replacement has no such operation.
+        if !self.facts.aggregates.has_unions() {
             return Ok(());
         }
         for _ in 0..1_000_000 {
