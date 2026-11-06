@@ -57,10 +57,7 @@ fn ordinary_type_privacy_body_const_and_unsafe_checks_remain() -> Result {
         ("missing", &["C string literals require"][..]),
         ("local-type", &["type", "mismatch"][..]),
         ("local-mutable", &["type", "mismatch", "mutable"][..]),
-        (
-            "local-pointer",
-            &["type", "mismatch", "mutability"][..],
-        ),
+        ("local-pointer", &["type", "mismatch", "mutability"][..]),
         ("local-const", &["const"][..]),
         ("local-reinterpret", &["type", "mismatch"][..]),
         ("local-nul", &["null", "NUL", "zero", "c-string"][..]),
@@ -147,11 +144,7 @@ fn actual_methods_and_both_literal_storage_views_execute_natively() -> Result {
     for (name, observer, expected) in [
         ("native", "observer.c", "CStr 65 2 0 195 169 255 92 1\n"),
         ("local-storage-v2", "local-storage.c", "storage 8 65 0\n"),
-        (
-            "local-roundtrip",
-            "local-roundtrip.c",
-            "roundtrip 255 0\n",
-        ),
+        ("local-roundtrip", "local-roundtrip.c", "roundtrip 255 0\n"),
     ] {
         crate::ffi_program::check(
             &root,
