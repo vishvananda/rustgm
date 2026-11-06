@@ -1,3 +1,14 @@
+The [PA17 diagnostic successor](parallel/pa17-drop-signature-successor.md) records
+terminal full42156026578: all2727 private controls and every public target pass;
+only two course diagnostic sidecars are stale after the actual pin_drop contract.
+Both unchanged inputs reject independently with E0438/E0407. Exact generation
+and205/205 PA17/all44 layouts pass on immutable9ebf8ae5. Full successor remains
+pending. Root's paid shared-query adapter stays isolated after16 public/3 actual
+radix-module controls pass; cold private linking timed out within the guard,
+so its two query-budget tests are not claimed executed. Workers retain the
+original AsyncIterator source/borrow and const original-row pairing work; mfield
+remains a hard consumer integration blocker until its exact semantic retry passes.
+
 The [complete Drop checkpoint](parallel/full-drop-source-checkpoint.md) qualifies
 both legal unused alternate headers, all12 original-source outcomes and4 actual
 ordinary/pinned/generic native traces. CLI9ebf8ae5 preserves original core at

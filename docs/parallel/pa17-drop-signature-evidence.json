@@ -1,0 +1,28 @@
+{
+  "scope": "Two PA17 destructor diagnostic sidecars; original source and language rejection unchanged",
+  "ci_predecessor": 42156026578,
+  "ci_result": "all2727 private and all public targets pass; only these two course diagnostics fail",
+  "receipt": {
+    "path": "obj/parallel/pa17-drop-signature-references/qualification-v1/receipt.json",
+    "sha256": "57fe0c81e4100990011e77ec8d649fca04f4f40317222b2d5faeb8e27f648745"
+  },
+  "sources": {
+    "tests/spec/headers/extra-constant.rs": "f620b499786024c5ef8f860f1bc7ac6a477d3e0c8f6f3776d88838fe85f4115e",
+    "tests/spec/headers/extra-method.rs": "3712316d08f501c1c9568a4855c47f1313ec4182044ba1368abc62bd40b49da9"
+  },
+  "cli_sha256": "9ebf8ae50fa4c54aa9fd2ed59bd5f2e0fd6728621b42271c1b723f8a193e5415",
+  "independent_rust": {
+    "extra-constant": "E0438",
+    "extra-method": "E0407"
+  },
+  "qualification": {
+    "pa17": "205/205",
+    "layout": "all44 pass",
+    "seconds": 8.187364427023567
+  },
+  "generation": "Authorized exact-case generator; two stderr sidecars + tracked scoped provenance, no manual reference edits",
+  "pending": [
+    "full successor qualification",
+    "all original core/alloc/std artifacts and unreleased PA scope"
+  ]
+}
