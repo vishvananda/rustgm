@@ -96,7 +96,22 @@
     "state": "success",
     "url": "https://github.com/vishvananda/rustgm/actions/runs/42255186438"
   },
-  "current_full_ci": "pending after main publication",
+  "current_full_ci": {
+    "run": "42273932679",
+    "head": "14fe4f9c510715d2f20bb43786e79250e013d645",
+    "url": "https://github.com/vishvananda/rustgm/actions/runs/42273932679",
+    "state": "passed",
+    "gates": [
+      "fast smoke",
+      "lint, architecture and harness",
+      "independent host build graph",
+      "release and course tests",
+      "native maintainer qualification",
+      "debug invariants",
+      "independent Rust qualification",
+      "PA25 const-machine candidate contract"
+    ]
+  },
   "pending": [
     "Whole original core/alloc/std artifacts",
     "Full original CStr module/derive/constructors/from_ptr/strlen",
@@ -811,5 +826,10 @@
       "status": "CLI usage error --types; no input/parity/timing qualification; exact failed observation retained"
     },
     "interpretation": "All40 immutable A/A+ABBA observations preserve exact output equality. Ordinary-control median paired ratios1.0172 and1.0062 sit within observed calibration variation. No broad throughput or speedup claim."
+  },
+  "initial_full_ci": {
+    "id": 42265080175,
+    "state": "failed",
+    "repair": "docs/parallel/text-slice-repair.json"
   }
 }
