@@ -1,4 +1,6 @@
 //! Genuine source storage shape is independent of executable state-machine proof.
+#[path = "stateframe/poll_observers.rs"]
+mod poll_observers;
 use crate::resolve as source;
 use rustgm::{
     abi::layout::Layouts,

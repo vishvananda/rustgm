@@ -1,5 +1,24 @@
 # Parallel library bootstrap implementation
 
+The [joined scalar-poll checkpoint](parallel/scalar-poll-join.md) now passes34
+exact controls across4 targets and14 real native observers, including actual
+required poll/Ready3, state access without user Copy and completed-reentry
+rejection. CLI15ac6c1c preserves original722-input core at **LIB-171 AsyncIterator**
+in18.8339s/375opens, with all pins/configuration/options/cap/finite limits fixed.
+Core still exits1; no original artifact or whole PA after24 is complete.
+Current/predecessor pins are15ac6c1c/8d4a4ff3;5fc is retired/pruned.
+
+Full42131050558 is terminal:2725 private controls pass, one stale vocabulary
+expectation and one bare Destruct-policy assertion fail. Both have scoped
+successors; actual lending/mismatch/wrong-factory private controls pass that run.
+Private scalar-poll invariants and full successor qualification remain pending.
+Root integrates and handles CI; the existing6.1-sol/high workers own actual
+AsyncIterator source/manual consumers and genuine root-local const qualification.
+Four observed const false acceptances block consumer integration. Keep2heavy,
+16GiB caps,150GiB reserve and <=300s local batches in the existing warm trees.
+
+## Prior source checkpoint record
+
 The [FusedIterator checkpoint](parallel/fused-iterator-checkpoint.md) passes17 new
 source/body outcomes,4 exact public tests and2 actual native observers.
 Immutable CLI8d4a4ff3 advances unchanged original core to **LIB-171, AsyncIterator**,

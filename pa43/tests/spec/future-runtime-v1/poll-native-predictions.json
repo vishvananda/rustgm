@@ -1,0 +1,30 @@
+{
+  "state": "C guard frozen before joined candidate execution; source outcomes independently qualified by existing pollready/pollbyte/pollrepeat predictions",
+  "cases": [
+    {
+      "source": "pollready-source.rs",
+      "source_sha256": "ea1b156f31ff38720bab3bd94b8bea2ea926451e3f9926f2879e89bfc13f41d7",
+      "observer": "poll-observer.c",
+      "observer_sha256": "c6bf28cd2035266f5aa923ea71e88d907495fcc6c560a7589c7fd3a8541ca99d",
+      "stdout": "3\n",
+      "status": 0
+    },
+    {
+      "source": "pollbyte-source.rs",
+      "source_sha256": "f1a0bf5dbb39baf57aee1e3a74b72d8004585cc736a3d4aa1c66b15bc06bbd58",
+      "observer": "poll-observer.c",
+      "observer_sha256": "c6bf28cd2035266f5aa923ea71e88d907495fcc6c560a7589c7fd3a8541ca99d",
+      "stdout": "3\n",
+      "status": 0
+    },
+    {
+      "source": "pollrepeat-source.rs",
+      "source_sha256": "255fb151ad6f5677a391e595ee42d74507e7ff7958b42ed4d16f95b5065ee8cf",
+      "observer": "poll-repeat-observer.c",
+      "observer_sha256": "9cdaab5ef6dc2cf7b341dd61235c18dc09138b620be34c034ee4ae4ef8e23981",
+      "stdout": "",
+      "status": 0
+    }
+  ],
+  "completion_guard": "Actual x86-64 candidate trap is checked in a child by SIGILL. Rust completion panic abort and exact signal/unwind parity are separately retained requirements; this guard does not claim they match. Core dumps are disabled before the intentional trap."
+}

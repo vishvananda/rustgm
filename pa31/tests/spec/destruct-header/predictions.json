@@ -1,0 +1,27 @@
+{
+  "state": "independent Rust correction before dedicated candidate observation",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "cases": [
+    {
+      "file": "bare.rs",
+      "sha256": "ec81a81bb7e3f8a4430bfefc004408f9735575c2521f160db92c54f1d575d225",
+      "expected_status": 0
+    },
+    {
+      "file": "not-trait.rs",
+      "sha256": "403c46b7855a19a0308ba6be02baf26f0c4f4b8d9e15b7f0e424b1551dab5f60",
+      "expected_status": 1
+    },
+    {
+      "file": "by-value.rs",
+      "sha256": "3dd98b430e1817780406b4e60efabdfe2fd6a6806c037688b3ac7d1636b1149f",
+      "expected_status": 0
+    },
+    {
+      "file": "wrong-result.rs",
+      "sha256": "825605e538ad70ad2313593746f09e9bd04050876ad5f729774eddda9535543d",
+      "expected_status": 0
+    }
+  ],
+  "correction": "Pinned Rust accepts unused alternative Drop signatures. Initial predictions incorrectly treated current implementation profile fences as language errors; all initial predictions/diagnostics retained in header-reference. Bare Destruct0 and non-trait Drop1 unchanged."
+}

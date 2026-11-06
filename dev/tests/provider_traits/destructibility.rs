@@ -43,16 +43,22 @@ fn source_destruction_headers_retain_real_declarations_without_execution_permiss
     Ok(())
 }
 #[test]
-fn source_destruction_headers_reject_forged_and_malformed_contracts() -> TestResult {
+fn source_drop_targets_validate_and_wider_unused_signatures_stay_fenced() -> TestResult {
     for tail in [
         r#"#[lang="drop"]pub struct Drop;"#,
         r#"#[lang="drop"]pub const trait Drop{fn drop(self);}"#,
         r#"#[lang="drop"]pub const trait Drop{fn drop(&mut self)->u8;}"#,
-        r#"#[lang="destruct"]pub const trait Destruct:PointeeSized{}"#,
     ] {
         let report = report(&[BASE, tail].concat())?;
         assert!(sema::declarations::analyze(&report).is_err(), "{tail}");
     }
+    Ok(())
+}
+#[test]
+fn unused_destruct_declaration_keeps_its_actual_attribute_policy() -> TestResult {
+    let text = crate::resolve::fixture("pa31/tests/spec/destruct-header/bare.rs")?;
+    let report = report(&text)?;
+    sema::declarations::analyze(&report)?;
     Ok(())
 }
 #[test]
