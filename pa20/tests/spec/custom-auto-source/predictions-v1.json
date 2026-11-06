@@ -1,0 +1,252 @@
+{
+  "schema": 1,
+  "state": "frozen-before-any-Rust-or-candidate-observation",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "scope": "PA20 independent custom-auto semantic reference; actual source permission remains PA31, transport PA29. No native execution or panic/unwind runtime permission.",
+  "cases": [
+    {
+      "file": "original-headers.rs",
+      "sha256": "917d779770e663bd688fcc4a8e4d5e1a3c1c21ea8e2df4ffc9cf30d219c057a0",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Exact original standard diagnostic auto declarations, UnsafeCell and required ordinary positive/negative impl cutouts check unused."
+    },
+    {
+      "file": "original-demands.rs",
+      "sha256": "f64fd5c6fec5c9c90b93b3e1ddf4a2b5ea8940e6faed1517d15ca5e4b5f47493",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Genuine automatic aggregate evidence and actual reference/raw/AssertUnwindSafe impl conditions; owned UnsafeCell differs from RefUnwindSafe."
+    },
+    {
+      "file": "original-mut-reference.rs",
+      "sha256": "8e751bb066cffd034da17d3f1c8aac1fa34099fcd92f57bd439df777e59ebdd7",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Actual negative UnwindSafe impl blocks mutable reference."
+    },
+    {
+      "file": "original-cell-negative.rs",
+      "sha256": "edf5cb400e13ab0f5da43a43e1dfb543d9423808a293b3871a46edc9eab6f1e3",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Actual negative RefUnwindSafe impl blocks UnsafeCell."
+    },
+    {
+      "file": "original-shared-cell.rs",
+      "sha256": "bc92222af76c8153c2233d9ec300a5e632c10b6998c86bc12c8436fc57c99000",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Actual explicit shared-reference UnwindSafe prerequisite RefUnwindSafe fails; no structural fallback."
+    },
+    {
+      "file": "structural-positive.rs",
+      "sha256": "a62228c389b5d92d4ce18bdff623080fc31fc012920c25be93e6c04a7b13b301",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Custom ordinary auto trait composes actual scalar/struct/enum/union/tuple/array/reference/pointer/PhantomData; function pointer carries no captured output ownership."
+    },
+    {
+      "file": "field-negative.rs",
+      "sha256": "279642e552b5d6fcedede4fd97875c14e03d01801d65ec9b35f03e825153887d",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "A negative ordinary field blocks automatic nominal evidence."
+    },
+    {
+      "file": "raw-negative.rs",
+      "sha256": "6f4d947a63cdbc93a754393bf86c437269797d423f9598ac26b0c8b6a4de5c72",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Arbitrary custom auto on raw pointer requires pointee evidence."
+    },
+    {
+      "file": "reference-negative.rs",
+      "sha256": "1082c6b0041965cf5861d16e5cfd74d7218d0e9686541767635cf30bd0e9708f",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Arbitrary custom auto on shared reference requires referent evidence."
+    },
+    {
+      "file": "zero-array-negative.rs",
+      "sha256": "7e8f38b88f0316570bbbfc62f7fbba8be3751b6893b7123d46ab250b837f4945",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Zero runtime elements do not erase auto-trait element requirement."
+    },
+    {
+      "file": "phantom-negative.rs",
+      "sha256": "6f66d023db91a8d8f2b02440a8ff05753d91904e5afc5fd48b799a74837dd4db",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Real zero-sized PhantomData still owns logical auto-trait argument."
+    },
+    {
+      "file": "generic-premise.rs",
+      "sha256": "6b01a692b04fafa6304aaee82979a1f3939bbec274b04df6a52aca291e6296f5",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual caller premise supplies unknown parameter component evidence."
+    },
+    {
+      "file": "generic-missing.rs",
+      "sha256": "5032f3e85ec3c7d4b5340741691c87bee94a576abb524584c305e8153302151c",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Rigid parameter has no blanket automatic evidence without actual premise."
+    },
+    {
+      "file": "projection-premise.rs",
+      "sha256": "1891d222cd3c0b80118fa70c1372dbb93a31ceff74df28adf635e75731a32fef",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual associated declaration result bound supplies projection component proof."
+    },
+    {
+      "file": "projection-missing.rs",
+      "sha256": "98b492b7a8e33e92f50e20f7e605102097fc1ef4286666d9ef35c74a777fe09b",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Projection identity alone supplies no auto bound."
+    },
+    {
+      "file": "lifetime-premise.rs",
+      "sha256": "4bfe71e9ad7a3615abcecae0b6d861731d06f86e810739009e97b5f0de89a7bb",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual generic auto premise and ordinary reference well-formedness retain local lifetime; auto proof does not imply static."
+    },
+    {
+      "file": "lifetime-escape.rs",
+      "sha256": "e22d20f45a907e15f194e862bc75d925fdfe6fcffc9f33903ff9fba83a9066bb",
+      "expected_code": 1,
+      "expected_error_codes": [],
+      "expected_messages": [
+        "lifetime may not live long enough"
+      ],
+      "hypothesis": "Successful auto proof does not permit reference lifetime escape."
+    },
+    {
+      "file": "explicit-positive.rs",
+      "sha256": "9e3a5233694031e3f98186ba64d1d29d0d2d91232b93d1ff79d86eecf2b4095b",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Real explicit safe auto impl overrides negative field; genuine unsafe auto implementation uses unsafe syntax."
+    },
+    {
+      "file": "conditional-positive.rs",
+      "sha256": "e846a2d5a2da089814fec8a311ea5e6d322849df6cc11bb26eb3b9c89c2300ed",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Explicit generic positive impl succeeds with real prerequisite."
+    },
+    {
+      "file": "conditional-negative.rs",
+      "sha256": "ec050229813cd07ecf614bfd46241ac015239ac4d192e0cb4eb9cb8bc642c838",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Relevant manual impl suppresses automatic fallback even when its predicate fails; u8 field Auto is insufficient."
+    },
+    {
+      "file": "recursive-positive.rs",
+      "sha256": "67409afb97e4d0cb0ff13e3dfd58598c9b9dde76d698d48d1be4863d27976699",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual structural auto cycle is coinductive when every noncyclic leaf succeeds."
+    },
+    {
+      "file": "recursive-negative.rs",
+      "sha256": "bf62112673f5fe00304a572c823172fd6a3e2d2af67a18939a6a7b119c211472",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Active auto cycle cannot publish proof before negative sibling leaf."
+    },
+    {
+      "file": "recursive-condition-negative.rs",
+      "sha256": "d8ea0e0dbe2717a7d0060b5eb60ae081957dd7aa0d04beeadabb8849f1d9b205",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Auto SCC still retains actual manual-impl prerequisite failure in another component."
+    },
+    {
+      "file": "declaration-restrictions.rs",
+      "sha256": "4d1a6a9f680c15aa9463081b07cd6e96a700b5b99c66673495dfa34d4e7be12f",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0567",
+        "E0568",
+        "E0380"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Ordinary auto declarations reject generic parameters, supertraits, members and where bounds."
+    },
+    {
+      "file": "implementation-safety.rs",
+      "sha256": "cbe9ac922244711955bd5510b7d5a46add597217e0fcb4f50513c9f92c077b52",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0200",
+        "E0199",
+        "E0198"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Missing unsafe on unsafe auto impl, excess unsafe on safe auto impl, and unsafe negative impl remain ordinary errors."
+    }
+  ]
+}

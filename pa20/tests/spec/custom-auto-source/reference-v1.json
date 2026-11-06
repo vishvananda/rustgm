@@ -1,0 +1,2340 @@
+{
+  "schema": 1,
+  "state": "qualified independent reference; no compiler edit or RustGM candidate observation",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "compiler": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "qualified_sources": 34,
+  "qualified_observations": 68,
+  "prediction_files": [
+    {
+      "path": "predictions-v1.json",
+      "sha256": "297eb20cb2f6d74acdd5bcc2a1962f92ad365ff867a72751eb35a3bed206b9dc"
+    },
+    {
+      "path": "predictions-v2.json",
+      "sha256": "a085061d495e94789de653bca805929050d5c155e6f13eb6c3afe989d95204f0"
+    },
+    {
+      "path": "predictions-v3.json",
+      "sha256": "932decf882a1226a2dd3d90ab754c4503bf985540b52e8ca513f7e18bfd5c992"
+    },
+    {
+      "path": "predictions-v4.json",
+      "sha256": "6ff00593133dbf1f7c326eb4c8573a5c69e41264dacf6a6ee4921b706f955796"
+    }
+  ],
+  "provenance_sha256": "bf381373450f66b21223d0bce69e80143abb3454330c9611a8339b45d6572a8b",
+  "raw_receipts": [
+    {
+      "path": "obj/parallel/custom-auto-reference/v1/receipt.json",
+      "sha256": "9e8705251392a7543b9e855264e50aa0c4f78a8eec74878ac5c845b1a7bf495a",
+      "runner_sha256": "2518701c90369d825a474f25e3a05ce028e57c84b982f0097ffe2c7b99dfe1e5",
+      "seconds": 2.6354428860358894,
+      "outer_status": 0
+    },
+    {
+      "path": "obj/parallel/custom-auto-reference/v2/receipt.json",
+      "sha256": "7f031d32b175f2247cf45c7dc0c1ef400a0b541e2cda6f7dd58cbdaf721b216f",
+      "runner_sha256": "d3725e8869755a8b32ebcb550df9d8d37f6d8e5677d40c9e41d7ab0ee20fb2a1",
+      "seconds": 0.15751896699657664,
+      "outer_status": 0
+    },
+    {
+      "path": "obj/parallel/custom-auto-reference/v3/receipt.json",
+      "sha256": "fedc71a3e5e0d79db91a146f26217d1ef06861ca593a8849d1c1682b9d9e954d",
+      "runner_sha256": "616402c04e1149d6d219c7a92c3fd75902c96278215ec49f1b74d838f1b56b19",
+      "seconds": 0.4357398580177687,
+      "outer_status": 0
+    },
+    {
+      "path": "obj/parallel/custom-auto-reference/v4/receipt.json",
+      "sha256": "f7dc54c70ede57ab7850e81c37d3d25bc1dc888c59a37de64cf7150cd8b81b1d",
+      "runner_sha256": "b4abdf8f0abcab689693874a609534ffc3f0962427c792a72ccab652c8c470fa",
+      "seconds": 0.16863390698563308,
+      "outer_status": 0
+    }
+  ],
+  "guard": {
+    "deadline_seconds": 90,
+    "wait_seconds": 0,
+    "max_output_gib": 16,
+    "reserve_gib": 150,
+    "global_heavy_jobs": 2,
+    "commands": "timeout --signal=TERM --kill-after=5s 90s python3 scripts/resources.py run --wait-seconds 0 --max-output-gib 16 -- python3 scripts/storage.py run --prune-under obj/parallel/custom-auto-reference/VERSION -- python3 obj/parallel/custom-auto-reference/VERSION/run.py"
+  },
+  "observations": [
+    {
+      "file": "original-headers.rs",
+      "sha256": "917d779770e663bd688fcc4a8e4d5e1a3c1c21ea8e2df4ffc9cf30d219c057a0",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Exact original standard diagnostic auto declarations, UnsafeCell and required ordinary positive/negative impl cutouts check unused.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/original-headers.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "original-headers.rs",
+      "sha256": "917d779770e663bd688fcc4a8e4d5e1a3c1c21ea8e2df4ffc9cf30d219c057a0",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Exact original standard diagnostic auto declarations, UnsafeCell and required ordinary positive/negative impl cutouts check unused.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/original-headers.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "original-demands.rs",
+      "sha256": "f64fd5c6fec5c9c90b93b3e1ddf4a2b5ea8940e6faed1517d15ca5e4b5f47493",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Genuine automatic aggregate evidence and actual reference/raw/AssertUnwindSafe impl conditions; owned UnsafeCell differs from RefUnwindSafe.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/original-demands.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "original-demands.rs",
+      "sha256": "f64fd5c6fec5c9c90b93b3e1ddf4a2b5ea8940e6faed1517d15ca5e4b5f47493",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Genuine automatic aggregate evidence and actual reference/raw/AssertUnwindSafe impl conditions; owned UnsafeCell differs from RefUnwindSafe.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/original-demands.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "original-mut-reference.rs",
+      "sha256": "8e751bb066cffd034da17d3f1c8aac1fa34099fcd92f57bd439df777e59ebdd7",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Actual negative UnwindSafe impl blocks mutable reference.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/original-mut-reference.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the type `&mut u8` may not be safely transferred across an unwind boundary"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c7b3d2e4a3f36119bfca54160bb2d6135165c80493fafb1f7dfbce41aacbfdd5"
+    },
+    {
+      "file": "original-mut-reference.rs",
+      "sha256": "8e751bb066cffd034da17d3f1c8aac1fa34099fcd92f57bd439df777e59ebdd7",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Actual negative UnwindSafe impl blocks mutable reference.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/original-mut-reference.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the type `&mut u8` may not be safely transferred across an unwind boundary"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c7b3d2e4a3f36119bfca54160bb2d6135165c80493fafb1f7dfbce41aacbfdd5"
+    },
+    {
+      "file": "original-cell-negative.rs",
+      "sha256": "edf5cb400e13ab0f5da43a43e1dfb543d9423808a293b3871a46edc9eab6f1e3",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Actual negative RefUnwindSafe impl blocks UnsafeCell.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/original-cell-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the type `UnsafeCell<u8>` may contain interior mutability and a reference may not be safely transferable across a catch_unwind boundary"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "512d2440afedd9b62bcc41a6edf817aa8440733cd26766e655756f13f7594312"
+    },
+    {
+      "file": "original-cell-negative.rs",
+      "sha256": "edf5cb400e13ab0f5da43a43e1dfb543d9423808a293b3871a46edc9eab6f1e3",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Actual negative RefUnwindSafe impl blocks UnsafeCell.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/original-cell-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the type `UnsafeCell<u8>` may contain interior mutability and a reference may not be safely transferable across a catch_unwind boundary"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "512d2440afedd9b62bcc41a6edf817aa8440733cd26766e655756f13f7594312"
+    },
+    {
+      "file": "original-shared-cell.rs",
+      "sha256": "bc92222af76c8153c2233d9ec300a5e632c10b6998c86bc12c8436fc57c99000",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Actual explicit shared-reference UnwindSafe prerequisite RefUnwindSafe fails; no structural fallback.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/original-shared-cell.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the type `&UnsafeCell<u8>` may not be safely transferred across an unwind boundary"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "7998269cb0e2e5b4d0296e4f6e8f1614c43b1520e4c2328329619d5ae2df3f00"
+    },
+    {
+      "file": "original-shared-cell.rs",
+      "sha256": "bc92222af76c8153c2233d9ec300a5e632c10b6998c86bc12c8436fc57c99000",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Actual explicit shared-reference UnwindSafe prerequisite RefUnwindSafe fails; no structural fallback.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/original-shared-cell.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the type `&UnsafeCell<u8>` may not be safely transferred across an unwind boundary"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "7998269cb0e2e5b4d0296e4f6e8f1614c43b1520e4c2328329619d5ae2df3f00"
+    },
+    {
+      "file": "structural-positive.rs",
+      "sha256": "a62228c389b5d92d4ce18bdff623080fc31fc012920c25be93e6c04a7b13b301",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Custom ordinary auto trait composes actual scalar/struct/enum/union/tuple/array/reference/pointer/PhantomData; function pointer carries no captured output ownership.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/structural-positive.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "structural-positive.rs",
+      "sha256": "a62228c389b5d92d4ce18bdff623080fc31fc012920c25be93e6c04a7b13b301",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Custom ordinary auto trait composes actual scalar/struct/enum/union/tuple/array/reference/pointer/PhantomData; function pointer carries no captured output ownership.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/structural-positive.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "field-negative.rs",
+      "sha256": "279642e552b5d6fcedede4fd97875c14e03d01801d65ec9b35f03e825153887d",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "A negative ordinary field blocks automatic nominal evidence.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/field-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `Bad: Auto` is not satisfied in `Record`"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "d41335c88f90bc553b3493fe9b00936c8b0909ee00ac5c6bd94724e672ba1705"
+    },
+    {
+      "file": "field-negative.rs",
+      "sha256": "279642e552b5d6fcedede4fd97875c14e03d01801d65ec9b35f03e825153887d",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "A negative ordinary field blocks automatic nominal evidence.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/field-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `Bad: Auto` is not satisfied in `Record`"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "d41335c88f90bc553b3493fe9b00936c8b0909ee00ac5c6bd94724e672ba1705"
+    },
+    {
+      "file": "raw-negative.rs",
+      "sha256": "6f4d947a63cdbc93a754393bf86c437269797d423f9598ac26b0c8b6a4de5c72",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Arbitrary custom auto on raw pointer requires pointee evidence.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/raw-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `Bad: Auto` is not satisfied in `*const Bad`"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "2ae7da16c33e89039528672ebaaf10fbd201fe426fe7d9e76d4d0e411d3a6dac"
+    },
+    {
+      "file": "raw-negative.rs",
+      "sha256": "6f4d947a63cdbc93a754393bf86c437269797d423f9598ac26b0c8b6a4de5c72",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Arbitrary custom auto on raw pointer requires pointee evidence.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/raw-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `Bad: Auto` is not satisfied in `*const Bad`"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "2ae7da16c33e89039528672ebaaf10fbd201fe426fe7d9e76d4d0e411d3a6dac"
+    },
+    {
+      "file": "reference-negative.rs",
+      "sha256": "1082c6b0041965cf5861d16e5cfd74d7218d0e9686541767635cf30bd0e9708f",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Arbitrary custom auto on shared reference requires referent evidence.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/reference-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `Bad: Auto` is not satisfied in `&Bad`"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "0b99001653895690f316e342d695bb474ebe030852ff20de743ce5815f524d7e"
+    },
+    {
+      "file": "reference-negative.rs",
+      "sha256": "1082c6b0041965cf5861d16e5cfd74d7218d0e9686541767635cf30bd0e9708f",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Arbitrary custom auto on shared reference requires referent evidence.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/reference-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `Bad: Auto` is not satisfied in `&Bad`"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "0b99001653895690f316e342d695bb474ebe030852ff20de743ce5815f524d7e"
+    },
+    {
+      "file": "zero-array-negative.rs",
+      "sha256": "7e8f38b88f0316570bbbfc62f7fbba8be3751b6893b7123d46ab250b837f4945",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Zero runtime elements do not erase auto-trait element requirement.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/zero-array-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `Bad: Auto` is not satisfied in `[Bad; 0]`"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "f5a2ba62fb97ae6fe15c059523ad707ba59b6a118a2bf9bca177816533416e2a"
+    },
+    {
+      "file": "zero-array-negative.rs",
+      "sha256": "7e8f38b88f0316570bbbfc62f7fbba8be3751b6893b7123d46ab250b837f4945",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Zero runtime elements do not erase auto-trait element requirement.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/zero-array-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `Bad: Auto` is not satisfied in `[Bad; 0]`"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "f5a2ba62fb97ae6fe15c059523ad707ba59b6a118a2bf9bca177816533416e2a"
+    },
+    {
+      "file": "phantom-negative.rs",
+      "sha256": "6f66d023db91a8d8f2b02440a8ff05753d91904e5afc5fd48b799a74837dd4db",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Real zero-sized PhantomData still owns logical auto-trait argument.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/phantom-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `Bad: Auto` is not satisfied in `Logical<Bad>`"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "163ec5cf97ad87b09e4846c353fc24662cca738419e7327b9525ed3083c0431a"
+    },
+    {
+      "file": "phantom-negative.rs",
+      "sha256": "6f66d023db91a8d8f2b02440a8ff05753d91904e5afc5fd48b799a74837dd4db",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Real zero-sized PhantomData still owns logical auto-trait argument.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/phantom-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `Bad: Auto` is not satisfied in `Logical<Bad>`"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "163ec5cf97ad87b09e4846c353fc24662cca738419e7327b9525ed3083c0431a"
+    },
+    {
+      "file": "generic-premise.rs",
+      "sha256": "6b01a692b04fafa6304aaee82979a1f3939bbec274b04df6a52aca291e6296f5",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual caller premise supplies unknown parameter component evidence.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/generic-premise.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "generic-premise.rs",
+      "sha256": "6b01a692b04fafa6304aaee82979a1f3939bbec274b04df6a52aca291e6296f5",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual caller premise supplies unknown parameter component evidence.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/generic-premise.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "generic-missing.rs",
+      "sha256": "5032f3e85ec3c7d4b5340741691c87bee94a576abb524584c305e8153302151c",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Rigid parameter has no blanket automatic evidence without actual premise.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/generic-missing.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `T: Auto` is not satisfied in `Wrap<T>`"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "af01ef6bd3c932987c351f6f02c8f44985c141b623db281cc050fa69e1b39081"
+    },
+    {
+      "file": "generic-missing.rs",
+      "sha256": "5032f3e85ec3c7d4b5340741691c87bee94a576abb524584c305e8153302151c",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Rigid parameter has no blanket automatic evidence without actual premise.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/generic-missing.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `T: Auto` is not satisfied in `Wrap<T>`"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "af01ef6bd3c932987c351f6f02c8f44985c141b623db281cc050fa69e1b39081"
+    },
+    {
+      "file": "projection-premise.rs",
+      "sha256": "1891d222cd3c0b80118fa70c1372dbb93a31ceff74df28adf635e75731a32fef",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual associated declaration result bound supplies projection component proof.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/projection-premise.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "projection-premise.rs",
+      "sha256": "1891d222cd3c0b80118fa70c1372dbb93a31ceff74df28adf635e75731a32fef",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual associated declaration result bound supplies projection component proof.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/projection-premise.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "projection-missing.rs",
+      "sha256": "98b492b7a8e33e92f50e20f7e605102097fc1ef4286666d9ef35c74a777fe09b",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Projection identity alone supplies no auto bound.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/projection-missing.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `<T as Has>::Item: Auto` is not satisfied in `Wrap<<T as Has>::Item>`"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "335630f9c54c0b13990662a1f14823aeea32920a424a42941c3d36239900fdce"
+    },
+    {
+      "file": "projection-missing.rs",
+      "sha256": "98b492b7a8e33e92f50e20f7e605102097fc1ef4286666d9ef35c74a777fe09b",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Projection identity alone supplies no auto bound.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/projection-missing.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `<T as Has>::Item: Auto` is not satisfied in `Wrap<<T as Has>::Item>`"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "335630f9c54c0b13990662a1f14823aeea32920a424a42941c3d36239900fdce"
+    },
+    {
+      "file": "lifetime-premise.rs",
+      "sha256": "4bfe71e9ad7a3615abcecae0b6d861731d06f86e810739009e97b5f0de89a7bb",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual generic auto premise and ordinary reference well-formedness retain local lifetime; auto proof does not imply static.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/lifetime-premise.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "lifetime-premise.rs",
+      "sha256": "4bfe71e9ad7a3615abcecae0b6d861731d06f86e810739009e97b5f0de89a7bb",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual generic auto premise and ordinary reference well-formedness retain local lifetime; auto proof does not imply static.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/lifetime-premise.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "lifetime-escape.rs",
+      "sha256": "e22d20f45a907e15f194e862bc75d925fdfe6fcffc9f33903ff9fba83a9066bb",
+      "expected_code": 1,
+      "expected_error_codes": [],
+      "expected_messages": [
+        "lifetime may not live long enough"
+      ],
+      "hypothesis": "Successful auto proof does not permit reference lifetime escape.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/lifetime-escape.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "lifetime may not live long enough"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "734cd1979dd634207cf0ba777ea800c2ccfe2c17618d9d404548cf1458595059"
+    },
+    {
+      "file": "lifetime-escape.rs",
+      "sha256": "e22d20f45a907e15f194e862bc75d925fdfe6fcffc9f33903ff9fba83a9066bb",
+      "expected_code": 1,
+      "expected_error_codes": [],
+      "expected_messages": [
+        "lifetime may not live long enough"
+      ],
+      "hypothesis": "Successful auto proof does not permit reference lifetime escape.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/lifetime-escape.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "lifetime may not live long enough"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "734cd1979dd634207cf0ba777ea800c2ccfe2c17618d9d404548cf1458595059"
+    },
+    {
+      "file": "explicit-positive.rs",
+      "sha256": "9e3a5233694031e3f98186ba64d1d29d0d2d91232b93d1ff79d86eecf2b4095b",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Real explicit safe auto impl overrides negative field; genuine unsafe auto implementation uses unsafe syntax.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/explicit-positive.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "explicit-positive.rs",
+      "sha256": "9e3a5233694031e3f98186ba64d1d29d0d2d91232b93d1ff79d86eecf2b4095b",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Real explicit safe auto impl overrides negative field; genuine unsafe auto implementation uses unsafe syntax.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/explicit-positive.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "conditional-positive.rs",
+      "sha256": "e846a2d5a2da089814fec8a311ea5e6d322849df6cc11bb26eb3b9c89c2300ed",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Explicit generic positive impl succeeds with real prerequisite.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/conditional-positive.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "conditional-positive.rs",
+      "sha256": "e846a2d5a2da089814fec8a311ea5e6d322849df6cc11bb26eb3b9c89c2300ed",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Explicit generic positive impl succeeds with real prerequisite.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/conditional-positive.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "conditional-negative.rs",
+      "sha256": "ec050229813cd07ecf614bfd46241ac015239ac4d192e0cb4eb9cb8bc642c838",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Relevant manual impl suppresses automatic fallback even when its predicate fails; u8 field Auto is insufficient.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/conditional-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `u8: Allowed` is not satisfied"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9f6d273a39becbcf7f1c853424bd7ea7f64f467d2f216572e9513b5214bdb150"
+    },
+    {
+      "file": "conditional-negative.rs",
+      "sha256": "ec050229813cd07ecf614bfd46241ac015239ac4d192e0cb4eb9cb8bc642c838",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Relevant manual impl suppresses automatic fallback even when its predicate fails; u8 field Auto is insufficient.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/conditional-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `u8: Allowed` is not satisfied"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9f6d273a39becbcf7f1c853424bd7ea7f64f467d2f216572e9513b5214bdb150"
+    },
+    {
+      "file": "recursive-positive.rs",
+      "sha256": "67409afb97e4d0cb0ff13e3dfd58598c9b9dde76d698d48d1be4863d27976699",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual structural auto cycle is coinductive when every noncyclic leaf succeeds.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/recursive-positive.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "recursive-positive.rs",
+      "sha256": "67409afb97e4d0cb0ff13e3dfd58598c9b9dde76d698d48d1be4863d27976699",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual structural auto cycle is coinductive when every noncyclic leaf succeeds.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/recursive-positive.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "recursive-negative.rs",
+      "sha256": "bf62112673f5fe00304a572c823172fd6a3e2d2af67a18939a6a7b119c211472",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Active auto cycle cannot publish proof before negative sibling leaf.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/recursive-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `Bad: Auto` is not satisfied in `Node<'static>`"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "6dcad9e97a541d1ea7e4fada2fc151c0d08197d52d55746aaa5d9162fbe8f79a"
+    },
+    {
+      "file": "recursive-negative.rs",
+      "sha256": "bf62112673f5fe00304a572c823172fd6a3e2d2af67a18939a6a7b119c211472",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Active auto cycle cannot publish proof before negative sibling leaf.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/recursive-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `Bad: Auto` is not satisfied in `Node<'static>`"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "6dcad9e97a541d1ea7e4fada2fc151c0d08197d52d55746aaa5d9162fbe8f79a"
+    },
+    {
+      "file": "recursive-condition-negative.rs",
+      "sha256": "d8ea0e0dbe2717a7d0060b5eb60ae081957dd7aa0d04beeadabb8849f1d9b205",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Auto SCC still retains actual manual-impl prerequisite failure in another component.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/recursive-condition-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `u8: Allowed` is not satisfied"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "d000cab1bdbcd0732b350a47fe7375a451af3bba52b4fca6a8a0889016ca6513"
+    },
+    {
+      "file": "recursive-condition-negative.rs",
+      "sha256": "d8ea0e0dbe2717a7d0060b5eb60ae081957dd7aa0d04beeadabb8849f1d9b205",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Auto SCC still retains actual manual-impl prerequisite failure in another component.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/recursive-condition-negative.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `u8: Allowed` is not satisfied"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "d000cab1bdbcd0732b350a47fe7375a451af3bba52b4fca6a8a0889016ca6513"
+    },
+    {
+      "file": "declaration-restrictions.rs",
+      "sha256": "4d1a6a9f680c15aa9463081b07cd6e96a700b5b99c66673495dfa34d4e7be12f",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0567",
+        "E0568",
+        "E0380"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Ordinary auto declarations reject generic parameters, supertraits, members and where bounds.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/declaration-restrictions.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0567",
+          "message": "auto traits cannot have generic parameters"
+        },
+        {
+          "code": "E0568",
+          "message": "auto traits cannot have super traits or lifetime bounds"
+        },
+        {
+          "code": "E0380",
+          "message": "auto traits cannot have associated items"
+        },
+        {
+          "code": "E0568",
+          "message": "auto traits cannot have super traits or lifetime bounds"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "52079dc55a705a24d9ef839dc244c2dc3147c458b50fa440e85592b745986587"
+    },
+    {
+      "file": "declaration-restrictions.rs",
+      "sha256": "4d1a6a9f680c15aa9463081b07cd6e96a700b5b99c66673495dfa34d4e7be12f",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0567",
+        "E0568",
+        "E0380"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Ordinary auto declarations reject generic parameters, supertraits, members and where bounds.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/declaration-restrictions.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0567",
+          "message": "auto traits cannot have generic parameters"
+        },
+        {
+          "code": "E0568",
+          "message": "auto traits cannot have super traits or lifetime bounds"
+        },
+        {
+          "code": "E0380",
+          "message": "auto traits cannot have associated items"
+        },
+        {
+          "code": "E0568",
+          "message": "auto traits cannot have super traits or lifetime bounds"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "52079dc55a705a24d9ef839dc244c2dc3147c458b50fa440e85592b745986587"
+    },
+    {
+      "file": "implementation-safety.rs",
+      "sha256": "cbe9ac922244711955bd5510b7d5a46add597217e0fcb4f50513c9f92c077b52",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0200",
+        "E0199",
+        "E0198"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Missing unsafe on unsafe auto impl, excess unsafe on safe auto impl, and unsafe negative impl remain ordinary errors.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/implementation-safety.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0198",
+          "message": "negative impls cannot be unsafe"
+        },
+        {
+          "code": "E0199",
+          "message": "implementing the trait `SafeAuto` is not unsafe"
+        },
+        {
+          "code": "E0200",
+          "message": "the trait `UnsafeAuto` requires an `unsafe impl` declaration"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "06bd266d5d5106890300374219a3c64d45249ae6c615a2d6ab37f33617b10a0d"
+    },
+    {
+      "file": "implementation-safety.rs",
+      "sha256": "cbe9ac922244711955bd5510b7d5a46add597217e0fcb4f50513c9f92c077b52",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0200",
+        "E0199",
+        "E0198"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Missing unsafe on unsafe auto impl, excess unsafe on safe auto impl, and unsafe negative impl remain ordinary errors.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/implementation-safety.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v1/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0198",
+          "message": "negative impls cannot be unsafe"
+        },
+        {
+          "code": "E0199",
+          "message": "implementing the trait `SafeAuto` is not unsafe"
+        },
+        {
+          "code": "E0200",
+          "message": "the trait `UnsafeAuto` requires an `unsafe impl` declaration"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "06bd266d5d5106890300374219a3c64d45249ae6c615a2d6ab37f33617b10a0d"
+    },
+    {
+      "file": "where-premise.rs",
+      "sha256": "9a92c64666ea0f16815a011cbb988bdaeb6b3cd4fac28b6345a8f4abe7b5718d",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual where premise supplies component bound; function-pointer output is not an owned component.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/where-premise.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v2/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "where-premise.rs",
+      "sha256": "9a92c64666ea0f16815a011cbb988bdaeb6b3cd4fac28b6345a8f4abe7b5718d",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual where premise supplies component bound; function-pointer output is not an owned component.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/where-premise.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v2/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "where-no-inversion.rs",
+      "sha256": "1feca9049a82fa8547c7f2910f084a62856c3efe247aab1f386a01db57313c89",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Auto bound on wrapper supplies no inverse component permission for T.",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/where-no-inversion.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v2/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `T: Auto` is not satisfied"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "d4fae2cf9817c6e0fbb93adbc3254ba553c88acf0dab58fa6c27ab82be9f1177"
+    },
+    {
+      "file": "where-no-inversion.rs",
+      "sha256": "1feca9049a82fa8547c7f2910f084a62856c3efe247aab1f386a01db57313c89",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Auto bound on wrapper supplies no inverse component permission for T.",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/where-no-inversion.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v2/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `T: Auto` is not satisfied"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "d4fae2cf9817c6e0fbb93adbc3254ba553c88acf0dab58fa6c27ab82be9f1177"
+    },
+    {
+      "file": "decl-feature-off.rs",
+      "sha256": "c38b8816b5f25cb3c07a558b290b7ffc29ee0ef86e38e3a340d638fceaa6a75a",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0658"
+      ],
+      "expected_messages": [],
+      "hypothesis": "One-fault ordinary auto declaration restriction; installed std supplies support independently of no_core Freeze.",
+      "foundation": "installed standard core/std, no no_core prefix",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/decl-feature-off.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v3/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0658",
+          "message": "auto traits are experimental and possibly buggy"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "94d4e17b9ea07a8e47b204d7b4b1079a1c46e86331f856f26da4b1e215e646f0"
+    },
+    {
+      "file": "decl-feature-off.rs",
+      "sha256": "c38b8816b5f25cb3c07a558b290b7ffc29ee0ef86e38e3a340d638fceaa6a75a",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0658"
+      ],
+      "expected_messages": [],
+      "hypothesis": "One-fault ordinary auto declaration restriction; installed std supplies support independently of no_core Freeze.",
+      "foundation": "installed standard core/std, no no_core prefix",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/decl-feature-off.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v3/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0658",
+          "message": "auto traits are experimental and possibly buggy"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "94d4e17b9ea07a8e47b204d7b4b1079a1c46e86331f856f26da4b1e215e646f0"
+    },
+    {
+      "file": "decl-generic.rs",
+      "sha256": "c93a6aad9efae88b961655778c73272feca6a7ae5c8b59bfff5c1565d955c936",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0567"
+      ],
+      "expected_messages": [],
+      "hypothesis": "One-fault ordinary auto declaration restriction; installed std supplies support independently of no_core Freeze.",
+      "foundation": "installed standard core/std, no no_core prefix",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/decl-generic.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v3/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0567",
+          "message": "auto traits cannot have generic parameters"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "3f4ba805fbc7a7f11490eacafae1ec54958da9f0aef52b1c677a48d788352991"
+    },
+    {
+      "file": "decl-generic.rs",
+      "sha256": "c93a6aad9efae88b961655778c73272feca6a7ae5c8b59bfff5c1565d955c936",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0567"
+      ],
+      "expected_messages": [],
+      "hypothesis": "One-fault ordinary auto declaration restriction; installed std supplies support independently of no_core Freeze.",
+      "foundation": "installed standard core/std, no no_core prefix",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/decl-generic.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v3/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0567",
+          "message": "auto traits cannot have generic parameters"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "3f4ba805fbc7a7f11490eacafae1ec54958da9f0aef52b1c677a48d788352991"
+    },
+    {
+      "file": "decl-supertrait.rs",
+      "sha256": "b49d42f5872154134ef08691fac034f3c17b357cad967b901a0e36bd5067fa54",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0568"
+      ],
+      "expected_messages": [],
+      "hypothesis": "One-fault ordinary auto declaration restriction; installed std supplies support independently of no_core Freeze.",
+      "foundation": "installed standard core/std, no no_core prefix",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/decl-supertrait.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v3/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0568",
+          "message": "auto traits cannot have super traits or lifetime bounds"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a611be268e9a3e88065907cb8dd0a72e21a28219088a5e84051bda71a7e0b445"
+    },
+    {
+      "file": "decl-supertrait.rs",
+      "sha256": "b49d42f5872154134ef08691fac034f3c17b357cad967b901a0e36bd5067fa54",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0568"
+      ],
+      "expected_messages": [],
+      "hypothesis": "One-fault ordinary auto declaration restriction; installed std supplies support independently of no_core Freeze.",
+      "foundation": "installed standard core/std, no no_core prefix",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/decl-supertrait.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v3/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0568",
+          "message": "auto traits cannot have super traits or lifetime bounds"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a611be268e9a3e88065907cb8dd0a72e21a28219088a5e84051bda71a7e0b445"
+    },
+    {
+      "file": "decl-member.rs",
+      "sha256": "2902908573e8c625dbff3e6cf449a547cb7a7c6802da0ceea1163070fbe20761",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0380"
+      ],
+      "expected_messages": [],
+      "hypothesis": "One-fault ordinary auto declaration restriction; installed std supplies support independently of no_core Freeze.",
+      "foundation": "installed standard core/std, no no_core prefix",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/decl-member.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v3/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0380",
+          "message": "auto traits cannot have associated items"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "99fe053c6f0e1ca53c336d261c90d4cf43b4962c029d4f4c5a36c6e72c020e99"
+    },
+    {
+      "file": "decl-member.rs",
+      "sha256": "2902908573e8c625dbff3e6cf449a547cb7a7c6802da0ceea1163070fbe20761",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0380"
+      ],
+      "expected_messages": [],
+      "hypothesis": "One-fault ordinary auto declaration restriction; installed std supplies support independently of no_core Freeze.",
+      "foundation": "installed standard core/std, no no_core prefix",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/decl-member.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v3/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0380",
+          "message": "auto traits cannot have associated items"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "99fe053c6f0e1ca53c336d261c90d4cf43b4962c029d4f4c5a36c6e72c020e99"
+    },
+    {
+      "file": "decl-const.rs",
+      "sha256": "611c2a4e7586e12a34900c0f609ea7db8ac9619fb76f8c8b0fda1ddb99bf786e",
+      "expected_code": 1,
+      "expected_error_codes": [],
+      "expected_messages": [
+        "auto traits cannot be const"
+      ],
+      "hypothesis": "One-fault ordinary auto declaration restriction; installed std supplies support independently of no_core Freeze.",
+      "foundation": "installed standard core/std, no no_core prefix",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/decl-const.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v3/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "auto traits cannot be const"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "af296d1b52c82313893dd443dc8a11712c7f41489d5ef6ee67e7fbb0185c7118"
+    },
+    {
+      "file": "decl-const.rs",
+      "sha256": "611c2a4e7586e12a34900c0f609ea7db8ac9619fb76f8c8b0fda1ddb99bf786e",
+      "expected_code": 1,
+      "expected_error_codes": [],
+      "expected_messages": [
+        "auto traits cannot be const"
+      ],
+      "hypothesis": "One-fault ordinary auto declaration restriction; installed std supplies support independently of no_core Freeze.",
+      "foundation": "installed standard core/std, no no_core prefix",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/decl-const.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v3/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "auto traits cannot be const"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "af296d1b52c82313893dd443dc8a11712c7f41489d5ef6ee67e7fbb0185c7118"
+    },
+    {
+      "file": "decl-where.rs",
+      "sha256": "526bd822c6b38d613f002508a4f83b8ae642906542d54aee41409cfaeeb1858b",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0568"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Isolated ordinary auto-trait where-Self clause rejects; matching empty header accepts.",
+      "foundation": "installed standard core/std, no no_core prefix",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/decl-where.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v4/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0568",
+          "message": "auto traits cannot have super traits or lifetime bounds"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "67897903b7f431c71fa784190a77563004bce019ddd26cf8c8ac835ab64bd54b"
+    },
+    {
+      "file": "decl-where.rs",
+      "sha256": "526bd822c6b38d613f002508a4f83b8ae642906542d54aee41409cfaeeb1858b",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0568"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Isolated ordinary auto-trait where-Self clause rejects; matching empty header accepts.",
+      "foundation": "installed standard core/std, no no_core prefix",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/decl-where.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v4/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0568",
+          "message": "auto traits cannot have super traits or lifetime bounds"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "67897903b7f431c71fa784190a77563004bce019ddd26cf8c8ac835ab64bd54b"
+    },
+    {
+      "file": "decl-empty.rs",
+      "sha256": "c3add32829d2f00264c27227b0086263f984514f611b2bd6a6d69ee6bf31e61b",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Isolated ordinary auto-trait where-Self clause rejects; matching empty header accepts.",
+      "foundation": "installed standard core/std, no no_core prefix",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/decl-empty.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v4/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "decl-empty.rs",
+      "sha256": "c3add32829d2f00264c27227b0086263f984514f611b2bd6a6d69ee6bf31e61b",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Isolated ordinary auto-trait where-Self clause rejects; matching empty header accepts.",
+      "foundation": "installed standard core/std, no no_core prefix",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa20/tests/spec/custom-auto-source/decl-empty.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/custom-auto-reference/v4/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "source_files": {
+    "conditional-negative.rs": "ec050229813cd07ecf614bfd46241ac015239ac4d192e0cb4eb9cb8bc642c838",
+    "conditional-positive.rs": "e846a2d5a2da089814fec8a311ea5e6d322849df6cc11bb26eb3b9c89c2300ed",
+    "decl-const.rs": "611c2a4e7586e12a34900c0f609ea7db8ac9619fb76f8c8b0fda1ddb99bf786e",
+    "decl-empty.rs": "c3add32829d2f00264c27227b0086263f984514f611b2bd6a6d69ee6bf31e61b",
+    "decl-feature-off.rs": "c38b8816b5f25cb3c07a558b290b7ffc29ee0ef86e38e3a340d638fceaa6a75a",
+    "decl-generic.rs": "c93a6aad9efae88b961655778c73272feca6a7ae5c8b59bfff5c1565d955c936",
+    "decl-member.rs": "2902908573e8c625dbff3e6cf449a547cb7a7c6802da0ceea1163070fbe20761",
+    "decl-supertrait.rs": "b49d42f5872154134ef08691fac034f3c17b357cad967b901a0e36bd5067fa54",
+    "decl-where.rs": "526bd822c6b38d613f002508a4f83b8ae642906542d54aee41409cfaeeb1858b",
+    "declaration-restrictions.rs": "4d1a6a9f680c15aa9463081b07cd6e96a700b5b99c66673495dfa34d4e7be12f",
+    "explicit-positive.rs": "9e3a5233694031e3f98186ba64d1d29d0d2d91232b93d1ff79d86eecf2b4095b",
+    "field-negative.rs": "279642e552b5d6fcedede4fd97875c14e03d01801d65ec9b35f03e825153887d",
+    "generic-missing.rs": "5032f3e85ec3c7d4b5340741691c87bee94a576abb524584c305e8153302151c",
+    "generic-premise.rs": "6b01a692b04fafa6304aaee82979a1f3939bbec274b04df6a52aca291e6296f5",
+    "implementation-safety.rs": "cbe9ac922244711955bd5510b7d5a46add597217e0fcb4f50513c9f92c077b52",
+    "lifetime-escape.rs": "e22d20f45a907e15f194e862bc75d925fdfe6fcffc9f33903ff9fba83a9066bb",
+    "lifetime-premise.rs": "4bfe71e9ad7a3615abcecae0b6d861731d06f86e810739009e97b5f0de89a7bb",
+    "original-cell-negative.rs": "edf5cb400e13ab0f5da43a43e1dfb543d9423808a293b3871a46edc9eab6f1e3",
+    "original-demands.rs": "f64fd5c6fec5c9c90b93b3e1ddf4a2b5ea8940e6faed1517d15ca5e4b5f47493",
+    "original-headers.rs": "917d779770e663bd688fcc4a8e4d5e1a3c1c21ea8e2df4ffc9cf30d219c057a0",
+    "original-mut-reference.rs": "8e751bb066cffd034da17d3f1c8aac1fa34099fcd92f57bd439df777e59ebdd7",
+    "original-shared-cell.rs": "bc92222af76c8153c2233d9ec300a5e632c10b6998c86bc12c8436fc57c99000",
+    "original-unwind-safe.rs": "dc809c9cb6a7917683d15bd9f7276ff0b1127ec36e250dc0be3aca0597b0fa65",
+    "phantom-negative.rs": "6f66d023db91a8d8f2b02440a8ff05753d91904e5afc5fd48b799a74837dd4db",
+    "projection-missing.rs": "98b492b7a8e33e92f50e20f7e605102097fc1ef4286666d9ef35c74a777fe09b",
+    "projection-premise.rs": "1891d222cd3c0b80118fa70c1372dbb93a31ceff74df28adf635e75731a32fef",
+    "raw-negative.rs": "6f4d947a63cdbc93a754393bf86c437269797d423f9598ac26b0c8b6a4de5c72",
+    "recursive-condition-negative.rs": "d8ea0e0dbe2717a7d0060b5eb60ae081957dd7aa0d04beeadabb8849f1d9b205",
+    "recursive-negative.rs": "bf62112673f5fe00304a572c823172fd6a3e2d2af67a18939a6a7b119c211472",
+    "recursive-positive.rs": "67409afb97e4d0cb0ff13e3dfd58598c9b9dde76d698d48d1be4863d27976699",
+    "reference-negative.rs": "1082c6b0041965cf5861d16e5cfd74d7218d0e9686541767635cf30bd0e9708f",
+    "structural-positive.rs": "a62228c389b5d92d4ce18bdff623080fc31fc012920c25be93e6c04a7b13b301",
+    "where-no-inversion.rs": "1feca9049a82fa8547c7f2910f084a62856c3efe247aab1f386a01db57313c89",
+    "where-premise.rs": "9a92c64666ea0f16815a011cbb988bdaeb6b3cd4fac28b6345a8f4abe7b5718d",
+    "zero-array-negative.rs": "7e8f38b88f0316570bbbfc62f7fbba8be3751b6893b7123d46ab250b837f4945"
+  },
+  "setup_failures": [],
+  "ICEs": [],
+  "prediction_corrections": [],
+  "foundations": "Original declaration/impl and structural/generic cases use authored no_core dependency shell; decl-* one-fault cases use installed std/core without a no_core Freeze gate confound.",
+  "scope": "Compile-time trait evidence and ordinary declaration/impl/lifetime legality only. No native execution is needed to distinguish these marker obligations; no panic, catch_unwind, unwind runtime, exception ABI or original full module body implementation is claimed."
+}

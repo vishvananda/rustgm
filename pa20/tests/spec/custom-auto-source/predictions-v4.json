@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "state": "frozen-before-v4-Rust-or-candidate-observation",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "scope": "Final isolated where-clause/empty pair requested by solver owner; Root hold remains active, no observations yet.",
+  "cases": [
+    {
+      "file": "decl-where.rs",
+      "sha256": "526bd822c6b38d613f002508a4f83b8ae642906542d54aee41409cfaeeb1858b",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0568"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Isolated ordinary auto-trait where-Self clause rejects; matching empty header accepts.",
+      "foundation": "installed standard core/std, no no_core prefix"
+    },
+    {
+      "file": "decl-empty.rs",
+      "sha256": "c3add32829d2f00264c27227b0086263f984514f611b2bd6a6d69ee6bf31e61b",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Isolated ordinary auto-trait where-Self clause rejects; matching empty header accepts.",
+      "foundation": "installed standard core/std, no no_core prefix"
+    }
+  ]
+}

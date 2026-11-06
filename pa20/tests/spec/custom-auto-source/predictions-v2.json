@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "state": "frozen-before-any-v2-Rust-or-candidate-observation",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "scope": "Two remaining explicit where-clause/no-inversion controls only; no other matrix expansion.",
+  "cases": [
+    {
+      "file": "where-premise.rs",
+      "sha256": "9a92c64666ea0f16815a011cbb988bdaeb6b3cd4fac28b6345a8f4abe7b5718d",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual where premise supplies component bound; function-pointer output is not an owned component."
+    },
+    {
+      "file": "where-no-inversion.rs",
+      "sha256": "1feca9049a82fa8547c7f2910f084a62856c3efe247aab1f386a01db57313c89",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0277"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Auto bound on wrapper supplies no inverse component permission for T."
+    }
+  ]
+}

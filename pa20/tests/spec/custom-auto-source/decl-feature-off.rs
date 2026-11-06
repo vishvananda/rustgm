@@ -1,0 +1,1 @@
+pub auto trait Marker{}

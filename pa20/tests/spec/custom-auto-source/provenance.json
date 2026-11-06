@@ -1,0 +1,91 @@
+{
+  "schema": 1,
+  "repository": "https://github.com/rust-lang/rust",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "license": "MIT OR Apache-2.0",
+  "upstream_path": "library/core/src/panic/unwind_safe.rs",
+  "upstream_sha256": "dc809c9cb6a7917683d15bd9f7276ff0b1127ec36e250dc0be3aca0597b0fa65",
+  "original_file": "original-unwind-safe.rs",
+  "intervals": [
+    {
+      "name": "UnwindSafe",
+      "lines": [
+        85,
+        91
+      ],
+      "bytes_half_open": [
+        4159,
+        4493
+      ],
+      "sha256": "e164ef84d28bf2895be7d73864cef00a2978dc625147b7c9827c653fe408f4ff"
+    },
+    {
+      "name": "RefUnwindSafe",
+      "lines": [
+        101,
+        109
+      ],
+      "bytes_half_open": [
+        4840,
+        5321
+      ],
+      "sha256": "be8fdb962b3af45140a848e14482ec46e1d6983a1af074c853190022ecab7513"
+    },
+    {
+      "name": "AssertUnwindSafe",
+      "lines": [
+        170,
+        171
+      ],
+      "bytes_half_open": [
+        7502,
+        7647
+      ],
+      "sha256": "a51ebbe50b61f93b9fda2ab9cc2699bf8ac6e8731eaa9bd4b5176aad1dd3a53a"
+    },
+    {
+      "name": "reference-and-raw-impls",
+      "lines": [
+        181,
+        188
+      ],
+      "bytes_half_open": [
+        8003,
+        8450
+      ],
+      "sha256": "a674ba3467e79dc748a787a67c7f1220b9e42c0a1245e6bf0d545f4f2a03761f"
+    },
+    {
+      "name": "assert-and-cell-impls",
+      "lines": [
+        193,
+        203
+      ],
+      "bytes_half_open": [
+        8684,
+        9210
+      ],
+      "sha256": "aa7eae26c2f7621353b7d40b14dfd0a4acd6a1b1b715e6d36435385d488c8041"
+    }
+  ],
+  "UnsafeCell": {
+    "path": "library/core/src/cell.rs",
+    "lines": [
+      2319,
+      2325
+    ],
+    "bytes_half_open": [
+      83826,
+      83993
+    ],
+    "sha256": "65e131ef79697b22c157638570a38da5c46c586af0c8a4f2992a287a3e3d1152"
+  },
+  "adaptation": "Preserve full original unwind_safe.rs. Original five companions embed exact trait/wrapper/impl slices and exact UnsafeCell declaration bytes in minimal authored no_core dependency shell. Other cases use ordinary custom Auto name with no standard diagnostic item. No whole-module or runtime-unwind claim.",
+  "primary_compiler": [
+    "compiler/rustc_ast_passes/src/ast_validation.rs:958-995,1396-1406",
+    "compiler/rustc_trait_selection/src/traits/select/candidate_assembly.rs:738-825",
+    "compiler/rustc_trait_selection/src/traits/select/mod.rs:1262-1277,2319+"
+  ],
+  "reference": "doc/rust-reference/src/special-types-and-traits.md:136-159",
+  "prediction_sha256": "297eb20cb2f6d74acdd5bcc2a1962f92ad365ff867a72751eb35a3bed206b9dc"
+}

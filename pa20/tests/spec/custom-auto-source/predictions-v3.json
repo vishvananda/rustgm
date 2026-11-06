@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "state": "frozen-before-v3-Rust-or-candidate-observation",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "scope": "Five one-fault declaration controls requested by solver owner; retain original combined declarations unchanged.",
+  "cases": [
+    {
+      "file": "decl-feature-off.rs",
+      "sha256": "c38b8816b5f25cb3c07a558b290b7ffc29ee0ef86e38e3a340d638fceaa6a75a",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0658"
+      ],
+      "expected_messages": [],
+      "hypothesis": "One-fault ordinary auto declaration restriction; installed std supplies support independently of no_core Freeze.",
+      "foundation": "installed standard core/std, no no_core prefix"
+    },
+    {
+      "file": "decl-generic.rs",
+      "sha256": "c93a6aad9efae88b961655778c73272feca6a7ae5c8b59bfff5c1565d955c936",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0567"
+      ],
+      "expected_messages": [],
+      "hypothesis": "One-fault ordinary auto declaration restriction; installed std supplies support independently of no_core Freeze.",
+      "foundation": "installed standard core/std, no no_core prefix"
+    },
+    {
+      "file": "decl-supertrait.rs",
+      "sha256": "b49d42f5872154134ef08691fac034f3c17b357cad967b901a0e36bd5067fa54",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0568"
+      ],
+      "expected_messages": [],
+      "hypothesis": "One-fault ordinary auto declaration restriction; installed std supplies support independently of no_core Freeze.",
+      "foundation": "installed standard core/std, no no_core prefix"
+    },
+    {
+      "file": "decl-member.rs",
+      "sha256": "2902908573e8c625dbff3e6cf449a547cb7a7c6802da0ceea1163070fbe20761",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0380"
+      ],
+      "expected_messages": [],
+      "hypothesis": "One-fault ordinary auto declaration restriction; installed std supplies support independently of no_core Freeze.",
+      "foundation": "installed standard core/std, no no_core prefix"
+    },
+    {
+      "file": "decl-const.rs",
+      "sha256": "611c2a4e7586e12a34900c0f609ea7db8ac9619fb76f8c8b0fda1ddb99bf786e",
+      "expected_code": 1,
+      "expected_error_codes": [],
+      "expected_messages": [
+        "auto traits cannot be const"
+      ],
+      "hypothesis": "One-fault ordinary auto declaration restriction; installed std supplies support independently of no_core Freeze.",
+      "foundation": "installed standard core/std, no no_core prefix"
+    }
+  ]
+}
