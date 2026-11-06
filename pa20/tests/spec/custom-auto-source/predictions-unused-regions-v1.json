@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "file": "unused-regions-1.rs",
+      "sha256": "3a1669a8ddd114e578d6dba7b0b4e389a81f10cc700ee46435c43ef123256636",
+      "expected": 1,
+      "error": "E0277",
+      "hypothesis": "Same genuine negative; unused implementation lifetime slots do not change applicability."
+    },
+    {
+      "file": "unused-regions-400.rs",
+      "sha256": "33609cc6ecd3725bc70e75b4eb2634bb72c8f2e98b7c87f06c5e5d3f3a031d11",
+      "expected": 1,
+      "error": "E0277",
+      "hypothesis": "Same genuine negative; unused implementation lifetime slots do not change applicability."
+    }
+  ],
+  "candidate_before_prediction": {
+    "unused-regions-1.rs": "ordinary absent trait obligation",
+    "unused-regions-400.rs": "hypothesized existing trait selection work budget fence"
+  }
+}

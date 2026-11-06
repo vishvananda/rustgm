@@ -45,45 +45,84 @@ fn custom(facts: &Declarations, goal: Predicate) -> Result<bool, String> {
 
 struct Equations {
     private: Range<u32>,
-    rigid: HashMap<RegionId, RegionId>,
+    regions: HashMap<RegionId, RegionId>,
+    private_count: u32,
+    rigid_count: u32,
     pairs: Vec<(RegionId, RegionId)>,
 }
 impl Equations {
+    fn new(private: Range<u32>) -> Self {
+        Self {
+            private,
+            regions: HashMap::default(),
+            private_count: 0,
+            rigid_count: 0,
+            pairs: Vec::new(),
+        }
+    }
+    fn limit(&self) -> usize {
+        let extent = (self.private_count as usize)
+            .saturating_add(self.rigid_count as usize)
+            .saturating_add(self.pairs.len())
+            .saturating_add(2);
+        extent.saturating_mul(extent).saturating_mul(8)
+    }
     fn region(
         &mut self,
         region: RegionId,
         pay: &mut impl FnMut(Growth) -> Result<(), String>,
     ) -> Result<RegionId, String> {
-        if region == RegionId::STATIC || self.private.contains(&region.0) {
+        if region == RegionId::STATIC {
             return Ok(region);
         }
-        if region.bound_parts().is_some_and(|(depth, _)| depth != 0)
-            || (region.bound_parts().is_none() && region.0 >= self.private.start)
+        let owned = self.private.contains(&region.0);
+        if !owned
+            && (region.bound_parts().is_some_and(|(depth, _)| depth != 0)
+                || (region.bound_parts().is_none() && region.0 >= self.private.start))
         {
             return Err("negative equality refers to an unowned lifetime".into());
         }
-        if let Some(&existing) = self.rigid.get(&region) {
+        if let Some(&existing) = self.regions.get(&region) {
             return Ok(existing);
         }
         pay(Growth::map::<RegionId, RegionId>(
-            self.rigid.len(),
-            self.rigid.capacity(),
+            self.regions.len(),
+            self.regions.capacity(),
             1,
         ))?;
-        let slot =
-            u16::try_from(self.rigid.len()).map_err(|_| "negative caller lifetime overflow")?;
-        let replacement = RegionId::bound(0, slot)?;
-        Ok(*self.rigid.entry(region).or_insert(replacement))
+        let replacement = if owned {
+            let next = self
+                .private_count
+                .checked_add(1)
+                .ok_or("negative private lifetime overflow")?;
+            let local = RegionId(next);
+            if local.bound_parts().is_some() {
+                return Err("negative private lifetime overflow".into());
+            }
+            self.private_count = next;
+            local
+        } else {
+            let slot =
+                u16::try_from(self.rigid_count).map_err(|_| "negative caller lifetime overflow")?;
+            let local = RegionId::bound(0, slot)?;
+            self.rigid_count = self
+                .rigid_count
+                .checked_add(1)
+                .ok_or("negative caller lifetime overflow")?;
+            local
+        };
+        self.regions.insert(region, replacement);
+        Ok(replacement)
     }
     fn pay(self, facts: &Declarations, limit: usize) -> Result<bool, String> {
         let mut constraints = Constraints::new(
             &facts.types,
             &facts.lifetimes.variances,
-            u32::try_from(self.rigid.len()).map_err(|_| "negative caller lifetime overflow")?,
+            self.rigid_count,
             limit,
         )
         .map_err(|e| e.to_string())?;
-        for region in self.private {
+        for region in 1..=self.private_count {
             constraints
                 .variable(RegionId(region))
                 .map_err(|e| e.to_string())?;
@@ -130,11 +169,7 @@ impl Search<'_> {
             return Err("negative equality owner has positive polarity".into());
         }
         self.negative_growth(Growth::vector::<usize>(0, 0, 1))?;
-        let mut equations = Equations {
-            private,
-            rigid: HashMap::default(),
-            pairs: Vec::new(),
-        };
+        let mut equations = Equations::new(private);
         let mut work = vec![root];
         let mut seen = HashSet::default();
         while let Some(index) = work.pop() {
@@ -195,13 +230,7 @@ impl Search<'_> {
         }
         // Prepay the bounded graph's worst-case propagation as well as its live
         // input/output storage. Failure keeps this payment in the same query.
-        let extent = equations
-            .private
-            .len()
-            .saturating_add(equations.rigid.len())
-            .saturating_add(equations.pairs.len())
-            .saturating_add(2);
-        let limit = extent.saturating_mul(extent).saturating_mul(8);
+        let limit = equations.limit();
         self.account_query_work(limit)?;
         equations.pay(facts, limit)
     }

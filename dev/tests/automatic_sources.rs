@@ -9,6 +9,8 @@ const CASES: &[(&str, bool, bool)] = &[
     ("target-sized-premise.rs", true, false),
     ("negative-pointer-header.rs", true, false),
     ("negative-pointer-demand.rs", false, false),
+    ("unused-regions-1.rs", false, false),
+    ("unused-regions-400.rs", false, false),
     ("native.rs", true, true),
     ("original-headers.rs", true, true),
     ("original-demands.rs", true, true),

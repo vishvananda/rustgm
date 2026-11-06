@@ -23284,7 +23284,9 @@
         "tests/spec/custom-auto-source/target-unsized.rs",
         "tests/spec/custom-auto-source/where-no-inversion.rs",
         "tests/spec/custom-auto-source/where-premise.rs",
-        "tests/spec/custom-auto-source/zero-array-negative.rs"
+        "tests/spec/custom-auto-source/zero-array-negative.rs",
+        "tests/spec/custom-auto-source/unused-regions-1.rs",
+        "tests/spec/custom-auto-source/unused-regions-400.rs"
       ]
     }
   ]

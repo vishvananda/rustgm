@@ -93,3 +93,13 @@ The vendored Rust Reference at
 composites, function pointers, logical PhantomData and manual-impl precedence.
 Use one typed component frontier and current caller's ordinary proof graph;
 completed structural data is not a cache of permission across environments.
+
+## Unused private-region regression
+
+The later predictions-unused-regions-v1/reference-unused-regions-v1 pair freezes
+one and400 declared impl lifetimes with exactly one used reference lifetime. Both
+reject E0277 in pinned Rust. The immutable pre-fix Word CLI rejects the first with
+the actual trait cause and the latter at its work limit. The touched-only payer
+restores the actual negative cause for400 without changing the declared source or
+raising its limits. Both are public full-lowering opponents and auxiliaries of the
+existing ordinary PA20 primary. The original independent34-source packet is unchanged.

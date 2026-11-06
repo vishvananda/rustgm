@@ -1,0 +1,76 @@
+{
+  "predictions_sha256": "a09fff429b998f5fae0a4926c58072be948adb6f12a8feac9126ee394d86f633",
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "driver": {
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+    }
+  },
+  "candidate_before": {
+    "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/final/rustgm",
+    "sha256": "7256f9daadac17212e41cdebd9088621e0796719f5bb6d32c469e5be44bccff8"
+  },
+  "observations": [
+    {
+      "file": "unused-regions-1.rs",
+      "stage": "rust",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--cap-lints=allow",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/unused-regions-1.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/auto-private-regions/reference/unused-regions-1.rmeta"
+      ],
+      "code": 1,
+      "seconds": 0.040507165947929025,
+      "stderr": "error[E0277]: the trait bound `&mut u8: Auto` is not satisfied\n --> /mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/unused-regions-1.rs:5:24\n  |\n5 | pub fn reject(){need::<&mut u8>();}\n  |                        ^^^^^^^ the trait `Auto` is not implemented for `&mut u8`\n  |\n  = note: `Auto` is implemented for `&u8`, but not for `&mut u8`\nnote: required by a bound in `need`\n --> /mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/unused-regions-1.rs:4:11\n  |\n4 | fn need<T:Auto>(){}\n  |           ^^^^ required by this bound in `need`\nhelp: consider removing the leading `&`-reference\n  |\n5 - pub fn reject(){need::<&mut u8>();}\n5 + pub fn reject(){need::<u8>();}\n  |\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0277`.\n"
+    },
+    {
+      "file": "unused-regions-1.rs",
+      "stage": "before",
+      "argv": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/final/rustgm",
+        "--emit-trait-semantics",
+        "--cap-lints=allow",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/unused-regions-1.rs"
+      ],
+      "code": 1,
+      "seconds": 0.012092887074686587,
+      "stderr": "ERROR: file 0: 128: trait obligation requires an unambiguous matching assumption or implementation\n"
+    },
+    {
+      "file": "unused-regions-400.rs",
+      "stage": "rust",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--cap-lints=allow",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/unused-regions-400.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/auto-private-regions/reference/unused-regions-400.rmeta"
+      ],
+      "code": 1,
+      "seconds": 0.03965466609224677,
+      "stderr": "error[E0277]: the trait bound `&mut u8: Auto` is not satisfied\n --> /mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/unused-regions-400.rs:5:24\n  |\n5 | pub fn reject(){need::<&mut u8>();}\n  |                        ^^^^^^^ the trait `Auto` is not implemented for `&mut u8`\n  |\n  = note: `Auto` is implemented for `&u8`, but not for `&mut u8`\nnote: required by a bound in `need`\n --> /mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/unused-regions-400.rs:4:11\n  |\n4 | fn need<T:Auto>(){}\n  |           ^^^^ required by this bound in `need`\nhelp: consider removing the leading `&`-reference\n  |\n5 - pub fn reject(){need::<&mut u8>();}\n5 + pub fn reject(){need::<u8>();}\n  |\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0277`.\n"
+    },
+    {
+      "file": "unused-regions-400.rs",
+      "stage": "before",
+      "argv": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherited-overflow/final/rustgm",
+        "--emit-trait-semantics",
+        "--cap-lints=allow",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/unused-regions-400.rs"
+      ],
+      "code": 1,
+      "seconds": 0.01524878793861717,
+      "stderr": "ERROR: file 0: 2416: trait selection work budget exceeded\n"
+    }
+  ]
+}
