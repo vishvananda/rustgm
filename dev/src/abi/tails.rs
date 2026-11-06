@@ -46,6 +46,12 @@ pub struct Queries {
     pub steps: usize,
 }
 impl Queries {
+    pub(crate) fn completed(&self, ty: TypeId) -> Option<Result<Id, &'static str>> {
+        match self.states.get(&ty) {
+            Some(State::Complete(result)) => Some(*result),
+            Some(State::Active) | None => None,
+        }
+    }
     #[must_use]
     pub fn at(&self, id: Id) -> Option<&Layout> {
         self.records.get(id.0 as usize)

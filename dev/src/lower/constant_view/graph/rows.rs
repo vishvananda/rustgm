@@ -93,7 +93,7 @@ impl Graph<'_> {
         let stored = match self.facts.types.kind(ty) {
             Some(Kind::Array { element, length }) => {
                 if kind != "bytes"
-                    || element != TypeId::primitive(crate::types::Primitive::U8)
+                    || !self.reader.byte_carrier(element)
                     || usize::try_from(length).ok() != Some(self.reader.bytes(text)?.len())
                 {
                     return Err("constant byte image differs from its stored type");

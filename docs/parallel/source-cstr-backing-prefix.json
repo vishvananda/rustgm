@@ -1,0 +1,129 @@
+{
+  "schema": 1,
+  "kind": "compiled prefix; actual CStr integration failures retained",
+  "parent": "bd4d8f0f5a2446601bb8f5c4e7c747d100246767",
+  "root_dependencies": [
+    "00a776537402a76b061eec49e806a998b885f350",
+    "0f0e84757",
+    "dbeec3c05",
+    "9a4986688"
+  ],
+  "source_fingerprints": {
+    "dev/src/abi/layout.rs": "87fed72f3663ed78b3062b1e06d334e5f5340312a0df3a1b1aa86a011e84fa70",
+    "dev/src/abi/metadata.rs": "c734ea2b5140bbade10b168dc2c3bd1c7ee9a0fb1f5ea3961fadc3c53d0d54cf",
+    "dev/src/abi/tails.rs": "d116ad4aacb84945273eacad8feb90736ffb5c62f3851b6e69fbea9b95628b0d",
+    "dev/src/body/promote/values.rs": "d8a389e1ef727c1266dc21dbe74d54f5bfa138fb7814491a36bc663daa5df3de",
+    "dev/src/const_eval/memory/bytes/slice_words.rs": "73fca8751d3bb390b0cfbf190b8d2c93a310565a313add16e0b34969f592f588",
+    "dev/src/const_eval/memory/bytes/words.rs": "160ffd0f3a4c73f48b95e7cb60a788c635f3332e150cd3073fc1fd21c9c5062a",
+    "dev/src/const_eval/memory/raw_slices.rs": "bea2e9457b24fd82987d366cb90f84bca3b280cc6a570b835019ba41b07777ef",
+    "dev/src/const_eval/memory/tails.rs": "f3302f84f25cace8ac35b8ebbc37f9af82939b59a649c1f956dbb49c0a726daa",
+    "dev/src/const_eval/values.rs": "3968f806f2907748bc7555dfae6b48e8bcac26e50105ba9f78b04c869db412f9",
+    "dev/src/lower/constant_view/graph/rows.rs": "3f4307e5de08d0cc583d22c6f4423cbfc32623915e830648102e1e242d47cc19",
+    "dev/src/sema/constants.rs": "78cf315f8bfa1565d973559e4058468a9c81d8bba64f2497fcd2ce5d73dff53b",
+    "dev/src/sema/constants/references.rs": "7c71fccd948839e62491afab42aa3283d1fc100028f3a1bcb6e17d780fb99f2b",
+    "dev/src/sema/constants/values.rs": "a860920e0bccc2559a2e888375b81d4d4fd0294dc7fc693af327f8236ba6c1db",
+    "dev/src/sema/constants/values/memory.rs": "21c7e0a6ed4fd7fed8b3f6bb908342c6ab37583dc5f7681be2a8670776eeb9c7",
+    "dev/src/sema/constants/values/relocations.rs": "0fbaa11b2d185968f664a68167ab932b274eae5909227a1a08103c967c4eb993",
+    "dev/src/sema/constants/values/relocations/addresses.rs": "2a2d678415a3c41407ad3f5942fb6717a962a5924e5d398c7bb2beca014c09e5",
+    "dev/src/sema/constants/values/structure.rs": "1c3b7ce2c1b2f505f3344a0f2cdfc51b0e0e842cb51e9a41a7630cca17b96fb0",
+    "dev/src/sema/constants/values/literal_storage.rs": "86e4abe5992e5833ba9d9e56dc0114555283086549732a22393a383f6945778a"
+  },
+  "qualified_source_map": {
+    "path": "obj/parallel/source-transport/cstr-backing/static3/sources.json",
+    "sha256": "3a3712d8b286c3b2da87a8700aa0a850225af2fd7b5bc410ca25a21ddddbb16f",
+    "count": 3610
+  },
+  "receipt": {
+    "path": "obj/parallel/source-transport/cstr-backing/static3/receipt.json",
+    "sha256": "ebeb729d55684ad01da3c29f83dda20e0ad505c19e54142537fa897b7b60e864",
+    "stages": [
+      {
+        "stage": "format",
+        "argv": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--all"
+        ],
+        "code": 0,
+        "seconds": 31.691049569984898
+      },
+      {
+        "stage": "audit",
+        "argv": [
+          "obj/audit-venv/bin/python",
+          "scripts/rust_audit.py",
+          "--root",
+          ".",
+          "--cache",
+          "obj/fast-audit.json"
+        ],
+        "code": 0,
+        "seconds": 6.511425803997554
+      },
+      {
+        "stage": "metadata",
+        "argv": [
+          "cargo",
+          "clippy",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--lib",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "code": 0,
+        "seconds": 97.39600101002725
+      },
+      {
+        "stage": "source-candidate",
+        "argv": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_frontend",
+          "cstr_sources::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 101,
+        "seconds": 131.9996542870067
+      }
+    ]
+  },
+  "outcomes": {
+    "format": "passed",
+    "architecture": "passed",
+    "strict_library_clippy": "passed",
+    "public_cstr": {
+      "passed": 2,
+      "failed": 3,
+      "ignored_native": 1,
+      "failures": [
+        "operation requires a scalar type at actual source sites3947/3727",
+        "local-pointer actual raw pointer coercion cannot strengthen mutability; narrow test assertion differs"
+      ]
+    },
+    "legacy_constant_tail": "not reached",
+    "private_execution": "pending CI",
+    "fat_reference_roundtrip": "required follow-up, independently Rust-positive"
+  },
+  "measured_widths": {
+    "References": 160,
+    "Place": 64,
+    "Pointer": 24,
+    "LiteralProfile": 16,
+    "TailStorage": 8
+  },
+  "profiles": "Actual immutable sized c_char array, Length and SharedDerived; no newValue/Body/Store/Frame or serialized profile."
+}

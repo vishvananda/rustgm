@@ -37,7 +37,10 @@ impl Evaluator<'_> {
         else {
             return Err("symbolic sequence word requires original array storage".into());
         };
-        if !reader.same_storage_type(element, reader.sequence_element(target)?) {
+        let selected = reader.sequence_element(target)?;
+        if !reader.same_storage_type(element, selected)
+            && !reader.byte_reinterpretation(element, selected)
+        {
             return Err("symbolic sequence word has a different stored element".into());
         }
         let from = if stride == 0 && address.offset == 0 {
@@ -52,7 +55,7 @@ impl Evaluator<'_> {
         }
         let mut pointer = super::super::references::Pointer::new(address.root.0);
         pointer.write = address.write;
-        self.subsequence(Constant(Value::Reference(pointer)), from, length, target)
+        self.sequence_view::<true>(Constant(Value::Reference(pointer)), from, length, target)
     }
     pub(crate) fn word_address(
         &mut self,
@@ -278,7 +281,8 @@ impl Reader<'_> {
             Some(
                 crate::types::Kind::Slice(_)
                 | crate::types::Kind::Primitive(crate::types::Primitive::Str),
-            ) if self.same_storage_type(element, self.sequence_element(selected)?) => {}
+            ) if self.same_storage_type(element, self.sequence_element(selected)?)
+                || self.byte_reinterpretation(element, self.sequence_element(selected)?) => {}
             _ => return Err("symbolic range has a different stored element type"),
         }
         from.checked_mul(stride)

@@ -939,13 +939,13 @@ impl Queries<'_> {
                 .get(&key)
                 .copied()
                 .ok_or_else(|| self.error(query, "missing selected literal value"))?;
-            let string = facts.ty.and_then(|ty| self.typing.facts.types.kind(ty))
-                .is_some_and(|ty| matches!(ty, Type::Reference { referent, .. } if referent == TypeId::primitive(Primitive::Str)));
-            return Ok(Expression::Value(if string {
-                Value::Text(id)
-            } else {
-                Value::Bytes(id)
-            }));
+            let ty = facts
+                .ty
+                .ok_or_else(|| self.error(query, "literal lacks its actual type"))?;
+            let value = self
+                .text_value(id, ty)
+                .map_err(|error| self.error(query, error))?;
+            return Ok(Expression::Value(value));
         }
         if let Some(expression) = self.reference_expression(key)? {
             return Ok(Expression::Reference(expression));

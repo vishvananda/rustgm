@@ -6,6 +6,12 @@ use super::super::{
 use super::{Constant, Evaluator, Failure, LocationId, Metadata, Reader};
 use crate::{resolve::model::DefId, types::TypeId};
 
+#[derive(Clone, Copy)]
+pub(crate) enum TailStorage {
+    Field(TypeId),
+    Backing(TypeId),
+}
+
 impl Constant {
     /// A numeric raw address supplies no allocation, reference or dereference authority.
     #[must_use]
@@ -234,9 +240,12 @@ impl Reader<'_> {
         index: u64,
         target: TypeId,
         metadata: Metadata,
-    ) -> Result<TypeId, &'static str> {
+    ) -> Result<TailStorage, &'static str> {
         use crate::types::Kind;
         let types = &self.facts.types;
+        if let Some(storage) = self.literal_tail_storage(owner, actual, index, target, metadata)? {
+            return Ok(storage);
+        }
         let same_owner = match (types.kind(owner), types.kind(actual)) {
             (Some(Kind::Adt(left, _)), Some(Kind::Adt(right, _))) => left == right,
             (Some(Kind::Tuple(left)), Some(Kind::Tuple(right))) => {
@@ -253,7 +262,7 @@ impl Reader<'_> {
         }
         let stored = self.stored_child(actual, None, index)?;
         if stored == target {
-            return Ok(stored);
+            return Ok(TailStorage::Field(stored));
         }
         let compatible = match (types.kind(target), types.kind(stored), metadata) {
             (
@@ -282,7 +291,7 @@ impl Reader<'_> {
         if !compatible {
             return Err("constant tail storage differs from its selected metadata or type");
         }
-        Ok(stored)
+        Ok(TailStorage::Field(stored))
     }
     /// A completed DST's final unsized field inherits its existing metadata.
     /// This selects a physical field; it establishes no source conversion proof.
@@ -377,6 +386,15 @@ impl Evaluator<'_> {
         length: u64,
         ty: TypeId,
     ) -> Result<Constant, Failure> {
+        self.sequence_view::<false>(base, from, length, ty)
+    }
+    pub(super) fn sequence_view<const BYTE_CAST: bool>(
+        &mut self,
+        base: Constant,
+        from: u64,
+        length: u64,
+        ty: TypeId,
+    ) -> Result<Constant, Failure> {
         use crate::types::Kind;
         let Value::Reference(pointer) = base.0 else {
             return Err("constant range requires symbolic storage".into());
@@ -403,7 +421,12 @@ impl Evaluator<'_> {
             }
             Some(Kind::Slice(_) | Kind::Primitive(crate::types::Primitive::Str))
                 if Reader::new(facts)
-                    .same_storage_type(Reader::new(facts).sequence_element(ty)?, element) =>
+                    .same_storage_type(Reader::new(facts).sequence_element(ty)?, element)
+                    || BYTE_CAST
+                        && Reader::new(facts).byte_reinterpretation(
+                            Reader::new(facts).sequence_element(ty)?,
+                            element,
+                        ) =>
             {
                 true
             }

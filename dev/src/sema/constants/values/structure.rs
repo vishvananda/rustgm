@@ -55,6 +55,18 @@ impl FieldTypes<'_> {
     }
 }
 impl<'a> Reader<'a> {
+    /// Equal byte widths preserve bits, never a source coercion or reference permission.
+    pub(crate) fn byte_carrier(self, ty: TypeId) -> bool {
+        matches!(
+            self.facts.types.kind(ty),
+            Some(Kind::Primitive(
+                crate::types::Primitive::I8 | crate::types::Primitive::U8
+            ))
+        )
+    }
+    pub(crate) fn byte_reinterpretation(self, left: TypeId, right: TypeId) -> bool {
+        self.byte_carrier(left) && self.byte_carrier(right)
+    }
     /// Only the first stored field of the actual role relaxes pointer validity.
     /// This is not a permission to read, write, borrow or dereference its pointers.
     pub(crate) fn field_may_dangle(self, ty: TypeId, index: u64) -> bool {
@@ -253,10 +265,8 @@ impl<'a> Reader<'a> {
         };
         match self.facts.types.kind(ty) {
             Some(Kind::Array { element, length })
-                if element == TypeId::primitive(crate::types::Primitive::U8)
-                    && length == bytes.len() as u64 => {}
-            Some(Kind::Slice(element))
-                if element == TypeId::primitive(crate::types::Primitive::U8) => {}
+                if self.byte_carrier(element) && length == bytes.len() as u64 => {}
+            Some(Kind::Slice(element)) if self.byte_carrier(element) => {}
             _ => return Err("constant byte range differs from its stored type"),
         }
         Ok(bytes)

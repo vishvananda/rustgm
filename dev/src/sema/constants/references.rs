@@ -66,7 +66,7 @@ pub(in crate::sema) struct References {
     projections: Vec<Projection>,
     ranges: Option<Vec<ranges::Subsequence>>,
     statics: HashMap<DefId, Id>,
-    literals: HashMap<crate::sema::text::Id, Id>,
+    literals: HashMap<(crate::sema::text::Id, TypeId), Id>,
     pub(super) static_order: Vec<DefId>,
 }
 impl References {
@@ -75,7 +75,7 @@ impl References {
         text: crate::sema::text::Id,
         ty: TypeId,
     ) -> Result<Value, &'static str> {
-        if let Some(&place) = self.literals.get(&text) {
+        if let Some(&place) = self.literals.get(&(text, ty)) {
             return Ok(Value::Reference(Pointer::new(place)));
         }
         // Charge a conservative 128 bytes per retained map entry and backing
@@ -90,7 +90,7 @@ impl References {
             packed: None,
             projection: None,
         })?;
-        self.literals.insert(text, Self::id(value)?);
+        self.literals.insert((text, ty), Self::id(value)?);
         Ok(value)
     }
     pub(super) fn static_place(&mut self, id: DefId, ty: TypeId) -> Result<Value, &'static str> {
@@ -475,5 +475,30 @@ fn repeated_literal_addresses_reuse_one_backing_per_text() -> Result<(), &'stati
         assert_eq!(references.literals.len(), width as usize);
         assert!(references.projections.is_empty());
     }
+    Ok(())
+}
+
+#[cfg(test)]
+#[test]
+fn literal_backing_identity_includes_the_actual_sized_carrier() -> Result<(), &'static str> {
+    let mut types = crate::types::Store::default();
+    let mut references = References::default();
+    let mut selected = Vec::new();
+    for element in [crate::types::Primitive::U8, crate::types::Primitive::I8] {
+        let ty = types.intern(crate::types::Kind::Array {
+            element: TypeId::primitive(element),
+            length: 2,
+        })?;
+        let value = references.literal_place(crate::sema::text::Id(0), ty)?;
+        assert_eq!(references.get(value)?.ty, ty);
+        assert!(value == references.literal_place(crate::sema::text::Id(0), ty)?);
+        selected.push(value);
+    }
+    assert!(selected[0] != selected[1]);
+    assert_eq!(references.places.len(), 2);
+    assert_eq!(references.literals.len(), 2);
+    assert_eq!(size_of::<((crate::sema::text::Id, TypeId), Id)>(), 12);
+    assert_eq!(size_of::<Place>(), 64);
+    assert_eq!(size_of::<Pointer>(), 24);
     Ok(())
 }

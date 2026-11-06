@@ -75,7 +75,8 @@ impl Machine<'_, '_> {
         else {
             return Err("symbolic slice validity requires original array storage".into());
         };
-        if !Reader::new(self.evaluator.facts()).same_storage_type(element, expected)
+        if (!Reader::new(self.evaluator.facts()).same_storage_type(element, expected)
+            && !Reader::new(self.evaluator.facts()).byte_reinterpretation(element, expected))
             || range
                 .from
                 .checked_add(range.length)

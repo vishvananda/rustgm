@@ -49,6 +49,12 @@ pub struct Queries {
     pub steps: usize,
 }
 impl Queries {
+    pub(crate) fn completed(&self, ty: TypeId) -> Option<Result<Metadata, &'static str>> {
+        match self.states.get(&ty) {
+            Some(State::Complete(result)) => Some(*result),
+            Some(State::Active) | None => None,
+        }
+    }
     /// Arrays, references and pointers stop traversal: their targets are not tails.
     /// Nominal fields must have been instantiated and concrete projections normalized.
     /// # Errors
@@ -156,4 +162,26 @@ fn tail(types: &Store, fields: ListId) -> Result<Step, &'static str> {
         .ok_or("invalid pointer metadata fields")?
         .last()
         .map_or(Step::Complete(Metadata::Thin), |&ty| Step::Tail(ty)))
+}
+
+#[cfg(test)]
+#[test]
+fn completed_metadata_reader_retains_misses_errors_and_paid_results() -> Result<(), &'static str> {
+    let mut types = Store::default();
+    let definitions = aggregate::Definitions::default();
+    let slice = types.intern(Kind::Slice(TypeId::primitive(Primitive::U8)))?;
+    let invalid = TypeId(u32::MAX);
+    let mut query = Queries::default();
+    assert!(query.completed(slice).is_none());
+    assert_eq!(query.demand(&types, &definitions, slice)?, Metadata::Length);
+    let steps = query.steps;
+    for _ in 0..128 {
+        assert_eq!(query.completed(slice), Some(Ok(Metadata::Length)));
+    }
+    assert_eq!(query.steps, steps);
+    let failure = query.demand(&types, &definitions, invalid);
+    assert!(failure.is_err());
+    assert_eq!(query.completed(invalid), Some(failure));
+    assert_eq!(query.completed(slice), Some(Ok(Metadata::Length)));
+    Ok(())
 }

@@ -106,6 +106,29 @@ impl Layouts {
             .as_deref()
             .map_or(0, |metadata| metadata.steps)
     }
+    pub(crate) fn tail_steps(&self) -> usize {
+        self.tails.as_deref().map_or(0, |tails| tails.steps)
+    }
+    /// Read only a completed physical metadata result; a miss grants no thin view.
+    pub(crate) fn cached_pointer_metadata(
+        &self,
+        types: &Store,
+        ty: TypeId,
+    ) -> Option<Result<super::metadata::Metadata, &'static str>> {
+        use super::metadata::Metadata;
+        if types.is_sized(ty) == Some(true) {
+            return Some(Ok(Metadata::Thin));
+        }
+        if matches!(
+            types.kind(ty),
+            Some(Kind::Slice(_) | Kind::Primitive(Primitive::Str))
+        ) {
+            return Some(Ok(Metadata::Length));
+        }
+        self.metadata
+            .as_deref()
+            .and_then(|metadata| metadata.completed(ty))
+    }
     /// Classify a prepared referent's physical pointer metadata. A missing
     /// canonical Sized proof does not by itself imply a wide pointer.
     /// # Errors
@@ -204,23 +227,40 @@ impl Layouts {
         index: u32,
     ) -> Result<(TypeId, super::tails::Offset), Error> {
         let id = self.tail_layout(types, definitions, ty)?;
-        let result = (|| {
-            let tails = self.tails.as_ref().ok_or("missing unsized layout query")?;
-            let fields = tails
-                .at(id)
-                .and_then(|layout| layout.fields)
-                .ok_or("unsized referent has no aggregate fields")?;
-            let field = types
-                .list(fields.types)
-                .and_then(|list| list.get(index as usize))
-                .copied()
-                .ok_or("invalid unsized field index")?;
-            let offset = tails
-                .field_offset(fields, index)
-                .ok_or("missing unsized field offset")?;
-            Ok((field, offset))
-        })();
-        result.map_err(|message| Error { ty, message })
+        self.prepared_unsized_field(types, id, index)
+            .map_err(|message| Error { ty, message })
+    }
+    pub(crate) fn cached_unsized_field(
+        &self,
+        types: &Store,
+        ty: TypeId,
+        index: u32,
+    ) -> Option<Result<(TypeId, super::tails::Offset), &'static str>> {
+        self.tails
+            .as_deref()?
+            .completed(ty)
+            .map(|result| result.and_then(|id| self.prepared_unsized_field(types, id, index)))
+    }
+    fn prepared_unsized_field(
+        &self,
+        types: &Store,
+        id: super::tails::Id,
+        index: u32,
+    ) -> Result<(TypeId, super::tails::Offset), &'static str> {
+        let tails = self.tails.as_ref().ok_or("missing unsized layout query")?;
+        let fields = tails
+            .at(id)
+            .and_then(|layout| layout.fields)
+            .ok_or("unsized referent has no aggregate fields")?;
+        let field = types
+            .list(fields.types)
+            .and_then(|list| list.get(index as usize))
+            .copied()
+            .ok_or("invalid unsized field index")?;
+        let offset = tails
+            .field_offset(fields, index)
+            .ok_or("missing unsized field offset")?;
+        Ok((field, offset))
     }
     #[must_use]
     pub fn get(&self, ty: TypeId) -> Option<&Layout> {

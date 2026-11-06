@@ -68,7 +68,9 @@ impl super::Reader<'_> {
         match self.facts.types.kind(ty) {
             Some(Kind::Slice(element)) => Ok(element),
             Some(Kind::Primitive(Primitive::Str)) => Ok(TypeId::primitive(Primitive::U8)),
-            _ => Err("symbolic sequence requires a slice or str type"),
+            _ => crate::sema::compiler_items::c_strings::storage_profile(self.facts, ty)?
+                .map(|profile| profile.element)
+                .ok_or("symbolic sequence requires a slice, str or actual transparent CStr tail"),
         }
     }
     pub(crate) fn word_shape(self, ty: TypeId) -> Result<WordShape, &'static str> {
@@ -81,14 +83,14 @@ impl super::Reader<'_> {
             Some(Kind::Pointer { pointee, .. }) => WordShape::Data {
                 pointee,
                 reference: None,
-                metadata: self.word_metadata(pointee),
+                metadata: self.word_metadata(pointee)?,
             },
             Some(Kind::Reference {
                 referent, mutable, ..
             }) => WordShape::Data {
                 pointee: referent,
                 reference: Some(mutable),
-                metadata: self.word_metadata(referent),
+                metadata: self.word_metadata(referent)?,
             },
             _ => return Err("constant symbolic word requires a pointer or function type"),
         };
@@ -111,14 +113,18 @@ impl super::Reader<'_> {
         }
         Ok(shape)
     }
-    fn word_metadata(self, ty: TypeId) -> MetadataShape {
-        match self.facts.types.kind(ty) {
-            Some(
-                crate::types::Kind::Slice(_)
-                | crate::types::Kind::Primitive(crate::types::Primitive::Str),
-            ) => MetadataShape::Length,
-            Some(crate::types::Kind::Dynamic { .. }) => MetadataShape::Object,
-            _ => MetadataShape::Thin,
+    fn word_metadata(self, ty: TypeId) -> Result<MetadataShape, &'static str> {
+        use crate::abi::metadata::Metadata;
+        match self
+            .facts
+            .layouts
+            .cached_pointer_metadata(&self.facts.types, ty)
+            .ok_or("symbolic word lacks completed actual pointer metadata")??
+        {
+            Metadata::Thin => Ok(MetadataShape::Thin),
+            Metadata::Length => Ok(MetadataShape::Length),
+            Metadata::VTable(_) => Ok(MetadataShape::Object),
+            Metadata::Unknown(_) => Err("symbolic word retains unresolved pointer metadata"),
         }
     }
 }

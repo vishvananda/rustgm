@@ -111,6 +111,19 @@ impl Machine<'_, '_> {
             .ok_or("constant raw slice path retention overflow")?;
         let selected = (|| {
             self.check_slice_storage(&path, place.address, element)?;
+            if path.fields.is_empty()
+                && let Some(Kind::Array {
+                    element: stored, ..
+                }) = self
+                    .evaluator
+                    .facts()
+                    .types
+                    .kind(Reader::new(self.evaluator.facts()).location(path.root)?.ty)
+                && stored != element
+                && Reader::new(self.evaluator.facts()).byte_reinterpretation(stored, element)
+            {
+                return self.byte_address(place, index, result);
+            }
             self.slice_data_element(place.address, element, index, result)
         })();
         self.slots = previous;
@@ -163,7 +176,8 @@ impl Machine<'_, '_> {
                 }) => length == range.length && reader.same_storage_type(stored, element),
                 _ => false,
             };
-            if !reader.same_storage_type(stored, element)
+            if (!reader.same_storage_type(stored, element)
+                && !reader.byte_reinterpretation(stored, element))
                 || range
                     .from
                     .checked_add(range.length)

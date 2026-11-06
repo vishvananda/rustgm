@@ -88,7 +88,15 @@ impl Machine<'_, '_> {
                         .ok_or("tail projection lacks storage")?,
                 )?
                 .ty;
-            reader.tail_storage(place.ty, actual, u64::from(index), target, metadata)?
+            match reader.tail_storage(place.ty, actual, u64::from(index), target, metadata)? {
+                crate::sema::values::TailStorage::Field(stored) => stored,
+                crate::sema::values::TailStorage::Backing(stored) => {
+                    if stored != actual {
+                        return Err("constant literal tail changed its backing identity".into());
+                    }
+                    return place.address.with_metadata(metadata);
+                }
+            }
         } else {
             target
         };

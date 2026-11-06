@@ -273,7 +273,8 @@ impl Machine<'_, '_> {
         if let Some(crate::types::Kind::Array {
             element: actual, ..
         }) = self.evaluator.facts().types.kind(root)
-            && Reader::new(self.evaluator.facts()).same_storage_type(actual, element)
+            && (Reader::new(self.evaluator.facts()).same_storage_type(actual, element)
+                || Reader::new(self.evaluator.facts()).byte_reinterpretation(actual, element))
         {
             if reference {
                 self.footprint(root)?;

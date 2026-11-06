@@ -22,6 +22,8 @@ mod wrapping_values;
 pub(crate) use footprints::{ProjectionStorage, StorageLayout, StoredShape};
 pub mod execution;
 mod memory;
+pub(crate) use memory::TailStorage;
+mod literal_storage;
 mod mutation;
 mod session;
 mod structure;

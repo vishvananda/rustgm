@@ -6,7 +6,7 @@ use crate::{
         model::Scalar,
         values::{Metadata, Overflow, Reader},
     },
-    types::{Kind, Primitive, TypeId, instance::Instance},
+    types::{Kind, instance::Instance},
 };
 
 pub(super) fn boolean(value: Constant) -> Result<bool, Failure> {
@@ -168,14 +168,7 @@ impl Machine<'_, '_> {
                     return Ok(None);
                 }
             }
-            Rvalue::Text(text) => {
-                if matches!(self.evaluator.facts().types.kind(ty), Some(Kind::Reference { referent, .. }) if referent == TypeId::primitive(Primitive::Str))
-                {
-                    Constant::string(text)
-                } else {
-                    Constant::bytes(text)
-                }
-            }
+            Rvalue::Text(text) => self.evaluator.text_literal(text, ty)?,
             Rvalue::Read(place) => {
                 let Some(address) = self.place(frame, place)? else {
                     return Ok(None);
