@@ -78,3 +78,11 @@ never excuses a failed library path. Full unwinding and async remain separate
 from the initial abort-profile graph. Optional PA45 reproducible self-hosting
 remains outside this goal. CPPGM is the explicit LowIR backend; backend extensions
 require separate reviewed capability work.
+
+The [overflow/automatic/CI checkpoint](docs/parallel/overflow-auto-ci-main-join.md)
+clears the authenticated const-closure overflow attribute frontier. The actual
+joined CLI now reaches LIB189, a cold closure in str/pattern.rs1858,19.5022s with
+all722 inputs/profile/limits unchanged. Nine focused controls, strict selected
+Clippy, architecture and282 harness checks pass. Full successor CI, genuine
+const-closure callable/capture/CTFE semantics, Field consumers and all original
+library artifact gates remain required; no new whole assignment is complete.
