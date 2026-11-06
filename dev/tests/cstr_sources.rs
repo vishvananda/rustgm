@@ -1,4 +1,4 @@
-//! Actual CStr declarations, source methods and typed constant storage.
+//! Actual `CStr` declarations, source methods and typed constant storage.
 use crate::resolve as source;
 use rustgm::{expand::config::Config, pipeline, support::diagnostics::LintCap};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
