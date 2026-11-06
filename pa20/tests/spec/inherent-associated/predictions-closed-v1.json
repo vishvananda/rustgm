@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "before_observation": true,
+  "cases": {
+    "wrong-result-closed": {
+      "sha256": "fe44360c97f095bc6772434e18622bb3aae88698b0668a298292ecb20d19f894",
+      "expected": 1,
+      "cause": "E0308: actual alias expands to u8 but function returns u16; closed owner pair to lookup.rs"
+    }
+  }
+}

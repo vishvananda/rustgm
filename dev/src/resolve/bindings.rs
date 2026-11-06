@@ -277,6 +277,12 @@ impl super::package::Package {
             "reborrow client identity changed",
         )
     }
+    pub(crate) fn requested_inherent_associated_types(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::InherentAssociatedTypes,
+            "inherent associated types client identity changed",
+        )
+    }
     pub(crate) fn requested_new_range(&self) -> Result<bool, &'static str> {
         self.requested_expression_feature(
             policy::Feature::NewRange,

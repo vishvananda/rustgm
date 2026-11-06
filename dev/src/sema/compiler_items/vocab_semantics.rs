@@ -14,14 +14,32 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
             // Ordinary completed headers supply no compiler assertion routing.
             continue;
         }
-        match role {
-            // These roles complete through their actual ordinary declarations.
-            // Generated state, implicit operations and executable calls still
-            // require their separate typed contracts and ordinary body proofs.
-            LangItem::CoroutineState
+        if !ordinary_declaration(role)
+            && let Some(declaration) = reserved.language(role)
+        {
+            return Err(Declarations::error(
+                report,
+                declaration.origin,
+                "source compiler language item semantic contract is not implemented",
+            ));
+        }
+    }
+    Ok(())
+}
+
+/// Admission names actual declaration producers, never implementation evidence.
+const fn ordinary_declaration(role: LangItem) -> bool {
+    matches!(
+        role,
+        LangItem::CoroutineState
             | LangItem::CStr
             | LangItem::Reborrow
             | LangItem::CoerceShared
+            | LangItem::FieldRepresentingType
+            | LangItem::Field
+            | LangItem::FieldBase
+            | LangItem::FieldType
+            | LangItem::FieldOffset
             | LangItem::MemCpy
             | LangItem::MemMove
             | LangItem::MemSet
@@ -95,19 +113,8 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
             | LangItem::Receiver
             | LangItem::ReceiverTarget
             | LangItem::CompilerMove
-            | LangItem::CompilerCopy => {}
-            _ => {
-                if let Some(declaration) = reserved.language(role) {
-                    return Err(Declarations::error(
-                        report,
-                        declaration.origin,
-                        "source compiler language item semantic contract is not implemented",
-                    ));
-                }
-            }
-        }
-    }
-    Ok(())
+            | LangItem::CompilerCopy
+    )
 }
 
 #[cfg(test)]

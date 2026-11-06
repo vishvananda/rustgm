@@ -6,7 +6,7 @@ use crate::{
     types::{ItemId, Kind, aggregate},
 };
 
-const ROLES: [LangItem; 7] = [
+const ROLES: [LangItem; 8] = [
     LangItem::Poll,
     LangItem::PollReady,
     LangItem::PollPending,
@@ -14,6 +14,7 @@ const ROLES: [LangItem; 7] = [
     LangItem::CoroutineState,
     LangItem::ResumeTy,
     LangItem::CStr,
+    LangItem::FieldRepresentingType,
 ];
 
 /// Complete ordinary headers/fields without restricting Rust-valid unused shapes.

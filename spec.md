@@ -6321,6 +6321,20 @@ the complete nominal/value and operation contract is transported. Share common
 declaration target/arity facts without replacing dedicated trait, projection or
 execution proof. See the [source qualification](docs/pa31-type-reflection-source-checkpoint.md).
 
+FieldRepresentingType and Field headers consume actual ordinary nominal/trait
+declarations. Complete independently present Base/Type/OFFSET members after
+ordinary aliases/constants and owner schemas finish. Preserve genuine unrelated
+trait and inherent owners, alternative unused shapes and ordinary initializer
+errors. Reuse the existing declaration ledger; header completion supplies no
+builtin implementation, projected type or offset value. Demanded consumers must
+authenticate the actual representing application, selected base/coordinates,
+eligible unpacked struct or tuple and required sizing/trait proofs. Base/Type
+normalization retains that selected parent. OFFSET must execute the genuine
+provided initializer and authenticate its reached field_offset intrinsic before
+reading completed layout. Source field_of lookup keeps its own contextual
+privacy and stability authority. Full reflection and authenticated transport
+remain separate required consumers.
+
 Owned unsized function parameters require actual crate permission and direct
 parameter identity. A lazy pass-local, prepaid index is shared across body
 checks; ordinary sized bindings build no index. Keep parameter ownership

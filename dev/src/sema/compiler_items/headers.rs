@@ -2,6 +2,7 @@
 mod authored;
 mod clone_signature;
 pub(super) mod functions;
+pub(super) mod reflection_members;
 pub(super) mod weak_imports;
 use crate::{
     resolve::{

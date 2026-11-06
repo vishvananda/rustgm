@@ -77,6 +77,33 @@ pub(super) struct Structural {
 }
 
 impl Structural {
+    pub fn growth(&self, key: Key, context: ItemContext) -> crate::support::retained::Growth {
+        use crate::support::retained::Growth;
+        let mut growth = Growth::map::<NameId, ()>(
+            self.names.len(),
+            self.names.capacity(),
+            usize::from(!self.names.contains(&key.1)),
+        );
+        let contexts = self.members.get(&key);
+        growth.include(Growth::map::<Key, HashMap<ItemContext, Vec<DefId>>>(
+            self.members.len(),
+            self.members.capacity(),
+            usize::from(contexts.is_none()),
+        ));
+        let (length, capacity) = contexts.map_or((0, 0), |v| (v.len(), v.capacity()));
+        let missing = usize::from(contexts.is_none_or(|v| !v.contains_key(&ItemContext::ROOT)))
+            + usize::from(
+                context != ItemContext::ROOT && contexts.is_none_or(|v| !v.contains_key(&context)),
+            );
+        growth.include(Growth::map::<ItemContext, Vec<DefId>>(
+            length, capacity, missing,
+        ));
+        let (length, capacity) = contexts
+            .and_then(|v| v.get(&context))
+            .map_or((0, 0), |v| (v.len(), v.capacity()));
+        growth.include(Growth::vector::<DefId>(length, capacity, 1));
+        growth
+    }
     pub fn publish(&mut self, key: Key, context: ItemContext, member: DefId) {
         self.names.insert(key.1);
         let contexts = self.members.entry(key).or_default();

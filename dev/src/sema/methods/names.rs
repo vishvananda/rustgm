@@ -173,6 +173,61 @@ impl Use {
 }
 
 impl Methods {
+    pub(in crate::sema) fn inherent_growth(
+        &self,
+        key: Bucket,
+        context: ItemContext,
+    ) -> crate::support::retained::Growth {
+        use crate::support::retained::Growth;
+        let mut growth = Growth::default();
+        let key = match key {
+            Bucket::Nominal(item, name) => (item, name),
+            Bucket::Structural(head, name) => {
+                let names = self.names.as_deref();
+                growth.bytes = usize::from(names.is_none()) * size_of::<Index>();
+                let structural = names.and_then(|v| v.structural.as_deref());
+                growth.bytes += usize::from(structural.is_none()) * size_of::<Structural>();
+                growth.include(structural.map_or_else(
+                    || Structural::default().growth((head, name), context),
+                    |v| v.growth((head, name), context),
+                ));
+                return growth;
+            }
+        };
+        let ordinary = self.inherent.get(&key);
+        growth.include(Growth::map::<Key, Vec<DefId>>(
+            self.inherent.len(),
+            self.inherent.capacity(),
+            usize::from(ordinary.is_none()),
+        ));
+        if context == ItemContext::ROOT {
+            let (length, capacity) = ordinary.map_or((0, 0), |v| (v.len(), v.capacity()));
+            growth.include(Growth::vector::<DefId>(length, capacity, 1));
+        } else {
+            let names = self.names.as_deref();
+            growth.bytes += usize::from(names.is_none()) * size_of::<Index>();
+            let contextual = names.and_then(|v| v.contextual.as_deref());
+            growth.bytes += usize::from(contextual.is_none()) * size_of::<Contextual>();
+            let contexts = contextual.and_then(|v| v.inherent.get(&key));
+            let (length, capacity) =
+                contextual.map_or((0, 0), |v| (v.inherent.len(), v.inherent.capacity()));
+            growth.include(Growth::map::<Key, HashMap<ItemContext, Vec<DefId>>>(
+                length,
+                capacity,
+                usize::from(contexts.is_none()),
+            ));
+            let (length, capacity) = contexts.map_or((0, 0), |v| (v.len(), v.capacity()));
+            let members = contexts.and_then(|v| v.get(&context));
+            growth.include(Growth::map::<ItemContext, Vec<DefId>>(
+                length,
+                capacity,
+                usize::from(members.is_none()),
+            ));
+            let (length, capacity) = members.map_or((0, 0), |v| (v.len(), v.capacity()));
+            growth.include(Growth::vector::<DefId>(length, capacity, 1));
+        }
+        growth
+    }
     pub(in crate::sema) fn publish_inherent(
         &mut self,
         key: impl Into<Bucket>,

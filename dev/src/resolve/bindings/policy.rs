@@ -89,6 +89,7 @@ pub(in crate::resolve) enum Feature {
     ConstPreciseLiveDrops = 72,
     NewRange = 73,
     Reborrow = 74,
+    InherentAssociatedTypes = 75,
 }
 
 #[cfg(test)]
@@ -136,6 +137,7 @@ impl Request {
             "prelude_import" => Self::Capability(Feature::PreludeImport),
             "new_range" => Self::Capability(Feature::NewRange),
             "reborrow" => Self::Capability(Feature::Reborrow),
+            "inherent_associated_types" => Self::Capability(Feature::InherentAssociatedTypes),
             "must_not_suspend" => Self::Capability(Feature::MustNotSuspend),
             "no_core" => Self::Capability(Feature::NoCore),
             "abi_unadjusted" => Self::Capability(Feature::AbiUnadjusted),
@@ -269,6 +271,7 @@ impl Features {
             || self.has(Feature::MetavariableExpressions)
             || self.has(Feature::NewRange)
             || self.has(Feature::Reborrow)
+            || self.has(Feature::InherentAssociatedTypes)
     }
     fn insert(&mut self, feature: Feature) {
         let index = feature as usize;

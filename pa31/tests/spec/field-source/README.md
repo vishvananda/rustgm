@@ -17,6 +17,29 @@ the shared resource/storage wrappers, a 90-second outer deadline, explicit
 runs completed successfully. This is reference work only: there is no RustGM
 candidate observation, compiler edit or native execution.
 
+## Standard Send identity successor
+
+The sixteen `*-v4.rs` companions differ from their qualified v2/v3 predecessors
+only by adding the exact `#[rustc_diagnostic_item = "Send"]` attribute from pinned
+`marker.rs:87`. The already vendored full original at
+`../coerce-pointee-source/original-marker.rs` matches the pinned bytes;
+`provenance-v4.json` records the source interval, license and checksums. No second
+copy of the original module is needed. All original Field/Copy/Clone cutout bytes
+remain unchanged.
+
+`predictions-v4.json` was frozen before observing the companions. All sixteen
+sources pass their predicted metadata and object outcomes, 32 observations, under
+the same profile and guards. `reference-v4.json` binds exact sources, commands,
+diagnostics and raw receipt. This variant gives the ordinary Send declaration
+its genuine standard diagnostic identity; it grants no trait proof by itself.
+
+The earlier qualified v2/v3 sources remain valid Rust programs or intended
+ordinary negatives. Their custom auto trait Send is a broader PA20 implementation
+requirement, not a setup failure. Their observations are unchanged and remain
+separate from the genuinely invalid dependency setup in v1 and the four
+original-derived v2 attempts described below. Candidate implementation remains
+Root-owned; this successor runs no RustGM candidate or native executable.
+
 ## Qualified selection
 
 Sixteen sources have both metadata and object observations, 32 checks total.

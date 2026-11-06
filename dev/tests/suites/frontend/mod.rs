@@ -133,6 +133,8 @@ pub(crate) mod qualify;
 mod quota_options;
 #[path = "../../record_availability.rs"]
 mod record_availability;
+#[path = "../../reflection_sources.rs"]
+mod reflection_sources;
 #[path = "../../resolution.rs"]
 mod resolution;
 #[path = "../../helpers/resolve.rs"]
@@ -208,6 +210,8 @@ mod overload_captures;
 #[path = "../../assertion_sources.rs"]
 mod assertion_sources;
 
+#[path = "../../qualified_types.rs"]
+mod qualified_types;
 #[path = "../../reborrow_sources.rs"]
 mod reborrow_sources;
 #[path = "../../weak_symbols.rs"]

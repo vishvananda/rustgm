@@ -1,3 +1,17 @@
+The [Field/inherent join](parallel/field-headers-main-join.md) qualifies11 focused
+controls,21 PA20 text oracles,282 harness checks and three native observers.
+Immutable040e5723 clears the Field language-item fence and reaches LIB187,
+UnwindSafe at panic/unwind_safe.rs91/file187:4464,33.1302s/375opens on unchanged
+original722/profile/limits. Original Field semantics/library artifacts remain
+incomplete. Root owns publication and genuine Field evidence/projection/OFFSET;
+Source owns the now-original-core generic/custom auto-trait prerequisite, Async
+its independent UnwindSafe/RefUnwindSafe contracts. Closed inherent aliases are
+integrated; generic/where/lifetime debts remain named requirements. Source-owner
+repaird865397c7 restores Declarations7120 and retains native behavior; full
+42293148604 passes those sizes/all public targets but finds one weak-provider
+test setup error, repaired in the current join; successor full CI remains due. Keep the same btrfs trees,2heavy/16GiB/
+150GiB/<=300s guards and scoped cleanup. Earlier checkpoint observations follow.
+
 The [Reborrow operation checkpoint](parallel/reborrow-operations-checkpoint.md)
 qualifies seven public controls in115.23s and two native observers in34.66s.
 Immutable CLI9aa812d6 advances unchanged original722-input core to LIB186,

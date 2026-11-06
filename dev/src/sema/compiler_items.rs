@@ -59,6 +59,7 @@ pub(crate) use subtraction_contract::SubtractionSelection;
 pub(crate) use subtraction_contract::{scalar_arithmetic, wrapping_operator};
 pub(crate) use wrapping_contract::WrappingOffsetSelection;
 pub(in crate::sema) mod reflection;
+pub(in crate::sema) use headers::reflection_members::complete as complete_field_headers;
 pub(in crate::sema) mod transmutability;
 mod transmute_contract;
 mod transmute_sizes;

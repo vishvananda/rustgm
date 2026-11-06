@@ -1,0 +1,150 @@
+{
+  "profile": "pinned Rust1.98.0 edition2024 cap-lints allow metadata+object; no candidate observations",
+  "cases": {
+    "unused": {
+      "sha256": "540cc8d68df32674dc35ce178e20446663f5ce0c10252f75af06461c86f84ee7",
+      "expected": 0,
+      "cause": "real unused alias definition"
+    },
+    "lookup": {
+      "sha256": "a145c5454fdb977b17006ede3d22488f749ae68f4e69eb22295067a577d0e6ec",
+      "expected": 0,
+      "cause": "ordinary qualified lookup"
+    },
+    "explicit": {
+      "sha256": "b95e79f7d9213bb19127f49745cf952462e29a01466d904dedf888bc1d3d0568",
+      "expected": 0,
+      "cause": "explicit Self prefix"
+    },
+    "self-use": {
+      "sha256": "1acb51db4b41bebf0a839e4d3eb3910f6a79101be620cb697dc4d9171416cf37",
+      "expected": 0,
+      "cause": "actual impl Self mapping"
+    },
+    "public": {
+      "sha256": "6bd6685b9a88713c9ea47bed840dc1f13f6a04b348f0297a6a908c3353a0f612",
+      "expected": 0,
+      "cause": "inherent visibility"
+    },
+    "generic-owner": {
+      "sha256": "2c40a8ed5c0e821ec8998e5dd6756cc90b0ef0d301503048db0b579c22c69885",
+      "expected": 0,
+      "cause": "owner substitution"
+    },
+    "generic-member": {
+      "sha256": "ea574af362f95ce37ec97d653b5c22c2b27d65faf1bed9eed3bbf8477b7fd54a",
+      "expected": 0,
+      "cause": "member substitution"
+    },
+    "lifetime-member": {
+      "sha256": "f95821b679b05dd355a31ce663bca7f6f4d38801717970554f0287076c9c20f8",
+      "expected": 0,
+      "cause": "member lifetime"
+    },
+    "lifetime-owner": {
+      "sha256": "7db901edb6b14ad4be21b606ea5628121772b3c289e048dfcaa16510ed2c020b",
+      "expected": 0,
+      "cause": "owner lifetime"
+    },
+    "where-owner": {
+      "sha256": "f1b31d5f0e20b5eaa04c4d1d533e0f3fa511b72b0ec4bc65381bf18f9bc3c2d3",
+      "expected": 0,
+      "cause": "actual owner where proof"
+    },
+    "specialized": {
+      "sha256": "5ac3a73151f19bd0cd7f781b1260d6641ba119622675ebb0793387876765b31b",
+      "expected": 0,
+      "cause": "specialized owner"
+    },
+    "disjoint": {
+      "sha256": "0cd67f2a048db47cc9ab2704ce38f0f1e310f6066ec7ba55057f7e658558e0c1",
+      "expected": 0,
+      "cause": "disjoint owner selection"
+    },
+    "namespaces": {
+      "sha256": "904f51f8083663a364400f33c9acb38ed5bb7c14a05c99bf4f2c686e7aac0237",
+      "expected": 0,
+      "cause": "separate member namespaces, prediction until checked"
+    },
+    "missing-feature": {
+      "sha256": "edf13909f7f058a889e9ff03754e32909ad56d73e0f7a749eccda641c496760f",
+      "expected": 1,
+      "cause": "disabled feature"
+    },
+    "missing-result": {
+      "sha256": "51576fa6a5bf80a2092615c6d688d39dcfee5fd9901f0583fecdc0159dc3f11b",
+      "expected": 1,
+      "cause": "missing alias result"
+    },
+    "written-bound": {
+      "sha256": "5f70b783361ae35b99c92fd4d92de2f0b26211141610ec67d9d4c8c5ff7a2ee4",
+      "expected": 1,
+      "cause": "uncertain bound syntax legality"
+    },
+    "invalid-unused": {
+      "sha256": "639d11eb508ad5d1e9133ca63c840068bb90cbc201ccb39b354f98217c270f4c",
+      "expected": 1,
+      "cause": "unused alias must typecheck"
+    },
+    "missing-owner-bound": {
+      "sha256": "ca2cad9d87b8c34995b8b5dc93331c0b27f9b65b9d2d62b0a8c4dd55f402dcdf",
+      "expected": 1,
+      "cause": "unsatisfied owner premise"
+    },
+    "missing-member-bound": {
+      "sha256": "1fb73d9b91662165ee4778f069fdf1e79e36262d179571e746179b80faeec6f9",
+      "expected": 1,
+      "cause": "member premise, prediction until checked"
+    },
+    "member-where": {
+      "sha256": "bef6afb4bb37a446c4eeacb43100ab11241f1401f6b1adbd56438e5500d9fcc0",
+      "expected": 0,
+      "cause": "member where definition"
+    },
+    "missing-arity": {
+      "sha256": "b5c03c294a9e7854bed175f16fdfe74fc7fc44e37ead7bfe8e2a2a00eac15818",
+      "expected": 1,
+      "cause": "member arity"
+    },
+    "wrong-owner": {
+      "sha256": "83e05f9af4ee63b25e96ee8a2241c4d3525d72127a1dc537b074dca1e9f381c3",
+      "expected": 1,
+      "cause": "unrelated owner"
+    },
+    "private": {
+      "sha256": "154510147ac981f3e9e8176ff227675e39170c4ca6969bb1869e61b610969680",
+      "expected": 1,
+      "cause": "private associated type"
+    },
+    "duplicate": {
+      "sha256": "155f37671c2c189e49e2c151cd0ac219716e537a66292fa53f28c4ddec32d0fc",
+      "expected": 1,
+      "cause": "overlapping declaration"
+    },
+    "escape": {
+      "sha256": "5b8db372783a6e7574af6302400f46fc6304d955ddf538a2473d33b3329d9081",
+      "expected": 1,
+      "cause": "directed lifetime escape"
+    },
+    "wrong-result": {
+      "sha256": "4bd5443b981bc77408c99a4f4b8de2dfcd374c93afa850697805a11cabef4821",
+      "expected": 1,
+      "cause": "real alias result identity"
+    },
+    "recursive": {
+      "sha256": "828257b32db510159be4c6081745388569849f2c16d50be1bc9b7d097e3dd412",
+      "expected": 1,
+      "cause": "alias cycle"
+    },
+    "overlap": {
+      "sha256": "cf04b0cef2140522ec22375f1e6c96ed72fc9b57537644fb91a84de09d83d894",
+      "expected": 1,
+      "cause": "overlapping owner premises"
+    },
+    "trait-control": {
+      "sha256": "f24e2933202e4307f60404de5fb2139ae223d456c7d984d79cfbb97b4f299bc5",
+      "expected": 0,
+      "cause": "existing trait path control"
+    }
+  }
+}

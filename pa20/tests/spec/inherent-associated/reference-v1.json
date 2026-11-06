@@ -1,0 +1,2321 @@
+{
+  "schema": 1,
+  "scope": "independent Rust reference packet; finite candidate profile qualified separately",
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "version": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+    "driver": {
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+    }
+  },
+  "predictions": {
+    "predictions-v1.json": {
+      "profile": "pinned Rust1.98.0 edition2024 cap-lints allow metadata+object; no candidate observations",
+      "cases": {
+        "unused": {
+          "sha256": "540cc8d68df32674dc35ce178e20446663f5ce0c10252f75af06461c86f84ee7",
+          "expected": 0,
+          "cause": "real unused alias definition"
+        },
+        "lookup": {
+          "sha256": "a145c5454fdb977b17006ede3d22488f749ae68f4e69eb22295067a577d0e6ec",
+          "expected": 0,
+          "cause": "ordinary qualified lookup"
+        },
+        "explicit": {
+          "sha256": "b95e79f7d9213bb19127f49745cf952462e29a01466d904dedf888bc1d3d0568",
+          "expected": 0,
+          "cause": "explicit Self prefix"
+        },
+        "self-use": {
+          "sha256": "1acb51db4b41bebf0a839e4d3eb3910f6a79101be620cb697dc4d9171416cf37",
+          "expected": 0,
+          "cause": "actual impl Self mapping"
+        },
+        "public": {
+          "sha256": "6bd6685b9a88713c9ea47bed840dc1f13f6a04b348f0297a6a908c3353a0f612",
+          "expected": 0,
+          "cause": "inherent visibility"
+        },
+        "generic-owner": {
+          "sha256": "2c40a8ed5c0e821ec8998e5dd6756cc90b0ef0d301503048db0b579c22c69885",
+          "expected": 0,
+          "cause": "owner substitution"
+        },
+        "generic-member": {
+          "sha256": "ea574af362f95ce37ec97d653b5c22c2b27d65faf1bed9eed3bbf8477b7fd54a",
+          "expected": 0,
+          "cause": "member substitution"
+        },
+        "lifetime-member": {
+          "sha256": "f95821b679b05dd355a31ce663bca7f6f4d38801717970554f0287076c9c20f8",
+          "expected": 0,
+          "cause": "member lifetime"
+        },
+        "lifetime-owner": {
+          "sha256": "7db901edb6b14ad4be21b606ea5628121772b3c289e048dfcaa16510ed2c020b",
+          "expected": 0,
+          "cause": "owner lifetime"
+        },
+        "where-owner": {
+          "sha256": "f1b31d5f0e20b5eaa04c4d1d533e0f3fa511b72b0ec4bc65381bf18f9bc3c2d3",
+          "expected": 0,
+          "cause": "actual owner where proof"
+        },
+        "specialized": {
+          "sha256": "5ac3a73151f19bd0cd7f781b1260d6641ba119622675ebb0793387876765b31b",
+          "expected": 0,
+          "cause": "specialized owner"
+        },
+        "disjoint": {
+          "sha256": "0cd67f2a048db47cc9ab2704ce38f0f1e310f6066ec7ba55057f7e658558e0c1",
+          "expected": 0,
+          "cause": "disjoint owner selection"
+        },
+        "namespaces": {
+          "sha256": "904f51f8083663a364400f33c9acb38ed5bb7c14a05c99bf4f2c686e7aac0237",
+          "expected": 0,
+          "cause": "separate member namespaces, prediction until checked"
+        },
+        "missing-feature": {
+          "sha256": "edf13909f7f058a889e9ff03754e32909ad56d73e0f7a749eccda641c496760f",
+          "expected": 1,
+          "cause": "disabled feature"
+        },
+        "missing-result": {
+          "sha256": "51576fa6a5bf80a2092615c6d688d39dcfee5fd9901f0583fecdc0159dc3f11b",
+          "expected": 1,
+          "cause": "missing alias result"
+        },
+        "written-bound": {
+          "sha256": "5f70b783361ae35b99c92fd4d92de2f0b26211141610ec67d9d4c8c5ff7a2ee4",
+          "expected": 1,
+          "cause": "uncertain bound syntax legality"
+        },
+        "invalid-unused": {
+          "sha256": "639d11eb508ad5d1e9133ca63c840068bb90cbc201ccb39b354f98217c270f4c",
+          "expected": 1,
+          "cause": "unused alias must typecheck"
+        },
+        "missing-owner-bound": {
+          "sha256": "ca2cad9d87b8c34995b8b5dc93331c0b27f9b65b9d2d62b0a8c4dd55f402dcdf",
+          "expected": 1,
+          "cause": "unsatisfied owner premise"
+        },
+        "missing-member-bound": {
+          "sha256": "1fb73d9b91662165ee4778f069fdf1e79e36262d179571e746179b80faeec6f9",
+          "expected": 1,
+          "cause": "member premise, prediction until checked"
+        },
+        "member-where": {
+          "sha256": "bef6afb4bb37a446c4eeacb43100ab11241f1401f6b1adbd56438e5500d9fcc0",
+          "expected": 0,
+          "cause": "member where definition"
+        },
+        "missing-arity": {
+          "sha256": "b5c03c294a9e7854bed175f16fdfe74fc7fc44e37ead7bfe8e2a2a00eac15818",
+          "expected": 1,
+          "cause": "member arity"
+        },
+        "wrong-owner": {
+          "sha256": "83e05f9af4ee63b25e96ee8a2241c4d3525d72127a1dc537b074dca1e9f381c3",
+          "expected": 1,
+          "cause": "unrelated owner"
+        },
+        "private": {
+          "sha256": "154510147ac981f3e9e8176ff227675e39170c4ca6969bb1869e61b610969680",
+          "expected": 1,
+          "cause": "private associated type"
+        },
+        "duplicate": {
+          "sha256": "155f37671c2c189e49e2c151cd0ac219716e537a66292fa53f28c4ddec32d0fc",
+          "expected": 1,
+          "cause": "overlapping declaration"
+        },
+        "escape": {
+          "sha256": "5b8db372783a6e7574af6302400f46fc6304d955ddf538a2473d33b3329d9081",
+          "expected": 1,
+          "cause": "directed lifetime escape"
+        },
+        "wrong-result": {
+          "sha256": "4bd5443b981bc77408c99a4f4b8de2dfcd374c93afa850697805a11cabef4821",
+          "expected": 1,
+          "cause": "real alias result identity"
+        },
+        "recursive": {
+          "sha256": "828257b32db510159be4c6081745388569849f2c16d50be1bc9b7d097e3dd412",
+          "expected": 1,
+          "cause": "alias cycle"
+        },
+        "overlap": {
+          "sha256": "cf04b0cef2140522ec22375f1e6c96ed72fc9b57537644fb91a84de09d83d894",
+          "expected": 1,
+          "cause": "overlapping owner premises"
+        },
+        "trait-control": {
+          "sha256": "f24e2933202e4307f60404de5fb2139ae223d456c7d984d79cfbb97b4f299bc5",
+          "expected": 0,
+          "cause": "existing trait path control"
+        }
+      }
+    },
+    "predictions-extra-v1.json": {
+      "profile": "Rust1.98.0 edition2024 cap-lints allow metadata/object +native C ABI observer",
+      "cases": {
+        "macro-allowed": {
+          "sha256": "32764b2b7b68385547b0c418b1e0bd502e0628d2f289a718d7b1b79647e2d409",
+          "expected": 0,
+          "cause": "real defining macro allowance"
+        },
+        "macro-denied": {
+          "sha256": "c21e9cc12215308c026edfbf08ffb0880ae517bf0c0756d2547e4fd34aaebdf2",
+          "expected": 1,
+          "cause": "macro without feature authority"
+        },
+        "unsized": {
+          "sha256": "60af7a7beaf6b163c6f3151ac1b7d18ba2351fb2121536ba8ebbd01dff2a4e94",
+          "expected": 0,
+          "cause": "real unsized alias result"
+        },
+        "unused-member": {
+          "sha256": "c344b15070dcde5766db51e36506a2cc2f25887d19cc8315e3328d9229e3ed72",
+          "expected": 0,
+          "cause": "unused member type parameter"
+        },
+        "disjoint-kinds": {
+          "sha256": "19abd627835205b419f1ab01f2b61407c220d5e7f07756dcdc37a29753a0fe58",
+          "expected": 0,
+          "cause": "disjoint owners with different member namespaces"
+        },
+        "native": {
+          "sha256": "bc0fce6ee2ae39bc613c2e7365df7966b65bdb40abff6a828e5195ea63fb35bf",
+          "expected": 0,
+          "cause": "operand-dependent normal alias calls",
+          "stdout": "alias 23\n"
+        }
+      }
+    }
+  },
+  "observations": [
+    {
+      "case": "unused",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/unused.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/unused.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.0244025900028646,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "unused",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/unused.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/unused.obj"
+      ],
+      "code": 0,
+      "seconds": 0.019008019007742405,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "lookup",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/lookup.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/lookup.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.023981678008567542,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "lookup",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/lookup.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/lookup.obj"
+      ],
+      "code": 0,
+      "seconds": 0.02702583302743733,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "explicit",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/explicit.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/explicit.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.02448976202867925,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "explicit",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/explicit.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/explicit.obj"
+      ],
+      "code": 0,
+      "seconds": 0.028310519002843648,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "self-use",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/self-use.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/self-use.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.02394276700215414,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "self-use",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/self-use.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/self-use.obj"
+      ],
+      "code": 0,
+      "seconds": 0.0212553950259462,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "public",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/public.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/public.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.024542066967114806,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "public",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/public.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/public.obj"
+      ],
+      "code": 0,
+      "seconds": 0.023777235997840762,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "generic-owner",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/generic-owner.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/generic-owner.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.02795805997448042,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "generic-owner",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/generic-owner.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/generic-owner.obj"
+      ],
+      "code": 0,
+      "seconds": 0.025698027980979532,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "generic-member",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/generic-member.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/generic-member.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.028874274983536452,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "generic-member",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/generic-member.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/generic-member.obj"
+      ],
+      "code": 0,
+      "seconds": 0.027276095002889633,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "lifetime-member",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/lifetime-member.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/lifetime-member.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.024792059033643454,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "lifetime-member",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/lifetime-member.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/lifetime-member.obj"
+      ],
+      "code": 0,
+      "seconds": 0.02830105199245736,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "lifetime-owner",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/lifetime-owner.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/lifetime-owner.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.024854271032381803,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "lifetime-owner",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/lifetime-owner.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/lifetime-owner.obj"
+      ],
+      "code": 0,
+      "seconds": 0.025223648000974208,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "where-owner",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/where-owner.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/where-owner.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.022753082972485572,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "where-owner",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/where-owner.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/where-owner.obj"
+      ],
+      "code": 0,
+      "seconds": 0.024516917997971177,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "specialized",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/specialized.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/specialized.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.021130806009750813,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "specialized",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/specialized.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/specialized.obj"
+      ],
+      "code": 0,
+      "seconds": 0.02148558699991554,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "disjoint",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/disjoint.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/disjoint.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.022516291995998472,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "disjoint",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/disjoint.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/disjoint.obj"
+      ],
+      "code": 0,
+      "seconds": 0.024094922991935164,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "namespaces",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/namespaces.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/namespaces.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.025345662026666105,
+      "expected": 0,
+      "diagnostics": [
+        {
+          "code": "E0592",
+          "message": "duplicate definitions with name `A`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "namespaces",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/namespaces.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/namespaces.obj"
+      ],
+      "code": 1,
+      "seconds": 0.025976711011026055,
+      "expected": 0,
+      "diagnostics": [
+        {
+          "code": "E0592",
+          "message": "duplicate definitions with name `A`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "missing-feature",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/missing-feature.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/missing-feature.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.022169970034155995,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0658",
+          "message": "inherent associated types are unstable"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "missing-feature",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/missing-feature.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/missing-feature.obj"
+      ],
+      "code": 1,
+      "seconds": 0.028026123996824026,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0658",
+          "message": "inherent associated types are unstable"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "missing-result",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/missing-result.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/missing-result.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.023965668980963528,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": null,
+          "message": "associated type in `impl` without body"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "missing-result",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/missing-result.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/missing-result.obj"
+      ],
+      "code": 1,
+      "seconds": 0.021073979965876788,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": null,
+          "message": "associated type in `impl` without body"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "written-bound",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/written-bound.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/written-bound.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.023488654987886548,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": null,
+          "message": "bounds on `type`s in `impl`s have no effect"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "written-bound",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/written-bound.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/written-bound.obj"
+      ],
+      "code": 1,
+      "seconds": 0.02342247497290373,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": null,
+          "message": "bounds on `type`s in `impl`s have no effect"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "invalid-unused",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/invalid-unused.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/invalid-unused.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.0422857379890047,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0425",
+          "message": "cannot find type `Missing` in this scope"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "invalid-unused",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/invalid-unused.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/invalid-unused.obj"
+      ],
+      "code": 1,
+      "seconds": 0.04220216698013246,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0425",
+          "message": "cannot find type `Missing` in this scope"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "missing-owner-bound",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/missing-owner-bound.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/missing-owner-bound.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.03840422898065299,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `T: Copy` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "missing-owner-bound",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/missing-owner-bound.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/missing-owner-bound.obj"
+      ],
+      "code": 1,
+      "seconds": 0.039389185956679285,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `T: Copy` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "missing-member-bound",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/missing-member-bound.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/missing-member-bound.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.03594482399057597,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `T: Copy` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "missing-member-bound",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/missing-member-bound.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/missing-member-bound.obj"
+      ],
+      "code": 1,
+      "seconds": 0.03630204900400713,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `T: Copy` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "member-where",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/member-where.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/member-where.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.024042223987635225,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "member-where",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/member-where.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/member-where.obj"
+      ],
+      "code": 0,
+      "seconds": 0.023439465032424778,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "missing-arity",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/missing-arity.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/missing-arity.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.03586285398341715,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0107",
+          "message": "missing generics for associated type `S::A`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "missing-arity",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/missing-arity.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/missing-arity.obj"
+      ],
+      "code": 1,
+      "seconds": 0.03209297597641125,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0107",
+          "message": "missing generics for associated type `S::A`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "wrong-owner",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/wrong-owner.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/wrong-owner.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.0239596709725447,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0223",
+          "message": "ambiguous associated type"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "wrong-owner",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/wrong-owner.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/wrong-owner.obj"
+      ],
+      "code": 1,
+      "seconds": 0.02604537201113999,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0223",
+          "message": "ambiguous associated type"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "private",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/private.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/private.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.023349114984739572,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0624",
+          "message": "associated type `A` is private"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "private",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/private.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/private.obj"
+      ],
+      "code": 1,
+      "seconds": 0.021487813035491854,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0624",
+          "message": "associated type `A` is private"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "duplicate",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/duplicate.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/duplicate.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.021455803012941033,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0592",
+          "message": "duplicate definitions with name `A`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "duplicate",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/duplicate.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/duplicate.obj"
+      ],
+      "code": 1,
+      "seconds": 0.020108124997932464,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0592",
+          "message": "duplicate definitions with name `A`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "escape",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/escape.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/escape.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.02266402798704803,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": null,
+          "message": "lifetime may not live long enough"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "escape",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/escape.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/escape.obj"
+      ],
+      "code": 1,
+      "seconds": 0.02550589299062267,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": null,
+          "message": "lifetime may not live long enough"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "wrong-result",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/wrong-result.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/wrong-result.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.038886661001015455,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0308",
+          "message": "mismatched types"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "wrong-result",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/wrong-result.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/wrong-result.obj"
+      ],
+      "code": 1,
+      "seconds": 0.033094536047428846,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0308",
+          "message": "mismatched types"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "recursive",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/recursive.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/recursive.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.03366289800032973,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": null,
+          "message": "overflow evaluating associated type `S::A`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "recursive",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/recursive.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/recursive.obj"
+      ],
+      "code": 1,
+      "seconds": 0.028899183962494135,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": null,
+          "message": "overflow evaluating associated type `S::A`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "overlap",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/overlap.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/overlap.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.026007323991507292,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0592",
+          "message": "duplicate definitions with name `A`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "overlap",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/overlap.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/overlap.obj"
+      ],
+      "code": 1,
+      "seconds": 0.02330042002722621,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0592",
+          "message": "duplicate definitions with name `A`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "trait-control",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/trait-control.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/trait-control.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.025358368002343923,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "trait-control",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/trait-control.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-v1/trait-control.obj"
+      ],
+      "code": 0,
+      "seconds": 0.024754312995355576,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "macro-allowed",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/macro-allowed.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-extra-v1/macro-allowed.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.0480739789782092,
+      "expected": 0,
+      "diagnostics": [
+        {
+          "code": "E0658",
+          "message": "allow_internal_unstable side-steps feature gating and stability checks"
+        },
+        {
+          "code": "E0658",
+          "message": "inherent associated types are unstable"
+        },
+        {
+          "code": "E0223",
+          "message": "ambiguous associated type"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 3 previous errors"
+        }
+      ]
+    },
+    {
+      "case": "macro-allowed",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/macro-allowed.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-extra-v1/macro-allowed.obj"
+      ],
+      "code": 1,
+      "seconds": 0.04149862698977813,
+      "expected": 0,
+      "diagnostics": [
+        {
+          "code": "E0658",
+          "message": "allow_internal_unstable side-steps feature gating and stability checks"
+        },
+        {
+          "code": "E0658",
+          "message": "inherent associated types are unstable"
+        },
+        {
+          "code": "E0223",
+          "message": "ambiguous associated type"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 3 previous errors"
+        }
+      ]
+    },
+    {
+      "case": "macro-denied",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/macro-denied.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-extra-v1/macro-denied.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.04759596398798749,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0658",
+          "message": "inherent associated types are unstable"
+        },
+        {
+          "code": "E0223",
+          "message": "ambiguous associated type"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 2 previous errors"
+        }
+      ]
+    },
+    {
+      "case": "macro-denied",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/macro-denied.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-extra-v1/macro-denied.obj"
+      ],
+      "code": 1,
+      "seconds": 0.04224280099151656,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0658",
+          "message": "inherent associated types are unstable"
+        },
+        {
+          "code": "E0223",
+          "message": "ambiguous associated type"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 2 previous errors"
+        }
+      ]
+    },
+    {
+      "case": "unsized",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/unsized.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-extra-v1/unsized.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.028882051003165543,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "unsized",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/unsized.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-extra-v1/unsized.obj"
+      ],
+      "code": 0,
+      "seconds": 0.028537695994600654,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "unused-member",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/unused-member.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-extra-v1/unused-member.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.026370822975877672,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "unused-member",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/unused-member.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-extra-v1/unused-member.obj"
+      ],
+      "code": 0,
+      "seconds": 0.028217462997417897,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "disjoint-kinds",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/disjoint-kinds.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-extra-v1/disjoint-kinds.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.028665428049862385,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "disjoint-kinds",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/disjoint-kinds.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-extra-v1/disjoint-kinds.obj"
+      ],
+      "code": 0,
+      "seconds": 0.0297544960048981,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "native",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/native.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-extra-v1/native.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.02802619303110987,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "native",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "inherent_types",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/native.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-extra-v1/native.obj"
+      ],
+      "code": 0,
+      "seconds": 0.03165604802779853,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "native",
+      "stage": "link",
+      "argv": [
+        "cc",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/observer.c",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-extra-v1/native.obj",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-extra-v1/observer"
+      ],
+      "code": 0,
+      "seconds": 0.05122570099774748,
+      "stdout": ""
+    },
+    {
+      "case": "native",
+      "stage": "execute",
+      "argv": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-extra-v1/observer"
+      ],
+      "code": 0,
+      "seconds": 0.0018643200164660811,
+      "stdout": "alias 23\n"
+    }
+  ],
+  "source_hashes": {
+    "unused.rs": "540cc8d68df32674dc35ce178e20446663f5ce0c10252f75af06461c86f84ee7",
+    "lookup.rs": "a145c5454fdb977b17006ede3d22488f749ae68f4e69eb22295067a577d0e6ec",
+    "explicit.rs": "b95e79f7d9213bb19127f49745cf952462e29a01466d904dedf888bc1d3d0568",
+    "self-use.rs": "1acb51db4b41bebf0a839e4d3eb3910f6a79101be620cb697dc4d9171416cf37",
+    "public.rs": "6bd6685b9a88713c9ea47bed840dc1f13f6a04b348f0297a6a908c3353a0f612",
+    "generic-owner.rs": "2c40a8ed5c0e821ec8998e5dd6756cc90b0ef0d301503048db0b579c22c69885",
+    "generic-member.rs": "ea574af362f95ce37ec97d653b5c22c2b27d65faf1bed9eed3bbf8477b7fd54a",
+    "lifetime-member.rs": "f95821b679b05dd355a31ce663bca7f6f4d38801717970554f0287076c9c20f8",
+    "lifetime-owner.rs": "7db901edb6b14ad4be21b606ea5628121772b3c289e048dfcaa16510ed2c020b",
+    "where-owner.rs": "f1b31d5f0e20b5eaa04c4d1d533e0f3fa511b72b0ec4bc65381bf18f9bc3c2d3",
+    "specialized.rs": "5ac3a73151f19bd0cd7f781b1260d6641ba119622675ebb0793387876765b31b",
+    "disjoint.rs": "0cd67f2a048db47cc9ab2704ce38f0f1e310f6066ec7ba55057f7e658558e0c1",
+    "namespaces.rs": "904f51f8083663a364400f33c9acb38ed5bb7c14a05c99bf4f2c686e7aac0237",
+    "missing-feature.rs": "edf13909f7f058a889e9ff03754e32909ad56d73e0f7a749eccda641c496760f",
+    "missing-result.rs": "51576fa6a5bf80a2092615c6d688d39dcfee5fd9901f0583fecdc0159dc3f11b",
+    "written-bound.rs": "5f70b783361ae35b99c92fd4d92de2f0b26211141610ec67d9d4c8c5ff7a2ee4",
+    "invalid-unused.rs": "639d11eb508ad5d1e9133ca63c840068bb90cbc201ccb39b354f98217c270f4c",
+    "missing-owner-bound.rs": "ca2cad9d87b8c34995b8b5dc93331c0b27f9b65b9d2d62b0a8c4dd55f402dcdf",
+    "missing-member-bound.rs": "1fb73d9b91662165ee4778f069fdf1e79e36262d179571e746179b80faeec6f9",
+    "member-where.rs": "bef6afb4bb37a446c4eeacb43100ab11241f1401f6b1adbd56438e5500d9fcc0",
+    "missing-arity.rs": "b5c03c294a9e7854bed175f16fdfe74fc7fc44e37ead7bfe8e2a2a00eac15818",
+    "wrong-owner.rs": "83e05f9af4ee63b25e96ee8a2241c4d3525d72127a1dc537b074dca1e9f381c3",
+    "private.rs": "154510147ac981f3e9e8176ff227675e39170c4ca6969bb1869e61b610969680",
+    "duplicate.rs": "155f37671c2c189e49e2c151cd0ac219716e537a66292fa53f28c4ddec32d0fc",
+    "escape.rs": "5b8db372783a6e7574af6302400f46fc6304d955ddf538a2473d33b3329d9081",
+    "wrong-result.rs": "4bd5443b981bc77408c99a4f4b8de2dfcd374c93afa850697805a11cabef4821",
+    "recursive.rs": "828257b32db510159be4c6081745388569849f2c16d50be1bc9b7d097e3dd412",
+    "overlap.rs": "cf04b0cef2140522ec22375f1e6c96ed72fc9b57537644fb91a84de09d83d894",
+    "trait-control.rs": "f24e2933202e4307f60404de5fb2139ae223d456c7d984d79cfbb97b4f299bc5",
+    "predictions-v1.json": "a60cdd6b4ed708575be6aec1e50e15719f5038214acd104261f4e2246e1729e6",
+    "macro-allowed.rs": "32764b2b7b68385547b0c418b1e0bd502e0628d2f289a718d7b1b79647e2d409",
+    "macro-denied.rs": "c21e9cc12215308c026edfbf08ffb0880ae517bf0c0756d2547e4fd34aaebdf2",
+    "unsized.rs": "60af7a7beaf6b163c6f3151ac1b7d18ba2351fb2121536ba8ebbd01dff2a4e94",
+    "unused-member.rs": "c344b15070dcde5766db51e36506a2cc2f25887d19cc8315e3328d9229e3ed72",
+    "disjoint-kinds.rs": "19abd627835205b419f1ab01f2b61407c220d5e7f07756dcdc37a29753a0fe58",
+    "native.rs": "bc0fce6ee2ae39bc613c2e7365df7966b65bdb40abff6a828e5195ea63fb35bf",
+    "observer.c": "ec4e8163c43e12d81b63337f40806196226ea61a7b11dcca3dd3e0ce674a9314",
+    "predictions-extra-v1.json": "06fdf2389f609fb32de9f72804a4c4db812ca59b6244afe4d3c601f3b1f52c81",
+    "wrong-result-closed.rs": "fe44360c97f095bc6772434e18622bb3aae88698b0668a298292ecb20d19f894",
+    "predictions-closed-v1.json": "c608ed41a07896518b47c376cf6a0da4e96ce6a213bb0f34b96c7fb2ab4bcd6e"
+  },
+  "corrections": {
+    "namespaces": "Original predicted acceptance disproved by E0592: same-owner type and function names conflict.",
+    "macro-allowed": "Unqualified setup: allow_internal_unstable itself requires a feature request. Original source and diagnostics retained; not semantic rejection parity."
+  },
+  "pending_rust_positive_profiles": [
+    "generic-owner",
+    "generic-member",
+    "lifetime-owner",
+    "lifetime-member",
+    "where-owner",
+    "member-where"
+  ],
+  "additional_closed_result_reference": {
+    "tool": {
+      "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+      "version": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+      "driver": {
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+      }
+    },
+    "predictions_sha256": "c608ed41a07896518b47c376cf6a0da4e96ce6a213bb0f34b96c7fb2ab4bcd6e",
+    "observations": [
+      {
+        "case": "wrong-result-closed",
+        "stage": "metadata",
+        "argv": [
+          "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "inherent_types",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "--error-format=json",
+          "--emit=metadata",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/wrong-result-closed.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-closed-v1/wrong-result-closed.metadata"
+        ],
+        "code": 1,
+        "seconds": 0.04400427802465856,
+        "expected": 1,
+        "diagnostics": [
+          {
+            "code": "E0308",
+            "message": "mismatched types"
+          },
+          {
+            "code": null,
+            "message": "aborting due to 1 previous error"
+          }
+        ]
+      },
+      {
+        "case": "wrong-result-closed",
+        "stage": "obj",
+        "argv": [
+          "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "inherent_types",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "--error-format=json",
+          "--emit=obj",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/inherent-associated/wrong-result-closed.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/inherent-types/reference-closed-v1/wrong-result-closed.obj"
+        ],
+        "code": 1,
+        "seconds": 0.040316446975339204,
+        "expected": 1,
+        "diagnostics": [
+          {
+            "code": "E0308",
+            "message": "mismatched types"
+          },
+          {
+            "code": null,
+            "message": "aborting due to 1 previous error"
+          }
+        ]
+      }
+    ]
+  },
+  "additional_closed_prediction": {
+    "schema": 1,
+    "before_observation": true,
+    "cases": {
+      "wrong-result-closed": {
+        "sha256": "fe44360c97f095bc6772434e18622bb3aae88698b0668a298292ecb20d19f894",
+        "expected": 1,
+        "cause": "E0308: actual alias expands to u8 but function returns u16; closed owner pair to lookup.rs"
+      }
+    }
+  },
+  "pending_semantic_opponents": [
+    "missing-owner-bound",
+    "missing-member-bound",
+    "missing-arity",
+    "escape",
+    "recursive",
+    "wrong-result"
+  ],
+  "candidate_count_note": "Closed wrong-result-closed is independently E0308; original generic wrong-result currently hits the required-profile fence and is not counted as ordinary rejection parity."
+}

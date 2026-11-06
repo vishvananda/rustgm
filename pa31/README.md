@@ -2,6 +2,14 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [Field/inherent checkpoint](../docs/parallel/field-headers-main-join.md)
+qualifies the actual five ordinary Field headers and unrelated/inherent owners.
+Original core clears their language-item fence to UnwindSafe/custom auto traits;
+this is not completion of the original Field module. Genuine compiler-provided
+Field evidence, Base/Type normalization, OFFSET execution/layout, full reflection
+and authenticated transport remain required. PA20 also retains full generic
+inherent alias and arbitrary auto-trait proof requirements.
+
 The [Reborrow operation checkpoint](../docs/parallel/reborrow-operations-checkpoint.md)
 qualifies real implementation/Copy proof, contextual moves versus loans, selected
 lifetimes, source places, native storage copying and actual const execution.

@@ -1,0 +1,218 @@
+{
+  "state": "qualified finite ordinary Field/inherent-alias join; original core now reaches LIB187; full assignment/library artifacts remain required",
+  "base": "d865397c7",
+  "source_snapshot": {
+    "count": 3678,
+    "sha256": "36ade20e6c31ed976425d5801de6cc364406847bbc420203c662d105ed594b87",
+    "change_from_regular_native": [
+      "dev/tests/invariants/weak_headers.rs"
+    ],
+    "equivalence": "Only the private weak-header opponent setup changed after regular/native qualification. Production, selected source bodies, input bytes and CLI remain identical."
+  },
+  "compiler_cli_sha256": "040e572320900a28fe462b8f7571a770db351a5e0e6c1976e2bee874a7cc6c43",
+  "regular": {
+    "path": "obj/qualification/fast/1794000094261046553/receipt.json",
+    "sha256": "b1a5ef0e6cf29602128be881967ad0f88cc7324a3807870000d44cfc8e90a004",
+    "tests": 11,
+    "seconds": 163.07,
+    "selected": {
+      "suite_frontend": [
+        "reflection_sources::exact_original_headers_and_provided_offset_body_are_checked",
+        "reflection_sources::exact_original_nominal_trait_and_copy_clone_intervals_are_preserved",
+        "reflection_sources::ordinary_constant_types_and_explicit_implementation_policy_remain",
+        "reflection_sources::unused_alternative_headers_and_unrelated_trait_members_remain_ordinary",
+        "reflection_sources::written_targets_and_parent_generic_counts_reject_before_completion",
+        "qualified_types::actual_inherent_alias_body_reaches_ordinary_lowering",
+        "qualified_types::closed_alias_declarations_and_real_type_uses",
+        "qualified_types::generic_owner_and_member_proof_remain_named_requirements",
+        "qualified_types::ordinary_alias_errors_remain_errors",
+        "arbitrary_methods::actual_receiver_targets_preserve_ordinary_headers_and_type_only_reachability",
+        "arbitrary_methods::ordinary_nested_open_obligations_remain_possible_after_canonical_queries"
+      ]
+    },
+    "field_accepted_sources": 4,
+    "field_ordinary_rejections": 10,
+    "inherent_closed_sources": 10,
+    "inherent_ordinary_rejections": 10,
+    "inherent_rust_positive_required_proof_fences": 6
+  },
+  "native": {
+    "path": "obj/qualification/fast/1794000403399845592/receipt.json",
+    "sha256": "91003e922a1568380f4b88843f6c15d2e6f3152d285e7809edb2de1c8d15466e",
+    "tests": 2,
+    "executables": 3,
+    "seconds": 35.36,
+    "observed_stdout": [
+      "alias 23",
+      "reborrow 23 23 47 47 0 99 31",
+      "successor 17 23 19 31 23 59 1"
+    ]
+  },
+  "metadata": {
+    "path": "obj/parallel/field-headers-core-v2/metadata.json",
+    "sha256": "7c013728bb7920fde898cf5f52ab04e9ffde9d97933332e2cccfbaf00069ee07",
+    "seconds": 45.751297053007875,
+    "scope": "coherent integration metadata and private compile-time layout opponents; no release/private runtime link"
+  },
+  "core": {
+    "path": "obj/parallel/field-headers-core-v2/receipt.json",
+    "sha256": "0d66490e4e3a61cddfa81a7e34f4619524699764bb8954ea62511b1ea87f12f3",
+    "pin": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/040e572320900a28fe462b8f7571a770db351a5e0e6c1976e2bee874a7cc6c43/rustgm",
+    "profile_values_identical": true,
+    "config_source_pins_identical": 6,
+    "result": {
+      "infrastructure_failure": false,
+      "classification": "observed original-core blocker",
+      "lint_cap": "allow",
+      "source_contract_limits": {
+        "work": 14500624,
+        "attempted_bytes": 1073741824,
+        "retained_bytes": 67108864
+      },
+      "expected_cli_sha256": "040e572320900a28fe462b8f7571a770db351a5e0e6c1976e2bee874a7cc6c43",
+      "expected_cli_source": "explicit caller input",
+      "status": 1,
+      "first_error": "ERROR: file 187: 4464: custom source auto traits are not implemented",
+      "inputs_unchanged": true,
+      "opened_source_count": 375,
+      "total_seconds": 33.13015190704027,
+      "raw_sha256": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "7a48f4cb8a663ade18ed9731f4608ba81c12d8a0273b8abc9f6464a2dee378c8",
+        "whole-core.openat": "f62368c47cc42d3e42943b8370494127c20cbdec8385b0a8d0162c0ce305ce13",
+        "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+      }
+    },
+    "frontier": {
+      "id": "LIB187",
+      "path": "library/core/src/panic/unwind_safe.rs",
+      "line": 91,
+      "file_id": 187,
+      "byte": 4464,
+      "actual_declaration": "pub auto trait UnwindSafe {}",
+      "phase": "associated-owner collection after prior Field language-item fence; full Field original semantics not established"
+    },
+    "harness": 282,
+    "text_cases": 21,
+    "required_consumer_observations": [
+      {
+        "name": "demanded-offset-v4",
+        "source_sha256": "284b6c1e00d0fb9a1dc6fd2d280f9a140c89127b06016d5c11f8c1fbefd332ac",
+        "status": 1,
+        "stderr": "ERROR: file 0: 4121: associated type requires an unambiguous implementation\n",
+        "qualification": "residual observation only; no semantic parity or execution claim"
+      },
+      {
+        "name": "demanded-packed-v4",
+        "source_sha256": "6bdab67ce14951aac6f66890d4fc23948c1def3c6582c318e2d11531ddec2b8d",
+        "status": 1,
+        "stderr": "ERROR: file 0: 4093: trait obligation requires an unambiguous matching assumption or implementation\n",
+        "qualification": "residual observation only; no semantic parity or execution claim"
+      },
+      {
+        "name": "inherent-owner-v4",
+        "source_sha256": "bab2bf8a7ac67ccea2119c8e60ac4d57e157763817d6d252e569d27305749bf4",
+        "status": 0,
+        "stderr": "",
+        "qualification": "residual observation only; no semantic parity or execution claim"
+      }
+    ]
+  },
+  "performance": {
+    "path": "obj/parallel/field-headers-perf-v1/receipt.json",
+    "sha256": "e4e90ef10773928ebcdec662b2dacc291bd9274a5f066a6968e7cf3fb9315ab3",
+    "plan_sha256": "8b98ccfe0fb3d531cb6cec6ef450b3da19f5e406d60f1a1ea650aa46172e9326",
+    "observations": 40,
+    "summary": [
+      {
+        "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+        "aa_min_seconds": 0.10926287196343765,
+        "aa_max_seconds": 0.11712672503199428,
+        "paired_ratios": [
+          0.8712521810463321,
+          1.1121448923166342,
+          0.9737407608252487,
+          1.0051678240609132
+        ],
+        "median_ratio": 0.9894542924430809,
+        "all_output_equal": true
+      },
+      {
+        "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+        "aa_min_seconds": 0.4250197839573957,
+        "aa_max_seconds": 0.4383041840046644,
+        "paired_ratios": [
+          1.0226443770483447,
+          0.9578198351389827,
+          1.0156430531382983,
+          1.1455940872571353
+        ],
+        "median_ratio": 1.0191437150933216,
+        "all_output_equal": true
+      }
+    ],
+    "limits": "Ordinary output equality and noisy paired controls only; no broad speed/no-regression claim or pre-feature changed-path baseline. A small independent reference batch may have overlapped early samples."
+  },
+  "independent_references": {
+    "field_v4": {
+      "path": "pa31/tests/spec/field-source/reference-v4.json",
+      "sha256": "34e5db2a6b70839cdab6422d995eb2f6096c5c77b3a0ff3cfc6761cd3dbc48ee",
+      "sources": 16,
+      "metadata_object_observations": 32
+    },
+    "inherent_alias": {
+      "path": "pa20/tests/spec/inherent-associated/reference-v1.json",
+      "sha256": "d6bca37e66b299e28e63ed06c9bf4daafa88c37f6e2e89945a43ea4c2c82ce4d"
+    },
+    "queued_auto_traits": {
+      "commit": "4fecbdff36fd870e8e3b9ce5ca97d5b1e6881f28",
+      "sources": 34,
+      "observations": 68,
+      "reference_sha256": "1b9f39b85489e99c10e256e826c6406297c690b619e3de965f33df39bcd6da74",
+      "publication": "Queued with actual auto primary/manifest+reference-batch registration; absent from this final ready tree. Attempted isolated union preserved check_layout discovery failure, not compiler failure."
+    }
+  },
+  "ci_setup_repair": {
+    "path": "obj/parallel/field-headers-core-v2/ci-setup-v2/receipt.json",
+    "sha256": "1017132414d3a5e2067e8e893414772357959c6e34bbbfe9c6d0ea9b747f25f7",
+    "seconds": 65.40504416899057,
+    "prior_run": 42293148604,
+    "prior_head": "d865397c7",
+    "prior_log_sha256": "f860df43a40722d2a242d2b3c011640b5d51def2d4d5e30a8472204daf09ac25",
+    "prior_result": "2782 private/all13 public pass; sole private weak-provider setup invalid without no_core",
+    "actual_repair": "Valid distinct no_core provider preserves wrong-provider catalog rejection; empty setup rejects and corrected one accepts independently with immutable currentCLI. Strict all-target metadata passes; private runtime pending successor fullCI."
+  },
+  "retired_pins": {
+    "path": "obj/parallel/field-headers-core-v2/retired-pins.json",
+    "sha256": "ff03ff455b1283901451a2c4d816c7a48405c7baf6045fa38f33f2b0a78f3f63",
+    "reclaimed_gib": 0.18,
+    "retained": [
+      "040e5723",
+      "9aa812d6"
+    ]
+  },
+  "preserved_failures": [
+    {
+      "path": "obj/parallel/field-headers-core-v1/receipt.json",
+      "sha256": "c4a351d130a63c66805e5b13addc9a0eaa9c590576245bcaa5b4e962d8923190",
+      "cause": "Valid original-core observation followed by residual CLI usage2 from inappropriate --crate-type=lib with semantic mode; no residual parity claim."
+    },
+    {
+      "path": "obj/parallel/field-headers-core-v2/ci-setup/receipt.json",
+      "sha256": "5c6fb4caf2442c63852a6aa8aba5e15edd4d9e729ed714e3014afceb09c47a6f",
+      "cause": "Formatting check before compiler invocation; corrected successor retained."
+    },
+    {
+      "path": "obj/parallel/field-headers-core-v2/reference-join/receipt.json",
+      "sha256": "2800093aef169cd4daf051bbb9022f95ca2d4fd07cded54eeee11cb791560df5",
+      "cause": "Reference-only queued auto packet needs related main-manifest primary/auxiliary discovery and batch registration. Removed from ready union; final fixture/script trees exactly equal prior passing harness/upstream input."
+    }
+  ],
+  "remaining": [
+    "Actual generic/custom auto trait declaration/structural/negative/coinductive/scoped proof for LIB187.",
+    "Actual builtin Field implementation, Base/Type normalization, genuine OFFSET initializer/intrinsic/layout, source field_of/privacy, full reflection and transport.",
+    "Full generic/lifetime/where inherent aliases through actual combined owner/member input proof.",
+    "Full successor CI, all remaining PA25+ contracts and original core/alloc/std artifacts."
+  ],
+  "resources": "Existing btrfs trees/caches only, two-heavy global,16GiB absolute/tree,150GiB reserve, <=300s local batches; scoped cleanup and only current/predecessor pins."
+}

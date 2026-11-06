@@ -29,6 +29,29 @@ struct Members {
 }
 
 impl Pending {
+    fn alias_growth(&self, owner: DefId, name: NameId) -> crate::support::retained::Growth {
+        use crate::support::retained::Growth;
+        let Some(members) = self.owners.get(&owner) else {
+            return Growth::default();
+        };
+        let mut growth = Growth::vector::<(NameId, DefId)>(
+            members.declarations.len(),
+            members.declarations.capacity(),
+            1,
+        );
+        let key = (members.head, name);
+        growth.include(Growth::map::<(Option<Target>, NameId), HashSet<DefId>>(
+            self.buckets.len(),
+            self.buckets.capacity(),
+            usize::from(!self.buckets.contains_key(&key)),
+        ));
+        let (length, capacity) = self
+            .buckets
+            .get(&key)
+            .map_or((0, 0), |set| (set.len(), set.capacity()));
+        growth.include(Growth::map::<DefId, ()>(length, capacity, 1));
+        growth
+    }
     fn insert(&mut self, owner: DefId, name: NameId, member: DefId, marked: bool) {
         if let Some(members) = self.owners.get_mut(&owner) {
             members.all_marked &= marked;
@@ -148,17 +171,23 @@ impl Checker<'_> {
                 );
             }
         }
-        for member in self.facts.associated.members() {
+        for index in 0..self.facts.associated.members().len() {
+            let member = self.facts.associated.members()[index];
             let owner = self.facts.associated.get(member.owner).ok_or_else(|| {
                 Error::at(crate::resolve::unit::FileId(0), 0, "invalid method owner")
             })?;
             let definition = &self.report.resolution.definitions[member.definition.0 as usize];
-            if !matches!(definition.kind, DefKind::Function | DefKind::Const) {
+            if !matches!(
+                definition.kind,
+                DefKind::Function | DefKind::Const | DefKind::TypeAlias
+            ) {
                 continue;
             }
             match owner.kind {
                 OwnerKind::Trait { .. } => {
-                    trait_names.insert(definition.name);
+                    if definition.kind != DefKind::TypeAlias {
+                        trait_names.insert(definition.name);
+                    }
                 }
                 OwnerKind::Impl {
                     target,
@@ -167,9 +196,15 @@ impl Checker<'_> {
                 } => {
                     // A raw head is only an exclusion hint, never a ready schema.
                     let _ = target;
+                    let name = definition.name;
+                    let owner = owner.self_definition;
+                    if definition.kind == DefKind::TypeAlias {
+                        let growth = pending.alias_growth(owner, name);
+                        self.charge_inherent_type(growth.work.saturating_add(1), growth.bytes)?;
+                    }
                     pending.insert(
-                        owner.self_definition,
-                        definition.name,
+                        owner,
+                        name,
                         member.definition,
                         marked.contains(&member.definition),
                     );
@@ -239,6 +274,10 @@ impl Checker<'_> {
             {
                 continue;
             }
+            if self.report.resolution.definitions[member.0 as usize].kind == DefKind::TypeAlias {
+                let growth = self.facts.methods.inherent_growth(bucket, context);
+                self.charge_inherent_type(growth.work.saturating_add(1), growth.bytes)?;
+            }
             self.facts.methods.publish_inherent(bucket, context, member);
         }
         Ok(())
@@ -271,9 +310,17 @@ impl Checker<'_> {
         }
         let definitions = &self.report.resolution.definitions;
         let declaration = definitions.get(member.0 as usize).ok_or_else(error)?;
-        if declaration.namespace != Namespace::Value
+        let namespace = if declaration.kind == DefKind::TypeAlias {
+            Namespace::Type
+        } else {
+            Namespace::Value
+        };
+        if declaration.namespace != namespace
             || declaration.name != name
-            || !matches!(declaration.kind, DefKind::Function | DefKind::Const)
+            || !matches!(
+                declaration.kind,
+                DefKind::Function | DefKind::Const | DefKind::TypeAlias
+            )
             || definitions
                 .get(owner.0 as usize)
                 .and_then(|owner| owner.members)
@@ -285,7 +332,7 @@ impl Checker<'_> {
             .report
             .resolution
             .bindings
-            .get_key((declaration.scope, name, Namespace::Value, context))
+            .get_key((declaration.scope, name, namespace, context))
             .ok_or_else(error)?;
         let target = definitions
             .get(binding.target.0 as usize)
@@ -295,7 +342,10 @@ impl Checker<'_> {
             || target.scope != declaration.scope
             || target.namespace != Namespace::Value
             || target.name != name
-            || !matches!(target.kind, DefKind::Function | DefKind::Const)
+            || !matches!(
+                target.kind,
+                DefKind::Function | DefKind::Const | DefKind::TypeAlias
+            )
             || associated.owner(binding.target) != Some(actual_owner)
             || self.report.definition_item_context(binding.target)? != context
         {

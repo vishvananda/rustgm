@@ -94,7 +94,8 @@ impl Checker<'_> {
         if matches!(
             kind,
             Kind::Path { .. } | Kind::Applied { .. } | Kind::Qualified { .. }
-        ) && self.schedule_implicit_projection(key, context)?
+        ) && (self.schedule_inherent_type(key, context)?
+            || self.schedule_implicit_projection(key, context)?)
         {
             return Ok(());
         }

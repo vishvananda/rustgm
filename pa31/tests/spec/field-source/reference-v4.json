@@ -1,0 +1,1058 @@
+{
+  "schema": 1,
+  "scope": "Independent pinned Rust reference only; no candidate observation, compiler edit or native execution.",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "compiler": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "prediction_file": "predictions-v4.json",
+  "prediction_sha256": "12e522c1a8b6719fd89953309372f7df8f314ca7f37c260406a78be758b72a66",
+  "provenance_file": "provenance-v4.json",
+  "provenance_sha256": "42607be10a2b66423af7d7a4ed7404273fabf75f351109932168747356717565",
+  "predecessor_reference_sha256": "bf614325277aa72975378221b1229c5241d4e5c6459750bbc945b9d0dadeaf35",
+  "qualified_sources": 16,
+  "qualified_observations": 32,
+  "source_change": "Each predecessor differs only by adding the exact original rustc_diagnostic_item Send attribute. All original Field/Copy+Clone cutout bytes remain identical. Earlier qualified v2/v3 custom-auto-trait cases remain valid broader PA20 requirements, not setup failures.",
+  "observations": [
+    {
+      "file": "unused-alternative-v4.rs",
+      "sha256": "c29158a8fcbabc7b409a8c7ca8c8f2d3fa38379f93453fa03b4d4c1681c50095",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Role targets/arity do not require exact original generic kinds, fields, unsafe/supertrait flags, names or constant type.",
+      "predecessor_file": "unused-alternative-v2.rs",
+      "predecessor_sha256": "d29812fd7985c01711567077f1bab9bde7ebb87d7d26bfa6fc99bcde4d934ea5",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/unused-alternative-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "unused-alternative-v4.rs",
+      "sha256": "c29158a8fcbabc7b409a8c7ca8c8f2d3fa38379f93453fa03b4d4c1681c50095",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Role targets/arity do not require exact original generic kinds, fields, unsafe/supertrait flags, names or constant type.",
+      "predecessor_file": "unused-alternative-v2.rs",
+      "predecessor_sha256": "d29812fd7985c01711567077f1bab9bde7ebb87d7d26bfa6fc99bcde4d934ea5",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/unused-alternative-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "unrelated-owner-v4.rs",
+      "sha256": "963ab7e501b7f1bd8de10cd49cc6919f8d952d873f6d67cf8fc8704e98b1f406",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Unused associated roles authenticate their real nongeneric trait owner independently, without a demanded Field family.",
+      "predecessor_file": "unrelated-owner-v2.rs",
+      "predecessor_sha256": "2c403c37deb9cbe2e899e0955c6048b8f9476f2d3dd94cec0671190b67236a7a",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/unrelated-owner-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "unrelated-owner-v4.rs",
+      "sha256": "963ab7e501b7f1bd8de10cd49cc6919f8d952d873f6d67cf8fc8704e98b1f406",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Unused associated roles authenticate their real nongeneric trait owner independently, without a demanded Field family.",
+      "predecessor_file": "unrelated-owner-v2.rs",
+      "predecessor_sha256": "2c403c37deb9cbe2e899e0955c6048b8f9476f2d3dd94cec0671190b67236a7a",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/unrelated-owner-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "inherent-owner-v4.rs",
+      "sha256": "bab2bf8a7ac67ccea2119c8e60ac4d57e157763817d6d252e569d27305749bf4",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Associated targets may belong to a genuine nongeneric inherent impl; hypothesis requires independent observation.",
+      "predecessor_file": "inherent-owner-v2.rs",
+      "predecessor_sha256": "9294ed609806d279ca229df9d14a993b8fae88b47a91dbc1fbb5dba1e03a9fa7",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/inherent-owner-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "inherent-owner-v4.rs",
+      "sha256": "bab2bf8a7ac67ccea2119c8e60ac4d57e157763817d6d252e569d27305749bf4",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Associated targets may belong to a genuine nongeneric inherent impl; hypothesis requires independent observation.",
+      "predecessor_file": "inherent-owner-v2.rs",
+      "predecessor_sha256": "9294ed609806d279ca229df9d14a993b8fae88b47a91dbc1fbb5dba1e03a9fa7",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/inherent-owner-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "wrong-struct-target-v4.rs",
+      "sha256": "70a7c2052f211be1a158c327e09272e4db88a2103259a491ac36f13d9c268ec1",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Struct role rejects enum target.",
+      "expected_message": "attribute cannot be used",
+      "predecessor_file": "wrong-struct-target-v2.rs",
+      "predecessor_sha256": "b9665d9b6c44eb16809dcff66acd872020a0b922aa1ae2d1a3b903ae545a240b",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/wrong-struct-target-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field_representing_type\"]` attribute cannot be used on enums"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "0d0f3d6154b0b612e748ddaa571834ccf495cc8ddd73e848dd587f449b884941"
+    },
+    {
+      "file": "wrong-struct-target-v4.rs",
+      "sha256": "70a7c2052f211be1a158c327e09272e4db88a2103259a491ac36f13d9c268ec1",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Struct role rejects enum target.",
+      "expected_message": "attribute cannot be used",
+      "predecessor_file": "wrong-struct-target-v2.rs",
+      "predecessor_sha256": "b9665d9b6c44eb16809dcff66acd872020a0b922aa1ae2d1a3b903ae545a240b",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/wrong-struct-target-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field_representing_type\"]` attribute cannot be used on enums"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "0d0f3d6154b0b612e748ddaa571834ccf495cc8ddd73e848dd587f449b884941"
+    },
+    {
+      "file": "wrong-trait-target-v4.rs",
+      "sha256": "1fa169934a8d3e94d5e55ad62edf531809d6335469f08fc738b865b216808320",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Trait role rejects struct target.",
+      "expected_message": "attribute cannot be used",
+      "predecessor_file": "wrong-trait-target-v2.rs",
+      "predecessor_sha256": "70de67a1a96208853bef5ef9d5ac2c1b28b3aada9d4649960ceee6080d20d471",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/wrong-trait-target-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field\"]` attribute cannot be used on structs"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a38f4b06592dcb27f8fcf83fbb9febdc670c85acdebd2c9446b4589158f23925"
+    },
+    {
+      "file": "wrong-trait-target-v4.rs",
+      "sha256": "1fa169934a8d3e94d5e55ad62edf531809d6335469f08fc738b865b216808320",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Trait role rejects struct target.",
+      "expected_message": "attribute cannot be used",
+      "predecessor_file": "wrong-trait-target-v2.rs",
+      "predecessor_sha256": "70de67a1a96208853bef5ef9d5ac2c1b28b3aada9d4649960ceee6080d20d471",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/wrong-trait-target-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field\"]` attribute cannot be used on structs"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a38f4b06592dcb27f8fcf83fbb9febdc670c85acdebd2c9446b4589158f23925"
+    },
+    {
+      "file": "wrong-base-target-v4.rs",
+      "sha256": "8cf2b508f421e792720f6adb51a0a885c07e2095eba235d00114d8d7b43e8786",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Associated type role rejects a free type alias.",
+      "expected_message": "attribute cannot be used",
+      "predecessor_file": "wrong-base-target-v2.rs",
+      "predecessor_sha256": "c8e3f4f43f5dba70376d75073248f93884128291404194d8df48ec635293a941",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/wrong-base-target-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field_base\"]` attribute cannot be used on type aliases"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "77be75249984090f73cf1843c6e4e09cf608cf8e0523faf6941490e82ca90f48"
+    },
+    {
+      "file": "wrong-base-target-v4.rs",
+      "sha256": "8cf2b508f421e792720f6adb51a0a885c07e2095eba235d00114d8d7b43e8786",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Associated type role rejects a free type alias.",
+      "expected_message": "attribute cannot be used",
+      "predecessor_file": "wrong-base-target-v2.rs",
+      "predecessor_sha256": "c8e3f4f43f5dba70376d75073248f93884128291404194d8df48ec635293a941",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/wrong-base-target-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field_base\"]` attribute cannot be used on type aliases"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "77be75249984090f73cf1843c6e4e09cf608cf8e0523faf6941490e82ca90f48"
+    },
+    {
+      "file": "wrong-type-target-v4.rs",
+      "sha256": "e30b6e1d90ea3043086f697a35e05c12c0fb1d095d7ad690f99ea0708da4a24e",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Associated type role rejects associated constant target.",
+      "expected_message": "attribute cannot be used",
+      "predecessor_file": "wrong-type-target-v2.rs",
+      "predecessor_sha256": "3c766a745c9a7ddde254f78fa145c233f09ca0b6656ada42cdfc407d880d1da9",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/wrong-type-target-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field_type\"]` attribute cannot be used on associated consts"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "7344894ee589b250a4f197606aa55d32b3fc176e5ad9a9632774613bea3a2fe3"
+    },
+    {
+      "file": "wrong-type-target-v4.rs",
+      "sha256": "e30b6e1d90ea3043086f697a35e05c12c0fb1d095d7ad690f99ea0708da4a24e",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Associated type role rejects associated constant target.",
+      "expected_message": "attribute cannot be used",
+      "predecessor_file": "wrong-type-target-v2.rs",
+      "predecessor_sha256": "3c766a745c9a7ddde254f78fa145c233f09ca0b6656ada42cdfc407d880d1da9",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/wrong-type-target-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field_type\"]` attribute cannot be used on associated consts"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "7344894ee589b250a4f197606aa55d32b3fc176e5ad9a9632774613bea3a2fe3"
+    },
+    {
+      "file": "wrong-offset-target-v4.rs",
+      "sha256": "57f3a8f98f1ea35fba8a2ebfb4387cc695c04c26beb21c36518069ed3f421360",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Associated constant role rejects associated type target.",
+      "expected_message": "attribute cannot be used",
+      "predecessor_file": "wrong-offset-target-v2.rs",
+      "predecessor_sha256": "cf91df1ea18df53a9ef89260fac0b6448d9435b79a0d7f01a3e895e89e5bb82b",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/wrong-offset-target-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field_offset\"]` attribute cannot be used on associated types"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "3a67ffc44f11e6565eb4d8eb1caeb4d4bb1ce1bb4f39e67094facd9e79249942"
+    },
+    {
+      "file": "wrong-offset-target-v4.rs",
+      "sha256": "57f3a8f98f1ea35fba8a2ebfb4387cc695c04c26beb21c36518069ed3f421360",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Associated constant role rejects associated type target.",
+      "expected_message": "attribute cannot be used",
+      "predecessor_file": "wrong-offset-target-v2.rs",
+      "predecessor_sha256": "cf91df1ea18df53a9ef89260fac0b6448d9435b79a0d7f01a3e895e89e5bb82b",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/wrong-offset-target-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field_offset\"]` attribute cannot be used on associated types"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "3a67ffc44f11e6565eb4d8eb1caeb4d4bb1ce1bb4f39e67094facd9e79249942"
+    },
+    {
+      "file": "wrong-struct-arity-v4.rs",
+      "sha256": "53b5d9fee9c4a06cd99811d6647d578692b8a0529afb9d73d7b831252fac952a",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Struct role requires three written generic parameters.",
+      "predecessor_file": "wrong-struct-arity-v2.rs",
+      "predecessor_sha256": "b382c0a0fa06352f7ace98053cd834945ececb57c4c44ed6468dbbc5dc15892c",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/wrong-struct-arity-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0718",
+          "message": "`field_representing_type` lang item must be applied to a struct with 3 generic arguments"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "fa300070e1fd0172e2867c35e90abce649c907095d86b6fb00284df73b603178"
+    },
+    {
+      "file": "wrong-struct-arity-v4.rs",
+      "sha256": "53b5d9fee9c4a06cd99811d6647d578692b8a0529afb9d73d7b831252fac952a",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Struct role requires three written generic parameters.",
+      "predecessor_file": "wrong-struct-arity-v2.rs",
+      "predecessor_sha256": "b382c0a0fa06352f7ace98053cd834945ececb57c4c44ed6468dbbc5dc15892c",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/wrong-struct-arity-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0718",
+          "message": "`field_representing_type` lang item must be applied to a struct with 3 generic arguments"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "fa300070e1fd0172e2867c35e90abce649c907095d86b6fb00284df73b603178"
+    },
+    {
+      "file": "wrong-trait-arity-v4.rs",
+      "sha256": "103081dd098d6a823cb4f0683df6504a3a8c9513e99c8b1aa930bf05e4548cae",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Field role requires zero written generic parameters.",
+      "predecessor_file": "wrong-trait-arity-v2.rs",
+      "predecessor_sha256": "78e45a3c864b37122c482f08e42106e714072a913abec920b9c5f6aec09085e5",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/wrong-trait-arity-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0718",
+          "message": "`field` lang item must be applied to a trait with 0 generic arguments"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "b3724419072daacae8a87d412fd748ff01139fc930f427dbce2dccfd76ed2f17"
+    },
+    {
+      "file": "wrong-trait-arity-v4.rs",
+      "sha256": "103081dd098d6a823cb4f0683df6504a3a8c9513e99c8b1aa930bf05e4548cae",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Field role requires zero written generic parameters.",
+      "predecessor_file": "wrong-trait-arity-v2.rs",
+      "predecessor_sha256": "78e45a3c864b37122c482f08e42106e714072a913abec920b9c5f6aec09085e5",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/wrong-trait-arity-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0718",
+          "message": "`field` lang item must be applied to a trait with 0 generic arguments"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "b3724419072daacae8a87d412fd748ff01139fc930f427dbce2dccfd76ed2f17"
+    },
+    {
+      "file": "wrong-member-parent-arity-v4.rs",
+      "sha256": "023e1d270c9e3e65b1bbd92daa31504ce4fc3739146e5b6b44ce98d3148ddb41",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Associated role generic count includes actual parent parameters.",
+      "predecessor_file": "wrong-member-parent-arity-v2.rs",
+      "predecessor_sha256": "e9d59b345576136982521c9953516ebe3703937cc875205e06699c3666e004e6",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/wrong-member-parent-arity-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0718",
+          "message": "`field_base` lang item must be applied to a associated type with 0 generic arguments"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "8181e21b15c65c2f48664dc2d2b5fe3624b6b6368985081ff154489ad31d7396"
+    },
+    {
+      "file": "wrong-member-parent-arity-v4.rs",
+      "sha256": "023e1d270c9e3e65b1bbd92daa31504ce4fc3739146e5b6b44ce98d3148ddb41",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Associated role generic count includes actual parent parameters.",
+      "predecessor_file": "wrong-member-parent-arity-v2.rs",
+      "predecessor_sha256": "e9d59b345576136982521c9953516ebe3703937cc875205e06699c3666e004e6",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/wrong-member-parent-arity-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0718",
+          "message": "`field_base` lang item must be applied to a associated type with 0 generic arguments"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "8181e21b15c65c2f48664dc2d2b5fe3624b6b6368985081ff154489ad31d7396"
+    },
+    {
+      "file": "invalid-ordinary-body-v4.rs",
+      "sha256": "ca5edb971c66711625a75c7739bbe426a86863e79a0185fd3ea356c71b7388d2",
+      "expected_code": 1,
+      "expected_error_code": "E0308",
+      "hypothesis": "Unused role does not suppress ordinary provided constant body type checking.",
+      "predecessor_file": "invalid-ordinary-body-v2.rs",
+      "predecessor_sha256": "70d7b6e2e1e4ffe6c02e3ab0f792c492a917c6169abac3b86566103ebb8bf43f",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/invalid-ordinary-body-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0308",
+          "message": "mismatched types"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e499df86ea2e7b2b6da7ecc171e5b5c755774a44df8161706ba2a132ccf0c825"
+    },
+    {
+      "file": "invalid-ordinary-body-v4.rs",
+      "sha256": "ca5edb971c66711625a75c7739bbe426a86863e79a0185fd3ea356c71b7388d2",
+      "expected_code": 1,
+      "expected_error_code": "E0308",
+      "hypothesis": "Unused role does not suppress ordinary provided constant body type checking.",
+      "predecessor_file": "invalid-ordinary-body-v2.rs",
+      "predecessor_sha256": "70d7b6e2e1e4ffe6c02e3ab0f792c492a917c6169abac3b86566103ebb8bf43f",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/invalid-ordinary-body-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0308",
+          "message": "mismatched types"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e499df86ea2e7b2b6da7ecc171e5b5c755774a44df8161706ba2a132ccf0c825"
+    },
+    {
+      "file": "original-headers-v4.rs",
+      "sha256": "ab91867580ba0a57eb6b3f22c5bed8126636fb2d9eac88906905da7115c02afd",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Unused exact pinned struct/trait/member/default OFFSET and Copy/Clone bodies check normally.",
+      "predecessor_file": "original-headers-v3.rs",
+      "predecessor_sha256": "83e5649b8d27ec8e76b59c4e3ef9f6209226490af1718af72ab3379b127c2865",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/original-headers-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "original-headers-v4.rs",
+      "sha256": "ab91867580ba0a57eb6b3f22c5bed8126636fb2d9eac88906905da7115c02afd",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Unused exact pinned struct/trait/member/default OFFSET and Copy/Clone bodies check normally.",
+      "predecessor_file": "original-headers-v3.rs",
+      "predecessor_sha256": "83e5649b8d27ec8e76b59c4e3ef9f6209226490af1718af72ab3379b127c2865",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/original-headers-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "explicit-impl-v4.rs",
+      "sha256": "c3c4949581c057a81d4ff15c3915997355bf78c15a283bc3770119264f21adc1",
+      "expected_code": 1,
+      "expected_error_code": "E0322",
+      "hypothesis": "Actual rustc_deny_explicit_impl prohibits authored Field impl.",
+      "predecessor_file": "explicit-impl-v3.rs",
+      "predecessor_sha256": "3572bc1615e71c00fd344dbf0295e34576da4e5b0921236253ad7453d2577b0d",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/explicit-impl-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0322",
+          "message": "explicit impls for the `Field` trait are not permitted"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a9cd196860c7e10738751abc254e1ff2cc1ed48b71f21fbbc92e8840ce55672c"
+    },
+    {
+      "file": "explicit-impl-v4.rs",
+      "sha256": "c3c4949581c057a81d4ff15c3915997355bf78c15a283bc3770119264f21adc1",
+      "expected_code": 1,
+      "expected_error_code": "E0322",
+      "hypothesis": "Actual rustc_deny_explicit_impl prohibits authored Field impl.",
+      "predecessor_file": "explicit-impl-v3.rs",
+      "predecessor_sha256": "3572bc1615e71c00fd344dbf0295e34576da4e5b0921236253ad7453d2577b0d",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/explicit-impl-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0322",
+          "message": "explicit impls for the `Field` trait are not permitted"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a9cd196860c7e10738751abc254e1ff2cc1ed48b71f21fbbc92e8840ce55672c"
+    },
+    {
+      "file": "demanded-offset-v4.rs",
+      "sha256": "284b6c1e00d0fb9a1dc6fd2d280f9a140c89127b06016d5c11f8c1fbefd332ac",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Actual builtin Field proof, Type projection and default field_offset CTFE are a distinct demanded consumer.",
+      "predecessor_file": "demanded-offset-v3.rs",
+      "predecessor_sha256": "ee236c7a9c54ea00d4231331d281f25ffc5a58ebd4f9ad273349d60e956416fc",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/demanded-offset-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "demanded-offset-v4.rs",
+      "sha256": "284b6c1e00d0fb9a1dc6fd2d280f9a140c89127b06016d5c11f8c1fbefd332ac",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Actual builtin Field proof, Type projection and default field_offset CTFE are a distinct demanded consumer.",
+      "predecessor_file": "demanded-offset-v3.rs",
+      "predecessor_sha256": "ee236c7a9c54ea00d4231331d281f25ffc5a58ebd4f9ad273349d60e956416fc",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/demanded-offset-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "demanded-packed-v4.rs",
+      "sha256": "6bdab67ce14951aac6f66890d4fc23948c1def3c6582c318e2d11531ddec2b8d",
+      "expected_code": 1,
+      "expected_error_code": "E0277",
+      "hypothesis": "Packed field existence does not provide builtin Field implementation.",
+      "predecessor_file": "demanded-packed-v3.rs",
+      "predecessor_sha256": "e6f933df8bebf9a9e061fb31394be4c54d5244d748016f8fd80a74a30c9c2bf9",
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/demanded-packed-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.rmeta"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `field_of!(Record, word): Field` is not satisfied"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "5fe0bc04258bcf35d08c6d555bd97e14e424a6ad6c9d8dda105b8a5a976dd91a"
+    },
+    {
+      "file": "demanded-packed-v4.rs",
+      "sha256": "6bdab67ce14951aac6f66890d4fc23948c1def3c6582c318e2d11531ddec2b8d",
+      "expected_code": 1,
+      "expected_error_code": "E0277",
+      "hypothesis": "Packed field existence does not provide builtin Field implementation.",
+      "predecessor_file": "demanded-packed-v3.rs",
+      "predecessor_sha256": "e6f933df8bebf9a9e061fb31394be4c54d5244d748016f8fd80a74a30c9c2bf9",
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/field-source/demanded-packed-v4.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/field-header-reference/v4/actual.o"
+      ],
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `field_of!(Record, word): Field` is not satisfied"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "5fe0bc04258bcf35d08c6d555bd97e14e424a6ad6c9d8dda105b8a5a976dd91a"
+    }
+  ],
+  "raw_receipt": {
+    "path": "obj/parallel/field-header-reference/v4/receipt.json",
+    "sha256": "3cace77aec0d43bbd584608274b8b57dccdf0615da113d30a991632346a98779",
+    "runner_sha256": "00555cf03d972d73cd65f80d8f494857fb253121385dd6b0ef08f4dd8599601e",
+    "seconds": 1.5310228309826925
+  },
+  "guard": {
+    "outer_seconds": 90,
+    "outer_status": 0,
+    "max_output_gib": 16,
+    "reserve_gib": 150,
+    "max_shared_jobs": 2,
+    "wait_seconds": 0
+  },
+  "remaining": "No builtin Field implementation, normalization result, layout, offset or Send/Sync/Copy evidence follows from header completion. Original Debug/reflection/remaining methods, macro/privacy/field access, full demanded execution and authenticated transport remain required."
+}

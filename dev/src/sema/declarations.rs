@@ -46,6 +46,7 @@ mod objects;
 mod offset_paths;
 mod primitive_constants;
 mod projections;
+mod qualified_aliases;
 mod receivers;
 mod required_features;
 mod smart_receivers;
@@ -104,6 +105,8 @@ enum Work {
     ValidateImpl(DefId, traits::ImplementationPhase),
     MethodPrefix(NodeKey, regions::Context),
     InherentMethod(NodeKey, associated::Path, regions::Context),
+    InherentType(NodeKey, regions::Context),
+    InherentTypeResult(NodeKey, DefId, regions::Context),
     InherentHeaders(ItemId, crate::resolve::names::NameId),
     EvaluateConstant(evaluation::Request, bool),
     InitializerReady(DefId),
@@ -511,12 +514,7 @@ impl Checker<'_> {
         }
         self.complete_deferred_declarations(&mut steps, work_limit)?;
         self.complete_nominals(&mut steps, work_limit)?;
-        super::compiler_items::phantom::complete(self.report, &mut self.facts)?;
-        super::compiler_items::pointee::prepare(self.report, &mut self.facts)?;
-        super::compiler_items::discriminant::prepare(self.report, &mut self.facts)?;
-        super::compiler_items::site_records::complete(self.report, &mut self.facts)?;
-        super::compiler_items::transmutability::complete_options(self.report, &mut self.facts)?;
-        super::compiler_items::reflection::complete(self.report, &mut self.facts)?;
+        self.complete_compiler_value_headers()?;
         super::traits::results::prepare_opaque_outlives(&mut self.facts)
             .map_err(|e| Error::at(FileId(0), 0, e))?;
         self.trait_defaults()?;
@@ -550,6 +548,16 @@ impl Checker<'_> {
         super::api_exposure::check(self.report, &self.facts)?;
         self.reject_alias_execution()?;
         super::specialization::require_execution(&self.facts)
+    }
+    /// Value/member roles consume ordinary completed types and nominal fields.
+    fn complete_compiler_value_headers(&mut self) -> Result<(), Error> {
+        super::compiler_items::complete_field_headers(self.report, &mut self.facts)?;
+        super::compiler_items::phantom::complete(self.report, &mut self.facts)?;
+        super::compiler_items::pointee::prepare(self.report, &mut self.facts)?;
+        super::compiler_items::discriminant::prepare(self.report, &mut self.facts)?;
+        super::compiler_items::site_records::complete(self.report, &mut self.facts)?;
+        super::compiler_items::transmutability::complete_options(self.report, &mut self.facts)?;
+        super::compiler_items::reflection::complete(self.report, &mut self.facts)
     }
     fn latent_library_definition(&self, id: DefId) -> bool {
         self.report
@@ -612,6 +620,10 @@ impl Checker<'_> {
                 }
                 Work::InherentMethod(key, path, context) => {
                     self.complete_method_path(key, &path, context, steps, limit, &mut scan)?;
+                }
+                Work::InherentType(key, context) => self.complete_inherent_type(key, context)?,
+                Work::InherentTypeResult(key, member, context) => {
+                    self.complete_inherent_type_result(key, member, context)?;
                 }
                 Work::EvaluateConstant(request, resume) => {
                     self.evaluate_constant(request, resume)?;

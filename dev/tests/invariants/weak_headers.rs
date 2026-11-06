@@ -20,7 +20,8 @@ fn ordinary_foreign_completion_rejects_missing_registry_and_wrong_provider() -> 
     for role in ROLES {
         assert_eq!(complete(&report, &facts, &catalog, role)?, Some(role));
     }
-    let wrong = test_source::source_provider("", "another_provider")?;
+    let wrong =
+        test_source::source_provider("#![feature(no_core)] #![no_core]", "another_provider")?;
     assert!(complete(&wrong, &facts, &catalog, LangItem::MemCpy).is_err());
     facts.foreign = None;
     assert!(complete(&report, &facts, &catalog, LangItem::MemCpy).is_err());

@@ -81,7 +81,7 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 39] = [
+const TRAIT_ROLES: [LangItem; 40] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::UseCloned,
@@ -121,6 +121,7 @@ const TRAIT_ROLES: [LangItem; 39] = [
     LangItem::CoercePointeeValidated,
     LangItem::Reborrow,
     LangItem::CoerceShared,
+    LangItem::Field,
 ];
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -419,6 +420,7 @@ fn canonical_header_only(role: LangItem) -> bool {
     matches!(
         role,
         LangItem::UseCloned
+            | LangItem::Field
             | LangItem::Reborrow
             | LangItem::CoerceShared
             | LangItem::CoercePointeeValidated
@@ -699,10 +701,25 @@ pub(super) fn complete_value_declaration(
             | LangItem::CoroutineState
             | LangItem::ResumeTy
             | LangItem::CStr
+            | LangItem::FieldRepresentingType
     ) && !super::interval_values::NOMINALS.contains(&role)
     {
         return Err(Error::unlocated(
             "invalid source value declaration completion",
+        ));
+    }
+    record_completion(facts, role, declaration)
+}
+
+/// Only the actual completed ordinary associated-member producer enters this gate.
+pub(super) fn complete_reflection_member(
+    facts: &mut Declarations,
+    role: LangItem,
+    declaration: Declaration,
+) -> Result<(), Error> {
+    if !super::headers::reflection_members::ROLES.contains(&role) {
+        return Err(Error::unlocated(
+            "invalid source reflection member completion",
         ));
     }
     record_completion(facts, role, declaration)

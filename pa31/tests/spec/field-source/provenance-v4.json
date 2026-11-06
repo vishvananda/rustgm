@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "upstream_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "upstream_path": "library/core/src/marker.rs",
+  "upstream_sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+  "existing_vendored_original": "../coerce-pointee-source/original-marker.rs",
+  "vendored_sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+  "license": "MIT OR Apache-2.0",
+  "intervals": [
+    {
+      "name": "actual-Send-declaration-and-attributes",
+      "lines": [
+        86,
+        94
+      ],
+      "bytes_half_open": [
+        3191,
+        3476
+      ],
+      "sha256": "7349b7bd887382c1c57335e5f4062aecc619827161ec90bbc3fa7b52fa0f841e",
+      "text": "#[stable(feature = \"rust1\", since = \"1.0.0\")]\n#[rustc_diagnostic_item = \"Send\"]\n#[diagnostic::on_unimplemented(\n    message = \"`{Self}` cannot be sent between threads safely\",\n    label = \"`{Self}` cannot be sent between threads safely\"\n)]\npub unsafe auto trait Send {\n    // empty.\n}\n"
+    },
+    {
+      "name": "diagnostic-identity",
+      "lines": [
+        87,
+        87
+      ],
+      "bytes_half_open": [
+        3237,
+        3271
+      ],
+      "sha256": "a84ad5933877c86a3f17d7cde406abb3410d9dd3020ebdde45e796d84e459da5",
+      "text": "#[rustc_diagnostic_item = \"Send\"]\n"
+    }
+  ],
+  "adaptation": "Add only exact original rustc_diagnostic_item Send attribute to the existing authored ordinary auto trait declaration. No other source changes; keep original Field/Copy/Clone intervals unchanged. Existing v2/v3 qualified cases are valid custom-auto-trait requirements.",
+  "prediction_sha256": "12e522c1a8b6719fd89953309372f7df8f314ca7f37c260406a78be758b72a66"
+}

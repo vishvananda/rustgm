@@ -1,0 +1,9 @@
+# Required generic inherent-alias proof producer
+
+The closed checkpoint is not a generic alias proof. PathQuery discards trial arguments and skips directed outlives during applicability. Full support must retain/prove the actual selected owner application before substituting its member; schema matching alone cannot pay those conditions.
+
+Existing reuse points are `declaration_inputs::{declared,collect_inherited}` for original scoped clauses, `generics::instantiate_associated_definition` for the complete owner/member mapping, `projections::families::inputs` for member input/region conditions, ordinary annotation argument preparation for authored member arguments, and the existing scoped normalization/formation frontier. Do not fabricate a trait header to use `traits::selection::Instance`: it explicitly requires a genuine registry capability. Do not fabricate an associated projection to reach the trait-family machinery.
+
+Two actual producer gaps remain: completing inherent family input contracts without a trait TypeContract, and retaining the selected owner plus member arguments and their formation/where/region debts through the real caller scope. `projection_alias_owner` currently excludes associated aliases because trait families already own their proofs; ordinary `alias_requirements::Use` has one owner/argument domain, so any joint-argument extension must authenticate both actual owners rather than silently treat an inherent alias as a free alias.
+
+Keep the six Rust-positive generic/lifetime/where fixtures and the original generic negative causes (bounds, arity, escape, wrong result, recursion). Their inputs and evidence are committed unchanged. This work is deferred in priority to the actual original-core custom-auto-trait blocker; it remains required and was not counted as negative parity or completion.

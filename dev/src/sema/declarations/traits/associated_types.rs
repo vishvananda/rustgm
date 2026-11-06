@@ -126,7 +126,15 @@ impl Checker<'_> {
             let ItemKind::TypeAlias { ty, bounds } = item.kind else {
                 return Err(self.error(key, "missing associated type syntax"));
             };
-            if item.visibility != Visibility::Private {
+            if item.visibility != Visibility::Private
+                && !matches!(
+                    owner.kind,
+                    OwnerKind::Impl {
+                        trait_type: None,
+                        ..
+                    }
+                )
+            {
                 return Err(self.error(key, "associated types require inherited visibility"));
             }
             let parent = match owner.kind {
@@ -168,10 +176,12 @@ impl Checker<'_> {
                 OwnerKind::Impl {
                     trait_type: None, ..
                 } => {
-                    return Err(self.error(
-                        key,
-                        "inherent associated types are not supported by the stable profile",
-                    ));
+                    self.require_inherent_type_feature(key)?;
+                    if bounds.start != bounds.end || ty.is_none() {
+                        return Err(self.error(key,
+                            "inherent associated type definitions require a type and cannot declare bounds"));
+                    }
+                    owner.self_definition
                 }
                 OwnerKind::ImportedImpl(_) => {
                     return Err(self.error(

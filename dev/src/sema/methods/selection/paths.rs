@@ -3,7 +3,7 @@ mod conditions;
 use super::super::buckets::Bucket;
 use super::{
     Assumptions, Caller, Context, Declarations, DefId, Environment, Error, NameId, NodeKey, Prefix,
-    Report, ScopeId, TermId, account_probe, applicability, candidates, trait_groups,
+    Report, ScopeId, TermId, account_probe, applicability, trait_groups,
 };
 use crate::sema::{annotations::Scratch, traits::implementations::Availability};
 use crate::support::hash::HashMap;
@@ -71,7 +71,7 @@ impl Query {
             key,
             (source.infer, term),
             bucket,
-            site,
+            (site, crate::resolve::model::Namespace::Value),
             caller,
         )
     }
@@ -90,7 +90,39 @@ impl Query {
         let term = prefix
             .known(&facts.types, ty)
             .map_err(|error| Declarations::error(report, key, applicability::inference(error)))?;
-        Self::inherent_prefix(report, facts, key, (prefix, term), bucket, site, caller)
+        Self::inherent_prefix(
+            report,
+            facts,
+            key,
+            (prefix, term),
+            bucket,
+            (site, crate::resolve::model::Namespace::Value),
+            caller,
+        )
+    }
+
+    pub fn inherent_alias(
+        report: &Report,
+        facts: &mut Declarations,
+        key: NodeKey,
+        ty: crate::types::TypeId,
+        bucket: impl Into<Bucket>,
+        site: super::super::names::Use,
+        caller: OwnedCaller,
+    ) -> Result<Self, Error> {
+        let mut prefix = Context::default();
+        let term = prefix
+            .known(&facts.types, ty)
+            .map_err(|error| Declarations::error(report, key, applicability::inference(error)))?;
+        Self::inherent_prefix(
+            report,
+            facts,
+            key,
+            (prefix, term),
+            bucket,
+            (site, crate::resolve::model::Namespace::Type),
+            caller,
+        )
     }
 
     fn inherent_prefix(
@@ -99,12 +131,20 @@ impl Query {
         key: NodeKey,
         (mut prefix, term): (Context, TermId),
         bucket: impl Into<Bucket>,
-        site: super::super::names::Use,
+        (site, namespace): (super::super::names::Use, crate::resolve::model::Namespace),
         caller: OwnedCaller,
     ) -> Result<Self, Error> {
-        let members = candidates(report, facts, &mut prefix, term, bucket.into(), site)
-            .map_err(|message| Declarations::error(report, key, message))?
-            .members;
+        let members = super::candidates_in(
+            report,
+            facts,
+            &mut prefix,
+            term,
+            bucket.into(),
+            site,
+            namespace,
+        )
+        .map_err(|message| Declarations::error(report, key, message))?
+        .members;
         facts.methods.selection_steps = facts.methods.selection_steps.saturating_add(prefix.steps);
         Ok(Self {
             prefix,

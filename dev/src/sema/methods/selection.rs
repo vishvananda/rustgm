@@ -241,6 +241,26 @@ pub(super) fn candidates(
     key: impl Into<Bucket>,
     site: super::names::Use,
 ) -> Result<Found, &'static str> {
+    candidates_in(
+        report,
+        facts,
+        context,
+        prefix,
+        key,
+        site,
+        crate::resolve::model::Namespace::Value,
+    )
+}
+
+pub(super) fn candidates_in(
+    report: &Report,
+    facts: &mut Declarations,
+    context: &mut Context,
+    prefix: TermId,
+    key: impl Into<Bucket>,
+    site: super::names::Use,
+    namespace: crate::resolve::model::Namespace,
+) -> Result<Found, &'static str> {
     let key = key.into();
     let mut result = context_candidates(facts, context, prefix, key, ItemContext::ROOT)?;
     if facts.methods.has_contextual_inherent(key) {
@@ -254,6 +274,14 @@ pub(super) fn candidates(
     let mut selected = 0;
     for index in 0..result.len() {
         let member = result[index];
+        let definition = report
+            .resolution
+            .definitions
+            .get(member.0 as usize)
+            .ok_or("inherent candidate declaration is missing")?;
+        if definition.namespace != namespace {
+            continue;
+        }
         let owner = facts
             .associated
             .member_owner(member)

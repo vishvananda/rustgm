@@ -320,6 +320,7 @@ impl Checker<'_> {
         let contextual = self.facts.methods.has_contextual_inherent(bucket);
         let unique = if let [method] = candidates
             && !contextual
+            && self.report.resolution.definitions[method.0 as usize].namespace == Namespace::Value
         {
             Some(*method)
         } else {
@@ -380,7 +381,7 @@ impl Checker<'_> {
     }
 
     /// Publish the selected owner and its typed prefix as one semantic fact.
-    fn retain_selected_path(
+    pub(super) fn retain_selected_path(
         &mut self,
         key: NodeKey,
         path: &Path,

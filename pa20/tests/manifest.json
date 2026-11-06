@@ -22884,6 +22884,338 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/inherent-associated/unused.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/inherent-associated/escape.rs",
+        "tests/spec/inherent-associated/generic-member.rs",
+        "tests/spec/inherent-associated/generic-owner.rs",
+        "tests/spec/inherent-associated/lifetime-member.rs",
+        "tests/spec/inherent-associated/lifetime-owner.rs",
+        "tests/spec/inherent-associated/macro-allowed.rs",
+        "tests/spec/inherent-associated/macro-denied.rs",
+        "tests/spec/inherent-associated/member-where.rs",
+        "tests/spec/inherent-associated/missing-arity.rs",
+        "tests/spec/inherent-associated/missing-member-bound.rs",
+        "tests/spec/inherent-associated/missing-owner-bound.rs",
+        "tests/spec/inherent-associated/recursive.rs",
+        "tests/spec/inherent-associated/unused-member.rs",
+        "tests/spec/inherent-associated/where-owner.rs",
+        "tests/spec/inherent-associated/wrong-result.rs"
+      ]
+    },
+    {
+      "path": "tests/spec/inherent-associated/lookup.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/explicit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/self-use.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/public.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/specialized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/disjoint.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/unsized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/disjoint-kinds.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/trait-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/native.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/missing-feature.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/missing-result.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/written-bound.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/invalid-unused.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/wrong-owner.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/private.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/duplicate.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/wrong-result-closed.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/namespaces.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inherent-associated/overlap.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.associated-types"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/qualified_types.rs",
+      "input": "file"
     }
   ]
 }

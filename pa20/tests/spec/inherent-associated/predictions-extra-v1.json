@@ -1,0 +1,36 @@
+{
+  "profile": "Rust1.98.0 edition2024 cap-lints allow metadata/object +native C ABI observer",
+  "cases": {
+    "macro-allowed": {
+      "sha256": "32764b2b7b68385547b0c418b1e0bd502e0628d2f289a718d7b1b79647e2d409",
+      "expected": 0,
+      "cause": "real defining macro allowance"
+    },
+    "macro-denied": {
+      "sha256": "c21e9cc12215308c026edfbf08ffb0880ae517bf0c0756d2547e4fd34aaebdf2",
+      "expected": 1,
+      "cause": "macro without feature authority"
+    },
+    "unsized": {
+      "sha256": "60af7a7beaf6b163c6f3151ac1b7d18ba2351fb2121536ba8ebbd01dff2a4e94",
+      "expected": 0,
+      "cause": "real unsized alias result"
+    },
+    "unused-member": {
+      "sha256": "c344b15070dcde5766db51e36506a2cc2f25887d19cc8315e3328d9229e3ed72",
+      "expected": 0,
+      "cause": "unused member type parameter"
+    },
+    "disjoint-kinds": {
+      "sha256": "19abd627835205b419f1ab01f2b61407c220d5e7f07756dcdc37a29753a0fe58",
+      "expected": 0,
+      "cause": "disjoint owners with different member namespaces"
+    },
+    "native": {
+      "sha256": "bc0fce6ee2ae39bc613c2e7365df7966b65bdb40abff6a828e5195ea63fb35bf",
+      "expected": 0,
+      "cause": "operand-dependent normal alias calls",
+      "stdout": "alias 23\n"
+    }
+  }
+}
