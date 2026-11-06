@@ -140,15 +140,9 @@ fn comparison_diagnostic_hints_do_not_supply_operator_language_roles() -> Result
 }
 
 #[test]
-fn fixed_factory_result_unsizing_retains_its_required_nominal_validation_gap() -> Result {
+fn fixed_factory_result_unsizing_uses_actual_nominal_validation_and_value_proof() -> Result {
     let text = source::fixture("pa31/tests/spec/source-coroutines/full/result-coercion.rs")?;
-    let error = inspect_source(&text).err().ok_or("nominal boundary")?;
-    assert!(
-        error
-            .to_string()
-            .contains("source CoerceUnsized nominal implementation validation is not implemented"),
-        "{error}"
-    );
+    inspect_source(&text)?;
     Ok(())
 }
 

@@ -3,6 +3,7 @@ mod allocation;
 mod arguments;
 pub(in crate::sema) use arguments::instantiate_charged as instantiate_callable;
 pub(in crate::sema) use arguments::{callable_substitution, callable_substitution_paid};
+mod coercions;
 mod consteval_defaults;
 mod dependencies;
 mod effect_requirements;

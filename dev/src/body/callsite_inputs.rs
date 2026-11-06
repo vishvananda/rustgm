@@ -1,10 +1,13 @@
 //! Sparse caller-site data shares the existing callable input owner, never its proof.
 use super::ir::{Body, NodeKey, Rvalue, ValueId};
+#[path = "coercion_inputs.rs"]
+mod nominal_inputs;
 use crate::{
     sema::values::LocationId,
     support::{hash::HashMap, retained},
     types::{TypeId, instance::Instance},
 };
+pub(crate) use nominal_inputs::NominalUse;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct CallerSite {
@@ -17,12 +20,14 @@ pub(crate) struct CallerSite {
 pub struct CallableInputs {
     pub(super) targets: Option<HashMap<Instance, Instance>>,
     pub(super) sites: Vec<CallerSite>,
+    nominal: Option<Box<nominal_inputs::NominalInputs>>,
 }
 impl CallableInputs {
     pub(crate) fn from_targets(targets: HashMap<Instance, Instance>) -> Self {
         Self {
             targets: Some(targets),
             sites: Vec::new(),
+            nominal: None,
         }
     }
     pub(super) fn allocation_bytes(&self) -> usize {
@@ -30,6 +35,11 @@ impl CallableInputs {
             .as_ref()
             .map_or(0, retained::map)
             .saturating_add(retained::vector(&self.sites))
+            .saturating_add(
+                self.nominal
+                    .as_ref()
+                    .map_or(0, |inputs| inputs.allocation_bytes()),
+            )
     }
 }
 impl Body {
@@ -100,6 +110,7 @@ impl Body {
         &mut self,
         facts: &crate::sema::model::Declarations,
     ) -> Result<(), &'static str> {
+        self.validate_nominal_inputs(facts)?;
         let Some(inputs) = self
             .resolved_callables
             .as_mut()
@@ -138,11 +149,13 @@ impl Body {
     pub(crate) fn unproved_callable_inputs(
         &self,
         facts: &crate::sema::model::Declarations,
+        key: super::ir::BodyKey,
+        instance: Option<Instance>,
     ) -> Result<Option<Box<CallableInputs>>, &'static str> {
         let Some(inputs) = self
             .resolved_callables
             .as_ref()
-            .filter(|inputs| !inputs.sites.is_empty())
+            .filter(|inputs| !inputs.sites.is_empty() || inputs.nominal.is_some())
         else {
             return Ok(None);
         };
@@ -154,6 +167,7 @@ impl Body {
         Ok(Some(Box::new(CallableInputs {
             targets: None,
             sites: inputs.sites.clone(),
+            nominal: self.copy_nominal_inputs(facts, key, instance)?,
         })))
     }
     pub(crate) fn specialize_caller_inputs(
@@ -192,6 +206,8 @@ impl Body {
         facts: &mut crate::sema::model::Declarations,
         fold: &mut crate::types::substitute::Bound,
     ) -> Result<(), &'static str> {
+        self.rewrite_nominal_inputs(facts, fold)?;
+        self.validate_nominal_inputs(facts)?;
         let Some(inputs) = self
             .resolved_callables
             .as_deref_mut()

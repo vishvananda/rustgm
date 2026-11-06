@@ -33,6 +33,29 @@ impl Completed {
 }
 
 impl Context {
+    /// Inspect only a nominal's already completed inputs, without interning or
+    /// recursively visiting missing summaries. Compatible equations preserve a
+    /// completed certificate; missing inputs retain ordinary contextual inference.
+    pub(crate) fn nominal_inputs_fixed(
+        &mut self,
+        store: &Store,
+        root: TermId,
+    ) -> Result<bool, Error> {
+        self.step()?;
+        let root = self.root(root)?;
+        match self.terms[root.0 as usize].value {
+            Value::Known(ty) if matches!(store.kind(ty), Some(crate::types::Kind::Adt(..))) => {
+                Ok(true)
+            }
+            Value::Construct(Constructor::Adt(..)) => Ok(true),
+            // Nominal arguments have already been assembled. Reuse their direct
+            // child summaries in the same memo, never start a resolution walk.
+            Value::Construct(Constructor::AdtArgs(..)) => self
+                .remember_structure(store, root)
+                .map(|facts| facts.is_some()),
+            _ => Err(Error::InvalidIdentity),
+        }
+    }
     pub(super) fn completed(
         &self,
         store: &Store,

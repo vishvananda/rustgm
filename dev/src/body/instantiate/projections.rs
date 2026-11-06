@@ -178,6 +178,8 @@ pub(super) fn normalize_with_owner(
                 conversion.try_map(|input| ty(facts, &mut session, &mut storage, input))?;
         }
     }
+    body.map_nominal_inputs(|input| ty(facts, &mut session, &mut storage, input))?;
+    body.validate_nominal_inputs(facts)?;
     let scoped_terms = rewrite_contract(facts, contract, &mut session)?;
     assumptions::normalize(facts, contract, &mut proof)?;
     let mut evidence = crate::body::regions::Proof::new(body.source, proof);

@@ -24,6 +24,7 @@ mod subtraction_runtime;
 mod termination_call;
 mod text;
 mod vararg;
+mod wrapper_transfers;
 mod wrapping_runtime;
 use super::{
     Error,
@@ -825,8 +826,8 @@ impl Lower<'_, '_, '_> {
                     crate::types::unsizing::Conversion::Upcast { source, target } => {
                         self.object_upcasting(operand, source, target)
                     }
-                    crate::types::unsizing::Conversion::Nominal { .. } => {
-                        Err("nominal coercion requires its checked wrapper conversion plan")
+                    crate::types::unsizing::Conversion::Nominal { source, target } => {
+                        self.nominal_coercion(id, operand, source, target)
                     }
                 };
             }

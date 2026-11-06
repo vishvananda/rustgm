@@ -1,5 +1,6 @@
 //! Built-in struct unsizing eligibility follows declaration tails, not pointer layout.
 mod eligibility;
+mod transfers;
 mod wrappers;
 use super::{
     ItemId, Kind, Store, TypeId,
@@ -8,6 +9,7 @@ use super::{
     parameters::{ParameterId, uses::Uses},
 };
 use crate::support::hash::{HashMap, HashSet};
+pub(crate) use transfers::{Plan as CoercionPlan, Span as CoercionSpan, Step as CoercionStep};
 pub(crate) use wrappers::{Field as CoercionField, Schema as CoercionSchema};
 
 /// A selected terminal conversion survives structural wrappers and specialization.

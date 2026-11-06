@@ -184,6 +184,12 @@ impl Checker<'_> {
             return Ok(false);
         }
         let goal = self.retain_nominal_goal(node, role.definition, actual, expected)?;
+        if self.facts.types.existing_arena_identity().is_none() {
+            self.facts
+                .charge_caller_inputs(1, crate::types::arena::Identity::allocation_bytes())
+                .map_err(|e| self.error(node, e))?;
+            self.facts.types.arena_identity();
+        }
         self.state.unsizing_adjustments.insert(
             self.state.adjustments.len(),
             Pending {

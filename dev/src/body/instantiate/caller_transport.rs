@@ -261,6 +261,8 @@ pub(super) fn body(
             value.ty = fold.apply(&mut facts.types, value.ty)?;
             operand(facts, &mut value.kind, fold)?;
         }
+        body.rewrite_nominal_inputs(facts, fold)?;
+        body.validate_nominal_inputs(facts)?;
         Ok(())
     })
 }

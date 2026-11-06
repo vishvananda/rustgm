@@ -73,18 +73,48 @@ fn resolve_using(
     mut scope: Option<&mut super::copy_requirements::materialized::InstanceScope>,
     mut preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
 ) -> Result<(), crate::sema::dispatch::Failure> {
-    let dispatch = body.values.iter().any(|value| {
-        matches!(
-            value.kind,
-            Rvalue::AssociatedConstant(_) | Rvalue::SourceAssociated(_)
-        ) || trait_function(facts, value)
-    });
+    body.validate_nominal_inputs(facts)?;
+    let dispatch = !body.nominal_uses().is_empty()
+        || body.values.iter().any(|value| {
+            matches!(
+                value.kind,
+                Rvalue::AssociatedConstant(_)
+                    | Rvalue::SourceAssociated(_)
+                    | Rvalue::Unsize {
+                        conversion: crate::types::unsizing::Conversion::Nominal { .. },
+                        ..
+                    }
+            ) || trait_function(facts, value)
+        });
     if !dispatch {
         return finish_using(facts, body, contract, scope.as_deref(), preparation);
     }
     let (mut caller, mut dispatcher) = callers::prepare(facts, body, contract)?;
+    for row in body.nominal_uses() {
+        if let Some(service) = &mut preparation {
+            dispatcher.nominal_coercion(facts, row.from, row.to, Some(&mut **service))?;
+        } else {
+            dispatcher.nominal_coercion(facts, row.from, row.to, None)?;
+        }
+    }
     let mut replacements = HashMap::default();
-    for value in &mut body.values {
+    let nominal = body.resolved_callables.as_deref().map_or(
+        &[][..],
+        super::callable_inputs::CallableInputs::nominal_uses,
+    );
+    for (index, value) in body.values.iter_mut().enumerate() {
+        if matches!(
+            value.kind,
+            Rvalue::Unsize {
+                conversion: crate::types::unsizing::Conversion::Nominal { .. },
+                ..
+            }
+        ) && nominal
+            .binary_search_by_key(&index, |row| row.operation.0 as usize)
+            .is_err()
+        {
+            return Err("nominal operation lacks its actual checked adjustment provenance".into());
+        }
         if let Rvalue::AssociatedConstant(instance) = value.kind
             && let Some(parameters) = &mut original
             && parameters.deferred(facts, instance)?
@@ -139,12 +169,16 @@ fn resolve_using(
         rewrite(facts, body, contract, &mut fold)?;
         retain_initializer_targets(facts, body, &originals, &mut fold)?;
     }
-    let proof = dispatcher.finish();
+    retain_proof(body, contract, dispatcher.finish());
+    finish_using(facts, body, contract, scope.as_deref(), preparation)
+}
+
+fn retain_proof(body: &Body, contract: &mut Contract, proof: crate::sema::dispatch::Obligations) {
     if proof.has_quantified() {
         contract
             .proofs
             .push(crate::body::regions::Proof::new(body.source, proof));
-        return finish_using(facts, body, contract, scope.as_deref(), preparation);
+        return;
     }
     let mut obligations = proof
         .regions
@@ -170,7 +204,6 @@ fn resolve_using(
         kind: Kind::TypeOutlives { ty, shorter },
     }));
     contract.obligations = obligations;
-    finish_using(facts, body, contract, scope.as_deref(), preparation)
 }
 
 fn finish_using(

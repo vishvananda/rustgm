@@ -22,15 +22,19 @@ pub(crate) struct Schema {
     pub fields: Vec<Field>,
 }
 pub(super) struct Plans {
-    arena: Identity,
-    schemas: HashMap<ItemId, Schema>,
+    pub(super) arena: Identity,
+    pub(super) schemas: HashMap<ItemId, Schema>,
+    pub(super) transfers: HashMap<(TypeId, TypeId), super::transfers::Plan>,
     work: usize,
     bytes: usize,
 }
 impl Plans {
-    fn charge(&mut self, work: usize, bytes: usize) -> Result<(), &'static str> {
+    pub(super) fn charge(&mut self, work: usize, bytes: usize) -> Result<(), &'static str> {
         self.work = self.work.saturating_add(work);
         self.bytes = self.bytes.saturating_add(bytes);
+        self.require_budget()
+    }
+    pub(super) fn require_budget(&self) -> Result<(), &'static str> {
         if self.work > 1_000_000 || self.bytes > 64 * 1024 * 1024 {
             return Err("nominal coercion recipe work/storage budget exceeded");
         }
@@ -57,6 +61,7 @@ impl Rules {
             self.nominal = Some(Box::new(Plans {
                 arena: types.arena_identity(),
                 schemas: HashMap::default(),
+                transfers: HashMap::default(),
                 work: 0,
                 bytes: size_of::<Plans>(),
             }));
@@ -110,9 +115,14 @@ impl Rules {
         if !types.has_identity(&plans.arena) {
             return Err("nominal coercion recipe belongs to another type store");
         }
+        plans.require_budget()?;
         Ok(plans.schemas.get(&owner))
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/transfer_budgets.rs"]
+mod tests;
 
 impl Schema {
     pub(crate) fn endpoints(

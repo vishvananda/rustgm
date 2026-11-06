@@ -12,10 +12,15 @@ impl Checker<'_> {
         let Some(expected) = expected else {
             return Ok(None);
         };
-        let (Some(Constructor::AdtArgs(owner, _)), Some(Constructor::AdtArgs(target, _))) = (
+        let heads = (
             self.contextual_head(node, actual)?,
             self.contextual_head(node, expected)?,
-        ) else {
+        );
+        if self.fixed_constructor_inputs(node, actual, heads)? {
+            return Ok(None);
+        }
+        let (Some(Constructor::AdtArgs(owner, _)), Some(Constructor::AdtArgs(target, _))) = heads
+        else {
             return Ok(Some(expected));
         };
         if owner != target {
@@ -91,6 +96,30 @@ impl Checker<'_> {
                 .map_err(|e| self.error(node, e))?;
         }
         Ok(Some(term))
+    }
+    fn fixed_constructor_inputs(
+        &mut self,
+        node: NodeId,
+        actual: TermId,
+        heads: (Option<Constructor>, Option<Constructor>),
+    ) -> Result<bool, Error> {
+        if !matches!(heads,
+            (Some(Constructor::Adt(a, _) | Constructor::AdtArgs(a, _)),
+            Some(Constructor::Adt(b, _) | Constructor::AdtArgs(b, _))) if a == b)
+        {
+            return Ok(false);
+        }
+        // Fixed inputs have nothing to infer backwards. Own fields and later
+        // directed coercion still require their ordinary complete proofs.
+        match self
+            .state
+            .infer
+            .nominal_inputs_fixed(&self.facts.types, actual)
+        {
+            Ok(fixed) => Ok(fixed),
+            Err(crate::types::infer::Error::Normalization) => Ok(true),
+            Err(error) => Err(self.error(node, error)),
+        }
     }
     fn array_tail_context(&mut self, node: NodeId, slice: TermId) -> Result<TermId, Error> {
         // Only the length is unknown. Retaining the element context is necessary

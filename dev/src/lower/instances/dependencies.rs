@@ -341,6 +341,7 @@ impl Discovered {
 
     fn conversion(
         &mut self,
+        facts: &Declarations,
         body: &Body,
         index: usize,
         conversion: crate::types::unsizing::Conversion<TypeId>,
@@ -364,7 +365,13 @@ impl Discovered {
             }
             crate::types::unsizing::Conversion::Slice(_) => {}
             crate::types::unsizing::Conversion::Nominal { .. } => {
-                return Err("nominal coercion requires its checked wrapper conversion plan");
+                let row = body.nominal_use(
+                    &facts.types,
+                    crate::body::ir::ValueId(
+                        u32::try_from(index).map_err(|_| "too many nominal conversions")?,
+                    ),
+                )?;
+                Reader::new(facts).nominal_conversion(row.source, row.from, row.to)?;
             }
         }
         Ok(())
@@ -596,7 +603,7 @@ impl Dependencies {
         self.charge(body.values.len())?;
         for (index, value) in body.values.iter().enumerate() {
             if let Rvalue::Unsize { conversion, .. } = value.kind {
-                result.conversion(body, index, conversion)?;
+                result.conversion(facts, body, index, conversion)?;
             }
             if let Rvalue::Invoke {
                 kind,

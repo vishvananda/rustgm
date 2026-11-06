@@ -491,7 +491,7 @@ impl Lower<'_, '_, '_> {
         }
         Ok(Selected::Object(address))
     }
-    fn field_offset(
+    pub(super) fn field_offset(
         &self,
         layout: &Layout,
         ordinal: u32,

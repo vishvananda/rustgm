@@ -1,0 +1,506 @@
+{
+  "scope": "PA31 selected nominal array-to-slice wrapper values; no whole assignment/library completion",
+  "base": "6694351ed",
+  "historical_prerequisite_commits": [
+    "4a805a781",
+    "b568fe27f"
+  ],
+  "integration": "Apply non-merge own commits in order on main669 or descendant; historical WIP alone is not the consumer checkpoint.",
+  "production_changed": {
+    "dev/src/body/body_view.rs": "fe7676cb94f907dd6d7cd0666d83c7e5bffb13686090dca16268418810a15ba4",
+    "dev/src/body/build/references.rs": "0b3625392611ed1a96424c29bd07934647a82d9062974dfdcef1854d847aa9b3",
+    "dev/src/body/callsite_inputs.rs": "f4074ab073fe387542eb75af1e99bd7a8ef7e23f63f367f57f0736abca0dc66a",
+    "dev/src/body/coercion_inputs.rs": "bff92d73bdf7de930b0b801d0509803749ff173d00c0448392f918f7029de9b0",
+    "dev/src/body/dispatch.rs": "55a2372b863306f1b01e512083853a16e392de2f821119158f79917116f17193",
+    "dev/src/body/instantiate.rs": "058a483c5f300c18e1171f808fd7cb13938fe42ffa22e77fc15c89627a92b5f7",
+    "dev/src/body/instantiate/caller_transport.rs": "eafd36b21d7e7a08b1903f3109095121a2bf3243cd3d9b05a150a60d517ff96d",
+    "dev/src/body/instantiate/projections.rs": "25091016ddfd6b919645ad59162d369dfcba79a120bfc3a04e3c432789c0de7f",
+    "dev/src/body/promote/values.rs": "bf7b6d76992f708fb1c2ac8490685b209404bf9b68a5d547bbe5fec25e6e5694",
+    "dev/src/const_eval/values.rs": "2ec7b5daf8f8c0357c0e8e05805c34313cb41c96a839e84c18b6b02352e8754e",
+    "dev/src/lower/function.rs": "f6bbf421b2c89c4817c489470d0e8879eaeddce75617e958a45d9987f0bc5988",
+    "dev/src/lower/function/aggregate.rs": "60ee94ceb0866c35069c75aa2c24e3ab3b763871c911f9980c2fc93fc90fbcc8",
+    "dev/src/lower/function/wrapper_transfers.rs": "35eb5e670682feabcdb34db0fda27233509bfe6b4d5713bdd0981f696722bbdc",
+    "dev/src/lower/instances/dependencies.rs": "eb115a3a33337a03595ee7b916b1e04f5804e528900b5b86576037f021a977e3",
+    "dev/src/sema/bodies.rs": "d0f5ed7ea8761310a6d5c03b7b2ccec7d57138de6d056d5b41e745a92e86ebe4",
+    "dev/src/sema/bodies/finalization.rs": "a91465c3fe6b143a983c83067ac335e9cc30f8d35b3eeae08df8ba38fac392eb",
+    "dev/src/sema/bodies/lifetimes.rs": "18b24aa56b6875c66d3974eaa73181746590c89526ed17b3c56aec0c4ec940ea",
+    "dev/src/sema/bodies/references.rs": "58515809eb452c99fa52752308ed1d22d8e9e9efbf3b2988f2a7d19b359cbc2b",
+    "dev/src/sema/bodies/unsizing.rs": "60a3c1238947c3ae44a4f10db920bd95ae82c7910dae1ddc813ba906f57c80fe",
+    "dev/src/sema/bodies/unsizing/construction_context.rs": "6ec32acba526bcc8b317dd468fba33880bfc1a36dc34efb33fca47d1cc1034ea",
+    "dev/src/sema/bodies/unsizing/tail_conversion.rs": "087b8987e725d49188369a9f2b4148d6dd5230e25b35e300bfe4b14a6ea98b16",
+    "dev/src/sema/bodies/unsizing/wrappers.rs": "27c57db759cefd1104c6a881fc9a227d68218b47a4f10ce08e092d5976d3354c",
+    "dev/src/sema/constants/references.rs": "9e00fdff196b78f89d78e44d60229df163fd19b72e2868b0626ed5894f4eb443",
+    "dev/src/sema/constants/values.rs": "859345f56d59378fc906b7765b9ccac84aed211dea9de4a9c8094f315de26ba9",
+    "dev/src/sema/constants/values/conversion_reads.rs": "76fb504104861ae03a8ecc65565816abf9e26589667ec883325d5fefd821c079",
+    "dev/src/sema/declarations/traits/implementations/coercions.rs": "cf04a9755e78cb673c607157c8856b70e3942b290b8b69b39379a82079ed6048",
+    "dev/src/sema/declarations/traits/implementations/coercions/structure.rs": "cd0546f0fe7568c73ef1213887e6649bbbda623c4c6712e94133c209c5d21750",
+    "dev/src/sema/declarations/traits/implementations/validation.rs": "b03afb59c2e162b4cd5e26e6507484af6af044b519142edd85d2f4a6b8401f48",
+    "dev/src/sema/dispatch.rs": "436faeea2cd3cd2118172a8bf61c6738b37e8d8dd8e10eb0396b12466753076b",
+    "dev/src/sema/dispatch/coercions.rs": "4e727b8189cc727ddec11628ebc5baca9d67133dbe91cd4dc928bb3e9e2f89dd",
+    "dev/src/sema/dispatch/coercions/transfer_layout.rs": "b497cff850b3c3f9e94a12a53653d1236ba1949665ac3593299d72a7abeee4b9",
+    "dev/src/types/aggregate/fields.rs": "7712b9fe940c61c446de01b70abd650114b5dd85b8724113f6402b6226f5b6ae",
+    "dev/src/types/infer/completed.rs": "8424b10d638520f8e62d5c9eb7d8eae957fbb9540e0a0a004f63efbc0370840d",
+    "dev/src/types/unsizing.rs": "ee45aec62c2639052bbbebeceb4a4c1605061522e627da46947a6e6cc7848816",
+    "dev/src/types/unsizing/transfers.rs": "f5a2542befb2b0d5a9ec7d6baa168f78810e1009076eebd1cdfea8404856068a",
+    "dev/src/types/unsizing/wrappers.rs": "0f1bd4139bd54d6bb6becc945dad9bf1eecf0eb8915de111ba798ec50ef618dd"
+  },
+  "tests_changed": {
+    "dev/tests/coercion_provider.rs": "67735d0b7da0ab80e4e1f3fcf7a203c0262e9b0f628ad349c4b9fe6c1ab400fd",
+    "dev/tests/coroutine_sources.rs": "261eb7846ea8a57f9a5f6619a28f177f33f9b4a64335a5146a4386cfbb54ef33",
+    "dev/tests/invariants/transfer_budgets.rs": "5e25b11edb2032ffe852a38b25169620d658096736f5c8d54ae46289df3202d3",
+    "dev/tests/invariants/transfer_claims.rs": "5981d55a4ea503fbb4551dc9d6268304bd65e8b1b461f49e47f3fb0d7407ed5d"
+  },
+  "production_count": 2119,
+  "production_digest": "aecba021b840918ed7bc9ce7dcdae796967bf769e9d8418ff9295af453cf4fea",
+  "fixtures": {
+    "pa31/tests/spec/nominal-coercions/one-field.rs": "613dffa20a1ed4000abd96df91c765ee61bf078f7853869f8d33b4589a98a0de",
+    "pa31/tests/spec/nominal-coercions/scalar-prefix.rs": "c5cb96df8cb3fb1e458d4ca57defbd7853acc84d6b3c1045271fdde8b5601ae0",
+    "pa31/tests/spec/nominal-coercions/nested-wrapper.rs": "160700080d6d6436ba6f0e7bcc1f8ffac726c1c8fd9a5e794384e1981c1f8681",
+    "pa31/tests/spec/nominal-coercions/phantom-field.rs": "810601727b902323c58079a0c6f8b386fef2d5935029ec97a9d72640a8a72f9c",
+    "pa31/tests/spec/nominal-coercions/repr-c.rs": "182302c4aaf1c0d81ce1cac96c2ea861d8d586cc647e91384811ebe0f57b15cd",
+    "pa31/tests/spec/nominal-coercions/packed.rs": "8537419ad278a51a1985c8f41598e65348f37c9339bb133d14222b4b9be714ac",
+    "pa31/tests/spec/nominal-coercions/lifetime-paid.rs": "4fe1bbe05788f313696b81e975824dd8b6ac92936ce965b42e9cec6f66cdf584",
+    "pa31/tests/spec/nominal-coercions/lifetime-unpaid.rs": "7717592547a0219ccfa5e4a27730ecee5228fcd451830ea89e4ec1f0eabb3d1f",
+    "pa31/tests/spec/nominal-coercions/zero-changed.rs": "77e693e16b74ccf512abf3c3f198ccb373dc9b7c16f8a6c1bd902dc2ec75aceb",
+    "pa31/tests/spec/nominal-coercions/two-changed.rs": "dacd6022d933c4d83f3c371e03be0c418ae58b8c9c4c06e34832d5ded6b85754",
+    "pa31/tests/spec/nominal-coercions/different-owner.rs": "ef34388b6224d52e6b72089662ba3fcdeac1d511e6962be6ecfedeb1decfd072",
+    "pa31/tests/spec/nominal-coercions/enum-owner.rs": "8353db0eb9183a5bc42c5b1d1c0d2af207e711789dca7f3b0db8f1017cd81d2d",
+    "pa31/tests/spec/nominal-coercions/union-owner.rs": "49205a144d1e2e6bcb700a0fe2e3fef0d606a5527dc9fe739e35318898823663",
+    "pa31/tests/spec/nominal-coercions/missing-field-bound.rs": "44c90c47034afd2ed0be14779581e0008b2e2c3d6bfd88e741c1a1391efb1296",
+    "pa31/tests/spec/nominal-coercions/scalar-change.rs": "386e6889c69649bcf13eae4ca25a39b0913339cc7dd9783354820a57652b61a5",
+    "pa31/tests/spec/nominal-coercions/mutable-strengthening.rs": "fd60f103a9f4544e887b79977d3c83e00d542fdefa96d457af949d8a6be6a786",
+    "pa31/tests/spec/nominal-coercions/predictions.json": "18f5d57038efca6b4f1285d29cb3b335b7af4292c35726a5462dacd4ca100a45",
+    "pa31/tests/spec/nominal-coercions/cases.tsv": "4cc885fee1f8d9eeab56de620bc482b14f5bb843f4f436859ecd832fc173c2dd",
+    "pa31/tests/spec/nominal-coercions/README.md": "7efd754e34af47a0c17dc7c719060377c9c5782501aa2ac1eefe6f3894b26e21",
+    "pa31/tests/spec/nominal-coercions/reference-results.json": "4fecf596735bb534de01dfcba431a47d9c1fd6acb183164510a759855d5b5dbc",
+    "pa31/tests/spec/nominal-coercions/values/native.rs": "e23230d3f59aadde1e821636d726189f34fd45968d38c7b2ccce775b0a8b2be7",
+    "pa31/tests/spec/nominal-coercions/values/observer.c": "40304b4d67f689c656b2e2c0c97e75aef8011d71a64c7d3b4fef365ab80e52c5",
+    "pa31/tests/spec/nominal-coercions/values/native.expected": "4d07ded9bc0f4d04811d44c9e55c77e7744a263c44a7b028828385d6463a6fd7",
+    "pa31/tests/spec/nominal-coercions/values/escape.rs": "1d62e2e385386d900613204486dfca7327faa2bb371de83e41588cc6521fccd3",
+    "pa31/tests/spec/nominal-coercions/values/mutability.rs": "77380227eb2aa7eb4a8aae73fa235efc413f815e655aeaf4b81c543fd57503a6",
+    "pa31/tests/spec/nominal-coercions/values/element.rs": "3a94db760a5d6e46534d027959eb9a7f669accb850932d64fac96e40e5156e0f",
+    "pa31/tests/spec/nominal-coercions/values/moved-source.rs": "06f7ac6021aceb32baa3ae2563c4a4b20152369fb4218bd3699096ae1d6437e2",
+    "pa31/tests/spec/nominal-coercions/values/predictions.json": "695c7bca95cb48d393e30ba36218f3aee09ab631421bef5ac6513fc50c7a5242",
+    "pa31/tests/spec/nominal-coercions/values/predictions-initial.json": "faeb0f61503084d61d0bb08149bdd764b199c7ce97a0aba11cb938cef0b682f1",
+    "pa31/tests/spec/nominal-coercions/values/predictions-v2.json": "cc4ec9b1df9d45297858bd7f7e3f249965c46b9a6886ece1792e2be9788360ce",
+    "pa31/tests/spec/nominal-coercions/values/predictions-v3.json": "c8d76e9899dd61bfab42d840247075dd889b0edbdcf649f9364b73b201f23db3",
+    "pa31/tests/spec/source-coroutines/full/result-coercion.rs": "16b1d23d193074c832a23a5b672d7089b09564cb5520ec0b6c50d27374c8b09f",
+    "pa31/tests/spec/unsizing-roles/nominal-coerce-required.rs": "a517ea5ffe7f7b63561397e5ff32c064b7a6b202dedd446425dc81949bb184d5",
+    "pa31/tests/README.md": "07e4b4f526c2289bc544f3fea01af25330d707ab21f1e3784bfc9f2f8286dc02",
+    "dev/tests/suites/frontend/mod.rs": "87c3141d9e4140a4d765b9290150db4ebfb10c8831c4107f0bbe215f108f000b"
+  },
+  "final_public": {
+    "path": "obj/qualification/fast/1793977194820380596/receipt.json",
+    "sha256": "d550d9e190a1f4059c98c11c75b54c2cd3c9aed71c2b08c119ad5a29418ca504",
+    "state": "passed",
+    "selected": {
+      "suite_frontend": [
+        "coercion_provider::nominal_value_typing_retains_actual_goals_and_full_source_opponents",
+        "coroutine_sources::fixed_factory_result_unsizing_uses_actual_nominal_validation_and_value_proof"
+      ]
+    },
+    "seconds": 73.86441995704081
+  },
+  "final_metadata": {
+    "path": "obj/parallel/nominal-coercions-v1/metadata-v3/receipt.json",
+    "sha256": "2fac3dacae33877f78d0001f4099cc001084757416cb1d4de17851a2da829dd2",
+    "result": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": 0,
+      "seconds": 91.40041257499252,
+      "source_unchanged": true,
+      "source_count": 3646,
+      "source_digest": "be7bd6d2aee858bb47e96ea420b93fbe1feaff3b5b6160347d8f4685dc5d22f2",
+      "private_execution": "pending CI; metadata only, no link"
+    }
+  },
+  "final_native_upstream_harness": {
+    "path": "obj/parallel/nominal-coercions-v1/final-qualification/receipt.json",
+    "sha256": "3586d7cf221f2f2b99bb41c350533284134b308e48c93b7c80066adbcf64afe3",
+    "result": {
+      "producer": "obj/qualification/fast/1793977194820380596/receipt.json",
+      "binary_sha256": "aeda50423e72f3948f25ad8315fba5541427dc0b53fad1a52e223c26fd3d2bf2",
+      "source_count": 3646,
+      "source_digest": "be7bd6d2aee858bb47e96ea420b93fbe1feaff3b5b6160347d8f4685dc5d22f2",
+      "commands": [
+        {
+          "name": "native",
+          "command": [
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/rust/dev-fast/deps/suite_frontend-96ae30d9a27bd3bd",
+            "--ignored",
+            "--exact",
+            "coercion_provider::nominal_wrapper_values_preserve_transfer_effects_and_real_cleanup",
+            "--nocapture"
+          ],
+          "status": 0,
+          "seconds": 0.628124859998934
+        },
+        {
+          "name": "upstream",
+          "command": [
+            "make",
+            "test-upstream"
+          ],
+          "status": 0,
+          "seconds": 0.1413475790177472
+        },
+        {
+          "name": "harness",
+          "command": [
+            "make",
+            "test-harness"
+          ],
+          "status": 0,
+          "seconds": 12.561966888024472
+        }
+      ],
+      "source_unchanged": true,
+      "tools": {
+        "lowir": "32b1e67c44d242351bb20787e3bbd287a603a677fffbe0859a38002be776f11d",
+        "lowir2native": "27b3138e442d53706a059cea0ea98ede2756f56076f00f26ffc28da078974815",
+        "cppgm++": "0d216449452b5a911d364ef7f4eb807d7b429a8cb96fb0afed8f99b60b5cfa5b"
+      },
+      "native_files": {
+        "wrappers.lowir": "a6fd0c90a6589808703133cdb91a9432152fea1cb8487e5517676126bb381ff0",
+        "wrappers.c": "40304b4d67f689c656b2e2c0c97e75aef8011d71a64c7d3b4fef365ab80e52c5",
+        "wrappers-backend.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "wrappers-backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "wrappers-backend.status": "6cc546a5638e984f9933ced3ab9a573a08d859ab2ef2ec3fbc35654829359190",
+        "wrappers-link.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "wrappers-link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "wrappers-link.status": "6cc546a5638e984f9933ced3ab9a573a08d859ab2ef2ec3fbc35654829359190",
+        "wrappers-execute.stdout": "4d07ded9bc0f4d04811d44c9e55c77e7744a263c44a7b028828385d6463a6fd7",
+        "wrappers-execute.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "wrappers.o": "134097e5ecd8626c43a612acab9890fb973c0106e08e5616798de5c078ce6fed",
+        "wrappers.native": "2ee81d0f45ca5d959d71eedb8c81d2ed56cc53a5cc2a97509bdcdcd7a23dce68"
+      },
+      "native_stdout": "47|\n23|17\n47|19,17\n23|5,17\n23|9,6,17\n47|\n",
+      "state": "passed"
+    }
+  },
+  "prior_full_affected_public": {
+    "path": "obj/qualification/fast/1793974635062911758/receipt.json",
+    "sha256": "42cd67f8fe29f0a8f50a4541a6c3fa83712752f21008a7f7c2f3405091b77d3e",
+    "scope": "10 exact/3targets before final seal and budget reads; existing factory/scaling/object controls"
+  },
+  "prior_native_25": {
+    "path": "obj/qualification/fast/1793974887533253095/receipt.json",
+    "sha256": "88562aa6b233037e27a778ab5ce7bb2c4591243bc37e46c6db43a0a556a87608",
+    "scope": "six new observers plus19 old native7 programs; same producer fingerprint as prior10-test gate"
+  },
+  "independent_values": {
+    "path": "obj/parallel/nominal-coercions-v1/value-reference-v4/receipt.json",
+    "sha256": "9d5bd82d6812468ea50d06fe1bc44e9599489781cb8a4a451396fa51de797746",
+    "result": {
+      "prediction_sha256": "695c7bca95cb48d393e30ba36218f3aee09ab631421bef5ac6513fc50c7a5242",
+      "cases": [
+        {
+          "file": "escape.rs",
+          "rustc_status": 1,
+          "sha256": "1d62e2e385386d900613204486dfca7327faa2bb371de83e41588cc6521fccd3",
+          "diagnostic": "lifetime may not live long enough",
+          "status": 1,
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "-Zthreads=2",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/nominal-coercions/values/escape.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/nominal-coercions-v1/value-reference-v4/actual.rmeta"
+          ],
+          "matched": true
+        },
+        {
+          "file": "mutability.rs",
+          "rustc_status": 1,
+          "sha256": "77380227eb2aa7eb4a8aae73fa235efc413f815e655aeaf4b81c543fd57503a6",
+          "diagnostic": "E0308",
+          "status": 1,
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "-Zthreads=2",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/nominal-coercions/values/mutability.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/nominal-coercions-v1/value-reference-v4/actual.rmeta"
+          ],
+          "matched": true
+        },
+        {
+          "file": "element.rs",
+          "rustc_status": 1,
+          "sha256": "3a94db760a5d6e46534d027959eb9a7f669accb850932d64fac96e40e5156e0f",
+          "diagnostic": "E0308",
+          "status": 1,
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "-Zthreads=2",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/nominal-coercions/values/element.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/nominal-coercions-v1/value-reference-v4/actual.rmeta"
+          ],
+          "matched": true
+        },
+        {
+          "file": "moved-source.rs",
+          "rustc_status": 1,
+          "sha256": "06f7ac6021aceb32baa3ae2563c4a4b20152369fb4218bd3699096ae1d6437e2",
+          "diagnostic": "E0382",
+          "status": 1,
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "-Zthreads=2",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/nominal-coercions/values/moved-source.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/nominal-coercions-v1/value-reference-v4/actual.rmeta"
+          ],
+          "matched": true
+        }
+      ],
+      "native": [
+        {
+          "name": "rust-native",
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-name=coercion_native",
+            "--crate-type=staticlib",
+            "-Cpanic=abort",
+            "-Copt-level=0",
+            "-Zthreads=2",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/nominal-coercions/values/native.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/nominal-coercions-v1/value-reference-v4/actual.a"
+          ],
+          "status": 0
+        },
+        {
+          "name": "link",
+          "command": [
+            "cc",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/nominal-coercions/values/observer.c",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/nominal-coercions-v1/value-reference-v4/actual.a",
+            "-ldl",
+            "-lpthread",
+            "-lm",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/nominal-coercions-v1/value-reference-v4/actual"
+          ],
+          "status": 0
+        },
+        {
+          "name": "execute",
+          "command": [
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/nominal-coercions-v1/value-reference-v4/actual"
+          ],
+          "status": 0
+        }
+      ],
+      "state": "passed",
+      "seconds": 0.4681939010042697,
+      "stdout_matches": true,
+      "stderr_matches": true
+    }
+  },
+  "declaration_evidence": "docs/parallel/nominal-coercion-declarations-evidence.json",
+  "measured_bytes": {
+    "conversion_typeid": 12,
+    "callable_inputs_before": 56,
+    "callable_inputs": 64,
+    "nominal_inputs": 72,
+    "nominal_use": 24,
+    "physical_plan": 56,
+    "physical_span": 40,
+    "physical_step": 12,
+    "body": 456
+  },
+  "private_execution_pending": [
+    "body::callable_inputs::nominal_inputs::tests::nominal_rows_reject_foreign_source_body_instance_operand_and_store",
+    "types::unsizing::wrappers::tests::nominal_schema_and_plan_reads_preserve_sticky_work_and_storage_failure"
+  ],
+  "retained_metadata_failures": [
+    "obj/parallel/nominal-coercions-v1/metadata/receipt.json",
+    "obj/parallel/nominal-coercions-v1/metadata-v2/receipt.json"
+  ],
+  "retained_development_failures": [
+    "obj/qualification/fast/1793972666059340999/receipt.json",
+    "obj/qualification/fast/1793973133488907085/receipt.json",
+    "obj/qualification/fast/1793973196845242845/receipt.json",
+    "obj/qualification/fast/1793973441035496783/receipt.json",
+    "obj/qualification/fast/1793973516549346994/receipt.json",
+    "obj/qualification/fast/1793974291227277945/receipt.json",
+    "obj/qualification/fast/1793974532243405902/receipt.json",
+    "obj/qualification/fast/1793975355414124993/receipt.json"
+  ],
+  "required_remaining": [
+    "wider pointer/object/upcast terminals and combined borrow/nominal profiles",
+    "broader generic/lifetime and generated-owner qualification",
+    "constant-evaluated nominal aggregate conversion",
+    "authenticated nominal-operation metadata/body transport; older profiles stay fenced",
+    "full async/gen suspension/cancellation/recursive cleanup remains required",
+    "CI private execution and wider release/performance qualification; no speedup claim",
+    "complete original core/alloc/std artifacts and all assignments remain unfinished"
+  ],
+  "coherent_final": {
+    "path": "obj/parallel/nominal-coercions-v1/coherent-final/receipt.json",
+    "sha256": "67604a23b2dfa5aac880dbcf8832984cf3e3a6000e2cd3429ef1552837e998c3",
+    "state": "passed",
+    "source_count": 3646,
+    "source_digest": "f2dd65b549ffe9a0e64e90655cf9b1f13bdc513c30a2eeea17043d5d22edaf41",
+    "steps": [
+      {
+        "name": "format",
+        "command": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "seconds": 18.263353108020965,
+        "status": 0,
+        "environment": {}
+      },
+      {
+        "name": "architecture",
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/audit-venv/bin/python",
+          "scripts/rust_audit.py",
+          "--root",
+          ".",
+          "--cache",
+          "obj/fast-audit.json"
+        ],
+        "seconds": 4.42772600799799,
+        "status": 0,
+        "environment": {}
+      },
+      {
+        "name": "all-target-metadata",
+        "command": [
+          "cargo",
+          "clippy",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--all-targets",
+          "--all-features",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "seconds": 47.40983741695527,
+        "status": 0,
+        "environment": {}
+      },
+      {
+        "name": "build",
+        "command": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_frontend",
+          "--no-run",
+          "--message-format=json"
+        ],
+        "seconds": 47.815868543984834,
+        "status": 0,
+        "environment": {}
+      },
+      {
+        "name": "source",
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/rust/dev-fast/deps/suite_frontend-96ae30d9a27bd3bd",
+          "--exact",
+          "coercion_provider::nominal_value_typing_retains_actual_goals_and_full_source_opponents",
+          "coroutine_sources::fixed_factory_result_unsizing_uses_actual_nominal_validation_and_value_proof"
+        ],
+        "seconds": 2.1770365000120364,
+        "status": 0,
+        "environment": {}
+      },
+      {
+        "name": "native",
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/rust/dev-fast/deps/suite_frontend-96ae30d9a27bd3bd",
+          "--ignored",
+          "--exact",
+          "coercion_provider::nominal_wrapper_values_preserve_transfer_effects_and_real_cleanup",
+          "coercion_provider::source_unsizing_goal_native_answers"
+        ],
+        "seconds": 4.224402044026647,
+        "status": 0,
+        "environment": {}
+      },
+      {
+        "name": "upstream",
+        "command": [
+          "make",
+          "test-upstream"
+        ],
+        "seconds": 0.16571204003412277,
+        "status": 0,
+        "environment": {}
+      },
+      {
+        "name": "harness",
+        "command": [
+          "make",
+          "test-harness"
+        ],
+        "seconds": 15.908193733950611,
+        "status": 0,
+        "environment": {}
+      }
+    ],
+    "binary": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/rust/dev-fast/deps/suite_frontend-96ae30d9a27bd3bd",
+      "sha256": "67155ad48874afd8b15500f27f0b52bc5fbb7249bc816d3a29b060effdd858db"
+    },
+    "private_execution": "pending CI; metadata only, no private link"
+  },
+  "scope_of_prior_receipts": "Earlier receipts retain exact prior fingerprints; coherent_final qualifies the final complete source after restoring the unchanged ordinary CTFE snapshot byte calculation.",
+  "snapshot_accounting": "body/ir.rs is byte-identical to main669; actual nominal Body retention is billed in CallableInputs, not as nonexistent CTFE snapshot data.",
+  "backend_tools": {
+    "lowir": "32b1e67c44d242351bb20787e3bbd287a603a677fffbe0859a38002be776f11d",
+    "lowir2native": "27b3138e442d53706a059cea0ea98ede2756f56076f00f26ffc28da078974815",
+    "cppgm++": "0d216449452b5a911d364ef7f4eb807d7b429a8cb96fb0afed8f99b60b5cfa5b"
+  }
+}

@@ -122,7 +122,7 @@ fn nominal_coercion_implementations_prove_one_actual_changed_field() -> TestResu
 }
 
 #[test]
-fn nominal_value_typing_retains_actual_trait_goals_and_owned_inputs() -> TestResult {
+fn nominal_value_typing_retains_actual_goals_and_full_source_opponents() -> TestResult {
     let folder = "pa31/tests/spec/nominal-coercions/values";
     let text = crate::resolve::fixture(&format!("{folder}/native.rs"))?;
     let report = crate::resolve::source_provider(&text, "nominal_values")?;
@@ -139,10 +139,28 @@ fn nominal_value_typing_retains_actual_trait_goals_and_owned_inputs() -> TestRes
         })
         .count();
     assert_eq!(nominal, 6);
+    let rustgm::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = analysis;
+    rustgm::lower::instances::inspect_prepared(&report, &mut facts, prepared, |_, _| ())?;
     for name in ["escape", "mutability", "element", "moved-source"] {
         let text = crate::resolve::fixture(&format!("{folder}/{name}.rs"))?;
         let report = crate::resolve::source_provider(&text, "nominal_opponent")?;
         let error = rustgm::pipeline::analyze_source(&report)
+            .and_then(
+                |rustgm::pipeline::Analysis {
+                     mut facts,
+                     prepared,
+                 }| {
+                    rustgm::lower::instances::inspect_prepared(
+                        &report,
+                        &mut facts,
+                        prepared,
+                        |_, _| (),
+                    )
+                },
+            )
             .err()
             .ok_or_else(|| format!("accepted {name}"))?
             .to_string();
@@ -152,19 +170,60 @@ fn nominal_value_typing_retains_actual_trait_goals_and_owned_inputs() -> TestRes
                 "budget",
                 "exhausted",
                 "undefined",
-                "unsupported"
+                "unsupported",
+                "wrapper conversion plan",
+                "aggregate conversion plan"
             ]
             .iter()
             .any(|fence| error.contains(fence)),
             "{name}: {error}"
         );
         println!("{name}: {error}");
+        let cause = match name {
+            "escape" => "required lifetime does not outlive its target",
+            "moved-source" => "local may be uninitialized at this read",
+            _ => "trait obligation requires an unambiguous matching assumption or implementation",
+        };
+        assert!(error.contains(cause), "{name}: {error}");
     }
     assert_eq!(
         size_of::<rustgm::types::unsizing::Conversion<rustgm::types::TypeId>>(),
         12
     );
     assert_eq!(size_of::<rustgm::body::ir::Body>(), 456);
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the pinned CPPGM object backend and a C compiler"]
+fn nominal_wrapper_values_preserve_transfer_effects_and_real_cleanup() -> TestResult {
+    let folder = "pa31/tests/spec/nominal-coercions/values";
+    let text = crate::resolve::fixture(&format!("{folder}/native.rs"))?;
+    let report = crate::resolve::source_provider(&text, "nominal_native")?;
+    let rustgm::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = rustgm::pipeline::analyze_source(&report)?;
+    let program = rustgm::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        rustgm::lower::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+    )?;
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let output = root.join("obj/parallel/nominal-coercions-v1/candidate-native");
+    std::fs::create_dir_all(&output)?;
+    crate::ffi_program::check(
+        &root,
+        &output,
+        "wrappers",
+        &program,
+        &crate::resolve::fixture(&format!("{folder}/observer.c"))?,
+        &crate::resolve::fixture(&format!("{folder}/native.expected"))?,
+    )?;
     Ok(())
 }
 #[test]

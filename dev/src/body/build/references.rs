@@ -1,5 +1,5 @@
 //! Reference operations preserve places and never snapshot a borrowed referent.
-use super::{Builder, Error, NodeId, Place, Rvalue, Type, TypeId, ValueId};
+use super::{Builder, Error, NodeId, NodeKey, Place, Rvalue, Type, TypeId, ValueId};
 use crate::body::ir::{BorrowKind, ProjectionKind};
 
 impl Builder<'_> {
@@ -89,7 +89,25 @@ impl Builder<'_> {
         let conversion = self
             .unsizing_adjustment(node)
             .ok_or_else(|| self.error(node, "missing selected unsizing conversion"))?;
-        self.evaluate(node, target, Rvalue::Unsize { value, conversion })
+        let operation = self.evaluate(node, target, Rvalue::Unsize { value, conversion })?;
+        if let crate::types::unsizing::Conversion::Nominal { source, target } = conversion {
+            self.body
+                .append_nominal_use(
+                    self.facts,
+                    super::super::callable_inputs::NominalUse {
+                        source: NodeKey {
+                            node,
+                            ..self.source
+                        },
+                        operation,
+                        operand: value,
+                        from: source,
+                        to: target,
+                    },
+                )
+                .map_err(|e| self.error(node, e))?;
+        }
+        Ok(operation)
     }
     pub(super) fn static_place(&mut self, node: NodeId, id: super::DefId) -> Result<Place, Error> {
         let ty = self.facts.definitions[id.0 as usize]
