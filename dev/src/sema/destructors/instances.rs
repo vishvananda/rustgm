@@ -28,6 +28,11 @@ pub fn select(facts: &mut Declarations, target: TypeId) -> Result<Option<Instanc
         return Err("destructor selection requires concrete type and const arguments");
     }
     let method = implementation.method;
+    let owner = implementation.self_definition;
+    let inverse = implementation.coverage.arguments;
+    if let Some(instance) = provided_instance(facts, target, method, owner)? {
+        return Ok(Some(instance));
+    }
     let definition = facts
         .definitions
         .get(method.0 as usize)
@@ -38,8 +43,6 @@ pub fn select(facts: &mut Declarations, target: TypeId) -> Result<Option<Instanc
     if !facts.generics.has_parameters(method) {
         return Instance::new(&facts.types, definition).map(Some);
     }
-    let owner = implementation.self_definition;
-    let inverse = implementation.coverage.arguments;
     if facts.lifetimes.callables.get(ItemId(method.0)).is_none() {
         publish(facts, method)?;
     }
@@ -103,6 +106,153 @@ pub fn select(facts: &mut Declarations, target: TypeId) -> Result<Option<Instanc
     )?;
     facts.destructors.instances.insert(target, instance);
     Ok(Some(instance))
+}
+
+/// Select the actual provided `Drop::drop` body for a pin-only implementation.
+/// This is callable data; its original body still passes normal materialization.
+fn provided_instance(
+    facts: &mut Declarations,
+    target: TypeId,
+    method: DefId,
+    owner: DefId,
+) -> Result<Option<Instance>, &'static str> {
+    let declaration = cleanup_method(facts, method, owner)?;
+    if declaration == method {
+        return Ok(None);
+    }
+    let function = facts
+        .function_indices
+        .get(&declaration)
+        .and_then(|&index| facts.functions.get(index))
+        .ok_or("provided destructor lost its actual source function")?;
+    if function.definition != declaration || function.body.is_none() {
+        return Err("pinned destruction requires its actual provided Drop body");
+    }
+    let item = ItemId(declaration.0);
+    let template = facts
+        .lifetimes
+        .callables
+        .get(item)
+        .ok_or("provided Drop lacks its canonical callable")?;
+    let parameters = facts
+        .lifetimes
+        .callables
+        .generic_parameters(item)
+        .ok_or("provided Drop lacks its actual parameter table")?;
+    let [parameter] = parameters else {
+        return Err("provided Drop has another generic contract");
+    };
+    if template.parameters != 0 {
+        return Err("provided Drop has unsupported early lifetimes");
+    }
+    let signature = template.signature;
+    let bindings = [(*parameter, Argument::Type(target))];
+    let payments =
+        crate::sema::header_attributes::source_payments(facts.must_use_contracts.as_deref())
+            .map_err(|_| "provided Drop requires its actual source payer")?;
+    let pay = |work, bytes| payments.charge(work, bytes);
+    let mut fold = Bound::parameters_captured_charged(&facts.types, &bindings, Vec::new(), &pay)?;
+    let Argument::Type(signature) =
+        fold.apply_argument_charged(&mut facts.types, Argument::Type(signature), &pay)?
+    else {
+        return Err("provided Drop substitution changed its signature kind");
+    };
+    let arguments = facts
+        .types
+        .intern_arguments_observed::<true>(&[Argument::Type(target)], &pay)?;
+    let ty = facts.types.intern_observed::<true>(
+        Kind::FunctionItem {
+            item,
+            signature,
+            arguments,
+        },
+        &pay,
+    )?;
+    let instance = Instance::new(&facts.types, ty)?;
+    crate::types::destruction::validate_method(&mut facts.types, instance, item, target)?;
+    let growth = crate::support::retained::Growth::map::<TypeId, Instance>(
+        facts.destructors.instances.len(),
+        facts.destructors.instances.capacity(),
+        1,
+    );
+    pay(growth.work, growth.bytes)?;
+    facts.destructors.instances.insert(target, instance);
+    Ok(Some(instance))
+}
+
+/// The recipe names its actual callable, independently of the impl's override.
+pub(crate) fn cleanup_method(
+    facts: &Declarations,
+    method: DefId,
+    owner: DefId,
+) -> Result<DefId, &'static str> {
+    let signature = facts
+        .function_header(method)?
+        .ok_or("destructor method header is pending")?
+        .signature;
+    let Some(Kind::Function { parameters, .. }) = facts.types.kind(signature) else {
+        return Err("destructor method lost its actual signature");
+    };
+    let Some([receiver]) = facts.types.list(parameters) else {
+        return Err("destructor method lost its actual receiver");
+    };
+    if matches!(facts.types.kind(*receiver), Some(Kind::Reference { .. })) {
+        return Ok(method);
+    }
+    provided_member(facts, owner, method)
+}
+
+fn provided_member(
+    facts: &Declarations,
+    owner: DefId,
+    actual: DefId,
+) -> Result<DefId, &'static str> {
+    let role = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("pinned destruction requires source Drop")?
+        .validated_language(crate::support::bindings::LangItem::Drop)?
+        .ok_or("pinned destruction lost its actual Drop role")?;
+    let registry = facts
+        .generics
+        .implementations
+        .as_deref()
+        .ok_or("missing destructor implementation registry")?;
+    if !registry.is_validated(owner) {
+        return Err("pinned destruction requires its checked implementation");
+    }
+    let header = registry
+        .header(owner)
+        .ok_or("pinned destruction lost its actual implementation")?;
+    let mut found = None;
+    let mut implemented = false;
+    for &(member, selected) in &header.methods {
+        if facts.associated.trait_owner(member) != Some(role.definition) {
+            return Err("destructor method mapping changed its actual trait owner");
+        }
+        implemented |= selected == Some(actual);
+        let signature = facts
+            .function_header(member)?
+            .ok_or("Drop member signature is pending")?
+            .signature;
+        let Some(Kind::Function { parameters, .. }) = facts.types.kind(signature) else {
+            return Err("Drop member is not a callable");
+        };
+        let Some([receiver]) = facts.types.list(parameters) else {
+            return Err("Drop member has another receiver contract");
+        };
+        if matches!(facts.types.kind(*receiver), Some(Kind::Reference { .. }))
+            && (selected.is_some() || found.replace(member).is_some())
+        {
+            return Err(
+                "pinned destruction cannot replace or conflict with its provided drop member",
+            );
+        }
+    }
+    if !implemented {
+        return Err("pinned destruction lost its actual override mapping");
+    }
+    found.ok_or("pinned destruction has no actual provided Drop member")
 }
 
 fn publish(facts: &mut Declarations, method: DefId) -> Result<(), &'static str> {

@@ -1,0 +1,24 @@
+{
+  "scope": "Completed no-await future must reject a second actual required poll before source-body re-entry. Native panic/trap status is recorded, not treated as equivalent unwind machinery.",
+  "frozen_before_candidate": true,
+  "authored_suffix_sha256": "865cd0aeac85cf891174a99cb9aa4da021e6bb1bad1b8eb830608f76c367b3ac",
+  "cases": [
+    {
+      "path": "pa43/tests/spec/future-runtime-v1/pollrepeat-source.rs",
+      "sha256": "255fb151ad6f5677a391e595ee42d74507e7ff7958b42ed4d16f95b5065ee8cf",
+      "expected_compile": 0,
+      "native_outcome": "Must terminate unsuccessfully before returning a second Ready result; no stdout from C observer.",
+      "oracle": "Pinned standard-core companion with byte-identical authored value/observe suffix; source no_core ResumeTy infrastructure is not semantic parity."
+    },
+    {
+      "path": "pa43/tests/spec/future-runtime-v1/pollrepeat-companion.rs",
+      "sha256": "0c77f46e61d5fd136c6d85538f12a61dbe8a10db4a54421543b549c47ec292f2",
+      "expected_compile": 0,
+      "native_outcome": "Must terminate unsuccessfully before returning a second Ready result; no stdout from C observer.",
+      "oracle": "Pinned standard-core companion with byte-identical authored value/observe suffix; source no_core ResumeTy infrastructure is not semantic parity."
+    }
+  ],
+  "expected_rust_runtime": "std future poll-after-completion panic; C observer must not print3",
+  "expected_candidate_runtime": "generated completed-state branch traps; C observer must not print3",
+  "not_claimed": "Exact panic signal/diagnostic/unwind/cancellation parity; all remain required for wider bodies."
+}

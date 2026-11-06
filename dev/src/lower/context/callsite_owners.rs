@@ -10,6 +10,7 @@ enum Callable {
     Adapter(Adapter, TypeId),
     Closure(ClosureId, TypeId, Option<TypeId>),
     Function(DefId, TypeId, Option<TypeId>),
+    Future(crate::types::future::EntryKey, TypeId, TypeId),
 }
 impl Callable {
     fn owner(owner: Owner) -> Result<Self, &'static str> {
@@ -25,6 +26,13 @@ impl Callable {
                 signature,
                 execution,
             } => Ok(Self::Function(definition, signature, execution)),
+            Owner::FutureEntry {
+                key,
+                signature,
+                execution,
+            } if key.operation == crate::types::future::Operation::Poll => {
+                Ok(Self::Future(key, signature, execution))
+            }
             _ => Err("reached source operation requires an indexed callable body"),
         }
     }
@@ -50,9 +58,12 @@ impl Context<'_> {
                     .get(&super::Generated::Adapter(adapter))
                     .copied()
             }
-            Owner::Closure { .. } | Owner::Function { .. } if body.instance.is_some() => body
-                .instance
-                .and_then(|instance| self.instance_indices.get(&instance).copied()),
+            Owner::Closure { .. } | Owner::Function { .. } | Owner::FutureEntry { .. }
+                if body.instance.is_some() =>
+            {
+                body.instance
+                    .and_then(|instance| self.instance_indices.get(&instance).copied())
+            }
             Owner::Closure { identity, .. } => self.closure_indices.get(&identity).copied(),
             Owner::Function { definition, .. } => self
                 .body_indices

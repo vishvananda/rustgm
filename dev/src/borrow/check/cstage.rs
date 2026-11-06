@@ -158,6 +158,28 @@ pub(super) fn finish<S: std::hash::BuildHasher>(
     owner: Option<&Arc<()>>,
     regions: RegionUse,
 ) -> Result<Option<destruction::Plan>, Error> {
+    finish_sealed(
+        environment,
+        reused,
+        drop_regions,
+        prepared,
+        contract,
+        owner,
+        regions,
+    )
+    .map(|(plan, _)| plan)
+}
+
+/// Preserve the same checked seal when an affine owner must move after this proof.
+pub(super) fn finish_sealed<S: std::hash::BuildHasher>(
+    environment: &mut Environment<'_, S>,
+    reused: &mut Reused,
+    drop_regions: &mut Regions,
+    prepared: Prepared<'_, '_>,
+    contract: &regions::Body,
+    owner: Option<&Arc<()>>,
+    regions: RegionUse,
+) -> Result<(Option<destruction::Plan>, Seal), Error> {
     let error = |message: &str| Error {
         node: Some(prepared.body().source.into()),
         message: message.into(),
@@ -204,7 +226,7 @@ pub(super) fn finish<S: std::hash::BuildHasher>(
             storage,
         });
     }
-    Ok(prepared
+    let plan = prepared
         .plan
         .cleanups
         .iter()
@@ -213,5 +235,6 @@ pub(super) fn finish<S: std::hash::BuildHasher>(
             let mut plan = prepared.plan;
             plan.shrink_to_fit();
             plan
-        }))
+        });
+    Ok((plan, prepared.seal))
 }

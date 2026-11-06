@@ -36,6 +36,21 @@ impl FutureApplication {
     pub fn formation_requirements(&self) -> Option<&Obligations> {
         self.formation.as_deref()
     }
+
+    /// Lend the same immutable application to proof, then move it once to transformation.
+    /// The callback must consume its verifier completion before this borrowed body moves.
+    pub(crate) fn with_parts<T>(
+        self,
+        facts: &mut Declarations,
+        prove: impl FnOnce(&mut Declarations, &Materialized) -> Result<(), String>,
+        transform: impl FnOnce(&mut Declarations, Materialized, Box<Bound>) -> Result<T, String>,
+    ) -> Result<T, String> {
+        if self.formation.is_some() {
+            return Err("future poll requires its actual caller formation witnesses".into());
+        }
+        prove(facts, &self.materialized)?;
+        transform(facts, self.materialized, self.input_regions)
+    }
 }
 
 /// Select only the actual checked original for the complete genuine future application.

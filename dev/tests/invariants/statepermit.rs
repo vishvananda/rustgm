@@ -76,7 +76,7 @@ fn drop_permit_authenticates_the_full_generated_state_graph_and_current_arena() 
             "forgery {case}"
         );
     }
-    assert_eq!(size_of::<Permit>(), 40);
+    assert_eq!(size_of::<Permit>(), 48);
     assert_eq!(size_of::<crate::borrow::copy_view::CopyView<'_>>(), 32);
     assert_eq!(size_of::<Owner>(), 20);
     assert_eq!(size_of::<Body>(), 456);

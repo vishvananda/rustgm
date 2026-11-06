@@ -7,10 +7,13 @@ use crate::{
 use std::{ptr::NonNull, sync::Arc};
 pub(crate) type ConstOriginal<'a> = cstage::Prepared<'a, 'static>;
 pub(crate) struct Completed {
-    body: NonNull<Body>,
-    plan: Option<Box<crate::borrow::destruction::Plan>>,
-    targets: Option<Box<Bound>>,
+    pub(super) body: NonNull<Body>,
+    pub(super) plan: Option<Box<crate::borrow::destruction::Plan>>,
+    pub(super) targets: Option<Box<Bound>>,
+    pub(super) seal: Option<Box<Seal>>,
 }
+const _: [(); 32] = [(); size_of::<Completed>()];
+const _: [(); 40] = [(); size_of::<Seal>()];
 /// The callback only borrows this owned immutable body. A completed result from
 /// another allocation cannot be attached, and no mutable CFG view crosses it.
 pub(crate) fn with_const_original(
@@ -18,7 +21,7 @@ pub(crate) fn with_const_original(
     check: impl FnOnce(&Body) -> Result<Completed, Error>,
 ) -> Result<Proved, Error> {
     let completed = check(&body)?;
-    if completed.body != NonNull::from(&body) {
+    if completed.body != NonNull::from(&body) || completed.seal.is_some() {
         return Err(Error {
             node: Some(body.source.into()),
             message: "completed const cleanup belongs to another owned body".into(),
@@ -109,6 +112,7 @@ impl Verifier {
             body,
             plan: plan.map(Box::new),
             targets,
+            seal: None,
         })
     }
 }

@@ -73,9 +73,15 @@ pub(crate) fn collect(
     };
     let mut methods = Vec::new();
     for implementation in facts.destructors.implementations() {
+        let function = crate::sema::destructors::cleanup_method(
+            facts,
+            implementation.method,
+            implementation.self_definition,
+        )
+        .map_err(|message| (implementation.source.into(), message))?;
         let Some(Kind::FunctionItem { signature, .. }) = facts
             .definitions
-            .get(implementation.method.0 as usize)
+            .get(function.0 as usize)
             .copied()
             .flatten()
             .and_then(|ty| facts.types.kind(ty))
@@ -84,7 +90,7 @@ pub(crate) fn collect(
         };
         methods.push(Method {
             item: implementation.item,
-            function: implementation.method,
+            function,
             target: implementation.target,
             signature,
             captures: implementation.parameters,

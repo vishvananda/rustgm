@@ -71,6 +71,47 @@ pub fn future_application(
     crate::body::instantiate::future_application(facts, template, original, future)
 }
 
+/// A real scheduled poll consumes the checked application after its ordinary loan proof.
+/// This finite profile supplies no caller premises for remaining formation requirements.
+pub(crate) fn future_poll(
+    facts: &mut Declarations,
+    checked: &Checked<'_>,
+    method: crate::sema::coroutine_methods::FutureMethod,
+    prove: impl FnOnce(
+        &mut Declarations,
+        &crate::body::instantiate::Materialized,
+    ) -> Result<
+        (
+            crate::borrow::incremental::Completed,
+            crate::borrow::regions::Body,
+        ),
+        String,
+    >,
+) -> Result<coroutines::Constructed, String> {
+    method.validate(facts)?;
+    let application = future_application(facts, checked, method.key().future)?;
+    application.with_parts(
+        facts,
+        |facts, materialized| {
+            let (completed, regions) = prove(facts, materialized)?;
+            let environment = crate::borrow::Environment {
+                types: &facts.types,
+                definitions: &facts.aggregates,
+                derives: &facts.derives,
+                source_copy: facts.uses_source_copy(),
+                copies: &mut facts.copies,
+            };
+            completed
+                .consume_empty_application(&environment, &materialized.body, &regions)
+                .map_err(String::from)
+        },
+        |facts, materialized, mut inputs| {
+            let entry = method.execution(facts, &mut inputs, materialized.contract.universals)?;
+            coroutines::poll_entry(facts, materialized, &entry).map_err(String::from)
+        },
+    )
+}
+
 /// Authenticate constructor readiness without materializing or running the deferred body.
 pub(crate) fn future_constructor(
     facts: &mut Declarations,

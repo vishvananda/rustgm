@@ -272,8 +272,13 @@
       "destination": "pa31/tests/spec/source-const-drop/original/drop.rs",
       "sha256": "1d91c5e4e5868e8d2e6860da6fb5353f69172623a8ea7b9d7969e1ebd0fe7055",
       "adaptation": "none; full original bytes retained separately from finite required-member authored controls",
-      "oracle": "required full provided Drop/Pin source closure; not a passing consumer claim",
-      "owning_assignment": "pa31"
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31",
+      "oracle_companion": {
+        "path": "pa31/tests/spec/full-drop-source/whole.rs",
+        "sha256": "dfd9ba573ddfaac897a6050da29b6a026f908c709e64f53dce492b66c2e41aa9",
+        "expected_status": 0
+      }
     },
     {
       "repository": "rust",
@@ -281,8 +286,27 @@
       "destination": "pa31/tests/spec/async-calls/original.rs",
       "sha256": "fcda67887e19c20fd7b26db4a94ec7d5e42a38fcccac04cf16fad564e0b2ece1",
       "adaptation": "none; original bytes retained, whole.rs embeds them after the authored no_core provider foundation",
-      "oracle": "check-pass",
-      "owning_assignment": "pa31"
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31",
+      "oracle_companion": {
+        "path": "pa31/tests/spec/async-calls/whole.rs",
+        "sha256": "4b232e0fbcb084a6acbcb8d79b9408a6a96ddfb34ce6e444e8a875b108b1e1bd",
+        "expected_status": 0
+      }
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/iter/traits/marker.rs",
+      "destination": "pa31/tests/spec/fused-iterator/original.rs",
+      "sha256": "855c9e3a90fe4f1b689c0458c7d2c02bef0c32c776fcc1888c437830c72e457e",
+      "adaptation": "none; full original bytes retained and embedded after the authored no_core provider foundation",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31",
+      "oracle_companion": {
+        "path": "pa31/tests/spec/fused-iterator/whole.rs",
+        "sha256": "3af819eb5ff295959096e4f4a721a3f8b6bf54ceec33a226b44a72e6bad51485",
+        "expected_status": 0
+      }
     }
   ]
 }

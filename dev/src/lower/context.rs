@@ -528,6 +528,21 @@ impl<'a> Context<'a> {
     fn index_bodies(&mut self, facts: &Declarations) -> Result<(), &'static str> {
         for (index, body) in self.bodies.as_slice().iter().enumerate() {
             if let Owner::FutureEntry { key, .. } = body.owner {
+                if key.operation == crate::types::future::Operation::Poll {
+                    let instance = body
+                        .instance
+                        .ok_or("poll entry lost its actual required function item")?;
+                    let growth = crate::support::retained::Growth::map::<Instance, usize>(
+                        self.instance_indices.len(),
+                        self.instance_indices.capacity(),
+                        1,
+                    );
+                    facts.charge_caller_inputs(growth.work.saturating_add(1), growth.bytes)?;
+                    if self.instance_indices.insert(instance, index).is_some() {
+                        return Err("duplicate checked future poll instance");
+                    }
+                    continue;
+                }
                 let growth = crate::support::retained::Growth::map::<Generated, usize>(
                     self.adapter_indices.len(),
                     self.adapter_indices.capacity(),
@@ -928,8 +943,14 @@ impl<'a> Context<'a> {
         if let Some(symbol) = self.symbols[index] {
             return Ok(symbol);
         }
-        let Owner::Function { signature, .. } = self.body(index).owner else {
-            return Err("call target is not a function");
+        let signature = match self.body(index).owner {
+            Owner::Function { signature, .. } => signature,
+            Owner::FutureEntry { key, signature, .. }
+                if key.operation == crate::types::future::Operation::Poll =>
+            {
+                signature
+            }
+            _ => return Err("call target is not a checked callable entry"),
         };
         let tracked = self.constants.caller_tracking(definition)?;
         let signature = self.caller_signature(signature, tracked)?;

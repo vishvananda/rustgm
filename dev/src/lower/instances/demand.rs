@@ -325,6 +325,32 @@ impl Budget {
             .map_err(|e| diagnostic(report, e.node, e.message))?;
         self.leave(report, key)
     }
+    fn future_poll(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        templates: &Checked<'_>,
+        program: &mut proof::Builder,
+        method: crate::sema::coroutine_methods::FutureMethod,
+    ) -> Result<usize, Error> {
+        let prepared =
+            crate::pipeline::future_poll(facts, templates, method, |facts, application| {
+                program
+                    .prove_future_application(facts, templates, application)
+                    .map_err(|error| error.message)
+            })
+            .map_err(|message| diagnostic(report, None, message))?;
+        let key = prepared.body.key();
+        self.enter(key, &prepared.body, &prepared.contract)
+            .map_err(|message| {
+                diagnostic(report, Some(prepared.body.source.into()), message.into())
+            })?;
+        let index = program
+            .push_future_factory(facts, templates, prepared, &mut self.bytes)
+            .map_err(|error| diagnostic(report, error.node, error.message))?;
+        self.leave(report, key)?;
+        Ok(index)
+    }
     fn factory(
         &mut self,
         report: &Report,
@@ -593,9 +619,25 @@ impl Traversal<'_> {
                     }
                     return Ok(());
                 }
-                return Err(error(
-                    "future operation requires its checked generated state family",
-                ));
+                let method = facts
+                    .primitive_methods
+                    .as_deref()
+                    .and_then(|registry| registry.get_future(request.instance))
+                    .ok_or_else(|| {
+                        error("future demand lost its actual selected poll operation")
+                    })?;
+                method.validate(facts).map_err(error)?;
+                if !self.instances.contains_key(&request.instance) {
+                    let index = self.budget.future_poll(
+                        report,
+                        facts,
+                        templates,
+                        &mut self.program,
+                        method,
+                    )?;
+                    self.instances.insert(request.instance, index);
+                }
+                return Ok(());
             }
             Work::Enter(instance, source, caller) => (instance, source, caller),
             Work::Leave(item) => {

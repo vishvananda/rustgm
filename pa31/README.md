@@ -16,6 +16,15 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [complete Drop source packet](tests/spec/full-drop-source/README.md) qualifies
+the original provided Drop/pin_drop bodies and actual ordinary, pinned and generic
+cleanup. Unused alternate signatures retain ordinary header legality; exhaustive
+registration and actual execution still require their checked contracts. The
+cleanup callable can be the provided trait method while the implementation
+overrides pin_drop. Its real body, dispatch, substitutions and loans must be
+proved normally. Wider pin projection, async cleanup, CTFE and authenticated
+transport remain required; this finite contract does not release the assignment.
+
 The [VaArgSafe/VaList declaration checkpoint](../docs/parallel/source-va-declarations.md)
 retains ordinary actual headers, fields, implementation domains and ownership.
 It supplies no invented Copy, target layout or variadic runtime permission.
@@ -44,6 +53,12 @@ equality. Address conversion does not invoke the pointer and preserves actual
 ABI/safety and higher-ranked/scoped lifetime contracts. Broader demanded method
 profiles, const and metadata remain required. Original core now stops at the
 real AsyncDrop declaration; see PA42/43's source-signature/destruction boundary.
+
+The [FusedIterator source packet](tests/spec/fused-iterator/README.md) retains the
+actual pinned marker source and ordinary Iterator/Item implementation proof.
+Language-role completion grants no blanket implementation or generated body;
+genuine gen coroutine state/exhaustion and authenticated transport remain separate
+PA42/43/29 requirements. This finite source contract does not release this PA.
 
 The [Pin source packet](tests/spec/pin-source/README.md) qualifies an actual
 prerequisite: nominal identity and ordinary `new_unchecked` source bodies retain

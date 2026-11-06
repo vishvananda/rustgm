@@ -1,4 +1,6 @@
 //! Genuine source storage shape is independent of executable state-machine proof.
+#[path = "stateframe/poll_observers.rs"]
+mod poll_observers;
 use crate::resolve as source;
 use rustgm::{
     abi::layout::Layouts,
@@ -777,6 +779,116 @@ fn ordinary_program(text: &str, name: &str) -> Result<rustgm::lowir::program::Pr
     Ok(rustgm::lower::instances::build_prepared(
         &report, &mut facts, entry, prepared,
     )?)
+}
+
+#[test]
+fn actual_required_poll_keeps_checked_source_output_and_completed_drop() -> Result {
+    let text = source::fixture("pa43/tests/spec/future-runtime-v1/pollready-source.rs")?;
+    let companion = source::fixture("pa43/tests/spec/future-runtime-v1/pollready-companion.rs")?;
+    let (_, authored) = text
+        .split_once("pub async fn value")
+        .ok_or("actual async declaration")?;
+    assert!(companion.ends_with(&format!("pub async fn value{authored}")));
+    let report = source::source_provider(&text, "actual_ready_poll")?;
+    let rustgm::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = rustgm::pipeline::analyze_source(&report)?;
+    let poll = facts
+        .functions
+        .iter()
+        .find(|function| {
+            report
+                .package
+                .names
+                .get(report.resolution.definitions[function.definition.0 as usize].name)
+                == "poll"
+        })
+        .ok_or("actual required poll source owner")?
+        .definition;
+    let observe = facts
+        .functions
+        .iter()
+        .find(|function| {
+            report
+                .package
+                .names
+                .get(report.resolution.definitions[function.definition.0 as usize].name)
+                == "observe"
+        })
+        .ok_or("actual exported observer")?
+        .definition;
+    let program = rustgm::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        rustgm::lower::Roots {
+            entry: None,
+            exports: &[observe],
+        },
+        prepared,
+    )?;
+    let prefix = format!("rg.{}.i", poll.0);
+    let poll = program
+        .symbols
+        .iter()
+        .find(|symbol| symbol.name.contains(&prefix))
+        .ok_or("actual specialized required poll symbol")?;
+    // The ordinary Rust aggregate ABI adds its result address before Pin and Context.
+    assert_eq!(
+        program.parameters(poll.signature)?,
+        [rustgm::lowir::vocabulary::Type::Ptr; 3]
+    );
+    let rustgm::lowir::program::Signature::Scalar(signature) = program
+        .signatures
+        .get(poll.signature.0 as usize)
+        .ok_or("actual poll ABI")?
+    else {
+        return Err("Rust poll used another ABI profile".into());
+    };
+    assert_eq!(signature.result, rustgm::lowir::vocabulary::Type::Void);
+    assert_eq!(poll.body.as_ref().ok_or("actual poll CFG")?.blocks.len(), 3);
+    assert!(
+        program
+            .symbols
+            .iter()
+            .any(|symbol| symbol.name.contains("rg.future.drop.i") && symbol.body.is_some())
+    );
+    assert!(
+        program
+            .symbols
+            .iter()
+            .any(|symbol| symbol.name == "observe" && symbol.body.is_some())
+    );
+    Ok(())
+}
+
+#[test]
+fn compiler_poll_state_copy_requires_no_user_u8_copy_and_grants_no_borrowed_move() -> Result {
+    let text = source::fixture("pa43/tests/spec/future-runtime-v1/pollbyte-source.rs")?;
+    ordinary_program(&text, "poll_without_byte_copy")?;
+    for (file, valid) in [("pollbyte-owned.rs", true), ("pollbyte-borrow.rs", false)] {
+        let text = source::fixture(&format!("pa43/tests/spec/future-runtime-v1/{file}"))?;
+        let report = source::source_provider(&text, "ordinary_byte_ownership")?;
+        let rustgm::pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = rustgm::pipeline::analyze_source(&report)?;
+        let result =
+            rustgm::lower::instances::inspect_prepared(&report, &mut facts, prepared, |_, _| ());
+        if valid {
+            result?;
+        } else {
+            let error = result
+                .err()
+                .ok_or("ordinary borrowed u8 acquired generated state permission")?
+                .to_string();
+            assert!(
+                error.contains("borrowed") || error.contains("cannot move"),
+                "{error}"
+            );
+        }
+    }
+    Ok(())
 }
 
 #[test]

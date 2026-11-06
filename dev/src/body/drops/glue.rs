@@ -333,13 +333,20 @@ impl<'a> Catalog<'a> {
                 self.tuple_fields(list)?
             }
             Kind::Adt(item, args) => {
-                method = self.cache.methods.get(&item).copied().map(|method| {
-                    if self.types.region_args(args).is_some() {
-                        Method::Definition(method)
-                    } else {
-                        Method::Unresolved(method)
-                    }
-                });
+                method = self
+                    .cache
+                    .methods
+                    .get(&item)
+                    .copied()
+                    .map(|(method, signature)| {
+                        if self.types.region_args(args).is_some()
+                            && self.types.contains_parameters(signature) == Some(false)
+                        {
+                            Method::Definition(method)
+                        } else {
+                            Method::Unresolved(method)
+                        }
+                    });
                 self.nominal(ty, item)?
             }
             _ => return Err("invalid completed destruction type"),

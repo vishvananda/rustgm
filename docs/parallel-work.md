@@ -1,4 +1,62 @@
+The [complete Drop checkpoint](parallel/full-drop-source-checkpoint.md) qualifies
+both legal unused alternate headers, all12 original-source outcomes and4 actual
+ordinary/pinned/generic native traces. CLI9ebf8ae5 preserves original core at
+LIB-171 AsyncIterator in20.8564s/375opens; all722 inputs/configuration/limits are
+unchanged. Current/predecessor pins are9ebf8ae5/15ac6c1c;8d4a4ff3 is retired and
+pruned. All72 exclusive A/A+ABBA samples retain output equality; noisy ratios are
+recorded without broad performance claims. Full42151987920 passes release/course,
+native and debug, then fails only the independent checker compiling raw retained
+modules as standalone programs. Its frozen-provider repair now passes18 upstream
+checks,2 targeted harness guards and the preceding full282-test harness. Full
+successor qualification remains pending. No whole PA after24 or original
+core/alloc/std artifact is complete. The existing two6.1-sol/high workers continue
+AsyncIterator receiver inference and real const value history; the new mfield
+false acceptance blocks const-consumer integration. Keep2heavy,16GiB caps,
+150GiB reserve, existing warm btrfs trees and <=300s local batches.
+
 # Parallel library bootstrap implementation
+
+The [PA21 signature successor](parallel/pa21-signature-successor.md) records full
+42146747956: all2727 private checks and every public integration target pass,
+including actual poll/foreign-store invariants. Only two stale PA21 diagnostic
+sidecars fail. Both unchanged sources independently reject with Rust E0053;
+scoped generation and all801 PA21 cases/all44 layouts now pass. Full successor
+native/debug/independent qualification remains pending. No library artifact or
+whole PA after24 is complete. Root continues full original Drop/pin_drop source
+and execution; the two existing workers continue AsyncIterator receiver/owner
+inference and genuine const value history. Current immutable CLI remains15ac6c1c
+at original-core AsyncIterator with all722 inputs/configuration/limits fixed.
+
+The [joined scalar-poll checkpoint](parallel/scalar-poll-join.md) now passes34
+exact controls across4 targets and14 real native observers, including actual
+required poll/Ready3, state access without user Copy and completed-reentry
+rejection. CLI15ac6c1c preserves original722-input core at **LIB-171 AsyncIterator**
+in18.8339s/375opens, with all pins/configuration/options/cap/finite limits fixed.
+Core still exits1; no original artifact or whole PA after24 is complete.
+Current/predecessor pins are15ac6c1c/8d4a4ff3;5fc is retired/pruned.
+
+Full42131050558 is terminal:2725 private controls pass, one stale vocabulary
+expectation and one bare Destruct-policy assertion fail. Both have scoped
+successors; actual lending/mismatch/wrong-factory private controls pass that run.
+Private scalar-poll invariants and full successor qualification remain pending.
+Root integrates and handles CI; the existing6.1-sol/high workers own actual
+AsyncIterator source/manual consumers and genuine root-local const qualification.
+Four observed const false acceptances block consumer integration. Keep2heavy,
+16GiB caps,150GiB reserve and <=300s local batches in the existing warm trees.
+
+## Prior source checkpoint record
+
+The [FusedIterator checkpoint](parallel/fused-iterator-checkpoint.md) passes17 new
+source/body outcomes,4 exact public tests and2 actual native observers.
+Immutable CLI8d4a4ff3 advances unchanged original core to **LIB-171, AsyncIterator**,
+async_iter/async_iter.rs17/file108:636, in19.6464s/375opens. Current/predecessor pins
+are8d4a4ff3/5fc8c666;292c96f2 is retired/pruned. All54 timing/output observations
+remain retained, including the initial4096 B/A1.229 with noisy AA.786. A further24
+CPU/wall observations give.9805/.9805; the first ratio does not reproduce. No broad
+speedup or regression-absence claim. Full42131050558 is running on the preceding AsyncFn
+checkpoint, with the later private vocabulary adjustment pending successor CI.
+All722 hashes, configuration/options/cap/limits remain; core still exits1 and
+no original artifact or whole PA after24 is complete.
 
 The [AsyncFn callable checkpoint](parallel/lending-callable-checkpoint.md) now
 passes60 source/body outcomes,8 exact public tests and9 actual native observers.
@@ -7,7 +65,7 @@ FusedIterator**, marker.rs32/file176:1220, in23.3937s/375opens. All722 original
 hashes, pins, configuration, options/capAllow and finite limits remain unchanged.
 Core still exits1; no original library artifact or whole PA after24 is complete.
 
-Current/predecessor immutable pins are5fc8c666/292c96f2. All54 A/A+ABBA samples
+That checkpoint retained5fc8c666/292c96f2. All54 A/A+ABBA samples
 and output equality remain retained, including the ordinary1024 overhead/noise.
 The [method-shape repair](parallel/method-shape-checkpoint.md) passes its focused
 controls and1389 PA20 cases. The [batch preparation repair](parallel/future-batch-checkpoint.md)

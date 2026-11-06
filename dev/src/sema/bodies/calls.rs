@@ -486,21 +486,32 @@ impl Checker<'_> {
         Ok(candidates.regions)
     }
 
-    pub(super) fn function_item(
-        &mut self,
-        node: NodeId,
-        owner: DefId,
-        ty: TypeId,
-    ) -> Result<TypeId, Error> {
-        if self.facts.destructors.method(owner).is_some()
+    fn check_destructor_value(&self, node: NodeId, owner: DefId) -> Result<(), Error> {
+        if (self.facts.destructors.method(owner).is_some()
             || crate::sema::compiler_items::explicit_drop_member(self.facts, owner)
-                .map_err(|e| self.error(node, e))?
+                .map_err(|e| self.error(node, e))?)
+            && !crate::sema::compiler_items::source_drop_body(
+                self.facts,
+                self.state.environment_owner,
+                self.state.body,
+            )
+            .map_err(|e| self.error(node, e))?
         {
             return Err(self.error(
                 node,
                 "explicit destructor calls or function values are forbidden",
             ));
         }
+        Ok(())
+    }
+
+    pub(super) fn function_item(
+        &mut self,
+        node: NodeId,
+        owner: DefId,
+        ty: TypeId,
+    ) -> Result<TypeId, Error> {
+        self.check_destructor_value(node, owner)?;
         if let Some(variant) = self.facts.members.constructor(owner) {
             return self.constructor_item(node, ty, variant);
         }

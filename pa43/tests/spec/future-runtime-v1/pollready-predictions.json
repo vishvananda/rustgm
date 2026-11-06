@@ -1,0 +1,42 @@
+{
+  "scope": "First actual no-await empty-capture poll consumer; constructor, real required poll, actual Ready(u8), and completed scope-exit Drop must all execute.",
+  "frozen_before_candidate": true,
+  "authored_suffix_sha256": "7ba1e23e21c376d747d5ac7b1ab4870fd9975fa66111d4aa572c47f0382c1407",
+  "cases": [
+    {
+      "path": "pa43/tests/spec/future-runtime-v1/pollready-source.rs",
+      "sha256": "ea1b156f31ff38720bab3bd94b8bea2ea926451e3f9926f2879e89bfc13f41d7",
+      "semantic_status": 0,
+      "native_observe_result": 3,
+      "oracle": "Pinned standard-core companion for unchanged authored async function and observe suffix; exact no_core infrastructure is not semantic parity."
+    },
+    {
+      "path": "pa43/tests/spec/future-runtime-v1/pollready-companion.rs",
+      "sha256": "24c8d69a4c173ab05ac401d6aa7c371d35d3d5c40c6d1d6230ac830c3a8856bc",
+      "semantic_status": 0,
+      "native_observe_result": 3,
+      "oracle": "Pinned Rust standard-core source; pending execution."
+    }
+  ],
+  "required_controls": [
+    "Unpolled never body stays deferred (already frozen separately).",
+    "Actual required poll is selected, not an ordinary same-name method.",
+    "Repeated/completed poll must not re-enter or transfer captures again.",
+    "Ordinary moves through Pin/&mut remain rejected.",
+    "Foreign/stale family or checked application cannot authorize generated poll."
+  ],
+  "pending": "Independent Rust compile/native observation and candidate semantic/native observation await resource hold release. This freeze grants no runtime or parity claim.",
+  "remaining": [
+    "Real nonempty input/capture transfer and all parameter-pattern/body effects",
+    "Nontrivial and multi-argument capture/drop order",
+    "Borrowed captures and actual output ownership/cleanup",
+    "Suspension, cancellation, unwind, and recursive asynchronous destruction",
+    "Authored future executable metadata transport"
+  ],
+  "freeze_correction": {
+    "cause": "Pinned Rust independently rejected string literal suffix fn; insert required whitespace between extern ABI literal and fn in both authored suffixes. No candidate observations.",
+    "failed_receipt": "obj/parallel/future-runtime-v1/pollready/oracle-invalid-suffix.json",
+    "prior_plan_sha256": "1bcf8b896abea717ce090cc95df4c0d2ac54a263c402c1202e27e870c00ba260",
+    "predictions_unchanged": "Both compile0; native observe3."
+  }
+}

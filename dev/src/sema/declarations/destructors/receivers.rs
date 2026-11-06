@@ -23,6 +23,7 @@ impl Checker<'_> {
         let Some(&receiver) = self.facts.types.list(parameters).and_then(|p| p.first()) else {
             return Err(self.error(key, "missing typed Drop receiver"));
         };
+        let receiver = self.drop_receiver(key, owner, receiver)?;
         let Some(Type::Reference { region, .. }) = self.facts.types.kind(receiver) else {
             return Err(self.error(key, "invalid typed Drop receiver"));
         };
@@ -85,6 +86,56 @@ impl Checker<'_> {
         self.facts.lifetimes.functions.insert(owner, scheme);
         self.function_binders.insert(key, binder);
         Ok(())
+    }
+    pub(in crate::sema::declarations) fn drop_receiver(
+        &self,
+        key: NodeKey,
+        method: DefId,
+        receiver: TypeId,
+    ) -> Result<TypeId, Error> {
+        let definition = self
+            .report
+            .resolution
+            .definitions
+            .get(method.0 as usize)
+            .ok_or_else(|| self.error(key, "Drop method lost its actual definition"))?;
+        if self.report.package.names.get(definition.name) != "pin_drop" {
+            return Ok(receiver);
+        }
+        let pin = self
+            .facts
+            .source_bindings
+            .as_deref()
+            .and_then(|catalog| catalog.language(crate::support::bindings::LangItem::Pin))
+            .ok_or_else(|| self.error(key, "pinned destructor requires its actual source Pin"))?;
+        let Some(Type::Adt(item, arguments)) = self.facts.types.kind(receiver) else {
+            return Err(self.error(key, "pinned destructor requires its actual Pin application"));
+        };
+        let mut arguments = self
+            .facts
+            .types
+            .arguments(arguments)
+            .ok_or_else(|| self.error(key, "pinned destructor has invalid Pin arguments"))?;
+        if item.0 != pin.definition.0 || arguments.len() != 1 {
+            return Err(self.error(key, "pinned destructor changed its actual Pin owner"));
+        }
+        let Some(crate::types::arguments::Argument::Type(pointer)) = arguments.next() else {
+            return Err(self.error(key, "pinned destructor requires its actual pointer input"));
+        };
+        let target = self
+            .facts
+            .destructors
+            .method(method)
+            .ok_or_else(|| self.error(key, "pinned destructor lost its registered nominal target"))?
+            .target;
+        if !matches!(self.facts.types.kind(pointer), Some(Type::Reference { mutable:true, referent, .. }) if referent==target)
+        {
+            return Err(self.error(
+                key,
+                "pinned destructor requires its exact unique Self borrow",
+            ));
+        }
+        Ok(pointer)
     }
     /// Bootstrap cleanup supplies its own flattened argument mapping. An actual
     /// source Drop method also participates in ordinary trait conformance and

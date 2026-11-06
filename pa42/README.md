@@ -8,7 +8,12 @@ implementation priority, source pins and the migration of unreleased numbers.
 
 ## Required implementation
 
-Async functions/blocks, suspension liveness and future state machines.
+Async functions/blocks, suspension liveness and future state machines. Genuine
+`gen` coroutine Iterator/FusedIterator relations and exhaustion state must retain
+the actual authored body and yielded item contract. Ordinary FusedIterator
+implementations use normal source trait/supertrait proof in PA19/20/31; recognizing
+that language role grants no gen state, poll/next body or blanket implementation.
+Cancellation and cleanup compose with PA43, and imported bodies with PA29.
 
 The unchanged original-core probe now reaches LIB-154, the real AsyncDrop trait
 in `library/core/src/future/async_drop.rs:29`. Its required async method takes

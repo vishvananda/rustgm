@@ -1,0 +1,17 @@
+whole.rs	0
+native.rs	0
+forward.rs	0
+supertrait.rs	0
+unused.rs	0
+unused-unsafe.rs	0
+unused-members.rs	0
+ordinary.rs	0
+renamed.rs	0
+duplicate.rs	1
+wrong-arity.rs	1
+wrong-target.rs	1
+no-iterator.rs	1
+no-fused.rs	1
+scalar.rs	1
+wrong-item.rs	1
+bad-body.rs	1

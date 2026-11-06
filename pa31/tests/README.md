@@ -2,6 +2,12 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/full-drop-source/` retains the complete pinned Drop source in twelve
+independently predicted providers, with four real ordinary/pinned/generic native
+traces. The selected runtime callable retains the actual provided body rather
+than assuming every override has the ordinary destructor ABI. Declaration-only
+legality, implementation registration and executable proof remain distinct.
+
 `spec/type-reflection/` owns 27 independently declared source outcomes for
 `type_info`/`type_id`, actual renamed/generic/field data, target/duplicate/feature
 opponents and an ordinary native field observer. Its versioned contracts preserve

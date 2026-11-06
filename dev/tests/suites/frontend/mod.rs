@@ -57,6 +57,8 @@ mod forced_dyn_contracts;
 mod fragments;
 #[path = "../../fundamental_contracts.rs"]
 mod fundamental_contracts;
+#[path = "../../fused_sources.rs"]
+mod fused_sources;
 #[path = "../../future_helpers.rs"]
 mod future_helpers;
 #[path = "../../future_source.rs"]
@@ -105,6 +107,8 @@ pub(crate) mod observed_program;
 mod option_environment;
 #[path = "../../pattern_editions.rs"]
 mod pattern_editions;
+#[path = "../../pinned_drop.rs"]
+mod pinned_drop;
 #[path = "../../pinning_contracts.rs"]
 mod pinning_contracts;
 #[path = "../../polling_source.rs"]

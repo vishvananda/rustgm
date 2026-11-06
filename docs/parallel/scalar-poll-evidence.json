@@ -1,0 +1,324 @@
+{
+  "scope": "Genuine source authored async constructor/required poll/Ready/completed and unpolled Drop for actual single-scalar u8 body with zero input/capture applications; full async runtime remains required.",
+  "base": "785061ff3",
+  "shared_already_integrated": [
+    "d8111a37a mirrors31bd9f767",
+    "785061ff3 mirrors5043b4919+c3e9be5ef test-only wiring"
+  ],
+  "production_sha256": {
+    "dev/src/body/coroutines.rs": "5cc63d3e3975bf057930b57d4cef4eeface505c664f0bfd013c785dddbe2deeb",
+    "dev/src/body/coroutines/permit.rs": "8ab91d29370ac3855695cc6d24fa4877e0cfaaf7e2c5ac3f62bfb3c31c6bda12",
+    "dev/src/body/coroutines/resumption.rs": "f1f1b69108ed6df4c8ed0e7378fbfb027f1b122864b25c8d2b1dbf0fa7fa983a",
+    "dev/src/body/instantiate/asyncbody.rs": "69b3376ec35f0f14da46df587962f481dbfb6d236bf7d3ecb60268819a8e7a78",
+    "dev/src/body/instantiate/materialized_copy.rs": "e2a1cfd3b9dcf2bad90ebfe7a3dd3dd77f18a8ca2f0e22dd07a93b65e2233768",
+    "dev/src/borrow/check/cstage.rs": "2c00f6030aa20fa6dcf18beac6b6121d255ec7fb704ba2ea5fc9af19d74ab2d1",
+    "dev/src/borrow/check/incremental.rs": "38e6d55a494e49689226b6217336ab2bd9a3d3546829fc9c15e207e862aea3eb",
+    "dev/src/borrow/check/incremental/cstage.rs": "ff2680ad0784cdf50df4f97b04112f213e019494fb3f0135db5d5f898f8d6e16",
+    "dev/src/borrow/check/incremental/loaned.rs": "22db3c72cbba8249d0ea93dcacbeb0875f42365de7ce10e9bfae37b9a4f9d7d4",
+    "dev/src/lower/context.rs": "814b1d81170dc2072eca4230b06447d6d5e98037fffcdf28c0cc4051134e3d13",
+    "dev/src/lower/context/callsite_owners.rs": "7ad64b37ee8985401d9e16c836cbc146bef7de1ea3f428e86f8eb437506d5254",
+    "dev/src/lower/instances/demand.rs": "828153d9939b823ffaac168a444664ad29d6c86bbf1cd43ec8dc339701c0ac65",
+    "dev/src/lower/instances/proof.rs": "442120ceb2c9f1da6e2c0e1dfb2684d1a2cf6d91cdd468e51a23bd481b2488a6",
+    "dev/src/lower/instances/proof/asyncproof.rs": "77bcc9437ad129762575f068d6507ec52112172eded70e581125215f557567b2",
+    "dev/src/pipeline/asyncbody.rs": "e43c048935403463e5739e934a407c45de124fbd4f3d7df30f3cf20f17b84f71",
+    "dev/src/pipeline/mod.rs": "5d35d9f01862651d8c84d22849185357aa53dc1e12b80d90bd9f640593332082",
+    "dev/src/sema/coroutine_methods.rs": "5525e1af1e6b75f3b26db552812912aace5ee495d0d31cda0188c60532d84307",
+    "dev/src/sema/coroutine_methods/polling.rs": "2606d954a041908498a956af0bc8b7cdfd14b07c69996526f80a10a5466aec26",
+    "dev/src/sema/coroutine_methods/protocol.rs": "2962f7aa9a344c549458b90e0112a522afc472fd20e0f7b6d2b22bc34b67383c"
+  },
+  "test_sha256": {
+    "dev/tests/stateframe.rs": "374bfe8f1ba6824a660fe02adc66824007e1b71fae75a03bffa5b1160fa9ee2f",
+    "dev/tests/invariants/statepermit.rs": "de6fa6ec26481b494f0ad5758e9c7aee61556494d043cc7fdb54230b88e5e449",
+    "dev/tests/invariants/resumeverify.rs": "6ea1522b3de2402e34c2c365894e005c0c4102964d3b6a6e3b0baa2d3bda9370"
+  },
+  "fixture_sha256": {
+    "pa43/tests/spec/future-runtime-v1/pollready-companion.rs": "24c8d69a4c173ab05ac401d6aa7c371d35d3d5c40c6d1d6230ac830c3a8856bc",
+    "pa43/tests/spec/future-runtime-v1/pollready-predictions.json": "571f105afbb53981ba1d4db1a8699eaed3f07ab2bf970f34bf92199c2afdb33a",
+    "pa43/tests/spec/future-runtime-v1/pollready-source.rs": "ea1b156f31ff38720bab3bd94b8bea2ea926451e3f9926f2879e89bfc13f41d7",
+    "pa43/tests/spec/future-runtime-v1/pollrepeat-companion.rs": "0c77f46e61d5fd136c6d85538f12a61dbe8a10db4a54421543b549c47ec292f2",
+    "pa43/tests/spec/future-runtime-v1/pollrepeat-predictions.json": "db22bb1adfd17f07999aec1e7ab5851e1267e12bd9e9ba11c54cbe4c79a0c6d8",
+    "pa43/tests/spec/future-runtime-v1/pollrepeat-source.rs": "255fb151ad6f5677a391e595ee42d74507e7ff7958b42ed4d16f95b5065ee8cf",
+    "pa43/tests/spec/future-runtime-v1/pollbyte-borrow.rs": "51af8fda4cccd030df0ff3a128357ca97bedba0fc4438ffdeaa8d2d2730cef45",
+    "pa43/tests/spec/future-runtime-v1/pollbyte-owned.rs": "257770a8fc4f1b789fab94576f0960d2c72edda1b5cda730cc6629d948deea5f",
+    "pa43/tests/spec/future-runtime-v1/pollbyte-predictions.json": "d31f4c653fb289c36dff06d5d0f7390a7dfa55070c31ba582f12a5aa1193fabc",
+    "pa43/tests/spec/future-runtime-v1/pollbyte-source.rs": "f1a0bf5dbb39baf57aee1e3a74b72d8004585cc736a3d4aa1c66b15bc06bbd58"
+  },
+  "receipt_sha256": {
+    "obj/qualification/fast/1793925179922592390/receipt.json": "4345a0315ba08b78a04ca1f4008755cb334b6fa3f7a1268e3b4ef36680be4681",
+    "obj/parallel/future-runtime-v1/finalqual/receipt.json": "ac17cf879a3747c81e88f4ede8a2015c444c0d1534eeb932a564a62d24d0edb4",
+    "obj/parallel/future-runtime-v1/pollready/oracle.json": "0c30cedbaf3310c6555a58767477bebe888f11b139fd23632cd8c6114abe612a",
+    "obj/parallel/future-runtime-v1/pollready/native.json": "753013f549defa44c26b90bfc0c85785097221058ee1e8519f64163c3cdcc7a9",
+    "obj/parallel/future-runtime-v1/pollrepeat/oracle.json": "05239d3151c48578b49adf3e9ee83ff90cbdd2532f878deea9c1d82109cc8ed8",
+    "obj/parallel/future-runtime-v1/pollrepeat/native.json": "37760d3b9b2598cc044b44c55294d6acfd9139aa656dd775a2b2ad6dab212015",
+    "obj/parallel/future-runtime-v1/pollbyte/oracle.json": "a116493ab463242e2f7d736fc1205351547e809f44d203d73baee1978ce603ac",
+    "obj/parallel/future-runtime-v1/pollbyte/native.json": "d3cc93ab7b843439e235b4f8729ec46c6692cf58ae85b6ff6a8a6fe6baf40d7a"
+  },
+  "public": "28 exact tests across4 targets;114.09sec",
+  "metadata": "all-target/all-feature strict Clippy PASS123.27sec; private tests compiled, NOT executed",
+  "qualifier": "PASS134.58sec including29 pinned fixtures/126 RustReference files and3 exact same-artifact backend observers",
+  "native": {
+    "pollready": {
+      "gate": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/qualification/fast/1793925179922592390",
+      "gate_receipt_sha256": "4345a0315ba08b78a04ca1f4008755cb334b6fa3f7a1268e3b4ef36680be4681",
+      "plan_sha256": "571f105afbb53981ba1d4db1a8699eaed3f07ab2bf970f34bf92199c2afdb33a",
+      "source_sha256": "ea1b156f31ff38720bab3bd94b8bea2ea926451e3f9926f2879e89bfc13f41d7",
+      "rlib_sha256": "1f4f50c4e766c4063842f902f1881324bd7b915b0688562cae3298e2f4e008c9",
+      "client_sha256": "e880efadf5b80fea757632f5965898fb1f0f7c0eac829d005c35cec1e3a56c80",
+      "steps": [
+        {
+          "name": "driver-build",
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "-Zthreads=2",
+            "-Ccodegen-units=2",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollready/client.rs",
+            "--extern",
+            "rustgm=/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/rust/dev-fast/deps/librustgm-47cd2068569bec25.rlib",
+            "-L",
+            "dependency=/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/rust/dev-fast/deps",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollready/client"
+          ],
+          "status": 0,
+          "stdout": "",
+          "stderr": "warning: function `resolve` is never used\n  --> /mnt/vizier/rustgm-scratch/rustgm-async-work/dev/tests/helpers/resolve.rs:17:8\n   |\n17 | pub fn resolve(source: &str, expanded: bool) -> Result<Report, String> {\n   |        ^^^^^^^\n   |\n   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: function `resolve_config` is never used\n  --> /mnt/vizier/rustgm-scratch/rustgm-async-work/dev/tests/helpers/resolve.rs:21:8\n   |\n21 | pub fn resolve_config(source: &str, expanded: bool, config: &Config) -> Result<Report, String> {\n   |        ^^^^^^^^^^^^^^\n\nwarning: 2 warnings emitted\n\n"
+        },
+        {
+          "name": "lower",
+          "command": [
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollready/client",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa43/tests/spec/future-runtime-v1/pollready-source.rs",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollready/actual.lowir"
+          ],
+          "status": 0,
+          "stdout": "actual owner=20 body=456 kind=24 store=472\n",
+          "stderr": ""
+        },
+        {
+          "name": "link",
+          "command": [
+            "cc",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollready/observer.c",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollready/actual.o",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollready/actual"
+          ],
+          "status": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "name": "native",
+          "command": [
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollready/actual"
+          ],
+          "status": 0,
+          "stdout": "3\n",
+          "stderr": ""
+        }
+      ],
+      "backend": {
+        "lowir": "32b1e67c44d242351bb20787e3bbd287a603a677fffbe0859a38002be776f11d",
+        "lowir2native": "27b3138e442d53706a059cea0ea98ede2756f56076f00f26ffc28da078974815",
+        "cppgm++": "0d216449452b5a911d364ef7f4eb807d7b429a8cb96fb0afed8f99b60b5cfa5b"
+      },
+      "state": "passed",
+      "lowir_sha256": "3688f222bf0351f4b12baf6d0ebaf7df4800ee62e5338934b7df0bdc29233740",
+      "object_sha256": "4460cd330561d8c41185862218ce3c714e22142162596168f0adbfc6cb501588",
+      "executable_sha256": "f780d8c1ceb1bd4d23c68879fe2cf997b1bc499037a3e30c592ba1a3695be5ba",
+      "native_observe_result": 3,
+      "seconds": 2.2052350629819557
+    },
+    "pollrepeat": {
+      "gate": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/qualification/fast/1793925179922592390",
+      "gate_receipt_sha256": "4345a0315ba08b78a04ca1f4008755cb334b6fa3f7a1268e3b4ef36680be4681",
+      "plan_sha256": "db22bb1adfd17f07999aec1e7ab5851e1267e12bd9e9ba11c54cbe4c79a0c6d8",
+      "source_sha256": "255fb151ad6f5677a391e595ee42d74507e7ff7958b42ed4d16f95b5065ee8cf",
+      "rlib_sha256": "1f4f50c4e766c4063842f902f1881324bd7b915b0688562cae3298e2f4e008c9",
+      "client_sha256": "e880efadf5b80fea757632f5965898fb1f0f7c0eac829d005c35cec1e3a56c80",
+      "steps": [
+        {
+          "name": "driver-build",
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "-Zthreads=2",
+            "-Ccodegen-units=2",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollrepeat/client.rs",
+            "--extern",
+            "rustgm=/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/rust/dev-fast/deps/librustgm-47cd2068569bec25.rlib",
+            "-L",
+            "dependency=/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/rust/dev-fast/deps",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollrepeat/client"
+          ],
+          "status": 0,
+          "stdout": "",
+          "stderr": "warning: function `resolve` is never used\n  --> /mnt/vizier/rustgm-scratch/rustgm-async-work/dev/tests/helpers/resolve.rs:17:8\n   |\n17 | pub fn resolve(source: &str, expanded: bool) -> Result<Report, String> {\n   |        ^^^^^^^\n   |\n   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: function `resolve_config` is never used\n  --> /mnt/vizier/rustgm-scratch/rustgm-async-work/dev/tests/helpers/resolve.rs:21:8\n   |\n21 | pub fn resolve_config(source: &str, expanded: bool, config: &Config) -> Result<Report, String> {\n   |        ^^^^^^^^^^^^^^\n\nwarning: 2 warnings emitted\n\n"
+        },
+        {
+          "name": "lower",
+          "command": [
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollrepeat/client",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa43/tests/spec/future-runtime-v1/pollrepeat-source.rs",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollrepeat/actual.lowir"
+          ],
+          "status": 0,
+          "stdout": "actual owner=20 body=456 kind=24 store=472\n",
+          "stderr": ""
+        },
+        {
+          "name": "link",
+          "command": [
+            "cc",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollrepeat/observer.c",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollrepeat/actual.o",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollrepeat/actual"
+          ],
+          "status": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "name": "native",
+          "command": [
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollrepeat/actual"
+          ],
+          "status": -4,
+          "stdout": "",
+          "stderr": ""
+        }
+      ],
+      "backend": {
+        "lowir": "32b1e67c44d242351bb20787e3bbd287a603a677fffbe0859a38002be776f11d",
+        "lowir2native": "27b3138e442d53706a059cea0ea98ede2756f56076f00f26ffc28da078974815",
+        "cppgm++": "0d216449452b5a911d364ef7f4eb807d7b429a8cb96fb0afed8f99b60b5cfa5b"
+      },
+      "state": "passed",
+      "lowir_sha256": "fb1cd57fd2b3dde7fe3095895d2dcb21331ee7ccc08375bc8f5fc7ecea6b202c",
+      "object_sha256": "5ef2cad18c8052d2562382ec40443f2dd6b380367efdae14f8a1186d8ee5e004",
+      "executable_sha256": "5f3cc6de302d54df76819a948a369b168a52aabe5655c963b45f5eec06692ff0",
+      "native_status": -4,
+      "expected_completed_rejection": true,
+      "seconds": 3.345907703973353
+    },
+    "pollbyte": {
+      "gate": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/qualification/fast/1793925179922592390",
+      "gate_receipt_sha256": "4345a0315ba08b78a04ca1f4008755cb334b6fa3f7a1268e3b4ef36680be4681",
+      "plan_sha256": "d31f4c653fb289c36dff06d5d0f7390a7dfa55070c31ba582f12a5aa1193fabc",
+      "source_sha256": "f1a0bf5dbb39baf57aee1e3a74b72d8004585cc736a3d4aa1c66b15bc06bbd58",
+      "rlib_sha256": "1f4f50c4e766c4063842f902f1881324bd7b915b0688562cae3298e2f4e008c9",
+      "client_sha256": "e880efadf5b80fea757632f5965898fb1f0f7c0eac829d005c35cec1e3a56c80",
+      "steps": [
+        {
+          "name": "driver-build",
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "-Zthreads=2",
+            "-Ccodegen-units=2",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollbyte/client.rs",
+            "--extern",
+            "rustgm=/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/rust/dev-fast/deps/librustgm-47cd2068569bec25.rlib",
+            "-L",
+            "dependency=/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/rust/dev-fast/deps",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollbyte/client"
+          ],
+          "status": 0,
+          "stdout": "",
+          "stderr": "warning: function `resolve` is never used\n  --> /mnt/vizier/rustgm-scratch/rustgm-async-work/dev/tests/helpers/resolve.rs:17:8\n   |\n17 | pub fn resolve(source: &str, expanded: bool) -> Result<Report, String> {\n   |        ^^^^^^^\n   |\n   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: function `resolve_config` is never used\n  --> /mnt/vizier/rustgm-scratch/rustgm-async-work/dev/tests/helpers/resolve.rs:21:8\n   |\n21 | pub fn resolve_config(source: &str, expanded: bool, config: &Config) -> Result<Report, String> {\n   |        ^^^^^^^^^^^^^^\n\nwarning: 2 warnings emitted\n\n"
+        },
+        {
+          "name": "lower",
+          "command": [
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollbyte/client",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa43/tests/spec/future-runtime-v1/pollbyte-source.rs",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollbyte/actual.lowir"
+          ],
+          "status": 0,
+          "stdout": "actual owner=20 body=456 kind=24 store=472\n",
+          "stderr": ""
+        },
+        {
+          "name": "link",
+          "command": [
+            "cc",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollbyte/observer.c",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollbyte/actual.o",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollbyte/actual"
+          ],
+          "status": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "name": "native",
+          "command": [
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/future-runtime-v1/pollbyte/actual"
+          ],
+          "status": 0,
+          "stdout": "3\n",
+          "stderr": ""
+        }
+      ],
+      "backend": {
+        "lowir": "32b1e67c44d242351bb20787e3bbd287a603a677fffbe0859a38002be776f11d",
+        "lowir2native": "27b3138e442d53706a059cea0ea98ede2756f56076f00f26ffc28da078974815",
+        "cppgm++": "0d216449452b5a911d364ef7f4eb807d7b429a8cb96fb0afed8f99b60b5cfa5b"
+      },
+      "state": "passed",
+      "lowir_sha256": "3b0070c94de39635e458b1b54029fe75c20e344b3d219dc63aec5f363ece6659",
+      "object_sha256": "bc3756e1a8d3664938ef816c82a9b8b68c77eee8288efb8c0118bdb99a38feec",
+      "executable_sha256": "697a0b365438626d42faa4536aba16093b6d98754560243bce27958ac79c007a",
+      "native_observe_result": 3,
+      "seconds": 2.269766654993873
+    }
+  },
+  "failed_attempts_retained": [
+    "obj/qualification/fast/1793920990514773906",
+    "obj/qualification/fast/1793921712818353076",
+    "obj/qualification/fast/1793922585205384302",
+    "obj/qualification/fast/1793923577449130417",
+    "obj/qualification/fast/1793923984983599758"
+  ],
+  "inspection_receipts": [
+    "obj/parallel/future-runtime-v1/pollready/scopes.json",
+    "obj/parallel/future-runtime-v1/pollready/aggregates.json",
+    "obj/parallel/future-runtime-v1/pollready/original.json"
+  ],
+  "corrections": [
+    "Initial extern ABI literal whitespace error independently rejected by Rust; corrected/refrozen before candidate observation, prior input/receipt retained.",
+    "First typed scope assumption was wrong: source has Body/Block/Tail and3 ordered exits, now retained with checked offsets.",
+    "Physical Pin<&mut Future> application needed normal canonical field preparation after materialization.",
+    "Original empty promotion analysis is retained proof metadata; selected/generated bodies remain without promotion payload.",
+    "Initial2-Ptr physical ABI assertion was wrong: normal aggregate-result buffer adds thirdPtr/void native result,2 logical inputs unchanged."
+  ],
+  "layouts": {
+    "Kind": 24,
+    "Owner": 20,
+    "Body": 456,
+    "Builder": 1776,
+    "Work": 40,
+    "Materialized": 744,
+    "coroutines_Permit_before": 40,
+    "coroutines_Permit": 48,
+    "factories_Permit": 16,
+    "Bridge": 16,
+    "Completed_before": 24,
+    "Completed": 32,
+    "Seal": 40
+  },
+  "pending": [
+    "Private forged-poll/current+foreign-store invariant execution in full CI; no cold harness link attempted.",
+    "Harness rerun remains with Root because prior mocked temp roots inherit the actual resource controller under this worker TMPDIR; no harness or storage policy bypass.",
+    "Broader bodies/CFG, nonempty captures/raw inputs/parameter patterns and their evaluation/drop order, borrowed captures and loans, output ownership cleanup, suspension/await/cancellation/unwind, recursive async cleanup/helper execution and executable authored future metadata.",
+    "No full core/alloc/std artifact or whole assignment success claimed."
+  ]
+}

@@ -8,6 +8,7 @@ mod parameter_types;
 pub(in crate::sema::compiler_items) mod range_members;
 pub(super) use completion_set::RoleSet;
 mod destructibility;
+pub(in crate::sema) use destructibility::require_source_drop_contract;
 mod freezing;
 mod glue;
 pub(crate) use destructibility::destruct_predicate;
@@ -80,7 +81,7 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 33] = [
+const TRAIT_ROLES: [LangItem; 34] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::UseCloned,
@@ -114,6 +115,7 @@ const TRAIT_ROLES: [LangItem; 33] = [
     LangItem::AsyncFnMut,
     LangItem::AsyncFnOnce,
     LangItem::AsyncFnKindHelper,
+    LangItem::FusedIterator,
 ];
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -394,6 +396,8 @@ fn canonical_header_only(role: LangItem) -> bool {
             | LangItem::AsyncFnMut
             | LangItem::AsyncFnOnce
             | LangItem::AsyncFnKindHelper
+            | LangItem::FusedIterator
+            | LangItem::Drop
     )
 }
 
