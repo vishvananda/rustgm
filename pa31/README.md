@@ -613,3 +613,10 @@ to PA42, and captured loans, Pin, cancellation/drop to PA43; no role supplies th
 operations or a blanket implementation. Preserve the complete original coroutine
 module and independent wrong-owner/shape/argument/lifetime opponents when closing
 this source prerequisite.
+
+The [ordinary coroutine checkpoint](../docs/parallel/coroutine-source-checkpoint.md)
+qualifies twelve independent source outcomes and real manual resume output23/47.
+Joined Field capture and concrete cleanup planning controls pass, and original
+core advances past coroutine role admission to panic_bounds_check. This does not
+prove complete original-module typing, generated coroutine execution or a library
+artifact. Preserve the remaining source/runtime/transport requirements above.

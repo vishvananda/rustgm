@@ -1,3 +1,13 @@
+The [Coroutine/capture main join](parallel/coroutine-source-checkpoint.md) qualifies
+20 exact public tests across two targets in202.46s and two native tests covering
+ten observer contracts in33.37s. All3615 recorded input hashes match main. Joined
+CLI045a7a39 advances unchanged original core to LIB179 panic_bounds_check at
+panicking.rs266/file188:12641 in18.4363s/375opens; diagnostics match pref6 exactly.
+No library artifact or whole PA release is claimed. Existing workers continue
+real CTFE cleanup execution and the cohesive panic-hook source producer. Full
+successor CI owns private runtime/release qualification. Keep the same warm
+btrfs trees, two heavy jobs,16GiB caps,150GiB reserve and<=300s local guards.
+
 The concrete const-cleanup producer is joined from12b46e995 after Root verified
 all3561 frozen Rust input hashes against the committed tree. Its46 focused public
 checks, three existing runtime native observers, strict selected Clippy, format,

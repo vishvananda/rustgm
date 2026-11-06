@@ -1,0 +1,130 @@
+{
+  "state": "finite Coroutine, Field capture and concrete cleanup producer union qualified; full CI pending",
+  "compiler_commit": "3ac5b5e31",
+  "candidate_sha256": "f6f766736d15da3edc68605d759ebd754b021c02cfb2e89bd8e012e7f03cb634",
+  "regular_gate": {
+    "path": "obj/qualification/fast/1793958263279898681/receipt.json",
+    "sha256": "fb9ece9cb011f37d276bbc0b0d21236c7d021a05c5962fd6fce61d51456c7cf5",
+    "exact_public": 12,
+    "sources": 3613,
+    "seconds": 108.75
+  },
+  "native_gate": {
+    "path": "obj/qualification/fast/1793958464279220419/receipt.json",
+    "sha256": "033f2b269474dd661a224a533c63eb8d0a0db4665895c95fd40fd8ae5870dbf8",
+    "exact_tests": 1,
+    "expected_stdout": "23 47\n",
+    "seconds": 40.34,
+    "harness_only_delta": [
+      "dev/tests/coroutine_sources.rs"
+    ]
+  },
+  "binding": {
+    "path": "obj/parallel/coroutine-source-contracts/join-native-v2/receipt.json",
+    "sha256": "60b926c2c751414d89651eacb01a5975a74967b5d9426e2ea987c055998c9192"
+  },
+  "core_observation": {
+    "path": "obj/parallel/coroutine-core-v1/receipt.json",
+    "sha256": "76d24bb7da66b2e89c48ce48f687c7ce487839139cc226fb701dd8ef05db0b58",
+    "result": {
+      "infrastructure_failure": false,
+      "classification": "observed original-core blocker",
+      "lint_cap": "allow",
+      "source_contract_limits": {
+        "work": 14500624,
+        "attempted_bytes": 1073741824,
+        "retained_bytes": 67108864
+      },
+      "expected_cli_sha256": "f6f766736d15da3edc68605d759ebd754b021c02cfb2e89bd8e012e7f03cb634",
+      "expected_cli_source": "explicit caller input",
+      "status": 1,
+      "first_error": "ERROR: file 188: 12641: source compiler language item semantic contract is not implemented",
+      "inputs_unchanged": true,
+      "opened_source_count": 375,
+      "total_seconds": 19.22930843697395,
+      "raw_sha256": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "dbc78fc62bea4dd3eab80f4ef23737be583b9e84d8b40378e3e874b3d5f28cac",
+        "whole-core.openat": "a91e2ceb8343a12deb9ed9350bc96e1bc9ed47447c9bafd02b7604d414e3e3cb",
+        "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+      }
+    },
+    "frontier": "LIB179 panic_bounds_check, panicking.rs266, file188 byte12641"
+  },
+  "reference_packet": "pa31/tests/spec/source-coroutines/predictions.json",
+  "reference_packet_sha256": "8ae2bd80c8d1e2731f0a128aa9a4e6c8cbd43d7b7da733934ef0686248bc7946",
+  "candidate_cases": 12,
+  "inherited_controls": [
+    "Future14",
+    "AsyncIterator35 and original2",
+    "arbitrary receiver sources",
+    "known/unknown feature requests"
+  ],
+  "retained_failures": [
+    "identical match arms Clippy",
+    "known unused coroutines feature admission",
+    "unstaged actual Coroutine method header",
+    "wrapped trait receiver false pruning",
+    "missing native harness output directory"
+  ],
+  "scope": [
+    "ordinary actual enum/trait/member declarations",
+    "manual native resume",
+    "no generated state or blanket implementation",
+    "complete original module typing and coroutine lowering still required",
+    "all full/private execution pending successor CI"
+  ],
+  "joined": {
+    "regular_gate": {
+      "path": "obj/qualification/fast/1793958693152414024/receipt.json",
+      "sha256": "6d1a38e3a511886868d005f736870c74ba123454d0c833b5f87d81ee2d681857",
+      "exact_tests": 20,
+      "targets": 2,
+      "seconds": 202.46
+    },
+    "native_gate": {
+      "path": "obj/qualification/fast/1793958904549656470/receipt.json",
+      "sha256": "f21ed868ef18759cbd671c2092f12863256302a7fa18f58a1be65e2dc8754078",
+      "exact_tests": 2,
+      "executables": 2,
+      "observer_contracts": 10,
+      "seconds": 33.37
+    },
+    "source_input_hashes": 3615,
+    "main_source_mismatches": [],
+    "binding": {
+      "path": "obj/parallel/coroutine-source-contracts/join-native-v3/receipt.json",
+      "sha256": "57182d15320a5221a8fab5c08431b240be597118de631933b351e9532115a494"
+    },
+    "cli_sha256": "045a7a39d34c61a041c43cf35a46f810da7b1928476e44588c01e184a4d15ed8",
+    "core_observation": {
+      "path": "obj/parallel/coroutine-core-v2/receipt.json",
+      "sha256": "a556e17985455ee96aac2ff32eebd9fbe62f596596e74de782f02a24cd384c88",
+      "result": {
+        "infrastructure_failure": false,
+        "classification": "observed original-core blocker",
+        "lint_cap": "allow",
+        "source_contract_limits": {
+          "work": 14500624,
+          "attempted_bytes": 1073741824,
+          "retained_bytes": 67108864
+        },
+        "expected_cli_sha256": "045a7a39d34c61a041c43cf35a46f810da7b1928476e44588c01e184a4d15ed8",
+        "expected_cli_source": "explicit caller input",
+        "status": 1,
+        "first_error": "ERROR: file 188: 12641: source compiler language item semantic contract is not implemented",
+        "inputs_unchanged": true,
+        "opened_source_count": 375,
+        "total_seconds": 18.436334089026786,
+        "raw_sha256": {
+          "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "dbc78fc62bea4dd3eab80f4ef23737be583b9e84d8b40378e3e874b3d5f28cac",
+          "whole-core.openat": "31f627a62586806eb29c89ecb12e3f7d327b2582a9e1c57db677b13d5a074763",
+          "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+        }
+      }
+    },
+    "prior_core_diagnostics_equal": true,
+    "full_ci": "successor required; previous42190605652 failed3 private assertions and1 union test; runtime private fixes not yet executed"
+  }
+}

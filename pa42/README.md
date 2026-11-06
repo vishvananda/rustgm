@@ -24,9 +24,11 @@ cancellation and destruction. Keep manual source implementations distinct from
 compiler-generated implementations. An enum marker or trait declaration grants
 no generated state or blanket implementation.
 
-The original-source probe clears AsyncIterator and reaches `coroutine_state` in
-`library/core/src/ops/coroutine.rs:11`. Earlier AsyncDrop, callable and iterator
-source checkpoints remain prerequisites, not whole async completion. Preserve
+The ordinary coroutine source/manual-native checkpoint clears coroutine role
+admission in original core and reaches `panic_bounds_check` in panicking.rs:266.
+Whole original-module typing and generated coroutine execution remain required.
+Earlier AsyncDrop, callable and iterator source checkpoints remain prerequisites,
+not whole async completion. Preserve
 all actual signatures and required bodies, including `async_drop_in_place`;
 an accepted attribute or empty future cannot supply their implementation. The
 [live blocker tracker](../docs/library-build-blockers.md) records the qualified
