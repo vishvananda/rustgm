@@ -258,10 +258,11 @@ impl Lower<'_, '_, '_> {
         let limit = self.slice_length(place)?;
         let fault = self.builder.compare(Predicate::Uge, index, limit)?;
         Arithmetic {
+            constants: self.context.constants,
             builder: &mut self.builder,
             panic: &mut self.panic,
         }
-        .guard(fault)?;
+        .guard(fault, crate::support::bindings::LangItem::PanicBoundsCheck)?;
         let address = if leaf.size != 0 || self.addresses.needs(Place::Projection(id)) {
             let base = self.place(place)?.ok_or("slice data has no address")?;
             Some(self.indexed(base, index, leaf.size, leaf.align)?)

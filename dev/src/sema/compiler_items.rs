@@ -40,6 +40,7 @@ pub(in crate::sema) use handler_contract::Bindings as HandlerBindings;
 pub(crate) use handler_contract::complete as complete_panic_handler;
 mod abort_declaration;
 mod display_panics;
+pub(in crate::sema) mod guard_panics;
 mod runtime_panics;
 pub(crate) use display_panics::{
     Selection as PanicDisplaySelection, select as source_panic_display,

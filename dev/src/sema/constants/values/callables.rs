@@ -3,6 +3,16 @@ use super::{Constant, Evaluator, Failure, Reader, Type, TypeId, View};
 use crate::types::instance::Instance;
 
 impl Reader<'_> {
+    /// Actual guard emission retains source hook absence/completion distinctions.
+    pub(crate) fn require_source_assertion(
+        self,
+        role: crate::support::bindings::LangItem,
+    ) -> Result<(), &'static str> {
+        crate::sema::compiler_items::guard_panics::require_guard(self.facts, role)
+    }
+    pub(crate) fn require_source_future_assertion(self) -> Result<(), &'static str> {
+        crate::sema::compiler_items::guard_panics::require_future_guard(self.facts)
+    }
     pub(crate) fn has_runtime_layouts(self) -> bool {
         self.facts
             .source_bindings

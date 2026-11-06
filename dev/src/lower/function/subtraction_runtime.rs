@@ -80,11 +80,23 @@ impl Lower<'_, '_, '_> {
                 .map(|result| Some(Selected::Runtime(result)));
         }
         let (result, overflow) = Arithmetic {
+            constants: self.context.constants,
             builder: &mut self.builder,
             panic: &mut self.panic,
         }
         .subtract_overflow(signed, left, right)?;
-        let layout = self.context.layout(selected.output)?;
+        self.store_subtraction_tuple(result, overflow, selected.input, selected.output)
+            .map(Some)
+    }
+    /// Publish the real checked result and flag using its selected tuple layout.
+    fn store_subtraction_tuple(
+        &mut self,
+        result: crate::lowir::program::Value,
+        overflow: crate::lowir::program::Value,
+        input: TypeId,
+        output: TypeId,
+    ) -> Result<Selected, &'static str> {
+        let layout = self.context.layout(output)?;
         let Shape::Aggregate { .. } = layout.shape else {
             return Err("source subtraction tuple lacks its real layout");
         };
@@ -98,10 +110,10 @@ impl Lower<'_, '_, '_> {
             (difference, flag)
         };
         let address = self
-            .allocate(selected.output)?
+            .allocate(output)?
             .ok_or("source subtraction tuple has no storage")?;
         let destination = self.offset(address, difference)?;
-        self.write(Some(destination), Selected::Runtime(result), selected.input)?;
+        self.write(Some(destination), Selected::Runtime(result), input)?;
         let destination = self.offset(address, flag)?;
         let overflow = self.builder.convert(Convert::Trunc, Type::I1, overflow)?;
         self.write(
@@ -109,7 +121,7 @@ impl Lower<'_, '_, '_> {
             Selected::Runtime(overflow),
             TypeId::primitive(crate::types::Primitive::Bool),
         )?;
-        Ok(Some(Selected::Object(address)))
+        Ok(Selected::Object(address))
     }
     /// Modular operations never acquire the checked arithmetic panic path or
     /// C++ overflow assumptions. The builder still validates the scalar types.

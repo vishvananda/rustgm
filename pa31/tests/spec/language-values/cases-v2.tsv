@@ -1,0 +1,45 @@
+literal	pa31/tests/spec/language-values/literal.rs	0	0	compiler_move
+stringified	pa31/tests/spec/language-values/stringified.rs	0	0	compiler_move
+nested	pa31/tests/spec/language-values/nested.rs	0	0	compiler_move
+forwarded	pa31/tests/spec/language-values/forwarded.rs	0	0	compiler_move
+alias	pa31/tests/spec/language-values/alias.rs	0	0	compiler_move
+shadow	pa31/tests/spec/language-values/shadow.rs	0	0	compiler_move
+opaque	pa31/tests/spec/language-values/opaque.rs	0	0	compiler_move
+cfg-removed	pa31/tests/spec/language-values/cfg-removed.rs	0	0	
+number	pa31/tests/spec/language-values/number.rs	1	1	
+byte-string	pa31/tests/spec/language-values/byte-string.rs	1	1	
+block	pa31/tests/spec/language-values/block.rs	1	1	
+multiple	pa31/tests/spec/language-values/multiple.rs	1	1	
+missing-macro	pa31/tests/spec/language-values/missing-macro.rs	1	1	
+unknown-role	pa31/tests/spec/language-values/unknown-role.rs	1	1	
+missing-feature	pa31/tests/spec/language-values/missing-feature.rs	1	1	
+wrong-arity	pa31/tests/spec/language-values/wrong-arity.rs	1	1	
+wrong-target	pa31/tests/spec/language-values/wrong-target.rs	1	1	
+unsafe-wrapper	pa31/tests/spec/language-values/unsafe-wrapper.rs	1	1	
+duplicate	pa31/tests/spec/language-values/duplicate.rs	1	1	
+literal-panic_const_add_overflow	pa31/tests/spec/language-values/literal-panic_const_add_overflow.rs	0	0	panic_const_add_overflow
+literal-panic_const_sub_overflow	pa31/tests/spec/language-values/literal-panic_const_sub_overflow.rs	0	0	panic_const_sub_overflow
+literal-panic_const_mul_overflow	pa31/tests/spec/language-values/literal-panic_const_mul_overflow.rs	0	0	panic_const_mul_overflow
+literal-panic_const_div_overflow	pa31/tests/spec/language-values/literal-panic_const_div_overflow.rs	0	0	panic_const_div_overflow
+literal-panic_const_rem_overflow	pa31/tests/spec/language-values/literal-panic_const_rem_overflow.rs	0	0	panic_const_rem_overflow
+literal-panic_const_neg_overflow	pa31/tests/spec/language-values/literal-panic_const_neg_overflow.rs	0	0	panic_const_neg_overflow
+literal-panic_const_shr_overflow	pa31/tests/spec/language-values/literal-panic_const_shr_overflow.rs	0	0	panic_const_shr_overflow
+literal-panic_const_shl_overflow	pa31/tests/spec/language-values/literal-panic_const_shl_overflow.rs	0	0	panic_const_shl_overflow
+literal-panic_const_div_by_zero	pa31/tests/spec/language-values/literal-panic_const_div_by_zero.rs	0	0	panic_const_div_by_zero
+literal-panic_const_rem_by_zero	pa31/tests/spec/language-values/literal-panic_const_rem_by_zero.rs	0	0	panic_const_rem_by_zero
+literal-panic_const_coroutine_resumed	pa31/tests/spec/language-values/literal-panic_const_coroutine_resumed.rs	0	0	panic_const_coroutine_resumed
+literal-panic_const_async_fn_resumed	pa31/tests/spec/language-values/literal-panic_const_async_fn_resumed.rs	0	0	panic_const_async_fn_resumed
+literal-panic_const_async_gen_fn_resumed	pa31/tests/spec/language-values/literal-panic_const_async_gen_fn_resumed.rs	0	0	panic_const_async_gen_fn_resumed
+literal-panic_const_gen_fn_none	pa31/tests/spec/language-values/literal-panic_const_gen_fn_none.rs	0	0	panic_const_gen_fn_none
+literal-panic_const_coroutine_resumed_panic	pa31/tests/spec/language-values/literal-panic_const_coroutine_resumed_panic.rs	0	0	panic_const_coroutine_resumed_panic
+literal-panic_const_async_fn_resumed_panic	pa31/tests/spec/language-values/literal-panic_const_async_fn_resumed_panic.rs	0	0	panic_const_async_fn_resumed_panic
+literal-panic_const_async_gen_fn_resumed_panic	pa31/tests/spec/language-values/literal-panic_const_async_gen_fn_resumed_panic.rs	0	0	panic_const_async_gen_fn_resumed_panic
+literal-panic_const_gen_fn_none_panic	pa31/tests/spec/language-values/literal-panic_const_gen_fn_none_panic.rs	0	0	panic_const_gen_fn_none_panic
+literal-panic_const_coroutine_resumed_drop	pa31/tests/spec/language-values/literal-panic_const_coroutine_resumed_drop.rs	0	0	panic_const_coroutine_resumed_drop
+literal-panic_const_async_fn_resumed_drop	pa31/tests/spec/language-values/literal-panic_const_async_fn_resumed_drop.rs	0	0	panic_const_async_fn_resumed_drop
+literal-panic_const_async_gen_fn_resumed_drop	pa31/tests/spec/language-values/literal-panic_const_async_gen_fn_resumed_drop.rs	0	0	panic_const_async_gen_fn_resumed_drop
+literal-panic_const_gen_fn_none_drop	pa31/tests/spec/language-values/literal-panic_const_gen_fn_none_drop.rs	0	0	panic_const_gen_fn_none_drop
+repeated-panic-family	pa31/tests/spec/language-values/repeated-panic-family.rs	0	0	panic_const_add_overflow,panic_const_sub_overflow,panic_const_mul_overflow,panic_const_div_overflow,panic_const_rem_overflow,panic_const_neg_overflow,panic_const_shr_overflow,panic_const_shl_overflow,panic_const_div_by_zero,panic_const_rem_by_zero,panic_const_coroutine_resumed,panic_const_async_fn_resumed,panic_const_async_gen_fn_resumed,panic_const_gen_fn_none,panic_const_coroutine_resumed_panic,panic_const_async_fn_resumed_panic,panic_const_async_gen_fn_resumed_panic,panic_const_gen_fn_none_panic,panic_const_coroutine_resumed_drop,panic_const_async_fn_resumed_drop,panic_const_async_gen_fn_resumed_drop,panic_const_gen_fn_none_drop
+panic-wrong-target	pa31/tests/spec/language-values/panic-wrong-target.rs	1	1	
+panic-generic-any	pa31/tests/spec/language-values/panic-generic-any.rs	0	0	panic_const_add_overflow
+native-marker-bodies	pa31/tests/spec/language-values/native-marker-bodies.rs	0	0	compiler_move,compiler_copy

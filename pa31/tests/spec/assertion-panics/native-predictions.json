@@ -1,0 +1,10 @@
+{
+  "scope": "literal ordinary source marker body expectations frozen before reference or candidate native observations; no panic routing/format/unwind claim",
+  "source": "native.rs",
+  "source_sha256": "ec5d287907bec5e8229050082dbbea15af2ba3966fd90e183a1d19b94951d9bb",
+  "observer": "observer.c",
+  "observer_sha256": "19407226b44d5661c61b421d23b0986a886446e60ea50b9e59f3074a72afb01e",
+  "expected_status": 0,
+  "expected_stdout": "panic_bounds_check=9\npanic_misaligned_pointer_dereference=10\npanic_cannot_unwind=11\npanic_in_cleanup=12\npanic_null_pointer_dereference=13\npanic_invalid_enum_construction=14\npanic_const_add_overflow=15\npanic_const_sub_overflow=16\npanic_const_mul_overflow=17\npanic_const_div_overflow=18\npanic_const_rem_overflow=19\npanic_const_neg_overflow=20\npanic_const_shr_overflow=21\npanic_const_shl_overflow=22\npanic_const_div_by_zero=23\npanic_const_rem_by_zero=24\npanic_const_coroutine_resumed=25\npanic_const_async_fn_resumed=26\npanic_const_async_gen_fn_resumed=27\npanic_const_gen_fn_none=28\npanic_const_coroutine_resumed_panic=29\npanic_const_async_fn_resumed_panic=30\npanic_const_async_gen_fn_resumed_panic=31\npanic_const_gen_fn_none_panic=32\npanic_const_coroutine_resumed_drop=33\npanic_const_async_fn_resumed_drop=34\npanic_const_async_gen_fn_resumed_drop=35\npanic_const_gen_fn_none_drop=36\n",
+  "expected_stderr": ""
+}

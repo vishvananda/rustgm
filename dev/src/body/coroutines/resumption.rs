@@ -62,7 +62,7 @@ pub(crate) fn build(
     facts.aggregates.prepare(&mut facts.types, body.result)?;
     cleanup_free_protocol(facts, &body)?;
     values(&mut body, entry);
-    flow(&mut body)?;
+    flow(facts, &mut body)?;
     contract.key = body.key();
     contract.signature = Some(entry.execution);
     contract.universals = 3;
@@ -238,7 +238,7 @@ fn values(body: &mut Body, entry: &Entry) {
     ]);
 }
 
-fn flow(body: &mut Body) -> Result<(), &'static str> {
+fn flow(facts: &Declarations, body: &mut Body) -> Result<(), &'static str> {
     let original = body
         .statements
         .pop()
@@ -298,6 +298,7 @@ fn flow(body: &mut Body) -> Result<(), &'static str> {
         source: original_block.source,
         terminator: Terminator::Return(ValueId(6)),
     });
+    crate::sema::values::Reader::new(facts).require_source_future_assertion()?;
     body.blocks.push(Block {
         start: 16,
         end: 16,

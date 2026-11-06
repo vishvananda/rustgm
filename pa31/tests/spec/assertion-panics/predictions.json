@@ -1,0 +1,275 @@
+{
+  "scope": "frozen before panic producer implementation or candidate observation",
+  "rust": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_references": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/panicking.rs": "805a33d479ebcdf2c640f43fb01b7a6707038bc248b4830d15f30a8a60d40303",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir/src/lang_items.rs": "af62146fd0255b1b8baea76309e13eb00ff5b9a8ffe110348beba4deb3569690",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_passes/src/lang_items.rs": "4037b9d6f231067e211b8a310c74d0fef7537a3e37cfa33ce9552a7054cda47e",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_codegen_ssa/src/mir/block.rs": "13d6d31caf4c1693ec26c4fa4d8385361d816413b1c9fbc77a71b914face653b"
+  },
+  "original_source_preservation": "full original panicking.rs remains unchanged in the pinned722-input source package; this packet does not replace or stub its formatting, handler or unwind bodies",
+  "frontier": {
+    "path": "library/core/src/panicking.rs",
+    "byte": 12641,
+    "line": 266,
+    "lang": "panic_bounds_check"
+  },
+  "roles": [
+    {
+      "ordinal": 138,
+      "name": "panic_bounds_check"
+    },
+    {
+      "ordinal": 139,
+      "name": "panic_misaligned_pointer_dereference"
+    },
+    {
+      "ordinal": 140,
+      "name": "panic_cannot_unwind"
+    },
+    {
+      "ordinal": 141,
+      "name": "panic_in_cleanup"
+    },
+    {
+      "ordinal": 142,
+      "name": "panic_null_pointer_dereference"
+    },
+    {
+      "ordinal": 143,
+      "name": "panic_invalid_enum_construction"
+    },
+    {
+      "ordinal": 187,
+      "name": "panic_const_add_overflow"
+    },
+    {
+      "ordinal": 188,
+      "name": "panic_const_sub_overflow"
+    },
+    {
+      "ordinal": 189,
+      "name": "panic_const_mul_overflow"
+    },
+    {
+      "ordinal": 190,
+      "name": "panic_const_div_overflow"
+    },
+    {
+      "ordinal": 191,
+      "name": "panic_const_rem_overflow"
+    },
+    {
+      "ordinal": 192,
+      "name": "panic_const_neg_overflow"
+    },
+    {
+      "ordinal": 193,
+      "name": "panic_const_shr_overflow"
+    },
+    {
+      "ordinal": 194,
+      "name": "panic_const_shl_overflow"
+    },
+    {
+      "ordinal": 195,
+      "name": "panic_const_div_by_zero"
+    },
+    {
+      "ordinal": 196,
+      "name": "panic_const_rem_by_zero"
+    },
+    {
+      "ordinal": 197,
+      "name": "panic_const_coroutine_resumed"
+    },
+    {
+      "ordinal": 198,
+      "name": "panic_const_async_fn_resumed"
+    },
+    {
+      "ordinal": 199,
+      "name": "panic_const_async_gen_fn_resumed"
+    },
+    {
+      "ordinal": 200,
+      "name": "panic_const_gen_fn_none"
+    },
+    {
+      "ordinal": 201,
+      "name": "panic_const_coroutine_resumed_panic"
+    },
+    {
+      "ordinal": 202,
+      "name": "panic_const_async_fn_resumed_panic"
+    },
+    {
+      "ordinal": 203,
+      "name": "panic_const_async_gen_fn_resumed_panic"
+    },
+    {
+      "ordinal": 204,
+      "name": "panic_const_gen_fn_none_panic"
+    },
+    {
+      "ordinal": 205,
+      "name": "panic_const_coroutine_resumed_drop"
+    },
+    {
+      "ordinal": 206,
+      "name": "panic_const_async_fn_resumed_drop"
+    },
+    {
+      "ordinal": 207,
+      "name": "panic_const_async_gen_fn_resumed_drop"
+    },
+    {
+      "ordinal": 208,
+      "name": "panic_const_gen_fn_none_drop"
+    }
+  ],
+  "cases": [
+    {
+      "file": "original-signatures.rs",
+      "sha256": "a9460972660efecdf1d7e5d52cf097c3e3828624248b94b54885bbfff1a0310c",
+      "rustc_status": 0,
+      "purpose": "all28 original documented parameter/result shapes; original bodies remain in the immutable upstream source"
+    },
+    {
+      "file": "unused-bounds-alternative.rs",
+      "sha256": "24f6804357f02189fac7b22490626886a268aadf5f54a9332b923e8e88770c40",
+      "rustc_status": 0,
+      "purpose": "Rust-valid unused or ordinary explicit use supplies no compiler assertion contract"
+    },
+    {
+      "file": "unused-misaligned-alternative.rs",
+      "sha256": "14b54a9b8c9908fd8f749d67c9449b3edcc32bd82d812b60230421eefbc21e95",
+      "rustc_status": 0,
+      "purpose": "Rust-valid unused or ordinary explicit use supplies no compiler assertion contract"
+    },
+    {
+      "file": "unused-null-generic.rs",
+      "sha256": "cbafeda328fdb65a95659d144d11dc0c531361c8cc916314a071e8c8a3fd218e",
+      "rustc_status": 0,
+      "purpose": "Rust-valid unused or ordinary explicit use supplies no compiler assertion contract"
+    },
+    {
+      "file": "unused-invalid-enum-lifetime.rs",
+      "sha256": "263ff8bf83d472366f4f1ea519244fc04bacb20809ea1ef85c67725d77da3ee9",
+      "rustc_status": 0,
+      "purpose": "Rust-valid unused or ordinary explicit use supplies no compiler assertion contract"
+    },
+    {
+      "file": "unused-cannot-unsafe.rs",
+      "sha256": "86a471f5ee9674b90ab23093af08c1fb9e53d55e84b4e7c2c0e0890cd3d29907",
+      "rustc_status": 0,
+      "purpose": "Rust-valid unused or ordinary explicit use supplies no compiler assertion contract"
+    },
+    {
+      "file": "unused-cleanup-abi.rs",
+      "sha256": "2e761dce770edddbff87b2d881854bc6d84033a6ec2330b26c400df0eabbc211",
+      "rustc_status": 0,
+      "purpose": "Rust-valid unused or ordinary explicit use supplies no compiler assertion contract"
+    },
+    {
+      "file": "all-const-role-generics.rs",
+      "sha256": "2aaeb371eaf989304f88094b47b89b922968335504b2b67e7dcce15a3233ac99",
+      "rustc_status": 0,
+      "purpose": "Rust-valid unused or ordinary explicit use supplies no compiler assertion contract"
+    },
+    {
+      "file": "explicit-alternative-call.rs",
+      "sha256": "f92605ae0715a104dd1fd16ce3b6830c87b2d1a3190ab4407af69cfb209ad7da",
+      "rustc_status": 0,
+      "purpose": "Rust-valid unused or ordinary explicit use supplies no compiler assertion contract"
+    },
+    {
+      "file": "const-alternative-call.rs",
+      "sha256": "0a451e0bf5faa78ebc83a56fa2690f3d7d8c16c9663a8298695fb428712fad1e",
+      "rustc_status": 0,
+      "purpose": "Rust-valid unused or ordinary explicit use supplies no compiler assertion contract"
+    },
+    {
+      "file": "foreign-declaration.rs",
+      "sha256": "832e08b79f4a4021a82b8ab1e26c8a9e9691f6d3a2d50e0cdb3d9406cad0c39e",
+      "rustc_status": 0,
+      "purpose": "Rust-valid unused or ordinary explicit use supplies no compiler assertion contract"
+    },
+    {
+      "file": "cfg-removed.rs",
+      "sha256": "6492e0360f252a9b39028c452eb3492f4d6725d1e7c456c0b1dada8e29c9c227",
+      "rustc_status": 0,
+      "purpose": "Rust-valid unused or ordinary explicit use supplies no compiler assertion contract"
+    },
+    {
+      "file": "generic-caller.rs",
+      "sha256": "59decf4fd8e624a30d1be64a0b4c8d060d0d533044af6e9f76e04a952101f779",
+      "rustc_status": 0,
+      "purpose": "Rust-valid unused or ordinary explicit use supplies no compiler assertion contract"
+    },
+    {
+      "file": "invalid-unused-body.rs",
+      "sha256": "6f3ee322b8909be65551f0e800f65e1c1d4b8be1838b42f303255e6c22fe5e73",
+      "rustc_status": 1,
+      "purpose": "unused body is still checked",
+      "diagnostic": "E0308"
+    },
+    {
+      "file": "bounds-generic-type.rs",
+      "sha256": "d9b1eb60e282a2474b5890997275cd600116eebd0edb9569e9c1643e95513bec",
+      "rustc_status": 1,
+      "purpose": "exact0 written generic parameters",
+      "diagnostic": "E0718"
+    },
+    {
+      "file": "bounds-generic-lifetime.rs",
+      "sha256": "cd89bc5df584a4c5c4fa4b467581cd988006af0740ee4732cd7f92c9e636ec65",
+      "rustc_status": 1,
+      "purpose": "explicit lifetime counts in exact0 profile",
+      "diagnostic": "E0718"
+    },
+    {
+      "file": "misaligned-generic-const.rs",
+      "sha256": "da6c4b55a4aa647b114ba79b18551d9eaf69947e6be29dbe06a158457cd026b2",
+      "rustc_status": 1,
+      "purpose": "const parameter counts in exact0 profile",
+      "diagnostic": "E0718"
+    },
+    {
+      "file": "wrong-target.rs",
+      "sha256": "a657847f6acb04d39bf5f41fb302611ecf43bab696a16d9a062dbfb24c9fc249",
+      "rustc_status": 1,
+      "purpose": "actual function target required",
+      "diagnostic": "E0522"
+    },
+    {
+      "file": "associated-owner.rs",
+      "sha256": "2c12b5b5a241b68b90e5b4de19d653438ba713ec3be5b8e3e453e85117e3d5b5",
+      "rustc_status": 1,
+      "purpose": "associated method is not the free-function target",
+      "diagnostic": "E0522"
+    },
+    {
+      "file": "duplicate.rs",
+      "sha256": "bbf21f42f75524e927673d487de2b4eb610ffd7fafca4cfecbf2166e1774462c",
+      "rustc_status": 1,
+      "purpose": "duplicate actual role identities reject",
+      "diagnostic": "E0152"
+    },
+    {
+      "file": "unfulfilled-bound.rs",
+      "sha256": "f717fc955c8e0a70c82b23284a6412d503c2aaff1a3c32d07fb2f99fd4a07a8c",
+      "rustc_status": 1,
+      "purpose": "ordinary explicit call retains actual where-bounds",
+      "diagnostic": "E0277"
+    },
+    {
+      "file": "feature-off.rs",
+      "sha256": "3886b26518b8e5942fbf031c02ebb2f8ab7e699311e34fd840913699a822d7b1",
+      "rustc_status": 1,
+      "purpose": "actual language-item feature grant is required",
+      "diagnostic": "E0658"
+    }
+  ],
+  "phase_contract": "unused alternate signatures remain ordinary Rust declarations; generated assertions require separate typed source operation/signature/caller/nounwind/body ownership, otherwise an explicit readiness boundary; old PA11 abort baseline is retained"
+}

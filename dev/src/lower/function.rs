@@ -835,6 +835,7 @@ impl Lower<'_, '_, '_> {
                 let primitive = self.primitive(self.body.values[operand.0 as usize].ty)?;
                 let value = self.value(operand)?.runtime()?;
                 Arithmetic {
+                    constants: self.context.constants,
                     builder: &mut self.builder,
                     panic: &mut self.panic,
                 }
@@ -867,6 +868,7 @@ impl Lower<'_, '_, '_> {
                         .ok_or("missing remainder result")?
                 } else {
                     Arithmetic {
+                        constants: self.context.constants,
                         builder: &mut self.builder,
                         panic: &mut self.panic,
                     }

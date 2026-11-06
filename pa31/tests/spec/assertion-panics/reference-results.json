@@ -1,0 +1,48 @@
+{
+  "scope": "reviewed22 metadata outcomes and5 actual-operation metadata controls, all before candidate observation; native28 ordinary marker bodies only",
+  "rust": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "receipts": {
+    "initial": {
+      "receipt": "obj/parallel/panic-hooks-v1/reference/receipt.json",
+      "sha256": "d466f3e3c78fbdadfbaa14ffd03b484f01e334ad11f607cb588cf77e6c34528f",
+      "state": "failed",
+      "seconds": 1.342720991000533
+    },
+    "reviewed-targets": {
+      "receipt": "obj/parallel/panic-hooks-v1/reference-v2/receipt.json",
+      "sha256": "a19f9b0dd78607f681101602d1d1a98f45f4150b8d0ae2f3ea1b16a09450f6b3",
+      "state": "passed",
+      "seconds": 0.15266498597338796
+    },
+    "guard-setup": {
+      "receipt": "obj/parallel/panic-hooks-v1/guard-reference/receipt.json",
+      "sha256": "91fccbe45b45acdaec7ab5c84f050439efcadf68964f38b1a2724d77b064c1ff",
+      "state": "failed",
+      "seconds": 0.25805892795324326
+    },
+    "guard-index-producer": {
+      "receipt": "obj/parallel/panic-hooks-v1/guard-reference-v2/receipt.json",
+      "sha256": "b6c0c55fa03eee9df624aeff4882d7b9d3d19f44b756c217406107050cb10025",
+      "state": "passed",
+      "seconds": 0.12200937099987641
+    }
+  },
+  "native": {
+    "status": 0,
+    "stdout_exact": true,
+    "observers": 28,
+    "receipt": "obj/parallel/panic-hooks-v1/reference/receipt.json"
+  },
+  "corrections": [
+    "v1 foreign declaration predicted0; realE0264 establishes reviewed1",
+    "wrong-target and associated-owner retain1; current Rust uses uncoded attribute diagnostics",
+    "v1 two index sources lacked the actual Index producer and rejectE0608; v2 reuses the unchanged previously-qualified Index source, both independently0"
+  ],
+  "no_claims": [
+    "original panicking.rs formatting execution",
+    "compiler assertion source-call routing",
+    "const panic redirection expansion",
+    "unwind",
+    "panic transport"
+  ]
+}

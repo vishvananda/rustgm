@@ -245,6 +245,12 @@ fn complete_dependent_roles(
     {
         complete.roles.insert(role);
     }
+    for role in super::guard_panics::complete(report, facts, catalog)?
+        .into_iter()
+        .flatten()
+    {
+        complete.roles.insert(role);
+    }
     if let Some(role) = super::async_glue::complete(report, facts, catalog)? {
         complete.roles.insert(role);
     }

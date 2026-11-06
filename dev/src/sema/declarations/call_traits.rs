@@ -96,7 +96,28 @@ impl Checker<'_> {
             self.work.push(super::Work::Definition(declaration, false));
             self.drain(steps, limit)?;
         }
+        self.prepare_source_guard_headers(steps, limit)?;
         crate::sema::compiler_items::validate_traits(self.report, &mut self.facts)
+    }
+    fn prepare_source_guard_headers(
+        &mut self,
+        steps: &mut usize,
+        limit: usize,
+    ) -> Result<(), Error> {
+        for role in crate::sema::compiler_items::guard_panics::ROLES {
+            let Some(declaration) = self
+                .facts
+                .source_bindings
+                .as_deref()
+                .and_then(|catalog| catalog.language(role))
+            else {
+                continue;
+            };
+            self.work
+                .push(super::Work::Definition(declaration.definition, false));
+            self.drain(steps, limit)?;
+        }
+        Ok(())
     }
     /// Reserve-only identity is sufficient for parsing this declaration's Args;
     /// selection still waits for completed source callable validation.

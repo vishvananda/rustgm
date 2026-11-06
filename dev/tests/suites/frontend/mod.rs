@@ -192,3 +192,6 @@ mod coroutine_sources;
 
 #[path = "../../overload_captures.rs"]
 mod overload_captures;
+
+#[path = "../../assertion_sources.rs"]
+mod assertion_sources;

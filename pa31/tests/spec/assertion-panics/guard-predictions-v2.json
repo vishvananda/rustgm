@@ -1,0 +1,39 @@
+{
+  "scope": "frozen actual-index/unchecked/wrapping/flag operation controls before candidate observation; unsupported routing is a phase boundary, not Rust rejection parity",
+  "cases": [
+    {
+      "file": "bounds-route-v2.rs",
+      "sha256": "3e9726ffe12c0b08884dc767be16439524776824ac137c4e281f4958aa1a7a8c",
+      "rustc_status": 0,
+      "candidate_phase": "source-boundary"
+    },
+    {
+      "file": "bounds-unrelated-v2.rs",
+      "sha256": "6ae671133baf3ab2d27a78aea2260acd81c747c5f959fc317fd87a2696d10335",
+      "rustc_status": 0,
+      "candidate_phase": "ready"
+    },
+    {
+      "file": "wrapping-no-guard.rs",
+      "sha256": "5da378d5b68ce9733c001805d331b906b5c58b4df2d6ee519f89d2e60edb066a",
+      "rustc_status": 0,
+      "candidate_phase": "ready"
+    },
+    {
+      "file": "overflow-flag-no-guard.rs",
+      "sha256": "fa35b29d9905882f45fe7c39d9b06734f0a5f0491fd4875223e20732058e8631",
+      "rustc_status": 0,
+      "candidate_phase": "ready"
+    },
+    {
+      "file": "unchecked-no-guard.rs",
+      "sha256": "1ba7e9940767e466432ad14129337378b025b9dfa1d3a6a547aa81ab33f2e8b1",
+      "rustc_status": 0,
+      "candidate_phase": "ready"
+    }
+  ],
+  "review": {
+    "reason": "v1 array inputs lacked the real Index producer (RustE0608), not a panic-role rejection; v2 reuses the already qualified full source Index packet unchanged and appends the actual hook and consumer",
+    "predecessor": "guard-predictions.json"
+  }
+}

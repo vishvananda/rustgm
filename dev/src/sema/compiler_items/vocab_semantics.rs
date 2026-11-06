@@ -7,6 +7,10 @@ use crate::{
 
 pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Result<(), Error> {
     for role in LangItem::DECLARATIONS {
+        if super::guard_panics::ROLES.contains(&role) {
+            // Ordinary completed headers supply no compiler assertion routing.
+            continue;
+        }
         match role {
             // These roles complete through their actual ordinary declarations.
             // Generated state, implicit operations and executable calls still

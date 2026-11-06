@@ -293,10 +293,11 @@ impl Lower<'_, '_, '_> {
                 let limit = self.builder.integer(Type::I64, u128::from(length))?;
                 let fault = self.builder.compare(Predicate::Uge, index, limit)?;
                 Arithmetic {
+                    constants: self.context.constants,
                     builder: &mut self.builder,
                     panic: &mut self.panic,
                 }
-                .guard(fault)?;
+                .guard(fault, crate::support::bindings::LangItem::PanicBoundsCheck)?;
                 let Shape::Array {
                     stride,
                     length: actual,

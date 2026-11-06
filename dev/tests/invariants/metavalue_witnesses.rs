@@ -267,7 +267,7 @@ fn language_fixture(name: &str) -> Result<String, std::io::Error> {
 #[test]
 fn language_value_claims_preserve_all_frozen_outcomes_and_real_role_identities() -> TestResult {
     use crate::support::bindings::LangItem;
-    let table = crate::test_source::fixture("pa31/tests/spec/language-values/cases-v1.tsv")?;
+    let table = crate::test_source::fixture("pa31/tests/spec/language-values/cases-v2.tsv")?;
     assert_eq!(table.lines().count(), 45);
     for line in table.lines() {
         let [name, path, status, types, roles]: [_; 5] = line

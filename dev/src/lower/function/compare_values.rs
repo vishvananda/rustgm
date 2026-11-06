@@ -75,11 +75,13 @@ impl Lower<'_, '_, '_> {
             return Err("three_way_compare lost its selected scalar type");
         };
         let less = Arithmetic {
+            constants: self.context.constants,
             builder: &mut self.builder,
             panic: &mut self.panic,
         }
         .binary(Punctuation::Less, primitive, left, right)?;
         let greater = Arithmetic {
+            constants: self.context.constants,
             builder: &mut self.builder,
             panic: &mut self.panic,
         }
