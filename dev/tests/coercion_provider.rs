@@ -79,6 +79,47 @@ fn source_unsizing_never_substitutes_layout_name_or_one_way_lifetimes() -> TestR
     assert!(failures.is_empty(), "accepted: {failures:?}");
     Ok(())
 }
+
+#[test]
+fn nominal_coercion_implementations_prove_one_actual_changed_field() -> TestResult {
+    let folder = "pa31/tests/spec/nominal-coercions";
+    let cases = crate::resolve::fixture(&format!("{folder}/cases.tsv"))?;
+    let mut failures = Vec::new();
+    let mut count = 0;
+    for line in cases.lines() {
+        let (name, expected) = line.split_once('\t').ok_or("nominal case columns")?;
+        let text = crate::resolve::fixture(&format!("{folder}/{name}"))?;
+        let result = lower(&text);
+        match (expected, result) {
+            ("0", Ok(_)) => {}
+            ("1", Err(error))
+                if ![
+                    "not implemented",
+                    "budget",
+                    "exhausted",
+                    "lacks its completed",
+                    "undefined",
+                    "syntax",
+                    "feature request",
+                ]
+                .iter()
+                .any(|fence| error.to_string().contains(fence)) =>
+            {
+                println!("{name}: {error}");
+            }
+            (_, result) => failures.push(format!(
+                "{name}: {}",
+                result.map_or_else(|error| error.to_string(), |_| "accepted".into())
+            )),
+        }
+        count += 1;
+    }
+    assert_eq!(count, 16);
+    // Previously qualified Rust-positive required fixture remains a real goal.
+    lower(&source("nominal-coerce-required", "rs")?)?;
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
 #[test]
 #[ignore = "requires the pinned CPPGM backend and host C linker"]
 fn source_unsizing_goal_native_answers() -> TestResult {

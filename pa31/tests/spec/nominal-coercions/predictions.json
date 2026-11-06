@@ -1,0 +1,99 @@
+{
+  "scope": "frozen before nominal validation implementation or candidate observations",
+  "rust": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "cases": [
+    {
+      "file": "one-field.rs",
+      "rustc_status": 0,
+      "sha256": "613dffa20a1ed4000abd96df91c765ee61bf078f7853869f8d33b4589a98a0de"
+    },
+    {
+      "file": "scalar-prefix.rs",
+      "rustc_status": 0,
+      "sha256": "c5cb96df8cb3fb1e458d4ca57defbd7853acc84d6b3c1045271fdde8b5601ae0"
+    },
+    {
+      "file": "nested-wrapper.rs",
+      "rustc_status": 0,
+      "sha256": "160700080d6d6436ba6f0e7bcc1f8ffac726c1c8fd9a5e794384e1981c1f8681"
+    },
+    {
+      "file": "phantom-field.rs",
+      "rustc_status": 0,
+      "sha256": "810601727b902323c58079a0c6f8b386fef2d5935029ec97a9d72640a8a72f9c"
+    },
+    {
+      "file": "repr-c.rs",
+      "rustc_status": 0,
+      "sha256": "182302c4aaf1c0d81ce1cac96c2ea861d8d586cc647e91384811ebe0f57b15cd"
+    },
+    {
+      "file": "packed.rs",
+      "rustc_status": 0,
+      "sha256": "8537419ad278a51a1985c8f41598e65348f37c9339bb133d14222b4b9be714ac"
+    },
+    {
+      "file": "lifetime-paid.rs",
+      "rustc_status": 0,
+      "sha256": "4fe1bbe05788f313696b81e975824dd8b6ac92936ce965b42e9cec6f66cdf584"
+    },
+    {
+      "file": "lifetime-unpaid.rs",
+      "rustc_status": 1,
+      "sha256": "7717592547a0219ccfa5e4a27730ecee5228fcd451830ea89e4ec1f0eabb3d1f"
+    },
+    {
+      "file": "zero-changed.rs",
+      "rustc_status": 1,
+      "sha256": "77e693e16b74ccf512abf3c3f198ccb373dc9b7c16f8a6c1bd902dc2ec75aceb"
+    },
+    {
+      "file": "two-changed.rs",
+      "rustc_status": 1,
+      "sha256": "dacd6022d933c4d83f3c371e03be0c418ae58b8c9c4c06e34832d5ded6b85754"
+    },
+    {
+      "file": "different-owner.rs",
+      "rustc_status": 1,
+      "sha256": "ef34388b6224d52e6b72089662ba3fcdeac1d511e6962be6ecfedeb1decfd072"
+    },
+    {
+      "file": "enum-owner.rs",
+      "rustc_status": 1,
+      "sha256": "8353db0eb9183a5bc42c5b1d1c0d2af207e711789dca7f3b0db8f1017cd81d2d"
+    },
+    {
+      "file": "union-owner.rs",
+      "rustc_status": 1,
+      "sha256": "49205a144d1e2e6bcb700a0fe2e3fef0d606a5527dc9fe739e35318898823663"
+    },
+    {
+      "file": "missing-field-bound.rs",
+      "rustc_status": 1,
+      "sha256": "44c90c47034afd2ed0be14779581e0008b2e2c3d6bfd88e741c1a1391efb1296"
+    },
+    {
+      "file": "scalar-change.rs",
+      "rustc_status": 1,
+      "sha256": "386e6889c69649bcf13eae4ca25a39b0913339cc7dd9783354820a57652b61a5"
+    },
+    {
+      "file": "mutable-strengthening.rs",
+      "rustc_status": 1,
+      "sha256": "fd60f103a9f4544e887b79977d3c83e00d542fdefa96d457af949d8a6be6a786"
+    }
+  ],
+  "actual_original_consumer": {
+    "path": "pa31/tests/spec/source-coroutines/full/result-coercion.rs",
+    "sha256": "16b1d23d193074c832a23a5b672d7089b09564cb5520ec0b6c50d27374c8b09f",
+    "rustc_status": 0
+  },
+  "native_plan": [
+    "actual Pin<&[u8;2]> to Pin<&[u8]> returns preserved element/length",
+    "scalar prefix survives thin-to-wide wrapper conversion",
+    "nested wrapper conversion evaluates source exactly once",
+    "source whole-value transfers once; unchanged owned fields drop once",
+    "shared/mutable loan escape and mutability strengthening remain rejected"
+  ],
+  "remaining": "No native or candidate observation in this declaration packet; wrapper value/terminal metadata/ownership plan remains required."
+}

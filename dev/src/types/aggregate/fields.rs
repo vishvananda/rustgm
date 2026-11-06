@@ -117,7 +117,21 @@ impl SemanticFields<'_> {
         variant: usize,
         field: usize,
     ) -> Result<TypeId, &'static str> {
-        self.cost.charge(1, 0)?;
+        self.field_paid(types, variant, field, &|_, _| Ok(()))
+    }
+    /// Lend the same substitution's actual growth to its caller's existing payer.
+    pub(crate) fn field_paid(
+        &mut self,
+        types: &mut Store,
+        variant: usize,
+        field: usize,
+        pay: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<TypeId, &'static str> {
+        let charge = |work, bytes| {
+            self.cost.charge(work, bytes)?;
+            pay(work, bytes)
+        };
+        charge(1, 0)?;
         let variant = self
             .variants
             .get(variant)
@@ -132,12 +146,12 @@ impl SemanticFields<'_> {
                 types,
                 self.item,
                 self.arguments,
-                &|w, b| self.cost.charge(w, b),
+                &charge,
             )?);
         }
         self.fold
             .as_mut()
             .ok_or("semantic fields lost their paid fold")?
-            .apply_inside_observed::<true>(types, ty, 0, &|w, b| self.cost.charge(w, b))
+            .apply_inside_observed::<true>(types, ty, 0, &charge)
     }
 }

@@ -1,0 +1,16 @@
+one-field.rs	0
+scalar-prefix.rs	0
+nested-wrapper.rs	0
+phantom-field.rs	0
+repr-c.rs	0
+packed.rs	0
+lifetime-paid.rs	0
+lifetime-unpaid.rs	1
+zero-changed.rs	1
+two-changed.rs	1
+different-owner.rs	1
+enum-owner.rs	1
+union-owner.rs	1
+missing-field-bound.rs	1
+scalar-change.rs	1
+mutable-strengthening.rs	1

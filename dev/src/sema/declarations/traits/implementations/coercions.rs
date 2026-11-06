@@ -1,4 +1,5 @@
 //! Source coercion impls retain their typed referent proof and lifetime relation.
+mod structure;
 use super::{Checker, Error, NodeKey};
 use crate::{
     support::{bindings::LangItem, constness::Constness},
@@ -44,16 +45,34 @@ impl Checker<'_> {
         if arguments.next().is_some() {
             return Err(self.error(source, "coercion implementation has extra arguments"));
         }
-        let (from, to, regions) = pointer_pair(&self.facts.types, predicate.ty, target)
-            .map_err(|e| self.error(source, e))?;
-        let unsize = self
+        let (from, to, regions, role) = if matches!(
+            (
+                self.facts.types.kind(predicate.ty),
+                self.facts.types.kind(target)
+            ),
+            (Some(Kind::Adt(..)), Some(Kind::Adt(..)))
+        ) {
+            let (from, to) = structure::changed(&mut self.facts, predicate.ty, target, proof)
+                .map_err(|e| self.error(source, e))?;
+            (from, to, None, LangItem::CoerceUnsized)
+        } else {
+            let (from, to, regions) = pointer_pair(&self.facts.types, predicate.ty, target)
+                .map_err(|e| self.error(source, e))?;
+            (from, to, regions, LangItem::Unsize)
+        };
+        let relation = self
             .facts
             .source_bindings
             .as_deref()
             .ok_or_else(|| self.error(source, "source coercion lost its catalog"))?
-            .validated_language(LangItem::Unsize)
+            .validated_language(role)
             .map_err(|e| self.error(source, e))?
-            .ok_or_else(|| self.error(source, "source CoerceUnsized requires actual Unsize"))?;
+            .ok_or_else(|| {
+                self.error(
+                    source,
+                    "source CoerceUnsized requires its actual field relation",
+                )
+            })?;
         let arguments = self
             .facts
             .types
@@ -63,7 +82,7 @@ impl Checker<'_> {
             .facts
             .types
             .intern_trait_application(crate::types::traits::Application {
-                item: crate::types::ItemId(unsize.definition.0),
+                item: crate::types::ItemId(relation.definition.0),
                 arguments,
             })
             .map_err(|e| self.error(source, e))?;
@@ -79,7 +98,7 @@ impl Checker<'_> {
         {
             return Err(self.error(
                 source,
-                "source CoerceUnsized implementation does not prove its exact Unsize relation",
+                "source CoerceUnsized implementation does not prove its exact field relation",
             ));
         }
         Ok(regions)
@@ -127,9 +146,6 @@ fn pointer_pair(
                 mutable: b,
             }),
         ) if a || !b => Ok((from, to, None)),
-        (Some(Kind::Adt(..)), Some(Kind::Adt(..))) => {
-            Err("source CoerceUnsized nominal implementation validation is not implemented")
-        }
         _ => {
             Err("source CoerceUnsized implementation does not retain a permitted pointer coercion")
         }
