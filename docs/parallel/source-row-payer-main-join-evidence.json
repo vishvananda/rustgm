@@ -1,0 +1,64 @@
+{
+  "state": "passed",
+  "worker_sources_sha256": "0a7318ce9b3bb1282006c1d7a85aaf1eef276cfac73009f1b42b92f880f42093",
+  "worker_receipt_sha256": "8a7d85efcafd5a6fe80fd6cb0ede460a3932889c4c09bcf6f2cf1646c9630260",
+  "matched_rust_files": 3548,
+  "runs": [
+    {
+      "name": "temporary",
+      "command": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/rust/dev-fast/deps/suite_frontend-042f6bb45eb72a91",
+        "--exact",
+        "temporary_editions::destruction_sources_and_opposing_borrows_reach_complete_lowering",
+        "--nocapture"
+      ],
+      "binary_sha256": "3bc9aa44e9b19397878b6ce35060da76f7323ba5b3c99a7ce6e103631fc88acb",
+      "status": 0,
+      "seconds": 0.1308018850395456
+    },
+    {
+      "name": "originals",
+      "command": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/rust/dev-fast/deps/suite_linking-f26e83065cdff922",
+        "--exact",
+        "crate_linking::instantiable::actual_generic_originals_execute_runtime_and_constant_instances_after_roundtrip",
+        "--nocapture"
+      ],
+      "binary_sha256": "076e029f86eebae7447c4fa55638c3909e5315f5a6b2c2b3e57ec96d3251434a",
+      "status": 0,
+      "seconds": 0.02537963498616591
+    },
+    {
+      "name": "client",
+      "command": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/rust/dev-fast/deps/suite_linking-f26e83065cdff922",
+        "--exact",
+        "crate_linking::packet_libraries::cli_required_trait_methods_accept_fresh_local_implementations",
+        "--nocapture"
+      ],
+      "binary_sha256": "076e029f86eebae7447c4fa55638c3909e5315f5a6b2c2b3e57ec96d3251434a",
+      "status": 0,
+      "seconds": 0.16285947302822024
+    },
+    {
+      "name": "unit",
+      "command": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/rust/dev-fast/deps/suite_traits-1eb52380c4060d30",
+        "--exact",
+        "ctdrop::original_unit_result_const_calls_pay_their_actual_destruct_premises",
+        "--nocapture"
+      ],
+      "binary_sha256": "72502834a91ab70d30627e275a71dfe1c753a2d2f7c57fba24d7b58e175f7cc9",
+      "status": 0,
+      "seconds": 0.23036840598797426
+    },
+    {
+      "name": "harness",
+      "status": 0,
+      "seconds": 12.964258960040752
+    }
+  ],
+  "seconds": 20.421127777022775,
+  "receipt_sha256": "44ca16a2534441d4972326b4812f088cbdcb2706e1524eea7ab3e815444375c9",
+  "qualification_scope": "Compiler and test Rust inputs match Source frozen map across main, warm tree and worker. Main adds only one existing smoke selection; no duplicate Cargo build. Private execution and full successor CI remain pending."
+}

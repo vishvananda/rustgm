@@ -1,3 +1,13 @@
+The [complete cleanup-row payer main join](parallel/source-row-payer-main-join.md)
+repairs both ordinary Some-row and prior None-row paths while preserving actual
+SourceCore checks. Source54 public controls and Root4 cached/harness controls
+pass; compiler/test Rust inputs match exactly without a duplicate build. Smoke
+now includes the frozen temporary-editions cleanup/borrow regression using its
+existing frontend target. Scope64 metadata correction remains included; full
+successor execution is pending. Root joins qualified AsyncIterator/Field next;
+the unchanged-source candidate core probe clears AsyncIterator and reaches
+CoroutineState, but main's joined observation remains separate.
+
 Full42176016850 is terminal failure after2741 private passes: three private and35
 public failures retain the ordinary cleanup-row payer regression; Source now owns
 that priority repair before the next full run. The fourth private failure is an
