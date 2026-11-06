@@ -1,3 +1,11 @@
+The [unit/payment main join](parallel/source-unit-main-join.md) integrates actual
+unit-result const calls and the ordinary-original-row CI payer repair. Root
+matches all3544 qualified source files and reruns14 exact public controls. Full
+42169539998 is terminal failure; its two smoke regressions pass locally after
+repair, while successor private/full qualification remains pending. Original
+core stays LIB171; actual interpreter cleanup and conditional-parent history
+remain required. Existing two workers and resource guards are unchanged.
+
 The [selected-cleanup main join](parallel/source-cleanup-main-join.md) integrates
 actual scoped qualification and original-row producers after44 exact public and3
 native controls pass. CLI98313b1b preserves original core at LIB171 in18.7041s /
