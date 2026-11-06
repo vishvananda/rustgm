@@ -41,7 +41,7 @@ impl Checker<'_> {
         let Some((key, mut receiver, target)) = self.actual_method_receiver(function) else {
             return Ok(());
         };
-        if receiver.base != target {
+        if receiver.base != target && self.facts.source_bindings.is_some() {
             receiver.base = self.validate_smart_receiver(function, key, receiver.base, target)?;
         }
         if receiver.base != target {

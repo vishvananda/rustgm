@@ -1,0 +1,16 @@
+{
+  "state": "focused bootstrap receiver repair passed; full successor pending",
+  "failed_full_ci": 42199401711,
+  "full_private_passed": 2753,
+  "full_regular_integration_passed": 2185,
+  "source_unchanged": true,
+  "reference_changes": false,
+  "gate": "obj/qualification/fast/1793961244062850330/receipt.json",
+  "gate_sha256": "24ec249c7d551b3fb23e570ddba19fd6c3748465468d501d2d5138bbeeffebdf",
+  "exact_tests": 9,
+  "course_pa19": "1193/1193",
+  "seconds": 109.89,
+  "compiler_files": [
+    "dev/src/sema/declarations/methods.rs"
+  ]
+}
