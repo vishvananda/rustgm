@@ -1,0 +1,249 @@
+{
+  "scope": "Finite complete original Drop source with actual ordinary/pinned/generic cleanup; no whole PA or original library artifact completion",
+  "receipts": {
+    "reference-v2/receipt.json": {
+      "path": "obj/parallel/full-drop-source-v1/reference-v2/receipt.json",
+      "sha256": "c188450d7879e7b627bc1af9d6633e5c6bdd9e5b75b93e6a211292d59d4f816d",
+      "state": "passed"
+    },
+    "gate-v8/receipt.json": {
+      "path": "obj/parallel/full-drop-source-v1/gate-v8/receipt.json",
+      "sha256": "d910fba449805d2292ae41c526bb94bdaa468f3ea8f5e67aef3e43589d4185c6",
+      "state": "passed"
+    },
+    "native-gate-v1/receipt.json": {
+      "path": "obj/parallel/full-drop-source-v1/native-gate-v1/receipt.json",
+      "sha256": "65e506215274ecf50f3f784ea9ec909bada6c4fc9262c18f194f85a331bbc6e7",
+      "state": "passed"
+    },
+    "qualification-v1/receipt.json": {
+      "path": "obj/parallel/full-drop-source-v1/qualification-v1/receipt.json",
+      "sha256": "2565cc270fdca71619769c0d3887ec920833897001efc586c9db457a4d51e162",
+      "state": "observed"
+    },
+    "performance-v1/receipt.json": {
+      "path": "obj/parallel/full-drop-source-v1/performance-v1/receipt.json",
+      "sha256": "8369298dc49d6da73c88c33c026f2b883264b0c5c823a1906114b1f6ecb99c61",
+      "state": "passed"
+    },
+    "ci-harness-v2/receipt.json": {
+      "path": "obj/parallel/full-drop-source-v1/ci-harness-v2/receipt.json",
+      "sha256": "8aa34add7f73f7d3f226ce32285f53c2fcfd858ea8c9e798bff1af00e86a3aae",
+      "state": "passed"
+    }
+  },
+  "source_sha256": {
+    "dev/src/body/drops.rs": "ec3c1e5c037d9c9b99d59c6ea466b05757c9181da5f6c5e2ea08680fffaf38bb",
+    "dev/src/body/drops/glue.rs": "c0bc59508fede50d49edcde3de73ea68f3c44d815761599342bae603f4d51534",
+    "dev/src/body/drops/glue/cache.rs": "ebc1a304c64d44c7a12c69967df0db9318ddc1356c080d3635139fc9a74f354a",
+    "dev/src/sema/bodies/calls.rs": "9e7136a3744325b4fc3c1778c7d35f2202e89d2f874cbae09010b4b196bb9778",
+    "dev/src/sema/compiler_items.rs": "791e87be5b1711a8dfe0d6e9ec10e47201f13d9278a9a247e81b99abb3d8ea86",
+    "dev/src/sema/compiler_items/explicit_cleanup.rs": "03c1b410e15919ab6c3c3676f15e7e3aedb487a36153c9ccfb4b0ff601d37d83",
+    "dev/src/sema/compiler_items/roles.rs": "8b03e2a53e9fd7117e531c9d0c54d8e04fa3e72cc8a9fe6d463a6498e000c2c0",
+    "dev/src/sema/compiler_items/roles/destructibility.rs": "0464ff0ec43c2280ef55b1efececbe42c6ad6ba32dca42f38c9f2b86e901bd46",
+    "dev/src/sema/declarations/destructors.rs": "4c60209282654fb1f5c49adff1647f199322c236cfcb44d349e5761602e5030a",
+    "dev/src/sema/declarations/destructors/headers.rs": "0633853ccddf3ea8ae3ba578b1690e444696a1735ddd0b73d900448724ec62eb",
+    "dev/src/sema/declarations/destructors/receivers.rs": "9d98719886f47bd30147c97c575fb37948153292332ea0f2021b7bc38bc1f973",
+    "dev/src/sema/declarations/receivers.rs": "5c2c70eb161ea6fe107fbef6a001d95f2aa433d148fdc8591a1c99037cb62d17",
+    "dev/src/sema/destructors.rs": "73d99fcd8acdb8197b34d83386ae57adc572a3a0abbeccf0e49b26c577c2ae02",
+    "dev/src/sema/destructors/instances.rs": "d6e52ba51aab02bed5732b63bdf5afa6724b76daa7fee51166b1e2c565a020ba",
+    "dev/tests/pinned_drop.rs": "3c88e73d995a3b72b5a0a7f03ead9417dc3a0a5769c6d99929aad0e0e6f41c29",
+    "dev/tests/provider_traits/destructibility.rs": "20df3a9c2b8b6cc63a2f486e1db2e7aa1f59f676c02f8570696a54714d7b9f1e",
+    "dev/tests/suites/frontend/mod.rs": "c9f5548220a052f9e806951a07743a2dabf80551f7ee8019eb9858acd75b6b11",
+    "pa31/README.md": "a34bfaba55a12554ac501886c81a9bd6d4b609629cade032b98a2c38d2074f72",
+    "pa31/tests/README.md": "07e4b4f526c2289bc544f3fea01af25330d707ab21f1e3784bfc9f2f8286dc02",
+    "pa31/tests/spec/destruct-header/README.md": "fb4ebdeabed0b62d1bd2490850ca953cde402c76a7e41c3a9d5fb9409912ac20",
+    "pa31/tests/spec/destruct-header/cases.tsv": "69355f6a6a66fa0b5c8bfdf55f1ef0ce6a35d81b39a34d606a5b348d96eda660",
+    "pa31/tests/spec/full-drop-source/README.md": "bd8653c4f64e32e672ed3c14fca4d049d83dc8df5bc1f57bae9f649382c48836",
+    "pa31/tests/spec/full-drop-source/both.rs": "d130c66eb87abe7c1a01f4f3d46808050be9fb247945476deb1f50e4b8f674b7",
+    "pa31/tests/spec/full-drop-source/cases.tsv": "b76a06a36c88214fb6a1abb737582e283ef9ba38a43a1aeac729d0a6b4d3ffe5",
+    "pa31/tests/spec/full-drop-source/drop.rs": "c606cb2d42fc889661c6f152b430181dbaf11bb20d120183ab52c5c46cf613bd",
+    "pa31/tests/spec/full-drop-source/empty.rs": "8894a8e27ba2817a4c96e348171f5eee2a8a55546e0c813a364e2c253c38d907",
+    "pa31/tests/spec/full-drop-source/explicit-drop.rs": "dbeb7b884e3f88d8bde1c1a43302ce3671228f61b7e7d29dd1442c1771be0f48",
+    "pa31/tests/spec/full-drop-source/explicit-pin.rs": "bad1d323dff4d65be6ff10bf7cd8e5c742e6dca296a58414ddf96d643df4f191",
+    "pa31/tests/spec/full-drop-source/generic-drop.rs": "3d1fc37da0a13e953b8587a22479f26079320ed8210122378fb801e1d1862129",
+    "pa31/tests/spec/full-drop-source/generic-pin.rs": "8be5d7e7d40d1eaab8d6423ec8dbb620ef6571f05cb3e3d8052bfafa6d5e7276",
+    "pa31/tests/spec/full-drop-source/observe.c": "cb6d2f7dcb04ab05000e2ab5f590f62c0c562389d5b8eeb203a0f4882748eac9",
+    "pa31/tests/spec/full-drop-source/pin-drop.rs": "7e6ed767eae7815b4b128b2151f7ccb272dbfb46c5d3fcd72d8a908a6ff67dae",
+    "pa31/tests/spec/full-drop-source/predictions.json": "3a21ef64e8aa6e57a62f725b67aee09a47b66edc85080cef5aa4b389cc0239e6",
+    "pa31/tests/spec/full-drop-source/provided-call.rs": "1f4ef9d695723d679e9a6047356d8e692f601681e14cf45e4168dcd97fd2d1ba",
+    "pa31/tests/spec/full-drop-source/whole.rs": "dfd9ba573ddfaac897a6050da29b6a026f908c709e64f53dce492b66c2e41aa9",
+    "pa31/tests/spec/full-drop-source/wrong-receiver.rs": "ce7ad87e854fda51d961d36e2f7a104d04ccb36beb927b08fea6b07629219746",
+    "pa31/tests/spec/full-drop-source/wrong-result.rs": "dd749a2cebc67e6af3bb4f53fa019f40ebfdcf07e80adb83ace7eed0daffa1e9",
+    "scripts/check_rustc.py": "3d1ea10afe4bd05ffa9f002c3f16d1a526e29d4eae933bfb63f494aff9025d03",
+    "scripts/tests/test_rustc_checks.py": "a21b8d0b6e3636c5f465c216ae8fab37fe746458d72a94af4965f2291a5290b5",
+    "spec.md": "cdbc114411d0c024ddb701bf102e23c9001c9bee9f94d63b51310d07318e604a",
+    "third_party/sources.json": "4fbb8006712b5fd1cb95cb888f34e2dfb60ac73fbb4ed21117d127297dc0a1dc"
+  },
+  "exact_public_tests": 10,
+  "full_source_cases": 12,
+  "native_programs": 4,
+  "cli_sha256": "9ebf8ae50fa4c54aa9fd2ed59bd5f2e0fd6728621b42271c1b723f8a193e5415",
+  "original_core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "9ebf8ae50fa4c54aa9fd2ed59bd5f2e0fd6728621b42271c1b723f8a193e5415",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 108: 636: source compiler language item semantic contract is not implemented",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 20.85637425997993,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "15b46f1fc63061c8fff4dcef98d5d48a90d931b6b9b0555455355fd9ede273e9",
+      "whole-core.openat": "90d2c613b1ffd1e3ae7aeec82c215dfa5cba720c06a321d5f128cd62e760f4f8",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    }
+  },
+  "performance": {
+    "observations": 72,
+    "scales": [
+      {
+        "family": "drop",
+        "width": 8,
+        "source_sha256": "597c7d8afaba1857a60ea3fc05868edf37cdd0b767c6173838b7171fec81eac6",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.2856050709398308,
+            "AA_cpu_second_over_first": 1.294270158154006,
+            "ABBA_cpu_B_over_A": 1.024697422194278,
+            "ABBA_B_over_A": 1.024673434875161
+          },
+          {
+            "AA_second_over_first": 1.1184279411151574,
+            "AA_cpu_second_over_first": 1.1224420767799754,
+            "ABBA_cpu_B_over_A": 1.0939226519337013,
+            "ABBA_B_over_A": 1.094109836077025
+          },
+          {
+            "AA_second_over_first": 0.9693903450958161,
+            "AA_cpu_second_over_first": 0.9701751774105508,
+            "ABBA_cpu_B_over_A": 1.0436386560508066,
+            "ABBA_B_over_A": 1.0453390083600977
+          }
+        ],
+        "candidate_median_seconds": 0.023326730501139536,
+        "paired_median_cpu_B_over_A": 1.0436386560508066,
+        "paired_median_B_over_A": 1.0453390083600977
+      },
+      {
+        "family": "drop",
+        "width": 32,
+        "source_sha256": "8ea912e49517213b7a21238ebb5c29cea041658fc50a2eb6e0c393680cb0952f",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.102190641464153,
+            "AA_cpu_second_over_first": 1.1030650756738225,
+            "ABBA_cpu_B_over_A": 1.0795534585733468,
+            "ABBA_B_over_A": 1.0792436821756242
+          },
+          {
+            "AA_second_over_first": 1.0117056103397961,
+            "AA_cpu_second_over_first": 1.007820572563165,
+            "ABBA_cpu_B_over_A": 1.0062511145013957,
+            "ABBA_B_over_A": 1.0061166437562568
+          },
+          {
+            "AA_second_over_first": 0.8778653357312656,
+            "AA_cpu_second_over_first": 0.8784385555126104,
+            "ABBA_cpu_B_over_A": 0.9429989927890826,
+            "ABBA_B_over_A": 0.9434140684698271
+          }
+        ],
+        "candidate_median_seconds": 0.05301373949623667,
+        "paired_median_cpu_B_over_A": 1.0062511145013957,
+        "paired_median_B_over_A": 1.0061166437562568
+      },
+      {
+        "family": "drop",
+        "width": 128,
+        "source_sha256": "3a6103004e8e39431d2f025b525328711bf0a3f56b21866eb539277e0920b95a",
+        "blocks": [
+          {
+            "AA_second_over_first": 0.9384128199487315,
+            "AA_cpu_second_over_first": 0.9366904423948355,
+            "ABBA_cpu_B_over_A": 1.169077423686127,
+            "ABBA_B_over_A": 1.1689976365427934
+          },
+          {
+            "AA_second_over_first": 1.2079550983399905,
+            "AA_cpu_second_over_first": 1.2080299018844398,
+            "ABBA_cpu_B_over_A": 0.9868726671828226,
+            "ABBA_B_over_A": 0.9873664041084349
+          },
+          {
+            "AA_second_over_first": 1.0673936512084732,
+            "AA_cpu_second_over_first": 1.0680449998330832,
+            "ABBA_cpu_B_over_A": 1.022657972238774,
+            "ABBA_B_over_A": 1.0222869033852673
+          }
+        ],
+        "candidate_median_seconds": 0.18077987700235099,
+        "paired_median_cpu_B_over_A": 1.022657972238774,
+        "paired_median_B_over_A": 1.0222869033852673
+      },
+      {
+        "family": "ordinary",
+        "width": 4096,
+        "source_sha256": "9f5ca894e474569a5033b27b8508936790ca745d34c1e370abe066fbf4086bba",
+        "blocks": [
+          {
+            "AA_second_over_first": 0.9807903674064892,
+            "AA_cpu_second_over_first": 0.980676944502348,
+            "ABBA_cpu_B_over_A": 0.9646484870002036,
+            "ABBA_B_over_A": 0.9645396794252993
+          },
+          {
+            "AA_second_over_first": 1.0088541626563696,
+            "AA_cpu_second_over_first": 1.008650417585384,
+            "ABBA_cpu_B_over_A": 0.9639805387998455,
+            "ABBA_B_over_A": 0.9638166348721121
+          },
+          {
+            "AA_second_over_first": 1.0010570923657423,
+            "AA_cpu_second_over_first": 1.0011293516338517,
+            "ABBA_cpu_B_over_A": 1.0351494681443785,
+            "ABBA_B_over_A": 1.0350142303460932
+          }
+        ],
+        "candidate_median_seconds": 0.9479711375315674,
+        "paired_median_cpu_B_over_A": 0.9646484870002036,
+        "paired_median_B_over_A": 0.9645396794252993
+      }
+    ],
+    "interpretation": "Exclusive immutable A/A-calibrated ABBA common controls; every observation and output equality retained. Not full-library throughput or a broad speedup/regression-absence claim."
+  },
+  "qualification": {
+    "harness_tests": 282,
+    "independent_upstream_initial": 17,
+    "independent_upstream_successor": 18,
+    "manual_full_ci": {
+      "run": 42151987920,
+      "head": "bfd50b429",
+      "passed": [
+        "lint/architecture/harness",
+        "host build graph",
+        "release and course",
+        "native",
+        "debug invariants"
+      ],
+      "failed": "Independent Rust check treated retained source modules as standalone programs; source-fragment companion successor passes18 checks",
+      "full_successor": "pending"
+    }
+  },
+  "required": [
+    "Original AsyncIterator/Item/poll_next +helpers and real source forwarders (LIB-171)",
+    "Remaining pin_v2/projection and actual source feature/consumer closure",
+    "Broader async/poll/borrow/cancellation/unwind",
+    "Const value history/CTFE and shared builtin-query storage accounting",
+    "Authenticated destructor/body metadata",
+    "Complete original core/alloc/std artifacts and whole-PA release checks"
+  ]
+}

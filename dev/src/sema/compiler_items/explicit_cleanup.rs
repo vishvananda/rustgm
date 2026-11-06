@@ -84,21 +84,42 @@ pub(in crate::sema) fn explicit_drop_member(
         }
     };
     catalog.validated_language(LangItem::Drop)?;
-    let members = facts
-        .associated
-        .owner(declaration.definition)
-        .and_then(|id| facts.associated.owner_members(id))
-        .ok_or("explicit source Drop use has no validated members")?;
-    let [member] = members else {
-        return Err("explicit source Drop use requires its checked member profile");
-    };
     let Some(header) = implementation else {
-        return Ok(definition == *member);
+        return Ok(true);
     };
-    if !matches!(header.methods.as_slice(), [(declared, Some(actual))]
-        if *declared == *member && *actual == definition)
+    if !header
+        .methods
+        .iter()
+        .any(|(_, actual)| *actual == Some(definition))
     {
         return Err("explicit source Drop use requires its exact declaration-to-override mapping");
     }
     Ok(true)
+}
+
+/// The exemption belongs to the genuine provided body, not an enclosing method
+/// environment inherited by a closure, inline constant or subtrait body.
+pub(in crate::sema) fn source_drop_body(
+    facts: &Declarations,
+    owner: Option<DefId>,
+    body: crate::resolve::unit::NodeKey,
+) -> Result<bool, &'static str> {
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(false);
+    };
+    let Some(drop) = catalog.validated_language(LangItem::Drop)? else {
+        return Ok(false);
+    };
+    let Some(owner) = owner else {
+        return Ok(false);
+    };
+    if facts.associated.trait_owner(owner) != Some(drop.definition) {
+        return Ok(false);
+    }
+    let function = facts
+        .function_indices
+        .get(&owner)
+        .and_then(|&index| facts.functions.get(index))
+        .ok_or("provided Drop body lost its actual source function")?;
+    Ok(function.definition == owner && function.body == Some(body))
 }

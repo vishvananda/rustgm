@@ -16,6 +16,15 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [complete Drop source packet](tests/spec/full-drop-source/README.md) qualifies
+the original provided Drop/pin_drop bodies and actual ordinary, pinned and generic
+cleanup. Unused alternate signatures retain ordinary header legality; exhaustive
+registration and actual execution still require their checked contracts. The
+cleanup callable can be the provided trait method while the implementation
+overrides pin_drop. Its real body, dispatch, substitutions and loans must be
+proved normally. Wider pin projection, async cleanup, CTFE and authenticated
+transport remain required; this finite contract does not release the assignment.
+
 The [VaArgSafe/VaList declaration checkpoint](../docs/parallel/source-va-declarations.md)
 retains ordinary actual headers, fields, implementation domains and ownership.
 It supplies no invented Copy, target layout or variadic runtime permission.

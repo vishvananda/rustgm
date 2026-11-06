@@ -202,11 +202,12 @@ impl Checker<'_> {
         let ty = self.ty(annotation.map_or(key, |node| NodeKey { node, ..key }))?;
         let (base, references) = if let Some(implementation) = self.facts.destructors.method(owner)
         {
+            let pointer = self.drop_receiver(key, owner, ty)?;
             let Some(Type::Reference {
                 mutable: true,
                 region,
                 referent,
-            }) = self.facts.types.kind(ty)
+            }) = self.facts.types.kind(pointer)
             else {
                 return Err(self.error(key, "Drop receiver must have type &mut Self"));
             };
@@ -218,7 +219,11 @@ impl Checker<'_> {
                     "Drop receiver requires an independent lifetime and the exact Self type",
                 ));
             }
-            (referent, 1)
+            if pointer == ty {
+                (referent, 1)
+            } else {
+                self.receiver_base(key, owner, binder, ty)?
+            }
         } else {
             self.receiver_base(key, owner, binder, ty)?
         };

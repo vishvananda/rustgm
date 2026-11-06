@@ -8,6 +8,7 @@ mod parameter_types;
 pub(in crate::sema::compiler_items) mod range_members;
 pub(super) use completion_set::RoleSet;
 mod destructibility;
+pub(in crate::sema) use destructibility::require_source_drop_contract;
 mod freezing;
 mod glue;
 pub(crate) use destructibility::destruct_predicate;
@@ -396,6 +397,7 @@ fn canonical_header_only(role: LangItem) -> bool {
             | LangItem::AsyncFnOnce
             | LangItem::AsyncFnKindHelper
             | LangItem::FusedIterator
+            | LangItem::Drop
     )
 }
 

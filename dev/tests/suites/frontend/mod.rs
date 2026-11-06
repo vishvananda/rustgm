@@ -107,6 +107,8 @@ pub(crate) mod observed_program;
 mod option_environment;
 #[path = "../../pattern_editions.rs"]
 mod pattern_editions;
+#[path = "../../pinned_drop.rs"]
+mod pinned_drop;
 #[path = "../../pinning_contracts.rs"]
 mod pinning_contracts;
 #[path = "../../polling_source.rs"]
