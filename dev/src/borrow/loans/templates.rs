@@ -1,4 +1,6 @@
 //! Generic bodies share ordinary proofs with scoped moves and abstract cleanup.
+mod concrete;
+mod payload;
 mod staged;
 use super::Analysis;
 use crate::support::hash::HashMap;
@@ -17,6 +19,7 @@ use crate::{
         outlives::LiveRegions,
     },
 };
+pub(crate) use payload::Payload;
 pub(crate) use staged::{Initial, Prepared};
 
 /// Prove moves, initialization, abstract destruction and loans in every template.

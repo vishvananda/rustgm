@@ -1,5 +1,5 @@
 //! One initialized plan releases semantic borrows without publishing a loan proof.
-use super::{Analysis, Error, Verifier, regions, symbolic};
+use super::{Analysis, Error, Payload, Verifier, regions, symbolic};
 use crate::{
     body::{ir::Body, regions::BuiltinRequirements},
     borrow::ownership::initialization,
@@ -53,7 +53,7 @@ impl<'a> Initial<'a> {
         self.seal
             .validate(environment, self.body(), contract, owner)
     }
-    pub(super) fn select(self, plan: Option<symbolic::Plan>) -> Prepared<'a> {
+    pub(super) fn select<P: Payload>(self, plan: Option<P>) -> Prepared<'a, P> {
         Prepared {
             facts: self.facts,
             plan,
@@ -64,15 +64,15 @@ impl<'a> Initial<'a> {
         }
     }
 }
-pub(crate) struct Prepared<'a> {
+pub(crate) struct Prepared<'a, P: Payload = symbolic::Plan> {
     facts: initialization::Facts<'a>,
-    plan: Option<symbolic::Plan>,
+    plan: Option<P>,
     parameters: Arc<Environment>,
     builtins: Option<Arc<BuiltinRequirements>>,
     seal: crate::borrow::loans::seal::Seal,
     defining_steps: usize,
 }
-impl Prepared<'_> {
+impl<P: Payload> Prepared<'_, P> {
     pub(crate) fn body(&self) -> &Body {
         self.facts.body()
     }
@@ -154,13 +154,38 @@ impl Prepared<'_> {
             .validate(environment, self.body(), contract, verifier.owner.as_ref())
     }
 }
+
+/// Only successful same-owner loan completion can move out the concrete plan.
+/// The source body remains borrowed until the owned execution snapshot is built.
+pub(crate) struct Execution<'a> {
+    body: &'a Body,
+    plan: Option<crate::borrow::destruction::Plan>,
+    seal: crate::borrow::loans::seal::Seal,
+}
+impl Execution<'_> {
+    pub(crate) fn active(&self) -> bool {
+        self.plan
+            .as_ref()
+            .is_some_and(|plan| plan.cleanups.iter().any(|cleanup| cleanup.node.is_some()))
+    }
+    pub(crate) fn planning_steps(&self) -> usize {
+        self.plan.as_ref().map_or(0, |plan| plan.steps)
+    }
+}
+
+const _: [(); 784] = [(); size_of::<Prepared<'_>>()];
+const _: [(); 904] = [(); size_of::<Prepared<'_, crate::borrow::destruction::Plan>>()];
+const _: [(); 224] = [(); size_of::<Execution<'_>>()];
 impl Verifier {
     pub(crate) fn begin_qualification<S: std::hash::BuildHasher>(
         &self,
         environment: &crate::borrow::Environment<'_, S>,
         initial: &mut Initial<'_>,
         contract: &regions::Body,
-        requirements: &crate::body::drops::Requirements,
+        (requirements, mode): (
+            &crate::body::drops::Requirements,
+            initialization::Refinement,
+        ),
         position: &impl Fn(
             TypeId,
             crate::body::drops::MemberQuery,
@@ -171,7 +196,7 @@ impl Verifier {
             environment.types,
             environment.definitions,
             &|item| self.custom.contains(&item),
-            (initialization::Refinement::Defining, Some(requirements)),
+            (mode, Some(requirements)),
             position,
         )
     }
@@ -201,7 +226,9 @@ impl Verifier {
     ) -> Result<Analysis, Error> {
         let parameters = crate::borrow::permissions::check(environment, contract)?
             .unwrap_or_else(|| Arc::clone(&prepared.parameters));
-        self.complete(environment, prepared, contract, parameters)
+        let result = self.complete(environment, &prepared, contract, parameters);
+        drop(prepared);
+        result
     }
     pub(crate) fn finish_initial<S: std::hash::BuildHasher>(
         &mut self,
@@ -210,12 +237,44 @@ impl Verifier {
         contract: &regions::Body,
     ) -> Result<Analysis, Error> {
         let parameters = Arc::clone(&prepared.parameters);
-        self.complete(environment, prepared, contract, parameters)
+        let result = self.complete(environment, &prepared, contract, parameters);
+        drop(prepared);
+        result
     }
-    fn complete<S: std::hash::BuildHasher>(
+    pub(crate) fn finish_execution<'a, S: std::hash::BuildHasher>(
         &mut self,
         environment: &mut crate::borrow::Environment<'_, S>,
-        prepared: Prepared<'_>,
+        prepared: Prepared<'a, crate::borrow::destruction::Plan>,
+        contract: &regions::Body,
+        refreshed: bool,
+    ) -> Result<Execution<'a>, Error> {
+        let parameters = if refreshed {
+            crate::borrow::permissions::check(environment, contract)?
+                .unwrap_or_else(|| Arc::clone(&prepared.parameters))
+        } else {
+            Arc::clone(&prepared.parameters)
+        };
+        self.complete(environment, &prepared, contract, parameters)?;
+        Ok(Execution {
+            body: prepared.facts.body(),
+            plan: prepared.plan,
+            seal: prepared.seal,
+        })
+    }
+    pub(crate) fn require_execution<S: std::hash::BuildHasher>(
+        &self,
+        environment: &crate::borrow::Environment<'_, S>,
+        execution: &Execution<'_>,
+        contract: &regions::Body,
+    ) -> Result<(), &'static str> {
+        execution
+            .seal
+            .validate(environment, execution.body, contract, self.owner.as_ref())
+    }
+    fn complete<S: std::hash::BuildHasher, P: Payload>(
+        &mut self,
+        environment: &mut crate::borrow::Environment<'_, S>,
+        prepared: &Prepared<'_, P>,
         contract: &regions::Body,
         parameters: Arc<Environment>,
     ) -> Result<Analysis, Error> {
@@ -256,7 +315,7 @@ impl Verifier {
                 &prepared.facts.storage,
             )
         };
-        let result = result
+        result
             .map(|mut analysis| {
                 analysis.steps = analysis.steps.saturating_add(prepared.defining_steps);
                 analysis
@@ -264,9 +323,7 @@ impl Verifier {
             .map_err(|e| Error {
                 node: Some(e.node),
                 message: e.message.into(),
-            });
-        drop(prepared);
-        result
+            })
     }
 }
 pub(super) fn require_arenas<S: std::hash::BuildHasher>(

@@ -73,29 +73,10 @@ pub(crate) fn collect(
     };
     let mut methods = Vec::new();
     for implementation in facts.destructors.implementations() {
-        let function = crate::sema::destructors::cleanup_method(
-            facts,
-            implementation.method,
-            implementation.self_definition,
-        )
-        .map_err(|message| (implementation.source.into(), message))?;
-        let Some(Kind::FunctionItem { signature, .. }) = facts
-            .definitions
-            .get(function.0 as usize)
-            .copied()
-            .flatten()
-            .and_then(|ty| facts.types.kind(ty))
-        else {
-            return Err((implementation.source.into(), "missing destructor signature"));
-        };
-        methods.push(Method {
-            item: implementation.item,
-            function,
-            target: implementation.target,
-            signature,
-            captures: implementation.parameters,
-            source: implementation.source,
-        });
+        methods.push(
+            method(facts, implementation)
+                .map_err(|message| (implementation.source.into(), message))?,
+        );
     }
     let query = query.ok_or((origin.into(), "missing destruction query"))?;
     let bodies = program
@@ -111,6 +92,33 @@ pub(crate) fn collect(
         bodies,
         query_steps: query.steps,
     }))
+}
+pub(crate) fn method(
+    facts: &Declarations,
+    implementation: &crate::sema::destructors::Implementation,
+) -> Result<Method, &'static str> {
+    let function = crate::sema::destructors::cleanup_method(
+        facts,
+        implementation.method,
+        implementation.self_definition,
+    )?;
+    let Some(Kind::FunctionItem { signature, .. }) = facts
+        .definitions
+        .get(function.0 as usize)
+        .copied()
+        .flatten()
+        .and_then(|ty| facts.types.kind(ty))
+    else {
+        return Err("missing destructor signature");
+    };
+    Ok(Method {
+        item: implementation.item,
+        function,
+        target: implementation.target,
+        signature,
+        captures: implementation.parameters,
+        source: implementation.source,
+    })
 }
 fn classify(
     facts: &Declarations,

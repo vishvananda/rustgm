@@ -166,7 +166,10 @@ impl<'a, 'p> InitialRow<'a, 'p> {
                 environment,
                 &mut self.initial,
                 self.region,
-                self.destruction,
+                (
+                    self.destruction,
+                    crate::borrow::ownership::initialization::Refinement::Defining,
+                ),
                 position,
             )
             .map_err(|message| Error {

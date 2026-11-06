@@ -1,4 +1,5 @@
 //! Semantic const eligibility joins the same initialized plan before normal loans.
+mod concrete;
 use crate::{
     body::{
         self,
@@ -26,6 +27,11 @@ pub(super) fn one(
         regions,
         purpose,
     } = input;
+    let mode = if *purpose == super::execution::ProofPurpose::Code {
+        borrow::ownership::initialization::Refinement::EligibilityOnly
+    } else {
+        borrow::ownership::initialization::Refinement::Defining
+    };
     let required = body.const_context || contract.requires_defining_cleanup_preparation();
     let mut copies = Copies::default();
     if facts.source_bindings.is_none()
@@ -57,7 +63,7 @@ pub(super) fn one(
                 environment,
                 &mut initial,
                 regions,
-                destruction,
+                (destruction, mode),
                 &|ty, field| body::drops::nominal_position(facts, ty, field),
             )
         })?;
@@ -69,6 +75,9 @@ pub(super) fn one(
                 verifier.accept_qualification(environment, &mut initial, regions, &answers)
             })?;
         }
+    }
+    if *purpose == super::execution::ProofPurpose::Code {
+        return concrete::one(report, facts, initial, input, verifier, &mut copies);
     }
     let mut plan = with_environment(facts, &mut copies, |environment| {
         verifier.select_initial(
@@ -83,21 +92,7 @@ pub(super) fn one(
         )
     })
     .map_err(|e| e.message)?;
-    plan.resolve_selected(&mut facts.types, &facts.aggregates)?;
-    let precise = precise_live_drops(report, facts)?;
-    let active = plan.active().next().is_some();
-    let eligible = plan.active_const()?;
-    if eligible {
-        body::defining_cleanups::select(
-            facts,
-            body,
-            contract.to_mut(),
-            plan.eligibility(),
-            precise,
-            active,
-        )?;
-        **regions = recheck(facts, body, contract)?;
-    }
+    let eligible = eligibility(report, facts, &mut plan, contract, regions)?;
     with_environment(facts, &mut copies, |environment| {
         if eligible {
             verifier.finish(environment, plan, regions)
@@ -106,10 +101,31 @@ pub(super) fn one(
         }
     })
     .map_err(|e| e.message)?;
-    if active && *purpose == super::execution::ProofPurpose::Code {
-        return Err("constant interpreter cleanup scheduling is not implemented".into());
-    }
     Ok(())
+}
+fn eligibility<P: borrow::loans::templates::Payload>(
+    report: &crate::resolve::expansion::Report,
+    facts: &mut Declarations,
+    plan: &mut borrow::loans::templates::Prepared<'_, P>,
+    contract: &mut std::borrow::Cow<'_, Contract>,
+    regions: &mut regions::Body,
+) -> Result<bool> {
+    plan.resolve_selected(&mut facts.types, &facts.aggregates)?;
+    let precise = precise_live_drops(report, facts)?;
+    let active = plan.active().next().is_some();
+    let eligible = plan.active_const()?;
+    if eligible {
+        body::defining_cleanups::select(
+            facts,
+            plan.body(),
+            contract.to_mut(),
+            plan.eligibility(),
+            precise,
+            active,
+        )?;
+        *regions = recheck(facts, plan.body(), contract)?;
+    }
+    Ok(eligible)
 }
 pub(crate) fn templates<'a>(
     report: &crate::resolve::expansion::Report,

@@ -107,6 +107,8 @@ mod cetags;
 
 #[path = "../../ctdrop.rs"]
 mod ctdrop;
+#[path = "../../ctexec.rs"]
+mod ctexec;
 #[path = "../../ctfix.rs"]
 mod ctfix;
 #[path = "../../ctleaf.rs"]

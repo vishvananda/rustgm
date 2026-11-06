@@ -1,0 +1,411 @@
+{
+  "state": "passed finite producer; CTFE execution required",
+  "joined_main": "027a7203d",
+  "source_count": 3561,
+  "qualified_owned_files": {
+    "dev/src/body/drops.rs": "0bb0037faec5cd28ae7fb1abed2155d9c9284584888b1aaa99f428206b253561",
+    "dev/src/borrow/loans/templates.rs": "7eb2fe1f3a57440dda899490cacf53c451da2f2ba43a65ecf9ddd9c1f0ba12cd",
+    "dev/src/borrow/loans/templates/staged.rs": "659753c010ea00e3fc124e9ef949fb246d118c84c7b4e4aa9debef5770e6cbea",
+    "dev/src/borrow/loans/templates/payload.rs": "fa0e628438a709322258af3d98f48dad6f48687b68e419b22324c52d00785d60",
+    "dev/src/borrow/loans/templates/concrete.rs": "a4fab87d5eae37cb01ea4e7b57b88237fb4c95716732fc7afa2bf9692686c879",
+    "dev/src/borrow/templates/staged.rs": "429e7d1e7c4d5a5b42b8619832109e76abaebc565913d2c53d3421b874635acb",
+    "dev/src/pipeline/cdrop.rs": "a3340523a32f34a1fb9197c4dc2ad7a01f7b0f0922b0c725cfe50e08e79a2589",
+    "dev/src/pipeline/cdrop/concrete.rs": "d9674b3bb11fb454604ecd2f55a7c5ce26c6aca67670eb6fd7bb1e697be7ffa2",
+    "dev/tests/ctexec.rs": "2c1bd9e768903f49e0f4509fc7b8b628871084bd05f38f67d8df747d4d0dabf8",
+    "dev/tests/suites/traits/mod.rs": "5cf9bb49e63dd1754282a3aaeba3386f9c4a8880ce2dfca01ede34d9e51cb28a"
+  },
+  "receipts": {
+    "producer1/receipt.json": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/producer1/receipt.json",
+      "sha256": "c6eb7f3b0f1927ab4812e156024009f9f793bd824a1349f397f231f175be1b3d"
+    },
+    "producer2/receipt.json": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/producer2/receipt.json",
+      "sha256": "ed91b4d7fe338de35e4570d832209639d963449f544d9c63bd17ef4732b80e73"
+    },
+    "producer3/receipt.json": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/producer3/receipt.json",
+      "sha256": "a9f7c3c8423d64b56dfc59373d78459742cc6201e2c1bad17ba40a31f2a43cc3"
+    },
+    "producer4/receipt.json": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/producer4/receipt.json",
+      "sha256": "c2e0429a390e8a205e33721b0ad4f977208d9b0927dc59f8e7c73ba71f5011f3"
+    },
+    "producer5/receipt.json": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/producer5/receipt.json",
+      "sha256": "39965a0b7586d04d139b908928ea529f5d96c5173bc28def88705eb3847dc363"
+    },
+    "producer6/receipt.json": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/producer6/receipt.json",
+      "sha256": "04160ef270a3d2bdcce440bd88f257dcf22065d2f3fafa1c88250919e942b17e"
+    },
+    "producer6/sources.json": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/producer6/sources.json",
+      "sha256": "318df0ffe5b161f48a9e75ab2aa26e178bdcebdfe2ebddfcb6074790f9dcf668"
+    },
+    "reference-v1/receipt.json": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/receipt.json",
+      "sha256": "60c4502c2fa4b3bcb5c4366d86e6d839f872926e9b528823f77edcd7030cfefb"
+    }
+  },
+  "final_commands": [
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--all"
+      ],
+      "code": 0,
+      "seconds": 16.349728444009088
+    },
+    {
+      "name": "audit",
+      "command": [
+        "obj/audit-venv/bin/python",
+        "scripts/rust_audit.py",
+        "--root",
+        ".",
+        "--cache",
+        "obj/fast-audit.json"
+      ],
+      "code": 0,
+      "seconds": 2.888573541014921
+    },
+    {
+      "name": "strict",
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--lib",
+        "--test",
+        "suite_traits",
+        "--bin",
+        "rustgm",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "code": 0,
+      "seconds": 69.52077495201956
+    },
+    {
+      "name": "ctexec",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_traits",
+        "ctexec::",
+        "--",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 108.9713944029645
+    },
+    {
+      "name": "ctdrop",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_traits",
+        "ctdrop::",
+        "--",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 0.8178270820062608
+    },
+    {
+      "name": "ctsel",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_traits",
+        "ctsel::",
+        "--",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 1.4343145249877125
+    },
+    {
+      "name": "ctseal",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_traits",
+        "ctseal::",
+        "--",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 0.18278611003188416
+    },
+    {
+      "name": "ctwire",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_traits",
+        "ctwire::",
+        "--",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 0.11364134697942063
+    },
+    {
+      "name": "ctfix",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_traits",
+        "ctfix::",
+        "--",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 1.0793572779512033
+    },
+    {
+      "name": "ctown",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_traits",
+        "ctown::",
+        "--",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 0.31325320003088564
+    },
+    {
+      "name": "ctleaf",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_traits",
+        "ctleaf::",
+        "--",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 0.12233469099737704
+    },
+    {
+      "name": "ctnext",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_traits",
+        "ctnext::",
+        "--",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 0.1789484960027039
+    },
+    {
+      "name": "native2",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_traits",
+        "ctdrop::actual_const_drop_runtime_body_writes_the_runtime_operand",
+        "--",
+        "--exact",
+        "--ignored",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 0.5522222919971682
+    },
+    {
+      "name": "native1",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_traits",
+        "ctnext::genuine_unconditional_const_drop_native_body_consumes_runtime_data",
+        "--",
+        "--exact",
+        "--ignored",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 0.3471386149758473
+    },
+    {
+      "name": "harness",
+      "command": [
+        "python3",
+        "scripts/maintainer_suites.py",
+        "check"
+      ],
+      "code": 0,
+      "seconds": 0.08989713399205357
+    },
+    {
+      "name": "upstream",
+      "command": [
+        "python3",
+        "scripts/upstream.py",
+        "--verify"
+      ],
+      "code": 0,
+      "seconds": 0.1654405479785055
+    }
+  ],
+  "passed_test_functions": {
+    "ctexec": 2,
+    "ctdrop": 9,
+    "ctsel": 10,
+    "ctseal": 3,
+    "ctwire": 4,
+    "ctfix": 7,
+    "ctown": 4,
+    "ctleaf": 3,
+    "ctnext": 4,
+    "native2": 1,
+    "native1": 1
+  },
+  "public_regular_passed": 46,
+  "candidate_runtime_native_observers": {
+    "count2": "41",
+    "rtcnt": "47",
+    "runct": "59"
+  },
+  "independent_ctfe_expected_native": {
+    "n41": "41",
+    "n59": "59",
+    "nonce": "41"
+  },
+  "widths_bytes": {
+    "Initial": 728,
+    "Prepared<symbolic>": 784,
+    "Prepared<concrete>": 904,
+    "Execution": 224,
+    "Code": 304,
+    "PreparedOperand": 32,
+    "Frame": 248,
+    "State": 424,
+    "Machine": 4720
+  },
+  "bounded_controls": {
+    "definition_cleanup_base": 768,
+    "definition_width_8_32_128_growth": [
+      1473,
+      5889,
+      23553
+    ],
+    "sparse_array_lengths": [
+      8,
+      1048576
+    ],
+    "sparse_array_work": [
+      1328,
+      1328
+    ]
+  },
+  "retained_fences": [
+    "active interpreter cleanup scheduling",
+    "conditional parent history",
+    "unimplemented broader execution profiles"
+  ],
+  "semantic_negatives": {
+    "ctbad": "active cleanup requires const Destruct in its actual defining environment",
+    "ctcall": "non-const calls are not allowed in const functions",
+    "ctunsf": "raw pointer dereference requires an unsafe context",
+    "dborr": "access conflicts with a live reference loan"
+  },
+  "failures_retained": [
+    "producer1 unused Execution import",
+    "producer2 analyze-only unused-body preflight did not demand ctcall",
+    "producer5 needless pass by value in consuming finish wrappers; fixed explicit drops",
+    "producer6 initial zero-wait admission refused while Root+Async live; retried only after verified idle"
+  ],
+  "scope": [
+    "symbolic Original unchanged",
+    "same Initial Facts and Seal",
+    "actual concrete Catalog/Plan selection",
+    "normal semantic/region/loan finish",
+    "no candidate destructor CTFE claim",
+    "no private runtime or full-release claim"
+  ],
+  "accounting_note": "Explicit recipe and concrete Plan steps are recorded; refinement retains its existing independent work/storage budget. Potential-but-inactive concrete catalog work is real; no zero-cost or performance claim."
+}
