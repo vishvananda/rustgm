@@ -3,6 +3,7 @@ mod creation;
 mod disposal;
 mod framing;
 mod permit;
+mod resumption;
 #[cfg(test)]
 #[path = "../../tests/invariants/statepermit.rs"]
 mod tests;
@@ -15,6 +16,7 @@ pub(crate) use creation::{Constructed, constructor};
 pub(crate) use disposal::build as drop_entry;
 pub(crate) use framing::{field, transfer};
 pub(crate) use permit::Permit;
+pub(crate) use resumption::build as poll_entry;
 
 /// Ordinary proof cannot publish an entry whose generated factory is absent.
 pub(crate) fn require_ordinary_body(body: &Body) -> Result<(), &'static str> {

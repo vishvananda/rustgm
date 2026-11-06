@@ -1,8 +1,12 @@
 //! Orchestrate append-only body proofs without retaining semantic borrows across demand.
+mod asyncproof;
 #[cfg(test)]
 #[path = "../../../tests/invariants/exposure_stages.rs"]
 mod exposure_stages;
 mod forwarding;
+#[cfg(test)]
+#[path = "../../../tests/invariants/resumeverify.rs"]
+mod resumeverify;
 #[cfg(test)]
 mod tests;
 use crate::{

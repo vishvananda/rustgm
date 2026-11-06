@@ -16,12 +16,59 @@ pub(crate) struct FutureMethod {
     instance: Instance,
     key: EntryKey,
 }
+/// Signature and member data, never a checked body or generated-family permit.
+pub(crate) struct Entry {
+    pub method: FutureMethod,
+    pub public: TypeId,
+    pub execution: TypeId,
+    pub pin_field: crate::sema::members::FieldId,
+    pub ready: crate::sema::members::VariantId,
+    pub result: TypeId,
+}
 impl FutureMethod {
     pub(crate) const fn instance(self) -> Instance {
         self.instance
     }
     pub(crate) const fn key(self) -> EntryKey {
         self.key
+    }
+    /// Keep application coordinates outside the independently opened public binder.
+    pub(crate) fn execution(
+        self,
+        facts: &mut Declarations,
+        inputs: &mut Bound,
+        first: u32,
+    ) -> Result<Entry, &'static str> {
+        let declared = self.validate(facts)?;
+        let Some(Kind::FunctionItem {
+            signature: public, ..
+        }) = facts.types.kind(self.instance.ty())
+        else {
+            return Err("poll entry lost its real required function item");
+        };
+        let mut physical = {
+            let (types, payments) = facts.caller_input_store()?;
+            let pay = |work, bytes| payments.charge(work, bytes);
+            let Argument::Type(frame) =
+                inputs.apply_argument_charged(types, Argument::Type(self.key.future), &pay)?
+            else {
+                return Err("poll entry changed its actual application argument kind");
+            };
+            let formal = types
+                .intern_arguments_observed::<true>(&[Argument::Type(declared.self_type)], &pay)?;
+            let actual = types.intern_arguments_observed::<true>(&[Argument::Type(frame)], &pay)?;
+            Bound::captured_arguments_charged(types, formal, actual, &pay)?
+        };
+        let signature = expected_signature(facts, &declared, &mut physical)?;
+        let (execution, result) = open_entry(facts, signature, first)?;
+        Ok(Entry {
+            method: self,
+            public,
+            execution,
+            pin_field: declared.pin_field,
+            ready: declared.ready,
+            result,
+        })
     }
     pub(crate) fn validate(self, facts: &mut Declarations) -> Result<Declared, &'static str> {
         let declared = protocol::require(facts)?;
@@ -60,6 +107,77 @@ impl FutureMethod {
         }
         Ok(declared)
     }
+}
+
+/// Remove exactly the public function binder; application lifetimes stay outside it.
+fn open_entry(
+    facts: &mut Declarations,
+    signature: TypeId,
+    first: u32,
+) -> Result<(TypeId, TypeId), &'static str> {
+    let Some(Kind::Function {
+        parameters,
+        result,
+        unsafe_,
+        convention,
+        bound_regions: 3,
+    }) = facts.types.kind(signature)
+    else {
+        return Err("poll entry lost its actual three-slot public binder");
+    };
+    let [receiver, context] = facts
+        .types
+        .list(parameters)
+        .ok_or("poll entry lost its actual parameters")?
+    else {
+        return Err("poll entry requires its two actual public inputs");
+    };
+    let parameters = [*receiver, *context];
+    let end = first
+        .checked_add(3)
+        .filter(|&value| u16::try_from(value).is_ok())
+        .ok_or("poll entry universal frame exceeds its slot encoding")?;
+    facts.charge_caller_inputs(
+        3,
+        size_of::<Bound>() + 3 * size_of::<crate::types::RegionId>(),
+    )?;
+    let arguments = (first..end)
+        .map(|slot| {
+            crate::types::RegionId::bound(
+                0,
+                u16::try_from(slot).map_err(|_| "invalid poll entry slot")?,
+            )
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let mut opened = Bound::new(arguments);
+    let (types, payments) = facts.caller_input_store()?;
+    let pay = |work, bytes| payments.charge(work, bytes);
+    let mut mapped = [TypeId::UNIT; 2];
+    for (slot, ty) in mapped.iter_mut().zip(parameters) {
+        let Argument::Type(value) =
+            opened.apply_argument_charged(types, Argument::Type(ty), &pay)?
+        else {
+            return Err("poll entry input changed its actual type kind");
+        };
+        *slot = value;
+    }
+    let Argument::Type(result) =
+        opened.apply_argument_charged(types, Argument::Type(result), &pay)?
+    else {
+        return Err("poll entry result changed its actual type kind");
+    };
+    let parameters = types.intern_list_observed::<true>(&mapped, &pay)?;
+    let execution = types.intern_observed::<true>(
+        Kind::Function {
+            parameters,
+            result,
+            unsafe_,
+            convention,
+            bound_regions: end,
+        },
+        &pay,
+    )?;
+    Ok((execution, result))
 }
 
 pub(in crate::sema) fn retain(

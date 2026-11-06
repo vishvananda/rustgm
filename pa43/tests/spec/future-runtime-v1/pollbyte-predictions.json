@@ -1,0 +1,27 @@
+{
+  "scope": "Generated poll may copy only its compiler-owned state byte without a source u8 Copy implementation; ordinary borrowed u8 read still requires real Copy.",
+  "frozen_before_candidate": true,
+  "source": {
+    "path": "pa43/tests/spec/future-runtime-v1/pollbyte-source.rs",
+    "sha256": "f1a0bf5dbb39baf57aee1e3a74b72d8004585cc736a3d4aa1c66b15bc06bbd58",
+    "expected_compile": 0,
+    "native_observe_result": 3,
+    "authored_suffix": "Byte-identical value/observe suffix of already frozen pollready companion; only genuine source u8 Clone/Copy implementations are absent."
+  },
+  "independent_cases": [
+    {
+      "path": "pa43/tests/spec/future-runtime-v1/pollbyte-owned.rs",
+      "sha256": "257770a8fc4f1b789fab94576f0960d2c72edda1b5cda730cc6629d948deea5f",
+      "expected_compile": 0,
+      "required_diagnostic": null
+    },
+    {
+      "path": "pa43/tests/spec/future-runtime-v1/pollbyte-borrow.rs",
+      "sha256": "51af8fda4cccd030df0ff3a128357ca97bedba0fc4438ffdeaa8d2d2730cef45",
+      "expected_compile": 1,
+      "required_diagnostic": "E0507"
+    }
+  ],
+  "runtime_companion": "pa43/tests/spec/future-runtime-v1/pollready-companion.rs",
+  "not_claimed": "Exact no_core authored-async ResumeTy infrastructure parity or broader state transfer."
+}

@@ -14,6 +14,8 @@ pub(crate) struct Declared {
     pub signature: TypeId,
     pub self_type: TypeId,
     pub poll: ItemId,
+    pub pin_field: crate::sema::members::FieldId,
+    pub ready: crate::sema::members::VariantId,
 }
 
 pub(super) fn require(facts: &mut Declarations) -> Result<Declared, &'static str> {
@@ -81,14 +83,16 @@ pub(super) fn require(facts: &mut Declarations) -> Result<Declared, &'static str
     {
         return Err("demanded poll Context requires its actual one-lifetime nominal schema");
     }
-    pin_field(facts, pin, pin_parameter)?;
-    variants(facts, poll, poll_parameter)?;
+    let pin_field = pin_field(facts, pin, pin_parameter)?;
+    let ready = variants(facts, poll, poll_parameter)?;
     signature(facts, public, self_type, pin, poll, context, output)?;
     Ok(Declared {
         method: method.definition,
         signature: public,
         self_type,
         poll,
+        pin_field,
+        ready,
     })
 }
 
@@ -149,7 +153,11 @@ fn type_parameter(
     Ok(ty)
 }
 
-fn pin_field(facts: &Declarations, pin: ItemId, parameter: TypeId) -> Result<(), &'static str> {
+fn pin_field(
+    facts: &Declarations,
+    pin: ItemId,
+    parameter: TypeId,
+) -> Result<crate::sema::members::FieldId, &'static str> {
     let [variant] = facts.members.variants(pin) else {
         return Err("demanded poll Pin requires its actual single storage variant");
     };
@@ -160,10 +168,19 @@ fn pin_field(facts: &Declarations, pin: ItemId, parameter: TypeId) -> Result<(),
     if !matches!(fields,[field] if field.ty == parameter) {
         return Err("demanded poll Pin requires its actual pointer parameter field");
     }
-    Ok(())
+    let member = facts
+        .members
+        .variants
+        .get(variant.0 as usize)
+        .ok_or("poll Pin lost its actual storage member")?;
+    Ok(crate::sema::members::FieldId(member.start))
 }
 
-fn variants(facts: &Declarations, poll: ItemId, parameter: TypeId) -> Result<(), &'static str> {
+fn variants(
+    facts: &Declarations,
+    poll: ItemId,
+    parameter: TypeId,
+) -> Result<crate::sema::members::VariantId, &'static str> {
     let catalog = facts
         .source_bindings
         .as_deref()
@@ -187,7 +204,7 @@ fn variants(facts: &Declarations, poll: ItemId, parameter: TypeId) -> Result<(),
             "demanded poll requires exact actual Ready(Output) and unit Pending constructors",
         );
     }
-    Ok(())
+    Ok(ready_id)
 }
 
 fn variant(

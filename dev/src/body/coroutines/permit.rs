@@ -15,18 +15,27 @@ pub(crate) struct Permit {
 }
 pub(super) enum Identity {
     Constructor(Instance),
+    Poll {
+        instance: Instance,
+        pin_field: crate::sema::members::FieldId,
+        ready: crate::sema::members::VariantId,
+    },
     Drop,
 }
 impl Permit {
     pub(crate) const fn instance(&self) -> Option<Instance> {
         match self.identity {
-            Identity::Constructor(instance) => Some(instance),
+            Identity::Constructor(instance) | Identity::Poll { instance, .. } => Some(instance),
             Identity::Drop => None,
         }
     }
     pub(crate) const fn entry(&self) -> Option<crate::types::future::EntryKey> {
         match self.identity {
             Identity::Constructor(_) => None,
+            Identity::Poll { .. } => Some(crate::types::future::EntryKey {
+                future: self.future,
+                operation: crate::types::future::Operation::Poll,
+            }),
             Identity::Drop => Some(crate::types::future::EntryKey {
                 future: self.future,
                 operation: crate::types::future::Operation::Drop,
@@ -41,7 +50,12 @@ impl Permit {
         place: crate::body::ir::Place,
     ) -> Result<bool, &'static str> {
         use crate::body::ir::{Place, ProjectionId, ProjectionKind};
-        if self.entry().is_none() || place != Place::Projection(ProjectionId(1)) {
+        let coordinate = match self.identity {
+            Identity::Constructor(_) => return Ok(false),
+            Identity::Poll { .. } => 2,
+            Identity::Drop => 1,
+        };
+        if place != Place::Projection(ProjectionId(coordinate)) {
             return Ok(false);
         }
         self.family(types)?;
@@ -50,10 +64,10 @@ impl Permit {
         {
             return Err("compiler state read changed its actual generated family");
         }
-        let Some(state) = body.projections.get(1) else {
+        let Some(state) = body.projections.get(coordinate as usize) else {
             return Err("compiler state read lost its actual place");
         };
-        if state.base != Place::Projection(ProjectionId(0))
+        if state.base != Place::Projection(ProjectionId(coordinate - 1))
             || state.ty != TypeId::primitive(crate::types::Primitive::U8)
             || !matches!(state.kind, ProjectionKind::FutureField(0))
         {
@@ -66,6 +80,16 @@ impl Permit {
     }
     pub(crate) const fn source(&self) -> NodeKey {
         self.source
+    }
+    pub(crate) fn require_original(
+        &self,
+        original: &Body,
+        body: &Body,
+    ) -> Result<(), &'static str> {
+        if matches!(self.identity, Identity::Poll { .. }) {
+            super::resumption::require_original(original, body)?;
+        }
+        Ok(())
     }
     pub(crate) fn family(&self, types: &Store) -> Result<OpaqueId, &'static str> {
         if !types.has_identity(&self.arena) {
@@ -85,6 +109,9 @@ impl Permit {
             || body.has_resolved_callables()
         {
             return Err("generated future entry has unrelated lexical or callable payloads");
+        }
+        if matches!(self.identity, Identity::Poll { .. }) {
+            return super::resumption::validate(types, body, self);
         }
         let Some(instance) = self.instance() else {
             if body.instance.is_some()
@@ -175,4 +202,4 @@ fn construction(
     }
     Ok(())
 }
-const _: [(); 40] = [(); size_of::<Permit>()];
+const _: [(); 48] = [(); size_of::<Permit>()];
