@@ -62,6 +62,7 @@ fn declared_source_feature_requests_preserve_actual_use_contracts() {
     // They test the published loading/expansion contracts, not completed core.
     for (request, tail, accepted) in [
         ("asm_experimental_arch", "", true),
+        ("coroutines", "", true),
         ("never_type", "type N=!;", true),
         ("", "type N=!;", false),
         ("", "fn f()->!{loop{}}", true),

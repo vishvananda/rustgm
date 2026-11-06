@@ -1,4 +1,4 @@
-//! Future declaration identity is separate from demanded polling and state machines.
+//! Resumable declaration identities grant no generated body or state machine.
 use super::Catalog;
 use crate::{
     resolve::{
@@ -45,20 +45,48 @@ pub(in crate::sema) fn signature_roles(
 
 /// Validate independently present source declarations without inventing a poll ABI.
 /// Alternative unused language members remain ordinary checked source declarations.
-pub(super) fn complete(
+pub(super) fn complete_future(
     report: &Report,
     facts: &Declarations,
     catalog: &Catalog,
 ) -> Result<[Option<LangItem>; 3], Error> {
-    let mut completed = [None; 3];
-    for (slot, role) in [
-        LangItem::Future,
-        LangItem::FutureOutput,
-        LangItem::FuturePoll,
-    ]
-    .into_iter()
-    .enumerate()
-    {
+    complete_roles(
+        report,
+        facts,
+        catalog,
+        [
+            LangItem::Future,
+            LangItem::FutureOutput,
+            LangItem::FuturePoll,
+        ],
+    )
+}
+
+pub(super) fn complete_coroutine(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &Catalog,
+) -> Result<[Option<LangItem>; 3], Error> {
+    complete_roles(
+        report,
+        facts,
+        catalog,
+        [
+            LangItem::CoroutineYield,
+            LangItem::CoroutineReturn,
+            LangItem::CoroutineResume,
+        ],
+    )
+}
+
+fn complete_roles<const N: usize>(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &Catalog,
+    roles: [LangItem; N],
+) -> Result<[Option<LangItem>; N], Error> {
+    let mut completed = [None; N];
+    for (slot, role) in roles.into_iter().enumerate() {
         let Some(declaration) = catalog.language(role) else {
             continue;
         };
@@ -69,43 +97,47 @@ pub(super) fn complete(
             .resolution
             .definitions
             .get(declaration.definition.0 as usize)
-            .ok_or_else(|| error("source Future member lost its declaration"))?;
+            .ok_or_else(|| error("source resumable member lost its declaration"))?;
         if definition.node != Some(declaration.origin) {
             return Err(error(
-                "source Future member changed its declaration identity",
+                "source resumable member changed its declaration identity",
             ));
         }
         match role {
             LangItem::Future => {
                 super::headers::Trait::source(report, facts, declaration).map_err(error)?;
             }
-            LangItem::FutureOutput => {
+            LangItem::FutureOutput | LangItem::CoroutineYield | LangItem::CoroutineReturn => {
                 let schema = facts
                     .types
                     .projection_schema(ItemId(declaration.definition.0))
                     .ok_or_else(|| {
-                        error("source future_output lacks its actual projection schema")
+                        error("source associated result lacks its actual projection schema")
                     })?;
                 if definition.kind != DefKind::TypeAlias
                     || declaration.parent != Some(DefId(schema.trait_item.0))
                 {
                     return Err(error(
-                        "source future_output changed its actual associated owner",
+                        "source associated result changed its actual associated owner",
                     ));
                 }
             }
-            LangItem::FuturePoll => {
+            LangItem::FuturePoll | LangItem::CoroutineResume => {
                 let function = facts
                     .function_header(declaration.definition)
                     .map_err(error)?
-                    .ok_or_else(|| error("source poll lacks its actual callable declaration"))?;
+                    .ok_or_else(|| {
+                        error("source resume/poll lacks its actual callable declaration")
+                    })?;
                 if function.declaration.source() != Some(declaration.origin)
                     || definition.kind != DefKind::Function
                 {
-                    return Err(error("source poll changed its actual callable identity"));
+                    return Err(error(
+                        "source resume/poll changed its actual callable identity",
+                    ));
                 }
             }
-            _ => return Err(error("invalid source Future role completion")),
+            _ => return Err(error("invalid source resumable role completion")),
         }
         completed[slot] = Some(role);
     }

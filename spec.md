@@ -3460,6 +3460,12 @@ a lexical candidate for another Self, such as a reference to that parameter. Pee
 reference shape and consult existing assumption/implementation head indexes before
 copying a probe graph. These filters can exclude impossible candidates; positive
 matches still require complete equations and validated implementation evidence.
+Apply this subject-head filter only when the peeled declared receiver is the
+actual owner's `Self`. A wrapped receiver such as `Pin<&mut Self>` has a different
+outer nominal; bind its real receiver signature through the existing applicability
+probe before testing the implementing Self's complete trait obligations. Do not
+query the wrapper's implementation bucket as though it were Self, or copy and
+bind the same signature in a second probe just to recover the inner type.
 Integer and floating-point receiver variables keep their numeric domains and the
 ordinary inference/fallback rules. A completely unknown Self is not guessed.
 

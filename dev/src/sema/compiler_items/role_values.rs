@@ -1,4 +1,4 @@
-//! Real polling declarations remain distinct from a demanded future operation.
+//! Completed source value roles retain ordinary nominal and variant identities.
 use crate::{
     resolve::{bindings::Declaration, expansion::Report, model::DefKind, package::Error},
     sema::{header_attributes, model::Declarations},
@@ -6,11 +6,12 @@ use crate::{
     types::{ItemId, Kind, aggregate},
 };
 
-const ROLES: [LangItem; 4] = [
+const ROLES: [LangItem; 5] = [
     LangItem::Poll,
     LangItem::PollReady,
     LangItem::PollPending,
     LangItem::Context,
+    LangItem::CoroutineState,
 ];
 
 /// Complete ordinary headers/fields without restricting Rust-valid unused shapes.
@@ -28,24 +29,27 @@ pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Re
         let catalog = facts
             .source_bindings
             .as_deref()
-            .ok_or_else(|| error("polling declaration lost its catalog"))?;
+            .ok_or_else(|| error("source value declaration lost its catalog"))?;
         catalog.require_provider_report(report).map_err(error)?;
         let definition = report
             .resolution
             .definitions
             .get(declaration.definition.0 as usize)
-            .ok_or_else(|| error("polling declaration lost its actual definition"))?;
+            .ok_or_else(|| error("source value declaration lost its actual definition"))?;
         if definition.node != Some(declaration.origin) {
             return Err(error(
-                "polling declaration changed its actual source identity",
+                "source value declaration changed its actual source identity",
             ));
         }
-        if matches!(role, LangItem::Poll | LangItem::Context) {
+        if matches!(
+            role,
+            LangItem::Poll | LangItem::Context | LangItem::CoroutineState
+        ) {
             nominal(facts, declaration, role).map_err(error)?;
         } else {
             variant(facts, declaration, definition.kind).map_err(error)?;
         }
-        super::roles::complete_polling_declaration(facts, role, declaration)?;
+        super::roles::complete_value_declaration(facts, role, declaration)?;
     }
     Ok(())
 }
@@ -56,10 +60,10 @@ fn nominal(
     role: LangItem,
 ) -> Result<(), &'static str> {
     let item = ItemId(declaration.definition.0);
-    let expected = if role == LangItem::Poll {
-        aggregate::Kind::Enum
-    } else {
+    let expected = if role == LangItem::Context {
         aggregate::Kind::Struct
+    } else {
+        aggregate::Kind::Enum
     };
     if !matches!(facts.definitions.get(item.0 as usize).copied().flatten().and_then(|ty| facts.types.kind(ty)), Some(Kind::Adt(owner, _)) if owner == item)
         || !facts
@@ -71,7 +75,7 @@ fn nominal(
             .get(item)
             .is_none_or(|definition| definition.kind != expected)
     {
-        return Err("polling declaration lacks its actual completed nominal shape");
+        return Err("source value declaration lacks its actual completed nominal shape");
     }
     Ok(())
 }

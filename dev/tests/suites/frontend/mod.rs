@@ -186,3 +186,6 @@ mod stream_sources;
 
 #[path = "../../autoref_lints.rs"]
 mod autoref_lints;
+
+#[path = "../../coroutine_sources.rs"]
+mod coroutine_sources;

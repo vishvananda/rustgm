@@ -31,7 +31,7 @@ impl Checker<'_> {
             return Err(self.error(key, "async functions cannot be const"));
         }
         let (future, member) =
-            crate::sema::compiler_items::futures::signature_roles(self.report, &self.facts)?;
+            crate::sema::compiler_items::resumable::signature_roles(self.report, &self.facts)?;
         let captures = self.opaque_captures(
             key,
             owner,

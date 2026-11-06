@@ -223,7 +223,7 @@ impl Declarations {
             return Err(error("future shape lost its actual declared Output result"));
         };
         let (future, member) =
-            super::super::compiler_items::futures::signature_roles(report, self)?;
+            super::super::compiler_items::resumable::signature_roles(report, self)?;
         super::check_future_contract(&self.types, declaration, output, future, member)
             .map_err(error)?;
         self.types

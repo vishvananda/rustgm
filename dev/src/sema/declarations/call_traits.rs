@@ -42,6 +42,7 @@ impl Checker<'_> {
             crate::support::bindings::LangItem::Deref,
             crate::support::bindings::LangItem::DerefMut,
             crate::support::bindings::LangItem::Future,
+            crate::support::bindings::LangItem::Coroutine,
             crate::support::bindings::LangItem::AsyncIterator,
             crate::support::bindings::LangItem::AsyncDrop,
         ] {
@@ -77,6 +78,7 @@ impl Checker<'_> {
             crate::support::bindings::LangItem::AsyncDropInPlace,
             crate::support::bindings::LangItem::FnPtrAddr,
             crate::support::bindings::LangItem::FuturePoll,
+            crate::support::bindings::LangItem::CoroutineResume,
             crate::support::bindings::LangItem::AsyncIteratorPollNext,
             crate::support::bindings::LangItem::IntoAsyncIterIntoIter,
             crate::support::bindings::LangItem::RangeMin,

@@ -558,6 +558,18 @@ impl Search<'_> {
                 None => return Ok(true),
             }
         }
+        let self_type = self
+            .facts
+            .associated
+            .schema(owner)
+            .ok_or("trait receiver lost its actual owner schema")?
+            .self_type;
+        if receiver != self_type {
+            // A wrapped receiver's outer nominal is not the implementing Self.
+            // The existing applicability probe binds its actual signature once
+            // before proving the complete trait obligations for the inner Self.
+            return Ok(true);
+        }
         crate::sema::traits::selection::may_have_subject(
             self.facts,
             self.source,

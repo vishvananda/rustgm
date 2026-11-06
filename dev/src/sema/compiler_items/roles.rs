@@ -81,7 +81,7 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 35] = [
+const TRAIT_ROLES: [LangItem; 36] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::UseCloned,
@@ -117,6 +117,7 @@ const TRAIT_ROLES: [LangItem; 35] = [
     LangItem::AsyncFnKindHelper,
     LangItem::FusedIterator,
     LangItem::AsyncIterator,
+    LangItem::Coroutine,
 ];
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -226,7 +227,13 @@ fn complete_dependent_roles(
         .source_bindings
         .as_deref()
         .ok_or_else(|| Error::unlocated("dependent source roles lost their actual catalog"))?;
-    for role in super::futures::complete(report, facts, catalog)?
+    for role in super::resumable::complete_future(report, facts, catalog)?
+        .into_iter()
+        .flatten()
+    {
+        complete.roles.insert(role);
+    }
+    for role in super::resumable::complete_coroutine(report, facts, catalog)?
         .into_iter()
         .flatten()
     {
@@ -406,6 +413,7 @@ fn canonical_header_only(role: LangItem) -> bool {
             | LangItem::FusedIterator
             | LangItem::Drop
             | LangItem::AsyncIterator
+            | LangItem::Coroutine
     )
 }
 
@@ -645,17 +653,23 @@ pub(super) fn complete_stream_helper(
     record_completion(facts, role, declaration)
 }
 
-/// Only the actual completed poll enum/context/variant producer enters this gate.
-pub(super) fn complete_polling_declaration(
+/// Only the actual completed source nominal/variant producer enters this gate.
+pub(super) fn complete_value_declaration(
     facts: &mut Declarations,
     role: LangItem,
     declaration: Declaration,
 ) -> Result<(), Error> {
     if !matches!(
         role,
-        LangItem::Poll | LangItem::PollReady | LangItem::PollPending | LangItem::Context
+        LangItem::Poll
+            | LangItem::PollReady
+            | LangItem::PollPending
+            | LangItem::Context
+            | LangItem::CoroutineState
     ) {
-        return Err(Error::unlocated("invalid polling declaration completion"));
+        return Err(Error::unlocated(
+            "invalid source value declaration completion",
+        ));
     }
     record_completion(facts, role, declaration)
 }

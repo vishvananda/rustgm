@@ -145,6 +145,11 @@ fn unimplemented_builtin_claims_stop_before_granting_layout_drop_or_auto_trait_s
                 | LangItem::DerefTarget
                 | LangItem::Receiver
                 | LangItem::ReceiverTarget
+                | LangItem::CoroutineState
+                | LangItem::Coroutine
+                | LangItem::CoroutineYield
+                | LangItem::CoroutineReturn
+                | LangItem::CoroutineResume
                 | LangItem::Future
                 | LangItem::FutureOutput
                 | LangItem::FuturePoll

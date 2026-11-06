@@ -125,7 +125,7 @@ enum Request {
     Capability(Feature),
     /// A requested library instability still requires its actual declaration inventory.
     Library(Feature),
-    /// A diagnostic or target-independent request grants no semantic capability.
+    /// A known request grants no permission for an unsupported semantic consumer.
     NoCapability,
 }
 impl Request {
@@ -198,7 +198,8 @@ impl Request {
             "pattern_types" => Self::Capability(Feature::PatternTypes),
             // Requests alone grant no operation permission. Const-drop/assembly
             // execution and documentation/advisory producers need their own proof.
-            "const_destruct"
+            "coroutines"
+            | "const_destruct"
             | "asm_experimental_arch"
             | "multiple_supertrait_upcastable"
             | "intra_doc_pointers"
