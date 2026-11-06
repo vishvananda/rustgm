@@ -21,6 +21,7 @@ pub struct CallableInputs {
     pub(super) targets: Option<HashMap<Instance, Instance>>,
     pub(super) sites: Vec<CallerSite>,
     nominal: Option<Box<nominal_inputs::NominalInputs>>,
+    pub(super) value_reborrows: Option<Box<super::reborrow_inputs::Inputs>>,
 }
 impl CallableInputs {
     pub(crate) fn from_targets(targets: HashMap<Instance, Instance>) -> Self {
@@ -28,12 +29,14 @@ impl CallableInputs {
             targets: Some(targets),
             sites: Vec::new(),
             nominal: None,
+            value_reborrows: None,
         }
     }
     pub(super) fn allocation_bytes(&self) -> usize {
-        self.targets
-            .as_ref()
-            .map_or(0, retained::map)
+        self.value_reborrows
+            .as_deref()
+            .map_or(0, super::reborrow_inputs::Inputs::allocation_bytes)
+            .saturating_add(self.targets.as_ref().map_or(0, retained::map))
             .saturating_add(retained::vector(&self.sites))
             .saturating_add(
                 self.nominal
@@ -152,11 +155,9 @@ impl Body {
         key: super::ir::BodyKey,
         instance: Option<Instance>,
     ) -> Result<Option<Box<CallableInputs>>, &'static str> {
-        let Some(inputs) = self
-            .resolved_callables
-            .as_ref()
-            .filter(|inputs| !inputs.sites.is_empty() || inputs.nominal.is_some())
-        else {
+        let Some(inputs) = self.resolved_callables.as_ref().filter(|inputs| {
+            !inputs.sites.is_empty() || inputs.nominal.is_some() || inputs.value_reborrows.is_some()
+        }) else {
             return Ok(None);
         };
         facts.charge_caller_inputs(
@@ -168,6 +169,7 @@ impl Body {
             targets: None,
             sites: inputs.sites.clone(),
             nominal: self.copy_nominal_inputs(facts, key, instance)?,
+            value_reborrows: self.copy_value_reborrow_inputs(facts, key, instance)?,
         })))
     }
     pub(crate) fn specialize_caller_inputs(

@@ -14,6 +14,7 @@ mod invocations;
 mod logical_values;
 mod pointers;
 mod ptr_values;
+mod reborrow_values;
 mod references;
 mod referents;
 mod reinterpret_calls;
@@ -685,6 +686,7 @@ impl Lower<'_, '_, '_> {
             Rvalue::Length(place) => self.slice_length(place)?,
             Rvalue::TextEquals { place, text } => self.text_equals(place, text)?,
             Rvalue::Text(text) => return self.text_literal(text, representation),
+            Rvalue::Reborrow { .. } => return self.value_reborrow(id),
             Rvalue::IsVariant { place, variant } => return self.is_variant(place, variant),
             Rvalue::Read(place) => {
                 if matches!(representation, Representation::Scalar(Type::Void)) {

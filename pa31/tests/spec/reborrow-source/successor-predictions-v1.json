@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "prefix": {
+    "source": "source.rs",
+    "source_sha256": "b1bfcec687a83bfa567acb2d33db86ae1cda47affe9b2e93b9ce7810cfbac619",
+    "length": 1659,
+    "sha256": "1246e422dd256d1d4c500c796a0494ea97bd5065a91fc3a484b82200689ec72e"
+  },
+  "scope": "One combined native for multidata+concrete/explicit expectations, nested singlefield, zero-data markers, and actual projected operand evaluated once. Relay accept is a hypothesis, not presumed runtime proof. Inferred/borrow/unsafe negatives are independent. Extra PhantomData support retains actual pinned declaration with ordinary real Clone/Copy bodies.",
+  "cases": [
+    {
+      "file": "successor-native-v1.rs",
+      "sha256": "951a9469f9c2f9d011005037bccad60314f964ba0929cfece4ff4a817d95e819",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "prediction_status": "frozen-before-any-Rust-or-candidate-observation",
+      "native": {
+        "observer": "successor-native-v1.c",
+        "observer_sha256": "72a645f5f696a5d4f7c411ab6b9b2305a58b57b837f91abe58068d7414d16c67",
+        "stdout": "successor 17 23 19 31 47 23 59 1 7\n",
+        "crate_type": "lib"
+      }
+    },
+    {
+      "file": "successor-relay-v1.rs",
+      "sha256": "87b0b52f5b0b423a99d7cc67c8b0d5809602b732a85f2f3633417f92a2f4a9ae",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "prediction_status": "frozen-before-any-Rust-or-candidate-observation"
+    },
+    {
+      "file": "successor-inferred-v1.rs",
+      "sha256": "e4c6099f2d589f140081661f94158a8e35e47b969e0c56253d33fa747544dec3",
+      "expected_code": 1,
+      "expected_error_code": "E0382",
+      "prediction_status": "frozen-before-any-Rust-or-candidate-observation"
+    },
+    {
+      "file": "successor-static-unused-v1.rs",
+      "sha256": "405ef0a0ccc96ba4fa98fc544d2ef3434c414b566d45f5db9d84ef9f4a33f7d4",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "prediction_status": "frozen-before-any-Rust-or-candidate-observation"
+    },
+    {
+      "file": "successor-static-use-v1.rs",
+      "sha256": "e176ac1e0f0c6a8bc40220f452ed1d6506341011d99bccf143b42a4c9b7bdf06",
+      "expected_code": 1,
+      "expected_error_code": "E0597",
+      "prediction_status": "frozen-before-any-Rust-or-candidate-observation"
+    },
+    {
+      "file": "successor-unsafe-v1.rs",
+      "sha256": "23b598b31360a7bd7174e8c917c48fb807a17f1102cc4028a303ff4c1384e222",
+      "expected_code": 1,
+      "expected_error_code": "E0133",
+      "prediction_status": "frozen-before-any-Rust-or-candidate-observation"
+    }
+  ]
+}

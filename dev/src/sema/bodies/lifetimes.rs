@@ -31,6 +31,7 @@ impl Checker<'_> {
         self.publish_pointer_adjustments(solved, body_key);
         for index in 0..self.state.adjustments.len() {
             self.validate_nominal_goal(index, solved, predicates, evidence)?;
+            let shared_borrow = self.publish_value_reborrow(index, solved, predicates, evidence)?;
             let adjustment = &self.state.adjustments[index];
             let key = self.key(adjustment.node);
             let target = solved.types[adjustment.expected.0 as usize];
@@ -66,6 +67,9 @@ impl Checker<'_> {
                     .or_else(|| self.state.callable_adjustments.get(&index).copied())
             {
                 proof_actual = solved.types[view.0 as usize];
+            }
+            if let Some(borrow) = shared_borrow {
+                proof_actual = borrow;
             }
             if let Some(fold) = &mut defining {
                 proof_actual = fold

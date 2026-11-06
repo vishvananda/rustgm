@@ -323,6 +323,9 @@ impl Checker<'_> {
         self.state.checks.clear();
         self.state.negated.clear();
         self.state.adjustments.clear();
+        // Pending goals belong to one inference arena. Release this rare table
+        // instead of carrying a previous body's indices or oversized buckets.
+        self.state.value_reborrows = None;
         self.state.reference_adjustments.clear();
         self.state.unsizing_adjustments.clear();
         self.state.pointer_adjustments.clear();

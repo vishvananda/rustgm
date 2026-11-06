@@ -205,6 +205,11 @@ pub enum Rvalue {
         place: Place,
         kind: BorrowKind,
     },
+    /// Copy a checked nominal view while borrowing its actual source place.
+    Reborrow {
+        place: Place,
+        mutable: bool,
+    },
     /// Non-moving constructor test; the owned input must be fully initialized.
     IsVariant {
         place: Place,

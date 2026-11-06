@@ -1,3 +1,15 @@
+The [Reborrow operation checkpoint](parallel/reborrow-operations-checkpoint.md)
+qualifies seven public controls in115.23s and two native observers in34.66s.
+Immutable CLI9aa812d6 advances unchanged original722-input core to LIB186,
+FieldRepresentingType at field.rs11/file79:252,24.067s/375opens. Profile/limits
+stay fixed; there is no original library artifact or whole PA after24 release.
+Root integrates the actual selected-target/context/place/loan/CTFE work, then
+owns Field's five ordinary headers; Async prepares independent Field contracts.
+Source implements six separately frozen weak foreign-symbol headers using the
+existing registry, with no intrinsic/copy permission. Prior CStr full42273932679
+passes; new private/full qualification remains due. Keep the same warm btrfs
+trees,2heavy/16GiB/150GiB/<=300s guards and scoped cleanup.
+
 The [CStr byte-slice repair](parallel/text-slice-repair.md) passes full
 42273932679 on main14fe4f9c5, including release/course, private, native, debug and
 independent gates. The separately frozen [Reborrow reference packet](parallel/source-reborrow-reference.md)

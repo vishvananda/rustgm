@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "profile": "Same pinned no_core profile as v1/v2",
+  "predecessor": "V2 intended borrow overlap was obscured by use_pair expecting Exclusive while keep returns &mut u8. Preserve V2; V3 corrects only helper parameter types.",
+  "cases": [
+    {
+      "file": "local-overlap-v3.rs",
+      "sha256": "4d63b76e44e5aa3f89e4089ae718519b282d62a26a8111dbd91af060da1b7e30",
+      "expected_code": 1,
+      "expected_cause": "overlapping mutable borrow",
+      "prediction_status": "frozen before v3 reference"
+    }
+  ]
+}

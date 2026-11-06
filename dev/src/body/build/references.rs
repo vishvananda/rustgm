@@ -11,6 +11,46 @@ impl Builder<'_> {
         let Some(mut place) = place.filter(|_| self.current.is_some()) else {
             return Ok(());
         };
+        if self.fact(node)?.adjustment.is_some_and(|a| {
+            matches!(
+                a.kind,
+                crate::sema::model::AdjustmentKind::GenericReborrow
+                    | crate::sema::model::AdjustmentKind::CoerceShared
+            )
+        }) {
+            let key = NodeKey {
+                node,
+                ..self.source
+            };
+            let row = self
+                .facts
+                .value_reborrows
+                .as_deref()
+                .ok_or_else(|| self.error(node, "value reborrow source inventory is missing"))?
+                .get(self.facts, key)
+                .map_err(|e| self.error(node, e))?
+                .ok_or_else(|| self.error(node, "value reborrow source selection is missing"))?;
+            if self.place_type(node, place)? != row.source {
+                return Err(self.error(node, "value reborrow changed its actual source place type"));
+            }
+            let value = self.evaluate(
+                node,
+                row.borrow,
+                Rvalue::Reborrow {
+                    place,
+                    mutable: row.mutable,
+                },
+            )?;
+            self.body
+                .append_value_reborrow(self.facts, key, value, place)
+                .map_err(|e| self.error(node, e))?;
+            let value = if row.borrow == row.target {
+                value
+            } else {
+                self.evaluate(node, row.target, Rvalue::Constrain(value))?
+            };
+            return self.save(node, value);
+        }
         let reference = self
             .reference_adjustment(node)
             .ok_or_else(|| self.error(node, "missing reference conversion selection"))?;

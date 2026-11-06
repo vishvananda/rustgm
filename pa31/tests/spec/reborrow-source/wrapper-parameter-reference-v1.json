@@ -1,0 +1,247 @@
+{
+  "schema": 1,
+  "scope": "Pinned Rust reference only; no RustGM candidate/compiler changes or native execution. All tested function bodies use by-value wrappers and no explicit reference construction.",
+  "correction": "Original direct by-value write/write/read positive hypothesis disproved by E0597 at shared read; it is a qualified ordinary negative. Explicitly typed shortened wrapper local V2 accepts. Overlapping typed wrapper locals rejectE0499. Alloriginalbytes retained.",
+  "current_cases": [
+    {
+      "file": "wrapper-parameter-valid.rs",
+      "expected_code_after_review": 1,
+      "expected_error_code": "E0597"
+    },
+    {
+      "file": "wrapper-parameter-overlap.rs",
+      "expected_code_after_review": 1,
+      "expected_error_code": "E0499"
+    },
+    {
+      "file": "wrapper-parameter-valid-v2.rs",
+      "expected_code_after_review": 0
+    }
+  ],
+  "runs": [
+    {
+      "version": "v1",
+      "receipt": "obj/parallel/reborrow-wrapper-parameters/v1/receipt.json",
+      "receipt_sha256": "9d990402318cfb86fe4827bff14cdad6cccfd20b299617817780029095b54d65",
+      "state": "observed",
+      "profile": {
+        "rust": "1.98.0",
+        "edition": "2024",
+        "target": "x86_64-unknown-linux-gnu",
+        "panic": "abort",
+        "cap_lints": "allow",
+        "RUSTC_BOOTSTRAP": "1",
+        "threads": 2
+      },
+      "prediction_sha256": "3a0763e02f8d2b4e6f0f0405082e742880daa2dcee473efdefb402f937255c8f",
+      "compiler": {
+        "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+      },
+      "cases": [
+        {
+          "file": "wrapper-parameter-valid.rs",
+          "sha256": "119c7d47e4d751bbcedc865286233d96f899990fc38d33dcc914404dfbf076f8",
+          "expected_code": 0,
+          "expected_error_code": "",
+          "prediction_status": "frozen-before-any-Rust-or-candidate-observation",
+          "mode": "metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=metadata",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/reborrow-source/wrapper-parameter-valid.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/reborrow-wrapper-parameters/v1/actual.rmeta"
+          ],
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0597",
+              "message": "`value` does not live long enough"
+            }
+          ],
+          "prediction_matches": false,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0127f7d86089a66c7efe580eb253ea39f5fb8f959a8fb25e317877252b1c822a"
+        },
+        {
+          "file": "wrapper-parameter-valid.rs",
+          "sha256": "119c7d47e4d751bbcedc865286233d96f899990fc38d33dcc914404dfbf076f8",
+          "expected_code": 0,
+          "expected_error_code": "",
+          "prediction_status": "frozen-before-any-Rust-or-candidate-observation",
+          "mode": "obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=obj",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/reborrow-source/wrapper-parameter-valid.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/reborrow-wrapper-parameters/v1/actual.o"
+          ],
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0597",
+              "message": "`value` does not live long enough"
+            }
+          ],
+          "prediction_matches": false,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0127f7d86089a66c7efe580eb253ea39f5fb8f959a8fb25e317877252b1c822a"
+        },
+        {
+          "file": "wrapper-parameter-overlap.rs",
+          "sha256": "4cdeb74652ad738e03ee0d18812eb6a730951b45944b103ff8aae25ec55344cb",
+          "expected_code": 1,
+          "expected_error_code": "E0499",
+          "prediction_status": "frozen-before-any-Rust-or-candidate-observation",
+          "mode": "metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=metadata",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/reborrow-source/wrapper-parameter-overlap.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/reborrow-wrapper-parameters/v1/actual.rmeta"
+          ],
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0499",
+              "message": "cannot borrow `value` as mutable more than once at a time"
+            }
+          ],
+          "prediction_matches": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9c03313eaa3f29c75a773e75a4593beb7e2ebfdef0d16b79085d38328f67b275"
+        },
+        {
+          "file": "wrapper-parameter-overlap.rs",
+          "sha256": "4cdeb74652ad738e03ee0d18812eb6a730951b45944b103ff8aae25ec55344cb",
+          "expected_code": 1,
+          "expected_error_code": "E0499",
+          "prediction_status": "frozen-before-any-Rust-or-candidate-observation",
+          "mode": "obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=obj",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/reborrow-source/wrapper-parameter-overlap.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/reborrow-wrapper-parameters/v1/actual.o"
+          ],
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0499",
+              "message": "cannot borrow `value` as mutable more than once at a time"
+            }
+          ],
+          "prediction_matches": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9c03313eaa3f29c75a773e75a4593beb7e2ebfdef0d16b79085d38328f67b275"
+        }
+      ],
+      "seconds": 0.20620016602333635,
+      "all_predictions_match": false
+    },
+    {
+      "version": "v2",
+      "receipt": "obj/parallel/reborrow-wrapper-parameters/v2/receipt.json",
+      "receipt_sha256": "3880e029da2fc2805283547dbbf2d1b5fbbce827599d9bedc5923fefe5952178",
+      "state": "observed",
+      "profile": {
+        "rust": "1.98.0",
+        "edition": "2024",
+        "target": "x86_64-unknown-linux-gnu",
+        "panic": "abort",
+        "cap_lints": "allow",
+        "RUSTC_BOOTSTRAP": "1",
+        "threads": 2
+      },
+      "prediction_sha256": "5d3d652cfddce3ee45b1560ade322a989733f9b3d31c709ec44abedbd351c337",
+      "compiler": {
+        "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+      },
+      "cases": [
+        {
+          "file": "wrapper-parameter-valid-v2.rs",
+          "sha256": "4626c1d0c47aa2afd05c5a6ccb30421e913692732513c8794b1449ea040f0bf1",
+          "expected_code": 0,
+          "expected_error_code": "",
+          "prediction_status": "frozen-before-v2-Rust-or-candidate-observation",
+          "mode": "metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=metadata",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/reborrow-source/wrapper-parameter-valid-v2.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/reborrow-wrapper-parameters/v2/actual.rmeta"
+          ],
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "wrapper-parameter-valid-v2.rs",
+          "sha256": "4626c1d0c47aa2afd05c5a6ccb30421e913692732513c8794b1449ea040f0bf1",
+          "expected_code": 0,
+          "expected_error_code": "",
+          "prediction_status": "frozen-before-v2-Rust-or-candidate-observation",
+          "mode": "obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=obj",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/reborrow-source/wrapper-parameter-valid-v2.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/reborrow-wrapper-parameters/v2/actual.o"
+          ],
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "seconds": 0.1015234460355714,
+      "all_predictions_match": true
+    }
+  ]
+}

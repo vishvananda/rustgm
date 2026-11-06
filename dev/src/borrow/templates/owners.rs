@@ -57,10 +57,12 @@ pub(super) fn insert(
         return Err(error("template proof requires distinct original owners"));
     }
     if body.promotions.is_none()
-        && body
-            .values
-            .iter()
-            .any(|v| matches!(v.kind, crate::body::ir::Rvalue::Borrow { .. }))
+        && body.values.iter().any(|v| {
+            matches!(
+                v.kind,
+                crate::body::ir::Rvalue::Borrow { .. } | crate::body::ir::Rvalue::Reborrow { .. }
+            )
+        })
     {
         return Err(error(
             "template proof requires completed promotion analysis",

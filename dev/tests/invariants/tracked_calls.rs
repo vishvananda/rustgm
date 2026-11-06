@@ -156,7 +156,7 @@ fn caller_metadata_cannot_replace_targets_or_forge_snapshot_identity() -> TestRe
     assert_eq!(size_of::<body::ir::Body>(), 456);
     assert_eq!(size_of::<body::ir::Rvalue>(), 20);
     assert_eq!(size_of::<body::ir::Value>(), 24);
-    assert_eq!(size_of::<body::ir::ResolvedCallables>(), 64);
+    assert_eq!(size_of::<body::ir::ResolvedCallables>(), 72);
     assert_eq!(
         size_of::<super::super::Header>(),
         72 + size_of::<Option<Box<super::super::promotability::Marker>>>()

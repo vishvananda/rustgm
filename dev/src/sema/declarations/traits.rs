@@ -1,6 +1,9 @@
 //! Trait Self has its own identity; source generic parameter indices remain unchanged.
 mod associated_types;
 mod implementations;
+pub(in crate::sema) use implementations::{
+    ReborrowField, ReborrowStructView, reborrow_struct_view,
+};
 mod override_identity;
 pub(super) use implementations::impl_contract_obligations;
 pub(super) use implementations::{

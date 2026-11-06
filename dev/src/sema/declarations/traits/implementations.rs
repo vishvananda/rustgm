@@ -9,6 +9,10 @@ mod negative;
 mod orphans;
 mod portable_impls;
 mod readiness;
+mod reborrowing;
+pub(in crate::sema) use reborrowing::structure::{
+    Field as ReborrowField, StructView as ReborrowStructView, view as reborrow_struct_view,
+};
 mod reservation_rules;
 mod rpit_defaults;
 pub(in crate::sema::declarations) use readiness::Readiness;

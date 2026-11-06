@@ -293,6 +293,7 @@ fn inspect_action(
                 .get(id.0 as usize)
                 .ok_or("invalid storage value")?;
             if let Rvalue::Borrow { place, .. }
+            | Rvalue::Reborrow { place, .. }
             | Rvalue::Read(place)
             | Rvalue::Validate(place)
             | Rvalue::Length(place)

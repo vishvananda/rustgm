@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "predecessor": {
+    "file": "wrapper-parameter-predictions-v1.json",
+    "sha256": "3a0763e02f8d2b4e6f0f0405082e742880daa2dcee473efdefb402f937255c8f",
+    "correction": "Direct by-value param\u2192shared conversion rejectsE0597 (input universal cannotborrowparamforwholeinputlifetime), contrarypositivehypothesis. V2 explicitly shortens to a typed nominal local first, no reference construction. Original negative remains E0499; do not rerun it."
+  },
+  "cases": [
+    {
+      "file": "wrapper-parameter-valid-v2.rs",
+      "sha256": "4626c1d0c47aa2afd05c5a6ccb30421e913692732513c8794b1449ea040f0bf1",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "prediction_status": "frozen-before-v2-Rust-or-candidate-observation"
+    }
+  ]
+}

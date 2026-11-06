@@ -2,10 +2,14 @@
 use super::{AccessKind, Checker, Collector, Error, NodeId, Use, Work};
 use crate::{sema::model::AdjustmentKind, types::infer::Constructor};
 
+#[derive(Clone, Copy)]
+pub(super) enum ReferenceUse {
+    Reference(crate::sema::model::ReferenceConversion, super::TermId),
+    Value { mutable: bool },
+}
 /// Temporary transfer of the collector's two existing selection tables.
 pub(super) struct ReferenceUses {
-    pub(super) references:
-        crate::support::hash::HashMap<NodeId, (super::ReferenceConversion, super::TermId)>,
+    pub(super) references: crate::support::hash::HashMap<NodeId, ReferenceUse>,
     pub(super) adjusted: crate::support::hash::HashSet<NodeId>,
 }
 pub(super) fn reference_uses(
@@ -27,7 +31,23 @@ pub(super) fn reference_uses(
             adjusted.remove(&adjustment.node);
         }
         if let Some(&reference) = checker.state.reference_adjustments.get(&index) {
-            references.insert(adjustment.node, reference);
+            references.insert(
+                adjustment.node,
+                ReferenceUse::Reference(reference.0, reference.1),
+            );
+        }
+        if let Some(pending) = checker
+            .state
+            .value_reborrows
+            .as_deref()
+            .and_then(|p| p.get(&index))
+        {
+            references.insert(
+                adjustment.node,
+                ReferenceUse::Value {
+                    mutable: pending.capture_mutability(),
+                },
+            );
         }
         if !matches!(
             adjustment.kind,
@@ -53,23 +73,37 @@ impl Collector<'_> {
         checker: &mut Checker<'_>,
         work: &Work,
     ) -> Result<Work, Error> {
-        let (conversion, borrow) = self.references.get(&work.node).copied().ok_or_else(|| {
-            checker.error(work.node, "missing capture reference conversion selection")
-        })?;
+        let selected = self
+            .references
+            .get(&work.node)
+            .copied()
+            .ok_or_else(|| checker.error(work.node, "missing capture borrow selection"))?;
         if work.dereferences != 0 || work.receiver.is_some() {
-            return Err(checker.error(work.node, "conflicting capture reference conversion uses"));
+            return Err(checker.error(work.node, "conflicting capture borrow uses"));
         }
-        // A contextual reborrow evaluates the place even with a wildcard
-        // destination. Only an unadjusted wildcard remains a non-reading mention.
-        let usage = match checker.head(work.node, borrow)? {
-            Some(Constructor::Reference { mutable: true, .. }) => Use::Mutable,
-            Some(Constructor::Reference { mutable: false, .. }) => Use::Shared,
-            _ => return Err(checker.error(work.node, "missing capture reference borrow type")),
+        // Both forms evaluate their actual source place, including wildcard
+        // destinations. A value reborrow adds no reference dereference prefix.
+        let (usage, dereferences) = match selected {
+            ReferenceUse::Reference(conversion, borrow) => {
+                let usage = match checker.head(work.node, borrow)? {
+                    Some(Constructor::Reference { mutable: true, .. }) => Use::Mutable,
+                    Some(Constructor::Reference { mutable: false, .. }) => Use::Shared,
+                    _ => {
+                        return Err(
+                            checker.error(work.node, "missing capture reference borrow type")
+                        );
+                    }
+                };
+                (usage, conversion.dereferences)
+            }
+            ReferenceUse::Value { mutable } => {
+                (if mutable { Use::Mutable } else { Use::Shared }, 0)
+            }
         };
         Ok(Work {
             node: work.node,
             usage,
-            dereferences: conversion.dereferences,
+            dereferences,
             receiver: Some((work.node, AccessKind::Reference)),
         })
     }

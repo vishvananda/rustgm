@@ -1,0 +1,187 @@
+{
+  "state": "qualified finite Reborrow source/runtime/CTFE checkpoint; no original library artifact or whole PA release",
+  "worktree": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work",
+  "cli_sha256": "9aa812d66647c3e57800d93cab93649b9b424999d025a9d3f64657c8cec4cc11",
+  "source_snapshot": {
+    "count": 3671,
+    "sha256": "f7285b7895388a4ae927d0018257f39bdefe663e0ebb1468a939e7411f5e3114"
+  },
+  "regular": {
+    "path": "obj/qualification/fast/1793994464861182918/receipt.json",
+    "sha256": "916f6e45f6f79b724f75aecb398a3319828e2cc03d8c3a5039b95872442a902f",
+    "seconds": 115.23,
+    "selected": {
+      "suite_ownership": [
+        "loans::last_uses_aliases_and_reborrow_permissions"
+      ],
+      "suite_frontend": [
+        "reborrow_sources::actual_source_operations_and_unused_alternate_headers_remain_real",
+        "reborrow_sources::checked_source_operations_retain_their_original_places",
+        "reborrow_sources::generic_expectations_and_operation_field_lifetimes_remain_ordinary",
+        "reborrow_sources::source_impl_fields_and_operation_loans_retain_their_ordinary_rejections",
+        "reborrow_sources::wrapper_parameters_keep_loans_without_explicit_reference_values",
+        "cstr_sources::real_source_methods_and_const_static_views_lower"
+      ]
+    },
+    "tests": 7,
+    "positive_reborrow_sources": 7,
+    "ordinary_rejections": 20
+  },
+  "native": {
+    "path": "obj/qualification/fast/1793994609101974524/receipt.json",
+    "sha256": "6da922be5595998f8e9f94baedd6c8985dce3855a1da6896d8b684056f502671",
+    "seconds": 34.66,
+    "tests": 1,
+    "executables": 2,
+    "observed_stdout": [
+      "reborrow 23 23 47 47 0 99 31",
+      "successor 17 23 19 31 23 59 1"
+    ]
+  },
+  "core": {
+    "path": "obj/parallel/source-reborrow-core-v1/receipt.json",
+    "sha256": "a2f24caa5f1eb537875053a47f253cb86e77937452d747c38a177ac16b5e3656",
+    "pin": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/9aa812d66647c3e57800d93cab93649b9b424999d025a9d3f64657c8cec4cc11/rustgm",
+    "result": {
+      "infrastructure_failure": false,
+      "classification": "observed original-core blocker",
+      "lint_cap": "allow",
+      "source_contract_limits": {
+        "work": 14500624,
+        "attempted_bytes": 1073741824,
+        "retained_bytes": 67108864
+      },
+      "expected_cli_sha256": "9aa812d66647c3e57800d93cab93649b9b424999d025a9d3f64657c8cec4cc11",
+      "expected_cli_source": "explicit caller input",
+      "status": 1,
+      "first_error": "ERROR: file 79: 252: source compiler language item semantic contract is not implemented",
+      "inputs_unchanged": true,
+      "opened_source_count": 375,
+      "total_seconds": 24.067043486982584,
+      "raw_sha256": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "137b1ca34d75f5deffcd8c52a7cb93260a881e7186df38a35d9dca51aa89684d",
+        "whole-core.openat": "b31951ceaf9e873f8808a4268bb06e9d799872f17d8ad6f03affea03b7482a2b",
+        "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+      }
+    },
+    "frontier": {
+      "id": "LIB-186",
+      "file": 79,
+      "byte": 252,
+      "path": "library/core/src/field.rs",
+      "line": 11,
+      "item": "FieldRepresentingType"
+    },
+    "setup": {
+      "path": "obj/parallel/source-reborrow-core-v1/setup.json",
+      "sha256": "ea9b6c3abd5bb39f228325ec22d334edd1a8e854d36d100b062295e15959fb0b"
+    },
+    "manifest": {
+      "path": "obj/parallel/source-reborrow-core-v1/manifest.json",
+      "sha256": "ca96fc3c551753bc9468b14055b3eae4069b665da19b9776b536e3321da75247"
+    },
+    "producer": {
+      "path": "obj/parallel/source-reborrow-core-v1/producer.json",
+      "sha256": "85b0caca06cc32d069ac4e90403b16720167ab85275bf348ae00152e60a99c6a"
+    }
+  },
+  "performance": {
+    "path": "obj/parallel/source-reborrow-perf-v1/receipt.json",
+    "sha256": "6516c08f096fc91ef58cd70e5e47eaefac5fdadefd948920b6878a4b0652fc9f",
+    "plan": {
+      "path": "obj/parallel/source-reborrow-perf-v1/plan.json",
+      "sha256": "f4a31e6d05a2a7f4bd99d5b28fc6f837c7ac37e0b0c423460994638949b476e2"
+    },
+    "observations": 40,
+    "summary": [
+      {
+        "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+        "aa_min_seconds": 0.12628131301607937,
+        "aa_max_seconds": 0.16611282899975777,
+        "paired_ratios": [
+          0.8581181691675609,
+          0.9720058715763203,
+          1.1323436091795795,
+          0.9897209526932998
+        ],
+        "median_ratio": 0.9808634121348101,
+        "all_output_equal": true
+      },
+      {
+        "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+        "aa_min_seconds": 0.44981943699531257,
+        "aa_max_seconds": 0.6145026410231367,
+        "paired_ratios": [
+          0.9214002480925823,
+          1.082898748219088,
+          1.041285838516375,
+          1.170910158233971
+        ],
+        "median_ratio": 1.0620922933677315,
+        "all_output_equal": true
+      }
+    ],
+    "interpretation": "Noisy ordinary controls; exact output equality. No broad speedup or regression-absence claim; no common pre-feature baseline for new operations."
+  },
+  "tested_files": {
+    "pa31/tests/spec/reborrow-source/header-extra.rs": "ec2a9db56659d05502e48097c1f9bfcb1dd32c5d9943fa1ea364c672d9de8dfa",
+    "pa31/tests/spec/reborrow-source/header-unsafe.rs": "5bd1d53671b09732dfaabd32e6291a28e8d7b0fa99918dd44d453b42b0953fe3",
+    "pa31/tests/spec/reborrow-source/source.rs": "b1bfcec687a83bfa567acb2d33db86ae1cda47affe9b2e93b9ce7810cfbac619",
+    "pa31/tests/spec/reborrow-source/native.rs": "c6a24845f534c1f13975e55bd25498fc597b1fbaceb46c0320d57b90d567010d",
+    "pa31/tests/spec/reborrow-source/successor-native-v3.rs": "de11cb29317828dcd98699c72acdf884b46f77f45969990170c8b72d0485a346",
+    "pa31/tests/spec/reborrow-source/successor-static-unused-v1.rs": "405ef0a0ccc96ba4fa98fc544d2ef3434c414b566d45f5db9d84ef9f4a33f7d4",
+    "pa31/tests/spec/reborrow-source/successor-inferred-v1.rs": "e4c6099f2d589f140081661f94158a8e35e47b969e0c56253d33fa747544dec3",
+    "pa31/tests/spec/reborrow-source/successor-relay-v1.rs": "87b0b52f5b0b423a99d7cc67c8b0d5809602b732a85f2f3633417f92a2f4a9ae",
+    "pa31/tests/spec/reborrow-source/successor-static-use-v1.rs": "e176ac1e0f0c6a8bc40220f452ed1d6506341011d99bccf143b42a4c9b7bdf06",
+    "pa31/tests/spec/reborrow-source/successor-unsafe-v2.rs": "70e95888a8115f003df0b80b3f6077d015d3403f9a68239aa8e542c7be3b9a93",
+    "pa31/tests/spec/reborrow-source/wrapper-parameter-valid-v2.rs": "4626c1d0c47aa2afd05c5a6ccb30421e913692732513c8794b1449ea040f0bf1",
+    "pa31/tests/spec/reborrow-source/wrapper-parameter-valid.rs": "119c7d47e4d751bbcedc865286233d96f899990fc38d33dcc914404dfbf076f8",
+    "pa31/tests/spec/reborrow-source/wrapper-parameter-overlap.rs": "4cdeb74652ad738e03ee0d18812eb6a730951b45944b103ff8aae25ec55344cb",
+    "pa31/tests/spec/reborrow-source/local-enum.rs": "ef2cbb7fe5e27ecf5a6aadb5f3627fcf5bebd40f8bad50ecb4c852cde2ccadf2",
+    "pa31/tests/spec/reborrow-source/local-noncopy.rs": "ad0ea55cc64dfa533f1d450184bb8b83d9f1817bf04d3c96575dd118d43ff7ed",
+    "pa31/tests/spec/reborrow-source/local-multiple-fields.rs": "8a0fd930aad37b9db6a27d5ccaa88def780ee24debb91a04373423c172645e81",
+    "pa31/tests/spec/reborrow-source/local-no-life.rs": "1bd6a2f69941e16241e4fcf75d860beef99d95032f7ba23b8f9f0f7a587665ac",
+    "pa31/tests/spec/reborrow-source/local-two-life.rs": "e9f76a1fdf717437953cbd9329fe432ed5b8266c91f391761dc742378af9548e",
+    "pa31/tests/spec/reborrow-source/local-target-type.rs": "587280255f7a195e0d00f44d598678fa0a1f3d78a0e34070774b56422af04a0f",
+    "pa31/tests/spec/reborrow-source/local-target-copy.rs": "513f50f33751008d23c7a0ff76a74970ba23912128917dd405b23178a845a511",
+    "pa31/tests/spec/reborrow-source/local-missing.rs": "2ac1de00ea0a89a781f024e28b303c1ec3a55ccc138c2dc8bd50a313904ac6b4",
+    "pa31/tests/spec/reborrow-source/local-fake.rs": "34ed2495dba6e88e3dd6660181de9efd55b960bcef67b10083660f56baceded0",
+    "pa31/tests/spec/reborrow-source/local-overlap-v3.rs": "4d63b76e44e5aa3f89e4089ae718519b282d62a26a8111dbd91af060da1b7e30",
+    "pa31/tests/spec/reborrow-source/local-shared-write-v2.rs": "009c13fe2bd9137db17f7a5e933e5e5eb083fece43f77b158b3d57b57649b2fe",
+    "pa31/tests/spec/reborrow-source/local-shared-move.rs": "096c125260758b80362c4f6733aef98bc2a447386cd2be4319aba318fc405dab",
+    "pa31/tests/spec/reborrow-source/local-escape.rs": "d6675b2626574020dc3482b1722db078ff1cb236e0c63f0623bc246c46c210eb",
+    "pa31/tests/spec/reborrow-source/local-unsafe-source-v2.rs": "761af232bade8f7f231cffecfabba86ace1ee245047d6161f8d2212fc0c50fac",
+    "pa31/tests/spec/reborrow-source/observer.c": "71b559b2b057f8d1c0179334a0ccd7d1c3b41567886da08c74b7637a778171c5",
+    "pa31/tests/spec/reborrow-source/successor-native-v3.c": "a85555bf12c12dd7f798384a0ffd695f82a5ecb7227a422c008b2bb935f2f67a",
+    "pa31/tests/spec/reborrow-source/reference-outcomes.json": "212bbaef1432a05d733cff6b25a52c2e96f4accbed0e3cd1b648bf0e25ff043f",
+    "pa31/tests/spec/reborrow-source/successor-reference-v1.json": "68a8374b00b9162cacd5ae5c57a40e027584ef59ae3a2db5e31c0dcd70463102",
+    "pa31/tests/spec/reborrow-source/wrapper-parameter-reference-v1.json": "fa1f928ebc6b8f265f6786059f1d60a011808e2714a18fcae9202a3240c481f9",
+    "pa31/tests/spec/reborrow-source/local-predictions-v1.json": "d7c46b349646548d287889f008d05682fb8d965a86dd30fe3f140045aeafb16b",
+    "pa31/tests/spec/reborrow-source/local-predictions-v2.json": "5af0780b57715dc1cf628334b002f9dcf954640677f7d3ac11dfcb52233cd7b2",
+    "pa31/tests/spec/reborrow-source/local-predictions-v3.json": "c58c899e47e4dbd21570ad30e9b22848e6cd7c8ccaf4b1c30a6aabfbeaf865b9"
+  },
+  "architecture": {
+    "pending_goals": "body-local optional table released at inference reset",
+    "runtime_target": "actual selected destination, no extra lifetime or type-argument vector",
+    "operation_claim": "cold owner/source/instance/store/operation/place/target identity",
+    "validation_complexity": "one values/rows pass and one statement pass with binary lookup; no per-row full statement rescan",
+    "field_preparation": "ordinary shared prepared storage and one charged fold over raw/normalized declaration fields; declared-field width per operation remains an explicit scaling dimension",
+    "callable_inputs_bytes": 72,
+    "prior_callable_inputs_bytes": 64,
+    "ordinary_node_body_value_fields_added": false
+  },
+  "prior_full_ci": {
+    "run": 42273932679,
+    "head": "14fe4f9c510715d2f20bb43786e79250e013d645",
+    "state": "passed; predecessor compiler only"
+  },
+  "pending": [
+    "Successor full private/debug/release/independent CI",
+    "Full original Field and weak foreign declaration families",
+    "Complete original core/alloc/std artifacts",
+    "Wider operations, effects/Drop/const/derives/closures and authenticated transport",
+    "Demanded nested/zero native profiles with currently unqualified pinned no_core ICE observations",
+    "Whole PA25+ requirements and release contracts"
+  ]
+}

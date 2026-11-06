@@ -174,6 +174,9 @@ impl Transfers {
                     .ok_or("cleanup tag value is missing")?;
                 let expose = match source.kind {
                     Rvalue::Address(place) => Self::exposure(tags, paths, place, true)?,
+                    Rvalue::Reborrow { place, mutable } => {
+                        Self::exposure(tags, paths, place, mutable)?
+                    }
                     Rvalue::Borrow { place, .. } => Self::exposure(
                         tags,
                         paths,
@@ -292,7 +295,7 @@ impl Transfers {
             .get(value.0 as usize)
             .ok_or("cleanup tag constructor is missing")?;
         match value.kind {
-            Rvalue::Read(place) => {
+            Rvalue::Read(place) | Rvalue::Reborrow { place, .. } => {
                 self.copy(
                     tags,
                     types,
@@ -602,7 +605,9 @@ fn exposure_type(
 ) -> Result<Option<(u32, TypeId)>, &'static str> {
     root.map(|root| {
         let place = match kind {
-            Rvalue::Address(place) | Rvalue::Borrow { place, .. } => Some(place),
+            Rvalue::Address(place)
+            | Rvalue::Borrow { place, .. }
+            | Rvalue::Reborrow { place, .. } => Some(place),
             _ => None,
         };
         place

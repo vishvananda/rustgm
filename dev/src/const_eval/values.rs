@@ -169,6 +169,12 @@ impl Machine<'_, '_> {
                 }
             }
             Rvalue::Text(text) => self.evaluator.text_literal(text, ty)?,
+            Rvalue::Reborrow { .. } => {
+                let Some(value) = self.value_reborrow(frame, id)? else {
+                    return Ok(None);
+                };
+                value
+            }
             Rvalue::Read(place) => {
                 let Some(address) = self.place(frame, place)? else {
                     return Ok(None);
@@ -386,5 +392,67 @@ impl Machine<'_, '_> {
         frame.values[id.0 as usize] = Some(result);
         frame.temporaries.remove(&id);
         Ok(None)
+    }
+
+    fn value_reborrow(
+        &mut self,
+        frame: &mut Frame,
+        operation: ValueId,
+    ) -> Result<Option<Constant>, Failure> {
+        let body = self.bodies[frame.body].clone();
+        let selected = body.value_reborrow(self.evaluator.facts(), operation)?;
+        let source = self.footprint(selected.source)?;
+        let target = self.footprint(selected.target)?;
+        if source.size != target.size || source.align != target.align {
+            return Err("value reborrow requires matching physical storage profiles".into());
+        }
+        if !selected.mutable {
+            if let Some(field) = selected.field {
+                let a = self.reborrow_field(selected.source, field.source, field.source_ty)?;
+                let b = self.reborrow_field(selected.target, field.target, field.target_ty)?;
+                if a != b {
+                    return Err("shared value reborrow requires matching data-field storage".into());
+                }
+            } else if source.size != 0 {
+                return Err("fieldless shared value reborrow requires zero-sized storage".into());
+            }
+        }
+        let Some(place) = self.place(frame, selected.place)? else {
+            return Ok(None);
+        };
+        let Some(value) = self.read(place)? else {
+            return Ok(None);
+        };
+        if selected.mutable {
+            return Ok(Some(value));
+        }
+        match self.transmute_value(selected.source, selected.target, value)? {
+            super::memory::Read::Value(value) => Ok(Some(value)),
+            super::memory::Read::Pending => Ok(None),
+        }
+    }
+
+    fn reborrow_field(
+        &mut self,
+        owner: crate::types::TypeId,
+        field: crate::sema::members::Selection,
+        ty: crate::types::TypeId,
+    ) -> Result<(u64, u64, u32), Failure> {
+        let index = match field {
+            crate::sema::members::Selection::Tuple(index) => index,
+            crate::sema::members::Selection::Nominal(field) => self
+                .evaluator
+                .facts()
+                .members
+                .ordinal(field)
+                .ok_or("value reborrow data field lacks an actual ordinal")?,
+        };
+        let (physical, offset) = self.storage_offset(owner, &[u64::from(index)])?;
+        let physical = self.footprint(physical)?;
+        let actual = self.footprint(ty)?;
+        if physical.size != actual.size || physical.align != actual.align {
+            return Err("value reborrow data field differs from its physical storage".into());
+        }
+        Ok((offset, actual.size, actual.align))
     }
 }

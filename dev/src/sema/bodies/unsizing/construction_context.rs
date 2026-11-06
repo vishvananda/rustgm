@@ -16,6 +16,20 @@ impl Checker<'_> {
             self.contextual_head(node, actual)?,
             self.contextual_head(node, expected)?,
         );
+        if matches!(heads,
+            (Some(Constructor::Adt(a, _) | Constructor::AdtArgs(a, _)),
+             Some(Constructor::Adt(b, _) | Constructor::AdtArgs(b, _))) if a != b)
+            && self
+                .report
+                .package
+                .requested_reborrow()
+                .map_err(|e| self.error(node, e))?
+        {
+            // A different destination nominal can be the result of a genuine
+            // CoerceShared operation. It cannot constrain the source constructor
+            // backwards; the enclosing coercion must prove that operation.
+            return Ok(None);
+        }
         if self.fixed_constructor_inputs(node, actual, heads)? {
             return Ok(None);
         }

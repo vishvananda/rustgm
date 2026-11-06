@@ -2,6 +2,13 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [Reborrow operation checkpoint](../docs/parallel/reborrow-operations-checkpoint.md)
+qualifies real implementation/Copy proof, contextual moves versus loans, selected
+lifetimes, source places, native storage copying and actual const execution.
+Original core advances to FieldRepresentingType. Wider operations/Drop/const,
+closures/derives, compiler-provided field reflection and authenticated transport
+remain required; this does not release PA31 or build an original library artifact.
+
 The [CStr integration](../docs/parallel/source-cstr-main-join.md) qualifies actual
 source methods, typed literal/constant/static backing and provenance-bearing byte
 reconstruction, including native ordinary/generic nominal reference controls.

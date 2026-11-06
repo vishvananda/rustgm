@@ -141,6 +141,8 @@ fn unimplemented_builtin_claims_stop_before_granting_layout_drop_or_auto_trait_s
                 | LangItem::CoercePointeeValidated
                 | LangItem::ResumeTy
                 | LangItem::CStr
+                | LangItem::Reborrow
+                | LangItem::CoerceShared
                 | LangItem::GetContext
                 | LangItem::CompilerCopy
                 | LangItem::UseCloned

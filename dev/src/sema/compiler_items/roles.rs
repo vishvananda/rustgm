@@ -81,7 +81,7 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 37] = [
+const TRAIT_ROLES: [LangItem; 39] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::UseCloned,
@@ -119,6 +119,8 @@ const TRAIT_ROLES: [LangItem; 37] = [
     LangItem::AsyncIterator,
     LangItem::Coroutine,
     LangItem::CoercePointeeValidated,
+    LangItem::Reborrow,
+    LangItem::CoerceShared,
 ];
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -412,6 +414,8 @@ fn canonical_header_only(role: LangItem) -> bool {
     matches!(
         role,
         LangItem::UseCloned
+            | LangItem::Reborrow
+            | LangItem::CoerceShared
             | LangItem::CoercePointeeValidated
             | LangItem::FnPtrTrait
             | LangItem::Deref

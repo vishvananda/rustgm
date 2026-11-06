@@ -122,7 +122,7 @@ fn needs_analysis(body: &Body) -> bool {
         && body
             .values
             .iter()
-            .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
+            .any(|v| matches!(v.kind, Rvalue::Borrow { .. } | Rvalue::Reborrow { .. }))
 }
 /// Complete one new instance without rescanning previously prepared bodies.
 /// # Errors
@@ -254,7 +254,7 @@ impl<'a, 'b> Engine<'a, 'b> {
             .body
             .values
             .iter()
-            .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
+            .any(|v| matches!(v.kind, Rvalue::Borrow { .. } | Rvalue::Reborrow { .. }))
         {
             return Ok(facts);
         }

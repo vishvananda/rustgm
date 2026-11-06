@@ -1,0 +1,707 @@
+{
+  "schema": 1,
+  "scope": "Independent pinned Rust only. No RustGM candidate observation. Current native covers concrete/explicit generic expectations, real Copy tags, and evaluated-once source projection. Nested/zero demand ICE and initial setup errors remain unqualified.",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "compiler": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "files": {
+    "pa31/tests/spec/reborrow-source/successor-inferred-v1.rs": "e4c6099f2d589f140081661f94158a8e35e47b969e0c56253d33fa747544dec3",
+    "pa31/tests/spec/reborrow-source/successor-native-v1.c": "72a645f5f696a5d4f7c411ab6b9b2305a58b57b837f91abe58068d7414d16c67",
+    "pa31/tests/spec/reborrow-source/successor-native-v1.rs": "951a9469f9c2f9d011005037bccad60314f964ba0929cfece4ff4a817d95e819",
+    "pa31/tests/spec/reborrow-source/successor-native-v2.c": "566313e58244d02b5cf4f14f1880f8cd89f80ca416189858852b475c3c77a379",
+    "pa31/tests/spec/reborrow-source/successor-native-v2.rs": "8d7ac9788fcd4c94b86a764ad453f383a6d1d0910887c96644a8dc585a1321c4",
+    "pa31/tests/spec/reborrow-source/successor-native-v3.c": "a85555bf12c12dd7f798384a0ffd695f82a5ecb7227a422c008b2bb935f2f67a",
+    "pa31/tests/spec/reborrow-source/successor-native-v3.rs": "de11cb29317828dcd98699c72acdf884b46f77f45969990170c8b72d0485a346",
+    "pa31/tests/spec/reborrow-source/successor-predictions-v1.json": "adc2592c34a1bcc7c7780ba3c513240a6adfc5a6bb28b484a9aa597b84ca1560",
+    "pa31/tests/spec/reborrow-source/successor-predictions-v2.json": "0c12d3577976b8ffced79c4cdb1d3e0fed7f5f03fbd10b2263b0ce5a91a20a34",
+    "pa31/tests/spec/reborrow-source/successor-predictions-v3.json": "54a45b6f3ff7ef493e294ba34b72e03e1cf6c7c62b1028ac1596a42a0f199afc",
+    "pa31/tests/spec/reborrow-source/successor-relay-v1.rs": "87b0b52f5b0b423a99d7cc67c8b0d5809602b732a85f2f3633417f92a2f4a9ae",
+    "pa31/tests/spec/reborrow-source/successor-static-unused-v1.rs": "405ef0a0ccc96ba4fa98fc544d2ef3434c414b566d45f5db9d84ef9f4a33f7d4",
+    "pa31/tests/spec/reborrow-source/successor-static-use-v1.rs": "e176ac1e0f0c6a8bc40220f452ed1d6506341011d99bccf143b42a4c9b7bdf06",
+    "pa31/tests/spec/reborrow-source/successor-unsafe-v1.rs": "23b598b31360a7bd7174e8c917c48fb807a17f1102cc4028a303ff4c1384e222",
+    "pa31/tests/spec/reborrow-source/successor-unsafe-v2.rs": "70e95888a8115f003df0b80b3f6077d015d3403f9a68239aa8e542c7be3b9a93"
+  },
+  "successor_runs": [
+    {
+      "version": "v1",
+      "receipt": "obj/parallel/reborrow-successor/v1/receipt.json",
+      "receipt_sha256": "f3729fc4d2aa7c786bc34087ccdcb5578b2ccd50d742c0bbd532cfea69c22517",
+      "seconds": 0.5296285899821669,
+      "prediction_sha256": "adc2592c34a1bcc7c7780ba3c513240a6adfc5a6bb28b484a9aa597b84ca1560",
+      "cases": [
+        {
+          "file": "successor-native-v1.rs",
+          "sha256": "951a9469f9c2f9d011005037bccad60314f964ba0929cfece4ff4a817d95e819",
+          "mode": "metadata",
+          "expected_code": 0,
+          "status": 101,
+          "errors": [
+            {
+              "code": "E0716",
+              "message": "temporary value dropped while borrowed"
+            },
+            {
+              "code": null,
+              "message": "the compiler unexpectedly panicked. This is a bug"
+            },
+            {
+              "code": null,
+              "message": "the compiler unexpectedly panicked. This is a bug"
+            }
+          ],
+          "prediction_matches": false,
+          "classification": "unqualified-reference-ICE"
+        },
+        {
+          "file": "successor-relay-v1.rs",
+          "sha256": "87b0b52f5b0b423a99d7cc67c8b0d5809602b732a85f2f3633417f92a2f4a9ae",
+          "mode": "metadata",
+          "expected_code": 0,
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0515",
+              "message": "cannot return reference to temporary value"
+            },
+            {
+              "code": "E0515",
+              "message": "cannot return value referencing function parameter `value`"
+            }
+          ],
+          "prediction_matches": false,
+          "classification": "qualified-ordinary-outcome"
+        },
+        {
+          "file": "successor-relay-v1.rs",
+          "sha256": "87b0b52f5b0b423a99d7cc67c8b0d5809602b732a85f2f3633417f92a2f4a9ae",
+          "mode": "obj",
+          "expected_code": 0,
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0515",
+              "message": "cannot return reference to temporary value"
+            },
+            {
+              "code": "E0515",
+              "message": "cannot return value referencing function parameter `value`"
+            }
+          ],
+          "prediction_matches": false,
+          "classification": "qualified-ordinary-outcome"
+        },
+        {
+          "file": "successor-inferred-v1.rs",
+          "sha256": "e4c6099f2d589f140081661f94158a8e35e47b969e0c56253d33fa747544dec3",
+          "mode": "metadata",
+          "expected_code": 1,
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0382",
+              "message": "use of moved value: `value`"
+            }
+          ],
+          "prediction_matches": true,
+          "classification": "qualified-ordinary-outcome"
+        },
+        {
+          "file": "successor-static-unused-v1.rs",
+          "sha256": "405ef0a0ccc96ba4fa98fc544d2ef3434c414b566d45f5db9d84ef9f4a33f7d4",
+          "mode": "metadata",
+          "expected_code": 0,
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "classification": "qualified-ordinary-outcome"
+        },
+        {
+          "file": "successor-static-use-v1.rs",
+          "sha256": "e176ac1e0f0c6a8bc40220f452ed1d6506341011d99bccf143b42a4c9b7bdf06",
+          "mode": "metadata",
+          "expected_code": 1,
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0597",
+              "message": "`value` does not live long enough"
+            }
+          ],
+          "prediction_matches": true,
+          "classification": "qualified-ordinary-outcome"
+        },
+        {
+          "file": "successor-unsafe-v1.rs",
+          "sha256": "23b598b31360a7bd7174e8c917c48fb807a17f1102cc4028a303ff4c1384e222",
+          "mode": "metadata",
+          "expected_code": 1,
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0133",
+              "message": "dereference of raw pointer is unsafe and requires unsafe function or block"
+            },
+            {
+              "code": "E0716",
+              "message": "temporary value dropped while borrowed"
+            }
+          ],
+          "prediction_matches": true,
+          "classification": "qualified-ordinary-outcome"
+        }
+      ],
+      "native": [],
+      "native_qualified": false,
+      "native_stdout": null
+    },
+    {
+      "version": "v2",
+      "receipt": "obj/parallel/reborrow-successor/v2/receipt.json",
+      "receipt_sha256": "07d1bf3d375416ae301fba0d5ce6248f190ae06863d843d3daf4905b41839b5a",
+      "seconds": 0.26543562300503254,
+      "prediction_sha256": "0c12d3577976b8ffced79c4cdb1d3e0fed7f5f03fbd10b2263b0ce5a91a20a34",
+      "cases": [
+        {
+          "file": "successor-native-v2.rs",
+          "sha256": "8d7ac9788fcd4c94b86a764ad453f383a6d1d0910887c96644a8dc585a1321c4",
+          "mode": "metadata",
+          "expected_code": 0,
+          "status": 101,
+          "errors": [
+            {
+              "code": null,
+              "message": "the compiler unexpectedly panicked. This is a bug"
+            }
+          ],
+          "prediction_matches": false,
+          "classification": "unqualified-reference-ICE"
+        },
+        {
+          "file": "successor-unsafe-v2.rs",
+          "sha256": "70e95888a8115f003df0b80b3f6077d015d3403f9a68239aa8e542c7be3b9a93",
+          "mode": "metadata",
+          "expected_code": 1,
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0133",
+              "message": "dereference of raw pointer is unsafe and requires unsafe function or block"
+            }
+          ],
+          "prediction_matches": true,
+          "classification": "qualified-ordinary-outcome"
+        }
+      ],
+      "native": [],
+      "native_qualified": false,
+      "native_stdout": null
+    },
+    {
+      "version": "v3",
+      "receipt": "obj/parallel/reborrow-successor/v3/receipt.json",
+      "receipt_sha256": "535f1eb675e646425f7561b3e80c26e4b7c7e8d3bf2184e7af1ba74f40869929",
+      "seconds": 0.1944507810403593,
+      "prediction_sha256": "54a45b6f3ff7ef493e294ba34b72e03e1cf6c7c62b1028ac1596a42a0f199afc",
+      "cases": [
+        {
+          "file": "successor-native-v3.rs",
+          "sha256": "de11cb29317828dcd98699c72acdf884b46f77f45969990170c8b72d0485a346",
+          "mode": "metadata",
+          "expected_code": 0,
+          "status": 0,
+          "errors": [],
+          "prediction_matches": true,
+          "classification": "qualified-ordinary-outcome"
+        }
+      ],
+      "native": [
+        {
+          "step": "native-object",
+          "status": 0
+        },
+        {
+          "step": "native-link",
+          "status": 0
+        },
+        {
+          "step": "native-execute",
+          "status": 0
+        }
+      ],
+      "native_qualified": true,
+      "native_stdout": "successor 17 23 19 31 23 59 1\n"
+    }
+  ],
+  "local_negative_history": [
+    {
+      "version": "v1",
+      "receipt": "obj/parallel/reborrow-local-reference/v1/receipt.json",
+      "receipt_sha256": "fe1e292b97141cf72088e67518aea97eb49fa0b87a7b58473b5b6aa0cdf4607a",
+      "review_summary": "obj/parallel/reborrow-local-reference/v1/summary.json",
+      "review_summary_sha256": "baa240728c0eeebadb3c8ef37bb2282171fc86d04d6b151844edf956e22c68bb",
+      "prediction_sha256": "d7c46b349646548d287889f008d05682fb8d965a86dd30fe3f140045aeafb16b",
+      "cases": [
+        {
+          "file": "local-enum.rs",
+          "sha256": "ef2cbb7fe5e27ecf5a6aadb5f3627fcf5bebd40f8bad50ecb4c852cde2ccadf2",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0377",
+              "message": "the trait `Reborrow` may only be implemented for a coercion between structures"
+            }
+          ],
+          "setup_failure": false
+        },
+        {
+          "file": "local-no-life.rs",
+          "sha256": "1bd6a2f69941e16241e4fcf75d860beef99d95032f7ba23b8f9f0f7a587665ac",
+          "status": 1,
+          "errors": [
+            {
+              "code": null,
+              "message": "implementing `Reborrow` requires that a single lifetime parameter is passed between source and target"
+            }
+          ],
+          "setup_failure": false
+        },
+        {
+          "file": "local-two-life.rs",
+          "sha256": "e9f76a1fdf717437953cbd9329fe432ed5b8266c91f391761dc742378af9548e",
+          "status": 1,
+          "errors": [
+            {
+              "code": null,
+              "message": "implementing `Reborrow` requires that a single lifetime parameter is passed between source and target"
+            }
+          ],
+          "setup_failure": false
+        },
+        {
+          "file": "local-target-type.rs",
+          "sha256": "587280255f7a195e0d00f44d598678fa0a1f3d78a0e34070774b56422af04a0f",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `&'a mut u8: CoerceShared<&'a u16>` is not satisfied"
+            }
+          ],
+          "setup_failure": false
+        },
+        {
+          "file": "local-target-copy.rs",
+          "sha256": "513f50f33751008d23c7a0ff76a74970ba23912128917dd405b23178a845a511",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `Shared<'a>: Copy` is not satisfied"
+            }
+          ],
+          "setup_failure": false
+        },
+        {
+          "file": "local-missing.rs",
+          "sha256": "2ac1de00ea0a89a781f024e28b303c1ec3a55ccc138c2dc8bd50a313904ac6b4",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `Exclusive<'a>: Reborrow` is not satisfied"
+            },
+            {
+              "code": "E0382",
+              "message": "use of moved value: `value`"
+            }
+          ],
+          "setup_failure": false
+        },
+        {
+          "file": "local-fake.rs",
+          "sha256": "34ed2495dba6e88e3dd6660181de9efd55b960bcef67b10083660f56baceded0",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0382",
+              "message": "use of moved value: `value`"
+            }
+          ],
+          "setup_failure": false
+        },
+        {
+          "file": "local-overlap.rs",
+          "sha256": "19af63d6c8c7b981065e3e145f9350ac84641256b98aaeaa00d172f7a9569977",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0433",
+              "message": "cannot find module or crate `std` in this scope"
+            }
+          ],
+          "setup_failure": true
+        },
+        {
+          "file": "local-shared-write.rs",
+          "sha256": "ab43c4b0362dd6b047395d9d01238dbad7e41f9f5a245fd9178519397ff5245f",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0433",
+              "message": "cannot find module or crate `std` in this scope"
+            }
+          ],
+          "setup_failure": true
+        },
+        {
+          "file": "local-shared-move.rs",
+          "sha256": "096c125260758b80362c4f6733aef98bc2a447386cd2be4319aba318fc405dab",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0505",
+              "message": "cannot move out of `value` because it is borrowed"
+            }
+          ],
+          "setup_failure": false
+        },
+        {
+          "file": "local-escape.rs",
+          "sha256": "d6675b2626574020dc3482b1722db078ff1cb236e0c63f0623bc246c46c210eb",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0597",
+              "message": "`value` does not live long enough"
+            }
+          ],
+          "setup_failure": false
+        },
+        {
+          "file": "local-unsafe-source.rs",
+          "sha256": "bf21fb2a171b74ab8b764757b68af471035ecc1350e4e8971894c2961791e3ce",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0433",
+              "message": "cannot find module or crate `std` in this scope"
+            }
+          ],
+          "setup_failure": true
+        },
+        {
+          "file": "local-noncopy.rs",
+          "sha256": "ad0ea55cc64dfa533f1d450184bb8b83d9f1817bf04d3c96575dd118d43ff7ed",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0277",
+              "message": "the trait bound `Owned: Copy` is not satisfied"
+            }
+          ],
+          "setup_failure": false
+        },
+        {
+          "file": "local-multiple-fields.rs",
+          "sha256": "8a0fd930aad37b9db6a27d5ccaa88def780ee24debb91a04373423c172645e81",
+          "status": 1,
+          "errors": [
+            {
+              "code": null,
+              "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+            }
+          ],
+          "setup_failure": false
+        }
+      ]
+    },
+    {
+      "version": "v2",
+      "receipt": "obj/parallel/reborrow-local-reference/v2/receipt.json",
+      "receipt_sha256": "d90e3cfac651a15320b0c680144a1d082422cd345ffe45af87e18d194c7b4f77",
+      "review_summary": "obj/parallel/reborrow-local-reference/v2/summary.json",
+      "review_summary_sha256": "196596f22224e7dd1289516f8fed1d9066895de3f7317414f9d546f1ba825bc0",
+      "prediction_sha256": "5af0780b57715dc1cf628334b002f9dcf954640677f7d3ac11dfcb52233cd7b2",
+      "cases": [
+        {
+          "file": "local-overlap-v2.rs",
+          "sha256": "80df3cf37bf67ccf6839af591084e14c278082f7da0424678dd3e89715bb3d28",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0308",
+              "message": "arguments to this function are incorrect"
+            }
+          ],
+          "setup_failure": false
+        },
+        {
+          "file": "local-shared-write-v2.rs",
+          "sha256": "009c13fe2bd9137db17f7a5e933e5e5eb083fece43f77b158b3d57b57649b2fe",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0506",
+              "message": "cannot assign to `*value.value` because it is borrowed"
+            }
+          ],
+          "setup_failure": false
+        },
+        {
+          "file": "local-unsafe-source-v2.rs",
+          "sha256": "761af232bade8f7f231cffecfabba86ace1ee245047d6161f8d2212fc0c50fac",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0133",
+              "message": "dereference of raw pointer is unsafe and requires unsafe function or block"
+            }
+          ],
+          "setup_failure": false
+        }
+      ]
+    },
+    {
+      "version": "v3",
+      "receipt": "obj/parallel/reborrow-local-reference/v3/receipt.json",
+      "receipt_sha256": "4a4754cab49bd3f4238729bcf41482c4db0807b17684a9cd7b267f38132fb09e",
+      "review_summary": null,
+      "review_summary_sha256": null,
+      "prediction_sha256": "c58c899e47e4dbd21570ad30e9b22848e6cd7c8ccaf4b1c30a6aabfbeaf865b9",
+      "cases": [
+        {
+          "file": "local-overlap-v3.rs",
+          "sha256": "4d63b76e44e5aa3f89e4089ae718519b282d62a26a8111dbd91af060da1b7e30",
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0499",
+              "message": "cannot borrow `value` as mutable more than once at a time"
+            }
+          ],
+          "setup_failure": false
+        }
+      ]
+    }
+  ],
+  "final_ordinary_negative_count": 14,
+  "final_ordinary_negatives": [
+    {
+      "file": "local-enum.rs",
+      "sha256": "ef2cbb7fe5e27ecf5a6aadb5f3627fcf5bebd40f8bad50ecb4c852cde2ccadf2",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0377",
+          "message": "the trait `Reborrow` may only be implemented for a coercion between structures"
+        }
+      ]
+    },
+    {
+      "file": "local-no-life.rs",
+      "sha256": "1bd6a2f69941e16241e4fcf75d860beef99d95032f7ba23b8f9f0f7a587665ac",
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "implementing `Reborrow` requires that a single lifetime parameter is passed between source and target"
+        }
+      ]
+    },
+    {
+      "file": "local-two-life.rs",
+      "sha256": "e9f76a1fdf717437953cbd9329fe432ed5b8266c91f391761dc742378af9548e",
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "implementing `Reborrow` requires that a single lifetime parameter is passed between source and target"
+        }
+      ]
+    },
+    {
+      "file": "local-target-type.rs",
+      "sha256": "587280255f7a195e0d00f44d598678fa0a1f3d78a0e34070774b56422af04a0f",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `&'a mut u8: CoerceShared<&'a u16>` is not satisfied"
+        }
+      ]
+    },
+    {
+      "file": "local-target-copy.rs",
+      "sha256": "513f50f33751008d23c7a0ff76a74970ba23912128917dd405b23178a845a511",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `Shared<'a>: Copy` is not satisfied"
+        }
+      ]
+    },
+    {
+      "file": "local-missing.rs",
+      "sha256": "2ac1de00ea0a89a781f024e28b303c1ec3a55ccc138c2dc8bd50a313904ac6b4",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `Exclusive<'a>: Reborrow` is not satisfied"
+        },
+        {
+          "code": "E0382",
+          "message": "use of moved value: `value`"
+        }
+      ]
+    },
+    {
+      "file": "local-fake.rs",
+      "sha256": "34ed2495dba6e88e3dd6660181de9efd55b960bcef67b10083660f56baceded0",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0382",
+          "message": "use of moved value: `value`"
+        }
+      ]
+    },
+    {
+      "file": "local-shared-move.rs",
+      "sha256": "096c125260758b80362c4f6733aef98bc2a447386cd2be4319aba318fc405dab",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0505",
+          "message": "cannot move out of `value` because it is borrowed"
+        }
+      ]
+    },
+    {
+      "file": "local-escape.rs",
+      "sha256": "d6675b2626574020dc3482b1722db078ff1cb236e0c63f0623bc246c46c210eb",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0597",
+          "message": "`value` does not live long enough"
+        }
+      ]
+    },
+    {
+      "file": "local-noncopy.rs",
+      "sha256": "ad0ea55cc64dfa533f1d450184bb8b83d9f1817bf04d3c96575dd118d43ff7ed",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `Owned: Copy` is not satisfied"
+        }
+      ]
+    },
+    {
+      "file": "local-multiple-fields.rs",
+      "sha256": "8a0fd930aad37b9db6a27d5ccaa88def780ee24debb91a04373423c172645e81",
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "implementing `CoerceShared` does not allow multiple lifetimes or fields to be coerced"
+        }
+      ]
+    },
+    {
+      "file": "local-shared-write-v2.rs",
+      "sha256": "009c13fe2bd9137db17f7a5e933e5e5eb083fece43f77b158b3d57b57649b2fe",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0506",
+          "message": "cannot assign to `*value.value` because it is borrowed"
+        }
+      ]
+    },
+    {
+      "file": "local-unsafe-source-v2.rs",
+      "sha256": "761af232bade8f7f231cffecfabba86ace1ee245047d6161f8d2212fc0c50fac",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0133",
+          "message": "dereference of raw pointer is unsafe and requires unsafe function or block"
+        }
+      ]
+    },
+    {
+      "file": "local-overlap-v3.rs",
+      "sha256": "4d63b76e44e5aa3f89e4089ae718519b282d62a26a8111dbd91af060da1b7e30",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0499",
+          "message": "cannot borrow `value` as mutable more than once at a time"
+        }
+      ]
+    }
+  ],
+  "mir": {
+    "command": [
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "--edition=2024",
+      "--target=x86_64-unknown-linux-gnu",
+      "--crate-type=lib",
+      "-Cpanic=abort",
+      "--cap-lints=allow",
+      "-Zthreads=2",
+      "--emit=mir",
+      "-Zmir-opt-level=0",
+      "-Zmir-include-spans=yes",
+      "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/reborrow-source/source.rs",
+      "-o",
+      "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/reborrow-successor/mir-v1/actual.mir"
+    ],
+    "status": 0,
+    "source_sha256": "b1bfcec687a83bfa567acb2d33db86ae1cda47affe9b2e93b9ce7810cfbac619",
+    "compiler_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "seconds": 0.04421516298316419,
+    "RUSTC_BOOTSTRAP": "1",
+    "mir_sha256": "a99fb753aed8929f0c3e417ad4bc508f12786faa46147a22cbbc19660c4f0354",
+    "receipt": "obj/parallel/reborrow-successor/mir-v1/receipt.json",
+    "receipt_sha256": "b6add537cfb1ef921d9f9ee7d8bb295968f6f242f95f0ae975fbc76370684000",
+    "artifact": "obj/parallel/reborrow-successor/mir-v1/source.mir.txt",
+    "pair_observations": [
+      "Argument _1 is &mutu8; nominal local_2 is initialized DIRECTLY from Exclusive{value:move_3}, where_3=&mut(*_1).",
+      "No nominal Reborrow on the let initializer.",
+      "Exclusive reborrow _2 at43:61-66 and43:77-82, then move result into actual write call.",
+      "Shared coerce shared _2 at43:98-103, then move result into read.",
+      "Allthree nominal sourceplaces are actual local_2, not a materialized source temporary."
+    ]
+  },
+  "corrections": [
+    "Relay bestprediction0 is disproved by E0515 in both metadata/object. It is a qualified negative, never a positive candidate target.",
+    "NativeV1 has E0716 Holder inner temporary plus ICE101 in zero; neither is semantic negative parity.",
+    "NativeV2 names inner values and removes zero operation; it still ICE101 in nested. Never executed.",
+    "NativeV3 removes nested operation only, retains genuine declarations/impls/Clone bodies; metadata/object/link/execute pass.",
+    "UnsafeV1 also had E0716; V2 names inner storage and rejects solely E0133.",
+    "LocalNegativeV1 retains3 std-unavailable E0433 setup failures.",
+    "LocalNegativeV2 overlap retains E0308 helper mismatch; sharedwriteE0506/unsafeE0133 qualify.",
+    "LocalNegativeV3 fixes helper input types and rejects E0499; final14ordinary controls are selected from preserved histories without reruns."
+  ],
+  "remaining": "Nested/zero-field runtime, wider guards/closures/drop/transport/const remain required; this finite reference does not grant compiler or runtime permission.",
+  "exact_commands": "Retained verbatim in every hash-bound raw receipt; profiles and compiler identity are recorded here.",
+  "cc_observed_after_runs": {
+    "path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+    "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88"
+  }
+}

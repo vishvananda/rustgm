@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "predecessor": {
+    "file": "successor-predictions-v2.json",
+    "sha256": "0c12d3577976b8ffced79c4cdb1d3e0fed7f5f03fbd10b2263b0ce5a91a20a34",
+    "correction": "V2 no_core demand of singlefield nested CoerceShared ICE101 in mir_borrowck(nested). V3 removes only that operation function/observer call while preserving real nested declarations/impls/Clone bodies. V1/V2 bytes, source errors and ICE traces remain unqualified. Current native only claims multidata concrete/explicit expectations and actual source projection evaluated once."
+  },
+  "cases": [
+    {
+      "file": "successor-native-v3.rs",
+      "sha256": "de11cb29317828dcd98699c72acdf884b46f77f45969990170c8b72d0485a346",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "prediction_status": "frozen-before-v3-Rust-or-candidate-observation",
+      "native": {
+        "observer": "successor-native-v3.c",
+        "observer_sha256": "a85555bf12c12dd7f798384a0ffd695f82a5ecb7227a422c008b2bb935f2f67a",
+        "stdout": "successor 17 23 19 31 23 59 1\n",
+        "crate_type": "lib"
+      }
+    }
+  ]
+}

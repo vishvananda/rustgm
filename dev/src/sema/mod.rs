@@ -83,3 +83,5 @@ pub(crate) mod protocol_plans;
 mod unsized_parameters;
 
 mod coherence_policy;
+
+pub(crate) mod reborrow_adjustments;

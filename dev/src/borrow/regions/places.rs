@@ -197,7 +197,7 @@ pub(crate) fn visit_bounds(
     let mut borrowed = false;
     for value in &body.values {
         sink.charge(1)?;
-        if matches!(value.kind, Rvalue::Borrow { .. }) {
+        if matches!(value.kind, Rvalue::Borrow { .. } | Rvalue::Reborrow { .. }) {
             borrowed = true;
             break;
         }
@@ -215,11 +215,21 @@ pub(crate) fn visit_bounds(
             .values
             .get(id.0 as usize)
             .ok_or("missing evaluated borrow value")?;
-        let Rvalue::Borrow { place, .. } = value.kind else {
-            continue;
-        };
-        let Some(Kind::Reference { region, .. }) = types.kind(value.ty) else {
-            return Err("borrow value has no reference type");
+        let (place, region) = match value.kind {
+            Rvalue::Borrow { place, .. } => {
+                let Some(Kind::Reference { region, .. }) = types.kind(value.ty) else {
+                    return Err("borrow value has no reference type");
+                };
+                (place, region)
+            }
+            Rvalue::Reborrow { place, .. } => {
+                body.value_reborrow(types, id)?;
+                (
+                    place,
+                    crate::body::reborrow_inputs::region(types, value.ty)?,
+                )
+            }
+            _ => continue,
         };
         places.borrow(
             place,

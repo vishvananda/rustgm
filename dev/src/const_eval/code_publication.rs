@@ -126,6 +126,7 @@ impl Prepared {
             vector(&code.operands),
             code.caller_site_bytes(),
             code.cleanup_bytes(),
+            code.reborrow_bytes(),
             map(&code.promotions),
             map(&code.callables),
         ])

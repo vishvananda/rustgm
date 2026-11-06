@@ -207,3 +207,6 @@ mod overload_captures;
 
 #[path = "../../assertion_sources.rs"]
 mod assertion_sources;
+
+#[path = "../../reborrow_sources.rs"]
+mod reborrow_sources;

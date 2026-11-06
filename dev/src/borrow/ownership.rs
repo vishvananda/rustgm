@@ -124,7 +124,7 @@ fn visit<'a, S: BuildHasher>(
             && (body
                 .values
                 .iter()
-                .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
+                .any(|v| matches!(v.kind, Rvalue::Borrow { .. } | Rvalue::Reborrow { .. }))
                 || body.projections.iter().any(|p| p.kind.is_dereference()))
         {
             pending = Some(body.source);
@@ -413,14 +413,22 @@ impl BodyFacts {
         state: &mut State<I>,
         id: crate::body::ir::ValueId,
     ) -> Result<(), &'static str> {
-        if let Rvalue::Borrow { place, .. } | Rvalue::Address(place) =
-            body.values[id.0 as usize].kind
-        {
-            let Some(Kind::Reference { mutable, .. } | Kind::Pointer { mutable, .. }) =
-                types.kind(body.values[id.0 as usize].ty)
-            else {
-                return Err("borrow value has no reference type");
-            };
+        let borrowing = match body.values[id.0 as usize].kind {
+            Rvalue::Borrow { place, .. } | Rvalue::Address(place) => {
+                let Some(Kind::Reference { mutable, .. } | Kind::Pointer { mutable, .. }) =
+                    types.kind(body.values[id.0 as usize].ty)
+                else {
+                    return Err("borrow value has no reference type");
+                };
+                Some((place, mutable, false))
+            }
+            Rvalue::Reborrow { place, mutable } => {
+                body.value_reborrow(types, id)?;
+                Some((place, mutable, true))
+            }
+            _ => None,
+        };
+        if let Some((place, mutable, generic)) = borrowing {
             let info = self.paths.place(place)?;
             let (path, shallow) = self.paths.guard_target(info);
             if let Some(path) = path {
@@ -434,14 +442,15 @@ impl BodyFacts {
                     return Err("borrowed place may be uninitialized or moved");
                 }
             }
-            let unique = matches!(
-                body.values[id.0 as usize].kind,
-                Rvalue::Borrow {
-                    kind: crate::body::ir::BorrowKind::UniqueImmutable,
-                    ..
-                }
-            );
-            if unique && !mutable {
+            let unique = generic
+                || matches!(
+                    body.values[id.0 as usize].kind,
+                    Rvalue::Borrow {
+                        kind: crate::body::ir::BorrowKind::UniqueImmutable,
+                        ..
+                    }
+                );
+            if unique && !mutable && !generic {
                 return Err("unique capture requires an exclusive reference");
             }
             if mutable {

@@ -14,6 +14,7 @@ use std::ops::Index;
 mod proven_storage;
 #[path = "code_publication.rs"]
 mod publication;
+mod reborrow_records;
 pub(crate) use publication::{Prepared, Registration};
 
 #[derive(Clone, Copy)]
@@ -31,6 +32,7 @@ pub(crate) enum PreparedOperand {
     Discriminant(crate::sema::members::VariantId),
     Cleanup(std::rc::Rc<super::ctglue::Bundle>),
     CallerSites(std::sync::Arc<[crate::body::ir::CallerSite]>),
+    Reborrows(std::sync::Arc<crate::body::reborrow_inputs::Inputs>),
 }
 
 pub(crate) struct Code {
@@ -99,6 +101,7 @@ impl Code {
                 crate::support::retained::new_map::<ValueId, Constant>(facts.entries().count())
             }),
             body.callable_allocation_bytes(),
+            body.reborrow_snapshot_bytes(),
             Self::operand_count(body)?.saturating_mul(size_of::<PreparedOperand>()),
         ]
         .into_iter()
@@ -106,7 +109,8 @@ impl Code {
     }
     fn operand_count(body: &Body) -> Result<usize, &'static str> {
         body.statements.iter().try_fold(
-            usize::from(!body.caller_sites().is_empty()),
+            usize::from(!body.caller_sites().is_empty())
+                .saturating_add(usize::from(body.reborrow_snapshot_bytes() != 0)),
             |count, statement| Ok(count + usize::from(Self::operand(body, statement)?.is_some())),
         )
     }
@@ -133,6 +137,9 @@ impl Code {
             if let Some(operand) = Self::operand(body, statement)? {
                 operands.push(operand);
             }
+        }
+        if let Some(inputs) = body.snapshot_value_reborrows()? {
+            operands.push(PreparedOperand::Reborrows(inputs));
         }
         if !body.caller_sites().is_empty() {
             // Exactly one data footer follows every legacy prepared operand.

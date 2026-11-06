@@ -156,6 +156,8 @@ pub fn coercions(coercions: &[super::model::Coercion], out: &mut impl Write) -> 
             AdjustmentKind::ArrayToSlice => "array-to-slice",
             AdjustmentKind::Unsize => "unsize",
             AdjustmentKind::Reborrow => "reborrow",
+            AdjustmentKind::GenericReborrow => "generic-reborrow",
+            AdjustmentKind::CoerceShared => "coerce-shared",
             AdjustmentKind::Equality => "same-shape",
             AdjustmentKind::Pointer => "pointer",
             AdjustmentKind::PointerReborrow => "pointer-reborrow",
@@ -273,6 +275,8 @@ fn nodes(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Res
                     AdjustmentKind::ArrayToSlice => "array-to-slice",
                     AdjustmentKind::Unsize => "unsize",
                     AdjustmentKind::Reborrow => "reborrow",
+                    AdjustmentKind::GenericReborrow => "generic-reborrow",
+                    AdjustmentKind::CoerceShared => "coerce-shared",
                     AdjustmentKind::Pointer => "pointer",
                     AdjustmentKind::PointerReborrow => "pointer-reborrow",
                 };

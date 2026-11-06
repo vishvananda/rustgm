@@ -176,6 +176,10 @@ impl Paths {
                 place: Place::Temporary(id),
                 ..
             }
+            | Rvalue::Reborrow {
+                place: Place::Temporary(id),
+                ..
+            }
             | Rvalue::Validate(Place::Temporary(id))
             | Rvalue::Length(Place::Temporary(id))
             | Rvalue::TextEquals {

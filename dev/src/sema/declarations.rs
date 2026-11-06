@@ -60,6 +60,7 @@ mod trait_paths;
 mod trait_regions;
 mod traits;
 pub(in crate::sema) use traits::validate_impl_requirements_prepared;
+pub(in crate::sema) use traits::{ReborrowField, ReborrowStructView, reborrow_struct_view};
 mod unreduced;
 mod validation;
 use super::{

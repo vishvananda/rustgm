@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "predecessor": {
+    "file": "successor-predictions-v1.json",
+    "sha256": "adc2592c34a1bcc7c7780ba3c513240a6adfc5a6bb28b484a9aa597b84ca1560",
+    "corrections": "V1 native ICE101 in zero plus E0716 Holder inner temporary preserved unqualified. V2 removes zero operation only (zero declaration/impls remain); names nested/Holder inner values to retain proper source storage lifetime. Relay hypothesis0 disproved by actual E0515 metadata+object, unchanged input retained as negative. No invalid case is executed."
+  },
+  "cases": [
+    {
+      "file": "successor-native-v2.rs",
+      "sha256": "8d7ac9788fcd4c94b86a764ad453f383a6d1d0910887c96644a8dc585a1321c4",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "prediction_status": "frozen-before-v2-Rust-or-candidate-observation",
+      "native": {
+        "observer": "successor-native-v2.c",
+        "observer_sha256": "566313e58244d02b5cf4f14f1880f8cd89f80ca416189858852b475c3c77a379",
+        "stdout": "successor 17 23 19 31 47 23 59 1\n",
+        "crate_type": "lib"
+      }
+    },
+    {
+      "file": "successor-unsafe-v2.rs",
+      "sha256": "70e95888a8115f003df0b80b3f6077d015d3403f9a68239aa8e542c7be3b9a93",
+      "expected_code": 1,
+      "expected_error_code": "E0133",
+      "prediction_status": "frozen-before-v2-Rust-or-candidate-observation"
+    }
+  ]
+}

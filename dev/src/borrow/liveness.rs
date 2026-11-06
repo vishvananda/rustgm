@@ -218,6 +218,7 @@ impl<'a> Flow<'a> {
             Rvalue::Read(place)
             | Rvalue::Address(place)
             | Rvalue::Borrow { place, .. }
+            | Rvalue::Reborrow { place, .. }
             | Rvalue::Length(place)
             | Rvalue::TextEquals { place, .. }
             | Rvalue::IsVariant { place, .. }
@@ -399,7 +400,10 @@ impl<'a> Flow<'a> {
     }
     fn borrow_entity(&self, action: Action) -> Option<usize> {
         if let Action::Evaluate(id) = action
-            && matches!(self.body.values[id.0 as usize].kind, Rvalue::Borrow { .. })
+            && matches!(
+                self.body.values[id.0 as usize].kind,
+                Rvalue::Borrow { .. } | Rvalue::Reborrow { .. }
+            )
         {
             self.values[id.0 as usize]
         } else {

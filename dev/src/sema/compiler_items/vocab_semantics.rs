@@ -20,6 +20,8 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
             // require their separate typed contracts and ordinary body proofs.
             LangItem::CoroutineState
             | LangItem::CStr
+            | LangItem::Reborrow
+            | LangItem::CoerceShared
             | LangItem::TryTraitFromYeet
             | LangItem::CoercePointeeValidated
             | LangItem::ResumeTy

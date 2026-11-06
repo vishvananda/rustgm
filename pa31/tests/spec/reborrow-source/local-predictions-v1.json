@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "profile": "Same exact actual-declaration no_core source prefix as source.rs; pinned Rust1.98/edition2024/targetx86_64/panicabort/caplintsallow/RUSTC_BOOTSTRAP1. These are authored local companions; original std sources preserved.",
+  "cases": [
+    {
+      "file": "local-enum.rs",
+      "sha256": "ef2cbb7fe5e27ecf5a6aadb5f3627fcf5bebd40f8bad50ecb4c852cde2ccadf2",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-local-no_core-observation",
+      "origin": "enum.rs",
+      "expected_cause": "same ordinary compiler/trait/type/borrow/lifetime/safety rejection as original independent source, no missing-library setup"
+    },
+    {
+      "file": "local-no-life.rs",
+      "sha256": "1bd6a2f69941e16241e4fcf75d860beef99d95032f7ba23b8f9f0f7a587665ac",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-local-no_core-observation",
+      "origin": "no-life.rs",
+      "expected_cause": "same ordinary compiler/trait/type/borrow/lifetime/safety rejection as original independent source, no missing-library setup"
+    },
+    {
+      "file": "local-two-life.rs",
+      "sha256": "e9f76a1fdf717437953cbd9329fe432ed5b8266c91f391761dc742378af9548e",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-local-no_core-observation",
+      "origin": "two-life.rs",
+      "expected_cause": "same ordinary compiler/trait/type/borrow/lifetime/safety rejection as original independent source, no missing-library setup"
+    },
+    {
+      "file": "local-target-type.rs",
+      "sha256": "587280255f7a195e0d00f44d598678fa0a1f3d78a0e34070774b56422af04a0f",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-local-no_core-observation",
+      "origin": "target-type.rs",
+      "expected_cause": "same ordinary compiler/trait/type/borrow/lifetime/safety rejection as original independent source, no missing-library setup"
+    },
+    {
+      "file": "local-target-copy.rs",
+      "sha256": "513f50f33751008d23c7a0ff76a74970ba23912128917dd405b23178a845a511",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-local-no_core-observation",
+      "origin": "target-copy.rs",
+      "expected_cause": "same ordinary compiler/trait/type/borrow/lifetime/safety rejection as original independent source, no missing-library setup"
+    },
+    {
+      "file": "local-missing.rs",
+      "sha256": "2ac1de00ea0a89a781f024e28b303c1ec3a55ccc138c2dc8bd50a313904ac6b4",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-local-no_core-observation",
+      "origin": "missing.rs",
+      "expected_cause": "same ordinary compiler/trait/type/borrow/lifetime/safety rejection as original independent source, no missing-library setup"
+    },
+    {
+      "file": "local-fake.rs",
+      "sha256": "34ed2495dba6e88e3dd6660181de9efd55b960bcef67b10083660f56baceded0",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-local-no_core-observation",
+      "origin": "fake.rs",
+      "expected_cause": "same ordinary compiler/trait/type/borrow/lifetime/safety rejection as original independent source, no missing-library setup"
+    },
+    {
+      "file": "local-overlap.rs",
+      "sha256": "19af63d6c8c7b981065e3e145f9350ac84641256b98aaeaa00d172f7a9569977",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-local-no_core-observation",
+      "origin": "overlap.rs",
+      "expected_cause": "same ordinary compiler/trait/type/borrow/lifetime/safety rejection as original independent source, no missing-library setup"
+    },
+    {
+      "file": "local-shared-write.rs",
+      "sha256": "ab43c4b0362dd6b047395d9d01238dbad7e41f9f5a245fd9178519397ff5245f",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-local-no_core-observation",
+      "origin": "shared-write.rs",
+      "expected_cause": "same ordinary compiler/trait/type/borrow/lifetime/safety rejection as original independent source, no missing-library setup"
+    },
+    {
+      "file": "local-shared-move.rs",
+      "sha256": "096c125260758b80362c4f6733aef98bc2a447386cd2be4319aba318fc405dab",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-local-no_core-observation",
+      "origin": "shared-move.rs",
+      "expected_cause": "same ordinary compiler/trait/type/borrow/lifetime/safety rejection as original independent source, no missing-library setup"
+    },
+    {
+      "file": "local-escape.rs",
+      "sha256": "d6675b2626574020dc3482b1722db078ff1cb236e0c63f0623bc246c46c210eb",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-local-no_core-observation",
+      "origin": "escape.rs",
+      "expected_cause": "same ordinary compiler/trait/type/borrow/lifetime/safety rejection as original independent source, no missing-library setup"
+    },
+    {
+      "file": "local-unsafe-source.rs",
+      "sha256": "bf21fb2a171b74ab8b764757b68af471035ecc1350e4e8971894c2961791e3ce",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-local-no_core-observation",
+      "origin": "unsafe-source.rs",
+      "expected_cause": "same ordinary compiler/trait/type/borrow/lifetime/safety rejection as original independent source, no missing-library setup"
+    },
+    {
+      "file": "local-noncopy.rs",
+      "sha256": "ad0ea55cc64dfa533f1d450184bb8b83d9f1817bf04d3c96575dd118d43ff7ed",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-local-no_core-observation",
+      "expected_cause": "real non-Copy/Reborrow field"
+    },
+    {
+      "file": "local-multiple-fields.rs",
+      "sha256": "8a0fd930aad37b9db6a27d5ccaa88def780ee24debb91a04373423c172645e81",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-local-no_core-observation",
+      "expected_cause": "more than one actual CoerceShared data field"
+    }
+  ]
+}

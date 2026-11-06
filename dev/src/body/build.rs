@@ -623,7 +623,10 @@ impl<'a> Builder<'a> {
                 AdjustmentKind::Pointer => {
                     value = self.selected_pointer(node, value, adjustment.target)?;
                 }
-                AdjustmentKind::Reborrow | AdjustmentKind::PointerReborrow => {
+                AdjustmentKind::Reborrow
+                | AdjustmentKind::PointerReborrow
+                | AdjustmentKind::GenericReborrow
+                | AdjustmentKind::CoerceShared => {
                     if self.body.values[value.0 as usize].ty != adjustment.target {
                         return Err(self.error(node, "missing selected reference adjustment"));
                     }
@@ -1025,7 +1028,10 @@ impl<'a> Builder<'a> {
                 if self.fact(node)?.adjustment.is_some_and(|a| {
                     matches!(
                         a.kind,
-                        AdjustmentKind::Reborrow | AdjustmentKind::PointerReborrow
+                        AdjustmentKind::Reborrow
+                            | AdjustmentKind::PointerReborrow
+                            | AdjustmentKind::GenericReborrow
+                            | AdjustmentKind::CoerceShared
                     )
                 }) {
                     self.scratch.unadjusted.push(node);

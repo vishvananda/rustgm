@@ -271,6 +271,12 @@ impl super::package::Package {
             "const-closure client identity changed",
         )
     }
+    pub(crate) fn requested_reborrow(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::Reborrow,
+            "reborrow client identity changed",
+        )
+    }
     pub(crate) fn requested_new_range(&self) -> Result<bool, &'static str> {
         self.requested_expression_feature(
             policy::Feature::NewRange,

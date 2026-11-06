@@ -38,11 +38,12 @@ impl<'a> Proof<'a> {
             loans: Vec::new(),
             remaining: 32_000_000,
             precise: if body.projections.iter().any(|p| p.kind.is_dereference())
-                || body
-                    .values
-                    .iter()
-                    .any(|v| matches!(v.kind, Rvalue::Borrow { .. } | Rvalue::Address(_)))
-            {
+                || body.values.iter().any(|v| {
+                    matches!(
+                        v.kind,
+                        Rvalue::Borrow { .. } | Rvalue::Reborrow { .. } | Rvalue::Address(_)
+                    )
+                }) {
                 Some(Index::new(body)?)
             } else {
                 None
@@ -171,6 +172,7 @@ impl<'a> Proof<'a> {
                 if let Rvalue::Read(place)
                 | Rvalue::Address(place)
                 | Rvalue::Borrow { place, .. }
+                | Rvalue::Reborrow { place, .. }
                 | Rvalue::Validate(place)
                 | Rvalue::Length(place)
                 | Rvalue::TextEquals { place, .. }
@@ -294,20 +296,26 @@ impl<'a> Proof<'a> {
                     self.write(place, live, Depth::Deep)?;
                 }
             }
-            Action::Evaluate(id) => {
-                if let Rvalue::Borrow { place, .. } | Rvalue::Address(place) =
-                    self.body.values[id.0 as usize].kind
-                    && matches!(
+            Action::Evaluate(id) => match self.body.values[id.0 as usize].kind {
+                Rvalue::Reborrow {
+                    place,
+                    mutable: true,
+                } => {
+                    self.write(place, live, Depth::Deep)?;
+                }
+                Rvalue::Borrow { place, .. } | Rvalue::Address(place)
+                    if matches!(
                         types.kind(self.body.values[id.0 as usize].ty),
                         Some(
                             Kind::Reference { mutable: true, .. }
                                 | Kind::Pointer { mutable: true, .. }
                         )
-                    )
+                    ) =>
                 {
                     self.write(place, live, Depth::Deep)?;
                 }
-            }
+                _ => {}
+            },
             Action::StorageLive(local) | Action::StorageDead(local) => {
                 self.write(Place::Local(local), live, Depth::Storage)?;
             }

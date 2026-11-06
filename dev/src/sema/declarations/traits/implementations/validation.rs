@@ -378,6 +378,7 @@ impl Checker<'_> {
             self.validate_source_constant_type_impl(owner, source, predicate, &mut proof)?;
         }
         self.validate_source_dispatch_impl(source, predicate, &mut proof)?;
+        self.validate_source_reborrowing_impl(owner, source, predicate, &mut proof)?;
         let coerced = self.validate_source_coercion_impl(owner, source, predicate, &mut proof)?;
         self.retain_trait_proof(owner, source, &mut proof);
         let mut queries = Queries::new(

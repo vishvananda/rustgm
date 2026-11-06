@@ -1284,6 +1284,25 @@ slice coercion, arbitrary nominal DST interpretation or authenticated metadata
 transport. Whole modules, derives, constructors and library artifacts remain
 separate required qualification.
 
+Source Reborrow and CoerceShared keep ordinary declaration/implementation proof
+separate from operation selection. A contextual nominal destination must exist
+before checking its expression; later equality cannot turn a previous move into
+a loan. Preserve selected implementation equalities and use the actual selected
+destination as the operation's loan type. Propagate contextual borrowing through
+transparent blocks to the actual source place, without duplicating effects or
+materializing a move through a reference. Prepare the real runtime storage via
+the shared typed field producer; matching physical layouts supply no permission.
+
+Carry sparse, authenticated source/body/instance/store/operation/place inputs
+through template substitution, native copying and immutable const snapshots.
+Preflight their context before remapping. Release pending goal indices at the
+inference-arena boundary. Loans, guard protections, initialization, storage,
+unsafe access and promotion remain ordinary; no implicit Clone call is introduced.
+Validate operation coverage in one statement pass with an existing sorted index,
+not a full statement scan per claim. Declared field width per operation remains
+an explicit scaling dimension. The [operation checkpoint](docs/parallel/reborrow-operations-checkpoint.md)
+binds source/native/MIR observations and required wider/transport work.
+
 Growing constructor inputs must share completed inference prefixes. Reuse the
 existing postorder occurs/freshening walks to record immutable graph facts;
 holes, projections, lifetime-bearing fresh positions and callable-template

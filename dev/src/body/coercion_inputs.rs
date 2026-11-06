@@ -212,6 +212,7 @@ impl Body {
         &self,
         facts: &Declarations,
     ) -> Result<(), &'static str> {
+        self.validate_value_reborrow_inputs(facts)?;
         let Some(inputs) = self
             .resolved_callables
             .as_ref()
@@ -281,6 +282,7 @@ impl Body {
         facts: &mut Declarations,
         fold: &mut Bound,
     ) -> Result<(), &'static str> {
+        self.require_value_reborrow_context(&facts.types)?;
         if let Some(inputs) = self
             .resolved_callables
             .as_ref()
@@ -300,6 +302,7 @@ impl Body {
         &mut self,
         mut map: impl FnMut(TypeId) -> Result<TypeId, &'static str>,
     ) -> Result<(), &'static str> {
+        self.map_value_reborrow_inputs(&mut map)?;
         let Some(inputs) = self
             .resolved_callables
             .as_deref_mut()
@@ -318,5 +321,5 @@ impl Body {
 const _: () = {
     assert!(size_of::<NominalUse>() == 24);
     assert!(size_of::<NominalInputs>() == 72);
-    assert!(size_of::<CallableInputs>() == 64);
+    assert!(size_of::<CallableInputs>() == 72);
 };

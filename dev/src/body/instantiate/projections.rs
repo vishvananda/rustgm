@@ -143,6 +143,7 @@ pub(super) fn normalize_with_owner(
     comparison: Option<(TypeId, TypeId)>,
     mut owner: Option<&mut super::allocated_owners::Operation>,
 ) -> Result<u32, &'static str> {
+    body.require_value_reborrow_context(&facts.types)?;
     let first = owner
         .as_ref()
         .map_or_else(|| first_region(contract), |owner| Ok(owner.first()))?;

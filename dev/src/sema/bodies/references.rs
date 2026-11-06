@@ -50,7 +50,7 @@ impl Checker<'_> {
         expected: TermId,
         identity_reborrow: bool,
     ) -> Result<bool, Error> {
-        // A block typed without an expected reference has already consumed its
+        // A block typed without an expected borrowable type has consumed its
         // tail. A later join can coerce that result, but cannot undo its move.
         let contextual = self.state.reference_expected.contains(&node);
         if !contextual

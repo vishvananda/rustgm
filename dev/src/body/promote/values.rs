@@ -305,7 +305,8 @@ impl Engine<'_, '_> {
             | Rvalue::IsVariant { .. }
             | Rvalue::Length(_)
             | Rvalue::TextEquals { .. }
-            | Rvalue::Validate(_) => None,
+            | Rvalue::Validate(_)
+            | Rvalue::Reborrow { .. } => None,
             Rvalue::Unit
             | Rvalue::Text(_)
             | Rvalue::Scalar(_)

@@ -1,24 +1,29 @@
 # Library build blocker tracker
 
-Current original-core frontier is **LIB-185, Reborrow**, at
-`library/core/src/marker.rs:1356`, file81 byte51821. Qualified CLIa8b8d578 clears
-CStr and observes31.0827s/375 opens. All722 inputs and cfg/profile values, options,
-capAllow and finite limits remain unchanged. Five configuration-source pins stay
-identical; const_eval/values.rs is explicitly rebound only for the shared typed
-text producer. Source admission exits1; no original core/alloc/std artifact or
-whole PA after24 is complete.
+Current original-core frontier is **LIB-186, FieldRepresentingType**, at
+`library/core/src/field.rs:11`, file79 byte252. Qualified immutable CLI9aa812d6
+clears Reborrow and observes24.067s/375opens. All722 original inputs, cfg/profile
+values, options, capAllow and finite limits remain unchanged. Five configuration
+source pins stay identical; const_eval/values.rs is explicitly rebound for the
+published slice repair and authenticated operation dispatch. Source admission
+exits1; no original core/alloc/std artifact or whole PA after24 is complete.
 
-The [CStr integration](parallel/source-cstr-main-join.md) qualifies actual source
-methods, static literal identity, typed constant backing and full byte-word
-reconstruction with ordinary nominal/generic controls. Eleven public tests,
-full356 PA22/142 PA2 cases, strict selected Clippy, format and architecture pass
-in107.29s; four native observers pass in38.79s. All independent setup/hypothesis
-discrepancies and the genuine failing pre-fix byte-word case remain retained.
-Broader module/derive/constructor/CTFE/transport work remains required. Prior
-full42255186438 passes all qualification stages; the CStr successor is pending.
-Root finishes publication; Source prepares independently frozen Reborrow and
-CoerceShared contracts in the same warm tree. Async is idle after reference handoff.
-Same two-heavy/16GiB/150GiB/five-minute guards and scoped cleanup remain in force.
+The [Reborrow checkpoint](parallel/reborrow-operations-checkpoint.md) passes seven
+public controls in115.23s and two genuine native observers in34.66s. It retains
+real trait/Copy/lifetime proof, contextual destination timing, source-place and
+store/body/instance identity, wrapper-only loans and const execution. Seven
+positive source cases and twenty independently qualified ordinary rejections
+pass. Pending goals are released between inference arenas; all previous setup,
+ICE and disproved prediction evidence remains separate. Forty ordinary A/A+ABBA
+observations preserve exact output with noisy timings and no broad speed claim.
+New private/debug/full-release/independent CI and wider/transport profiles remain
+required. The predecessor CStr compiler passes full42273932679 on main14fe4f9c5.
+
+Root owns the actual five-member Field declaration family next; Async prepares
+its independently frozen source contracts. Source implements the separate six
+weak foreign-symbol ordinary headers, with no intrinsic/byte-copy permission.
+Keep existing warm btrfs trees, two heavy jobs,16GiB caps,150GiB reserve and
+five-minute local guards, including scoped cleanup.
 
 The [source-range/nominal-value join](parallel/source-range-main-join.md) is
 published on main1514aa9a4 with all3651 qualified input hashes matching. It passes
@@ -875,7 +880,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-182 | Required source-family preflight; not the observed first frontier | Actual IntoFuture::into_future and ResumeTy/get_context | PA31 source declarations +PA19/20 actual parent/associated proof +PA26/42 future consumers +PA27 raw access +PA29 transport | Source worker | Source review identifies actual ordinary IntoFuture trait/required tagged member and real blanket F:Future body as an independent slice. ResumeTy/get_context additionally require genuine full Context/Waker/NonNull/variance foundations; authored legal token wrappers are not claimed to be the actual standard Context layout. Freeze references before candidate; keep implicit-await/runtime/transport separate. |
 | LIB-183 | Actual source nominal value conversion qualified on main; wider terminals/CTFE/transport remain required | Actual nominal CoerceUnsized and original Pin factory-result consumer | PA31 actual compiler trait +PA19/20 impl/caller/region proof +PA22/23 unsizing +PA26 whole-value ownership +PA29 transport | Async worker | Main098f62af1/1514aa9a4 integrates the complete qualified worker chain. Original result-coercion16b1 passes the full consumer. Six independently frozen native traces,19 existing unsize programs, four negative cause guards, ordinary impl/schema/region evidence and exact physical plans pass. Full Body/source/instance/arena/operation/endpoints authenticate each use; cached layout grants no permission. Wider terminals, CTFE and wire remain required; private execution awaits full42244995375. |
 | LIB-184 | Finite source/static/native/byte-word checkpoint qualified; wider graph/CTFE/wire required | Actual CStr, static C literals and ordinary source pointer/byte methods | PA31 actual library identity +PA12 DST layout +PA15/16 lifetime/loans +PA25 typed constant/static backing +PA26 literals/methods +PA29 transport +PA30 raw-pointer observers | Root integrated | CLIa8b8d578 clears actual CStr to Reborrow. Eleven public controls/full356 PA22+142 PA2 and four native observers pass. Runtime/promotion/CTFE share real sized character-array backing and logical nominal views, actual tail layout/metadata and ordinary source methods. Frozen byte-word case changes genuine failure to success, including ordinary/generic nominal refs. No extra hot fields/maps/wire shape. Full module/derive/from_ptr/strlen/constructor and wider CTFE/transport remain required. |
-| LIB-185 | Current unchanged original-core source-role blocker | Actual Reborrow and CoerceShared, implementation constraints and ordinary reborrow operations | PA31 source bindings +PA19/20 implementation proof +PA15/16 ownership/loans +PA26 language operations +PA29 transport | Root next; Source reference preparation | CLIa8b8d578 reaches marker.rs1356/file81:51821 in31.0827s/375opens with all722 original inputs/profile/limits unchanged. Preserve actual empty Reborrow trait and CoerceShared<Target:Copy>:Reborrow header, feature authority, real implementation/operation/borrow semantics; no role-bit copy or loan permission. Independently freeze upstream and native consumers before candidate observations. |
+| LIB-185 | Finite source/loan/native/CTFE checkpoint qualified; wider profiles required | Actual Reborrow and CoerceShared implementation and operation semantics | PA31 source bindings +PA19/20 actual implementation/Copy proof +PA15/16 loans +PA25 const copying +PA26 operations +PA29 transport | Root integrated | [Checkpoint](parallel/reborrow-operations-checkpoint.md): CLI9aa812d6 clears Reborrow on unchanged original722/profile/limits to FieldRepresentingType. Seven public controls, seven positive source cases, twenty ordinary negatives and two real native observers pass. Actual selected target supplies loan lifetime; no late-inferred reborrow, stale body goals, implicit Clone or lost source effects. Wider operations, const/Drop/closure/derive and authenticated transport remain required. |
+| LIB-186 | Current unchanged original-core source-role blocker | Actual FieldRepresentingType, Field and Base/Type/OFFSET member headers | PA31 source identities +PA19/20 member/implementation proof +PA12 layout +PA25 offsets +PA29 transport | Root next; Async reference packet; Source owns independent weak foreign family | CLI9aa812d6 reaches field.rs11/file79:252 in24.067s/375opens; all722 inputs/profile/limits stay fixed. Preserve the real nominal, trait and member owners and ordinary unused legality. Header completion must not grant compiler-built Field evidence, reflection, layout/offset evaluation, field access, Copy or imported permission. |
 | LIB-180 | Actual source/explicit-call contract integrated; original role frontier cleared | Actual from_yeet generic free-function producer | PA31 source header/identity +PA26 FromResidual/Yeet dispatch +PA19/20 generic proof +PA29 transport | Root integrated | [Main join](parallel/from-yeet-flags-main-join.md): exact original function/all12 independently frozen outcomes and genuine native23/47 pass. Shared ordinary defined-function header staging preserves actual generics/caller tracking/const/unsafe/loan proof. CLIf90679ab clears this role on unchanged original core. Full Try-module const closure, implicit yeet consumers and authenticated transport remain required. |
 | LIB-179 | Ordinary family source contract integrated; original role frontier cleared | Actual panic_bounds_check and27 guard/const panic-hook declarations | PA31 source identities +PA11/12 checked guard lowering +PA25/26 format/const +PA29 transport +PA39 unwind | Root integrated; broader runtime required | Joined CLI12836562 clears all28 actual ordinary headers; frozen22 source outcomes,5 guard-phase opponents and ordinary28-body native marker calls pass. No supplied source hook silently becomes course abort. Actual guard signatures, caller location, nounwind, body routing, formatting/handler graph, future cause separation, const/unwind and metadata remain required. |
 | LIB-178 | Full original module and actual provided forwarders integrated; generated state/transport required | Actual CoroutineState enum and Coroutine/Yield/Return/resume family | PA31 source identities +PA19/20 trait/receiver proof +PA12/18 enums/generics +PA42 suspension/resumption +PA43 ownership +PA29 transport | Root integrated | Complete unchanged original module/all8 derives and2 provided forwarders pass9 frozen outcomes; manual/provided native23/47 match Rust. Wrong-owner/lifetime/Unpin controls retain real failures. Generic nominal factory input context and diagnostic-only comparison hints use ordinary proofs. Separate actual wrapper CoerceUnsized consumer, generated state/capture/cancel/cleanup and authenticated transport remain required. |

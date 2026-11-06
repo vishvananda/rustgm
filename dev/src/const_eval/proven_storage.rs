@@ -17,6 +17,7 @@ impl Code {
         if self.cleanup().is_some() {
             return Err("constant cleanup snapshots cannot be restored into another Code");
         }
+        self.require_reborrow_context(types)?;
         let mut restore = Restore { types, fold, work };
         self.result = restore.storage(self.result)?;
         for local in &mut self.locals {
@@ -43,6 +44,11 @@ impl Code {
             }
         }
         for operand in &mut self.operands {
+            if let PreparedOperand::Reborrows(inputs) = operand {
+                std::sync::Arc::get_mut(inputs)
+                    .ok_or("shared value reborrow snapshot cannot be restored")?
+                    .map_types(&mut |ty| restore.storage(ty))?;
+            }
             if let PreparedOperand::Inline { result, .. } = operand {
                 *result = restore.storage(*result)?;
             }

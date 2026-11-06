@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "profile": "Same pinned actual no_core source profile as local-predictions-v1.",
+  "predecessor": "Original three v1 companions retained with genuine std-unavailable setup failure. V2 uses authored parameter-use functions or actual unsafe raw dereference, preserving intended liveness/safety causes.",
+  "cases": [
+    {
+      "file": "local-overlap-v2.rs",
+      "sha256": "80df3cf37bf67ccf6839af591084e14c278082f7da0424678dd3e89715bb3d28",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-v2-reference",
+      "expected_cause": "borrow conflict"
+    },
+    {
+      "file": "local-shared-write-v2.rs",
+      "sha256": "009c13fe2bd9137db17f7a5e933e5e5eb083fece43f77b158b3d57b57649b2fe",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-v2-reference",
+      "expected_cause": "borrow conflict"
+    },
+    {
+      "file": "local-unsafe-source-v2.rs",
+      "sha256": "761af232bade8f7f231cffecfabba86ace1ee245047d6161f8d2212fc0c50fac",
+      "expected_code": 1,
+      "prediction_status": "frozen-before-v2-reference",
+      "expected_cause": "unsafe"
+    }
+  ]
+}

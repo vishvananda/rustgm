@@ -335,8 +335,8 @@ pub(super) fn place(value: Place, out: &mut impl Write) -> io::Result<()> {
         Place::Projection(id) => write!(out, "p{}", id.0),
     }
 }
-fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
-    match value {
+fn rvalue(body: &Body, value_kind: Rvalue, out: &mut impl Write) -> io::Result<()> {
+    match value_kind {
         Rvalue::Union { field, value } => write!(out, "union field={field:?} value=v{}", value.0),
         Rvalue::Aggregate { variant, fields } => {
             write!(out, "aggregate")?;
@@ -365,16 +365,8 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
             write!(out, "address ")?;
             place(value, out)
         }
-        Rvalue::Borrow { place: value, kind } => {
-            write!(
-                out,
-                "{} ",
-                match kind {
-                    super::ir::BorrowKind::TwoPhase => "borrow-two-phase",
-                    super::ir::BorrowKind::UniqueImmutable => "borrow-unique-immutable",
-                    super::ir::BorrowKind::Immediate => "borrow",
-                }
-            )?;
+        Rvalue::Borrow { place: value, .. } | Rvalue::Reborrow { place: value, .. } => {
+            write!(out, "{} ", borrow_name(value_kind))?;
             place(value, out)
         }
         Rvalue::Read(value) => {
@@ -431,7 +423,19 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
         Rvalue::Assembly { .. }
         | Rvalue::Invoke { .. }
         | Rvalue::Intrinsic { .. }
-        | Rvalue::Call { .. } => call_value(body, value, out),
+        | Rvalue::Call { .. } => call_value(body, value_kind, out),
+    }
+}
+fn borrow_name(value: Rvalue) -> &'static str {
+    match value {
+        Rvalue::Borrow { kind, .. } => match kind {
+            super::ir::BorrowKind::TwoPhase => "borrow-two-phase",
+            super::ir::BorrowKind::UniqueImmutable => "borrow-unique-immutable",
+            super::ir::BorrowKind::Immediate => "borrow",
+        },
+        Rvalue::Reborrow { mutable: true, .. } => "reborrow-value mutable",
+        Rvalue::Reborrow { mutable: false, .. } => "reborrow-value shared",
+        _ => "invalid-borrow",
     }
 }
 fn call_value(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {

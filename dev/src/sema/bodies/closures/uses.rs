@@ -8,7 +8,6 @@ use crate::{
     sema::{
         closures::captures::{Mode, PathId, Plan},
         closures::{AccessKind, AdjustedAccess},
-        model::ReferenceConversion,
         scalar,
     },
     support::call_traits::CallTrait,
@@ -51,7 +50,7 @@ struct Collector<'a> {
     calls: HashMap<NodeId, (Option<CallTrait>, u32)>,
     methods: HashMap<NodeId, (u32, Option<TermId>)>,
     comparisons: HashSet<NodeId>,
-    references: HashMap<NodeId, (ReferenceConversion, TermId)>,
+    references: HashMap<NodeId, receivers::ReferenceUse>,
     adjusted: HashSet<NodeId>,
     adjusted_accesses: HashMap<(NodeKey, AccessKind), AdjustedAccess>,
     kind: CallKind,

@@ -32,6 +32,7 @@ pub(crate) mod provided;
 mod range_factories;
 pub mod regions;
 pub use crate::sema::scopes;
+pub(crate) mod reborrow_inputs;
 pub mod storage;
 pub(crate) mod transported_originals;
 pub(crate) mod vararg;

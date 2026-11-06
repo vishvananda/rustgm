@@ -59,9 +59,11 @@ mod pointers;
 mod privacy;
 mod protocol_control;
 mod range_values;
+mod reborrow_coercions;
 mod references;
 mod safety;
 mod selected_arguments;
+mod shared_value_regions;
 mod slots;
 mod text;
 mod trait_goals;
@@ -311,6 +313,7 @@ pub(super) struct State {
     checks: Vec<NodeId>,
     negated: HashSet<NodeId>,
     adjustments: Vec<PendingAdjustment>,
+    value_reborrows: Option<Box<crate::support::hash::HashMap<usize, reborrow_coercions::Pending>>>,
     reference_adjustments:
         crate::support::hash::HashMap<usize, (super::model::ReferenceConversion, TermId)>,
     unsizing_adjustments: crate::support::hash::HashMap<usize, unsizing::Pending>,
@@ -422,6 +425,7 @@ impl<'a> Checker<'a> {
                 checks: scratch.checks,
                 negated: HashSet::default(),
                 adjustments: Vec::new(),
+                value_reborrows: None,
                 reference_adjustments: crate::support::hash::HashMap::default(),
                 unsizing_adjustments: crate::support::hash::HashMap::default(),
                 pointer_adjustments: crate::support::hash::HashMap::default(),
@@ -1275,15 +1279,27 @@ impl Checker<'_> {
         reason = "syntax dispatch schedules context-sensitive child constraints without recursive traversal"
     )]
     fn enter(&mut self, node: NodeId, expected: Option<TermId>) -> Result<(), Error> {
-        if let Some(expected) = expected
-            && matches!(
-                self.contextual_head(node, expected)?,
-                Some(Constructor::Reference { .. } | Constructor::Pointer { .. })
-            )
-        {
-            self.state.reference_expected.insert(node);
-            if matches!(self.kind(node), Kind::If { .. } | Kind::Match { .. }) {
-                self.state.unsizing_contexts.insert(node, expected);
+        if let Some(expected) = expected {
+            match self.contextual_head(node, expected)? {
+                Some(Constructor::Reference { .. } | Constructor::Pointer { .. }) => {
+                    self.state.reference_expected.insert(node);
+                    if matches!(self.kind(node), Kind::If { .. } | Kind::Match { .. }) {
+                        self.state.unsizing_contexts.insert(node, expected);
+                    }
+                }
+                Some(Constructor::Adt(..) | Constructor::AdtArgs(..))
+                    if self
+                        .report
+                        .package
+                        .requested_reborrow()
+                        .map_err(|e| self.error(node, e))? =>
+                {
+                    // Remember the expectation before the expression can
+                    // infer its own nominal head. Later equality cannot
+                    // retrospectively turn the original move into a loan.
+                    self.state.reference_expected.insert(node);
+                }
+                _ => {}
             }
         }
         if let Some(frame) = self.state.frames.last_mut()
@@ -1961,9 +1977,21 @@ impl Checker<'_> {
         {
             return self.pointer_coercion(source, actual, expected);
         }
-        if self.source_nominal_coercion(source, actual, expected)? {
+        if self.source_value_reborrow(source, actual, expected)?
+            || self.source_nominal_coercion(source, actual, expected)?
+        {
             return Ok(());
         }
+        self.coerce_equality(source, actual, expected, actual_head, expected_head)
+    }
+    fn coerce_equality(
+        &mut self,
+        source: NodeId,
+        actual: TermId,
+        expected: TermId,
+        actual_head: Option<Constructor>,
+        expected_head: Option<Constructor>,
+    ) -> Result<(), Error> {
         let inferred = if expected_head.is_none() {
             self.inferred_regions(source, actual)?
         } else {

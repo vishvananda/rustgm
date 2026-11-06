@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "prefix": {
+    "source": "source.rs",
+    "source_sha256": "b1bfcec687a83bfa567acb2d33db86ae1cda47affe9b2e93b9ce7810cfbac619",
+    "bytes": 2063,
+    "sha256": "1fe013ccc4bc6b8a0b8ae5fcf4959aba8b9f94e44a5ae4ac28ada2c6fff4db73"
+  },
+  "purpose": "By-value wrapper arguments only; new tested bodies contain no explicit reference expression. Actual helpers/roles/source prefix unchanged.",
+  "cases": [
+    {
+      "file": "wrapper-parameter-valid.rs",
+      "sha256": "119c7d47e4d751bbcedc865286233d96f899990fc38d33dcc914404dfbf076f8",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "prediction_status": "frozen-before-any-Rust-or-candidate-observation"
+    },
+    {
+      "file": "wrapper-parameter-overlap.rs",
+      "sha256": "4cdeb74652ad738e03ee0d18812eb6a730951b45944b103ff8aae25ec55344cb",
+      "expected_code": 1,
+      "expected_error_code": "E0499",
+      "prediction_status": "frozen-before-any-Rust-or-candidate-observation"
+    }
+  ]
+}

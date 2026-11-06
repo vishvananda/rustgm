@@ -86,7 +86,8 @@ impl Engine<'_, '_> {
                 | Rvalue::Length(_)
                 | Rvalue::TextEquals { .. }
                 | Rvalue::Validate(_)
-                | Rvalue::Union { .. } => Ok(false),
+                | Rvalue::Union { .. }
+                | Rvalue::Reborrow { .. } => Ok(false),
                 Rvalue::Borrow { place, .. } => {
                     if !self.borrow_allowed(self.value(id)?.ty)? {
                         return Ok(false);

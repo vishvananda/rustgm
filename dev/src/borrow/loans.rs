@@ -87,7 +87,7 @@ impl Flow<'_> {
         for (index, value) in self.body.values.iter().enumerate() {
             self.charge(1)?;
             let id = ValueId(u32::try_from(index).map_err(|_| "too many loan values")?);
-            match value.kind {
+            let borrowing = match value.kind {
                 Rvalue::Borrow { place, kind } => {
                     let Some(Kind::Reference {
                         region, mutable, ..
@@ -95,10 +95,6 @@ impl Flow<'_> {
                     else {
                         return Err("loan has no reference type");
                     };
-                    let region = contract
-                        .identities
-                        .get(region)
-                        .ok_or("missing borrow region")?;
                     let mode = if !mutable {
                         Mode::Shared
                     } else if kind == BorrowKind::TwoPhase {
@@ -106,27 +102,44 @@ impl Flow<'_> {
                     } else {
                         Mode::Mutable
                     };
-                    let start = self.loans.len();
-                    for (place, tracked) in self.places.expanded(place)? {
-                        if tracked {
-                            if self.loans.len() >= 500_000 {
-                                return Err("too many reference loans");
-                            }
-                            self.loans.push(Loan {
-                                place,
-                                region,
-                                mode,
-                                value: id,
-                            });
+                    Some((place, region, mode))
+                }
+                Rvalue::Reborrow { place, mutable } => {
+                    self.body.value_reborrow(types, id)?;
+                    Some((
+                        place,
+                        crate::body::reborrow_inputs::region(types, value.ty)?,
+                        if mutable { Mode::Mutable } else { Mode::Shared },
+                    ))
+                }
+                _ => None,
+            };
+            if let Some((place, region, mode)) = borrowing {
+                let region = contract
+                    .identities
+                    .get(region)
+                    .ok_or("missing borrow region")?;
+                let start = self.loans.len();
+                for (place, tracked) in self.places.expanded(place)? {
+                    if tracked {
+                        if self.loans.len() >= 500_000 {
+                            return Err("too many reference loans");
                         }
+                        self.loans.push(Loan {
+                            place,
+                            region,
+                            mode,
+                            value: id,
+                        });
                     }
-                    self.generated[index] = (start, self.loans.len());
-                    self.origins[index] = Some(id);
                 }
-                Rvalue::Constrain(value) | Rvalue::Unsize { value, .. } | Rvalue::Reify(value) => {
-                    self.origins[index] = self.origins.get(value.0 as usize).copied().flatten();
-                }
-                _ => {}
+                self.generated[index] = (start, self.loans.len());
+                self.origins[index] = Some(id);
+            } else if let Rvalue::Constrain(value)
+            | Rvalue::Unsize { value, .. }
+            | Rvalue::Reify(value) = value.kind
+            {
+                self.origins[index] = self.origins.get(value.0 as usize).copied().flatten();
             }
         }
         Ok(())
@@ -286,7 +299,7 @@ impl Flow<'_> {
                     Depth::Deep,
                     None,
                 )?,
-                Rvalue::Borrow { place, .. } => {
+                Rvalue::Borrow { place, .. } | Rvalue::Reborrow { place, .. } => {
                     let (a, b) = self.generated[id.0 as usize];
                     let mode = self
                         .loans
@@ -700,7 +713,7 @@ pub(super) fn analyze<const RECORD: bool>(
     if !body
         .values
         .iter()
-        .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
+        .any(|v| matches!(v.kind, Rvalue::Borrow { .. } | Rvalue::Reborrow { .. }))
     {
         return Ok(Report {
             analysis: Analysis {
@@ -761,7 +774,7 @@ fn finish<const RECORD: bool>(
         && !body
             .values
             .iter()
-            .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
+            .any(|v| matches!(v.kind, Rvalue::Borrow { .. } | Rvalue::Reborrow { .. }))
     {
         // Without a borrow no loan exists: pruning, accesses, destructor
         // accesses and storage endings have nothing to check.

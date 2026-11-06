@@ -284,6 +284,10 @@ pub fn references(
         | Rvalue::Borrow {
             place: Place::Static(id),
             ..
+        }
+        | Rvalue::Reborrow {
+            place: Place::Static(id),
+            ..
         } => Some((id, true)),
         _ => None,
     });

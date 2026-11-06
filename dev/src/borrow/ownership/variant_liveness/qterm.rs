@@ -270,7 +270,9 @@ fn expression(
                 Term::Type(TypeId::UNIT)
             }
             Rvalue::Constrain(next) | Rvalue::Reify(next) => return Ok(Step::Next(next)),
-            Rvalue::Read(place) => return place_expression(tags, input, aliases, place),
+            Rvalue::Read(place) | Rvalue::Reborrow { place, .. } => {
+                return place_expression(tags, input, aliases, place);
+            }
             Rvalue::Borrow { place, .. } | Rvalue::Address(place) => {
                 if let Place::Projection(id) = place {
                     let projection = input
