@@ -1,3 +1,15 @@
+The concrete const-cleanup producer is joined from12b46e995 after Root verified
+all3561 frozen Rust input hashes against the committed tree. Its46 focused public
+checks, three existing runtime native observers, strict selected Clippy, format,
+architecture, harness and upstream verification pass. It selects a real concrete
+Plan from the same initialized Facts/Seal and completes ordinary loans; active
+Code cleanup still deliberately fails before interpreter publication. This is
+planning/loan progress, not CTFE destructor execution. The worker continues the
+paid owned footer and exact Code/cleanup continuation; Root continues actual
+Coroutine declarations. Original core remains LIB178; no artifact or whole PA
+release is claimed. Keep existing two workers and the same disk/job/time guards.
+See [the producer evidence](parallel/source-ctfe-concrete-producer.md).
+
 The [published AsyncIterator/Field join](parallel/async-iterator-main-join.md)
 combines the complete payer repair with genuine source calls and lexical raw
 borrows. Joined57 public/13 native/all-target metadata pass, matching3608 frozen
