@@ -239,6 +239,12 @@ impl Checker<'_> {
     }
 
     pub(super) fn collect_closure(&mut self) -> Result<(), Error> {
+        // This child's fresh work queue placed CollectClosure below Enter and
+        // CoerceElement. Dependencies resume above it, and mutable-place choices
+        // have settled. The enclosing and sibling states remain parked. Prepare
+        // only this child's calls; ordinary finish reuses the idempotent cursor
+        // before solving and proving all const, region and loan obligations.
+        self.finish_field_calls()?;
         let body = self.state.body.node;
         let mut scheduler = self
             .state

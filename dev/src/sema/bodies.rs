@@ -673,14 +673,7 @@ impl Checker<'_> {
         self.report.package.unit(self.state.file).configured.active[node.get() as usize]
     }
     fn function(&mut self, function: Function) -> Result<(), Error> {
-        if function.body.is_none()
-            && self
-                .facts
-                .foreign
-                .as_deref()
-                .and_then(|r| r.function(function.definition))
-                .is_some_and(|f| f.linkage == crate::support::linkage::Linkage::Import)
-        {
+        if defining_bodies::imported(self.facts, function) {
             return Ok(());
         }
         if self

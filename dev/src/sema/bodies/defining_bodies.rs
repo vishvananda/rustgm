@@ -2,6 +2,9 @@
 use super::{Checker, Declarations, DefiningRequest, Error, Requirement, State};
 use crate::support::hash::HashMap;
 use crate::{resolve::expansion::Report, types::opaque::OpaqueId};
+#[cfg(test)]
+#[path = "../../../tests/invariants/importscheduling.rs"]
+mod importscheduling;
 
 #[derive(Clone, Copy)]
 enum Status {
@@ -15,13 +18,26 @@ struct Suspended {
     state: Box<State>,
 }
 
+/// An authenticated import has no authored body to schedule. This does not
+/// publish a typed-body proof or permit materialization of an absent body.
+pub(super) fn imported(facts: &Declarations, function: super::Function) -> bool {
+    function.body.is_none()
+        && facts
+            .foreign
+            .as_deref()
+            .and_then(|rows| rows.function(function.definition))
+            .is_some_and(|function| function.linkage == crate::support::linkage::Linkage::Import)
+}
+
 /// Preserve functions already checked to satisfy an early constant demand.
 fn initial_states(facts: &Declarations) -> Vec<Status> {
     facts
         .functions
         .iter()
         .map(|function| {
-            if facts.typed_function_bodies.contains(&function.definition) {
+            if imported(facts, *function) {
+                Status::Checked
+            } else if facts.typed_function_bodies.contains(&function.definition) {
                 Status::Complete
             } else {
                 Status::Unseen

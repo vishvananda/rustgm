@@ -1,0 +1,32 @@
+{
+  "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "metadata": {
+    "original": 21,
+    "receiver_prefix": 4,
+    "scaling": 3,
+    "all_predictions_matched": true
+  },
+  "native": {
+    "observers": 9,
+    "authored_section_byte_identical": true,
+    "status": 0,
+    "stdout_matches_literal_prediction": true
+  },
+  "receipts": {
+    "original": {
+      "receipt": "obj/parallel/async-iterator-v1/capture-oracle/receipt.json",
+      "sha256": "bcb47a13aaff559c90549adb9c08551e79213c97124eeb26399fb615dacc8fdc",
+      "seconds": 1.4568600979982875
+    },
+    "prefix": {
+      "receipt": "obj/parallel/async-iterator-v1/prefix-oracle/receipt.json",
+      "sha256": "8eb9c9a90de97bead7d91f6b4df996aa62f567f1b3dd0a6d9cd70b4ab84a1d22",
+      "seconds": 0.27147280098870397
+    },
+    "scaling": {
+      "receipt": "obj/parallel/async-iterator-v1/scaling-capture-oracle/receipt.json",
+      "sha256": "0341ac1ed41869f9e386e7ed8fecb39683ea6c150952130ef187cafa843b6087",
+      "seconds": 0.1730444089625962
+    }
+  }
+}

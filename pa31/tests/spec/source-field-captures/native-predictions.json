@@ -1,0 +1,22 @@
+{
+  "scope": "frozen literal reference behavior before candidate capture observation",
+  "source": "native.rs",
+  "source_sha256": "cb51589487685a30fbfc49c740c1ceb2dd741b2d27a18670dc99fd1a80271717",
+  "core_companion": "native-core.rs",
+  "core_companion_sha256": "5c3bab2b76bd2b8a7016e70fda9b89867d6d8e1365ba464bc47543cebef67344",
+  "authored_sha256": "9a8e96acf96f25d5d010a257b5cfb124ffa99dd3bcfc5f99c13d0a7fafe7410b",
+  "observer": "observer.c",
+  "observer_sha256": "c06c8605d1883e2babd58bd82fe76070ab678d6ce1499e0d39582974301a50bd",
+  "expected_status": 0,
+  "expected_stdout": "shared\nevent=10\nevent=1\nevent=11\nevent=1\nevent=12\nevent=9\nvalue=13\nmutable\nevent=20\nevent=2\nevent=21\nevent=2\nevent=22\nevent=9\nvalue=23\nmove-read\nevent=30\nevent=1\nevent=31\nevent=1\nevent=32\nevent=9\nvalue=13\nonce\nevent=40\nevent=1\nevent=9\nevent=41\nvalue=13\nunpolled\nevent=50\nevent=9\ndisjoint\nevent=60\nevent=1\nevent=41\nevent=9\nvalue=13\ntemporary\nevent=70\nevent=3\nevent=1\nevent=9\nevent=71\nevent=3\nevent=1\nevent=9\nevent=72\nvalue=13\nnested\nevent=80\nevent=81\nevent=1\nevent=82\nevent=81\nevent=1\nevent=83\nevent=9\nvalue=13\nreference\nvalue=67\n",
+  "expected_stderr": "",
+  "contracts": [
+    "no Deref at environment construction",
+    "real Fn/FnMut/FnOnce adapters",
+    "owned wrapper prefix drop once",
+    "unpolled closure performs no body effects",
+    "precise outer field prefix",
+    "temporary and nested call-time effects",
+    "actual borrowed field lifetime"
+  ]
+}

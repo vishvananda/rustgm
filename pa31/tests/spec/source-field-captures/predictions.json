@@ -1,0 +1,154 @@
+{
+  "scope": "reference predictions frozen before candidate capture implementation or observation",
+  "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "edition": 2024,
+  "cases": [
+    {
+      "file": "shared-fn.rs",
+      "path": "pa31/tests/spec/source-field-captures/shared-fn.rs",
+      "sha256": "aa66818a0103e0ffd99a309a8b2a1bc475d9ca456035ccde3896c6d1edbcda01",
+      "rustc_status": 0,
+      "purpose": "Fn borrows the actual wrapper prefix and permits repeated shared calls"
+    },
+    {
+      "file": "mutable-fnmut.rs",
+      "path": "pa31/tests/spec/source-field-captures/mutable-fnmut.rs",
+      "sha256": "9f1aa13f3de0201bef1ec10b4b4c7534aa68c59f3aadedc030f75d6a510560aa",
+      "rustc_status": 0,
+      "purpose": "Field mutation selects FnMut and the actual mutable wrapper capture"
+    },
+    {
+      "file": "mutable-not-fn.rs",
+      "path": "pa31/tests/spec/source-field-captures/mutable-not-fn.rs",
+      "sha256": "d5e6cf53bd5c657446ab2658d172c938819b627864b68598b71bcfde24579ab9",
+      "rustc_status": 1,
+      "purpose": "mutation through DerefMut cannot acquire Fn shared-call permission"
+    },
+    {
+      "file": "move-read-fn.rs",
+      "path": "pa31/tests/spec/source-field-captures/move-read-fn.rs",
+      "sha256": "a98d11f8603b925a3f663c03441fd2dacd5285af36ea02c23ae23f7e8a7620ac",
+      "rustc_status": 0,
+      "purpose": "move capture owns Wrap while the body remains Fn"
+    },
+    {
+      "file": "move-once.rs",
+      "path": "pa31/tests/spec/source-field-captures/move-once.rs",
+      "sha256": "5d4d2d11371d53230a96757df0253bc853a5a0b71c76a665b41a54d828d1c513",
+      "rustc_status": 0,
+      "purpose": "consuming the actual captured wrapper makes a genuine FnOnce"
+    },
+    {
+      "file": "once-not-fnmut.rs",
+      "path": "pa31/tests/spec/source-field-captures/once-not-fnmut.rs",
+      "sha256": "c4824cbfdf77f4fc277eade5e6850ad75c01fe3628e0c551d031a20012a08adc",
+      "rustc_status": 1,
+      "purpose": "a consumed wrapper cannot be called through FnMut"
+    },
+    {
+      "file": "noncopy-out.rs",
+      "path": "pa31/tests/spec/source-field-captures/noncopy-out.rs",
+      "sha256": "2bcd429dcc3599c4c98549e63ee507776c696c245e59c2bcb559679e2c903942",
+      "rustc_status": 1,
+      "purpose": "non-Copy field cannot move through the actual Deref borrowed result"
+    },
+    {
+      "file": "move-prefix.rs",
+      "path": "pa31/tests/spec/source-field-captures/move-prefix.rs",
+      "sha256": "273650b5c4c6d96efda129ab027799deff70d6e5b23c710ea84fa80e0fadf175",
+      "rustc_status": 1,
+      "purpose": "custom Deref requires the whole Wrap prefix rather than a fabricated leaf capture"
+    },
+    {
+      "file": "shared-prefix.rs",
+      "path": "pa31/tests/spec/source-field-captures/shared-prefix.rs",
+      "sha256": "705af90dba04d1387f00185af5572f9cb437c69dcf6d36c983f0d028584fc490",
+      "rustc_status": 1,
+      "purpose": "shared capture of Wrap conflicts with a write to its sibling field"
+    },
+    {
+      "file": "mutable-prefix.rs",
+      "path": "pa31/tests/spec/source-field-captures/mutable-prefix.rs",
+      "sha256": "f654f23d102ab525a66038e4f9dba1cd73b1c2a3e6c94ad90ed4bd4707a1ac8d",
+      "rustc_status": 1,
+      "purpose": "mutable capture of Wrap conflicts with a sibling read before the call"
+    },
+    {
+      "file": "disjoint-root.rs",
+      "path": "pa31/tests/spec/source-field-captures/disjoint-root.rs",
+      "sha256": "06e00d4bfddc96663017729f28f167533a1f3db05eca8f1a4f8d0e1c8396a128",
+      "rustc_status": 0,
+      "purpose": "precision stops at owner.left while independent owner.right stays usable"
+    },
+    {
+      "file": "shared-copy.rs",
+      "path": "pa31/tests/spec/source-field-captures/shared-copy.rs",
+      "sha256": "da1a7bff922cccf6598e17340531d006448fb9c5fc3d06bcf06250f2d01e38a0",
+      "rustc_status": 0,
+      "purpose": "a shared reference capture is Copy even though the wrapper is not"
+    },
+    {
+      "file": "owned-not-copy.rs",
+      "path": "pa31/tests/spec/source-field-captures/owned-not-copy.rs",
+      "sha256": "cede5860a9eb79a5f964f5a5eab4598d76a8b3fc5db3d183a34b653333d0a82f",
+      "rustc_status": 1,
+      "purpose": "owning the whole non-Copy wrapper cannot copy merely its leaf value"
+    },
+    {
+      "file": "input-lifetime.rs",
+      "path": "pa31/tests/spec/source-field-captures/input-lifetime.rs",
+      "sha256": "6da906a7142efec4afc220e12c301fbd810b85b5db76e9b5958247101186a8b6",
+      "rustc_status": 0,
+      "purpose": "a returned move closure retains its actual borrowed input lifetime"
+    },
+    {
+      "file": "local-escape.rs",
+      "path": "pa31/tests/spec/source-field-captures/local-escape.rs",
+      "sha256": "1766372ae29d3d6224b832d33263cbedf854a263697fdfc1c8c36f543268387b",
+      "rustc_status": 1,
+      "purpose": "an unused local owner cannot escape through a returned closure borrow"
+    },
+    {
+      "file": "opposite-lifetime.rs",
+      "path": "pa31/tests/spec/source-field-captures/opposite-lifetime.rs",
+      "sha256": "6c0f562bcdf64b50dc10d7aa14640fc8882779eb691cac2e93df5ba59f37652a",
+      "rustc_status": 1,
+      "purpose": "input lifetime cannot be promoted to static by a Field capture"
+    },
+    {
+      "file": "field-reference.rs",
+      "path": "pa31/tests/spec/source-field-captures/field-reference.rs",
+      "sha256": "ab9a8b408f5b429a604fb3f681b91ee05dad55404387fbde9422503ef56d8aa3",
+      "rustc_status": 0,
+      "purpose": "copying a real reference field preserves its declared lifetime across the call"
+    },
+    {
+      "file": "generic-input.rs",
+      "path": "pa31/tests/spec/source-field-captures/generic-input.rs",
+      "sha256": "65ac3aba32ff4d1138799c23dd7f1990c48a3796f756fb9b46bfc89ec5b319b2",
+      "rustc_status": 0,
+      "purpose": "generic callers must retain genuine Deref Target and lifetime premises"
+    },
+    {
+      "file": "nested.rs",
+      "path": "pa31/tests/spec/source-field-captures/nested.rs",
+      "sha256": "de69b346070fd5018e33cba183d331ae0b0de5141c12c43c1381aa2b03b7715b",
+      "rustc_status": 0,
+      "purpose": "nested closure imports preserve the original wrapper prefix"
+    },
+    {
+      "file": "calltime-temporary.rs",
+      "path": "pa31/tests/spec/source-field-captures/calltime-temporary.rs",
+      "sha256": "0bc8e6b922b3523566991139b63a27ab0ad3b7136b69f4ff8b5013b376c7c30e",
+      "rustc_status": 0,
+      "purpose": "a noncapturing temporary owner is constructed and dereferenced only when called"
+    },
+    {
+      "file": "unused-invalid.rs",
+      "path": "pa31/tests/spec/source-field-captures/unused-invalid.rs",
+      "sha256": "a141508a89e61664e3b7214065c68e9950faacac354134689248f5d6b5cf7304",
+      "rustc_status": 1,
+      "purpose": "unused closure bodies retain ordinary missing-field checking"
+    }
+  ]
+}

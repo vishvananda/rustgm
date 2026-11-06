@@ -231,6 +231,12 @@ impl Places {
                 let Some(mut place) = self.cache[&value] else {
                     return Ok(None);
                 };
+                // A language dereference is a call-time boundary, not a physical
+                // capture projection. Its final target's built-in dereferences
+                // must never be applied to the original wrapper place here.
+                if checker.field_plan(node).is_some() {
+                    return Ok(None);
+                }
                 let count = checker
                     .facts
                     .autoderefs
@@ -247,11 +253,8 @@ impl Places {
                 else {
                     return Err(checker.error(node, "missing typed closure field selection"));
                 };
-                if plan.is_some() || checker.field_plan(node).is_some() {
-                    return Err(checker.error(
-                        node,
-                        "overloaded field capture requires its actual checked dereference path",
-                    ));
+                if plan.is_some() {
+                    return Err(checker.error(node, "field capture lost its actual open plan"));
                 }
                 let step = self.field_step(checker, node, &mut place, field)?;
                 let path = self

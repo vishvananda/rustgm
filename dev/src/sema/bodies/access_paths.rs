@@ -65,6 +65,15 @@ pub(super) struct OpenStep {
 
 const _: [(); 24] = [(); size_of::<OpenStep>()];
 
+/// A prepared call's actual first receiver, never its invocation-time target.
+#[derive(Clone, Copy)]
+pub(super) struct CaptureReceiver {
+    pub operand: NodeId,
+    pub dereferences: u32,
+    pub borrow: TermId,
+}
+const _: [(); 12] = [(); size_of::<CaptureReceiver>()];
+
 #[derive(Default)]
 pub(super) struct Pending {
     pub steps: Vec<OpenStep>,
@@ -135,6 +144,57 @@ impl Checker<'_> {
                 .next_plan = cursor;
         }
         Ok(())
+    }
+
+    pub(super) fn field_capture_receiver(
+        &self,
+        node: NodeId,
+    ) -> Result<Option<CaptureReceiver>, Error> {
+        let Some(id) = self.field_plan(node) else {
+            return Ok(None);
+        };
+        let open = self
+            .state
+            .call_types
+            .protocol_plans
+            .get(id.index())
+            .copied()
+            .filter(|open| open.node == node)
+            .ok_or_else(|| self.error(node, "field capture belongs to another actual plan"))?;
+        let super::protocol_control::OpenKind::Field(field) = open.kind else {
+            return Err(self.error(node, "field capture changed its actual plan kind"));
+        };
+        if !matches!(self.kind(node), crate::syntax::ast::Kind::Field { value, .. } if value == field.operand)
+            || field.field.is_none()
+            || field.steps.len().map_err(|e| self.error(node, e))? == 0
+        {
+            return Err(self.error(node, "field capture lost its actual source or discovery"));
+        }
+        // Reuse the real contiguous method/call range authentication, retaining
+        // the public callable and opened signature for normal final publication.
+        self.protocol_open_call(open, 0)
+            .map_err(|e| self.error(node, e))?;
+        let range = field
+            .calls
+            .ok_or_else(|| self.error(node, "field capture call is unfinished"))?;
+        let step = self
+            .state
+            .call_types
+            .access
+            .as_deref()
+            .and_then(|rows| rows.steps.get(field.steps.start as usize))
+            .filter(|step| step.node == node && step.output_view.is_some())
+            .ok_or_else(|| self.error(node, "field capture lost its actual first step"))?;
+        let (_, pending) = &self.state.call_types.methods[range.method as usize];
+        let (dereferences, borrow) = pending.capture_receiver();
+        if dereferences != step.dereferences {
+            return Err(self.error(node, "field capture changed its actual receiver prefix"));
+        }
+        Ok(Some(CaptureReceiver {
+            operand: field.operand,
+            dereferences,
+            borrow: borrow.ok_or_else(|| self.error(node, "field capture has no actual borrow"))?,
+        }))
     }
 
     fn prepare_field_step(

@@ -1,0 +1,25 @@
+{
+  "scope": "additional readiness and built-in prefix predictions frozen before candidate edits or observation",
+  "cases": [
+    {
+      "file": "late-mut-method.rs",
+      "sha256": "3638e81e7ba6bc1d1ebfdc7e8d757ac60713e72e553baa59bdb0937a08892e09",
+      "rustc_status": 0
+    },
+    {
+      "file": "reference-prefix.rs",
+      "sha256": "1bde31806ce651e4e78d15214aa9f1b6b6f93a25803eec09430678016abfc25c",
+      "rustc_status": 0
+    },
+    {
+      "file": "mutable-reference-prefix.rs",
+      "sha256": "495752b11da816ea1f97141467c3934812f29dac51fbda4df88f9e071f1f1ff2",
+      "rustc_status": 0
+    },
+    {
+      "file": "mutable-prefix-not-fn.rs",
+      "sha256": "a67123ea873ae875fd95f64ce184e58245d7f1a8058d69e9c2ccb3df48ed076c",
+      "rustc_status": 1
+    }
+  ]
+}

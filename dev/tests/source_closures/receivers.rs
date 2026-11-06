@@ -115,8 +115,9 @@ fn adjusted_receiver_paths_preserve_the_original_source_place()
                     .ok_or("missing method")?
                     .receiver
             }
-            AccessKind::Index => {
-                let rustgm::syntax::ast::Kind::Index { value, .. } = report
+            AccessKind::Field | AccessKind::Index => {
+                let (rustgm::syntax::ast::Kind::Index { value, .. }
+                | rustgm::syntax::ast::Kind::Field { value, .. }) = report
                     .package
                     .unit(site.file)
                     .configured

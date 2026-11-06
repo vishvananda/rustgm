@@ -17,6 +17,13 @@ producer/profile fence.
 
 The semantic-only inspection test is separate from the full pipeline/native
 consumers. Source/owner/binder/range/link corruption controls remain private.
-Closure capture and structural constant-address consumers retain explicit
-required boundaries; this packet does not redefine their completion or supply
-a generated coroutine implementation.
+The separately frozen [capture packet](../source-field-captures/README.md)
+qualifies genuine custom-Deref receiver-prefix captures and call-time effects.
+Structural constant-address consumers, imported capture transport and generated
+coroutine implementations remain required.
+
+The union-borrow pair preserves the actual source DerefMut receiver read: safe
+union-field borrowing rejects with the unsafe-operation cause; its lexical
+unsafe-block counterpart passes. These two predictions were independently
+checked before candidate observation. Existing ordinary reference/tuple union
+read opponents and direct-store positives remain in the PA27 union packet.

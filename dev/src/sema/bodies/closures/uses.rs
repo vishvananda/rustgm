@@ -89,6 +89,7 @@ impl Checker<'_> {
                 .call_types
                 .methods
                 .iter()
+                .filter(|(node, _)| self.field_plan(*node).is_none())
                 .map(|(node, pending)| (*node, pending.capture_receiver()))
                 .collect(),
             comparisons: self
@@ -96,6 +97,7 @@ impl Checker<'_> {
                 .call_types
                 .methods
                 .iter()
+                .filter(|(node, _)| self.field_plan(*node).is_none())
                 .filter_map(|(node, pending)| {
                     crate::sema::compiler_items::comparison_member(
                         self.report,
@@ -406,7 +408,7 @@ impl Collector<'_> {
                 self.method(checker, node, receiver)?;
             }
             Kind::Index { value, index } => self.index(checker, work, value, index)?,
-            Kind::Field { value, .. } => self.projected(checker, node, value, work.usage)?,
+            Kind::Field { value, .. } => self.field(checker, node, value, work.usage)?,
             Kind::Repeat { value, .. }
             | Kind::Cast { value, .. }
             | Kind::FieldInit { value, .. } => self.push(value, Use::Value),

@@ -183,6 +183,32 @@ impl Collector<'_> {
         Ok(())
     }
 
+    pub(super) fn field(
+        &mut self,
+        checker: &mut Checker<'_>,
+        node: NodeId,
+        value: NodeId,
+        usage: Use,
+    ) -> Result<(), Error> {
+        let Some(receiver) = checker.field_capture_receiver(node)? else {
+            return self.projected(checker, node, value, usage);
+        };
+        let usage = match checker.head(node, receiver.borrow)? {
+            Some(Constructor::Reference { mutable: true, .. }) => Use::Mutable,
+            Some(Constructor::Reference { mutable: false, .. }) => Use::Shared,
+            _ => return Err(checker.error(node, "field capture lost its actual receiver borrow")),
+        };
+        // Capture the actual call input. The result's fields and every Deref
+        // effect remain in the ordinary checked closure body, evaluated on call.
+        self.pending.push(Work {
+            node: receiver.operand,
+            usage,
+            dereferences: receiver.dereferences,
+            receiver: Some((node, AccessKind::Field)),
+        });
+        Ok(())
+    }
+
     pub(super) fn projected(
         &mut self,
         checker: &mut Checker<'_>,

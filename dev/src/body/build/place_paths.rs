@@ -31,6 +31,7 @@ impl Builder<'_> {
             return Err(self.error(node, "field construction received another actual protocol"));
         };
         let mut calls = plan.calls().map_err(|e| self.error(node, e))?;
+        let mut first = true;
         while let Some(step) =
             protocol_plans::access::next(self.facts, plan, self.source, steps, &mut calls)
                 .map_err(|e| self.error(node, e))?
@@ -45,10 +46,20 @@ impl Builder<'_> {
                     self.error(node, "field construction changed its actual receiver arity")
                 );
             };
+            let prefix = if first {
+                self.remaining_receiver_dereferences(
+                    node,
+                    crate::sema::closures::AccessKind::Field,
+                    step.dereferences,
+                )?
+            } else {
+                step.dereferences
+            };
+            first = false;
             let argument = self.receiver_value(
                 node,
                 place,
-                step.dereferences,
+                prefix,
                 Some(step.borrow),
                 *expected,
                 BorrowKind::Immediate,

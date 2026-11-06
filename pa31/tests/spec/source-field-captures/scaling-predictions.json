@@ -1,0 +1,20 @@
+{
+  "scope": "shared-reference capture widths frozen before candidate scaling observations",
+  "cases": [
+    {
+      "file": "scaling-1.rs",
+      "sha256": "09ce8c5ebb1446a950a6e7ef1a716cdfa1908231ce823876241d1670782b46ce",
+      "rustc_status": 0
+    },
+    {
+      "file": "scaling-8.rs",
+      "sha256": "3041567e51de9ff53e1928fcfb8fbc3ad2c95c3154817dcb9fb17b04df7bdf33",
+      "rustc_status": 0
+    },
+    {
+      "file": "scaling-32.rs",
+      "sha256": "5136b229092aba4dfaf3d6e1a5d7c61261d471fca95efeeae7165f826bbc1e0c",
+      "rustc_status": 0
+    }
+  ]
+}

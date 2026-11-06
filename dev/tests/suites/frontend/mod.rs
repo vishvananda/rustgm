@@ -189,3 +189,6 @@ mod autoref_lints;
 
 #[path = "../../coroutine_sources.rs"]
 mod coroutine_sources;
+
+#[path = "../../overload_captures.rs"]
+mod overload_captures;

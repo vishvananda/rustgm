@@ -172,7 +172,15 @@ impl Builder<'_> {
                 if matches!(self.fact(node)?.operation, Some(Operation::Call { .. })) {
                     self.scratch.work.push(Work::LanguageReceiver(node));
                 }
-                self.scratch.work.push(Work::Place(value));
+                let receiver = if matches!(
+                    self.fact(node)?.operation,
+                    Some(Operation::Field { plan: Some(_), .. })
+                ) {
+                    self.receiver_place_work(value, node, crate::sema::closures::AccessKind::Field)
+                } else {
+                    Work::Place(value)
+                };
+                self.scratch.work.push(receiver);
             }
             Kind::Index { value, index } => {
                 self.scratch.work.push(Work::FinishPlace(node));
