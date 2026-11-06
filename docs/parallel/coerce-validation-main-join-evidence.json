@@ -1,0 +1,49 @@
+{
+  "checkpoint": "actual source CoercePointeeValidated and authenticated derive origins",
+  "main_implementation": "dac85b383",
+  "regular": {
+    "receipt": "obj/qualification/fast/1793972565930722772/receipt.json",
+    "sha256": "f9e92241cf61534aeef0f546d371d0a3814229c450d44a7afea60967902554d9",
+    "exact_tests": 6,
+    "seconds": 42.27
+  },
+  "native": {
+    "receipt": "obj/qualification/fast/1793972627320308460/receipt.json",
+    "sha256": "9d3f08837ceec4de1dd96a7509b51815912aefb2cb20ebdbff6ad7731a82daa8",
+    "exact_tests": 2,
+    "executables": 9,
+    "full_text_suite": "pa18"
+  },
+  "reference": {
+    "receipt": "obj/parallel/coerce-pointee-contracts/reference-v2/receipt.json",
+    "sha256": "f4c7c44b23676eef9b082cb8a6aed8b4177f4da9e9e94eafb42e9d89d98df6b5",
+    "source_outcomes": 18,
+    "ordinary_native": "23 47"
+  },
+  "source_fingerprint_count": 3637,
+  "original_core": {
+    "receipt": "obj/parallel/coerce-pointee-core-v1/receipt.json",
+    "sha256": "ee1a8b78485a509d56f00355eb6ab2bd3211e8ec2cc7ac9fe17f96fb7c9bc879",
+    "cli_sha256": "91edac3f6c606fa56e958003cfac88db1ed0dc0bb5eba6972f5aa1c06ad94415",
+    "first_error": "ERROR: file 245: 1724: source compiler language item semantic contract is not implemented",
+    "source": "library/core/src/future/mod.rs:51",
+    "total_seconds": 18.41431988601107,
+    "opened_sources": 375,
+    "official_inputs": 722,
+    "inputs_unchanged": true,
+    "status": 1,
+    "artifact": false
+  },
+  "baseline_full_ci": {
+    "run": 42220745796,
+    "head": "6694351ed4f9f42b50a68882a39cfa0a273588aa",
+    "conclusion": "success"
+  },
+  "pending": [
+    "new private derive-origin forgery test and successor full CI",
+    "genuine CoercePointee producer and consumers",
+    "generic custom auto traits",
+    "authenticated metadata",
+    "core alloc std artifacts"
+  ]
+}

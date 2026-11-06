@@ -1,6 +1,12 @@
 # RustGM Programming Assignment 31: Compiler/library bindings
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
+
+The [CoercePointee source checkpoint](../docs/parallel/coerce-validation-main-join.md)
+preserves actual trait headers and requires authenticated builtin origin for
+validity implementations. Full derive generation, generic custom auto traits,
+coercion/dispatch consumers and metadata remain required. The unchanged original
+core frontier advances to ResumeTy; this does not release PA31.
 Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The source profile is Rust 1.98.0, initially edition 2024
 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
 See the [library bootstrap plan](../docs/library-bootstrap-roadmap.md) for

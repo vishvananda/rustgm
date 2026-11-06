@@ -1,3 +1,12 @@
+The [CoercePointee source checkpoint](parallel/coerce-validation-main-join.md)
+passes6 public tests/16 ordinary outcomes and2 native tests/9 programs/fullPA18.
+CLI91edac3f advances unchanged722-input core to LIB182 ResumeTy in18.4143s/375opens;
+no artifact or wholePA release. Real derive/custom-auto positives remain required.
+Root owns ResumeTy/get_context; workers own real nominal CoerceUnsized values
+and full IntoFuture/projected-bound prerequisites. Keep the same warm trees and
+2heavy/16GiB/150GiB/<=300s guards. Baseline full42220745796 passes; new private/full
+successor qualification remains pending.
+
 The [from_yeet/conditional-flags main join](parallel/from-yeet-flags-main-join.md)
 passes26 public and6 native tests/17 executables plus fullPA18. All3635 source
 fingerprints match main. CLIf90679ab advances unchanged722-input core to LIB181
