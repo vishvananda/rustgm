@@ -4,6 +4,43 @@ use std::collections::BTreeMap;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[test]
+fn charged_radix_growth_is_prepaid_and_cached_unions_keep_the_same_identity() -> Result {
+    let mut map = Map::<u32>::default();
+    assert_eq!(
+        map.singleton_charged(1, 2, &|_, _| Err(Error::Budget)),
+        Err(Error::Budget)
+    );
+    assert!(map.nodes.is_empty() && map.index.is_empty() && map.unions.is_empty());
+    let bytes = std::cell::Cell::new(0usize);
+    let pay = |_, amount| {
+        bytes.set(bytes.get().saturating_add(amount));
+        Ok(())
+    };
+    let left = map.singleton_charged(1, 2, &pay)?;
+    let right = map.singleton_charged(u32::MAX, 7, &pay)?;
+    let state = (map.nodes.len(), map.index.len(), map.unions.len());
+    assert_eq!(
+        map.union_charged(left, right, &|_, _| Err(Error::Budget)),
+        Err(Error::Budget)
+    );
+    assert_eq!((map.nodes.len(), map.index.len(), map.unions.len()), state);
+    let merged = map
+        .union_charged(left, right, &pay)?
+        .ok_or("paid disjoint union")?;
+    assert_eq!(map.union(left, right)?, Some(merged));
+    let retained = bytes.get();
+    for _ in 0..32 {
+        assert_eq!(map.union_charged(right, left, &pay)?, Some(merged));
+        assert_eq!(map.singleton_charged(1, 2, &pay)?, left);
+    }
+    assert_eq!(bytes.get(), retained);
+    let conflict = map.singleton_charged(1, 9, &pay)?;
+    assert_eq!(map.union_charged(left, conflict, &pay)?, None);
+    assert_eq!(map.get(merged, 1)?, Some(2));
+    Ok(())
+}
+
+#[test]
 fn unions_are_canonical_commutative_and_conflict_preserving() -> Result {
     let keys = [0, 1, 2, 3, 127, 128, 65535, 65536, 1 << 31, u32::MAX];
     let mut map = Map::default();

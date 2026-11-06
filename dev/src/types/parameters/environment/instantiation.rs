@@ -1,5 +1,6 @@
 //! Builtin instantiation recipes preserve slot correlations without copying prefixes.
 use crate::support::hash::HashMap;
+use crate::support::retained::Growth;
 use crate::{
     support::radix_map::{Id, Map},
     types::{
@@ -52,10 +53,47 @@ impl Matches {
         surrounding: u16,
         equalities: Option<&RegionEqualities>,
     ) -> Result<bool, Error> {
+        self.accepts_observed::<false>(types, actual, pattern, surrounding, equalities, &|_, _| {
+            Ok(())
+        })
+    }
+    pub(super) fn accepts_charged(
+        &mut self,
+        types: &Store,
+        actual: TypeId,
+        pattern: Pattern,
+        surrounding: u16,
+        equalities: Option<&RegionEqualities>,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<bool, &'static str> {
+        let failure = std::cell::Cell::new(None);
+        let pay = |work, bytes| {
+            charge(work, bytes).map_err(|message| {
+                failure.set(Some(message));
+                Error::Budget
+            })
+        };
+        self.accepts_observed::<true>(types, actual, pattern, surrounding, equalities, &pay)
+            .map_err(|error| {
+                failure.get().unwrap_or(match error {
+                    Error::Budget => "builtin assumption matching work budget exceeded",
+                    _ => "invalid builtin assumption matching input",
+                })
+            })
+    }
+    fn accepts_observed<const CHARGED: bool>(
+        &mut self,
+        types: &Store,
+        actual: TypeId,
+        pattern: Pattern,
+        surrounding: u16,
+        equalities: Option<&RegionEqualities>,
+        pay: &impl Fn(usize, usize) -> Result<(), Error>,
+    ) -> Result<bool, Error> {
         if let Some(error) = self.failure {
             return Err(error);
         }
-        let result = self.run(types, actual, pattern, surrounding, equalities);
+        let result = self.run::<CHARGED>(types, actual, pattern, surrounding, equalities, pay);
         if let Err(error) = result {
             self.failure = Some(error);
             self.work.clear();
@@ -63,13 +101,14 @@ impl Matches {
         }
         result
     }
-    fn run(
+    fn run<const CHARGED: bool>(
         &mut self,
         types: &Store,
         actual: TypeId,
         pattern: Pattern,
         surrounding: u16,
         equalities: Option<&RegionEqualities>,
+        pay: &impl Fn(usize, usize) -> Result<(), Error>,
     ) -> Result<bool, Error> {
         let root = Key {
             inputs: Inputs::Types(actual, pattern.ty),
@@ -77,8 +116,11 @@ impl Matches {
             surrounding,
             quantified: pattern.quantified,
         };
-        self.work.push((root, false));
+        self.schedule::<CHARGED>(&[(root, false)], pay)?;
         while let Some((key, finish)) = self.work.pop() {
+            if CHARGED {
+                pay(1, 0)?;
+            }
             self.steps = self.steps.saturating_add(1);
             if self.steps().saturating_add(self.work.len()) > 1_000_000 {
                 return Err(Error::Budget);
@@ -94,13 +136,22 @@ impl Matches {
                         break;
                     };
                     result = match self.completed.get(&child).ok_or(Error::Identity)? {
-                        Some(right) => self.slots.union(left, *right)?,
+                        Some(right) => {
+                            if CHARGED {
+                                self.slots.union_charged(left, *right, &|work, bytes| {
+                                    pay(work, bytes)
+                                        .map_err(|_| crate::support::radix_map::Error::Budget)
+                                })?
+                            } else {
+                                self.slots.union(left, *right)?
+                            }
+                        }
                         None => None,
                     };
                 }
-                self.completed.insert(key, result);
+                self.complete::<CHARGED>(key, result, pay)?;
             } else {
-                self.start(types, key, equalities)?;
+                self.start::<CHARGED>(types, key, equalities, pay)?;
             }
         }
         self.completed
@@ -108,26 +159,28 @@ impl Matches {
             .map(Option::is_some)
             .ok_or(Error::Identity)
     }
-    fn start(
+    fn start<const CHARGED: bool>(
         &mut self,
         types: &Store,
         key: Key,
         equalities: Option<&RegionEqualities>,
+        pay: &impl Fn(usize, usize) -> Result<(), Error>,
     ) -> Result<(), Error> {
         if let Inputs::Types(actual, pattern) = key.inputs
             && actual == pattern
             && types.escaping_binders(actual).ok_or(Error::Identity)? <= key.nested
         {
-            self.completed.insert(key, Some(Id::EMPTY));
+            self.complete::<CHARGED>(key, Some(Id::EMPTY), pay)?;
             return Ok(());
         }
-        let mut frame = Frame {
+        let mut frame = Frame::<CHARGED> {
             types,
             key,
             node: Node::default(),
             slots: &mut self.slots,
             steps: &mut self.steps,
             equalities,
+            pay,
         };
         let matched = match key.inputs {
             Inputs::Types(a, b) => frame.compare(a, b, key.nested)?,
@@ -135,31 +188,77 @@ impl Matches {
             Inputs::Arguments(a, b) => frame.compare_arguments(a, b, key.nested)?,
         };
         if matched {
+            if CHARGED {
+                let mut growth = Growth::vector::<(Key, bool)>(
+                    self.work.len(),
+                    self.work.capacity(),
+                    1 + frame.node.children.len(),
+                );
+                growth.include(Growth::map::<Key, Node>(
+                    self.pending.len(),
+                    self.pending.capacity(),
+                    1,
+                ));
+                pay(1 + frame.node.children.len() + growth.work, growth.bytes)?;
+            }
             self.work.push((key, true));
             self.work
                 .extend(frame.node.children.iter().rev().map(|&key| (key, false)));
             self.pending.insert(key, frame.node);
         } else {
-            self.completed.insert(key, None);
+            self.complete::<CHARGED>(key, None, pay)?;
         }
         Ok(())
     }
+    fn schedule<const CHARGED: bool>(
+        &mut self,
+        values: &[(Key, bool)],
+        pay: &impl Fn(usize, usize) -> Result<(), Error>,
+    ) -> Result<(), Error> {
+        if CHARGED {
+            let growth =
+                Growth::vector::<(Key, bool)>(self.work.len(), self.work.capacity(), values.len());
+            pay(values.len() + growth.work, growth.bytes)?;
+        }
+        self.work.extend_from_slice(values);
+        Ok(())
+    }
+    fn complete<const CHARGED: bool>(
+        &mut self,
+        key: Key,
+        value: Option<Id>,
+        pay: &impl Fn(usize, usize) -> Result<(), Error>,
+    ) -> Result<(), Error> {
+        if CHARGED {
+            let growth =
+                Growth::map::<Key, Option<Id>>(self.completed.len(), self.completed.capacity(), 1);
+            pay(1 + growth.work, growth.bytes)?;
+        }
+        self.completed.insert(key, value);
+        Ok(())
+    }
 }
-struct Frame<'a, 't> {
+struct Frame<'a, 't, const CHARGED: bool> {
     types: &'t Store,
     key: Key,
     node: Node,
     slots: &'a mut Map<RegionId>,
     steps: &'a mut usize,
     equalities: Option<&'a RegionEqualities>,
+    pay: &'a dyn Fn(usize, usize) -> Result<(), Error>,
 }
-impl Frame<'_, '_> {
+impl<const CHARGED: bool> Frame<'_, '_, CHARGED> {
     fn canonical(&self, region: RegionId, depth: u16) -> Result<RegionId, Error> {
         self.equalities
             .map_or(Ok(region), |e| e.canonical(region, depth))
     }
     fn enqueue(&mut self, inputs: Inputs, nested: u16) -> Result<(), Error> {
         self.charge(1)?;
+        if CHARGED {
+            let growth =
+                Growth::vector::<Key>(self.node.children.len(), self.node.children.capacity(), 1);
+            (self.pay)(growth.work, growth.bytes)?;
+        }
         self.node.children.push(Key {
             inputs,
             nested,
@@ -168,11 +267,14 @@ impl Frame<'_, '_> {
         Ok(())
     }
 }
-impl<'t> Compare<'t> for Frame<'_, 't> {
+impl<'t, const CHARGED: bool> Compare<'t> for Frame<'_, 't, CHARGED> {
     fn types(&self) -> &'t Store {
         self.types
     }
     fn charge(&mut self, count: usize) -> Result<(), Error> {
+        if CHARGED {
+            (self.pay)(count, 0)?;
+        }
         *self.steps = self.steps.saturating_add(count);
         if *self.steps > 1_000_000 {
             return Err(Error::Budget);
@@ -212,8 +314,21 @@ impl<'t> Compare<'t> for Frame<'_, 't> {
                 None => actual,
             };
             let actual = self.canonical(actual, self.key.surrounding)?;
-            let leaf = self.slots.singleton(u32::from(slot), actual)?;
-            let Some(slots) = self.slots.union(self.node.slots, leaf)? else {
+            let pay = |work, bytes| {
+                (self.pay)(work, bytes).map_err(|_| crate::support::radix_map::Error::Budget)
+            };
+            let leaf = if CHARGED {
+                self.slots
+                    .singleton_charged(u32::from(slot), actual, &pay)?
+            } else {
+                self.slots.singleton(u32::from(slot), actual)?
+            };
+            let slots = if CHARGED {
+                self.slots.union_charged(self.node.slots, leaf, &pay)?
+            } else {
+                self.slots.union(self.node.slots, leaf)?
+            };
+            let Some(slots) = slots else {
                 return Ok(false);
             };
             self.node.slots = slots;

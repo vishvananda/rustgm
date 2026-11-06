@@ -168,6 +168,7 @@ pub(crate) struct Query {
     matches: Matches,
     completed: HashMap<(TypeId, u16), Permissions>,
     requests: usize,
+    failure: Option<&'static str>,
 }
 impl Query {
     fn new(environment: Arc<Environment>) -> Self {
@@ -177,6 +178,7 @@ impl Query {
             matches: Matches::default(),
             completed: HashMap::default(),
             requests: 0,
+            failure: None,
         }
     }
     pub(crate) fn steps(&self) -> usize {
@@ -184,7 +186,32 @@ impl Query {
             .saturating_add(self.shapes.steps)
             .saturating_add(self.matches.steps())
     }
-    fn get(&mut self, types: &Store, ty: TypeId, depth: u16) -> Result<Permissions, &'static str> {
+    fn get<const CHARGED: bool>(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+        depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Permissions, &'static str> {
+        if let Some(message) = self.failure {
+            return Err(message);
+        }
+        let result = self.compute::<CHARGED>(types, ty, depth, charge);
+        if let Err(message) = result {
+            self.failure = Some(message);
+        }
+        result
+    }
+    fn compute<const CHARGED: bool>(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+        depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Permissions, &'static str> {
+        if CHARGED {
+            charge(1, 0)?;
+        }
         self.requests = self.requests.saturating_add(1);
         if self.steps() > 1_000_000 {
             return Err("builtin assumption query work budget exceeded");
@@ -192,7 +219,11 @@ impl Query {
         if let Some(&found) = self.completed.get(&(ty, depth)) {
             return Ok(found);
         }
-        let key = self.shapes.get(types, ty).map_err(error)?;
+        let key = if CHARGED {
+            self.shapes.get_charged(types, ty, charge)?
+        } else {
+            self.shapes.get(types, ty).map_err(error)?
+        };
         let index = self
             .environment
             .builtins
@@ -200,18 +231,31 @@ impl Query {
             .ok_or("missing builtin assumption index")?;
         let mut permissions = Permissions::default();
         for predicate in index.candidates.get(&key).into_iter().flatten() {
+            if CHARGED {
+                charge(1, 0)?;
+            }
             self.requests = self.requests.saturating_add(1);
-            if !self
-                .matches
-                .accepts(
+            let accepts = if CHARGED {
+                self.matches.accepts_charged(
                     types,
                     ty,
                     predicate.pattern,
                     depth,
                     self.environment.regions.as_deref(),
-                )
-                .map_err(error)?
-            {
+                    charge,
+                )?
+            } else {
+                self.matches
+                    .accepts(
+                        types,
+                        ty,
+                        predicate.pattern,
+                        depth,
+                        self.environment.regions.as_deref(),
+                    )
+                    .map_err(error)?
+            };
+            if !accepts {
                 continue;
             }
             if let Bound::Auto(marker) = predicate.bound {
@@ -228,6 +272,14 @@ impl Query {
         }
         if self.steps() > 1_000_000 {
             return Err("builtin assumption query work budget exceeded");
+        }
+        if CHARGED {
+            let growth = Growth::map::<(TypeId, u16), Permissions>(
+                self.completed.len(),
+                self.completed.capacity(),
+                1,
+            );
+            charge(1 + growth.work, growth.bytes)?;
         }
         self.completed.insert((ty, depth), permissions);
         Ok(permissions)
@@ -266,6 +318,9 @@ impl Environment {
         if query.is_some_and(|q| !Arc::ptr_eq(self, &q.environment)) {
             return Err("builtin query belongs to a different parameter environment");
         }
+        if let Some(message) = query.and_then(|q| q.failure) {
+            return Err(message);
+        }
         Ok(())
     }
     fn matching_permissions(
@@ -275,13 +330,33 @@ impl Environment {
         depth: u16,
         query: &mut Option<Box<Query>>,
     ) -> Result<Permissions, &'static str> {
+        self.matching_permissions_observed::<false>(types, ty, depth, query, &|_, _| Ok(()))
+    }
+    fn matching_permissions_observed<const CHARGED: bool>(
+        self: &Arc<Self>,
+        types: &Store,
+        ty: TypeId,
+        depth: u16,
+        query: &mut Option<Box<Query>>,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Permissions, &'static str> {
         self.check_builtin_query(query.as_deref())?;
+        if CHARGED {
+            charge(1, 0)?;
+        }
         if self.builtins.is_none() {
             return Ok(Permissions::default());
         }
+        if query.is_none() {
+            if CHARGED {
+                charge(1, size_of::<Query>())?;
+            }
+            *query = Some(Box::new(Query::new(Arc::clone(self))));
+        }
         query
-            .get_or_insert_with(|| Box::new(Query::new(Arc::clone(self))))
-            .get(types, ty, depth)
+            .as_deref_mut()
+            .ok_or("missing builtin query after allocation")?
+            .get::<CHARGED>(types, ty, depth, charge)
     }
     pub(crate) fn assumed_with(
         self: &Arc<Self>,
@@ -299,6 +374,39 @@ impl Environment {
             copy: ordinary.copy || quantified.copy,
             clone_: ordinary.clone_ || quantified.clone_,
         })
+    }
+    /// A borrowed caller pays the existing query's actual matcher and radix DAG.
+    /// No payment creates a premise or changes the immutable environment.
+    #[allow(dead_code)] // Joined by the bounded symbolic cleanup consumer, not ordinary queries.
+    pub(crate) fn assumed_with_charged(
+        self: &Arc<Self>,
+        types: &Store,
+        ty: TypeId,
+        query: &mut Option<Box<Query>>,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Abilities, &'static str> {
+        let result = (|| {
+            self.check_builtin_query(query.as_deref())?;
+            charge(1, 0)?;
+            let ordinary = self.assumed(ty);
+            if ordinary.copy {
+                return Ok(ordinary);
+            }
+            let quantified = self
+                .matching_permissions_observed::<true>(types, ty, 0, query, charge)?
+                .abilities;
+            Ok(Abilities {
+                copy: ordinary.copy || quantified.copy,
+                clone_: ordinary.clone_ || quantified.clone_,
+            })
+        })();
+        if let Err(message) = result
+            && let Some(query) = query.as_deref_mut()
+            && Arc::ptr_eq(self, &query.environment)
+        {
+            query.failure.get_or_insert(message);
+        }
+        result
     }
     pub(crate) fn matching_sized(
         self: &Arc<Self>,
