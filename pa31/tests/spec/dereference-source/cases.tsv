@@ -29,3 +29,4 @@ pa31/tests/spec/dereference-source/wrong-method-body.rs	1
 pa31/tests/spec/dereference-source/wrong-mut-impl.rs	1
 pa31/tests/spec/dereference-source/owned-drop.rs	0
 pa31/tests/spec/dereference-source/native.rs	0
+pa31/tests/spec/dereference-source/nested-borrow.rs	0

@@ -42,7 +42,7 @@ fn actual_source_deref_and_mutable_places_keep_real_bodies_and_proofs() -> TestR
         }
         count += 1;
     }
-    assert_eq!(count, 31);
+    assert_eq!(count, 32);
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }
@@ -57,6 +57,24 @@ fn ordinary_deref_method_effects_and_one_time_place_evaluation_reach_native() ->
     rustgm::lowir::writer::write(
         &program,
         &mut std::fs::File::create(folder.join("source.lowir"))?,
+    )?;
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn nested_pin_borrow_mutates_the_actual_operand_before_directed_conversion() -> TestResult {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let folder = root.join("obj/parallel/async-iterator-v1/nested-native");
+    std::fs::create_dir_all(&folder)?;
+    let text = test_source::fixture("pa31/tests/spec/dereference-source/nested-borrow.rs")?;
+    crate::ffi_program::check(
+        &root,
+        &folder,
+        "nested-borrow",
+        &program(&text)?,
+        &test_source::fixture("pa31/tests/spec/dereference-source/nested-observer.c")?,
+        "23\n",
     )?;
     Ok(())
 }

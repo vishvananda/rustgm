@@ -160,13 +160,16 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    pub(super) fn publish_reference_alignment(&mut self) -> Result<(), Error> {
+    pub(super) fn publish_reference_alignment(
+        &mut self,
+        solved: &crate::types::infer::Solved,
+    ) -> Result<(), Error> {
         for i in 0..self.state.alignment.borrows.len() {
             let (source, operand) = self.state.alignment.borrows[i];
             if self.erased_source_assignment(source)? || self.erased_source_index(source) {
                 continue;
             }
-            self.check_index_receiver_policy(source, operand)?;
+            self.check_index_receiver_policy(source, operand, solved)?;
             self.check_static_reference(source, operand)?;
             let packed = self.packed_place(operand)?;
             self.alignment_requirement(source, self.ty(operand)?, packed, false)?;

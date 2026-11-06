@@ -173,14 +173,14 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))?;
         let signature = self.call_signature(node, signature)?;
         let receiver = self.child(node, signature, 0)?;
-        let actual = self.comparison_borrow(node, actual_subject, receiver)?;
+        let actual = self.operand_borrow(node, actual_subject, receiver, false)?;
         let pending =
             self.retain_language_borrow(node, left, method, callable, actual_subject, actual);
         self.state.call_types.methods[pending]
             .1
             .expect_receiver(receiver);
         let expected = self.child(node, signature, 1)?;
-        let actual = self.comparison_borrow(node, actual_right, expected)?;
+        let actual = self.operand_borrow(node, actual_right, expected, false)?;
         self.state.call_types.field_receivers.push(actual_right);
         self.state
             .call_types
@@ -253,14 +253,14 @@ impl Checker<'_> {
         let signature = self.child(node, callable, 0)?;
         let signature = self.call_signature(node, signature)?;
         let receiver = self.child(node, signature, 0)?;
-        let actual = self.comparison_borrow(node, subject, receiver)?;
+        let actual = self.operand_borrow(node, subject, receiver, false)?;
         let pending =
             self.retain_language_borrow(node, left, selected.method, callable, subject, actual);
         self.state.call_types.methods[pending]
             .1
             .expect_receiver(receiver);
         let expected = self.child(node, signature, 1)?;
-        let actual = self.comparison_borrow(node, right_type, expected)?;
+        let actual = self.operand_borrow(node, right_type, expected, false)?;
         self.state.call_types.field_receivers.push(right_type);
         self.state
             .call_types
@@ -270,24 +270,19 @@ impl Checker<'_> {
         self.state.calls.push((node, signature));
         self.child(node, signature, 2)
     }
-    fn comparison_borrow(
+    pub(super) fn operand_borrow(
         &mut self,
         node: NodeId,
         subject: TermId,
         expected: TermId,
+        mutable: bool,
     ) -> Result<TermId, Error> {
         let region =
             self.body_region(node, crate::sema::model::BodyRegionOrigin::ExpressionBorrow)?;
         let actual = self
             .state
             .infer
-            .construct(
-                Constructor::Reference {
-                    mutable: false,
-                    region,
-                },
-                &[subject],
-            )
+            .construct(Constructor::Reference { mutable, region }, &[subject])
             .map_err(|e| self.error(node, e))?;
         self.shape_equation(node, actual, expected)?;
         Ok(actual)
