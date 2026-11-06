@@ -10,7 +10,7 @@ fn actual_validation_marker_preserves_headers_and_forbids_user_assertions() -> R
     for line in source::fixture(&format!("{PACKET}/cases.tsv"))?.lines() {
         let (name, expected) = line.split_once('\t').ok_or("case columns")?;
         if name == "auto-header.rs" {
-            // This independently valid input keeps its separate required-gap test.
+            // This independently valid header has a separate identity check.
             assert_eq!(expected, "0");
             continue;
         }
@@ -45,17 +45,27 @@ fn actual_validation_marker_preserves_headers_and_forbids_user_assertions() -> R
 }
 
 #[test]
-fn valid_custom_auto_header_retains_its_required_generic_trait_gap() -> Result {
+fn valid_auto_header_keeps_actual_validation_role_and_ordinary_owner() -> Result {
     let text = source::fixture(&format!("{PACKET}/auto-header.rs"))?;
     let report = source::source_provider(&text, "auto_validation")?;
-    let error = rustgm::pipeline::analyze_source(&report)
-        .err()
-        .ok_or("custom source auto traits still require their general implementation")?;
+    let analysis = rustgm::pipeline::analyze_source(&report)?;
+    let declaration = report
+        .resolution
+        .source_bindings
+        .as_deref()
+        .ok_or("source reservations")?
+        .language(rustgm::support::bindings::LangItem::CoercePointeeValidated)
+        .ok_or("actual validation role")?;
+    let owner = analysis
+        .facts
+        .associated
+        .owner(declaration.definition)
+        .and_then(|owner| analysis.facts.associated.get(owner))
+        .ok_or("actual trait owner")?;
     assert!(
-        error
-            .to_string()
-            .contains("custom source auto traits are not implemented"),
-        "{error}"
+        matches!(owner.kind, rustgm::sema::associated::OwnerKind::Trait {
+            definition, auto_: true, unsafe_: false, constant: false
+        } if definition == declaration.definition)
     );
     Ok(())
 }

@@ -183,15 +183,13 @@ impl Checker<'_> {
         if actual.kind != DefKind::Trait {
             return Err(self.error(source, "inherent object principal is not an actual trait"));
         }
-        let local = self
+        let auto_ = self
             .facts
             .associated
             .owner(definition)
             .and_then(|owner| self.facts.associated.get(owner))
-            .is_some_and(|owner| {
-                let Some(key) = owner.source else {
-                    return false;
-                };
+            .and_then(|owner| {
+                let key = owner.source?;
                 let OwnerKind::Trait {
                     definition: current,
                     auto_,
@@ -199,23 +197,27 @@ impl Checker<'_> {
                     constant,
                 } = owner.kind
                 else {
-                    return false;
+                    return None;
                 };
                 if current != definition || actual.node != Some(key) {
-                    return false;
+                    return None;
                 }
                 let unit = self.report.package.unit(key.file);
-                unit.configured.active.get(key.node.get() as usize) == Some(&true)
+                (unit.configured.active.get(key.node.get() as usize) == Some(&true)
                     && matches!(unit.configured.ast.node(key.node).kind,
                         crate::syntax::ast::Kind::Item(index)
                         if matches!(unit.configured.ast.items[index as usize].kind,
                             crate::syntax::item::ItemKind::Trait {
                                 auto_: a, unsafe_: u, constant: c, ..
-                            } if (a, u, c) == (auto_, unsafe_, constant)))
+                            } if (a, u, c) == (auto_, unsafe_, constant))))
+                    .then_some(auto_)
             });
-        if !local {
+        let Some(auto_) = auto_ else {
             return Err(self.error(source,
                 "foreign object inherent permission and lookup require their wider authenticated profile"));
+        };
+        if auto_ {
+            return Err(self.error(source, "cannot define inherent impl for a dyn auto trait"));
         }
         Ok(())
     }

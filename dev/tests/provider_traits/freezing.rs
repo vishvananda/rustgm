@@ -40,7 +40,6 @@ fn source_auto_header_profiles_and_feature_permissions_are_distinct() -> TestRes
     for declaration in [
         r#"#[lang="freeze"]pub unsafe trait Freeze{}"#,
         r#"#[lang="freeze"]pub auto trait Freeze{}"#,
-        r"pub unsafe auto trait Freeze{}",
         r#"#[lang="freeze"]pub unsafe auto trait Freeze{fn f();}"#,
     ] {
         let source = prefix() + declaration;
@@ -64,6 +63,23 @@ fn source_auto_header_profiles_and_feature_permissions_are_distinct() -> TestRes
         .ok_or("missing freeze_impls accepted")?
         .to_string();
     assert!(error.contains("freeze_impls"), "{error}");
+    Ok(())
+}
+
+#[test]
+fn same_spelling_custom_auto_header_does_not_acquire_freeze_role() -> TestResult {
+    let source = prefix() + "pub unsafe auto trait Freeze{}";
+    let report = report(&source)?;
+    sema::declarations::analyze(&report)?;
+    assert!(
+        report
+            .resolution
+            .source_bindings
+            .as_deref()
+            .ok_or("source reservations")?
+            .language(LangItem::Freeze)
+            .is_none()
+    );
     Ok(())
 }
 

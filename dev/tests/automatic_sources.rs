@@ -71,6 +71,24 @@ fn analyze(input: &str, provider: bool) -> std::result::Result<(), String> {
     .map_err(|e| e.to_string())?;
     Ok(())
 }
+
+#[test]
+fn inherent_auto_objects_require_a_real_non_auto_principal() -> Result {
+    let input = crate::resolve::fixture(
+        "pa31/tests/spec/source-incoherent-inherent/local/auto-only.rs",
+    )?;
+    let error = analyze(&input, false)
+        .err()
+        .ok_or("auto-only inherent implementation accepted")?;
+    assert!(error.contains("dyn auto trait"), "{error}");
+    let (prefix, _) = input.split_once("impl dyn Auto").ok_or("original impl")?;
+    analyze(
+        &format!("{prefix}fn view(value:&dyn Auto)->&dyn Auto{{value}}"),
+        false,
+    )?;
+    Ok(())
+}
+
 #[test]
 fn automatic_source_headers_and_structural_consumers() -> Result {
     let mut errors = Vec::new();

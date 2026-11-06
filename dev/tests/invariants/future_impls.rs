@@ -159,7 +159,7 @@ fn reservation_attribute_keeps_actual_gate_owner_signature_safety_and_duplicate_
             "wrong_signature" => &["signature", "incompatible types"],
             "unsafe_missing" => &["safety", "unsafe"],
             "missing_gate" => &["rustc_attrs"],
-            "negative" => &["custom source auto traits are not implemented"],
+            "negative" => &["reservation impl requires an actual positive trait impl"],
             _ => &["reservation"],
         };
         assert!(

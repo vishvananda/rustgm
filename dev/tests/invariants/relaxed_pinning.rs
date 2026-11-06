@@ -75,7 +75,6 @@ fn source_negative_impls_exceptions_headers_and_formation_never_gain_name_author
         "header-no-auto",
         "header-generic",
         "header-member",
-        "lookalike",
         "formation-unpaid",
     ] {
         let error = crate::test_source::source_provider(&fixture(name)?, "pinning_opponent")
@@ -89,6 +88,22 @@ fn source_negative_impls_exceptions_headers_and_formation_never_gain_name_author
         assert!(!error.contains("budget"), "{name}: {error}");
         eprintln!("UnsafeUnpin opponent {name}: {error}");
     }
+    Ok(())
+}
+#[test]
+fn same_spelling_custom_auto_trait_checks_without_pinning_role_authority() -> Result {
+    let source = fixture("lookalike")?;
+    let report = crate::test_source::source_provider(&source, "ordinary_pinning")?;
+    let analysis = crate::pipeline::analyze_source(&report)?;
+    assert!(
+        analysis
+            .facts
+            .source_bindings
+            .as_deref()
+            .ok_or("source catalog")?
+            .validated_language(LangItem::UnsafeUnpin)?
+            .is_none()
+    );
     Ok(())
 }
 #[test]
