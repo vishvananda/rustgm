@@ -1,0 +1,36 @@
+{
+  "state": "independent reference passed; no candidate observed",
+  "reference_receipt": {
+    "path": "obj/parallel/source-transport/ctfe-exec/reference-v1/receipt.json",
+    "sha256": "60c4502c2fa4b3bcb5c4366d86e6d839f872926e9b528823f77edcd7030cfefb"
+  },
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "driver_sha256": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c",
+  "prediction": {
+    "path": "pa31/tests/spec/source-ctfe-cleanup/predictions.json",
+    "sha256": "2e4db32b77cf5c0ff5cb0c7411be84e794453c3dfa82d6d137ca790201f9e718"
+  },
+  "initial_prediction": {
+    "path": "pa31/tests/spec/source-ctfe-cleanup/predictions-initial.json",
+    "sha256": "5c01d5283e1c84ff03c9f5b9ba30d81359c7231e512c4756be9f44b82662cec5"
+  },
+  "metadata_cases": 12,
+  "native_effects": {
+    "n41.rs": "41\n",
+    "n59.rs": "59\n",
+    "nonce.rs": "41\n"
+  },
+  "all_expected_causes_match": true,
+  "frozen_first_four": "same hashes as source-ctfe-execution-preparation.md",
+  "candidate": "not run",
+  "scope": "No Code cleanup permission or component/PA/library completion. Valid unsupported conditional/recursive/other profiles remain required.",
+  "reference_native_flags": [
+    "-Cpanic=abort",
+    "-Cdebug-assertions=no",
+    "-Coverflow-checks=no"
+  ],
+  "limitations": [
+    "No panic/alignment instrumentation parity claim",
+    "required-member source Drop header variant is not complete upstream provided-body closure"
+  ]
+}

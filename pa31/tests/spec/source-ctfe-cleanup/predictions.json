@@ -1,0 +1,136 @@
+{
+  "schema": 1,
+  "target": "x86_64-unknown-linux-gnu",
+  "compiler": "pinned Rust1.98.0",
+  "prediction_state": "frozen before independent reference and before candidate; valid unsupported runtime profiles remain required",
+  "cases": [
+    {
+      "file": "ct41.rs",
+      "source_sha256": "8f3c2dccdd5b215ecbcb871ef3ca6274c30466429cbd0daef9f4151cd95860c5",
+      "expected_code": 0,
+      "expected_errors": [],
+      "expected_value": 41,
+      "base": "pa31/tests/spec/source-const-drop/count2.rs",
+      "base_sha256": "a8f2ba8d677d2a1f49ca9e0633d4a242954a868739ec70750008b30b96420896",
+      "append": "\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]pub const fn ct_effect()->i32{let mut out=0;{let _owned=C{out:&raw mut out};}out}\nconst OBSERVED:i32=ct_effect();\n"
+    },
+    {
+      "file": "ct59.rs",
+      "source_sha256": "ef11911a8571a34ed8177fa5741e2a43186638383336628c6f5fbd9c72611131",
+      "expected_code": 0,
+      "expected_errors": [],
+      "expected_value": 59,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "append": "\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]pub const fn ct_order()->i32{let mut out=0;{let _first=C{out:&raw mut out,value:41};}{let _second=C{out:&raw mut out,value:59};}out}\nconst OBSERVED:i32=ct_order();\n"
+    },
+    {
+      "file": "ctonce.rs",
+      "source_sha256": "06a54b0b06c9390934627db201070609a5d34115b11ff75b8a97ad1b23f29ae5",
+      "expected_code": 0,
+      "expected_errors": [],
+      "expected_value": 41,
+      "base": "pa31/tests/spec/source-const-drop/count2.rs",
+      "base_sha256": "a8f2ba8d677d2a1f49ca9e0633d4a242954a868739ec70750008b30b96420896",
+      "append": "\npub struct Once{out:*mut i32}\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]const impl Drop for Once{fn drop(&mut self){unsafe{*self.out=41;self.out=0 as *mut i32;}}}\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]pub const fn ct_once()->i32{let mut out=0;{let owned=Once{out:&raw mut out};let _moved=owned;}out}\nconst OBSERVED:i32=ct_once();\n"
+    },
+    {
+      "file": "ctbad.rs",
+      "source_sha256": "bec804dbba7149f10df66b1ac0aad3c8203f9eaf7f57cf94336a71c09c2e61aa",
+      "expected_code": 1,
+      "expected_errors": [
+        "E0493"
+      ],
+      "expected_value": null,
+      "base": "pa31/tests/spec/source-const-drop/rtcnt.rs",
+      "base_sha256": "2cfe99057f74ac5bbcc0325f0ec442a53d51755e82b22839bde5ad8f04169899",
+      "append": "\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]pub const fn ct_bad()->i32{let mut out=0;{let _owned=N{out:&raw mut out,value:59};}out}\nconst OBSERVED:i32=ct_bad();\n"
+    },
+    {
+      "file": "ctdead.rs",
+      "source_sha256": "8cb42007db892614b80c96c63503d8bb70566f7d2ce48f859a1a94ad0a4e6f9d",
+      "expected_code": 0,
+      "expected_errors": [],
+      "expected_value": 0,
+      "base": "pa31/tests/spec/source-const-drop/count2.rs",
+      "base_sha256": "a8f2ba8d677d2a1f49ca9e0633d4a242954a868739ec70750008b30b96420896",
+      "append": "\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]pub const fn ct_dead()->i32{let mut out=0;{if false{let _owned=C{out:&raw mut out};}}out}\nconst OBSERVED:i32=ct_dead();\n"
+    },
+    {
+      "file": "ctcond.rs",
+      "source_sha256": "98243e8e0b661e230b4ff45494bd0a5b5a76720134f9cead7f703ee064420d8b",
+      "expected_code": 0,
+      "expected_errors": [],
+      "expected_value": null,
+      "base": "pa31/tests/spec/source-const-drop/count2.rs",
+      "base_sha256": "a8f2ba8d677d2a1f49ca9e0633d4a242954a868739ec70750008b30b96420896",
+      "append": "\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]pub const fn ct_cond(flag:bool)->i32{let mut out=0;{let owned;if flag{owned=C{out:&raw mut out};}}out}\nconst OFF:i32=ct_cond(false);const ON:i32=ct_cond(true);\n"
+    },
+    {
+      "file": "ctcall.rs",
+      "source_sha256": "7dff908349b702bc70a013db26f238c825dbfc6cade0cceb8ac3d6ab1e73a01f",
+      "expected_code": 1,
+      "expected_errors": [
+        "E0015"
+      ],
+      "expected_value": null,
+      "base": "pa31/tests/spec/source-const-drop/count2.rs",
+      "base_sha256": "a8f2ba8d677d2a1f49ca9e0633d4a242954a868739ec70750008b30b96420896",
+      "append": "\nfn ordinary(){}\npub struct Bad;\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]const impl Drop for Bad{fn drop(&mut self){ordinary();}}\n"
+    },
+    {
+      "file": "ctunsf.rs",
+      "source_sha256": "08198f51343c041827712747c21a74dc1e48691d2a21f163deab6c3113a8acd6",
+      "expected_code": 1,
+      "expected_errors": [
+        "E0133"
+      ],
+      "expected_value": null,
+      "base": "pa31/tests/spec/source-const-drop/count2.rs",
+      "base_sha256": "a8f2ba8d677d2a1f49ca9e0633d4a242954a868739ec70750008b30b96420896",
+      "append": "\npub struct Bad{out:*mut i32}\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]const impl Drop for Bad{fn drop(&mut self){*self.out=41;}}\n"
+    },
+    {
+      "file": "dborr.rs",
+      "source_sha256": "82ec345e67b7479e4e38344952429bafa7190e8d910666c34392b432f92fa1bb",
+      "expected_code": 1,
+      "expected_errors": [
+        "E0506"
+      ],
+      "base": "pa31/tests/spec/source-const-cleanup/dborrow.rs",
+      "base_sha256": "82ec345e67b7479e4e38344952429bafa7190e8d910666c34392b432f92fa1bb",
+      "prediction": "original opposing loan remains rejected independent of cleanup eligibility"
+    },
+    {
+      "file": "n41.rs",
+      "source_sha256": "0f40fa4d5d647c6045e9a5166592e05776dea70aa33f0bf3c3e78ff8ddeda496",
+      "expected_code": 0,
+      "expected_errors": [],
+      "expected_value": 41,
+      "native": true,
+      "base": "ct41.rs",
+      "prediction": "actual CTFE OBSERVED is returned through an ordinary C boundary; no checked-arithmetic/panic parity claim"
+    },
+    {
+      "file": "n59.rs",
+      "source_sha256": "66a354421b5033364a0ae57288f23eb91a9e3c7500e076aea3f83cb066fbe84c",
+      "expected_code": 0,
+      "expected_errors": [],
+      "expected_value": 59,
+      "native": true,
+      "base": "ct59.rs",
+      "prediction": "actual CTFE OBSERVED is returned through an ordinary C boundary; no checked-arithmetic/panic parity claim"
+    },
+    {
+      "file": "nonce.rs",
+      "source_sha256": "c028d2404fe6a14d79b0cfe83e5599d570e9e1046307fefba70d9cea9f363186",
+      "expected_code": 0,
+      "expected_errors": [],
+      "expected_value": 41,
+      "native": true,
+      "base": "ctonce.rs",
+      "prediction": "actual CTFE OBSERVED is returned through an ordinary C boundary; no checked-arithmetic/panic parity claim"
+    }
+  ],
+  "correction_before_new_oracle": "dborr has unchanged source SHA82ec345e..., already frozen dead.json/reference-v9 specifies E0506; initial E0502 recollection retained in predictions-initial.json"
+}
