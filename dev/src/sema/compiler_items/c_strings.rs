@@ -65,7 +65,7 @@ pub(crate) fn storage_profile(
         || definition.repr.representation != aggregate::Representation::Transparent
         || definition.repr.packed.is_some()
         || definition.repr.align.is_some()
-        || facts.aggregates.shared_mutation(owner) != aggregate::SharedMutation::Ordinary
+        || facts.aggregates.shared_mutation(owner) != Some(aggregate::SharedMutation::Ordinary)
     {
         return Err("C string storage requires its actual transparent immutable byte-tail profile");
     }
