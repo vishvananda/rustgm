@@ -109,7 +109,7 @@ impl Row {
         }
         if let Some(requirements) = &self.requirements
             && (self.signatures.map(|(public, _)| public) != Some(requirements.signature())
-                || self.result != crate::types::TypeId::primitive(requirements.result()))
+                || self.result != requirements.result().ty())
         {
             return Err("source const callee changed its paired callable signature");
         }

@@ -1,0 +1,418 @@
+{
+  "state": "passed finite unit-result payment checkpoint; prior outer cleanup timeout retained",
+  "base_commit": "20c557e01bbd77cdacdbd53c3f5f07a4738e995b",
+  "compiler_source_bindings": [
+    {
+      "path": "dev/src/sema/compiler_items/const_payments.rs",
+      "sha256": "aaa9cd45b95c46ac2e4f3607c0797126a4b07028f07c63f4f2a961b2fc613607"
+    },
+    {
+      "path": "dev/src/const_eval/argument_witness.rs",
+      "sha256": "e1ea1c08b8f9fa9aa3838174b729148de51b2a622b0de160569fb6eabe9f8ce6"
+    },
+    {
+      "path": "dev/src/const_eval/use_calls.rs",
+      "sha256": "d653d3d8ccb574584885878df91917267f1b3a68e1e144166faa936979999240"
+    },
+    {
+      "path": "dev/src/const_eval/use_inputs.rs",
+      "sha256": "3db7f8a88bc26e5b52f84268173366e21de1b04059d0e4ed6f207692957eb29b"
+    },
+    {
+      "path": "dev/tests/ctdrop.rs",
+      "sha256": "14c2087c472f229394a29dc4bfb4ce750e46a530b3151adf28cb2dcd6587a8a3"
+    }
+  ],
+  "fixture_bindings": [
+    {
+      "path": "pa31/tests/spec/source-const-drop/plain.rs",
+      "sha256": "4eec9b1785c88b247bd60916017def1abb69f3bc99a7d56fbf9cb27fadd4ec67"
+    },
+    {
+      "path": "pa31/tests/spec/source-const-drop/ownc.rs",
+      "sha256": "56ef2b073965c49756444643cd896615777a86e90954d6584688d47eab92e1f3"
+    },
+    {
+      "path": "pa31/tests/spec/source-const-drop/fieldc.rs",
+      "sha256": "b8451a96cf897365f6e41a6d0aa779ab223000e60b56a6a3a5f9991070fd6f1a"
+    },
+    {
+      "path": "pa31/tests/spec/source-const-drop/cond2.rs",
+      "sha256": "1bb547971adc0e80816cab2be8028edb1982f81314938b0d2d3b99f66c9a5c0f"
+    },
+    {
+      "path": "pa31/tests/spec/source-const-drop/ownn.rs",
+      "sha256": "04ed299b97d7ed6372906bbae363ba31d6b866fa12ade847b27ab7b5e1b0b264"
+    },
+    {
+      "path": "pa31/tests/spec/source-const-drop/fieldn.rs",
+      "sha256": "41f7de8e24ee0dc3ef0f7d9ac341ceb7af8f6f6eab0adc51f27ed25255111a08"
+    },
+    {
+      "path": "pa31/tests/spec/source-const-drop/plain2.rs",
+      "sha256": "1211eb44d499d38ea04c583fb229c270de8ecc9f5ebe57ed757dcbdf0a3aa2d0"
+    },
+    {
+      "path": "pa31/tests/spec/source-const-drop/ownc2.rs",
+      "sha256": "4b30a1a20c8f904e511aacfa4c9ebff2bcdf5ca1401450d4c5aced1e700162ba"
+    },
+    {
+      "path": "pa31/tests/spec/source-const-drop/field2.rs",
+      "sha256": "c2a2856dd20372780df58513303cffb18ea394b77f36d6640d3f729ea7527f4b"
+    },
+    {
+      "path": "pa31/tests/spec/source-const-drop/cond3.rs",
+      "sha256": "a895bce9d029a73532f7ac0e85927ac97e3ae456babebae413614d2587a24bc6"
+    }
+  ],
+  "independent_references": [
+    {
+      "path": "obj/parallel/source-transport/va-const/reference-v2/receipt.json",
+      "sha256": "53b642f24161d1f56ae5c88b76f5f09edadbdde0a6b04037db29d15038c14db9",
+      "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+      "observations": [
+        {
+          "file": "plain.rs",
+          "expected_code": 0,
+          "source_sha256": "4eec9b1785c88b247bd60916017def1abb69f3bc99a7d56fbf9cb27fadd4ec67",
+          "prediction": "accepted",
+          "argv": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--crate-name",
+            "plain",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-drop/plain.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-const/reference-v2/plain.rmeta"
+          ],
+          "code": 0,
+          "seconds": 0.03381565399467945,
+          "matches": true,
+          "infrastructure": false,
+          "errors": []
+        },
+        {
+          "file": "ownc.rs",
+          "expected_code": 0,
+          "source_sha256": "56ef2b073965c49756444643cd896615777a86e90954d6584688d47eab92e1f3",
+          "prediction": "accepted",
+          "argv": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--crate-name",
+            "ownc",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-drop/ownc.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-const/reference-v2/ownc.rmeta"
+          ],
+          "code": 0,
+          "seconds": 0.029162786027882248,
+          "matches": true,
+          "infrastructure": false,
+          "errors": []
+        },
+        {
+          "file": "ownn.rs",
+          "expected_code": 1,
+          "source_sha256": "04ed299b97d7ed6372906bbae363ba31d6b866fa12ade847b27ab7b5e1b0b264",
+          "prediction": "non-const destruction/call rejected",
+          "argv": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--crate-name",
+            "ownn",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-drop/ownn.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-const/reference-v2/ownn.rmeta"
+          ],
+          "code": 1,
+          "seconds": 0.02646611799718812,
+          "matches": true,
+          "infrastructure": false,
+          "errors": [
+            [
+              "E0277",
+              "the trait bound `N: const Destruct` is not satisfied"
+            ],
+            [
+              "",
+              "aborting due to 1 previous error"
+            ]
+          ]
+        },
+        {
+          "file": "fieldc.rs",
+          "expected_code": 0,
+          "source_sha256": "b8451a96cf897365f6e41a6d0aa779ab223000e60b56a6a3a5f9991070fd6f1a",
+          "prediction": "accepted",
+          "argv": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--crate-name",
+            "fieldc",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-drop/fieldc.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-const/reference-v2/fieldc.rmeta"
+          ],
+          "code": 0,
+          "seconds": 0.025780786003451794,
+          "matches": true,
+          "infrastructure": false,
+          "errors": []
+        },
+        {
+          "file": "fieldn.rs",
+          "expected_code": 1,
+          "source_sha256": "41f7de8e24ee0dc3ef0f7d9ac341ceb7af8f6f6eab0adc51f27ed25255111a08",
+          "prediction": "non-const destruction/call rejected",
+          "argv": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--crate-name",
+            "fieldn",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-drop/fieldn.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-const/reference-v2/fieldn.rmeta"
+          ],
+          "code": 1,
+          "seconds": 0.02787345799151808,
+          "matches": true,
+          "infrastructure": false,
+          "errors": [
+            [
+              "E0277",
+              "the trait bound `N: const Destruct` is not satisfied"
+            ],
+            [
+              "",
+              "aborting due to 1 previous error"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "path": "obj/parallel/source-transport/va-const/reference-v3/receipt.json",
+      "sha256": "edcc064f204dd10c2b280fb8ede9195c57a3095a0b204ec3a57cb79e39bc29fc",
+      "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+      "observations": [
+        {
+          "file": "cond2.rs",
+          "expected_code": 0,
+          "source_sha256": "1bb547971adc0e80816cab2be8028edb1982f81314938b0d2d3b99f66c9a5c0f",
+          "prediction": "conditional const Drop uses normal const Destruct premise; correcting invalid struct [const] bound",
+          "argv": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--crate-name",
+            "cond2",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-drop/cond2.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-const/reference-v3/cond2.rmeta"
+          ],
+          "code": 0,
+          "seconds": 0.03597776195965707,
+          "matches": true,
+          "infrastructure": false,
+          "errors": []
+        }
+      ]
+    }
+  ],
+  "qualification": [
+    {
+      "path": "obj/parallel/source-transport/va-cleanup/unit1/receipt.json",
+      "sha256": "f5163b39839821b07ff680e3b3cd34111d7617c51b21452fc7173eeba02e1ce8"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-cleanup/unit2/receipt.json",
+      "sha256": "e49e9f958fa223d694b62a04c27c911543269bd7cf8e5affeb8cf44c1ffb371b"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-cleanup/unit2/outer-observation.json",
+      "sha256": "78570a3415b2e77588d11bb34dc4c8435f4b484dac0890d2706fd5bd06d233a6"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-cleanup/unit2/sources.json",
+      "sha256": "7ca1b3005d32b6427714e11a3ce6dc96a21538756f88d7eda5985d9f8b70e66f"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-cleanup/unit3/receipt.json",
+      "sha256": "82a06df988d9b3fcb403f3d88fb7514e17b6f333e0425c12fb6213391358b507"
+    },
+    {
+      "path": "obj/parallel/source-transport/va-cleanup/unit3/sources.json",
+      "sha256": "7ca1b3005d32b6427714e11a3ce6dc96a21538756f88d7eda5985d9f8b70e66f"
+    }
+  ],
+  "unit1_outer_exit": 0,
+  "unit2_outer_exit": 124,
+  "selected_public_tests": 23,
+  "private_adversarial_execution": "pending CI; existing opponents compile under all-test/all-feature strict metadata",
+  "native": "no new native execution claimed",
+  "layouts": {
+    "baseline": {
+      "file": "obj/parallel/source-transport/va-cleanup/qualify-badsem8/selected.stdout",
+      "sha256": "7a91747b1c87b8b76f32eb188aaef613ed9e3e65f93e8422cc53604217d661de",
+      "sizes": {
+        "sema::compiler_items::const_payments::Requirements": {
+          "bytes": 48,
+          "alignment": 8
+        },
+        "sema::compiler_items::const_payments::Payment": {
+          "bytes": 16,
+          "alignment": 8
+        },
+        "const_eval::use_calls::Continuation": {
+          "bytes": 80,
+          "alignment": 8
+        },
+        "const_eval::use_inputs::Row": {
+          "bytes": 96,
+          "alignment": 8
+        },
+        "const_eval::code::Code": {
+          "bytes": 304,
+          "alignment": 8
+        },
+        "const_eval::State": {
+          "bytes": 424,
+          "alignment": 8
+        }
+      }
+    },
+    "candidate": {
+      "file": "obj/parallel/source-transport/va-cleanup/unit1/ctdrop.stdout",
+      "sha256": "b9806b89b0e3d735be25834c43767d8354858f908829bbd3488e4e779141a299",
+      "sizes": {
+        "sema::compiler_items::const_payments::Requirements": {
+          "bytes": 48,
+          "alignment": 8
+        },
+        "sema::compiler_items::const_payments::Payment": {
+          "bytes": 16,
+          "alignment": 8
+        },
+        "const_eval::use_calls::Continuation": {
+          "bytes": 80,
+          "alignment": 8
+        },
+        "const_eval::use_inputs::Row": {
+          "bytes": 96,
+          "alignment": 8
+        },
+        "const_eval::code::Code": {
+          "bytes": 304,
+          "alignment": 8
+        },
+        "const_eval::State": {
+          "bytes": 424,
+          "alignment": 8
+        },
+        "sema::compiler_items::const_payments::ResultProfile": {
+          "bytes": 1,
+          "alignment": 1
+        }
+      }
+    }
+  },
+  "costs": {
+    "plain": {
+      "canonical": 566,
+      "frames": 2,
+      "steps": 195,
+      "code_bytes": 1996,
+      "source_context_bytes": 0
+    },
+    "plain2": {
+      "canonical": 566,
+      "frames": 2,
+      "steps": 183,
+      "code_bytes": 2028,
+      "source_context_bytes": 0
+    },
+    "ownc": {
+      "canonical": 577,
+      "frames": 2,
+      "steps": 195,
+      "code_bytes": 1996,
+      "source_context_bytes": 0
+    },
+    "ownc2": {
+      "canonical": 577,
+      "frames": 2,
+      "steps": 183,
+      "code_bytes": 2028,
+      "source_context_bytes": 0
+    },
+    "fieldc": {
+      "canonical": 753,
+      "frames": 2,
+      "steps": 195,
+      "code_bytes": 1996,
+      "source_context_bytes": 0
+    },
+    "field2": {
+      "canonical": 753,
+      "frames": 2,
+      "steps": 183,
+      "code_bytes": 2028,
+      "source_context_bytes": 0
+    },
+    "cond2": {
+      "canonical": 857,
+      "frames": 2,
+      "steps": 195,
+      "code_bytes": 1996,
+      "source_context_bytes": 0
+    },
+    "cond3": {
+      "canonical": 857,
+      "frames": 2,
+      "steps": 183,
+      "code_bytes": 2028,
+      "source_context_bytes": 0
+    }
+  },
+  "retained_boundaries": [
+    "active Code-purpose interpreter cleanup before snapshot/publication",
+    "conditional-parent value-history qualification",
+    "variadic cursor constant execution",
+    "open signatures/arguments or new lifetime/size debts",
+    "wider result/input profiles",
+    "broader imported precision/type/body transport"
+  ],
+  "scope": "Finite exact Primitive|Unit conditional payment; existing Unit/return execution; no schema or backend change",
+  "backups": [
+    "46f89d69663cbbe299a5216549e9a0338f1a2f7c"
+  ],
+  "final_source_map_matches": true,
+  "unit3_outer_exit": 0,
+  "final_cost_observations_equal": true,
+  "first_batch_passed_tests": 20,
+  "final_cached_passed_tests": 12
+}

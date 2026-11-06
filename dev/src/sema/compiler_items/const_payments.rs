@@ -18,12 +18,26 @@ mod closed_inputs;
 use closed_inputs::closed_arguments;
 pub(in crate::sema) use closed_inputs::{closed_clause, open_closed_clause};
 
+#[derive(Clone, Copy)]
+pub(crate) enum ResultProfile {
+    Primitive(Primitive),
+    Unit,
+}
+impl ResultProfile {
+    pub(crate) const fn ty(self) -> TypeId {
+        match self {
+            Self::Primitive(primitive) => TypeId::primitive(primitive),
+            Self::Unit => TypeId::UNIT,
+        }
+    }
+}
+
 /// Immutable materialization data, without caller permission or a selected proof.
 pub(crate) struct Requirements {
     instance: Instance,
     definition: DefId,
     signature: TypeId,
-    result: Primitive,
+    result: ResultProfile,
     environment: Arc<Environment>,
     goals: Vec<Clause>,
 }
@@ -46,7 +60,7 @@ impl Requirements {
     pub(crate) fn signature(&self) -> TypeId {
         self.signature
     }
-    pub(crate) fn result(&self) -> Primitive {
+    pub(crate) fn result(&self) -> ResultProfile {
         self.result
     }
     pub(crate) fn retained_bytes(&self) -> usize {
@@ -100,7 +114,7 @@ pub(crate) fn profile(
     facts: &Declarations,
     instance: Instance,
     charge: &mut impl FnMut(usize) -> Result<(), &'static str>,
-) -> Result<(DefId, TypeId, crate::types::GenericArgs, Primitive), &'static str> {
+) -> Result<(DefId, TypeId, crate::types::GenericArgs, ResultProfile), &'static str> {
     charge(12)?;
     let Some(Kind::FunctionItem {
         item,
@@ -142,10 +156,12 @@ pub(crate) fn profile(
     else {
         return Err("source const payment currently requires a closed callable signature");
     };
-    let Some(Kind::Primitive(primitive)) = facts.types.kind(result) else {
-        return Err("source const payment currently requires a primitive result");
+    let result = match facts.types.kind(result) {
+        Some(Kind::Primitive(primitive)) => ResultProfile::Primitive(primitive),
+        _ if result == TypeId::UNIT => ResultProfile::Unit,
+        _ => return Err("source const payment currently requires a primitive or unit result"),
     };
-    if primitive == Primitive::Str
+    if matches!(result, ResultProfile::Primitive(Primitive::Str))
         || !closed_arguments(&facts.types, parameters, charge)?
         || facts.types.needs_region_context(instance.ty()) != Some(false)
     {
@@ -162,7 +178,7 @@ pub(crate) fn profile(
     if !facts.types.arguments_are_concrete(arguments)? {
         return Err("source const payment requires complete concrete generic arguments");
     }
-    Ok((definition, signature, arguments, primitive))
+    Ok((definition, signature, arguments, result))
 }
 pub(crate) fn prepare(
     facts: &mut Declarations,
@@ -178,7 +194,7 @@ pub(crate) fn prepare(
         Ok(())
     });
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(attempted);
-    let (definition, signature, _, primitive) = result?;
+    let (definition, signature, _, result) = result?;
     let environment = facts
         .generics
         .environments
@@ -241,7 +257,7 @@ pub(crate) fn prepare(
         instance,
         definition,
         signature,
-        result: primitive,
+        result,
         environment,
         goals,
     }))
