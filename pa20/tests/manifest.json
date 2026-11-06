@@ -22914,7 +22914,17 @@
         "tests/spec/inherent-associated/recursive.rs",
         "tests/spec/inherent-associated/unused-member.rs",
         "tests/spec/inherent-associated/where-owner.rs",
-        "tests/spec/inherent-associated/wrong-result.rs"
+        "tests/spec/inherent-associated/wrong-result.rs",
+        "tests/spec/inherent-associated/fallback-self-feature.rs",
+        "tests/spec/inherent-associated/fallback-self-stable.rs",
+        "tests/spec/inherent-associated/shadow-self.rs",
+        "tests/spec/inherent-associated/private-self.rs",
+        "tests/spec/inherent-associated/specialized-self.rs",
+        "tests/spec/inherent-associated/fallback-qualified-self-feature.rs",
+        "tests/spec/inherent-associated/fallback-qualified-self-stable.rs",
+        "tests/spec/inherent-associated/shadow-qualified-self.rs",
+        "tests/spec/inherent-associated/private-qualified-self.rs",
+        "tests/spec/inherent-associated/specialized-qualified-self.rs"
       ]
     },
     {

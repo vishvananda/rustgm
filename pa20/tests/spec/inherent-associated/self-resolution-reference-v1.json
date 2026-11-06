@@ -1,0 +1,234 @@
+{
+  "schema": 1,
+  "scope": "Independent Rust reference only; no compiler/candidate/native changes. Existing unused.rs primary changes only auxiliary ownership, no active outcome changes.",
+  "compiler": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "prediction_file": "self-resolution-predictions-v1.json",
+  "prediction_sha256": "83eb58dc1b399c335805735db6d45f91ec3b951a3a2dc0c3cf567a3f9fae09da",
+  "sources": 10,
+  "observations": 20,
+  "all_predictions_match": true,
+  "results": [
+    {
+      "file": "fallback-self-feature.rs",
+      "sha256": "1a60341f11f66858b7f2eef25c33971d529f8ecf9a204c11cb4eb0c42685c119",
+      "mode": "metadata",
+      "status": 0,
+      "errors": []
+    },
+    {
+      "file": "fallback-self-feature.rs",
+      "sha256": "1a60341f11f66858b7f2eef25c33971d529f8ecf9a204c11cb4eb0c42685c119",
+      "mode": "obj",
+      "status": 0,
+      "errors": []
+    },
+    {
+      "file": "fallback-self-stable.rs",
+      "sha256": "c5d2f12d0a5fbaf725433e01b9608372ac678925eb73ae0c047fcdcf63ebb8bb",
+      "mode": "metadata",
+      "status": 0,
+      "errors": []
+    },
+    {
+      "file": "fallback-self-stable.rs",
+      "sha256": "c5d2f12d0a5fbaf725433e01b9608372ac678925eb73ae0c047fcdcf63ebb8bb",
+      "mode": "obj",
+      "status": 0,
+      "errors": []
+    },
+    {
+      "file": "shadow-self.rs",
+      "sha256": "394e474888fdaa7f19526837d8c4622b71b275c5513ad147068fa13ef6148729",
+      "mode": "metadata",
+      "status": 0,
+      "errors": []
+    },
+    {
+      "file": "shadow-self.rs",
+      "sha256": "394e474888fdaa7f19526837d8c4622b71b275c5513ad147068fa13ef6148729",
+      "mode": "obj",
+      "status": 0,
+      "errors": []
+    },
+    {
+      "file": "private-self.rs",
+      "sha256": "b651374b18b7948e4622d8281e105b25bd52ede0f93111ee0869463175fc3b19",
+      "mode": "metadata",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0624",
+          "message": "associated type `Type` is private"
+        }
+      ]
+    },
+    {
+      "file": "private-self.rs",
+      "sha256": "b651374b18b7948e4622d8281e105b25bd52ede0f93111ee0869463175fc3b19",
+      "mode": "obj",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0624",
+          "message": "associated type `Type` is private"
+        }
+      ]
+    },
+    {
+      "file": "specialized-self.rs",
+      "sha256": "e0e856cab937e11e9982f71212e3f36adf571260a5dd080487dc0c8fc80e8a78",
+      "mode": "metadata",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0220",
+          "message": "associated type `Type` not found for `S<u32>` in the current scope"
+        }
+      ]
+    },
+    {
+      "file": "specialized-self.rs",
+      "sha256": "e0e856cab937e11e9982f71212e3f36adf571260a5dd080487dc0c8fc80e8a78",
+      "mode": "obj",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0220",
+          "message": "associated type `Type` not found for `S<u32>` in the current scope"
+        }
+      ]
+    },
+    {
+      "file": "fallback-qualified-self-feature.rs",
+      "sha256": "998e072cd1fabdfffe93ef469f9192890d841d078d0ead50becbc32f38c513d0",
+      "mode": "metadata",
+      "status": 0,
+      "errors": []
+    },
+    {
+      "file": "fallback-qualified-self-feature.rs",
+      "sha256": "998e072cd1fabdfffe93ef469f9192890d841d078d0ead50becbc32f38c513d0",
+      "mode": "obj",
+      "status": 0,
+      "errors": []
+    },
+    {
+      "file": "fallback-qualified-self-stable.rs",
+      "sha256": "6b321e3059f006377516dfc012a3ce72eacfda9a3b347c5ed34274b632e48946",
+      "mode": "metadata",
+      "status": 0,
+      "errors": []
+    },
+    {
+      "file": "fallback-qualified-self-stable.rs",
+      "sha256": "6b321e3059f006377516dfc012a3ce72eacfda9a3b347c5ed34274b632e48946",
+      "mode": "obj",
+      "status": 0,
+      "errors": []
+    },
+    {
+      "file": "shadow-qualified-self.rs",
+      "sha256": "633d016ff5870041778eff706e2b5849db60f8a3bcb4a7fa13f01bd6317f9935",
+      "mode": "metadata",
+      "status": 0,
+      "errors": []
+    },
+    {
+      "file": "shadow-qualified-self.rs",
+      "sha256": "633d016ff5870041778eff706e2b5849db60f8a3bcb4a7fa13f01bd6317f9935",
+      "mode": "obj",
+      "status": 0,
+      "errors": []
+    },
+    {
+      "file": "private-qualified-self.rs",
+      "sha256": "2015e0dfc2c226b7d289ad35d1ed3193a7adce1f25b47ee419d68ea33a9d42d0",
+      "mode": "metadata",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0624",
+          "message": "associated type `Type` is private"
+        }
+      ]
+    },
+    {
+      "file": "private-qualified-self.rs",
+      "sha256": "2015e0dfc2c226b7d289ad35d1ed3193a7adce1f25b47ee419d68ea33a9d42d0",
+      "mode": "obj",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0624",
+          "message": "associated type `Type` is private"
+        }
+      ]
+    },
+    {
+      "file": "specialized-qualified-self.rs",
+      "sha256": "d24ac38ca3cba65539bf3c4dd9b4b8c6632faef964e4e79a3897231e823117f6",
+      "mode": "metadata",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0220",
+          "message": "associated type `Type` not found for `S<u32>` in the current scope"
+        }
+      ]
+    },
+    {
+      "file": "specialized-qualified-self.rs",
+      "sha256": "d24ac38ca3cba65539bf3c4dd9b4b8c6632faef964e4e79a3897231e823117f6",
+      "mode": "obj",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0220",
+          "message": "associated type `Type` not found for `S<u32>` in the current scope"
+        }
+      ]
+    }
+  ],
+  "raw_receipt": {
+    "path": "obj/parallel/inherent-self-reference/v1/receipt.json",
+    "sha256": "419f92f8773c44ec543d63050e1e42d7b9992c1f43455b36ab7f23148d1be303",
+    "runner_sha256": "4b73ba8c26df35bb7d0aab02a6011d485b40ea588b6eee40aadaf68826db9cd1",
+    "seconds": 1.3876455220161006
+  },
+  "guard": {
+    "deadline_seconds": 90,
+    "max_output_gib": 16,
+    "reserve_gib": 150,
+    "max_shared_jobs": 2,
+    "wait_seconds": 0,
+    "outer_status": 0
+  },
+  "setup_failures": [],
+  "ICEs": [],
+  "prediction_corrections": [],
+  "added_auxiliary": [
+    "tests/spec/inherent-associated/fallback-self-feature.rs",
+    "tests/spec/inherent-associated/fallback-self-stable.rs",
+    "tests/spec/inherent-associated/shadow-self.rs",
+    "tests/spec/inherent-associated/private-self.rs",
+    "tests/spec/inherent-associated/specialized-self.rs",
+    "tests/spec/inherent-associated/fallback-qualified-self-feature.rs",
+    "tests/spec/inherent-associated/fallback-qualified-self-stable.rs",
+    "tests/spec/inherent-associated/shadow-qualified-self.rs",
+    "tests/spec/inherent-associated/private-qualified-self.rs",
+    "tests/spec/inherent-associated/specialized-qualified-self.rs"
+  ],
+  "primary": "rustc_hir_analysis/src/hir_ty_lowering/mod.rs:1530-1665,1671-1758 (Rust88d9e12ae178fab0fb5cc050a94da85685d449ea): inherent aliases precede trait-impl Self; fallback only if no early alias, never failed applicability/privacy."
+}

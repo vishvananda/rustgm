@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "state": "frozen-before-any-Rust-or-candidate-observation",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "cases": [
+    {
+      "file": "fallback-self-feature.rs",
+      "sha256": "1a60341f11f66858b7f2eef25c33971d529f8ecf9a204c11cb4eb0c42685c119",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "No early inherent alias: actual trait-impl Self associated type follows ordinary trait path, independent of feature request."
+    },
+    {
+      "file": "fallback-self-stable.rs",
+      "sha256": "c5d2f12d0a5fbaf725433e01b9608372ac678925eb73ae0c047fcdcf63ebb8bb",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "No early inherent alias: actual trait-impl Self associated type follows ordinary trait path, independent of feature request."
+    },
+    {
+      "file": "shadow-self.rs",
+      "sha256": "394e474888fdaa7f19526837d8c4622b71b275c5513ad147068fa13ef6148729",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual closed inherent u8 alias shadows trait u32 member inside trait impl; method signature stays independently u8."
+    },
+    {
+      "file": "private-self.rs",
+      "sha256": "b651374b18b7948e4622d8281e105b25bd52ede0f93111ee0869463175fc3b19",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0624"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Private early inherent alias blocks fallback even though trait result has same u32 type."
+    },
+    {
+      "file": "specialized-self.rs",
+      "sha256": "e0e856cab937e11e9982f71212e3f36adf571260a5dd080487dc0c8fc80e8a78",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0220"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Two real early aliases on same ADT but wrong full applications: closed-shape pruning must not create no-alias fallback."
+    },
+    {
+      "file": "fallback-qualified-self-feature.rs",
+      "sha256": "998e072cd1fabdfffe93ef469f9192890d841d078d0ead50becbc32f38c513d0",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "No early inherent alias: actual trait-impl Self associated type follows ordinary trait path, independent of feature request."
+    },
+    {
+      "file": "fallback-qualified-self-stable.rs",
+      "sha256": "6b321e3059f006377516dfc012a3ce72eacfda9a3b347c5ed34274b632e48946",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "No early inherent alias: actual trait-impl Self associated type follows ordinary trait path, independent of feature request."
+    },
+    {
+      "file": "shadow-qualified-self.rs",
+      "sha256": "633d016ff5870041778eff706e2b5849db60f8a3bcb4a7fa13f01bd6317f9935",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_messages": [],
+      "hypothesis": "Actual closed inherent u8 alias shadows trait u32 member inside trait impl; method signature stays independently u8."
+    },
+    {
+      "file": "private-qualified-self.rs",
+      "sha256": "2015e0dfc2c226b7d289ad35d1ed3193a7adce1f25b47ee419d68ea33a9d42d0",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0624"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Private early inherent alias blocks fallback even though trait result has same u32 type."
+    },
+    {
+      "file": "specialized-qualified-self.rs",
+      "sha256": "d24ac38ca3cba65539bf3c4dd9b4b8c6632faef964e4e79a3897231e823117f6",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0220"
+      ],
+      "expected_messages": [],
+      "hypothesis": "Two real early aliases on same ADT but wrong full applications: closed-shape pruning must not create no-alias fallback."
+    }
+  ],
+  "primary": "rustc_hir_analysis/src/hir_ty_lowering/mod.rs:1530-1665,1671-1758; early alias presence precedes applicability and visibility."
+}
