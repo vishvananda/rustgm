@@ -1,0 +1,157 @@
+{
+  "schema": 1,
+  "base": "afcc7d4a8",
+  "state": "passed",
+  "failure": {
+    "run": "42265080175",
+    "raw_log": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/ci/42265080175/failed.log",
+    "raw_log_sha256": "c977def3b3eb3f68274bec9b381ab4791b0f19189ffb927e14fa083401c0959d",
+    "excerpt": "obj/parallel/source-transport/text-slice-repair/gate1/prior-ci-failures.log",
+    "excerpt_sha256": "f33b4978546b04f3f99460662a22b9c922e5c5b8f718de04f3c6ca3bc2b9c0ed"
+  },
+  "qualification": {
+    "receipt": "obj/parallel/source-transport/text-slice-repair/gate1/receipt.json",
+    "sha256": "23f55e1d634d845cfa89295c9096323cbf9949751e7287f70e5698fa7f564ec7",
+    "stages": [
+      {
+        "stage": "format",
+        "argv": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--all"
+        ],
+        "code": 0,
+        "seconds": 14.699613648990635
+      },
+      {
+        "stage": "audit",
+        "argv": [
+          "obj/audit-venv/bin/python",
+          "scripts/rust_audit.py",
+          "--root",
+          ".",
+          "--cache",
+          "obj/fast-audit.json"
+        ],
+        "code": 0,
+        "seconds": 2.715298885013908
+      },
+      {
+        "stage": "strict",
+        "argv": [
+          "cargo",
+          "clippy",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--lib",
+          "--test",
+          "suite_patterns",
+          "--bin",
+          "rustgm",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "code": 0,
+        "seconds": 63.41676034400007
+      },
+      {
+        "stage": "patterns",
+        "argv": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_patterns",
+          "text_patterns::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 101.97083387500606
+      },
+      {
+        "stage": "permissions",
+        "argv": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_constants",
+          "sequence_constants::literal_storage_obeys_bounds_and_shared_write_permission",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 6.3301776589942165
+      },
+      {
+        "stage": "cstr",
+        "argv": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_frontend",
+          "cstr_sources::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 15.079617901996244
+      },
+      {
+        "stage": "native",
+        "argv": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_frontend",
+          "cstr_sources::actual_methods_and_both_literal_storage_views_execute_natively",
+          "--",
+          "--ignored",
+          "--exact",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 1.047829047020059
+      }
+    ],
+    "source_map": "obj/parallel/source-transport/text-slice-repair/gate1/sources.json",
+    "source_map_sha256": "1522beda445f3859e46530382f7093589f4537753d5f57a1e0218dbd1a6f3a5d"
+  },
+  "changed_sources": {
+    "dev/src/sema/constants/values/literal_storage.rs": "5db696172774e00f3b6bfb4df9e9a84480491c314e9093be1904a355c1595562",
+    "dev/tests/text_patterns.rs": "8fa10f8c6ba87b33eec2c5b30bc904f45a1226ef6b67563126834ea6d3a54a8a"
+  },
+  "outcomes": {
+    "text_patterns": 10,
+    "literal_permissions": 1,
+    "cstr_source": 6,
+    "native_test": 1,
+    "native_observers": 4
+  },
+  "scope": "Restore only actual immutable U8 slice text views; preserve CStr role/storage authentication and unknown nominal rejection."
+}

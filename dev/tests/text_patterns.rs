@@ -62,6 +62,10 @@ const ACCEPTED: &[(&str, &str)] = &[
     ("byte-array", r#"fn f(x:&[u8;2]){match x{b"ab"=>(),_=>()}}"#),
     ("byte-slice", r#"fn f(x:&[u8]){match x{b"ab"=>(),_=>()}}"#),
     (
+        "byte-views",
+        r#"const A:&[u8;2]=b"ab";const B:&[u8]=b"ab";const S:&str="ab";fn f(x:(&[u8;2],&[u8],&str)){match x{(A,B,S)=>(),_=>()}}"#,
+    ),
+    (
         "byte-raw",
         r##"fn f(x:&[u8]){match x{br#"ab"#=>(),b"\x61b"=>(),_=>()}}"##,
     ),
@@ -418,7 +422,7 @@ fn text_constants_keep_file_provenance_and_distinguish_string_from_bytes()
             .all(|s| s.contains("source=0:"))
     );
     let (_, facts) = analyze(
-        r#"const S:&str="a";const B:&[u8;1]=b"a";fn f(x:(&str,&[u8;1])){match x{(S,B)=>(),_=>()}}"#,
+        r#"const S:&str="a";const B:&[u8;1]=b"a";const C:&[u8]=b"a";fn f(x:(&str,&[u8;1],&[u8])){match x{(S,B,C)=>(),_=>()}}"#,
     )?;
     assert_eq!(facts.texts.len(), 1);
     Ok(())
@@ -466,7 +470,7 @@ fn text_witnesses_and_expansion_limits_are_atomic() -> Result<(), Box<dyn std::e
 }
 
 #[test]
-fn wide_pointer_fields_are_supported_while_c_strings_keep_their_later_boundary()
+fn wide_pointer_fields_are_supported_while_c_strings_require_actual_source()
 -> Result<(), Box<dyn std::error::Error>> {
     let directory = folder()?;
     for (name, source, boundary) in [
@@ -475,7 +479,7 @@ fn wide_pointer_fields_are_supported_while_c_strings_keep_their_later_boundary()
         (
             "c-string",
             r#"fn f(){let _=c"a";}"#,
-            Some("C string values require the library type assignment"),
+            Some("C string literals require their actual source declaration"),
         ),
     ] {
         let path = directory.join(format!("deferred-{name}.rs"));

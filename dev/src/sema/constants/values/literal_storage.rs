@@ -23,13 +23,13 @@ impl Queries<'_> {
         if referent == TypeId::primitive(Primitive::Str) {
             return Ok(Value::Text(text));
         }
-        if matches!(facts.types.kind(referent), Some(Kind::Array { element, .. })
+        if matches!(facts.types.kind(referent), Some(Kind::Array { element, .. } | Kind::Slice(element))
             if element == TypeId::primitive(Primitive::U8))
         {
             return Ok(Value::Bytes(text));
         }
         let profile = crate::sema::compiler_items::c_strings::literal_profile(facts, ty)?
-            .ok_or("text literal lacks its actual byte-array, str or CStr type")?;
+            .ok_or("text literal lacks its actual byte-array, byte-slice, str or CStr type")?;
         let bytes = facts.texts.get(text)?;
         if bytes.last() != Some(&0) {
             return Err("CStr literal backing lacks its trailing NUL");
