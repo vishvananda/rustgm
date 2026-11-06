@@ -1,0 +1,69 @@
+{
+  "scope": "Complete unchanged originalCoroutine module including8 derives and2 real forwarders. Dependency declarations are authored reducers, not full standard fmt/hash runtime. Predictions frozen before RustGM observation.",
+  "reference_crate_name": "core",
+  "candidate_observed": false,
+  "cases": [
+    {
+      "name": "whole",
+      "path": "pa31/tests/spec/source-coroutines/full/whole.rs",
+      "sha256": "16d65565c187e3b10e8b189ed8690dcd053d999abd10ab5944be0d90f9e1ace6",
+      "rustc_status": 0
+    },
+    {
+      "name": "forwarders",
+      "path": "pa31/tests/spec/source-coroutines/full/forwarders.rs",
+      "sha256": "4e55765095997918115f28d4005d4d58af651f8b1c7f4e92ab72dfd0fa6465a1",
+      "rustc_status": 0
+    },
+    {
+      "name": "pin-non-unpin",
+      "path": "pa31/tests/spec/source-coroutines/full/pin-non-unpin.rs",
+      "sha256": "7fcbe550f7c556227668c18586313e4ee0cbb25465343334ecfc3abadab13121",
+      "rustc_status": 0
+    },
+    {
+      "name": "ref-non-unpin",
+      "path": "pa31/tests/spec/source-coroutines/full/ref-non-unpin.rs",
+      "sha256": "1e6991504d6e82dd609a06772ab16610633c5db1d07c2a1d5d49f232a38055cc",
+      "rustc_status": 1
+    },
+    {
+      "name": "borrow-forwarder",
+      "path": "pa31/tests/spec/source-coroutines/full/borrow-forwarder.rs",
+      "sha256": "bcce0fecaea7f550227d6d19b58893ae31d73654cc11f7a3883441413ff176ac",
+      "rustc_status": 0
+    },
+    {
+      "name": "escaping-borrow",
+      "path": "pa31/tests/spec/source-coroutines/full/escaping-borrow.rs",
+      "sha256": "dd042f04a7921b4e2d5d3ef765bfe25ebb0127cb97915a7f9acbd443859acafe",
+      "rustc_status": 1
+    },
+    {
+      "name": "wrong-yield",
+      "path": "pa31/tests/spec/source-coroutines/full/wrong-yield.rs",
+      "sha256": "f2d58df52c802061a7fac5161e06622285e986aa4c2b75b5af5e5e42861ec0ee",
+      "rustc_status": 1
+    },
+    {
+      "name": "wrong-argument",
+      "path": "pa31/tests/spec/source-coroutines/full/wrong-argument.rs",
+      "sha256": "b309aa802d8ce0f0d220ab6a032197e82206d7abc9ac6045ac208d25928653d9",
+      "rustc_status": 1
+    },
+    {
+      "name": "wrong-owner",
+      "path": "pa31/tests/spec/source-coroutines/full/wrong-owner.rs",
+      "sha256": "89a5fcebef86ab30ce300f53a73c7a43dd21564a7931fec3dd0202ed8495e979",
+      "rustc_status": 1
+    }
+  ],
+  "native": {
+    "source": "forwarders.rs",
+    "expected_stdout": "23 47\n"
+  },
+  "original": {
+    "path": "library/core/src/ops/coroutine.rs",
+    "sha256": "2efdc7a8f95729f287c19d4d64498f278b78f9cc018c3ecf3f7430ece96284a4"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "state": "independent complete original module references frozen; implementation in progress",
+  "original_sha256": "2efdc7a8f95729f287c19d4d64498f278b78f9cc018c3ecf3f7430ece96284a4",
+  "prediction_sha256": "36b6b591ab193fb644da4f0e102252670a94ed036e2a9b58c1ddf1925cfa6aa8",
+  "metadata": {
+    "receipt": "obj/parallel/coroutine-full-module/reference-v5/receipt.json",
+    "sha256": "e09508f0e9c9e82874f556690dc324bd8df1e1ebb2139d80f723e0a6682f227c",
+    "cases": 9,
+    "accepted": 4,
+    "rejected": 5,
+    "rejection_codes": {
+      "ref-non-unpin": "E0277",
+      "escaping-borrow": "E0515",
+      "wrong-yield": "E0308",
+      "wrong-argument": "E0308",
+      "wrong-owner": "E0277"
+    }
+  },
+  "native": {
+    "receipt": "obj/parallel/coroutine-full-module/reference-v7/receipt.json",
+    "sha256": "475c7d1ecaee06db01b131213bb10b95cf4c873f315ba4b58fc909f3f91091bc",
+    "expected_stdout": "23 47\n",
+    "flags": [
+      "-Cpanic=abort",
+      "-Coverflow-checks=off"
+    ],
+    "companion_upstream_check_passed": true
+  },
+  "diagnostic_only": {
+    "receipt": "obj/parallel/coroutine-full-module/diagnostic-reference-v1/receipt.json",
+    "sha256": "1fd50a9d1e515aba261c2f96345de121a66eb9e690f22a99227db93a60c9d51c",
+    "positive": 1,
+    "negative": 1
+  },
+  "factory_controls": {
+    "receipt": "obj/parallel/coroutine-full-module/factory-reference-v1/receipt.json",
+    "sha256": "14b3639d07cca26e8e25f82e48cf374e1e7e8f4283cef9e64cf948a34a652965",
+    "positive": 2,
+    "negative": 1
+  },
+  "initial_candidate": {
+    "receipt": "obj/parallel/coroutine-full-module/candidate-v1/receipt.json",
+    "sha256": "a9220e189d4c116256bdf37a59b352b3a527f1a0d65210807fd31ec450ff5b7e",
+    "gap": "diagnostic-only PartialOrd rejected before ordinary typing; later generic factory context exposes original &mutG forwarder mismatch"
+  },
+  "retained_setup_failures": [
+    "v1 missing dependency imports",
+    "v2 incomplete reference/comparison/unsize foundation",
+    "v3 duplicated shared DispatchFromDyn impl",
+    "v6 missing debug overflow panic hook in unused dependency Neg body; native profile explicitoff in v7"
+  ],
+  "scope": "complete original coroutine source module and manual forwarding, not generated state/full std/assignment release"
+}

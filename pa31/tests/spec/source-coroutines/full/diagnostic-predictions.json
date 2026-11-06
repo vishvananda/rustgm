@@ -1,0 +1,17 @@
+{
+  "contract": "Independently Rust0 diagnostic-only comparison declarations; diagnostic hints do not implement operator language roles. Negative consumerRustE0369. Frozen before modified-candidate observation.",
+  "cases": [
+    {
+      "name": "only-hints",
+      "path": "pa31/tests/spec/source-coroutines/full/only-hints.rs",
+      "sha256": "64e10cbf4cbc463b04b36eb2dce211377966c21cebe6e51da79abd622dd1d9fe",
+      "rustc_status": 0
+    },
+    {
+      "name": "hint-not-operation",
+      "path": "pa31/tests/spec/source-coroutines/full/hint-not-operation.rs",
+      "sha256": "e8dd13a53550166f73515406fd556ff6e54221a2c6f89b688d186c61a7ffc1c3",
+      "rustc_status": 1
+    }
+  ]
+}

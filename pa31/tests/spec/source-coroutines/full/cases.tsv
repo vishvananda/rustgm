@@ -1,0 +1,9 @@
+pa31/tests/spec/source-coroutines/full/whole.rs	0
+pa31/tests/spec/source-coroutines/full/forwarders.rs	0
+pa31/tests/spec/source-coroutines/full/pin-non-unpin.rs	0
+pa31/tests/spec/source-coroutines/full/ref-non-unpin.rs	1
+pa31/tests/spec/source-coroutines/full/borrow-forwarder.rs	0
+pa31/tests/spec/source-coroutines/full/escaping-borrow.rs	1
+pa31/tests/spec/source-coroutines/full/wrong-yield.rs	1
+pa31/tests/spec/source-coroutines/full/wrong-argument.rs	1
+pa31/tests/spec/source-coroutines/full/wrong-owner.rs	1

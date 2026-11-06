@@ -321,6 +321,20 @@
         "sha256": "05350cccee0180952df499d6e2d209e653edbe007cc86e9ac177e17b55a055ee",
         "expected_status": 0
       }
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/ops/coroutine.rs",
+      "destination": "pa31/tests/spec/source-coroutines/full/original.rs",
+      "sha256": "2efdc7a8f95729f287c19d4d64498f278b78f9cc018c3ecf3f7430ece96284a4",
+      "adaptation": "none; full original bytes retained including all8 derives and both forwarding implementations; companion wraps authored no_core dependency declarations",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31",
+      "oracle_companion": {
+        "path": "pa31/tests/spec/source-coroutines/full/whole.rs",
+        "sha256": "16d65565c187e3b10e8b189ed8690dcd053d999abd10ab5944be0d90f9e1ace6",
+        "expected_status": 0
+      }
     }
   ]
 }
