@@ -153,5 +153,21 @@
     "native_test": 1,
     "native_observers": 4
   },
-  "scope": "Restore only actual immutable U8 slice text views; preserve CStr role/storage authentication and unknown nominal rejection."
+  "scope": "Restore only actual immutable U8 slice text views; preserve CStr role/storage authentication and unknown nominal rejection.",
+  "full_successor": {
+    "run": "42273932679",
+    "head": "14fe4f9c510715d2f20bb43786e79250e013d645",
+    "url": "https://github.com/vishvananda/rustgm/actions/runs/42273932679",
+    "state": "passed",
+    "gates": [
+      "fast smoke",
+      "lint, architecture and harness",
+      "independent host build graph",
+      "release and course tests",
+      "native maintainer qualification",
+      "debug invariants",
+      "independent Rust qualification",
+      "PA25 const-machine candidate contract"
+    ]
+  }
 }

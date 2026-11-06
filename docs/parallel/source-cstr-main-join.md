@@ -48,7 +48,11 @@ selection is explicitly invalid and excluded from qualification.
 
 Prior full [42255186438](https://github.com/vishvananda/rustgm/actions/runs/42255186438)
 passes all private, release/course, native, debug and independent gates on the
-preceding IntoFuture/range compiler. The CStr successor full run remains pending.
+preceding IntoFuture/range compiler. Initial CStr full42265080175 exposed actual
+byte-slice pattern regressions. The [typed slice repair](text-slice-repair.md)
+passes full successor42273932679 on main14fe4f9c5, including all private/release,
+course, native, debug and independent gates. Original core remains last observed
+at LIB185; the repair's full success is not a fresh original-input probe.
 Keep current/predecessor immutable pins, existing warm btrfs trees, two heavy jobs,
 16GiB caps,150GiB reserve and five-minute local guards. No whole PA after24 is
 completed by this checkpoint.

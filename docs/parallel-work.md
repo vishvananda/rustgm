@@ -1,3 +1,12 @@
+The [CStr byte-slice repair](parallel/text-slice-repair.md) passes full
+42273932679 on main14fe4f9c5, including release/course, private, native, debug and
+independent gates. The separately frozen [Reborrow reference packet](parallel/source-reborrow-reference.md)
+is published with 82 qualified ordinary outcomes and twelve native executions;
+its ten ICE profiles remain unqualified. Root's actual operation/loan/CTFE work
+is still isolated pending positive/native qualification. Original core remains
+LIB185 with no original library artifact or whole PA after24 complete. Keep the
+existing btrfs trees, two heavy jobs,16GiB caps,150GiB reserve and five-minute guards.
+
 The [CStr main checkpoint](parallel/source-cstr-main-join.md) qualifies11 exact
 public tests/full356 PA22+142 PA2 in107.29s and four native observers in38.79s.
 Immutable CLIa8b8d578 advances unchanged original722-input core to LIB185 Reborrow,
