@@ -2566,6 +2566,17 @@ own trait application and supertraits, excluding unrelated impl where-bounds.
 Concrete types and inherent Self do not infer a trait qualifier. Generic defaults
 require explicit trait qualification in the pinned profile.
 
+The source inherent-type extension retains this ordinary projection route when
+its actual feature is disabled; definitions still require their own permission.
+With permission, trait-impl Self probes its actual ADT's type-name bucket before
+trait fallback. Complete pending owners, preserve real member ownership and
+hygiene, and distinguish raw name presence from shape, applicability and privacy.
+A private or differently specialized inherent alias still prevents fallback to a
+trait member. Only an absent raw name or a non-ADT Self resumes the ordinary
+projection. Reuse the existing buckets and cumulative lookup budget; no global
+scan, speculative alias body, new query flag or dense cache grants this decision.
+Full generic/where/lifetime inherent-alias proof remains separately required.
+
 Cache member candidates by complete predicate and canonical name, retaining
 type, const and lifetime arguments. Rebase captured lifetime slots into the use
 binder before lookup; duplicate identical applications are harmless while

@@ -58,6 +58,18 @@ fn ordinary_alias_errors_remain_errors() -> Result {
     }
     Ok(())
 }
+
+#[test]
+fn trait_implementation_self_results_use_the_ordinary_projection_without_inherent_permission()
+-> Result {
+    for source in [
+        "trait Get{type Type; fn get(value:Self::Type)->Self::Type;} struct S; impl Get for S{type Type=u32; fn get(value:Self::Type)->Self::Type{value}}",
+        "trait Get{type Type; fn get(value:<Self>::Type)-><Self>::Type;} struct S; impl Get for S{type Type=u32; fn get(value:<Self>::Type)-><Self>::Type{value}}",
+    ] {
+        analyze(source)?;
+    }
+    Ok(())
+}
 #[test]
 fn generic_owner_and_member_proof_remain_named_requirements() -> Result {
     for name in [
@@ -119,5 +131,34 @@ fn actual_inherent_alias_identity_executes() -> Result {
         &crate::resolve::fixture(&format!("{ROOT}/observer.c"))?,
         "alias 23\n",
     )?;
+    Ok(())
+}
+
+#[test]
+fn genuine_inherent_names_control_trait_impl_self_fallback() -> Result {
+    for name in [
+        "fallback-self-feature",
+        "fallback-qualified-self-feature",
+        "fallback-self-stable",
+        "fallback-qualified-self-stable",
+        "shadow-self",
+        "shadow-qualified-self",
+    ] {
+        analyze(&input(name)?).map_err(|error| format!("{name}: {error}"))?;
+    }
+    for name in [
+        "private-self",
+        "private-qualified-self",
+        "specialized-self",
+        "specialized-qualified-self",
+    ] {
+        let error = analyze(&input(name)?)
+            .err()
+            .ok_or_else(|| format!("{name} accepted"))?;
+        assert!(
+            error.contains("no applicable inherent associated type"),
+            "{name}: {error}"
+        );
+    }
     Ok(())
 }

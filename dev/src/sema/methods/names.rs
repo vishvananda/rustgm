@@ -432,6 +432,47 @@ impl Methods {
         self.names.as_deref_mut()?.contextual.as_deref_mut()
     }
 
+    /// Probe the actual name bucket before shape, applicability or privacy filtering.
+    /// Its presence prevents a trait fallback even when the inherent candidate fails.
+    pub(in crate::sema) fn has_inherent_type_name(
+        &mut self,
+        report: &Report,
+        associated: &crate::sema::associated::Inventory,
+        key: Bucket,
+        site: Use,
+    ) -> Result<bool, &'static str> {
+        let mut cursor = Cursor::new(site.context);
+        let mut context = ItemContext::ROOT;
+        loop {
+            let count = self
+                .inherent_members(key, context)
+                .map_or(0, <[DefId]>::len);
+            self.account_name_lookup(count.saturating_add(1))?;
+            for member in self.inherent_members(key, context).into_iter().flatten() {
+                let declaration = report
+                    .resolution
+                    .definitions
+                    .get(member.0 as usize)
+                    .ok_or("inherent type name lost its actual declaration")?;
+                if declaration.namespace == crate::resolve::model::Namespace::Type {
+                    let owner = associated
+                        .member_owner(*member)
+                        .ok_or("inherent type name lost its owner")?;
+                    if site.matching(report, owner, *member)?.is_some() {
+                        return Ok(true);
+                    }
+                }
+            }
+            if !self.has_contextual_inherent(key) {
+                return Ok(false);
+            }
+            let Some(next) = cursor.next(self, report, key)? else {
+                return Ok(false);
+            };
+            context = next;
+        }
+    }
+
     pub(in crate::sema) fn has_inherent(&self, key: impl Into<Bucket>) -> bool {
         match key.into() {
             Bucket::Nominal(item, name) => self.inherent.contains_key(&(item, name)),

@@ -25,17 +25,17 @@ impl Checker<'_> {
             crate::sema::header_attributes::reserve_source_contracts(&mut self.facts, work, bytes)
         }
     }
-    pub(super) fn require_inherent_type_feature(&self, key: NodeKey) -> Result<(), Error> {
+    fn permits_inherent_type(&self, key: NodeKey) -> Result<bool, Error> {
         if self
             .report
             .package
             .requested_inherent_associated_types()
-            .map_err(|e| self.error(key, e))?
+            .map_err(|error| self.error(key, error))?
         {
-            return Ok(());
+            return Ok(true);
         }
         let feature = crate::resolve::bindings::FeatureName::new("inherent_associated_types")
-            .map_err(|e| self.error(key, e))?;
+            .map_err(|error| self.error(key, error))?;
         let span = self
             .report
             .package
@@ -44,12 +44,14 @@ impl Checker<'_> {
             .ast
             .node(key.node)
             .span;
-        if self
-            .report
+        self.report
             .macro_allowances()
             .allows_at(key.file, span, &feature)
-            .map_err(|e| self.error(key, e.to_string()))?
-        {
+            .map_err(|error| self.error(key, error.to_string()))
+    }
+
+    pub(super) fn require_inherent_type_feature(&self, key: NodeKey) -> Result<(), Error> {
+        if self.permits_inherent_type(key)? {
             return Ok(());
         }
         Err(self.error(
@@ -73,12 +75,7 @@ impl Checker<'_> {
                 return Ok(false);
             }
             if definition.kind == DefKind::SelfType
-                && self
-                    .facts
-                    .associated
-                    .owner(path.owner)
-                    .and_then(|id| self.facts.associated.get(id))
-                    .is_some_and(|o| matches!(o.kind, OwnerKind::Trait { .. }))
+                && self.facts.associated.trait_owner(path.owner).is_some()
             {
                 return Ok(false);
             }
@@ -115,7 +112,9 @@ impl Checker<'_> {
         } else {
             return Ok(false);
         };
-        self.require_inherent_type_feature(key)?;
+        if !self.permits_inherent_type(key)? {
+            return Ok(false);
+        }
         if let Some(owner) = owner {
             self.facts
                 .node_mut(prefix)
@@ -173,12 +172,74 @@ impl Checker<'_> {
                 && self.facts.associated.trait_owner(id).is_some())
     }
 
+    fn trait_impl_prefix(&self, key: NodeKey) -> Option<NodeKey> {
+        let (prefix, owner) = if let Some(path) = self.report.resolution.associated_paths.get(&key)
+        {
+            (
+                NodeKey {
+                    node: path.prefix,
+                    ..key
+                },
+                path.owner,
+            )
+        } else {
+            let path = self.report.resolution.qualified_paths.get(&key)?;
+            let prefix = NodeKey {
+                node: path.ty,
+                ..key
+            };
+            (prefix, self.bound_parameter(prefix, true)?)
+        };
+        if self
+            .report
+            .resolution
+            .definitions
+            .get(owner.0 as usize)?
+            .kind
+            != DefKind::SelfType
+        {
+            return None;
+        }
+        let owner = self
+            .facts
+            .associated
+            .get(self.facts.associated.owner(owner)?)?;
+        matches!(
+            owner.kind,
+            OwnerKind::Impl {
+                trait_type: Some(_),
+                ..
+            }
+        )
+        .then_some(prefix)
+    }
+
+    fn continue_trait_projection(
+        &mut self,
+        key: NodeKey,
+        context: regions::Context,
+    ) -> Result<(), Error> {
+        if self.schedule_implicit_projection(key, context)? {
+            return Ok(());
+        }
+        Err(self.error(
+            key,
+            "trait implementation Self lost its ordinary associated projection",
+        ))
+    }
+
     pub(super) fn complete_inherent_type(
         &mut self,
         key: NodeKey,
         context: regions::Context,
     ) -> Result<(), Error> {
         use crate::sema::methods::selection::{PathCaller, PathProgress, PathQuery};
+        let trait_prefix = self.trait_impl_prefix(key);
+        if let Some(prefix) = trait_prefix
+            && !matches!(self.facts.types.kind(self.ty(prefix)?), Some(Type::Adt(..)))
+        {
+            return self.continue_trait_projection(key, context);
+        }
         let path = self.inherent_type_path(key)?;
         let pending =
             self.inherent_headers
@@ -194,6 +255,15 @@ impl Checker<'_> {
         let bucket = Bucket::lookup(&self.facts.types, path.head, path.name)
             .ok_or_else(|| self.error(key, "missing inherent type owner bucket"))?;
         let identifier = Use::path(self.report, path.suffix, path.scope)?;
+        if trait_prefix.is_some()
+            && !self
+                .facts
+                .methods
+                .has_inherent_type_name(self.report, &self.facts.associated, bucket, identifier)
+                .map_err(|error| self.error(key, error))?
+        {
+            return self.continue_trait_projection(key, context);
+        }
         let query = if let Some(query) = self.method_queries.remove(&key) {
             *query
         } else {

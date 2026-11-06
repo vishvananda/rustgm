@@ -9,6 +9,12 @@ is actual custom auto-trait owner collection; it does not prove the original
 Field module finished semantic analysis. No original core/alloc/std artifact
 or whole PA after24 is complete.
 
+The [trait Self CI repair](parallel/self-type-ci-repair.md) addresses the67 shared
+IAT lookup failures and one wrong-provider diagnostic panic exposed by full
+42299342081. Eight focused controls,20 independent Rust outcomes and282 harness
+checks pass, with unchanged existing oracle bytes. Full successor CI is pending;
+this is a regression repair, not another core-frontier or whole-PA completion.
+
 The [Field/inherent join](parallel/field-headers-main-join.md) qualifies ordinary
 Field nominal/trait/associated headers, including unrelated and real inherent
 owners. Eleven focused controls,21 new PA20 text oracles,282 harness checks and

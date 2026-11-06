@@ -33,6 +33,9 @@ pub(in crate::sema::compiler_items) fn complete(
     let Some(declaration) = catalog.language(role) else {
         return Ok(None);
     };
+    catalog
+        .require_provider_report(report)
+        .map_err(Error::unlocated)?;
     let error = |message| Declarations::error(report, declaration.origin, message);
     if !ROLES.contains(&role) {
         return Err(error(
@@ -40,7 +43,6 @@ pub(in crate::sema::compiler_items) fn complete(
         ));
     }
     crate::sema::header_attributes::charge_source_contract_query(facts, 8)?;
-    catalog.require_provider_report(report).map_err(error)?;
     let header = facts
         .function_header(declaration.definition)
         .map_err(error)?

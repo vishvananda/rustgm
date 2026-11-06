@@ -1,3 +1,11 @@
+The [trait Self CI repair](parallel/self-type-ci-repair.md) resolves the two
+shared causes in full42299342081: incorrect inherent lookup interception and a
+wrong-provider diagnostic panic. Eight focused controls/123.59s,20 independent
+Rust outcomes and all282 harness checks pass; scoped references preserve existing
+oracle bytes. Full successor private/native CI remains pending. Original core
+stays LIB187; Root resumes Field consumers and Source completes actual custom-auto
+negative debt proof under the unchanged two-heavy/btrfs/16GiB/150GiB limits.
+
 The [Field/inherent join](parallel/field-headers-main-join.md) qualifies11 focused
 controls,21 PA20 text oracles,282 harness checks and three native observers.
 Immutable040e5723 clears the Field language-item fence and reaches LIB187,
