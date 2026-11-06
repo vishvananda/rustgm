@@ -23,6 +23,8 @@ mod coercion_provider;
 mod crate_expansion;
 #[path = "../../crate_syntax.rs"]
 mod crate_syntax;
+#[path = "../../cstr_sources.rs"]
+mod cstr_sources;
 #[path = "../../ctfe_selector.rs"]
 mod ctfe_selector;
 #[path = "../../declarative_macros.rs"]
