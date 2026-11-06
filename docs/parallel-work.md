@@ -1,3 +1,11 @@
+The [Index-row successor](parallel/index-row-successor.md) repairs the six
+shared-cause failures in terminal full42163466614: source Index now always
+retains its existing pending-row index for same-Solved authentication. Six exact
+public controls and seven native programs pass; private/full successor remains
+pending. Paid-query, radix and const-index forgery controls did pass the terminal
+CI run. Original core remains LIB-171; no whole PA or library artifact is done.
+Existing two workers, warm btrfs trees and resource limits remain unchanged.
+
 The [actual-operand borrow join](parallel/operand-borrow-join.md) passes 25 public
 controls on actual main dependencies, 25 native programs, PA19 1193/1193,
 PA21 801/801, PA24 482/482, harness 282 and upstream31/126. CLI ae15b1d5 keeps
