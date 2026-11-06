@@ -74,9 +74,8 @@ fn analyze(input: &str, provider: bool) -> std::result::Result<(), String> {
 
 #[test]
 fn inherent_auto_objects_require_a_real_non_auto_principal() -> Result {
-    let input = crate::resolve::fixture(
-        "pa31/tests/spec/source-incoherent-inherent/local/auto-only.rs",
-    )?;
+    let input =
+        crate::resolve::fixture("pa31/tests/spec/source-incoherent-inherent/local/auto-only.rs")?;
     let error = analyze(&input, false)
         .err()
         .ok_or("auto-only inherent implementation accepted")?;

@@ -210,7 +210,7 @@ impl Checker<'_> {
                             crate::syntax::item::ItemKind::Trait {
                                 auto_: a, unsafe_: u, constant: c, ..
                             } if (a, u, c) == (auto_, unsafe_, constant))))
-                    .then_some(auto_)
+                .then_some(auto_)
             });
         let Some(auto_) = auto_ else {
             return Err(self.error(source,
