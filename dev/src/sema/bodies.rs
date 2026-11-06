@@ -2773,7 +2773,10 @@ impl Checker<'_> {
             let value = unit
                 .literal(index)
                 .map_err(|e| self.error(node, e.message))?;
-            if matches!(value, Value::String(_) | Value::ByteString(_)) {
+            if matches!(
+                value,
+                Value::String(_) | Value::ByteString(_) | Value::CString(_)
+            ) {
                 continue;
             }
             let negated = self.state.negated.contains(&node);

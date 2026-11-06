@@ -57,7 +57,10 @@ fn ordinary_type_privacy_body_const_and_unsafe_checks_remain() -> Result {
         ("missing", &["C string literals require"][..]),
         ("local-type", &["type", "mismatch"][..]),
         ("local-mutable", &["type", "mismatch", "mutable"][..]),
-        ("local-pointer", &["type", "mismatch", "mutable"][..]),
+        (
+            "local-pointer",
+            &["type", "mismatch", "mutability"][..],
+        ),
         ("local-const", &["const"][..]),
         ("local-reinterpret", &["type", "mismatch"][..]),
         ("local-nul", &["null", "NUL", "zero", "c-string"][..]),
