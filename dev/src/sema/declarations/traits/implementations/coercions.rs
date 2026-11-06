@@ -13,6 +13,7 @@ use crate::{
 impl Checker<'_> {
     pub(super) fn validate_source_coercion_impl(
         &mut self,
+        owner: super::DefId,
         source: NodeKey,
         predicate: Predicate,
         proof: &mut crate::sema::nominals::Proof,
@@ -45,21 +46,42 @@ impl Checker<'_> {
         if arguments.next().is_some() {
             return Err(self.error(source, "coercion implementation has extra arguments"));
         }
-        let (from, to, regions, role) = if matches!(
+        let (from, to, regions, role, schema) = if matches!(
             (
                 self.facts.types.kind(predicate.ty),
                 self.facts.types.kind(target)
             ),
             (Some(Kind::Adt(..)), Some(Kind::Adt(..)))
         ) {
-            let (from, to) = structure::changed(&mut self.facts, predicate.ty, target, proof)
+            let schema = structure::schema(&mut self.facts, predicate.ty, target, proof)
                 .map_err(|e| self.error(source, e))?;
-            (from, to, None, LangItem::CoerceUnsized)
+            let field = schema.fields[schema.changed as usize];
+            (
+                field.source,
+                field.target,
+                None,
+                LangItem::CoerceUnsized,
+                Some(schema),
+            )
         } else {
             let (from, to, regions) = pointer_pair(&self.facts.types, predicate.ty, target)
                 .map_err(|e| self.error(source, e))?;
-            (from, to, regions, LangItem::Unsize)
+            (from, to, regions, LangItem::Unsize, None)
         };
+        self.prove_coercion_field(source, from, to, role, proof)?;
+        if let Some(schema) = schema {
+            self.retain_coercion_schema(owner, source, schema)?;
+        }
+        Ok(regions)
+    }
+    fn prove_coercion_field(
+        &mut self,
+        source: NodeKey,
+        from: TypeId,
+        to: TypeId,
+        role: LangItem,
+        proof: &mut crate::sema::nominals::Proof,
+    ) -> Result<(), Error> {
         let relation = self
             .facts
             .source_bindings
@@ -101,7 +123,39 @@ impl Checker<'_> {
                 "source CoerceUnsized implementation does not prove its exact field relation",
             ));
         }
-        Ok(regions)
+        Ok(())
+    }
+    fn retain_coercion_schema(
+        &mut self,
+        owner: super::DefId,
+        source: NodeKey,
+        schema: crate::types::unsizing::CoercionSchema,
+    ) -> Result<(), Error> {
+        if self.facts.unsizing_rules.is_none() {
+            self.facts
+                .charge_caller_inputs(1, size_of::<crate::types::unsizing::Rules>())
+                .map_err(|e| self.error(source, e))?;
+        }
+        let pay = crate::sema::header_attributes::caller_payments(
+            self.facts.must_use_contracts.as_deref(),
+            true,
+        )
+        .map_err(|_| {
+            self.error(
+                source,
+                "nominal coercion declaration lacks its source payer",
+            )
+        })?;
+        self.facts
+            .unsizing_rules
+            .get_or_insert_default()
+            .retain_nominal_schema(
+                &mut self.facts.types,
+                crate::types::ItemId(owner.0),
+                schema,
+                &|w, b| pay.charge(w, b),
+            )
+            .map_err(|e| Error::at(source.file, 0, e))
     }
 }
 

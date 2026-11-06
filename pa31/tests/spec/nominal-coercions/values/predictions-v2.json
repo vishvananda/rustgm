@@ -1,0 +1,39 @@
+{
+  "scope": "frozen before wrapper value implementation or candidate observation",
+  "original_prefix_sha256": "16b1d23d193074c832a23a5b672d7089b09564cb5520ec0b6c50d27374c8b09f",
+  "source": "native.rs",
+  "source_sha256": "695915d66cda814b30a8b4629109dc99c1734e8a9f1d86fc9b783bbcc24fb474",
+  "observer": "observer.c",
+  "observer_sha256": "40304b4d67f689c656b2e2c0c97e75aef8011d71a64c7d3b4fef365ab80e52c5",
+  "rustc_status": 0,
+  "expected_stdout": "47|\n23|17\n47|19,17\n23|5,17\n23|9,6,17\n47|\n",
+  "expected_stderr": "",
+  "cases": [
+    {
+      "file": "escape.rs",
+      "rustc_status": 1,
+      "sha256": "1d62e2e385386d900613204486dfca7327faa2bb371de83e41588cc6521fccd3",
+      "diagnostic": "lifetime may not live long enough"
+    },
+    {
+      "file": "mutability.rs",
+      "rustc_status": 1,
+      "sha256": "77380227eb2aa7eb4a8aae73fa235efc413f815e655aeaf4b81c543fd57503a6",
+      "diagnostic": "E0308"
+    },
+    {
+      "file": "element.rs",
+      "rustc_status": 1,
+      "sha256": "3a94db760a5d6e46534d027959eb9a7f669accb850932d64fac96e40e5156e0f",
+      "diagnostic": "E0308"
+    },
+    {
+      "file": "moved-source.rs",
+      "rustc_status": 1,
+      "sha256": "06f7ac6021aceb32baa3ae2563c4a4b20152369fb4218bd3699096ae1d6437e2",
+      "diagnostic": "E0382"
+    }
+  ],
+  "profiles": "Actual Pin, scalar-prefix, nested, side-effect-once, real Drop owner+field, actual PhantomData; no fake field moves.",
+  "correction": "Initial reference failed E0152: complete original prefix already defines marker::PhantomData. Reuse actual marker; no original prefix edits. Four initial negative statuses are not semantic parity."
+}

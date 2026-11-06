@@ -4,13 +4,40 @@ mod construction_context;
 mod elaboration;
 mod relations;
 mod tail_conversion;
+mod wrappers;
 use crate::types::infer::arguments::Argument;
 
 pub(super) struct Pending {
     pub view: TermId,
     pub conversion: crate::types::unsizing::Conversion<TermId>,
-    pub borrow_view: Option<TermId>,
+    pub justification: Justification,
     pub relations: Vec<(TermId, TermId)>,
+}
+
+#[derive(Clone, Copy)]
+pub(super) enum Justification {
+    Structural,
+    Borrow(TermId),
+    /// Stable index of this body's actual canonical `CoerceUnsized` goal.
+    NominalGoal(u32),
+}
+const _: [(); 8] = [(); size_of::<Justification>()];
+const _: [(); 48] = [(); size_of::<Pending>()];
+const _: [(); 12] = [(); size_of::<crate::types::unsizing::Conversion<crate::types::TypeId>>()];
+impl Pending {
+    pub(super) fn borrow_view(&self) -> Option<TermId> {
+        match self.justification {
+            Justification::Borrow(view) => Some(view),
+            Justification::Structural | Justification::NominalGoal(_) => None,
+        }
+    }
+    pub(super) fn retain_borrow(&mut self, view: TermId) -> Result<(), &'static str> {
+        if matches!(self.justification, Justification::NominalGoal(_)) {
+            return Err("nominal whole-value coercion cannot replace a required source borrow");
+        }
+        self.justification = Justification::Borrow(view);
+        Ok(())
+    }
 }
 
 impl Checker<'_> {

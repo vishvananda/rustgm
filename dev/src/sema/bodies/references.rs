@@ -179,12 +179,14 @@ impl Checker<'_> {
                 .construct(Constructor::Reference { mutable, region }, &[referent])
                 .map_err(|e| self.error(node, e))?;
             if let Some(pending) = &mut unsizing {
-                pending.borrow_view = Some(
-                    self.state
-                        .infer
-                        .construct(Constructor::Reference { mutable, region }, &[pending.view])
-                        .map_err(|e| self.error(node, e))?,
-                );
+                pending
+                    .retain_borrow(
+                        self.state
+                            .infer
+                            .construct(Constructor::Reference { mutable, region }, &[pending.view])
+                            .map_err(|e| self.error(node, e))?,
+                    )
+                    .map_err(|e| self.error(node, e))?;
             }
             self.state
                 .reference_adjustments

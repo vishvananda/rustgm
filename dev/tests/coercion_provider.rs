@@ -120,6 +120,53 @@ fn nominal_coercion_implementations_prove_one_actual_changed_field() -> TestResu
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }
+
+#[test]
+fn nominal_value_typing_retains_actual_trait_goals_and_owned_inputs() -> TestResult {
+    let folder = "pa31/tests/spec/nominal-coercions/values";
+    let text = crate::resolve::fixture(&format!("{folder}/native.rs"))?;
+    let report = crate::resolve::source_provider(&text, "nominal_values")?;
+    let analysis = rustgm::pipeline::analyze_source(&report)?;
+    let nominal = analysis
+        .facts
+        .unsizing_adjustments
+        .values()
+        .filter(|conversion| {
+            matches!(
+                conversion,
+                rustgm::types::unsizing::Conversion::Nominal { .. }
+            )
+        })
+        .count();
+    assert_eq!(nominal, 6);
+    for name in ["escape", "mutability", "element", "moved-source"] {
+        let text = crate::resolve::fixture(&format!("{folder}/{name}.rs"))?;
+        let report = crate::resolve::source_provider(&text, "nominal_opponent")?;
+        let error = rustgm::pipeline::analyze_source(&report)
+            .err()
+            .ok_or_else(|| format!("accepted {name}"))?
+            .to_string();
+        assert!(
+            ![
+                "not implemented",
+                "budget",
+                "exhausted",
+                "undefined",
+                "unsupported"
+            ]
+            .iter()
+            .any(|fence| error.contains(fence)),
+            "{name}: {error}"
+        );
+        println!("{name}: {error}");
+    }
+    assert_eq!(
+        size_of::<rustgm::types::unsizing::Conversion<rustgm::types::TypeId>>(),
+        12
+    );
+    assert_eq!(size_of::<rustgm::body::ir::Body>(), 456);
+    Ok(())
+}
 #[test]
 #[ignore = "requires the pinned CPPGM backend and host C linker"]
 fn source_unsizing_goal_native_answers() -> TestResult {

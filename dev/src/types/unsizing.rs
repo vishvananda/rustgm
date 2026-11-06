@@ -1,5 +1,6 @@
 //! Built-in struct unsizing eligibility follows declaration tails, not pointer layout.
 mod eligibility;
+mod wrappers;
 use super::{
     ItemId, Kind, Store, TypeId,
     aggregate::{self, Definitions},
@@ -7,14 +8,26 @@ use super::{
     parameters::{ParameterId, uses::Uses},
 };
 use crate::support::hash::{HashMap, HashSet};
+pub(crate) use wrappers::{Field as CoercionField, Schema as CoercionSchema};
 
 /// A selected terminal conversion survives structural wrappers and specialization.
 /// Its types are proof inputs; consumers must not rediscover eligibility.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Conversion<T> {
     Slice(T),
-    Object { concrete: T, target: T },
-    Upcast { source: T, target: T },
+    Object {
+        concrete: T,
+        target: T,
+    },
+    Upcast {
+        source: T,
+        target: T,
+    },
+    /// An actual nominal application pair; executable consumers require its plan.
+    Nominal {
+        source: T,
+        target: T,
+    },
 }
 impl<T> Conversion<T> {
     /// Transport every retained type through the same specialization environment.
@@ -28,6 +41,10 @@ impl<T> Conversion<T> {
                 target: map(target)?,
             },
             Self::Upcast { source, target } => Conversion::Upcast {
+                source: map(source)?,
+                target: map(target)?,
+            },
+            Self::Nominal { source, target } => Conversion::Nominal {
                 source: map(source)?,
                 target: map(target)?,
             },
@@ -48,6 +65,7 @@ pub struct Rules {
     completed: HashMap<Key, Option<ParameterId>>,
     excluded: Uses,
     projected: eligibility::Candidates,
+    nominal: Option<Box<wrappers::Plans>>,
     pub steps: usize,
 }
 impl Rules {

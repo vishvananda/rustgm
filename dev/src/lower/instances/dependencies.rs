@@ -363,6 +363,9 @@ impl Discovered {
                 self.upcasts.push((source, target));
             }
             crate::types::unsizing::Conversion::Slice(_) => {}
+            crate::types::unsizing::Conversion::Nominal { .. } => {
+                return Err("nominal coercion requires its checked wrapper conversion plan");
+            }
         }
         Ok(())
     }

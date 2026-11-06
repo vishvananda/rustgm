@@ -2,21 +2,27 @@
 use crate::{
     sema::{model::Declarations, nominals::Proof},
     support::retained::Growth,
-    types::{Kind, TypeId, aggregate::SemanticFields},
+    types::{
+        Kind, TypeId,
+        aggregate::SemanticFields,
+        unsizing::{CoercionField, CoercionSchema},
+    },
 };
 
-pub(super) fn changed(
+pub(super) fn schema(
     facts: &mut Declarations,
     source: TypeId,
     target: TypeId,
     proof: &mut Proof,
-) -> Result<(TypeId, TypeId), &'static str> {
-    let pairs = fields(facts, source, target)?;
+) -> Result<CoercionSchema, &'static str> {
+    let mut fields = fields(facts, source, target)?;
     let mut changed = None;
-    for (from, to) in pairs {
+    for (index, field) in fields.iter_mut().enumerate() {
         facts.charge_caller_inputs(2, 0)?;
-        let from = proof.normalize(facts, from)?;
-        let to = proof.normalize(facts, to)?;
+        let from = proof.normalize(facts, field.source)?;
+        let to = proof.normalize(facts, field.target)?;
+        field.source = from;
+        field.target = to;
         let phantom = facts.aggregates.phantom_argument(&facts.types, from)?;
         if phantom.is_some() {
             if facts
@@ -26,22 +32,31 @@ pub(super) fn changed(
             {
                 return Err("nominal coercion changed its actual PhantomData owner");
             }
+            field.phantom = true;
             continue;
         }
         // Field equality includes every lifetime and complete application input.
         // A subtype relation would silently admit a second runtime field change.
-        if from != to && changed.replace((from, to)).is_some() {
+        if from != to && changed.replace(index).is_some() {
             return Err("nominal CoerceUnsized implementation changes more than one field");
         }
     }
-    changed.ok_or("nominal CoerceUnsized implementation requires one changed field")
+    let changed =
+        changed.ok_or("nominal CoerceUnsized implementation requires one changed field")?;
+    Ok(CoercionSchema {
+        source,
+        target,
+        changed: u32::try_from(changed)
+            .map_err(|_| "nominal coercion changed field index overflow")?,
+        fields,
+    })
 }
 
 fn fields(
     facts: &mut Declarations,
     source: TypeId,
     target: TypeId,
-) -> Result<Vec<(TypeId, TypeId)>, &'static str> {
+) -> Result<Vec<CoercionField>, &'static str> {
     let (Some(Kind::Adt(owner, _)), Some(Kind::Adt(other, _))) =
         (facts.types.kind(source), facts.types.kind(target))
     else {
@@ -65,12 +80,12 @@ fn fields(
     let pay =
         crate::sema::header_attributes::caller_payments(facts.must_use_contracts.as_deref(), true)
             .map_err(|_| "nominal CoerceUnsized lacks its completed source payer")?;
-    let growth = Growth::vector::<(TypeId, TypeId)>(0, 0, count);
+    let growth = Growth::vector::<CoercionField>(0, 0, count);
     pay.charge(
         growth.work.saturating_add(1),
-        growth.bytes.saturating_add(
-            2 * size_of::<SemanticFields<'_>>() + size_of::<Vec<(TypeId, TypeId)>>(),
-        ),
+        growth
+            .bytes
+            .saturating_add(2 * size_of::<SemanticFields<'_>>() + size_of::<Vec<CoercionField>>()),
     )?;
     let mut pairs = Vec::new();
     pairs
@@ -81,7 +96,11 @@ fn fields(
     for index in 0..count {
         let a = from.field_paid(&mut facts.types, 0, index, &|w, b| pay.charge(w, b))?;
         let b = to.field_paid(&mut facts.types, 0, index, &|w, b| pay.charge(w, b))?;
-        pairs.push((a, b));
+        pairs.push(CoercionField {
+            source: a,
+            target: b,
+            phantom: false,
+        });
     }
     Ok(pairs)
 }

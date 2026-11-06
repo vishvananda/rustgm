@@ -15,6 +15,8 @@ impl Checker<'_> {
         &mut self,
         solved: &crate::types::infer::Solved,
         body_key: crate::resolve::unit::NodeKey,
+        predicates: &[crate::types::parameters::predicates::Predicate],
+        evidence: &crate::support::hash::HashMap<usize, crate::sema::traits::selection::Source>,
     ) -> Result<(), Error> {
         let mut defining = (!solved.defining_opaques.is_empty())
             .then(|| {
@@ -27,7 +29,9 @@ impl Checker<'_> {
             .map_err(|e| self.error(body_key.node, e))?;
         self.publish_unsizing_relations(solved, body_key, defining.as_mut())?;
         self.publish_pointer_adjustments(solved, body_key);
-        for (index, adjustment) in self.state.adjustments.iter().enumerate() {
+        for index in 0..self.state.adjustments.len() {
+            self.validate_nominal_goal(index, solved, predicates, evidence)?;
+            let adjustment = &self.state.adjustments[index];
             let key = self.key(adjustment.node);
             let target = solved.types[adjustment.expected.0 as usize];
             let actual = solved.types[adjustment.actual.0 as usize];
@@ -98,7 +102,7 @@ impl Checker<'_> {
                         .state
                         .unsizing_adjustments
                         .get(&index)
-                        .and_then(|pending| pending.borrow_view)
+                        .and_then(super::unsizing::Pending::borrow_view)
                         .unwrap_or(*borrow)
                         .0 as usize],
                     expected: proof_expected,

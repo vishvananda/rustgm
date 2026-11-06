@@ -249,6 +249,12 @@ impl Queries<'_> {
                     target: self.specialized_type(key, target)?,
                 }
             }
+            crate::types::unsizing::Conversion::Nominal { .. } => {
+                return Err(self.error(
+                    query,
+                    "nominal constant coercion requires its actual aggregate conversion plan",
+                ));
+            }
         };
         super::address_values::unsize(value, metadata).map_err(|e| self.error(query, e.message()))
     }

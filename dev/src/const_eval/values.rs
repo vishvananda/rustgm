@@ -356,6 +356,9 @@ impl Machine<'_, '_> {
                     crate::types::unsizing::Conversion::Upcast { target, .. } => {
                         value.upcast(target)?
                     }
+                    crate::types::unsizing::Conversion::Nominal { .. } => {
+                        return Err("constant nominal coercion requires its checked aggregate conversion plan".into());
+                    }
                 }
             }
             Rvalue::Validate(place) => {

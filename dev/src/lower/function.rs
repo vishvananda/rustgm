@@ -825,6 +825,9 @@ impl Lower<'_, '_, '_> {
                     crate::types::unsizing::Conversion::Upcast { source, target } => {
                         self.object_upcasting(operand, source, target)
                     }
+                    crate::types::unsizing::Conversion::Nominal { .. } => {
+                        Err("nominal coercion requires its checked wrapper conversion plan")
+                    }
                 };
             }
             Rvalue::Unary {

@@ -12,6 +12,24 @@ use crate::{
     syntax::ast::Unary,
 };
 impl Engine<'_, '_> {
+    fn unsize_conversion(
+        &mut self,
+        value: ValueId,
+        conversion: crate::types::unsizing::Conversion<crate::types::TypeId>,
+    ) -> Result<Option<Evaluated>, Error> {
+        match conversion {
+            crate::types::unsizing::Conversion::Slice(array) => self.unsize(value, array),
+            crate::types::unsizing::Conversion::Object { concrete, target } => {
+                self.object_unsizing(value, concrete, target)
+            }
+            crate::types::unsizing::Conversion::Upcast { target, .. } => {
+                self.object_upcasting(value, target)
+            }
+            crate::types::unsizing::Conversion::Nominal { .. } => Err(
+                "nominal coercion promotion requires its checked aggregate conversion plan".into(),
+            ),
+        }
+    }
     pub(super) fn require_call_promotion_profile(&self, callee: ValueId) -> Result<(), Error> {
         let Some(Type::FunctionItem { item, .. }) =
             self.evaluator.facts().types.kind(self.value(callee)?.ty)
@@ -243,15 +261,7 @@ impl Engine<'_, '_> {
             Rvalue::Read(place) => self.place_value(place)?.map(|v| v.value),
             Rvalue::Borrow { place, .. } => self.borrow_value(place, ty)?,
             Rvalue::Constrain(operand) => return self.constrain_value(operand, ty),
-            Rvalue::Unsize { value, conversion } => match conversion {
-                crate::types::unsizing::Conversion::Slice(array) => self.unsize(value, array)?,
-                crate::types::unsizing::Conversion::Object { concrete, target } => {
-                    self.object_unsizing(value, concrete, target)?
-                }
-                crate::types::unsizing::Conversion::Upcast { target, .. } => {
-                    self.object_upcasting(value, target)?
-                }
-            },
+            Rvalue::Unsize { value, conversion } => self.unsize_conversion(value, conversion)?,
             Rvalue::Reify(operand) => self.reify_value(operand)?,
             Rvalue::Unary {
                 operator,

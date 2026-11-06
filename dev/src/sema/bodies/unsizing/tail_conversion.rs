@@ -102,7 +102,7 @@ impl Checker<'_> {
         Ok(Some(Pending {
             view: result.view,
             conversion: result.conversion,
-            borrow_view: None,
+            justification: super::Justification::Structural,
             relations,
         }))
     }

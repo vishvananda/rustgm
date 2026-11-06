@@ -1968,6 +1968,9 @@ impl Checker<'_> {
         {
             return self.pointer_coercion(source, actual, expected);
         }
+        if self.source_nominal_coercion(source, actual, expected)? {
+            return Ok(());
+        }
         let inferred = if expected_head.is_none() {
             self.inferred_regions(source, actual)?
         } else {
