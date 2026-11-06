@@ -52,7 +52,8 @@ Selected private linking exceeded the local time limit before execution; it is
 not a pass and is not retried as a full development build. Corrected private
 tests compile under strict metadata. Successor
 [42255186438](https://github.com/vishvananda/rustgm/actions/runs/42255186438)
-owns actual private execution and complete release/native/course qualification.
+passed actual private execution and complete release/native/course/debug/independent
+qualification. The later CStr compiler has its own separately pending successor.
 
 The [CStr reference packet](source-cstr-reference.md) freezes24 source outcomes
 and three native observers, including actual CStr/slice methods and standard

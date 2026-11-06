@@ -1,3 +1,14 @@
+The [CStr main checkpoint](parallel/source-cstr-main-join.md) qualifies11 exact
+public tests/full356 PA22+142 PA2 in107.29s and four native observers in38.79s.
+Immutable CLIa8b8d578 advances unchanged original722-input core to LIB185 Reborrow,
+marker.rs1356/file81:51821,31.0827s/375opens. Profile/limits stay fixed, with only
+an explicit shared-text-producer code-source rebind. Prior full42255186438 passes
+all gates; CStr successor remains pending. Source prepares independently frozen
+Reborrow/CoerceShared contracts; Async is idle after byte-word reference handoff.
+Root owns publication and implementation next. Keep the same warm btrfs trees,
+2heavy/16GiB/150GiB/<=300s guards and scoped cleanup. No original library artifact
+or whole PA after24 is complete.
+
 The [IntoFuture/range main integration](parallel/source-future-range-main-join.md)
 now reaches LIB184 CStr at c_str.rs102/file120:3736 using immutable repaired
 CLIb9c47bb9,18.1829s/375 opens. All722 inputs/profile values/budgets are unchanged;

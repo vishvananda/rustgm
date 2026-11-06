@@ -1,0 +1,815 @@
+{
+  "state": "qualified development CStr checkpoint; original core still exits1",
+  "compiler_cli_sha256": "a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9",
+  "source_snapshot": {
+    "count": 3661,
+    "sha256": "13d5e34e56e9d40a88e40d9828127fa79da47d032ff6f3f478eaa2b82b1c10d3"
+  },
+  "regular": {
+    "receipt": "obj/qualification/fast/1793986773948741546/receipt.json",
+    "sha256": "ff55c72468b1c25f2a5556e2ed77a443ef404391beb9f7282387836bd6613895",
+    "tests": 11,
+    "seconds": 107.29,
+    "selected": {
+      "suite_constants": [
+        "sequence_constants::literal_storage_obeys_bounds_and_shared_write_permission",
+        "dst_tail_metadata::dst_field_metadata_matches_declared_source_and_phase_outcomes",
+        "dst_tail_metadata::work::repeated_tail_selection_does_not_rescan_unrelated_fields_or_store_types"
+      ],
+      "suite_memory": [
+        "fragment_ranges::owned_fragment_range_source_contracts",
+        "reference_cells::reference_cells_match_independent_objects"
+      ],
+      "suite_frontend": [
+        "cstr_sources::c_string_interning_shares_ordinary_bytes_across_all_word_boundaries",
+        "cstr_sources::cstr_and_nominal_references_reconstruct_from_actual_symbolic_byte_words",
+        "cstr_sources::ordinary_type_privacy_body_const_and_unsafe_checks_remain",
+        "cstr_sources::original_nominal_and_method_intervals_are_preserved",
+        "cstr_sources::real_source_methods_and_const_static_views_lower",
+        "cstr_sources::source_nominal_and_unused_alternative_headers_retain_ordinary_legality"
+      ]
+    },
+    "pa22": 356,
+    "pa2": 142
+  },
+  "native": {
+    "receipt": "obj/qualification/fast/1793986908755673685/receipt.json",
+    "sha256": "5191e3b39a9be7496ff3cc7ec363d9512c4d1049e47a6e73937a001ff70bb8d6",
+    "tests": 1,
+    "executables": 4,
+    "seconds": 38.79,
+    "stdout": [
+      "CStr 65 2 0 195 169 255 92 1",
+      "storage 8 65 0",
+      "roundtrip 255 0",
+      "byte-word 255 0 17 23"
+    ]
+  },
+  "byte_word_pre_fix": {
+    "receipt": "obj/qualification/fast/1793986550403767291/receipt.json",
+    "state": "failed genuine Rust-positive input",
+    "error": "constant range differs from its checked element type or length",
+    "post_fix": "same frozen source passes and executes natively"
+  },
+  "core": {
+    "state": "passed observation",
+    "cli_sha256": "a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9",
+    "pin": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+    "regular": "obj/qualification/fast/1793986773948741546/receipt.json",
+    "native": "obj/qualification/fast/1793986908755673685/receipt.json",
+    "observer_status": 0,
+    "core": {
+      "infrastructure_failure": false,
+      "classification": "observed original-core blocker",
+      "lint_cap": "allow",
+      "source_contract_limits": {
+        "work": 14500624,
+        "attempted_bytes": 1073741824,
+        "retained_bytes": 67108864
+      },
+      "expected_cli_sha256": "a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9",
+      "expected_cli_source": "explicit caller input",
+      "status": 1,
+      "first_error": "ERROR: file 81: 51821: source compiler language item semantic contract is not implemented",
+      "inputs_unchanged": true,
+      "opened_source_count": 375,
+      "total_seconds": 31.08270420099143,
+      "raw_sha256": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "9149b1fac5bbecd0ae484d625a819b7400eb7e99b6eb061f3f8e9713a441cc8b",
+        "whole-core.openat": "6cceab5e6d5acd6b1ada05f7cb34239371c35c8ed2314478a22c9f351ac61f1e",
+        "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+      }
+    },
+    "seconds": 32.35183252103161
+  },
+  "core_receipt_sha256": "1ef4a58dba6458d0da8cee3ef4bc293f3d3a57048f4cc822ef9b01acb0257a7d",
+  "core_manifest_sha256": "cb257f713575d5c93ef5cf1bce6fa9be566dc6de4fb378347d621f7ff4bc181e",
+  "setup": {
+    "path": "obj/parallel/source-cstr-core/setup.json",
+    "sha256": "4fe7d2fc27537619b367069853ef71a665d5512c9ba47639fe289654e7f46af4",
+    "change": "Only const_eval/values.rs tracked code rebind: typed Rvalue::Text uses shared storage producer. All five other source pins and all actual configuration/profile/limits identical."
+  },
+  "previous_full_ci": {
+    "id": 42255186438,
+    "head": "def741d531ae8a931a2b085f41c329aaeb18a749",
+    "state": "success",
+    "url": "https://github.com/vishvananda/rustgm/actions/runs/42255186438"
+  },
+  "current_full_ci": "pending after main publication",
+  "pending": [
+    "Whole original core/alloc/std artifacts",
+    "Full original CStr module/derive/constructors/from_ptr/strlen",
+    "Wider valid CTFE and nominal DST profiles",
+    "Authenticated metadata transport",
+    "Whole PA25+ release contracts"
+  ],
+  "performance": {
+    "receipt": "obj/parallel/source-cstr-perf/v2/receipt.json",
+    "sha256": "bf7a5b3d5a119f8c7cb04b039af9c931a984bd47eee205ca758118aec45a0c01",
+    "frozen_plan": {
+      "state": "frozen before observations",
+      "inputs": [
+        {
+          "path": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "functions": 512,
+          "sha256": "3b431a7e4c9b01a12f7f7c0693764adb05049de6fcd937a6d460176db717a944"
+        },
+        {
+          "path": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "functions": 2048,
+          "sha256": "803ccedaaa95747c227998d41a5b78946de39b7055bd4d55bcbdd8efe5cf3bfd"
+        }
+      ],
+      "baseline": "b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51",
+      "candidate": "qualified CStr immutable CLI pin from source-cstr-core receipt",
+      "mode": "--emit-types",
+      "aa_per_input": 4,
+      "abba_blocks_per_input": 4,
+      "output": "Exact bytes must equal baseline on every observation; retain statuses, SHA256, wall and childCPU seconds. No broad speedup claim from noisy ordinary controls.",
+      "setup_predecessor": "../receipt.json retains initial --types usage error before input parsing; no timing/parity claim from that attempt."
+    },
+    "raw": {
+      "state": "passed output equality; ordinary control observations",
+      "plan_sha256": "33bef799c7b0555942ecdf0f50f5aece25ab3b5837e7a63f7c14631fe40a18b7",
+      "baseline_sha256": "b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51",
+      "candidate_sha256": "a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9",
+      "seconds": 11.934430708002765,
+      "observations": [
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "AA",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.13264052994782105,
+          "cpu_seconds": 0.131803,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "AA",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.10742963198572397,
+          "cpu_seconds": 0.10639,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "AA",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.11381131503731012,
+          "cpu_seconds": 0.112682,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "AA",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.11038243497023359,
+          "cpu_seconds": 0.10967399999999995,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "ABBA0",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.1063223039964214,
+          "cpu_seconds": 0.10550600000000002,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "ABBA0",
+          "slot": "B",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.1119013240095228,
+          "cpu_seconds": 0.111325,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "ABBA0",
+          "slot": "B",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.11490556597709656,
+          "cpu_seconds": 0.1142909999999999,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "ABBA0",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.11472119303653017,
+          "cpu_seconds": 0.11408199999999998,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "ABBA1",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.1170023150043562,
+          "cpu_seconds": 0.11635099999999998,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "ABBA1",
+          "slot": "B",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.11265476996777579,
+          "cpu_seconds": 0.112108,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "ABBA1",
+          "slot": "B",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.12353173497831449,
+          "cpu_seconds": 0.12290200000000007,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "ABBA1",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.10975778702413663,
+          "cpu_seconds": 0.10914999999999991,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "ABBA2",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.10979036102071404,
+          "cpu_seconds": 0.10916899999999992,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "ABBA2",
+          "slot": "B",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.10924546601017937,
+          "cpu_seconds": 0.10863100000000007,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "ABBA2",
+          "slot": "B",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.10977931704837829,
+          "cpu_seconds": 0.10916000000000022,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "ABBA2",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.11285797302844003,
+          "cpu_seconds": 0.11233199999999988,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "ABBA3",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.11288257304113358,
+          "cpu_seconds": 0.11236200000000013,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "ABBA3",
+          "slot": "B",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.11444845801452175,
+          "cpu_seconds": 0.11386299999999996,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "ABBA3",
+          "slot": "B",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.11029188497923315,
+          "cpu_seconds": 0.1097639999999998,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "phase": "ABBA3",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-512.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.11002161202486604,
+          "cpu_seconds": 0.1094620000000002,
+          "stdout_sha256": "66a3b3551359801e441b67160aca55278a3477f173c2c311b196871ecb208f18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "AA",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.43541369697777554,
+          "cpu_seconds": 0.43383899999999975,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "AA",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.4295448209741153,
+          "cpu_seconds": 0.4279470000000001,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "AA",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.4329545079963282,
+          "cpu_seconds": 0.4302419999999999,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "AA",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.4578508749837056,
+          "cpu_seconds": 0.45614999999999983,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "ABBA0",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.43826083798194304,
+          "cpu_seconds": 0.4366809999999999,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "ABBA0",
+          "slot": "B",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.44383005995769054,
+          "cpu_seconds": 0.4429819999999999,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "ABBA0",
+          "slot": "B",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.4472066049929708,
+          "cpu_seconds": 0.4459640000000008,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "ABBA0",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.4487826780532487,
+          "cpu_seconds": 0.4480479999999993,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "ABBA1",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.440273137006443,
+          "cpu_seconds": 0.4397170000000006,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "ABBA1",
+          "slot": "B",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.4304917629924603,
+          "cpu_seconds": 0.429765999999999,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "ABBA1",
+          "slot": "B",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.42748581600608304,
+          "cpu_seconds": 0.4267240000000008,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "ABBA1",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.42810231598559767,
+          "cpu_seconds": 0.4274569999999996,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "ABBA2",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.4423259469913319,
+          "cpu_seconds": 0.4416560000000002,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "ABBA2",
+          "slot": "B",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.44027610402554274,
+          "cpu_seconds": 0.439394000000001,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "ABBA2",
+          "slot": "B",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.4242462369729765,
+          "cpu_seconds": 0.4234160000000003,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "ABBA2",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.4154768320149742,
+          "cpu_seconds": 0.41353900000000093,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "ABBA3",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.40759135503321886,
+          "cpu_seconds": 0.4069089999999992,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "ABBA3",
+          "slot": "B",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.4376960379886441,
+          "cpu_seconds": 0.43703400000000014,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "ABBA3",
+          "slot": "B",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/a8b8d5781ed47f28ab9db3dc70d5c675e7ad1b30a546276ef4a6f4e9f9d242b9/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.42239501897711307,
+          "cpu_seconds": 0.42189600000000066,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "phase": "ABBA3",
+          "slot": "A",
+          "argv": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/pins/b9c47bb99ccb142878724e24d7cd276f89ecf45a8ade79db1af50c12a6537c51/rustgm",
+            "--emit-types",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/source-cstr-perf/ordinary-text-2048.rs"
+          ],
+          "status": 0,
+          "wall_seconds": 0.42057654599193484,
+          "cpu_seconds": 0.4197309999999994,
+          "stdout_sha256": "e855001d87e406ad15962ac5d343c4d17a1c328cbc8ce9c2b558f31e40cb5a49",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_equal": true
+        }
+      ],
+      "summary": [
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-512.rs",
+          "aa_min_seconds": 0.10742963198572397,
+          "aa_max_seconds": 0.13264052994782105,
+          "paired_ratios": [
+            1.0260735693699625,
+            1.0415699359511357,
+            0.9837252274710646,
+            1.008237431375331
+          ],
+          "median_ratio": 1.0171555003726467,
+          "all_output_equal": true
+        },
+        {
+          "input": "obj/parallel/source-cstr-perf/ordinary-text-2048.rs",
+          "aa_min_seconds": 0.4295448209741153,
+          "aa_max_seconds": 0.4578508749837056,
+          "paired_ratios": [
+            1.0045016381308076,
+            0.988026061817304,
+            1.0078334579423922,
+            1.038546719694264
+          ],
+          "median_ratio": 1.0061675480366,
+          "all_output_equal": true
+        }
+      ]
+    },
+    "setup_predecessor": {
+      "receipt": "obj/parallel/source-cstr-perf/receipt.json",
+      "status": "CLI usage error --types; no input/parity/timing qualification; exact failed observation retained"
+    },
+    "interpretation": "All40 immutable A/A+ABBA observations preserve exact output equality. Ordinary-control median paired ratios1.0172 and1.0062 sit within observed calibration variation. No broad throughput or speedup claim."
+  }
+}

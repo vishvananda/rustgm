@@ -2,6 +2,12 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [CStr integration](../docs/parallel/source-cstr-main-join.md) qualifies actual
+source methods, typed literal/constant/static backing and provenance-bearing byte
+reconstruction, including native ordinary/generic nominal reference controls.
+Original core now reaches Reborrow. Whole module/derive/constructor/from_ptr/strlen,
+wider CTFE and authenticated transport remain required; this does not release PA31.
+
 The [IntoFuture/range integration](../docs/parallel/source-future-range-main-join.md)
 qualifies full original Future/IntoFuture ordinary calls and both forwarders,
 shared projected-bound production and source range records. Original core now
