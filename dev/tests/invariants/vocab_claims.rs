@@ -117,6 +117,83 @@ fn append_only_vocabulary_preserves_ordinals_spellings_and_checked_profiles() ->
     assert_eq!(size_of::<LangItem>(), 1);
     Ok(())
 }
+// Independently reviewed declaration families; this is not derived from the
+// compiler's admission table, so unknown claims retain their negative control.
+const REVIEWED_SOURCE_ROLES: &[LangItem] = &[
+    LangItem::CompilerMove,
+    LangItem::TryTraitFromYeet,
+    LangItem::CoercePointeeValidated,
+    LangItem::ResumeTy,
+    LangItem::CStr,
+    LangItem::Reborrow,
+    LangItem::CoerceShared,
+    LangItem::GetContext,
+    LangItem::CompilerCopy,
+    LangItem::UseCloned,
+    LangItem::FnPtrTrait,
+    LangItem::FnPtrAddr,
+    LangItem::Pin,
+    LangItem::UnsafeCell,
+    LangItem::UnsafePinned,
+    LangItem::PinNewUnchecked,
+    LangItem::Deref,
+    LangItem::DerefMut,
+    LangItem::DerefPure,
+    LangItem::DerefTarget,
+    LangItem::Receiver,
+    LangItem::ReceiverTarget,
+    LangItem::CoroutineState,
+    LangItem::Coroutine,
+    LangItem::CoroutineYield,
+    LangItem::CoroutineReturn,
+    LangItem::CoroutineResume,
+    LangItem::Future,
+    LangItem::FutureOutput,
+    LangItem::FuturePoll,
+    LangItem::Poll,
+    LangItem::PollReady,
+    LangItem::PollPending,
+    LangItem::Context,
+    LangItem::AsyncDropInPlace,
+    LangItem::AsyncDrop,
+    LangItem::AsyncFn,
+    LangItem::AsyncFnMut,
+    LangItem::AsyncFnOnce,
+    LangItem::AsyncFnOnceOutput,
+    LangItem::CallOnceFuture,
+    LangItem::CallRefFuture,
+    LangItem::AsyncFnKindHelper,
+    LangItem::AsyncFnKindUpvars,
+    LangItem::FusedIterator,
+    LangItem::AsyncIterator,
+    LangItem::AsyncIteratorPollNext,
+    LangItem::AsyncGenReady,
+    LangItem::AsyncGenPending,
+    LangItem::AsyncGenFinished,
+    LangItem::IntoAsyncIterIntoIter,
+    LangItem::IntoFutureIntoFuture,
+    LangItem::Mul,
+    LangItem::Rem,
+    LangItem::BitXor,
+    LangItem::BitAnd,
+    LangItem::Shr,
+    LangItem::Index,
+    LangItem::IndexMut,
+    LangItem::VaArgSafe,
+    LangItem::VaList,
+    LangItem::CVoid,
+    LangItem::AddAssign,
+    LangItem::SubAssign,
+    LangItem::MulAssign,
+    LangItem::DivAssign,
+    LangItem::RemAssign,
+    LangItem::BitXorAssign,
+    LangItem::BitAndAssign,
+    LangItem::BitOrAssign,
+    LangItem::ShlAssign,
+    LangItem::ShrAssign,
+];
+
 #[test]
 fn unimplemented_builtin_claims_stop_before_granting_layout_drop_or_auto_trait_semantics()
 -> TestResult {
@@ -134,81 +211,7 @@ fn unimplemented_builtin_claims_stop_before_granting_layout_drop_or_auto_trait_s
         {
             continue;
         }
-        if matches!(
-            role,
-            LangItem::CompilerMove
-                | LangItem::TryTraitFromYeet
-                | LangItem::CoercePointeeValidated
-                | LangItem::ResumeTy
-                | LangItem::CStr
-                | LangItem::Reborrow
-                | LangItem::CoerceShared
-                | LangItem::GetContext
-                | LangItem::CompilerCopy
-                | LangItem::UseCloned
-                | LangItem::FnPtrTrait
-                | LangItem::FnPtrAddr
-                | LangItem::Pin
-                | LangItem::UnsafeCell
-                | LangItem::UnsafePinned
-                | LangItem::PinNewUnchecked
-                | LangItem::Deref
-                | LangItem::DerefMut
-                | LangItem::DerefPure
-                | LangItem::DerefTarget
-                | LangItem::Receiver
-                | LangItem::ReceiverTarget
-                | LangItem::CoroutineState
-                | LangItem::Coroutine
-                | LangItem::CoroutineYield
-                | LangItem::CoroutineReturn
-                | LangItem::CoroutineResume
-                | LangItem::Future
-                | LangItem::FutureOutput
-                | LangItem::FuturePoll
-                | LangItem::Poll
-                | LangItem::PollReady
-                | LangItem::PollPending
-                | LangItem::Context
-                | LangItem::AsyncDropInPlace
-                | LangItem::AsyncDrop
-                | LangItem::AsyncFn
-                | LangItem::AsyncFnMut
-                | LangItem::AsyncFnOnce
-                | LangItem::AsyncFnOnceOutput
-                | LangItem::CallOnceFuture
-                | LangItem::CallRefFuture
-                | LangItem::AsyncFnKindHelper
-                | LangItem::AsyncFnKindUpvars
-                | LangItem::FusedIterator
-                | LangItem::AsyncIterator
-                | LangItem::AsyncIteratorPollNext
-                | LangItem::AsyncGenReady
-                | LangItem::AsyncGenPending
-                | LangItem::AsyncGenFinished
-                | LangItem::IntoAsyncIterIntoIter
-                | LangItem::IntoFutureIntoFuture
-                | LangItem::Mul
-                | LangItem::Rem
-                | LangItem::BitXor
-                | LangItem::BitAnd
-                | LangItem::Shr
-                | LangItem::Index
-                | LangItem::IndexMut
-                | LangItem::VaArgSafe
-                | LangItem::VaList
-                | LangItem::CVoid
-                | LangItem::AddAssign
-                | LangItem::SubAssign
-                | LangItem::MulAssign
-                | LangItem::DivAssign
-                | LangItem::RemAssign
-                | LangItem::BitXorAssign
-                | LangItem::BitAndAssign
-                | LangItem::BitOrAssign
-                | LangItem::ShlAssign
-                | LangItem::ShrAssign
-        ) {
+        if REVIEWED_SOURCE_ROLES.contains(&role) {
             continue;
         }
         let report = test_source::source_provider(&input(&case)?, "language_claims")?;

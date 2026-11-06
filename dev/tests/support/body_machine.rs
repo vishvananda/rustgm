@@ -163,6 +163,7 @@ impl Machine<'_> {
                 return Err("inline assembly is outside the PA10 scalar executor".into());
             }
             Rvalue::Borrow { .. }
+            | Rvalue::Reborrow { .. }
             | Rvalue::Address(_)
             | Rvalue::Unsize { .. }
             | Rvalue::AssociatedConstant(_)

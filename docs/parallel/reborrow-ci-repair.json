@@ -1,0 +1,111 @@
+{
+  "state": "passed CI-driven test-only repair; full successor pending",
+  "base": "3ce6b5d05f471a4714eb01977d31a451b5edb1f7",
+  "worktree": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work",
+  "prior_ci": {
+    "run": 42285466362,
+    "head": "3ce6b5d05f471a4714eb01977d31a451b5edb1f7",
+    "log": "obj/ci/42285466362/failed.log",
+    "sha256": "28ebca0774eaeb85c8b9edba7867bd2d5fc756f190f339ba1776d3a23cf7401a"
+  },
+  "qualification": {
+    "receipt": "obj/parallel/reborrow-ci-repair-v1/receipt.json",
+    "sha256": "09c2dba72941f2f6c4e3d037ae6165145bc6782866ecc062a6ecad26f8ce1e69",
+    "seconds": 128.27504019095795,
+    "steps": [
+      {
+        "name": "format",
+        "command": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "status": 0,
+        "seconds": 17.357449562987313
+      },
+      {
+        "name": "audit",
+        "command": [
+          "obj/audit-venv/bin/python",
+          "scripts/rust_audit.py",
+          "--root",
+          ".",
+          "--cache",
+          "obj/fast-audit.json"
+        ],
+        "status": 0,
+        "seconds": 2.6210670470027253
+      },
+      {
+        "name": "ci-metadata",
+        "command": [
+          "cargo",
+          "clippy",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--all-targets",
+          "--all-features",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "status": 0,
+        "seconds": 100.54146610700991
+      },
+      {
+        "name": "build-lowering",
+        "command": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_lowering",
+          "--no-run",
+          "--message-format=json"
+        ],
+        "status": 0,
+        "seconds": 6.934207591053564
+      },
+      {
+        "name": "inventory",
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/deps/suite_lowering-3fa79cbddf827b7c",
+          "--list"
+        ],
+        "status": 0,
+        "seconds": 0.00832994596567005
+      },
+      {
+        "name": "scalar-execution",
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/deps/suite_lowering-3fa79cbddf827b7c",
+          "--exact",
+          "typed_bodies::deep_bodies_are_iterative_and_views_are_deterministic"
+        ],
+        "status": 0,
+        "seconds": 0.3654478769749403
+      }
+    ],
+    "source_hashes": 3671
+  },
+  "changed_files": {
+    "dev/tests/support/body_machine.rs": "30f1bd77dad2b2bb202bcab728534cc5606c905d57afbc931a7d71c2ed652fae",
+    "dev/tests/invariants/vocab_claims.rs": "426a0b07d4002573e39701aa3dbf13dc1746a30f2f68b17e810c09fc63fbc7a8"
+  },
+  "production_source_changes": false,
+  "compiler_cli_sha256": "9aa812d66647c3e57800d93cab93649b9b424999d025a9d3f64657c8cec4cc11",
+  "pending": [
+    "private runtime and full release/debug/native/independent successor CI"
+  ]
+}
