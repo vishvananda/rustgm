@@ -3,7 +3,9 @@ pub(in crate::sema) mod normal_form;
 mod normalization;
 mod quantified;
 pub(in crate::sema) use quantified::{Goal as QuantifiedGoal, Queries as QuantifiedQueries};
+mod decide;
 mod opening;
+pub(crate) use decide::Decision;
 mod shape_normalization;
 mod term_normalization;
 use crate::{

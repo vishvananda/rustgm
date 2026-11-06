@@ -2,6 +2,10 @@
 mod index;
 mod locate;
 mod parts;
+mod picked;
+mod qterm;
+mod query;
+pub(crate) use picked::Selected;
 mod tags;
 mod trans;
 use super::initialization::Maybe;
@@ -16,6 +20,12 @@ use crate::{
     types::{Kind, Store, TypeId},
 };
 
+#[derive(Clone, Copy)]
+pub(super) struct EligibilityInput<'a> {
+    pub definitions: &'a Definitions,
+    pub custom: &'a dyn Fn(ItemId) -> bool,
+    pub requirements: Option<&'a crate::body::drops::Requirements>,
+}
 #[derive(Clone, Copy)]
 struct Rule {
     parent: PathId,
@@ -39,7 +49,7 @@ impl Refinements {
         types: &Store,
         position: &impl Fn(TypeId, MemberQuery) -> Result<MemberPosition, &'static str>,
         byte_limit: usize,
-        eligibility: Option<(&Definitions, &dyn Fn(ItemId) -> bool)>,
+        eligibility: Option<EligibilityInput<'_>>,
         physical: bool,
     ) -> Result<Self, &'static str> {
         let mut result = Self {
@@ -56,12 +66,19 @@ impl Refinements {
             paths,
             types,
             position,
-            eligibility.map(|(definitions, _)| definitions),
+            eligibility.map(|input| input.definitions),
+            eligibility.and_then(|input| input.requirements),
         )?;
         if physical && !result.rules.is_empty() {
             result.index_fields(paths, types, position)?;
         }
-        if seeded && let Some((definitions, custom)) = eligibility {
+        if seeded
+            && let Some(EligibilityInput {
+                definitions,
+                custom,
+                ..
+            }) = eligibility
+        {
             let partition = index::Partition::new(
                 index::Inputs {
                     types,
@@ -73,7 +90,10 @@ impl Refinements {
                 custom,
                 position,
             )?;
+            let prior = result.steps;
             result.charge(partition.tags.parts.steps.get())?;
+            // All later capture/substitution work shares this same combined cap.
+            partition.tags.parts.charge(prior)?;
             result.partition = Some(Box::new(partition));
         }
         Ok(result)
@@ -85,6 +105,7 @@ impl Refinements {
         types: &Store,
         position: &impl Fn(TypeId, MemberQuery) -> Result<MemberPosition, &'static str>,
         definitions: Option<&Definitions>,
+        requirements: Option<&crate::body::drops::Requirements>,
     ) -> Result<bool, &'static str> {
         let mut seeded = false;
         self.charge(body.blocks.len())?;
@@ -103,6 +124,23 @@ impl Refinements {
                     };
                     seeded|=ty.is_some_and(|ty|matches!(types.kind(ty),Some(Kind::Adt(item,_))
                         if definitions.get(item).is_some_and(|d|d.kind==crate::types::aggregate::Kind::Enum)));
+                    if let (Action::StorageLive(id), Some(requirements)) =
+                        (statement.action, requirements)
+                    {
+                        seeded |= body.locals.get(id.0 as usize).is_some_and(|local| {
+                            matches!(
+                                local.kind,
+                                crate::body::ir::LocalKind::Parameter(_)
+                                    | crate::body::ir::LocalKind::Variadic
+                            ) && requirements.locals.get(id.0 as usize).copied() == Some(true)
+                                && structural_type(types, definitions, local.ty)
+                        });
+                    }
+                    if let (Action::Evaluate(value), Some(requirements)) =
+                        (statement.action, requirements)
+                    {
+                        seeded |= structural_seed(types, definitions, body, requirements, value);
+                    }
                 }
             }
             let Terminator::Branch { condition, yes, no } = block.terminator else {
@@ -324,5 +362,167 @@ impl Refinements {
         self.partition
             .as_ref()
             .map_or(Ok(()), |p| p.transition(event, state))
+    }
+}
+
+impl Refinements {
+    pub(super) fn visit_selected(
+        &self,
+        facts: &super::initialization::Facts<'_>,
+        mut visitor: impl FnMut(
+            super::initialization::Transition,
+            &mut super::initialization::Point<'_>,
+        ) -> Result<
+            Option<crate::borrow::destruction::schedule::Cleanup>,
+            &'static str,
+        >,
+    ) -> Result<Option<Box<Selected>>, &'static str> {
+        let Some(partition) = &self.partition else {
+            facts.visit_transfers(|event, point| visitor(event, point).map(|_| ()))?;
+            return Ok(None);
+        };
+        let mut selected = Selected::new(&partition.tags, &facts.ownership.paths, facts.body())?;
+        facts.visit_transfers(|event, point| {
+            let snapshot = if let super::initialization::Transition::Observe(
+                super::initialization::Event::Cleanup(candidate),
+            ) = event
+            {
+                Some(selected.snapshot(
+                    &partition.tags,
+                    &facts.ownership.paths,
+                    facts.body(),
+                    candidate,
+                    point,
+                    partition.queries.as_deref(),
+                )?)
+            } else {
+                None
+            };
+            // Snapshot is captured before the callback can inspect/mutate Point.
+            let row = visitor(event, point)?;
+            match (snapshot, row) {
+                (Some(snapshot), Some(row)) => {
+                    selected.complete(&partition.tags.parts, &snapshot, row)
+                }
+                (None, None) => Ok(()),
+                _ => Err("selected replay visitor changed actual cleanup coverage"),
+            }
+        })?;
+        Ok(Some(Box::new(selected)))
+    }
+    pub(super) fn install_selected(
+        &mut self,
+        body: &Body,
+        selected: Box<Selected>,
+    ) -> Result<(), &'static str> {
+        let partition = self
+            .partition
+            .as_mut()
+            .ok_or("selected cleanup lost its actual partition")?;
+        if partition.selected.is_some()
+            || selected.body != body.key()
+            || selected.source != body.source
+        {
+            return Err("selected cleanup owner is stale or belongs to another body");
+        }
+        partition.selected = Some(selected);
+        Ok(())
+    }
+    pub(super) fn selected(&self) -> Option<&Selected> {
+        self.partition.as_ref()?.selected.as_deref()
+    }
+    pub(super) fn resolve_selected(
+        &mut self,
+        types: &mut Store,
+        definitions: &Definitions,
+        body: &Body,
+    ) -> Result<(), &'static str> {
+        let Some(partition) = &mut self.partition else {
+            return Ok(());
+        };
+        if let Some(selected) = &mut partition.selected {
+            selected.resolve(
+                types,
+                definitions,
+                body,
+                &partition.tags.parts,
+                &partition.transfers.candidates,
+                partition
+                    .queries
+                    .as_deref()
+                    .map(|q| q.coordinates.as_slice()),
+            )?;
+        }
+        Ok(())
+    }
+}
+
+impl Refinements {
+    pub(super) fn has_partition(&self) -> bool {
+        self.partition.is_some()
+    }
+    pub(super) fn prepare_queries(
+        &mut self,
+        types: &mut Store,
+        definitions: &Definitions,
+        body: &Body,
+        paths: &Paths,
+    ) -> Result<Option<&[TypeId]>, &'static str> {
+        self.partition
+            .as_deref_mut()
+            .map(|p| p.prepare_queries(types, definitions, body, paths))
+            .transpose()
+    }
+    pub(super) fn accept_queries(
+        &mut self,
+        body: &Body,
+        types: &Store,
+        definitions: &Definitions,
+        regions: &crate::borrow::regions::Body,
+        answers: &crate::body::defining_cleanups::Qualification<'_>,
+    ) -> Result<(), &'static str> {
+        self.partition
+            .as_deref_mut()
+            .ok_or("const qualification lost its partition")?
+            .accept_queries(body, types, definitions, regions, answers)
+    }
+    pub(super) fn apply_queries(&mut self) -> Result<(), &'static str> {
+        self.partition
+            .as_deref_mut()
+            .and_then(|p| p.queries.as_deref_mut())
+            .ok_or("const qualification refinement was already completed")?
+            .apply()
+    }
+}
+
+fn structural_seed(
+    types: &Store,
+    definitions: &Definitions,
+    body: &Body,
+    requirements: &crate::body::drops::Requirements,
+    value: crate::body::ir::ValueId,
+) -> bool {
+    let Some(value) = body
+        .values
+        .get(value.0 as usize)
+        .filter(|_| requirements.values.get(value.0 as usize).copied() == Some(true))
+    else {
+        return false;
+    };
+    if !matches!(
+        value.kind,
+        Rvalue::Aggregate { .. } | Rvalue::Repeat { .. } | Rvalue::Call { .. } | Rvalue::Read(_)
+    ) {
+        return false;
+    }
+    structural_type(types, definitions, value.ty)
+}
+fn structural_type(types: &Store, definitions: &Definitions, ty: TypeId) -> bool {
+    match types.kind(ty) {
+        Some(Kind::Tuple(_) | Kind::Array { .. } | Kind::ArrayTerm { .. }) => true,
+        Some(Kind::Adt(item, _)) => definitions
+            .get(item)
+            .is_some_and(|d| d.kind == crate::types::aggregate::Kind::Struct),
+        _ => false,
     }
 }

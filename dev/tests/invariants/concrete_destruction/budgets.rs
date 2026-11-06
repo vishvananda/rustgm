@@ -1,5 +1,7 @@
 //! Bounded exact queries preflight live slots and share completed graph work.
 use super::*;
+#[path = "qcost.rs"]
+mod qcost;
 use crate::types::{
     GenericArgs, Kind, Primitive, copy, opaque, parameters::environment::Environment,
 };

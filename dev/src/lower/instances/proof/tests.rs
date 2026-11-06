@@ -36,12 +36,12 @@ fn completed_original_rejects_equal_shaped_foreign_contract_before_collection() 
     let mut program = body::build_concrete(&report, &facts)?;
     body::promote::analyze(&report, &mut facts, &mut program)?;
     let checked = originals(&mut facts, &templates, &inputs)?;
-    let (mut builder, mut bodies) = super::Builder::new(program)?;
-    builder.prepare_parent_regions(&mut facts, &indexed, &bodies)?;
+    let (mut builder, mut bodies) = super::Builder::new(&facts, program)?;
+    builder.prepare_parent_regions(&mut facts, &indexed, bodies.bodies())?;
     let staged = builder.stage_parent(
         &mut facts,
         &checked,
-        bodies.pop().ok_or("actual original")?,
+        bodies.pop()?.ok_or("actual original")?,
         None,
     )?;
     let mut work = 0;
@@ -337,8 +337,7 @@ fn assembly_rejects_unproved_bodies_and_inconsistent_cleanup() -> TestResult {
     f.program.bodies.clear();
     let recipes = body::drops::glue::Cache::new(&[])?.into_recipes();
     assert!(incremental::with_checked(f.program, vec![], Some(recipes), |_| ()).is_err());
-    let (report, mut f) =
-        fixture_with_report("struct D;impl Drop for D{fn drop(&mut self){}}fn main(){let d=D;}")?;
+    let mut f = fixture("struct D;impl Drop for D{fn drop(&mut self){}}fn main(){let d=D;}")?;
     f.program.bodies.clear();
     let recipes = body::drops::glue::Cache::new(&[])?.into_recipes();
     assert!(incremental::with_checked(f.program, vec![], Some(recipes), |_| ()).is_err());
@@ -350,14 +349,15 @@ fn assembly_cannot_erase_a_completed_destruction_proof() -> TestResult {
     let (report, mut f) =
         fixture_with_report("struct D;impl Drop for D{fn drop(&mut self){}}fn main(){let d=D;}")?;
     let checked = originals(&mut f.facts, &f.templates, &f.inputs)?;
-    let (mut builder, bodies) = super::Builder::new(f.program)?;
-    for body in bodies {
+    let (mut builder, mut bodies) = super::Builder::new(&f.facts, f.program)?;
+    bodies.reverse(&f.facts)?;
+    while let Some((body, requirements)) = bodies.pop()? {
         let input = f
             .inputs
             .iter()
             .find(|input| input.key == body.key())
             .ok_or("missing ordinary contract")?;
-        builder.push(&report, &mut f.facts, &checked, body, input, None)?;
+        builder.push(&report, &mut f.facts, &checked, body, input, requirements)?;
     }
     builder.program.drops = None;
     builder.recipes = None;

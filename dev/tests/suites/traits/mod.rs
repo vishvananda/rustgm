@@ -117,5 +117,7 @@ mod ctnext;
 mod ctown;
 #[path = "../../ctseal.rs"]
 mod ctseal;
+#[path = "../../ctsel.rs"]
+mod ctsel;
 #[path = "../../ctwire.rs"]
 mod ctwire;

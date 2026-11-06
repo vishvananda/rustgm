@@ -64,7 +64,9 @@ fn precise_request_omits_only_non_access_cleanup_eligibility() -> Result {
             .ok_or("const cleanup authority changed")?;
         let message = error.to_string();
         assert!(
-            message.contains("const Destruct") || message.contains("can't drop"),
+            message.contains("const Destruct")
+                || message.contains("const Drop")
+                || message.contains("can't drop"),
             "{name}: {message}"
         );
         assert!(!message.contains("not implemented"), "{name}: {message}");
@@ -72,22 +74,22 @@ fn precise_request_omits_only_non_access_cleanup_eligibility() -> Result {
     Ok(())
 }
 #[test]
-fn active_enum_selection_remains_required_beyond_the_no_access_repair() -> Result {
-    // prknow/prmove are Rust-positive; prunk is Rust-negative with an E0493 cause.
-    // This checkpoint does not claim semantic parity for either retained fence.
-    for name in ["prknow", "prmove", "prunk"] {
-        let error = cleanup(name)
-            .err()
-            .ok_or_else(|| format!("{name}: qualify actual selected enum cleanup"))?;
-        assert!(
-            error
-                .to_string()
-                .contains("selected const enum cleanup leaves"),
-            "{name}: {error}"
-        );
+fn actual_known_enum_cleanup_definitions_are_separate_from_unknown_payloads() -> Result {
+    for name in ["prknow", "prmove"] {
+        cleanup(name).map_err(|e| format!("{name}: {e}"))?;
     }
+    let error = cleanup("prunk")
+        .err()
+        .ok_or("unknown nonconst payload accepted")?;
+    assert!(
+        error.to_string().contains("const Drop")
+            || error.to_string().contains("const Destruct")
+            || error.to_string().contains("can't drop"),
+        "{error}"
+    );
     Ok(())
 }
+
 #[test]
 fn no_drop_repair_keeps_reached_intrinsic_body_fences() -> Result {
     for name in ["const", "runtime", "reified"] {

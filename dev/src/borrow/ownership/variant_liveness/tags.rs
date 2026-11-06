@@ -29,7 +29,6 @@ pub(super) struct Node {
     pub tags: Range,
     pub own_tags: Range,
     pub own_need: Range,
-    pub partial: Range,
     pub anchor: Anchor,
 }
 pub(super) struct Root {
@@ -37,6 +36,8 @@ pub(super) struct Root {
     pub coordinate: Coordinate,
     pub tags: Range,
     pub exposed: u32,
+    pub bad: u32,
+    pub borrowed: u32,
 }
 pub(super) struct Child {
     pub ordinal: u32,
@@ -123,6 +124,8 @@ impl Tags {
             this.build(&mut work)?;
             let end = this.bits;
             let exposed = this.bit(1)?.start;
+            let bad = this.bit(1)?.start;
+            let borrowed = this.bit(1)?.start;
             this.parts.pay(Growth::map::<PathId, u32>(
                 this.origins.len(),
                 this.origins.capacity(),
@@ -145,6 +148,8 @@ impl Tags {
                 coordinate,
                 tags: Range { start, end },
                 exposed,
+                bad,
+                borrowed,
             });
         }
         Ok(this)
@@ -175,7 +180,6 @@ impl Tags {
             tags: Range::default(),
             own_tags: Range::default(),
             own_need: Range::default(),
-            partial: Range::default(),
             anchor,
         });
         Ok(id)
@@ -212,13 +216,8 @@ impl Tags {
                         0
                     })?;
                     let required = self.bit(u32::from(need != Need::None))?;
-                    let partial = self.bit(u32::from(matches!(
-                        form,
-                        Form::Tuple | Form::Nominal { enumeration: false } | Form::Array
-                    )))?;
                     self.nodes[id.0 as usize].own_tags = own;
                     self.nodes[id.0 as usize].own_need = required;
-                    self.nodes[id.0 as usize].partial = partial;
                     self.nodes[id.0 as usize].tags.start = own.start;
                     self.push(work, Work::Finish(id))?;
                     self.descend(id, form, variants, work)?;

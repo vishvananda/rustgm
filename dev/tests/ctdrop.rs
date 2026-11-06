@@ -182,15 +182,11 @@ fn actual_definition_cleanup_work_grows_with_demanded_bodies() -> Result {
 }
 
 #[test]
-fn selected_enum_requirements_remain_named() -> Result {
-    for (name, gap) in [
-        ("egood", "selected const enum cleanup leaves"),
-        ("empty", "selected const enum cleanup leaves"),
-    ] {
-        let error = program(name)
-            .err()
-            .ok_or_else(|| format!("{name}: boundary changed; qualify it"))?;
-        assert!(error.to_string().contains(gap), "{name}: {error}");
+fn actual_selected_good_and_empty_payload_definitions_compile() -> Result {
+    // Both unchanged inputs were independently Rust-positive before the old
+    // named selected-leaf fence. Their real bodies now pass the producer.
+    for name in ["egood", "empty"] {
+        program(name).map_err(|error| format!("{name}: {error}"))?;
     }
     Ok(())
 }

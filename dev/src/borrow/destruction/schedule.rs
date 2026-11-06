@@ -12,6 +12,7 @@ pub(crate) struct Cleanup {
 pub(crate) struct Schedule<'a> {
     pub events: &'a [Event],
     cleanups: Cleanups<'a>,
+    selected: Option<&'a crate::borrow::ownership::Selected>,
 }
 #[derive(Clone, Copy)]
 enum Cleanups<'a> {
@@ -23,13 +24,29 @@ impl<'a> Schedule<'a> {
         Self {
             events: &plan.events,
             cleanups: Cleanups::Concrete(&plan.cleanups),
+            selected: None,
         }
     }
     pub(crate) const fn symbolic(events: &'a [Event], cleanups: &'a [Cleanup]) -> Self {
         Self {
             events,
             cleanups: Cleanups::Symbolic(cleanups),
+            selected: None,
         }
+    }
+    pub(crate) fn with_selected(
+        mut self,
+        body: &crate::body::ir::Body,
+        selected: Option<&'a crate::borrow::ownership::Selected>,
+    ) -> Result<Self, &'static str> {
+        if let Some(selected) = selected {
+            selected.validate(body, self)?;
+        }
+        self.selected = selected;
+        Ok(self)
+    }
+    pub(crate) const fn selected(self) -> Option<&'a crate::borrow::ownership::Selected> {
+        self.selected
     }
     pub(crate) fn cleanups(self) -> impl Iterator<Item = Cleanup> + 'a {
         let (concrete, symbolic): (&[super::Cleanup], &[Cleanup]) = match self.cleanups {

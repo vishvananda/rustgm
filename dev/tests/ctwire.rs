@@ -29,14 +29,16 @@ fn provider(name: &str) -> Result<Vec<u8>> {
     Ok(crates::encode(&interface)?)
 }
 #[test]
-fn conditional_composite_original_remains_a_required_positive() -> Result {
+fn conditional_composite_original_advances_to_the_required_type_row() -> Result {
+    // This unchanged Rust-positive provider now passes defining cleanup. Export
+    // still requires its tuple type row; no imported-policy result is claimed.
     let error = provider("impro3")
         .err()
         .ok_or("qualify actual conditional composite original")?;
     assert!(
         error
             .to_string()
-            .contains("active cleanup requires const Destruct in its actual defining environment"),
+            .contains("source type form requires an explicitly supported transport row"),
         "{error}"
     );
     Ok(())

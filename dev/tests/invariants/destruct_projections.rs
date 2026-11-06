@@ -127,7 +127,7 @@ fn failed_formation_after_indexing_never_produces_a_projected_use() -> Result {
         &mut Work::new(1_000_000),
     )?;
     assert!(matches!(
-        prepared.claims.get(ty),
+        prepared.claims.get(ty, Purpose::Body),
         Some(claims::Claim::ProjectedDestruct)
     ));
     contract.obligations.push(crate::body::regions::Obligation {

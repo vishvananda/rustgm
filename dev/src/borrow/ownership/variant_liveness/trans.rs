@@ -1,6 +1,8 @@
 //! One checked statement index supplies both tag dataflow and replay transfers.
+use super::qterm::Input;
 use super::{
     parts::{self, Form, Range},
+    qterm::{Aliases, Compiler, Source, Terms},
     tags::{Coordinate, Located, Step, Tags},
 };
 use crate::{
@@ -14,16 +16,11 @@ use crate::{
     types::{Kind, Store, TypeId},
 };
 #[derive(Clone, Copy)]
-struct Input<'a> {
-    types: &'a Store,
-    paths: &'a Paths,
-    body: &'a Body,
-}
-#[derive(Clone, Copy)]
 struct Construction {
     form: Form,
     selected: u32,
     fields: crate::body::ir::ValueList,
+    ty: TypeId,
 }
 pub(super) struct Copy {
     pub source: Range,
@@ -36,21 +33,33 @@ pub(super) struct Fill {
 }
 struct Update {
     destination: Option<Located>,
-    expose: Option<u32>,
+    expose: Option<(u32, TypeId)>,
     storage: Option<bool>,
+    source: Source,
 }
 pub(super) struct Row {
     pub destination: Option<Located>,
     pub copies: Range,
     pub fills: Range,
-    pub expose: Option<u32>,
+    pub expose: Option<(u32, TypeId)>,
     pub storage: Option<bool>,
+    source: Source,
+    pub qualification: Range,
+}
+pub(super) struct Candidate {
+    pub value: ValueId,
+    pub variant: u32,
+    pub callee: TypeId,
+    pub signature: TypeId,
+    pub result: TypeId,
 }
 pub(super) struct Transfers {
+    pub candidates: Vec<Candidate>,
     pub rows: HashMap<Location, Row>,
     pub copies: Vec<Copy>,
     pub fills: Vec<Fill>,
     pub scratch: usize,
+    pub terms: Terms,
 }
 impl Transfers {
     pub(super) fn new(
@@ -61,11 +70,14 @@ impl Transfers {
         position: &impl Fn(TypeId, MemberQuery) -> Result<MemberPosition, &'static str>,
     ) -> Result<Self, &'static str> {
         let mut this = Self {
+            candidates: Vec::new(),
             rows: HashMap::default(),
             copies: Vec::new(),
             fills: Vec::new(),
             scratch: 0,
+            terms: Terms::default(),
         };
+        let mut aliases = Aliases::default();
         for (index, block) in body.blocks.iter().enumerate() {
             for before in block.start..block.end {
                 tags.parts.charge(1)?;
@@ -74,12 +86,14 @@ impl Transfers {
                     .get(before as usize)
                     .ok_or("cleanup tag statement is missing")?
                     .action;
+                aliases.observe(&tags.parts, Input { types, paths, body }, action)?;
                 let copies = parts::compact(this.copies.len())?;
                 let fills = parts::compact(this.fills.len())?;
                 let Update {
                     destination,
                     expose,
                     storage,
+                    source,
                 } = this.action(tags, Input { types, paths, body }, action, position)?;
                 if destination.is_none() && expose.is_none() {
                     continue;
@@ -100,6 +114,8 @@ impl Transfers {
                     destination,
                     expose,
                     storage,
+                    source,
+                    qualification: Range::default(),
                     copies: Range {
                         start: copies,
                         end: parts::compact(this.copies.len())?,
@@ -122,6 +138,20 @@ impl Transfers {
                 }
             }
         }
+        let mut compiler = Compiler::default();
+        for row in this.rows.values_mut() {
+            row.qualification = this.terms.compile(
+                tags,
+                Input { types, paths, body },
+                &aliases,
+                &mut compiler,
+                row.source,
+            )?;
+        }
+        this.scratch = this
+            .scratch
+            .checked_add(1)
+            .ok_or("qualification scratch size overflow")?;
         tags.parts.pay(Growth {
             bytes: this.scratch,
             work: this.scratch,
@@ -158,13 +188,17 @@ impl Transfers {
                 let destination = paths
                     .temporary_path(value)
                     .and_then(|path| tags.locations.get(&path).copied());
-                if let Some(destination) = destination {
-                    self.value(tags, input, value, destination, position)?;
-                }
+                let qualification = if let Some(destination) = destination {
+                    self.value(tags, input, value, destination, position)?
+                } else {
+                    Source::Clear
+                };
+                let expose = exposure_type(body, source.kind, expose)?;
                 Ok(Update {
                     destination,
                     expose,
                     storage: None,
+                    source: qualification,
                 })
             }
             Action::Store { place, value } => {
@@ -184,6 +218,7 @@ impl Transfers {
                     destination,
                     expose: None,
                     storage: None,
+                    source: Source::Value(value),
                 })
             }
             Action::StorageLive(local) | Action::StorageDead(local) => {
@@ -203,12 +238,23 @@ impl Transfers {
                     destination,
                     expose: None,
                     storage: Some(initialized),
+                    source: if initialized {
+                        Source::Type(
+                            body.locals
+                                .get(local.0 as usize)
+                                .ok_or("qualification parameter is missing")?
+                                .ty,
+                        )
+                    } else {
+                        Source::Clear
+                    },
                 })
             }
             _ => Ok(Update {
                 destination: None,
                 expose: None,
                 storage: None,
+                source: Source::Clear,
             }),
         }
     }
@@ -238,19 +284,23 @@ impl Transfers {
         value: ValueId,
         destination: Located,
         position: &impl Fn(TypeId, MemberQuery) -> Result<MemberPosition, &'static str>,
-    ) -> Result<(), &'static str> {
+    ) -> Result<Source, &'static str> {
         let Input { types, paths, body } = input;
+        let identity = value;
         let value = body
             .values
             .get(value.0 as usize)
             .ok_or("cleanup tag constructor is missing")?;
         match value.kind {
-            Rvalue::Read(place) => self.copy(
-                tags,
-                types,
-                tags.place(paths, place)?.map(|p| p.coordinate),
-                destination.coordinate,
-            ),
+            Rvalue::Read(place) => {
+                self.copy(
+                    tags,
+                    types,
+                    tags.place(paths, place)?.map(|p| p.coordinate),
+                    destination.coordinate,
+                )?;
+                Ok(Source::Place(place))
+            }
             Rvalue::Aggregate { variant, fields } => {
                 let part = &tags.parts.entries
                     [tags.nodes[destination.coordinate.0 as usize].part.0 as usize];
@@ -268,11 +318,12 @@ impl Transfers {
                     }
                     (Form::Tuple | Form::Array, None) => 0,
                     (Form::Leaf, _) => {
-                        return self.fill(
+                        self.fill(
                             tags,
                             tags.nodes[destination.coordinate.0 as usize].tags,
                             true,
-                        );
+                        )?;
+                        return Ok(Source::Type(value.ty));
                     }
                     _ => return Err("cleanup tag constructor has another structural owner"),
                 };
@@ -284,25 +335,113 @@ impl Transfers {
                         form,
                         selected,
                         fields,
+                        ty: value.ty,
                     },
                 )
             }
+            Rvalue::Call { .. } => self.call(tags, input, identity, destination, position),
+            Rvalue::Constrain(value) => {
+                let source = paths
+                    .temporary_path(value)
+                    .and_then(|path| tags.locations.get(&path))
+                    .map(|p| p.coordinate);
+                self.copy(tags, types, source, destination.coordinate)?;
+                Ok(Source::Value(value))
+            }
             Rvalue::Repeat { value, .. } => {
                 let Some(child) = tags.child(destination.coordinate, Step::Element)? else {
-                    return Ok(());
+                    return Ok(Source::Value(value));
                 };
                 let source = paths
                     .temporary_path(value)
                     .and_then(|path| tags.locations.get(&path))
                     .map(|p| p.coordinate);
-                self.copy(tags, types, source, child)
+                self.copy(tags, types, source, child)?;
+                Ok(Source::Value(value))
             }
-            _ => self.fill(
+            _ => {
+                self.fill(
+                    tags,
+                    tags.nodes[destination.coordinate.0 as usize].tags,
+                    true,
+                )?;
+                Ok(Source::Type(value.ty))
+            }
+        }
+    }
+    fn call(
+        &mut self,
+        tags: &mut Tags,
+        input: Input<'_>,
+        identity: ValueId,
+        destination: Located,
+        position: &impl Fn(TypeId, MemberQuery) -> Result<MemberPosition, &'static str>,
+    ) -> Result<Source, &'static str> {
+        let Input { types, body, .. } = input;
+        let value = body
+            .values
+            .get(identity.0 as usize)
+            .ok_or("cleanup constructor value is missing")?;
+        let Rvalue::Call {
+            callee,
+            signature,
+            arguments,
+        } = value.kind
+        else {
+            return Err("cleanup constructor call changed its transfer");
+        };
+        let callee = body
+            .values
+            .get(callee.0 as usize)
+            .ok_or("cleanup constructor callee is missing")?;
+        if !matches!((types.kind(callee.ty), callee.kind),
+                    (Some(Kind::FunctionItem {item, ..}), Rvalue::Function(definition)) if item.0 == definition.0)
+        {
+            self.fill(
                 tags,
                 tags.nodes[destination.coordinate.0 as usize].tags,
                 true,
-            ),
+            )?;
+            return Ok(Source::Type(value.ty));
         }
+        let callee = callee.ty;
+        let selected = position(value.ty, MemberQuery::ConstructorCall(callee))?;
+        let MemberPosition::Variant(selected) = selected else {
+            self.fill(
+                tags,
+                tags.nodes[destination.coordinate.0 as usize].tags,
+                true,
+            )?;
+            return Ok(Source::Type(value.ty));
+        };
+        tags.parts.pay(Growth::vector::<Candidate>(
+            self.candidates.len(),
+            self.candidates.capacity(),
+            1,
+        ))?;
+        self.candidates
+            .try_reserve(1)
+            .map_err(|_| "cleanup constructor candidate allocation failed")?;
+        self.candidates.push(Candidate {
+            value: identity,
+            variant: selected,
+            callee,
+            signature,
+            result: value.ty,
+        });
+        let form =
+            tags.parts.entries[tags.nodes[destination.coordinate.0 as usize].part.0 as usize].form;
+        self.constructor(
+            tags,
+            input,
+            destination.coordinate,
+            Construction {
+                form,
+                selected,
+                fields: arguments,
+                ty: value.ty,
+            },
+        )
     }
     fn constructor(
         &mut self,
@@ -310,12 +449,13 @@ impl Transfers {
         input: Input<'_>,
         destination: Coordinate,
         construction: Construction,
-    ) -> Result<(), &'static str> {
+    ) -> Result<Source, &'static str> {
         let Input { types, paths, body } = input;
         let Construction {
             form,
             selected,
             fields,
+            ty,
         } = construction;
         let node = &tags.nodes[destination.0 as usize];
         let part = &tags.parts.entries[node.part.0 as usize];
@@ -340,6 +480,7 @@ impl Transfers {
         {
             return Err("cleanup tag constructor changed its actual field count");
         }
+        let nonstructural = part.need == super::parts::Need::OwnDrop || matches!(form, Form::Leaf);
         let own = node.own_tags;
         let need = node.own_need;
         self.fill(tags, need, true)?;
@@ -381,7 +522,11 @@ impl Transfers {
                 .map(|source| source.coordinate);
             self.copy(tags, types, source, child)?;
         }
-        Ok(())
+        Ok(if nonstructural {
+            Source::Type(ty)
+        } else {
+            Source::Fields(fields)
+        })
     }
     fn fill(
         &mut self,
@@ -448,4 +593,22 @@ impl Transfers {
         });
         Ok(())
     }
+}
+
+fn exposure_type(
+    body: &Body,
+    kind: Rvalue,
+    root: Option<u32>,
+) -> Result<Option<(u32, TypeId)>, &'static str> {
+    root.map(|root| {
+        let place = match kind {
+            Rvalue::Address(place) | Rvalue::Borrow { place, .. } => Some(place),
+            _ => None,
+        };
+        place
+            .and_then(|p| body.place_type(p))
+            .map(|ty| (root, ty))
+            .ok_or("qualification exposure lost its actual borrowed type")
+    })
+    .transpose()
 }

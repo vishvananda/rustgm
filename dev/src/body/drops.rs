@@ -286,9 +286,11 @@ pub enum MemberQuery {
     Field(super::ir::Selection),
     Variant(super::ir::VariantId),
     Constructor(super::ir::VariantId),
+    ConstructorCall(TypeId),
 }
 #[derive(Clone, Copy)]
 pub enum MemberPosition {
+    NotConstructor,
     Field { variant: u32, field: u32 },
     Variant(u32),
 }
@@ -311,6 +313,21 @@ pub(crate) fn member_position(
     ty: TypeId,
     query: MemberQuery,
 ) -> Result<MemberPosition, &'static str> {
+    if let MemberQuery::ConstructorCall(callee) = query {
+        let Some(Kind::FunctionItem { item, .. }) = types.kind(callee) else {
+            return Ok(MemberPosition::NotConstructor);
+        };
+        let Some(variant) = members.constructor(DefId(item.0)) else {
+            return Ok(MemberPosition::NotConstructor);
+        };
+        return member_position(
+            types,
+            definitions,
+            members,
+            ty,
+            MemberQuery::Constructor(variant),
+        );
+    }
     let Some(Kind::Adt(item, _)) = types.kind(ty) else {
         return Err("invalid instance cleanup nominal owner");
     };
@@ -326,7 +343,9 @@ pub(crate) fn member_position(
             .variant(field)
             .ok_or("missing instance cleanup variant")?,
         MemberQuery::Variant(variant) | MemberQuery::Constructor(variant) => variant,
-        MemberQuery::Field(_) => return Err("invalid instance cleanup field selection"),
+        MemberQuery::ConstructorCall(_) | MemberQuery::Field(_) => {
+            return Err("invalid instance cleanup field selection");
+        }
     };
     let variant = members
         .variants
@@ -351,7 +370,9 @@ pub(crate) fn member_position(
         MemberQuery::Variant(_) | MemberQuery::Constructor(_) => {
             Ok(MemberPosition::Variant(variant.ordinal))
         }
-        MemberQuery::Field(_) => Err("invalid instance cleanup field selection"),
+        MemberQuery::ConstructorCall(_) | MemberQuery::Field(_) => {
+            Err("invalid instance cleanup field selection")
+        }
     }
 }
 

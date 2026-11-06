@@ -1,9 +1,5 @@
 //! One prepaid eligibility partition drives the existing initialization machine.
-use super::{
-    parts::Range,
-    tags::{Coordinate, Tags},
-    trans::Transfers,
-};
+use super::{parts::Range, tags::Tags, trans::Transfers};
 use crate::{
     body::{
         drops::{MemberPosition, MemberQuery},
@@ -28,11 +24,13 @@ pub(super) struct Inputs<'a> {
 }
 struct Release {
     clear: Option<Range>,
-    parent: Option<Coordinate>,
+    root: Option<u32>,
 }
 pub(super) struct Partition {
     pub tags: Tags,
     pub transfers: Transfers,
+    pub selected: Option<Box<super::Selected>>,
+    pub queries: Option<Box<super::query::Queries>>,
     releases: HashMap<(u32, u32), Release>,
 }
 impl Partition {
@@ -68,20 +66,14 @@ impl Partition {
             if path.parent.is_none() && tags.roots[root as usize].path.0 as usize != index {
                 return Err("cleanup qualifier root changed its actual path");
             }
-            let clear = path
-                .parent
-                .is_none()
-                .then_some(tags.roots[root as usize].tags);
-            let mut parent = path.parent;
-            let mut coordinate = None;
-            while let Some(id) = parent {
-                tags.parts.charge(1)?;
-                if let Some(found) = tags.locations.get(&id) {
-                    coordinate = Some(found.coordinate);
-                    break;
-                }
-                parent = input.paths.entries[id.0 as usize].parent;
-            }
+            let clear = tags
+                .locations
+                .get(&crate::borrow::ownership::PathId(super::parts::compact(
+                    index,
+                )?))
+                .filter(|located| !located.merged)
+                .map(|located| tags.nodes[located.coordinate.0 as usize].tags);
+            let whole = path.parent.is_none().then_some(root);
             tags.parts.pay(Growth::map::<(u32, u32), Release>(
                 releases.len(),
                 releases.capacity(),
@@ -91,13 +83,7 @@ impl Partition {
                 .try_reserve(1)
                 .map_err(|_| "cleanup qualifier release allocation failed")?;
             if releases
-                .insert(
-                    (path.start, path.end),
-                    Release {
-                        clear,
-                        parent: coordinate,
-                    },
-                )
+                .insert((path.start, path.end), Release { clear, root: whole })
                 .is_some()
             {
                 return Err("cleanup qualifier release interval has multiple owners");
@@ -117,6 +103,8 @@ impl Partition {
         Ok(Self {
             tags,
             transfers,
+            selected: None,
+            queries: None,
             releases,
         })
     }
@@ -137,6 +125,16 @@ impl Partition {
         let Some(row) = self.transfers.rows.get(&location) else {
             return Ok(());
         };
+        if let Some(queries) = self.queries.as_deref() {
+            let bad =
+                self.transfers
+                    .terms
+                    .evaluate(row.qualification, &self.tags, queries, state)?;
+            let slot = scratch
+                .last_mut()
+                .ok_or("qualification scratch is missing")?;
+            *slot = u8::from(bad);
+        }
         for copy in &self.transfers.copies[row.copies.start as usize..row.copies.end as usize] {
             for (offset, bit) in (copy.source.start..copy.source.end).enumerate() {
                 *scratch
@@ -161,6 +159,20 @@ impl Partition {
             let root = &self.tags.roots[node.root as usize];
             if row.storage.is_some() {
                 state.set_possible(root.exposed, root.exposed + 1, false)?;
+            }
+            if self.queries.is_some() {
+                if row.storage.is_some() {
+                    state.set_possible(root.bad, root.bad + 1, false)?;
+                    state.set_possible(root.borrowed, root.borrowed + 1, false)?;
+                }
+                if scratch
+                    .last()
+                    .copied()
+                    .ok_or("qualification result scratch is missing")?
+                    != 0
+                {
+                    state.set_possible(root.bad, root.bad + 1, true)?;
+                }
             }
             if row.storage.is_none() && state.possible(root.exposed)? {
                 state.set_possible(node.tags.start, node.tags.end, true)?;
@@ -188,8 +200,14 @@ impl Partition {
                 }
             }
         }
-        if let Some(root) = row.expose {
+        if let Some((root, ty)) = row.expose {
             let root = &self.tags.roots[root as usize];
+            if let Some(queries) = self.queries.as_deref()
+                && queries.may(ty)?
+            {
+                state.set_possible(root.bad, root.bad + 1, true)?;
+                state.set_possible(root.borrowed, root.borrowed + 1, true)?;
+            }
             state.set_possible(root.exposed, root.exposed + 1, true)?;
             state.set_possible(root.tags.start, root.tags.end, true)?;
         }
@@ -213,15 +231,22 @@ impl Partition {
         let Some(release) = self.releases.get(&(start, end)) else {
             return Ok(());
         };
+        // Consume only the actual owned subtree. Whole moves clear source BAD
+        // after the pre-statement capture unless its qualification borrow is sticky.
         if let Some(range) = release.clear {
             state.set_possible(range.start, range.end, false)?;
         }
-        let mut parent = release.parent;
-        while let Some(id) = parent {
-            state.charge(1)?;
-            let node = &self.tags.nodes[id.0 as usize];
-            state.set_possible(node.partial.start, node.partial.end, true)?;
-            parent = node.parent;
+        if self.queries.is_some()
+            && let Some(root) = release.root
+        {
+            let root = self
+                .tags
+                .roots
+                .get(root as usize)
+                .ok_or("qualification release root is missing")?;
+            if !state.possible(root.borrowed)? {
+                state.set_possible(root.bad, root.bad + 1, false)?;
+            }
         }
         Ok(())
     }
@@ -239,6 +264,9 @@ impl Partition {
             return Ok(());
         };
         let node = &self.tags.nodes[located.coordinate.0 as usize];
+        if state.possible(self.tags.roots[node.root as usize].exposed)? {
+            return Ok(());
+        }
         let own = node.own_tags;
         let selected = own
             .start

@@ -73,6 +73,9 @@ impl Definitions {
     }
 }
 impl SemanticFields<'_> {
+    pub(crate) fn retained_bytes(&self) -> usize {
+        self.cost.bytes.get()
+    }
     pub(crate) fn work(&self) -> usize {
         self.cost.work.get()
     }
@@ -96,28 +99,45 @@ impl SemanticFields<'_> {
             let fields = types
                 .list(variant.fields)
                 .ok_or("semantic declaration field list is missing")?;
-            if let Some(&ty) = fields.get(self.field) {
-                self.cost.charge(1, 0)?;
+            if self.field < fields.len() {
+                let field = self.field;
                 self.field += 1;
-                if self.fold.is_none() {
-                    self.fold = Some(Bound::joint_charged(
-                        types,
-                        self.item,
-                        self.arguments,
-                        &|w, b| self.cost.charge(w, b),
-                    )?);
-                }
-                return self
-                    .fold
-                    .as_mut()
-                    .ok_or("semantic fields lost their paid fold")?
-                    .apply_inside_observed::<true>(types, ty, 0, &|w, b| self.cost.charge(w, b))
-                    .map(Some);
+                return self.field(types, self.variant, field).map(Some);
             }
             self.variant += 1;
             self.field = 0;
             self.entered = false;
         }
         Ok(None)
+    }
+    /// Resolve one authenticated declaration coordinate with the same paid fold.
+    pub(crate) fn field(
+        &mut self,
+        types: &mut Store,
+        variant: usize,
+        field: usize,
+    ) -> Result<TypeId, &'static str> {
+        self.cost.charge(1, 0)?;
+        let variant = self
+            .variants
+            .get(variant)
+            .ok_or("semantic field variant is missing")?;
+        let ty = types
+            .list(variant.fields)
+            .and_then(|fields| fields.get(field))
+            .copied()
+            .ok_or("semantic declaration field coordinate is missing")?;
+        if self.fold.is_none() {
+            self.fold = Some(Bound::joint_charged(
+                types,
+                self.item,
+                self.arguments,
+                &|w, b| self.cost.charge(w, b),
+            )?);
+        }
+        self.fold
+            .as_mut()
+            .ok_or("semantic fields lost their paid fold")?
+            .apply_inside_observed::<true>(types, ty, 0, &|w, b| self.cost.charge(w, b))
     }
 }

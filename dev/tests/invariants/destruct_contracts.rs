@@ -165,7 +165,9 @@ fn no_drop_requires_actual_ready_copy_identity_without_destruct() -> Result {
     };
     let owner = facts.associated.trait_owner(definition).ok_or("trait")?;
     let ty = facts.associated.schema(owner).ok_or("schema")?.self_type;
-    assert_eq!(claims.get(ty), Some(claims::Claim::NoDrop));
+    assert_eq!(claims.get(ty, Purpose::Body), Some(claims::Claim::NoDrop));
+    assert_eq!(claims.get(ty, Purpose::Whole), None);
+    assert_eq!(claims.get(ty, Purpose::OwnDrop), None);
     let pending_catalog =
         crate::sema::compiler_items::Catalog::reserve(&report)?.ok_or("reserved source catalog")?;
     let completed = facts
@@ -181,7 +183,10 @@ fn no_drop_requires_actual_ready_copy_identity_without_destruct() -> Result {
         pending,
         &mut work,
     )?;
-    assert_eq!(pending_claims.get(ty), Some(claims::Claim::PendingCopy));
+    assert_eq!(
+        pending_claims.get(ty, Purpose::Body),
+        Some(claims::Claim::PendingCopy)
+    );
     assert!(pending.require().is_err());
     facts.source_bindings = Some(completed);
     let unrelated = claims::Role::Validated(owner);

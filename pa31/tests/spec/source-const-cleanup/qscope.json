@@ -1,0 +1,42 @@
+{
+  "state": "frozen before independent and candidate observation",
+  "foundation": "pa31/tests/spec/source-const-cleanup/hmov.rs",
+  "foundation_sha256": "fd491bcd9a0f8a146b0e0db3ec9188535ace7d2ab0713b9842fecba3b2ab2b5e",
+  "cases": [
+    {
+      "file": "rfield.rs",
+      "expected_code": 0,
+      "expected_cause": null,
+      "prediction": "NoDrop scalar field borrow does not retain qualification on a whole-root move",
+      "source_sha256": "afbfee28d5648bca4e0b1762935917b19221a01bac647f5300e3c12fe2083046"
+    },
+    {
+      "file": "mfield.rs",
+      "expected_code": 1,
+      "expected_cause": "E0493",
+      "prediction": "MayQualify field borrow retains qualification after the same whole-root move",
+      "source_sha256": "ab1a7ef998d5b7f3871a7842b131540f73170ebf56402d28be7524968a829a57"
+    },
+    {
+      "file": "gcon.rs",
+      "expected_code": 0,
+      "expected_cause": null,
+      "prediction": "Actual scoped conditional Destruct evidence makes unknown generic operand universally eligible",
+      "source_sha256": "43caee655cf0a7afa8c262c0a7b25ed370161889ac6e1521105a06a36d18bc2e"
+    },
+    {
+      "file": "gmiss.rs",
+      "expected_code": 1,
+      "expected_cause": "E0493",
+      "prediction": "Unbounded generic operand remains possibly nonconst",
+      "source_sha256": "b3dbba1c8d753d86adaaef93e5959727d6f2eef07f9fc44dd7df2e3bc4fa970a"
+    },
+    {
+      "file": "rlocal.rs",
+      "expected_code": 0,
+      "expected_cause": null,
+      "prediction": "NoDrop reference value retains unqualified immutable parameter provenance through a local",
+      "source_sha256": "bfd694d000f47b65429fc060a073c3042af6406b2b29e7e9aa49423d7540c023"
+    }
+  ]
+}

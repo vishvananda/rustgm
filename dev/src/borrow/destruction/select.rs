@@ -58,6 +58,27 @@ pub(crate) fn select_reusing(
     facts: &initialization::Facts<'_>,
     transitions: &mut Vec<initialization::Transition>,
 ) -> Result<Plan, Error> {
+    select_inside(catalog, facts, transitions, None)
+}
+pub(crate) fn select_reusing_defining(
+    catalog: &mut glue::Catalog<'_>,
+    facts: &mut initialization::Facts<'_>,
+    transitions: &mut Vec<initialization::Transition>,
+) -> Result<Plan, Error> {
+    let mut selected = None;
+    let plan = select_inside(catalog, facts, transitions, Some(&mut selected))?;
+    facts.install_selected(selected).map_err(|message| Error {
+        node: facts.body().source.into(),
+        message,
+    })?;
+    Ok(plan)
+}
+fn select_inside(
+    catalog: &mut glue::Catalog<'_>,
+    facts: &initialization::Facts<'_>,
+    transitions: &mut Vec<initialization::Transition>,
+    selected: Option<&mut Option<Box<crate::borrow::ownership::Selected>>>,
+) -> Result<Plan, Error> {
     facts.destructor_moves(catalog.types(), |item| catalog.custom(item))?;
     let body = facts.body();
     let error = |message| Error {
@@ -84,18 +105,33 @@ pub(crate) fn select_reusing(
         }
     }
     let mut recording = super::flags::Recording::for_body(body, std::mem::take(transitions));
-    facts
-        .visit_transfers(|transition, point| {
-            recording.push(transition);
-            if let Transition::Observe(event) = transition {
-                builder.charge(1)?;
-                if let Event::Cleanup(candidate) = event {
-                    builder.cleanup(body, candidate, point)?;
-                }
+    let mut observe = |transition, point: &mut Point<'_>| {
+        recording.push(transition);
+        if let Transition::Observe(event) = transition {
+            builder.charge(1)?;
+            if let Event::Cleanup(candidate) = event {
+                builder.cleanup(body, candidate, point)?;
+                let cleanup = builder
+                    .plan
+                    .cleanups
+                    .last()
+                    .ok_or("selected cleanup row was not published")?;
+                return Ok(Some(super::schedule::Cleanup {
+                    candidate: cleanup.candidate,
+                    live_type: cleanup.live_type,
+                    access: cleanup.node.is_some(),
+                }));
             }
-            Ok(())
-        })
-        .map_err(error)?;
+        }
+        Ok(None)
+    };
+    if let Some(selected) = selected {
+        *selected = facts.visit_selected(&mut observe).map_err(error)?;
+    } else {
+        facts
+            .visit_transfers(|event, point| observe(event, point).map(|_| ()))
+            .map_err(error)?;
+    }
     builder.flags().map_err(error)?;
     let elaborated =
         super::flags::elaborate(&mut builder.plan, facts, &mut recording, builder.retained);

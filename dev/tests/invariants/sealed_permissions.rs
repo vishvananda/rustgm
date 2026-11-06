@@ -81,15 +81,23 @@ fn control(mode: &str) -> TestResult {
     let (report, mut fixture) = fixture_with_report(SOURCE)?;
     let target = install_conditions(mode, &mut fixture)?;
     let checked = originals(&mut fixture.facts, &fixture.templates, &fixture.inputs)?;
-    let (mut builder, bodies) = super::super::Builder::new(fixture.program)?;
+    let (mut builder, mut bodies) = super::super::Builder::new(&fixture.facts, fixture.program)?;
     let mut current = None;
-    for body in bodies {
+    bodies.reverse(&fixture.facts)?;
+    while let Some((body, requirements)) = bodies.pop()? {
         let input = fixture
             .inputs
             .iter()
             .find(|input| input.key == body.key())
             .ok_or("actual caller contract")?;
-        let index = builder.push(&report, &mut fixture.facts, &checked, body, input, None)?;
+        let index = builder.push(
+            &report,
+            &mut fixture.facts,
+            &checked,
+            body,
+            input,
+            requirements,
+        )?;
         current = Some(index);
     }
     let current = current.ok_or("actual sealed caller index")?;

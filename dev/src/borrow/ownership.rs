@@ -8,6 +8,7 @@ mod paths;
 mod state;
 pub mod templates;
 mod variant_liveness;
+pub(crate) use variant_liveness::Selected;
 pub mod view;
 pub struct Error {
     pub node: crate::body::ir::ProofSite,

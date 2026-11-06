@@ -24,7 +24,8 @@ pub(crate) use async_glue::{
 mod cdrop;
 pub(crate) mod const_payments;
 mod copying;
-pub(crate) use cdrop::prove_cleanup_requirements;
+pub(crate) use crate::sema::nominals::traits::Decision as CleanupDecision;
+pub(crate) use cdrop::{decide_cleanup_requirements, prove_cleanup_requirements};
 mod explicit_cleanup;
 mod glue_calls;
 pub(in crate::sema) mod headers;

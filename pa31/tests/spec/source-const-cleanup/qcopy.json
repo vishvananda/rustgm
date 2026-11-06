@@ -1,0 +1,35 @@
+{
+  "state": "frozen before independent and candidate observation",
+  "foundation": "hcop.rs",
+  "foundation_sha256": "6c2299088ce210af0b30ef05e464a7fd549ac63ef0d8398413a2adbc728d5335",
+  "cases": [
+    {
+      "file": "cpfld.rs",
+      "expected_code": 0,
+      "expected_cause": null,
+      "prediction": "Actual source Copy proves the sole unknown field cannot require runtime cleanup; whole Destruct is separate.",
+      "source_sha256": "1def4af745c5fa80deac0f6b1e35ce5379c9e9ebbce4b3e2131991b3a60061f8"
+    },
+    {
+      "file": "cpmiss.rs",
+      "expected_code": 1,
+      "expected_cause": "E0493",
+      "prediction": "Unbounded unknown field remains possibly nonconst.",
+      "source_sha256": "6852d50eeca48eb3736ce5223da5dd76e3dbb975a50676c0738a04967f6f9b33"
+    },
+    {
+      "file": "cpbad.rs",
+      "expected_code": 1,
+      "expected_cause": "E0493",
+      "prediction": "A real nonconst sibling destructor remains required despite the Copy field.",
+      "source_sha256": "b01079e52184b4b2325babdc3b7b70d3b49a0160bd0aef7387d73c7bb90d5768"
+    },
+    {
+      "file": "cpwhol.rs",
+      "expected_code": 1,
+      "expected_cause": "E0277",
+      "prediction": "Dropless cleanup eligibility cannot satisfy explicit whole const Destruct.",
+      "source_sha256": "1a8dd95fdf897f408b469101658e6992b7a31616456f1e4365a6e0d88a48b406"
+    }
+  ]
+}

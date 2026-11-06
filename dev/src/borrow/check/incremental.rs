@@ -6,7 +6,7 @@ mod scheduled;
 pub(crate) use scheduled::FutureCaller;
 mod cstage;
 mod loaned;
-pub(crate) use cstage::{Completed, with_const_original};
+pub(crate) use cstage::{Completed, ConstInitial, with_const_original};
 mod parents;
 use super::{Checked, Environment, Error};
 use crate::{

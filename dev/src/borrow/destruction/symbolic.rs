@@ -111,8 +111,9 @@ fn select_inside(
             message,
         })?;
     facts.destructor_moves(types, &custom)?;
+    let source = facts.body().source;
     let error = |message| Error {
-        node: facts.body().source.into(),
+        node: source.into(),
         message,
     };
     let mut builder = Builder {
@@ -160,11 +161,11 @@ fn select_inside(
         }
     }
     let mut recording = super::flags::Recording::for_body(facts.body(), Vec::new());
-    facts
-        .visit_transfers(|transition, point| {
+    let selected = facts
+        .visit_selected(|transition, point| {
             recording.push(transition);
             let initialization::Transition::Observe(event) = transition else {
-                return Ok(());
+                return Ok(None);
             };
             builder.charge(1)?;
             if let initialization::Event::Cleanup(candidate) = event {
@@ -179,13 +180,15 @@ fn select_inside(
                     && builder.needed.demand(types, definitions, ty)?;
                 let access = live && builder.access(ty, tracked, point)?;
                 builder.retain(size_of::<Cleanup>())?;
-                builder.plan.cleanups.push(Cleanup {
+                let cleanup = Cleanup {
                     candidate,
                     access,
                     live_type: live.then_some(ty),
-                });
+                };
+                builder.plan.cleanups.push(cleanup);
+                return Ok(Some(cleanup));
             }
-            Ok(())
+            Ok(None)
         })
         .map_err(error)?;
     Recorder {
@@ -200,7 +203,9 @@ fn select_inside(
         builder.plan.cleanups.iter().map(|c| c.candidate),
     )
     .map_err(error)?;
-    Ok(builder.plan)
+    let plan = builder.plan;
+    facts.install_selected(selected).map_err(error)?;
+    Ok(plan)
 }
 impl<C: Fn(ItemId) -> bool> Builder<'_, C> {
     fn charge(&mut self, count: usize) -> Result<(), &'static str> {

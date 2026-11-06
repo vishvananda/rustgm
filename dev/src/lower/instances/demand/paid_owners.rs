@@ -69,17 +69,19 @@ pub(super) fn build<C: Collect>(
         .into_iter()
         .map(|(key, input)| (key, Arc::new(input)))
         .collect();
-    let (mut builder, bodies) = proof::Builder::new(program).map_err(error)?;
+    let (mut builder, mut bodies) = proof::Builder::new(facts, program).map_err(error)?;
     builder.bind_future_store(facts, templates).map_err(error)?;
     builder
-        .prepare_parent_regions(facts, &inputs, &bodies)
+        .prepare_parent_regions(facts, &inputs, bodies.bodies())
         .map_err(|e| diagnostic(report, e.node, e.message))?;
-    let mut staged = Vec::with_capacity(bodies.len());
-    for body in bodies {
+    let mut staged = Vec::with_capacity(bodies.bodies().len());
+    bodies.reverse(facts).map_err(error)?;
+    while let Some((body, requirements)) = bodies.pop().map_err(error)? {
+        bodies.shrink(facts).map_err(error)?;
         let ports = pending.remove(&body.key());
         staged.push(
             builder
-                .stage_parent(facts, templates, body, ports)
+                .stage_parent(facts, templates, (body, requirements), ports)
                 .map_err(|e| diagnostic(report, e.node, e.message))?,
         );
     }
