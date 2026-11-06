@@ -85,6 +85,7 @@ impl Checker<'_> {
             crate::support::bindings::LangItem::RangeMax,
             crate::support::bindings::LangItem::RangeSub,
             crate::support::bindings::LangItem::TryTraitFromYeet,
+            crate::support::bindings::LangItem::GetContext,
         ] {
             if let Some(declaration) = catalog.language(role) {
                 declarations.push(declaration.definition);

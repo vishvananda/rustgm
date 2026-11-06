@@ -252,10 +252,10 @@ fn complete_dependent_roles(
     {
         complete.roles.insert(role);
     }
-    if let Some(role) =
-        super::headers::functions::complete(report, facts, catalog, LangItem::TryTraitFromYeet)?
-    {
-        complete.roles.insert(role);
+    for role in [LangItem::TryTraitFromYeet, LangItem::GetContext] {
+        if let Some(role) = super::headers::functions::complete(report, facts, catalog, role)? {
+            complete.roles.insert(role);
+        }
     }
     if let Some(role) = super::async_glue::complete(report, facts, catalog)? {
         complete.roles.insert(role);
@@ -679,6 +679,7 @@ pub(super) fn complete_value_declaration(
             | LangItem::PollPending
             | LangItem::Context
             | LangItem::CoroutineState
+            | LangItem::ResumeTy
     ) {
         return Err(Error::unlocated(
             "invalid source value declaration completion",

@@ -18,6 +18,8 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
             LangItem::CoroutineState
             | LangItem::TryTraitFromYeet
             | LangItem::CoercePointeeValidated
+            | LangItem::ResumeTy
+            | LangItem::GetContext
             | LangItem::Coroutine
             | LangItem::CoroutineYield
             | LangItem::CoroutineReturn

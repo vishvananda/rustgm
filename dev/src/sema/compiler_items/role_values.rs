@@ -6,12 +6,13 @@ use crate::{
     types::{ItemId, Kind, aggregate},
 };
 
-const ROLES: [LangItem; 5] = [
+const ROLES: [LangItem; 6] = [
     LangItem::Poll,
     LangItem::PollReady,
     LangItem::PollPending,
     LangItem::Context,
     LangItem::CoroutineState,
+    LangItem::ResumeTy,
 ];
 
 /// Complete ordinary headers/fields without restricting Rust-valid unused shapes.
@@ -43,7 +44,7 @@ pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Re
         }
         if matches!(
             role,
-            LangItem::Poll | LangItem::Context | LangItem::CoroutineState
+            LangItem::Poll | LangItem::Context | LangItem::CoroutineState | LangItem::ResumeTy
         ) {
             nominal(facts, declaration, role).map_err(error)?;
         } else {
@@ -60,7 +61,7 @@ fn nominal(
     role: LangItem,
 ) -> Result<(), &'static str> {
     let item = ItemId(declaration.definition.0);
-    let expected = if role == LangItem::Context {
+    let expected = if matches!(role, LangItem::Context | LangItem::ResumeTy) {
         aggregate::Kind::Struct
     } else {
         aggregate::Kind::Enum

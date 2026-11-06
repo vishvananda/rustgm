@@ -131,6 +131,8 @@ mod record_availability;
 mod resolution;
 #[path = "../../helpers/resolve.rs"]
 pub(crate) mod resolve;
+#[path = "../../resuming_sources.rs"]
+mod resuming_sources;
 #[path = "../../selected_references.rs"]
 mod selected_references;
 #[path = "../../smart_receivers.rs"]

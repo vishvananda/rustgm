@@ -1,0 +1,27 @@
+{
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "path": "library/core/src/future/mod.rs",
+  "sha256": "3e9d8d8c48ef0dd86e0f6980b72e9aa4cdd9dc72f55d9995766d430bc59440b3",
+  "helpers": {
+    "start_byte": 1606,
+    "end_byte_exclusive": 2314,
+    "sha256": "781bf636588aa526749829931c392562448f34f5ee7384d3a750eb536bc0e690"
+  },
+  "get_context": {
+    "start_byte": 1945,
+    "end_byte_exclusive": 2314,
+    "sha256": "a3bd74e4ac13e0db5153be88dd04e95fa3ca594dae6cc1206cd1b6c531843ab2"
+  },
+  "companion_dependency": {
+    "path": "pa31/tests/spec/source-nonnull/source-methods.rs",
+    "sha256": "86ab25bc51550188fd7bc8210faa99a04a8cd95eafe1e641d5a0ac64d16408cc",
+    "adaptation": "preserve selected actual NonNull methods; restore original const trait/impl/intrinsic stability for staged-api reference; add ordinary raw cast body and explicitly authored Context"
+  },
+  "required": [
+    "full original ResumeTy Debug/Copy/Clone/Send/Sync graph",
+    "full standard Context/Waker/LocalWaker/ExtData graph and runtime",
+    "actual generated resume/future consumers",
+    "authenticated metadata"
+  ],
+  "reference_receipt": "obj/parallel/resume-context-contracts/reference-v3/receipt.json"
+}

@@ -1,0 +1,89 @@
+{
+  "contract": "Frozen before candidate changes; actual source target/header and ordinary body validation, exact original get_context body with explicit authored Context dependency companion; full original ResumeTy derives/Context/Waker graph remains required",
+  "inputs": [
+    {
+      "case": "resume-unit",
+      "path": "pa31/tests/spec/resume-context/resume-unit.rs",
+      "status": 0,
+      "sha256": "21404c8adbd83d3abadd1cac300a39291134239185665a035521b8c3ca9548dd"
+    },
+    {
+      "case": "resume-generic",
+      "path": "pa31/tests/spec/resume-context/resume-generic.rs",
+      "status": 0,
+      "sha256": "5a38d379f0449720afaf8c8bba624a048da13419b16f303abc786f08ee0d49a0"
+    },
+    {
+      "case": "resume-enum",
+      "path": "pa31/tests/spec/resume-context/resume-enum.rs",
+      "status": 1,
+      "sha256": "ef581fa69eb04327ab92ea5ef6899d105dc814bb6f36ceec33a955eeee5bab62"
+    },
+    {
+      "case": "resume-duplicate",
+      "path": "pa31/tests/spec/resume-context/resume-duplicate.rs",
+      "status": 1,
+      "sha256": "124944809a9f1fa46e99d7ceb4e39282f1e8caf118805d4b81a3c654bdac3aff"
+    },
+    {
+      "case": "context-free",
+      "path": "pa31/tests/spec/resume-context/context-free.rs",
+      "status": 0,
+      "sha256": "f353998caf4961759067afe0ac71f31dd513a6dfcff4dc4769aa1c5a4f698f94"
+    },
+    {
+      "case": "context-generic",
+      "path": "pa31/tests/spec/resume-context/context-generic.rs",
+      "status": 0,
+      "sha256": "dff6394501898d5355ad8c303fc1ab0285694f3499f8b4950e681859140f22ee"
+    },
+    {
+      "case": "context-const",
+      "path": "pa31/tests/spec/resume-context/context-const.rs",
+      "status": 0,
+      "sha256": "487fa4f921e6a0d5880bfee65a2f21d15a5713c56d8a74f00bb304d59a538766"
+    },
+    {
+      "case": "context-associated",
+      "path": "pa31/tests/spec/resume-context/context-associated.rs",
+      "status": 1,
+      "sha256": "4501e7f32995bf1525cc6c789e582265431120d946f1c497fd68ca3aebab04c5"
+    },
+    {
+      "case": "context-duplicate",
+      "path": "pa31/tests/spec/resume-context/context-duplicate.rs",
+      "status": 1,
+      "sha256": "e816471e7d9a9ab3bca31dd71a4b98924a5b839f3a504c3aa145d639fee19365"
+    },
+    {
+      "case": "context-bad-body",
+      "path": "pa31/tests/spec/resume-context/context-bad-body.rs",
+      "status": 1,
+      "sha256": "938e069069111fea33304ea658d7a47295cb8877976d1c8633e0652a8d493b85"
+    },
+    {
+      "case": "context-unsafe-body",
+      "path": "pa31/tests/spec/resume-context/context-unsafe-body.rs",
+      "status": 1,
+      "sha256": "cefd49d9da826d100b8ba2b36a4e99e2af81e1ccec90044aca3672b5705dfe2a"
+    },
+    {
+      "case": "ordinary",
+      "path": "pa31/tests/spec/resume-context/ordinary.rs",
+      "status": 0,
+      "sha256": "fb3bf7933e2fc18d53c94ceb568916a5aab3320f46c9927e29971e69b1996eda"
+    },
+    {
+      "case": "body-native",
+      "path": "pa31/tests/spec/resume-context/body-native.rs",
+      "status": 0,
+      "sha256": "99fd4896491de9cac001a8c6a7a115bd5faccb9d1dd7e9d082faf9ba5fef7ffa",
+      "scope": "Exact original get_context body, actual selected NonNull source, authored test Context; full original graph/derive remain required"
+    }
+  ],
+  "original_sha256": "3e9d8d8c48ef0dd86e0f6980b72e9aa4cdd9dc72f55d9995766d430bc59440b3",
+  "native": {
+    "source": "body-native.rs",
+    "expected": "23 47\n"
+  }
+}

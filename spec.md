@@ -1237,6 +1237,15 @@ normal behavior. This supplies neither automatic implementation evidence nor
 nominal coercion, dispatch, executable derive output or metadata permission.
 Full builtin generation and generic custom auto traits remain required work.
 
+`ResumeTy` shares the completed ordinary nominal producer with `Context` and
+coroutine state. `get_context` shares the defined-function header adapter with
+`from_yeet`; schedule its actual header through the existing declaration worklist
+before completing the role ledger. Preserve all written fields, generic and
+unsafe/const flags, body identity and ordinary ownership/region checks. A resume
+tag supplies no generated future, special pointer conversion, automatic trait
+evidence or lifetime permission. Authored dependency companions and full original
+standard-library source qualification remain distinct acceptance requirements.
+
 Former-name links share that same cold relationship owner with an explicit kind;
 they never enable the canonical feature. Project canonical feature definitions
 once, keeping the first unstable declaration and checking stable/unstable or

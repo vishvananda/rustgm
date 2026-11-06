@@ -1,0 +1,13 @@
+pa31/tests/spec/resume-context/resume-unit.rs	0
+pa31/tests/spec/resume-context/resume-generic.rs	0
+pa31/tests/spec/resume-context/resume-enum.rs	1
+pa31/tests/spec/resume-context/resume-duplicate.rs	1
+pa31/tests/spec/resume-context/context-free.rs	0
+pa31/tests/spec/resume-context/context-generic.rs	0
+pa31/tests/spec/resume-context/context-const.rs	0
+pa31/tests/spec/resume-context/context-associated.rs	1
+pa31/tests/spec/resume-context/context-duplicate.rs	1
+pa31/tests/spec/resume-context/context-bad-body.rs	1
+pa31/tests/spec/resume-context/context-unsafe-body.rs	1
+pa31/tests/spec/resume-context/ordinary.rs	0
+pa31/tests/spec/resume-context/body-native.rs	0

@@ -353,6 +353,15 @@
       "adaptation": "none; full original retained as reference; exact CoercePointeeValidated slice is qualified independently, full marker module remains required",
       "oracle": "source-fragment",
       "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/future/mod.rs",
+      "destination": "pa31/tests/spec/resume-context/original-future.rs",
+      "sha256": "3e9d8d8c48ef0dd86e0f6980b72e9aa4cdd9dc72f55d9995766d430bc59440b3",
+      "adaptation": "none; full reference retained; exact get_context body independently executed with explicitly authored Context companion, full original graph/derives remain required",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
     }
   ]
 }
