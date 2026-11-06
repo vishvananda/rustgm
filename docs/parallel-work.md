@@ -1,3 +1,17 @@
+The [receiver conjunction main join](parallel/receiver-conjunction-main-join.md)
+passes15 exact public controls, all37 Deref source outcomes and2 real native
+programs on actual const/Unit/CI-repair dependencies. Alias8–128 canonical work
+2249/3337/5509/9849/18525 obeys the doubled-depth bound without raising limits.
+CLI91783654 preserves unchanged original722-input core at LIB171 in19.9352s /
+375opens. Current/predecessor pins91783654/CDF; superseded pins are retired after
+receipts are preserved. All116 performance observations remain, including two
+incomparable baseline failures; final54 common AA/ABBA samples preserve exact
+output. Full42176016850 fast succeeds; qualification is still running on the
+preceding Unit/repair compiler. New private/full successor execution is pending.
+The existing workers own genuine Field consumers and the separately planned
+actual concrete CTFE cleanup path. Symbolic cleanup is not executable permission.
+No whole PA after24 or original library artifact is complete; guards stay fixed.
+
 The [unit/payment main join](parallel/source-unit-main-join.md) integrates actual
 unit-result const calls and the ordinary-original-row CI payer repair. Root
 matches all3544 qualified source files and reruns14 exact public controls. Full
