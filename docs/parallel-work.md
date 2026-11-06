@@ -1,3 +1,14 @@
+The [automatic-trait main join](parallel/custom-auto-main-join.md) clears LIB187
+and observes original core at LIB188, Iterator::count's genuine const-closure
+inherited-overflow word (iterator.rs231/file175:8088),21.1385s/375opens. All722
+input hashes, six pins and profile/limits stay identical. Exact worker/integrator
+tree equality reuses qualified immutableCLI153a0715 without another build.
+Source repairs the new typed attribute target; Root owns publication and Field
+consumers. Full previous CI passes2783private/all13public targets; only two stale
+stderr oracles needed independently checked regeneration. New producer's full
+successor remains pending. No original artifact or whole PA after24 is complete;
+keep existing btrfs trees,2heavy/16GiB/150GiB/300s and cleanup guards.
+
 The [trait Self CI repair](parallel/self-type-ci-repair.md) resolves the two
 shared causes in full42299342081: incorrect inherent lookup interception and a
 wrong-provider diagnostic panic. Eight focused controls/123.59s,20 independent

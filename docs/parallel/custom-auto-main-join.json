@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "kind": "actual-custom-auto-main-integration",
+  "worker_commit": "3fcc07e97389124d8c13547f8315884265468dea",
+  "integrated_commit": "8c0d2df052b8a4f9357c48b92e57f421605895d6",
+  "code_and_reference_tree_identical": true,
+  "tree": "53e5a4baf2f7df226786a6c4d82db3e489d66634",
+  "cli_sha256": "153a0715c498725209f8a2599137311f26d4f2963355620779a3e7c2b6791ab0",
+  "original_core": {
+    "blocker": "LIB-188",
+    "path": "library/core/src/iter/traits/iterator.rs",
+    "line": 231,
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "153a0715c498725209f8a2599137311f26d4f2963355620779a3e7c2b6791ab0",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 175: 8088: inherited overflow policy requires a function body or closure",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 21.138548093033023,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "dbe1d9c93f59df0ef99d226e3a87cb6d8b7fc0906ea590f2db41c7cbc442eca6",
+      "whole-core.openat": "a04d09be153873911200a1b348e03386fa9ae1c137871ebe9d99ecc668f4ea58",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    }
+  },
+  "receipts": {
+    "obj/parallel/custom-auto-core-v1/receipt.json": "6d280a251ee063a934300d5e8d240c9fe22b1b8974cb8e2f702e1c498a0ef23a",
+    "obj/parallel/custom-auto-core-v1/manifest.json": "4e908797fb33093be1b3545ec27050deb9f82de4ef18cfada5a7c8c528580421",
+    "obj/parallel/custom-auto-core-v1/producer.json": "36c6902b1f96d5574a8a60ece1646b14c3c480c27f868383a22e04204594bbbd",
+    "obj/parallel/inherent-diagnostic-refresh-v1/receipt.json": "23f446ddf63217907701270ef451de419b44653f98d7b72db8039614cbb9eaa1"
+  },
+  "qualification": "Reused the independently qualified immutable worker binary after exact integrated tree equality; no redundant compiler rebuild. Source/private qualification scope is in custom-auto-checkpoint.json. New private runtime remains CI-pending.",
+  "field_wip_stash": "87ace99851b04aba44322d31abd0445b4809ddc8"
+}
