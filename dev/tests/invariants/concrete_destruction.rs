@@ -184,11 +184,13 @@ fn sparse_concrete_scope_accounts_for_binding_without_growing_the_query() {
         _builtins: Option<Box<BuiltinQuery>>,
         _states: HashMap<TypeId, State>,
     }
-    // Exact exposure adds one cold arena-binding pointer; ordinary queries
-    // retain the same header and leave that optional binding absent.
+    // Exact exposure adds one cold arena-binding pointer; paid source queries
+    // also retain their cumulative work counter. Ordinary NeedsDrop stays compact.
     assert_eq!(
         size_of::<Scope>(),
-        size_of::<PreviousScope>() + size_of::<Option<Box<catalogue::Binding>>>()
+        size_of::<PreviousScope>()
+            + size_of::<Option<Box<catalogue::Binding>>>()
+            + size_of::<usize>()
     );
     assert_eq!(size_of::<NeedsDrop>(), 72);
     assert_eq!(
@@ -201,3 +203,7 @@ fn sparse_concrete_scope_accounts_for_binding_without_growing_the_query() {
         size_of::<Scope>()
     );
 }
+
+// Metadata checks independently verify the measured scope width without linking
+// a second private harness during development. Runtime behavior stays in CI.
+const _: [(); 64] = [(); size_of::<Scope>()];

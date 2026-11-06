@@ -1,3 +1,12 @@
+Full42176016850 is terminal failure after2741 private passes: three private and35
+public failures retain the ordinary cleanup-row payer regression; Source now owns
+that priority repair before the next full run. The fourth private failure is an
+old Scope64-vs56 formula. Its [test-only successor](parallel/scope-layout-successor.md)
+passes exact metadata width, all-test/all-feature strict Clippy, format and audit;
+production is unchanged. Root's receiver checkpoint remains qualified, and Async
+continues the real Field CFG/const consumers on main dependencies. Concrete CTFE
+cleanup planning stays durable behind the CI repair; no new cache or worker.
+
 The [receiver conjunction main join](parallel/receiver-conjunction-main-join.md)
 passes15 exact public controls, all37 Deref source outcomes and2 real native
 programs on actual const/Unit/CI-repair dependencies. Alias8–128 canonical work

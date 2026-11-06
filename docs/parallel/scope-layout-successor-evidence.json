@@ -1,0 +1,112 @@
+{
+  "state": "passed strict metadata; runtime CI pending",
+  "production_changed": false,
+  "production_tree": "0c5b8e96a4bfe4cfd897cfe714bc794312bf6558",
+  "private_test_path": "dev/tests/invariants/concrete_destruction.rs",
+  "private_test_sha256": "4cf63d1af1746eeb7269cd174d927309f84a9a477f839fa2fa326fdbe0e68118",
+  "actual_scope_bytes": 64,
+  "old_formula_bytes": 56,
+  "added_cold_work_counter_bytes": 8,
+  "needs_drop_bytes": 72,
+  "receipt": "obj/parallel/receiver-alias-kernel/scope-layout-successor/receipt.json",
+  "receipt_sha256": "17c712c3011c0baf1701594bbecb3a92524617f64a8bffe50cd7267b75871094",
+  "steps": [
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--all",
+        "--check"
+      ],
+      "status": 0,
+      "seconds": 28.074922425032128
+    },
+    {
+      "name": "audit",
+      "command": [
+        "obj/audit-venv/bin/python",
+        "scripts/rust_audit.py",
+        "--root",
+        ".",
+        "--cache",
+        "obj/fast-audit.json"
+      ],
+      "status": 0,
+      "seconds": 3.169850406993646
+    },
+    {
+      "name": "strict",
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--lib",
+        "--tests",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": 0,
+      "seconds": 148.70822983200196
+    }
+  ],
+  "seconds": 181.18223518395098,
+  "full_ci": {
+    "run": 42176016850,
+    "state": "terminal failure",
+    "log_sha256": "2868df297013a5f5ba28dc1c993d5371666c84b2ef421af972998afd8b987a73",
+    "private_passed": 2741,
+    "private_failed": 4,
+    "public_failed": 35,
+    "failures": [
+      "lower::instances::proof::tests::assembly_cannot_erase_a_completed_destruction_proof",
+      "lower::instances::proof::tests::instances_share_template_structure_exactly_as_full_reproof",
+      "sema::insignificant_drop::tests::frozen_source_targets_forms_macro_authority_and_real_drop_bodies",
+      "types::destruction::tests::sparse_concrete_scope_accounts_for_binding_without_growing_the_query",
+      "captured_dispatch::captured_object_views_match_independent_outcomes",
+      "environment_execution::adapters::declared_receiver_adaptations",
+      "environment_execution::declared_output_lifetime_results",
+      "environment_execution::direct_execution_outcomes",
+      "environment_execution::hierarchy::generic_receiver_outcomes_preserve_declared_boundaries",
+      "environment_execution::chains::declared_nested_receiver_outcomes",
+      "nested_evaluation::output::exact_output_and_escape_outcomes",
+      "environment_execution::specialization::complete_generic_capture_outcomes",
+      "source_closures::specializations::generic_closure_programs_have_checked_specializations",
+      "const_functions::const_destruction_uses_selected_cleanup",
+      "temporary_editions::destruction_sources_and_opposing_borrows_reach_complete_lowering",
+      "dot_methods::receiver_calls_preserve_inference_and_place_conversions",
+      "library_nominals::library_nominal_contracts_match_rustc",
+      "aggregate_calling::aggregate_profile_has_explicit_language_and_implementation_boundaries",
+      "instance_destructors::selected_destructors_lower_with_separate_template_and_instance_proofs",
+      "instance_destructors::sequential_cleanup_scopes_do_not_rescan_every_inactive_lifetime_value",
+      "lowir_lowering::public_lowir_demands_generic_functions_factories_and_cleanup",
+      "native_generic_aliases::generic_alias_programs_complete_the_lowir_pipeline",
+      "byte_fills::byte_fill_sources_match_declared_outcomes",
+      "captured_values::closure_byte_source_contracts",
+      "hidden_values::opaque_storage_source_contracts",
+      "offset_intrinsics::pointer_add_source_contracts",
+      "owned_transfers::owned_pointer_transfers_match_independent_objects",
+      "option_storage::nullable_enum_source_contracts",
+      "unsafe_statics::static_storage_and_default_reference_lint",
+      "demanded_cleanup::only_selected_runtime_cleanup_roots_demand_destructors",
+      "drop_headers::typed_drop_inspection_keeps_borrow_boundaries_and_lowir_proves_cleanup",
+      "native_destructors::cli_requires_completed_destructor_proofs_and_matches_library_lowering",
+      "guarantees::public_promises_match_source_outcomes",
+      "language_operators::extrema::owned_helper_outcomes",
+      "language_operators::iterator_cloning::iterator_clone_matches_declared_lookup_lifetime_and_permission_outcomes",
+      "language_operators::iterators::custom_iteration_matches_declared_outcomes",
+      "language_operators::lexicographic::sequence_ordering_matches_declared_contracts",
+      "language_operators::mutable_collections::mutable_collection_outcomes_keep_unique_items_and_lookup",
+      "language_operators::shared_iterators::shared_collection_outcomes_keep_items_borrows_and_lookup"
+    ],
+    "remaining": "Three private and35 public failures share caller-input payer errors in actual Some cleanup-row paths; Source owns compiler repair. Scope layout is independently corrected here."
+  }
+}
