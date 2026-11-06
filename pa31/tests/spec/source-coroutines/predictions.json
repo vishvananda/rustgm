@@ -1,0 +1,77 @@
+{
+  "contract": "Full authored ordinary source-coroutine contracts independently qualified before RustGM observation. Not a generated coroutine or whole-assignment release contract. Foundation reuses the existing source async-iterator attribution/NOTICE.",
+  "cases": [
+    {
+      "name": "unused-state",
+      "path": "pa31/tests/spec/source-coroutines/unused-state.rs",
+      "sha256": "02cb7386c6f24c536d8fd166d25c7fb2738e2c94b9ad8f9641bac14d6c711372",
+      "rustc_status": 0
+    },
+    {
+      "name": "renamed-state",
+      "path": "pa31/tests/spec/source-coroutines/renamed-state.rs",
+      "sha256": "112a3e8ea07e0a14f7e658c1da61887789225c9b79d145ac102a420d8cb660cd",
+      "rustc_status": 0
+    },
+    {
+      "name": "unused-zero-state",
+      "path": "pa31/tests/spec/source-coroutines/unused-zero-state.rs",
+      "sha256": "092af9a11fb3c88b319f3619a2562bdd6219add311e79486ec2c9a79f4abf214",
+      "rustc_status": 0
+    },
+    {
+      "name": "wrong-state-target",
+      "path": "pa31/tests/spec/source-coroutines/wrong-state-target.rs",
+      "sha256": "1ffdc835ae5e936a96945c7aafd593139fb1cf2418059191e94a8d661a5c4220",
+      "rustc_status": 1
+    },
+    {
+      "name": "unused-trait",
+      "path": "pa31/tests/spec/source-coroutines/unused-trait.rs",
+      "sha256": "89e79f610c507b3b88dd84408aaa703eb802d77ee3fc0dd139569eb6560c04b6",
+      "rustc_status": 0
+    },
+    {
+      "name": "ordinary-resume",
+      "path": "pa31/tests/spec/source-coroutines/ordinary-resume.rs",
+      "sha256": "7d30e8bc7a8832f102777f28c6f7cecd4af083cd19f7b45a0650905ee6545c70",
+      "rustc_status": 0
+    },
+    {
+      "name": "wrong-resume-argument",
+      "path": "pa31/tests/spec/source-coroutines/wrong-resume-argument.rs",
+      "sha256": "c971f0a20dffa03023c89f5929e2f83515bf87489ff7ea20dc7b1bc793276313",
+      "rustc_status": 1
+    },
+    {
+      "name": "unsafe-resume",
+      "path": "pa31/tests/spec/source-coroutines/unsafe-resume.rs",
+      "sha256": "45e119e7f25f21408cc9eeda4a4a2604f12691cd747e79f65652ed6ab1488a00",
+      "rustc_status": 1
+    },
+    {
+      "name": "missing-implementation",
+      "path": "pa31/tests/spec/source-coroutines/missing-implementation.rs",
+      "sha256": "ca91fff50238a8f5317b2c15bfcd15091eb07b22b678d3d2fefe0db84fe54c01",
+      "rustc_status": 1
+    },
+    {
+      "name": "wrong-trait-arity",
+      "path": "pa31/tests/spec/source-coroutines/wrong-trait-arity.rs",
+      "sha256": "988e8ed516f1367eee513cb7ad4c6607c4257112e1d336550a42a1cfbce892a3",
+      "rustc_status": 1
+    },
+    {
+      "name": "unused-alternate-resume",
+      "path": "pa31/tests/spec/source-coroutines/unused-alternate-resume.rs",
+      "sha256": "102f9f52af2b9870d8c1819115e9c8d58f6eb4b7f89dcc8df2502e2b87466a35",
+      "rustc_status": 0
+    },
+    {
+      "name": "native",
+      "path": "pa31/tests/spec/source-coroutines/native.rs",
+      "sha256": "f8277fc539fd43032cf05d392e220872353881b52ba9c6e4aebb687575417b98",
+      "rustc_status": 0
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+pa31/tests/spec/source-coroutines/unused-state.rs	0
+pa31/tests/spec/source-coroutines/renamed-state.rs	0
+pa31/tests/spec/source-coroutines/unused-zero-state.rs	0
+pa31/tests/spec/source-coroutines/wrong-state-target.rs	1
+pa31/tests/spec/source-coroutines/unused-trait.rs	0
+pa31/tests/spec/source-coroutines/ordinary-resume.rs	0
+pa31/tests/spec/source-coroutines/wrong-resume-argument.rs	1
+pa31/tests/spec/source-coroutines/unsafe-resume.rs	1
+pa31/tests/spec/source-coroutines/missing-implementation.rs	1
+pa31/tests/spec/source-coroutines/wrong-trait-arity.rs	1
+pa31/tests/spec/source-coroutines/unused-alternate-resume.rs	0
+pa31/tests/spec/source-coroutines/native.rs	0

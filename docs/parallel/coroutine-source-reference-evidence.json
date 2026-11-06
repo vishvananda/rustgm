@@ -1,0 +1,146 @@
+{
+  "state": "independent metadata12 and manual native reference qualified; candidate unobserved",
+  "candidate_observed": false,
+  "reference_receipt_sha256": "12993efc3fef53885313faaa70dd377bc7f1ed246928748a58250ba0d4760a94",
+  "predictions_sha256": "8ae2bd80c8d1e2731f0a128aa9a4e6c8cbd43d7b7da733934ef0686248bc7946",
+  "cases": [
+    {
+      "name": "unused-state",
+      "sha256": "02cb7386c6f24c536d8fd166d25c7fb2738e2c94b9ad8f9641bac14d6c711372",
+      "status": 0,
+      "matches": true
+    },
+    {
+      "name": "renamed-state",
+      "sha256": "112a3e8ea07e0a14f7e658c1da61887789225c9b79d145ac102a420d8cb660cd",
+      "status": 0,
+      "matches": true
+    },
+    {
+      "name": "unused-zero-state",
+      "sha256": "092af9a11fb3c88b319f3619a2562bdd6219add311e79486ec2c9a79f4abf214",
+      "status": 0,
+      "matches": true
+    },
+    {
+      "name": "wrong-state-target",
+      "sha256": "1ffdc835ae5e936a96945c7aafd593139fb1cf2418059191e94a8d661a5c4220",
+      "status": 1,
+      "matches": true
+    },
+    {
+      "name": "unused-trait",
+      "sha256": "89e79f610c507b3b88dd84408aaa703eb802d77ee3fc0dd139569eb6560c04b6",
+      "status": 0,
+      "matches": true
+    },
+    {
+      "name": "ordinary-resume",
+      "sha256": "7d30e8bc7a8832f102777f28c6f7cecd4af083cd19f7b45a0650905ee6545c70",
+      "status": 0,
+      "matches": true
+    },
+    {
+      "name": "wrong-resume-argument",
+      "sha256": "c971f0a20dffa03023c89f5929e2f83515bf87489ff7ea20dc7b1bc793276313",
+      "status": 1,
+      "matches": true
+    },
+    {
+      "name": "unsafe-resume",
+      "sha256": "45e119e7f25f21408cc9eeda4a4a2604f12691cd747e79f65652ed6ab1488a00",
+      "status": 1,
+      "matches": true
+    },
+    {
+      "name": "missing-implementation",
+      "sha256": "ca91fff50238a8f5317b2c15bfcd15091eb07b22b678d3d2fefe0db84fe54c01",
+      "status": 1,
+      "matches": true
+    },
+    {
+      "name": "wrong-trait-arity",
+      "sha256": "988e8ed516f1367eee513cb7ad4c6607c4257112e1d336550a42a1cfbce892a3",
+      "status": 1,
+      "matches": true
+    },
+    {
+      "name": "unused-alternate-resume",
+      "sha256": "102f9f52af2b9870d8c1819115e9c8d58f6eb4b7f89dcc8df2502e2b87466a35",
+      "status": 0,
+      "matches": true
+    },
+    {
+      "name": "native",
+      "sha256": "f8277fc539fd43032cf05d392e220872353881b52ba9c6e4aebb687575417b98",
+      "status": 0,
+      "matches": true
+    }
+  ],
+  "prior_boilerplate": "v1 retained E0635 unknown coroutine_trait library-feature request in own no_core crate. v2 removes only that unnecessary request; all12 independent predictions match before candidate observation.",
+  "native": {
+    "state": "passed pinned Rust object +literal C observer",
+    "expected_stdout": "23 47\n",
+    "receipt": "obj/parallel/coroutine-source-contracts/native-v1/receipt.json",
+    "receipt_sha256": "15fc6aef8022d7471db2327b206104d8890a944805c6e55ef63c41f8d58da6ac",
+    "source_sha256": "f8277fc539fd43032cf05d392e220872353881b52ba9c6e4aebb687575417b98",
+    "runs": [
+      {
+        "name": "object",
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--emit=obj",
+          "-Cpanic=abort",
+          "-Zthreads=2",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/source-coroutines/native.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/native-v1/native.o"
+        ],
+        "status": 0,
+        "seconds": 0.05851919000269845
+      },
+      {
+        "name": "link",
+        "command": [
+          "cc",
+          "pa31/tests/spec/source-coroutines/observer.c",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/native-v1/native.o",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/native-v1/observe"
+        ],
+        "status": 0,
+        "seconds": 0.046940114989411086
+      },
+      {
+        "name": "native",
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/coroutine-source-contracts/native-v1/observe"
+        ],
+        "status": 0,
+        "seconds": 0.0013366849743761122
+      },
+      {
+        "name": "harness",
+        "command": [
+          "make",
+          "test-harness"
+        ],
+        "status": 0,
+        "seconds": 13.116279122012202
+      },
+      {
+        "name": "upstream",
+        "command": [
+          "make",
+          "test-upstream"
+        ],
+        "status": 0,
+        "seconds": 0.14164697896922007
+      }
+    ],
+    "seconds": 13.36510462401202
+  }
+}
