@@ -1,0 +1,141 @@
+{
+  "schema": 1,
+  "scope": "Independent pinned Rust reference only; no RustGM candidate/compiler observation. Existing whole-place rawslot/Holder acceptance does not prove byte reconstruction support.",
+  "prediction_file": "byte-word-predictions-v1.json",
+  "prediction_sha256": "0813265c6bf229460248b82a12ce9df5595a5a67d97a9d6757af3d270d928e6c",
+  "source_file": "byte-word.rs",
+  "source_sha256": "7cb93f21b877796d8745e8fff2ac1e457a0c43a648fcd996ef7ccc799ba8eeed",
+  "observer_file": "byte-word.c",
+  "observer_sha256": "50698a3c43bc5ef54fad09e6adac702cd1fa5188f4063d0dda1e3c77b495a236",
+  "state": "passed",
+  "seconds": 0.20657563401618972,
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "compiler": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "commands": [
+    {
+      "label": "rustc-path",
+      "command": [
+        "rustup",
+        "which",
+        "--toolchain",
+        "1.98.0",
+        "rustc"
+      ],
+      "status": 0,
+      "stdout_sha256": "fe30e35d4dca44d9039c0f4e04b7cc617366223e9591525726225c014f17a16e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "rustc-version",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "-vV"
+      ],
+      "status": 0,
+      "stdout_sha256": "3975d062e234a9f3921955bf6ae5b90f5819df94fa825d057f76b34a35ed0f4d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "cc-version",
+      "command": [
+        "cc",
+        "--version"
+      ],
+      "status": 0,
+      "stdout_sha256": "f6ab9d76ae8dcab3e133254944fbc77f41e0ba766287e289345c1ab77df09c45",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "byte-word",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/cstr-source/byte-word.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/cstr-local-reference/byte-word-v1/actual.rmeta"
+      ],
+      "status": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "object",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "-Copt-level=0",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/cstr-source/byte-word.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/cstr-local-reference/byte-word-v1/actual.o"
+      ],
+      "status": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "link",
+      "command": [
+        "cc",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa31/tests/spec/cstr-source/byte-word.c",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/cstr-local-reference/byte-word-v1/actual.o",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/cstr-local-reference/byte-word-v1/actual"
+      ],
+      "status": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "execute",
+      "command": [
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/cstr-local-reference/byte-word-v1/actual"
+      ],
+      "status": 0,
+      "stdout_sha256": "cfad1796b9811fff43fd5b7dbd1c6b481e4d2cc898e1967f1f93b6f45d198f9b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "metadata_status": 0,
+  "native": [
+    {
+      "step": "object",
+      "status": 0
+    },
+    {
+      "step": "link",
+      "status": 0
+    },
+    {
+      "step": "execute",
+      "status": 0
+    }
+  ],
+  "stdout": "byte-word 255 0 17 23\n",
+  "stderr": "",
+  "raw_receipt": "obj/parallel/cstr-local-reference/byte-word-v1/receipt.json",
+  "raw_receipt_sha256": "86bfeeed13bc2639bfd24fa299bb1ab295d536a1641c54bbce1e126b0923df9a",
+  "boundary": "Actual reference validity and complete initialized provenance words remain required. This finite reference adds no layout/metadata/lifetime/write or executable permission. Root owns candidate registration/qualification."
+}

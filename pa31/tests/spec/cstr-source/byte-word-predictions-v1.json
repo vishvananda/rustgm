@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "source_prefix": {
+    "file": "local-storage-v2.rs",
+    "sha256": "0e832425735ae0d96719088968dc0048b28ce601703f53d36c4408c08a443df4",
+    "prefix_bytes": 3688,
+    "prefix_sha256": "e89ecdc08a6d2be5ef36a17e40abf72f68223e9ac6f223c2a95103b5867889bf"
+  },
+  "protocol": "Adapt unchanged pa27 fragment-ranges/vtable-word-rests complete-word snapshots/reassembly; preserve actual CStr methods. Real ordinary array Clone/Copy support enables provenance-preserving array moves. Also exact same protocol for ordinary Plain and generic Wrap<u8> reference words.",
+  "cases": [
+    {
+      "file": "byte-word.rs",
+      "sha256": "7cb93f21b877796d8745e8fff2ac1e457a0c43a648fcd996ef7ccc799ba8eeed",
+      "expected_code": 0,
+      "prediction_status": "predicted-before-any-Rust-or-candidate-observation",
+      "native": {
+        "observer": "byte-word.c",
+        "observer_sha256": "50698a3c43bc5ef54fad09e6adac702cd1fa5188f4063d0dda1e3c77b495a236",
+        "stdout": "byte-word 255 0 17 23\n",
+        "crate_type": "lib"
+      }
+    }
+  ]
+}
