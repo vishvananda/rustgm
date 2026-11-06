@@ -54,3 +54,29 @@ fn missing_extra_and_wrong_extent_rows_fail_before_body_consumption() -> Result 
     }
     Ok(())
 }
+
+#[test]
+fn body_only_moves_need_no_new_source_payer_but_actual_rows_do() -> Result {
+    let report = crate::test_source::resolve("fn one()->u8{7}fn main(){let _=one();}", true)?;
+    let facts = crate::pipeline::analyze_source(&report)?.facts;
+    let mut program = crate::body::build_concrete(&report, &facts)?;
+    assert!(program.drops.is_none());
+    let count = program.bodies.len();
+    // Exhaust the actual payer without editing its private owner. Moving
+    // existing body storage confers no body or cleanup permission.
+    assert!(facts.charge_caller_inputs(usize::MAX, 0).is_err());
+    assert!(facts.charge_caller_inputs(1, 0).is_err());
+    let mut originals = Originals::take(&facts, &mut program)?;
+    originals.reverse(&facts)?;
+    while originals.pop()?.is_some() {
+        originals.shrink(&facts)?;
+    }
+    assert!(originals.bodies().is_empty());
+    assert!(count > 0);
+    let (facts, mut program) = fixture()?;
+    let count = program.bodies.len();
+    assert!(facts.charge_caller_inputs(usize::MAX, 0).is_err());
+    assert!(Originals::take(&facts, &mut program).is_err());
+    assert_eq!(program.bodies.len(), count);
+    Ok(())
+}

@@ -1,0 +1,167 @@
+{
+  "state": "passed focused payer-placement repair; private runtime execution pending CI",
+  "parent_commit": "82ff803819cf2e6b3769617f65f74dee15794085",
+  "failed_ci": {
+    "run": 42169539998,
+    "head": "20c557e01bbd77cdacdbd53c3f5f07a4738e995b",
+    "job": 127733857914,
+    "name": "fast",
+    "url": "https://github.com/vishvananda/rustgm/actions/runs/42169539998/job/127733857914",
+    "failure": "Both ordinary fresh artifact consumers reject caller inputs exceed source work/storage budget"
+  },
+  "ci_bindings": [
+    {
+      "path": "obj/parallel/source-transport/ci42169539998/run.json",
+      "sha256": "6c97e05ed9a44970824809bea08f39e3630094bf9b5e920152b215aa99612278"
+    },
+    {
+      "path": "obj/parallel/source-transport/ci42169539998/fast-job.raw.log",
+      "sha256": "5fb0d70851ca96a78519de8e643035df9ffbade47d2a876d7a3b574f6068edc8"
+    },
+    {
+      "path": "obj/parallel/source-transport/ci42169539998/fast-job.log",
+      "sha256": "853e36073ee78a989a891d2dbed1b5d4db458e41ea19b82397b3f0ff87918699"
+    },
+    {
+      "path": "obj/parallel/source-transport/ci42169539998/fetch-run.json",
+      "sha256": "25dca3a90a02ee2bfddd516af8e1a06d26a2135daf91dd7c1283aa886b133acf"
+    },
+    {
+      "path": "obj/parallel/source-transport/ci42169539998/fetch-fast.json",
+      "sha256": "e0d6b22e685a0915577e5e7c10f6547f47a7c45f3dfe84dac8e0dfd313e7d9f1"
+    },
+    {
+      "path": "obj/parallel/source-transport/ci42169539998/fetch-job-api.json",
+      "sha256": "ce96a66f304ab59a3676273f528a7099fb125388bfbbaee3c34ddd93092333fd"
+    },
+    {
+      "path": "obj/parallel/source-transport/ci42169539998/fetch-job-raw.json",
+      "sha256": "3439bd8b845707453a68f4f08b2bc03c2097d70aa5c21456e94bd943d81fe568"
+    }
+  ],
+  "source_bindings": [
+    {
+      "path": "dev/src/lower/instances/proof/origins.rs",
+      "sha256": "5ec29d153e20b1edf6a4345bb9e217d61fd14e18a0b75fca923d2b4a17a1e5eb"
+    },
+    {
+      "path": "dev/tests/invariants/origrow.rs",
+      "sha256": "291a78086fe3911b2f3a12ed899c0015560b55818fe1f75005464fe46ffa4f09"
+    }
+  ],
+  "qualification_bindings": [
+    {
+      "path": "obj/parallel/source-transport/ci42169539998/repair1/receipt.json",
+      "sha256": "5fb46467c2dc310c6176c4b9e0d90d43b70dba5cb483a945b4e9adba3346db85"
+    },
+    {
+      "path": "obj/parallel/source-transport/ci42169539998/repair1/outer-observation.json",
+      "sha256": "d1be2d72e2bd0a74cb6495192a0ef909cb28d4de37fe569c3c5f829c3b855fb0"
+    },
+    {
+      "path": "obj/parallel/source-transport/ci42169539998/initial-metadata-failure-observation.json",
+      "sha256": "76bcb5df3978ffbd13aefccdd33c7259636c38c7c02e860bf0be08f2c0b6e762"
+    },
+    {
+      "path": "obj/parallel/source-transport/ci42169539998/repair2/receipt.json",
+      "sha256": "5b5fdcd850be9d497fe8d0ec7ba1ebb5fd5f3c2ca8f987dcdbc50cfb0a5d7180"
+    },
+    {
+      "path": "obj/parallel/source-transport/ci42169539998/repair2/sources.json",
+      "sha256": "67c2d99d2fedb4894772a9fe57146a213f603f53c6b7f903b5fe776e2cf982f8"
+    },
+    {
+      "path": "obj/parallel/source-transport/ci42169539998/repair3.py",
+      "sha256": "f1d0b480259f6b5e4de05e25ea5d1fea6e261b93132b639f04772ab80439246a"
+    }
+  ],
+  "final_outer_exit": 0,
+  "final_tests": {
+    "originals": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "required": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "ctseal": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    "ctfix": {
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0
+    },
+    "ctown": {
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0
+    },
+    "ctleaf": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    "ctwire": {
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0
+    },
+    "ctnext": {
+      "passed": 4,
+      "failed": 0,
+      "ignored": 1
+    },
+    "ctdrop": {
+      "passed": 9,
+      "failed": 0,
+      "ignored": 1
+    },
+    "ctsel": {
+      "passed": 10,
+      "failed": 0,
+      "ignored": 0
+    },
+    "primitive-payments": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    "cursor": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    }
+  },
+  "passed_regular_tests": 50,
+  "private_opponent": "all-test/all-feature strict metadata compiled; execution pending CI",
+  "first_repair_outer_exit": 124,
+  "initial_metadata_failure": {
+    "kind": "initial metadata failure observation from captured tool output; not an original raw log",
+    "exit": 101,
+    "seconds": 99.84835395897971,
+    "diagnostic": "E0616: field must_use_contracts of sema::model::Declarations is private",
+    "locations": [
+      "dev/tests/invariants/origrow.rs:67",
+      "dev/tests/invariants/origrow.rs:78"
+    ],
+    "preservation_limit": "The retry script repair3.py accidentally reused output directory repair2 and overwrote the initial local stderr/receipt. This retains the observed failure/cause without claiming raw preservation. Original CI fast logs and repair1 outer timeout remain intact.",
+    "correction": "Use existing failed charge_caller_inputs(usize::MAX,0); no field visibility change or new hook."
+  },
+  "accounting": "Only actual Some Requirements row work uses the existing payer. Complete Some coverage/extents and pre-growth/overlap charging unchanged; old None body movement allocates no row and uses no new payer. No accounting limit, registry, semantic role, proof, ABI or metadata change.",
+  "retained_boundaries": [
+    "None is data, not NoDrop or const permission",
+    "actual Some-row payment remains required",
+    "physical ownership and loans unchanged",
+    "active Code-purpose interpreter cleanup fence",
+    "conditional-parent value-history fence"
+  ],
+  "native": "no new native claim",
+  "known_conflicts": "none expected; origins.rs and origrow.rs are Source-owned",
+  "final_log_directory": "repair3.py emitted repair2/; paths are retained as actually emitted"
+}

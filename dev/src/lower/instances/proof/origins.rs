@@ -14,8 +14,8 @@ pub(in crate::lower::instances) struct Originals {
 impl Originals {
     pub(super) fn take(facts: &Declarations, program: &mut Program) -> Result<Self, &'static str> {
         let count = program.bodies.len();
-        facts.charge_caller_inputs(count.saturating_mul(4).saturating_add(1), 0)?;
         let requirements = if let Some(pending) = &mut program.drops {
+            facts.charge_caller_inputs(count.saturating_mul(4).saturating_add(1), 0)?;
             if pending.bodies.len() != count {
                 return Err("original cleanup rows have different body coverage");
             }
@@ -56,12 +56,9 @@ impl Originals {
         &mut self,
         facts: &Declarations,
     ) -> Result<(), &'static str> {
-        facts.charge_caller_inputs(
-            self.bodies
-                .len()
-                .saturating_add(self.requirements.as_ref().map_or(0, Vec::len)),
-            0,
-        )?;
+        if let Some(rows) = &self.requirements {
+            facts.charge_caller_inputs(self.bodies.len().saturating_add(rows.len()), 0)?;
+        }
         self.bodies.reverse();
         if let Some(rows) = &mut self.requirements {
             rows.reverse();
@@ -93,14 +90,15 @@ impl Originals {
         facts: &Declarations,
     ) -> Result<(), &'static str> {
         if self.bodies.len() < self.bodies.capacity() / 2 {
-            let rows = self.requirements.as_ref().map_or(0, Vec::len);
-            facts.charge_caller_inputs(
-                self.bodies.len().saturating_add(rows),
-                self.bodies
-                    .len()
-                    .saturating_mul(size_of::<Body>())
-                    .saturating_add(rows.saturating_mul(size_of::<Requirements>())),
-            )?;
+            if let Some(rows) = &self.requirements {
+                facts.charge_caller_inputs(
+                    self.bodies.len().saturating_add(rows.len()),
+                    self.bodies
+                        .len()
+                        .saturating_mul(size_of::<Body>())
+                        .saturating_add(rows.len().saturating_mul(size_of::<Requirements>())),
+                )?;
+            }
             self.bodies.shrink_to_fit();
             if let Some(rows) = &mut self.requirements {
                 rows.shrink_to_fit();
