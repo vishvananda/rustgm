@@ -5567,6 +5567,17 @@ replacement destinations do not claim their containing pointer or array's move
 path. These candidates still require field/array glue, conditional flags and
 destructor-induced liveness before they become executable cleanup.
 
+Constant cleanup consumes those same completed plan flags and actual Flags events.
+Map each guard into that plan's exact domain and retain the complete active-call
+inventory independently of its dynamic bit. Initialization bits belong to one
+cold frame cursor bound to its actual instance, Code and once-bound footer; entry
+initialization comes from real events, and loop edges never reset the bits. False
+guards skip only the call, after actual target/header/State authentication. Reuse
+the normal selected method, loans and owned child Unit continuation for true
+guards. Prepay cold cursor/word storage and bit work before growth or mutation,
+keep the ordinary frame footprint unchanged, and release storage once with its
+owning frame. A flag supplies no const, Copy, destructor or loan permission.
+
 Generic cleanup reuses the initialization replay and ordered event schedule.
 Select possible destructor access separately from original-type drop liveness:
 field moves can remove every runtime call while retaining an aggregate's lifetime

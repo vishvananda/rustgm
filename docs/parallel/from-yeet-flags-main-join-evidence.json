@@ -1,0 +1,79 @@
+{
+  "main_implementation": "078a7d1fa",
+  "qualified_inputs": 3635,
+  "inputs_match_main": true,
+  "cli_sha256": "f90679ab80b973233cf4b91fd45045c4525ea3ad049351615861cdd50a235512",
+  "regular_tests": 26,
+  "regular_seconds": 203.48,
+  "native_tests": 6,
+  "native_executables": 17,
+  "native_seconds": 64.5,
+  "core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "f90679ab80b973233cf4b91fd45045c4525ea3ad049351615861cdd50a235512",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 81: 51525: source compiler language item semantic contract is not implemented",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 30.052135011996143,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "2eef68d4fda28022208cfbb6f1d072bd84ada3d1d787afac116805791e1624be",
+      "whole-core.openat": "34b5b902330bc289eee42c7b3be732faeda007241cb1672b07bd2357ef2d643c",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    }
+  },
+  "frontier": {
+    "blocker": "LIB-181",
+    "file": 81,
+    "byte": 51525,
+    "path": "library/core/src/marker.rs",
+    "line": 1348,
+    "source_sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575"
+  },
+  "CI_predecessor": {
+    "run": 42214520487,
+    "private_pass": 2762,
+    "private_fail": 2,
+    "regular_public_pass": 2193,
+    "status": "terminal failure; both issues now covered by passing focused public regressions; full successor pending"
+  },
+  "receipts": [
+    {
+      "path": "obj/qualification/fast/1793968609936175916/receipt.json",
+      "sha256": "06ce12fbdeeef45b3727e341d80a676c0d031c9763792f1202013e5d1ae71522"
+    },
+    {
+      "path": "obj/qualification/fast/1793968934810619285/receipt.json",
+      "sha256": "8aff882c3f65f60e62a6bbda98eed0dd5a4f36ecfeb750fc710342bc070a2a3e"
+    },
+    {
+      "path": "obj/parallel/from-yeet-reference/receipt.json",
+      "sha256": "5d5c7af24f09d2848dd8c5d8338a793126014b38d5df06368a3c328e7b3aa343"
+    },
+    {
+      "path": "obj/parallel/factory-ci-42214520487/reference-v2/reference-receipt.json",
+      "sha256": "1ad92ebe7af15439c9228bd3acf96e9e00f31acb677ab18c0c6eeedc1090e0fa"
+    },
+    {
+      "path": "obj/parallel/from-yeet-core-v1/receipt.json",
+      "sha256": "2c1ca180cdebe952af0c1b832c7153600d29c0b39ccca78ba26105f227d6d80c"
+    },
+    {
+      "path": "obj/parallel/from-yeet-core-v1/join-binding.json",
+      "sha256": "c0234ff241bc8c0db5dca1bd2e9030758061f2259527b2c9fd780882b03982f0"
+    },
+    {
+      "path": "obj/parallel/full-ci-42214520487.log",
+      "sha256": "2e8709e766041558466b06a49805d9d56433c917c24b9478dbdc7e8b5fbf514f"
+    }
+  ]
+}
