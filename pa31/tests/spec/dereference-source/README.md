@@ -1,7 +1,7 @@
 # Actual source dereference contracts
 
-The31 complete authored inputs in `contract.json` and `cases.tsv` freeze outcomes
-before observing RustGM. Pinned Rust1.98.0 (88d9e12ae) independently confirms all31;
+The 32 complete authored inputs in `contract.json` and `cases.tsv` freeze outcomes
+before observing RustGM. Pinned Rust1.98.0 (88d9e12ae) independently confirms all 32;
 `foundation.rs` and the C observer are authenticated auxiliary inputs. Preserve
 repository NOTICE and the inherited source-foundation attribution.
 
@@ -23,3 +23,8 @@ source body or physical Copy fallback is involved.
 independent/native controls and remaining contract. Wider demanded signatures,
 const/metadata, implicit autoderef/coercion profiles and whole PA26/31/43 release
 requirements remain required. Local source completion is not imported permission.
+
+`nested-borrow.rs` adds a separately frozen actual `Pin<&mut &mut S>`
+regression. Its callback borrows the real nested operand, mutates the referent,
+and ends the borrow locally; the expected C observer output is `23\n`. It uses
+existing Pin/Deref/DerefMut roles and no AsyncIterator declarations.

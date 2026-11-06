@@ -36,16 +36,14 @@ impl Checker<'_> {
         let receiver = self.child(node, signature, 0)?;
         let receiver_subject = self.child(node, receiver, 0)?;
         self.shape_equation(node, subject, receiver_subject)?;
+        let actual = self.operand_borrow(node, subject, receiver, mutable)?;
         let result = self.child(node, signature, 1)?;
         let target = self.child(node, result, 0)?;
-        let pending = self.retain_language_borrow(
-            node,
-            operand,
-            selected.method,
-            callable,
-            subject,
-            receiver,
-        );
+        let pending =
+            self.retain_language_borrow(node, operand, selected.method, callable, subject, actual);
+        self.state.call_types.methods[pending]
+            .1
+            .expect_receiver(receiver);
         self.retain_dereference_call(node, mutable, pending, signature);
         Ok(target)
     }

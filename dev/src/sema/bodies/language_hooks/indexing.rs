@@ -57,8 +57,12 @@ impl Checker<'_> {
         self.shape_equation(node, idx, expected)?;
         let reference = self.child(node, signature, 2)?;
         let output = self.child(node, reference, 0)?;
+        let actual = self.operand_borrow(node, subject, receiver, mutable)?;
         let pending =
-            self.retain_language_borrow(node, value, selected.method, callable, subject, receiver);
+            self.retain_language_borrow(node, value, selected.method, callable, subject, actual);
+        self.state.call_types.methods[pending]
+            .1
+            .expect_receiver(receiver);
         self.retain_language_index_call(
             node,
             if mutable { Hook::IndexMut } else { Hook::Index },
@@ -95,6 +99,7 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
         value: NodeId,
+        solved: &Solved,
     ) -> Result<(), Error> {
         if self.facts.source_bindings.is_none() || !matches!(self.kind(node), Kind::Index { .. }) {
             return Ok(());
@@ -127,9 +132,27 @@ impl Checker<'_> {
                 "source index receiver policy changed its actual inputs",
             ));
         };
-        if selected.borrow != Some(*receiver)
-            || selected.receiver != *receiver
-            || selected.dereferences != 0
+        let pending = self
+            .language_index_method(node)
+            .and_then(|index| self.state.call_types.methods.get(index))
+            .filter(|(source, _)| *source == node)
+            .map(|(_, pending)| pending)
+            .ok_or_else(|| {
+                self.error(node, "source index receiver policy lost its solved borrow")
+            })?;
+        let [callable, actual, expected] = pending.value_types(solved);
+        let (dereferences, borrow) = pending.capture_receiver();
+        // Publication retains the real operand borrow and separately records
+        // its directed relation to the opened callee receiver. Region aliases
+        // may differ; neither place identity nor that relation is interchangeable.
+        if selected.method != pending.method()
+            || selected.callable != callable
+            || selected.borrow != Some(actual)
+            || borrow.map(|term| solved.types[term.0 as usize]) != Some(actual)
+            || selected.receiver != expected
+            || expected != *receiver
+            || selected.dereferences != dereferences
+            || dereferences != 0
             || !matches!(self.facts.types.kind(selected.callable),Some(Type::FunctionItem{item,..}) if item.0==selected.method.0)
         {
             return Err(self.error(

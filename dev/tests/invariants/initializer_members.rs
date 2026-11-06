@@ -125,3 +125,79 @@ fn runtime_member_calls_cannot_acquire_const_permission_from_a_body_flag() -> Re
     )?);
     Ok(())
 }
+
+#[test]
+fn const_index_operand_and_expected_receiver_remain_distinct_authenticated_inputs() -> Result {
+    let source = crate::test_source::fixture("pa31/tests/spec/source-index-places/const-valid.rs")?;
+    let report = crate::test_source::source_provider(&source, "const_index_operands")?;
+    let crate::pipeline::Analysis { mut facts, .. } = crate::pipeline::analyze_source(&report)?;
+    let (site, original) = facts
+        .methods
+        .calls
+        .iter()
+        .find(|(site, _)| {
+            matches!(
+                report
+                    .package
+                    .unit(site.file)
+                    .configured
+                    .ast
+                    .node(site.node)
+                    .kind,
+                crate::syntax::ast::Kind::Index { .. }
+            )
+        })
+        .map(|(site, method)| (*site, *method))
+        .ok_or("actual closed index")?;
+    let Some(crate::sema::model::Operation::Call { signature, .. }) =
+        facts.node(site).and_then(|node| node.operation)
+    else {
+        return Err("actual index Call".into());
+    };
+    let Some(Kind::Function { result, .. }) = facts.types.kind(signature) else {
+        return Err("actual index signature".into());
+    };
+    let call = Call {
+        site,
+        target: original.callable,
+        signature,
+        result,
+    };
+    let node_type = facts.node(site).and_then(|node| node.ty);
+    let mut work = Work::new(1_000_000);
+    index_result(&report, &facts, call, node_type, &mut work)?;
+    assert_ne!(original.borrow, Some(original.receiver));
+    let Some(Kind::Reference {
+        mutable,
+        region,
+        referent,
+    }) = original.borrow.and_then(|ty| facts.types.kind(ty))
+    else {
+        return Err("actual operand borrow".into());
+    };
+    let wrong_mutability = facts.types.intern(Kind::Reference {
+        mutable: !mutable,
+        region,
+        referent,
+    })?;
+    let wrong_referent = facts.types.intern(Kind::Reference {
+        mutable,
+        region,
+        referent: crate::types::TypeId::UNIT,
+    })?;
+    for mutation in 0..4 {
+        let mut changed = original;
+        match mutation {
+            0 => changed.receiver = crate::types::TypeId::UNIT,
+            1 => changed.borrow = Some(wrong_mutability),
+            2 => changed.borrow = Some(wrong_referent),
+            _ => changed.borrow = None,
+        }
+        facts.methods.calls.insert(site, changed);
+        assert!(index_result(&report, &facts, call, node_type, &mut work).is_err());
+    }
+    facts.methods.calls.insert(site, original);
+    assert!(index_operand(&facts, site, site.node, original.borrow, mutable, &mut work).is_err());
+    index_result(&report, &facts, call, node_type, &mut work)?;
+    Ok(())
+}

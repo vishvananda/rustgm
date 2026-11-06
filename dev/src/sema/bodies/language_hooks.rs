@@ -111,14 +111,23 @@ impl Checker<'_> {
         let result = self.child(node, signature, arity)?;
         if kind.borrowed() {
             let expected = self.child(node, signature, 0)?;
+            let actual = self.operand_borrow(
+                node,
+                subject,
+                expected,
+                kind.assignment() || kind == Hook::IndexMut,
+            )?;
             let pending = self.retain_language_borrow(
                 node,
                 left,
                 declaration.method,
                 callable,
                 subject,
-                expected,
+                actual,
             );
+            self.state.call_types.methods[pending]
+                .1
+                .expect_receiver(expected);
             if kind.indexing() {
                 self.retain_language_index_call(node, kind, pending, signature);
             } else {
