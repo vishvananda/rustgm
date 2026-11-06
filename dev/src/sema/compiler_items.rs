@@ -158,6 +158,7 @@ pub(crate) struct Catalog {
     traits: Option<Box<roles::Validated>>,
     call_effects: Option<Box<crate::support::hash::HashMap<DefId, calls::Effect>>>,
     pub(in crate::sema) call_contexts: Option<Box<super::bodies::CallContexts>>,
+    pub(crate) value_reborrows: Option<Box<super::reborrow_adjustments::Adjustments>>,
     intrinsics: crate::support::hash::HashMap<DefId, intrinsic_contracts::Intrinsic>,
     attributes: [crate::resolve::bindings::HeaderAttributes; LangItem::ALL.len()],
     runtime_checks: runtime_checks::RuntimeCheckSession,
@@ -255,6 +256,7 @@ impl Catalog {
             traits: None,
             call_effects: None,
             call_contexts: None,
+            value_reborrows: None,
             intrinsics: reserved
                 .intrinsics()
                 .map(|entry| {

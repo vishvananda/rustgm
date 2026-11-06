@@ -49,7 +49,7 @@ fn actual_source_transmute_preserves_owned_drop_and_prepares_native_roundtrips()
         &mut std::fs::File::create(folder.join("provider.lowir"))?,
     )?;
     // Provider roles retain compact identities; public declarations remain unchanged.
-    assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 3760);
+    assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 3768);
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     eprintln!(

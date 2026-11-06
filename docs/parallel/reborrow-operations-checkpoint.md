@@ -25,6 +25,11 @@ match-guard and promotion rules remain active. Pending goals are released at
 each inference reset; this prevents stale indices crossing bodies and avoids
 retaining an oversized rare table for subsequent bodies.
 
+The [source-owner repair](reborrow-source-owner-repair.md) keeps this same
+sparse semantic map under the existing optional source catalog, restoring the
+ordinary Declarations7120 layout. It separately qualifies current source/native
+behavior and compile-time width opponents after the full CI size failure.
+
 Seven exact public tests across two targets pass in 115.23 seconds, including
 ordinary loan and CStr controls. The Reborrow cohort has seven positive source
 cases and twenty independently qualified ordinary rejections. Two real native

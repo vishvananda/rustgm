@@ -413,7 +413,6 @@ pub struct Declarations {
     /// Packed source places remain checked even when their CFG is unreachable.
     pub reference_alignment: Vec<ReferenceAlignment>,
     pub reference_adjustments: crate::support::hash::HashMap<NodeKey, ReferenceAdjustment>,
-    pub(crate) value_reborrows: Option<Box<super::reborrow_adjustments::Adjustments>>,
     pub(crate) unsizing_rules: Option<Box<crate::types::unsizing::Rules>>,
     /// Selected terminal conversion; lowering consumes its retained proof inputs.
     pub unsizing_adjustments:
@@ -707,7 +706,6 @@ impl Declarations {
             destructors: super::destructors::Destructors::default(),
             reference_alignment: Vec::new(),
             reference_adjustments: crate::support::hash::HashMap::default(),
-            value_reborrows: None,
             unsizing_rules: None,
             unsizing_adjustments: crate::support::hash::HashMap::default(),
             pointer_adjustments: crate::support::hash::HashMap::default(),

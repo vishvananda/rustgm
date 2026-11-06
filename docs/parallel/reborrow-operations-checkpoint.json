@@ -183,5 +183,11 @@
     "Wider operations, effects/Drop/const/derives/closures and authenticated transport",
     "Demanded nested/zero native profiles with currently unqualified pinned no_core ICE observations",
     "Whole PA25+ requirements and release contracts"
-  ]
+  ],
+  "source_owner_successor": {
+    "path": "docs/parallel/reborrow-source-owner-repair.json",
+    "sha256": "f9209ae7c452128ea1b99e5d8f4da31565fdd56d12d5d0acdcc7793f04f19692",
+    "ordinary_declarations_bytes": 7120,
+    "source_catalog_bytes": 3768
+  }
 }

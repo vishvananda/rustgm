@@ -1295,6 +1295,10 @@ the shared typed field producer; matching physical layouts supply no permission.
 
 Carry sparse, authenticated source/body/instance/store/operation/place inputs
 through template substitution, native copying and immutable const snapshots.
+The existing optional source catalog owns semantic Reborrow selections. Preserve
+the ordinary compilation-root layout and charge actual lazy map/row retention
+through its established payer; keep body inference goals and checked CFG inputs
+in their own existing owners.
 Preflight their context before remapping. Release pending goal indices at the
 inference-arena boundary. Loans, guard protections, initialization, storage,
 unsafe access and promotion remain ordinary; no implicit Clone call is introduced.

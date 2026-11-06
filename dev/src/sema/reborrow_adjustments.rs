@@ -70,7 +70,12 @@ pub(in crate::sema) fn retain(
         .types
         .existing_arena_identity()
         .ok_or("value reborrow lost its prepaid type-store identity")?;
-    let previous = facts.value_reborrows.as_deref();
+    let previous = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("value reborrow requires its actual source catalog")?
+        .value_reborrows
+        .as_deref();
     if previous.is_some_and(|p| !facts.types.has_identity(&p.arena)) {
         return Err("value reborrow inventory belongs to another type store");
     }
@@ -85,6 +90,9 @@ pub(in crate::sema) fn retain(
         }),
     )?;
     let entries = &mut facts
+        .source_bindings
+        .as_deref_mut()
+        .ok_or("value reborrow lost its actual source catalog")?
         .value_reborrows
         .get_or_insert_with(|| {
             Box::new(Adjustments {

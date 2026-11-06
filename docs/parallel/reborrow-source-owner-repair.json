@@ -1,0 +1,73 @@
+{
+  "state": "qualified source-owner repair of actual CI compact-layout regression; full successor CI pending",
+  "base": "becb8eaa7",
+  "prior_ci": {
+    "run": 42287493371,
+    "head": "b93f19388e8d0e855d19cab450474ae6ca0dae50",
+    "url": "https://github.com/vishvananda/rustgm/actions/runs/42287493371",
+    "log": "obj/parallel/reborrow-layout-ci-repair-v1/prior-ci.log",
+    "sha256": "beee910e8088fd0bb096f7e99c00f3893c88ee2f47daa171004b07ace4bdcda4",
+    "failure": "eight ordinary Declarations size opponents expected7120, actual7128; all thirteen public targets passed"
+  },
+  "ownership": "Move the same lazy authenticated Reborrow adjustment map to the existing optional source Catalog; no cloned map, new index or permission. Ordinary size contracts remain unchanged. Source role, arena, actual operation and allocation prepayment remain mandatory.",
+  "compile_time_sizes": {
+    "Declarations": 7120,
+    "Catalog": 3768,
+    "Body": 456,
+    "Value": 24,
+    "Node": 36
+  },
+  "combined_source_roots_bytes": 10888,
+  "regular": {
+    "receipt": "obj/qualification/fast/1793998346705735216/receipt.json",
+    "sha256": "47371e82a697814648a9a9707fca3b2566f62abc688c68ad71f677dba09d71f7",
+    "seconds": 237.86,
+    "tests": 6,
+    "selected": {
+      "suite_frontend": [
+        "reborrow_sources::actual_source_operations_and_unused_alternate_headers_remain_real",
+        "reborrow_sources::checked_source_operations_retain_their_original_places",
+        "reborrow_sources::generic_expectations_and_operation_field_lifetimes_remain_ordinary",
+        "reborrow_sources::source_impl_fields_and_operation_loans_retain_their_ordinary_rejections",
+        "reborrow_sources::wrapper_parameters_keep_loans_without_explicit_reference_values",
+        "weak_symbols::actual_foreign_headers_preserve_unused_ordinary_legality"
+      ]
+    },
+    "subsequent_changes": [
+      "dev/tests/invariants/not_contracts.rs",
+      "dev/tests/invariants/parameter_derivations.rs",
+      "dev/tests/invariants/reflection_headers.rs",
+      "dev/tests/invariants/reinterpreted_calls.rs",
+      "dev/tests/invariants/signed_source.rs"
+    ],
+    "equivalence": "Only five existing private source Catalog size expectations changed after this pass; production, selected tests and inputs unchanged."
+  },
+  "metadata": {
+    "receipt": "obj/parallel/reborrow-source-owner-v1/metadata.json",
+    "sha256": "c3f08a8f4e6737386bc1a3bd065f0c64569202ab5e9702cf4471b9c777301be9",
+    "seconds": 113.0360949949827,
+    "strict": "all targets/all features, metadata only",
+    "purpose": "CI-driven coherent layout checkpoint; compile-time size opponents verify actual compiler sizes without a cold private link."
+  },
+  "native": {
+    "receipt": "obj/qualification/fast/1793998738714873621/receipt.json",
+    "sha256": "b4228716992a76d1953840a74ee078b35dbe833ab75f0ba337684ebbf4954790",
+    "seconds": 34.94,
+    "tests": 1,
+    "executables": 2,
+    "observed_stdout": [
+      "reborrow 23 23 47 47 0 99 31",
+      "successor 17 23 19 31 23 59 1"
+    ]
+  },
+  "source_snapshot": {
+    "count": 3674,
+    "sha256": "4284311ba97c7df0afd9cbfda2f20f1f1717c5611d56c05677b9a77b938ae6cb"
+  },
+  "pending": [
+    "Full successor release/debug/private/native/independent qualification remains CI work.",
+    "No repeated original-core probe for the source-owner-only move; latest observed core remains LIB186 FieldRepresentingType on immutable9aa812d6.",
+    "Wider Reborrow operations and authenticated transport; actual Field evidence/projections/default OFFSET and original core/alloc/std artifacts."
+  ],
+  "resources": "Same btrfs trees/cache, <=300s batches, two-heavy global,16GiB/tree absolute cap and150GiB reserve; generated native outputs pruned."
+}

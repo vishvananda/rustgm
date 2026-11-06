@@ -4,6 +4,14 @@ use crate::support::{bindings::SourceIntrinsic, hash::HashSet};
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 const PACKET: &str = "pa28/tests/spec/intrinsic-declarations";
 
+// Source Reborrow storage belongs to the existing optional source catalog.
+// Check ordinary records during metadata compilation as well as runtime.
+const _: [(); 7120] = [(); size_of::<Declarations>()];
+const _: [(); 456] = [(); size_of::<crate::body::ir::Body>()];
+const _: [(); 24] = [(); size_of::<crate::body::ir::Value>()];
+const _: [(); 36] = [(); size_of::<crate::syntax::ast::Node>()];
+const _: [(); 3768] = [(); size_of::<crate::sema::compiler_items::Catalog>()];
+
 #[test]
 fn registry_retains_distinct_identities_and_shared_finite_profiles() -> TestResult {
     let cases = crate::test_source::fixture(&format!("{PACKET}/cases.tsv"))?;

@@ -24,8 +24,9 @@ impl Builder<'_> {
             };
             let row = self
                 .facts
-                .value_reborrows
+                .source_bindings
                 .as_deref()
+                .and_then(|catalog| catalog.value_reborrows.as_deref())
                 .ok_or_else(|| self.error(node, "value reborrow source inventory is missing"))?
                 .get(self.facts, key)
                 .map_err(|e| self.error(node, e))?

@@ -166,8 +166,9 @@ impl Body {
         place: Place,
     ) -> Result<(), &'static str> {
         let adjustment = facts
-            .value_reborrows
+            .source_bindings
             .as_deref()
+            .and_then(|catalog| catalog.value_reborrows.as_deref())
             .ok_or("value reborrow source selection disappeared")?
             .get(facts, site)?
             .ok_or("value reborrow has no checked source selection")?;

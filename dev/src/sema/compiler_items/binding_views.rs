@@ -269,6 +269,7 @@ fn prepare_catalog(
         traits: None,
         call_effects: None,
         call_contexts: None,
+        value_reborrows: None,
         intrinsics: crate::support::hash::HashMap::default(),
         attributes,
         runtime_checks: super::runtime_checks::RuntimeCheckSession::new(&report.package),

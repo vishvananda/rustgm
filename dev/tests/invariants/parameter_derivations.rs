@@ -198,7 +198,7 @@ fn generic_markers_and_nominal_parameters_preserve_actual_proofs_and_cold_roles(
     assert_eq!(LangItem::OffsetOf.index(), 64);
     // Appended wrapper roles extend cold tables; hot records stay fixed.
     assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 5208);
-    assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 3760);
+    assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 3768);
     eprintln!(
         "source ConstParamTy cold Reservations={} Catalog={} Transaction={} roles={}",
         size_of::<crate::resolve::bindings::Reservations>(),
