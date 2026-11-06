@@ -5,8 +5,16 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 fn original() -> Result<(Declarations, crate::body::ir::Program)> {
     let text = crate::test_source::fixture("pa31/tests/spec/nominal-coercions/values/native.rs")?;
     let report = crate::test_source::source_provider(&text, "conversion_claims")?;
-    let crate::pipeline::Analysis { facts, .. } = crate::pipeline::analyze_source(&report)?;
-    let program = crate::body::build(&report, &facts)?;
+    let crate::pipeline::Analysis { facts, prepared } = crate::pipeline::analyze_source(&report)?;
+    // Generic originals remain templates; consume any concrete CFGs already
+    // retained by source preparation instead of rebuilding the whole fixture.
+    let program = crate::body::concrete_selected(
+        &report,
+        &facts,
+        |owner| crate::body::templates::owns(&facts, owner),
+        prepared.concrete,
+        crate::body::Selection::Complete,
+    )?;
     Ok((facts, program))
 }
 

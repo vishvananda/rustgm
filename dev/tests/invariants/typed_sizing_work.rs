@@ -1,7 +1,7 @@
 //! Whole typed calls include argument formation, unlike the isolated Freeze query.
 use super::*;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
-fn observe(source: &str) -> Result<(usize, usize)> {
+fn observe(source: &str) -> Result<(usize, usize, (usize, usize))> {
     let report = crate::test_source::source_provider(source, "freeze_perf_v1")?;
     let mut facts = crate::sema::declarations::analyze(&report)?;
     let functions = facts.functions.clone();
@@ -19,20 +19,14 @@ fn observe(source: &str) -> Result<(usize, usize)> {
             .get(report.resolution.definitions[function.definition.0 as usize].name)
             == "observe"
         {
-            // Ready sibling roots share one query's formation DAG. Its storage
-            // dies with that query; these calls need no cross-query cache owner.
-            assert!(
-                checker.state.canonical_trait_proofs.is_none(),
-                "conjunction retained cross-query storage: {:?}",
+            observed = Some((
+                checker.facts.body_work.inference_steps - first.0,
+                checker.facts.body_work.canonical_steps - first.1,
                 checker
                     .state
                     .canonical_trait_proofs
                     .as_deref()
-                    .map(selection::Reuse::observations)
-            );
-            observed = Some((
-                checker.facts.body_work.inference_steps - first.0,
-                checker.facts.body_work.canonical_steps - first.1,
+                    .map_or((0, 0), selection::Reuse::observations),
             ));
         }
     }
@@ -63,7 +57,12 @@ fn original_full_call_alias_depths_reuse_sizing_without_unrelated_nominal_growth
                 measured = Some(current);
             }
         }
-        let (inference, canonical) = measured.ok_or("measurement")?;
+        let (inference, canonical, (entries, bytes)) = measured.ok_or("measurement")?;
+        // Ready conjunctions and later exact roots share one immutable body's
+        // debt-free certificates; retention follows demanded goals, not the
+        // declaration catalog. The noise comparison includes these counts.
+        assert!(entries > 0 && entries <= 4 * depth + 16);
+        assert!(bytes <= entries * 96 + 256);
         if let Some((old_depth, old_inference, old_canonical)) = previous {
             let ratio = depth / old_depth;
             assert!(

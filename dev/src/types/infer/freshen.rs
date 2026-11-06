@@ -80,7 +80,7 @@ impl Context {
     fn closed(&self, store: &Store, id: TermId, depth: u16) -> Result<bool, Error> {
         if self
             .completed(store, id)?
-            .is_some_and(|facts| !facts.regions)
+            .is_some_and(|facts| !facts.regions && !facts.callables)
         {
             return Ok(true);
         }

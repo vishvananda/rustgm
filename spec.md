@@ -1263,8 +1263,10 @@ full module/derive/iteration and metadata closure remain acceptance requirements
 
 Growing constructor inputs must share completed inference prefixes. Reuse the
 existing postorder occurs/freshening walks to record immutable graph facts;
-holes, projections and lifetime-bearing fresh positions retain their ordinary
-work. Do not intern canonical types merely to obtain a completion certificate.
+holes, projections, lifetime-bearing fresh positions and callable-template
+rebuilding retain their ordinary work. A normalized current callable signature
+does not prove its declaration template free of new projection occurrences.
+Do not intern canonical types merely to obtain a completion certificate.
 Canonical sizing conjunctions share the existing body's completed-proof owner
 with individual selections in the same fixed caller and mode. A concrete,
 debt-free positive proof of an actual source sizing trait also proves that exact

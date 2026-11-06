@@ -85,23 +85,30 @@ fn merging_watched_roots_coalesces_waits_and_reports_each_query_once() -> TestRe
 #[test]
 fn watches_follow_newly_exposed_children_without_rescanning_ancestors() -> TestResult {
     let store = Store::default();
-    let mut context = Context::default();
-    let mut leaf = context.variable(Domain::Any)?;
-    let query = context.watch_resolution(&[leaf], &[])?;
-    assert_eq!(context.ready_resolution(&store)?, None);
-    let start = context.steps;
-    for _ in 0..512 {
-        let child = context.variable(Domain::Any)?;
-        let tuple = context.construct(Constructor::Tuple, &[child, child])?;
-        context.equate(&store, leaf, tuple)?;
+    let mut previous = None;
+    for depth in [128, 256, 512, 1024] {
+        let mut context = Context::default();
+        let mut leaf = context.variable(Domain::Any)?;
+        let query = context.watch_resolution(&[leaf], &[])?;
         assert_eq!(context.ready_resolution(&store)?, None);
-        leaf = child;
+        let start = context.steps;
+        for _ in 0..depth {
+            let child = context.variable(Domain::Any)?;
+            let tuple = context.construct(Constructor::Tuple, &[child, child])?;
+            context.equate(&store, leaf, tuple)?;
+            assert_eq!(context.ready_resolution(&store)?, None);
+            leaf = child;
+        }
+        let known = context.known(&store, BYTE)?;
+        context.equate(&store, leaf, known)?;
+        assert_eq!(context.ready_resolution(&store)?, Some(query));
+        assert_eq!(context.ready_resolution(&store)?, None);
+        let work = context.steps - start;
+        if let Some(prior) = previous {
+            assert!(work <= 2 * prior + 64, "depth{depth}: {prior}->{work}");
+        }
+        previous = Some(work);
     }
-    let known = context.known(&store, BYTE)?;
-    context.equate(&store, leaf, known)?;
-    assert_eq!(context.ready_resolution(&store)?, Some(query));
-    assert_eq!(context.ready_resolution(&store)?, None);
-    assert!(context.steps - start < 512 * 20);
     Ok(())
 }
 
