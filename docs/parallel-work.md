@@ -1,3 +1,14 @@
+The [overflow/automatic/CI join](parallel/overflow-auto-ci-main-join.md) passes
+nine focused public controls, selected strict Clippy, architecture and282 harness
+checks. The actual joined CLI clears LIB188 to LIB189, cold closure at
+str/pattern.rs1858/file239:69695,19.5022s/375opens with unchanged722/profile/limits.
+Full42308905382 failed one real auto-only inherent principal policy and four
+obsolete custom-auto assertions; repaired focused controls pass, full successor
+execution remains pending. Root owns Field consumers/publication, Source owns
+cold target semantics, Async owns real const-closure callable/capture/CTFE work.
+Keep existing btrfs trees,2heavy/16GiB/150GiB/300s and scoped cleanup. No original
+library artifact or whole assignment after24 is complete.
+
 The [automatic-trait main join](parallel/custom-auto-main-join.md) clears LIB187
 and observes original core at LIB188, Iterator::count's genuine const-closure
 inherited-overflow word (iterator.rs231/file175:8088),21.1385s/375opens. All722

@@ -1,0 +1,147 @@
+{
+  "scope": "joined finite overflow attribute, automatic-negative equation scaling and auto-trait CI repair",
+  "implementation_commit": "4e8c2cdae8209221b6f4a7493fa18036e7864cd1",
+  "compiler_source_fingerprint_sha256": "3afbf9eb3defda4339637903e81410d9f02dd333e623495a8ead56369376b465",
+  "compiler_source_files": 3685,
+  "cli_sha256": "1ed33c2066790d0fee1d292867928812c630d1530303e277554c55eef4854b93",
+  "fastcheck": {
+    "receipt": "obj/qualification/fast/1794008522024143551/receipt.json",
+    "sha256": "aa0d678d42c447b924229946ea3225abe4c76db07ddf3008c2eef1b8c4e54897",
+    "steps": [
+      {
+        "name": "assignment-metadata",
+        "seconds": 1.8193932560971007,
+        "status": 0
+      },
+      {
+        "name": "format",
+        "seconds": 15.91077616205439,
+        "status": 0
+      },
+      {
+        "name": "architecture",
+        "seconds": 4.326916711055674,
+        "status": 0
+      },
+      {
+        "name": "clippy",
+        "seconds": 63.052235681097955,
+        "status": 0
+      },
+      {
+        "name": "build",
+        "seconds": 120.12900325097144,
+        "status": 0
+      },
+      {
+        "name": "suite_frontend-inventory",
+        "seconds": 0.018113670987077057,
+        "status": 0
+      },
+      {
+        "name": "suite_frontend-ignored",
+        "seconds": 0.011124178068712354,
+        "status": 0
+      },
+      {
+        "name": "suite_frontend",
+        "seconds": 0.47566922998521477,
+        "status": 0
+      }
+    ],
+    "exact_tests": 9
+  },
+  "integration": {
+    "receipt": "obj/parallel/overflow-auto-ci-join-v1/receipt.json",
+    "sha256": "2e722a13736513d46c02bac97f4acceb63a8c0b5dfa9b87b792dda74e4cafc22",
+    "steps": [
+      {
+        "name": "cli",
+        "command": [
+          "cargo",
+          "build",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--bin",
+          "rustgm"
+        ],
+        "status": 0,
+        "seconds": 0.11475130904000252
+      },
+      {
+        "name": "harness-upstream",
+        "command": [
+          "make",
+          "test-harness",
+          "test-upstream"
+        ],
+        "status": 0,
+        "seconds": 14.306833344046026
+      },
+      {
+        "name": "original-core",
+        "command": [
+          "python3",
+          "scripts/observe_original_core.py",
+          "--worker",
+          "--cli",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/overflow-auto-ci-join-v1/pin/rustgm",
+          "--producer-binding",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/overflow-auto-ci-join-v1/producer.json",
+          "--expected-cli-sha256",
+          "1ed33c2066790d0fee1d292867928812c630d1530303e277554c55eef4854b93",
+          "--manifest",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/overflow-auto-ci-join-v1/manifest.json",
+          "--source-root",
+          "/home/vishvananda/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+          "--cap-lints",
+          "allow",
+          "--out",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/overflow-auto-ci-join-v1/core"
+        ],
+        "status": 0,
+        "seconds": 19.67571920901537
+      }
+    ],
+    "seconds": 35.29008572991006
+  },
+  "original_core": {
+    "status": 1,
+    "first_error": "ERROR: file 239: 69695: cold function-body profile is not implemented for this wider Rust target",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 19.502196834073402,
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "lint_cap": "allow"
+  },
+  "mapped_first_error": {
+    "blocker": "LIB-189",
+    "path": "library/core/src/str/pattern.rs",
+    "line": 1858,
+    "file": 239,
+    "offset": 69695,
+    "source_sha256": "878333fb2b4371194f0853b93ff4fc53efe02be878f603b546ab5ae00fa3eefd"
+  },
+  "unchanged_original_source_count": 722,
+  "unchanged_configuration_source_pins": 6,
+  "qualification_pending": [
+    "full successor CI including private test execution",
+    "complete const-closure callable/capture/CTFE semantics",
+    "whole original core artifact and consumers",
+    "all parent assignment release requirements"
+  ],
+  "failed_predecessor": {
+    "ci_run": 42308905382,
+    "private_failures": 3,
+    "public_failures": 2,
+    "causes": "one actual auto-only inherent principal bug and four obsolete custom-auto assertions"
+  },
+  "durable_field_wip_stash": "7d69dff70492fe817f98d48aad4cb79fbffda2b8"
+}
