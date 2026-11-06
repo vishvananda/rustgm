@@ -1,5 +1,8 @@
 //! The first executable profile retains closed ordinary Struct Drop bodies.
-use crate::body::drops::{glue, schedule::Call};
+use crate::body::drops::{
+    glue,
+    schedule::{Call, Guard},
+};
 use crate::{
     body::{
         ir::{Body, Owner},
@@ -34,17 +37,12 @@ pub(super) fn select(
     if !body.temporaries.is_empty() {
         return Err("constant materialized-temporary cleanup execution is not implemented");
     }
-    if !plan.flags.is_empty() {
-        return Err("constant conditional cleanup flag execution is not implemented");
-    }
     charge.charge(plan.events.len(), 0)?;
-    if plan.events.iter().any(|event| {
-        matches!(
-            event.effect,
-            crate::borrow::destruction::Effect::Birth(_)
-                | crate::borrow::destruction::Effect::Flags { .. }
-        )
-    }) {
+    if plan
+        .events
+        .iter()
+        .any(|event| matches!(event.effect, crate::borrow::destruction::Effect::Birth(_)))
+    {
         return Err("constant cleanup execution requires its finite local event profile");
     }
     charge.charge(plan.cleanups.len(), 0)?;
@@ -68,9 +66,23 @@ pub(super) fn select(
                 "constant recursive field/array/variant cleanup execution is not implemented",
             );
         };
-        if node.condition != Condition::Always {
-            return Err("constant conditional cleanup flag execution is not implemented");
-        }
+        let guard = match node.condition {
+            Condition::Always => Guard::ALWAYS,
+            Condition::Initialized(flag) => {
+                charge.charge(
+                    plan.flags
+                        .len()
+                        .checked_ilog2()
+                        .map_or(1, |n| n as usize + 1),
+                    0,
+                )?;
+                Guard::initialized(
+                    plan.flags
+                        .binary_search(&flag)
+                        .map_err(|_| "cleanup guard lost its actual plan flag")?,
+                )?
+            }
+        };
         let target = body
             .place_type(cleanup.candidate.place)
             .ok_or("executable cleanup lost its exact place type")?;
@@ -88,6 +100,7 @@ pub(super) fn select(
             target,
             instance,
             recipe: id,
+            guard,
         });
     }
     Ok(selected)

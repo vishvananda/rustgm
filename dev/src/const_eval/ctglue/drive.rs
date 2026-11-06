@@ -18,7 +18,11 @@ pub(in crate::const_eval) enum Step {
     Pending,
 }
 fn set_cursor(frame: &mut Frame, event: usize) -> Result<(), Failure> {
-    frame.cleanup_cursor = Some(
+    frame
+        .cleanup
+        .as_mut()
+        .ok_or("cleanup cursor has no actual frame state")?
+        .event = Some(
         u32::try_from(event)
             .ok()
             .and_then(|n| n.checked_add(1))
@@ -88,7 +92,12 @@ impl Machine<'_, '_> {
             .get(frame.block.0 as usize)
             .cloned()
             .ok_or("cleanup timeline lacks its actual block")?;
-        if frame.cleanup_cursor.is_none() {
+        let state = frame
+            .cleanup
+            .as_ref()
+            .ok_or("cleanup block has no actual frame state")?;
+        state.require_frame(&code, frame.instance)?;
+        if state.event.is_none() {
             set_cursor(frame, range.start)?;
         }
         let current = ctsites::cursor(frame)?;
@@ -126,6 +135,11 @@ impl Machine<'_, '_> {
             .get(&(frame.block, target))
             .cloned()
             .unwrap_or(0..0);
+        frame
+            .cleanup
+            .as_ref()
+            .ok_or("cleanup edge has no actual frame state")?
+            .require_frame(&code, frame.instance)?;
         let current = ctsites::cursor(frame)?;
         if current == block.end {
             set_cursor(frame, range.start)?;
@@ -164,7 +178,10 @@ impl Machine<'_, '_> {
                 }
                 Effect::Cleanup(index) => {
                     if bundle.view.call(index)?.is_some() {
-                        return self.enter_cleanup(frame, code, bundle);
+                        let step = self.enter_cleanup(frame, code, bundle)?;
+                        if !matches!(step, Step::Ready) {
+                            return Ok(step);
+                        }
                     }
                 }
                 Effect::Point | Effect::Deinitialize { .. } | Effect::StorageEnd(_) => {}
@@ -174,10 +191,17 @@ impl Machine<'_, '_> {
                             .into(),
                     );
                 }
-                Effect::Flags { .. } => {
-                    return Err(
-                        "constant conditional cleanup flag execution is not implemented".into(),
-                    );
+                Effect::Flags { range, .. } => {
+                    let width = range
+                        .end
+                        .checked_sub(range.start)
+                        .ok_or("invalid cleanup flag write extent")?;
+                    self.charge(width as usize + 32)?;
+                    frame
+                        .cleanup
+                        .as_mut()
+                        .ok_or("flag write has no actual frame state")?
+                        .write(code, frame.instance, current)?;
                 }
             }
             current += 1;
@@ -206,6 +230,9 @@ impl Machine<'_, '_> {
         let found = ctsites::current(self.evaluator.facts(), code, frame, bundle, &mut work);
         self.charge(work.steps)?;
         let (event, method, _) = found?;
+        if !frame.cleanup_allowed(code, event)? {
+            return Ok(Step::Ready);
+        }
         let Some(&target) = self.bodies.functions.get(&method.instance) else {
             self.waiting = Some(Requirement::CleanupBody(method.instance));
             return Ok(Step::Pending);
@@ -234,6 +261,9 @@ impl Machine<'_, '_> {
         let found = ctsites::current(self.evaluator.facts(), &code, frame, bundle, &mut work);
         self.charge(work.steps)?;
         let (event, method, place) = found?;
+        if !frame.cleanup_allowed(&code, event)? {
+            return Err("cleanup entry changed its actual initialized condition".into());
+        }
         if u32::try_from(event).map_err(|_| "cleanup event overflow")? != expected
             || self.bodies.functions.get(&method.instance) != Some(&target)
         {

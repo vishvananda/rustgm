@@ -26,6 +26,7 @@ pub(in crate::const_eval) fn inert() -> Result<(Declarations, Body, Rc<Bundle>)>
             calls: Vec::new(),
             active: Vec::new(),
             cleanup_count: 0,
+            flag_count: 0,
             blocks: Vec::new(),
             edges: crate::support::hash::HashMap::default(),
         },
@@ -118,12 +119,18 @@ fn sparse_call_inventory_distinguishes_removed_active_and_added_inactive_rows() 
         target: TypeId::UNIT,
         instance,
         recipe: body::drops::glue::Id(0),
+        guard: body::drops::schedule::Guard::ALWAYS,
     };
     let mut view = Rc::try_unwrap(bundle).map_err(|_| "shared")?.view;
     view.cleanup_count = 3;
     view.active = vec![2];
     view.calls = vec![row];
     view.validate()?;
+    view.calls[0].guard = body::drops::schedule::Guard::initialized(0)?;
+    assert!(view.validate().is_err());
+    view.flag_count = 1;
+    view.validate()?;
+    assert!(body::drops::schedule::Guard::initialized(usize::MAX).is_err());
     assert!(view.call(0)?.is_none());
     assert!(view.call(1)?.is_some());
     view.calls.clear();
@@ -150,5 +157,43 @@ fn ordinary_widths_and_cold_payloads_are_explicit() {
     assert_eq!(size_of::<crate::const_eval::code::PreparedOperand>(), 32);
     assert_eq!(size_of::<Bundle>(), 328);
     assert_eq!(size_of::<View>(), 240);
-    assert_eq!(size_of::<Method>(), 24);
+    assert_eq!(size_of::<Method>(), 28);
+}
+
+#[test]
+fn flags_events_cannot_write_outside_the_same_plan_domain() -> Result {
+    use crate::body::{
+        drops::{
+            glue::Range,
+            schedule::{Effect, Event},
+        },
+        ir::BlockId,
+        storage::Location,
+    };
+    let (_, _, bundle) = inert()?;
+    let mut view = Rc::try_unwrap(bundle).map_err(|_| "shared")?.view;
+    view.flag_count = 65;
+    let location = Location::At {
+        block: BlockId(0),
+        before: 0,
+    };
+    view.events.push(Event {
+        location,
+        effect: Effect::Flags {
+            range: Range { start: 64, end: 66 },
+            initialized: true,
+        },
+    });
+    assert!(view.validate().is_err());
+    view.events[0].effect = Effect::Flags {
+        range: Range { start: 64, end: 65 },
+        initialized: true,
+    };
+    view.validate()?;
+    view.events[0].effect = Effect::Flags {
+        range: Range { start: 0, end: 0 },
+        initialized: false,
+    };
+    assert!(view.validate().is_err());
+    Ok(())
 }

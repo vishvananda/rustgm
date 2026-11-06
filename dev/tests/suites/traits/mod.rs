@@ -111,6 +111,8 @@ mod ctdrop;
 mod ctexec;
 #[path = "../../ctfix.rs"]
 mod ctfix;
+#[path = "../../ctflag.rs"]
+mod ctflag;
 #[path = "../../ctleaf.rs"]
 mod ctleaf;
 #[path = "../../ctnext.rs"]

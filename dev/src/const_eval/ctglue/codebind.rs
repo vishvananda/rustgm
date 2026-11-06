@@ -75,27 +75,8 @@ impl Bundle {
         }
         Ok(method.place)
     }
-    pub(super) fn reached(
-        &self,
-        facts: &Declarations,
-        code: &Code,
-        event: usize,
-        work: &mut crate::body::defining_cleanups::Work,
-    ) -> Result<(Method, Place), &'static str> {
-        work.charge(
-            32 + self
-                .view
-                .calls
-                .len()
-                .checked_ilog2()
-                .map_or(0, |n| n as usize + 1),
-        )?;
+    pub(super) fn require_code(&self, code: &Code) -> Result<(), &'static str> {
         self.header(code)?;
-        if !facts.types.has_identity(&self.types)
-            || !facts.aggregates.has_identity(&self.definitions)
-        {
-            return Err("reached cleanup belongs to another current arena");
-        }
         let binding = self
             .binding
             .try_borrow()
@@ -107,6 +88,31 @@ impl Bundle {
         if !std::ptr::eq(actual.as_ref(), code) {
             return Err("reached cleanup belongs to another actual Code");
         }
+        Ok(())
+    }
+    pub(super) fn reached(
+        &self,
+        facts: &Declarations,
+        code: &Code,
+        event: usize,
+        work: &mut crate::body::defining_cleanups::Work,
+    ) -> Result<(Method, Place), &'static str> {
+        work.charge(
+            // Includes the following independent owning-frame guard lookup.
+            64 + self
+                .view
+                .calls
+                .len()
+                .checked_ilog2()
+                .map_or(0, |n| 2 * (n as usize + 1)),
+        )?;
+        self.header(code)?;
+        if !facts.types.has_identity(&self.types)
+            || !facts.aggregates.has_identity(&self.definitions)
+        {
+            return Err("reached cleanup belongs to another current arena");
+        }
+        self.require_code(code)?;
         let crate::body::drops::schedule::Effect::Cleanup(index) = self
             .view
             .events

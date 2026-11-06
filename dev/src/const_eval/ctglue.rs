@@ -1,6 +1,10 @@
 //! Executable cleanup consumes immutable phase-neutral data, never a synthesized Call.
 mod codebind;
 mod ctsites;
+mod cursor;
+pub(super) use cursor::Cursor;
+#[cfg(test)]
+pub(in crate::const_eval) use cursor::tests as mask_tests;
 mod drive;
 mod returned;
 #[cfg(test)]
@@ -84,6 +88,7 @@ pub(crate) fn prepare(
                 .retained_bytes()
                 .div_ceil(size_of::<usize>())
                 .saturating_add(view.active.len())
+                .saturating_add(view.events.len())
                 .saturating_add(view.calls.len().saturating_mul(10))
                 .saturating_add(32),
             fixed,

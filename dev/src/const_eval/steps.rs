@@ -8,7 +8,7 @@ impl Machine<'_, '_> {
         successor: crate::body::ir::BlockId,
     ) -> Result<(), Failure> {
         frame.block = successor;
-        frame.cleanup_cursor = None;
+        frame.reset_cleanup_event();
         frame.next = body
             .blocks
             .get(successor.0 as usize)

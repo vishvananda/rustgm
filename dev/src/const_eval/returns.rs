@@ -15,7 +15,7 @@ impl Machine<'_, '_> {
             .ok_or("constant return lacks a typed value")?
             .ty;
         let result = Self::value(&frame, value)?;
-        self.slots -= frame.locals.len() + frame.values.len();
+        self.slots -= frame.locals.len() + frame.values.len() + frame.cleanup_slots();
         self.memory.expire(&frame.allocations);
         if matches!(frame.return_to, super::ReturnTo::Cleanup(_)) {
             self.cleanup_returned(frame, body, result, result_ty)?;

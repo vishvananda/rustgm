@@ -172,3 +172,32 @@ fn cleanup_snapshots_cannot_restore_types_into_another_execution_owner() -> Resu
     assert_eq!(work, 0);
     Ok(())
 }
+
+#[test]
+fn conditional_frame_storage_is_admitted_before_any_cold_allocation() -> Result<(), String> {
+    let report = source::resolve("const fn f(){}", true)?;
+    let facts = sema::declarations::analyze(&report).map_err(|e| e.to_string())?;
+    let mut facts = sema::bodies::analyze(&report, facts).map_err(|e| e.to_string())?;
+    let code = crate::const_eval::ctglue::mask_tests::fixture()?;
+    let base = code.locals.len() + code.values.len();
+    let mut catalog = Catalog::default();
+    catalog.bodies.push(code);
+    let evaluator = crate::sema::values::Evaluator::new(&report, &mut facts);
+    let mut machine = crate::const_eval::Machine::catalog(
+        evaluator,
+        &catalog,
+        crate::const_eval::Limits {
+            slots: base,
+            ..crate::const_eval::Limits::default()
+        },
+    );
+    let error = machine
+        .begin(0, &[])
+        .err()
+        .ok_or("cold state escaped frame slot budget")?;
+    assert!(error.message.contains("storage limit"), "{}", error.message);
+    assert!(machine.frames.is_empty());
+    assert_eq!(machine.work.calls, 0);
+    assert_eq!(machine.memory.retained_cells(), 0);
+    Ok(())
+}

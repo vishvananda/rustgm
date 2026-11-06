@@ -33,7 +33,9 @@ impl Machine<'_, '_> {
             .last()
             .ok_or("cleanup return has no live actual parent")?;
         let expected_parent = child
-            .cleanup_parent
+            .cleanup
+            .as_ref()
+            .and_then(|state| state.parent)
             .ok_or("cleanup child lost its actual parent identity")?;
         if usize::try_from(expected_parent.get() - 1)
             .map_err(|_| "cleanup parent identity overflow")?
@@ -56,6 +58,13 @@ impl Machine<'_, '_> {
             return Err("cleanup return came from another actual selected body".into());
         }
         self.validate_invoked_entry(child.body, method.instance)?;
+        let parent = self
+            .frames
+            .last()
+            .ok_or("cleanup return lost its live parent")?;
+        if !parent.cleanup_allowed(&body, event)? {
+            return Err("cleanup return changed its actual initialized condition".into());
+        }
         drop(child);
         let parent = self
             .frames

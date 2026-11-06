@@ -1,0 +1,23 @@
+skip	0	0
+init	0	41
+both	0	41
+repl	0	59
+lifo	0	41
+move	0	41
+loop	0	41
+child	0	41
+chskip	0	41
+early	0	59
+wide8	0	41
+wide32	0	41
+wide65	0	41
+wide128	0	41
+uninit	1	E0381
+double	1	E0382
+loan	1	E0506
+noncon	1	E0493
+unsafe	1	E0133
+dang	1	E0080
+onoff	0	[0, 41]
+parin	0	59
+parmov	0	59

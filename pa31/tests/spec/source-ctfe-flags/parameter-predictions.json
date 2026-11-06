@@ -1,0 +1,25 @@
+{
+  "state": "frozen before reference/candidate",
+  "cases": {
+    "parin": {
+      "rust_status": 0,
+      "diagnostic": null,
+      "value": 59,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "da780dca233b57060013c2ca023749866b74bdb4fcf7244ce23ad9f15ea82a42"
+    },
+    "parmov": {
+      "rust_status": 0,
+      "diagnostic": null,
+      "value": 59,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "27ea007c4fefe21d158fbd54ce8430e6f43a3a74036f2f0f6d2c5b751d00089a"
+    }
+  },
+  "native": {
+    "parin": "59\n",
+    "parmov": "59\n"
+  }
+}

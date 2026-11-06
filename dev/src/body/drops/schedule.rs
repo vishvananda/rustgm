@@ -35,6 +35,25 @@ pub struct Event {
     pub effect: Effect,
 }
 
+/// An index in this exact completed plan's flag vector; zero denotes Always.
+#[derive(Clone, Copy)]
+pub(crate) struct Guard(Option<std::num::NonZeroU32>);
+impl Guard {
+    pub(crate) const ALWAYS: Self = Self(None);
+    pub(crate) fn initialized(index: usize) -> Result<Self, &'static str> {
+        Ok(Self(Some(
+            u32::try_from(index)
+                .ok()
+                .and_then(|i| i.checked_add(1))
+                .and_then(std::num::NonZeroU32::new)
+                .ok_or("cleanup flag index overflow")?,
+        )))
+    }
+    pub(crate) fn index(self) -> Option<usize> {
+        self.0.map(|i| (i.get() - 1) as usize)
+    }
+}
+
 #[derive(Clone, Copy)]
 pub(crate) struct Call {
     pub cleanup: u32,
@@ -42,6 +61,7 @@ pub(crate) struct Call {
     pub target: TypeId,
     pub instance: Instance,
     pub recipe: glue::Id,
+    pub guard: Guard,
 }
 
 pub(crate) struct View {
@@ -50,6 +70,7 @@ pub(crate) struct View {
     pub calls: Vec<Call>,
     pub active: Vec<u64>,
     pub cleanup_count: u32,
+    pub flag_count: u32,
     pub blocks: Vec<std::ops::Range<usize>>,
     pub edges: HashMap<(BlockId, BlockId), std::ops::Range<usize>>,
 }
@@ -88,7 +109,21 @@ impl View {
         {
             return Err("execution view has active bits outside its actual cleanup extent");
         }
+        for event in &self.events {
+            if let Effect::Flags { range, .. } = event.effect
+                && (range.start >= range.end || range.end > self.flag_count)
+            {
+                return Err("execution flag write exceeds its actual plan domain");
+            }
+        }
         for call in &self.calls {
+            if call
+                .guard
+                .index()
+                .is_some_and(|i| i >= self.flag_count as usize)
+            {
+                return Err("execution guard exceeds its actual plan flag domain");
+            }
             if !self.active(call.cleanup)? {
                 return Err("execution call has no actual active cleanup");
             }

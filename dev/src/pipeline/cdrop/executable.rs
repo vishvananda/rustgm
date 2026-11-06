@@ -53,6 +53,12 @@ pub(in crate::pipeline) fn view(
     let result = (|| {
         charge.charge(body.blocks.len(), 0)?;
         let index_bytes = timeline::Index::allocation_bound(body, &plan.events)?;
+        charge.charge(plan.flags.len(), 0)?;
+        if plan.flags.windows(2).any(|pair| pair[0] >= pair[1]) {
+            return Err("execution flags changed their actual sorted plan domain");
+        }
+        let flag_count =
+            u32::try_from(plan.flags.len()).map_err(|_| "execution flag extent overflow")?;
         let words = plan.cleanups.len().div_ceil(64);
         let fixed = size_of::<View>()
             .saturating_add(plan.allocation_bytes())
@@ -90,10 +96,17 @@ pub(in crate::pipeline) fn view(
             calls,
             active,
             cleanup_count,
+            flag_count,
             blocks,
             edges,
         };
-        charge.charge(view.calls.len().saturating_add(view.active.len()), 0)?;
+        charge.charge(
+            view.calls
+                .len()
+                .saturating_add(view.active.len())
+                .saturating_add(view.events.len()),
+            0,
+        )?;
         view.validate()?;
         Ok(view)
     })();

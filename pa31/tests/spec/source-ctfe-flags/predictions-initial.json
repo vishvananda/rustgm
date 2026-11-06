@@ -1,0 +1,183 @@
+{
+  "state": "frozen before reference/candidate observation; no compiler edits",
+  "cases": {
+    "skip": {
+      "rust_status": 0,
+      "diagnostic": null,
+      "value": 0,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "bea6bd13427b42756faa7bd4ae69cceabd13e9d1c8d4c21a9412f7953ad834be"
+    },
+    "init": {
+      "rust_status": 0,
+      "diagnostic": null,
+      "value": 41,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "297092aa7e35503d6e24f330aa4ad995094aa31205d24471b7c1aebe5efe2c3f"
+    },
+    "both": {
+      "rust_status": 0,
+      "diagnostic": null,
+      "value": 41,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "d7c21a3e1780ee1e2776e9e94f976838dc29d4613c8c84c8b6e3015aec5c60ca"
+    },
+    "repl": {
+      "rust_status": 0,
+      "diagnostic": null,
+      "value": 59,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "1f6e6a962ccc4d4ed799d8e182b11b92e4f5118a9d6551ce4f6332fba44d3bca"
+    },
+    "lifo": {
+      "rust_status": 0,
+      "diagnostic": null,
+      "value": 41,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "092eed3ef5322b71cf26b47eb64c90a678dc97e9edf7970c7fd471c288b301cc"
+    },
+    "move": {
+      "rust_status": 0,
+      "diagnostic": null,
+      "value": 41,
+      "base": "pa31/tests/spec/source-ctfe-cleanup/ctonce.rs",
+      "base_sha256": "06a54b0b06c9390934627db201070609a5d34115b11ff75b8a97ad1b23f29ae5",
+      "sha256": "6c56f78345593d51a8a4f1d7177c83ac079ad83c035224bc81735ea81505a7f5"
+    },
+    "loop": {
+      "rust_status": 0,
+      "diagnostic": null,
+      "value": 41,
+      "base": "pa31/tests/spec/source-ctfe-cleanup/ctonce.rs",
+      "base_sha256": "06a54b0b06c9390934627db201070609a5d34115b11ff75b8a97ad1b23f29ae5",
+      "sha256": "252e326aafbad01f10d0fdaba36e77ebcc40cb0fa9eee8d415b85a373acd93bc"
+    },
+    "child": {
+      "rust_status": 0,
+      "diagnostic": null,
+      "value": 41,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "935256c359ea48bb426124dfd3dc85473303c414322f6f48f865c48e013acea4"
+    },
+    "chskip": {
+      "rust_status": 0,
+      "diagnostic": null,
+      "value": 41,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "f7fe19e0193c4bd9175202601250dbd4f085a7df2de82dab90360b5eb85eb506"
+    },
+    "early": {
+      "rust_status": 0,
+      "diagnostic": null,
+      "value": 59,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "853ef27738c21ced628ee97e2edaa11132797122cfaad6ccc7a4155318d9b62d"
+    },
+    "wide8": {
+      "rust_status": 0,
+      "diagnostic": null,
+      "value": 41,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "1b7657b2e740bce03ca8f11d07456451b2cf8e056ebec46b1a1902bf5f7601ff"
+    },
+    "wide32": {
+      "rust_status": 0,
+      "diagnostic": null,
+      "value": 41,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "60a39e336e50485ff1e9d429723bac9165a3c2cf1e9ff3f63f0410acd3e19747"
+    },
+    "wide65": {
+      "rust_status": 0,
+      "diagnostic": null,
+      "value": 41,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "cd36d94be0b4cf36750c18f161de894e730861c3b701c7952a907d9b9ad6b3f6"
+    },
+    "wide128": {
+      "rust_status": 0,
+      "diagnostic": null,
+      "value": 41,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "55d83bc6c2aef01be8b8dbe53359705f3b55da5afe9468a68f762291980f658d"
+    },
+    "uninit": {
+      "rust_status": 1,
+      "diagnostic": "E0381",
+      "value": null,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "dfd5b43e04694639c71cfe56c880835c58e805adb90a03d91ed694310773a117"
+    },
+    "double": {
+      "rust_status": 1,
+      "diagnostic": "E0382",
+      "value": null,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "12c6772ef75f8d2b7305dce7f43c8c1ab954b00512215a8c43b1aca5abf9d2b0"
+    },
+    "loan": {
+      "rust_status": 1,
+      "diagnostic": "E0506",
+      "value": null,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "1eb65b48a42e450f75d0560be40ab618c5309a0af8015b8623566ed97d9e6efe"
+    },
+    "noncon": {
+      "rust_status": 1,
+      "diagnostic": "E0493",
+      "value": null,
+      "base": "pa31/tests/spec/source-const-drop/rtcnt.rs",
+      "base_sha256": "2cfe99057f74ac5bbcc0325f0ec442a53d51755e82b22839bde5ad8f04169899",
+      "sha256": "f73092155e054d7ca8d40b1c8266abb6b6a8a011fb4f7abd32cba3eb522d9692"
+    },
+    "unsafe": {
+      "rust_status": 1,
+      "diagnostic": "E0133",
+      "value": null,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "1c2593c8b1e07c5a0b769345468b3a9171ba29b74665874f5b7e948a2b928f10"
+    },
+    "dang": {
+      "rust_status": 1,
+      "diagnostic": "E0080",
+      "value": null,
+      "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+      "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+      "sha256": "d300c6d738d1ec013ee9331b0ed4becb4c3eb31ba5a11bd9c810baf43582f711"
+    },
+    "onoff": {
+      "rust_status": 0,
+      "values": [
+        0,
+        41
+      ],
+      "base": "pa31/tests/spec/source-ctfe-cleanup/ctcond.rs",
+      "base_sha256": "98243e8e0b661e230b4ff45494bd0a5b5a76720134f9cead7f703ee064420d8b",
+      "sha256": "fe0b2d05427a80e3038415012128a83b9f99181672336b67fc7ba27efd8943db"
+    }
+  },
+  "native": {
+    "onoff": "0 41\n",
+    "move": "41\n",
+    "loop": "41\n",
+    "child": "41\n",
+    "early": "59\n",
+    "wide65": "41\n"
+  }
+}

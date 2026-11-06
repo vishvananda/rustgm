@@ -1,0 +1,158 @@
+#![feature(impl_restriction)]
+#![feature(intrinsics,pattern_types,decl_macro,marker_trait_attr,freeze_impls,allow_internal_unstable,staged_api)]
+#![unstable(feature="location_fixture",issue="none")]
+#![rustc_coherence_is_core]#![feature(no_core,lang_items,rustc_attrs,const_trait_impl,const_destruct,fundamental,auto_traits)]
+#![no_core]
+#![allow(internal_features,dead_code,unused_variables)]
+#[lang = "pointee_sized"]
+#[diagnostic::on_unimplemented(
+    message = "values of type `{Self}` may or may not have a size",
+    label = "may or may not have a known size"
+)]
+#[fundamental]
+#[rustc_specialization_trait]
+#[rustc_deny_explicit_impl]
+#[rustc_coinductive]
+pub trait PointeeSized {
+    // Empty
+}
+#[lang = "meta_sized"]
+#[diagnostic::on_unimplemented(
+    message = "the size for values of type `{Self}` cannot be known",
+    label = "doesn't have a known size"
+)]
+#[fundamental]
+#[rustc_specialization_trait]
+#[rustc_deny_explicit_impl]
+// `MetaSized` being coinductive, despite having supertraits, is okay for the same reasons as
+// `Sized` above.
+#[rustc_coinductive]
+pub trait MetaSized: PointeeSized {
+    // Empty
+}
+#[lang = "sized"]
+#[diagnostic::on_unimplemented(
+    message = "the size for values of type `{Self}` cannot be known at compilation time",
+    label = "doesn't have a size known at compile-time"
+)]
+#[fundamental] // for Default, for example, which requires that `[T]: !Default` be evaluatable
+#[rustc_specialization_trait]
+#[rustc_deny_explicit_impl]
+#[rustc_dyn_incompatible_trait]
+// `Sized` being coinductive, despite having supertraits, is okay as there are no user-written impls,
+// and we know that the supertraits are always implemented if the subtrait is just by looking at
+// the builtin impls.
+#[rustc_coinductive]
+pub trait Sized: MetaSized {
+    // Empty.
+}
+#[lang = "legacy_receiver"]
+#[doc(hidden)]
+pub trait LegacyReceiver: PointeeSized {
+    // Empty.
+}
+
+impl<T: PointeeSized> LegacyReceiver for &T {}
+
+impl<T: PointeeSized> LegacyReceiver for &mut T {}
+#[unstable(feature = "const_destruct", issue = "133214")]
+#[rustc_const_unstable(feature = "const_destruct", issue = "133214")]
+#[lang = "destruct"]
+#[diagnostic::on_unimplemented(message = "can't drop `{Self}`")]
+#[rustc_deny_explicit_impl]
+#[rustc_dyn_incompatible_trait]
+pub const trait Destruct: PointeeSized {}
+#[lang = "freeze"]
+pub unsafe auto trait Freeze {}
+#[stable(feature = "rust1", since = "1.0.0")]
+#[lang = "clone"]
+#[rustc_diagnostic_item = "Clone"]
+#[rustc_trivial_field_reads]
+#[rustc_const_unstable(feature = "const_clone", issue = "142757")]
+pub const trait Clone: Sized {
+    /// Returns a duplicate of the value.
+    ///
+    /// Note that what "duplicate" means varies by type:
+    /// - For most types, this creates a deep, independent copy
+    /// - For reference types like `&T`, this creates another reference to the same value
+    /// - For smart pointers like [`Arc`] or [`Rc`], this increments the reference count
+    ///   but still points to the same underlying data
+    ///
+    /// [`Arc`]: ../../std/sync/struct.Arc.html
+    /// [`Rc`]: ../../std/rc/struct.Rc.html
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # #![allow(noop_method_call)]
+    /// let hello = "Hello"; // &str implements Clone
+    ///
+    /// assert_eq!("Hello", hello.clone());
+    /// ```
+    ///
+    /// Example with a reference-counted type:
+    ///
+    /// ```
+    /// use std::sync::{Arc, Mutex};
+    ///
+    /// let data = Arc::new(Mutex::new(vec![1, 2, 3]));
+    /// let data_clone = data.clone(); // Creates another Arc pointing to the same Mutex
+    ///
+    /// {
+    ///     let mut lock = data.lock().unwrap();
+    ///     lock.push(4);
+    /// }
+    ///
+    /// // Changes are visible through the clone because they share the same underlying data
+    /// assert_eq!(*data_clone.lock().unwrap(), vec![1, 2, 3, 4]);
+    /// ```
+    #[must_use = "cloning is often expensive and is not expected to have side effects"]
+    // Clone::clone is special because the compiler generates MIR to implement it for some types.
+    // See InstanceKind::CloneShim.
+    #[stable(feature = "rust1", since = "1.0.0")]
+    #[lang = "clone_fn"]
+    fn clone(&self) -> Self;
+
+    /// Performs copy-assignment from `source`.
+    ///
+    /// `a.clone_from(&b)` is equivalent to `a = b.clone()` in functionality,
+    /// but can be overridden to reuse the resources of `a` to avoid unnecessary
+    /// allocations.
+    #[inline]
+    #[stable(feature = "rust1", since = "1.0.0")]
+    fn clone_from(&mut self, source: &Self)
+    where
+        Self: [const] Destruct,
+    {
+        *self = source.clone()
+    }
+}
+#[stable(feature = "rust1", since = "1.0.0")]
+#[lang = "copy"]
+#[rustc_diagnostic_item = "Copy"]
+pub trait Copy: Clone {
+    // Empty.
+}
+impl Clone for u8 { fn clone(&self)->Self { *self } }
+impl Copy for u8 {}
+#[inline(always)]
+#[rustc_diagnostic_item = "convert_identity"]
+pub const fn identity<T>(x: T) -> T {
+    x
+}
+
+#[lang="drop_glue"]pub(crate) const unsafe fn drop_glue<T:PointeeSized>(_:&mut T)where T:[const]Destruct{}
+
+
+impl Clone for i32{fn clone(&self)->Self{*self}}impl Copy for i32{}
+
+#[lang="drop"]#[stable(feature="rust1",since="1.0.0")]#[rustc_const_unstable(feature="const_destruct",issue="133214")]pub const trait Drop{#[stable(feature="rust1",since="1.0.0")]fn drop(&mut self);}
+impl<T:PointeeSized> Clone for *mut T{fn clone(&self)->Self{*self}}impl<T:PointeeSized>Copy for *mut T{}
+pub struct C{out:*mut i32,value:i32}
+#[rustc_const_unstable(feature="const_destruct",issue="133214")]const impl Drop for C{fn drop(&mut self){unsafe{*self.out=self.value;}}}
+#[rustc_const_unstable(feature="const_destruct",issue="133214")]pub const fn consume<T>(value:C)->i32{let _owned=value;17}
+#[unsafe(no_mangle)]pub extern "C" fn run(value:i32)->i32{let mut out=0;let _answer=consume::<i32>(C{out:&mut out,value});out}
+
+#[rustc_const_unstable(feature="const_destruct",issue="133214")]pub const fn flags(flag:bool)->i32{let mut out=0;{let v0;let v1;let v2;let v3;let v4;let v5;let v6;let v7;let v8;let v9;let v10;let v11;let v12;let v13;let v14;let v15;let v16;let v17;let v18;let v19;let v20;let v21;let v22;let v23;let v24;let v25;let v26;let v27;let v28;let v29;let v30;let v31;let v32;let v33;let v34;let v35;let v36;let v37;let v38;let v39;let v40;let v41;let v42;let v43;let v44;let v45;let v46;let v47;let v48;let v49;let v50;let v51;let v52;let v53;let v54;let v55;let v56;let v57;let v58;let v59;let v60;let v61;let v62;let v63;let v64;let v65;let v66;let v67;let v68;let v69;let v70;let v71;let v72;let v73;let v74;let v75;let v76;let v77;let v78;let v79;let v80;let v81;let v82;let v83;let v84;let v85;let v86;let v87;let v88;let v89;let v90;let v91;let v92;let v93;let v94;let v95;let v96;let v97;let v98;let v99;let v100;let v101;let v102;let v103;let v104;let v105;let v106;let v107;let v108;let v109;let v110;let v111;let v112;let v113;let v114;let v115;let v116;let v117;let v118;let v119;let v120;let v121;let v122;let v123;let v124;let v125;let v126;let v127;if flag{v0=C{out:&raw mut out,value:41};v1=C{out:&raw mut out,value:59};v2=C{out:&raw mut out,value:59};v3=C{out:&raw mut out,value:59};v4=C{out:&raw mut out,value:59};v5=C{out:&raw mut out,value:59};v6=C{out:&raw mut out,value:59};v7=C{out:&raw mut out,value:59};v8=C{out:&raw mut out,value:59};v9=C{out:&raw mut out,value:59};v10=C{out:&raw mut out,value:59};v11=C{out:&raw mut out,value:59};v12=C{out:&raw mut out,value:59};v13=C{out:&raw mut out,value:59};v14=C{out:&raw mut out,value:59};v15=C{out:&raw mut out,value:59};v16=C{out:&raw mut out,value:59};v17=C{out:&raw mut out,value:59};v18=C{out:&raw mut out,value:59};v19=C{out:&raw mut out,value:59};v20=C{out:&raw mut out,value:59};v21=C{out:&raw mut out,value:59};v22=C{out:&raw mut out,value:59};v23=C{out:&raw mut out,value:59};v24=C{out:&raw mut out,value:59};v25=C{out:&raw mut out,value:59};v26=C{out:&raw mut out,value:59};v27=C{out:&raw mut out,value:59};v28=C{out:&raw mut out,value:59};v29=C{out:&raw mut out,value:59};v30=C{out:&raw mut out,value:59};v31=C{out:&raw mut out,value:59};v32=C{out:&raw mut out,value:59};v33=C{out:&raw mut out,value:59};v34=C{out:&raw mut out,value:59};v35=C{out:&raw mut out,value:59};v36=C{out:&raw mut out,value:59};v37=C{out:&raw mut out,value:59};v38=C{out:&raw mut out,value:59};v39=C{out:&raw mut out,value:59};v40=C{out:&raw mut out,value:59};v41=C{out:&raw mut out,value:59};v42=C{out:&raw mut out,value:59};v43=C{out:&raw mut out,value:59};v44=C{out:&raw mut out,value:59};v45=C{out:&raw mut out,value:59};v46=C{out:&raw mut out,value:59};v47=C{out:&raw mut out,value:59};v48=C{out:&raw mut out,value:59};v49=C{out:&raw mut out,value:59};v50=C{out:&raw mut out,value:59};v51=C{out:&raw mut out,value:59};v52=C{out:&raw mut out,value:59};v53=C{out:&raw mut out,value:59};v54=C{out:&raw mut out,value:59};v55=C{out:&raw mut out,value:59};v56=C{out:&raw mut out,value:59};v57=C{out:&raw mut out,value:59};v58=C{out:&raw mut out,value:59};v59=C{out:&raw mut out,value:59};v60=C{out:&raw mut out,value:59};v61=C{out:&raw mut out,value:59};v62=C{out:&raw mut out,value:59};v63=C{out:&raw mut out,value:59};v64=C{out:&raw mut out,value:59};v65=C{out:&raw mut out,value:59};v66=C{out:&raw mut out,value:59};v67=C{out:&raw mut out,value:59};v68=C{out:&raw mut out,value:59};v69=C{out:&raw mut out,value:59};v70=C{out:&raw mut out,value:59};v71=C{out:&raw mut out,value:59};v72=C{out:&raw mut out,value:59};v73=C{out:&raw mut out,value:59};v74=C{out:&raw mut out,value:59};v75=C{out:&raw mut out,value:59};v76=C{out:&raw mut out,value:59};v77=C{out:&raw mut out,value:59};v78=C{out:&raw mut out,value:59};v79=C{out:&raw mut out,value:59};v80=C{out:&raw mut out,value:59};v81=C{out:&raw mut out,value:59};v82=C{out:&raw mut out,value:59};v83=C{out:&raw mut out,value:59};v84=C{out:&raw mut out,value:59};v85=C{out:&raw mut out,value:59};v86=C{out:&raw mut out,value:59};v87=C{out:&raw mut out,value:59};v88=C{out:&raw mut out,value:59};v89=C{out:&raw mut out,value:59};v90=C{out:&raw mut out,value:59};v91=C{out:&raw mut out,value:59};v92=C{out:&raw mut out,value:59};v93=C{out:&raw mut out,value:59};v94=C{out:&raw mut out,value:59};v95=C{out:&raw mut out,value:59};v96=C{out:&raw mut out,value:59};v97=C{out:&raw mut out,value:59};v98=C{out:&raw mut out,value:59};v99=C{out:&raw mut out,value:59};v100=C{out:&raw mut out,value:59};v101=C{out:&raw mut out,value:59};v102=C{out:&raw mut out,value:59};v103=C{out:&raw mut out,value:59};v104=C{out:&raw mut out,value:59};v105=C{out:&raw mut out,value:59};v106=C{out:&raw mut out,value:59};v107=C{out:&raw mut out,value:59};v108=C{out:&raw mut out,value:59};v109=C{out:&raw mut out,value:59};v110=C{out:&raw mut out,value:59};v111=C{out:&raw mut out,value:59};v112=C{out:&raw mut out,value:59};v113=C{out:&raw mut out,value:59};v114=C{out:&raw mut out,value:59};v115=C{out:&raw mut out,value:59};v116=C{out:&raw mut out,value:59};v117=C{out:&raw mut out,value:59};v118=C{out:&raw mut out,value:59};v119=C{out:&raw mut out,value:59};v120=C{out:&raw mut out,value:59};v121=C{out:&raw mut out,value:59};v122=C{out:&raw mut out,value:59};v123=C{out:&raw mut out,value:59};v124=C{out:&raw mut out,value:59};v125=C{out:&raw mut out,value:59};v126=C{out:&raw mut out,value:59};v127=C{out:&raw mut out,value:59};}}out}
+const FLAGGED:i32=flags(true);
+#[unsafe(no_mangle)]pub extern "C" fn observed()->i32{FLAGGED}

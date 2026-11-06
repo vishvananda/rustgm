@@ -92,16 +92,30 @@ fn actual_expired_storage_is_rejected_by_reached_cleanup() -> Result {
     Ok(())
 }
 #[test]
-fn conditional_flags_remain_explicit_rust_positive_execution_work() -> Result {
-    let error = analyze("ctcond")
-        .err()
-        .ok_or("conditional flags need independent execution qualification")?;
-    assert!(
-        error
-            .to_string()
-            .contains("conditional cleanup flag execution is not implemented"),
-        "{error}"
-    );
+fn conditional_flags_follow_the_actual_initialization_events() -> Result {
+    let (report, analysis) = analyze("ctcond")?;
+    for (name, expected) in [("OFF", 0), ("ON", 41)] {
+        let initializer = analysis
+            .facts
+            .initializers
+            .iter()
+            .find(|i| {
+                report
+                    .package
+                    .names
+                    .get(report.resolution.definitions[i.definition.0 as usize].name)
+                    == name
+            })
+            .ok_or("actual conditional initializer")?;
+        let reader = rustgm::sema::values::Reader::new(&analysis.facts);
+        let value = reader
+            .definition(initializer.definition)
+            .ok_or("completed conditional result")?;
+        assert!(
+            matches!(reader.view(value)?,rustgm::sema::values::View::Scalar(
+            rustgm::sema::model::Scalar::Integer(actual)) if actual==expected)
+        );
+    }
     Ok(())
 }
 

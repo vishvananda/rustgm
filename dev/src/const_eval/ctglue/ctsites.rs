@@ -21,7 +21,9 @@ pub(crate) struct Reached {
 }
 pub(super) fn cursor(frame: &Frame) -> Result<usize, &'static str> {
     frame
-        .cleanup_cursor
+        .cleanup
+        .as_ref()
+        .and_then(|state| state.event)
         .map(|n| (n.get() - 1) as usize)
         .ok_or("cleanup continuation has no actual event cursor")
 }
@@ -101,6 +103,12 @@ impl State {
             .cleanup()
             .ok_or("cleanup caller has no owned execution footer")?;
         let (event, actual, _) = current(facts, code, frame, bundle, work)?;
+        if !frame
+            .cleanup_allowed(code, event)
+            .map_err(crate::sema::values::Failure::message)?
+        {
+            return Err("cleanup preparation is not an actual initialized operation");
+        }
         if actual.instance != method {
             return Err("cleanup preparation changed its actual selected method");
         }

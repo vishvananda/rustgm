@@ -107,8 +107,7 @@ struct Frame {
     next: u32,
     operand_cursor: u32,
     return_to: ReturnTo,
-    cleanup_cursor: Option<std::num::NonZeroU32>,
-    cleanup_parent: Option<std::num::NonZeroU32>,
+    cleanup: Option<Box<ctglue::Cursor>>,
     locals: Vec<Option<Constant>>,
     values: Vec<Option<Constant>>,
     temporaries: HashMap<ValueId, Constant>,
@@ -345,10 +344,12 @@ impl<'a, 'b> Machine<'a, 'b> {
         {
             return Err(Failure::Fault("cycle in selected initializer values"));
         }
+        let cold_slots = ctglue::Cursor::slots(&body, cleanup_parent)?;
         let slots = body
             .locals
             .len()
             .checked_add(body.values.len())
+            .and_then(|n| n.checked_add(cold_slots))
             .ok_or("constant frame size overflow")?;
         if self.frames.len() >= self.limits.frames {
             return Err(Failure::Fault("constant execution frame limit exceeded"));
@@ -366,6 +367,7 @@ impl<'a, 'b> Machine<'a, 'b> {
                 })),
         );
         self.charge(slots)?;
+        let cleanup = self.prepare_cleanup(&body, cleanup_parent, cold_slots)?;
         let first = body
             .blocks
             .first()
@@ -382,8 +384,7 @@ impl<'a, 'b> Machine<'a, 'b> {
                 0
             },
             return_to,
-            cleanup_cursor: None,
-            cleanup_parent,
+            cleanup,
             locals: vec![None; body.locals.len()],
             values: vec![None; body.values.len()],
             temporaries: HashMap::default(),
