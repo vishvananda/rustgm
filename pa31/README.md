@@ -2,6 +2,12 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [ResumeTy/get_context checkpoint](../docs/parallel/resume-context-main-join.md)
+uses actual ordinary nominal/function completions and preserves body/unsafe
+proof. Its native companion executes the exact pointer helper with authored
+Context support; full original Context/Waker/derive and async/metadata remain
+required. Unchanged original core now reaches IntoFuture::into_future.
+
 The [CoercePointee source checkpoint](../docs/parallel/coerce-validation-main-join.md)
 preserves actual trait headers and requires authenticated builtin origin for
 validity implementations. Full derive generation, generic custom auto traits,

@@ -1,0 +1,45 @@
+{
+  "checkpoint": "actual source ResumeTy and get_context declarations and ordinary pointer body",
+  "main_implementation": "066775c02",
+  "regular": {
+    "receipt": "obj/qualification/fast/1793973619118929008/receipt.json",
+    "sha256": "5b6b9685af3b7cd04ba8d53c727b7ab1630b36ff39f7d7e12b22c6de1609c8a4",
+    "exact_tests": 12,
+    "seconds": 133.36
+  },
+  "native": {
+    "receipt": "obj/qualification/fast/1793973762729729720/receipt.json",
+    "sha256": "65a2280615180a1a95bca6144c13888bc586aee5261ae311fc1d7755b5eacd91",
+    "exact_tests": 5,
+    "executables": 5,
+    "seconds": 39.04,
+    "full_text_suite": "pa18"
+  },
+  "reference": {
+    "receipt": "obj/parallel/resume-context-contracts/reference-v3/receipt.json",
+    "sha256": "c933110ff3bda673e2fa385d889738947d9f1e02e42199901caf4a93f3b18d80",
+    "source_outcomes": 13,
+    "native": "23 47",
+    "dependency_scope": "exact original helper body, selected actual NonNull methods, explicitly authored Context; full original graph remains required"
+  },
+  "source_fingerprint_count": 3638,
+  "original_core": {
+    "receipt": "obj/parallel/resume-context-core-v1/receipt.json",
+    "sha256": "7f5ea74bf557bfdc5209cb31f5481893fbf2df7847b8c1c63f1e9010f8fdbe57",
+    "cli_sha256": "f7aa434935038c2f3b515373de084c166eae6cba09f71a9567546b4889d59554",
+    "first_error": "ERROR: file 248: 4103: source compiler language item semantic contract is not implemented",
+    "source": "library/core/src/future/into_future.rs:134",
+    "total_seconds": 17.589294151985087,
+    "opened_sources": 375,
+    "official_inputs": 722,
+    "inputs_unchanged": true,
+    "status": 1,
+    "artifact": false
+  },
+  "pending": [
+    "full original ResumeTy derive and Context/Waker graph",
+    "real generated resume/future consumers and metadata",
+    "new full qualification; CoercePointee successor42228522299 remains running",
+    "complete core alloc std artifacts"
+  ]
+}

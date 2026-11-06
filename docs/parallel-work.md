@@ -1,3 +1,12 @@
+The [ResumeTy/get_context checkpoint](parallel/resume-context-main-join.md)
+passes12 public tests/13 new source outcomes and5 native programs/fullPA18.
+CLIf7aa4349 advances unchanged original core to LIB183 IntoFuture::into_future
+in17.5893s/375opens. All3638 qualification hashes match main; no artifact or whole
+PA release. Existing workers own the now-observed full IntoFuture/projected-bound
+and Pin<P> forwarder prerequisites, and real nominal CoerceUnsized values. Root
+proceeds with the next cohesive declaration family. Same warm trees and guards;
+the full original ResumeTy/Context graph and new full qualification remain required.
+
 The [CoercePointee source checkpoint](parallel/coerce-validation-main-join.md)
 passes6 public tests/16 ordinary outcomes and2 native tests/9 programs/fullPA18.
 CLI91edac3f advances unchanged722-input core to LIB182 ResumeTy in18.4143s/375opens;
