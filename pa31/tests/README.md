@@ -2,6 +2,14 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/field-source/` retains the complete pinned Field module and sixteen
+independently frozen no_core header/consumer controls, each checked in metadata
+and object modes. Actual original headers, unused alternatives, unrelated trait
+and inherent member owners accept; target/arity/body/explicit-impl/packed-demand
+opponents reject for their recorded causes. Earlier setup failures are preserved.
+Compiler-built Field proof, OFFSET CTFE, full reflection and transport remain
+separate demanded contracts; no RustGM candidate or native execution is claimed.
+
 `spec/full-drop-source/` retains the complete pinned Drop source in twelve
 independently predicted providers, with four real ordinary/pinned/generic native
 traces. The selected runtime callable retains the actual provided body rather

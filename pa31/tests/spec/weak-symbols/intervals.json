@@ -1,0 +1,16 @@
+{
+  "source": "original-ffi.rs",
+  "source_sha256": "902dad68e446f31f33809bcf2e02f77a0c48b7e10e652f427d43d794cd04340e",
+  "intervals": {
+    "c_void": {
+      "start": 1940,
+      "length": 477,
+      "sha256": "016c8fc79be03acd95c0703f90cb73dcbe188949efc65d9afd2f027464f6ecd1"
+    },
+    "runtime_symbols": {
+      "start": 3069,
+      "length": 717,
+      "sha256": "70c3c7a192f5cf621ec4862cbd9a4283849177dd65fdea9e643a97a4a9bbe792"
+    }
+  }
+}

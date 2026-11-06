@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "upstream": {
+    "repository": "https://github.com/rust-lang/rust",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "path": "library/core/src/field.rs",
+    "original_file": "original-field.rs",
+    "sha256": "2255c3352e8496a805e189b283dffd14e5e3d3678c0ac94606cefeae0f7a202f",
+    "license": "MIT OR Apache-2.0"
+  },
+  "intervals": [
+    {
+      "name": "FieldRepresentingType",
+      "lines": [
+        7,
+        16
+      ],
+      "bytes_half_open": [
+        104,
+        667
+      ],
+      "sha256": "080e0fe6fff365f27c060076873c3fb86734e7d90cdf9eaf2ef6dc5ffd035d31"
+    },
+    {
+      "name": "Field",
+      "lines": [
+        139,
+        169
+      ],
+      "bytes_half_open": [
+        5044,
+        6342
+      ],
+      "sha256": "d008cdfae06445373cf9fbf84dc1f52b987a6d87894a8a1a82186f7867a241f0"
+    },
+    {
+      "name": "Copy+Clone",
+      "lines": [
+        64,
+        75
+      ],
+      "bytes_half_open": [
+        2575,
+        2851
+      ],
+      "sha256": "6ec9c6a2244f2524b0c073b543a60c4a2c5af0476147e81969e126d4e06cc9f3"
+    },
+    {
+      "name": "FieldBase",
+      "lines": [
+        159,
+        160
+      ],
+      "bytes_half_open": [
+        6083,
+        6125
+      ],
+      "sha256": "df2f1a5af37eab64f6047239e2c86aa39cad26be34d64dd2c80a6450ce638c00"
+    },
+    {
+      "name": "FieldType",
+      "lines": [
+        163,
+        164
+      ],
+      "bytes_half_open": [
+        6157,
+        6199
+      ],
+      "sha256": "9997802a8ae44a2ea49ecbca15d78dc7b38be859ef5f1eb9ada8bd0eb68a67b9"
+    },
+    {
+      "name": "FieldOffset",
+      "lines": [
+        167,
+        168
+      ],
+      "bytes_half_open": [
+        6242,
+        6340
+      ],
+      "sha256": "5ba0fe65cebb28d4ecd87c7c58436537821ab04767950413bfb85ef9903e6792"
+    },
+    {
+      "name": "field_of",
+      "lines": [
+        135,
+        137
+      ],
+      "bytes_half_open": [
+        4933,
+        5043
+      ],
+      "sha256": "f72e66c7126d528d15d4c09f969926d2f38d263a4cf4469aa6d94599209ad15a"
+    }
+  ],
+  "adaptation": "original-field.rs is unchanged full source. Authored no_core companions embed exact struct, trait and Copy/Clone slices and authored minimal dependency declarations; original macro/Debug/other impls are not compiled. intrinsic field_offset declaration preserves actual signature/attributes from intrinsics/mod.rs2839-2842.",
+  "prediction_sha256": "831b8f16d9e6c741cc5d603162bfacafb074f972745376981ffec8a8038dfd64"
+}

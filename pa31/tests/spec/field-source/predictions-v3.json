@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "state": "frozen-before-any-Rust-or-candidate-observation",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "cases": [
+    {
+      "file": "original-headers-v3.rs",
+      "sha256": "83e5649b8d27ec8e76b59c4e3ef9f6209226490af1718af72ab3379b127c2865",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Unused exact pinned struct/trait/member/default OFFSET and Copy/Clone bodies check normally."
+    },
+    {
+      "file": "explicit-impl-v3.rs",
+      "sha256": "3572bc1615e71c00fd344dbf0295e34576da4e5b0921236253ad7453d2577b0d",
+      "expected_code": 1,
+      "expected_error_code": "E0322",
+      "hypothesis": "Actual rustc_deny_explicit_impl prohibits authored Field impl."
+    },
+    {
+      "file": "demanded-offset-v3.rs",
+      "sha256": "ee236c7a9c54ea00d4231331d281f25ffc5a58ebd4f9ad273349d60e956416fc",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Actual builtin Field proof, Type projection and default field_offset CTFE are a distinct demanded consumer."
+    },
+    {
+      "file": "demanded-packed-v3.rs",
+      "sha256": "e6f933df8bebf9a9e061fb31394be4c54d5244d748016f8fd80a74a30c9c2bf9",
+      "expected_code": 1,
+      "expected_error_code": "E0277",
+      "hypothesis": "Packed field existence does not provide builtin Field implementation."
+    }
+  ],
+  "predecessor": {
+    "file": "predictions-v2.json",
+    "sha256": "fe639688b28b64030e69fd996a3b2af2e2d84ca61e00198065241f9497304bf6",
+    "correction": "Only exact-original-derived four controls rerun. Supply ordinary PhantomData Clone+Copy implementation and field_projections feature used by original core. V2 twelve other cases already qualified in both modes; preserve original four setup diagnostics."
+  }
+}

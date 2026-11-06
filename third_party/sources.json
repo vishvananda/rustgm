@@ -1182,6 +1182,15 @@
       "adaptation": "authored exact opponent: only two field-type aliases replaced by literal outer reference syntax while original aliases/other fields/bodies/comments remain; original copied unchanged separately",
       "oracle": "source-fragment",
       "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/field.rs",
+      "destination": "pa31/tests/spec/field-source/original-field.rs",
+      "sha256": "2255c3352e8496a805e189b283dffd14e5e3d3678c0ac94606cefeae0f7a202f",
+      "adaptation": "none; complete original module retained, independently checked no_core companions embed exact declaration intervals",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
     }
   ]
 }

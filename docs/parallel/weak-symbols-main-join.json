@@ -1,0 +1,93 @@
+{
+  "state": "qualified finite ordinary weak foreign-header integration; no full core artifact",
+  "worktree": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work",
+  "base": "b93f19388",
+  "source_reference": "d08aec5adb766114aac635660be7749b38e0384c",
+  "source_implementation": "b5f046789dacd17cd1f199f7809b0bb0bbc343f6",
+  "integration": "dfc08a0d2",
+  "regular": {
+    "receipt": "obj/qualification/fast/1793996667700471261/receipt.json",
+    "sha256": "793c75cba54d23d804c0d8f4cbe973aff43da5aa80de356bd1ac59e70edfc399",
+    "seconds": 181.62,
+    "tests": 12,
+    "selected": {
+      "suite_linking": [
+        "foreign_declarations::foreign_function_outcomes_are_independently_qualified"
+      ],
+      "suite_frontend": [
+        "weak_symbols::actual_c_void_runtime_and_builtin_macro_intervals_are_retained",
+        "weak_symbols::actual_foreign_headers_preserve_unused_ordinary_legality",
+        "weak_symbols::real_source_foreign_calls_reach_existing_abi_lowering",
+        "weak_symbols::source_unsafe_type_const_generic_duplicate_and_target_checks_remain",
+        "reborrow_sources::actual_source_operations_and_unused_alternate_headers_remain_real",
+        "reborrow_sources::checked_source_operations_retain_their_original_places",
+        "reborrow_sources::generic_expectations_and_operation_field_lifetimes_remain_ordinary",
+        "reborrow_sources::source_impl_fields_and_operation_loans_retain_their_ordinary_rejections",
+        "reborrow_sources::wrapper_parameters_keep_loans_without_explicit_reference_values",
+        "assertion_sources::only_actual_emitted_guards_require_the_corresponding_source_panic_runtime",
+        "assertion_sources::panic_hook_headers_preserve_unused_shapes_and_real_ordinary_body_proof"
+      ]
+    }
+  },
+  "native": {
+    "receipt": "obj/qualification/fast/1793997035955653611/receipt.json",
+    "sha256": "bd7d82036b2b29529055a4bfbab92aadf3d64e08b1cc5cac968b14b9b4febb58",
+    "seconds": 36.35,
+    "tests": 2,
+    "executables": 3,
+    "selected": {
+      "suite_frontend": [
+        "weak_symbols::ordinary_foreign_calls_preserve_real_runtime_effects",
+        "reborrow_sources::runtime_operands_implicit_copy_explicit_clone_and_ctfe_execute"
+      ]
+    },
+    "observed_stdout": [
+      "runtime 1 1 1 1 1 5",
+      "reborrow 23 23 47 47 0 99 31",
+      "successor 17 23 19 31 23 59 1"
+    ]
+  },
+  "source_snapshot": {
+    "count": 3674,
+    "sha256": "acd5558b9daee738ad9d53293b7b63f9271c089af3f9137dc3ec11379f1ad84d"
+  },
+  "worker_evidence": {
+    "path": "docs/parallel/weak-symbols-checkpoint.json",
+    "sha256": "6c260abbb362fccb0f4fd1a6f8831593e1a5f1b25d263bc349ce62fd66978638",
+    "harness": 282,
+    "upstream": "passed, including the joined Field original provenance"
+  },
+  "compiler_cli_sha256": "97e47a45b1b04914c5a294b9d334a2ca731f5f1c1bb6bbf9b068fafa5c9bee46",
+  "core_observation": "No repeated probe for this header-only join; latest remains immutable9aa812d6 at FieldRepresentingType/LIB186 on unchanged original722/profile/limits.",
+  "pending": [
+    "two new private weak-header controls and reviewed-vocabulary runtime through successor CI",
+    "actual Field family and original core/alloc/std artifacts",
+    "intrinsic/compiler-generated copy/CTFE foreign operation and transport requirements"
+  ],
+  "joined_harness_upstream": {
+    "receipt": "obj/parallel/weak-symbol-main-join/verification/receipt.json",
+    "sha256": "d208d5e61cccf24b01f0defa9bbd09a372fe22707399239f7da6fa45584dcc8d",
+    "steps": [
+      {
+        "name": "harness",
+        "command": [
+          "make",
+          "test-harness"
+        ],
+        "status": 0,
+        "seconds": 13.851525264966767
+      },
+      {
+        "name": "upstream",
+        "command": [
+          "make",
+          "test-upstream"
+        ],
+        "status": 0,
+        "seconds": 0.16533854795852676
+      }
+    ],
+    "harness_tests": 282,
+    "temporary_fixture_isolation": "Btrfs TMPDIR; harness-only GIT_CEILING_DIRECTORIES ends discovery at each temporary fixture, without changing the actual worktree resource policy."
+  }
+}

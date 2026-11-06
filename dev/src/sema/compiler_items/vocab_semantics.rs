@@ -22,6 +22,12 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
             | LangItem::CStr
             | LangItem::Reborrow
             | LangItem::CoerceShared
+            | LangItem::MemCpy
+            | LangItem::MemMove
+            | LangItem::MemSet
+            | LangItem::MemCmp
+            | LangItem::Bcmp
+            | LangItem::StrLen
             | LangItem::TryTraitFromYeet
             | LangItem::CoercePointeeValidated
             | LangItem::ResumeTy

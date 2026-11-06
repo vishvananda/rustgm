@@ -1,0 +1,643 @@
+{
+  "schema": 1,
+  "scope": "Independent pinned Rust reference only; no RustGM candidate, native execution or compiler edit.",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "compiler": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "guard": {
+    "outer_seconds": 90,
+    "max_output_gib": 16,
+    "shared_jobs": 2,
+    "reserve_gib": 150,
+    "outer_status": 0,
+    "commands": "timeout --signal=TERM --kill-after=5s 90s python3 scripts/resources.py run --wait-seconds 0 --max-output-gib 16 -- python3 scripts/storage.py run --prune-under obj/parallel/field-header-reference/VERSION -- python3 obj/parallel/field-header-reference/VERSION/run.py"
+  },
+  "qualified_source_count": 16,
+  "qualified_observation_count": 32,
+  "qualified": [
+    {
+      "file": "unused-alternative-v2.rs",
+      "sha256": "d29812fd7985c01711567077f1bab9bde7ebb87d7d26bfa6fc99bcde4d934ea5",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Role targets/arity do not require exact original generic kinds, fields, unsafe/supertrait flags, names or constant type.",
+      "mode": "metadata",
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "unused-alternative-v2.rs",
+      "sha256": "d29812fd7985c01711567077f1bab9bde7ebb87d7d26bfa6fc99bcde4d934ea5",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Role targets/arity do not require exact original generic kinds, fields, unsafe/supertrait flags, names or constant type.",
+      "mode": "obj",
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "unrelated-owner-v2.rs",
+      "sha256": "2c403c37deb9cbe2e899e0955c6048b8f9476f2d3dd94cec0671190b67236a7a",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Unused associated roles authenticate their real nongeneric trait owner independently, without a demanded Field family.",
+      "mode": "metadata",
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "unrelated-owner-v2.rs",
+      "sha256": "2c403c37deb9cbe2e899e0955c6048b8f9476f2d3dd94cec0671190b67236a7a",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Unused associated roles authenticate their real nongeneric trait owner independently, without a demanded Field family.",
+      "mode": "obj",
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "inherent-owner-v2.rs",
+      "sha256": "9294ed609806d279ca229df9d14a993b8fae88b47a91dbc1fbb5dba1e03a9fa7",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Associated targets may belong to a genuine nongeneric inherent impl; hypothesis requires independent observation.",
+      "mode": "metadata",
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "inherent-owner-v2.rs",
+      "sha256": "9294ed609806d279ca229df9d14a993b8fae88b47a91dbc1fbb5dba1e03a9fa7",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Associated targets may belong to a genuine nongeneric inherent impl; hypothesis requires independent observation.",
+      "mode": "obj",
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "wrong-struct-target-v2.rs",
+      "sha256": "b9665d9b6c44eb16809dcff66acd872020a0b922aa1ae2d1a3b903ae545a240b",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Struct role rejects enum target.",
+      "expected_message": "attribute cannot be used",
+      "mode": "metadata",
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field_representing_type\"]` attribute cannot be used on enums"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "3d4ad482cdb0c0573cd86902824c18b6f845dce7b4a5b2cf5fe9944f74117b69"
+    },
+    {
+      "file": "wrong-struct-target-v2.rs",
+      "sha256": "b9665d9b6c44eb16809dcff66acd872020a0b922aa1ae2d1a3b903ae545a240b",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Struct role rejects enum target.",
+      "expected_message": "attribute cannot be used",
+      "mode": "obj",
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field_representing_type\"]` attribute cannot be used on enums"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "3d4ad482cdb0c0573cd86902824c18b6f845dce7b4a5b2cf5fe9944f74117b69"
+    },
+    {
+      "file": "wrong-trait-target-v2.rs",
+      "sha256": "70de67a1a96208853bef5ef9d5ac2c1b28b3aada9d4649960ceee6080d20d471",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Trait role rejects struct target.",
+      "expected_message": "attribute cannot be used",
+      "mode": "metadata",
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field\"]` attribute cannot be used on structs"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9cf1332015e3933dc91c2b3d1efa5011b2aea8ce41aadf39d28f40c3c74c5877"
+    },
+    {
+      "file": "wrong-trait-target-v2.rs",
+      "sha256": "70de67a1a96208853bef5ef9d5ac2c1b28b3aada9d4649960ceee6080d20d471",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Trait role rejects struct target.",
+      "expected_message": "attribute cannot be used",
+      "mode": "obj",
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field\"]` attribute cannot be used on structs"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9cf1332015e3933dc91c2b3d1efa5011b2aea8ce41aadf39d28f40c3c74c5877"
+    },
+    {
+      "file": "wrong-base-target-v2.rs",
+      "sha256": "c8e3f4f43f5dba70376d75073248f93884128291404194d8df48ec635293a941",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Associated type role rejects a free type alias.",
+      "expected_message": "attribute cannot be used",
+      "mode": "metadata",
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field_base\"]` attribute cannot be used on type aliases"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "865e67d297e9b4a287bc978cc36198064327aec7907c950ca4951a9b913da522"
+    },
+    {
+      "file": "wrong-base-target-v2.rs",
+      "sha256": "c8e3f4f43f5dba70376d75073248f93884128291404194d8df48ec635293a941",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Associated type role rejects a free type alias.",
+      "expected_message": "attribute cannot be used",
+      "mode": "obj",
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field_base\"]` attribute cannot be used on type aliases"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "865e67d297e9b4a287bc978cc36198064327aec7907c950ca4951a9b913da522"
+    },
+    {
+      "file": "wrong-type-target-v2.rs",
+      "sha256": "3c766a745c9a7ddde254f78fa145c233f09ca0b6656ada42cdfc407d880d1da9",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Associated type role rejects associated constant target.",
+      "expected_message": "attribute cannot be used",
+      "mode": "metadata",
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field_type\"]` attribute cannot be used on associated consts"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c34683a94034da6d75f7c2f4156c5618e38db693e7f04ae55b7b00c8f3ab0cc3"
+    },
+    {
+      "file": "wrong-type-target-v2.rs",
+      "sha256": "3c766a745c9a7ddde254f78fa145c233f09ca0b6656ada42cdfc407d880d1da9",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Associated type role rejects associated constant target.",
+      "expected_message": "attribute cannot be used",
+      "mode": "obj",
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field_type\"]` attribute cannot be used on associated consts"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c34683a94034da6d75f7c2f4156c5618e38db693e7f04ae55b7b00c8f3ab0cc3"
+    },
+    {
+      "file": "wrong-offset-target-v2.rs",
+      "sha256": "cf91df1ea18df53a9ef89260fac0b6448d9435b79a0d7f01a3e895e89e5bb82b",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Associated constant role rejects associated type target.",
+      "expected_message": "attribute cannot be used",
+      "mode": "metadata",
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field_offset\"]` attribute cannot be used on associated types"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "eb5180ccb862882292592fe2486e224f30635127ffa0e30e5cf0304081a8ea5b"
+    },
+    {
+      "file": "wrong-offset-target-v2.rs",
+      "sha256": "cf91df1ea18df53a9ef89260fac0b6448d9435b79a0d7f01a3e895e89e5bb82b",
+      "expected_code": 1,
+      "expected_error_code": "",
+      "hypothesis": "Associated constant role rejects associated type target.",
+      "expected_message": "attribute cannot be used",
+      "mode": "obj",
+      "status": 1,
+      "errors": [
+        {
+          "code": null,
+          "message": "`#[lang = \"field_offset\"]` attribute cannot be used on associated types"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "eb5180ccb862882292592fe2486e224f30635127ffa0e30e5cf0304081a8ea5b"
+    },
+    {
+      "file": "wrong-struct-arity-v2.rs",
+      "sha256": "b382c0a0fa06352f7ace98053cd834945ececb57c4c44ed6468dbbc5dc15892c",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Struct role requires three written generic parameters.",
+      "mode": "metadata",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0718",
+          "message": "`field_representing_type` lang item must be applied to a struct with 3 generic arguments"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c30079c8ae5297ce462e9c2a8177716c81db73d78db33937e078a1bbe31cb8c5"
+    },
+    {
+      "file": "wrong-struct-arity-v2.rs",
+      "sha256": "b382c0a0fa06352f7ace98053cd834945ececb57c4c44ed6468dbbc5dc15892c",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Struct role requires three written generic parameters.",
+      "mode": "obj",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0718",
+          "message": "`field_representing_type` lang item must be applied to a struct with 3 generic arguments"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c30079c8ae5297ce462e9c2a8177716c81db73d78db33937e078a1bbe31cb8c5"
+    },
+    {
+      "file": "wrong-trait-arity-v2.rs",
+      "sha256": "78e45a3c864b37122c482f08e42106e714072a913abec920b9c5f6aec09085e5",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Field role requires zero written generic parameters.",
+      "mode": "metadata",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0718",
+          "message": "`field` lang item must be applied to a trait with 0 generic arguments"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c2106489dcc19ac5ec85789c19cb6c8bd2f7f9bee33da7a72e1ae21189daacb0"
+    },
+    {
+      "file": "wrong-trait-arity-v2.rs",
+      "sha256": "78e45a3c864b37122c482f08e42106e714072a913abec920b9c5f6aec09085e5",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Field role requires zero written generic parameters.",
+      "mode": "obj",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0718",
+          "message": "`field` lang item must be applied to a trait with 0 generic arguments"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c2106489dcc19ac5ec85789c19cb6c8bd2f7f9bee33da7a72e1ae21189daacb0"
+    },
+    {
+      "file": "wrong-member-parent-arity-v2.rs",
+      "sha256": "e9d59b345576136982521c9953516ebe3703937cc875205e06699c3666e004e6",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Associated role generic count includes actual parent parameters.",
+      "mode": "metadata",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0718",
+          "message": "`field_base` lang item must be applied to a associated type with 0 generic arguments"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "b39eaa1f18496d1a1259bc301517733470e9abd27d59cf910686a1dc4e9c30e3"
+    },
+    {
+      "file": "wrong-member-parent-arity-v2.rs",
+      "sha256": "e9d59b345576136982521c9953516ebe3703937cc875205e06699c3666e004e6",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Associated role generic count includes actual parent parameters.",
+      "mode": "obj",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0718",
+          "message": "`field_base` lang item must be applied to a associated type with 0 generic arguments"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "b39eaa1f18496d1a1259bc301517733470e9abd27d59cf910686a1dc4e9c30e3"
+    },
+    {
+      "file": "invalid-ordinary-body-v2.rs",
+      "sha256": "70d7b6e2e1e4ffe6c02e3ab0f792c492a917c6169abac3b86566103ebb8bf43f",
+      "expected_code": 1,
+      "expected_error_code": "E0308",
+      "hypothesis": "Unused role does not suppress ordinary provided constant body type checking.",
+      "mode": "metadata",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0308",
+          "message": "mismatched types"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "b8a0cb86bb5357b01184f3cf6c6accd9c26d2ded7dc74daeae73023c57ff18b7"
+    },
+    {
+      "file": "invalid-ordinary-body-v2.rs",
+      "sha256": "70d7b6e2e1e4ffe6c02e3ab0f792c492a917c6169abac3b86566103ebb8bf43f",
+      "expected_code": 1,
+      "expected_error_code": "E0308",
+      "hypothesis": "Unused role does not suppress ordinary provided constant body type checking.",
+      "mode": "obj",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0308",
+          "message": "mismatched types"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "b8a0cb86bb5357b01184f3cf6c6accd9c26d2ded7dc74daeae73023c57ff18b7"
+    },
+    {
+      "file": "original-headers-v3.rs",
+      "sha256": "83e5649b8d27ec8e76b59c4e3ef9f6209226490af1718af72ab3379b127c2865",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Unused exact pinned struct/trait/member/default OFFSET and Copy/Clone bodies check normally.",
+      "mode": "metadata",
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "original-headers-v3.rs",
+      "sha256": "83e5649b8d27ec8e76b59c4e3ef9f6209226490af1718af72ab3379b127c2865",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Unused exact pinned struct/trait/member/default OFFSET and Copy/Clone bodies check normally.",
+      "mode": "obj",
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "explicit-impl-v3.rs",
+      "sha256": "3572bc1615e71c00fd344dbf0295e34576da4e5b0921236253ad7453d2577b0d",
+      "expected_code": 1,
+      "expected_error_code": "E0322",
+      "hypothesis": "Actual rustc_deny_explicit_impl prohibits authored Field impl.",
+      "mode": "metadata",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0322",
+          "message": "explicit impls for the `Field` trait are not permitted"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "2abc47df29bfaccf1460118e6fb42005881b3f05c0905f391fa627850691e143"
+    },
+    {
+      "file": "explicit-impl-v3.rs",
+      "sha256": "3572bc1615e71c00fd344dbf0295e34576da4e5b0921236253ad7453d2577b0d",
+      "expected_code": 1,
+      "expected_error_code": "E0322",
+      "hypothesis": "Actual rustc_deny_explicit_impl prohibits authored Field impl.",
+      "mode": "obj",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0322",
+          "message": "explicit impls for the `Field` trait are not permitted"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "2abc47df29bfaccf1460118e6fb42005881b3f05c0905f391fa627850691e143"
+    },
+    {
+      "file": "demanded-offset-v3.rs",
+      "sha256": "ee236c7a9c54ea00d4231331d281f25ffc5a58ebd4f9ad273349d60e956416fc",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Actual builtin Field proof, Type projection and default field_offset CTFE are a distinct demanded consumer.",
+      "mode": "metadata",
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "demanded-offset-v3.rs",
+      "sha256": "ee236c7a9c54ea00d4231331d281f25ffc5a58ebd4f9ad273349d60e956416fc",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Actual builtin Field proof, Type projection and default field_offset CTFE are a distinct demanded consumer.",
+      "mode": "obj",
+      "status": 0,
+      "errors": [],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "demanded-packed-v3.rs",
+      "sha256": "e6f933df8bebf9a9e061fb31394be4c54d5244d748016f8fd80a74a30c9c2bf9",
+      "expected_code": 1,
+      "expected_error_code": "E0277",
+      "hypothesis": "Packed field existence does not provide builtin Field implementation.",
+      "mode": "metadata",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `field_of!(Record, word): Field` is not satisfied"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "49aaeb784e6e0a634b0361dbb1c18e5f3fe005cfe62cd6dfe4be5899cb80bb62"
+    },
+    {
+      "file": "demanded-packed-v3.rs",
+      "sha256": "e6f933df8bebf9a9e061fb31394be4c54d5244d748016f8fd80a74a30c9c2bf9",
+      "expected_code": 1,
+      "expected_error_code": "E0277",
+      "hypothesis": "Packed field existence does not provide builtin Field implementation.",
+      "mode": "obj",
+      "status": 1,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `field_of!(Record, word): Field` is not satisfied"
+        }
+      ],
+      "prediction_matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "49aaeb784e6e0a634b0361dbb1c18e5f3fe005cfe62cd6dfe4be5899cb80bb62"
+    }
+  ],
+  "raw_receipts": [
+    {
+      "version": "v1",
+      "path": "obj/parallel/field-header-reference/v1/receipt.json",
+      "sha256": "5d56d3d7d77808424b5db77f71ef6000ea9d6805edecdf6510c26edf247a82a8",
+      "seconds": 1.397820407000836,
+      "prediction_file": "predictions-v1.json",
+      "prediction_sha256": "831b8f16d9e6c741cc5d603162bfacafb074f972745376981ffec8a8038dfd64",
+      "runner_sha256": "2ae9ec275d2d14b8bad20f98f0b3312450346a08d29dfc2145931375a1d51103"
+    },
+    {
+      "version": "v2",
+      "path": "obj/parallel/field-header-reference/v2/receipt.json",
+      "sha256": "76164cfc15649177dcadb95d8fd9790176f7c27be4cc07d33af12c9d80b41a5e",
+      "seconds": 2.2565752710215747,
+      "prediction_file": "predictions-v2.json",
+      "prediction_sha256": "fe639688b28b64030e69fd996a3b2af2e2d84ca61e00198065241f9497304bf6",
+      "runner_sha256": "9af00f41c1d9fcc8adb115f883f4bb86e7d6e461ba09d6605f3d6dd6da35173b"
+    },
+    {
+      "version": "v3",
+      "path": "obj/parallel/field-header-reference/v3/receipt.json",
+      "sha256": "7741c78add3200456e2210b066c0bb8969c2bb83153eeb8c019625659d731655",
+      "seconds": 0.6138543220004067,
+      "prediction_file": "predictions-v3.json",
+      "prediction_sha256": "d39b8084402cc5514669c1d3de9c9d5b4c8b447f52479e6abf2ccc243e125776",
+      "runner_sha256": "39d76a8786719256656d485215cc5f90624b995220a95abf6a1baa3eb2a92e48"
+    }
+  ],
+  "unqualified_history": {
+    "v1": "All 16 sources contaminated by unknown send lang item. Four original-derived sources also need Sized module import/fundamental gate. No semantic parity claim even where intended negative diagnostics also occur.",
+    "v2": "Twelve sources clean/qualified. Four original-derived sources still contain PhantomData Copy dependency E0204 and field_projections const intrinsic feature error, even where intended negative code also occurs.",
+    "v3": "Only four affected sources rerun with real ordinary PhantomData Clone/Copy support and active field_projections gate; all clean/intended causes."
+  },
+  "source_files": {
+    "demanded-offset-v2.rs": "0d5d306652d676d231544a7ac08c88a7eb63f2eaa14d2d918501a1c18bc6e4e7",
+    "demanded-offset-v3.rs": "ee236c7a9c54ea00d4231331d281f25ffc5a58ebd4f9ad273349d60e956416fc",
+    "demanded-offset.rs": "d722da2d2ffd58e4fc6305f5e2c7e85396a4a06373248756df36070fd41f0ee5",
+    "demanded-packed-v2.rs": "ac9531c7506725adadbe2e1f7aa0be0fd3e357102943f4dce1b3e83664cf51e3",
+    "demanded-packed-v3.rs": "e6f933df8bebf9a9e061fb31394be4c54d5244d748016f8fd80a74a30c9c2bf9",
+    "demanded-packed.rs": "254b34dfe38da0b3b8af4e1d4e45c29bd2fd4e03c32ae92f8a1dae48b3354b10",
+    "explicit-impl-v2.rs": "058914955d2cc81f7b29b97db3b4e4a5d0fa830d1ec7bae090e91c4894029cb9",
+    "explicit-impl-v3.rs": "3572bc1615e71c00fd344dbf0295e34576da4e5b0921236253ad7453d2577b0d",
+    "explicit-impl.rs": "5f4a6058728569d8a793e2653072be55017f2af130e8e767db5d6a13d183fdd6",
+    "inherent-owner-v2.rs": "9294ed609806d279ca229df9d14a993b8fae88b47a91dbc1fbb5dba1e03a9fa7",
+    "inherent-owner.rs": "894a7a4f222749ee63699b82a58f2575189f08c0db7ce46aa7edd101c69979cb",
+    "invalid-ordinary-body-v2.rs": "70d7b6e2e1e4ffe6c02e3ab0f792c492a917c6169abac3b86566103ebb8bf43f",
+    "invalid-ordinary-body.rs": "070b479b25572a692bbc47d6aecd1418808649efecdcd2c1391e10b92cb41366",
+    "original-field.rs": "2255c3352e8496a805e189b283dffd14e5e3d3678c0ac94606cefeae0f7a202f",
+    "original-headers-v2.rs": "2c4db8eb37f1d57c91ab8fc427cff94c27a46926d08c5bf05ebd6453530fe8eb",
+    "original-headers-v3.rs": "83e5649b8d27ec8e76b59c4e3ef9f6209226490af1718af72ab3379b127c2865",
+    "original-headers.rs": "19b978276a8d8f7f4737457995b5638b69a5eb831e95147d759afa3064901d41",
+    "unrelated-owner-v2.rs": "2c403c37deb9cbe2e899e0955c6048b8f9476f2d3dd94cec0671190b67236a7a",
+    "unrelated-owner.rs": "8f2c3e689e040c5586f3224eb31f645ccd08c6798a496702a51a7f163e370a5c",
+    "unused-alternative-v2.rs": "d29812fd7985c01711567077f1bab9bde7ebb87d7d26bfa6fc99bcde4d934ea5",
+    "unused-alternative.rs": "7316c746c119178b9f6795d088d3215dd6ffbb12906060d057ea5a9cf64d7373",
+    "wrong-base-target-v2.rs": "c8e3f4f43f5dba70376d75073248f93884128291404194d8df48ec635293a941",
+    "wrong-base-target.rs": "47c4b0b430fbc656be5cd57b611c0e00fc92cbea66552e9b4657d0b328b5c8ce",
+    "wrong-member-parent-arity-v2.rs": "e9d59b345576136982521c9953516ebe3703937cc875205e06699c3666e004e6",
+    "wrong-member-parent-arity.rs": "78f1aad140243f98cc56505208d75fe71dc0fd1b34c3ccb42ef6695fed7cf6fe",
+    "wrong-offset-target-v2.rs": "cf91df1ea18df53a9ef89260fac0b6448d9435b79a0d7f01a3e895e89e5bb82b",
+    "wrong-offset-target.rs": "2bf659b592e1dd32ed172406f7315c9fb19436eda3aaa76847f51257475ecd6f",
+    "wrong-struct-arity-v2.rs": "b382c0a0fa06352f7ace98053cd834945ececb57c4c44ed6468dbbc5dc15892c",
+    "wrong-struct-arity.rs": "8f1d29eca73bbab3ba7aa4724b26984888cc2ec129bef50069ccb7b14573c1ba",
+    "wrong-struct-target-v2.rs": "b9665d9b6c44eb16809dcff66acd872020a0b922aa1ae2d1a3b903ae545a240b",
+    "wrong-struct-target.rs": "fa71888a9c009b09cadda46f5a4de5c2a9ba4346deda58cbe1528f59b249d2ac",
+    "wrong-trait-arity-v2.rs": "78e45a3c864b37122c482f08e42106e714072a913abec920b9c5f6aec09085e5",
+    "wrong-trait-arity.rs": "f4aba9cc2f02b6de2c620c7b9d93b811c8def5e4e1d92aaac2c5965021c669d2",
+    "wrong-trait-target-v2.rs": "70de67a1a96208853bef5ef9d5ac2c1b28b3aada9d4649960ceee6080d20d471",
+    "wrong-trait-target.rs": "bb685433e3bb778fcef215152f30337233bca92c840d0be1b3ab36a892b0908a",
+    "wrong-type-target-v2.rs": "3c766a745c9a7ddde254f78fa145c233f09ca0b6656ada42cdfc407d880d1da9",
+    "wrong-type-target.rs": "6408605f90a070054a11e6047e133ed54d2029f341471658f9243a9685566a24"
+  },
+  "boundaries": [
+    "Compiler-generated Field impl/associated normalization/default OFFSET CTFE are distinct demanded consumer, not ordinary header completion.",
+    "demanded-offset-v3.rs checks genuine Rust proof/CTFE in metadata and object modes but executes no native observer.",
+    "field_of builtin expansion/privacy/index validation, full original Debug/reflection and remaining impls, ABI field reflection and authenticated transport remain required."
+  ]
+}

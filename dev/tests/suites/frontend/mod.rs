@@ -210,3 +210,5 @@ mod assertion_sources;
 
 #[path = "../../reborrow_sources.rs"]
 mod reborrow_sources;
+#[path = "../../weak_symbols.rs"]
+mod weak_symbols;

@@ -37,6 +37,7 @@ pub(super) use calls::record as record_call_effects;
 pub(in crate::sema) use explicit_cleanup::explicit_drop_member;
 pub(in crate::sema) use explicit_cleanup::source_drop_body;
 pub(crate) use glue_calls::{DropGlueSelection, check_const_drop_glue, source_drop_glue};
+pub(in crate::sema) use headers::weak_imports::ROLES as WEAK_IMPORTS;
 mod handler_contract;
 pub(in crate::sema) use handler_contract::Bindings as HandlerBindings;
 pub(crate) use handler_contract::complete as complete_panic_handler;

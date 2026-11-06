@@ -1,0 +1,883 @@
+{
+  "schema": 1,
+  "state": "reference-qualified",
+  "scope": "7 accepted and8 rejected source inputs, each metadata/object; six actual foreign-call C ABI observer",
+  "receipt": "obj/parallel/source-transport/weak-symbols/reference-v2/receipt.json",
+  "receipt_sha256": "c364ec22d80f8c617e21449d04d49bc4b3468427acdd933c02872089f368ac4a",
+  "predictions_sha256": "159a2a67582f9b7d41ffa59292ffbf52e7b53a806def9515cbba7b27a7a4fcb6",
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "version": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n"
+  },
+  "outcomes": [
+    {
+      "case": "source-v2",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/source-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/source-v2.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.029693213989958167,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "source-v2",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/source-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/source-v2.obj"
+      ],
+      "code": 0,
+      "seconds": 0.029742692946456373,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "safe-header-v2",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/safe-header-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/safe-header-v2.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.02709562797099352,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "safe-header-v2",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/safe-header-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/safe-header-v2.obj"
+      ],
+      "code": 0,
+      "seconds": 0.02952107897726819,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "changed-prototype-v2",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/changed-prototype-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/changed-prototype-v2.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.02518523798789829,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "changed-prototype-v2",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/changed-prototype-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/changed-prototype-v2.obj"
+      ],
+      "code": 0,
+      "seconds": 0.029641954984981567,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "rust-abi-v2",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/rust-abi-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/rust-abi-v2.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.0271836289903149,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "rust-abi-v2",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/rust-abi-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/rust-abi-v2.obj"
+      ],
+      "code": 0,
+      "seconds": 0.031225720013026148,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "lifetime-header-v2",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/lifetime-header-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/lifetime-header-v2.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.033419259008951485,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "lifetime-header-v2",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/lifetime-header-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/lifetime-header-v2.obj"
+      ],
+      "code": 0,
+      "seconds": 0.030691137013491243,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "ordinary-call-v2",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/ordinary-call-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/ordinary-call-v2.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.028456604981329292,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "ordinary-call-v2",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/ordinary-call-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/ordinary-call-v2.obj"
+      ],
+      "code": 0,
+      "seconds": 0.032059871999081224,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "safe-call-v2",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/safe-call-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/safe-call-v2.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.029606190975755453,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0133",
+          "message": "call to unsafe function `runtime_symbols::memcpy` is unsafe and requires unsafe function or block"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "safe-call-v2",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/safe-call-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/safe-call-v2.obj"
+      ],
+      "code": 1,
+      "seconds": 0.02950087800854817,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0133",
+          "message": "call to unsafe function `runtime_symbols::memcpy` is unsafe and requires unsafe function or block"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "wrong-argument-v2",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/wrong-argument-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/wrong-argument-v2.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.030576125951483846,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0308",
+          "message": "mismatched types"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "wrong-argument-v2",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/wrong-argument-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/wrong-argument-v2.obj"
+      ],
+      "code": 1,
+      "seconds": 0.029250000952742994,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0308",
+          "message": "mismatched types"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "wrong-result-v2",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/wrong-result-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/wrong-result-v2.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.028056554030627012,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0308",
+          "message": "mismatched types"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "wrong-result-v2",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/wrong-result-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/wrong-result-v2.obj"
+      ],
+      "code": 1,
+      "seconds": 0.03188251703977585,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0308",
+          "message": "mismatched types"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "const-call-v2",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/const-call-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/const-call-v2.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.0277025030227378,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0015",
+          "message": "cannot call non-const function `runtime_symbols::memcpy` in constant functions"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "const-call-v2",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/const-call-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/const-call-v2.obj"
+      ],
+      "code": 1,
+      "seconds": 0.031173055002000183,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0015",
+          "message": "cannot call non-const function `runtime_symbols::memcpy` in constant functions"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "generic-header-v2",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/generic-header-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/generic-header-v2.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.028993886953685433,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0044",
+          "message": "foreign items may not have type parameters"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "generic-header-v2",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/generic-header-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/generic-header-v2.obj"
+      ],
+      "code": 1,
+      "seconds": 0.02862519200425595,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0044",
+          "message": "foreign items may not have type parameters"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "duplicate-v2",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/duplicate-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/duplicate-v2.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.022937692003324628,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0152",
+          "message": "found duplicate lang item `memcpy_fn`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "duplicate-v2",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/duplicate-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/duplicate-v2.obj"
+      ],
+      "code": 1,
+      "seconds": 0.02163956401636824,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0152",
+          "message": "found duplicate lang item `memcpy_fn`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "wrong-target-v2",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/wrong-target-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/wrong-target-v2.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.02727325801970437,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": null,
+          "message": "`#[lang = \"memcpy_fn\"]` attribute cannot be used on structs"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "wrong-target-v2",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/wrong-target-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/wrong-target-v2.obj"
+      ],
+      "code": 1,
+      "seconds": 0.028820645005907863,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": null,
+          "message": "`#[lang = \"memcpy_fn\"]` attribute cannot be used on structs"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "defined-item-v2",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/defined-item-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/defined-item-v2.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.024868259963113815,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": null,
+          "message": "`#[lang = \"memcpy_fn\"]` attribute cannot be used on functions"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "defined-item-v2",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/defined-item-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/defined-item-v2.obj"
+      ],
+      "code": 1,
+      "seconds": 0.026617455994710326,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": null,
+          "message": "`#[lang = \"memcpy_fn\"]` attribute cannot be used on functions"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "native-v2",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/native-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/native-v2.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.027656136022415012,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "native-v2",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "weak_symbols",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/native-v2.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/native-v2.obj"
+      ],
+      "code": 0,
+      "seconds": 0.030561074963770807,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "native",
+      "stage": "link",
+      "argv": [
+        "cc",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/weak-symbols/observer.c",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/native-v2.obj",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/observer"
+      ],
+      "code": 0,
+      "seconds": 0.049927769985515624,
+      "stdout": ""
+    },
+    {
+      "case": "native",
+      "stage": "execute",
+      "argv": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/weak-symbols/reference-v2/observer"
+      ],
+      "code": 0,
+      "seconds": 0.0013445039512589574,
+      "stdout": "runtime 1 1 1 1 1 5\n"
+    }
+  ],
+  "setup_v1": {
+    "state": "unqualified missing actual include_str macro",
+    "receipt": "obj/parallel/source-transport/weak-symbols/reference-v1/receipt.json",
+    "sha256": "652b4b3ea19d913fc2ee0db2f62a71ad674a9b9c54fabc7123455a87774b47c4",
+    "sources": "obj/parallel/source-transport/weak-symbols/reference-v1/sources"
+  }
+}

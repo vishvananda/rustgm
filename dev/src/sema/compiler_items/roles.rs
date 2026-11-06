@@ -259,6 +259,11 @@ fn complete_dependent_roles(
             complete.roles.insert(role);
         }
     }
+    for role in super::headers::weak_imports::ROLES {
+        if let Some(role) = super::headers::weak_imports::complete(report, facts, catalog, role)? {
+            complete.roles.insert(role);
+        }
+    }
     if let Some(role) = super::async_glue::complete(report, facts, catalog)? {
         complete.roles.insert(role);
     }

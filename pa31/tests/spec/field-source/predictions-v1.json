@@ -1,0 +1,127 @@
+{
+  "schema": 1,
+  "state": "frozen-before-any-Rust-or-candidate-observation",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "cases": [
+    {
+      "file": "original-headers.rs",
+      "sha256": "19b978276a8d8f7f4737457995b5638b69a5eb831e95147d759afa3064901d41",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Unused exact pinned struct/trait/member/default OFFSET and Copy/Clone bodies check normally."
+    },
+    {
+      "file": "unused-alternative.rs",
+      "sha256": "7316c746c119178b9f6795d088d3215dd6ffbb12906060d057ea5a9cf64d7373",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Role targets/arity do not require exact original generic kinds, fields, unsafe/supertrait flags, names or constant type."
+    },
+    {
+      "file": "unrelated-owner.rs",
+      "sha256": "8f2c3e689e040c5586f3224eb31f645ccd08c6798a496702a51a7f163e370a5c",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Unused associated roles authenticate their real nongeneric trait owner independently, without a demanded Field family."
+    },
+    {
+      "file": "inherent-owner.rs",
+      "sha256": "894a7a4f222749ee63699b82a58f2575189f08c0db7ce46aa7edd101c69979cb",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Associated targets may belong to a genuine nongeneric inherent impl; hypothesis requires independent observation."
+    },
+    {
+      "file": "wrong-struct-target.rs",
+      "sha256": "fa71888a9c009b09cadda46f5a4de5c2a9ba4346deda58cbe1528f59b249d2ac",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Struct role rejects enum target."
+    },
+    {
+      "file": "wrong-trait-target.rs",
+      "sha256": "bb685433e3bb778fcef215152f30337233bca92c840d0be1b3ab36a892b0908a",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Trait role rejects struct target."
+    },
+    {
+      "file": "wrong-base-target.rs",
+      "sha256": "47c4b0b430fbc656be5cd57b611c0e00fc92cbea66552e9b4657d0b328b5c8ce",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Associated type role rejects a free type alias."
+    },
+    {
+      "file": "wrong-type-target.rs",
+      "sha256": "6408605f90a070054a11e6047e133ed54d2029f341471658f9243a9685566a24",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Associated type role rejects associated constant target."
+    },
+    {
+      "file": "wrong-offset-target.rs",
+      "sha256": "2bf659b592e1dd32ed172406f7315c9fb19436eda3aaa76847f51257475ecd6f",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Associated constant role rejects associated type target."
+    },
+    {
+      "file": "wrong-struct-arity.rs",
+      "sha256": "8f1d29eca73bbab3ba7aa4724b26984888cc2ec129bef50069ccb7b14573c1ba",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Struct role requires three written generic parameters."
+    },
+    {
+      "file": "wrong-trait-arity.rs",
+      "sha256": "f4aba9cc2f02b6de2c620c7b9d93b811c8def5e4e1d92aaac2c5965021c669d2",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Field role requires zero written generic parameters."
+    },
+    {
+      "file": "wrong-member-parent-arity.rs",
+      "sha256": "78f1aad140243f98cc56505208d75fe71dc0fd1b34c3ccb42ef6695fed7cf6fe",
+      "expected_code": 1,
+      "expected_error_code": "E0718",
+      "hypothesis": "Associated role generic count includes actual parent parameters."
+    },
+    {
+      "file": "invalid-ordinary-body.rs",
+      "sha256": "070b479b25572a692bbc47d6aecd1418808649efecdcd2c1391e10b92cb41366",
+      "expected_code": 1,
+      "expected_error_code": "E0308",
+      "hypothesis": "Unused role does not suppress ordinary provided constant body type checking."
+    },
+    {
+      "file": "explicit-impl.rs",
+      "sha256": "5f4a6058728569d8a793e2653072be55017f2af130e8e767db5d6a13d183fdd6",
+      "expected_code": 1,
+      "expected_error_code": "E0322",
+      "hypothesis": "Actual rustc_deny_explicit_impl prohibits authored Field impl."
+    },
+    {
+      "file": "demanded-offset.rs",
+      "sha256": "d722da2d2ffd58e4fc6305f5e2c7e85396a4a06373248756df36070fd41f0ee5",
+      "expected_code": 0,
+      "expected_error_code": "",
+      "hypothesis": "Actual builtin Field proof, Type projection and default field_offset CTFE are a distinct demanded consumer."
+    },
+    {
+      "file": "demanded-packed.rs",
+      "sha256": "254b34dfe38da0b3b8af4e1d4e45c29bd2fd4e03c32ae92f8a1dae48b3354b10",
+      "expected_code": 1,
+      "expected_error_code": "E0277",
+      "hypothesis": "Packed field existence does not provide builtin Field implementation."
+    }
+  ]
+}

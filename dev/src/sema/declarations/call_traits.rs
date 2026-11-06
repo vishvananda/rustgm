@@ -99,15 +99,18 @@ impl Checker<'_> {
             self.work.push(super::Work::Definition(declaration, false));
             self.drain(steps, limit)?;
         }
-        self.prepare_source_guard_headers(steps, limit)?;
+        self.prepare_source_function_headers(steps, limit)?;
         crate::sema::compiler_items::validate_traits(self.report, &mut self.facts)
     }
-    fn prepare_source_guard_headers(
+    fn prepare_source_function_headers(
         &mut self,
         steps: &mut usize,
         limit: usize,
     ) -> Result<(), Error> {
-        for role in crate::sema::compiler_items::guard_panics::ROLES {
+        for role in crate::sema::compiler_items::guard_panics::ROLES
+            .into_iter()
+            .chain(crate::sema::compiler_items::WEAK_IMPORTS)
+        {
             let Some(declaration) = self
                 .facts
                 .source_bindings

@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "state": "qualified finite ordinary foreign-header profile",
+  "base": "14fe4f9c5",
+  "reference_commit": "d08aec5adb766114aac635660be7749b38e0384c",
+  "reference": "pa31/tests/spec/weak-symbols/reference-v2.json",
+  "reference_sha256": "5db36775b5579281f073c3155a10c85f1e8b06aca96906085ceaa88593d3775d",
+  "qualification": {
+    "gate1": {
+      "receipt": "obj/parallel/source-transport/weak-symbols/gate1/receipt.json",
+      "sha256": "e322ba352ea7be06f7ffab43847cf02aa6b98aca9fdf8d46ba1f660110630d39"
+    },
+    "gate2": {
+      "receipt": "obj/parallel/source-transport/weak-symbols/gate2/receipt.json",
+      "sha256": "26d23bd2183aa37b5c8270250a1a143210a639d266109b25861ccd3f3bab118b"
+    },
+    "gate3": {
+      "receipt": "obj/parallel/source-transport/weak-symbols/gate3/receipt.json",
+      "sha256": "73214862edba9613ab3116b535f6b03ef3abb7f6456f970a952c1f2e8eb8d978"
+    }
+  },
+  "source_map": {
+    "path": "obj/parallel/source-transport/weak-symbols/gate3/sources.json",
+    "sha256": "0e358ee2679f28d3c18fd9686de0c7b22999a9ad6f9a8fb0bda1d8a31bb9ba03",
+    "count": 3613
+  },
+  "changed_sources": {
+    "dev/src/sema/compiler_items.rs": "876ff0ec556a1611c8aca8ae8fdf7c8a0fe97a03331b1c8bc7e37d924f84f22e",
+    "dev/src/sema/compiler_items/headers.rs": "93cbc9139cb5c3657c76ad23b27056b9dd03a121602c3eb46046cb83ed4e9dda",
+    "dev/src/sema/compiler_items/headers/weak_imports.rs": "37fc1d3a091c0e88db6196344864248d8f68a06f7dc7a98faf428f5557782c9b",
+    "dev/src/sema/compiler_items/roles.rs": "0b15e4e5d0df26f73edfad4ebe2783bc38d7977c24bc23c9aed506850063f46c",
+    "dev/src/sema/compiler_items/vocab_semantics.rs": "50cf2a1ea276a09f7bd1091bb3d85ab9e5264bd5ddba55ec8c294be388b0b6be",
+    "dev/src/sema/declarations/call_traits.rs": "2bd4cb7fa359484f7e035f521411a42eb21e06007a652ae3e846ce5bf3cda82c",
+    "dev/tests/weak_symbols.rs": "25c0e868761a400fb8021f271ba21039494a5cf42a41474be7b6110280909a17",
+    "dev/tests/invariants/weak_headers.rs": "c4b06eea2bbaa53731f1b27f44faddad51bee7c1c5485895b732d8eeee705a50",
+    "dev/tests/invariants/vocab_claims.rs": "1cde0fd26eab5e38f06bbf829b3b1a8f9aac9e159087be8e990c133ae878c330",
+    "dev/tests/suites/frontend/mod.rs": "7d6c54f22f72a3588c147e7a053d7898df0094de3835584081bc25f9e9116e4a"
+  },
+  "cli": {
+    "path": "obj/rust/dev-fast/rustgm",
+    "sha256": "0e5022af4f164194886b00a1c4ee0156685e821102d67735177fe6acb1917431"
+  },
+  "passed": {
+    "weak_regular": 4,
+    "old_guard_regular": 2,
+    "old_foreign_callers": 1,
+    "native_tests": 1,
+    "native_calls": 6,
+    "harness": 282,
+    "upstream": true
+  },
+  "failures": {
+    "gate1": "Strict/fmt/audit pass; actual foreign headers were not scheduled before role completion. Fixed existing definition/drain dependency, no fallback.",
+    "gate2": "All selected compiler/native controls passed. Two harness storage fixtures inherited ancestor Git/controller through owned TMPDIR.",
+    "gate3": "Harness-only GIT_CEILING_DIRECTORIES isolates fixture roots; actual guard root/cap/reserve retained in controller.json and fixture-isolation.json. All282 harness and upstream pass; all dev source hashes identical to gate2."
+  },
+  "widths": {
+    "existing_FunctionHeader": 48,
+    "existing_Validated": 80,
+    "new_retained_records": 0
+  },
+  "pending": [
+    "Two new private malformed-producer controls plus modified vocabulary control: compilation/execution pending CI.",
+    "No intrinsic, compiler-generated memory expansion, CTFE foreign execution, runtime-definition lint parity or operation transport capability.",
+    "No unchanged whole-core probe or PA31 release claim."
+  ]
+}

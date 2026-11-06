@@ -1,0 +1,106 @@
+{
+  "profile": {
+    "compiler": "Rust1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "cap_lints": "allow",
+    "overflow_checks": true,
+    "panic": "abort"
+  },
+  "cases": {
+    "source": {
+      "sha256": "9449cdb1e9ff2593636539ecf97eaa5f87d91ba12d39cdaf4d32d96d541692cf",
+      "expected": 0,
+      "cause": "actual six foreign declarations"
+    },
+    "safe-header": {
+      "sha256": "dad4e0e2e80bf6246d113abcf94e77d8ca86ad7953ecad717fad51fd0884bc26",
+      "expected": 0,
+      "cause": "ordinary safe foreign declaration"
+    },
+    "changed-prototype": {
+      "sha256": "5c0e6f2e500af61796987f5ff33fd055b6d57c42e9f013f93930b0e1c4efc270",
+      "expected": 0,
+      "cause": "unused changed prototype is ordinary declaration legality"
+    },
+    "rust-abi": {
+      "sha256": "21ab1bbea66154de11fb4cd2d61fed6c1c41c0e19b6bc39cc944f16d55b48a4e",
+      "expected": 0,
+      "cause": "unused changed ABI remains ordinary header"
+    },
+    "lifetime-header": {
+      "sha256": "457116c047a846446c6bda1f56b116611756105e86dca516acd362f7c0bc0ff6",
+      "expected": 0,
+      "cause": "unused foreign lifetime parameter"
+    },
+    "ordinary-call": {
+      "sha256": "95d31f238ff73118517ef6dbaef3217ed2e736ba5f00ff2eca9fa5a373741924",
+      "expected": 0,
+      "cause": "ordinary unsafe direct call"
+    },
+    "safe-call": {
+      "sha256": "84ab6b78bb5c7c8a9af52f1e4543cebdc282c7f58c488b3e07cedb85d4770566",
+      "expected": 1,
+      "cause": "unsafe call"
+    },
+    "wrong-argument": {
+      "sha256": "e2e21839ccf1af7f54d0b6de3ccae5c5d149f06ebab6d85197c7b8cfd6b6962d",
+      "expected": 1,
+      "cause": "actual argument type"
+    },
+    "wrong-result": {
+      "sha256": "7f42bec6bb8d59335c021e2193e0785a1c11b49f4fec1688e83be6990298153a",
+      "expected": 1,
+      "cause": "actual result type"
+    },
+    "const-call": {
+      "sha256": "97bf88706bf02653cd3205f77eafad2b35caf6084e7d845ec5c80d1b22a4d2fc",
+      "expected": 1,
+      "cause": "nonconst foreign call"
+    },
+    "generic-header": {
+      "sha256": "7c74e5f02e6e0483a8e3e5987ddaf0ff7a2fbf950a8b1d854da7c1c178bd71b9",
+      "expected": 1,
+      "cause": "foreign type generics"
+    },
+    "duplicate": {
+      "sha256": "5337cb940099da13718f128c6eaa0200aad3585ccf5a9bce6e3c59836b83486b",
+      "expected": 1,
+      "cause": "duplicate language declaration"
+    },
+    "wrong-target": {
+      "sha256": "a2ab660f1d50fea9e8adad6284769b5448de8a90aa97d2747b516efa9c8f194f",
+      "expected": 1,
+      "cause": "invalid declaration target"
+    },
+    "defined-item": {
+      "sha256": "9f00680f2d6a581b24f37ece5be24faa131edb3076d956c8ee7cafeff0459809",
+      "expected": 0,
+      "cause": "prediction only: weak role on defined function, separate target-profile requirement"
+    },
+    "native": {
+      "sha256": "6546a8ace68695a85a1f7e1fb00fd58a80582527fc9b2359e431cfff62bb685c",
+      "expected": 0,
+      "stdout": "runtime 1 1 1 1 1 5\n"
+    }
+  },
+  "original_sources": {
+    "original-ffi.rs": {
+      "upstream": "library/core/src/ffi/mod.rs",
+      "sha256": "902dad68e446f31f33809bcf2e02f77a0c48b7e10e652f427d43d794cd04340e"
+    },
+    "original-weak.rs": {
+      "upstream": "compiler/rustc_hir/src/weak_lang_items.rs",
+      "sha256": "f68d273741f1e017b8ecab21b8c516002437fe80d65268b90faae8a6c829aad5"
+    },
+    "original-runtime-lint.rs": {
+      "upstream": "compiler/rustc_lint/src/runtime_symbols.rs",
+      "sha256": "e82628a0a93b3717fa9fb5e75da30271bb24a9392e968405595a6bf3a580ac96"
+    },
+    "c_void.md": {
+      "upstream": "library/core/src/ffi/c_void.md",
+      "sha256": "2d622454864a5ed26ec2245470fb19f7082fb813c461f55ca844bf5efb388293"
+    }
+  },
+  "support": "Separately authored sizing/Copy/Destruct foundation reused from CStr packet; exact original c_void and six runtime declarations retained. Whole ffi/module/lint implementation remains required."
+}

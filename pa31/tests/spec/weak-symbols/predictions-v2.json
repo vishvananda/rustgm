@@ -1,0 +1,113 @@
+{
+  "profile": {
+    "compiler": "Rust1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "cap_lints": "allow",
+    "overflow_checks": true,
+    "panic": "abort"
+  },
+  "cases": {
+    "source-v2": {
+      "sha256": "9ebfc4d3db53796fb6b303a05b6a00303d0a6b2c424bfeea0728489cd49fdf1f",
+      "expected": 0,
+      "cause": "actual six foreign declarations"
+    },
+    "safe-header-v2": {
+      "sha256": "5877b66cc623a7b38797fbc3ce4134b94f935d4986229c206be5c530404a5296",
+      "expected": 0,
+      "cause": "ordinary safe foreign declaration"
+    },
+    "changed-prototype-v2": {
+      "sha256": "a31f6c93990b7190c77ec5b4e8a44ab261c67fcaf35bed7c54c861b7f00c62eb",
+      "expected": 0,
+      "cause": "unused changed prototype is ordinary declaration legality"
+    },
+    "rust-abi-v2": {
+      "sha256": "cbdf4eee62c04e4ced29d564d6e4ebeb43632a69cf6feae65c22689264b4a115",
+      "expected": 0,
+      "cause": "unused changed ABI remains ordinary header"
+    },
+    "lifetime-header-v2": {
+      "sha256": "7bb4b7ff074fafa1d06d77adde26572249cc03a16597419eceefe5bdf74517d8",
+      "expected": 0,
+      "cause": "unused foreign lifetime parameter"
+    },
+    "ordinary-call-v2": {
+      "sha256": "6d45300999e0cecbcbb76589ae2309a9c5dba650bf7f63885c308016f87fba39",
+      "expected": 0,
+      "cause": "ordinary unsafe direct call"
+    },
+    "safe-call-v2": {
+      "sha256": "71aad1cb9d08f7dd7188e16d7dd5e080a6d70d9ff03d41ef503a5fcfa15a7f61",
+      "expected": 1,
+      "cause": "unsafe call"
+    },
+    "wrong-argument-v2": {
+      "sha256": "68003a46966d36e7239b956943cd9a750cd5a30c2b20e6170623a2c62fc5b883",
+      "expected": 1,
+      "cause": "actual argument type"
+    },
+    "wrong-result-v2": {
+      "sha256": "76c70498ea344c1ead5534c821db9d3f5aaabf11a4e5455f305a04e8cdd83805",
+      "expected": 1,
+      "cause": "actual result type"
+    },
+    "const-call-v2": {
+      "sha256": "cc0e6878ffd13f715560778385f45d4d99d7a86a23eae1dcb59e1dd43cc521d7",
+      "expected": 1,
+      "cause": "nonconst foreign call"
+    },
+    "generic-header-v2": {
+      "sha256": "79edf83be0921e02cdc9b25e08fd615d1db7a666c1b50ace2ade6bdea89ae2de",
+      "expected": 1,
+      "cause": "foreign type generics"
+    },
+    "duplicate-v2": {
+      "sha256": "91b8e52acc5be4c5442a962120781705ff52605003623a4422e6bbbb927bd2eb",
+      "expected": 1,
+      "cause": "duplicate language declaration"
+    },
+    "wrong-target-v2": {
+      "sha256": "d64f66da8dd38ac1df486a93cc8f318d61dca39df3d5677355b6c3699366ea50",
+      "expected": 1,
+      "cause": "invalid declaration target"
+    },
+    "defined-item-v2": {
+      "sha256": "77526a6984506f76c74a951bcb42e1370af57c1a4c6970addff003fb8d307328",
+      "expected": 1,
+      "cause": "actual weak-only foreign function target; v1 positive prediction disproved independently"
+    },
+    "native-v2": {
+      "sha256": "da05d622a7c477d59607e3b2c437d742bb73e229381187f8ec4eab40cad780ec",
+      "expected": 0,
+      "stdout": "runtime 1 1 1 1 1 5\n"
+    }
+  },
+  "original_sources": {
+    "original-ffi.rs": {
+      "upstream": "library/core/src/ffi/mod.rs",
+      "sha256": "902dad68e446f31f33809bcf2e02f77a0c48b7e10e652f427d43d794cd04340e"
+    },
+    "original-weak.rs": {
+      "upstream": "compiler/rustc_hir/src/weak_lang_items.rs",
+      "sha256": "f68d273741f1e017b8ecab21b8c516002437fe80d65268b90faae8a6c829aad5"
+    },
+    "original-runtime-lint.rs": {
+      "upstream": "compiler/rustc_lint/src/runtime_symbols.rs",
+      "sha256": "e82628a0a93b3717fa9fb5e75da30271bb24a9392e968405595a6bf3a580ac96"
+    },
+    "c_void.md": {
+      "upstream": "library/core/src/ffi/c_void.md",
+      "sha256": "2d622454864a5ed26ec2245470fb19f7082fb813c461f55ca844bf5efb388293"
+    }
+  },
+  "support": "Separately authored sizing/Copy/Destruct foundation reused from CStr packet; exact original c_void and six runtime declarations retained. Whole ffi/module/lint implementation remains required.",
+  "prior": "v1 original sources/diagnostics retained; missing actual include_str setup, not semantic parity",
+  "builtin_macro": {
+    "source": "original-macros.rs",
+    "sha256": "9784131e43d255fed7a07ae18cbc72748eedbebe65dfcefeee999989289df30c",
+    "interval": "original-include-str.rs",
+    "interval_sha256": "0b07dd82e8199c91e0727e6b69dff4d8727d65b95c0c7a121ec474bef7ccb5f6"
+  }
+}
