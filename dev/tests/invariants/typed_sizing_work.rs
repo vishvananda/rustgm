@@ -28,7 +28,7 @@ fn observe(source: &str) -> Result<(usize, usize)> {
                     .state
                     .canonical_trait_proofs
                     .as_deref()
-                    .map(|reuse| reuse.observations())
+                    .map(selection::Reuse::observations)
             );
             observed = Some((
                 checker.facts.body_work.inference_steps - first.0,
