@@ -9,10 +9,11 @@ when the actual declaration carries that attribute.
 
 The non-trait Drop target remains a negative. Pinned Rust accepts both unused
 alternative Drop signatures; the initial contrary predictions and diagnostics are
-retained. These Rust-positive implementation gaps remain in required-cases.tsv
-under PA31 source declarations and PA26 demanded destructor contracts. The
-existing candidate test explicitly preserves its current consumer-profile fences,
-without treating them as Rust language rejections. No cleanup,
+retained. These Rust-positive cases now pass the candidate declaration regression
+and join cases.tsv. Exact destructor contracts apply only when actual consumers
+need implementation registration. The
+[complete source packet](../full-drop-source/README.md) additionally qualifies
+real provided bodies and ordinary/pinned/generic runtime cleanup. No cleanup,
 const effect, implementation or executable body permission follows from this
 header packet. Full destruction contracts and authenticated transport remain
 required; this finite maintainer packet does not activate a planned assignment.

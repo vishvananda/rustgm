@@ -1,0 +1,12 @@
+whole.rs	0
+drop.rs	0
+pin-drop.rs	0
+empty.rs	1
+both.rs	1
+wrong-receiver.rs	1
+wrong-result.rs	1
+explicit-drop.rs	1
+explicit-pin.rs	1
+provided-call.rs	1
+generic-drop.rs	0
+generic-pin.rs	0

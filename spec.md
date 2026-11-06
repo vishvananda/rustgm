@@ -136,6 +136,24 @@ explicit transport requirements; matching layouts grant no type identity.
 
 ### Upstream library boundary
 
+Unused source Drop declarations retain ordinary Rust header legality. Enforce the
+executable destructor profile when exhaustive registration finds actual impls;
+declaration completion alone supplies no cleanup, Copy or const authority. A
+pin-only override retains its real checked receiver and implementation mapping.
+Its cleanup recipe names the actual provided `Drop::drop` callable and signature,
+then substitutes the concrete Self through the charged canonical callable path.
+The original provided body passes normal materialization and trait/loan checks;
+do not synthesize its forwarding operation or call the pinned override with a
+mutable-reference ABI. The recipe's exact callable identity remains mandatory.
+Use the interned signature's cached parameter summary for the direct-call fast
+path, preserving bounded shared recipes for generic applications and arrays.
+Only a genuine member's own provided Drop body may explicitly call destructor
+methods. Authenticate both its actual trait parent and body identity; a closure,
+inline constant, subtrait body or impl does not inherit that exemption. Broader
+pin projection/pin_v2, async destruction, CTFE and transported body contracts remain
+separate required work. The [full-source packet](pa31/tests/spec/full-drop-source/README.md)
+records the finite independent and native contract.
+
 AsyncDrop source implementations share ordinary nominal/trait/lifetime coverage
 with synchronous Drop while retaining a separate cold family. Source feature
 async_drop preserves its actual library request identity; only the synchronous

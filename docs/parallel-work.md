@@ -1,3 +1,19 @@
+The [complete Drop checkpoint](parallel/full-drop-source-checkpoint.md) qualifies
+both legal unused alternate headers, all12 original-source outcomes and4 actual
+ordinary/pinned/generic native traces. CLI9ebf8ae5 preserves original core at
+LIB-171 AsyncIterator in20.8564s/375opens; all722 inputs/configuration/limits are
+unchanged. Current/predecessor pins are9ebf8ae5/15ac6c1c;8d4a4ff3 is retired and
+pruned. All72 exclusive A/A+ABBA samples retain output equality; noisy ratios are
+recorded without broad performance claims. Full42151987920 passes release/course,
+native and debug, then fails only the independent checker compiling raw retained
+modules as standalone programs. Its frozen-provider repair now passes18 upstream
+checks,2 targeted harness guards and the preceding full282-test harness. Full
+successor qualification remains pending. No whole PA after24 or original
+core/alloc/std artifact is complete. The existing two6.1-sol/high workers continue
+AsyncIterator receiver inference and real const value history; the new mfield
+false acceptance blocks const-consumer integration. Keep2heavy,16GiB caps,
+150GiB reserve, existing warm btrfs trees and <=300s local batches.
+
 # Parallel library bootstrap implementation
 
 The [PA21 signature successor](parallel/pa21-signature-successor.md) records full

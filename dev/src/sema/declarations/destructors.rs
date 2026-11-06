@@ -36,6 +36,9 @@ impl Checker<'_> {
         steps: &mut usize,
         limit: usize,
     ) -> Result<(), Error> {
+        if !pending.is_empty() {
+            crate::sema::compiler_items::require_source_drop_contract(self.report, &self.facts)?;
+        }
         for Pending { header, owner } in pending {
             let key = header.source;
             let method = header

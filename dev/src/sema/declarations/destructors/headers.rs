@@ -90,13 +90,16 @@ pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Heade
         let definition = &report.resolution.definitions[member.definition.0 as usize];
         let header = &mut headers[header];
         if definition.kind != DefKind::Function
-            || report.package.names.get(definition.name) != "drop"
+            || !matches!(
+                report.package.names.get(definition.name),
+                "drop" | "pin_drop"
+            )
             || header.method.is_some()
         {
             return Err(Declarations::error(
                 report,
                 header.source,
-                "Drop requires exactly the drop method and no other associated items",
+                "Drop requires exactly one drop or pin_drop method and no other associated items",
             ));
         }
         let key = definition.node.ok_or_else(|| {

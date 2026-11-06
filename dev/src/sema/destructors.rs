@@ -5,6 +5,7 @@ use crate::{
     resolve::{model::DefId, unit::NodeKey},
     types::{ItemId, RegionId, TypeId, outlives::Pair, region_graph},
 };
+pub(crate) use instances::cleanup_method;
 pub use instances::select;
 
 pub struct Coverage {

@@ -1,0 +1,111 @@
+{
+  "state": "frozen before independent/candidate observations",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "original": {
+    "path": "library/core/src/ops/drop.rs",
+    "retained": "pa31/tests/spec/source-const-drop/original/drop.rs",
+    "sha256": "1d91c5e4e5868e8d2e6860da6fb5353f69172623a8ea7b9d7969e1ebd0fe7055"
+  },
+  "primary_laws": {
+    "compiler/rustc_hir_typeck/src/callee.rs": "Only genuine members whose current body parent is the actual Drop trait may call its destructor methods. A subtrait bridge is not exempt.",
+    "compiler/rustc_hir_analysis/src/check/always_applicable.rs": "Actual Drop impls must implement exactly one of drop and pin_drop; pin_v2 and feature authority remain separate required obligations."
+  },
+  "cases": [
+    {
+      "file": "whole.rs",
+      "sha256": "dfd9ba573ddfaac897a6050da29b6a026f908c709e64f53dce492b66c2e41aa9",
+      "expected_status": 0
+    },
+    {
+      "file": "drop.rs",
+      "sha256": "c606cb2d42fc889661c6f152b430181dbaf11bb20d120183ab52c5c46cf613bd",
+      "expected_status": 0
+    },
+    {
+      "file": "pin-drop.rs",
+      "sha256": "7e6ed767eae7815b4b128b2151f7ccb272dbfb46c5d3fcd72d8a908a6ff67dae",
+      "expected_status": 0
+    },
+    {
+      "file": "empty.rs",
+      "sha256": "8894a8e27ba2817a4c96e348171f5eee2a8a55546e0c813a364e2c253c38d907",
+      "expected_status": 1
+    },
+    {
+      "file": "both.rs",
+      "sha256": "d130c66eb87abe7c1a01f4f3d46808050be9fb247945476deb1f50e4b8f674b7",
+      "expected_status": 1
+    },
+    {
+      "file": "wrong-receiver.rs",
+      "sha256": "ce7ad87e854fda51d961d36e2f7a104d04ccb36beb927b08fea6b07629219746",
+      "expected_status": 1
+    },
+    {
+      "file": "wrong-result.rs",
+      "sha256": "dd749a2cebc67e6af3bb4f53fa019f40ebfdcf07e80adb83ace7eed0daffa1e9",
+      "expected_status": 1
+    },
+    {
+      "file": "explicit-drop.rs",
+      "sha256": "dbeb7b884e3f88d8bde1c1a43302ce3671228f61b7e7d29dd1442c1771be0f48",
+      "expected_status": 1
+    },
+    {
+      "file": "explicit-pin.rs",
+      "sha256": "bad1d323dff4d65be6ff10bf7cd8e5c742e6dca296a58414ddf96d643df4f191",
+      "expected_status": 1
+    },
+    {
+      "file": "provided-call.rs",
+      "sha256": "1f4ef9d695723d679e9a6047356d8e692f601681e14cf45e4168dcd97fd2d1ba",
+      "expected_status": 1
+    },
+    {
+      "file": "generic-drop.rs",
+      "sha256": "3d1fc37da0a13e953b8587a22479f26079320ed8210122378fb801e1d1862129",
+      "expected_status": 0
+    },
+    {
+      "file": "generic-pin.rs",
+      "sha256": "8be5d7e7d40d1eaab8d6423ec8dbb620ef6571f05cb3e3d8052bfafa6d5e7276",
+      "expected_status": 0
+    }
+  ],
+  "native": [
+    {
+      "file": "drop.rs",
+      "observer": "observe.c",
+      "stdout": "23 7\n",
+      "status": 0
+    },
+    {
+      "file": "pin-drop.rs",
+      "observer": "observe.c",
+      "stdout": "23 7\n",
+      "status": 0
+    },
+    {
+      "file": "generic-drop.rs",
+      "observer": "observe.c",
+      "stdout": "17 7\n",
+      "status": 0
+    },
+    {
+      "file": "generic-pin.rs",
+      "observer": "observe.c",
+      "stdout": "19 7\n",
+      "status": 0
+    }
+  ],
+  "scope": "Actual complete source and ordinary/pinned destructor implementation paths, not async destruction or authenticated metadata closure.",
+  "fixture_repair": "All12 metadata predictions already matched; native emission requires the actual compiler drop_glue entry. Foundation now embeds its unchanged original source function. All original Drop bytes and predictions remain unchanged; failed attempt retained.",
+  "foundation_drop_glue": {
+    "path": "library/core/src/ptr/mod.rs",
+    "source_slice_sha256": "f7cb585a6618ff571c542a0e9a092d1553cda9989a48e251dd3e769278e4f15e"
+  },
+  "primary_source_sha256": {
+    "compiler/rustc_hir_typeck/src/callee.rs": "12717500fbf916e353151ee4a51972115c940a6e5e74ef831677a0cfdf91e2ab",
+    "compiler/rustc_hir_analysis/src/check/always_applicable.rs": "f279b9a598cb529e02d3b703b32ec541ec6bef5b88fab4d171e7dbe041637c50"
+  }
+}

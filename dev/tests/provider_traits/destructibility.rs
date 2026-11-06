@@ -43,14 +43,15 @@ fn source_destruction_headers_retain_real_declarations_without_execution_permiss
     Ok(())
 }
 #[test]
-fn source_drop_targets_validate_and_wider_unused_signatures_stay_fenced() -> TestResult {
-    for tail in [
-        r#"#[lang="drop"]pub struct Drop;"#,
-        r#"#[lang="drop"]pub const trait Drop{fn drop(self);}"#,
-        r#"#[lang="drop"]pub const trait Drop{fn drop(&mut self)->u8;}"#,
+fn source_drop_declarations_preserve_unused_signature_legality() -> TestResult {
+    for (name, accepted) in [
+        ("not-trait", false),
+        ("by-value", true),
+        ("wrong-result", true),
     ] {
-        let report = report(&[BASE, tail].concat())?;
-        assert!(sema::declarations::analyze(&report).is_err(), "{tail}");
+        let text = crate::resolve::fixture(&format!("pa31/tests/spec/destruct-header/{name}.rs"))?;
+        let result = report(&text).and_then(|report| Ok(sema::declarations::analyze(&report)?));
+        assert_eq!(result.is_ok(), accepted, "{name}");
     }
     Ok(())
 }
