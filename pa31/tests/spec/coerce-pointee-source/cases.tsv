@@ -1,0 +1,17 @@
+whole.rs	0
+renamed.rs	0
+unused-member.rs	0
+unsafe-header.rs	0
+const-header.rs	0
+auto-header.rs	0
+duplicate.rs	1
+generic-header.rs	1
+wrong-target.rs	1
+manual-struct.rs	1
+manual-scalar.rs	1
+automatic-spoof.rs	1
+macro-spoof.rs	1
+blanket.rs	1
+negative.rs	1
+lookalike.rs	0
+ordinary-native.rs	0

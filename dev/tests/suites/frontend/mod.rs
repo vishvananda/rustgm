@@ -15,6 +15,8 @@ mod callback_provider;
 mod capped_cli;
 #[path = "../../cell_sources.rs"]
 mod cell_sources;
+#[path = "../../coerce_validation_source.rs"]
+mod coerce_validation_source;
 #[path = "../../coercion_provider.rs"]
 mod coercion_provider;
 #[path = "../../crate_expansion.rs"]

@@ -1,5 +1,6 @@
 //! Retain complete impl applications; headers alone do not prove an implementation.
 mod admissible_parameters;
+mod coerce_validation;
 mod constants;
 mod copying;
 mod implementation_domains;
@@ -238,6 +239,7 @@ impl Checker<'_> {
         source: NodeKey,
         definition: DefId,
     ) -> Result<(), Error> {
+        self.require_pointee_validation_origin(source, definition)?;
         if self
             .facts
             .source_bindings

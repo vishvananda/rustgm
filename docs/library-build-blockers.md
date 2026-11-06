@@ -12,8 +12,10 @@ public tests in203.48s and6 native tests/17 executables plus fullPA18 in64.50s.
 Actual from_yeet generic dispatch and conditional CTFE initialization/cleanup
 execute real bodies and match independent Rust. Full42214520487 failed after2762
 private and2193 regular public passes; its two Root regressions now have passing
-public controls. The corrected private tests/new flag adversaries and full
-successor remain pending. The [factory algorithm checkpoint](parallel/nominal-factory-scaling.md)
+public controls. Full successor
+[42220745796](https://github.com/vishvananda/rustgm/actions/runs/42220745796)
+on main6694351ed now passes both fast and complete qualification, including the
+corrected private controls and flag adversaries. The [factory algorithm checkpoint](parallel/nominal-factory-scaling.md)
 retains linear-work invariants and48 immutable A/A+ABBA observations.
 
 The [AsyncIterator/Field main join](parallel/async-iterator-main-join.md) passes57

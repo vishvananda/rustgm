@@ -10,6 +10,12 @@ use crate::{
 impl Report {
     /// Data about an authenticated generated member, never trait/const permission.
     pub(crate) fn derived_const_parameter_impl(&self, site: NodeKey) -> Result<bool, Error> {
+        self.derived_builtin_impl(site, Builtin::ConstParamTy)
+    }
+    pub(crate) fn derived_coerce_pointee_impl(&self, site: NodeKey) -> Result<bool, Error> {
+        self.derived_builtin_impl(site, Builtin::CoercePointee)
+    }
+    fn derived_builtin_impl(&self, site: NodeKey, role: Builtin) -> Result<bool, Error> {
         let Some(source) = self.package.source_core() else {
             return Ok(false);
         };
@@ -53,14 +59,14 @@ impl Report {
             .definitions
             .get(member.definition)
             .ok_or_else(|| error("derived impl lost its actual definition"))?;
-        if !matches!(definition.body, Body::Builtin(Builtin::ConstParamTy)) {
+        if !matches!(definition.body, Body::Builtin(actual) if actual == role) {
             return Ok(false);
         }
         let entry = self.literal_transaction(index)?;
         self.expanded_derive(entry.owner, entry.effect)?;
         if node.span.start < member.generated.start || node.span.end > member.generated.end {
             return Err(error(
-                "ConstParamTy impl escaped its actual generated member",
+                "builtin derive impl escaped its actual generated member",
             ));
         }
         Ok(true)

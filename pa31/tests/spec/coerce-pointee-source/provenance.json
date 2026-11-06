@@ -1,0 +1,10 @@
+{
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "path": "library/core/src/marker.rs",
+  "sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+  "start_byte": 51407,
+  "end_byte_exclusive": 51590,
+  "fragment_sha256": "209ca11751ae9147957fc494402b7156eefbf93a3dcae2b7a2a90c0daaa53f9d",
+  "compiler_law_path": "compiler/rustc_hir_analysis/src/coherence/builtin.rs",
+  "compiler_law_sha256": "7367f1f3a8e4f31c398f17300c24061589ef30de04aaa98d51df368539ec7c4d"
+}

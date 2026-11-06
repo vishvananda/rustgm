@@ -229,3 +229,55 @@ fn derived_payloads_require_the_actual_marker_on_each_instantiated_child() -> Te
     assert!(!error.contains("budget"), "{error}");
     Ok(())
 }
+
+#[test]
+fn another_builtin_derive_cannot_assert_coerce_pointee_validity() -> TestResult {
+    let mut report = resolved(&source("actual-source")?)?;
+    let sites = report
+        .resolution
+        .definitions
+        .iter()
+        .filter_map(|definition| definition.node)
+        .collect::<Vec<_>>();
+    let mut selected = None;
+    for site in sites {
+        if report.derived_const_parameter_impl(site)? {
+            selected = Some(site);
+            break;
+        }
+    }
+    let site = selected.ok_or("actual generated ConstParamTy implementation")?;
+    assert!(!report.derived_coerce_pointee_impl(site)?);
+    let span = report
+        .package
+        .unit(site.file)
+        .configured
+        .ast
+        .node(site.node)
+        .span;
+    let origin = report
+        .package
+        .origin(site.file, span.start)
+        .ok_or("derived origin")?;
+    let index = usize::try_from(
+        origin
+            .introduction
+            .0
+            .checked_sub(1)
+            .ok_or("actual derive introduction")?,
+    )?;
+    let definition = report
+        .invocations
+        .get(index)
+        .ok_or("actual derive member")?
+        .definition;
+    assert!(matches!(
+        report.definitions[definition].body,
+        Body::Builtin(Builtin::ConstParamTy)
+    ));
+    report.definitions[definition].body = Body::Builtin(Builtin::CoercePointee);
+    assert!(report.derived_coerce_pointee_impl(site).is_err());
+    report.definitions[definition].body = Body::Builtin(Builtin::ConstParamTy);
+    assert!(report.derived_const_parameter_impl(site)?);
+    Ok(())
+}

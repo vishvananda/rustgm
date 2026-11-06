@@ -373,6 +373,7 @@ impl Checker<'_> {
             )
         };
         self.validate_source_copy_impl(source, predicate, &mut proof)?;
+        self.validate_pointee_validation_target(source, predicate)?;
         if !reservation {
             self.validate_source_constant_type_impl(owner, source, predicate, &mut proof)?;
         }

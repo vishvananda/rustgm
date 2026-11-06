@@ -1224,6 +1224,19 @@ existing artifact profiles closed until their per-policy relationship columns
 and fresh permission consumers are complete. See the
 [ConstParamTy checkpoint](docs/pa31-const-parameter-derive-prerequisite.md).
 
+The source `CoercePointeeValidated` role preserves its actual ordinary trait
+header and required members. Every explicit implementation, including negative
+and blanket implementations, requires the genuine builtin derive origin. Read
+that origin through the existing selected-member transaction, whole source/header
+and incarnation authentication shared with `ConstParamTy`; documentary
+`automatically_derived` attributes and other builtin derives confer no authority.
+Require the completed actual target to be a nonempty transparent struct at normal
+implementation validation. Gate these queries on the actual role identity before
+reading origins or fields; ordinary traits with the same spelling retain their
+normal behavior. This supplies neither automatic implementation evidence nor
+nominal coercion, dispatch, executable derive output or metadata permission.
+Full builtin generation and generic custom auto traits remain required work.
+
 Former-name links share that same cold relationship owner with an explicit kind;
 they never enable the canonical feature. Project canonical feature definitions
 once, keeping the first unstable declaration and checking stable/unstable or

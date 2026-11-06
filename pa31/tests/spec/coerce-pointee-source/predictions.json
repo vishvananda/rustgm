@@ -1,0 +1,120 @@
+{
+  "contract": "Frozen before candidate changes; actual pinned marker trait, genuine unused-header legality, strict forbidden user/spoofed impls, ordinary same-name trait, and real builtin derive positive retained as required work.",
+  "inputs": [
+    {
+      "case": "whole",
+      "path": "pa31/tests/spec/coerce-pointee-source/whole.rs",
+      "status": 0,
+      "sha256": "fbc352b632852022282cc8158a8041061c5208468bd9f392d8c2890c1b180525"
+    },
+    {
+      "case": "renamed",
+      "path": "pa31/tests/spec/coerce-pointee-source/renamed.rs",
+      "status": 0,
+      "sha256": "d9c0bd9eeef317af3ece0d6ea0bfdbd4e1e239b8295e9a5992d7c99f77664286"
+    },
+    {
+      "case": "unused-member",
+      "path": "pa31/tests/spec/coerce-pointee-source/unused-member.rs",
+      "status": 0,
+      "sha256": "b6315717235288aacefdea614e25e0513e6f351c08186b7c16cf574080c28fad"
+    },
+    {
+      "case": "unsafe-header",
+      "path": "pa31/tests/spec/coerce-pointee-source/unsafe-header.rs",
+      "status": 0,
+      "sha256": "b6bda1108937ff896ddc6d951422074de892f5f74358aa0c040fa8df14271349"
+    },
+    {
+      "case": "const-header",
+      "path": "pa31/tests/spec/coerce-pointee-source/const-header.rs",
+      "status": 0,
+      "sha256": "0a7725685ae23480e317d9013c763193efac64c5c0f74e1d36d0a796baba2ca6"
+    },
+    {
+      "case": "auto-header",
+      "path": "pa31/tests/spec/coerce-pointee-source/auto-header.rs",
+      "status": 0,
+      "sha256": "84eec94032c141979e0e377f9caff015416251e36bb8c677d792c3a8540a4622"
+    },
+    {
+      "case": "duplicate",
+      "path": "pa31/tests/spec/coerce-pointee-source/duplicate.rs",
+      "status": 1,
+      "sha256": "13e8f21063b096cc7e657accf0033bc4c53d045cb9d6b2fcbdaa51dc1dcccf32"
+    },
+    {
+      "case": "generic-header",
+      "path": "pa31/tests/spec/coerce-pointee-source/generic-header.rs",
+      "status": 1,
+      "sha256": "514801ff0e58cd082be62f3c73752140868a1d0e27d1e1080f268f4159228a13"
+    },
+    {
+      "case": "wrong-target",
+      "path": "pa31/tests/spec/coerce-pointee-source/wrong-target.rs",
+      "status": 1,
+      "sha256": "d77723f1ce62220e45f6debcf17778c3e0066dad6ad4c2334c1367ce1fef3ac3"
+    },
+    {
+      "case": "manual-struct",
+      "path": "pa31/tests/spec/coerce-pointee-source/manual-struct.rs",
+      "status": 1,
+      "sha256": "3408e85e9e3add8d5d3d20494cf70b5457a833033cfce5910b1a77eb4c69c71c"
+    },
+    {
+      "case": "manual-scalar",
+      "path": "pa31/tests/spec/coerce-pointee-source/manual-scalar.rs",
+      "status": 1,
+      "sha256": "da2973ff9791e799c0fc5e7de3f0ed6aff0dc604276e609b491f051c2e172bac"
+    },
+    {
+      "case": "automatic-spoof",
+      "path": "pa31/tests/spec/coerce-pointee-source/automatic-spoof.rs",
+      "status": 1,
+      "sha256": "a34a1b0e5d476d2d7839971951991a83bfd550f0eb4d28d277a4af89d600c8e3"
+    },
+    {
+      "case": "macro-spoof",
+      "path": "pa31/tests/spec/coerce-pointee-source/macro-spoof.rs",
+      "status": 1,
+      "sha256": "d73ec61cc3e27f9c93be55cb62333a79f912a2171c4459a414340fca69b9f00d"
+    },
+    {
+      "case": "blanket",
+      "path": "pa31/tests/spec/coerce-pointee-source/blanket.rs",
+      "status": 1,
+      "sha256": "c532eb293b7e1c43a5e4084e64de0c4e48b1737a4530da4a1e42a3ee09e0c2a8"
+    },
+    {
+      "case": "negative",
+      "path": "pa31/tests/spec/coerce-pointee-source/negative.rs",
+      "status": 1,
+      "sha256": "0bf73c329c45acf4075c652f806e04e9df25e07dade93b8d5d6aa9ebe9510dae"
+    },
+    {
+      "case": "lookalike",
+      "path": "pa31/tests/spec/coerce-pointee-source/lookalike.rs",
+      "status": 0,
+      "sha256": "fef1e6f505304ae34dc0bd70d8c2c79004a640b5a074123c94d303e5ba1a2492"
+    },
+    {
+      "case": "ordinary-native",
+      "path": "pa31/tests/spec/coerce-pointee-source/ordinary-native.rs",
+      "status": 0,
+      "sha256": "fef1e6f505304ae34dc0bd70d8c2c79004a640b5a074123c94d303e5ba1a2492"
+    },
+    {
+      "case": "actual-derive",
+      "path": "pa31/tests/spec/coerce-pointee-source/actual-derive.rs",
+      "status": 0,
+      "sha256": "8e084e63fa3d74d966929621d4df71136d2e77d3b4ed80971e5070840ace8e94",
+      "candidate_contract": "Required actual builtin derive producer and validation; not claimed complete by declaration checkpoint."
+    }
+  ],
+  "native": {
+    "source": "ordinary-native.rs",
+    "expected": "23 47\n"
+  },
+  "reference_receipt": "obj/parallel/coerce-pointee-contracts/reference-v2/receipt.json",
+  "reference_sha256": "f4c7c44b23676eef9b082cb8a6aed8b4177f4da9e9e94eafb42e9d89d98df6b5"
+}

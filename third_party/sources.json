@@ -344,6 +344,15 @@
       "adaptation": "none; full original bytes retained as reference; exact from_yeet function slice and explicit-call companions independently qualified; whole module qualification remains required",
       "oracle": "source-fragment",
       "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/marker.rs",
+      "destination": "pa31/tests/spec/coerce-pointee-source/original-marker.rs",
+      "sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+      "adaptation": "none; full original retained as reference; exact CoercePointeeValidated slice is qualified independently, full marker module remains required",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
     }
   ]
 }

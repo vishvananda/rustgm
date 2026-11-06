@@ -3,7 +3,8 @@ passes26 public and6 native tests/17 executables plus fullPA18. All3635 source
 fingerprints match main. CLIf90679ab advances unchanged722-input core to LIB181
 CoercePointeeValidated in30.0521s/375opens; no artifact or wholePA release.
 Full42214520487 fails two Root regressions after2762private/2193public passes;
-both now have passing public regressions, with private/full successor pending.
+both are repaired, and full successor42220745796 on main6694351ed passes all
+fast/private/public/course/native/debug/independent qualification stages.
 Root owns the next marker producer; existing workers own actual nominal wrapper
 conversion and source future-helper preflight. Keep warm trees,2heavy/16GiB/
 150GiB/<=300s guards. Conditional flags are integrated; broader cleanup remains.
