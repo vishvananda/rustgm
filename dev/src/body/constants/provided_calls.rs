@@ -232,6 +232,9 @@ pub(super) fn closed_request(
     let node = facts
         .node(call.site)
         .ok_or("const member lost its typed site")?;
+    if let Some(crate::sema::model::Operation::Field { plan: Some(id), .. }) = node.operation {
+        return closed_field(report, facts, body, source, call, id, work);
+    }
     let Some(crate::sema::model::Operation::Call {
         signature,
         source_use,
@@ -276,6 +279,49 @@ pub(super) fn closed_request(
         direct_source(report, facts, call, definition, work)?;
     }
     Ok(true)
+}
+
+/// A Field expression owns several actual calls, each with its real reference
+/// result. Its final selected field type is not any call's result contract.
+fn closed_field(
+    report: &crate::resolve::expansion::Report,
+    facts: &Declarations,
+    body: &Body,
+    source: crate::resolve::unit::NodeKey,
+    call: Call,
+    id: crate::sema::bodies::ProtocolPlanId,
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    work.charge(8)?;
+    let plan = id.current(facts, source, call.site)?;
+    let crate::sema::protocol_plans::Kind::Field { steps, .. } = plan.kind else {
+        return Err("const field call changed its actual protocol");
+    };
+    work.charge(
+        steps
+            .end
+            .saturating_sub(steps.start)
+            .checked_ilog2()
+            .map_or(1, |n| n as usize + 2),
+    )?;
+    crate::sema::protocol_plans::access::lookup(
+        report,
+        facts,
+        plan,
+        source,
+        crate::sema::iteration::Call {
+            callable: call.target,
+            signature: call.signature,
+        },
+    )
+    .map_err(|_| "const field call lost its actual owner, source or complete call")?;
+    if !matches!(facts.types.kind(call.signature), Some(Kind::Function { result, .. }) if result == call.result)
+    {
+        return Err("const field call changed its actual reference result");
+    }
+    closed_member(facts, call, work)?;
+    let effect = plan.source_use.effect_for(facts, source)?;
+    closed_effect(report, facts, body, source, effect, work)
 }
 
 /// A retained Index call produces a reference before its source expression forms

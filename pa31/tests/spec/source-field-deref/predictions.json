@@ -1,0 +1,163 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "edition": 2024,
+  "cases": [
+    {
+      "name": "shared.rs",
+      "path": "pa31/tests/spec/source-field-deref/shared.rs",
+      "sha256": "6ed2f6b37b2cd218910131c886a1a8d7a3f7b209309973d624460f5ce09099c9",
+      "rustc_status": 0,
+      "purpose": "shared source dereference field"
+    },
+    {
+      "name": "mutable.rs",
+      "path": "pa31/tests/spec/source-field-deref/mutable.rs",
+      "sha256": "ce7737b991c17b53e868a12456bc739f56b034bcf1b54d87a85b5f0d9fc77697",
+      "rustc_status": 0,
+      "purpose": "actual mutable source dereference field"
+    },
+    {
+      "name": "late-mut.rs",
+      "path": "pa31/tests/spec/source-field-deref/late-mut.rs",
+      "sha256": "fb6182e35f6d62b45d43954b3ae102277d1ee1df15f47b0f6afe99e5b9972bbe",
+      "rustc_status": 0,
+      "purpose": "late method receiver mutability chooses only final DerefMut"
+    },
+    {
+      "name": "nested.rs",
+      "path": "pa31/tests/spec/source-field-deref/nested.rs",
+      "sha256": "95bfce18a105034e462fddc44955159c5ed7b089f3ea49ee6c34f276c99473e3",
+      "rustc_status": 0,
+      "purpose": "every source dereference step is preserved"
+    },
+    {
+      "name": "shadow.rs",
+      "path": "pa31/tests/spec/source-field-deref/shadow.rs",
+      "sha256": "471e400ba143fd947f1492131217889e719c96ba911a3bd3b963009f084be279",
+      "rustc_status": 0,
+      "purpose": "actual field wins without demanding a Deref implementation"
+    },
+    {
+      "name": "missing-mut.rs",
+      "path": "pa31/tests/spec/source-field-deref/missing-mut.rs",
+      "sha256": "b8d5dc282f9cc44b1fdbb19383e683be1490f6085e3f35dc1ec8ff963d037c49",
+      "rustc_status": 1,
+      "purpose": "DerefMut implementation"
+    },
+    {
+      "name": "immutable.rs",
+      "path": "pa31/tests/spec/source-field-deref/immutable.rs",
+      "sha256": "8f5416c81e17c3e58b636283cf37aa9e271069451c263fc17687f8bc9fc58582",
+      "rustc_status": 1,
+      "purpose": "mutable place"
+    },
+    {
+      "name": "loan.rs",
+      "path": "pa31/tests/spec/source-field-deref/loan.rs",
+      "sha256": "c28a8bc1e3a94971ef39173334bb8300465d851e711a99af0ba9f5783f073ecb",
+      "rustc_status": 1,
+      "purpose": "borrow conflict"
+    },
+    {
+      "name": "escape.rs",
+      "path": "pa31/tests/spec/source-field-deref/escape.rs",
+      "sha256": "3fac6a6f1f9c8948d71c1f9a363d9c91e102bf8fccb822e2dbfb4fa3a7196972",
+      "rustc_status": 1,
+      "purpose": "borrow escape"
+    },
+    {
+      "name": "noncopy.rs",
+      "path": "pa31/tests/spec/source-field-deref/noncopy.rs",
+      "sha256": "a1230ada5f09ecff6e3a57186af23e36d47eb818c9d0a48e366aaa6f43afcb22",
+      "rustc_status": 1,
+      "purpose": "move through borrowed place"
+    },
+    {
+      "name": "packed.rs",
+      "path": "pa31/tests/spec/source-field-deref/packed.rs",
+      "sha256": "5014cd09bdb5e3bed5f7fbc7c715a1f1af12a8c2604622ba1e6304eff4ebb9dd",
+      "rustc_status": 1,
+      "purpose": "packed implicit receiver borrow"
+    },
+    {
+      "name": "raw.rs",
+      "path": "pa31/tests/spec/source-field-deref/raw.rs",
+      "sha256": "3cee34a62217229b4bee80e14c47db21f911cfb1dcae735325366161a2e911f7",
+      "rustc_status": 1,
+      "purpose": "raw pointers do not implicitly dereference"
+    },
+    {
+      "name": "raw-explicit.rs",
+      "path": "pa31/tests/spec/source-field-deref/raw-explicit.rs",
+      "sha256": "62e26657e3e6f2c6561338a2c38fd1ed90be41e38a845fe68934f45c7bcf8bff",
+      "rustc_status": 1,
+      "purpose": "explicit raw dereference still denies dangerous implicit autoref by default"
+    },
+    {
+      "name": "cycle.rs",
+      "path": "pa31/tests/spec/source-field-deref/cycle.rs",
+      "sha256": "3213197ece7ce1f45b7b1ec9ce031253dfaff133f299dd0b7cf1067003be0aab",
+      "rustc_status": 1,
+      "purpose": "real repeated canonical subject/target cycle"
+    },
+    {
+      "name": "const-mut.rs",
+      "path": "pa31/tests/spec/source-field-deref/const-mut.rs",
+      "sha256": "775f4a25ba19e356d133818b2b6dbe87fee9a5a343fcfc056ca5df29f3b2d2af",
+      "rustc_status": 0,
+      "purpose": "const mutable field uses no nonconst shared method"
+    },
+    {
+      "name": "const-shared-nonconst.rs",
+      "path": "pa31/tests/spec/source-field-deref/const-shared-nonconst.rs",
+      "sha256": "345edc5f668255703319f655a5555439e3780c1ba44bc5b58e75024b0ad1ed94",
+      "rustc_status": 1,
+      "purpose": "actual nonconst shared method is forbidden in const execution"
+    },
+    {
+      "name": "raw-reference.rs",
+      "path": "pa31/tests/spec/source-field-deref/raw-reference.rs",
+      "sha256": "ebc25f82b3dd1d7b71ffd91d229d989a80d86a31dc01557b55801448310f967a",
+      "rustc_status": 0,
+      "purpose": "genuine explicit reference within actual unsafe context avoids dangerous implicit autoref"
+    },
+    {
+      "name": "native.rs",
+      "path": "pa31/tests/spec/source-field-deref/native.rs",
+      "sha256": "e109fa6c86a2b0a38bc6a56521d7578c6eff90f82461ac45849d7f6f15fb6725",
+      "rustc_status": 0,
+      "purpose": "actual ordinary selected method effects, late mutability, multiple steps, one-time temporary and field shadowing"
+    },
+    {
+      "name": "lifetime.rs",
+      "path": "pa31/tests/spec/source-field-deref/lifetime.rs",
+      "sha256": "b117f7c216879684c4dff239ba855b85600153def625b47ca31697345a6dfe42",
+      "rustc_status": 0,
+      "purpose": "actual captured target lifetime remains distinct from opened callee aliases"
+    }
+  ],
+  "reviewed_corrections": [
+    {
+      "name": "raw-explicit.rs",
+      "initial": 0,
+      "actual_rustc": 1,
+      "cause": "deny-by-default dangerous_implicit_autorefs even inside unsafe; original source retained unchanged",
+      "replacement_positive": "raw-reference.rs uses actual explicit &*x, not a lint allowance"
+    }
+  ],
+  "native": [
+    {
+      "name": "native.rs",
+      "observer": "observer.c",
+      "observer_sha256": "ddead0a3d7e6d8435ff0a6b10e2fddc388707366880a795a3d60dcdf046a852d",
+      "stdout": "call=1\nshared=13\ncall=2\nlate=23\ncall=3\ncall=1\ntemporary=13\ncall=4\ncall=1\nnested=13\nshadow=41\n"
+    },
+    {
+      "name": "const-mut.rs",
+      "observer": "const-observer.c",
+      "observer_sha256": "a20ccde624b7c4e63587c5e87318d496ef056b61f12420551abcf844ace0222c",
+      "stdout": "const=23\n"
+    }
+  ]
+}

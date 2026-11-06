@@ -1,0 +1,202 @@
+{
+  "scope": "finite genuine AsyncIterator source consumers, typed implicit Field calls, mandatory raw-autoref policy; no generated-coroutine execution claim",
+  "baseline": "d2b62f0c8 + d6218dfd1 via own merges25b29ee53/375ec7002",
+  "public": {
+    "receipt": "obj/qualification/fast/1793950776392062926/receipt.json",
+    "sha256": "c8e19e9cb4496404e9821913b809a3cc00733bf80e8db80f12bf1c3dbbd589c8",
+    "seconds": 13.804520991980098,
+    "total_seconds": 214.01,
+    "exact_tests": 12,
+    "targets": 2,
+    "production_map_sha256": "b143d6cab949ee2be670b6287377b94d26519f5d4300d25f79269a50661cd75f"
+  },
+  "native": {
+    "receipt": "obj/parallel/async-iterator-v1/final-natives/receipt.json",
+    "sha256": "22e2315786dc01df01d6b1a22c8b9f23819f85207cfbd5f630327560fd676811",
+    "seconds": 7.545930488035083,
+    "actual_C_observers": 13,
+    "groups": [
+      "Field2",
+      "AsyncIterator4",
+      "Index7"
+    ],
+    "source_unchanged": true
+  },
+  "source": {
+    "pinned_original": "pa31/tests/spec/async-iterator/original.rs",
+    "sha256": "90d7c43c1335f58e4db6d016db2638a5d14406caf34d12714f626b71d4690e9a",
+    "whole_companion_sha256": "05350cccee0180952df499d6e2d209e653edbe007cc86e9ac177e17b55a055ee",
+    "fixture_map_sha256": "9108a3d6b5b7235fadaad51b9a0c76598dfcc7c8f811351dd7d68c4b33d43db1",
+    "fixtures": {
+      "pa31/tests/spec/async-iterator/bad-body.rs": "5d9ca44d41ced62683cfb6180ca699a3849f5f82dc82d97bd626f7caef73b1b4",
+      "pa31/tests/spec/async-iterator/bad-default.rs": "e19547f6a1eb81e1bf97b499babee6530f0cb906cf0c7510a560c17f2bb6c12c",
+      "pa31/tests/spec/async-iterator/cases.tsv": "32808b693f1e8dcf421f1ace0d2b46a35302f5d8cfb27bd38db1741f5c0b7ae2",
+      "pa31/tests/spec/async-iterator/duplicate.rs": "d1866907ecc83e683a0a72874f74e4ee11ef74296a2d588bf4a6fecbb7318d00",
+      "pa31/tests/spec/async-iterator/escape.rs": "4df8bf4f8ee2fe16259da35e99663d77670e13995fbbb3525ef3c5255b02391c",
+      "pa31/tests/spec/async-iterator/forward.c": "c7c267f11907955608bca292537b28dd3f87bd2785b4705cdfa6813d6b74b854",
+      "pa31/tests/spec/async-iterator/forward.rs": "60abd30a1fd15129c6276b81d9664681f3f23fae94ea955722d0e3e83b820916",
+      "pa31/tests/spec/async-iterator/helpers.c": "dde0da7992d17bb9ea13828158a1e4906e0d099505cd23994c807fae36c39487",
+      "pa31/tests/spec/async-iterator/helpers.rs": "6e0e1a75b4c73b66ecf3df8c544b2d6e45448dc8c4fa78f6229e1b4d3f890e87",
+      "pa31/tests/spec/async-iterator/into.c": "8d92f03c43991750cc53abb236311bb996892de02cafb2d9783a98399d39acc9",
+      "pa31/tests/spec/async-iterator/into.rs": "7f71baa67e424052ebc4170b7ddb8c7ef3c8af78274ce1b97b5543fd5da23c8e",
+      "pa31/tests/spec/async-iterator/native.rs": "64a561165560ce59502764251081affdb06b5480d2978fd70e5c5871982b0eb5",
+      "pa31/tests/spec/async-iterator/no-impl.rs": "b4f9ce37e6680f787589c347b9e0d73a34de55fbbd0ebd1ad517a86f2a33e8a6",
+      "pa31/tests/spec/async-iterator/observe.c": "9e18500e936fc4bea66adaa969625d0c35b615e4baf911ef8cc265d44f92033a",
+      "pa31/tests/spec/async-iterator/ordinary.rs": "e753e133607a86eab452bc605176658c287b28711fe96bd8427ba1e0a9fd15a4",
+      "pa31/tests/spec/async-iterator/original.rs": "90d7c43c1335f58e4db6d016db2638a5d14406caf34d12714f626b71d4690e9a",
+      "pa31/tests/spec/async-iterator/predictions.json": "47836c8a2d0095e44b64c41d466c4abc7ff48066478833ac1424c8e329a9fb3b",
+      "pa31/tests/spec/async-iterator/receiver-captured.rs": "c4347735cd52c7d7064bc5d26adf525758ec28a15026b2e3e6b03e178f611b04",
+      "pa31/tests/spec/async-iterator/receiver-depth-128.rs": "5bcb9a6f144c0f5cdf022672bbd79e771a4e41c1659afd7f0864dcdf55f0f252",
+      "pa31/tests/spec/async-iterator/receiver-depth-32.rs": "b56f0b8831c74bf8b153e1b7341722d6dcdaa9f67353900313591df52f39f051",
+      "pa31/tests/spec/async-iterator/receiver-depth-8.rs": "52facabf8f0651653d543b744aa28e77554c710cbf33acd9d689517277ef4adf",
+      "pa31/tests/spec/async-iterator/receiver-ordinary.rs": "568235ccb60b142e03bc762388e2c81ab41ae0f9dfa3f673228c454359c0d860",
+      "pa31/tests/spec/async-iterator/receiver-plain-escape.rs": "65157499795bac436719eb5db8e98eca2cad7048abe42fcce6564f4cd37948ad",
+      "pa31/tests/spec/async-iterator/receiver-plain-valid.rs": "efb64ec2b87d8a0080ddebb6050708af8ec244b2f1bc662f132ce212f2a897e2",
+      "pa31/tests/spec/async-iterator/receiver-plain.rs": "fe20b2a156cf81d898a0d7e7274cb50613e7b2f540d68f6a371ad9ba967d44cc",
+      "pa31/tests/spec/async-iterator/receiver-wrong-arguments.rs": "3f3d2e0dbeb93d320203b1208d98bd811814d9ba550835a1012cf9f6fd899edd",
+      "pa31/tests/spec/async-iterator/receiver-wrong-lifetime.rs": "e148f2e29986ed9fedddfa2912e278a0399797d065cb3c428ec35e172fa998c5",
+      "pa31/tests/spec/async-iterator/renamed.rs": "d7a27531812a7d92db92b803fc1a5e339b904fdb03349fcf13635090dbe6796b",
+      "pa31/tests/spec/async-iterator/unsafe-impl.rs": "9063345d6f3d5864620638cfdc89482e855dd3888b0108f5297e1b0898dcd964",
+      "pa31/tests/spec/async-iterator/unused-finished.rs": "2c64a8d6b99c462c4d82b2582ea8b90cbeae57e41378a57e26fadc3d4bb45562",
+      "pa31/tests/spec/async-iterator/unused-into.rs": "675fc76d546d2d711f0ceef18fbfd42df190bf5516fccde47524a740b8b03c42",
+      "pa31/tests/spec/async-iterator/unused-pending.rs": "2b965c0d0f8f54c6a3c6e111d4eaf2666b60fe0421993f0ec43a9152e78d2ae8",
+      "pa31/tests/spec/async-iterator/unused-poll.rs": "df1a55afb299ba707c4b6ccb9bce3a789b800887208f49302513165da307420d",
+      "pa31/tests/spec/async-iterator/unused-ready.rs": "1f974ec9d2ed56f1678967d34fd876ccac8fe035bfc81145e782731cb00134d6",
+      "pa31/tests/spec/async-iterator/unused-unsafe.rs": "9c51bb3c4815c712c580196f5f15148c37f4ed9efcb6a3d88673f11721058a69",
+      "pa31/tests/spec/async-iterator/unused.rs": "4d57a2005916956f579415384bb79c1d8b4f7fff320ec84680febcd25234647f",
+      "pa31/tests/spec/async-iterator/whole.rs": "05350cccee0180952df499d6e2d209e653edbe007cc86e9ac177e17b55a055ee",
+      "pa31/tests/spec/async-iterator/wrong-arity.rs": "ddd9dbe34b7e7237ee76de51e28bf3e42d6c1119a0db02136d12faf84a9ed4ba",
+      "pa31/tests/spec/async-iterator/wrong-item.rs": "8a326034500927e610933af1b1b5d08c67df15d93835d5f89624913fbd513c38",
+      "pa31/tests/spec/async-iterator/wrong-receiver.rs": "246b96f3fa25c9c23a1f2a3e07fdcc19b57371b8e059f9136b7e02402dc20c58",
+      "pa31/tests/spec/async-iterator/wrong-result.rs": "7cc1c2bcc3b586c18292d52a5611947641562ec05e5cd073ac780f5117c16ec9",
+      "pa31/tests/spec/async-iterator/wrong-target.rs": "b8d3f8a3554494a56cd7da8fd57d9fa22a625fa7cdc515dac10f3a558e6a4e6e",
+      "pa31/tests/spec/source-field-deref/cases.tsv": "17531c08163bc469f8a379457e5d3a22e15e3ebf73c9e6dbc9eb36c4cda4ee95",
+      "pa31/tests/spec/source-field-deref/const-mut.rs": "775f4a25ba19e356d133818b2b6dbe87fee9a5a343fcfc056ca5df29f3b2d2af",
+      "pa31/tests/spec/source-field-deref/const-observer.c": "a20ccde624b7c4e63587c5e87318d496ef056b61f12420551abcf844ace0222c",
+      "pa31/tests/spec/source-field-deref/const-shared-nonconst.rs": "345edc5f668255703319f655a5555439e3780c1ba44bc5b58e75024b0ad1ed94",
+      "pa31/tests/spec/source-field-deref/cycle.rs": "3213197ece7ce1f45b7b1ec9ce031253dfaff133f299dd0b7cf1067003be0aab",
+      "pa31/tests/spec/source-field-deref/escape.rs": "3fac6a6f1f9c8948d71c1f9a363d9c91e102bf8fccb822e2dbfb4fa3a7196972",
+      "pa31/tests/spec/source-field-deref/immutable.rs": "8f5416c81e17c3e58b636283cf37aa9e271069451c263fc17687f8bc9fc58582",
+      "pa31/tests/spec/source-field-deref/late-mut.rs": "fb6182e35f6d62b45d43954b3ae102277d1ee1df15f47b0f6afe99e5b9972bbe",
+      "pa31/tests/spec/source-field-deref/lifetime.rs": "b117f7c216879684c4dff239ba855b85600153def625b47ca31697345a6dfe42",
+      "pa31/tests/spec/source-field-deref/loan.rs": "c28a8bc1e3a94971ef39173334bb8300465d851e711a99af0ba9f5783f073ecb",
+      "pa31/tests/spec/source-field-deref/missing-mut.rs": "b8d5dc282f9cc44b1fdbb19383e683be1490f6085e3f35dc1ec8ff963d037c49",
+      "pa31/tests/spec/source-field-deref/mutable.rs": "ce7737b991c17b53e868a12456bc739f56b034bcf1b54d87a85b5f0d9fc77697",
+      "pa31/tests/spec/source-field-deref/native.rs": "e109fa6c86a2b0a38bc6a56521d7578c6eff90f82461ac45849d7f6f15fb6725",
+      "pa31/tests/spec/source-field-deref/nested.rs": "95bfce18a105034e462fddc44955159c5ed7b089f3ea49ee6c34f276c99473e3",
+      "pa31/tests/spec/source-field-deref/noncopy.rs": "a1230ada5f09ecff6e3a57186af23e36d47eb818c9d0a48e366aaa6f43afcb22",
+      "pa31/tests/spec/source-field-deref/observer.c": "ddead0a3d7e6d8435ff0a6b10e2fddc388707366880a795a3d60dcdf046a852d",
+      "pa31/tests/spec/source-field-deref/packed.rs": "5014cd09bdb5e3bed5f7fbc7c715a1f1af12a8c2604622ba1e6304eff4ebb9dd",
+      "pa31/tests/spec/source-field-deref/predictions.json": "bc4c13946dd734de60c746aa7823b610cda005763f3900723029905397e48d92",
+      "pa31/tests/spec/source-field-deref/raw-explicit.rs": "62e26657e3e6f2c6561338a2c38fd1ed90be41e38a845fe68934f45c7bcf8bff",
+      "pa31/tests/spec/source-field-deref/raw-reference.rs": "ebc25f82b3dd1d7b71ffd91d229d989a80d86a31dc01557b55801448310f967a",
+      "pa31/tests/spec/source-field-deref/raw.rs": "3cee34a62217229b4bee80e14c47db21f911cfb1dcae735325366161a2e911f7",
+      "pa31/tests/spec/source-field-deref/shadow.rs": "471e400ba143fd947f1492131217889e719c96ba911a3bd3b963009f084be279",
+      "pa31/tests/spec/source-field-deref/shared.rs": "6ed2f6b37b2cd218910131c886a1a8d7a3f7b209309973d624460f5ce09099c9",
+      "pa40/tests/spec/source-field-autorefs/cases.tsv": "349276d772771e59a6586359fec19d45b6d013d60ee0d9303cf814fc71b8457e",
+      "pa40/tests/spec/source-field-autorefs/predictions.json": "9f6c447c67fc477eef0d40615a472a0bb4f2773f0c441eabb22d2623fd4ac0cc",
+      "pa40/tests/spec/source-field-autorefs/raw-allow.rs": "fa3b6a36b5aa9d5a05cae01349cf1ffc373a3d064c032799c06426b3ac3e5b77",
+      "pa40/tests/spec/source-field-autorefs/raw-deny.rs": "db88462cc69618b4c536460340b34ea1b2052658644e1e3752bf5ea4ec7fade7",
+      "pa40/tests/spec/source-field-autorefs/raw-direct.rs": "edca53b32709128bcbbfe28fb61fcd93f96fbf40b4b04a0542f37228d285d6a3",
+      "pa40/tests/spec/source-field-autorefs/raw-expect-missing.rs": "811e83c528dae32ae259654346e27980eb658680ad99cbf52908d5fb0a8e66b6",
+      "pa40/tests/spec/source-field-autorefs/raw-expect.rs": "e6329222f4edc741aa143630541d2fa3b795e269a3656660744e36720cd88b49",
+      "pa40/tests/spec/source-field-autorefs/raw-forbid-allow.rs": "d511740fc0dcd6d7f500401c4f184ef455a16127ce97973a2b3d39c0d1b37cdb",
+      "pa40/tests/spec/source-field-autorefs/raw-warn.rs": "53825eace91a10aff2f395824aaa6632996b273dfec893045290496bb1231508"
+    }
+  },
+  "oracles": {
+    "obj/parallel/async-iterator-v1/field-oracle/receipt.json": {
+      "sha256": "2c4064a1c5f515bd3adcf85f6437d7521658dd4fa487f495f84dfd2d725d96fc",
+      "state": "passed"
+    },
+    "obj/parallel/async-iterator-v1/field-native-oracle/receipt.json": {
+      "sha256": "e6a84272a4c41e0dbb80f49880ee0cb4c8dd15d92d4a7a1d2c404be7d0eae216",
+      "state": "passed"
+    },
+    "obj/parallel/async-iterator-v1/field-lifetime-oracle/receipt.json": {
+      "sha256": "0c4770f1ef6d3cc963f453bfdf4aef6ce14767b23f7095b870bbc16185e76a23",
+      "state": null
+    },
+    "obj/parallel/async-iterator-v1/field-lint-oracle-native/receipt.json": {
+      "sha256": "799df4e9877351d042ba2d46da588b26bc2219dbf3731e5a7c30278d21a69c28",
+      "state": "passed"
+    },
+    "obj/parallel/async-iterator-v1/index-raw-oracle/receipt.json": {
+      "sha256": "516e0ba74d7755f9dbc868d14d668e6c484dd1a4c6da33066c0503e3fdfd65e8",
+      "state": "passed"
+    }
+  },
+  "actual_layout_bytes": {
+    "Policy": 160,
+    "previous_Policy": 152,
+    "cold_Expectation": 40,
+    "OpenStep": 24,
+    "checked_Step": 40,
+    "Work": 24,
+    "previous_Work": 40,
+    "Selected": 12,
+    "previous_Selected": 24,
+    "CallTypes": 728,
+    "previous_CallTypes": 720,
+    "CallContexts": 96,
+    "previous_CallContexts": 88,
+    "Operation": 16,
+    "NodeFacts": 80,
+    "Body": 456,
+    "Owner": 20,
+    "Kind": 24
+  },
+  "cli": {
+    "sha256": "40982781a05a92f2a092a43965c239721edf512db90a3152f07b5ebf8505b0f0",
+    "path": "obj/parallel/async-iterator-v1/pins/40982781a05a92f2a092a43965c239721edf512db90a3152f07b5ebf8505b0f0/rustgm",
+    "binding": "obj/parallel/async-iterator-v1/pins/40982781a05a92f2a092a43965c239721edf512db90a3152f07b5ebf8505b0f0/binding.json"
+  },
+  "core": {
+    "status": "Root inner observation; clean outer confirmation pending",
+    "cleared": "AsyncIterator LIB-171",
+    "next": "library/core/src/ops/coroutine.rs:11 #[lang=\"coroutine_state\"] enum CoroutineState<Y,R>, opened file88 byte454",
+    "all_original_inputs": 722,
+    "opens": 375,
+    "timing": "33.47s concurrent inner; no performance conclusion",
+    "outer": "145s wrapper infrastructure failure after inner/cleanup; retained by Root"
+  },
+  "private": "All-target/all-feature metadata passed, including corruption controls; private execution remains pending full CI.",
+  "required_remaining": [
+    "authentic gen/async-gen state, suspension, capture/cancellation/unwind/recursive async cleanup and transport",
+    "Field closure capture path and structural constant-address consumers remain explicitly fenced",
+    "full demanded/imported stream/helper protocols and original core/alloc/std artifacts",
+    "private test execution and joined release/independent matrix"
+  ],
+  "metadata": {
+    "receipt": "obj/parallel/async-iterator-v1/final-metadata/receipt.json",
+    "sha256": "f5e82f157fba3c1adc411f44ea71c7f5647c97d960aa6d19d7f7426a001ab78d",
+    "seconds": 104.13819169899216,
+    "steps": [
+      {
+        "name": "strict",
+        "status": 0,
+        "seconds": 85.48979397304356
+      },
+      {
+        "name": "upstream",
+        "status": 0,
+        "seconds": 0.14813928201328963
+      },
+      {
+        "name": "harness",
+        "status": 0,
+        "seconds": 16.916199843981303
+      }
+    ],
+    "source_unchanged": true,
+    "private_link": false,
+    "private_execution": "pending full CI",
+    "harness_tests": 282,
+    "registered_test_roots": 437
+  },
+  "test_only_after_qualification": {
+    "dev/tests/invariants/slice_headers.rs": "39314e34aed874ac2210c9e3d4f5a09b41a72801f991383f7c33f7619f4757d8",
+    "dev/tests/idxops.rs": "3cc384bd75cbc2904c3d7773156a301134ae8087ef9d659ed839ae0acc871ff8"
+  },
+  "test_only_after_qualification_note": "Same private marked-method negative now expects real deny diagnostic instead of historical profile fence; remove unused public source_policy cause arm (no active case uses it). No production or fixture change."
+}

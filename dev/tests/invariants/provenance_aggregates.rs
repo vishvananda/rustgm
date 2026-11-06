@@ -138,7 +138,7 @@ fn actual_opaque_field_uses_share_one_selected_identity_and_reject_metadata() ->
                 assert_eq!(field, selected);
                 initializers += 1;
             }
-            Some(Operation::Field { field }) => {
+            Some(Operation::Field { field, .. }) => {
                 assert_eq!(field, Selection::Nominal(selected));
                 reads += 1;
             }
@@ -195,7 +195,8 @@ pub fn answer()->u32{read!(provider::make())}";
     assert!(matches!(
         facts.node(fields[0].0).and_then(|node| node.operation),
         Some(Operation::Field {
-            field: Selection::Nominal(_)
+            field: Selection::Nominal(_),
+            ..
         })
     ));
     Ok(())

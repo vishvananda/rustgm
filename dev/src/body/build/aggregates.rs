@@ -272,6 +272,14 @@ impl Builder<'_> {
                 self.scratch.places.push(Some(place));
                 return Ok(());
             }
+            if let Some(Operation::Field {
+                plan: Some(plan), ..
+            }) = self.fact(node)?.operation
+            {
+                let place = self.field_call_place(node, base, plan)?;
+                self.scratch.places.push(Some(place));
+                return Ok(());
+            }
             let base = self.automatic_dereferences(node, base)?;
             if self.fact(node)?.operation == Some(Operation::Dereference) {
                 let place = self.dereference_place(node, base)?;
@@ -279,7 +287,7 @@ impl Builder<'_> {
                 return Ok(());
             }
             let kind = match self.fact(node)?.operation {
-                Some(Operation::Field { field }) => ProjectionKind::Field(field),
+                Some(Operation::Field { field, plan: None }) => ProjectionKind::Field(field),
                 Some(Operation::Index { length }) => {
                     let Kind::Index { index, .. } = self.kind(node) else {
                         return Err(self.error(node, "invalid index selection"));

@@ -61,7 +61,11 @@ impl Builder<'_> {
                 return Err(self.error(node, "method borrow is not a reference"));
             };
             if referent != self.place_type(node, place)? {
-                return Err(self.error(node, "method borrow differs from selected receiver place"));
+                let actual = self.place_type(node, place)?;
+                return Err(self.error(node, format!(
+                    "method borrow differs from selected receiver place: actual {actual:?} {:?}, expected {referent:?} {:?}, place {place:?}",
+                    self.facts.types.kind(actual), self.facts.types.kind(referent),
+                )));
             }
             let kind = if mutable {
                 mutable_kind

@@ -79,8 +79,8 @@ fn actual_discharged_sites_keep_owner_signature_and_safe_target_identity() -> Re
         size_of::<super::super::super::safety::Pending>(),
         size_of::<super::super::super::safety::Record>()
     );
-    assert_eq!(size_of::<crate::sema::bodies::calls::CallTypes>(), 720);
-    assert_eq!(size_of::<CallContexts>(), 88);
+    assert_eq!(size_of::<crate::sema::bodies::calls::CallTypes>(), 728);
+    assert_eq!(size_of::<CallContexts>(), 96);
     assert_eq!(size_of::<Descriptor>(), 12);
     Ok(())
 }

@@ -55,12 +55,6 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
             // storage and cleanup execution have a separate demanded boundary.
             continue;
         }
-        if role == LangItem::FusedIterator {
-            // Ordinary implementations retain their actual Iterator/supertrait
-            // proof. Only gen coroutines have the separate compiler builtin;
-            // declaration completion grants no blanket impl or generated body.
-            continue;
-        }
         if matches!(
             role,
             LangItem::Mul | LangItem::Rem | LangItem::BitXor | LangItem::BitAnd | LangItem::Shr
@@ -92,9 +86,16 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
                 | LangItem::CallRefFuture
                 | LangItem::AsyncFnKindHelper
                 | LangItem::AsyncFnKindUpvars
+                | LangItem::FusedIterator
+                | LangItem::AsyncIterator
+                | LangItem::AsyncIteratorPollNext
+                | LangItem::AsyncGenReady
+                | LangItem::AsyncGenPending
+                | LangItem::AsyncGenFinished
+                | LangItem::IntoAsyncIterIntoIter
         ) {
-            // Genuine ordinary declarations are completed by the Future producer.
-            // Polling and future state machines remain separate demanded consumers.
+            // Canonical producers complete these actual ordinary declarations.
+            // Future/gen state and generated methods need separate demanded proof.
             continue;
         }
         if matches!(role, LangItem::Pin | LangItem::PinNewUnchecked) {

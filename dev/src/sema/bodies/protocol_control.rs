@@ -9,6 +9,7 @@ pub(super) struct OpenCall {
 }
 #[derive(Clone, Copy)]
 pub(super) enum OpenKind {
+    Field(super::access_paths::OpenField),
     Block {
         body: NodeId,
         call: OpenCall,
@@ -58,6 +59,19 @@ impl OpenCall {
     }
 }
 impl OpenKind {
+    pub(super) fn call_count(self) -> Result<usize, &'static str> {
+        match self {
+            Self::Block { .. } => Ok(1),
+            Self::Branch { .. } | Self::Iteration { .. } => Ok(2),
+            Self::Field(field) => {
+                let count = field.steps.len()?;
+                if count == 0 || field.field.is_none() || field.calls.is_none() {
+                    return Err("field calls lack their completed actual discovery and selection");
+                }
+                Ok(count)
+            }
+        }
+    }
     pub(super) fn solved(
         self,
         solved: &Solved,
@@ -71,6 +85,11 @@ impl OpenKind {
                 .ok_or("source protocol lost a solved type")
         };
         Ok(match self {
+            Self::Field(_) => {
+                return Err(
+                    "field plan requires its actual final calls and checked step publication",
+                );
+            }
             Self::Block { body, call } => Kind::Block {
                 body,
                 from_output: call.solved(solved)?,
@@ -121,6 +140,56 @@ impl OpenKind {
     }
 }
 impl Checker<'_> {
+    pub(super) fn protocol_open_call(
+        &self,
+        plan: OpenPlan,
+        index: usize,
+    ) -> Result<OpenCall, &'static str> {
+        match (plan.kind, index) {
+            (
+                OpenKind::Block { call, .. }
+                | OpenKind::Branch { branch: call, .. }
+                | OpenKind::Iteration {
+                    into_iter: call, ..
+                },
+                0,
+            )
+            | (
+                OpenKind::Branch { residual: call, .. } | OpenKind::Iteration { next: call, .. },
+                1,
+            ) => Ok(call),
+            (OpenKind::Field(field), index) if index < field.steps.len()? => {
+                let range = field.calls.ok_or("field call selection is unfinished")?;
+                let (source, method) = self
+                    .state
+                    .call_types
+                    .methods
+                    .get(
+                        (range.method as usize)
+                            .checked_add(index)
+                            .ok_or("field method range overflow")?,
+                    )
+                    .ok_or("field method range is outside its actual owner")?;
+                let (call_source, signature) = self
+                    .state
+                    .calls
+                    .get(
+                        (range.call as usize)
+                            .checked_add(index)
+                            .ok_or("field call range overflow")?,
+                    )
+                    .ok_or("field call range is outside its actual owner")?;
+                if (*source, *call_source) != (plan.node, plan.node) {
+                    return Err("field call range belongs to another actual source node");
+                }
+                Ok(OpenCall {
+                    callable: method.callable,
+                    signature: *signature,
+                })
+            }
+            _ => Err("protocol call cursor is outside its actual plan"),
+        }
+    }
     pub(super) fn protocol_call(
         &mut self,
         node: NodeId,

@@ -26,6 +26,7 @@ mod methods;
 mod operators;
 mod pattern_tests;
 mod patterns;
+mod place_paths;
 mod references;
 mod residual_edges;
 mod retries;

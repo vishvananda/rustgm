@@ -29,6 +29,23 @@ pub(super) struct Pending {
     unsize: bool,
 }
 impl Pending {
+    pub(super) const fn borrowed(
+        method: DefId,
+        callable: TermId,
+        dereferences: u32,
+        actual: TermId,
+        expected: TermId,
+    ) -> Self {
+        Self {
+            method,
+            callable,
+            dereferences,
+            borrow: Some(actual),
+            actual,
+            expected,
+            unsize: false,
+        }
+    }
     pub(super) fn expect_receiver(&mut self, expected: TermId) {
         self.expected = expected;
     }
@@ -436,16 +453,18 @@ impl Checker<'_> {
                 self.state.checks.push(*node);
                 continue;
             }
-            self.facts.methods.calls.insert(
-                key,
-                Call {
-                    method: pending.method,
-                    callable: solved.types[pending.callable.0 as usize],
-                    dereferences: pending.dereferences,
-                    borrow: pending.borrow.map(|term| solved.types[term.0 as usize]),
-                    receiver: expected,
-                },
-            );
+            if !matches!(self.kind(*node), crate::syntax::ast::Kind::Field { .. }) {
+                self.facts.methods.calls.insert(
+                    key,
+                    Call {
+                        method: pending.method,
+                        callable: solved.types[pending.callable.0 as usize],
+                        dereferences: pending.dereferences,
+                        borrow: pending.borrow.map(|term| solved.types[term.0 as usize]),
+                        receiver: expected,
+                    },
+                );
+            }
             self.facts.retain_coercion(Coercion {
                 body: self.state.body,
                 source: key,
@@ -500,15 +519,7 @@ impl Checker<'_> {
         self.state.alignment.borrows.push((node, source));
         let pending = (
             node,
-            Pending {
-                method,
-                callable,
-                dereferences: 0,
-                borrow: Some(receiver),
-                actual: receiver,
-                expected: receiver,
-                unsize: false,
-            },
+            Pending::borrowed(method, callable, 0, receiver, receiver),
         );
         if let Some(index) = self.language_index_method(node) {
             self.state.call_types.methods[index] = pending;

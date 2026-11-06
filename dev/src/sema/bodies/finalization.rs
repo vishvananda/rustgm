@@ -26,6 +26,7 @@ pub(super) struct Publication {
 }
 impl Checker<'_> {
     pub(super) fn finish(&mut self, body: NodeId) -> Result<Option<Dependency>, Error> {
+        self.finish_field_calls()?;
         if self
             .state
             .trait_goals
@@ -239,6 +240,7 @@ impl Checker<'_> {
         self.publish_constant_uses(arguments)?;
         let constant_dependencies = self.dependency_append(&constant_dependencies)?;
         self.publish_methods(&solved)?;
+        self.publish_field_outputs(&solved)?;
         self.publish_for_plans(&solved)?;
         self.publish_invocations(&solved);
         let body_key = self.key(body);

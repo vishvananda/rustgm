@@ -91,7 +91,7 @@ impl Checker<'_> {
                     ..
                 }
                 | crate::syntax::ast::Kind::For { .. }
-        )
+        ) || self.field_plan(node).is_some()
     }
     pub(in crate::sema::bodies) fn replayed_protocol_context(
         &self,
@@ -99,7 +99,14 @@ impl Checker<'_> {
         operation: Option<Operation>,
         effect: crate::support::constness::Constness,
     ) -> Result<Option<SourceCallUse>, Error> {
-        let Some(Operation::Try { plan } | Operation::Iteration { plan }) = operation else {
+        let Some(
+            Operation::Try { plan }
+            | Operation::Iteration { plan }
+            | Operation::Field {
+                plan: Some(plan), ..
+            },
+        ) = operation
+        else {
             return Ok(None);
         };
         let plan = plan
@@ -165,10 +172,12 @@ impl Checker<'_> {
         })?;
         for index in 0..count {
             let open = self.state.call_types.protocol_plans[index];
-            let kind = open
-                .kind
-                .solved(solved)
-                .map_err(|e| self.error(open.node, e))?;
+            let kind = match open.kind {
+                super::super::protocol_control::OpenKind::Field(field) => {
+                    self.publish_field_plan(open, field, solved, source_use)?
+                }
+                kind => kind.solved(solved).map_err(|e| self.error(open.node, e))?,
+            };
             if let Kind::Iteration { plan, .. } = kind {
                 self.prepare_iteration_storage(open.node, plan.iterator, plan.option)?;
             }
@@ -187,8 +196,11 @@ impl Checker<'_> {
     fn commit_protocol_plans(&mut self, plans: Vec<Plan>) -> Result<(), Error> {
         let mut new_count = 0;
         for plan in &plans {
-            if let Some(Operation::Try { plan: id } | Operation::Iteration { plan: id }) =
-                self.facts.node(plan.node).and_then(|node| node.operation)
+            if let Some(
+                Operation::Try { plan: id }
+                | Operation::Iteration { plan: id }
+                | Operation::Field { plan: Some(id), .. },
+            ) = self.facts.node(plan.node).and_then(|node| node.operation)
             {
                 if id
                     .current(self.facts, self.state.body, plan.node)
@@ -225,7 +237,11 @@ impl Checker<'_> {
             if matches!(
                 self.facts.nodes[plan.node.file.0 as usize][plan.node.node.get() as usize]
                     .operation,
-                Some(Operation::Try { .. } | Operation::Iteration { .. })
+                Some(
+                    Operation::Try { .. }
+                        | Operation::Iteration { .. }
+                        | Operation::Field { plan: Some(_), .. }
+                )
             ) {
                 continue;
             }
@@ -237,10 +253,13 @@ impl Checker<'_> {
             );
             contexts.plans.push(plan);
             self.facts.nodes[plan.node.file.0 as usize][plan.node.node.get() as usize].operation =
-                Some(if matches!(plan.kind, Kind::Iteration { .. }) {
-                    Operation::Iteration { plan: id }
-                } else {
-                    Operation::Try { plan: id }
+                Some(match plan.kind {
+                    Kind::Field { field, .. } => Operation::Field {
+                        field,
+                        plan: Some(id),
+                    },
+                    Kind::Iteration { .. } => Operation::Iteration { plan: id },
+                    _ => Operation::Try { plan: id },
                 });
         }
         Ok(())
@@ -250,6 +269,22 @@ impl Checker<'_> {
         plan: Plan,
         allowances: &mut crate::resolve::expansion::MacroAllowanceSession<'_>,
     ) -> Result<(), Error> {
+        if matches!(plan.kind, Kind::Field { .. }) {
+            crate::sema::protocol_plans::access::check(
+                self.report,
+                self.facts,
+                self.state.body,
+                plan,
+            )?;
+            let mut calls = plan.calls().map_err(|e| self.error(plan.node.node, e))?;
+            while let Some(call) = plan
+                .next_call(self.facts, self.state.body, &mut calls)
+                .map_err(|e| self.error(plan.node.node, e))?
+            {
+                self.check_const_library_callable(plan.node.node, call.callable, allowances)?;
+            }
+            return Ok(());
+        }
         if let Kind::Iteration {
             plan: iteration, ..
         } = plan.kind
@@ -260,7 +295,11 @@ impl Checker<'_> {
                 plan.node,
                 iteration,
             )?;
-            for call in plan.calls().into_iter().flatten() {
+            let mut calls = plan.calls().map_err(|e| self.error(plan.node.node, e))?;
+            while let Some(call) = plan
+                .next_call(self.facts, self.state.body, &mut calls)
+                .map_err(|e| self.error(plan.node.node, e))?
+            {
                 self.check_const_library_callable(plan.node.node, call.callable, allowances)?;
             }
             return Ok(());
@@ -294,14 +333,17 @@ impl Checker<'_> {
                     }),
                 ]
             }
-            Kind::Iteration { .. } => {
+            Kind::Iteration { .. } | Kind::Field { .. } => {
                 return Err(self.error(plan.node.node, "iteration plan lost its source branch"));
             }
         };
-        for (call, expected) in plan.calls().into_iter().zip(expected) {
-            let Some(call) = call else {
-                continue;
-            };
+        let mut calls = plan.calls().map_err(|e| self.error(plan.node.node, e))?;
+        let mut index = 0;
+        while let Some(call) = plan
+            .next_call(self.facts, self.state.body, &mut calls)
+            .map_err(|e| self.error(plan.node.node, e))?
+        {
+            let expected = expected.get(index).copied().flatten();
             if !matches!(self.facts.types.kind(call.callable),Some(Type::FunctionItem {item,..}) if Some(crate::resolve::model::DefId(item.0))==expected)
             {
                 return Err(self.error(
@@ -310,6 +352,7 @@ impl Checker<'_> {
                 ));
             }
             self.check_const_library_callable(plan.node.node, call.callable, allowances)?;
+            index += 1;
         }
         Ok(())
     }

@@ -24,6 +24,46 @@ pub(in crate::sema) fn available(facts: &Declarations) -> bool {
         .is_some_and(|catalog| catalog.language(LangItem::Deref).is_some())
 }
 
+/// Discovery authenticates the actual projection, without selecting an unused
+/// shared method or acquiring any call, const or mutable-place permission.
+pub(in crate::sema) fn target(
+    report: &Report,
+    facts: &Declarations,
+    source: NodeKey,
+) -> Result<(DefId, crate::types::ItemId), Error> {
+    let error = |message| Declarations::error(report, source, message);
+    crate::sema::header_attributes::charge_source_contract_query(facts, 5)?;
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or_else(|| error("field discovery lacks its actual source catalog"))?;
+    catalog.require_provider_report(report).map_err(error)?;
+    let base = catalog
+        .validated_language(LangItem::Deref)
+        .map_err(error)?
+        .ok_or_else(|| error("field discovery lacks its completed actual Deref"))?;
+    let target = catalog
+        .validated_language(LangItem::DerefTarget)
+        .map_err(error)?
+        .ok_or_else(|| error("field discovery lacks its completed actual Target"))?;
+    super::headers::Trait::source(report, facts, base)
+        .map_err(error)?
+        .canonical_inputs(facts)
+        .map_err(error)?;
+    let item = crate::types::ItemId(target.definition.0);
+    if target.parent != Some(base.definition)
+        || facts
+            .types
+            .projection_schema(item)
+            .is_none_or(|schema| schema.trait_item.0 != base.definition.0)
+    {
+        return Err(error(
+            "field discovery changed its actual Target owner or schema",
+        ));
+    }
+    Ok((base.definition, item))
+}
+
 pub(in crate::sema) fn query(
     report: &Report,
     facts: &Declarations,

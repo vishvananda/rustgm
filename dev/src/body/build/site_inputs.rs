@@ -27,30 +27,13 @@ impl Builder<'_> {
                 signature: expected,
                 source_use: Some(source),
             }) if expected == signature => source,
-            Some(Operation::Try { plan } | Operation::Iteration { plan }) => {
-                let plan = plan
-                    .current(
-                        self.facts,
-                        self.source,
-                        crate::resolve::unit::NodeKey {
-                            node,
-                            ..self.source
-                        },
-                    )
-                    .map_err(|error| self.error(node, error))?;
-                if !plan
-                    .calls()
-                    .into_iter()
-                    .flatten()
-                    .any(|call| call.callable == callable && call.signature == signature)
-                {
-                    return Err(self.error(
-                        node,
-                        "caller site differs from the actual generated Try call",
-                    ));
+            Some(
+                Operation::Field {
+                    plan: Some(plan), ..
                 }
-                plan.source_use
-            }
+                | Operation::Try { plan }
+                | Operation::Iteration { plan },
+            ) => self.protocol_site_source(node, plan, callable, signature)?,
             _ if !required => return Ok(()),
             _ => {
                 return Err(self.error(
@@ -88,6 +71,49 @@ impl Builder<'_> {
                 self.facts,
             )
             .map_err(|error| self.error(node, error))
+    }
+    fn protocol_site_source(
+        &self,
+        node: NodeId,
+        id: crate::sema::bodies::ProtocolPlanId,
+        callable: crate::types::TypeId,
+        signature: crate::types::TypeId,
+    ) -> Result<crate::sema::bodies::SourceCallUse, Error> {
+        let key = crate::resolve::unit::NodeKey {
+            node,
+            ..self.source
+        };
+        let plan = id
+            .current(self.facts, self.source, key)
+            .map_err(|error| self.error(node, error))?;
+        if matches!(plan.kind, crate::sema::protocol_plans::Kind::Field { .. }) {
+            crate::sema::protocol_plans::access::lookup(
+                self.report,
+                self.facts,
+                plan,
+                self.source,
+                crate::sema::iteration::Call {
+                    callable,
+                    signature,
+                },
+            )?;
+        } else {
+            let mut calls = plan.calls().map_err(|error| self.error(node, error))?;
+            let mut present = false;
+            while let Some(call) = plan
+                .next_call(self.facts, self.source, &mut calls)
+                .map_err(|error| self.error(node, error))?
+            {
+                present |= call.callable == callable && call.signature == signature;
+            }
+            if !present {
+                return Err(self.error(
+                    node,
+                    "caller site differs from its actual generated protocol call",
+                ));
+            }
+        }
+        Ok(plan.source_use)
     }
     fn validate_source_opening(
         &self,

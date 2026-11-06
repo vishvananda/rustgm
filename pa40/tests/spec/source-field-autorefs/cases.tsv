@@ -1,0 +1,7 @@
+raw-allow.rs	0
+raw-warn.rs	0
+raw-expect.rs	0
+raw-expect-missing.rs	1
+raw-forbid-allow.rs	1
+raw-deny.rs	1
+raw-direct.rs	0

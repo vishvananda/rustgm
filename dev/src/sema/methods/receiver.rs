@@ -307,6 +307,26 @@ impl Search<'_> {
             .ok_or("selected receiver lacks its actual owner")?
             .self_type;
         if let Some(crate::types::Kind::Adt(owner, _)) = self.facts.types.kind(ty) {
+            let &(mut receiver, references) = self
+                .facts
+                .methods
+                .receivers
+                .get(&method)
+                .ok_or("selected method lost its actual declared receiver")?;
+            for _ in 0..references {
+                self.source.account_work(1).map_err(inference)?;
+                let Some(crate::types::Kind::Reference { referent, .. }) =
+                    self.facts.types.kind(receiver)
+                else {
+                    return Err("selected method changed its actual reference prefix");
+                };
+                receiver = referent;
+            }
+            if receiver != ty {
+                // A wrapped explicit receiver matches the original outer operand.
+                // Its real signature equations infer the complete inner Self.
+                return Ok(None);
+            }
             let head = self
                 .source
                 .head(&self.facts.types, self.base)

@@ -1,0 +1,217 @@
+{
+  "state": "frozen before independent or candidate observations",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "original": {
+    "path": "library/core/src/async_iter/async_iter.rs",
+    "destination": "original.rs",
+    "sha256": "90d7c43c1335f58e4db6d016db2638a5d14406caf34d12714f626b71d4690e9a"
+  },
+  "cases": [
+    {
+      "file": "whole.rs",
+      "sha256": "05350cccee0180952df499d6e2d209e653edbe007cc86e9ac177e17b55a055ee",
+      "expected_status": 0
+    },
+    {
+      "file": "native.rs",
+      "sha256": "64a561165560ce59502764251081affdb06b5480d2978fd70e5c5871982b0eb5",
+      "expected_status": 0
+    },
+    {
+      "file": "forward.rs",
+      "sha256": "60abd30a1fd15129c6276b81d9664681f3f23fae94ea955722d0e3e83b820916",
+      "expected_status": 0
+    },
+    {
+      "file": "helpers.rs",
+      "sha256": "6e0e1a75b4c73b66ecf3df8c544b2d6e45448dc8c4fa78f6229e1b4d3f890e87",
+      "expected_status": 0
+    },
+    {
+      "file": "into.rs",
+      "sha256": "7f71baa67e424052ebc4170b7ddb8c7ef3c8af78274ce1b97b5543fd5da23c8e",
+      "expected_status": 0
+    },
+    {
+      "file": "renamed.rs",
+      "sha256": "d7a27531812a7d92db92b803fc1a5e339b904fdb03349fcf13635090dbe6796b",
+      "expected_status": 0
+    },
+    {
+      "file": "unused.rs",
+      "sha256": "4d57a2005916956f579415384bb79c1d8b4f7fff320ec84680febcd25234647f",
+      "expected_status": 0
+    },
+    {
+      "file": "unused-unsafe.rs",
+      "sha256": "9c51bb3c4815c712c580196f5f15148c37f4ed9efcb6a3d88673f11721058a69",
+      "expected_status": 0
+    },
+    {
+      "file": "unused-poll.rs",
+      "sha256": "df1a55afb299ba707c4b6ccb9bce3a789b800887208f49302513165da307420d",
+      "expected_status": 0
+    },
+    {
+      "file": "unused-ready.rs",
+      "sha256": "1f974ec9d2ed56f1678967d34fd876ccac8fe035bfc81145e782731cb00134d6",
+      "expected_status": 0
+    },
+    {
+      "file": "unused-pending.rs",
+      "sha256": "2b965c0d0f8f54c6a3c6e111d4eaf2666b60fe0421993f0ec43a9152e78d2ae8",
+      "expected_status": 0
+    },
+    {
+      "file": "unused-finished.rs",
+      "sha256": "2c64a8d6b99c462c4d82b2582ea8b90cbeae57e41378a57e26fadc3d4bb45562",
+      "expected_status": 0
+    },
+    {
+      "file": "unused-into.rs",
+      "sha256": "675fc76d546d2d711f0ceef18fbfd42df190bf5516fccde47524a740b8b03c42",
+      "expected_status": 0
+    },
+    {
+      "file": "duplicate.rs",
+      "sha256": "d1866907ecc83e683a0a72874f74e4ee11ef74296a2d588bf4a6fecbb7318d00",
+      "expected_status": 1
+    },
+    {
+      "file": "wrong-arity.rs",
+      "sha256": "ddd9dbe34b7e7237ee76de51e28bf3e42d6c1119a0db02136d12faf84a9ed4ba",
+      "expected_status": 1
+    },
+    {
+      "file": "wrong-target.rs",
+      "sha256": "b8d3f8a3554494a56cd7da8fd57d9fa22a625fa7cdc515dac10f3a558e6a4e6e",
+      "expected_status": 1
+    },
+    {
+      "file": "no-impl.rs",
+      "sha256": "b4f9ce37e6680f787589c347b9e0d73a34de55fbbd0ebd1ad517a86f2a33e8a6",
+      "expected_status": 1
+    },
+    {
+      "file": "wrong-item.rs",
+      "sha256": "8a326034500927e610933af1b1b5d08c67df15d93835d5f89624913fbd513c38",
+      "expected_status": 1
+    },
+    {
+      "file": "wrong-result.rs",
+      "sha256": "7cc1c2bcc3b586c18292d52a5611947641562ec05e5cd073ac780f5117c16ec9",
+      "expected_status": 1
+    },
+    {
+      "file": "wrong-receiver.rs",
+      "sha256": "246b96f3fa25c9c23a1f2a3e07fdcc19b57371b8e059f9136b7e02402dc20c58",
+      "expected_status": 1
+    },
+    {
+      "file": "unsafe-impl.rs",
+      "sha256": "9063345d6f3d5864620638cfdc89482e855dd3888b0108f5297e1b0898dcd964",
+      "expected_status": 1
+    },
+    {
+      "file": "bad-body.rs",
+      "sha256": "5d9ca44d41ced62683cfb6180ca699a3849f5f82dc82d97bd626f7caef73b1b4",
+      "expected_status": 1
+    },
+    {
+      "file": "escape.rs",
+      "sha256": "4df8bf4f8ee2fe16259da35e99663d77670e13995fbbb3525ef3c5255b02391c",
+      "expected_status": 1
+    },
+    {
+      "file": "ordinary.rs",
+      "sha256": "e753e133607a86eab452bc605176658c287b28711fe96bd8427ba1e0a9fd15a4",
+      "expected_status": 0
+    },
+    {
+      "file": "receiver-depth-8.rs",
+      "sha256": "52facabf8f0651653d543b744aa28e77554c710cbf33acd9d689517277ef4adf",
+      "expected_status": 0
+    },
+    {
+      "file": "receiver-depth-32.rs",
+      "sha256": "b56f0b8831c74bf8b153e1b7341722d6dcdaa9f67353900313591df52f39f051",
+      "expected_status": 0
+    },
+    {
+      "file": "receiver-depth-128.rs",
+      "sha256": "5bcb9a6f144c0f5cdf022672bbd79e771a4e41c1659afd7f0864dcdf55f0f252",
+      "expected_status": 0
+    },
+    {
+      "file": "receiver-captured.rs",
+      "sha256": "c4347735cd52c7d7064bc5d26adf525758ec28a15026b2e3e6b03e178f611b04",
+      "expected_status": 0
+    },
+    {
+      "file": "receiver-wrong-arguments.rs",
+      "sha256": "3f3d2e0dbeb93d320203b1208d98bd811814d9ba550835a1012cf9f6fd899edd",
+      "expected_status": 1
+    },
+    {
+      "file": "receiver-wrong-lifetime.rs",
+      "sha256": "e148f2e29986ed9fedddfa2912e278a0399797d065cb3c428ec35e172fa998c5",
+      "expected_status": 1
+    },
+    {
+      "file": "receiver-ordinary.rs",
+      "sha256": "568235ccb60b142e03bc762388e2c81ab41ae0f9dfa3f673228c454359c0d860",
+      "expected_status": 0
+    },
+    {
+      "file": "bad-default.rs",
+      "sha256": "e19547f6a1eb81e1bf97b499babee6530f0cb906cf0c7510a560c17f2bb6c12c",
+      "expected_status": 1
+    },
+    {
+      "file": "receiver-plain.rs",
+      "sha256": "fe20b2a156cf81d898a0d7e7274cb50613e7b2f540d68f6a371ad9ba967d44cc",
+      "expected_status": 1
+    },
+    {
+      "file": "receiver-plain-escape.rs",
+      "sha256": "65157499795bac436719eb5db8e98eca2cad7048abe42fcce6564f4cd37948ad",
+      "expected_status": 1
+    },
+    {
+      "file": "receiver-plain-valid.rs",
+      "sha256": "efb64ec2b87d8a0080ddebb6050708af8ec244b2f1bc662f132ce212f2a897e2",
+      "expected_status": 0
+    }
+  ],
+  "native": [
+    {
+      "file": "native.rs",
+      "observer": "observe.c",
+      "stdout": "23 0 0\n"
+    },
+    {
+      "file": "forward.rs",
+      "observer": "forward.c",
+      "stdout": "23 23\n"
+    },
+    {
+      "file": "helpers.rs",
+      "observer": "helpers.c",
+      "stdout": "23 1 0\n"
+    },
+    {
+      "file": "into.rs",
+      "observer": "into.c",
+      "stdout": "23\n"
+    }
+  ],
+  "reviewed_corrections": [
+    {
+      "file": "receiver-plain.rs",
+      "initial_prediction": 0,
+      "actual_status": 1,
+      "cause": "E0308 in both lifetime directions; equal nominal heads do not prove full receiver equality",
+      "reviewed_status": 1
+    }
+  ]
+}

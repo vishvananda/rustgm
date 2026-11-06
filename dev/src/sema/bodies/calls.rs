@@ -16,6 +16,7 @@ pub(super) struct ActiveCall {
 #[derive(Default)]
 pub(super) struct CallTypes {
     pub safety: Option<Box<super::safety::Pending>>,
+    pub access: Option<Box<super::access_paths::Pending>>,
     pub protocol_plans: Vec<super::protocol_control::OpenPlan>,
     pub offsets: Option<Box<super::displacement_inputs::Pending>>,
     pub iteration: Option<Box<super::iteration::Pending>>,
@@ -53,6 +54,7 @@ struct Constraint {
     bound_regions: Option<u32>,
     intrinsic: bool,
 }
+const _: [(); 728] = [(); size_of::<CallTypes>()];
 impl CallTypes {
     pub fn bound_regions(&self, index: usize) -> Option<u32> {
         self.constraints.as_ref()?.get(&index)?.bound_regions
@@ -90,6 +92,7 @@ impl CallTypes {
     }
     pub fn clear(&mut self) {
         self.safety = None;
+        self.access = None;
         self.protocol_plans.clear();
         self.offsets = None;
         self.iteration = None;

@@ -1,9 +1,17 @@
 //! Canonical protocol calls share the current semantic-body call context owner.
 use super::{bodies::SourceCallUse, iteration::Call, members::VariantId};
 use crate::{resolve::unit::NodeKey, syntax::ast::NodeId, types::TypeId};
+pub(crate) mod access;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Kind {
+    Field {
+        operand: NodeId,
+        field: super::members::Selection,
+        receiver: TypeId,
+        dereferences: u32,
+        steps: access::Range,
+    },
     Block {
         body: NodeId,
         from_output: Call,
@@ -31,16 +39,68 @@ pub(crate) struct Plan {
     pub kind: Kind,
 }
 impl Plan {
-    pub(crate) fn calls(self) -> [Option<Call>; 2] {
-        match self.kind {
-            Kind::Block { from_output, .. } => [Some(from_output), None],
-            Kind::Branch {
-                branch, residual, ..
-            } => [Some(branch), Some(residual)],
-            Kind::Iteration { plan, .. } => [Some(plan.into_iter), Some(plan.next)],
+    pub(crate) fn calls(self) -> Result<Calls, &'static str> {
+        let (next, remaining) = match self.kind {
+            Kind::Field { steps, .. } => {
+                let count = steps
+                    .end
+                    .checked_sub(steps.start)
+                    .filter(|&count| count != 0)
+                    .ok_or("field calls have an invalid actual step range")?;
+                (steps.first.get() - 1, count)
+            }
+            Kind::Block { .. } => (0, 1),
+            Kind::Branch { .. } | Kind::Iteration { .. } => (0, 2),
+        };
+        Ok(Calls { next, remaining })
+    }
+    pub(crate) fn next_call(
+        self,
+        facts: &super::model::Declarations,
+        owner: NodeKey,
+        calls: &mut Calls,
+    ) -> Result<Option<Call>, &'static str> {
+        if calls.remaining == 0 {
+            return Ok(None);
         }
+        let call = match (self.kind, calls.next) {
+            (Kind::Field { steps, .. }, _) => {
+                return access::next(facts, self, owner, steps, calls)
+                    .map(|step| step.map(|step| step.call));
+            }
+            (
+                Kind::Block {
+                    from_output: call, ..
+                }
+                | Kind::Branch { branch: call, .. },
+                0,
+            )
+            | (Kind::Branch { residual: call, .. }, 1) => {
+                calls.next += 1;
+                call
+            }
+            (Kind::Iteration { plan, .. }, index @ 0..=1) => {
+                calls.next += 1;
+                if index == 0 {
+                    plan.into_iter
+                } else {
+                    plan.next
+                }
+            }
+            _ => return Err("protocol call cursor exceeds its actual source plan"),
+        };
+        calls.remaining -= 1;
+        Ok(Some(call))
     }
 }
+
+/// A bounded traversal position; it grants no call or body permission.
+pub(crate) struct Calls {
+    next: u32,
+    remaining: u32,
+}
+const _: [(); 64] = [(); size_of::<Plan>()];
+const _: [(); 8] = [(); size_of::<Calls>()];
 
 /// Reauthenticate at the real CFG boundary, after canonical call publication.
 pub(crate) fn checked(
@@ -67,6 +127,10 @@ pub(crate) fn checked(
         .ast
         .node(node.node)
         .kind;
+    if matches!(plan.kind, Kind::Field { .. }) {
+        access::check(report, facts, owner, plan)?;
+        return Ok(plan);
+    }
     if let Kind::Iteration {
         iterator,
         pattern,
@@ -113,15 +177,18 @@ pub(crate) fn checked(
             ));
         }
     };
-    for (call, expected) in plan.calls().into_iter().zip(expected) {
-        if let Some(call) = call
-            && !matches!(facts.types.kind(call.callable),Some(Type::FunctionItem {item,signature,..})
+    let mut calls = plan.calls().map_err(error)?;
+    let mut index = 0;
+    while let Some(call) = plan.next_call(facts, owner, &mut calls).map_err(error)? {
+        let expected = expected.get(index).copied().flatten();
+        if !matches!(facts.types.kind(call.callable),Some(Type::FunctionItem {item,signature,..})
                 if Some(crate::resolve::model::DefId(item.0))==expected && signature==call.signature)
         {
             return Err(error(
                 "Try plan changed its actual callable application or signature",
             ));
         }
+        index += 1;
     }
     Ok(plan)
 }

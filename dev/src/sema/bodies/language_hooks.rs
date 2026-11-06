@@ -129,7 +129,7 @@ impl Checker<'_> {
                 .1
                 .expect_receiver(expected);
             if kind.indexing() {
-                self.retain_language_index_call(node, kind, pending, signature);
+                self.retain_language_index_call(node, kind, pending, signature)?;
             } else {
                 self.state.calls.push((node, signature));
             }

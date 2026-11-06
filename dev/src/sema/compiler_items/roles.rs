@@ -81,7 +81,7 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 34] = [
+const TRAIT_ROLES: [LangItem; 35] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::UseCloned,
@@ -116,6 +116,7 @@ const TRAIT_ROLES: [LangItem; 34] = [
     LangItem::AsyncFnOnce,
     LangItem::AsyncFnKindHelper,
     LangItem::FusedIterator,
+    LangItem::AsyncIterator,
 ];
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -226,6 +227,12 @@ fn complete_dependent_roles(
         .as_deref()
         .ok_or_else(|| Error::unlocated("dependent source roles lost their actual catalog"))?;
     for role in super::futures::complete(report, facts, catalog)?
+        .into_iter()
+        .flatten()
+    {
+        complete.roles.insert(role);
+    }
+    for role in super::streams::complete(report, facts, catalog)?
         .into_iter()
         .flatten()
     {
@@ -398,6 +405,7 @@ fn canonical_header_only(role: LangItem) -> bool {
             | LangItem::AsyncFnKindHelper
             | LangItem::FusedIterator
             | LangItem::Drop
+            | LangItem::AsyncIterator
     )
 }
 
@@ -620,6 +628,21 @@ pub(super) fn complete_pin_constructor(
     declaration: Declaration,
 ) -> Result<(), Error> {
     record_completion(facts, LangItem::PinNewUnchecked, declaration)
+}
+
+/// Only the genuine late inherent helper producer completes these exact roles.
+pub(super) fn complete_stream_helper(
+    facts: &mut Declarations,
+    role: LangItem,
+    declaration: Declaration,
+) -> Result<(), Error> {
+    if !matches!(
+        role,
+        LangItem::AsyncGenReady | LangItem::AsyncGenPending | LangItem::AsyncGenFinished
+    ) {
+        return Err(Error::unlocated("invalid async-gen helper completion"));
+    }
+    record_completion(facts, role, declaration)
 }
 
 /// Only the actual completed poll enum/context/variant producer enters this gate.

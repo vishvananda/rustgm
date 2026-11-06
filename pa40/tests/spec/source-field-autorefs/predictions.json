@@ -1,0 +1,67 @@
+{
+  "scope": "dangerous implicit autoref through actual source Field call; frozen before implementation",
+  "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "cases": [
+    {
+      "name": "raw-allow.rs",
+      "path": "pa40/tests/spec/source-field-autorefs/raw-allow.rs",
+      "sha256": "fa3b6a36b5aa9d5a05cae01349cf1ffc373a3d064c032799c06426b3ac3e5b77",
+      "rustc_status": 0,
+      "purpose": "allow only the implicit-reference lint"
+    },
+    {
+      "name": "raw-warn.rs",
+      "path": "pa40/tests/spec/source-field-autorefs/raw-warn.rs",
+      "sha256": "53825eace91a10aff2f395824aaa6632996b273dfec893045290496bb1231508",
+      "rustc_status": 0,
+      "purpose": "warn preserves actual unsafe borrow semantics"
+    },
+    {
+      "name": "raw-expect.rs",
+      "path": "pa40/tests/spec/source-field-autorefs/raw-expect.rs",
+      "sha256": "e6329222f4edc741aa143630541d2fa3b795e269a3656660744e36720cd88b49",
+      "rustc_status": 0,
+      "purpose": "actual implicit borrow fulfills expectation"
+    },
+    {
+      "name": "raw-expect-missing.rs",
+      "path": "pa40/tests/spec/source-field-autorefs/raw-expect-missing.rs",
+      "sha256": "811e83c528dae32ae259654346e27980eb658680ad99cbf52908d5fb0a8e66b6",
+      "rustc_status": 1,
+      "purpose": "explicit reference leaves expectation unfulfilled"
+    },
+    {
+      "name": "raw-forbid-allow.rs",
+      "path": "pa40/tests/spec/source-field-autorefs/raw-forbid-allow.rs",
+      "sha256": "d511740fc0dcd6d7f500401c4f184ef455a16127ce97973a2b3d39c0d1b37cdb",
+      "rustc_status": 1,
+      "purpose": "forbid cannot be lexically weakened"
+    },
+    {
+      "name": "raw-deny.rs",
+      "path": "pa40/tests/spec/source-field-autorefs/raw-deny.rs",
+      "sha256": "db88462cc69618b4c536460340b34ea1b2052658644e1e3752bf5ea4ec7fade7",
+      "rustc_status": 1,
+      "purpose": "local deny overrides inherited allow"
+    },
+    {
+      "name": "raw-direct.rs",
+      "path": "pa40/tests/spec/source-field-autorefs/raw-direct.rs",
+      "sha256": "edca53b32709128bcbbfe28fb61fcd93f96fbf40b4b04a0542f37228d285d6a3",
+      "rustc_status": 0,
+      "purpose": "ordinary raw field projection creates no reference"
+    },
+    {
+      "name": "raw-explicit-capped",
+      "path": "pa31/tests/spec/source-field-deref/raw-explicit.rs",
+      "sha256": "62e26657e3e6f2c6561338a2c38fd1ed90be41e38a845fe68934f45c7bcf8bff",
+      "rustc_status": 0,
+      "purpose": "cap-lints allow suppresses the deny-default lint without granting unsafe permission",
+      "flags": [
+        "--cap-lints",
+        "allow"
+      ]
+    }
+  ],
+  "relocation": "Exact source bytes retained; advanced lint-policy controls live in owning PA40. Independent pre-implementation receipt: obj/parallel/async-iterator-v1/field-lint-oracle-native/receipt.json."
+}

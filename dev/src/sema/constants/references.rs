@@ -359,7 +359,7 @@ impl Queries<'_> {
                         Some(Expression::Dereference(child(operand)))
                     }
                 }
-                (Kind::Field { value, .. }, Some(Operation::Field { field })) => {
+                (Kind::Field { value, .. }, Some(Operation::Field { field, plan: None })) => {
                     if self.union_receiver(key, child(value))? {
                         return Ok(None);
                     }

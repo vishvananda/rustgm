@@ -62,6 +62,7 @@ impl Checker<'_> {
                         .and_then(|op| {
                             if let super::Operation::Field {
                                 field: crate::sema::members::Selection::Nominal(field),
+                                ..
                             } = op
                             {
                                 Some(field)

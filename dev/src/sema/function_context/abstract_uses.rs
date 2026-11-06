@@ -125,31 +125,13 @@ impl<'a> DefiningCalls<'a> {
         };
         let definition = DefId(item.0);
         self.check_premise(definition, arguments, &mut charge)?;
-        charge(1)?;
-        let node = self
-            .facts
-            .node(call.site)
-            .ok_or("abstract const call has no actual typed source site")?;
-        let Some(Operation::Call {
-            signature,
-            source_use,
-        }) = node.operation
-        else {
-            return Err("abstract const call changed its typed source operation");
-        };
-        if signature != call.signature || node.ty != Some(call.result) {
-            return Err("abstract const call changed its opened signature or result");
-        }
+        let (source_use, field) = self.source_use(call, &mut charge)?;
         charge(1)?;
         let effect = match self.premise {
             Premise::Function { effect, .. } => effect,
             Premise::Trait { .. } => Constness::Conditional,
         };
-        if source_use
-            .ok_or("abstract const call has no defining source-use fact")?
-            .effect_for(self.facts, self.owner)?
-            != effect
-        {
+        if source_use.effect_for(self.facts, self.owner)? != effect {
             return Err(if effect == Constness::Conditional {
                 "abstract const call changed its defining conditional demand"
             } else {
@@ -157,6 +139,9 @@ impl<'a> DefiningCalls<'a> {
             });
         }
         charge(1)?;
+        if field {
+            return Ok(());
+        }
         if let Some(method) = self.facts.methods.calls.get(&call.site) {
             if method.method != definition || method.callable != call.target {
                 return Err("abstract const call changed its exact selected method application");
@@ -177,6 +162,62 @@ impl<'a> DefiningCalls<'a> {
             }
         }
         Ok(())
+    }
+
+    fn source_use(
+        &self,
+        call: Call,
+        charge: &mut impl FnMut(usize) -> Result<(), &'static str>,
+    ) -> Result<(crate::sema::bodies::SourceCallUse, bool), &'static str> {
+        charge(1)?;
+        let node = self
+            .facts
+            .node(call.site)
+            .ok_or("abstract const call has no actual typed source site")?;
+        let source = match node.operation {
+            Some(Operation::Call {
+                signature,
+                source_use,
+            }) => {
+                if signature != call.signature || node.ty != Some(call.result) {
+                    return Err("abstract const call changed its opened signature or result");
+                }
+                return Ok((
+                    source_use.ok_or("abstract const call has no defining source-use fact")?,
+                    false,
+                ));
+            }
+            Some(Operation::Field { plan: Some(id), .. }) => {
+                let plan = id.current(self.facts, self.owner, call.site)?;
+                let crate::sema::protocol_plans::Kind::Field { steps, .. } = plan.kind else {
+                    return Err("abstract const field changed its actual protocol");
+                };
+                charge(
+                    steps
+                        .end
+                        .saturating_sub(steps.start)
+                        .checked_ilog2()
+                        .map_or(1, |n| n as usize + 2),
+                )?;
+                crate::sema::protocol_plans::access::retained(
+                    self.facts,
+                    plan,
+                    self.owner,
+                    crate::sema::iteration::Call {
+                        callable: call.target,
+                        signature: call.signature,
+                    },
+                )
+                .map_err(|_| "abstract const field lost its actual retained call")?;
+                if !matches!(self.facts.types.kind(call.signature), Some(Kind::Function { result, .. }) if result == call.result)
+                {
+                    return Err("abstract const field changed its actual call result");
+                }
+                plan.source_use
+            }
+            _ => return Err("abstract const call changed its typed source operation"),
+        };
+        Ok((source, true))
     }
 
     fn check_premise(

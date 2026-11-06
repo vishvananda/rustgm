@@ -610,8 +610,15 @@ impl Context {
         if self.head(store, id)?.is_none() {
             return Ok(None);
         }
-        let term = self.terms[id.0 as usize];
-        Ok(Some((term.end - term.start) as usize))
+        let term = self
+            .terms
+            .get(id.0 as usize)
+            .ok_or(Error::InvalidIdentity)?;
+        let children = self
+            .edges
+            .get(term.start as usize..term.end as usize)
+            .ok_or(Error::InvalidIdentity)?;
+        Ok(Some(children.len()))
     }
     /// Apply the compilation unit's never fallback to an otherwise unconstrained
     /// general variable at a never-coercion site, after all body constraints.

@@ -15,9 +15,8 @@ use crate::{
 
 #[derive(Clone, Copy)]
 pub(super) struct Field {
-    receiver: TermId,
-    name: Name,
-    kind: Constructor,
+    pub receiver: TermId,
+    pub name: Name,
 }
 
 impl Checker<'_> {
@@ -560,7 +559,8 @@ impl Checker<'_> {
         value: NodeId,
         name: Span,
     ) -> Result<TermId, Error> {
-        let field = self.prepare_field(node, value, name)?;
+        let mut field = self.prepare_field(node, value, name)?;
+        field.receiver = self.autoderef(node, field.receiver)?;
         self.complete_field(node, field)
     }
     pub(super) fn prepare_field(
@@ -570,19 +570,12 @@ impl Checker<'_> {
         name: Span,
     ) -> Result<Field, Error> {
         let name = self.member_name(node, name)?;
-        let receiver = self.autoderef(node, self.term(value)?)?;
+        let receiver = self.term(value)?;
         self.check_union_receiver(node, value)?;
-        let kind = self.head(node, receiver)?.ok_or_else(|| {
-            self.error(node, "field access requires a known tuple or struct type")
-        })?;
-        Ok(Field {
-            receiver,
-            name,
-            kind,
-        })
+        Ok(Field { receiver, name })
     }
-    pub(super) fn field_dependency(&self, field: &Field) -> Option<crate::types::ItemId> {
-        let (Constructor::Adt(item, _) | Constructor::AdtArgs(item, _)) = field.kind else {
+    pub(super) fn field_dependency(&self, kind: Constructor) -> Option<crate::types::ItemId> {
+        let (Constructor::Adt(item, _) | Constructor::AdtArgs(item, _)) = kind else {
             return None;
         };
         let definition = &self.report.resolution.definitions[item.0 as usize];
@@ -593,11 +586,10 @@ impl Checker<'_> {
         .then_some(item)
     }
     pub(super) fn complete_field(&mut self, node: NodeId, field: Field) -> Result<TermId, Error> {
-        let Field {
-            receiver,
-            name,
-            kind,
-        } = field;
+        let Field { receiver, name } = field;
+        let kind = self.head(node, receiver)?.ok_or_else(|| {
+            self.error(node, "field access requires a known tuple or struct type")
+        })?;
         let (selection, ty) = match kind {
             Constructor::Tuple => {
                 let Name::Index(index) = name else {
@@ -626,8 +618,72 @@ impl Checker<'_> {
             }
             _ => return Err(self.error(node, "field access requires a known tuple or struct type")),
         };
-        self.selected(node, Operation::Field { field: selection })?;
+        let plan = match self
+            .facts
+            .node(self.key(node))
+            .and_then(|fact| fact.operation)
+        {
+            Some(Operation::Field { field, plan }) if field == selection => plan,
+            Some(Operation::Field { .. }) => {
+                return Err(self.error(node, "field selection changed its actual published member"));
+            }
+            _ => None,
+        };
+        self.selected(
+            node,
+            Operation::Field {
+                field: selection,
+                plan,
+            },
+        )?;
         Ok(ty)
+    }
+
+    pub(super) fn present_field(
+        &mut self,
+        node: NodeId,
+        field: Field,
+        kind: Constructor,
+    ) -> Result<bool, Error> {
+        match kind {
+            Constructor::Tuple => {
+                let Name::Index(index) = field.name else {
+                    return Ok(false);
+                };
+                let count = self
+                    .state
+                    .infer
+                    .arity(&self.facts.types, field.receiver)
+                    .map_err(|e| self.error(node, e))?
+                    .ok_or_else(|| self.error(node, "tuple field lost its known actual head"))?;
+                Ok((index as usize) < count)
+            }
+            Constructor::Adt(item, _) | Constructor::AdtArgs(item, _) => {
+                let definition = self
+                    .report
+                    .resolution
+                    .definitions
+                    .get(item.0 as usize)
+                    .ok_or_else(|| self.error(node, "field owner has an invalid declaration"))?;
+                if definition.kind != DefKind::Struct {
+                    return Ok(false);
+                }
+                let variant = self.struct_variant(node, item)?;
+                let Kind::Field { name: span, .. } = self.kind(node) else {
+                    return Err(self.error(node, "field lookup lost its actual source syntax"));
+                };
+                let context = match field.name {
+                    Name::Named(_) => self.field_adjustment(node, item, span.start)?.context,
+                    Name::Index(_) => ItemContext::ROOT,
+                };
+                Ok(self
+                    .facts
+                    .members
+                    .field_in(variant, field.name, context)
+                    .is_some())
+            }
+            _ => Ok(false),
+        }
     }
     pub(super) fn array_index(
         &mut self,

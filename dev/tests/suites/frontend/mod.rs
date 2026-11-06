@@ -178,3 +178,11 @@ mod wrapper_sources;
 
 #[path = "../../group_execution.rs"]
 mod group_execution;
+
+#[path = "../../access_sources.rs"]
+mod access_sources;
+#[path = "../../stream_sources.rs"]
+mod stream_sources;
+
+#[path = "../../autoref_lints.rs"]
+mod autoref_lints;

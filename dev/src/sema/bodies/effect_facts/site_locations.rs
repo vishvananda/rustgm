@@ -185,6 +185,10 @@ impl Checker<'_> {
         for index in 0..self.state.calls.len() {
             let (node, _) = self.state.calls[index];
             if self.is_protocol_call(node) {
+                if self.field_plan(node).is_some() {
+                    // Open plans below visit each actual Field call exactly once.
+                    continue;
+                }
                 if let Some(Operation::Try { plan } | Operation::Iteration { plan }) = self
                     .facts
                     .node(self.key(node))
@@ -193,7 +197,11 @@ impl Checker<'_> {
                     let plan = plan
                         .current(self.facts, self.state.body, self.key(node))
                         .map_err(|e| self.error(node, e))?;
-                    for call in plan.calls().into_iter().flatten() {
+                    let mut calls = plan.calls().map_err(|e| self.error(node, e))?;
+                    while let Some(call) = plan
+                        .next_call(self.facts, self.state.body, &mut calls)
+                        .map_err(|e| self.error(node, e))?
+                    {
                         self.retain_site_request(requests, node, call.callable)?;
                     }
                 }
@@ -233,22 +241,14 @@ impl Checker<'_> {
         self.ordinary_site_requests(solved, &mut requests)?;
         for index in 0..self.state.call_types.protocol_plans.len() {
             let open = self.state.call_types.protocol_plans[index];
-            let calls = match open.kind {
-                crate::sema::bodies::protocol_control::OpenKind::Block { call, .. } => {
-                    [Some(call), None]
-                }
-                crate::sema::bodies::protocol_control::OpenKind::Branch {
-                    branch,
-                    residual,
-                    ..
-                } => [Some(branch), Some(residual)],
-                crate::sema::bodies::protocol_control::OpenKind::Iteration {
-                    into_iter,
-                    next,
-                    ..
-                } => [Some(into_iter), Some(next)],
-            };
-            for call in calls.into_iter().flatten() {
+            let count = open
+                .kind
+                .call_count()
+                .map_err(|e| self.error(open.node, e))?;
+            for index in 0..count {
+                let call = self
+                    .protocol_open_call(open, index)
+                    .map_err(|e| self.error(open.node, e))?;
                 let call = call.solved(solved).map_err(|e| self.error(open.node, e))?;
                 self.retain_site_request(&mut requests, open.node, call.callable)?;
             }

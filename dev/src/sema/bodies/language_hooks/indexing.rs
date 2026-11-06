@@ -68,7 +68,7 @@ impl Checker<'_> {
             if mutable { Hook::IndexMut } else { Hook::Index },
             pending,
             signature,
-        );
+        )?;
         Ok(output)
     }
     pub(in crate::sema::bodies) fn source_primitive_index_solved(

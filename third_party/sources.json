@@ -307,6 +307,20 @@
         "sha256": "3af819eb5ff295959096e4f4a721a3f8b6bf54ceec33a226b44a72e6bad51485",
         "expected_status": 0
       }
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/async_iter/async_iter.rs",
+      "destination": "pa31/tests/spec/async-iterator/original.rs",
+      "sha256": "90d7c43c1335f58e4db6d016db2638a5d14406caf34d12714f626b71d4690e9a",
+      "adaptation": "none; original bytes retained; whole providers prepend authored no_core foundation",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31",
+      "oracle_companion": {
+        "path": "pa31/tests/spec/async-iterator/whole.rs",
+        "sha256": "05350cccee0180952df499d6e2d209e653edbe007cc86e9ac177e17b55a055ee",
+        "expected_status": 0
+      }
     }
   ]
 }

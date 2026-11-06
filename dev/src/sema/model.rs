@@ -56,6 +56,7 @@ pub enum Operation {
     },
     Field {
         field: super::members::Selection,
+        plan: Option<super::bodies::ProtocolPlanId>,
     },
     Index {
         length: u64,

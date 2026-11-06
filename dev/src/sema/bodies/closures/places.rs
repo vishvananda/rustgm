@@ -240,13 +240,19 @@ impl Places {
                 for _ in 0..count {
                     place = self.dereference(checker, node, place)?;
                 }
-                let Some(Operation::Field { field }) = checker
+                let Some(Operation::Field { field, plan }) = checker
                     .facts
                     .node(checker.key(node))
                     .and_then(|fact| fact.operation)
                 else {
                     return Err(checker.error(node, "missing typed closure field selection"));
                 };
+                if plan.is_some() || checker.field_plan(node).is_some() {
+                    return Err(checker.error(
+                        node,
+                        "overloaded field capture requires its actual checked dereference path",
+                    ));
+                }
                 let step = self.field_step(checker, node, &mut place, field)?;
                 let path = self
                     .graph

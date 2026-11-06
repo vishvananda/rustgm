@@ -163,6 +163,12 @@ fn unimplemented_builtin_claims_stop_before_granting_layout_drop_or_auto_trait_s
                 | LangItem::AsyncFnKindHelper
                 | LangItem::AsyncFnKindUpvars
                 | LangItem::FusedIterator
+                | LangItem::AsyncIterator
+                | LangItem::AsyncIteratorPollNext
+                | LangItem::AsyncGenReady
+                | LangItem::AsyncGenPending
+                | LangItem::AsyncGenFinished
+                | LangItem::IntoAsyncIterIntoIter
                 | LangItem::Mul
                 | LangItem::Rem
                 | LangItem::BitXor

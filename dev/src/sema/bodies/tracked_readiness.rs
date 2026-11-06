@@ -74,16 +74,14 @@ impl Checker<'_> {
         for index in 0..self.state.call_types.protocol_plans.len() {
             let open = self.state.call_types.protocol_plans[index];
             self.caller_readiness_step(open.node)?;
-            let calls = match open.kind {
-                super::protocol_control::OpenKind::Block { call, .. } => [Some(call), None],
-                super::protocol_control::OpenKind::Branch {
-                    branch, residual, ..
-                } => [Some(branch), Some(residual)],
-                super::protocol_control::OpenKind::Iteration {
-                    into_iter, next, ..
-                } => [Some(into_iter), Some(next)],
-            };
-            for call in calls.into_iter().flatten() {
+            let count = open
+                .kind
+                .call_count()
+                .map_err(|e| self.error(open.node, e))?;
+            for index in 0..count {
+                let call = self
+                    .protocol_open_call(open, index)
+                    .map_err(|e| self.error(open.node, e))?;
                 let call = call.solved(solved).map_err(|e| self.error(open.node, e))?;
                 if self.requires_caller_site(open.node, call.callable)? {
                     return Ok(Some(open.node));

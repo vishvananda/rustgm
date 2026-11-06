@@ -22,6 +22,7 @@ mod target_permissions;
 mod tracked_readiness;
 pub(super) use effect_facts::CallContexts;
 pub use effect_facts::{OffsetPlanId, ProtocolPlanId, SourceCallUse};
+mod access_paths;
 mod assembly_values;
 mod environment_values;
 mod field_storage;
@@ -252,6 +253,7 @@ enum Work {
     CollectClosure,
     CollectInline,
 }
+const _: [(); 24] = [(); size_of::<Work>()];
 /// Cleared storage can be reused between short declaration-time constants.
 /// Successful checks clear touched slots; caller evidence is cleared before reuse.
 #[derive(Default)]
@@ -950,8 +952,9 @@ impl Checker<'_> {
                     }
                 }
                 Work::Field(node, field) => {
-                    let term = self.complete_field(node, field)?;
-                    self.schedule_expression_completion(node, term)?;
+                    if let Some(dependency) = self.progress_field(node, field)? {
+                        return Ok(Some(dependency));
+                    }
                 }
                 Work::CompleteExpression(node, term) => self.exit_expression(node, term)?,
             }
@@ -998,19 +1001,11 @@ impl Checker<'_> {
                 source: self.key(node),
             }));
         }
-        let term = if let Kind::Field { value, name } = self.kind(node) {
+        if let Kind::Field { value, name } = self.kind(node) {
             let field = self.prepare_field(node, value, name)?;
-            if let Some(item) = self.field_dependency(&field) {
-                self.state.work.push(Work::Field(node, field));
-                return Ok(Some(Dependency {
-                    requirement: Requirement::Nominal(item),
-                    source: self.key(node),
-                }));
-            }
-            self.complete_field(node, field)?
-        } else {
-            self.expression(node)?
-        };
+            return self.progress_field(node, field);
+        }
+        let term = self.expression(node)?;
         self.schedule_expression_completion(node, term)?;
         Ok(None)
     }

@@ -379,6 +379,7 @@ fn aggregate_selections_keep_nominal_field_ids_and_array_bounds() -> Result<(), 
             Some(Operation::FieldInit { field }) => initializers.push(field.0),
             Some(Operation::Field {
                 field: Selection::Nominal(field),
+                ..
             }) => fields.push(field.0),
             Some(Operation::Index { length }) => {
                 assert_eq!(length, 2);

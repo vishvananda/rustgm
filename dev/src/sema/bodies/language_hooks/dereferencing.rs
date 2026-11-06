@@ -1,6 +1,17 @@
 //! Dereference syntax selects the actual source method and borrows its receiver once.
-use super::super::{Checker, Error, NodeId, TermId, Type};
+use super::super::{Checker, DefId, Error, NodeId, TermId, Type};
 use crate::types::{ItemId, infer::predicates::Predicate};
+
+/// Transient actual call inputs; final body/region proof supplies permission.
+pub(in crate::sema::bodies) struct DereferenceCall {
+    pub(in crate::sema::bodies) method: DefId,
+    pub(in crate::sema::bodies) callable: TermId,
+    pub(in crate::sema::bodies) signature: TermId,
+    pub(in crate::sema::bodies) receiver: TermId,
+    pub(in crate::sema::bodies) borrow: TermId,
+    pub(in crate::sema::bodies) target: TermId,
+}
+const _: [(); 24] = [(); size_of::<DereferenceCall>()];
 
 impl Checker<'_> {
     pub(in crate::sema::bodies) fn source_dereference(
@@ -9,16 +20,44 @@ impl Checker<'_> {
         operand: NodeId,
         mutable: bool,
     ) -> Result<TermId, Error> {
+        let subject = self.term(operand)?;
+        let call = self.dereference_call(node, subject, mutable)?;
+        let pending = self.retain_language_borrow(
+            node,
+            operand,
+            call.method,
+            call.callable,
+            subject,
+            call.borrow,
+        );
+        self.state.call_types.methods[pending]
+            .1
+            .expect_receiver(call.receiver);
+        self.retain_dereference_call(node, mutable, pending, call.signature)?;
+        Ok(call.target)
+    }
+
+    pub(in crate::sema::bodies) fn dereference_call(
+        &mut self,
+        node: NodeId,
+        subject: TermId,
+        mutable: bool,
+    ) -> Result<DereferenceCall, Error> {
         let selected = crate::sema::compiler_items::dereferencing::query(
             self.report,
             self.facts,
             self.key(node),
             mutable,
         )?;
-        let subject = self.term(operand)?;
+        let effect = self.callee_use_effect()?;
         self.state.call_types.obligations.push((
             node,
-            Predicate::trait_application(subject, ItemId(selected.trait_definition.0), Vec::new()),
+            Predicate::trait_application_with_effect(
+                subject,
+                ItemId(selected.trait_definition.0),
+                Vec::new(),
+                effect,
+            ),
         ));
         self.complete_method_arguments(node, selected.method)?;
         let item = self.facts.definitions[selected.method.0 as usize]
@@ -39,12 +78,13 @@ impl Checker<'_> {
         let actual = self.operand_borrow(node, subject, receiver, mutable)?;
         let result = self.child(node, signature, 1)?;
         let target = self.child(node, result, 0)?;
-        let pending =
-            self.retain_language_borrow(node, operand, selected.method, callable, subject, actual);
-        self.state.call_types.methods[pending]
-            .1
-            .expect_receiver(receiver);
-        self.retain_dereference_call(node, mutable, pending, signature);
-        Ok(target)
+        Ok(DereferenceCall {
+            method: selected.method,
+            callable,
+            signature,
+            receiver,
+            borrow: actual,
+            target,
+        })
     }
 }

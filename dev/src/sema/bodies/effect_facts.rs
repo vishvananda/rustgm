@@ -2,6 +2,7 @@
 use super::{Checker, Declarations, Error};
 use crate::{resolve::unit::NodeKey, support::constness::Constness, types::infer::Solved};
 use std::num::NonZeroU32;
+mod access_rows;
 #[path = "effect_facts/site_locations.rs"]
 mod caller_sites;
 mod discharged_sites;
@@ -42,11 +43,20 @@ pub(in crate::sema) struct CallContexts {
     sites: Vec<caller_sites::Site>,
     offsets: Option<Box<displacement_rows::Rows>>,
     safety: Option<Box<discharged_sites::Rows>>,
+    access: Option<Box<crate::sema::protocol_plans::access::Rows>>,
 }
+const _: [(); 96] = [(); size_of::<CallContexts>()];
+const _: [(); 16] = [(); size_of::<crate::sema::model::Operation>()];
+const _: [(); 80] = [(); size_of::<crate::sema::model::NodeFacts>()];
 const MAX_ROWS: usize = 1_000_000;
 const MAX_RETAINED: usize = 16 * 1024 * 1024;
 const MAX_TRANSIENT: usize = 32 * 1024 * 1024;
 impl CallContexts {
+    pub(in crate::sema) fn access_steps(
+        &self,
+    ) -> Option<&[crate::sema::protocol_plans::access::Step]> {
+        Some(&self.access.as_deref()?.steps)
+    }
     fn slot<'a>(
         catalog: &'a mut Option<Box<crate::sema::compiler_items::Catalog>>,
         local: &'a mut Option<Box<Self>>,
@@ -86,6 +96,13 @@ impl CallContexts {
                         .as_deref()
                         .map_or(0, discharged_sites::Rows::bytes),
                 )
+            })
+            .and_then(|bytes| {
+                bytes.checked_add(self.access.as_deref().map_or(0, |rows| {
+                    size_of::<crate::sema::protocol_plans::access::Rows>()
+                        + rows.steps.capacity()
+                            * size_of::<crate::sema::protocol_plans::access::Step>()
+                }))
             })
             .ok_or("source call context storage overflow")
     }
