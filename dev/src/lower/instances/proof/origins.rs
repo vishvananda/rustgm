@@ -1,21 +1,36 @@
 //! Original bodies move with their actual pending rows, without cloning payloads.
+mod rowpay;
 use crate::{
     body::{
         drops::Requirements,
         ir::{Body, Program},
     },
+    resolve::expansion::Report,
     sema::model::Declarations,
     support::retained::{self, Growth},
 };
-pub(in crate::lower::instances) struct Originals {
+pub(in crate::lower::instances) struct Originals<'report> {
     bodies: Vec<Body>,
-    requirements: Option<Vec<Requirements>>,
+    requirements: Option<Box<Rows<'report>>>,
 }
-impl Originals {
-    pub(super) fn take(facts: &Declarations, program: &mut Program) -> Result<Self, &'static str> {
+struct Rows<'report> {
+    values: Vec<Requirements>,
+    payer: rowpay::Payer<'report>,
+}
+impl<'report> Originals<'report> {
+    pub(super) fn take(
+        report: &'report Report,
+        facts: &Declarations,
+        program: &mut Program,
+    ) -> Result<Self, &'static str> {
         let count = program.bodies.len();
         let requirements = if let Some(pending) = &mut program.drops {
-            facts.charge_caller_inputs(count.saturating_mul(4).saturating_add(1), 0)?;
+            let payer = rowpay::Payer::new(report, facts)?;
+            payer.charge(
+                facts,
+                count.saturating_mul(4).saturating_add(1),
+                size_of::<Rows<'_>>(),
+            )?;
             if pending.bodies.len() != count {
                 return Err("original cleanup rows have different body coverage");
             }
@@ -30,7 +45,8 @@ impl Originals {
             // Both row containers can remain live during assembly. Their inner
             // payloads move once; no copy of a Requirements collection is made.
             let growth = Growth::vector::<Requirements>(0, 0, count);
-            facts.charge_caller_inputs(
+            payer.charge(
+                facts,
                 growth.work,
                 growth
                     .bytes
@@ -40,7 +56,10 @@ impl Originals {
             replacement
                 .try_reserve_exact(count)
                 .map_err(|_| "original cleanup row assembly allocation failed")?;
-            Some(std::mem::replace(&mut pending.bodies, replacement))
+            Some(Box::new(Rows {
+                values: std::mem::replace(&mut pending.bodies, replacement),
+                payer,
+            }))
         } else {
             None
         };
@@ -57,11 +76,15 @@ impl Originals {
         facts: &Declarations,
     ) -> Result<(), &'static str> {
         if let Some(rows) = &self.requirements {
-            facts.charge_caller_inputs(self.bodies.len().saturating_add(rows.len()), 0)?;
+            rows.payer.charge(
+                facts,
+                self.bodies.len().saturating_add(rows.values.len()),
+                0,
+            )?;
         }
         self.bodies.reverse();
         if let Some(rows) = &mut self.requirements {
-            rows.reverse();
+            rows.values.reverse();
         }
         Ok(())
     }
@@ -71,7 +94,7 @@ impl Originals {
         if self
             .requirements
             .as_ref()
-            .is_some_and(|r| r.len() != self.bodies.len())
+            .is_some_and(|r| r.values.len() != self.bodies.len())
         {
             return Err("original cleanup row ownership changed before consumption");
         }
@@ -81,7 +104,7 @@ impl Originals {
         let row = self
             .requirements
             .as_mut()
-            .map(|rows| rows.pop().ok_or("original cleanup row is missing"))
+            .map(|rows| rows.values.pop().ok_or("original cleanup row is missing"))
             .transpose()?;
         Ok(Some((body, row)))
     }
@@ -91,17 +114,20 @@ impl Originals {
     ) -> Result<(), &'static str> {
         if self.bodies.len() < self.bodies.capacity() / 2 {
             if let Some(rows) = &self.requirements {
-                facts.charge_caller_inputs(
-                    self.bodies.len().saturating_add(rows.len()),
+                rows.payer.charge(
+                    facts,
+                    self.bodies.len().saturating_add(rows.values.len()),
                     self.bodies
                         .len()
                         .saturating_mul(size_of::<Body>())
-                        .saturating_add(rows.len().saturating_mul(size_of::<Requirements>())),
+                        .saturating_add(
+                            rows.values.len().saturating_mul(size_of::<Requirements>()),
+                        ),
                 )?;
             }
             self.bodies.shrink_to_fit();
             if let Some(rows) = &mut self.requirements {
-                rows.shrink_to_fit();
+                rows.values.shrink_to_fit();
             }
         }
         Ok(())

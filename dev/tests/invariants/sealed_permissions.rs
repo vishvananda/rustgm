@@ -81,7 +81,8 @@ fn control(mode: &str) -> TestResult {
     let (report, mut fixture) = fixture_with_report(SOURCE)?;
     let target = install_conditions(mode, &mut fixture)?;
     let checked = originals(&mut fixture.facts, &fixture.templates, &fixture.inputs)?;
-    let (mut builder, mut bodies) = super::super::Builder::new(&fixture.facts, fixture.program)?;
+    let (mut builder, mut bodies) =
+        super::super::Builder::new(&report, &fixture.facts, fixture.program)?;
     let mut current = None;
     bodies.reverse(&fixture.facts)?;
     while let Some((body, requirements)) = bodies.pop()? {

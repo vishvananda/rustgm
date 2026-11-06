@@ -1,0 +1,217 @@
+{
+  "state": "passed finite actual-report cleanup-row payer repair",
+  "base_main": "d6218dfd1",
+  "parent": "06e1057288a1fa1131ac70ff3f44d4dfabe7240e",
+  "failed_ci": 42176016850,
+  "failed_log": {
+    "path": "obj/parallel/source-transport/ci42176016850/full.raw.log",
+    "sha256": "2868df297013a5f5ba28dc1c993d5371666c84b2ef421af972998afd8b987a73"
+  },
+  "frozen_fixtures": {
+    "path": "obj/parallel/source-transport/ci42176016850/frozen-sources.json",
+    "sha256": "533785856f4fd873d2d0b330104998f017ae7213612b4c7a01e1989837f6fce2"
+  },
+  "source_bindings": [
+    {
+      "path": "dev/src/body/copy_requirements.rs",
+      "sha256": "4e149505edaf124f6414dadbaeabf9d6fa9b2b5a8996f2b1e94b078a7f936376"
+    },
+    {
+      "path": "dev/src/lower/instances/demand.rs",
+      "sha256": "d54a3041e1e9c5b728ec814d7a4387d0897e34bc41d88c2197f7d5b8e736adb5"
+    },
+    {
+      "path": "dev/src/lower/instances/demand/paid_owners.rs",
+      "sha256": "2e34487d5b505eafbb3c03486d674b244ab533241b4b5b64b65226ccb697fb44"
+    },
+    {
+      "path": "dev/src/lower/instances/proof.rs",
+      "sha256": "64302e8b4e61207c90b1208e06ee04e7ad2cdb6650523ce0f9f78613e47f7bd6"
+    },
+    {
+      "path": "dev/src/lower/instances/proof/origins.rs",
+      "sha256": "9e4c1224ed193c567811571dcd535e596eb34745936b23228f6bccc7bea7ce52"
+    },
+    {
+      "path": "dev/src/lower/instances/proof/tests.rs",
+      "sha256": "ad0d563fa4238e68ef1a4888dbf34869b7b6a778da792a0718924dbf7bd614f3"
+    },
+    {
+      "path": "dev/tests/invariants/adapter_contracts.rs",
+      "sha256": "706eaaf179a65f65da58ecfef4701129113d214e2ed44e001cd0613f0a83b2e5"
+    },
+    {
+      "path": "dev/tests/invariants/exposure_stages.rs",
+      "sha256": "380deefeeefdf63b9256b469853ad344cfdad7143d4c82fa2739e5f4c0e727a3"
+    },
+    {
+      "path": "dev/tests/invariants/origrow.rs",
+      "sha256": "908c3927ec5208b96e00bb5693cd4d910ecb0aa6ffe247126f86e038dd745713"
+    },
+    {
+      "path": "dev/tests/invariants/sealed_permissions.rs",
+      "sha256": "cccfb1e951e90483d0e0412099db0bf4793fd23e00382bc38b65b3c6e43bf5d7"
+    },
+    {
+      "path": "dev/src/lower/instances/proof/origins/rowpay.rs",
+      "sha256": "844a936bf8b5c52eb3c290a461e930623278a7901f75902616206ce96345f135"
+    }
+  ],
+  "qualification": [
+    {
+      "path": "obj/parallel/source-transport/ci42176016850/payer1/receipt.json",
+      "sha256": "40e7ac0e0091c67859d244eff6576bb2f6fce67a054010637600a1f5329361a7"
+    },
+    {
+      "path": "obj/parallel/source-transport/ci42176016850/payer2/receipt.json",
+      "sha256": "8e9dadafc57688dc087f5184875770dc7d4c9a6933d8fac4a1b7958750332b66"
+    },
+    {
+      "path": "obj/parallel/source-transport/ci42176016850/payer2/outer-observation.json",
+      "sha256": "26d6bf9a280d8da25db2492aae6bee150e23e8f8f7c4e0fc697d157a11a0df5e"
+    },
+    {
+      "path": "obj/parallel/source-transport/ci42176016850/payer3/receipt.json",
+      "sha256": "7423d9f801c9c6498558e8beff0d336ee376ae616c4a967447b7d18f659c3cc4"
+    },
+    {
+      "path": "obj/parallel/source-transport/ci42176016850/payer4/receipt.json",
+      "sha256": "8a7d85efcafd5a6fe80fd6cb0ede460a3932889c4c09bcf6f2cf1646c9630260"
+    },
+    {
+      "path": "obj/parallel/source-transport/ci42176016850/payer4/sources.json",
+      "sha256": "0a7318ce9b3bb1282006c1d7a85aaf1eef276cfac73009f1b42b92f880f42093"
+    }
+  ],
+  "outer_exits": {
+    "payer1": 0,
+    "payer2": 124,
+    "payer3": 0,
+    "payer4": 0
+  },
+  "final_tests": {
+    "temporary": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "selected": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "sequential": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "constant": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "originals": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "client": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "ctseal": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    "ctfix": {
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0
+    },
+    "ctown": {
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0
+    },
+    "ctleaf": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    "ctwire": {
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0
+    },
+    "ctnext": {
+      "passed": 4,
+      "failed": 0,
+      "ignored": 1
+    },
+    "ctdrop": {
+      "passed": 9,
+      "failed": 0,
+      "ignored": 1
+    },
+    "ctsel": {
+      "passed": 10,
+      "failed": 0,
+      "ignored": 0
+    },
+    "payments": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    "cursor": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    }
+  },
+  "passed_regular_tests": 54,
+  "layouts": {
+    "lower::instances::proof::origins::Originals<'_>": {
+      "bytes": 32,
+      "alignment": 8
+    },
+    "lower::instances::proof::origins::Rows<'_>": {
+      "bytes": 72,
+      "alignment": 8
+    },
+    "lower::instances::proof::origins::rowpay::Payer<'_>": {
+      "bytes": 48,
+      "alignment": 8
+    }
+  },
+  "layout_log": {
+    "path": "obj/parallel/source-transport/ci42176016850/payer2/temporary.stdout",
+    "sha256": "04bd38b4b325558f8189294cb9a0b2cf0357f06a9c710785f9be4d1e90afb840"
+  },
+  "actual_box_charge": 72,
+  "private_execution": "pending CI; all-test/all-feature strict metadata compiled",
+  "native": "not rerun for this cost-only repair",
+  "proof_and_schema": "No semantic permission, Body/Plan/Proved/wire/backend record change",
+  "no_missing_source_fallback": true,
+  "source_map_matches": true,
+  "owned_compiler_files": [
+    "dev/src/body/copy_requirements.rs",
+    "dev/src/lower/instances/demand.rs",
+    "dev/src/lower/instances/demand/paid_owners.rs",
+    "dev/src/lower/instances/proof.rs",
+    "dev/src/lower/instances/proof/origins.rs",
+    "dev/src/lower/instances/proof/tests.rs",
+    "dev/tests/invariants/adapter_contracts.rs",
+    "dev/tests/invariants/exposure_stages.rs",
+    "dev/tests/invariants/origrow.rs",
+    "dev/tests/invariants/sealed_permissions.rs",
+    "dev/src/lower/instances/proof/origins/rowpay.rs"
+  ],
+  "root_owned": "Makefile smoke addition not edited by Source",
+  "warm_cli": {
+    "path": "obj/rust/dev-fast/rustgm",
+    "sha256": "b70012503b886e49d596874e0321e72953424852bef0a1ab6576d0664d2100e9"
+  }
+}

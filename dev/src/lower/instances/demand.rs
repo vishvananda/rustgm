@@ -1095,8 +1095,8 @@ pub(super) fn prepare_ordinary<C: Collect>(
     } else {
         body::constants::analyze_bodies(report, facts, program.bodies.iter(), globals)?;
     }
-    let (mut program, mut bodies) =
-        proof::Builder::new(facts, program).map_err(|e| diagnostic(report, None, e.into()))?;
+    let (mut program, mut bodies) = proof::Builder::new(report, facts, program)
+        .map_err(|e| diagnostic(report, None, e.into()))?;
     program
         .bind_future_store(facts, templates)
         .map_err(|e| diagnostic(report, None, e.into()))?;

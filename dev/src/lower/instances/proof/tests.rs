@@ -36,7 +36,7 @@ fn completed_original_rejects_equal_shaped_foreign_contract_before_collection() 
     let mut program = body::build_concrete(&report, &facts)?;
     body::promote::analyze(&report, &mut facts, &mut program)?;
     let checked = originals(&mut facts, &templates, &inputs)?;
-    let (mut builder, mut bodies) = super::Builder::new(&facts, program)?;
+    let (mut builder, mut bodies) = super::Builder::new(&report, &facts, program)?;
     builder.prepare_parent_regions(&mut facts, &indexed, bodies.bodies())?;
     let staged = builder.stage_parent(
         &mut facts,
@@ -349,7 +349,7 @@ fn assembly_cannot_erase_a_completed_destruction_proof() -> TestResult {
     let (report, mut f) =
         fixture_with_report("struct D;impl Drop for D{fn drop(&mut self){}}fn main(){let d=D;}")?;
     let checked = originals(&mut f.facts, &f.templates, &f.inputs)?;
-    let (mut builder, mut bodies) = super::Builder::new(&f.facts, f.program)?;
+    let (mut builder, mut bodies) = super::Builder::new(&report, &f.facts, f.program)?;
     bodies.reverse(&f.facts)?;
     while let Some((body, requirements)) = bodies.pop()? {
         let input = f

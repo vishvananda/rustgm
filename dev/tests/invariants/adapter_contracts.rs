@@ -134,7 +134,7 @@ fn generic_adapter_requires_its_exact_specialized_source() -> TestResult {
         entries.push(generic_entry(&mut facts, &checked, outer)?);
     }
     assert_ne!(entries[0].instance(), entries[1].instance());
-    let (mut builder, _) = super::super::Builder::new(&facts, program)?;
+    let (mut builder, _) = super::super::Builder::new(&report, &facts, program)?;
     let indices = specialized_sources(&report, &mut facts, &checked, &mut builder, &entries)?;
     assert!(body::adapters::build(&mut facts, entries[0], builder.body(indices[1])?).is_err());
     let prepared = body::adapters::build(&mut facts, entries[0], builder.body(indices[0])?)?;
@@ -237,7 +237,7 @@ fn proved_sources(
     program: body::ir::Program,
     inputs: &[Contract],
 ) -> TestResult<(super::super::Builder, usize, usize)> {
-    let (mut builder, mut bodies) = super::super::Builder::new(facts, program)?;
+    let (mut builder, mut bodies) = super::super::Builder::new(report, facts, program)?;
     let inputs: crate::support::hash::HashMap<_, _> =
         inputs.iter().cloned().map(|c| (c.key, c)).collect();
     builder.prepare_original_regions(facts, &inputs, bodies.bodies())?;

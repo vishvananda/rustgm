@@ -69,7 +69,7 @@ pub(super) fn build<C: Collect>(
         .into_iter()
         .map(|(key, input)| (key, Arc::new(input)))
         .collect();
-    let (mut builder, mut bodies) = proof::Builder::new(facts, program).map_err(error)?;
+    let (mut builder, mut bodies) = proof::Builder::new(report, facts, program).map_err(error)?;
     builder.bind_future_store(facts, templates).map_err(error)?;
     builder
         .prepare_parent_regions(facts, &inputs, bodies.bodies())

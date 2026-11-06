@@ -204,11 +204,12 @@ impl Builder {
         Ok(index)
     }
 
-    pub(super) fn new(
+    pub(super) fn new<'report>(
+        report: &'report crate::resolve::expansion::Report,
         facts: &Declarations,
         mut program: Program,
-    ) -> Result<(Self, origins::Originals), &'static str> {
-        let ordinary = origins::Originals::take(facts, &mut program)?;
+    ) -> Result<(Self, origins::Originals<'report>), &'static str> {
+        let ordinary = origins::Originals::take(report, facts, &mut program)?;
         // Whole-program region tables exist only for body inspection views;
         // proofs and lowering read the per-body contracts instead.
         program.region_equalities = Vec::new();

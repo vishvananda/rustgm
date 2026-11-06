@@ -380,7 +380,7 @@ impl OriginalIndexBudget {
     pub(crate) fn costs(&self) -> (usize, usize) {
         (self.steps.get(), self.bytes.get())
     }
-    fn charge(&self, work: usize, bytes: usize) -> Result<(), &'static str> {
+    pub(crate) fn charge(&self, work: usize, bytes: usize) -> Result<(), &'static str> {
         self.steps.set(self.steps.get().saturating_add(work));
         self.bytes.set(self.bytes.get().saturating_add(bytes));
         if self.steps.get() > self.work_limit || self.bytes.get() > self.byte_limit {

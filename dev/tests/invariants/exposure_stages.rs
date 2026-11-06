@@ -13,7 +13,7 @@ fn first_vtable_batch_retains_exposure_before_later_dynamic_helper_demand() -> R
     let report = crate::test_source::source_provider(&source, "exposure_stages")?;
     let crate::pipeline::Analysis { mut facts, .. } = crate::pipeline::analyze_source(&report)?;
     let program = crate::body::build_concrete(&report, &facts)?;
-    let (mut builder, _) = Builder::new(&facts, program)?;
+    let (mut builder, _) = Builder::new(&report, &facts, program)?;
     assert!(builder.program.drops.is_none());
     assert!(builder.recipes.is_none());
     let empty = builder.object_dependencies(&mut facts, &[])?;
