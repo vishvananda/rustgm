@@ -1,4 +1,7 @@
 //! Associated bindings keep their own syntax range and become separate typed predicates.
+mod constraint;
+mod nest;
+mod proj;
 mod selectors;
 use super::bounds::lexical::Scope;
 use super::{Checker, DefId, Error, Kind, NodeKey, Type, Work, regions};
@@ -23,8 +26,9 @@ pub(in super::super) struct Pending {
     paths: HashMap<NodeKey, Arguments>,
     trait_headers: Option<Vec<Binding>>,
     prepared_arguments: HashSet<NodeKey>,
+    projected: Option<Box<proj::Pending>>,
 }
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(in crate::sema::declarations) struct Binding {
     pub owner: DefId,
     pub path: NodeKey,
@@ -60,7 +64,9 @@ impl Checker<'_> {
         for offset in (list.start..list.end).rev() {
             let node = self.report.package.unit(path.file).configured.ast.edges[offset as usize];
             let key = NodeKey { node, ..path };
-            let value = self.associated_binding_value(key)?;
+            let Some(value) = self.associated_binding_rhs(key)? else {
+                continue;
+            };
             self.work.push(Work::Node(
                 NodeKey {
                     node: value,
@@ -112,15 +118,27 @@ impl Checker<'_> {
     }
 
     pub(in super::super) fn associated_binding_value(&self, key: NodeKey) -> Result<NodeId, Error> {
+        self.associated_binding_rhs(key)?
+            .ok_or_else(|| self.error(key, "this associated binding requires an equality"))
+    }
+    pub(in super::super) fn associated_binding_rhs(
+        &self,
+        key: NodeKey,
+    ) -> Result<Option<NodeId>, Error> {
         match self.kind(key) {
             Kind::Constraint {
                 value: Some(value),
                 bounds,
                 ..
-            } if bounds.start == bounds.end => Ok(value),
+            } if bounds.start == bounds.end => Ok(Some(value)),
+            Kind::Constraint {
+                value: None,
+                bounds,
+                ..
+            } if bounds.start != bounds.end => Ok(None),
             Kind::Constraint { .. } => Err(self.error(
                 key,
-                "associated type bounds require projected bound obligations",
+                "associated binding requires either an equality or bounds",
             )),
             _ => Err(self.error(key, "positional arguments must precede associated bindings")),
         }
@@ -130,6 +148,7 @@ impl Checker<'_> {
         &mut self,
         binding: Binding,
         output: &mut Vec<crate::sema::generics::Predicate>,
+        dependencies: &mut Vec<super::super::aliases::Edge>,
     ) -> Result<bool, Error> {
         if crate::sema::lifetimes::call_arguments(self.report, binding.path)?.is_some() {
             self.call_output_binding(
@@ -141,79 +160,54 @@ impl Checker<'_> {
             )?;
             return Ok(false);
         }
-        let Binding {
-            path,
-            predicate,
-            original,
-            scope,
-            context,
-            ..
-        } = binding;
+        let path = binding.path;
         let Some(list) = self.associated_bindings.bindings(path) else {
             return Ok(false);
         };
-        if let Some(headers) = &mut self.associated_bindings.trait_headers {
-            headers.push(binding);
+        if self.associated_bindings.trait_headers.is_some() {
+            self.stage_header_binding(binding, list)?;
             return Ok(false);
         }
         let mut pending = false;
         for offset in list.start..list.end {
             let node = self.report.package.unit(path.file).configured.ast.edges[offset as usize];
             let source = NodeKey { node, ..path };
-            let binding = self
-                .report
-                .resolution
-                .associated_bindings
-                .get(&source)
-                .ok_or_else(|| self.error(source, "associated binding requires one member name"))?;
-            let name = binding.name;
-            let application = self.binding_projection(source, predicate, name)?;
-            if self.prepare_binding_arguments(source, application, context)? {
-                pending = true;
-                continue;
+            match self.complete_binding_constraint(source, binding)? {
+                constraint::Outcome::Pending => pending = true,
+                constraint::Outcome::Equality(value) => output.push(value),
+                constraint::Outcome::Bounds(subject) => {
+                    pending |= self.complete_projected_bounds(
+                        source,
+                        binding,
+                        subject,
+                        output,
+                        dependencies,
+                    )?;
+                }
             }
-            let ty = self.applied_binding(source, application, context, false)?;
-            let original_ty = if original == predicate {
-                self.applied_binding(source, application, context, true)?
-            } else {
-                let original = self.binding_projection(source, original, name)?;
-                self.applied_binding(source, original, context, true)?
-            };
-            if self
-                .facts
-                .associated
-                .families
-                .contains_key(&DefId(application.item.0))
-            {
-                // The equality's result cannot erase the family selector's
-                // input requirements. Retain that typed root at its own source.
-                self.store(source, original_ty)?;
-            }
-            let value = NodeKey {
-                node: self.associated_binding_value(source)?,
-                ..path
-            };
-            let result = self.ty(value)?;
-            let original_result = self.facts.unreduced.node(value).unwrap_or(result);
-            let value = Predicate {
-                ty,
-                bound: Bound::ProjectionEqual(result),
-            };
-            let original = self.bound_clause(
-                source,
-                scope,
-                Predicate {
-                    ty: original_ty,
-                    bound: Bound::ProjectionEqual(original_result),
-                },
-            )?;
-            self.facts.unreduced.retain_predicate(source, original);
-            output.push(crate::sema::generics::Predicate {
-                source,
-                value: self.bound_clause(source, scope, value)?,
-            });
         }
         Ok(pending)
+    }
+
+    fn stage_header_binding(&mut self, binding: Binding, list: List) -> Result<(), Error> {
+        let path = binding.path;
+        for offset in list.start..list.end {
+            let node = self.report.package.unit(path.file).configured.ast.edges[offset as usize];
+            if self
+                .associated_binding_rhs(NodeKey { node, ..path })?
+                .is_none()
+            {
+                self.prepare_projected_owner(binding.owner)?;
+                self.bound_subject_lifetimes(path, binding.owner)?;
+                break;
+            }
+        }
+        self.associated_bindings
+            .trait_headers
+            .as_mut()
+            .ok_or_else(|| Error::unlocated("missing trait header staging"))?
+            .push(binding);
+        Ok(())
     }
 
     /// Lookup uses complete ordinary headers; equality requirements are published
@@ -231,13 +225,23 @@ impl Checker<'_> {
         let mut additions = Vec::with_capacity(pending.len());
         for binding in pending {
             let mut values = Vec::new();
-            if self.complete_associated_bindings(binding, &mut values)? {
-                self.drain(steps, limit)?;
+            let mut dependencies = Vec::new();
+            loop {
                 values.clear();
-                if self.complete_associated_bindings(binding, &mut values)? {
-                    return Err(self.error(binding.path, "unfinished associated binding arguments"));
+                dependencies.clear();
+                *steps = steps.saturating_add(1);
+                if *steps > limit {
+                    return Err(self.error(
+                        binding.path,
+                        "associated bindings exceed declaration work budget",
+                    ));
                 }
+                if !self.complete_associated_bindings(binding, &mut values, &mut dependencies)? {
+                    break;
+                }
+                self.drain(steps, limit)?;
             }
+            self.retain_alias_edges(binding.owner, dependencies)?;
             additions.push((ItemId(binding.owner.0), values));
         }
         for (owner, predicates) in &additions {

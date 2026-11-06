@@ -51,6 +51,8 @@ mod retained_projection_results;
 mod scoped_projection_inputs;
 #[path = "../../scoped_result_relations.rs"]
 mod scoped_result_relations;
+#[path = "../../selector_bounds.rs"]
+mod selector_bounds;
 #[path = "../../support/semantic.rs"]
 pub(crate) mod semantic;
 #[path = "../../signature_projection_environments.rs"]

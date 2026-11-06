@@ -1,0 +1,24 @@
+{
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "originals": {
+    "original-future.rs": {
+      "path": "library/core/src/future/future.rs",
+      "sha256": "0220631d95ab45f4b769911df75da8d5542eae1eacb771aa9164c48ddb452bcf"
+    },
+    "original-into.rs": {
+      "path": "library/core/src/future/into_future.rs",
+      "sha256": "076941ebe7b191e304bb0a852935f1ecc910284cd94350d5de00e8022952811f"
+    },
+    "original-mod.rs": {
+      "path": "library/core/src/future/mod.rs",
+      "sha256": "3e9d8d8c48ef0dd86e0f6980b72e9aa4cdd9dc72f55d9995766d430bc59440b3"
+    }
+  },
+  "foundation": {
+    "path": "pa31/tests/spec/async-iterator/whole.rs",
+    "start_byte": 0,
+    "end_byte_exclusive": 2625,
+    "sha256": "8f6be29c67aece8fe8c5683ca7d1dfb528775abbeb6576436666f6d6a5745509"
+  },
+  "contract": "Full original Future and IntoFuture files embedded unchanged; supporting Pin/Context dependencies are authored protocol, not complete std APIs; original future/mod.rs preserved as required ResumeTy/get_context full closure."
+}

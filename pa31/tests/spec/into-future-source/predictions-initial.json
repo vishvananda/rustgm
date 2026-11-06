@@ -1,0 +1,153 @@
+{
+  "state": "frozen before first reference/candidate observation; expectations are hypotheses pending reference",
+  "cases": {
+    "whole": {
+      "expected_status": 0,
+      "cause": "Complete pinned Future and IntoFuture modules with authored inherited protocol dependencies",
+      "expected_code": null,
+      "sha256": "f8844e3422436cf94eac639dd09be0f0a6be6651f836bf7cbd6682af49e86db4",
+      "native": false
+    },
+    "blanket": {
+      "expected_status": 0,
+      "cause": "Real blanket IntoFuture body self consumes actual Future",
+      "expected_code": null,
+      "sha256": "7a774a3059551fd96296badf00fe7f928694168e3f772a37b9afcc3d98a6b39c",
+      "native": true
+    },
+    "explicit": {
+      "expected_status": 0,
+      "cause": "Real custom operand-dependent source method and output projection",
+      "expected_code": null,
+      "sha256": "7b424ae41775868b131995b3f5330d4c5676e14e4fb9251917c1b2c62d584df0",
+      "native": true
+    },
+    "borrow": {
+      "expected_status": 0,
+      "cause": "Actual blanket retains the full borrowed Future application",
+      "expected_code": null,
+      "sha256": "1ca907345ec3a253f881610fdfaf924fab4b97d32edeb29f746d8b9bf6d3f995",
+      "native": true
+    },
+    "escape": {
+      "expected_status": 1,
+      "cause": "Actual returned lifetime cannot escape its local",
+      "expected_code": "E0515",
+      "sha256": "2c0125f4cc3a0a7e64e445e8dc57aac4c3ba8fcd1726a64c3557206fd187e828",
+      "native": false
+    },
+    "move": {
+      "expected_status": 1,
+      "cause": "By-value conversion consumes non-Copy Self",
+      "expected_code": "E0382",
+      "sha256": "9dcb0a900a23a66d26e97a175ace4d65781d54a54237b9658019d39df91268ef",
+      "native": false
+    },
+    "output": {
+      "expected_status": 1,
+      "cause": "Associated Future Output equality is retained in unused impl",
+      "expected_code": "E0271",
+      "sha256": "f521dfe2e8fdb12942c70f16d25e3e239a33d4f648ebdb68e035db428f5dfe99",
+      "native": false
+    },
+    "missing": {
+      "expected_status": 1,
+      "cause": "Missing actual Future/IntoFuture implementation",
+      "expected_code": "E0277",
+      "sha256": "e5cd58c6a56a91ced73614400d9d58ad59e0f49ea7bdb598034423321c0856f5",
+      "native": false
+    },
+    "notfut": {
+      "expected_status": 1,
+      "cause": "Associated returned type must implement actual Future",
+      "expected_code": "E0277",
+      "sha256": "9a07c30707924815a3828fd5a2d294cc3ac9b9491d6c9b060469e21fa0a05577",
+      "native": false
+    },
+    "fake": {
+      "expected_status": 1,
+      "cause": "Same-spelling non-role trait is not the actual Future",
+      "expected_code": "E0277",
+      "sha256": "a31eb3d1d244a8619ff6531edd5f5e4442673721bea5f88240dbbb80cb4d1810",
+      "native": false
+    },
+    "const": {
+      "expected_status": 1,
+      "cause": "Real ordinary conversion is not const despite identity body",
+      "expected_code": "E0015",
+      "sha256": "447fd525d6b5c7690ce4c9bae60c6263c7ea3616be03952b1414b8bac5d81650",
+      "native": false
+    },
+    "unsafe": {
+      "expected_status": 1,
+      "cause": "Unsafe impl method cannot satisfy the safe actual member",
+      "expected_code": "E0053",
+      "sha256": "87e3f4e7d5d7a8d8c08cafad50a347939f8263aa2e200b6d27683db192161c3f",
+      "native": false
+    },
+    "body": {
+      "expected_status": 1,
+      "cause": "Unused source implementation body is checked normally",
+      "expected_code": "E0308",
+      "sha256": "d325c11111a45eefe5dcf0a0ac1af473085a43ea2977d44e94f4ea6d0739b4e3",
+      "native": false
+    },
+    "duplicate": {
+      "expected_status": 1,
+      "cause": "Duplicate actual language claim",
+      "expected_code": "E0152",
+      "sha256": "b7c7bc4995d523085065e11d40e7ea70b149cfecd27d2ebcc2f4dca3bf218146",
+      "native": false
+    },
+    "alt": {
+      "expected_status": 0,
+      "cause": "Unused alternative required member/arity keeps ordinary legality",
+      "expected_code": null,
+      "sha256": "205cf57c107f170ec3bd057f8c8e3599d03709f1a238d27b98bb5cea2558b965",
+      "native": false
+    },
+    "free": {
+      "expected_status": 1,
+      "cause": "Language role requires actual required trait method",
+      "expected_code": "E0718",
+      "sha256": "9a17d7ee3ed5c79e3d16224f8b10d60e6e1ae7355f721d601d7041ce58b948c5",
+      "native": false
+    },
+    "inher": {
+      "expected_status": 1,
+      "cause": "Inherent owner cannot claim required trait method role",
+      "expected_code": "E0718",
+      "sha256": "30e7feb66103074ac7d58c865d5a45ce4397d644dd430a997f606914a9b63424",
+      "native": false
+    },
+    "provided": {
+      "expected_status": 1,
+      "cause": "Provided trait method is a different actual target kind",
+      "expected_code": "E0718",
+      "sha256": "986897140ee460466954b9a9294949361278aef5ff85bbc309fa7e3c38d26788",
+      "native": false
+    },
+    "norole": {
+      "expected_status": 0,
+      "cause": "Ordinary explicit call does not acquire a language-role requirement",
+      "expected_code": null,
+      "sha256": "bdb7ff27e0c4aff9c58a644505879fc05c3c6d79566e3a059ba42456cf26327d",
+      "native": false
+    },
+    "rename": {
+      "expected_status": 0,
+      "cause": "Actual parent identity/schema not parent spelling",
+      "expected_code": null,
+      "sha256": "4b326a729a47d34a9a8587225e55e1bebabc785d0f11259d773f86cba45023e2",
+      "native": false
+    },
+    "native": {
+      "expected_status": 0,
+      "cause": "Real original blanket plus custom effectful and retained-borrow ordinary source paths",
+      "expected_code": null,
+      "sha256": "9e5e8c4d4361e7fa6605d8e20d09eb08b9d8c9de3e2695ff83d22dbe68aa4a31",
+      "native": true
+    }
+  },
+  "native_expected": "23 23 47 59\n"
+}

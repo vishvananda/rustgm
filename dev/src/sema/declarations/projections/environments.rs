@@ -15,6 +15,7 @@ impl Checker<'_> {
         let Some(application) = request.alias.associated() else {
             return Ok(());
         };
+        self.demand_projection_subject(key, application.subject)?;
         let predicate = Predicate {
             ty: application.subject,
             bound: Bound::Trait(application.trait_application),
@@ -64,6 +65,35 @@ impl Checker<'_> {
             }
             binder = self.regions.parent(current);
         }
+        Ok(())
+    }
+
+    fn demand_projection_subject(
+        &mut self,
+        key: NodeKey,
+        subject: crate::types::TypeId,
+    ) -> Result<(), Error> {
+        if self.facts.source_bindings.is_none() {
+            return Ok(());
+        }
+        let Some(crate::types::Kind::Adt(item, _)) = self.facts.types.kind(subject) else {
+            return Ok(());
+        };
+        if self
+            .facts
+            .generics
+            .nominal_contracts
+            .contains(&DefId(item.0))
+        {
+            return Ok(());
+        }
+        if !self.nominal_registered(item) {
+            return Err(self.error(
+                key,
+                "projected nominal subject lacks its completed imported or local contract producer",
+            ));
+        }
+        self.work.push(Work::NominalContract(item, false));
         Ok(())
     }
 

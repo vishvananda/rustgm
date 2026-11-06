@@ -3,7 +3,7 @@ use crate::support::hash::{HashMap, HashSet};
 use crate::{resolve::model::DefId, types::RegionId};
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct BinderId(usize);
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) enum Position {
     Input,
     Impl,
@@ -14,7 +14,7 @@ pub(super) enum Position {
     Default(DefId),
     Alias(DefId),
 }
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct Context {
     pub binder: Option<BinderId>,
     pub position: Position,

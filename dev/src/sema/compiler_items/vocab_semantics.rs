@@ -76,6 +76,7 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
             | LangItem::AsyncGenPending
             | LangItem::AsyncGenFinished
             | LangItem::IntoAsyncIterIntoIter
+            | LangItem::IntoFutureIntoFuture
             | LangItem::Pin
             | LangItem::PinNewUnchecked
             | LangItem::Deref

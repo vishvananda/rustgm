@@ -1,4 +1,5 @@
 //! Decode resolved bounds once; subjects and trait arguments share the declaration worklist.
+mod finish;
 pub(in crate::sema::declarations) mod lexical;
 mod sizing_defaults;
 use super::{Checker, DefId, Error, Kind, NodeKey, Type, Work, regions};
@@ -19,10 +20,10 @@ pub(in super::super) enum Subject {
 }
 #[derive(Clone, Copy)]
 pub(in super::super) struct Syntax {
-    source: NodeKey,
+    pub(in crate::sema::declarations) source: NodeKey,
     subject: Subject,
-    bound: Written,
-    scope: Option<Scope>,
+    pub(in crate::sema::declarations) bound: Written,
+    pub(in crate::sema::declarations) scope: Option<Scope>,
 }
 #[derive(Clone, Copy)]
 pub(in super::super) enum Written {
@@ -173,7 +174,7 @@ impl Checker<'_> {
             }
         }
     }
-    fn bound_list(
+    pub(in crate::sema::declarations) fn bound_list(
         &mut self,
         key: NodeKey,
         subject: Subject,
@@ -476,9 +477,12 @@ impl Checker<'_> {
                 | crate::resolve::model::DefKind::SelfType
                 | crate::resolve::model::DefKind::Struct
                 | crate::resolve::model::DefKind::Enum
-        ) || self.facts.associated.trait_owner(owner).is_some()
-            && self.report.resolution.definitions[owner.0 as usize].kind
-                == crate::resolve::model::DefKind::TypeAlias;
+        ) || self.report.resolution.definitions[owner.0 as usize].kind
+            == crate::resolve::model::DefKind::Trait
+            && self.projected_bound_owner(owner)
+            || self.facts.associated.trait_owner(owner).is_some()
+                && self.report.resolution.definitions[owner.0 as usize].kind
+                    == crate::resolve::model::DefKind::TypeAlias;
         let mut work = vec![(key.node, true)];
         let mut children = Vec::new();
         let mut seen = crate::support::hash::HashSet::default();
@@ -559,60 +563,15 @@ impl Checker<'_> {
                 Subject::Type(key) => self.facts.unreduced.node(key).unwrap_or(ty),
                 Subject::Parameter(_) | Subject::Associated(_) => ty,
             };
-            let ty = self.bound_subject(bound.source, bound.scope, ty)?;
-            let original_ty = self.bound_subject(bound.source, bound.scope, original_ty)?;
-            if let Written::Alias { path, definition } = bound.bound {
-                let edge = self.canonical_alias_edge(
-                    path,
-                    definition,
-                    ty,
-                    original_ty,
-                    bound.context(context),
-                    self.alias_scope_count(bound.scope),
-                )?;
-                self.complete_alias_bound(owner, edge, &mut completed, &mut alias_edges)?;
-                if !matches!(bound.subject, Subject::Associated(_)) {
-                    input_count = completed.len();
-                }
-                continue;
-            }
-            let (value, original_bound) =
-                self.bound_values(bound.bound, ty, original_ty, bound.context(context))?;
-            if matches!(bound.subject, Subject::Parameter(_))
-                && !matches!(self.facts.types.kind(ty), Some(Type::Parameter(_)))
-            {
-                return Err(self.error(bound.source, "trait bounds require a type parameter"));
-            }
-            let value = Predicate { ty, bound: value };
-            let original = Predicate {
-                ty: original_ty,
-                bound: original_bound,
-            };
-            if original
-                .contains_projections(&self.facts.types)
-                .map_err(|e| self.error(bound.source, e))?
-            {
-                let original = self.bound_clause(bound.source, bound.scope, original)?;
-                self.facts
-                    .unreduced
-                    .retain_predicate(bound.source, original);
-            }
-            completed.push(crate::sema::generics::Predicate {
-                source: bound.source,
-                value: self.bound_clause(bound.source, bound.scope, value)?,
-            });
-            if let Written::User { path, .. } = bound.bound {
-                pending_bindings |= self.complete_associated_bindings(
-                    super::bindings::Binding {
-                        owner,
-                        path,
-                        predicate: value,
-                        original,
-                        scope: bound.scope,
-                        context: bound.context(context),
-                    },
-                    &mut completed,
-                )?;
+            if let Some(binding) = self.complete_written_bound(
+                (owner, context),
+                bound,
+                (ty, original_ty),
+                &mut completed,
+                &mut alias_edges,
+            )? {
+                pending_bindings |=
+                    self.complete_associated_bindings(binding, &mut completed, &mut alias_edges)?;
             }
             if !matches!(bound.subject, Subject::Associated(_)) {
                 input_count = completed.len();
@@ -739,11 +698,9 @@ impl Syntax {
         match self.bound {
             Written::User {
                 path, definition, ..
-            } => Some((path, definition)),
-            Written::Trait(_)
-            | Written::SourceSizing(_)
-            | Written::Outlives(_)
-            | Written::Alias { .. } => None,
+            }
+            | Written::Alias { path, definition } => Some((path, definition)),
+            Written::Trait(_) | Written::SourceSizing(_) | Written::Outlives(_) => None,
         }
     }
     pub(in super::super) fn subject(self) -> Option<NodeKey> {

@@ -1,0 +1,1 @@
+trait A{type Out;}trait B<const N:usize>{}impl<const N:usize>B<N>for u8{}struct S;impl A for S{type Out=u8;}fn f<T:A<Out:B<0>+B<1>+B<2>+B<3>+B<4>+B<5>+B<6>+B<7>+B<8>+B<9>+B<10>+B<11>+B<12>+B<13>+B<14>+B<15>>>(){}fn main(){f::<S>();}

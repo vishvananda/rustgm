@@ -5,6 +5,7 @@ use crate::support::hash::HashSet;
 use crate::types::arguments::Argument;
 use std::sync::Arc;
 
+type Root = (NodeKey, regions::Context);
 pub(super) struct Bounds {
     syntax: Vec<Syntax>,
     roots: Vec<(NodeKey, regions::Context)>,
@@ -131,75 +132,30 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let mut roots = Vec::new();
         let mut seen = HashSet::default();
-        for bound in &syntax {
-            if let Some(key) = bound.subject() {
-                self.retain_bound_root(key, bound.subject_context(context), &mut seen, &mut roots)?;
-            }
-            if let Some((path, definition)) = bound.trait_path() {
-                if let Some((inputs, output)) =
-                    crate::sema::lifetimes::call_arguments(self.report, path)?
-                {
-                    let ast = &self.report.package.unit(path.file).configured.ast;
-                    for node in ast.list(inputs).iter().copied().chain(output) {
-                        self.retain_bound_root(
-                            NodeKey { node, ..path },
-                            bound.context(context),
-                            &mut seen,
-                            &mut roots,
-                        )?;
-                    }
-                    continue;
-                }
-                if let Some(list) = self.associated_bindings.bindings(path) {
-                    for offset in list.start..list.end {
-                        let node = self.report.package.unit(path.file).configured.ast.edges
-                            [offset as usize];
-                        let source = NodeKey { node, ..path };
-                        if self
-                            .facts
-                            .node(source)
-                            .is_some_and(|facts| facts.ty.is_some())
-                        {
-                            self.retain_bound_root(
-                                source,
-                                bound.context(context),
-                                &mut seen,
-                                &mut roots,
-                            )?;
-                        }
-                        let value = self.associated_binding_value(source)?;
-                        self.retain_bound_root(
-                            NodeKey {
-                                node: value,
-                                ..path
-                            },
-                            bound.context(context),
-                            &mut seen,
-                            &mut roots,
-                        )?;
-                    }
-                }
-                let (list, omitted) = self.supplied_arguments(path, definition)?;
-                if let Some(list) = list {
-                    let ast = &self.report.package.unit(path.file).configured.ast;
-                    for (&node, parameter) in ast.list(list).iter().zip(
-                        self.facts.generics.parameters[&definition]
-                            .iter()
-                            .skip(omitted),
-                    ) {
-                        if matches!(parameter.argument, Argument::Type(_)) {
-                            self.retain_bound_root(
-                                NodeKey { node, ..path },
-                                bound.context(context),
-                                &mut seen,
-                                &mut roots,
-                            )?;
-                        }
-                    }
-                }
-            }
+        for &bound in &syntax {
+            self.collect_raw_bound(bound, context, false, &mut seen, &mut roots)?;
         }
-        if !roots.is_empty() {
+        let staged = self.take_projected_roots(owner, crate::support::retained::vector(&syntax))?;
+        let completed = staged.is_some();
+        if let Some(mut staged) = staged {
+            let growth = crate::support::retained::Growth::vector::<Root>(
+                roots.len(),
+                roots.capacity(),
+                staged.len(),
+            );
+            self.charge_bound_staging(growth.work.saturating_add(staged.len()), growth.bytes)?;
+            roots.append(&mut staged);
+        }
+        if !roots.is_empty() || completed {
+            if completed {
+                let table = &self.projections.raw_bounds;
+                let growth = crate::support::retained::Growth::map::<DefId, Bounds>(
+                    table.len(),
+                    table.capacity(),
+                    usize::from(!table.contains_key(&owner)),
+                );
+                self.charge_bound_staging(growth.work.saturating_add(1), growth.bytes)?;
+            }
             self.projections
                 .raw_bounds
                 .insert(owner, Bounds { syntax, roots });
@@ -207,14 +163,157 @@ impl Checker<'_> {
         Ok(())
     }
 
+    fn collect_raw_bound(
+        &self,
+        bound: Syntax,
+        context: regions::Context,
+        projected: bool,
+        seen: &mut HashSet<(NodeKey, regions::Context)>,
+        roots: &mut Vec<(NodeKey, regions::Context)>,
+    ) -> Result<(), Error> {
+        if !projected && let Some(key) = bound.subject() {
+            self.retain_bound_root(key, bound.subject_context(context), seen, roots)?;
+        }
+        if let Some((path, definition)) = bound.trait_path() {
+            if let Some((inputs, output)) =
+                crate::sema::lifetimes::call_arguments(self.report, path)?
+            {
+                let ast = &self.report.package.unit(path.file).configured.ast;
+                for node in ast.list(inputs).iter().copied().chain(output) {
+                    self.retain_bound_root(
+                        NodeKey { node, ..path },
+                        bound.context(context),
+                        seen,
+                        roots,
+                    )?;
+                }
+                return Ok(());
+            }
+            if let Some(list) = self.associated_bindings.bindings(path) {
+                for offset in list.start..list.end {
+                    let node =
+                        self.report.package.unit(path.file).configured.ast.edges[offset as usize];
+                    let source = NodeKey { node, ..path };
+                    if self
+                        .facts
+                        .node(source)
+                        .is_some_and(|facts| facts.ty.is_some())
+                    {
+                        self.retain_bound_root(source, bound.context(context), seen, roots)?;
+                    }
+                    if let Some(value) = self.associated_binding_rhs(source)? {
+                        self.retain_bound_root(
+                            NodeKey {
+                                node: value,
+                                ..path
+                            },
+                            bound.context(context),
+                            seen,
+                            roots,
+                        )?;
+                    }
+                }
+            }
+            let (list, omitted) = self.supplied_arguments(path, definition)?;
+            if let Some(list) = list {
+                let ast = &self.report.package.unit(path.file).configured.ast;
+                for (&node, parameter) in ast.list(list).iter().zip(
+                    self.facts.generics.parameters[&definition]
+                        .iter()
+                        .skip(omitted),
+                ) {
+                    if matches!(parameter.argument, Argument::Type(_)) {
+                        self.retain_bound_root(
+                            NodeKey { node, ..path },
+                            bound.context(context),
+                            seen,
+                            roots,
+                        )?;
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+    pub(in crate::sema::declarations) fn retain_projected_raw_bounds(
+        &mut self,
+        owner: DefId,
+        syntax: &[Syntax],
+        context: regions::Context,
+    ) -> Result<(), Error> {
+        let mut maximum = 0_usize;
+        for &bound in syntax {
+            if let Some((path, definition)) = bound.trait_path() {
+                if let Some((inputs, output)) =
+                    crate::sema::lifetimes::call_arguments(self.report, path)?
+                {
+                    maximum = maximum
+                        .saturating_add((inputs.end - inputs.start) as usize)
+                        .saturating_add(usize::from(output.is_some()));
+                } else {
+                    let (arguments, _) = self.supplied_arguments(path, definition)?;
+                    maximum =
+                        maximum.saturating_add(arguments.map_or(0, |a| (a.end - a.start) as usize));
+                    if let Some(bindings) = self.associated_bindings.bindings(path) {
+                        maximum = maximum.saturating_add(
+                            ((bindings.end - bindings.start) as usize).saturating_mul(2),
+                        );
+                    }
+                }
+            }
+        }
+        let bytes = maximum
+            .saturating_mul(size_of::<Root>())
+            .saturating_add(crate::support::retained::new_map::<Root, ()>(maximum));
+        self.charge_bound_staging(maximum.saturating_add(syntax.len()), bytes)?;
+        let mut roots = Vec::with_capacity(maximum);
+        let mut seen = HashSet::with_capacity_and_hasher(
+            maximum,
+            crate::support::hash::BuildFxHasher::default(),
+        );
+        for &bound in syntax {
+            self.collect_raw_bound(bound, context, true, &mut seen, &mut roots)?;
+        }
+        if roots.is_empty() {
+            return Ok(());
+        }
+        self.stage_projected_roots(owner, &mut roots)?;
+        Ok(())
+    }
+
+    pub(in crate::sema::declarations) fn append_completed_bound_roots(
+        &mut self,
+        owner: DefId,
+        roots: &mut Vec<Root>,
+    ) -> Result<(), Error> {
+        let prior = self.projections.raw_bounds.get(&owner).ok_or_else(|| {
+            Error::unlocated("projected roots follow their completed owner phase")
+        })?;
+        let growth = crate::support::retained::Growth::vector::<Root>(
+            prior.roots.len(),
+            prior.roots.capacity(),
+            roots.len(),
+        );
+        self.charge_bound_staging(growth.work.saturating_add(roots.len()), growth.bytes)?;
+        self.projections
+            .raw_bounds
+            .get_mut(&owner)
+            .ok_or_else(|| Error::unlocated("projected roots lost their completed owner"))?
+            .roots
+            .append(roots);
+        Ok(())
+    }
+
     fn retain_bound_root(
         &self,
         key: NodeKey,
         context: regions::Context,
-        seen: &mut HashSet<NodeKey>,
+        seen: &mut HashSet<(NodeKey, regions::Context)>,
         roots: &mut Vec<(NodeKey, regions::Context)>,
     ) -> Result<(), Error> {
-        if self.facts.types.contains_projections(self.ty(key)?) == Some(true) && seen.insert(key) {
+        if self.facts.types.contains_projections(self.ty(key)?) == Some(true)
+            && seen.insert((key, context))
+        {
             roots.push((key, context));
         }
         Ok(())
@@ -232,8 +331,10 @@ impl Checker<'_> {
         let Some(bounds) = self.projections.raw_bounds.get(&owner) else {
             return Ok(false);
         };
+        let Some(&(key, _)) = bounds.roots.first() else {
+            return Ok(false);
+        };
         let roots = bounds.roots.clone();
-        let key = roots[0].0;
         let environment = self.elaborated_source_environment(key, owner)?;
         self.projections
             .raw_environments

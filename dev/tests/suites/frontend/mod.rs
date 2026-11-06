@@ -77,6 +77,8 @@ mod hygiene;
 mod interpolation;
 #[path = "../../interval_sources.rs"]
 mod interval_sources;
+#[path = "../../into_future.rs"]
+mod into_future;
 #[path = "../../inventory_ordering.rs"]
 mod inventory_ordering;
 #[path = "../../keyed_parameters.rs"]

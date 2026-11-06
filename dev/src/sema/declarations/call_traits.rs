@@ -81,6 +81,7 @@ impl Checker<'_> {
             crate::support::bindings::LangItem::CoroutineResume,
             crate::support::bindings::LangItem::AsyncIteratorPollNext,
             crate::support::bindings::LangItem::IntoAsyncIterIntoIter,
+            crate::support::bindings::LangItem::IntoFutureIntoFuture,
             crate::support::bindings::LangItem::RangeMin,
             crate::support::bindings::LangItem::RangeMax,
             crate::support::bindings::LangItem::RangeSub,

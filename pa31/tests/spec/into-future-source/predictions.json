@@ -1,0 +1,161 @@
+{
+  "state": "corrected fixture requests after failed reference-v1; exact original module attributes retained; no candidate observation",
+  "cases": {
+    "whole": {
+      "expected_status": 0,
+      "cause": "Complete pinned Future and IntoFuture modules with authored inherited protocol dependencies",
+      "expected_code": null,
+      "sha256": "392e27ac6700dceb6ce824dbda85612a81b39682743508aaf00bc1c02538cab4",
+      "native": false
+    },
+    "blanket": {
+      "expected_status": 0,
+      "cause": "Real blanket IntoFuture body self consumes actual Future",
+      "expected_code": null,
+      "sha256": "49dd4f2bb621ad3f2a57a92399cf7669db2e0e7c413e23f795939c656c5c6d6e",
+      "native": true
+    },
+    "explicit": {
+      "expected_status": 0,
+      "cause": "Real custom operand-dependent source method and output projection",
+      "expected_code": null,
+      "sha256": "af5cb1198f68a5b8e39812437dbcc8cbca68d98a28a0d30c0c307f257e58c2b3",
+      "native": true
+    },
+    "borrow": {
+      "expected_status": 0,
+      "cause": "Actual blanket retains the full borrowed Future application",
+      "expected_code": null,
+      "sha256": "73927820436c84fe13d26ed071a8570472eb2c26fb947f3c5510d5d3ecc28af2",
+      "native": true
+    },
+    "escape": {
+      "expected_status": 1,
+      "cause": "Actual returned lifetime cannot escape its local",
+      "expected_code": "E0515",
+      "sha256": "d7925a3f7cdf70887b2eec1509b3cd41cf13f99a3a743afea6605d37b3bbcdd4",
+      "native": false
+    },
+    "move": {
+      "expected_status": 1,
+      "cause": "By-value conversion consumes non-Copy Self",
+      "expected_code": "E0382",
+      "sha256": "9069271b2617b7d78081eee3669caf9b69d29eb616eb6de831fe669f7794b9d2",
+      "native": false
+    },
+    "output": {
+      "expected_status": 1,
+      "cause": "Associated Future Output equality is retained in unused impl",
+      "expected_code": "E0271",
+      "sha256": "6254d84439fa127bb65a51da17d383ccfc99eb1ac10f6c4537282eff7ca98bfb",
+      "native": false
+    },
+    "missing": {
+      "expected_status": 1,
+      "cause": "Missing actual Future/IntoFuture implementation",
+      "expected_code": "E0277",
+      "sha256": "435f7a8a568cebe773770068e6968c308c0dfa00e6091791ba5eb4bb1dcb29b3",
+      "native": false
+    },
+    "notfut": {
+      "expected_status": 1,
+      "cause": "Associated returned type must implement actual Future",
+      "expected_code": "E0277",
+      "sha256": "650d5be2f7cd9850a2e3cae29996d3cb7b93809d02d6456913881710c8c0db28",
+      "native": false
+    },
+    "fake": {
+      "expected_status": 1,
+      "cause": "Same-spelling non-role trait is not the actual Future",
+      "expected_code": "E0277",
+      "sha256": "7f2a42aa648260b46b9d2c82979a75388a941cc65a56c394ca7ef5affb45d8ec",
+      "native": false
+    },
+    "const": {
+      "expected_status": 1,
+      "cause": "Real ordinary conversion is not const despite identity body",
+      "expected_code": "E0015",
+      "sha256": "e3f2d15b21a14553f6d263f71bb3e28bc191a208fa85cfb02b4c8b0866a8a819",
+      "native": false
+    },
+    "unsafe": {
+      "expected_status": 1,
+      "cause": "Unsafe impl method cannot satisfy the safe actual member",
+      "expected_code": "E0053",
+      "sha256": "dcf3f57b29b62bc2588f6897fdd0b1f923599c8550e23077292ca751843b0ad1",
+      "native": false
+    },
+    "body": {
+      "expected_status": 1,
+      "cause": "Unused source implementation body is checked normally",
+      "expected_code": "E0308",
+      "sha256": "61b2b8300dd5fc296a9dcfcfb7186eb49b5a8f7b3a28b6610d4038a947863ece",
+      "native": false
+    },
+    "duplicate": {
+      "expected_status": 1,
+      "cause": "Duplicate actual language claim",
+      "expected_code": "E0152",
+      "sha256": "813b59f1c637ad5ff32f69f3aa1f0e90bf974d86ddd97c6ba833682ea1c813bd",
+      "native": false
+    },
+    "alt": {
+      "expected_status": 0,
+      "cause": "Unused alternative required member/arity keeps ordinary legality",
+      "expected_code": null,
+      "sha256": "205cf57c107f170ec3bd057f8c8e3599d03709f1a238d27b98bb5cea2558b965",
+      "native": false
+    },
+    "free": {
+      "expected_status": 1,
+      "cause": "Language role requires actual required trait method",
+      "expected_code": null,
+      "sha256": "9a17d7ee3ed5c79e3d16224f8b10d60e6e1ae7355f721d601d7041ce58b948c5",
+      "native": false,
+      "expected_error_contains": "cannot be used on functions"
+    },
+    "inher": {
+      "expected_status": 1,
+      "cause": "Inherent owner cannot claim required trait method role",
+      "expected_code": null,
+      "sha256": "30e7feb66103074ac7d58c865d5a45ce4397d644dd430a997f606914a9b63424",
+      "native": false,
+      "expected_error_contains": "cannot be used on inherent methods"
+    },
+    "provided": {
+      "expected_status": 1,
+      "cause": "Provided trait method is a different actual target kind",
+      "expected_code": null,
+      "sha256": "986897140ee460466954b9a9294949361278aef5ff85bbc309fa7e3c38d26788",
+      "native": false,
+      "expected_error_contains": "cannot be used on provided trait methods"
+    },
+    "norole": {
+      "expected_status": 0,
+      "cause": "Ordinary explicit call does not acquire a language-role requirement",
+      "expected_code": null,
+      "sha256": "c143e13d661e9c7809bc2320fed26f93312583fce0e8aa29af1f4dc9b6400d2e",
+      "native": false
+    },
+    "rename": {
+      "expected_status": 0,
+      "cause": "Actual parent identity/schema not parent spelling",
+      "expected_code": null,
+      "sha256": "0e992e828db86ee8ed45013715277ce66b60a62cbe57c19811d426ff756dce87",
+      "native": false
+    },
+    "native": {
+      "expected_status": 0,
+      "cause": "Real original blanket plus custom effectful and retained-borrow ordinary source paths",
+      "expected_code": null,
+      "sha256": "05cefa4e0e34fdec4daa6f905edf75aa3811fa373b0689c28730f898f2c64962",
+      "native": true
+    }
+  },
+  "native_expected": "23 23 47 59\n",
+  "candidate_profile": "cap-lints=allow; default uncapped full-source doc diagnostics remain Rust-positive PA40 required work",
+  "reference_profiles": [
+    "uncapped reference-v2 all21 and native passed",
+    "cap-lints=allow reference-v3 all21 and native passed before capped candidate"
+  ]
+}

@@ -380,6 +380,43 @@
       "adaptation": "none; full reference retained; exact field blocks/constructor and authored construction companions are qualified separately; full derive/module/metadata remain required",
       "oracle": "source-fragment",
       "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/future/future.rs",
+      "destination": "pa31/tests/spec/into-future-source/original-future.rs",
+      "sha256": "0220631d95ab45f4b769911df75da8d5542eae1eacb771aa9164c48ddb452bcf",
+      "adaptation": "none; full original bytes retained; actual Future/IntoFuture modules embedded unchanged with inherited authored protocol foundation; future/mod.rs ResumeTy/get_context closure remains required",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31",
+      "oracle_companion": {
+        "path": "pa31/tests/spec/into-future-source/whole.rs",
+        "sha256": "392e27ac6700dceb6ce824dbda85612a81b39682743508aaf00bc1c02538cab4",
+        "expected_status": 0
+      }
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/future/into_future.rs",
+      "destination": "pa31/tests/spec/into-future-source/original-into.rs",
+      "sha256": "076941ebe7b191e304bb0a852935f1ecc910284cd94350d5de00e8022952811f",
+      "adaptation": "none; full original bytes retained; actual Future/IntoFuture modules embedded unchanged with inherited authored protocol foundation; future/mod.rs ResumeTy/get_context closure remains required",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31",
+      "oracle_companion": {
+        "path": "pa31/tests/spec/into-future-source/whole.rs",
+        "sha256": "392e27ac6700dceb6ce824dbda85612a81b39682743508aaf00bc1c02538cab4",
+        "expected_status": 0
+      }
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/future/mod.rs",
+      "destination": "pa31/tests/spec/into-future-source/original-mod.rs",
+      "sha256": "3e9d8d8c48ef0dd86e0f6980b72e9aa4cdd9dc72f55d9995766d430bc59440b3",
+      "adaptation": "none; full original bytes retained; actual Future/IntoFuture modules embedded unchanged with inherited authored protocol foundation; future/mod.rs ResumeTy/get_context closure remains required",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
     }
   ]
 }

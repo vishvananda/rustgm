@@ -9,13 +9,19 @@ use crate::{
     },
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(in crate::sema::declarations) struct Scope {
     binder: regions::BinderId,
     subject_inside: bool,
 }
 
 impl Scope {
+    pub(in crate::sema::declarations) fn inside(self) -> Self {
+        Self {
+            subject_inside: true,
+            ..self
+        }
+    }
     pub(in crate::sema::declarations) fn count(self, regions: &regions::Regions) -> u32 {
         regions.count(self.binder)
     }

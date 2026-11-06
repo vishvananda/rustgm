@@ -12837,6 +12837,134 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/hrtb.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/selector_bounds.rs independently frozen source packet",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/hrbad.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/selector_bounds.rs independently frozen source packet",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/assoc-bounds/outer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/selector_bounds.rs independently frozen source packet",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/gat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/selector_bounds.rs independently frozen source packet",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/gwrong.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/selector_bounds.rs independently frozen source packet",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/assoc-bounds/alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/selector_bounds.rs independently frozen source packet",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/unused.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/selector_bounds.rs independently frozen source packet",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

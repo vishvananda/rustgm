@@ -1,4 +1,4 @@
-//! Ordinary async-iterator declarations provide no generated coroutine implementation.
+//! Ordinary future/async-iterator members provide no generated coroutine implementation.
 use super::Catalog;
 use crate::{
     resolve::{bindings::Declaration, expansion::Report, model::DefKind, package::Error},
@@ -13,11 +13,12 @@ pub(super) fn complete(
     report: &Report,
     facts: &Declarations,
     catalog: &Catalog,
-) -> Result<[Option<LangItem>; 2], Error> {
-    let mut completed = [None; 2];
+) -> Result<[Option<LangItem>; 3], Error> {
+    let mut completed = [None; 3];
     for (slot, role) in [
         LangItem::AsyncIteratorPollNext,
         LangItem::IntoAsyncIterIntoIter,
+        LangItem::IntoFutureIntoFuture,
     ]
     .into_iter()
     .enumerate()
@@ -138,7 +139,9 @@ fn require_owner(
     let error = |message| Declarations::error(report, declaration.origin, message);
     if matches!(
         role,
-        LangItem::AsyncIteratorPollNext | LangItem::IntoAsyncIterIntoIter
+        LangItem::AsyncIteratorPollNext
+            | LangItem::IntoAsyncIterIntoIter
+            | LangItem::IntoFutureIntoFuture
     ) {
         let parent = facts
             .associated

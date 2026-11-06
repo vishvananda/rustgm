@@ -1,0 +1,21 @@
+whole	0	
+blanket	0	
+explicit	0	
+borrow	0	
+escape	1	E0515
+move	1	E0382
+output	1	E0271
+missing	1	E0277
+notfut	1	E0277
+fake	1	E0277
+const	1	E0015
+unsafe	1	E0053
+body	1	E0308
+duplicate	1	E0152
+alt	0	
+free	1	
+inher	1	
+provided	1	
+norole	0	
+rename	0	
+native	0	

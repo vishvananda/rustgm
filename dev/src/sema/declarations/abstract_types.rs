@@ -231,6 +231,7 @@ impl Checker<'_> {
             bounds.push(self.bound_clause(source, scope, predicate)?);
             if let Written::User { path, .. } = written {
                 let mut equalities = Vec::new();
+                let mut dependencies = Vec::new();
                 waiting |= self.complete_associated_bindings(
                     Binding {
                         owner: pending.owner,
@@ -244,7 +245,9 @@ impl Checker<'_> {
                         context,
                     },
                     &mut equalities,
+                    &mut dependencies,
                 )?;
+                self.retain_alias_edges(pending.owner, dependencies)?;
                 bounds.extend(equalities.into_iter().map(|p| p.value));
             }
         }
