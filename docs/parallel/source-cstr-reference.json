@@ -1,0 +1,211 @@
+{
+  "schema": 1,
+  "kind": "reference-only; no RustGM candidate observations or frontend implementation",
+  "base": "fe32eaa1e5a9cdb8adcf905b231b19ca0f836f40",
+  "files": {
+    "pa31/tests/spec/cstr-source/README.md": "5269f35c902179929ac490ada18bd26b4be1e1e7bfa678951f7a0137e5ac6d9b",
+    "pa31/tests/spec/cstr-source/body.rs": "e89a5ee1c736d86e1e3d2ccde1038cf8424fa83066099a97d6fb90bb2772a4ac",
+    "pa31/tests/spec/cstr-source/const.rs": "5a2f4918bf6f742bdd8e1990afe671c83018b240658d06f4eb388ede6b9a986c",
+    "pa31/tests/spec/cstr-source/construct.c": "d4d0013d2f5d5eee05a44a53d63fe838d5a29c60181220adf7cc48b663791103",
+    "pa31/tests/spec/cstr-source/construct.rs": "9773be36abc057f0a4c95acada597b429d9e8ceffb84f5b7c8ec9a1bf61aa741",
+    "pa31/tests/spec/cstr-source/ctfe.rs": "dce7a19fe7b0ae3f4745a1085f8e0d493f84ca51c6a5e7683a9888c5c5da23cf",
+    "pa31/tests/spec/cstr-source/demand.rs": "023c26461041f19fb335dc73bffb948dc75e22c6fd9ef8e2e2678621496f2ec0",
+    "pa31/tests/spec/cstr-source/escape.rs": "71abdb54ccdb9e0c71a1db370d66fe45b75d990d18da1051227f683d3f7a8355",
+    "pa31/tests/spec/cstr-source/extra.rs": "1c04e0da372510c511f6a1537df06d3e6c02baf6da55eb058a38bbaf9768534d",
+    "pa31/tests/spec/cstr-source/generic.rs": "fdb330e8c2352bb0ce508323a3c9523097e7617934039846ea4e273ef361261e",
+    "pa31/tests/spec/cstr-source/lend.rs": "ed67356db8746542937753859a2582f8f8c83032af741ac4d8c7c99441d47098",
+    "pa31/tests/spec/cstr-source/literal.rs": "f0a1b287647744cf4479a34a6b5b73b0e11e758444d9aa4372fa8050da2e169f",
+    "pa31/tests/spec/cstr-source/loan.rs": "23ab6ef2bee3523fb5f700d07e17b4c180fc3f7906528c13bc05c050e88e6aaa",
+    "pa31/tests/spec/cstr-source/missing.rs": "757890c8227b3c47f93189fdcbf6239775d4253a0b6315bddbd83d7ae01e1d6f",
+    "pa31/tests/spec/cstr-source/mutable.rs": "4e85b822b0d833cfca80226654d28b6b54ad95538e8049b6db89c469bd900891",
+    "pa31/tests/spec/cstr-source/native.rs": "1d7b9e7774bdb4f81af246d594d546d7cd148f366f18fa54adad596c3de1d262",
+    "pa31/tests/spec/cstr-source/nul.rs": "693d14b9fd7c67fa6967d7032f41b263cf12d108bc78c9dc3175ef617d2a8d93",
+    "pa31/tests/spec/cstr-source/observer.c": "944f3e5998381e69f17b85ec360db0f26a629e28f3ebf9c0234a806aac7d452e",
+    "pa31/tests/spec/cstr-source/original-cstr.rs": "d70203ccebe03eb6b24666154f88951faa58b0d19b431510d1ce69dbf5a3daac",
+    "pa31/tests/spec/cstr-source/original-drop-glue.rs": "5a60a9b1a527f153e485e5d7cc760531d7cd28ea055e539b645271ea559d10af",
+    "pa31/tests/spec/cstr-source/original-primitives.rs": "905b68ca42cb0181788962c2c7d83a0897fc8096758d3cc11aaabf2776f05ed4",
+    "pa31/tests/spec/cstr-source/original-slice.rs": "453bfd6e0fc09e06ac1793ccb03e2e2f04fae149db6a079256097c8fad510669",
+    "pa31/tests/spec/cstr-source/pointer.rs": "008d3bba358f48fdb19efa21cd428945474eb3041661e147a8cfd330d8671029",
+    "pa31/tests/spec/cstr-source/predictions-v1.json": "335396cab08164ec72375625bd850d43fefce26ea356175772d1d9d8beb37d21",
+    "pa31/tests/spec/cstr-source/predictions-v2.json": "2653fc76769d451dbbadedaa48313ec048cbe0cab89ea7780b4baeee0f9dd522",
+    "pa31/tests/spec/cstr-source/predictions-v3.json": "a9c78a435a55ad5c26526660e4453b5bcae283388259721b5d5e6f75a435bf33",
+    "pa31/tests/spec/cstr-source/predictions-v4.json": "d4762dc0d0cdfe6b0c94c2206352b79503ebfd5a318f7bb32a1d7eca674f96a9",
+    "pa31/tests/spec/cstr-source/privacy.rs": "fdc2818a82af7fb1d52d183e67507fbbdd0e0727e7422d436ac5aa0b900af0bf",
+    "pa31/tests/spec/cstr-source/rawnul.rs": "b9d6b9b73f25b8e2c824d29fd53690224c73a61c7a5fcba0d0551a5822fb8fd1",
+    "pa31/tests/spec/cstr-source/repr.rs": "5df0ff03e05821990ac3f15057df96a1d0cd82046d8d4a416181ad3ea3522e41",
+    "pa31/tests/spec/cstr-source/source-intervals.json": "d145eccf2b56d1a585252f86f36ac439d77dc1b4a21a430550e2156615b277fb",
+    "pa31/tests/spec/cstr-source/source.rs": "e8e4d9c779d4bfe8e9e75b795383a4a83f6cf6649548d11ec7658d752ad4521a",
+    "pa31/tests/spec/cstr-source/storage.c": "8bc8eaf24fe575cd2827cf76deaf3db7b27688f8c700e3f4b6f68a4063fae49a",
+    "pa31/tests/spec/cstr-source/storage.rs": "a99a3550b53f8b31bcdf596a581a96413bebb2955e5e89bd998e5f05fc62068a",
+    "pa31/tests/spec/cstr-source/type.rs": "4cbb25b2b2d72ae86e10bba1964984af50676c200a1d3f04bddb53443ee91118",
+    "pa31/tests/spec/cstr-source/unsafe.rs": "74a357e09f6cb9b156d6305edab479d1c131aabda250cecf328dd73ef4766250",
+    "pa31/tests/spec/cstr-source/wrong.rs": "bc8067b1044f2767f5e106a55dfca9593c414a9c9e29c8460be5f299c2690802"
+  },
+  "prediction_sha256": "d4762dc0d0cdfe6b0c94c2206352b79503ebfd5a318f7bb32a1d7eca674f96a9",
+  "receipts": {
+    "obj/parallel/source-transport/cstr-reference/reference-v1/receipt.json": "cc6df2fd0cc1e7a8c6a85eca62ab8ae70910729e4371608d2f02101660dd6672",
+    "obj/parallel/source-transport/cstr-reference/reference-v2/receipt.json": "b34ea6b195dda47d2e62a3f0e443eabe5cb0529393d79d2f115fe8ef1aa7e6bd",
+    "obj/parallel/source-transport/cstr-reference/reference-v3/receipt.json": "900b89a26cd3aaa8bc7d10ee0b1dffd92723472b18e9e2816d4ef47bd66cf6c2",
+    "obj/parallel/source-transport/cstr-reference/reference-v4/receipt.json": "40552beb9ec22139e301565cdb471e8449401b96d0b9801bd76702acc9ba1443"
+  },
+  "tool": {
+    "rustc": {
+      "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+      "version": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n"
+    },
+    "driver": {
+      "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so",
+      "sha256": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+    },
+    "sysroot": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu",
+    "libraries": {
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcore-a6075fd9c05de416.rlib": "37559e4d9488546d92cb19b74bcee17f7396c10a2a781c8a24e7464f836e7e51",
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd-2e38004a9ef1deab.rlib": "c72b308614b215194d09d3bb7369dfd9acd33225333dd44b85574d7af726403f",
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/liballoc-ca14532e0afe7a5d.rlib": "2730ec537c47f62737c175c0fa8f43c60636c5887da80933be1b3c91ac708401",
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libpanic_abort-0d311229c3300097.rlib": "9d55a53552cc14de6b79771cdb128210a6fc0b64433567d18421b24026a25c47",
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcompiler_builtins-b8411246c6de4c7a.rlib": "92804424c98ac58c1f9621d4b1ed891c7a865f0fe93301bcdd2231a658e5aad9"
+    }
+  },
+  "qualification": {
+    "cases": 24,
+    "accepted": 10,
+    "rejected": 14,
+    "native_observers": 3,
+    "stdout": [
+      "CStr 65 2 0 195 169 255 92 1\n",
+      "storage 8 65 0\n",
+      "construct 111 107 0\n"
+    ],
+    "harness": {
+      "argv": [
+        "make",
+        "test-harness"
+      ],
+      "code": 0,
+      "seconds": 13.5162134449929
+    },
+    "upstream": {
+      "argv": [
+        "make",
+        "test-upstream"
+      ],
+      "code": 0,
+      "seconds": 0.14782224502414465
+    }
+  },
+  "native_artifacts": {
+    "native.rs": {
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "--emit=obj",
+        "--crate-name",
+        "native",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/cstr-source/native.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cstr-reference/reference-v4/native.o"
+      ],
+      "code": 0,
+      "object_sha256": "50f98d1a539db29c6882afdae6870bc2d27b3599c247a603c304366a3b3767f6",
+      "link": {
+        "argv": [
+          "cc",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/cstr-source/observer.c",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cstr-reference/reference-v4/native.o",
+          "-ldl",
+          "-lpthread",
+          "-lm",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cstr-reference/reference-v4/native.observer"
+        ],
+        "code": 0
+      },
+      "executable_sha256": "7e9884d604441588a7f7c014b0349b8c2f016aa098e4a1cdd2e1084f3ebb2451",
+      "execution": {
+        "code": 0,
+        "stdout": "CStr 65 2 0 195 169 255 92 1\n",
+        "matches": true
+      }
+    },
+    "storage.rs": {
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=staticlib",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "--emit=link",
+        "--crate-name",
+        "storage",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/cstr-source/storage.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cstr-reference/reference-v4/storage.a"
+      ],
+      "code": 0,
+      "object_sha256": "348f3b2bf73ec0fcbccd0288b53d2fcf3e1e0233c606b41477ff0ded7a580631",
+      "link": {
+        "argv": [
+          "cc",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/cstr-source/storage.c",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cstr-reference/reference-v4/storage.a",
+          "-ldl",
+          "-lpthread",
+          "-lm",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cstr-reference/reference-v4/storage.observer"
+        ],
+        "code": 0
+      },
+      "executable_sha256": "2f2586dc9f23e77a2e056034ed66add3621b49e854dc54c0dc8c13d86d575ce1",
+      "execution": {
+        "code": 0,
+        "stdout": "storage 8 65 0\n",
+        "matches": true
+      }
+    },
+    "construct.rs": {
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=staticlib",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "--emit=link",
+        "--crate-name",
+        "construct",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/cstr-source/construct.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cstr-reference/reference-v4/construct.a"
+      ],
+      "code": 0,
+      "object_sha256": "10f180c6c52a1514eb7aeda1c2ba66f7f11ae7ec9cae7d70e746f0424c377bce",
+      "link": {
+        "argv": [
+          "cc",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/cstr-source/construct.c",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cstr-reference/reference-v4/construct.a",
+          "-ldl",
+          "-lpthread",
+          "-lm",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cstr-reference/reference-v4/construct.observer"
+        ],
+        "code": 0
+      },
+      "executable_sha256": "c8f74c6d7541fc689f6ff6286c8c8d99ad3b66f69d8fa2bc64521e255ebdefbe",
+      "execution": {
+        "code": 0,
+        "stdout": "construct 111 107 0\n",
+        "matches": true
+      }
+    }
+  },
+  "history": "v1/v2 setup and link failures are retained with source snapshots; v2 generic wildcard literal0 corrected its initial uncertain1 prediction. Current24 predictions were frozen before v4 observations; no candidate was consulted."
+}

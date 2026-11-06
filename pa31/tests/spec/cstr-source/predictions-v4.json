@@ -1,0 +1,257 @@
+{
+  "schema": 1,
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "environment": {
+      "RUSTC_BOOTSTRAP": "1"
+    }
+  },
+  "cases": [
+    {
+      "file": "source.rs",
+      "sha256": "e8e4d9c779d4bfe8e9e75b795383a4a83f6cf6649548d11ec7658d752ad4521a",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "actual-source-cutout",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "native.rs",
+      "sha256": "1d7b9e7774bdb4f81af246d594d546d7cd148f366f18fa54adad596c3de1d262",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "actual-source-cutout",
+      "prediction_status": "predicted-not-yet-observed",
+      "native": {
+        "observer": "observer.c",
+        "stdout": "CStr 65 2 0 195 169 255 92 1\n",
+        "observer_sha256": "944f3e5998381e69f17b85ec360db0f26a629e28f3ebf9c0234a806aac7d452e",
+        "rustc_crate_type": "lib"
+      }
+    },
+    {
+      "file": "privacy.rs",
+      "sha256": "fdc2818a82af7fb1d52d183e67507fbbdd0e0727e7422d436ac5aa0b900af0bf",
+      "expected_code": 1,
+      "expected_error_text": [
+        "private"
+      ],
+      "profile": "actual-source-cutout",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "body.rs",
+      "sha256": "e89a5ee1c736d86e1e3d2ccde1038cf8424fa83066099a97d6fb90bb2772a4ac",
+      "expected_code": 1,
+      "expected_error_text": [
+        "mismatched types"
+      ],
+      "profile": "altered-source-body",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "wrong.rs",
+      "sha256": "bc8067b1044f2767f5e106a55dfca9593c414a9c9e29c8460be5f299c2690802",
+      "expected_code": 1,
+      "expected_error_text": [
+        "cannot be used on enums"
+      ],
+      "profile": "altered-unused-role",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "extra.rs",
+      "sha256": "1c04e0da372510c511f6a1537df06d3e6c02baf6da55eb058a38bbaf9768534d",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "altered-unused-role",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "generic.rs",
+      "sha256": "fdb330e8c2352bb0ce508323a3c9523097e7617934039846ea4e273ef361261e",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "altered-unused-role",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "repr.rs",
+      "sha256": "5df0ff03e05821990ac3f15057df96a1d0cd82046d8d4a416181ad3ea3522e41",
+      "expected_code": 1,
+      "expected_error_text": [
+        "transparent struct"
+      ],
+      "profile": "altered-unused-role",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "missing.rs",
+      "sha256": "757890c8227b3c47f93189fdcbf6239775d4253a0b6315bddbd83d7ae01e1d6f",
+      "expected_code": 1,
+      "expected_error_text": [
+        "CStr"
+      ],
+      "profile": "missing-role",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "demand.rs",
+      "sha256": "023c26461041f19fb335dc73bffb948dc75e22c6fd9ef8e2e2678621496f2ec0",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "altered-demanded-role",
+      "prediction_status": "corrected-after-independent-v2-acceptance"
+    },
+    {
+      "file": "literal.rs",
+      "sha256": "f0a1b287647744cf4479a34a6b5b73b0e11e758444d9aa4372fa8050da2e169f",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "std",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "type.rs",
+      "sha256": "4cbb25b2b2d72ae86e10bba1964984af50676c200a1d3f04bddb53443ee91118",
+      "expected_code": 1,
+      "expected_error_text": [
+        "mismatched types"
+      ],
+      "profile": "std",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "mutable.rs",
+      "sha256": "4e85b822b0d833cfca80226654d28b6b54ad95538e8049b6db89c469bd900891",
+      "expected_code": 1,
+      "expected_error_text": [
+        "mutability"
+      ],
+      "profile": "std",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "nul.rs",
+      "sha256": "693d14b9fd7c67fa6967d7032f41b263cf12d108bc78c9dc3175ef617d2a8d93",
+      "expected_code": 1,
+      "expected_error_text": [
+        "null characters"
+      ],
+      "profile": "std",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "rawnul.rs",
+      "sha256": "b9d6b9b73f25b8e2c824d29fd53690224c73a61c7a5fcba0d0551a5822fb8fd1",
+      "expected_code": 1,
+      "expected_error_text": [
+        "null characters"
+      ],
+      "profile": "std",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "unsafe.rs",
+      "sha256": "74a357e09f6cb9b156d6305edab479d1c131aabda250cecf328dd73ef4766250",
+      "expected_code": 1,
+      "expected_error_text": [
+        "unsafe"
+      ],
+      "profile": "std",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "escape.rs",
+      "sha256": "71abdb54ccdb9e0c71a1db370d66fe45b75d990d18da1051227f683d3f7a8355",
+      "expected_code": 1,
+      "expected_error_text": [
+        "local variable"
+      ],
+      "profile": "std",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "pointer.rs",
+      "sha256": "008d3bba358f48fdb19efa21cd428945474eb3041661e147a8cfd330d8671029",
+      "expected_code": 1,
+      "expected_error_text": [
+        "mutability"
+      ],
+      "profile": "std",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "const.rs",
+      "sha256": "5a2f4918bf6f742bdd8e1990afe671c83018b240658d06f4eb388ede6b9a986c",
+      "expected_code": 1,
+      "expected_error_text": [
+        "non-const"
+      ],
+      "profile": "std",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "ctfe.rs",
+      "sha256": "dce7a19fe7b0ae3f4745a1085f8e0d493f84ca51c6a5e7683a9888c5c5da23cf",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "std",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "storage.rs",
+      "sha256": "a99a3550b53f8b31bcdf596a581a96413bebb2955e5e89bd998e5f05fc62068a",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "std",
+      "prediction_status": "predicted-not-yet-observed",
+      "native": {
+        "observer": "storage.c",
+        "stdout": "storage 8 65 0\n",
+        "observer_sha256": "8bc8eaf24fe575cd2827cf76deaf3db7b27688f8c700e3f4b6f68a4063fae49a",
+        "rustc_crate_type": "staticlib"
+      }
+    },
+    {
+      "file": "construct.rs",
+      "sha256": "9773be36abc057f0a4c95acada597b429d9e8ceffb84f5b7c8ec9a1bf61aa741",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "std",
+      "prediction_status": "predicted-not-yet-observed",
+      "native": {
+        "observer": "construct.c",
+        "stdout": "construct 111 107 0\n",
+        "observer_sha256": "d4d0013d2f5d5eee05a44a53d63fe838d5a29c60181220adf7cc48b663791103",
+        "rustc_crate_type": "staticlib"
+      }
+    },
+    {
+      "file": "loan.rs",
+      "sha256": "23ab6ef2bee3523fb5f700d07e17b4c180fc3f7906528c13bc05c050e88e6aaa",
+      "expected_code": 1,
+      "expected_error_text": [
+        "as mutable because it is also borrowed as immutable"
+      ],
+      "profile": "std",
+      "prediction_status": "predicted-not-yet-observed"
+    },
+    {
+      "file": "lend.rs",
+      "sha256": "ed67356db8746542937753859a2582f8f8c83032af741ac4d8c7c99441d47098",
+      "expected_code": 0,
+      "expected_error_text": [],
+      "profile": "std",
+      "prediction_status": "predicted-not-yet-observed"
+    }
+  ],
+  "pre_observation_review": "Native pointer consistency uses the SAME static CStr value, never independent identical literals or const addresses. No pointer inequality between byte/C promotions is required.",
+  "corrections_from_v1": "Actual nominal/method intervals unchanged. Corrected authored no_core support const stability and ordinary real Clone/Copy declarations/impls; standard-library native links use real Rust staticlib runtime after standalone object dependency failures. Original inputs/receipts retained.",
+  "corrections_from_v2": "Added exact pinned ptr::drop_glue declaration/body, compiler-owned synchronous cleanup foundation, to no_core setup only. Generic-role wildcard literal was accepted in v2; status corrected to0, not made a negative.",
+  "added_v4": "Frozen opposite mutable-loan pair before observations. Prior22 exact sources unchanged from fully qualified v3."
+}

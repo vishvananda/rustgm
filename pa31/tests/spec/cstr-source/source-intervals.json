@@ -1,0 +1,67 @@
+{
+  "repository": "rust-lang/rust",
+  "commit": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "originals": {
+    "original-cstr.rs": {
+      "source": "library/core/src/ffi/c_str.rs",
+      "sha256": "d70203ccebe03eb6b24666154f88951faa58b0d19b431510d1ce69dbf5a3daac",
+      "bytes": 31360
+    },
+    "original-slice.rs": {
+      "source": "library/core/src/slice/mod.rs",
+      "sha256": "453bfd6e0fc09e06ac1793ccb03e2e2f04fae149db6a079256097c8fad510669",
+      "bytes": 218583
+    },
+    "original-primitives.rs": {
+      "source": "library/core/src/ffi/primitives.rs",
+      "sha256": "905b68ca42cb0181788962c2c7d83a0897fc8096758d3cc11aaabf2776f05ed4",
+      "bytes": 9657
+    }
+  },
+  "intervals": {
+    "nominal": {
+      "file": "original-cstr.rs",
+      "byte_start": 3180,
+      "byte_end": 4083,
+      "line_start": 92,
+      "line_end": 108,
+      "sha256": "30407aed1c07e1ebcc7f6adb54059bac702bc1aab4f29ef0bae914c15afd8861"
+    },
+    "as_ptr": {
+      "file": "original-cstr.rs",
+      "byte_start": 18958,
+      "byte_end": 19251,
+      "line_start": 478,
+      "line_end": 486,
+      "sha256": "e4a9125947bf91c32b62abacfdd40341efcf212fb640d372b3ce16e12f37ae0b"
+    },
+    "to_bytes_with_nul": {
+      "file": "original-cstr.rs",
+      "byte_start": 22631,
+      "byte_end": 23121,
+      "line_start": 577,
+      "line_end": 586,
+      "sha256": "f43b675547a66e3ca2a06b8c8aa70a8243130a09fceb8d6a89f2635aad926a79"
+    },
+    "slice_as_ptr": {
+      "file": "original-slice.rs",
+      "byte_start": 24530,
+      "byte_end": 24839,
+      "line_start": 722,
+      "line_end": 730,
+      "sha256": "ecc266bccda290b837be03d26897371b6d0c5902ab91e1e22eb9a831d7693fc3"
+    }
+  },
+  "support": "Authored no_core sizing/receiver/auto/destruct and real Clone/Copy declarations/impls; pinned Linux x86_64 c_char=i8 target choice. Exact CStr declaration after unused derive, three reached method intervals and exact compiler-owned ptr::drop_glue helper; full derives and omitted module/method closure remain required.",
+  "drop_glue": {
+    "source": "library/core/src/ptr/mod.rs",
+    "module_sha256": "f7b3e71d9e9246762c38641c6c1a49079265782aab6deaa537b43665b418f029",
+    "byte_start": 40258,
+    "byte_end": 40570,
+    "line_start": 821,
+    "line_end": 829,
+    "sha256": "38455811aac2f15bdd1d943eca0383ee3aed0aee1ac075760a448443e61e9437",
+    "destination": "original-drop-glue.rs",
+    "file_sha256": "5a60a9b1a527f153e485e5d7cc760531d7cd28ea055e539b645271ea559d10af"
+  }
+}

@@ -417,6 +417,42 @@
       "adaptation": "none; full original bytes retained; actual Future/IntoFuture modules embedded unchanged with inherited authored protocol foundation; future/mod.rs ResumeTy/get_context closure remains required",
       "oracle": "source-fragment",
       "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/ffi/c_str.rs",
+      "destination": "pa31/tests/spec/cstr-source/original-cstr.rs",
+      "sha256": "d70203ccebe03eb6b24666154f88951faa58b0d19b431510d1ce69dbf5a3daac",
+      "adaptation": "none; complete original module bytes retained for reference-only CStr packet; reached consumer intervals recorded separately",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/slice/mod.rs",
+      "destination": "pa31/tests/spec/cstr-source/original-slice.rs",
+      "sha256": "453bfd6e0fc09e06ac1793ccb03e2e2f04fae149db6a079256097c8fad510669",
+      "adaptation": "none; complete original module bytes retained for reference-only CStr packet; reached consumer intervals recorded separately",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/ffi/primitives.rs",
+      "destination": "pa31/tests/spec/cstr-source/original-primitives.rs",
+      "sha256": "905b68ca42cb0181788962c2c7d83a0897fc8096758d3cc11aaabf2776f05ed4",
+      "adaptation": "none; complete original module bytes retained for reference-only CStr packet; reached consumer intervals recorded separately",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/ptr/mod.rs",
+      "destination": "pa31/tests/spec/cstr-source/original-drop-glue.rs",
+      "sha256": "5a60a9b1a527f153e485e5d7cc760531d7cd28ea055e539b645271ea559d10af",
+      "adaptation": "exact lines821-829 helper declaration/body plus existing trailing newline; complete original module/interval hashes in source-intervals.json; compiler-owned synchronous drop glue, not authored replacement",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
     }
   ]
 }
