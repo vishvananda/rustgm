@@ -1,0 +1,24 @@
+{
+  "state": "frozen before reference and candidate execution",
+  "cases": {
+    "ctlifo": {
+      "rust_status": 0,
+      "value": 41,
+      "cause": "reverse local declaration cleanup order"
+    },
+    "ctdang": {
+      "rust_status": 1,
+      "diagnostic": "E0080",
+      "cause": "actual const destructor writes expired pointed-to local storage"
+    },
+    "nlifo": {
+      "rust_status": 0,
+      "native": "41\n"
+    }
+  },
+  "sha256": {
+    "ctlifo": "398fb34732e0cb874588f1d71fcf6d862daf0f5d16ba5da413fe3b6df5bddf09",
+    "ctdang": "04d074e41c5e4001fe12fb3ce1c380cbfe8d6119208ad68365e901fce8e904bf",
+    "nlifo": "f9bad3fd8492875f4da6c7434217cc0288958b504dc639e7406f9603f57b2dca"
+  }
+}

@@ -162,7 +162,7 @@ pub(crate) struct Execution<'a> {
     plan: Option<crate::borrow::destruction::Plan>,
     seal: crate::borrow::loans::seal::Seal,
 }
-impl Execution<'_> {
+impl<'body> Execution<'body> {
     pub(crate) fn active(&self) -> bool {
         self.plan
             .as_ref()
@@ -170,6 +170,20 @@ impl Execution<'_> {
     }
     pub(crate) fn planning_steps(&self) -> usize {
         self.plan.as_ref().map_or(0, |plan| plan.steps)
+    }
+    pub(crate) fn require_current<S: std::hash::BuildHasher>(
+        &self,
+        environment: &crate::borrow::Environment<'_, S>,
+        body: &Body,
+        regions: &regions::Body,
+    ) -> Result<(), &'static str> {
+        if !std::ptr::eq(self.body, body) {
+            return Err("completed cleanup belongs to another borrowed source body");
+        }
+        self.seal.validate_context(environment, body, regions)
+    }
+    pub(crate) fn into_plan(self) -> (&'body Body, Option<crate::borrow::destruction::Plan>) {
+        (self.body, self.plan)
     }
 }
 

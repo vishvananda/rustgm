@@ -19,6 +19,54 @@ pub(crate) struct Registration<'catalog> {
     existing: bool,
 }
 impl Prepared {
+    pub(crate) fn attach_cleanup(
+        &mut self,
+        bundle: std::rc::Rc<crate::const_eval::ctglue::Bundle>,
+        budget: usize,
+        work: &mut usize,
+    ) -> Result<(), &'static str> {
+        bundle.require_unbound()?;
+        if self.code.cleanup().is_some() {
+            return Err("constant Code already owns a cleanup footer");
+        }
+        let growth = crate::support::retained::Growth::vector::<super::PreparedOperand>(
+            self.code.operands.len(),
+            self.code.operands.capacity(),
+            1,
+        );
+        *work = work.saturating_add(growth.work).saturating_add(1);
+        if self
+            .bytes
+            .saturating_add(bundle.allocation_bytes())
+            .saturating_add(growth.bytes)
+            > budget
+        {
+            return Err("constant cleanup footer exceeds Code storage budget");
+        }
+        self.code
+            .operands
+            .try_reserve_exact(1)
+            .map_err(|_| "constant cleanup footer allocation failed")?;
+        let caller = if matches!(
+            self.code.operands.last(),
+            Some(super::PreparedOperand::CallerSites(_))
+        ) {
+            self.code.operands.pop()
+        } else {
+            None
+        };
+        self.code
+            .operands
+            .push(super::PreparedOperand::Cleanup(bundle));
+        if let Some(caller) = caller {
+            self.code.operands.push(caller);
+        }
+        self.bytes = Self::storage(&self.code);
+        if self.bytes > budget {
+            return Err("constant cleanup snapshot exceeds Code storage budget");
+        }
+        Ok(())
+    }
     pub(crate) const fn code(&self) -> &Code {
         &self.code
     }
@@ -77,6 +125,7 @@ impl Prepared {
             vector(&code.blocks),
             vector(&code.operands),
             code.caller_site_bytes(),
+            code.cleanup_bytes(),
             map(&code.promotions),
             map(&code.callables),
         ])
@@ -144,9 +193,11 @@ impl Catalog {
         code.source_only = source_only;
         let actual = code.result;
         code.result = published;
+        let code = std::rc::Rc::new(code);
+        Code::bind_cleanup(&code)?;
         Ok(Registration {
             catalog: self,
-            code: std::rc::Rc::new(code),
+            code,
             bytes,
             index,
             expression,

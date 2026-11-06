@@ -49,6 +49,8 @@ pub enum Requirement {
     SourceAssociatedBody(SourceComputation),
     DiscriminantValue(crate::sema::members::VariantId),
     FunctionBody(instance::Instance),
+    /// A real selected cleanup event, never an invented source Call expression.
+    CleanupBody(instance::Instance),
     InitializerBody(DefId),
     InlineBody {
         source: NodeKey,

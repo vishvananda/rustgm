@@ -67,6 +67,15 @@ pub struct Recipes {
     exposed: crate::support::hash::HashMap<TypeId, Option<Id>>,
 }
 impl Recipes {
+    pub(crate) fn allocation_bytes(&self) -> usize {
+        use crate::support::retained::{map, sum, vector};
+        sum([
+            vector(&self.entries),
+            vector(&self.fields),
+            vector(&self.variants),
+            map(&self.exposed),
+        ])
+    }
     pub(crate) fn has_exposed(&self) -> bool {
         !self.exposed.is_empty()
     }

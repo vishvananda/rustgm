@@ -266,7 +266,7 @@ fn const_cursor_definition_compiles_and_reached_cleanup_remains_required() -> Re
     assert!(
         error
             .to_string()
-            .contains("constant interpreter cleanup scheduling is not implemented"),
+            .contains("constant generic/structural cleanup execution is not implemented"),
         "{error}"
     );
     Ok(())

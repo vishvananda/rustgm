@@ -18,7 +18,7 @@ impl Verifier {
         initial
             .require(environment, contract, self.owner.as_ref())
             .map_err(error)?;
-        initial
+        let refinement = initial
             .facts
             .refine_variants(
                 environment.types,
@@ -28,12 +28,17 @@ impl Verifier {
                 &|ty, query| catalog.member_position(ty, query),
             )
             .map_err(error)?;
-        let plan =
+        let mut plan =
             destruction::select_reusing_defining(catalog, &mut initial.facts, &mut Vec::new())
                 .map_err(|error| Error {
                     node: Some(error.node),
                     message: error.message.into(),
                 })?;
+        plan.steps = plan
+            .steps
+            .checked_add(refinement)
+            .filter(|n| *n <= 32_000_000)
+            .ok_or_else(|| error("destruction planning work budget exceeded"))?;
         Ok(initial.select(Some(plan)))
     }
 }

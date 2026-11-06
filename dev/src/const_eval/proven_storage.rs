@@ -14,6 +14,9 @@ impl Code {
         fold: &mut Bound,
         work: &mut usize,
     ) -> Result<(), &'static str> {
+        if self.cleanup().is_some() {
+            return Err("constant cleanup snapshots cannot be restored into another Code");
+        }
         let mut restore = Restore { types, fold, work };
         self.result = restore.storage(self.result)?;
         for local in &mut self.locals {

@@ -29,6 +29,7 @@ pub(crate) enum PreparedOperand {
         result: crate::types::TypeId,
     },
     Discriminant(crate::sema::members::VariantId),
+    Cleanup(std::rc::Rc<super::ctglue::Bundle>),
     CallerSites(std::sync::Arc<[crate::body::ir::CallerSite]>),
 }
 
@@ -52,6 +53,38 @@ pub(crate) struct Code {
 }
 
 impl Code {
+    pub(crate) fn cleanup_growth_bound(
+        body: &Body,
+    ) -> Result<crate::support::retained::Growth, &'static str> {
+        let count = Self::operand_count(body)?;
+        Ok(crate::support::retained::Growth::vector::<PreparedOperand>(
+            count, count, 1,
+        ))
+    }
+    pub(crate) fn cleanup(&self) -> Option<&std::rc::Rc<super::ctglue::Bundle>> {
+        let index = self.operands.len().checked_sub(1)?;
+        let index = if matches!(
+            self.operands.get(index),
+            Some(PreparedOperand::CallerSites(_))
+        ) {
+            index.checked_sub(1)?
+        } else {
+            index
+        };
+        match self.operands.get(index) {
+            Some(PreparedOperand::Cleanup(bundle)) => Some(bundle),
+            _ => None,
+        }
+    }
+    pub(super) fn bind_cleanup(code: &std::rc::Rc<Self>) -> Result<(), &'static str> {
+        if let Some(bundle) = code.cleanup() {
+            bundle.bind(code)?;
+        }
+        Ok(())
+    }
+    pub(super) fn cleanup_bytes(&self) -> usize {
+        self.cleanup().map_or(0, |bundle| bundle.allocation_bytes())
+    }
     pub(crate) fn storage_bytes(body: &Body) -> Result<usize, &'static str> {
         Ok([
             std::mem::size_of::<Self>(),
@@ -88,7 +121,14 @@ impl Code {
             return Err("inline assembly has no constant execution snapshot");
         }
         body.validate_caller_sites()?;
-        let mut operands = Vec::with_capacity(Self::operand_count(body)?);
+        let count = Self::operand_count(body)?;
+        // Every valid snapshot fits the existing 64 MiB Code budget;32-byte
+        // operands therefore fit this checked u32 interpreter cursor.
+        u32::try_from(count)
+            .ok()
+            .filter(|n| *n < u32::MAX)
+            .ok_or("constant snapshot operand cursor identity overflow")?;
+        let mut operands = Vec::with_capacity(count);
         for statement in &body.statements {
             if let Some(operand) = Self::operand(body, statement)? {
                 operands.push(operand);

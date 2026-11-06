@@ -25,7 +25,7 @@ impl Machine<'_, '_> {
         if let super::Requirement::InitializerBody(definition) = requirement
             && let Some(&target) = self.bodies.definitions.get(&definition)
         {
-            self.push(target, &[], None)?;
+            self.push(target, &[], super::ReturnTo::Root)?;
             return Ok(true);
         }
         Ok(false)

@@ -25,3 +25,17 @@ all4 negatives with their exact intended codes. Three native companions observe
 Candidate consumption has not been observed at this freeze. The first recollected
 dborr code E0502 was corrected from its existing E0506 reference before the new
 oracle; predictions-initial.json preserves that correction history.
+
+The reached execution extension separately freezes ctlifo/nlifo (reverse-order
+cleanup gives41) and ctdang (actual expired-local write E0080). ctmove was first
+predicted E0080, then pinned Rust accepted it; the original prediction and
+reference-v3 mismatch are retained. The corrected independent ctmove/nmove
+observers yield7 before candidate execution. This follows the pinned
+interpreter's current Move/Copy place behavior, without waiving storage expiry.
+
+The finite candidate now executes the real source bodies for41/59/41, LIFO41 and
+Move7, and preserves the expired-storage/const/unsafe/loan opponents. Its five
+native companions use the same primitive C boundary. Conditional flags and
+recursive/generic/temporary cleanup remain explicit execution work. See the
+separate execution checkpoint/evidence; this packet does not claim the complete
+standard module or all destructor profiles.

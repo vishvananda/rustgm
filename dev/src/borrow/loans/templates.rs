@@ -20,7 +20,7 @@ use crate::{
     },
 };
 pub(crate) use payload::Payload;
-pub(crate) use staged::{Initial, Prepared};
+pub(crate) use staged::{Execution, Initial, Prepared};
 
 /// Prove moves, initialization, abstract destruction and loans in every template.
 /// Provenance and promotion must already be checked on these retained bodies.

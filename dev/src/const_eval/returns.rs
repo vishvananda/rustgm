@@ -5,7 +5,7 @@ use crate::sema::values::Constant;
 impl Machine<'_, '_> {
     pub(super) fn returned(
         &mut self,
-        frame: &Frame,
+        frame: Frame,
         body: &Code,
         value: ValueId,
     ) -> Result<Option<Constant>, Failure> {
@@ -14,9 +14,13 @@ impl Machine<'_, '_> {
             .get(value.0 as usize)
             .ok_or("constant return lacks a typed value")?
             .ty;
-        let result = Self::value(frame, value)?;
+        let result = Self::value(&frame, value)?;
         self.slots -= frame.locals.len() + frame.values.len();
         self.memory.expire(&frame.allocations);
+        if matches!(frame.return_to, super::ReturnTo::Cleanup(_)) {
+            self.cleanup_returned(frame, body, result, result_ty)?;
+            return Ok(None);
+        }
         if let Owner::Initializer { definition, .. } = body.owner {
             self.active_initializers.remove(&definition);
             self.validate_result(result, result_ty)?;
@@ -59,12 +63,14 @@ impl Machine<'_, '_> {
         }
         if let Some(parent) = self.frames.last_mut() {
             // Storage-read preparation publishes its initializer without a value destination.
-            if frame.return_to.is_none() && matches!(body.owner, Owner::Initializer { .. }) {
+            if frame.return_to == super::ReturnTo::Root
+                && matches!(body.owner, Owner::Initializer { .. })
+            {
                 return Ok(None);
             }
-            let target = frame
-                .return_to
-                .ok_or("constant return has no destination")?;
+            let super::ReturnTo::Value(target) = frame.return_to else {
+                return Err("constant return has no destination".into());
+            };
             parent.values[target.0 as usize] = Some(result);
             return Ok(None);
         }

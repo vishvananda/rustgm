@@ -155,3 +155,20 @@ fn owned_publication_consumes_the_snapshot_without_reading_a_later_body() -> Res
     assert_eq!(code.callables.capacity(), 0);
     Ok(())
 }
+
+#[test]
+fn cleanup_snapshots_cannot_restore_types_into_another_execution_owner() -> Result<(), String> {
+    let (mut facts, body, bundle) = crate::const_eval::ctglue::tests::inert()?;
+    let mut code = Code::snapshot(&body)?;
+    code.operands.push(PreparedOperand::Cleanup(bundle));
+    let original = code.result;
+    let mut fold = crate::types::substitute::Bound::new(Vec::new());
+    let mut work = 0;
+    assert_eq!(
+        code.restore_storage(&mut facts.types, &mut fold, &mut work),
+        Err("constant cleanup snapshots cannot be restored into another Code")
+    );
+    assert_eq!(code.result, original);
+    assert_eq!(work, 0);
+    Ok(())
+}

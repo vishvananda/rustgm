@@ -44,6 +44,7 @@ impl Engine {
         contract: &Contract,
         regions: &crate::borrow::regions::Body,
         purpose: ProofPurpose,
+        checked: crate::pipeline::cdrop::Checked<'_>,
     ) -> Result<
         (
             Option<const_eval::code::Prepared>,
@@ -51,6 +52,7 @@ impl Engine {
         ),
         &'static str,
     > {
+        let cleanup = checked.consume(body, purpose, contract, regions)?;
         if purpose == ProofPurpose::Original {
             return Ok((None, const_eval::use_inputs::Uses::default()));
         }
@@ -75,14 +77,33 @@ impl Engine {
         let mut uses = const_eval::use_inputs::Inputs::prepare_uses(facts, body, row_bytes)?;
         let available = (64 * 1024 * 1024usize).saturating_sub(self.catalog.bytes);
         let fixed = const_eval::code::Code::storage_bytes(body)?;
-        let extra = available
+        let mut extra = available
             .checked_sub(fixed)
             .ok_or("constant execution code exceeds 64 MiB budget")?;
-        let mut work = 0;
-        let code =
+        let mut work = 0usize;
+        let code = (|| {
+            let cleanup = if let Some(cleanup) = cleanup {
+                facts.charge_caller_inputs(body.statements.len(), 0)?;
+                work = work.saturating_add(body.statements.len());
+                let growth = const_eval::code::Code::cleanup_growth_bound(body)?;
+                extra = extra
+                    .checked_sub(growth.bytes)
+                    .ok_or("constant cleanup footer exceeds storage budget")?;
+                let view = crate::pipeline::cdrop::execution_view(
+                    facts, body, contract, regions, *cleanup, extra, &mut work,
+                )?;
+                let bundle =
+                    const_eval::ctglue::prepare(facts, body, contract, view, extra, &mut work)?;
+                extra = extra
+                    .checked_sub(bundle.allocation_bytes())
+                    .ok_or("constant cleanup bundle exceeds storage budget")?;
+                Some(bundle)
+            } else {
+                None
+            };
             crate::borrow::solved_callables(&mut facts.types, body, regions, extra, &mut work)
                 .and_then(|solved| {
-                    let code = const_eval::code::Prepared::from_proved(
+                    let mut code = const_eval::code::Prepared::from_proved(
                         &mut facts.types,
                         solved.body,
                         solved.targets,
@@ -90,9 +111,13 @@ impl Engine {
                         available,
                         &mut work,
                     )?;
+                    if let Some(cleanup) = cleanup {
+                        code.attach_cleanup(cleanup, available, &mut work)?;
+                    }
                     uses.finalize_code(&mut facts.types, code.code(), &mut work)?;
                     Ok(code)
-                });
+                })
+        })();
         facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
         Ok((Some(code?), uses))
     }

@@ -28,6 +28,47 @@ struct Extent {
 }
 const NO_POINT: u32 = u32::MAX;
 impl Index {
+    pub(crate) fn into_lanes(
+        self,
+    ) -> (
+        crate::body::drops::schedule::BlockLanes,
+        crate::body::drops::schedule::EdgeLanes,
+    ) {
+        (self.blocks, self.edges)
+    }
+    /// Prepayment includes conservative hash growth/overlap before construction.
+    pub(crate) fn allocation_bound(body: &Body, events: &[Event]) -> Result<usize, &'static str> {
+        let positions = body.blocks.iter().try_fold(0usize, |count, block| {
+            let width = block
+                .end
+                .checked_sub(block.start)
+                .and_then(|n| n.checked_add(1))
+                .ok_or("invalid cleanup block extent")?;
+            count
+                .checked_add(width as usize)
+                .ok_or("cleanup position storage overflow")
+        })?;
+        Ok(crate::support::retained::sum([
+            body.blocks
+                .len()
+                .saturating_mul(size_of::<Extent>() + size_of::<std::ops::Range<usize>>()),
+            positions.saturating_mul(size_of::<u32>()),
+            crate::support::retained::new_map::<(BlockId, BlockId), std::ops::Range<usize>>(
+                events.len(),
+            ),
+            crate::support::retained::new_map::<Location, Point>(events.len()),
+        ]))
+    }
+    pub(crate) fn allocation_bytes(&self) -> usize {
+        use crate::support::retained::{map, sum, vector};
+        sum([
+            vector(&self.blocks),
+            map(&self.edges),
+            vector(&self.positions),
+            vector(&self.extents),
+            map(&self.others),
+        ])
+    }
     /// The inspection or statement point recorded at this location.
     pub(crate) fn point(&self, location: Location) -> Option<Point> {
         if let Some(slot) = self.slot(location) {

@@ -1,0 +1,1855 @@
+{
+  "state": "qualified finite closed Struct actual const Drop execution; broader cleanup required",
+  "base_main": "a17973200",
+  "concrete_producer": "12b46e995",
+  "source_count": 3575,
+  "source_map": {
+    "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/execute10/sources.json",
+    "sha256": "0610f051312ca733065c2f21a1e154793fafd2a9d9230f7ffbe0c0d7f6570fb7"
+  },
+  "fixture_sha256": {
+    "pa31/tests/spec/source-ctfe-cleanup/ct41.rs": "8f3c2dccdd5b215ecbcb871ef3ca6274c30466429cbd0daef9f4151cd95860c5",
+    "pa31/tests/spec/source-ctfe-cleanup/ct59.rs": "ef11911a8571a34ed8177fa5741e2a43186638383336628c6f5fbd9c72611131",
+    "pa31/tests/spec/source-ctfe-cleanup/ctonce.rs": "06a54b0b06c9390934627db201070609a5d34115b11ff75b8a97ad1b23f29ae5",
+    "pa31/tests/spec/source-ctfe-cleanup/ctbad.rs": "bec804dbba7149f10df66b1ac0aad3c8203f9eaf7f57cf94336a71c09c2e61aa",
+    "pa31/tests/spec/source-ctfe-cleanup/ctdead.rs": "8cb42007db892614b80c96c63503d8bb70566f7d2ce48f859a1a94ad0a4e6f9d",
+    "pa31/tests/spec/source-ctfe-cleanup/ctcond.rs": "98243e8e0b661e230b4ff45494bd0a5b5a76720134f9cead7f703ee064420d8b",
+    "pa31/tests/spec/source-ctfe-cleanup/ctcall.rs": "7dff908349b702bc70a013db26f238c825dbfc6cade0cceb8ac3d6ab1e73a01f",
+    "pa31/tests/spec/source-ctfe-cleanup/ctunsf.rs": "08198f51343c041827712747c21a74dc1e48691d2a21f163deab6c3113a8acd6",
+    "pa31/tests/spec/source-ctfe-cleanup/dborr.rs": "82ec345e67b7479e4e38344952429bafa7190e8d910666c34392b432f92fa1bb",
+    "pa31/tests/spec/source-ctfe-cleanup/n41.rs": "0f40fa4d5d647c6045e9a5166592e05776dea70aa33f0bf3c3e78ff8ddeda496",
+    "pa31/tests/spec/source-ctfe-cleanup/n59.rs": "66a354421b5033364a0ae57288f23eb91a9e3c7500e076aea3f83cb066fbe84c",
+    "pa31/tests/spec/source-ctfe-cleanup/nonce.rs": "c028d2404fe6a14d79b0cfe83e5599d570e9e1046307fefba70d9cea9f363186",
+    "pa31/tests/spec/source-ctfe-cleanup/predictions.json": "2e4db32b77cf5c0ff5cb0c7411be84e794453c3dfa82d6d137ca790201f9e718",
+    "pa31/tests/spec/source-ctfe-cleanup/observe.c": "6e55c113812d2b407c01bae00a1bda1ef8a97c55eb4fe2cb0c02a939efd5816b",
+    "pa31/tests/spec/source-ctfe-cleanup/README.md": "368376508d7d71506810ed4f6539ca7b35a2602b77e96bf4cfd1a668f0eebad3",
+    "pa31/tests/spec/source-ctfe-cleanup/predictions-initial.json": "5c01d5283e1c84ff03c9f5b9ba30d81359c7231e512c4756be9f44b82662cec5",
+    "pa31/tests/spec/source-ctfe-cleanup/ctdang.rs": "04d074e41c5e4001fe12fb3ce1c380cbfe8d6119208ad68365e901fce8e904bf",
+    "pa31/tests/spec/source-ctfe-cleanup/ctlifo.rs": "398fb34732e0cb874588f1d71fcf6d862daf0f5d16ba5da413fe3b6df5bddf09",
+    "pa31/tests/spec/source-ctfe-cleanup/ctmove.rs": "20998618ca2c6d8016e04af38465bae8f0d0d6b4258c3d82caa14b4b3a0fc113",
+    "pa31/tests/spec/source-ctfe-cleanup/execution-predictions.json": "58a04b05c3ac93413c4ca7ef3ae1bd1fe2d6e5afbfdd7d0feaaf562d1c874c53",
+    "pa31/tests/spec/source-ctfe-cleanup/move-predictions-initial.json": "f3c628f537e0ffb617b00937db92b8de36040f9fe6801131398dbb5d7bf104d6",
+    "pa31/tests/spec/source-ctfe-cleanup/move-predictions.json": "fbc6273e6db70aac457742712819dfec8de6599dad53ed13eb74ce980712580e",
+    "pa31/tests/spec/source-ctfe-cleanup/nlifo.rs": "f9bad3fd8492875f4da6c7434217cc0288958b504dc639e7406f9603f57b2dca",
+    "pa31/tests/spec/source-ctfe-cleanup/nmove.rs": "1b91dae032109dd1ffd5abb55d81490c8aec05cf5b96bb1121787751034e7f2d"
+  },
+  "receipts": {
+    "reference-v1": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/receipt.json",
+      "sha256": "60c4502c2fa4b3bcb5c4366d86e6d839f872926e9b528823f77edcd7030cfefb",
+      "result": {
+        "rustc": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+        "driver": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so",
+        "driver_sha256": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c",
+        "prediction_sha256": "2e4db32b77cf5c0ff5cb0c7411be84e794453c3dfa82d6d137ca790201f9e718",
+        "environment": {
+          "RUSTC_BOOTSTRAP": "1"
+        },
+        "observations": [
+          {
+            "file": "ct41.rs",
+            "source_sha256": "8f3c2dccdd5b215ecbcb871ef3ca6274c30466429cbd0daef9f4151cd95860c5",
+            "expected_code": 0,
+            "expected_errors": [],
+            "expected_value": 41,
+            "base": "pa31/tests/spec/source-const-drop/count2.rs",
+            "base_sha256": "a8f2ba8d677d2a1f49ca9e0633d4a242954a868739ec70750008b30b96420896",
+            "append": "\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]pub const fn ct_effect()->i32{let mut out=0;{let _owned=C{out:&raw mut out};}out}\nconst OBSERVED:i32=ct_effect();\n",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "ct41",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/ct41.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/ct41.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.030465083953458816,
+            "errors": [],
+            "infrastructure": false,
+            "matches": true
+          },
+          {
+            "file": "ct59.rs",
+            "source_sha256": "ef11911a8571a34ed8177fa5741e2a43186638383336628c6f5fbd9c72611131",
+            "expected_code": 0,
+            "expected_errors": [],
+            "expected_value": 59,
+            "base": "pa31/tests/spec/source-const-cleanup/runct.rs",
+            "base_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+            "append": "\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]pub const fn ct_order()->i32{let mut out=0;{let _first=C{out:&raw mut out,value:41};}{let _second=C{out:&raw mut out,value:59};}out}\nconst OBSERVED:i32=ct_order();\n",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "ct59",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/ct59.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/ct59.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.03006117499899119,
+            "errors": [],
+            "infrastructure": false,
+            "matches": true
+          },
+          {
+            "file": "ctonce.rs",
+            "source_sha256": "06a54b0b06c9390934627db201070609a5d34115b11ff75b8a97ad1b23f29ae5",
+            "expected_code": 0,
+            "expected_errors": [],
+            "expected_value": 41,
+            "base": "pa31/tests/spec/source-const-drop/count2.rs",
+            "base_sha256": "a8f2ba8d677d2a1f49ca9e0633d4a242954a868739ec70750008b30b96420896",
+            "append": "\npub struct Once{out:*mut i32}\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]const impl Drop for Once{fn drop(&mut self){unsafe{*self.out=41;self.out=0 as *mut i32;}}}\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]pub const fn ct_once()->i32{let mut out=0;{let owned=Once{out:&raw mut out};let _moved=owned;}out}\nconst OBSERVED:i32=ct_once();\n",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "ctonce",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/ctonce.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/ctonce.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.03201882203575224,
+            "errors": [],
+            "infrastructure": false,
+            "matches": true
+          },
+          {
+            "file": "ctbad.rs",
+            "source_sha256": "bec804dbba7149f10df66b1ac0aad3c8203f9eaf7f57cf94336a71c09c2e61aa",
+            "expected_code": 1,
+            "expected_errors": [
+              "E0493"
+            ],
+            "expected_value": null,
+            "base": "pa31/tests/spec/source-const-drop/rtcnt.rs",
+            "base_sha256": "2cfe99057f74ac5bbcc0325f0ec442a53d51755e82b22839bde5ad8f04169899",
+            "append": "\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]pub const fn ct_bad()->i32{let mut out=0;{let _owned=N{out:&raw mut out,value:59};}out}\nconst OBSERVED:i32=ct_bad();\n",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "ctbad",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/ctbad.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/ctbad.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.029514889989513904,
+            "errors": [
+              [
+                "E0493",
+                "destructor of `N` cannot be evaluated at compile-time"
+              ]
+            ],
+            "infrastructure": false,
+            "matches": true
+          },
+          {
+            "file": "ctdead.rs",
+            "source_sha256": "8cb42007db892614b80c96c63503d8bb70566f7d2ce48f859a1a94ad0a4e6f9d",
+            "expected_code": 0,
+            "expected_errors": [],
+            "expected_value": 0,
+            "base": "pa31/tests/spec/source-const-drop/count2.rs",
+            "base_sha256": "a8f2ba8d677d2a1f49ca9e0633d4a242954a868739ec70750008b30b96420896",
+            "append": "\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]pub const fn ct_dead()->i32{let mut out=0;{if false{let _owned=C{out:&raw mut out};}}out}\nconst OBSERVED:i32=ct_dead();\n",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "ctdead",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/ctdead.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/ctdead.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.03429020999465138,
+            "errors": [],
+            "infrastructure": false,
+            "matches": true
+          },
+          {
+            "file": "ctcond.rs",
+            "source_sha256": "98243e8e0b661e230b4ff45494bd0a5b5a76720134f9cead7f703ee064420d8b",
+            "expected_code": 0,
+            "expected_errors": [],
+            "expected_value": null,
+            "base": "pa31/tests/spec/source-const-drop/count2.rs",
+            "base_sha256": "a8f2ba8d677d2a1f49ca9e0633d4a242954a868739ec70750008b30b96420896",
+            "append": "\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]pub const fn ct_cond(flag:bool)->i32{let mut out=0;{let owned;if flag{owned=C{out:&raw mut out};}}out}\nconst OFF:i32=ct_cond(false);const ON:i32=ct_cond(true);\n",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "ctcond",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/ctcond.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/ctcond.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.03345093200914562,
+            "errors": [],
+            "infrastructure": false,
+            "matches": true
+          },
+          {
+            "file": "ctcall.rs",
+            "source_sha256": "7dff908349b702bc70a013db26f238c825dbfc6cade0cceb8ac3d6ab1e73a01f",
+            "expected_code": 1,
+            "expected_errors": [
+              "E0015"
+            ],
+            "expected_value": null,
+            "base": "pa31/tests/spec/source-const-drop/count2.rs",
+            "base_sha256": "a8f2ba8d677d2a1f49ca9e0633d4a242954a868739ec70750008b30b96420896",
+            "append": "\nfn ordinary(){}\npub struct Bad;\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]const impl Drop for Bad{fn drop(&mut self){ordinary();}}\n",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "ctcall",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/ctcall.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/ctcall.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.031187437009066343,
+            "errors": [
+              [
+                "E0015",
+                "cannot call non-const function `ordinary` in constant functions"
+              ]
+            ],
+            "infrastructure": false,
+            "matches": true
+          },
+          {
+            "file": "ctunsf.rs",
+            "source_sha256": "08198f51343c041827712747c21a74dc1e48691d2a21f163deab6c3113a8acd6",
+            "expected_code": 1,
+            "expected_errors": [
+              "E0133"
+            ],
+            "expected_value": null,
+            "base": "pa31/tests/spec/source-const-drop/count2.rs",
+            "base_sha256": "a8f2ba8d677d2a1f49ca9e0633d4a242954a868739ec70750008b30b96420896",
+            "append": "\npub struct Bad{out:*mut i32}\n#[rustc_const_unstable(feature=\"const_destruct\",issue=\"133214\")]const impl Drop for Bad{fn drop(&mut self){*self.out=41;}}\n",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "ctunsf",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/ctunsf.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/ctunsf.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.030537760991137475,
+            "errors": [
+              [
+                "E0133",
+                "dereference of raw pointer is unsafe and requires unsafe block"
+              ]
+            ],
+            "infrastructure": false,
+            "matches": true
+          },
+          {
+            "file": "dborr.rs",
+            "source_sha256": "82ec345e67b7479e4e38344952429bafa7190e8d910666c34392b432f92fa1bb",
+            "expected_code": 1,
+            "expected_errors": [
+              "E0506"
+            ],
+            "base": "pa31/tests/spec/source-const-cleanup/dborrow.rs",
+            "base_sha256": "82ec345e67b7479e4e38344952429bafa7190e8d910666c34392b432f92fa1bb",
+            "prediction": "original opposing loan remains rejected independent of cleanup eligibility",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "dborr",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/dborr.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/dborr.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.027525082987267524,
+            "errors": [
+              [
+                "E0506",
+                "cannot assign to `x` because it is borrowed"
+              ]
+            ],
+            "infrastructure": false,
+            "matches": true
+          },
+          {
+            "file": "n41.rs",
+            "source_sha256": "0f40fa4d5d647c6045e9a5166592e05776dea70aa33f0bf3c3e78ff8ddeda496",
+            "expected_code": 0,
+            "expected_errors": [],
+            "expected_value": 41,
+            "native": true,
+            "base": "ct41.rs",
+            "prediction": "actual CTFE OBSERVED is returned through an ordinary C boundary; no checked-arithmetic/panic parity claim",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "n41",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/n41.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/n41.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.026646452024579048,
+            "errors": [],
+            "infrastructure": false,
+            "matches": true
+          },
+          {
+            "file": "n59.rs",
+            "source_sha256": "66a354421b5033364a0ae57288f23eb91a9e3c7500e076aea3f83cb066fbe84c",
+            "expected_code": 0,
+            "expected_errors": [],
+            "expected_value": 59,
+            "native": true,
+            "base": "ct59.rs",
+            "prediction": "actual CTFE OBSERVED is returned through an ordinary C boundary; no checked-arithmetic/panic parity claim",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "n59",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/n59.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/n59.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.03080528398277238,
+            "errors": [],
+            "infrastructure": false,
+            "matches": true
+          },
+          {
+            "file": "nonce.rs",
+            "source_sha256": "c028d2404fe6a14d79b0cfe83e5599d570e9e1046307fefba70d9cea9f363186",
+            "expected_code": 0,
+            "expected_errors": [],
+            "expected_value": 41,
+            "native": true,
+            "base": "ctonce.rs",
+            "prediction": "actual CTFE OBSERVED is returned through an ordinary C boundary; no checked-arithmetic/panic parity claim",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "nonce",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/nonce.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/nonce.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.02805003704270348,
+            "errors": [],
+            "infrastructure": false,
+            "matches": true
+          }
+        ],
+        "native": [
+          {
+            "file": "n41.rs",
+            "source_sha256": "0f40fa4d5d647c6045e9a5166592e05776dea70aa33f0bf3c3e78ff8ddeda496",
+            "stage": "object",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "-Cdebug-assertions=no",
+              "-Coverflow-checks=no",
+              "--emit=obj",
+              "--crate-name",
+              "n41",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/n41.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/n41.o"
+            ],
+            "code": 0,
+            "seconds": 0.03458442899864167,
+            "stdout": "",
+            "matches": true
+          },
+          {
+            "file": "n41.rs",
+            "source_sha256": "0f40fa4d5d647c6045e9a5166592e05776dea70aa33f0bf3c3e78ff8ddeda496",
+            "stage": "link",
+            "argv": [
+              "cc",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/observe.c",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/n41.o",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/n41.native"
+            ],
+            "code": 0,
+            "seconds": 0.06245731801027432,
+            "stdout": "",
+            "matches": true
+          },
+          {
+            "file": "n41.rs",
+            "source_sha256": "0f40fa4d5d647c6045e9a5166592e05776dea70aa33f0bf3c3e78ff8ddeda496",
+            "stage": "run",
+            "argv": [
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/n41.native"
+            ],
+            "code": 0,
+            "seconds": 0.0020661380258388817,
+            "stdout": "41\n",
+            "matches": true
+          },
+          {
+            "file": "n59.rs",
+            "source_sha256": "66a354421b5033364a0ae57288f23eb91a9e3c7500e076aea3f83cb066fbe84c",
+            "stage": "object",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "-Cdebug-assertions=no",
+              "-Coverflow-checks=no",
+              "--emit=obj",
+              "--crate-name",
+              "n59",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/n59.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/n59.o"
+            ],
+            "code": 0,
+            "seconds": 0.03583403199445456,
+            "stdout": "",
+            "matches": true
+          },
+          {
+            "file": "n59.rs",
+            "source_sha256": "66a354421b5033364a0ae57288f23eb91a9e3c7500e076aea3f83cb066fbe84c",
+            "stage": "link",
+            "argv": [
+              "cc",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/observe.c",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/n59.o",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/n59.native"
+            ],
+            "code": 0,
+            "seconds": 0.056979867978952825,
+            "stdout": "",
+            "matches": true
+          },
+          {
+            "file": "n59.rs",
+            "source_sha256": "66a354421b5033364a0ae57288f23eb91a9e3c7500e076aea3f83cb066fbe84c",
+            "stage": "run",
+            "argv": [
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/n59.native"
+            ],
+            "code": 0,
+            "seconds": 0.0018741260282695293,
+            "stdout": "59\n",
+            "matches": true
+          },
+          {
+            "file": "nonce.rs",
+            "source_sha256": "c028d2404fe6a14d79b0cfe83e5599d570e9e1046307fefba70d9cea9f363186",
+            "stage": "object",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "-Cdebug-assertions=no",
+              "-Coverflow-checks=no",
+              "--emit=obj",
+              "--crate-name",
+              "nonce",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/nonce.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/nonce.o"
+            ],
+            "code": 0,
+            "seconds": 0.036898793012369424,
+            "stdout": "",
+            "matches": true
+          },
+          {
+            "file": "nonce.rs",
+            "source_sha256": "c028d2404fe6a14d79b0cfe83e5599d570e9e1046307fefba70d9cea9f363186",
+            "stage": "link",
+            "argv": [
+              "cc",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/observe.c",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/nonce.o",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/nonce.native"
+            ],
+            "code": 0,
+            "seconds": 0.04798402398591861,
+            "stdout": "",
+            "matches": true
+          },
+          {
+            "file": "nonce.rs",
+            "source_sha256": "c028d2404fe6a14d79b0cfe83e5599d570e9e1046307fefba70d9cea9f363186",
+            "stage": "run",
+            "argv": [
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v1/nonce.native"
+            ],
+            "code": 0,
+            "seconds": 0.0019202289986424148,
+            "stdout": "41\n",
+            "matches": true
+          }
+        ]
+      }
+    },
+    "reference-v2": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v2/receipt.json",
+      "sha256": "f9d24920d8dfcbba644c6fa0d689d3a3d4e9e5e9028c42b96894b46c940ee993",
+      "result": {
+        "rustc": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+        "driver": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so",
+        "driver_sha256": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c",
+        "prediction_sha256": "58a04b05c3ac93413c4ca7ef3ae1bd1fe2d6e5afbfdd7d0feaaf562d1c874c53",
+        "environment": {
+          "RUSTC_BOOTSTRAP": "1"
+        },
+        "observations": [
+          {
+            "file": "ctlifo.rs",
+            "source_sha256": "398fb34732e0cb874588f1d71fcf6d862daf0f5d16ba5da413fe3b6df5bddf09",
+            "expected_code": 0,
+            "expected_errors": [],
+            "native": false,
+            "expected_value": 41,
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "ctlifo",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/ctlifo.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v2/ctlifo.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.031764439947437495,
+            "errors": [],
+            "infrastructure": false,
+            "matches": true
+          },
+          {
+            "file": "ctdang.rs",
+            "source_sha256": "04d074e41c5e4001fe12fb3ce1c380cbfe8d6119208ad68365e901fce8e904bf",
+            "expected_code": 1,
+            "expected_errors": [
+              "E0080"
+            ],
+            "native": false,
+            "expected_value": 41,
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "ctdang",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/ctdang.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v2/ctdang.rmeta",
+              "--error-format=json"
+            ],
+            "code": 1,
+            "seconds": 0.03262958599952981,
+            "errors": [
+              [
+                "E0080",
+                "memory access failed: alloc2 has been freed, so this pointer is dangling"
+              ]
+            ],
+            "infrastructure": false,
+            "matches": true
+          },
+          {
+            "file": "nlifo.rs",
+            "source_sha256": "f9bad3fd8492875f4da6c7434217cc0288958b504dc639e7406f9603f57b2dca",
+            "expected_code": 0,
+            "expected_errors": [],
+            "native": true,
+            "expected_value": 41,
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "nlifo",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/nlifo.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v2/nlifo.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.02847249899059534,
+            "errors": [],
+            "infrastructure": false,
+            "matches": true
+          }
+        ],
+        "native": [
+          {
+            "file": "nlifo.rs",
+            "source_sha256": "f9bad3fd8492875f4da6c7434217cc0288958b504dc639e7406f9603f57b2dca",
+            "stage": "object",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "-Cdebug-assertions=no",
+              "-Coverflow-checks=no",
+              "--emit=obj",
+              "--crate-name",
+              "nlifo",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/nlifo.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v2/nlifo.o"
+            ],
+            "code": 0,
+            "seconds": 0.03779418801423162,
+            "stdout": "",
+            "matches": true
+          },
+          {
+            "file": "nlifo.rs",
+            "source_sha256": "f9bad3fd8492875f4da6c7434217cc0288958b504dc639e7406f9603f57b2dca",
+            "stage": "link",
+            "argv": [
+              "cc",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/observe.c",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v2/nlifo.o",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v2/nlifo.native"
+            ],
+            "code": 0,
+            "seconds": 0.04991592303849757,
+            "stdout": "",
+            "matches": true
+          },
+          {
+            "file": "nlifo.rs",
+            "source_sha256": "f9bad3fd8492875f4da6c7434217cc0288958b504dc639e7406f9603f57b2dca",
+            "stage": "run",
+            "argv": [
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v2/nlifo.native"
+            ],
+            "code": 0,
+            "seconds": 0.0022568749845959246,
+            "stdout": "41\n",
+            "matches": true
+          }
+        ]
+      }
+    },
+    "reference-v3": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v3/receipt.json",
+      "sha256": "8bee772839706d72012b0998427fd99b7b89c6751e609249c850ab82786b6018",
+      "result": {
+        "rustc": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+        "driver": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so",
+        "driver_sha256": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c",
+        "prediction_sha256": "f3c628f537e0ffb617b00937db92b8de36040f9fe6801131398dbb5d7bf104d6",
+        "environment": {
+          "RUSTC_BOOTSTRAP": "1"
+        },
+        "observations": [
+          {
+            "file": "ctmove.rs",
+            "source_sha256": "20998618ca2c6d8016e04af38465bae8f0d0d6b4258c3d82caa14b4b3a0fc113",
+            "expected_code": 1,
+            "expected_errors": [
+              "E0080"
+            ],
+            "native": false,
+            "expected_value": 41,
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "ctmove",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/ctmove.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v3/ctmove.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.03158474602969363,
+            "errors": [],
+            "infrastructure": false,
+            "matches": false
+          }
+        ],
+        "native": []
+      }
+    },
+    "reference-v4": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v4/receipt.json",
+      "sha256": "275d0132a43fcf536f998247d8f12c7ca6d3d44be14f766a3d8eb7a1d60b29d1",
+      "result": {
+        "rustc": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+        "driver": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so",
+        "driver_sha256": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c",
+        "prediction_sha256": "fbc6273e6db70aac457742712819dfec8de6599dad53ed13eb74ce980712580e",
+        "environment": {
+          "RUSTC_BOOTSTRAP": "1"
+        },
+        "observations": [
+          {
+            "file": "ctmove.rs",
+            "source_sha256": "20998618ca2c6d8016e04af38465bae8f0d0d6b4258c3d82caa14b4b3a0fc113",
+            "expected_code": 0,
+            "expected_errors": [],
+            "native": false,
+            "expected_value": 7,
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "ctmove",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/ctmove.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v4/ctmove.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.03283035202184692,
+            "errors": [],
+            "infrastructure": false,
+            "matches": true
+          },
+          {
+            "file": "nmove.rs",
+            "source_sha256": "1b91dae032109dd1ffd5abb55d81490c8aec05cf5b96bb1121787751034e7f2d",
+            "expected_code": 0,
+            "expected_errors": [],
+            "native": true,
+            "expected_value": 7,
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "--emit=metadata",
+              "--crate-name",
+              "nmove",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/nmove.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v4/nmove.rmeta",
+              "--error-format=json"
+            ],
+            "code": 0,
+            "seconds": 0.03464588196948171,
+            "errors": [],
+            "infrastructure": false,
+            "matches": true
+          }
+        ],
+        "native": [
+          {
+            "file": "nmove.rs",
+            "source_sha256": "1b91dae032109dd1ffd5abb55d81490c8aec05cf5b96bb1121787751034e7f2d",
+            "stage": "object",
+            "argv": [
+              "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+              "--edition=2024",
+              "--target=x86_64-unknown-linux-gnu",
+              "--crate-type=lib",
+              "-Cpanic=abort",
+              "-Cdebug-assertions=no",
+              "-Coverflow-checks=no",
+              "--emit=obj",
+              "--crate-name",
+              "nmove",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/nmove.rs",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v4/nmove.o"
+            ],
+            "code": 0,
+            "seconds": 0.03312703297706321,
+            "stdout": "",
+            "matches": true
+          },
+          {
+            "file": "nmove.rs",
+            "source_sha256": "1b91dae032109dd1ffd5abb55d81490c8aec05cf5b96bb1121787751034e7f2d",
+            "stage": "link",
+            "argv": [
+              "cc",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-ctfe-cleanup/observe.c",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v4/nmove.o",
+              "-o",
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v4/nmove.native"
+            ],
+            "code": 0,
+            "seconds": 0.05271819600602612,
+            "stdout": "",
+            "matches": true
+          },
+          {
+            "file": "nmove.rs",
+            "source_sha256": "1b91dae032109dd1ffd5abb55d81490c8aec05cf5b96bb1121787751034e7f2d",
+            "stage": "run",
+            "argv": [
+              "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/reference-v4/nmove.native"
+            ],
+            "code": 0,
+            "seconds": 0.0017048959853127599,
+            "stdout": "7\n",
+            "matches": true
+          }
+        ]
+      }
+    },
+    "execute5": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/execute5/receipt.json",
+      "sha256": "cec2d06fc0856e61cbaa170914d4cd67fb65caa48b00c852456435ecbeb829b9",
+      "result": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 18.23995392402867
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.4916918860399164
+        },
+        {
+          "name": "strict",
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--lib",
+            "--test",
+            "suite_traits",
+            "--bin",
+            "rustgm",
+            "--all-features",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "code": 0,
+          "seconds": 71.34982901299372
+        },
+        {
+          "name": "execution",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctexec::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 124.45328162703663
+        },
+        {
+          "name": "ordinary",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctdrop::original_unit_result_const_calls_pay_their_actual_destruct_premises",
+            "--",
+            "--exact",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.46253512002294883
+        }
+      ]
+    },
+    "execute7": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/execute7/receipt.json",
+      "sha256": "0a5801c5613ae78ad108014cdad0f96ceac2764a3853a48bacf40e1f9def9570",
+      "result": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 16.834951791039202
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.858649754023645
+        },
+        {
+          "name": "metadata",
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--all-targets",
+            "--all-features",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "code": 0,
+          "seconds": 106.78669733699644
+        }
+      ]
+    },
+    "execute8": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/execute8/receipt.json",
+      "sha256": "ae3577c606e6e14db9cccc4f00aa2c04e54c087445ab26178bfda563a4e46077",
+      "result": [
+        {
+          "name": "ctexec",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctexec::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 124.99084339302499
+        },
+        {
+          "name": "native5",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctexec::actual_evaluated_cleanup_effects_reach_five_native_observers",
+            "--",
+            "--exact",
+            "--ignored",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 1.2424980259966105
+        },
+        {
+          "name": "ctdrop",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctdrop::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.8492116639972664
+        },
+        {
+          "name": "ctsel",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctsel::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 1.4022443889989518
+        },
+        {
+          "name": "ctseal",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctseal::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.1652342120069079
+        },
+        {
+          "name": "ctwire",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctwire::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.11253515601856634
+        },
+        {
+          "name": "ctfix",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctfix::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.9395979690016247
+        },
+        {
+          "name": "ctown",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctown::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.27238457498606294
+        },
+        {
+          "name": "ctleaf",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctleaf::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.11752437404356897
+        },
+        {
+          "name": "ctnext",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctnext::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.15639262303011492
+        },
+        {
+          "name": "native2",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctdrop::actual_const_drop_runtime_body_writes_the_runtime_operand",
+            "--",
+            "--exact",
+            "--ignored",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.45765477197710425
+        },
+        {
+          "name": "native1",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctnext::genuine_unconditional_const_drop_native_body_consumes_runtime_data",
+            "--",
+            "--exact",
+            "--ignored",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.2882533649681136
+        },
+        {
+          "name": "harness",
+          "command": [
+            "python3",
+            "scripts/maintainer_suites.py",
+            "check"
+          ],
+          "code": 0,
+          "seconds": 0.07928732602158561
+        },
+        {
+          "name": "upstream",
+          "command": [
+            "python3",
+            "scripts/upstream.py",
+            "--verify"
+          ],
+          "code": 0,
+          "seconds": 0.124266444996465
+        },
+        {
+          "name": "cursor-boundary",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "vactx::const_cursor_definition_compiles_and_reached_cleanup_remains_required",
+            "--",
+            "--exact",
+            "--nocapture"
+          ],
+          "code": 101,
+          "seconds": 0.5293210070230998
+        }
+      ]
+    },
+    "execute9": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/execute9/receipt.json",
+      "sha256": "aec2f4b295de19c09f6c9ed2124992963c4357b488c2e41aee7927aa6f891bf1",
+      "result": [
+        {
+          "name": "format",
+          "command": [
+            "cargo",
+            "fmt",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--all"
+          ],
+          "code": 0,
+          "seconds": 17.514342114969622
+        },
+        {
+          "name": "audit",
+          "command": [
+            "obj/audit-venv/bin/python",
+            "scripts/rust_audit.py",
+            "--root",
+            ".",
+            "--cache",
+            "obj/fast-audit.json"
+          ],
+          "code": 0,
+          "seconds": 2.7041517210309394
+        },
+        {
+          "name": "metadata",
+          "command": [
+            "cargo",
+            "clippy",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--all-targets",
+            "--all-features",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "code": 0,
+          "seconds": 113.1903331700014
+        }
+      ]
+    },
+    "execute10": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/execute10/receipt.json",
+      "sha256": "3afc2e4a6f614222deb2ac52d5108cc1d3e935da23e7a6ac8a63a1a16b9ee332",
+      "result": [
+        {
+          "name": "ctexec",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctexec::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 109.91111872904003
+        },
+        {
+          "name": "native5",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctexec::actual_evaluated_cleanup_effects_reach_five_native_observers",
+            "--",
+            "--exact",
+            "--ignored",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 1.8682036270038225
+        },
+        {
+          "name": "ctdrop",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctdrop::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 1.383398414007388
+        },
+        {
+          "name": "ctsel",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctsel::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 2.511313850991428
+        },
+        {
+          "name": "ctseal",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctseal::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.3948118429980241
+        },
+        {
+          "name": "ctwire",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctwire::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.22217049897881225
+        },
+        {
+          "name": "ctfix",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctfix::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 1.7292017319705337
+        },
+        {
+          "name": "ctown",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctown::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.3195796189829707
+        },
+        {
+          "name": "ctleaf",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctleaf::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.1445307660032995
+        },
+        {
+          "name": "ctnext",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctnext::",
+            "--",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.18962574203033
+        },
+        {
+          "name": "native2",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctdrop::actual_const_drop_runtime_body_writes_the_runtime_operand",
+            "--",
+            "--exact",
+            "--ignored",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.6535399980493821
+        },
+        {
+          "name": "native1",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "ctnext::genuine_unconditional_const_drop_native_body_consumes_runtime_data",
+            "--",
+            "--exact",
+            "--ignored",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.42790548503398895
+        },
+        {
+          "name": "harness",
+          "command": [
+            "python3",
+            "scripts/maintainer_suites.py",
+            "check"
+          ],
+          "code": 0,
+          "seconds": 0.09855119697749615
+        },
+        {
+          "name": "upstream",
+          "command": [
+            "python3",
+            "scripts/upstream.py",
+            "--verify"
+          ],
+          "code": 0,
+          "seconds": 0.13685200695181265
+        },
+        {
+          "name": "cursor-boundary",
+          "command": [
+            "cargo",
+            "test",
+            "--manifest-path",
+            "dev/Cargo.toml",
+            "--locked",
+            "--profile",
+            "dev-fast",
+            "--test",
+            "suite_traits",
+            "vactx::const_cursor_definition_compiles_and_reached_cleanup_remains_required",
+            "--",
+            "--exact",
+            "--nocapture"
+          ],
+          "code": 0,
+          "seconds": 0.6221389360143803
+        }
+      ]
+    }
+  },
+  "backend": {
+    "lock_sha256": "f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581",
+    "tools": {
+      "lowir": {
+        "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/backend/pins/32b1e67c44d242351bb20787e3bbd287a603a677fffbe0859a38002be776f11d/lowir",
+        "sha256": "32b1e67c44d242351bb20787e3bbd287a603a677fffbe0859a38002be776f11d"
+      },
+      "lowir2native": {
+        "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/backend/pins/27b3138e442d53706a059cea0ea98ede2756f56076f00f26ffc28da078974815/lowir2native",
+        "sha256": "27b3138e442d53706a059cea0ea98ede2756f56076f00f26ffc28da078974815"
+      },
+      "cppgm++": {
+        "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/backend/pins/0d216449452b5a911d364ef7f4eb807d7b429a8cb96fb0afed8f99b60b5cfa5b/cppgm++",
+        "sha256": "0d216449452b5a911d364ef7f4eb807d7b429a8cb96fb0afed8f99b60b5cfa5b"
+      }
+    }
+  },
+  "native5": [
+    {
+      "source": "n41",
+      "value": 41,
+      "folder": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/native-n41-4081833",
+      "files_sha256": {
+        "source.lowir": "6d6fb81168e19617dcf047253bab00d35906d4cdf975cdcb810795b100aea500",
+        "backend.command": "6d7d6cb8305d4ba8c66b5dbd1eed232efdf905c25ed45254a5a0f84101348315",
+        "source.o": "e4c8e222e8238f9dc6d4d8dbd5e70f2a1e9e9adf598b7e3bf00109be04a8b333",
+        "backend.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "0e9ab6ac6c4b543cd5b4c72782ea4cdcfec3a15217ef4e17acb6097bfcfc5c17",
+        "observer": "a2d7242e342719b5321a6b1823d13ee07ec21961b6caf74d96199e1f0344558b",
+        "link.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "ec7ed924581aab7fed457b2189dbaea7bbbe8a9bfd722cbfee4115a835362691",
+        "native.stdout": "040316eca5e77dbb2212c1efe8b81cb23bc67ce0ac8cb5c9d902d98bd45ddfa1",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "source": "n59",
+      "value": 59,
+      "folder": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/native-n59-4081833",
+      "files_sha256": {
+        "source.lowir": "ac10c3126ee42cd9cce6b9b298846b53268924055550ee47e065a19541ce2175",
+        "backend.command": "07d99d2237dc68048c85cf544f80f5cd3519e2a51e610840844001ce8f502638",
+        "source.o": "10e415460cc24fa6672a3a829cdce1d21ee003a59c6abd27ff8256bdb5c5c24b",
+        "backend.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "b33eddfd3e923e206540abc693261433309d58e195f9971b443504bcbb4ae0f6",
+        "observer": "bef9708bbc639e745b2bc1f10c4ee32088cf45d326b9dc15de43d06810bee9d3",
+        "link.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "bf9d72ecd8fe7cf8d80e5f51e0559cb6f19ae527d1f9fc68a43776932cfc0530",
+        "native.stdout": "be4ba010e48e7d5c7c60457e7f40538407a26f4ead94b392beff67a3a5546b8a",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "source": "nonce",
+      "value": 41,
+      "folder": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/native-nonce-4081833",
+      "files_sha256": {
+        "source.lowir": "6d6fb81168e19617dcf047253bab00d35906d4cdf975cdcb810795b100aea500",
+        "backend.command": "380652491d827cd451e1b8f65c773e8533e9ec2f4b2a6558bd4d31446e21a271",
+        "source.o": "e4c8e222e8238f9dc6d4d8dbd5e70f2a1e9e9adf598b7e3bf00109be04a8b333",
+        "backend.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "776867e7791813544770bb2e8d43491fb23d80fb921d8cb475f2d87b54032149",
+        "observer": "a2d7242e342719b5321a6b1823d13ee07ec21961b6caf74d96199e1f0344558b",
+        "link.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "114b9f163a24d8dfaa73d9f7f205a9e281975e411ebc7aef5defa0d62331d889",
+        "native.stdout": "040316eca5e77dbb2212c1efe8b81cb23bc67ce0ac8cb5c9d902d98bd45ddfa1",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "source": "nlifo",
+      "value": 41,
+      "folder": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/native-nlifo-4081833",
+      "files_sha256": {
+        "source.lowir": "5f086247db15868621ea58ceb40cf7f81886d2036593093b061f86c1fe937f55",
+        "backend.command": "6cecc5bb3dea0ce4997d9f270f04d48f3d45fab401fe468f29c2a3456b154db5",
+        "source.o": "b93cf9e5e24240d30ac0949e2ec9b76a6e5c1592fa92cdf41e5f66e3b6dcdc81",
+        "backend.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "d9f61279878146238f1deba9a9d6cfce259f35f2e0afa60f6d3c1f36499012be",
+        "observer": "bf2e6c4ed6754fae9adfc44d58f8023b2b28bfbd881d99ca6c85f1a8bfcd896d",
+        "link.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "d7a8bacada0fdfa52effa177a03ffc01173208ed3081d85c3190e590252a552e",
+        "native.stdout": "040316eca5e77dbb2212c1efe8b81cb23bc67ce0ac8cb5c9d902d98bd45ddfa1",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "source": "nmove",
+      "value": 7,
+      "folder": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/native-nmove-4081833",
+      "files_sha256": {
+        "source.lowir": "3b871698248a8099af7215a6d9d99ce0c8e8af4b6502b6cc3083663003e5ebe2",
+        "backend.command": "eedf654f08b4cb61ba9e0f1bd410ac412cdba22c18cd4599a7a496ebb8f93a5a",
+        "source.o": "0eaffb21cc8ed39c26c0f7cbe146c55c16f6a992f697aaae346f9763560101a7",
+        "backend.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "4e1a9094f0d12baab72084c55a78869c746f238511e823bdb0c89a5385ad4ab5",
+        "observer": "c8e9d77b3ca80f3dc236b250b761f9e9e6e9d9d0d82440e53be1045ee39b9ca4",
+        "link.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "2912b5c86f2e0cd231cebc1ead07b1867173fb3d126d2c54ae321e7308efd3ef",
+        "native.stdout": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "qualified": {
+    "metadata": "all targets/features strict Clippy, no private link",
+    "public_tests": 49,
+    "native_programs": 8,
+    "harness": true,
+    "upstream": true,
+    "private_runtime": "pending CI",
+    "full_release_debug_independent": "pending CI"
+  },
+  "widths": {
+    "Code": 304,
+    "Frame": 248,
+    "ReturnTo": 8,
+    "PreparedOperand": 32,
+    "Checked": 32,
+    "View": 240,
+    "Call": 24,
+    "Bundle": 328
+  },
+  "bounded_observations": {
+    "ctdrop": [
+      "const cleanup canonical work: base=768, growth=[1473, 5889, 23553]"
+    ],
+    "ctsel": [
+      "array qualification canonical work: length8=1328, length1048576=1328"
+    ]
+  },
+  "current_effect_observations": [
+    "   Compiling rustgm v0.1.0 (/mnt/vizier/rustgm-scratch/rustgm-pa29-work/dev)",
+    "    Finished `dev-fast` profile [unoptimized] target(s) in 1m 49s",
+    "     Running tests/suites/traits/mod.rs (obj/rust/dev-fast/deps/suite_traits-1eb52380c4060d30)",
+    "ct41: frames=3 steps=292 code_bytes=5432",
+    "ct41: observed 41",
+    "ct59: frames=4 steps=522 code_bytes=7008",
+    "ct59: observed 59",
+    "ctbad: file 0: 5847: active cleanup requires const Destruct in its actual defining environment",
+    "ctonce: frames=3 steps=346 code_bytes=6576",
+    "ctonce: observed 41",
+    "ctdead: frames=2 steps=91 code_bytes=5272",
+    "ctdead: observed 0",
+    "ctcall: file 0: 5913: non-const calls are not allowed in const functions",
+    "ctunsf: file 0: 5911: raw pointer dereference requires an unsafe context",
+    "ctlifo: frames=4 steps=509 code_bytes=6676",
+    "ctlifo: observed 41",
+    "dborr: file 0: 5701: access conflicts with a live reference loan",
+    "ctmove: frames=3 steps=451 code_bytes=8812",
+    "ctmove: observed 7"
+  ],
+  "failures_retained": {
+    "execute1": "architecture phase dependency, required neutral data projection",
+    "execute2": "five Rust type joins",
+    "execute3": "eight lint issues",
+    "execute4": "run105/100-line lint",
+    "execute6": "three new private-test style lints",
+    "execute8": "all semantic/native/regression pass except stale clcall scheduler fence, now actual generic/structural profile",
+    "reference-v3": "initial raw-move E0080 prediction disproved by real Rust0; corrected before candidate"
+  },
+  "compiler_law": {
+    "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/ctfe-exec/move-law/sources.json",
+    "sha256": "c464b6e7a7f669600a14c047ce66356bc85848e63b3a09c60440d7438db7ceb3"
+  },
+  "required_boundaries": [
+    "conditional flags",
+    "materialized temporaries",
+    "recursive/field/array/variant cleanup",
+    "generic and provided-method cleanup",
+    "conditional-parent active cleanup",
+    "anonymous/initializer execution owners",
+    "imported cleanup/policy/body authority",
+    "full standard module closure",
+    "full CTFE destructor contract beyond finite profile"
+  ],
+  "performance": "actual layouts/counters and existing width8/32/128 plus sparse array bounded controls; no broad speedup claim"
+}

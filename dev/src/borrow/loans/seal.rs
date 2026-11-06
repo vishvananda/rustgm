@@ -37,6 +37,17 @@ impl Seal {
         contract: &regions::Body,
         owner: Option<&Arc<()>>,
     ) -> Result<(), &'static str> {
+        if !same_arc(self.owner.as_ref(), owner) {
+            return Err("initialized cleanup plan changed its arena, verifier or body");
+        }
+        self.validate_context(environment, body, contract)
+    }
+    pub(in crate::borrow::loans) fn validate_context<S: std::hash::BuildHasher>(
+        &self,
+        environment: &Environment<'_, S>,
+        body: &Body,
+        contract: &regions::Body,
+    ) -> Result<(), &'static str> {
         if self.body != NonNull::from(body)
             || self
                 .types
@@ -46,7 +57,6 @@ impl Seal {
                 .definitions
                 .as_ref()
                 .is_some_and(|id| !environment.definitions.has_identity(id))
-            || !same_arc(self.owner.as_ref(), owner)
             || contract.key != body.key()
             || contract.source != body.source
             || contract.instance != body.instance

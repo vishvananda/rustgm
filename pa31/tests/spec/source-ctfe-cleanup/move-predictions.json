@@ -1,0 +1,18 @@
+{
+  "state": "corrected from exact reference-v3 Rust0 before candidate observation; native7 predicted",
+  "cases": {
+    "ctmove": {
+      "rust_status": 0,
+      "value": 7
+    },
+    "nmove": {
+      "rust_status": 0,
+      "native": "7\n",
+      "value": 7
+    }
+  },
+  "sha256": {
+    "ctmove": "20998618ca2c6d8016e04af38465bae8f0d0d6b4258c3d82caa14b4b3a0fc113",
+    "nmove": "1b91dae032109dd1ffd5abb55d81490c8aec05cf5b96bb1121787751034e7f2d"
+  }
+}

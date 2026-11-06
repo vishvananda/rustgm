@@ -1,0 +1,13 @@
+{
+  "state": "frozen before reference and candidate observation",
+  "cases": {
+    "ctmove": {
+      "rust_status": 1,
+      "diagnostic": "E0080",
+      "cause": "typed raw field address is read after a whole non-Copy owner move"
+    }
+  },
+  "sha256": {
+    "ctmove": "20998618ca2c6d8016e04af38465bae8f0d0d6b4258c3d82caa14b4b3a0fc113"
+  }
+}

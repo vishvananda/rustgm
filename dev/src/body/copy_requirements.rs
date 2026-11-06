@@ -376,7 +376,6 @@ impl OriginalIndexBudget {
             byte_limit,
         }
     }
-    #[cfg(test)]
     pub(crate) fn costs(&self) -> (usize, usize) {
         (self.steps.get(), self.bytes.get())
     }

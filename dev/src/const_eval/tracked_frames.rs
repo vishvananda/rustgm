@@ -115,7 +115,15 @@ impl Machine<'_, '_> {
             if !tracked {
                 return Ok(site.location);
             }
-            next = actual.return_to;
+            next = match actual.return_to {
+                super::ReturnTo::Value(value) => Some(value),
+                super::ReturnTo::Root => None,
+                super::ReturnTo::Cleanup(_) => {
+                    return Err(
+                        "tracked caller inheritance through cleanup is not implemented".into(),
+                    );
+                }
+            };
         }
         Err("tracked const entry lacks a genuine caller frame".into())
     }

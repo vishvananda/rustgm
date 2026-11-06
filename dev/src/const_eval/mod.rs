@@ -1,6 +1,7 @@
 //! Bounded constant execution consumes selected typed CFGs, never source syntax.
 pub(crate) mod code;
 mod counted;
+pub(crate) mod ctglue;
 mod executed_calls;
 mod invoked_defaults;
 pub(crate) mod lease_codes;
@@ -29,6 +30,7 @@ mod returns;
 mod runtime_checks;
 mod selector_sites;
 mod static_reads;
+mod steps;
 mod subtraction_calls;
 mod tag_calls;
 mod transfers;
@@ -91,14 +93,22 @@ struct ReadOperation {
     frame: usize,
     position: u32,
 }
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ReturnTo {
+    Root,
+    Value(ValueId),
+    Cleanup(u32),
+}
 struct Frame {
     instance: usize,
     context: EvaluationContext,
     body: usize,
     block: BlockId,
     next: u32,
-    operand_cursor: usize,
-    return_to: Option<ValueId>,
+    operand_cursor: u32,
+    return_to: ReturnTo,
+    cleanup_cursor: Option<std::num::NonZeroU32>,
+    cleanup_parent: Option<std::num::NonZeroU32>,
     locals: Vec<Option<Constant>>,
     values: Vec<Option<Constant>>,
     temporaries: HashMap<ValueId, Constant>,
@@ -107,6 +117,8 @@ struct Frame {
     union_views: HashMap<crate::body::ir::LocalId, memory::UnionField>,
     allocations: Vec<crate::sema::values::LocationId>,
 }
+const _: [(); 8] = [(); size_of::<ReturnTo>()];
+const _: [(); 248] = [(); size_of::<Frame>()];
 /// All CFGs are immutable and already checked by their defining-body pipeline.
 pub struct Machine<'a, 'b> {
     evaluator: Evaluator<'a>,
@@ -228,7 +240,7 @@ impl<'a, 'b> Machine<'a, 'b> {
         }
         self.check_source_function_root(index)
             .map_err(|failure| self.error(index, failure))?;
-        self.push(index, arguments, None)
+        self.push(index, arguments, ReturnTo::Root)
             .map_err(|failure| self.error(index, failure))?;
         match self.advance()? {
             Progress::Complete(value) => Ok(value),
@@ -277,7 +289,7 @@ impl<'a, 'b> Machine<'a, 'b> {
     pub(crate) fn begin(&mut self, index: usize, arguments: &[Constant]) -> Result<(), Error> {
         self.check_source_function_root(index)
             .map_err(|failure| self.error(index, failure))?;
-        self.push(index, arguments, None)
+        self.push(index, arguments, ReturnTo::Root)
             .map_err(|failure| self.error(index, failure))
     }
     pub(crate) fn advance(&mut self) -> Result<Progress, Error> {
@@ -301,10 +313,15 @@ impl<'a, 'b> Machine<'a, 'b> {
         &mut self,
         index: usize,
         arguments: &[Constant],
-        return_to: Option<ValueId>,
+        return_to: ReturnTo,
     ) -> Result<(), Failure> {
         self.bodies.validate_entry(index)?;
         let body = self.bodies[index].clone();
+        u32::try_from(body.operands.len())
+            .ok()
+            .filter(|n| *n < u32::MAX)
+            .ok_or("constant operand cursor exceeds its checked Code index bound")?;
+        let cleanup_parent = self.cleanup_parent(return_to)?;
         if !body.const_context {
             return Err(Failure::Fault(
                 "non-const body requested during constant execution",
@@ -360,11 +377,13 @@ impl<'a, 'b> Machine<'a, 'b> {
             block: BlockId(0),
             next: first.start,
             operand_cursor: if body.operands.is_empty() {
-                usize::MAX
+                u32::MAX
             } else {
                 0
             },
             return_to,
+            cleanup_cursor: None,
+            cleanup_parent,
             locals: vec![None; body.locals.len()],
             values: vec![None; body.values.len()],
             temporaries: HashMap::default(),
@@ -407,7 +426,7 @@ impl<'a, 'b> Machine<'a, 'b> {
                 frame: frame.instance,
                 position: frame.next,
             });
-            let mut frame = if frame.operand_cursor == usize::MAX {
+            let mut frame = if frame.operand_cursor == u32::MAX {
                 frame
             } else {
                 let Some(frame) = self.prepare_operands(frame).map_err(|e| (index, e))? else {
@@ -424,30 +443,28 @@ impl<'a, 'b> Machine<'a, 'b> {
                 .blocks
                 .get(frame.block.0 as usize)
                 .ok_or((index, Failure::Invalid("invalid constant execution block")))?;
+            let has_cleanup = body.cleanup().is_some();
+            if has_cleanup {
+                let step = self.cleanup_block(&mut frame).map_err(|e| (index, e))?;
+                if !matches!(step, ctglue::Step::Ready) {
+                    if let Some(progress) =
+                        self.suspend_cleanup(frame, step).map_err(|e| (index, e))?
+                    {
+                        return Ok(progress);
+                    }
+                    continue;
+                }
+            }
             if frame.next < block.end {
                 let statement = body.statements.get(frame.next as usize).ok_or((
                     index,
                     Failure::Invalid("invalid constant execution statement"),
                 ))?;
-                frame.next += 1;
-                let call = self
-                    .statement(&mut frame, statement.action)
-                    .map_err(|e| (index, e))?;
-                if let Some(requirement) = self.waiting.take() {
-                    frame.next -= 1;
-                    self.frames.push(frame);
-                    if self
-                        .initialize_storage(requirement)
-                        .map_err(|e| (index, e))?
-                    {
-                        continue;
-                    }
-                    return Ok(Progress::Prepare(requirement));
-                }
-                self.frames.push(frame);
-                if let Some((target, arguments, destination)) = call {
-                    self.push(target, &arguments, Some(destination))
-                        .map_err(|e| (index, e))?;
+                if let Some(progress) = self
+                    .run_statement(frame, statement.action, has_cleanup)
+                    .map_err(|e| (index, e))?
+                {
+                    return Ok(progress);
                 }
                 continue;
             }
@@ -463,9 +480,8 @@ impl<'a, 'b> Machine<'a, 'b> {
                     }
                 }
                 Terminator::Return(value) => {
-                    if let Some(result) = self
-                        .returned(&frame, &body, value)
-                        .map_err(|e| (index, e))?
+                    if let Some(result) =
+                        self.returned(frame, &body, value).map_err(|e| (index, e))?
                     {
                         return Ok(Progress::Complete(result));
                     }
@@ -481,13 +497,21 @@ impl<'a, 'b> Machine<'a, 'b> {
                     ));
                 }
             };
-            frame.block = successor;
-            frame.next = body
-                .blocks
-                .get(successor.0 as usize)
-                .ok_or((index, Failure::Invalid("invalid constant successor")))?
-                .start;
-            self.frames.push(frame);
+            if has_cleanup {
+                let step = self
+                    .cleanup_edge(&mut frame, successor)
+                    .map_err(|e| (index, e))?;
+                if !matches!(step, ctglue::Step::Ready) {
+                    if let Some(progress) =
+                        self.suspend_cleanup(frame, step).map_err(|e| (index, e))?
+                    {
+                        return Ok(progress);
+                    }
+                    continue;
+                }
+            }
+            self.enter_successor(frame, &body, successor)
+                .map_err(|e| (index, e))?;
         }
     }
     fn value(frame: &Frame, id: ValueId) -> Result<Constant, Failure> {

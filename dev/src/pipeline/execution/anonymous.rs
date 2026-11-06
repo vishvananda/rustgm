@@ -174,7 +174,7 @@ impl Engine {
             return Ok(true);
         };
         let mut contract = std::borrow::Cow::Borrowed(contract);
-        self.prove_loans(
+        let checked = self.prove_loans(
             report,
             facts,
             &template.body,
@@ -186,6 +186,7 @@ impl Engine {
                 purpose: super::ProofPurpose::Original,
             },
         )?;
+        drop(checked);
         Ok(false)
     }
     pub(super) fn build_anonymous(

@@ -7,14 +7,15 @@ use crate::{
     types::copy::Copies,
 };
 
-pub(super) fn one(
+pub(super) fn one<'body>(
     report: &Report,
     facts: &mut Declarations,
-    initial: Initial<'_>,
+    initial: Initial<'body>,
     input: &mut crate::pipeline::execution::LoanInput<'_, '_>,
     verifier: &mut Verifier,
     copies: &mut Copies,
-) -> Result<()> {
+) -> Result<super::Checked<'body>> {
+    let body = initial.body();
     let count = facts.destructors.implementations().len();
     let bytes = count
         .checked_mul(size_of::<body::drops::Method>())
@@ -50,8 +51,17 @@ pub(super) fn one(
         .canonical_steps
         .saturating_add(execution.planning_steps());
     if execution.active() {
-        return Err("constant interpreter cleanup scheduling is not implemented".into());
+        facts.charge_caller_inputs(
+            1,
+            size_of::<(
+                crate::borrow::loans::templates::Execution<'_>,
+                borrow::destruction::glue::Cache,
+            )>(),
+        )?;
+        let mut checked = super::Checked::new(body, input.purpose, input.regions);
+        checked.cleanup = Some(Box::new((execution, cache)));
+        return Ok(checked);
     }
     drop(cache);
-    Ok(())
+    Ok(super::Checked::new(body, input.purpose, input.regions))
 }

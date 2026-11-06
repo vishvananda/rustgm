@@ -61,6 +61,27 @@ pub(crate) enum Requirement {
     ProjectedDestruct,
 }
 impl State {
+    /// Actual body/snapshot ownership is checked separately. This query consumes
+    /// only its retained full-subject const eligibility evidence.
+    pub(crate) fn require_execution_target(
+        &self,
+        types: &crate::types::Store,
+        ty: TypeId,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let Self::Prepared(prepared) = self else {
+            return Err("executable cleanup requires its completed defining State");
+        };
+        if !prepared.const_context
+            || prepared.effect() != crate::support::constness::Constness::Const
+        {
+            return Err("conditional-parent cleanup execution is not implemented");
+        }
+        match prepared.requirement(types, ty, Purpose::OwnDrop, work)? {
+            Requirement::Declared => Ok(()),
+            Requirement::ProjectedDestruct => Err("executable own Drop retains a projected debt"),
+        }
+    }
     pub(crate) fn check_environment(
         &self,
         expected: &Arc<Environment>,

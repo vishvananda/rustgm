@@ -53,7 +53,7 @@ impl Engine {
             .paid_child_regions(facts, &concrete.body, &concrete.contract, instance, result)
             .map_err(|e| report.body_error(e.source.unwrap_or(source.into()), e.message))?;
         let mut contract = std::borrow::Cow::Borrowed(&concrete.contract);
-        self.prove_loans(
+        let checked_loans = self.prove_loans(
             report,
             facts,
             &concrete.body,
@@ -72,6 +72,7 @@ impl Engine {
                 &contract,
                 &regions,
                 super::ProofPurpose::Code,
+                checked_loans,
             )
             .map_err(error)?;
         let retained = if uses.needed {

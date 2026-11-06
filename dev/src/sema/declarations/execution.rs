@@ -281,7 +281,7 @@ impl Checker<'_> {
                     "inline constant body must complete with its owning declaration",
                 ));
             }
-            Requirement::FunctionBody(instance) => {
+            Requirement::FunctionBody(instance) | Requirement::CleanupBody(instance) => {
                 let Some(Kind::FunctionItem { item, .. }) = self.facts.types.kind(instance.ty())
                 else {
                     return Err(Error::at(

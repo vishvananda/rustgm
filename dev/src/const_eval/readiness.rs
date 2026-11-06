@@ -50,10 +50,20 @@ impl Machine<'_, '_> {
     }
     pub(super) fn prepare_operands(&mut self, mut frame: Frame) -> Result<Option<Frame>, Failure> {
         let body = self.bodies[frame.body].clone();
-        while let Some(operand) = body.operands.get(frame.operand_cursor).cloned() {
+        while let Some(operand) = body
+            .operands
+            .get(
+                usize::try_from(frame.operand_cursor)
+                    .map_err(|_| "invalid constant operand cursor")?,
+            )
+            .cloned()
+        {
             self.charge(1)?;
-            if matches!(operand, PreparedOperand::CallerSites(_)) {
-                frame.operand_cursor += 1;
+            if matches!(
+                operand,
+                PreparedOperand::CallerSites(_) | PreparedOperand::Cleanup(_)
+            ) {
+                frame.advance_operand()?;
                 continue;
             }
             let reader = Reader::new(self.evaluator.facts());
@@ -63,7 +73,7 @@ impl Machine<'_, '_> {
                     self.frames.push(frame);
                     return Ok(None);
                 }
-                frame.operand_cursor += 1;
+                frame.advance_operand()?;
                 continue;
             }
             let PreparedOperand::Inline {
@@ -91,23 +101,33 @@ impl Machine<'_, '_> {
             };
             if let Some(value) = value {
                 frame.values[destination.0 as usize] = Some(value);
-                frame.operand_cursor += 1;
+                frame.advance_operand()?;
                 continue;
             }
             if let Some(target) = target {
                 if let Inline::Closed(source) = selected {
                     self.evaluator.require_inline(source, result)?;
                 }
-                frame.operand_cursor += 1;
+                frame.advance_operand()?;
                 self.frames.push(frame);
-                self.push(target, &[], Some(destination))?;
+                self.push(target, &[], super::ReturnTo::Value(destination))?;
             } else {
                 self.waiting = Some(requirement);
                 self.frames.push(frame);
             }
             return Ok(None);
         }
-        frame.operand_cursor = usize::MAX;
+        frame.operand_cursor = u32::MAX;
         Ok(Some(frame))
+    }
+}
+impl Frame {
+    fn advance_operand(&mut self) -> Result<(), Failure> {
+        self.operand_cursor = self
+            .operand_cursor
+            .checked_add(1)
+            .filter(|n| *n < u32::MAX)
+            .ok_or("constant operand cursor identity overflow")?;
+        Ok(())
     }
 }

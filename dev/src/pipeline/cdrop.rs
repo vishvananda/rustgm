@@ -1,5 +1,7 @@
 //! Semantic const eligibility joins the same initialized plan before normal loans.
 mod concrete;
+mod executable;
+mod profile;
 use crate::{
     body::{
         self,
@@ -11,16 +13,68 @@ use crate::{
     sema::model::Declarations,
     types::{ItemId, copy::Copies},
 };
+pub(super) use executable::view as execution_view;
 type Result<T> = std::result::Result<T, String>;
+type Cleanup<'body> = Box<(
+    borrow::loans::templates::Execution<'body>,
+    borrow::destruction::glue::Cache,
+)>;
 
-pub(super) fn one(
+/// Completion belongs to this borrowed body and actual post-refresh region row.
+/// Only this owner can hand a future active cleanup payload to Code publication.
+pub(super) struct Checked<'body> {
+    body: &'body Body,
+    purpose: super::execution::ProofPurpose,
+    builtins: Option<std::sync::Arc<body::regions::BuiltinRequirements>>,
+    cleanup: Option<Cleanup<'body>>,
+}
+impl<'body> Checked<'body> {
+    fn new(
+        body: &'body Body,
+        purpose: super::execution::ProofPurpose,
+        regions: &regions::Body,
+    ) -> Self {
+        Self {
+            body,
+            purpose,
+            builtins: regions.builtins.clone(),
+            cleanup: None,
+        }
+    }
+    pub(super) fn consume(
+        self,
+        body: &Body,
+        purpose: super::execution::ProofPurpose,
+        contract: &Contract,
+        regions: &regions::Body,
+    ) -> std::result::Result<Option<Cleanup<'body>>, &'static str> {
+        let same = |other: &Option<std::sync::Arc<body::regions::BuiltinRequirements>>| match (
+            &self.builtins,
+            other,
+        ) {
+            (None, None) => true,
+            (Some(a), Some(b)) => std::sync::Arc::ptr_eq(a, b),
+            _ => false,
+        };
+        if !std::ptr::eq(self.body, body)
+            || self.purpose != purpose
+            || !same(&regions.builtins)
+            || !same(&contract.builtins)
+        {
+            return Err("constant Code completion belongs to another body, purpose or region row");
+        }
+        Ok(self.cleanup)
+    }
+}
+
+pub(super) fn one<'body>(
     report: &crate::resolve::expansion::Report,
     facts: &mut Declarations,
-    body: &Body,
+    body: &'body Body,
     destruction: &body::drops::Requirements,
     input: &mut super::execution::LoanInput<'_, '_>,
     verifier: &mut Verifier,
-) -> Result<()> {
+) -> Result<Checked<'body>> {
     let super::execution::LoanInput {
         parameters,
         contract,
@@ -48,7 +102,7 @@ pub(super) fn one(
                 &|ty, field| body::drops::nominal_position(facts, ty, field),
             )
         })
-        .map(|_| ())
+        .map(|_| Checked::new(body, *purpose, regions))
         .map_err(|e| e.message);
     }
     facts.types.arena_identity();
@@ -101,7 +155,7 @@ pub(super) fn one(
         }
     })
     .map_err(|e| e.message)?;
-    Ok(())
+    Ok(Checked::new(body, *purpose, regions))
 }
 fn eligibility<P: borrow::loans::templates::Payload>(
     report: &crate::resolve::expansion::Report,

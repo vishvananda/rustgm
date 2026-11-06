@@ -43,7 +43,7 @@ impl Engine {
         Original::validate_parts_charged(facts, body, contract).map_err(identity_error)?;
         let mut contract = std::borrow::Cow::Borrowed(contract);
         let mut regions = Self::source_regions(report, facts, body, &contract)?;
-        self.prove_loans(
+        let checked = self.prove_loans(
             report,
             facts,
             body,
@@ -75,7 +75,7 @@ impl Engine {
             });
         }
         let (code, uses) = self
-            .finish_code(facts, body, &contract, &regions, purpose)
+            .finish_code(facts, body, &contract, &regions, purpose, checked)
             .map_err(|e| report.body_error(body.source, e))?;
         let retained = if uses.needed {
             Some(

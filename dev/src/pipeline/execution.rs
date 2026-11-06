@@ -4,6 +4,7 @@ mod anonymous;
 mod code_inputs;
 mod component_index;
 mod components;
+mod ctbodies;
 mod defining_heads;
 mod expressions;
 #[cfg(test)]
@@ -449,6 +450,9 @@ impl Engine {
                 .map_err(|e| Error::at(FileId(0), 0, e)),
             Requirement::FunctionBody(instance) => {
                 self.prepare_reached_function(report, facts, instance, state)
+            }
+            Requirement::CleanupBody(instance) => {
+                self.prepare_cleanup_body(report, facts, instance, state)
             }
             Requirement::AnonymousBody { instance, result } => {
                 if facts.patterns.pending_bodies.contains(&instance.source()) {
@@ -932,7 +936,7 @@ impl Engine {
             std::borrow::Cow::Owned,
         );
         let mut regions = Self::source_regions(report, facts, body, &contract)?;
-        self.prove_loans(
+        let checked = self.prove_loans(
             report,
             facts,
             body,
@@ -956,7 +960,7 @@ impl Engine {
             .map_err(|e| report.body_error(body.source, e))?;
         }
         let (code, uses) = self
-            .finish_code(facts, body, contract, &regions, input.purpose)
+            .finish_code(facts, body, contract, &regions, input.purpose, checked)
             .map_err(|e| report.body_error(body.source, e))?;
         let retained = if uses.needed {
             Some(
@@ -993,14 +997,14 @@ impl Engine {
         )
         .map_err(|e| report.body_error(e.source.unwrap_or(source.into()), e.message))
     }
-    fn prove_loans(
+    fn prove_loans<'body>(
         &mut self,
         report: &Report,
         facts: &mut Declarations,
-        body: &Body,
+        body: &'body Body,
         destruction: &body::drops::Requirements,
         input: &mut LoanInput<'_, '_>,
-    ) -> Result<(), Error> {
+    ) -> Result<super::cdrop::Checked<'body>, Error> {
         let source = body.source;
         let custom = facts
             .destructors
@@ -1024,7 +1028,6 @@ impl Engine {
             .as_mut()
             .ok_or_else(|| report.body_error(source, "missing constant loan verifier"))?;
         super::cdrop::one(report, facts, body, destruction, input, loans)
-            .map_err(|e| report.body_error(source, e))?;
-        Ok(())
+            .map_err(|e| report.body_error(source, e))
     }
 }
