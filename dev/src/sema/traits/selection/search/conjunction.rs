@@ -62,7 +62,7 @@ pub(in crate::sema) fn prove_conjunction(
             expected,
         } => {
             search
-                .refutation(facts, root, expected)?
+                .paid_refutation(facts, context, root, expected)?
                 .reject()
                 .map_err(str::to_owned)?;
             Ok(Conjunction::Unproven(index))

@@ -55,7 +55,10 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<bool, String> {
-        if frame.formation.is_some() || facts.source_bindings.is_none() {
+        if frame.formation.is_some()
+            || (facts.source_bindings.is_none()
+                && !Self::declared_automatic_goal(facts, &frame.goal)?)
+        {
             return Ok(false);
         }
         // Actual source marker roles share formation independently of their

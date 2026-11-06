@@ -150,6 +150,7 @@ impl Checker<'_> {
         if !self.reservation_impl(Some(source), owner)? {
             self.validate_reference_coherence(owner, source, predicate, steps)?;
         }
+        self.validate_automatic_domain(owner, source, predicate)?;
         let negative = self.negative_impl_contract(owner, source, predicate)?;
         if negative || matches!(predicate.bound, Bound::Auto(_)) {
             self.facts

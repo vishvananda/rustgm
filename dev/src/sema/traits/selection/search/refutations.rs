@@ -2,6 +2,15 @@
 use super::{Decision, Declarations, Search, Source};
 use crate::sema::traits::selection::refutation::{Closed, Conditional, Refutation};
 
+/// Only this module can bind a completed payment to its same extracted graph.
+pub(in crate::sema) struct Paid(Box<Conditional>);
+impl Paid {
+    pub(in crate::sema::traits::selection) fn identity(&self) -> &Closed {
+        &self.0.identity
+    }
+}
+const _: () = assert!(size_of::<Paid>() == size_of::<Box<Conditional>>());
+
 impl Search<'_> {
     pub(super) fn negative_child(&self, decision: Decision) -> Result<Decision, String> {
         let Decision::Refuted(index) = decision else {
@@ -11,6 +20,42 @@ impl Search<'_> {
             return Err("conditional negative implementation requires scoped debt payment".into());
         }
         Ok(Decision::Absent)
+    }
+
+    pub(super) fn accept_negative(
+        &mut self,
+        facts: &Declarations,
+        decision: Decision,
+    ) -> Result<Decision, String> {
+        if let Ok(result) = self.negative_child(decision) {
+            return Ok(result);
+        }
+        let Decision::Refuted(index) = decision else {
+            return Err("invalid negative completion".into());
+        };
+        if !self.pay_negative_equalities(facts, index)? {
+            return Err("conditional negative implementation requires scoped debt payment".into());
+        }
+        Ok(Decision::Absent)
+    }
+
+    pub(super) fn paid_refutation(
+        mut self,
+        facts: &Declarations,
+        context: &mut super::Context,
+        root: usize,
+        expected: super::Predicate,
+    ) -> Result<Refutation, String> {
+        let before = self.query.steps;
+        let paid = self.pay_negative_equalities(facts, root);
+        let charged = context.account_work(self.query.steps.saturating_sub(before));
+        let paid = paid?;
+        charged.map_err(super::inference)?;
+        let result = self.refutation(facts, root, expected)?;
+        Ok(match (paid, result) {
+            (true, Refutation::Conditional(proof)) => Refutation::Equalities(Paid(proof)),
+            (_, result) => result,
+        })
     }
 
     pub(super) fn refutation(

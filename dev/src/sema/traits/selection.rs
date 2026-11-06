@@ -34,6 +34,7 @@ pub(in crate::sema) use known_premises::opaque_normalized;
 pub(in crate::sema) use memo::Memo;
 pub(in crate::sema) use readiness::{has_known_subject, requires_resolved_inputs};
 pub(in crate::sema) use result_templates::symbolic_result;
+pub(in crate::sema) use search::automatic_predicate;
 #[cfg(test)]
 pub(in crate::sema) use search::callable_layouts;
 #[cfg(test)]

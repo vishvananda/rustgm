@@ -2,6 +2,19 @@
 use super::{Decision, Declarations, Frame, Node, Predicate, Search, Source, inference};
 
 impl Search<'_> {
+    pub(super) fn prepare_automatic_child(
+        &mut self,
+        facts: &Declarations,
+        frame: &Frame,
+        child: &mut Frame,
+    ) -> Result<(), String> {
+        let automatic = matches!(
+            frame.goal.builtin_bound(),
+            Some(crate::types::parameters::predicates::Bound::Auto(_))
+        ) || Self::source_auto_goal(facts, &frame.goal)?;
+        self.query.prepare_auto_child(frame, child, automatic);
+        Ok(())
+    }
     pub(super) fn auto_cycle(
         &mut self,
         facts: &mut Declarations,
@@ -66,16 +79,14 @@ impl super::Query {
     /// Auto traits expose no associated outputs: repeated exact predicates can
     /// share the full proof's private witnesses in the same scope. A bare cycle
     /// assumption has no completed frame key and must never replace that proof.
-    pub(super) fn remember_auto(&mut self, frame: &Frame, goal: Predicate, decision: Decision) {
-        if frame.key.is_some()
-            && (matches!(
-                goal.bound,
-                crate::types::parameters::predicates::Bound::Auto(_)
-            ) || frame
-                .autos
-                .as_deref()
-                .is_some_and(super::auto_obligations::Pending::source_marker))
-        {
+    pub(super) fn remember_auto(
+        &mut self,
+        frame: &Frame,
+        goal: Predicate,
+        decision: Decision,
+        automatic: bool,
+    ) {
+        if frame.key.is_some() && automatic {
             self.auto_provisional
                 .entry(frame.auto_segment)
                 .or_default()
@@ -87,15 +98,9 @@ impl super::Query {
         self.auto_provisional.remove(&frame.auto_segment);
     }
 
-    pub(super) fn prepare_auto_child(&mut self, frame: &Frame, child: &mut Frame) {
+    pub(super) fn prepare_auto_child(&mut self, frame: &Frame, child: &mut Frame, automatic: bool) {
         if !child.started {
-            if (matches!(
-                frame.goal.builtin_bound(),
-                Some(crate::types::parameters::predicates::Bound::Auto(_))
-            ) || frame
-                .autos
-                .as_deref()
-                .is_some_and(super::auto_obligations::Pending::source_marker))
+            if automatic
                 && !frame.forming()
                 && !frame
                     .autos

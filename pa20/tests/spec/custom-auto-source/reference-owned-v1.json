@@ -1,0 +1,307 @@
+{
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "version": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+    "driver": {
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+    }
+  },
+  "predictions_sha256": "93d3347b41a989101d4c044bd4db79aba467f361c7ff08f965a02e9e59ece2b2",
+  "observations": [
+    {
+      "case": "target-dyn",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "automatic_traits",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/target-dyn.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/custom-auto/reference-owned-v1/target-dyn.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.03583370498381555,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0321",
+          "message": "traits with a default impl, like `Auto`, cannot be implemented for trait object `(dyn Base + 'static)`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "target-dyn",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "automatic_traits",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/target-dyn.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/custom-auto/reference-owned-v1/target-dyn.obj"
+      ],
+      "code": 1,
+      "seconds": 0.03319322603056207,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0321",
+          "message": "traits with a default impl, like `Auto`, cannot be implemented for trait object `(dyn Base + 'static)`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "target-unsized",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "automatic_traits",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/target-unsized.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/custom-auto/reference-owned-v1/target-unsized.metadata"
+      ],
+      "code": 1,
+      "seconds": 0.04122971900505945,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0321",
+          "message": "traits with a default impl, like `Auto`, cannot be implemented for generic type `T`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "target-unsized",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "automatic_traits",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/target-unsized.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/custom-auto/reference-owned-v1/target-unsized.obj"
+      ],
+      "code": 1,
+      "seconds": 0.03995454701362178,
+      "expected": 1,
+      "diagnostics": [
+        {
+          "code": "E0321",
+          "message": "traits with a default impl, like `Auto`, cannot be implemented for generic type `T`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "case": "target-sized",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "automatic_traits",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/target-sized.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/custom-auto/reference-owned-v1/target-sized.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.0271045439876616,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "target-sized",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "automatic_traits",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/target-sized.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/custom-auto/reference-owned-v1/target-sized.obj"
+      ],
+      "code": 0,
+      "seconds": 0.02748295699711889,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "negative-pointer-header",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "automatic_traits",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/negative-pointer-header.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/custom-auto/reference-owned-v1/negative-pointer-header.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.029163383995182812,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "negative-pointer-header",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "automatic_traits",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/negative-pointer-header.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/custom-auto/reference-owned-v1/negative-pointer-header.obj"
+      ],
+      "code": 0,
+      "seconds": 0.027986704953946173,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "native",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "automatic_traits",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/native.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/custom-auto/reference-owned-v1/native.metadata"
+      ],
+      "code": 0,
+      "seconds": 0.028297102020587772,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "native",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "automatic_traits",
+        "--cap-lints=allow",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/native.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/custom-auto/reference-owned-v1/native.obj"
+      ],
+      "code": 0,
+      "seconds": 0.028920340992044657,
+      "expected": 0,
+      "diagnostics": []
+    },
+    {
+      "case": "native",
+      "stage": "link",
+      "argv": [
+        "cc",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa20/tests/spec/custom-auto-source/observer.c",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/custom-auto/reference-owned-v1/native.obj",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/custom-auto/reference-owned-v1/observer"
+      ],
+      "code": 0,
+      "seconds": 0.05453220603521913,
+      "stdout": ""
+    },
+    {
+      "case": "native",
+      "stage": "execute",
+      "argv": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/custom-auto/reference-owned-v1/observer"
+      ],
+      "code": 0,
+      "seconds": 0.0016303189913742244,
+      "stdout": "auto 23\n"
+    }
+  ]
+}

@@ -205,16 +205,6 @@ impl Search<'_> {
 }
 
 impl Pending {
-    pub(super) fn source_marker(&self) -> bool {
-        matches!(
-            self.root.marker,
-            crate::types::auto_traits::AutoTrait::Freeze
-                | crate::types::auto_traits::AutoTrait::Send
-                | crate::types::auto_traits::AutoTrait::Sync
-                | crate::types::auto_traits::AutoTrait::Unpin
-                | crate::types::auto_traits::AutoTrait::UnsafeUnpin
-        )
-    }
     pub(super) fn revealing(&self) -> bool {
         self.needed.as_ref().is_some_and(|leaf| leaf.reveal)
     }

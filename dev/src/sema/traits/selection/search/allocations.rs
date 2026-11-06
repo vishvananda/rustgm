@@ -18,6 +18,10 @@ impl Allocations {
             monotonic: false,
         }
     }
+    /// Only an uninterrupted root allocation owns every ID in this interval.
+    pub(super) fn plain(&self) -> Option<std::ops::Range<u32>> {
+        (!self.monotonic && self.stream.is_none()).then_some(self.first..self.end)
+    }
     pub fn floor(&self) -> u32 {
         self.floor
     }

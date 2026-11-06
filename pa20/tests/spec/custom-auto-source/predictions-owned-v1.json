@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "before_observation": true,
+  "cases": {
+    "target-dyn": {
+      "sha256": "59b612e7be943c190dd81da5d82644878211a4cbd3d549d9ae059776a9c210cd",
+      "expected": 1,
+      "hypothesis": "E0321: local automatic trait cannot be implemented for a dynamic object"
+    },
+    "target-unsized": {
+      "sha256": "4f60201b6cb44e60a276751a8a34394ef4f16f5f2131b4e7bf8327ea568958e8",
+      "expected": 1,
+      "hypothesis": "E0321: blanket subject can include dynamic objects"
+    },
+    "target-sized": {
+      "sha256": "bae2ecdfe156a1d60c343919ba314e18a8be83a3a96691c85f9fc83b3c9b54f8",
+      "expected": 0,
+      "hypothesis": "Local sized blanket automatic implementation is ordinary legal"
+    },
+    "negative-pointer-header": {
+      "sha256": "cdc2c271a00e74bc06c8189647e5d9649e1978b138cb5e329c40ba13a618f388",
+      "expected": 0,
+      "hypothesis": "Unstable automatic non-ADT negative header retains ordinary conditions without ADT applicability restriction"
+    },
+    "native": {
+      "sha256": "dbd5485a84ad81268d2b03bc43af7918384acc813fef3d3bca5e24a00de643a6",
+      "expected": 0,
+      "hypothesis": "Actual structural Wrap/u8 evidence, generic by-value body and C operand-dependent identity"
+    }
+  },
+  "observer_sha256": "bbdf253e958080bb689585d088734b407a62fae02e39f048788079ae8bb87f43"
+}

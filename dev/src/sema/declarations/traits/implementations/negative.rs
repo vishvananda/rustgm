@@ -48,6 +48,18 @@ impl Checker<'_> {
         if !automatic {
             return Ok(());
         }
+        // The actual unstable language deliberately permits conditional
+        // non-ADT negative auto headers. Their conditions still belong to the
+        // ordinary implementation proof; only ADTs require coverage here.
+        if !matches!(self.facts.types.kind(predicate.ty), Some(Kind::Adt(..)))
+            && self
+                .report
+                .package
+                .requested_auto_traits()
+                .map_err(|e| self.error(source, e))?
+        {
+            return Ok(());
+        }
         let error = |message| {
             Error::at(
                 source.file,

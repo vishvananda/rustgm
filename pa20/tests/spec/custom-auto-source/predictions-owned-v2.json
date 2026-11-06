@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "before_observation": true,
+  "cases": {
+    "target-sized-premise": {
+      "sha256": "ccff20d415c7cb2c7e5a13866580e4b4e267ddd5f8dfdb02c2d3fda7b334861a",
+      "expected": 0,
+      "hypothesis": "Actual scoped Sized premise excludes dynamic types even with ?Sized formal; ordinary auto impl remains legal"
+    }
+  }
+}

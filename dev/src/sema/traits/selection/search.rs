@@ -7,6 +7,8 @@ mod asynchronous;
 #[path = "../../../../tests/invariants/auto_cycle_work.rs"]
 mod auto_cycle_tests;
 mod auto_obligations;
+mod automatic_traits;
+pub(in crate::sema) use automatic_traits::predicate as automatic_predicate;
 mod builtins;
 mod callable_queries;
 mod callables;
@@ -79,6 +81,7 @@ mod input_universe;
 mod inputs;
 mod mechanical;
 mod member_conditions;
+mod negative_equalities;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/formation_clauses.rs"]
 mod nominal_tests;
@@ -94,6 +97,7 @@ mod pending_closure_tests;
 #[path = "../../../../tests/invariants/refutation_completion.rs"]
 mod refutation_completion;
 mod refutations;
+pub(in crate::sema) use refutations::Paid;
 mod reserved_trials;
 mod result_bounds;
 #[cfg(test)]
@@ -255,7 +259,7 @@ impl Search<'_> {
                 let expected = context
                     .resolved_predicate(&mut facts.types, goal)
                     .map_err(inference)?;
-                let refutation = self.refutation(facts, root, expected)?;
+                let refutation = self.paid_refutation(facts, context, root, expected)?;
                 // External consumers in this first profile cannot pay a scoped
                 // negative. Retain its full proof until this explicit boundary.
                 if matches!(refutation, super::Refutation::Conditional(_)) {
@@ -288,7 +292,12 @@ impl Search<'_> {
         }
         Ok(())
     }
-    fn remember(&mut self, frame: &Frame, decision: Decision) {
+    fn remember(
+        &mut self,
+        facts: &Declarations,
+        frame: &Frame,
+        decision: Decision,
+    ) -> Result<(), String> {
         match decision {
             Decision::Proven(index) => {
                 let node = &self.query.nodes[index];
@@ -299,7 +308,11 @@ impl Search<'_> {
                     self.query.remember(frame.scope, goal, decision);
                 }
                 if !self.query.nodes[index].provisional_size {
-                    self.query.remember_auto(frame, goal, decision);
+                    let automatic = matches!(
+                        goal.bound,
+                        crate::types::parameters::predicates::Bound::Auto(_)
+                    ) || Self::source_auto_goal(facts, &frame.goal)?;
+                    self.query.remember_auto(frame, goal, decision, automatic);
                 }
             }
             Decision::Absent if frame.cycles == self.query.cycles => {
@@ -311,6 +324,7 @@ impl Search<'_> {
             }
             Decision::Absent | Decision::Deferred | Decision::Refuted(_) => {}
         }
+        Ok(())
     }
     fn advance(&mut self, facts: &mut Declarations, frame: &mut Frame) -> Result<Action, String> {
         if frame.forming() {
@@ -607,7 +621,7 @@ impl Search<'_> {
         frame: &mut Frame,
         decision: Decision,
     ) -> Result<(), String> {
-        let decision = self.negative_child(decision)?;
+        let decision = self.accept_negative(facts, decision)?;
         if !matches!(decision, Decision::Proven(_)) {
             self.query.invalidate_auto(frame);
         }

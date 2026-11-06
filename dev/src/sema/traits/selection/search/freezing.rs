@@ -65,7 +65,8 @@ impl Search<'_> {
         Ok(None)
     }
     pub(super) fn source_auto_goal(facts: &Declarations, goal: &Goal) -> Result<bool, String> {
-        Ok(Self::source_auto_kind(facts, goal)?.is_some())
+        Ok(Self::source_auto_kind(facts, goal)?.is_some()
+            || Self::declared_automatic_goal(facts, goal)?)
     }
     pub(super) fn source_auto_result(
         &mut self,

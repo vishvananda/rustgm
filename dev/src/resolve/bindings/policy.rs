@@ -272,6 +272,7 @@ impl Features {
             || self.has(Feature::NewRange)
             || self.has(Feature::Reborrow)
             || self.has(Feature::InherentAssociatedTypes)
+            || self.has(Feature::AutoTraits)
     }
     fn insert(&mut self, feature: Feature) {
         let index = feature as usize;

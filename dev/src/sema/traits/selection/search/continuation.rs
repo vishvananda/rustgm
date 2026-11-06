@@ -245,7 +245,7 @@ impl<'a> Search<'a> {
                             &mut self.query.suspended,
                         )?
                     };
-                    self.query.prepare_auto_child(frame, &mut child);
+                    self.prepare_automatic_child(facts, frame, &mut child)?;
                     stack.push(child);
                 }
                 Action::Complete(decision) => {
@@ -271,7 +271,7 @@ impl<'a> Search<'a> {
                         return Ok(Progress::Ready(decision));
                     };
                     if completed.formation_cacheable() {
-                        self.remember(&completed, decision);
+                        self.remember(facts, &completed, decision)?;
                         self.query.export_completed(facts, decision)?;
                     }
                     self.accept(facts, parent, decision)?;

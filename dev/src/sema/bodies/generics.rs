@@ -415,6 +415,8 @@ impl Checker<'_> {
                 .map_err(|e| self.error(node, e))?
             || crate::sema::traits::selection::copying_predicate(self.facts, predicate)
                 .map_err(|e| self.error(node, e))?
+            || crate::sema::traits::selection::automatic_predicate(self.facts, predicate)
+                .map_err(|e| self.error(node, e))?
         {
             return Ok(None);
         }

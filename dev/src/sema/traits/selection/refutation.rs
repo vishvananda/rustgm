@@ -10,6 +10,8 @@ use std::sync::Arc;
 pub(in crate::sema) enum Refutation {
     DebtFree(Box<Closed>),
     Conditional(Box<Conditional>),
+    /// A closed negative whose private equality-only graph was actually paid.
+    Equalities(super::search::Paid),
 }
 pub(in crate::sema) struct Closed {
     pub(super) goal: super::Predicate,
@@ -33,7 +35,7 @@ impl Refutation {
         pay: impl FnOnce(&super::Obligations, &[crate::types::TypeId]) -> Result<bool, String>,
     ) -> Result<bool, String> {
         match self {
-            Self::DebtFree(_) => Ok(true),
+            Self::DebtFree(_) | Self::Equalities(_) => Ok(true),
             Self::Conditional(conditional) => pay(&conditional.proof, &conditional.sized),
         }
     }
@@ -46,6 +48,7 @@ impl Refutation {
         let identity = match self {
             Self::DebtFree(identity) => identity.as_ref(),
             Self::Conditional(conditional) => &conditional.identity,
+            Self::Equalities(paid) => paid.identity(),
         };
         let same_environment = match (identity.environment.as_ref(), caller.environment) {
             (None, None) => true,
@@ -87,6 +90,10 @@ impl Refutation {
                     availability,
                     first_region,
                 );
+                Ok(())
+            }
+            Self::Equalities(conditional) => {
+                let _paid = conditional;
                 Ok(())
             }
             Self::Conditional(conditional) => {

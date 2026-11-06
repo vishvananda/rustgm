@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "profile": "ordinary Bootstrap library, default lint profile, no cap-lints argument",
+  "cases": {
+    "ordinary": {
+      "sha256": "e136a838a3a4fb957c29fdbe2697c0af9e0aae255133493188ef1051a87c7279",
+      "expected": 0,
+      "error": null
+    }
+  }
+}

@@ -120,7 +120,7 @@ impl Search<'_> {
                 // The parent answer is independent of this member's requirements.
                 // Cache it before attaching the normalizer's prior input evidence;
                 // neither a later family failure nor a composite proof belongs here.
-                self.remember(frame, decision);
+                self.remember(facts, frame, decision)?;
             }
             let decision = self.input_evidence(facts, frame, decision)?;
             let parent = match decision {

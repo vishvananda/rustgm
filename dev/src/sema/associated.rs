@@ -1,4 +1,5 @@
 //! Namespace-resolved associated declarations; this inventory is not a type or impl proof.
+mod automatic_headers;
 mod comparisons;
 mod language;
 mod matching;
@@ -489,7 +490,7 @@ fn owner_kind(
                         })
                     })
             {
-                return Err(error("custom source auto traits are not implemented"));
+                automatic_headers::validate(report, source)?;
             }
             Ok(OwnerKind::Trait {
                 definition,

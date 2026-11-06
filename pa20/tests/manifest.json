@@ -23226,6 +23226,66 @@
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
       "input": "file"
+    },
+    {
+      "path": "tests/spec/custom-auto-source/ordinary.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection",
+        "pa20.coherence"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": false,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/automatic_sources.rs; independently frozen ordinary custom-auto primary",
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/custom-auto-source/conditional-negative.rs",
+        "tests/spec/custom-auto-source/conditional-positive.rs",
+        "tests/spec/custom-auto-source/decl-const.rs",
+        "tests/spec/custom-auto-source/decl-empty.rs",
+        "tests/spec/custom-auto-source/decl-feature-off.rs",
+        "tests/spec/custom-auto-source/decl-generic.rs",
+        "tests/spec/custom-auto-source/decl-member.rs",
+        "tests/spec/custom-auto-source/decl-supertrait.rs",
+        "tests/spec/custom-auto-source/decl-where.rs",
+        "tests/spec/custom-auto-source/declaration-restrictions.rs",
+        "tests/spec/custom-auto-source/explicit-positive.rs",
+        "tests/spec/custom-auto-source/field-negative.rs",
+        "tests/spec/custom-auto-source/generic-missing.rs",
+        "tests/spec/custom-auto-source/generic-premise.rs",
+        "tests/spec/custom-auto-source/implementation-safety.rs",
+        "tests/spec/custom-auto-source/lifetime-escape.rs",
+        "tests/spec/custom-auto-source/lifetime-premise.rs",
+        "tests/spec/custom-auto-source/native.rs",
+        "tests/spec/custom-auto-source/negative-pointer-demand.rs",
+        "tests/spec/custom-auto-source/negative-pointer-header.rs",
+        "tests/spec/custom-auto-source/original-cell-negative.rs",
+        "tests/spec/custom-auto-source/original-demands.rs",
+        "tests/spec/custom-auto-source/original-headers.rs",
+        "tests/spec/custom-auto-source/original-mut-reference.rs",
+        "tests/spec/custom-auto-source/original-shared-cell.rs",
+        "tests/spec/custom-auto-source/original-unwind-safe.rs",
+        "tests/spec/custom-auto-source/phantom-negative.rs",
+        "tests/spec/custom-auto-source/projection-missing.rs",
+        "tests/spec/custom-auto-source/projection-premise.rs",
+        "tests/spec/custom-auto-source/raw-negative.rs",
+        "tests/spec/custom-auto-source/recursive-condition-negative.rs",
+        "tests/spec/custom-auto-source/recursive-negative.rs",
+        "tests/spec/custom-auto-source/recursive-positive.rs",
+        "tests/spec/custom-auto-source/reference-negative.rs",
+        "tests/spec/custom-auto-source/structural-positive.rs",
+        "tests/spec/custom-auto-source/target-dyn.rs",
+        "tests/spec/custom-auto-source/target-sized-premise.rs",
+        "tests/spec/custom-auto-source/target-sized.rs",
+        "tests/spec/custom-auto-source/target-unsized.rs",
+        "tests/spec/custom-auto-source/where-no-inversion.rs",
+        "tests/spec/custom-auto-source/where-premise.rs",
+        "tests/spec/custom-auto-source/zero-array-negative.rs"
+      ]
     }
   ]
 }

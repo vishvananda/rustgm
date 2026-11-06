@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "description": "Frozen before Rust/candidate: relevant conditional negative pointer header must suppress structural fallback even when Allowed is absent.",
+  "cases": {
+    "negative-pointer-demand": {
+      "sha256": "c0cc2dce4640a13246d434c444b46034caac592bc06008900a0eb9cc88714247",
+      "expected": 1,
+      "error": "E0277"
+    }
+  }
+}

@@ -228,7 +228,7 @@ fn completed_unsizing_absence_does_not_erase_a_new_projection_prefix() -> Result
         assert!(matches!(search.run(&mut facts, frame)?, Decision::Absent));
         let mut cached = Frame::new(&facts, &mut context, &goal, 3)?;
         cached.canonical = Some(predicate);
-        search.remember(&cached, Decision::Absent);
+        search.remember(&facts, &cached, Decision::Absent)?;
         assert!(matches!(
             search.query.completed.get(&predicate),
             Some(Decision::Absent)

@@ -1,5 +1,6 @@
 //! Retain complete impl applications; headers alone do not prove an implementation.
 mod admissible_parameters;
+mod automatic_domains;
 mod coerce_validation;
 mod constants;
 mod copying;

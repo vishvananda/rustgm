@@ -7,6 +7,8 @@ mod arbitrary_methods;
 mod async_signatures;
 #[path = "../../asynccleanup.rs"]
 mod asynccleanup;
+#[path = "../../automatic_sources.rs"]
+mod automatic_sources;
 #[path = "../../callback_addresses.rs"]
 mod callback_addresses;
 #[path = "../../callback_provider.rs"]

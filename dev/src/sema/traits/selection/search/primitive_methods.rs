@@ -35,7 +35,7 @@ impl Search<'_> {
         if let Some(action) = Self::source_transmutability_result(facts, frame)? {
             return Ok(action);
         }
-        if let Some(action) = self.source_auto_result(facts, frame)? {
+        if let Some(action) = self.automatic_result(facts, frame)? {
             return Ok(action);
         }
         if let Some(action) = self.source_builtin_marker_result(facts, frame)? {
