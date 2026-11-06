@@ -1,3 +1,15 @@
+The [source-range/nominal-value join](parallel/source-range-main-join.md) is
+published on main1514aa9a4. All3651 input hashes match:29 public tests243.55s,
+four native groups/fullPA18 55.46s and strict all-target metadata113.57s pass.
+Range constructor inference and canonical proof work now scale linearly; all60
+immutable A/A+ABBA observations retain output equality. Full42244995375 is running;
+new private opponents are compiled locally but not yet executed. The nominal
+worker's coherent handoff is integrated and that worker is idle. Source finishes
+full IntoFuture/projected-bound producer, both real Future forwarders and exact
+PA20/21 text oracles. Root continues integration toward original core. Keep warm
+btrfs trees,2heavy/16GiB/150GiB/<=300s guards; no new trees or workers. Original
+core remains last observed at LIB183, with no artifact or whole PA release.
+
 The [ResumeTy/get_context checkpoint](parallel/resume-context-main-join.md)
 passes12 public tests/13 new source outcomes and5 native programs/fullPA18.
 CLIf7aa4349 advances unchanged original core to LIB183 IntoFuture::into_future

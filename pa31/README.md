@@ -2,6 +2,14 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [range/nominal-value checkpoint](../docs/parallel/source-range-main-join.md)
+qualifies actual source range records and real nominal CoerceUnsized value
+conversion. Ordinary type, region, move/Drop and selected implementation proofs
+remain authoritative; shared completed prefixes remove quadratic inference and
+sizing work. Full inclusive-call syntax, derives/modules/iteration, wider unsize
+terminals, const and authenticated transport remain required. This is a finite
+checkpoint, not completion of this assignment or an original library artifact.
+
 The [ResumeTy/get_context checkpoint](../docs/parallel/resume-context-main-join.md)
 uses actual ordinary nominal/function completions and preserves body/unsafe
 proof. Its native companion executes the exact pointer helper with authored
