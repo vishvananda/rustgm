@@ -19,6 +19,112 @@ use crate::types::{
 use std::sync::Arc;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
+#[test]
+fn charged_builtin_query_reuses_correlated_matches_and_preserves_scope() -> Result {
+    let mut types = Store::default();
+    let (id, ty) = parameter(&mut types)?;
+    let local = RegionId::bound(0, 0)?;
+    let pattern = pair(&mut types, local, local, ty)?;
+    let bound = clause(&mut types, pattern, 1, Bound::Copy)?;
+    let environment = environment(&types, id, &[bound])?;
+    let actual = pair(&mut types, RegionId(7), RegionId(7), ty)?;
+    let mismatch = pair(&mut types, RegionId(7), RegionId(8), ty)?;
+    let bytes = std::cell::Cell::new(0usize);
+    let work = std::cell::Cell::new(0usize);
+    let pay = |steps, retained| {
+        work.set(work.get().saturating_add(steps));
+        bytes.set(bytes.get().saturating_add(retained));
+        Ok(())
+    };
+    let mut query = None;
+    assert!(
+        environment
+            .assumed_with_charged(&types, actual, &mut query, &pay)?
+            .copy
+    );
+    assert!(
+        !environment
+            .assumed_with_charged(&types, mismatch, &mut query, &pay)?
+            .copy
+    );
+    let retained = bytes.get();
+    for _ in 0..32 {
+        assert!(
+            environment
+                .assumed_with_charged(&types, actual, &mut query, &pay)?
+                .copy
+        );
+        assert!(
+            !environment
+                .assumed_with_charged(&types, mismatch, &mut query, &pay)?
+                .copy
+        );
+    }
+    assert_eq!(bytes.get(), retained);
+    assert!(retained > size_of::<super::BuiltinQuery>() && work.get() > 64);
+    let foreign = Arc::new(Environment::new(&types, &[(id, Abilities::default())])?);
+    assert!(
+        foreign
+            .assumed_with_charged(&types, actual, &mut query, &pay)
+            .is_err()
+    );
+    assert!(environment.assumed_with(&types, actual, &mut query)?.copy);
+    Ok(())
+}
+
+#[test]
+fn charged_builtin_query_rejects_before_growth_and_keeps_failed_answers_unusable() -> Result {
+    let mut types = Store::default();
+    let (id, ty) = parameter(&mut types)?;
+    let local = RegionId::bound(0, 0)?;
+    let pattern = pair(&mut types, local, local, ty)?;
+    let bound = clause(&mut types, pattern, 1, Bound::Copy)?;
+    let environment = environment(&types, id, &[bound])?;
+    let actual = pair(&mut types, RegionId(7), RegionId(7), ty)?;
+    for limit in [0, size_of::<super::BuiltinQuery>()] {
+        let mut query = None;
+        let bytes = std::cell::Cell::new(0usize);
+        let pay = |_, amount| {
+            let next = bytes.get().saturating_add(amount);
+            if next > limit {
+                return Err("test builtin retained quota");
+            }
+            bytes.set(next);
+            Ok(())
+        };
+        assert_eq!(
+            environment.assumed_with_charged(&types, actual, &mut query, &pay),
+            Err("test builtin retained quota")
+        );
+        assert_eq!(query.is_none(), limit == 0);
+        if query.is_some() {
+            assert!(
+                environment
+                    .assumed_with(&types, actual, &mut query)
+                    .is_err()
+            );
+            assert!(
+                environment
+                    .assumed_with_charged(&types, actual, &mut query, &|_, _| Ok(()))
+                    .is_err()
+            );
+        }
+    }
+    let mut query = None;
+    assert!(environment.assumed_with(&types, actual, &mut query)?.copy);
+    assert_eq!(
+        environment.assumed_with_charged(&types, actual, &mut query, &|_, _| Err(
+            "test builtin work quota"
+        )),
+        Err("test builtin work quota")
+    );
+    assert_eq!(
+        environment.assumed_with(&types, actual, &mut query),
+        Err("test builtin work quota")
+    );
+    Ok(())
+}
+
 fn parameter(types: &mut Store) -> Result<(ParameterId, TypeId)> {
     let id = types.intern_parameter(Parameter {
         owner: ItemId(3),
