@@ -107,9 +107,15 @@ pub(super) fn validate(
         }
         let expected = expected_language(*item);
         if let Some(expected) = expected {
+            // Comparison hints can describe ordinary traits. They supply no
+            // language role; operator consumers require that separate identity.
             if !claims
                 .iter()
                 .any(|claim| matches!(claim, Claim::Language(role) if *role == expected))
+                && (!matches!(item, DiagnosticItem::PartialEq | DiagnosticItem::PartialOrd)
+                    || claims
+                        .iter()
+                        .any(|claim| matches!(claim, Claim::Language(_))))
             {
                 return Err(error(
                     "diagnostic identity has a different actual language owner",

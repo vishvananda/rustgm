@@ -7830,6 +7830,53 @@
         "crate_name": "shared_call_reborrow",
         "disambiguator": "pa18callrefs"
       }
+    },
+    {
+      "path": "tests/spec/call-argument-context/factory-reference-context.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "nominal generic factory result context before input coercion",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/call-argument-context/factory-written-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "nominal generic factory result context before input coercion"
+    },
+    {
+      "path": "tests/spec/call-argument-context/factory-slice-context.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "nominal generic factory result context before input coercion",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

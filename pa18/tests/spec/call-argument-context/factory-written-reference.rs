@@ -1,0 +1,1 @@
+struct W<T>(T);fn make<T>(x:T)->W<T>{W(x)}fn need(x:W<&u8>)->u8{*x.0}fn main(){let value=7u8;let r=&value;let _=need(make::<&&u8>(&r));}

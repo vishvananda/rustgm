@@ -1,0 +1,8 @@
+{
+  "source": "pa31/tests/spec/source-coroutines/full/result-coercion.rs",
+  "sha256": "16b1d23d193074c832a23a5b672d7089b09564cb5520ec0b6c50d27374c8b09f",
+  "rustc_status": 0,
+  "contract": "Fixed factory input retained; separate actual source CoerceUnsized result. Frozen before modified candidate observation.",
+  "reference_receipt": "obj/parallel/coroutine-full-module/coercion-reference-v1/receipt.json",
+  "reference_sha256": "8bf225c5f2cacedb326d39ad235fb4dec8b338dec0ac49781fde3a91f25af1aa"
+}

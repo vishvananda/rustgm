@@ -1,0 +1,74 @@
+{
+  "scope": "Original Coroutine module declarations and actual provided forwarders; no whole PA or core artifact claim",
+  "receipts": [
+    {
+      "path": "obj/qualification/fast/1793965294829061267/receipt.json",
+      "sha256": "e7d57201d0b5e2bf9e2f5605f7f9409a25ec6c55ad236b9be95e28dc9051151b",
+      "state": "passed",
+      "seconds": null,
+      "selected": {
+        "suite_declarations": [
+          "generic_functions::executable_entry_rejects_unused_generic_parameters",
+          "generic_functions::function_lifetime_formals_keep_dense_arguments_through_actual_calls",
+          "generic_functions::function_template_outcomes_are_independently_qualified",
+          "generic_functions::independent_symbolic_functions_reuse_syntax_and_preserve_owners",
+          "generic_functions::lifetime_binding_does_not_renumber_rigid_parameter_declarations",
+          "generic_functions::nominal_factory_context_reaches_inputs_before_reference_coercion",
+          "generic_functions::source_function_templates_are_checked_with_rigid_parameters",
+          "generic_functions::unsolved_arguments_and_body_proofs_remain_explicit_boundaries",
+          "generic_functions::unused_generic_bodies_and_declarations_are_checked"
+        ],
+        "suite_frontend": [
+          "coroutine_sources::comparison_diagnostic_hints_do_not_supply_operator_language_roles",
+          "coroutine_sources::complete_original_coroutine_derives_and_forwarders_keep_real_types_and_lifetimes",
+          "coroutine_sources::fixed_factory_result_unsizing_retains_its_required_nominal_validation_gap",
+          "coroutine_sources::ordinary_coroutine_contracts_keep_real_headers_bodies_and_failures",
+          "future_source::actual_future_roles_preserve_unused_alternatives_and_projection_consumers",
+          "future_source::source_future_output_projection_has_an_ordinary_native_body",
+          "arbitrary_methods::actual_receiver_targets_preserve_ordinary_headers_and_type_only_reachability",
+          "arbitrary_methods::ordinary_nested_open_obligations_remain_possible_after_canonical_queries"
+        ]
+      }
+    },
+    {
+      "path": "obj/qualification/fast/1793963603058759877/receipt.json",
+      "sha256": "b072eb86e5da07dac4a47f9ece1e8f2619878ab4eb41f8550b7bde3c92264046",
+      "state": "passed",
+      "seconds": null,
+      "selected": {
+        "suite_frontend": [
+          "coroutine_sources::manual_coroutine_resume_executes_actual_source_state_and_variants",
+          "coroutine_sources::original_pin_and_reference_forwarders_execute_actual_provided_bodies"
+        ]
+      }
+    },
+    {
+      "path": "obj/parallel/coroutine-full-module/course-v3/receipt.json",
+      "sha256": "e40d4e610c7384c3684d287000b552a28f3656edb563afe397acc718ec427a94",
+      "state": "passed independently checked3 course cases and2 native programs",
+      "seconds": 2.906540722993668,
+      "selected": null
+    },
+    {
+      "path": "obj/parallel/coroutine-full-module/final-root/receipt.json",
+      "sha256": "bef1a092dbc1271b888dde1fc45307803e9bf91b3d7b8f8faaa2407a592e703d",
+      "state": "passed all-pa18/harness/upstream",
+      "seconds": 4.247703467961401,
+      "selected": null
+    },
+    {
+      "path": "obj/parallel/coroutine-full-module/reference-v7/receipt.json",
+      "sha256": "475c7d1ecaee06db01b131213bb10b95cf4c873f315ba4b58fc909f3f91091bc",
+      "state": "passed whole companion and actual source forwarder native",
+      "seconds": 0.22530627099331468,
+      "selected": null
+    },
+    {
+      "path": "obj/parallel/coroutine-full-module/diagnostic-reference-v1/receipt.json",
+      "sha256": "1fd50a9d1e515aba261c2f96345de121a66eb9e690f22a99227db93a60c9d51c",
+      "state": "passed2",
+      "seconds": 0.06996795401209965,
+      "selected": null
+    }
+  ]
+}

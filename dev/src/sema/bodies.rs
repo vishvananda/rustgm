@@ -2364,17 +2364,28 @@ impl Checker<'_> {
         let Some(Constructor::Function { parameters, .. }) = self.head(node, term)? else {
             return Err(self.error(node, "call requires a known function type"));
         };
-        if constructor && let Some(expected) = expected {
+        if let Some(expected) = expected {
             let result = self.child(node, term, parameters as usize)?;
-            if let Some(expected) =
-                self.unsizing_constructor_context(node, result, Some(expected))?
+            let nominal = matches!(
+                (self.contextual_head(node, result)?, self.contextual_head(node, expected)?),
+                (Some(Constructor::AdtArgs(owner, _)),
+                    Some(Constructor::Adt(target, _) | Constructor::AdtArgs(target, _)))
+                    if owner == target
+            );
+            if (constructor || nominal)
+                && let Some(expected) =
+                    self.unsizing_constructor_context(node, result, Some(expected))?
+                && (constructor
+                    || !self
+                        .state
+                        .infer
+                        .incompatible(&self.facts.types, result, expected)
+                        .map_err(|error| self.error(node, error))?)
             {
                 self.shape_equation(node, result, expected)?;
             }
-        }
-        if !constructor && let Some(expected) = expected {
-            let result = self.child(node, term, parameters as usize)?;
-            if self.contextual_head(node, result)?.is_none()
+            if !constructor
+                && self.contextual_head(node, result)?.is_none()
                 && matches!(
                     self.contextual_head(node, expected)?,
                     Some(Constructor::Function { .. })

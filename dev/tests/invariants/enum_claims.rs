@@ -124,10 +124,24 @@ fn diagnostic_methods_require_their_actual_declared_trait_owner() -> TestResult 
         r#"#[rustc_diagnostic_item="default_fn"]fn wrong(){}"#,
         r#"#[rustc_diagnostic_item="Default"]trait Default{}
             trait Other{#[rustc_diagnostic_item="default_fn"]fn wrong();}"#,
-        r#"#[rustc_diagnostic_item="PartialEq"]trait MissingActualLanguage{}"#,
-        r#"#[rustc_diagnostic_item="PartialOrd"]trait MissingActualLanguage{}"#,
     ] {
         assert!(report(source).is_err(), "{source}");
     }
+    Ok(())
+}
+
+#[test]
+fn comparison_diagnostic_names_do_not_create_language_roles() -> TestResult {
+    let report = report(
+        r#"#[rustc_diagnostic_item="PartialEq"]trait EqualityHint{}
+        #[rustc_diagnostic_item="PartialOrd"]trait OrderingHint{}"#,
+    )?;
+    let reserved = report
+        .resolution
+        .source_bindings
+        .as_deref()
+        .ok_or("source reservations")?;
+    assert!(reserved.language(LangItem::PartialEq).is_none());
+    assert!(reserved.language(LangItem::PartialOrd).is_none());
     Ok(())
 }

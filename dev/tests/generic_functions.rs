@@ -230,3 +230,18 @@ fn independent_symbolic_functions_reuse_syntax_and_preserve_owners() -> Result<(
     assert_eq!(signatures.len(), 512);
     Ok(())
 }
+
+#[test]
+fn nominal_factory_context_reaches_inputs_before_reference_coercion() -> std::io::Result<()> {
+    for (name, expected) in [
+        ("factory-reference-context", true),
+        ("factory-written-reference", false),
+        ("factory-slice-context", true),
+    ] {
+        let text =
+            crate::resolve::fixture(&format!("pa18/tests/spec/call-argument-context/{name}.rs"))?;
+        let result = semantic::analyze(&text).map(|_| ());
+        assert_eq!(result.is_ok(), expected, "{name}: {result:?}");
+    }
+    Ok(())
+}

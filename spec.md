@@ -1138,6 +1138,10 @@ and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle
 permission. Forced dyn restrictions consult the completed actual role, while
 diagnostic identities and field-read hints grant no move or body permission.
+PartialEq and PartialOrd diagnostic hints may describe ordinary module traits
+without declaring their language roles. Preserve these hints separately; an
+actual language claim must have the matching owner, and operator consumers still
+require their completed language identity and full operation contract.
 Keep this state in fixed cold provider tables and preserve real provided bodies
 and conditional Environment clauses. The [capability checkpoint](docs/pa29-provider-capability-checkpoint.md)
 records actual checked originals and containing layouts.
@@ -4752,6 +4756,14 @@ For record constructors with omitted lifetimes, a known expected nominal with th
 same owner can supply those input lifetimes before field substitution. Preserve
 explicit written lifetimes and prove the usual formation and coercion debts.
 An associated output equality cannot invent equations between its inputs.
+
+An ordinary generic factory returning a nominal with the expected owner uses the
+same construction context before scheduling its arguments. Reuse the existing
+unsizing-tail hint so an expected slice/object does not become a sized input.
+Check equation compatibility without binding first: written or already fixed
+inputs retain their actual type and may use a separate result coercion. Preserve
+normal lifetime, formation and final coercion proofs; a result hint supplies none
+of those permissions. Do not specialize this rule to Pin or replay arguments.
 
 Before freshening a nominal value's lifetime inputs, preserve its existing identity
 when completed raw projected fields prove every input invariant. Reuse the variance

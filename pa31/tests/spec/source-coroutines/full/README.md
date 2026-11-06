@@ -25,7 +25,7 @@ This flag is explicit in the reference receipt; no panic/runtime parity is claim
 The whole-provider metadata companion also passes under the independent checker’s
 ordinary upstream_check crate name and flags.
 
-Diagnostic-only Eq/Ord hints are separate controls: pinned Rust accepts their
+Diagnostic-only PartialEq/PartialOrd hints are separate controls: pinned Rust accepts their
 ordinary declarations and rejects using them as operator language roles. They
 grant no implicit operator, caller, move or body permission.
 
@@ -35,3 +35,7 @@ factory result context; see the maintainer checkpoint/evidence for their status.
 No fixture is a generated-coroutine, whole-assignment or original-library artifact
 completion claim. PA31 owns the original identities/bodies, PA26 the derives,
 PA18 the generic context, PA42 generated state and PA43 capture/cleanup.
+
+The separately frozen result-coercion control keeps an explicitly written
+Pin<&[u8;2]> input and its genuine CoerceUnsized result to Pin<&[u8]>. A generic
+factory hint must not rewrite that fixed input to the expected output type.
