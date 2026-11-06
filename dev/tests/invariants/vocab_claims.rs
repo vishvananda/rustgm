@@ -128,7 +128,10 @@ fn unimplemented_builtin_claims_stop_before_granting_layout_drop_or_auto_trait_s
             continue;
         };
         let role = LangItem::from_name(name).ok_or("known role")?;
-        if crate::sema::compiler_items::guard_panics::ROLES.contains(&role) {
+        if crate::sema::compiler_items::guard_panics::ROLES.contains(&role)
+            || crate::sema::compiler_items::interval_values::NOMINALS.contains(&role)
+            || role == LangItem::RangeInclusiveNew
+        {
             continue;
         }
         if matches!(

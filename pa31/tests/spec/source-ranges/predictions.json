@@ -1,0 +1,375 @@
+{
+  "contract": "Frozen source range declaration/constructor, old and new record-form construction, bounds, move and lifetime outcomes; actual old inclusive constructor-call plan and full original modules/derive/metadata remain required",
+  "inputs": [
+    {
+      "case": "declarations",
+      "path": "pa31/tests/spec/source-ranges/declarations.rs",
+      "status": 0,
+      "sha256": "3d67e3af6f1243ca371e83b543904b8ac1ac968d4b90b372442bff4fa122b0fd",
+      "scope": "Exact actual role and field blocks and original constructor; derive/other attributes retained in full original references and remain required"
+    },
+    {
+      "case": "unused-rangefrom",
+      "path": "pa31/tests/spec/source-ranges/unused-rangefrom.rs",
+      "status": 0,
+      "sha256": "f6dc3742b23a288f1d6edc5e6b9e964e1f459f8da9406d1a76ae7c63c943a7c0"
+    },
+    {
+      "case": "wrong-rangefrom",
+      "path": "pa31/tests/spec/source-ranges/wrong-rangefrom.rs",
+      "status": 1,
+      "sha256": "beb3c58eefa706249de7d978ddec3278d5ba0b8ea373dc1c97a42f30b4d8cbdd"
+    },
+    {
+      "case": "unused-rangefull",
+      "path": "pa31/tests/spec/source-ranges/unused-rangefull.rs",
+      "status": 0,
+      "sha256": "50c2dc2de7d7088403d47a5564d3d2866a37a90d055802e394905bc9d5f16acf"
+    },
+    {
+      "case": "wrong-rangefull",
+      "path": "pa31/tests/spec/source-ranges/wrong-rangefull.rs",
+      "status": 1,
+      "sha256": "6cdb05eaf290beb84bdbde093418e8df785cf6e43a7eb320fb1412192dd1da67"
+    },
+    {
+      "case": "unused-rangeinclusive",
+      "path": "pa31/tests/spec/source-ranges/unused-rangeinclusive.rs",
+      "status": 0,
+      "sha256": "8a5082a2435da5b223da8588f646c761fe45063818649fadd156357a0edfbbf5"
+    },
+    {
+      "case": "wrong-rangeinclusive",
+      "path": "pa31/tests/spec/source-ranges/wrong-rangeinclusive.rs",
+      "status": 1,
+      "sha256": "6666cae2ceddb1c7c40022062e7cf7d2747e3a25f2affc9babe9a0127ee8a241"
+    },
+    {
+      "case": "unused-range",
+      "path": "pa31/tests/spec/source-ranges/unused-range.rs",
+      "status": 0,
+      "sha256": "7d86bdf763f70928d0659fe003ca3c9d59e2064bc76af88ff43481eedfef0ef2"
+    },
+    {
+      "case": "wrong-range",
+      "path": "pa31/tests/spec/source-ranges/wrong-range.rs",
+      "status": 1,
+      "sha256": "bde6bcb56f3be73e161a31c95ad27e3d43e776581c808e4374b94d3af04991d4"
+    },
+    {
+      "case": "unused-rangetoinclusive",
+      "path": "pa31/tests/spec/source-ranges/unused-rangetoinclusive.rs",
+      "status": 0,
+      "sha256": "508adef4cbf403e15e90883df242a863019a5290bac7c3f904c43fb967e93517"
+    },
+    {
+      "case": "wrong-rangetoinclusive",
+      "path": "pa31/tests/spec/source-ranges/wrong-rangetoinclusive.rs",
+      "status": 1,
+      "sha256": "bfdb998164a981790bbf2a929f7426c5a5fca15e3144f0d62abc19edbfa39dd4"
+    },
+    {
+      "case": "unused-rangeto",
+      "path": "pa31/tests/spec/source-ranges/unused-rangeto.rs",
+      "status": 0,
+      "sha256": "1db83a25695e1ed536d81fa59ae6181f637bb5a0ea46a6a341e384e6ddbea4fc"
+    },
+    {
+      "case": "wrong-rangeto",
+      "path": "pa31/tests/spec/source-ranges/wrong-rangeto.rs",
+      "status": 1,
+      "sha256": "f4f7adcbaca7bf71cd967fab30999df8347e985c52d464085922381fe70fcfa6"
+    },
+    {
+      "case": "unused-rangefromcopy",
+      "path": "pa31/tests/spec/source-ranges/unused-rangefromcopy.rs",
+      "status": 0,
+      "sha256": "161486a5549bcb9660599ed33b973d12c6c3b1e52c0e79da4989b3d49569caa8"
+    },
+    {
+      "case": "wrong-rangefromcopy",
+      "path": "pa31/tests/spec/source-ranges/wrong-rangefromcopy.rs",
+      "status": 1,
+      "sha256": "3ffb1f63dfa55feec1ec0320dc9bdb3cadfdb95b3c2d34c1a56f4e083d328b9f"
+    },
+    {
+      "case": "unused-rangecopy",
+      "path": "pa31/tests/spec/source-ranges/unused-rangecopy.rs",
+      "status": 0,
+      "sha256": "c4f6d6186341563f6d2ca6923e1fc35bca4572e2ff247e9c50e66a680ba432ae"
+    },
+    {
+      "case": "wrong-rangecopy",
+      "path": "pa31/tests/spec/source-ranges/wrong-rangecopy.rs",
+      "status": 1,
+      "sha256": "9a5f909ce1360e243f5a053976e80a25202cc583522abfe919fa72e0d002ec91"
+    },
+    {
+      "case": "unused-rangeinclusivecopy",
+      "path": "pa31/tests/spec/source-ranges/unused-rangeinclusivecopy.rs",
+      "status": 0,
+      "sha256": "5adaf9ad5d8916f42cfa022dc88ad969f7299b38e637adb87a3172c582fc94d9"
+    },
+    {
+      "case": "wrong-rangeinclusivecopy",
+      "path": "pa31/tests/spec/source-ranges/wrong-rangeinclusivecopy.rs",
+      "status": 1,
+      "sha256": "3ea64135c8e79e444e286b663658c26d6ea6738acda219c05b6c9de4f5ec94e3"
+    },
+    {
+      "case": "unused-rangetoinclusivecopy",
+      "path": "pa31/tests/spec/source-ranges/unused-rangetoinclusivecopy.rs",
+      "status": 0,
+      "sha256": "36d5c5da56dd43d831665b50a51c5013caa4b0789396d30a2a13d1fd345cc8f1"
+    },
+    {
+      "case": "wrong-rangetoinclusivecopy",
+      "path": "pa31/tests/spec/source-ranges/wrong-rangetoinclusivecopy.rs",
+      "status": 1,
+      "sha256": "4ee4193e451f0bed934feb308b423d6f79857d0d64a9c9271325a5bb9fce85f4"
+    },
+    {
+      "case": "duplicate",
+      "path": "pa31/tests/spec/source-ranges/duplicate.rs",
+      "status": 1,
+      "sha256": "450ec6714cd8c8495a4fa889b43dc62e508697aaa6b3698ae7a18687f8314cbc"
+    },
+    {
+      "case": "unrelated-constructor",
+      "path": "pa31/tests/spec/source-ranges/unrelated-constructor.rs",
+      "status": 0,
+      "sha256": "94874363aa251c9899f4a23fbdefbeac3b4eb02d83d4e50aebb6025cd57ca4a1"
+    },
+    {
+      "case": "trait-constructor",
+      "path": "pa31/tests/spec/source-ranges/trait-constructor.rs",
+      "status": 1,
+      "sha256": "79961a0e4b2d1dc9d5635270b719c10dfd9022c680ad628dda51d45e6c85c921"
+    },
+    {
+      "case": "constructor-bad-body",
+      "path": "pa31/tests/spec/source-ranges/constructor-bad-body.rs",
+      "status": 1,
+      "sha256": "262f8c858dd08941527b5bf1c3ae9da58bfc9f90bc154a233fd1fd9dc17f0260"
+    },
+    {
+      "case": "half-open",
+      "path": "pa31/tests/spec/source-ranges/half-open.rs",
+      "status": 0,
+      "sha256": "b2dcf08c03be2f4d5b8e29835bc77edacb8a55f566c4a91b447015533d760f1e"
+    },
+    {
+      "case": "reordered",
+      "path": "pa31/tests/spec/source-ranges/reordered.rs",
+      "status": 0,
+      "sha256": "bdc02c42feefbce36e34a80186a07245a47c6d671efe67dfe2b89c7ac31c3a4b"
+    },
+    {
+      "case": "heterogeneous",
+      "path": "pa31/tests/spec/source-ranges/heterogeneous.rs",
+      "status": 0,
+      "sha256": "f2377c49a7c5268d59a14c50f8fea1dfaad4db6541a891241bdf4c5cc1d302d6"
+    },
+    {
+      "case": "two-parameters",
+      "path": "pa31/tests/spec/source-ranges/two-parameters.rs",
+      "status": 0,
+      "sha256": "7ee9e0f812759b0afda3db5dbd859e88fcb1a1686ffe3954a3ade6d05ddd1e76"
+    },
+    {
+      "case": "lifetime-parameters",
+      "path": "pa31/tests/spec/source-ranges/lifetime-parameters.rs",
+      "status": 0,
+      "sha256": "24da299f292ae5bd74351d2e29d83a5735fb70586a82386dc22db63009ddcf0f"
+    },
+    {
+      "case": "const-parameters",
+      "path": "pa31/tests/spec/source-ranges/const-parameters.rs",
+      "status": 0,
+      "sha256": "552daa1eb15173a7c4f4ef333af4b1c8df2bbc80aa60017fde2032599b51aa89"
+    },
+    {
+      "case": "missing-field",
+      "path": "pa31/tests/spec/source-ranges/missing-field.rs",
+      "status": 1,
+      "sha256": "9dbffc5239a5ef33bd9a8a27805bd0eefeb7c34df917da8308877946f19e05f7"
+    },
+    {
+      "case": "extra-field",
+      "path": "pa31/tests/spec/source-ranges/extra-field.rs",
+      "status": 1,
+      "sha256": "ff3cf2264236a8d6bc07479313df12a9046d3c6d1d9b07b5f439c2c67d3560d4"
+    },
+    {
+      "case": "wrong-field-type",
+      "path": "pa31/tests/spec/source-ranges/wrong-field-type.rs",
+      "status": 1,
+      "sha256": "af187e6ca24a6127d8ce3a58e7621f3382209caee9abf1d7cb0cb008b345df63"
+    },
+    {
+      "case": "private-field",
+      "path": "pa31/tests/spec/source-ranges/private-field.rs",
+      "status": 1,
+      "sha256": "0e0b9d19dabb2884ffc373b2fca4cb9181f7a866c18187b21f0000181c61dab0"
+    },
+    {
+      "case": "missing-bound",
+      "path": "pa31/tests/spec/source-ranges/missing-bound.rs",
+      "status": 1,
+      "sha256": "8aad373752156105d96e2eb9971bab6ca0daabb4a2eccfc642d91ef96f37de7a"
+    },
+    {
+      "case": "moved-endpoint",
+      "path": "pa31/tests/spec/source-ranges/moved-endpoint.rs",
+      "status": 1,
+      "sha256": "49be6775ac845e8c37358d6e05786cc08f9184d3aed9667ae87d42499b8f9506"
+    },
+    {
+      "case": "lookalike",
+      "path": "pa31/tests/spec/source-ranges/lookalike.rs",
+      "status": 1,
+      "sha256": "91507e1f5efa41af0867fe38d15e48f46b857a02f8451caaa2e1240691e67392"
+    },
+    {
+      "case": "constructor-native",
+      "path": "pa31/tests/spec/source-ranges/constructor-native.rs",
+      "status": 0,
+      "sha256": "5b26ec793c02cd785bbe01da6776dbcdf7892efc313a94addd278d4fdcff67f8"
+    },
+    {
+      "case": "reordered-native",
+      "path": "pa31/tests/spec/source-ranges/reordered-native.rs",
+      "status": 0,
+      "sha256": "0e40673be959e8fe747fd4559d35496ebca7d93d866d6b9f1d2c803c2115f9f6"
+    },
+    {
+      "case": "drop-native",
+      "path": "pa31/tests/spec/source-ranges/drop-native.rs",
+      "status": 0,
+      "sha256": "e9d0b66fa0be546fbf8a96c6232263ffffb57e77bc9ab97197af3c7bab2400c1"
+    },
+    {
+      "case": "full-form",
+      "path": "pa31/tests/spec/source-ranges/full-form.rs",
+      "status": 0,
+      "sha256": "9a4ba42d2bffcc02ee807c6910de3f5463f1bda691f0fb12343ef02887593a65"
+    },
+    {
+      "case": "from-form",
+      "path": "pa31/tests/spec/source-ranges/from-form.rs",
+      "status": 0,
+      "sha256": "5f6c3371b6434102b873d4464d48f570dcc60a3b7256a3dee44509a2e3bb5ce3"
+    },
+    {
+      "case": "to-form",
+      "path": "pa31/tests/spec/source-ranges/to-form.rs",
+      "status": 0,
+      "sha256": "e5370165e3f32b6db37d87b6cd96eb89e2f77c2d6d05f976d41bea350aecdad0"
+    },
+    {
+      "case": "to-inclusive-form",
+      "path": "pa31/tests/spec/source-ranges/to-inclusive-form.rs",
+      "status": 0,
+      "sha256": "41d5e4341c14faed8cd5e7b6283697995263fedb4ea44e38f1d7cf541d09da2d"
+    },
+    {
+      "case": "new-half-open",
+      "path": "pa31/tests/spec/source-ranges/new-half-open.rs",
+      "status": 0,
+      "sha256": "4d381e186a2539aecc613ae1075566770947b2f5a0d1ec8b5a965ad742f383c0"
+    },
+    {
+      "case": "new-inclusive",
+      "path": "pa31/tests/spec/source-ranges/new-inclusive.rs",
+      "status": 0,
+      "sha256": "191affe4c6407df6063411179bc080e3a5813ebbd3999764cc5d7883bb848bd6"
+    },
+    {
+      "case": "new-to-inclusive",
+      "path": "pa31/tests/spec/source-ranges/new-to-inclusive.rs",
+      "status": 0,
+      "sha256": "bcbb2ca4ce39a516e236864b8f9a3927afd31ee4a6602df11bfd51b5c9398a6d"
+    },
+    {
+      "case": "new-from",
+      "path": "pa31/tests/spec/source-ranges/new-from.rs",
+      "status": 0,
+      "sha256": "c027ce9bdb43b7159966df724161b42d7fd6afecac272844262abcd511784ce3"
+    },
+    {
+      "case": "new-no-automatic-copy",
+      "path": "pa31/tests/spec/source-ranges/new-no-automatic-copy.rs",
+      "status": 1,
+      "sha256": "9f2e68ddceaab040450ef31276f54a3c4551f66b8cad83ed09c5ee03025708bb"
+    },
+    {
+      "case": "old-inclusive-form",
+      "path": "pa31/tests/spec/source-ranges/old-inclusive-form.rs",
+      "status": 0,
+      "sha256": "d21043d261d0043aa9f5341956dc55d18cfa278ac12cca16ac73bc7c97f06afd",
+      "candidate_contract": "Required ordinary inclusive constructor-call plan; not converted into a rejection or whole assignment pass"
+    },
+    {
+      "case": "lifetime-escape",
+      "path": "pa31/tests/spec/source-ranges/lifetime-escape.rs",
+      "status": 1,
+      "sha256": "25431f7f06153527cebdfb11655ed8c2b8d571c9f06e34097b8f4d19590a7d43"
+    },
+    {
+      "case": "present-bound",
+      "path": "pa31/tests/spec/source-ranges/present-bound.rs",
+      "status": 0,
+      "sha256": "e07b258806dfe3446215168e46df56f48db2e1b58a3a7bce9f6b081dacc5d745"
+    },
+    {
+      "case": "modern-native",
+      "path": "pa31/tests/spec/source-ranges/modern-native.rs",
+      "status": 0,
+      "sha256": "791c2c72bee4c9cf14039c875274f89bac7474336a57ef0d89177add6e36d121"
+    },
+    {
+      "case": "lifetime-only",
+      "path": "pa31/tests/spec/source-ranges/lifetime-only.rs",
+      "status": 0,
+      "sha256": "ae53f823724b263136c1423b322cfb707d7abbb7822070c3fa4bea1ebf753925"
+    },
+    {
+      "case": "lifetime-only-escape",
+      "path": "pa31/tests/spec/source-ranges/lifetime-only-escape.rs",
+      "status": 1,
+      "sha256": "e528d1d34f976183c64622d813d6b5cd34ce64a2d09aa985156fbf45a0620420"
+    }
+  ],
+  "native": [
+    {
+      "source": "constructor-native.rs",
+      "observer": "constructor-observer.c",
+      "expected": "23 47\n"
+    },
+    {
+      "source": "reordered-native.rs",
+      "observer": "reordered-observer.c",
+      "expected": "23 47\n"
+    },
+    {
+      "source": "drop-native.rs",
+      "observer": "drop-observer.c",
+      "expected": "23 47 47 23 \n"
+    },
+    {
+      "source": "modern-native.rs",
+      "observer": "modern-observer.c",
+      "expected": "23 47 23 47 47 1\n"
+    }
+  ],
+  "originals": [
+    {
+      "path": "library/core/src/ops/range.rs",
+      "sha256": "4ce46aa140f364787ac5584154035dd766150cec32a7e5358193425cafc8b6fc"
+    },
+    {
+      "path": "library/core/src/range.rs",
+      "sha256": "2a7539638bc58a1142af0580217e857b0b5731c2eeb36da356b852dcc9a3e6e0"
+    }
+  ]
+}

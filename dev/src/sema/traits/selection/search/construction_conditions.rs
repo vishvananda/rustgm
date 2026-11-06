@@ -111,8 +111,11 @@ impl Search<'_> {
                 );
             }
             Some(Entry::Completed(node)) => Some(*node),
-            None => None,
+            None => self.reuse_nominal_formation(facts, frame, ty, depth)?,
         };
+        if let Some(node) = cached {
+            self.query.families.insert(key, Entry::Completed(node));
+        }
         if matches!(
             facts.types.kind(ty),
             Some(crate::types::Kind::Future { .. })
@@ -160,6 +163,49 @@ impl Search<'_> {
             finished: cached.is_some() && select,
         }));
         Ok(cached.is_none())
+    }
+    /// A completed actual sizing proof already retained its subject's formation.
+    /// Reuse only that prerequisite, without selecting the parent's trait.
+    fn reuse_nominal_formation(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+        ty: TypeId,
+        depth: u16,
+    ) -> Result<Option<usize>, String> {
+        if depth != 0
+            || self.query.reuse.is_none()
+            || Self::source_sizing_kind(facts, &frame.goal)?.is_none()
+        {
+            return Ok(None);
+        }
+        let goal = frame
+            .inputs
+            .context
+            .resolved_predicate(&mut facts.types, &frame.goal)
+            .map_err(inference)?;
+        let predicate = super::Predicate { ty, ..goal };
+        let Some(super::Decision::Proven(child)) =
+            self.query.reuse_completed(facts, frame, predicate)?
+        else {
+            return Ok(None);
+        };
+        let first = frame.first;
+        let node = super::Node {
+            goal,
+            source: None,
+            children: vec![child],
+            first,
+            end: self.query.allocations.end().max(first),
+            equalities: std::mem::take(&mut frame.inputs.context.region_equalities),
+            outlives: Vec::new(),
+            type_outlives: Vec::new(),
+            sized: Vec::new(),
+            debt_free: false,
+            cycle_dependent: false,
+            provisional_size: false,
+        };
+        Ok(Some(self.query.push(node, frame.scope, first..first)))
     }
     #[cfg(test)]
     pub(super) fn nominal_formation_child_for_test(

@@ -25,18 +25,32 @@ enum Roots {
     },
 }
 
-/// Each root is checked normally. Completed formation and child selections stay
-/// inside this single query; they never become independent cross-caller facts.
+/// Each root is checked normally. An optional owner retains only the same
+/// debt-free concrete proofs as individual searches in this fixed caller/mode.
 pub(in crate::sema) fn prove_conjunction(
     facts: &mut Declarations,
     context: &mut Context,
     requirements: &[Predicate],
     caller: Caller<'_>,
     availability: Availability,
+    mut reuse: Option<&mut super::Reuse>,
 ) -> Result<Conjunction, Failure> {
     let mut search = Search::new(caller, availability);
+    if let Some(reuse) = reuse.as_deref_mut() {
+        if !facts.types.nominal_sizes_sealed() {
+            return Err(Failure::Invalid(
+                "proof reuse requires sealed nominal sizes".into(),
+            ));
+        }
+        search.query.reuse = Some(super::completed_proofs::Active::new(std::mem::take(reuse)));
+    }
     let roots = search.conjunction_roots(facts, context, requirements);
     let charged = context.account_work(search.query.steps).map_err(inference);
+    if let Some(reuse) = reuse
+        && let Some(active) = search.query.reuse.take()
+    {
+        *reuse = active.reuse;
+    }
     let roots = roots?;
     charged?;
     match roots {
@@ -89,6 +103,7 @@ impl Search<'_> {
                             self.query.nodes[root].goal,
                         )
                         .map_err(inference)?;
+                    self.query.export_completed(facts, Decision::Proven(root))?;
                     roots.push(root);
                 }
                 Decision::Refuted(root) => {

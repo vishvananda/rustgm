@@ -110,6 +110,78 @@ fn source_sizing_reuse_requires_the_exact_current_validated_catalog() -> Result 
     ));
     Ok(())
 }
+#[test]
+fn formation_reuses_only_actual_sizing_proofs_for_the_exact_closed_root() -> Result {
+    for fault in 0..8 {
+        let (mut facts, ty) = facts()?;
+        let mut goal = predicate(&mut facts, LangItem::MetaSized, ty)?;
+        if fault == 2 {
+            goal.bound = Bound::Sized;
+        }
+        let mut cached = goal;
+        if fault == 1 {
+            cached.ty = TypeId::UNIT;
+        }
+        let mut reuse = Reuse::default();
+        if fault != 5 {
+            assert!(matches!(
+                select(&mut facts, cached, &mut reuse)?,
+                selection::Selection::Proven(_)
+            ));
+            assert!(reuse.selection(&facts, cached, 1)?.is_some());
+        }
+        let assumptions = Assumptions::default();
+        let mut search = super::super::Search::new(
+            selection::Caller {
+                assumptions: &assumptions,
+                environment: None,
+                first_region: 1,
+                retain_sized: false,
+            },
+            Availability::Validated,
+        );
+        search.query.reuse = Some(Active::new(reuse));
+        let mut context = Context::default();
+        let mut fold = Instantiation::new(&mut context, &facts.types, &[])?;
+        let inferred = context.instantiate_predicate(&mut facts.types, goal, &mut fold)?;
+        let mut frame = super::super::Frame::new(&facts, &mut context, &inferred, 1)?;
+        if fault == 4 {
+            frame.scope = ScopeId(1);
+        }
+        if fault >= 6 {
+            search.query.allocations.record(9);
+        }
+        if fault == 7 {
+            frame
+                .inputs
+                .context
+                .region_equalities
+                .push((RegionId(7), RegionId(8)));
+        }
+        search.begin_nominal_formation(&mut facts, &mut frame, ty, u16::from(fault == 3), false)?;
+        let formation = frame.formation.as_ref().ok_or("formation")?;
+        let reused = fault == 0 || fault >= 6;
+        assert_eq!(formation.parent.is_some(), reused);
+        assert_eq!(formation.registered, !reused);
+        if let Some(parent) = formation.parent {
+            let prefix = &search.query.nodes[parent.node()];
+            assert!(
+                prefix.source.is_none(),
+                "formation never selects the parent trait"
+            );
+            assert_eq!(prefix.children.len(), 1);
+            assert_eq!(search.query.nodes[prefix.children[0]].goal, goal);
+            assert_eq!(prefix.end, if fault >= 6 { 9 } else { 1 });
+            assert_eq!(prefix.equalities.len(), usize::from(fault == 7));
+            assert!(frame.inputs.context.region_equalities.is_empty());
+            assert_eq!(
+                search.query.reuse.as_ref().ok_or("reuse")?.debt_free[parent.node()],
+                fault == 0
+            );
+        }
+    }
+    Ok(())
+}
 fn shifted_catalog() -> Result<Box<crate::sema::compiler_items::Catalog>> {
     let mut source =
         crate::test_source::fixture("pa31/tests/spec/source-freeze/nominal-no-override.rs")?;

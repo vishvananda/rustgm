@@ -61,7 +61,7 @@ impl Context {
         if !self.is_projection(store, root)? {
             return Err(Error::InvalidIdentity);
         }
-        if self.occurs(root, result)? {
+        if self.occurs(store, root, result)? {
             return Err(Error::Occurs);
         }
         let kind = self.materialize(store, root)?;

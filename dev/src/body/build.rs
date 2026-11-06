@@ -1685,11 +1685,7 @@ impl<'a> Builder<'a> {
             Kind::LibraryValue { value, .. } => self.library_value(node, value)?,
             Kind::Array(elements) => self.aggregate_elements(node, elements)?,
             Kind::Repeat { value, .. } => self.repeat(node, value)?,
-            Kind::Range {
-                inclusive: false,
-                start: Some(start),
-                end: Some(end),
-            } => self.range_value(node, start, end)?,
+            Kind::Range { start, end, .. } => self.range_value(node, start, end)?,
             Kind::Struct { fields, base, .. } => self.construct(node, fields, base)?,
             Kind::FieldInit { value, .. } => self.value(value)?,
             Kind::Group(value) | Kind::Attributed { value, .. } | Kind::Label { value, .. } => {

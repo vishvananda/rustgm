@@ -1,0 +1,69 @@
+{
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "originals": [
+    {
+      "path": "library/core/src/ops/range.rs",
+      "sha256": "4ce46aa140f364787ac5584154035dd766150cec32a7e5358193425cafc8b6fc"
+    },
+    {
+      "path": "library/core/src/range.rs",
+      "sha256": "2a7539638bc58a1142af0580217e857b0b5731c2eeb36da356b852dcc9a3e6e0"
+    }
+  ],
+  "fragments": [
+    {
+      "path": "Range.fragment.rs",
+      "sha256": "c8a3e332382ad73e706139be29a7a9c4d1869d8c36a3781062d30a03c06170f3"
+    },
+    {
+      "path": "RangeCopy.fragment.rs",
+      "sha256": "16981dd2fe6aa35da0f7082a32e38b5ad75022bf5f5ad3847a7edf33f80cf99d"
+    },
+    {
+      "path": "RangeFrom.fragment.rs",
+      "sha256": "e00251c0319d5e7a4c33f6317bafbd6a7fa0fa5630727a13ff0ca06c23f922b9"
+    },
+    {
+      "path": "RangeFromCopy.fragment.rs",
+      "sha256": "4cf5b4b230adccccd894cacdc9b28526b98d09edd92fc55efd2ab8e40bc4090f"
+    },
+    {
+      "path": "RangeFull.fragment.rs",
+      "sha256": "d0efdc88884ad44b20f26f6bd3ca4e36614d5d2fdf0d4da03395f61c78788510"
+    },
+    {
+      "path": "RangeInclusive.fragment.rs",
+      "sha256": "9e4c171758fa125532efc2e49ce80c63b225ebd158cd96ebac9c602c0eb24af9"
+    },
+    {
+      "path": "RangeInclusiveCopy.fragment.rs",
+      "sha256": "7403da0233a839ef59fddca6534060a68819c5d834d8a92c2d1e0cd2e346aeae"
+    },
+    {
+      "path": "RangeTo.fragment.rs",
+      "sha256": "09d8a85f9b9594482bc479addaa7a1d274fe29f02ddb265a59e7fa79027297a6"
+    },
+    {
+      "path": "RangeToInclusive.fragment.rs",
+      "sha256": "d822473dd6e998d6e4ef9e9732ab33d0dc47f804aa9ea060faf02e4026d6a967"
+    },
+    {
+      "path": "RangeToInclusiveCopy.fragment.rs",
+      "sha256": "7085623a61e3ed3c0a7a51b1c026cf6214b1bda5f26faa810bc9d3794086367f"
+    },
+    {
+      "path": "constructor.fragment.rs",
+      "sha256": "a0496fa21ff370ce1480aef47fc3b25762d512636a6dabd3dfab14a9c2a7571d"
+    },
+    {
+      "path": "destruct.fragment.rs",
+      "sha256": "b5aec6c9c472c9dd8bea45191d0ce4c7c6ce4053563ecb65311316722465805a"
+    },
+    {
+      "path": "glue.fragment.rs",
+      "sha256": "29a7dbd9ab006a7969a5877ac67ac4768c58b3711a511caf653428d2f09da31f"
+    }
+  ],
+  "reference_receipt": "obj/parallel/range-source-contracts/reference-v4/receipt.json",
+  "scope": "Actual field/constructor fragments and independent authored consumers, not full original module/derive/iteration/metadata qualification"
+}

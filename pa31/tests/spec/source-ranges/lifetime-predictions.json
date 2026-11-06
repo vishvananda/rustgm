@@ -1,0 +1,18 @@
+{
+  "contract": "Frozen independent lifetime-only nominal construction and genuine escape opponent before candidate correction",
+  "inputs": [
+    {
+      "case": "lifetime-only",
+      "path": "pa31/tests/spec/source-ranges/lifetime-only.rs",
+      "status": 0,
+      "sha256": "ae53f823724b263136c1423b322cfb707d7abbb7822070c3fa4bea1ebf753925"
+    },
+    {
+      "case": "lifetime-only-escape",
+      "path": "pa31/tests/spec/source-ranges/lifetime-only-escape.rs",
+      "status": 1,
+      "sha256": "e528d1d34f976183c64622d813d6b5cd34ce64a2d09aa985156fbf45a0620420"
+    }
+  ],
+  "native": []
+}

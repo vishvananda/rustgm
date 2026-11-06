@@ -369,15 +369,29 @@ impl Builder<'_> {
     pub(super) fn range_value(
         &mut self,
         node: NodeId,
-        start: NodeId,
-        end: NodeId,
+        start: Option<NodeId>,
+        end: Option<NodeId>,
     ) -> Result<ValueId, Error> {
         let Some(Operation::Construct { variant }) = self.fact(node)?.operation else {
-            return Err(self.error(node, "missing canonical Range construction"));
+            return Err(self.error(node, "missing checked range construction"));
         };
+        let start = start.map(|n| self.value(n)).transpose()?;
+        let end = end.map(|n| self.value(n)).transpose()?;
         let first = self.index(node, self.body.arguments.len())?;
-        self.body.arguments.push(self.value(start)?);
-        self.body.arguments.push(self.value(end)?);
+        let record = self.facts.members.variants[variant.0 as usize];
+        for field in &self.facts.members.fields[record.start as usize..record.end as usize] {
+            let crate::sema::members::Name::Named(name) = field.name else {
+                return Err(self.error(node, "checked range field has no actual name"));
+            };
+            let value = match self.facts.members.names.get(name) {
+                "start" => start,
+                "end" | "last" => end,
+                _ => None,
+            }
+            .ok_or_else(|| self.error(node, "checked range field lacks its actual operand"))?;
+            self.body.arguments.push(value);
+        }
+        let last = self.index(node, self.body.arguments.len())?;
         self.evaluate(
             node,
             self.ty(node)?,
@@ -385,7 +399,7 @@ impl Builder<'_> {
                 variant: Some(variant),
                 fields: ValueList {
                     start: first,
-                    end: first + 2,
+                    end: last,
                 },
             },
         )

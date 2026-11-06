@@ -18,6 +18,16 @@ impl Checker<'_> {
         let assumptions = self.trait_assumptions(node)?.unwrap_or_default();
         let environment = self.trait_query_environment(node)?;
         let first_region = self.trait_region_start(node)?;
+        if self.state.canonical_trait_proofs.is_none() {
+            for &predicate in &predicates {
+                if selection::Reuse::needed(self.facts, predicate)
+                    .map_err(|e| self.error(node, e))?
+                {
+                    self.state.canonical_trait_proofs = Some(Box::default());
+                    break;
+                }
+            }
+        }
         let context = self
             .state
             .canonical_trait_inference
@@ -33,6 +43,7 @@ impl Checker<'_> {
                 retain_sized: false,
             },
             self.availability,
+            self.state.canonical_trait_proofs.as_deref_mut(),
         );
         let equalities = std::mem::take(&mut context.region_equalities);
         match result.map_err(|error| {

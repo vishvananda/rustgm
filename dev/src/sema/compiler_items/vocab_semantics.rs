@@ -7,6 +7,9 @@ use crate::{
 
 pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Result<(), Error> {
     for role in LangItem::DECLARATIONS {
+        if super::interval_values::NOMINALS.contains(&role) || role == LangItem::RangeInclusiveNew {
+            continue;
+        }
         if super::guard_panics::ROLES.contains(&role) {
             // Ordinary completed headers supply no compiler assertion routing.
             continue;

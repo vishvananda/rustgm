@@ -644,11 +644,20 @@ pub(super) fn complete_nominal(
 }
 
 /// Only the authenticated ordinary inherent-member producer calls this gate.
-pub(super) fn complete_pin_constructor(
+pub(super) fn complete_constructor(
     facts: &mut Declarations,
+    role: LangItem,
     declaration: Declaration,
 ) -> Result<(), Error> {
-    record_completion(facts, LangItem::PinNewUnchecked, declaration)
+    if !matches!(
+        role,
+        LangItem::PinNewUnchecked | LangItem::RangeInclusiveNew
+    ) {
+        return Err(Error::unlocated(
+            "invalid source inherent constructor completion",
+        ));
+    }
+    record_completion(facts, role, declaration)
 }
 
 /// Only the genuine late inherent helper producer completes these exact roles.
@@ -680,7 +689,8 @@ pub(super) fn complete_value_declaration(
             | LangItem::Context
             | LangItem::CoroutineState
             | LangItem::ResumeTy
-    ) {
+    ) && !super::interval_values::NOMINALS.contains(&role)
+    {
         return Err(Error::unlocated(
             "invalid source value declaration completion",
         ));

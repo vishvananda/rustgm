@@ -138,7 +138,7 @@ pub struct Context {
     known: HashMap<TypeId, TermId>,
     pairs: Vec<(TermId, TermId)>,
     seen: HashSet<(TermId, TermId)>,
-    occurs_work: Vec<TermId>,
+    occurs_work: Vec<(TermId, bool)>,
     child_scratch: Vec<TermId>,
     marks: Vec<u32>,
     epoch: u32,
@@ -353,27 +353,48 @@ impl Context {
         }
         Ok(())
     }
-    fn occurs(&mut self, variable: TermId, candidate: TermId) -> Result<bool, Error> {
+    fn occurs(
+        &mut self,
+        store: &Store,
+        variable: TermId,
+        candidate: TermId,
+    ) -> Result<bool, Error> {
         self.epoch = self.epoch.wrapping_add(1);
         if self.epoch == 0 {
             self.marks.fill(0);
             self.epoch = 1;
         }
         self.occurs_work.clear();
-        self.occurs_work.push(candidate);
-        while let Some(next) = self.occurs_work.pop() {
+        self.occurs_work.push((candidate, false));
+        while let Some((next, finish)) = self.occurs_work.pop() {
             self.step()?;
             let next = self.root(next)?;
             if next == variable {
                 return Ok(true);
+            }
+            // A completed graph has no inference holes or projections. Reuse
+            // its immutable facts instead of walking the same growing prefix.
+            if self.completed(store, next)?.is_some() {
+                continue;
+            }
+            if finish {
+                self.remember_structure(store, next)?;
+                continue;
             }
             if self.marks[next.0 as usize] == self.epoch {
                 continue;
             }
             self.marks[next.0 as usize] = self.epoch;
             let term = self.terms[next.0 as usize];
-            self.occurs_work
-                .extend_from_slice(&self.edges[term.start as usize..term.end as usize]);
+            if matches!(term.value, Value::Construct(_)) {
+                self.occurs_work.push((next, true));
+            }
+            self.occurs_work.extend(
+                self.edges[term.start as usize..term.end as usize]
+                    .iter()
+                    .copied()
+                    .map(|child| (child, false)),
+            );
         }
         Ok(false)
     }
@@ -438,7 +459,7 @@ impl Context {
         }
         if CHECK_OCCURS
             && matches!(self.terms[candidate.0 as usize].value, Value::Construct(_))
-            && self.occurs(variable, candidate)?
+            && self.occurs(store, variable, candidate)?
         {
             return Err(Error::Occurs);
         }

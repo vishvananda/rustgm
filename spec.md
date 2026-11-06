@@ -1246,6 +1246,37 @@ tag supplies no generated future, special pointer conversion, automatic trait
 evidence or lifetime permission. Authored dependency companions and full original
 standard-library source qualification remain distinct acceptance requirements.
 
+Range language declarations reuse that ordinary nominal producer. Complete the
+actual inherent inclusive constructor with Pin's shared signature/body-frame
+adapter, preserving unused alternate-header legality. For source record forms,
+select the completed real language struct and infer its normal lifetime, type
+and const arguments through the same constructor kernel as written paths.
+Use actual named fields, adjusted syntax context, privacy and substituted field
+types; never force a single shared endpoint type or declaration-order operands.
+Evaluate start before end, then assemble values in actual field order so loans,
+moves and Drop remain ordinary. `new_range` is a captured crate feature selecting
+its genuine Copy-named declarations and `last` fields; those spellings supply no
+Copy evidence. No fake lexical application row, bootstrap source fallback,
+source reparse, retained range map or wider dense node is required. Legacy
+inclusive syntax still requires the real ordinary constructor-call plan, and
+full module/derive/iteration and metadata closure remain acceptance requirements.
+
+Growing constructor inputs must share completed inference prefixes. Reuse the
+existing postorder occurs/freshening walks to record immutable graph facts;
+holes, projections and lifetime-bearing fresh positions retain their ordinary
+work. Do not intern canonical types merely to obtain a completion certificate.
+Canonical sizing conjunctions share the existing body's completed-proof owner
+with individual selections in the same fixed caller and mode. A concrete,
+debt-free positive proof of an actual source sizing trait also proves that exact
+subject's nominal formation. Its formation-only wrapper retains `source=None`,
+the original allocation envelope and existing frame equalities; it selects no
+parent trait. This reuse is restricted to root scope and zero callable depth,
+with current role validation. Plain builtin Sized, pending, provisional, cyclic,
+scoped or debt-bearing answers supply no such certificate. Require doubled-depth
+scaling for both inference and canonical proof work, with unrelated declarations
+leaving those counts unchanged; a single faster traversal does not establish a
+linear constructor pipeline.
+
 Former-name links share that same cold relationship owner with an explicit kind;
 they never enable the canonical feature. Project canonical feature definitions
 once, keeping the first unstable declaration and checking stable/unstable or

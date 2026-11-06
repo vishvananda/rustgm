@@ -4,6 +4,7 @@ mod binding_views;
 mod calls;
 pub(in crate::sema) mod dereferencing;
 mod frozen_effects;
+pub(in crate::sema) mod interval_values;
 pub(in crate::sema) mod pinning;
 pub(crate) mod pointers;
 pub(in crate::sema) mod streams;

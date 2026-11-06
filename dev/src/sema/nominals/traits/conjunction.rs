@@ -67,6 +67,7 @@ impl State {
                 retain_sized: self.retain_sized,
             },
             self.availability,
+            None,
         )
         .map_err(|_| "invalid or exhausted canonical trait selection")?
         {

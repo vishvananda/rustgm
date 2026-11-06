@@ -1,0 +1,71 @@
+{
+  "contract": "Independent Rust positives frozen before candidate scaling measurement; doubled depth work <= twice prior +256, unrelated128 must not affect body inference work",
+  "inputs": [
+    {
+      "depth": 8,
+      "unrelated": 0,
+      "path": "pa31/tests/spec/source-ranges/scaling/depth-8-extra-0.rs",
+      "status": 0,
+      "sha256": "fea6f0ee6cc67b132569d338aaae63aab904c062cc1e8381f7ea65bfc6d3c011",
+      "case": "depth-8-extra-0"
+    },
+    {
+      "depth": 8,
+      "unrelated": 128,
+      "path": "pa31/tests/spec/source-ranges/scaling/depth-8-extra-128.rs",
+      "status": 0,
+      "sha256": "6191eb54000bb30d03c02db58d96aa19689bf5680adcbef6364af4aa297fa69a",
+      "case": "depth-8-extra-128"
+    },
+    {
+      "depth": 16,
+      "unrelated": 0,
+      "path": "pa31/tests/spec/source-ranges/scaling/depth-16-extra-0.rs",
+      "status": 0,
+      "sha256": "dd227a6d6e81e72aec6e20a37fd55851e8c2899be95f65b1cbd286e2bdc1da05",
+      "case": "depth-16-extra-0"
+    },
+    {
+      "depth": 16,
+      "unrelated": 128,
+      "path": "pa31/tests/spec/source-ranges/scaling/depth-16-extra-128.rs",
+      "status": 0,
+      "sha256": "4795583b6a38ce6e3674d8e0e324f8f5d5ffbfceec61fa575e5268ee2ca4e5bf",
+      "case": "depth-16-extra-128"
+    },
+    {
+      "depth": 32,
+      "unrelated": 0,
+      "path": "pa31/tests/spec/source-ranges/scaling/depth-32-extra-0.rs",
+      "status": 0,
+      "sha256": "b99c195ca0bd2a89cb4410bb34f4d90d7d06dd3662297a106e15baaf3eed72da",
+      "case": "depth-32-extra-0"
+    },
+    {
+      "depth": 32,
+      "unrelated": 128,
+      "path": "pa31/tests/spec/source-ranges/scaling/depth-32-extra-128.rs",
+      "status": 0,
+      "sha256": "a943593546ed56ae8bedd9166dad65173f643f30917ecf2d680490bd3777f220",
+      "case": "depth-32-extra-128"
+    },
+    {
+      "depth": 64,
+      "unrelated": 0,
+      "path": "pa31/tests/spec/source-ranges/scaling/depth-64-extra-0.rs",
+      "status": 0,
+      "sha256": "a8ad59e067aa4d9ea388cd086df22391fc4d1d52dfeb081cee2b41ce9ef4bcd2",
+      "case": "depth-64-extra-0"
+    },
+    {
+      "depth": 64,
+      "unrelated": 128,
+      "path": "pa31/tests/spec/source-ranges/scaling/depth-64-extra-128.rs",
+      "status": 0,
+      "sha256": "e19c01c3067e8b3e51a53c6dffcac9160e4d826274bef44c38647c3f3199624f",
+      "case": "depth-64-extra-128"
+    }
+  ],
+  "native": [],
+  "candidate_scope": "Nested-expression depth64 exceeds existing128 syntax nesting profile; raw pass8/16/32 and failed64 retained; not claimed parity at64"
+}

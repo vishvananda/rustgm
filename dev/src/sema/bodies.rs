@@ -1353,11 +1353,11 @@ impl Checker<'_> {
                 return self.enter_address(node, operand, expected);
             }
             Kind::Range {
-                inclusive: false,
-                start: Some(start),
-                end: Some(end),
+                inclusive,
+                start,
+                end,
             } => {
-                return self.enter_range(node, start, end, expected);
+                return self.enter_range(node, inclusive, start, end, expected);
             }
             Kind::Tuple(elements) | Kind::Array(elements) => {
                 return self.enter_elements(node, elements, expected);
@@ -1537,12 +1537,7 @@ impl Checker<'_> {
                 }
                 self.term(value)
             }
-            Kind::Closure { .. }
-            | Kind::Range {
-                inclusive: false,
-                start: Some(_),
-                end: Some(_),
-            } => self.term(node),
+            Kind::Closure { .. } | Kind::Range { .. } => self.term(node),
             Kind::InlineAssembly(args) => self.assembly_result(node, args),
             Kind::LibraryValue { kind, value } => self.library_value(node, kind, value),
             Kind::Literal(index) => self.literal(node, index),

@@ -233,17 +233,50 @@ fn occurs_checks_follow_indirect_bindings_and_shared_graphs() -> Result<(), Erro
     let pair = cx.construct(Constructor::Tuple, &[x, x])?;
     cx.equate(&store, y, pair)?;
     assert_eq!(cx.equate(&store, x, y), Err(Error::Occurs));
-    let mut cx = Context::default();
-    let leaf = cx.variable(Domain::Any)?;
-    let mut shared = cx.known(&store, TypeId::UNIT)?;
-    for _ in 0..100 {
-        shared = cx.construct(Constructor::Tuple, &[shared, shared])?;
+    let mut previous = None;
+    for depth in [64, 128, 256] {
+        let mut cx = Context::default();
+        let leaf = cx.variable(Domain::Any)?;
+        let mut shared = cx.known(&store, TypeId::UNIT)?;
+        for _ in 0..depth {
+            shared = cx.construct(Constructor::Tuple, &[shared, shared])?;
+        }
+        cx.equate(&store, leaf, shared)?;
+        if let Some(prior) = previous {
+            assert!(
+                cx.steps <= 2 * prior + 16,
+                "shared subtree work must remain linear: {prior}->{}",
+                cx.steps
+            );
+        }
+        previous = Some(cx.steps);
     }
-    cx.equate(&store, leaf, shared)?;
-    assert!(
-        cx.steps < 300,
-        "shared subtrees must not cause exponential traversal"
-    );
+    Ok(())
+}
+
+#[test]
+fn repeated_occurs_checks_share_completed_prefixes_without_interning_or_hiding_cycles()
+-> Result<(), Error> {
+    let store = Store::default();
+    let before = store.len();
+    for depth in [8, 16, 32, 64, 128] {
+        let mut cx = Context::default();
+        let byte = cx.known(&store, TypeId::primitive(Primitive::U8))?;
+        let mut tail = byte;
+        for _ in 0..depth {
+            let pair = cx.construct(Constructor::Tuple, &[byte, tail])?;
+            let hole = cx.variable(Domain::Any)?;
+            cx.equate(&store, hole, pair)?;
+            tail = hole;
+        }
+        assert!(cx.steps <= 12 * depth + 16, "depth{depth}: {}", cx.steps);
+        assert_eq!(store.len(), before);
+        let unknown = cx.variable(Domain::Any)?;
+        let open = cx.construct(Constructor::Tuple, &[tail, unknown])?;
+        let alias = cx.variable(Domain::Any)?;
+        cx.equate(&store, alias, open)?;
+        assert_eq!(cx.equate(&store, unknown, alias), Err(Error::Occurs));
+    }
     Ok(())
 }
 

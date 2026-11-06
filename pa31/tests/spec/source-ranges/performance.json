@@ -1,0 +1,70 @@
+{
+  "contract": "Same canonical nested range types with sequential bindings within existing syntax profile; doubled depth inference AND canonical proof work <= twice prior +256; unrelated128 must not affect either count. Original syntax-profile observations retained separately; no limit increased.",
+  "inputs": [
+    {
+      "case": "flat-depth-8-extra-0",
+      "depth": 8,
+      "unrelated": 0,
+      "path": "pa31/tests/spec/source-ranges/scaling/flat-depth-8-extra-0.rs",
+      "status": 0,
+      "sha256": "f66de0ec817c733063a8dbe3316a9adf06fb89a6b8bb11402e084cfc2ddbbae5"
+    },
+    {
+      "case": "flat-depth-8-extra-128",
+      "depth": 8,
+      "unrelated": 128,
+      "path": "pa31/tests/spec/source-ranges/scaling/flat-depth-8-extra-128.rs",
+      "status": 0,
+      "sha256": "98a274129c38d96194bb31537172c282068e761a3b9d568d7c0fad1214390660"
+    },
+    {
+      "case": "flat-depth-16-extra-0",
+      "depth": 16,
+      "unrelated": 0,
+      "path": "pa31/tests/spec/source-ranges/scaling/flat-depth-16-extra-0.rs",
+      "status": 0,
+      "sha256": "bc541a817de3885bcdf29ba2b713a19edbec45b2e13a246e30766795a669251f"
+    },
+    {
+      "case": "flat-depth-16-extra-128",
+      "depth": 16,
+      "unrelated": 128,
+      "path": "pa31/tests/spec/source-ranges/scaling/flat-depth-16-extra-128.rs",
+      "status": 0,
+      "sha256": "a26408d79feb8f9039d4f3cd1e11eecf9e5ec547f8c8ccda1255acdaaff3760e"
+    },
+    {
+      "case": "flat-depth-32-extra-0",
+      "depth": 32,
+      "unrelated": 0,
+      "path": "pa31/tests/spec/source-ranges/scaling/flat-depth-32-extra-0.rs",
+      "status": 0,
+      "sha256": "6834e79973b60ef585cbfc2e0888559ec3b22a1eada292e2867a6b95248ddaac"
+    },
+    {
+      "case": "flat-depth-32-extra-128",
+      "depth": 32,
+      "unrelated": 128,
+      "path": "pa31/tests/spec/source-ranges/scaling/flat-depth-32-extra-128.rs",
+      "status": 0,
+      "sha256": "80998f49b5d5d77fd0e085bf460d0a239a3217f916b51238947030cf95a1e6b6"
+    },
+    {
+      "case": "flat-depth-64-extra-0",
+      "depth": 64,
+      "unrelated": 0,
+      "path": "pa31/tests/spec/source-ranges/scaling/flat-depth-64-extra-0.rs",
+      "status": 0,
+      "sha256": "2308c04eb6a40c8904369be5527f9f4a49b148b1a154902fad6b2c1b87544ba1"
+    },
+    {
+      "case": "flat-depth-64-extra-128",
+      "depth": 64,
+      "unrelated": 128,
+      "path": "pa31/tests/spec/source-ranges/scaling/flat-depth-64-extra-128.rs",
+      "status": 0,
+      "sha256": "37efc3833722adcd442de1222aacdfb5bc0fa1879dfac957330a4c513e5865ac"
+    }
+  ],
+  "native": []
+}

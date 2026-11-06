@@ -128,27 +128,35 @@ fn already_materialized_closed_dags_share_work_without_sharing_fresh_positions()
 {
     let mut store = Store::default();
     let mut cx = Context::default();
-    let mut value = cx.known(&store, TypeId::UNIT)?;
-    for _ in 0..100 {
-        value = cx.construct(Constructor::Tuple, &[value, value])?;
-    }
-    assert_eq!(
-        cx.fresh_regions(
-            &mut store,
-            &rustgm::types::callable::Templates::default(),
-            value,
-            1
-        )?,
-        FreshRegions {
-            term: value,
-            regions: 0,
-            needs_normalization: false
+    let mut previous = None;
+    for depth in [64, 128, 256] {
+        cx = Context::default();
+        let mut value = cx.known(&store, TypeId::UNIT)?;
+        for _ in 0..depth {
+            value = cx.construct(Constructor::Tuple, &[value, value])?;
         }
-    );
-    assert!(
-        cx.steps < 400,
-        "closed DAG traversal must be linear in stored edges"
-    );
+        assert_eq!(
+            cx.fresh_regions(
+                &mut store,
+                &rustgm::types::callable::Templates::default(),
+                value,
+                1
+            )?,
+            FreshRegions {
+                term: value,
+                regions: 0,
+                needs_normalization: false
+            }
+        );
+        if let Some(prior) = previous {
+            assert!(
+                cx.steps <= 2 * prior + 16,
+                "closed DAG work: {prior}->{}",
+                cx.steps
+            );
+        }
+        previous = Some(cx.steps);
+    }
     let leaf = cx.known(&store, TypeId::UNIT)?;
     let mut open = cx.construct(
         Constructor::Reference {
@@ -463,7 +471,9 @@ fn deep_freshening_and_closed_dags_are_bounded_and_iterative()
         .regions,
         10_000
     );
-    assert!(cx.steps < 25_000);
+    // Both freshening and completion now account for the stored edges. Their
+    // combined work must remain linear even for deep lifetime-bearing graphs.
+    assert!(cx.steps < 40_000);
     let mut ty = TypeId::UNIT;
     for _ in 0..1_000 {
         let children = store.intern_list(&[ty, ty])?;

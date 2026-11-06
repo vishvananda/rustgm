@@ -87,6 +87,7 @@ pub(in crate::resolve) enum Feature {
     ArbitrarySelfTypes = 70,
     ArbitrarySelfTypesPointers = 71,
     ConstPreciseLiveDrops = 72,
+    NewRange = 73,
 }
 
 #[cfg(test)]
@@ -132,6 +133,7 @@ impl Request {
     fn named(name: &str) -> Option<Self> {
         Some(match name {
             "prelude_import" => Self::Capability(Feature::PreludeImport),
+            "new_range" => Self::Capability(Feature::NewRange),
             "must_not_suspend" => Self::Capability(Feature::MustNotSuspend),
             "no_core" => Self::Capability(Feature::NoCore),
             "abi_unadjusted" => Self::Capability(Feature::AbiUnadjusted),
@@ -263,6 +265,7 @@ impl Features {
             || self.has(Feature::ConstClosures)
             || self.has(Feature::MetavariableConcat)
             || self.has(Feature::MetavariableExpressions)
+            || self.has(Feature::NewRange)
     }
     fn insert(&mut self, feature: Feature) {
         let index = feature as usize;

@@ -75,6 +75,8 @@ mod glue_provider;
 mod hygiene;
 #[path = "../../interpolation.rs"]
 mod interpolation;
+#[path = "../../interval_sources.rs"]
+mod interval_sources;
 #[path = "../../inventory_ordering.rs"]
 mod inventory_ordering;
 #[path = "../../keyed_parameters.rs"]

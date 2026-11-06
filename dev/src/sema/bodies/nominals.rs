@@ -18,6 +18,11 @@ use crate::{
 };
 
 pub(super) use crate::sema::annotations::Fields;
+struct Written {
+    arguments: Vec<SourceArgument>,
+    lifetimes: Option<crate::syntax::ast::List>,
+}
+
 impl Checker<'_> {
     /// Resolve constructor paths whose lexical application is already known.
     fn constructor_application(
@@ -73,8 +78,49 @@ impl Checker<'_> {
             .item_uses
             .get(&self.key(path))
             .ok_or_else(|| self.error(node, "nominal arguments were not elaborated"))?;
-        let supplied = written.arguments.clone();
-        let lifetimes = written.lifetimes;
+        let written = Written {
+            arguments: written.arguments.clone(),
+            lifetimes: written.lifetimes,
+        };
+        self.nominal_inputs(node, owner, expected, &parameters, written)
+    }
+
+    /// Compiler syntax supplies ordinary inferred constructor inputs, without
+    /// creating a lexical path or a synthetic elaborated source argument row.
+    pub(super) fn implicit_nominal(
+        &mut self,
+        node: NodeId,
+        owner: ItemId,
+        expected: Option<TermId>,
+    ) -> Result<TermId, Error> {
+        let Some(parameters) = self.facts.generics.parameters.get(&DefId(owner.0)).cloned() else {
+            let ty = self.nominal_type(node, node, owner)?;
+            return self.known(node, ty);
+        };
+        self.nominal_inputs(
+            node,
+            owner,
+            expected,
+            &parameters,
+            Written {
+                arguments: Vec::new(),
+                lifetimes: None,
+            },
+        )
+    }
+
+    fn nominal_inputs(
+        &mut self,
+        node: NodeId,
+        owner: ItemId,
+        expected: Option<TermId>,
+        parameters: &[crate::sema::generics::Parameter],
+        written: Written,
+    ) -> Result<TermId, Error> {
+        let Written {
+            arguments: supplied,
+            lifetimes,
+        } = written;
         let count = parameters
             .iter()
             .take_while(|p| matches!(p.argument, Canonical::Lifetime(_)))

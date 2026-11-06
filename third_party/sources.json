@@ -362,6 +362,24 @@
       "adaptation": "none; full reference retained; exact get_context body independently executed with explicitly authored Context companion, full original graph/derives remain required",
       "oracle": "source-fragment",
       "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/ops/range.rs",
+      "destination": "pa31/tests/spec/source-ranges/original-ops-range.rs",
+      "sha256": "4ce46aa140f364787ac5584154035dd766150cec32a7e5358193425cafc8b6fc",
+      "adaptation": "none; full reference retained; exact field blocks/constructor and authored construction companions are qualified separately; full derive/module/metadata remain required",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/range.rs",
+      "destination": "pa31/tests/spec/source-ranges/original-new-range.rs",
+      "sha256": "2a7539638bc58a1142af0580217e857b0b5731c2eeb36da356b852dcc9a3e6e0",
+      "adaptation": "none; full reference retained; exact field blocks/constructor and authored construction companions are qualified separately; full derive/module/metadata remain required",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
     }
   ]
 }

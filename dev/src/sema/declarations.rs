@@ -526,6 +526,7 @@ impl Checker<'_> {
         self.validate_required_family_bounds()?;
         self.validate_signatures()?;
         super::compiler_items::pinning::complete(self.report, &mut self.facts)?;
+        super::compiler_items::interval_values::complete_constructor(self.report, &mut self.facts)?;
         super::compiler_items::streams::complete_helpers(self.report, &mut self.facts)?;
         self.validate_trait_implementations()?;
         self.validate_const_parameter_types()?;

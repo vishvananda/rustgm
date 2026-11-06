@@ -17,7 +17,7 @@ const ROLES: [LangItem; 6] = [
 
 /// Complete ordinary headers/fields without restricting Rust-valid unused shapes.
 pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
-    for role in ROLES {
+    for role in ROLES.into_iter().chain(super::interval_values::NOMINALS) {
         let Some(declaration) = facts
             .source_bindings
             .as_deref()
@@ -42,13 +42,10 @@ pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Re
                 "source value declaration changed its actual source identity",
             ));
         }
-        if matches!(
-            role,
-            LangItem::Poll | LangItem::Context | LangItem::CoroutineState | LangItem::ResumeTy
-        ) {
-            nominal(facts, declaration, role).map_err(error)?;
-        } else {
+        if matches!(role, LangItem::PollReady | LangItem::PollPending) {
             variant(facts, declaration, definition.kind).map_err(error)?;
+        } else {
+            nominal(facts, declaration, role).map_err(error)?;
         }
         super::roles::complete_value_declaration(facts, role, declaration)?;
     }
@@ -61,10 +58,10 @@ fn nominal(
     role: LangItem,
 ) -> Result<(), &'static str> {
     let item = ItemId(declaration.definition.0);
-    let expected = if matches!(role, LangItem::Context | LangItem::ResumeTy) {
-        aggregate::Kind::Struct
-    } else {
+    let expected = if matches!(role, LangItem::Poll | LangItem::CoroutineState) {
         aggregate::Kind::Enum
+    } else {
+        aggregate::Kind::Struct
     };
     if !matches!(facts.definitions.get(item.0 as usize).copied().flatten().and_then(|ty| facts.types.kind(ty)), Some(Kind::Adt(owner, _)) if owner == item)
         || !facts
