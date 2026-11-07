@@ -1162,3 +1162,88 @@ Exploratory probes of similar shapes (`probe/`) ran first. Results:
 `scripts/check_macro_metadata.py` (the new manifest), the two private
 invariants (`delegation_inputs`, `assert_emission`: `Site.crate_id`) and the
 integration tests above.
+
+### Derive preparation (task 3)
+
+Local derive output is unchanged. Three things that a cross-crate derive will
+need are now in place.
+
+- **Crate anchor.** `derive_output::Site.crate_id` is the crate of the
+  selected `derive` definition, 0 for a local one. `Output::text` turns each
+  `crate` identifier of the fixed derive text into the
+  `TokenKind::CrateRoot(crate_id)` token that `$crate` transcription makes.
+  Before, it lexed `crate::…` as an ordinary identifier path. `CrateRoot(0)`
+  resolves as `crate` (`append_path`), so local paths, their resolution and
+  the lowered output stay the same. The `--pa` suites below check this. An
+  imported derive would name its provider's `clone::Clone`, `marker::Copy`,
+  `fmt::Formatter`, `intrinsics::discriminant_value` and `AssertParam*`
+  helpers through `Imported::macro_root`, never through the client's own
+  `crate`.
+- **One payer.** Every expansion-time derive charge goes through
+  `derive_lists::derive_ledger`. That is `Package::source_contract_payer()`,
+  that is, `macro_context().contracts()`, and it stays limited to the source
+  core. For the source core it is `source.macros`, so charges and limits do
+  not change. It now also checks the provider identity that `macro_context`
+  checks. The affected steps are list reservation, argument scan, member
+  invocation, selection, generation, placement, prior `Copy`, `Default`
+  choice, the literal and builtin-impl grants, vocabulary replay and
+  receipts. `attach_derives` is the one exception: installation borrows the
+  units mutably while it charges, so it still names `Source::Core(source)`
+  and charges `source.macros` directly. That is the same ledger.
+- **Member contexts from rows.** `derive_contexts` already applies each
+  selected member definition's own `context` to its invocation, and
+  `MemberContext.edition` is that definition's edition. A transported row sets
+  both. No member context reads a source header.
+
+**Cross-crate derive (Lane C requirement).** I found the stopping point by
+reading the code; no fixture runs it. A call of an imported `derive` or member
+row stops at the imported-builtin gate in `require_invocable` ("imported
+builtin macro requires its provider's source declaration"). This happens
+before any derive transaction. Running it needs:
+
+- that gate to admit the derive roles;
+- `checked_derive_definition` to authenticate a row's role and edition instead
+  of a local header (`checked_source_macro`, `panic_contracts::published`);
+- `derive_ledger` to widen from the source core to the client's macro context.
+
+Before any of that is useful, Lane C must transport the provider's traits and
+impls that the generated impls name. These are:
+
+- `Clone`, `Copy`, `TrivialClone`;
+- `PartialEq`, `Eq`, `PartialOrd`, `Ord`;
+- `Debug` with `Formatter` and its `debug_*` methods, and `fmt::Result`;
+- `Hash`/`Hasher`, `Default`, `StructuralPartialEq`, `ConstParamTy_`;
+- `Option`, `Ordering`, the `AssertParamIsClone`/`AssertParamIsCopy`/`AssertParamIsEq` helpers and `intrinsics::discriminant_value`.
+
+The consumer must check impls of imported traits against them.
+`derived_literal_allowance` and `derived_builtin_impl` also stay limited to
+the source core.
+
+**Qualification (task 3).** A new private test
+(`image_storage::tests::derive_text_roots_name_the_defining_crate_and_keep_other_words`)
+checks the anchor. It lexes `crate::clone::Clone for crated r#type` with crate
+ids 0 and 7. Only the leading `crate` becomes `CrateRoot(id)`; `crated` and
+the raw identifier stay as they are. Strict private Clippy and 19 private
+derive tests passed (`obj/qualification/fast/1794070696966325189`): the
+storage, location, parameter, placement, image, formatter-family, tuple and
+enum `Default`, union `Copy`/`Clone`, type-macro, bounded-header and `Debug`
+field controls. The `--pa` text oracles all pass with the dev-fast CLI:
+
+- pa1 to pa12 (`1794071030512400039`);
+- pa13 to pa19 and pa21 to pa24, including the 805 pa13 cases with their
+  derive fixtures (`1794070845216208876`);
+- pa20, 1451/1451 (`1794071082401589441`).
+
+**Known failure, not caused by this task.**
+`derive_lists::tests::marker_shape_ordinary_storage_and_derive_owner_layouts_preserve_boundaries`
+and seven other private invariants assert that the expansion `Definition` is
+136 bytes. It has been 168 bytes since the macro consumer (`cbef4d469`) and
+the version-2/3 rows added `imported: Option<ImportedDefinition>` (32 bytes).
+The record has one spare byte, so a boxed field cannot fit either. Restoring
+136 means moving imported definitions into a side table keyed by definition
+index, threaded through the definition views (`bindings`, `permission_frames`,
+`permission_session`, `diagnostics::project`). That decision is left to the
+integrator. This task does not change `Definition`.
+
+Outside resolve, expand and support/crates, this task edits only the private
+invariant `image_accounting` (`Site.crate_id` and the new test).

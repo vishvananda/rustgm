@@ -32,6 +32,26 @@ use crate::{
 };
 use std::{ops::Range, sync::Arc};
 
+/// The ledger each derive charge pays: the package's macro-context contracts.
+/// Only the source core expands derives, and its context's contracts are its
+/// own `source.macros`, so local charges are unchanged. Any other package has
+/// no derive ledger yet; imported derive rows need Lane C trait/impl transport.
+fn derive_ledger(
+    package: &super::Package,
+) -> Result<Option<&panic_contracts::Contracts>, &'static str> {
+    if package.source_core().is_none() {
+        return Ok(None);
+    }
+    package.source_contract_payer()
+}
+/// The derive ledger a step requires, or `missing` by name.
+fn required_ledger<'a>(
+    package: &'a super::Package,
+    missing: &'static str,
+) -> Result<&'a panic_contracts::Contracts, &'static str> {
+    derive_ledger(package)?.ok_or(missing)
+}
+
 #[derive(Default)]
 pub(super) struct Transactions {
     entries: Vec<Transaction>,
@@ -184,13 +204,12 @@ impl<S: Sources> Engine<'_, S> {
         }
         let unit = self.loader.package.unit(file);
         let actual = &unit.configured.effects[effect];
-        let source = self
-            .loader
-            .package
-            .source_core()
-            .ok_or_else(|| call.diagnostic("derive requires its actual local provider"))?;
-        source
-            .macros
+        let ledger = required_ledger(
+            &self.loader.package,
+            "derive requires its actual local provider",
+        )
+        .map_err(|message| call.diagnostic(message))?;
+        ledger
             .charge(
                 count,
                 size_of::<Transactions>()
@@ -300,13 +319,8 @@ impl<S: Sources> Engine<'_, S> {
         let range = forest
             .children(group)
             .ok_or_else(|| call.diagnostic("derive lost its actual argument list"))?;
-        let source = self
-            .loader
-            .package
-            .source_core()
-            .ok_or_else(|| call.diagnostic("missing derive provider"))?;
-        source
-            .macros
+        required_ledger(&self.loader.package, "missing derive provider")
+            .map_err(|message| call.diagnostic(message))?
             .charge(
                 (range.end - range.start) as usize,
                 (range.end - range.start) as usize * 4 * size_of::<TreeRange>(),
@@ -365,11 +379,8 @@ impl<S: Sources> Engine<'_, S> {
             u32::try_from(self.invocations.len() + 1)
                 .map_err(|_| call.diagnostic("derive invocation overflow"))?,
         );
-        self.loader
-            .package
-            .source_core()
-            .ok_or_else(|| call.diagnostic("missing derive provider"))?
-            .macros
+        required_ledger(&self.loader.package, "missing derive provider")
+            .map_err(|message| call.diagnostic(message))?
             .charge(1, 4 * size_of::<Invocation>())
             .map_err(|message| call.diagnostic(message))?;
         self.paths

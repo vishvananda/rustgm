@@ -23,12 +23,18 @@ provider's semiopaque `panic_2021`/`unreachable_2021` row through
   is back to 160 bytes (macro rows share one cold box with original
   reservation work), and the const-allowance transport opponent
   `consumer-grant-not-request` again fails at its feature gate (below).
+- Builtin derive output now roots its `crate::` paths at the defining crate's
+  identity and charges the macro-context ledger, with every `--pa` suite
+  unchanged. Cross-crate derive still stops at the imported-builtin gate and
+  needs Lane C's trait and impl transport.
 
 Imported `format_args!` still stops by name: its expander and the typed
 constructors it emits need Lane C's transport of core's fmt language roles and
 constructors first. The fix for `consumer-grant-not-request` corrects a header
 ledger that the imported-contract ingest created with an empty input-graph
-bound (since `d2bcb1f89`).
+bound (since `d2bcb1f89`). Still open in this lane's area: the expansion
+`Definition` is 168 bytes, not the 136 that eight private invariants assert
+(since `cbef4d469`).
 
 [Census batch 3](parallel/census-batch3.md) bounds the source lint-policy
 ledger by its input. It keeps the former fixed limits as a floor, and adds

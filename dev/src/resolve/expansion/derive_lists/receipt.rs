@@ -8,17 +8,17 @@ pub(super) fn current(
     entry: &Transaction,
     expanded: bool,
 ) -> Result<(), Error> {
-    if let Some(source) = package.source_core() {
-        source
-            .macros
+    let located = |message| {
+        Error::at(
+            entry.owner.file,
+            entry.attribute.attribute.span.start,
+            message,
+        )
+    };
+    if let Some(ledger) = super::derive_ledger(package).map_err(located)? {
+        ledger
             .charge(9 + entry.trees.len() + entry.spelling.len(), 0)
-            .map_err(|message| {
-                Error::at(
-                    entry.owner.file,
-                    entry.attribute.attribute.span.start,
-                    message,
-                )
-            })?;
+            .map_err(located)?;
     }
     let failure = || {
         Error::at(
@@ -94,9 +94,11 @@ impl Report {
             .as_deref()
             .and_then(|effects| effects.derives.as_deref())
             .ok_or_else(failure)?;
-        let source = self.package.source_core().ok_or_else(failure)?;
-        source
-            .macros
+        let ledger = super::derive_ledger(&self.package)
+            .ok()
+            .flatten()
+            .ok_or_else(failure)?;
+        ledger
             .charge(1, 0)
             .map_err(|message| Error::at(owner.file, 0, message))?;
         let position = *transactions
@@ -126,8 +128,7 @@ impl Report {
             return Err(failure());
         }
         for index in entry.contexts.clone() {
-            source
-                .macros
+            ledger
                 .charge(1, 0)
                 .map_err(|message| Error::at(owner.file, 0, message))?;
             let member = self.invocations.get(index).ok_or_else(failure)?;

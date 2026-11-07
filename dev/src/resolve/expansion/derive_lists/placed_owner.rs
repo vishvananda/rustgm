@@ -22,11 +22,8 @@ impl Placement {
         facts: &Resolution,
         call: &Call,
     ) -> Result<Self, Error> {
-        package
-            .source_core()
-            .ok_or_else(|| call.diagnostic("derive requires its actual provider"))?
-            .macros
-            .charge(8, 0)
+        super::required_ledger(package, "derive requires its actual provider")
+            .and_then(|ledger| ledger.charge(8, 0))
             .map_err(|message| call.diagnostic(message))?;
         let frame = facts
             .scopes

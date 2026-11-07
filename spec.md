@@ -6318,6 +6318,8 @@ definition's parsed contract is rejected at publication. An imported `panic`,
 nested expansion of another definition. A single `use` import binding an
 unstable imported row needs the same feature or allowance as a call of it,
 whether or not the row is called; a glob import is checked only at its module.
+Builtin derive output roots each `crate::` path at the defining crate's
+identity, as `$crate` does; an imported derive row does not yet run.
 
 ## Lowering and backend facts
 

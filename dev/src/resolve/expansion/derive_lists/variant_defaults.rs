@@ -18,11 +18,8 @@ pub(super) struct Choice {
 }
 
 fn charge(package: &Package, owner: NodeKey, work: usize, bytes: usize) -> Result<(), Error> {
-    package
-        .source_core()
-        .ok_or_else(|| Error::at(owner.file, 0, "Default lost its source provider"))?
-        .macros
-        .charge(work, bytes)
+    super::required_ledger(package, "Default lost its source provider")
+        .and_then(|ledger| ledger.charge(work, bytes))
         .map_err(|message| Error::at(owner.file, 0, message))
 }
 

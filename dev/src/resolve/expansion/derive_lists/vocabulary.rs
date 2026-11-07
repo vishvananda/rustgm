@@ -15,9 +15,11 @@ pub(super) fn require(
         )
     };
     let unit = report.package.unit(entry.owner.file);
-    let source = report.package.source_core().ok_or_else(failure)?;
-    source
-        .macros
+    let ledger = super::derive_ledger(&report.package)
+        .ok()
+        .flatten()
+        .ok_or_else(failure)?;
+    ledger
         .charge(
             unit.origins.len().checked_ilog2().unwrap_or(0) as usize * 2 + 1,
             0,
@@ -30,8 +32,7 @@ pub(super) fn require(
         .origins
         .partition_point(|origin| origin.generated.start < invocation.generated.end);
     let origins = unit.origins.get(start..end).ok_or_else(failure)?;
-    source
-        .macros
+    ledger
         .charge(origins.len().saturating_mul(4), 0)
         .map_err(|_| failure())?;
     if entry.contexts.len() > crate::expand::builtin::derive_output::MEMBERS.len()
@@ -54,8 +55,7 @@ pub(super) fn require(
         match origin.kind {
             OriginKind::Captured(_) => return Err(failure()),
             OriginKind::Copied => {
-                source
-                    .macros
+                ledger
                     .charge((origin.generated.end - origin.generated.start) as usize, 0)
                     .map_err(|_| failure())?;
                 if origin.introduction.0 != 0

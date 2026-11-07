@@ -16,12 +16,13 @@ impl<S: Sources> Engine<'_, S> {
             .ok_or_else(|| {
                 self.calls[index].diagnostic("prior Copy lost its actual transaction owner")
             })?;
-        let source = self.loader.package.source_core().ok_or_else(|| {
-            self.calls[index].diagnostic("prior Copy requires its actual source provider")
-        })?;
+        let ledger = super::required_ledger(
+            &self.loader.package,
+            "prior Copy requires its actual source provider",
+        )
+        .map_err(|message| self.calls[index].diagnostic(message))?;
         for effect in owner.attributes.start..current.effect {
-            source
-                .macros
+            ledger
                 .charge(1, 0)
                 .map_err(|message| self.calls[index].diagnostic(message))?;
             let Some(&position) = transactions.index.get(&(current.owner.file, effect)) else {
@@ -33,8 +34,7 @@ impl<S: Sources> Engine<'_, S> {
             }
             receipt::current(&self.loader.package, &self.paths.state.facts, prior, true)?;
             for member in prior.contexts.clone() {
-                source
-                    .macros
+                ledger
                     .charge(1, 0)
                     .map_err(|message| self.calls[index].diagnostic(message))?;
                 let invocation = &self.invocations[member];

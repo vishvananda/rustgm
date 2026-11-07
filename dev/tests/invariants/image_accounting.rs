@@ -1,4 +1,5 @@
 //! Spare capacity is prepaid once; rejected growth publishes no image or token.
+//! A `crate` path root of derive text is the defining crate's root token.
 use super::*;
 use std::cell::Cell;
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
@@ -36,6 +37,7 @@ fn spare_capacity_and_failed_growth_keep_attempts_and_unpublished_rows() -> Test
         active: &unit.configured.active,
         item: unit.configured.ast.items[0],
         original: Span { start: 0, end: 1 },
+        crate_id: 0,
         members: [None; super::super::MEMBERS.len()],
         const_: false,
         prior_copy: false,
@@ -102,5 +104,69 @@ fn spare_capacity_and_failed_growth_keep_attempts_and_unpublished_rows() -> Test
     assert_eq!(lengths(&output), before_lengths);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
+    Ok(())
+}
+
+#[test]
+fn derive_text_roots_name_the_defining_crate_and_keep_other_words() -> TestResult {
+    use crate::{
+        expand::{
+            marks::{ExpansionId, Marks, SyntaxContextId, Transparency},
+            stream::Stream,
+        },
+        lex::token::Kind as TokenKind,
+        syntax::token_tree::Span,
+    };
+    let unit = unit()?;
+    let introduction = ExpansionId(1);
+    let context = Marks::default().apply(
+        SyntaxContextId::ROOT,
+        introduction,
+        Transparency::Opaque,
+        SyntaxContextId::ROOT,
+    )?;
+    for crate_id in [0, 7] {
+        let site = super::super::Site {
+            file: crate::support::source::FileId(0),
+            source: unit.source.text(),
+            ast: &unit.configured.ast,
+            active: &unit.configured.active,
+            item: unit.configured.ast.items[0],
+            original: Span { start: 0, end: 1 },
+            crate_id,
+            members: [None; super::super::MEMBERS.len()],
+            const_: false,
+            prior_copy: false,
+            enum_default: None,
+        };
+        let charge = |_: usize, _: usize| -> Result<(), crate::lex::token::LexError> { Ok(()) };
+        let mut output = super::super::Output {
+            site: &site,
+            stream: Stream::default(),
+            fields: Vec::new(),
+            charge: &charge,
+            context: (context, introduction),
+            edition: crate::support::edition::Edition::Rust2024,
+        };
+        output
+            .text("crate::clone::Clone for crated r#type")
+            .map_err(|error| error.message)?;
+        let kinds: Vec<_> = output
+            .stream
+            .tokens
+            .iter()
+            .map(|token| token.kind)
+            .collect();
+        assert_eq!(
+            kinds[0],
+            TokenKind::crate_root(crate_id).map_err(|error| error.message)?
+        );
+        assert!(
+            kinds[1..]
+                .iter()
+                .all(|kind| !matches!(kind, TokenKind::CrateRoot(_)))
+        );
+        assert_eq!(kinds.last(), Some(&TokenKind::RawIdentifier));
+    }
     Ok(())
 }

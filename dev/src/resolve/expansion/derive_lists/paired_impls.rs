@@ -27,13 +27,12 @@ impl<S: Sources> Engine<'_, S> {
         let children = entry.children.clone();
         let parent = self.invocations[entry.invocation].context;
         let (file, effect) = (entry.owner.file, entry.effect);
-        self.loader
-            .package
-            .source_core()
-            .ok_or_else(|| {
-                self.calls[index].diagnostic("derive selection lost its source provider")
-            })?
-            .macros
+        let ledger = super::required_ledger(
+            &self.loader.package,
+            "derive selection lost its source provider",
+        )
+        .map_err(|message| self.calls[index].diagnostic(message))?;
+        ledger
             .charge(
                 MEMBERS.len(),
                 size_of::<Selected>()
@@ -166,18 +165,17 @@ impl<S: Sources> Engine<'_, S> {
         let Kind::Item(item) = unit.configured.ast.node(node).kind else {
             return Err(self.calls[index].diagnostic("source derive requires an actual item owner"));
         };
-        let source = self
-            .loader
-            .package
-            .source_core()
-            .ok_or_else(|| self.calls[index].diagnostic("missing derive provider"))?;
+        let ledger = super::required_ledger(&self.loader.package, "missing derive provider")
+            .map_err(|message| self.calls[index].diagnostic(message))?;
         let original = unit.configured.effects[effect].attribute.attribute.span;
         let charge = |steps, bytes| {
-            source
-                .macros
+            ledger
                 .charge(steps, bytes)
                 .map_err(|message| error(original.start, message))
         };
+        let list = self.calls[index].selected.ok_or_else(|| {
+            self.calls[index].diagnostic("derive list lost its selected definition")
+        })?;
         let generated = derive_output::build(
             &derive_output::Site {
                 file,
@@ -186,6 +184,9 @@ impl<S: Sources> Engine<'_, S> {
                 active: &unit.configured.active,
                 item: unit.configured.ast.items[item as usize],
                 original,
+                crate_id: self.definitions[list]
+                    .imported
+                    .map_or(0, |imported| imported.crate_id),
                 members: std::array::from_fn(|slot| {
                     selected[slot].map(|(_, definition)| derive_output::MemberContext {
                         context: contexts[slot],
@@ -193,11 +194,7 @@ impl<S: Sources> Engine<'_, S> {
                     })
                 }),
                 const_: matches!(
-                    self.definitions[self.calls[index]
-                        .selected
-                        .ok_or_else(|| self.calls[index]
-                            .diagnostic("derive list lost its selected definition"))?]
-                    .body,
+                    self.definitions[list].body,
                     Body::Builtin(Builtin::DeriveConst)
                 ),
                 prior_copy: self.completed_copy(index)?,
@@ -207,8 +204,7 @@ impl<S: Sources> Engine<'_, S> {
             &charge,
         )
         .map_err(|failure| Error::at(file, failure.offset, failure.message))?;
-        source
-            .macros
+        ledger
             .charge(1, generated.payload_bytes().saturating_mul(4))
             .map_err(|message| self.calls[index].diagnostic(message))?;
         Ok(generated)

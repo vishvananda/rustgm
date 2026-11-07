@@ -16,11 +16,11 @@ impl Report {
         self.derived_builtin_impl(site, Builtin::CoercePointee)
     }
     fn derived_builtin_impl(&self, site: NodeKey, role: Builtin) -> Result<bool, Error> {
-        let Some(source) = self.package.source_core() else {
+        let error = |message| Error::at(site.file, 0, message);
+        let Some(ledger) = super::derive_ledger(&self.package).map_err(error)? else {
             return Ok(false);
         };
-        let error = |message| Error::at(site.file, 0, message);
-        source.macros.charge(4, 0).map_err(error)?;
+        ledger.charge(4, 0).map_err(error)?;
         let unit = self
             .package
             .units
@@ -35,8 +35,7 @@ impl Report {
         if (node.span.start as usize) < unit.source.original().len() {
             return Ok(false);
         }
-        source
-            .macros
+        ledger
             .charge(
                 8 + unit.origins.len().checked_ilog2().unwrap_or(0) as usize,
                 0,
@@ -76,17 +75,16 @@ impl Report {
         site: Location,
         feature: &FeatureName<'_>,
     ) -> Result<Option<bool>, Error> {
-        let Some(source) = self.package.source_core() else {
+        let error = |message| Error::at(site.file, site.span.start, message);
+        let Some(ledger) = super::derive_ledger(&self.package).map_err(error)? else {
             return Ok(None);
         };
-        let error = |message| Error::at(site.file, site.span.start, message);
         let unit = self
             .package
             .units
             .get(site.file.0 as usize)
             .ok_or_else(|| error("derive grant lost its source unit"))?;
-        source
-            .macros
+        ledger
             .charge(
                 1 + unit.origins.len().checked_ilog2().unwrap_or(0) as usize,
                 0,
@@ -180,12 +178,11 @@ impl Report {
             .as_deref()
             .and_then(|effects| effects.derives.as_deref())
             .ok_or_else(|| error("derive member has no completed transaction"))?;
-        let source = self
-            .package
-            .source_core()
-            .ok_or_else(|| error("derive member lost its actual provider"))?;
+        let ledger =
+            super::required_ledger(&self.package, "derive member lost its actual provider")
+                .map_err(error)?;
         for effect in owner.attributes.clone() {
-            source.macros.charge(1, 0).map_err(error)?;
+            ledger.charge(1, 0).map_err(error)?;
             let Some(&position) = transactions.index.get(&(member.node.file, effect)) else {
                 continue;
             };

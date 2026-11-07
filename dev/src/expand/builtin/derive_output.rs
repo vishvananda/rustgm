@@ -39,6 +39,10 @@ pub(crate) struct Site<'a> {
     pub active: &'a [bool],
     pub item: Item,
     pub original: Span,
+    /// The crate that defines the selected derive: 0 is this crate. Each
+    /// `crate` path root of the output is that crate's root token, so the
+    /// derived impl names its provider's items by crate identity, as `$crate`.
+    pub crate_id: u32,
     pub members: [Option<MemberContext>; MEMBERS.len()],
     pub const_: bool,
     pub prior_copy: bool,
@@ -239,6 +243,11 @@ impl Output<'_> {
                 TokenKind::Whitespace | TokenKind::LineComment | TokenKind::BlockComment
             ) {
                 continue;
+            }
+            if matches!(token.kind, TokenKind::Identifier)
+                && text.get(token.start as usize..token.end as usize) == Some("crate")
+            {
+                token.kind = TokenKind::crate_root(self.site.crate_id)?;
             }
             token.start += span.start;
             token.end += span.start;
