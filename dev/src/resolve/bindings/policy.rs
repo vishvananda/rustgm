@@ -10,7 +10,7 @@ use crate::{
     syntax::attribute::Input,
 };
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub(in crate::resolve) struct Features([u64; 2]);
 #[derive(Clone, Copy)]
 pub(in crate::resolve) enum Feature {
@@ -354,9 +354,11 @@ pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prep
     )
 }
 
-/// Imported macro rows that carry `allow_internal_unstable` lists charge their
-/// frames to the consumer's own allowance ledger, as local definitions do.
-fn imports_allowances(context: &Context) -> bool {
+/// Imported macro rows that carry `allow_internal_unstable` lists, declarative
+/// or builtin, charge their frames to the consumer's own allowance ledger, as
+/// local definitions do. Ordinary crates, source clients and staged consumers
+/// each own one.
+pub(super) fn imports_allowances(context: &Context) -> bool {
     context.dependencies.as_deref().is_some_and(|dependencies| {
         dependencies.artifacts().iter().any(|artifact| {
             artifact.macros().is_some_and(|macros| {
@@ -364,6 +366,10 @@ fn imports_allowances(context: &Context) -> bool {
                     .rows()
                     .iter()
                     .any(|row| !row.internal_unstable().is_empty())
+                    || macros
+                        .builtins()
+                        .iter()
+                        .any(|row| !row.internal_unstable().is_empty())
             })
         })
     })
@@ -382,14 +388,15 @@ pub(in crate::resolve) fn prepare_with_admission(
     let (features, library) = features(unit)?;
     let options = super::root_options::prepare(unit, features.has(Feature::RustcAttributes))?;
     if let Some(request) = admission {
-        let mut prepared =
-            super::consumer_policy::prepare(unit, context, no_core, features, library, request)?;
+        let mut prepared = super::consumer_policy::prepare(
+            unit, context, no_core, features, library, request, limits,
+        )?;
         prepared.macros = prepared.macros.with_options(options);
         return Ok(prepared);
     }
     if let Mode::SourceClient { provider } = &context.mode {
         let mut prepared =
-            super::client::prepare(unit, context, provider, no_core, features, library)?;
+            super::client::prepare(unit, context, provider, no_core, features, library, limits)?;
         prepared.macros = prepared.macros.with_options(options);
         return Ok(prepared);
     }

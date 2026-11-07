@@ -1,6 +1,8 @@
 //! Builtin macro rows travel in tag-14 version two with their module placement
 //! and expander identity; declarative rows there carry allowance lists, and
-//! re-export rows name a definition row by its owner and key.
+//! re-export rows name a definition row by its owner and key. Version three
+//! adds builtin allowance lists and every definition row's `#[unstable]`
+//! feature, which gates each call in the consumer.
 use super::{
     exports::compile,
     fresh_packets::{Packet, Result, unique},
@@ -524,6 +526,197 @@ fn reexport_row_metadata_grows_linearly_with_row_count() -> Result {
     }
     // Fixed-width module names: every re-export row adds the same table
     // bytes, and the consumer's output does not depend on the row count.
+    let [small, middle, large] = <[usize; 3]>::try_from(sizes.as_slice())?;
+    assert_eq!((middle - small) * 4, large - middle, "{sizes:?}");
+    assert!(outputs.windows(2).all(|pair| pair[0] == pair[1]));
+    Ok(())
+}
+
+const STABILITY: &str = "pa29/tests/spec/macro-stability-rows";
+const ANSWER_GATE: &str = "use of unstable library macro requires feature `gated_answer`";
+
+/// A `no_core` client of `base` with extra crate features.
+fn gated_client(
+    packet: &Packet,
+    label: &str,
+    features: &str,
+    body: &str,
+) -> Result<std::path::PathBuf> {
+    let source = packet.folder.join(format!("{label}.rs"));
+    std::fs::write(
+        &source,
+        format!("#![feature(no_core{features})]\n#![no_core]\nextern crate base;\n{body}\n"),
+    )?;
+    Ok(source)
+}
+
+#[test]
+fn stability_rows_and_builtin_lists_publish_in_version_three() -> Result {
+    let packet = Packet::publish(GROUP, STABILITY, "stability", "provider", PROFILE)?;
+    let bytes = std::fs::read(&packet.metadata)?;
+    assert_eq!(bytes[12..14], [14, 3]);
+    let interface = crates::decode(&bytes)?;
+    assert_eq!(crates::encode(&interface)?, bytes);
+    let macros = interface.macros().ok_or("missing macro table")?;
+    let owned = |features: &[String]| features.join(",");
+    let rows: Vec<_> = macros
+        .rows()
+        .iter()
+        .map(|row| (row.name(), row.unstable(), owned(row.internal_unstable())))
+        .collect();
+    assert_eq!(
+        rows,
+        [
+            ("answer", Some("gated_answer"), String::new()),
+            ("checked", None, "cfg_ub_checks".into()),
+            ("leaky", None, String::new()),
+            ("line_wrapper", None, "gated_line".into()),
+            ("wrapper", None, "gated_answer".into()),
+        ]
+    );
+    let builtins: Vec<_> = macros
+        .builtins()
+        .iter()
+        .map(|row| (row.name(), row.unstable(), owned(row.internal_unstable())))
+        .collect();
+    assert_eq!(
+        builtins,
+        [
+            ("cfg", None, String::new()),
+            ("line", Some("gated_line"), String::new()),
+            ("stringify", None, "gated_answer".into()),
+        ]
+    );
+    // The re-export names the unstable row; its own stability is not a row's.
+    assert_eq!(
+        reexport_rows(&interface)?,
+        [(
+            "reexported".into(),
+            "answer".into(),
+            0,
+            String::new(),
+            "answer".into()
+        )]
+    );
+    // Calls through a path and a re-export need the feature; requesting it,
+    // a library feature of the provider, admits both.
+    let body = "pub fn f() -> u32 { base::reexported::answer!() }";
+    let source = gated_client(&packet, "denied", "", body)?;
+    let mut denied = packet.consumer(&source, "denied", &packet.metadata, &packet.owner());
+    packet.rejected("denied", &mut denied, ANSWER_GATE)?;
+    let source = gated_client(&packet, "requested", ", gated_answer", body)?;
+    let mut requested = packet.consumer(&source, "requested", &packet.metadata, &packet.owner());
+    super::artifacts::checked("requested", &packet.folder, &mut requested)?;
+    // Version-two providers keep their exact bytes and version.
+    let earlier = Packet::publish(GROUP, SPEC, "stability-v2", "provider", PROFILE)?;
+    assert_eq!(std::fs::read(&earlier.metadata)?[12..14], [14, 2]);
+    Ok(())
+}
+
+#[test]
+fn forged_and_relabelled_stability_rows_are_rejected_by_name() -> Result {
+    let packet = Packet::publish(GROUP, STABILITY, "forged-stability", "provider", PROFILE)?;
+    let bytes = std::fs::read(&packet.metadata)?;
+    // The builtin `line` row: no helpers, an empty list, then tag 1 and its feature.
+    let line = b"line\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x0a\x00\x00\x00gated_line";
+    unique(&bytes, line)?;
+    let tagged = b"\x00\x01\x0a\x00\x00\x00gated_line";
+    rejected(
+        &respelled(&bytes, tagged, b"\x00\x02\x0a\x00\x00\x00gated_line")?,
+        "unknown exported macro stability",
+    )?;
+    rejected(
+        &respelled(&bytes, tagged, b"\x00\x01\x0a\x00\x00\x00gated-line")?,
+        "invalid exported macro unstable feature",
+    )?;
+    let listed = b"stringify\x00\x00\x00\x00\x00\x01\x00\x00\x00\x0c\x00\x00\x00gated-answer";
+    rejected(
+        &respelled(
+            &bytes,
+            b"stringify\x00\x00\x00\x00\x00\x01\x00\x00\x00\x0c\x00\x00\x00gated_answer",
+            listed,
+        )?,
+        "invalid exported macro internal-unstable features",
+    )?;
+    // Without any version-three field the table must not claim version three.
+    let mut plain = respelled(&bytes, tagged, b"\x00\x00")?;
+    plain = respelled(
+        &plain,
+        b"stringify\x00\x00\x00\x00\x00\x01\x00\x00\x00\x0c\x00\x00\x00gated_answer",
+        b"stringify\x00\x00\x00\x00\x00\x00\x00\x00\x00",
+    )?;
+    plain = respelled(
+        &plain,
+        b"\x00\x00\x00\x00\x01\x0c\x00\x00\x00gated_answer",
+        b"\x00\x00\x00\x00\x00",
+    )?;
+    rejected(
+        &plain,
+        "version-three exported macro table has only version-two rows",
+    )?;
+    // A version-two reader of version-three rows misreads them, so a
+    // relabelled table fails rather than dropping a gate.
+    assert!(crates::decode(&super::fresh_packets::relabel(&bytes, 2)).is_err());
+    // An expansion without a list does not admit the unstable row it calls,
+    // and an unstable builtin row is gated like a declarative one.
+    for (label, body, message) in [
+        ("leaky", "pub fn f() -> u32 { base::leaky!() }", ANSWER_GATE),
+        (
+            "line",
+            "pub fn f() -> u32 { base::line!() }",
+            "use of unstable library macro requires feature `gated_line`",
+        ),
+    ] {
+        let source = gated_client(&packet, label, "", body)?;
+        let mut consumer = packet.consumer(&source, label, &packet.metadata, &packet.owner());
+        packet.rejected(label, &mut consumer, message)?;
+    }
+    let body = "pub fn f() -> u32 { base::wrapper!() }\npub fn g() -> u32 { base::line_wrapper!() }\npub fn h() -> bool { base::checked!() }";
+    let source = gated_client(&packet, "listed", "", body)?;
+    let mut listed = packet.consumer(&source, "listed", &packet.metadata, &packet.owner());
+    super::artifacts::checked("listed", &packet.folder, &mut listed)?;
+    Ok(())
+}
+
+#[test]
+fn stability_row_metadata_grows_linearly_with_row_count() -> Result {
+    let packet = Packet::new(GROUP, STABILITY, "stability-scaling", "rows")?;
+    let fixture = std::fs::read_to_string(packet.fixture("provider"))?;
+    let foundation = fixture
+        .split("#[rustc_builtin_macro]")
+        .next()
+        .ok_or("missing provider foundation")?;
+    let (mut sizes, mut outputs) = (Vec::new(), Vec::new());
+    for count in [8, 32, 128] {
+        let rows = (0..count).try_fold(String::new(), |mut text, index| {
+            writeln!(
+                text,
+                "#[macro_export]\n#[unstable(feature = \"g{index:03}\", issue = \"none\")]\nmacro_rules! u{index:03} {{ () => {{ 1 }} }}"
+            )
+            .map(|()| text)
+        })?;
+        let source = packet.folder.join(format!("rows{count}.rs"));
+        std::fs::write(&source, format!("{foundation}{rows}"))?;
+        let metadata = packet.folder.join(format!("rows{count}.rgcrate"));
+        let mut export = packet.export(PROFILE, &source, &metadata);
+        super::artifacts::checked("provider", &packet.folder, &mut export)?;
+        let bytes = std::fs::read(&metadata)?;
+        assert_eq!(bytes[12..14], [14, 3]);
+        let interface = crates::decode(&bytes)?;
+        let table = interface.macros().ok_or("missing macro table")?;
+        assert_eq!(table.rows().len(), count);
+        sizes.push(table_bytes(&bytes)?);
+        let label = format!("client{count}");
+        let last = count - 1;
+        let features = format!(", g{last:03}");
+        let body = format!("pub fn f() -> u32 {{ base::u{last:03}!() }}");
+        let source = gated_client(&packet, &label, &features, &body)?;
+        let mut consumer = packet.consumer(&source, &label, &metadata, &packet.owner());
+        super::artifacts::checked(&label, &packet.folder, &mut consumer)?;
+        outputs.push(std::fs::read(packet.folder.join(format!("{label}.lowir")))?);
+    }
+    // Fixed-width names and features: every row adds the same table bytes,
+    // and the consumer's output does not depend on the row count.
     let [small, middle, large] = <[usize; 3]>::try_from(sizes.as_slice())?;
     assert_eq!((middle - small) * 4, large - middle, "{sizes:?}");
     assert!(outputs.windows(2).all(|pair| pair[0] == pair[1]));

@@ -58,6 +58,7 @@ mod format_inputs;
 mod format_sites;
 mod format_values;
 mod transported_macros;
+pub(super) mod unstable_calls;
 pub use exported_permissions::ExportedBuiltin;
 pub use transported_macros::ImportedDefinition;
 mod location;

@@ -289,33 +289,94 @@ impl Imports {
     }
     fn features(&mut self, policies: &[s::AvailabilityPolicy]) -> Result<(), Error> {
         for policy in policies {
-            self.charge(policy.feature.len().saturating_add(1), 0)?;
-            let normalized;
-            let spelling = if policy.feature.is_ascii() {
-                policy.feature.as_str()
-            } else {
-                normalized = Names::normalize_paid(&policy.feature, &mut |growth| {
-                    self.charge(growth.work, growth.bytes)
-                        .map_err(|_| "availability normalization budget exhausted")
-                })
+            self.feature(&policy.feature)?;
+        }
+        Ok(())
+    }
+    /// An imported macro row's `#[unstable]` feature is a library feature its
+    /// consumer may request, like an availability row's.
+    fn macro_features(
+        &mut self,
+        macros: &crate::support::crates::exported_macros::Macros,
+    ) -> Result<(), Error> {
+        let rows = macros.rows().iter().filter_map(|row| row.unstable());
+        let builtins = macros.builtins().iter().filter_map(|row| row.unstable());
+        for feature in rows.chain(builtins) {
+            self.feature(feature)?;
+        }
+        Ok(())
+    }
+    fn feature(&mut self, written: &str) -> Result<(), Error> {
+        self.charge(written.len().saturating_add(1), 0)?;
+        let normalized;
+        let spelling = if written.is_ascii() {
+            written
+        } else {
+            normalized = Names::normalize_paid(written, &mut |growth| {
+                self.charge(growth.work, growth.bytes)
+                    .map_err(|_| "availability normalization budget exhausted")
+            })
+            .map_err(Error::unlocated)?;
+            &normalized
+        };
+        let feature =
+            crate::resolve::bindings::FeatureName::new(spelling).map_err(Error::unlocated)?;
+        if self.features.contains(feature.spelling()) {
+            return Ok(());
+        }
+        let growth =
+            retained::Growth::map::<String, ()>(self.features.len(), self.features.capacity(), 1);
+        self.charge(
+            growth.work.saturating_add(feature.spelling().len()),
+            growth.bytes.saturating_add(feature.spelling().len()),
+        )?;
+        self.features.insert(feature.spelling().to_owned());
+        Ok(())
+    }
+    /// Record every declaration row of one source artifact by its canonical identity.
+    fn declarations(
+        &mut self,
+        imported: &Imported,
+        facts: &Resolution,
+        artifact: usize,
+        identity: &crate::support::crates::CrateIdentity,
+        descriptor: s::Descriptor<'_>,
+    ) -> Result<(), Error> {
+        for (ordinal, _) in descriptor.rows().declarations.iter().enumerate() {
+            let reference = DeclarationRef(
+                u32::try_from(ordinal)
+                    .map_err(|_| Error::unlocated("availability declaration index overflow"))?,
+            );
+            let definition = imported
+                .generic_definition(identity, reference)
                 .map_err(Error::unlocated)?;
-                &normalized
-            };
-            let feature =
-                crate::resolve::bindings::FeatureName::new(spelling).map_err(Error::unlocated)?;
-            if self.features.contains(feature.spelling()) {
-                continue;
-            }
-            let growth = retained::Growth::map::<String, ()>(
-                self.features.len(),
-                self.features.capacity(),
+            let kind = facts
+                .definitions
+                .get(definition.0 as usize)
+                .ok_or_else(|| Error::unlocated("availability canonical declaration is absent"))?
+                .kind;
+            let handle = self
+                .catalog
+                .declaration(definition)
+                .map_err(Error::unlocated)?;
+            self.catalog
+                .validate_declaration(handle, definition, kind)
+                .map_err(Error::unlocated)?;
+            let growth = retained::Growth::map::<DefId, Option<Declaration>>(
+                self.declarations.len(),
+                self.declarations.capacity(),
                 1,
             );
-            self.charge(
-                growth.work.saturating_add(feature.spelling().len()),
-                growth.bytes.saturating_add(feature.spelling().len()),
-            )?;
-            self.features.insert(feature.spelling().to_owned());
+            self.charge(growth.work.saturating_add(1), growth.bytes)?;
+            self.declarations.insert(
+                definition,
+                Some(Declaration {
+                    artifact,
+                    reference,
+                    handle,
+                    kind,
+                }),
+            );
         }
         Ok(())
     }
@@ -369,47 +430,13 @@ pub(in crate::resolve) fn prepare(
     };
     result.charge(0, size_of::<Imports>())?;
     for (index, artifact) in inventory.artifacts().iter().enumerate() {
+        if let Some(macros) = artifact.macros() {
+            result.macro_features(macros)?;
+        }
         let Some(descriptor) = artifact.source_descriptor() else {
             continue;
         };
-        let rows = descriptor.rows();
-        for (ordinal, _) in rows.declarations.iter().enumerate() {
-            let reference = DeclarationRef(
-                u32::try_from(ordinal)
-                    .map_err(|_| Error::unlocated("availability declaration index overflow"))?,
-            );
-            let definition = imported
-                .generic_definition(artifact.identity(), reference)
-                .map_err(Error::unlocated)?;
-            let kind = facts
-                .definitions
-                .get(definition.0 as usize)
-                .ok_or_else(|| Error::unlocated("availability canonical declaration is absent"))?
-                .kind;
-            let handle = result
-                .catalog
-                .declaration(definition)
-                .map_err(Error::unlocated)?;
-            result
-                .catalog
-                .validate_declaration(handle, definition, kind)
-                .map_err(Error::unlocated)?;
-            let growth = retained::Growth::map::<DefId, Option<Declaration>>(
-                result.declarations.len(),
-                result.declarations.capacity(),
-                1,
-            );
-            result.charge(growth.work.saturating_add(1), growth.bytes)?;
-            result.declarations.insert(
-                definition,
-                Some(Declaration {
-                    artifact: index,
-                    reference,
-                    handle,
-                    kind,
-                }),
-            );
-        }
+        result.declarations(imported, facts, index, artifact.identity(), descriptor)?;
         if !descriptor.profile().availability() {
             continue;
         }

@@ -147,7 +147,23 @@ impl Package {
                 local.validate(self)?;
                 Some(MacroContext::Local(local))
             }
-            Some(Source::Client(_) | Source::Staged(_)) | None => None,
+            // Source clients and staged consumers own a ledger only for the
+            // imported allowance lists their dependencies carry.
+            Some(Source::Client(client)) => match &client.allowances {
+                Some(local) => {
+                    local.validate(self)?;
+                    Some(MacroContext::Local(local))
+                }
+                None => None,
+            },
+            Some(Source::Staged(staged)) => match &staged.allowances {
+                Some(local) => {
+                    local.validate(self)?;
+                    Some(MacroContext::Local(local))
+                }
+                None => None,
+            },
+            None => None,
         })
     }
 }

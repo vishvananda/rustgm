@@ -25,8 +25,9 @@ pub struct ImportedDefinition {
     pub crate_id: u32,
     /// The provider's imported placement scope, the definition site.
     pub scope: ScopeId,
-    /// The declarative row whose internal-unstable features its frames carry.
-    pub row: Option<usize>,
+    /// The definition row whose internal-unstable features its frames carry
+    /// and whose `#[unstable]` feature its calls need.
+    pub row: crate::support::crates::exported_macros::DefinitionRow,
 }
 
 impl Definition {
@@ -81,6 +82,15 @@ fn builtin_role(row: &BuiltinMacro) -> Result<Builtin, String> {
         ));
     }
     Ok(role)
+}
+
+/// A row's `#[unstable]` feature must be a canonical feature identifier.
+fn authenticate_unstable(feature: Option<&str>) -> Result<(), Error> {
+    if let Some(feature) = feature {
+        crate::resolve::bindings::FeatureName::new(feature)
+            .map_err(|message| Error::at(FileId(0), 0, message))?;
+    }
+    Ok(())
 }
 
 /// Lex one transported image, rebuild its rows and require them to be equal.
@@ -149,7 +159,7 @@ impl<S: Sources> Engine<'_, S> {
                 file: None,
                 crate_id,
                 scope,
-                row: None,
+                row: entry.row,
             };
             let (definition, kind) = match entry.row {
                 ImportedRow::Declarative(row) => (
@@ -163,6 +173,8 @@ impl<S: Sources> Engine<'_, S> {
                         .ok_or_else(|| Error::at(FileId(0), 0, "missing imported builtin row"))?;
                     let role =
                         builtin_role(row).map_err(|message| Error::at(FileId(0), 0, message))?;
+                    self.authenticate_internal_unstable(FileId(0), row.internal_unstable())?;
+                    authenticate_unstable(row.unstable())?;
                     let package = &mut self.loader.package;
                     let name = package
                         .names
@@ -247,6 +259,7 @@ impl<S: Sources> Engine<'_, S> {
             return Err(Error::at(file, 0, "imported macro rule count changed"));
         }
         self.authenticate_internal_unstable(file, row.internal_unstable())?;
+        authenticate_unstable(row.unstable())?;
         let name = self
             .loader
             .package
@@ -267,7 +280,6 @@ impl<S: Sources> Engine<'_, S> {
             header: None,
             imported: Some(ImportedDefinition {
                 file: Some(file),
-                row: Some(index),
                 ..imported
             }),
         })

@@ -22,7 +22,8 @@ struct CachedHeader {
 enum Grant<'view> {
     None,
     Header(Rc<HeaderData>),
-    /// An imported row's sorted, re-authenticated `allow_internal_unstable` list.
+    /// An imported definition row's sorted, re-authenticated
+    /// `allow_internal_unstable` list, declarative or builtin.
     Imported(&'view [String]),
 }
 
@@ -247,7 +248,7 @@ impl<'view> Query<'view, '_> {
             Grant::Imported(_) | Grant::None => false,
         })
     }
-    /// An imported declarative row's frame carries exactly its transported,
+    /// An imported definition row's frame carries exactly its transported,
     /// re-authenticated feature list; each query pays for every listed feature.
     fn imported_grant(&self, frame: Frame, extra_work: usize) -> Result<Grant<'view>, Error> {
         let view = &self.view;
@@ -259,9 +260,6 @@ impl<'view> Query<'view, '_> {
         else {
             return Ok(Grant::None);
         };
-        let Some(row) = imported.row else {
-            return Ok(Grant::None);
-        };
         let features = view
             .facts
             .crates
@@ -271,7 +269,7 @@ impl<'view> Query<'view, '_> {
                     .dependencies()
                     .artifacts()
                     .get(usize::try_from(imported.crate_id.checked_sub(1)?).ok()?)?;
-                Some(artifact.macros()?.rows().get(row)?.internal_unstable())
+                artifact.macros()?.internal_unstable(imported.row)
             })
             .ok_or_else(|| error("imported macro allowance row disappeared"))?;
         view.package

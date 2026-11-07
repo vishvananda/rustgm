@@ -12,6 +12,10 @@
 //! declarative rows. Every row has a module placement; names are unique per
 //! placement. Re-export rows bind a further placement and name to one
 //! definition row of this crate or of a dependency, by that row's identity.
+//!
+//! Version three adds `allow_internal_unstable` lists to builtin rows and the
+//! `#[unstable]` feature of any definition row; a consumer must enable that
+//! feature, or call the row from an expansion allowed to use it.
 use crate::support::edition::Edition;
 
 /// Exported macros in one artifact.
@@ -69,6 +73,13 @@ fn validate_names(names: &[String], message: &'static str) -> Result<(), &'stati
         || names.windows(2).any(|pair| pair[0] >= pair[1])
     {
         return Err(message);
+    }
+    Ok(())
+}
+
+fn validate_unstable(feature: Option<&String>) -> Result<(), &'static str> {
+    if feature.is_some_and(|feature| !valid_identifier(feature, MAX_NAME_BYTES)) {
+        return Err("invalid exported macro unstable feature");
     }
     Ok(())
 }
@@ -240,6 +251,7 @@ pub struct Macro {
     image: String,
     rows: Vec<Row>,
     internal_unstable: Vec<String>,
+    unstable: Option<String>,
 }
 impl Macro {
     /// # Errors
@@ -270,6 +282,7 @@ impl Macro {
             image,
             rows,
             internal_unstable: Vec::new(),
+            unstable: None,
         })
     }
     /// Attach the definition's typed `allow_internal_unstable` features.
@@ -283,9 +296,22 @@ impl Macro {
         self.internal_unstable = features;
         Ok(self)
     }
+    /// Attach the definition's `#[unstable]` feature, if any.
+    /// # Errors
+    /// Rejects a feature that is not an identifier.
+    pub fn with_unstable(mut self, feature: Option<String>) -> Result<Self, &'static str> {
+        validate_unstable(feature.as_ref())?;
+        self.unstable = feature;
+        Ok(self)
+    }
     #[must_use]
     pub fn name(&self) -> &str {
         &self.name
+    }
+    /// The feature a consumer needs to call this definition.
+    #[must_use]
+    pub fn unstable(&self) -> Option<&str> {
+        self.unstable.as_deref()
     }
     /// Features an expansion of this definition may use, sorted and unique.
     #[must_use]
@@ -318,6 +344,7 @@ impl Macro {
             .saturating_add(self.image.len())
             .saturating_add(self.rows.len().saturating_mul(size_of::<Row>()))
             .saturating_add(names_bytes(&self.internal_unstable))
+            .saturating_add(self.unstable.as_ref().map_or(0, String::len))
     }
 }
 
@@ -331,6 +358,8 @@ pub struct BuiltinMacro {
     identity: String,
     kind: MacroKind,
     helpers: Vec<String>,
+    internal_unstable: Vec<String>,
+    unstable: Option<String>,
 }
 impl BuiltinMacro {
     /// # Errors
@@ -365,7 +394,38 @@ impl BuiltinMacro {
             identity,
             kind,
             helpers,
+            internal_unstable: Vec::new(),
+            unstable: None,
         })
+    }
+    /// Attach the definition's `allow_internal_unstable` features.
+    /// # Errors
+    /// Rejects lists that are oversized, unsorted, duplicated or not identifiers.
+    pub fn with_internal_unstable(mut self, features: Vec<String>) -> Result<Self, &'static str> {
+        validate_names(
+            &features,
+            "invalid exported macro internal-unstable features",
+        )?;
+        self.internal_unstable = features;
+        Ok(self)
+    }
+    /// Attach the definition's `#[unstable]` feature, if any.
+    /// # Errors
+    /// Rejects a feature that is not an identifier.
+    pub fn with_unstable(mut self, feature: Option<String>) -> Result<Self, &'static str> {
+        validate_unstable(feature.as_ref())?;
+        self.unstable = feature;
+        Ok(self)
+    }
+    /// Features an expansion of this row may use, sorted and unique.
+    #[must_use]
+    pub fn internal_unstable(&self) -> &[String] {
+        &self.internal_unstable
+    }
+    /// The feature a consumer needs to call this row.
+    #[must_use]
+    pub fn unstable(&self) -> Option<&str> {
+        self.unstable.as_deref()
     }
     /// The module path of the scope that binds this row; empty is the crate root.
     #[must_use]
@@ -402,6 +462,8 @@ impl BuiltinMacro {
             .saturating_add(self.identity.len())
             .saturating_add(names_bytes(&self.placement))
             .saturating_add(names_bytes(&self.helpers))
+            .saturating_add(names_bytes(&self.internal_unstable))
+            .saturating_add(self.unstable.as_ref().map_or(0, String::len))
     }
 }
 
@@ -670,6 +732,26 @@ impl Macros {
             .ok()
             .map(DefinitionRow::Builtin)
     }
+    /// The `allow_internal_unstable` features of one definition row.
+    #[must_use]
+    pub fn internal_unstable(&self, row: DefinitionRow) -> Option<&[String]> {
+        match row {
+            DefinitionRow::Declarative(index) => self.rows.get(index).map(Macro::internal_unstable),
+            DefinitionRow::Builtin(index) => self
+                .builtins
+                .get(index)
+                .map(BuiltinMacro::internal_unstable),
+        }
+    }
+    /// The `#[unstable]` feature of one definition row; the outer `None` is
+    /// an unknown row.
+    #[must_use]
+    pub fn unstable(&self, row: DefinitionRow) -> Option<Option<&str>> {
+        match row {
+            DefinitionRow::Declarative(index) => self.rows.get(index).map(Macro::unstable),
+            DefinitionRow::Builtin(index) => self.builtins.get(index).map(BuiltinMacro::unstable),
+        }
+    }
     /// The largest dependency ordinal a re-export row names.
     #[must_use]
     pub fn max_owner(&self) -> u32 {
@@ -679,16 +761,30 @@ impl Macros {
             .max()
             .unwrap_or(0)
     }
-    /// Whether any row needs envelope version two; otherwise the table keeps
-    /// its exact version-one bytes.
+    /// The least envelope version that holds every row: 3 for a builtin
+    /// allowance list or any `#[unstable]` row, 2 for a builtin row, a
+    /// re-export row or a declarative allowance list, and otherwise 1, whose
+    /// bytes stay exactly as before.
     #[must_use]
-    pub fn requires_version_two(&self) -> bool {
-        !self.builtins.is_empty()
+    pub fn version(&self) -> u8 {
+        if self.rows.iter().any(|row| row.unstable.is_some())
+            || self
+                .builtins
+                .iter()
+                .any(|row| row.unstable.is_some() || !row.internal_unstable.is_empty())
+        {
+            3
+        } else if !self.builtins.is_empty()
             || !self.reexports.is_empty()
             || self
                 .rows
                 .iter()
                 .any(|row| !row.internal_unstable.is_empty())
+        {
+            2
+        } else {
+            1
+        }
     }
     /// Rows plus placement components, for the shared component budget.
     pub(super) fn atoms(&self) -> usize {

@@ -225,6 +225,9 @@ pub(crate) struct StagedConsumer {
     runtime_checks: RuntimeCheckConfig,
     lint_cap: crate::support::diagnostics::LintCap,
     pub(super) features: Features,
+    /// The allowance ledger of imported rows' `allow_internal_unstable`
+    /// lists, present exactly when an imported row carries one.
+    pub(super) allowances: Option<super::LocalMacros>,
 }
 impl StagedConsumer {
     /// Borrowed data remains unpaid until a distinct semantic receipt is bound.
@@ -299,6 +302,7 @@ pub(super) fn prepare(
     features: Features,
     library: Option<Box<crate::resolve::stability::Library>>,
     request: Request<'_>,
+    limits: crate::expand::config::SourceContractLimits,
 ) -> Result<Prepared, Error> {
     let error = Error::unlocated;
     let Mode::SourceClient { provider } = &context.mode else {
@@ -325,6 +329,16 @@ pub(super) fn prepare(
             + request.admission.headers.preparation_bytes(),
     )?;
     let macros = features.macros();
+    let allowances = if super::policy::imports_allowances(context) {
+        Some(super::LocalMacros::new(
+            unit,
+            features.clone(),
+            limits,
+            true,
+        )?)
+    } else {
+        None
+    };
     let consumer = StagedConsumer {
         current: current.clone(),
         admission: request.admission,
@@ -336,6 +350,7 @@ pub(super) fn prepare(
         runtime_checks: request.runtime_checks,
         lint_cap: request.lint_cap,
         features,
+        allowances,
     };
     Ok(Prepared {
         source: Some(Box::new(Source::Staged(Rc::new(consumer)))),

@@ -6,6 +6,11 @@
 //! re-export rows and typed internal-unstable feature lists. A table that needs
 //! none of them keeps its exact version-one bytes, and a version-two table must
 //! need one of them.
+//!
+//! Version three keeps the version-two layout and appends to each definition
+//! row its `#[unstable]` feature (a tag byte, then the feature when the tag is
+//! 1), and to each builtin row, before that, its allowance list. Only a table
+//! with such a feature or a builtin allowance list writes version three.
 use super::{Interface, MAGIC, Reader, SCHEMA, Writer};
 use crate::support::{
     crates::exported_macros::{
@@ -17,6 +22,7 @@ use crate::support::{
 pub(super) const TAG: u8 = 14;
 const VERSION_ONE: u8 = 1;
 const VERSION_TWO: u8 = 2;
+const VERSION_THREE: u8 = 3;
 const GROUP: u8 = 0x80;
 const DECLARATIVE: u8 = 0;
 const BUILTIN: u8 = 1;
@@ -63,8 +69,10 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     let mut output = Writer::default();
     output.bytes(MAGIC)?;
     output.u16(SCHEMA)?;
-    if macros.requires_version_two() {
-        output.bytes(&[0, 0, TAG, VERSION_TWO])?;
+    let version = macros.version();
+    if version > VERSION_ONE {
+        let three = version == VERSION_THREE;
+        output.bytes(&[0, 0, TAG, version])?;
         let entries = merged(macros);
         output.u32(entries.len())?;
         for entry in entries {
@@ -74,8 +82,17 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
                     output.path(&[])?;
                     encode_macro(&mut output, row)?;
                     names(&mut output, row.internal_unstable())?;
+                    if three {
+                        unstable(&mut output, row.unstable())?;
+                    }
                 }
-                Entry::Builtin(row) => encode_builtin(&mut output, row)?,
+                Entry::Builtin(row) => {
+                    encode_builtin(&mut output, row)?;
+                    if three {
+                        names(&mut output, row.internal_unstable())?;
+                        unstable(&mut output, row.unstable())?;
+                    }
+                }
                 Entry::Reexport(row) => {
                     output.u8(REEXPORT)?;
                     output.path(row.placement())?;
@@ -123,6 +140,15 @@ fn encode_builtin(output: &mut Writer, row: &BuiltinMacro) -> Result<(), &'stati
     output.u8(row.kind() as u8)?;
     names(output, row.helpers())
 }
+fn unstable(output: &mut Writer, feature: Option<&str>) -> Result<(), &'static str> {
+    match feature {
+        None => output.u8(0),
+        Some(feature) => {
+            output.u8(1)?;
+            output.string(feature)
+        }
+    }
+}
 fn names(output: &mut Writer, names: &[String]) -> Result<(), &'static str> {
     output.u32(names.len())?;
     for name in names {
@@ -141,7 +167,7 @@ pub(super) fn decode(input: &mut Reader<'_>) -> Result<Interface, &'static str> 
             }
             Macros::new(rows)?
         }
-        VERSION_TWO => decode_version_two(input)?,
+        version @ (VERSION_TWO | VERSION_THREE) => decode_placed(input, version)?,
         _ => return Err("unknown exported macro metadata version"),
     };
     let length = input.u32()?;
@@ -151,7 +177,8 @@ pub(super) fn decode(input: &mut Reader<'_>) -> Result<Interface, &'static str> 
     }
     super::decode(inner)?.with_macros(macros)
 }
-fn decode_version_two(input: &mut Reader<'_>) -> Result<Macros, &'static str> {
+fn decode_placed(input: &mut Reader<'_>, version: u8) -> Result<Macros, &'static str> {
+    let three = version == VERSION_THREE;
     // Kind, placement count and name length.
     let count = input.count(MAX_MACROS, 7)?;
     let (mut rows, mut builtins, mut reexports) = (Vec::new(), Vec::new(), Vec::new());
@@ -164,14 +191,22 @@ fn decode_version_two(input: &mut Reader<'_>) -> Result<Macros, &'static str> {
                 if !placement.is_empty() {
                     return Err("declarative exported macros belong to the crate root");
                 }
-                let row = decode_macro(input)?;
-                let row = row.with_internal_unstable(decode_names(input)?)?;
+                let mut row = decode_macro(input)?;
+                row = row.with_internal_unstable(decode_names(input)?)?;
+                if three {
+                    row = row.with_unstable(decode_unstable(input)?)?;
+                }
                 let name = row.name().to_owned();
                 rows.push(row);
                 (placement, name)
             }
             BUILTIN => {
-                let row = decode_builtin(input, placement)?;
+                let mut row = decode_builtin(input, placement)?;
+                if three {
+                    row = row
+                        .with_internal_unstable(decode_names(input)?)?
+                        .with_unstable(decode_unstable(input)?)?;
+                }
                 let key = (row.placement().to_vec(), row.name().to_owned());
                 builtins.push(row);
                 key
@@ -196,10 +231,21 @@ fn decode_version_two(input: &mut Reader<'_>) -> Result<Macros, &'static str> {
         previous = Some(key);
     }
     let macros = Macros::with_reexports(rows, builtins, reexports)?;
-    if !macros.requires_version_two() {
-        return Err("version-two exported macro table has only version-one rows");
+    if macros.version() != version {
+        return Err(if three {
+            "version-three exported macro table has only version-two rows"
+        } else {
+            "version-two exported macro table has only version-one rows"
+        });
     }
     Ok(macros)
+}
+fn decode_unstable(input: &mut Reader<'_>) -> Result<Option<String>, &'static str> {
+    match input.u8()? {
+        0 => Ok(None),
+        1 => input.string(MAX_NAME_BYTES).map(Some),
+        _ => Err("unknown exported macro stability"),
+    }
 }
 fn decode_builtin(
     input: &mut Reader<'_>,

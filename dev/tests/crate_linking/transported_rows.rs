@@ -60,9 +60,9 @@ fn forged(bytes: &[u8], from: &[u8], to: &[u8]) -> Result<Vec<u8>> {
 fn frozen_macro_metadata_outcomes_hold_for_every_case() -> Result {
     let folder = qualify(false)?;
     let receipt = std::fs::read_to_string(folder.join("complete.json"))?;
-    // Fifteen declarative cases, fourteen builtin-row and allowance cases and
-    // fifteen re-export cases.
-    assert!(receipt.contains("\"cases\": 44"), "{receipt}");
+    // Fifteen declarative cases, fourteen builtin-row and allowance cases,
+    // fifteen re-export cases and nine stability cases.
+    assert!(receipt.contains("\"cases\": 53"), "{receipt}");
     Ok(())
 }
 

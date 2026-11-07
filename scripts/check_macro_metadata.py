@@ -11,7 +11,8 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFESTS = [ROOT / 'pa29/tests/macro-metadata-outcomes.json',
              ROOT / 'pa29/tests/macro-spacing-outcomes.json',
              ROOT / 'pa29/tests/builtin-macro-rows-outcomes.json',
-             ROOT / 'pa29/tests/macro-reexport-outcomes.json']
+             ROOT / 'pa29/tests/macro-reexport-outcomes.json',
+             ROOT / 'pa29/tests/macro-stability-outcomes.json']
 SOURCE_PROFILE = 'module-bodies-v13'
 
 

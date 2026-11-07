@@ -114,6 +114,8 @@ pub fn analyze_expanded(
     .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
     stability::fn_allowances::validate(&report)
         .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
+    expansion::unstable_calls::validate(&report)
+        .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
     float_features::validate_paths(&report)
         .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
     report

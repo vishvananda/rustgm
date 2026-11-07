@@ -22,6 +22,9 @@ pub struct SourceClient {
     pub(super) features: Features,
     dependencies: Arc<Dependencies>,
     provider_index: u32,
+    /// The allowance ledger of imported rows' `allow_internal_unstable`
+    /// lists, present exactly when an imported row carries one.
+    pub(super) allowances: Option<super::LocalMacros>,
 }
 impl SourceClient {
     pub(crate) fn availability_required(
@@ -89,6 +92,7 @@ pub(super) fn prepare(
     no_core: bool,
     features: Features,
     library: Option<Box<Library>>,
+    limits: crate::expand::config::SourceContractLimits,
 ) -> Result<Prepared, Error> {
     let current = identity(unit, context, provider, no_core, &features)?;
     let error = |message| Error::at(FileId(0), 0, message);
@@ -100,6 +104,16 @@ pub(super) fn prepare(
         .source_provider_index(provider)
         .map_err(error)?;
     let macros = features.macros();
+    let allowances = if super::policy::imports_allowances(context) {
+        Some(super::LocalMacros::new(
+            unit,
+            features.clone(),
+            limits,
+            true,
+        )?)
+    } else {
+        None
+    };
     Ok(Prepared {
         source: Some(Box::new(Source::Client(SourceClient {
             current: current.clone(),
@@ -107,6 +121,7 @@ pub(super) fn prepare(
             features,
             dependencies: Arc::clone(dependencies),
             provider_index,
+            allowances,
         }))),
         library,
         macros,

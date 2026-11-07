@@ -2,7 +2,8 @@
 //! Root `#[macro_export]` definitions publish their canonical body trees, and
 //! `#[rustc_builtin_macro]` definitions publish their expander identity. Every
 //! further public binding of a definition, local or imported, is a re-export
-//! row naming that definition row's identity.
+//! row naming that definition row's identity. Definition rows also carry their
+//! `allow_internal_unstable` list and `#[unstable]` feature.
 use super::{DefKind, Error, Report, error};
 use crate::{
     resolve::{
@@ -184,6 +185,31 @@ fn upstream(
     .map_err(error)
 }
 
+/// Each local declaration's regular `#[unstable]` feature, by its node.
+type Unstable<'report> = HashMap<NodeKey, &'report str>;
+
+fn unstable(report: &Report) -> Unstable<'_> {
+    let Some(inventory) = report
+        .package
+        .library_policy()
+        .and_then(crate::resolve::stability::Library::staged_inventory)
+    else {
+        return HashMap::default();
+    };
+    inventory
+        .policies()
+        .iter()
+        .filter(|policy| {
+            policy.kind == crate::resolve::stability::PolicyKind::Regular
+                && matches!(
+                    policy.level,
+                    crate::resolve::stability::Level::Unstable { .. }
+                )
+        })
+        .map(|policy| (policy.origin, &*policy.feature))
+        .collect()
+}
+
 /// The rows of one table under construction.
 #[derive(Default)]
 struct Table {
@@ -199,6 +225,7 @@ impl Table {
         &mut self,
         report: &Report,
         sites: &HashMap<NodeKey, usize>,
+        unstable: &Unstable<'_>,
         target: DefId,
         entries: &[&Bound<'_>],
     ) -> Result<(), Error> {
@@ -220,7 +247,9 @@ impl Table {
                 "macro-generated exported macros are outside the macro metadata profile",
             ));
         }
+        let feature = unstable.get(&node).map(|&feature| feature.to_owned());
         if let Some(builtin) = definition.exported_builtin().map_err(error)? {
+            let internal_unstable = definition.exported_internal_unstable().map_err(error)?;
             self.builtins.push(
                 BuiltinMacro::new(
                     canonical.placement.to_vec(),
@@ -230,12 +259,17 @@ impl Table {
                     builtin.kind,
                     builtin.helpers,
                 )
+                .and_then(|row| row.with_internal_unstable(internal_unstable))
+                .and_then(|row| row.with_unstable(feature))
                 .map_err(error)?,
             );
         } else {
             let root = canonical.direct && canonical.scope == report.resolution.module_scopes[0];
-            self.rows
-                .push(row(report, root, canonical.name, definition, node)?);
+            self.rows.push(
+                row(report, root, canonical.name, definition, node)?
+                    .with_unstable(feature)
+                    .map_err(error)?,
+            );
         }
         for entry in entries
             .iter()
@@ -303,8 +337,9 @@ pub(super) fn collect(
         .enumerate()
         .filter_map(|(index, definition)| definition.node.map(|node| (node, index)))
         .collect::<HashMap<_, _>>();
+    let unstable = unstable(report);
     for (target, entries) in local {
-        table.define(report, &sites, target, &entries)?;
+        table.define(report, &sites, &unstable, target, &entries)?;
     }
     table.finish().map(Some)
 }
