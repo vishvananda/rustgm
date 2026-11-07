@@ -5,6 +5,33 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+[Census batch 2](parallel/census-batch2.md) prepares impl header facts on demand
+through the declaration worklist, with cycle detection:
+
+- operator method headers and `Output` contracts behind array lengths and
+  initializers, for binary and unary operators;
+- associated result contracts behind impl where-clauses;
+- an impl's own trait reference behind `Self::` shorthand.
+
+Failed census headers stay item-local, and their members are blocked rather
+than failed. The 16 "invalid or exhausted" messages are split. Thirteen
+declared PA31/PA20 controls agree with rustc 1.98.0. Cause 4 (non-pointer
+`!null`) stays explicit.
+
+The batch also fixes a LIB-193 regression in four PA20 `assoc-bounds` cases.
+In ordinary crates, projected-bound staging charges the header ledger at about
+280 bytes per bound-syntax element, linearly, against a factor of 128. The
+input bound now counts 4,096 attempted bytes per written `Bound` or associated
+`Constraint` node in ordinary crates only. PA20 passes 1,451/1,451.
+
+Census 3 (analysis-only, pin `e29c6ab1`, inputs unchanged, 30 s/375 opens)
+checked 37,780 declarations: 92 failed and 622 blocked; bodies were not
+reached. It ends at the fixed lint-policy work cap ("source lint policy work
+budget exceeded", `ops/arith.rs`). The dominant blocker is rustc's builtin
+integer binop rule: `{ $size * $elems }` in `to_bytes.rs` and `($n - 1)` in
+`array_impl_default` block 478 items. The ordinary first error is still
+`any.rs` (Lane B). Evidence: `rustgm-pa29-work/obj/parallel/core-census-3b/`.
+
 [Macro stability rows and imported allowance ledgers](parallel/macro-metadata.md#stability-rows-and-imported-allowance-ledgers-version-3)
 (Lane B, PA29): tag-14 version 3 carries each definition row's `#[unstable]`
 feature and each builtin row's `allow_internal_unstable` list. Every call of
@@ -149,11 +176,6 @@ Its new first gap is `flatten.rs` 8286, "missing associated result contract",
 the same frontier and byte-identical census as under the observer's explicit
 caps. With Cargo's lint policy, core still stops first on the
 `implicit_provenance_casts` producer.
-
-Known regression: since LIB-193's input-graph header bound (`d2bcb1f89`),
-PA20 `assoc-bounds/{wide16,deep16,wide64,deep64}.rs` fail with "source header
-attribute producer exceeds storage budget". The bound has no setup term, and the
-LIB-193 join did not run the PA20 text suite. Lane A owns the repair.
 
 Known regression: since the enum-and-match join (`682507cd1`), the private
 invariant `resolve::stability::transport_tests::legacy_availability_remains_unknown_and_hot_records_do_not_grow`
