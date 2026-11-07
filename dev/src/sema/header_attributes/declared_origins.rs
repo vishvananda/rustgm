@@ -90,6 +90,12 @@ const WORK_PER_INPUT: usize = 16;
 /// Attempted header storage bytes per input-graph element: original core uses
 /// 6 and dense minimal target-feature functions about 49.
 const BYTES_PER_INPUT: usize = 128;
+/// Attempted bytes per written `Bound` or associated `Constraint` node. Outside
+/// a source core or client, projected-bound staging charges this ledger, not
+/// source retention. Its genuinely linear cost (maps, task vectors and boxed
+/// runs) measured about 2,250 bytes per written bound and 1,710 per node of
+/// nested associated bindings, far above `BYTES_PER_INPUT` per element.
+const BYTES_PER_STAGED_BOUND: usize = 4096;
 /// The local header ledger's linear bound, snapshotted once from the checked
 /// crate's own input graph before any charge. It is not a resource profile
 /// limit and grants no language, API or metadata permission.
@@ -101,8 +107,12 @@ pub(in crate::sema) struct InputBound {
 impl InputBound {
     /// Definitions plus every unit's owners, attribute effects, AST nodes,
     /// AST edges, retained attribute token trees and the bytes those tokens spell.
+    /// Ordinary crates also count the written bounds their staging charges here.
     pub(in crate::sema) fn of(report: &Report) -> Self {
+        let staging =
+            report.package.source_core().is_none() && report.package.source_client().is_none();
         let mut elements = report.resolution.definitions.len();
+        let mut staged = 0;
         for unit in &report.package.units {
             let syntax = &unit.configured;
             let counts = [
@@ -127,10 +137,24 @@ impl InputBound {
                     1 + spelled as usize
                 });
             elements = retained::sum(counts.into_iter().chain(trees));
+            if staging {
+                let bounds = syntax
+                    .ast
+                    .nodes
+                    .iter()
+                    .filter(|node| {
+                        matches!(node.kind, Kind::Bound { .. } | Kind::Constraint { .. })
+                    })
+                    .count();
+                staged = retained::sum([staged, bounds]);
+            }
         }
         Self {
             work: elements.saturating_mul(WORK_PER_INPUT),
-            bytes: elements.saturating_mul(BYTES_PER_INPUT),
+            bytes: retained::sum([
+                elements.saturating_mul(BYTES_PER_INPUT),
+                staged.saturating_mul(BYTES_PER_STAGED_BOUND),
+            ]),
         }
     }
     const fn exceeded(self, steps: usize, bytes: usize) -> bool {

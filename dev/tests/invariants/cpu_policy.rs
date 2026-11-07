@@ -713,3 +713,29 @@ fn header_work_stays_inside_its_input_graph_bound_only_while_linear() -> TestRes
     );
     Ok(())
 }
+#[test]
+fn projected_bound_staging_keeps_linear_headroom_in_ordinary_crates() -> TestResult {
+    for shape in ["wide", "deep"] {
+        let mut costs = Vec::new();
+        for count in [4, 16, 64] {
+            let path = format!("pa20/tests/spec/assoc-bounds/{shape}{count}.rs");
+            let (_, Analysis { facts, .. }) = analyze(&crate::test_source::fixture(&path)?)?;
+            let (steps, bytes) = header_attributes::source_contract_costs(&facts);
+            let bound = header_attributes::source_contract_bound(&facts);
+            eprintln!("staged-bounds {shape}{count} steps={steps} bytes={bytes} bound={bound:?}");
+            assert!(
+                steps * 2 <= bound.0 && bytes * 3 <= bound.1 * 2,
+                "{path}: written bounds keep their headroom: {steps}/{bytes} of {bound:?}"
+            );
+            costs.push(bytes);
+        }
+        // The cost per added written bound or nesting level stays flat.
+        let early = (costs[1] - costs[0]) / 12;
+        let late = (costs[2] - costs[1]) / 48;
+        assert!(
+            late * 10 <= early * 11,
+            "{shape}: staging stays linear: {costs:?}"
+        );
+    }
+    Ok(())
+}
