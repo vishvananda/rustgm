@@ -46,7 +46,11 @@ paths that need them stay fenced and are recorded, never worked around.
 
 The sema header ledger is one crate-wide counter capped by the fixed
 `MAX_COMPONENTS` constant (`declared_origins.rs:570`), independently of the
-configured `--source-contract-work-limit`. Replaying the charging code over the
+configured `--source-contract-work-limit`. That constant began as a metadata
+decoding bound (`74662c8e4`, "1,000,000 path/type atoms"). Draft commit
+`d9b3ea28e` reused it, together with the 16 MB artifact bound, as this ledger's
+work and storage caps. Declaration checking has used an input-proportional
+guard since `a66678f30`. Replaying the charging code over the
 opened sources estimates about 932K units for target-feature parsing and
 implication insertion alone: 6,337 x86 sites using only 87 distinct `enable`
 strings. That cost is linear and repeated; it is an estimate, not attribution.
@@ -55,11 +59,13 @@ strings. That cost is linear and repeated; it is an estimate, not attribution.
 2. Validate each distinct `enable` literal once and reuse its closed feature
    set. Every site still pays its lookup, owner/function/safety validation, row
    and witness retention, and its own gate result.
-3. Only if attribution shows remaining genuine linear work above the cap, bind
-   the header ledger to the explicitly configured, snapshotted
-   `SourceContractLimits` instead of the hard-coded constant. The ordinary
-   default stays one million, as `spec.md` requires. Never derive an allowance
-   from input size, refund failed work or skip validation.
+3. Replace the borrowed constants with the input-proportional work and storage
+   bound that the amended `spec.md` budget rule requires: a documented factor
+   of the authenticated input graph, computed once before the first charge, with
+   sticky failure. Size the factor from attribution of genuinely linear work.
+   Qualify it with paired linear-scaling inputs and an adversarial superlinear
+   control. Never refund failed work, skip validation or raise the factor to
+   absorb repeated work.
 
 ## Census mode
 

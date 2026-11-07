@@ -83,8 +83,9 @@ It does not establish how prior aggregate work was distributed, prove quadratic
 behavior or identify the current combined compiler's exact caller. **Lane A:
 attribute actual shared-budget contributions and collector work, then repair per
 the plan's LIB-193 section.** Preserve sticky failures and genuine
-source/target permissions. Do not tune charges, raise limits, skip checks or assume
-repeated image validation is responsible merely from the error wording.
+source/target permissions. Replace the header ledger's borrowed fixed constants with the
+input-proportional bound of the amended spec budget rule; never tune charges,
+skip checks or raise a factor to absorb repeated work.
 
 ## Qualification and CI
 

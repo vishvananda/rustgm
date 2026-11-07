@@ -1820,17 +1820,29 @@ repeated capacity payment or speculative token estimates. The
 [image-storage checkpoint](docs/pa31-derive-image-storage-checkpoint.md) records
 the original-core diagnosis and fixed-setup-separated scaling controls.
 
-Whole-crate source-contract allowances are explicit immutable configuration.
-Keep the ordinary defaults at one million work units and 64 MiB each for
-attempted storage and retained payload. Zero is a real limit; every accepted
-numeric value is finite. Snapshot the three limits once when either source-core
-or local macro contracts are created, preserving attempted charges and the first
-sticky exhaustion cause. Configuration changes cannot reset an existing state.
-Limits grant no language, API, unsafe, const or metadata permission. Record any
-changed resource profile separately from target configuration and lint caps;
-the original-core observer requires matching manifest and producer limits and
-records the actual compiler arguments and effective values. Do not derive a
-more generous allowance silently from input size or suppress real operations.
+Whole-crate source-contract allowances are explicit immutable configuration
+for runaway protection, not efficiency targets. They govern the macro-contract
+and library-inventory ledgers that read them. Keep the ordinary defaults at one
+million work units and 64 MiB each for attempted storage and retained payload.
+Zero is a real limit; every accepted numeric value is finite. Snapshot the three
+limits once when either source-core or local macro contracts are created,
+preserving attempted charges and the first sticky exhaustion cause.
+Configuration changes cannot reset an existing state. Limits grant no language,
+API, unsafe, const or metadata permission. Record any changed resource profile
+separately from target configuration and lint caps; the original-core observer
+requires matching manifest and producer limits and records the actual compiler
+arguments and effective values. Never suppress real operations.
+
+Efficiency comes from removing repeated work and from the complexity and scaling
+rules under "Ownership, allocation and complexity", not from a fixed whole-crate
+number. When a phase's required work and retention are linear in its input, bound
+its ledger by a documented constant factor of that phase's authenticated input
+graph (definitions, owners, AST nodes and edges), as declaration checking does.
+Never reuse a constant from another domain, such as a metadata decoding bound.
+Compute the bound once before the first charge and keep failure sticky. A
+proportional bound never justifies repeated or superlinear work: never raise its
+factor to absorb either, and qualify it with paired linear-scaling inputs and an
+adversarial superlinear control.
 
 Source enum Default requires one configured unit variant whose actual helper
 is published by the selected builtin derive. Bind that choice to its owner,
