@@ -6359,7 +6359,11 @@ list: a frame whose list contains it is skipped when choosing the panic
 edition, exactly as for a local definition, and a list that disagrees with the
 definition's parsed contract is rejected at publication. An imported `panic`,
 `unreachable` or `assert` builtin row delegates to its provider's rows through
-`$crate`, bound to the provider's crate identity. An imported row's
+`$crate`, bound to the provider's crate identity. A Rust 2015 or 2018 call site
+of `unreachable` delegates to `unreachable_2015`; pre-2021 `panic` and `assert`
+call sites stay rejected by name. Source clients are admitted in Rust 2015,
+2018 and 2024, as original std's cfg-if and rustc-demangle need; a Rust 2021
+source client stays rejected. An imported row's
 `allow_internal_unsafe` covers only sites in its own expansion frame, never a
 nested expansion of another definition. A single `use` import binding an
 unstable imported row needs the same feature or allowance as a call of it,

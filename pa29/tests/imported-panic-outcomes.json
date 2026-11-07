@@ -3,15 +3,21 @@
  "plan_sha256": "ba1d031bd5e6edf8937e54a8ad0d6f3e90d3a514ab9b5d7e94aa84590a4489d8",
  "plan2_sha256": "c42c05e42ae936b1a96a0d772fbcd4e1cb6e53028c293befcf125947066b3afc",
  "plan3_sha256": "5a631f1fd295255dcf2319946abe994b83ecd078d38c1d6bb82aef50093e4e6d",
+ "plan4_sha256": "aa76300abecba0ff5ec34c2dabed8d54073a19c1b0f96e43bd5bbdff2f7c6563",
  "oracle_sha256": "060e1469827e9e364938a1cbba6286ccf2ff644e341475589f254f25aa377a47",
  "oracle_runs_sha256": "2ebea7e4c94bdbc7f319cb59264900117d9852a5f5eb72689c4e12a57835e437",
+ "oracle4_sha256": "45f6a0477f6c69c361bf64296c81a13408ef55818b8974b497e933212aa19b92",
+ "oracle4_runs_sha256": "9253ddb712474150479ab4bd93d60bc4ea7fa926c54398a7f50738f9d478da3f",
+ "oracle4_result": "plan 4 (2026-11-07): all 75 declared rustc outcomes held natively, including 47 48 for the 2015 and 2018 unreachable clients; rustc accepts the 2015 panic opponent, whose call selects the panic_2015 row; declared before this oracle and before the implementation changed",
  "oracle_result": "all fourteen declared rustc outcomes held, including the native 41 43 44 41 and 41, two E0600 negations and two E0658 gates; round 1 ran the eleven plan-1 cases, candidate rounds 1 and 2 amended three frontend expectations only (see amended_controls), round 2 added plan 2 (integrator decision 4: an uncalled use import of an unstable row is E0658 at its use path; the feature admits it) and round 3 added plan 3 (a glob import binding the same row is accepted), rerunning all 72 macro cases natively",
  "rustc_version": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
  "amended_controls": [
   "panic-legacy-native-client: declared frontend 0; every 2018 source client is rejected first with \"source client requires the Rust 2024 source profile\", so it became a requirement row with that diagnostic and an unchanged rustc outcome",
   "panic-legacy-client: declared diagnostic \"the pre-2021 panic macro form is not implemented for edition 2018\"; the same 2024-profile rejection precedes it, so only the substring changed",
-  "panic-operators-provider: declared diagnostic \"source rvalue requires a complete wider transport row\" from a probe without LegacyReceiver; the fixture fails first at \"source role requires its exact pinned supertrait\", so only the substring changed"
+  "panic-operators-provider: declared diagnostic \"source rvalue requires a complete wider transport row\" from a probe without LegacyReceiver; the fixture fails first at \"source role requires its exact pinned supertrait\", so only the substring changed",
+  "panic-legacy-native-client: 2015/2018 source clients are admitted for the legacy rules original std needs (std profile decision of 2026-11-07); the provider-row edition walk selects panic_2021 (41), the originally declared frontend outcome (plan 4)",
+  "panic-legacy-client: with 2018 source clients admitted, the skipped wrapper reaches its 2018 call site, whose panic_2015 rule stays fenced by name: the originally declared diagnostic (plan 4)"
  ],
  "cases": [
   {
@@ -76,9 +82,8 @@
    "rustc_environment": {
     "RUSTC_BOOTSTRAP": "1"
    },
-   "frontend_expected_after_implementation": 1,
-   "note": "requirement: a 2018 consumer of plain_fail, which lacks edition_panic, selects panic_2021 from the provider row edition in rustc; RustGM source clients require Rust 2024, so this edition walk is not yet observable (amended after candidate round 1)",
-   "frontend_diagnostic": "source client requires the Rust 2024 source profile"
+   "frontend_expected_after_implementation": 0,
+   "note": "requirement: a 2018 consumer of plain_fail, which lacks edition_panic, selects panic_2021 from the provider row edition, as in rustc; amended after candidate round 1 while source clients required Rust 2024, restored in plan 4 when 2015/2018 source clients were admitted"
   },
   {
    "name": "panic-legacy-client",
@@ -92,14 +97,14 @@
    },
    "rustc": 0,
    "rustc_codes": [],
-   "frontend_diagnostic": "source client requires the Rust 2024 source profile",
+   "frontend_diagnostic": "the pre-2021 panic macro form is not implemented for edition 2018",
    "source_client": "panic-provider",
    "rustc_environment": {
     "RUSTC_BOOTSTRAP": "1"
    },
    "native": false,
    "frontend_expected_after_implementation": 1,
-   "note": "requirement: the skipped wrapper reaches the 2018 call site, which needs panic_2015 delegation; RustGM source clients require Rust 2024 before that delegation is reached (amended after candidate round 1)"
+   "note": "requirement: the skipped wrapper reaches the 2018 call site, which needs panic_2015 delegation, a legacy rule RustGM keeps rejected by name; amended after candidate round 1 while source clients required Rust 2024, restored in plan 4 when 2015/2018 source clients were admitted"
   },
   {
    "name": "panic-format-client",
@@ -309,6 +314,73 @@
    "native": false,
    "frontend_expected_after_implementation": 0,
    "note": "a glob import checks only the stability of its module path, so the unstable rows it binds stay ungated until called"
+  },
+  {
+   "name": "panic-legacy-unreachable-2015-client",
+   "path": "tests/spec/imported-panic-rows/legacy-unreachable-client.rs",
+   "source_sha256": "e15c234a8d9c4b83a9406495617b896a9964a61216e48fad9c79a9cf1a1255f3",
+   "kind": "object",
+   "crate": "client",
+   "edition": "2015",
+   "deps": {
+    "panics": "panic-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_client": "panic-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": true,
+   "native_driver": "tests/spec/imported-panic-rows/legacy-unreachable-driver.c",
+   "native_driver_sha256": "f9aef5205d854058ca607e5b9749fcddd554854e0dba51aa3a877f8916070ed0",
+   "native_stdout": "47 48\n",
+   "frontend_expected_after_implementation": 0,
+   "note": "a 2015 source client: both builtin unreachable call sites select the provider's unreachable_2015 row (47, 48) from the call site edition, as rustc-demangle 0.1.27 (v0.rs) calls core's"
+  },
+  {
+   "name": "panic-legacy-unreachable-2018-client",
+   "path": "tests/spec/imported-panic-rows/legacy-unreachable-client.rs",
+   "source_sha256": "e15c234a8d9c4b83a9406495617b896a9964a61216e48fad9c79a9cf1a1255f3",
+   "kind": "object",
+   "crate": "client",
+   "edition": "2018",
+   "deps": {
+    "panics": "panic-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_client": "panic-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": true,
+   "native_driver": "tests/spec/imported-panic-rows/legacy-unreachable-driver.c",
+   "native_driver_sha256": "f9aef5205d854058ca607e5b9749fcddd554854e0dba51aa3a877f8916070ed0",
+   "native_stdout": "47 48\n",
+   "frontend_expected_after_implementation": 0,
+   "note": "a 2018 source client: both builtin unreachable call sites select the provider's unreachable_2015 row (47, 48) from the call site edition, as rustc-demangle 0.1.27 (v0.rs) calls core's"
+  },
+  {
+   "name": "panic-legacy-2015-client",
+   "path": "tests/spec/imported-panic-rows/legacy-panic-client.rs",
+   "source_sha256": "ef0bc236bf39e34eb7fbe413601df46dc2c54fabb90f5ebb29bfe9f27d3f640f",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2015",
+   "deps": {
+    "panics": "panic-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_client": "panic-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "frontend_diagnostic": "the pre-2021 panic macro form is not implemented for edition 2015",
+   "note": "opponent: a 2015 builtin panic call site selects panic_2015 in rustc (45); RustGM keeps that rule rejected by name"
   }
  ]
 }

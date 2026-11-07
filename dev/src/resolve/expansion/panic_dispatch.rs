@@ -215,8 +215,13 @@ impl<S: Sources> Engine<'_, S> {
             (Builtin::Unreachable, Edition::Rust2021 | Edition::Rust2024) => {
                 Handler::Unreachable2021
             }
+            // rustc-demangle (2015) calls core's `unreachable!` with and
+            // without format arguments; both select `unreachable_2015`.
+            (Builtin::Unreachable, Edition::Rust2015 | Edition::Rust2018) => {
+                Handler::Unreachable2015
+            }
             (
-                Builtin::Assert | Builtin::CorePanic | Builtin::StdPanic | Builtin::Unreachable,
+                Builtin::Assert | Builtin::CorePanic | Builtin::StdPanic,
                 Edition::Rust2015 | Edition::Rust2018,
             ) => {
                 return Err(error(

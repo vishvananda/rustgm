@@ -18,12 +18,14 @@ use crate::{
 #[derive(Clone, Copy)]
 pub(crate) enum Handler {
     Panic2021,
+    Unreachable2015,
     Unreachable2021,
 }
 impl Handler {
     fn name(self) -> &'static str {
         match self {
             Self::Panic2021 => "panic_2021",
+            Self::Unreachable2015 => "unreachable_2015",
             Self::Unreachable2021 => "unreachable_2021",
         }
     }

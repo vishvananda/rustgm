@@ -51,7 +51,8 @@ pub enum LegacyRule {
     BareTraitObjects,
     /// `a...b` is an inclusive range pattern before 2021.
     DotDotDotPatterns,
-    /// Older panic macros accept a non-format literal or payload.
+    /// Older `panic!` and `assert!` accept a non-format literal or payload.
+    /// Older `unreachable!` is implemented: it delegates to `unreachable_2015`.
     PanicMacros,
     /// Older array method probes skip by-value `IntoIterator`.
     ArrayIntoIterator,

@@ -88,6 +88,29 @@ fn client_identity_and_source_gate_precede_dependency_admission() -> Result {
     Ok(())
 }
 
+/// Original std's cfg-if (2018) and rustc-demangle (2015) are clients of core:
+/// both editions pass the edition gate and reach dependency admission, while
+/// Rust 2021, which no std unit needs, stays rejected.
+#[test]
+fn legacy_source_clients_pass_the_edition_gate_and_2021_stays_rejected() -> Result {
+    let request = context()?;
+    for edition in [Edition::Rust2015, Edition::Rust2018] {
+        rejected(
+            HEADER,
+            edition,
+            &request,
+            "source client requires an authenticated dependency inventory",
+        )?;
+    }
+    rejected(
+        HEADER,
+        Edition::Rust2021,
+        &request,
+        "source client requires the Rust 2024 source profile",
+    )?;
+    Ok(())
+}
+
 #[test]
 fn empty_legacy_and_wrong_identity_artifacts_never_authenticate_source_client() -> Result {
     let mut request = context()?;

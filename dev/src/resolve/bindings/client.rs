@@ -145,7 +145,9 @@ pub(super) fn identity<'a>(
             "source client requires its distinct exact current crate identity",
         ));
     }
-    if unit.edition() != Edition::Rust2024 {
+    // Original std's cfg-if (2018) and rustc-demangle (2015) are clients of
+    // core; each legacy rule they reach is selected or rejected by name.
+    if unit.edition() == Edition::Rust2021 {
         return Err(error("source client requires the Rust 2024 source profile"));
     }
     if !no_core || !features.has(Feature::NoCore) {

@@ -187,17 +187,23 @@ core's builtin `panic`, `assert` and `unreachable` shapes and declarative
 wrappers whose allowance lists carry `edition_panic`, one wrapper without it,
 and four semiopaque `pub macro` rows in its `panic` module. `native-client.rs`
 runs the imported roles in a fresh 2024 consumer and links with
-`native-driver.c`; `legacy-native-client.rs` with `legacy-driver.c` and
-`legacy-client.rs` are 2018 requirement rows. Further clients cover the
-second `panic_2021` rule (`format-client.rs`), `assert` and `debug_assert`
-reaching the provider's missing `Not` item, a direct call of the unstable
-row, an uncalled `use` of it with and without its feature and a glob import
-of its module. Three requirement providers cover the single-rule `pub macro`
-form, a transparent `pub macro` and the operator items an executable `assert`
-needs. Eleven outcomes were declared in plan 1, two in plan 2 (the uncalled
-`use`) and one in plan 3 (the glob), each before any rustc or RustGM run of its
-files; three frontend expectations were amended after candidate rounds 1 and
-2 (`docs/parallel/macro-metadata.md`).
+`native-driver.c`. `legacy-native-client.rs` with `legacy-driver.c` is a 2018
+client whose wrapper call selects `panic_2021`; `legacy-client.rs` reaches a
+2018 `panic_2015` call site, which stays rejected by name.
+`legacy-unreachable-client.rs` with `legacy-unreachable-driver.c` runs in 2015
+and 2018 and selects `unreachable_2015`, as rustc-demangle calls core's;
+`legacy-panic-client.rs` is its 2015 `panic_2015` opponent. Further clients
+cover the second `panic_2021` rule (`format-client.rs`), `assert` and
+`debug_assert` reaching the provider's missing `Not` item, a direct call of
+the unstable row, an uncalled `use` of it with and without its feature and a
+glob import of its module. Three requirement providers cover the single-rule
+`pub macro` form, a transparent `pub macro` and the operator items an
+executable `assert` needs. Eleven outcomes were declared in plan 1, two in
+plan 2 (the uncalled `use`), one in plan 3 (the glob) and three in plan 4 (the
+2015/2018 source clients), each before any rustc or RustGM run of its files.
+Three frontend expectations were amended after candidate rounds 1 and 2
+(`docs/parallel/macro-metadata.md`). Plan 4 restored the two 2018 rows'
+originally declared outcomes (`docs/parallel/definition-lineage.md`).
 
 `provider-guard-outcomes.json` freezes the version-thirteen provider-guard
 packet under `spec/provider-guards/`. The packet holds:
