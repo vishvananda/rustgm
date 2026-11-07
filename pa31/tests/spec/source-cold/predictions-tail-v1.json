@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "file": "tail-no-feature.rs",
+      "sha256": "05e42d14de72a40d1274aa2b9009a84d265c11ec4b60621d26be23345860b077",
+      "expected": 0,
+      "hypothesis": "tail expression starts in actual statement position; verify typed parent requirement"
+    }
+  ]
+}

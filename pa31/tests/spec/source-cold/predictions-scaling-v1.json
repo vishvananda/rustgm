@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "file": "many-no-feature.rs",
+      "sha256": "565e8ae3f5cb61d58062adc416158bb982667cdf413aa253905dcae05746180d",
+      "expected": 0,
+      "hypothesis": "64 legal statement owners share one actual typed context walk; one expression owner still requires feature"
+    },
+    {
+      "file": "many-with-illegal.rs",
+      "sha256": "023c6a892ef65cd56bd26d504ee4605931cd2c58cf91c7126ccf4223bb30638c",
+      "expected": 1,
+      "hypothesis": "64 legal statement owners share one actual typed context walk; one expression owner still requires feature"
+    }
+  ]
+}

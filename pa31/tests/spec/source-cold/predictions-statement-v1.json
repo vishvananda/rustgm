@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "file": "statement-no-feature.rs",
+      "sha256": "e295ad57915dd766c6bcaad13e91818783355068b956064ad38418142095afcb",
+      "expected": 0,
+      "hypothesis": "statement attributes may use stable statement position; verify rather than impose expression-only gate"
+    }
+  ]
+}

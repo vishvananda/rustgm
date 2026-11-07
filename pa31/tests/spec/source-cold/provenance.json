@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "compiler_commit": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "sources": [
+    {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/str/pattern.rs",
+      "sha256": "878333fb2b4371194f0853b93ff4fc53efe02be878f603b546ab5ae00fa3eefd",
+      "bytes": 75630,
+      "first_line": 1857,
+      "last_line": 1881,
+      "byte_start": 69605,
+      "excerpt": "original-pattern-fragment.txt",
+      "excerpt_sha256": "85594b1dc277264c5e4baea1af3963ba2ed99bb7406b566a9b786910936d7486"
+    },
+    {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/codegen_attrs.rs",
+      "sha256": "cadff1c5afe081e459f0105daa76d5ccf10a1ee6f3fd54d1443323f688fa7885",
+      "excerpt": "original-cold-parser.txt",
+      "excerpt_sha256": "a4e9a8b819b34722402904e10f6d3a63f2dfeb34cb15d32a4b790384a4b0bfc3"
+    }
+  ],
+  "original_core_observation": "obj/parallel/source-transport/auto-private-regions/original-core-v1/receipt.json"
+}

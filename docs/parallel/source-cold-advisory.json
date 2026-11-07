@@ -1,0 +1,213 @@
+{
+  "schema": 1,
+  "base_commit": "809b78f87",
+  "published_main_base": "ac104463d",
+  "scope": "typed local advisory target and expression context; existing ordinary body authority",
+  "qualified_source_files": 3638,
+  "semantic": {
+    "receipt": "obj/parallel/source-transport/source-cold/gate8/receipt.json",
+    "sha256": "ca20752e7aad948ebb995f38304a609442126ac5f6e0e9a105ed772159867515",
+    "stages": [
+      {
+        "stage": "format",
+        "argv": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--all"
+        ],
+        "code": 0,
+        "seconds": 15.031237456947565
+      },
+      {
+        "stage": "audit",
+        "argv": [
+          "obj/audit-venv/bin/python",
+          "scripts/rust_audit.py",
+          "--root",
+          ".",
+          "--cache",
+          "obj/fast-audit.json"
+        ],
+        "code": 0,
+        "seconds": 2.4499437760096043
+      },
+      {
+        "stage": "strict",
+        "argv": [
+          "cargo",
+          "clippy",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--lib",
+          "--test",
+          "suite_frontend",
+          "--bin",
+          "rustgm",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "code": 0,
+        "seconds": 64.54007773299236
+      },
+      {
+        "stage": "source",
+        "argv": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_frontend",
+          "cold_sources::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 102.14301651099231
+      }
+    ],
+    "full_rust_status_cases": 22,
+    "full_positives": 11,
+    "negatives": 11,
+    "valid_required_profiles": 5
+  },
+  "final": {
+    "receipt": "obj/parallel/source-transport/source-cold/final1/receipt.json",
+    "sha256": "4d97497cbb558912335468dab0e0dcd8b78a55147db0c2f2b01a6d6025998dbc",
+    "stages": [
+      {
+        "stage": "strict-all",
+        "argv": [
+          "cargo",
+          "clippy",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--all-targets",
+          "--all-features",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "code": 0,
+        "seconds": 103.82275749603286
+      },
+      {
+        "stage": "word",
+        "argv": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_frontend",
+          "overflow_words::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 0.2426448919577524
+      },
+      {
+        "stage": "native",
+        "argv": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_frontend",
+          "cold_sources::actual_source_cold_closure_keeps_runtime_captures_and_control_flow",
+          "--",
+          "--ignored",
+          "--exact",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 0.2660866141086444
+      },
+      {
+        "stage": "cli",
+        "argv": [
+          "cargo",
+          "build",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--bin",
+          "rustgm"
+        ],
+        "code": 0,
+        "seconds": 0.0759873449569568
+      },
+      {
+        "stage": "harness",
+        "argv": [
+          "make",
+          "test-harness"
+        ],
+        "code": 0,
+        "seconds": 13.380762366112322
+      },
+      {
+        "stage": "upstream",
+        "argv": [
+          "make",
+          "test-upstream"
+        ],
+        "code": 0,
+        "seconds": 0.14660550805274397
+      }
+    ],
+    "cli": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/source-cold/final1/rustgm",
+      "sha256": "8a4222bb95d85cdd8c1f23af05803a46b7c42ed529d168441ede5b63412c7b00"
+    }
+  },
+  "reference": {
+    "cases": 27,
+    "metadata": 27,
+    "object": 1,
+    "native_stdout": "cold 23 71\n",
+    "manifest_sha256": "4897d789640e66ce258b32a4c4783997d277ff10a2fedc9e1aa178174652d63e",
+    "provenance_sha256": "2ce0edd53e79ef5181779d5e1c65798a079026185abcdb65fc1fef81037f3285"
+  },
+  "native": {
+    "path": "obj/parallel/source-transport/source-cold/native-3800114/source-cold-execute.stdout",
+    "sha256": "ea43eaad08d109a6085f00c9e6dbc486f28c0dfe8770404065729cccafda186a"
+  },
+  "layouts": {
+    "AttributePositions": 32,
+    "ColdState": 16,
+    "AnnotationState_before": 48,
+    "AnnotationState_after": 64,
+    "position_slot": 1,
+    "Declarations": 7120,
+    "Code": 304
+  },
+  "pending": [
+    "private invariant execution in full CI",
+    "joined integration and unchanged original core observation",
+    "valid const/async body and no-body advisory profiles",
+    "advisory source metadata transport and real backend optimization"
+  ]
+}

@@ -1,0 +1,188 @@
+{
+  "schema": 1,
+  "owner": "pa31 source advisory and expression-feature authority; PA26 codegen advisory/PA24 closures",
+  "profile": "Rust1.98 edition2024 x86_64 panicabort overflowyes debugassertionsno ubchecksno; ordinary lint policy, bootstrap1",
+  "cases": [
+    {
+      "file": "macro-allowed.rs",
+      "sha256": "108f828b4389e58d25796eb1efbdd1c2980da118620339271db1c4a27539481d",
+      "expected": 0,
+      "hypothesis": "actual definition allowance authorizes generated attribute only; caller expression cannot borrow it"
+    },
+    {
+      "file": "macro-forwarded.rs",
+      "sha256": "020aaea136c428902927647d2136ddfdaee40db59d82aba655f2236d629e32d7",
+      "expected": 1,
+      "hypothesis": "actual definition allowance authorizes generated attribute only; caller expression cannot borrow it"
+    },
+    {
+      "file": "many-no-feature.rs",
+      "sha256": "565e8ae3f5cb61d58062adc416158bb982667cdf413aa253905dcae05746180d",
+      "expected": 0,
+      "hypothesis": "64 legal statement owners share one actual typed context walk; one expression owner still requires feature"
+    },
+    {
+      "file": "many-with-illegal.rs",
+      "sha256": "023c6a892ef65cd56bd26d504ee4605931cd2c58cf91c7126ccf4223bb30638c",
+      "expected": 1,
+      "hypothesis": "64 legal statement owners share one actual typed context walk; one expression owner still requires feature"
+    },
+    {
+      "file": "statement-no-feature.rs",
+      "sha256": "e295ad57915dd766c6bcaad13e91818783355068b956064ad38418142095afcb",
+      "expected": 0,
+      "hypothesis": "statement attributes may use stable statement position; verify rather than impose expression-only gate"
+    },
+    {
+      "file": "tail-no-feature.rs",
+      "sha256": "05e42d14de72a40d1274aa2b9009a84d265c11ec4b60621d26be23345860b077",
+      "expected": 0,
+      "hypothesis": "tail expression starts in actual statement position; verify typed parent requirement"
+    },
+    {
+      "file": "closure.rs",
+      "sha256": "0a9e9963da98f33f0cbcbcac6d1491fd83843db40f6d35d9bc0219f47f1353ab",
+      "expected": 0,
+      "hypothesis": "ordinary closure body runs through normal call"
+    },
+    {
+      "file": "capture.rs",
+      "sha256": "f2a0ddce51c0dd63766c0efea9143cd253f87eb31a9aa9db59f5066b1c7ebfe8",
+      "expected": 0,
+      "hypothesis": "actual captured operands and control-flow remain live"
+    },
+    {
+      "file": "missing-expression-feature.rs",
+      "sha256": "349212d085357f88c90d6853d8522fdfad0f4d11fe2853544d0556ed8ef5902f",
+      "expected": 1,
+      "hypothesis": "expression attribute still requires stmt_expr_attributes"
+    },
+    {
+      "file": "wrong-target-deny.rs",
+      "sha256": "69c6616fe60b1eddde9bd1ea35a25d26c789283b602fd2be8152c2fc85d725c7",
+      "expected": 1,
+      "hypothesis": "wrong target remains actual unused_attributes denial"
+    },
+    {
+      "file": "wrong-target-allow.rs",
+      "sha256": "a2cd2edb3608da1f921603dc55706ab9ce2126c9f0c92b86a005d4746e744988",
+      "expected": 0,
+      "hypothesis": "wrong target advisory is ignored under ordinary Allow"
+    },
+    {
+      "file": "duplicate-deny.rs",
+      "sha256": "2f7f150e1a765aea6512cdd8e12139838962dc1a7721f14b1e8fc2bdbe5afc6d",
+      "expected": 1,
+      "hypothesis": "duplicate cold attributes keep unused_attributes policy"
+    },
+    {
+      "file": "duplicate-allow.rs",
+      "sha256": "dd56b92318b0c5ea6e00105729a0c808c75e04151e5d13a28e7e3e0526783a72",
+      "expected": 0,
+      "hypothesis": "first advisory remains sufficient under Allow"
+    },
+    {
+      "file": "unsafe-body.rs",
+      "sha256": "f7050979bc50bdb57d03bfda334283c5ba2fa3f329a8a30140dcc4358186a3d5",
+      "expected": 1,
+      "hypothesis": "cold never gives lexical unsafe permission"
+    },
+    {
+      "file": "unsafe-context.rs",
+      "sha256": "8ed85ac0da820fa1a892d363d312f1840aaabb7d1eb688f5936754407c0c60e7",
+      "expected": 0,
+      "hypothesis": "actual lexical unsafe context remains valid"
+    },
+    {
+      "file": "move-borrowed.rs",
+      "sha256": "3baa1465eba9ee9f70f441b5afde29c1ff69ccbd68358a4b34d18c56b01dae63",
+      "expected": 1,
+      "hypothesis": "cold never gives Copy or move permission"
+    },
+    {
+      "file": "lifetime.rs",
+      "sha256": "5cc62e7eaf40613b6aacaf194d6e3eb4b09daebefb19524aa13eda88c57e9645",
+      "expected": 1,
+      "hypothesis": "cold never gives static lifetime"
+    },
+    {
+      "file": "const-closure.rs",
+      "sha256": "2d69d50c0017631f752b65156151f92a119610e6ca363469f29dc78484abd078",
+      "expected": 0,
+      "hypothesis": "const closure target valid; callable semantics separately required"
+    },
+    {
+      "file": "async-block.rs",
+      "sha256": "cf3f2966328162053398114dd49e28e4e4bdef7c70674e9e66a77f136b7a04ea",
+      "expected": 0,
+      "hypothesis": "async block is a real function-like body target"
+    },
+    {
+      "file": "async-closure.rs",
+      "sha256": "cf93afd7166706d981ec17a5c47142e336009c650f9b189b45feae390510eeab",
+      "expected": 0,
+      "hypothesis": "async closure shares ordinary target identity"
+    },
+    {
+      "file": "function.rs",
+      "sha256": "3df55783fafeb36ee3737a3a868b8f66c2cba1865fd2b7a9d21173007598869a",
+      "expected": 0,
+      "hypothesis": "stable function word and inline independent of const permission"
+    },
+    {
+      "file": "nonconst.rs",
+      "sha256": "635957288f720a3ade8a742a41d850149b41d14ffa918a4c8f5f15228dbdb8a9",
+      "expected": 1,
+      "hypothesis": "cold never grants const calling"
+    },
+    {
+      "file": "malformed.rs",
+      "sha256": "ccec0c01c73f8c9db835adca3dd8b9d3cae104507be09e3a997953f733dc7e43",
+      "expected": 1,
+      "hypothesis": "cold is a plain word"
+    },
+    {
+      "file": "unsafe-wrapper.rs",
+      "sha256": "eea6fae508c48cddfc3fee27edab1dc84067b08cb499174b09b201f4cf9d6f54",
+      "expected": 1,
+      "hypothesis": "cold is not an unsafe attribute"
+    },
+    {
+      "file": "prototype-required.rs",
+      "sha256": "289552dfc30773d43982f5da99d882332204079f19708ec3ae497d2666bbc1a9",
+      "expected": 0,
+      "hypothesis": "unused no-body profile remains a separately required source/compiler boundary"
+    },
+    {
+      "file": "foreign-required.rs",
+      "sha256": "9e410447012214a34e0efed8f8f5d42995c83598e16cc3a042749671dcf26ca1",
+      "expected": 0,
+      "hypothesis": "valid actual foreign declaration; no lowering or transport authority implied"
+    },
+    {
+      "file": "source-native.rs",
+      "sha256": "5de7b95f7c2c0759a21c872a316bc9d6a25f2c6c88bff82de2f244ba10116867",
+      "expected": 0,
+      "hypothesis": "real source callable/Copy/Freeze/ordinary capture/body through primitive C boundary"
+    }
+  ],
+  "native": {
+    "stdout": "cold 23 71\n",
+    "observer_sha256": "3e4e64a9271c80e3bc6fa02507d57868eca4cbe370355ef9cb78d6b41c658257"
+  },
+  "maintainer_origin": "dev/tests/cold_sources.rs",
+  "scope": "actual local function/closure/async advisory targets and existing body checks, no optimizer or transport permission",
+  "references": {
+    "reference-v1.json": "e6eb4e04024219c0de2b6fccbf7d94e63b81474782012e442590a44306726856",
+    "reference-statement-v1.json": "cfdd9dffbabee1edd4f4edfafd7866ebca8c91d6af61165bf4e6e5de17da0b06",
+    "reference-tail-v1.json": "0d27b0c7dc66b7c83deeeb8f68852bd6fb26669f8590ba65ed8a13f79b44cd31",
+    "reference-macros-v1.json": "fae6cf7c61070d37af8fa62588efdf1d21349c268354cbec65a896419413ffcc",
+    "reference-scaling-v1.json": "360f6309b24dcfdf16b6d0526ab0206e9c1bfbf0c2c41d9233bc01992bbb9e45"
+  },
+  "required_profiles": [
+    "const closure callable creation and evaluation",
+    "async block and async closure bodies",
+    "no-body trait and foreign advisories",
+    "source function/closure advisory metadata transport"
+  ]
+}

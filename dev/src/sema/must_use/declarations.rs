@@ -19,17 +19,19 @@ use crate::{
 
 /// Sparse annotation state lasts for the pass; flags reset for each owner.
 #[derive(Default)]
-struct AnnotationState {
+struct AnnotationState<'unit> {
     coverage: bool,
+    cold: crate::sema::inlining::ColdState<'unit>,
     documentation: crate::sema::documentation_labels::Draft,
     documentation_options: crate::sema::documentation_options::Draft,
     insignificant_dtor: bool,
     native_links: crate::sema::link_dependencies::Draft,
 }
 
-impl AnnotationState {
+impl AnnotationState<'_> {
     fn begin_owner(&mut self) {
         self.coverage = false;
+        self.cold.begin_owner();
         self.insignificant_dtor = false;
     }
 }
@@ -213,21 +215,28 @@ fn complete_imports(report: &Report, facts: &mut Declarations) -> Result<(), Err
     clippy::too_many_lines,
     reason = "one annotation dispatch shares the configured owner, retained forest and macro allowance session"
 )]
-fn consume_annotation(
-    report: &Report,
+fn consume_annotation<'unit>(
+    report: &'unit Report,
     facts: &mut Declarations,
     (owner, declaration): (NodeKey, NodeKey),
     (attribute, effect): (Attribute, usize),
     forest: &Forest,
     allowances: &mut crate::resolve::expansion::MacroAllowanceSession<'_>,
-    flags: &mut AnnotationState,
+    flags: &mut AnnotationState<'unit>,
 ) -> Result<bool, Error> {
     let consumer = attribute
         .name(forest, report.package.unit(declaration.file).source.text())
         .and_then(Consumer::named);
     match consumer {
         Some(Consumer::ColdAdvisory) => {
-            crate::sema::inlining::consume_cold(report, facts, declaration, attribute)?;
+            crate::sema::inlining::consume_cold(
+                report,
+                facts,
+                (owner, declaration),
+                attribute,
+                allowances,
+                &mut flags.cold,
+            )?;
         }
         Some(Consumer::PointerLintMarker) => {
             crate::sema::header_attributes::consume_pointer_lint(

@@ -1,0 +1,25 @@
+    // this #[cold] is load-bearing, benchmark before removing it...
+    let check_mask = #[cold]
+    |idx, mask: u16, skip: bool| -> bool {
+        if skip {
+            return false;
+        }
+
+        // and so is this. optimizations are weird.
+        let mut mask = mask;
+
+        while mask != 0 {
+            let trailing = mask.trailing_zeros();
+            let offset = idx + trailing as usize + 1;
+            // SAFETY: mask is between 0 and 15 trailing zeroes, we skip one additional byte that was already compared
+            // and then take trimmed_needle.len() bytes. This is within the bounds defined by the outer loop
+            unsafe {
+                let sub = haystack.get_unchecked(offset..).get_unchecked(..trimmed_needle.len());
+                if small_slice_eq(sub, trimmed_needle) {
+                    return true;
+                }
+            }
+            mask &= !(1 << trailing);
+        }
+        false
+    };

@@ -1,5 +1,7 @@
 //! Configured source providers own real declaration claims and explicit features.
 mod admission;
+mod placement_cache;
+pub(crate) use placement_cache::AttributePositions;
 mod allowances;
 mod annotations;
 mod claim_tokens;

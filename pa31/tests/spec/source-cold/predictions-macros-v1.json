@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "file": "macro-allowed.rs",
+      "sha256": "108f828b4389e58d25796eb1efbdd1c2980da118620339271db1c4a27539481d",
+      "expected": 0,
+      "hypothesis": "actual definition allowance authorizes generated attribute only; caller expression cannot borrow it"
+    },
+    {
+      "file": "macro-forwarded.rs",
+      "sha256": "020aaea136c428902927647d2136ddfdaee40db59d82aba655f2236d629e32d7",
+      "expected": 1,
+      "hypothesis": "actual definition allowance authorizes generated attribute only; caller expression cannot borrow it"
+    }
+  ]
+}

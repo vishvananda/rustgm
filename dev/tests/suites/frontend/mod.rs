@@ -221,3 +221,6 @@ mod weak_symbols;
 
 #[path = "../../overflow_words.rs"]
 mod overflow_words;
+
+#[path = "../../cold_sources.rs"]
+mod cold_sources;
