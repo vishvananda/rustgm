@@ -10,7 +10,10 @@ use super::{
 };
 use crate::{
     expand::builtin::{Builtin, BuiltinKind},
-    resolve::{crates::ImportedRow, model::ScopeId},
+    resolve::{
+        crates::{ImportedMacro, ImportedRow},
+        model::{Resolution, ScopeId},
+    },
     support::crates::{
         Interface,
         exported_macros::{BuiltinMacro, Macro, MacroKind},
@@ -18,26 +21,22 @@ use crate::{
     syntax::token_tree::Forest,
 };
 
-/// Where an imported definition's tokens were written.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct ImportedDefinition {
-    /// The image unit of a declarative row: the spelling source, with the
-    /// transported edition. A builtin row has no image.
-    pub file: Option<FileId>,
-    /// One more than the provider's dependency index; `$crate` carries it.
-    pub crate_id: u32,
-    /// The provider's imported placement scope, the definition site.
-    pub scope: ScopeId,
-    /// The definition row whose internal-unstable features its frames carry
-    /// and whose `#[unstable]` feature its calls need.
-    pub row: crate::support::crates::exported_macros::DefinitionRow,
+/// The bound row that definition `index` installs, when it is imported.
+/// Imported definitions are the first ones, one per installed row in row
+/// order, so their data stays in the imported record's cold rows and the hot
+/// `Definition` of a local macro carries none of it.
+pub(super) fn imported(facts: &Resolution, index: usize) -> Option<&ImportedMacro> {
+    facts.crates.as_deref()?.installed_macros().get(index)
 }
 
 impl Definition {
-    /// The scope where this definition's tokens were written.
-    pub(super) fn site_scope(&self, facts: &crate::resolve::model::Resolution) -> Option<ScopeId> {
-        if let Some(imported) = self.imported {
-            return Some(imported.scope);
+    /// The scope where this definition (number `index`) was written.
+    pub(super) fn site_scope(&self, index: usize, facts: &Resolution) -> Option<ScopeId> {
+        if let Some(imported) = imported(facts, index) {
+            return facts
+                .definitions
+                .get(imported.definition.0 as usize)
+                .map(|placement| placement.scope);
         }
         match self.node {
             Some(node) => facts.node_scopes.get(&(self.module, node.node)).copied(),
@@ -45,9 +44,9 @@ impl Definition {
         }
     }
     /// The file holding this definition's spelling, and the crate id of its `$crate`.
-    pub(super) fn spelling(&self) -> Option<(FileId, u32)> {
-        if let Some(imported) = self.imported {
-            return imported.file.map(|file| (file, imported.crate_id));
+    pub(super) fn spelling(&self, index: usize, facts: &Resolution) -> Option<(FileId, u32)> {
+        if let Some(imported) = imported(facts, index) {
+            return imported.image.map(|file| (file, imported.crate_id));
         }
         self.node.map(|node| (node.file, 0))
     }
@@ -140,7 +139,9 @@ impl<S: Sources> Engine<'_, S> {
         self.paths
             .macro_use(&mut self.loader.package, context, visit.node, item)
     }
-    /// Install every imported row before any call is attempted. Each declarative
+    /// Install every imported row before any call is attempted, as the first
+    /// definitions in row order, and record each row's image unit in the row
+    /// itself. Each declarative
     /// row is lexed once, compiled in its transported edition and must keep its
     /// rule count; matching and transcription reuse that compiled forest. Each
     /// builtin row binds this consumer's own expander of its identity.
@@ -155,29 +156,21 @@ impl<S: Sources> Engine<'_, S> {
                 .artifacts()
                 .get(entry.artifact)
                 .ok_or_else(|| Error::at(FileId(0), 0, "missing macro provider"))?;
-            let scope = self
+            if self
                 .paths
                 .state
                 .facts
                 .definitions
                 .get(entry.definition.0 as usize)
-                .map(|definition| definition.scope)
-                .ok_or_else(|| Error::at(FileId(0), 0, "missing imported macro placement"))?;
-            let crate_id = u32::try_from(entry.artifact)
-                .ok()
-                .and_then(|index| index.checked_add(1))
-                .ok_or_else(|| Error::at(FileId(0), 0, "too many macro providers"))?;
-            let imported = ImportedDefinition {
-                file: None,
-                crate_id,
-                scope,
-                row: entry.row,
-            };
-            let (definition, kind) = match entry.row {
-                ImportedRow::Declarative(_) | ImportedRow::Scoped(_) => (
-                    self.import_declarative(artifact, entry.row, imported)?,
-                    BuiltinKind::Bang,
-                ),
+                .is_none()
+            {
+                return Err(Error::at(FileId(0), 0, "missing imported macro placement"));
+            }
+            let (definition, image, kind) = match entry.row {
+                ImportedRow::Declarative(_) | ImportedRow::Scoped(_) => {
+                    let (definition, image) = self.import_declarative(artifact, entry.row)?;
+                    (definition, Some(image), BuiltinKind::Bang)
+                }
                 ImportedRow::Builtin(row) => {
                     let row = artifact
                         .macros()
@@ -206,13 +199,21 @@ impl<S: Sources> Engine<'_, S> {
                             edition,
                             edition_panic: edition_panic(row.internal_unstable()),
                             header: None,
-                            imported: Some(imported),
                         },
+                        None,
                         role.kind(),
                     )
                 }
             };
             let index = self.definitions.len();
+            self.paths
+                .state
+                .facts
+                .crates
+                .as_deref_mut()
+                .ok_or_else(|| Error::at(FileId(0), 0, "missing imported macro rows"))?
+                .install_macro(index, image)
+                .map_err(|message| Error::at(FileId(0), 0, message))?;
             self.definitions.push(definition);
             self.paths.imported_macro(entry.definition, index, kind);
         }
@@ -239,12 +240,12 @@ impl<S: Sources> Engine<'_, S> {
         }
         Ok(())
     }
+    /// One declarative or semiopaque row and the image unit it is spelled in.
     fn import_declarative(
         &mut self,
         artifact: &Interface,
         index: ImportedRow,
-        imported: ImportedDefinition,
-    ) -> Result<Definition, Error> {
+    ) -> Result<(Definition, FileId), Error> {
         let macros = artifact
             .macros()
             .ok_or_else(|| Error::at(FileId(0), 0, "missing imported macro row"))?;
@@ -310,22 +311,21 @@ impl<S: Sources> Engine<'_, S> {
         } else {
             Body::Declarative(Compiled::new(compiled))
         };
-        Ok(Definition {
-            node: None,
-            module: ModuleId(0),
-            name,
-            body,
-            context: SyntaxContextId::ROOT,
-            introduction: ExpansionId(0),
-            preceding_scope: Scope::ROOT,
-            local_inner_macros: row.local_inner_macros(),
-            edition: row.edition(),
-            edition_panic: edition_panic(row.internal_unstable()),
-            header: None,
-            imported: Some(ImportedDefinition {
-                file: Some(file),
-                ..imported
-            }),
-        })
+        Ok((
+            Definition {
+                node: None,
+                module: ModuleId(0),
+                name,
+                body,
+                context: SyntaxContextId::ROOT,
+                introduction: ExpansionId(0),
+                preceding_scope: Scope::ROOT,
+                local_inner_macros: row.local_inner_macros(),
+                edition: row.edition(),
+                edition_panic: edition_panic(row.internal_unstable()),
+                header: None,
+            },
+            file,
+        ))
     }
 }

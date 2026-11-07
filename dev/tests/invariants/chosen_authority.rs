@@ -104,7 +104,6 @@ fn actual() -> Result<(
         edition: declared.edition,
         edition_panic: false,
         header: declared.header,
-        imported: None,
     };
     Ok((package, paths, vec![definition]))
 }
@@ -163,7 +162,7 @@ fn invocation_identity_must_be_next_and_parent_and_definition_scope_must_exist()
     check_invocation(&paths, 0, ExpansionId(1), ExpansionId(0))?;
     assert!(check_invocation(&paths, 1, ExpansionId(1), ExpansionId(0)).is_err());
     assert!(check_invocation(&paths, 0, ExpansionId(1), ExpansionId(7)).is_err());
-    paths.invocation(ExpansionId(1), ExpansionId(0), &definitions[0])?;
+    paths.invocation(ExpansionId(1), ExpansionId(0), (0, &definitions[0]))?;
     assert!(check_invocation(&paths, 0, ExpansionId(1), ExpansionId(0)).is_err());
     check_invocation(&paths, 1, ExpansionId(2), ExpansionId(1))?;
     eprintln!(

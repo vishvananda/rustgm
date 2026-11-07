@@ -60,7 +60,6 @@ mod format_values;
 mod transported_macros;
 pub(super) mod unstable_calls;
 pub use exported_permissions::ExportedBuiltin;
-pub use transported_macros::ImportedDefinition;
 mod location;
 mod metavariables;
 mod panic_dispatch;
@@ -123,8 +122,6 @@ pub struct Definition {
     pub edition: Edition,
     pub edition_panic: bool,
     pub(super) header: Option<std::rc::Rc<super::bindings::panic_contracts::HeaderData>>,
-    /// Set for a definition transported in a dependency's macro metadata.
-    pub imported: Option<transported_macros::ImportedDefinition>,
 }
 impl Definition {
     fn macro_kind(&self) -> builtin::BuiltinKind {
@@ -595,9 +592,12 @@ impl<'a, S: Sources> Engine<'a, S> {
                 .map_err(|message| Error::at(file, offset, message))?
                 .and_then(|expansion| expansion.0.checked_sub(1))
                 .and_then(|index| self.invocations.get(index as usize))
-                .map(|call| &self.definitions[call.definition])
-                .filter(|definition| definition.local_inner_macros)
-                .map(|definition| definition.imported.map_or(0, |imported| imported.crate_id));
+                .map(|call| call.definition)
+                .filter(|&definition| self.definitions[definition].local_inner_macros)
+                .map(|definition| {
+                    transported_macros::imported(&self.paths.state.facts, definition)
+                        .map_or(0, |imported| imported.crate_id)
+                });
             if let Some(crate_id) = local_inner {
                 let spelling = if crate_id == 0 {
                     "crate".to_owned()
@@ -1145,7 +1145,6 @@ impl<'a, S: Sources> Engine<'a, S> {
                     .allows(super::bindings::KnownFeature::EditionPanic)
             }),
             header: contract,
-            imported: None,
         });
         self.head = self
             .scopes
@@ -1275,10 +1274,19 @@ impl<'a, S: Sources> Engine<'a, S> {
             local_inner_macros: false,
             edition: self.loader.package.units[0].edition(),
             edition_panic: false,
-            imported: None,
         });
         self.builtin_definitions[slot] = Some(index);
         Ok(index)
+    }
+    /// Record expansion `context` of definition `index` at its definition scope.
+    fn introduce(
+        &mut self,
+        context: ExpansionId,
+        parent: ExpansionId,
+        index: usize,
+    ) -> Result<(), &'static str> {
+        self.paths
+            .invocation(context, parent, (index, &self.definitions[index]))
     }
     fn context(&self, file: FileId, offset: u32) -> Result<SyntaxContextId, Error> {
         self.loader.package.syntax_context(file, offset)
@@ -1373,8 +1381,7 @@ impl<'a, S: Sources> Engine<'a, S> {
             Transparency::SemiOpaque,
             generated,
         )?;
-        self.paths
-            .invocation(context, parent, &self.definitions[definition])
+        self.introduce(context, parent, definition)
             .map_err(|message| Error::at(file, original.start, message))?;
         self.invocations.push(Invocation {
             context,
@@ -1574,8 +1581,7 @@ impl<'a, S: Sources> Engine<'a, S> {
         let generated = package.units[file.0 as usize]
             .install_expansion(visit.node, &stream.source, configured, &stream.origins)
             .map_err(|e| Error::at(file, original.start, e.message))?;
-        self.paths
-            .invocation(context, parent, &self.definitions[definition])
+        self.introduce(context, parent, definition)
             .map_err(|message| Error::at(file, original.start, message))?;
         self.invocations.push(Invocation {
             context,

@@ -69,17 +69,17 @@ pub(in crate::resolve) fn validate(report: &Report) -> Result<(), Error> {
             span: invocation.original,
         };
         let error = |message| Error::at(site.file, site.span.start, message);
-        let imported = report
+        report
             .definitions
             .get(invocation.definition)
-            .ok_or_else(|| error("macro call names an unknown definition"))?
-            .imported;
-        let Some(imported) = imported else {
+            .ok_or_else(|| error("macro call names an unknown definition"))?;
+        let Some(imported) =
+            super::transported_macros::imported(&report.resolution, invocation.definition)
+        else {
             continue;
         };
-        let feature = usize::try_from(imported.crate_id)
-            .ok()
-            .and_then(|id| artifacts.get(id.checked_sub(1)?))
+        let feature = artifacts
+            .get(imported.artifact)
             .and_then(Interface::macros)
             .and_then(|macros| macros.unstable(imported.row))
             .ok_or_else(|| error("imported macro stability row disappeared"))?;

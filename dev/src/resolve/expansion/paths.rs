@@ -58,10 +58,10 @@ impl Paths {
         &mut self,
         expansion: ExpansionId,
         parent: ExpansionId,
-        definition: &super::Definition,
+        (index, definition): (usize, &super::Definition),
     ) -> Result<(), &'static str> {
         let scope = definition
-            .site_scope(&self.state.facts)
+            .site_scope(index, &self.state.facts)
             .ok_or("missing macro definition scope")?;
         self.state
             .facts

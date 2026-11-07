@@ -221,8 +221,7 @@ impl<S: Sources> Engine<'_, S> {
             u32::try_from(self.invocations.len() + 1)
                 .map_err(|_| Error::at(file, original.start, "too many expansion contexts"))?,
         );
-        self.paths
-            .invocation(context, visit.introduction, &self.definitions[definition])
+        self.introduce(context, visit.introduction, definition)
             .map_err(|message| Error::at(file, original.start, message))?;
         self.invocations.push(Invocation {
             context,
@@ -310,7 +309,8 @@ impl<S: Sources> Engine<'_, S> {
         let call = &self.calls[index];
         error.expansions.push(diagnostics::frame(
             &self.loader.package,
-            &self.definitions[definition],
+            &self.paths.state.facts,
+            (definition, &self.definitions[definition]),
             Location {
                 file: call.file,
                 span: self

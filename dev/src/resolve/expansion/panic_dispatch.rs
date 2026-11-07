@@ -180,23 +180,26 @@ impl<S: Sources> Engine<'_, S> {
         {
             return Err(error("panic delegation changed its selected source role"));
         }
-        let crate_id = match entry.imported {
-            // The provider's root is registered by crate identity; its rows
-            // and items are never found through a consumer name or alias.
-            Some(imported) if builtin.imported_delegation() => imported.crate_id,
-            Some(_) => return Err(error("imported panic delegation changed its selected role")),
-            None => {
-                if entry.node.is_none() {
-                    return Err(Error::at(
-                        FileId(0),
-                        0,
-                        "source panic declaration is missing",
-                    ));
+        let crate_id =
+            match super::transported_macros::imported(&self.paths.state.facts, definition) {
+                // The provider's root is registered by crate identity; its rows
+                // and items are never found through a consumer name or alias.
+                Some(imported) if builtin.imported_delegation() => imported.crate_id,
+                Some(_) => {
+                    return Err(error("imported panic delegation changed its selected role"));
                 }
-                self.local_panic_provider(&error)?;
-                0
-            }
-        };
+                None => {
+                    if entry.node.is_none() {
+                        return Err(Error::at(
+                            FileId(0),
+                            0,
+                            "source panic declaration is missing",
+                        ));
+                    }
+                    self.local_panic_provider(&error)?;
+                    0
+                }
+            };
         let edition = self.panic_edition(
             NodeKey {
                 file,
@@ -433,8 +436,7 @@ impl<S: Sources> Engine<'_, S> {
                 &generated.stream.origins,
             )
             .map_err(|failure| Error::at(file, original.start, failure.message))?;
-        self.paths
-            .invocation(context, visit.introduction, &self.definitions[definition])
+        self.introduce(context, visit.introduction, definition)
             .map_err(error)?;
         self.invocations.push(Invocation {
             context,

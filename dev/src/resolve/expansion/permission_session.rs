@@ -260,10 +260,13 @@ impl<'view> Query<'view, '_> {
     fn imported_grant(&self, frame: Frame, extra_work: usize) -> Result<Grant<'view>, Error> {
         let view = &self.view;
         let error = |message| Error::at(frame.call.file, frame.original.start, message);
-        let Some(imported) = view
-            .definitions
-            .get(frame.definition)
-            .and_then(|definition| definition.imported)
+        let Some(imported) =
+            view.definitions
+                .get(frame.definition)
+                .and(super::transported_macros::imported(
+                    view.facts,
+                    frame.definition,
+                ))
         else {
             return Ok(Grant::None);
         };
@@ -272,10 +275,7 @@ impl<'view> Query<'view, '_> {
             .crates
             .as_deref()
             .and_then(|crates| {
-                let artifact = crates
-                    .dependencies()
-                    .artifacts()
-                    .get(usize::try_from(imported.crate_id.checked_sub(1)?).ok()?)?;
+                let artifact = crates.dependencies().artifacts().get(imported.artifact)?;
                 let macros = artifact.macros()?;
                 Some((
                     macros.internal_unstable(imported.row)?,

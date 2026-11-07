@@ -160,7 +160,7 @@ impl Report {
                 panic_contracts::published(&self.package, node, definition.header.as_ref(), 1)?;
             if header.builtin != Some(role)
                 || header.edition != definition.edition
-                || !view.executed(member.context, definition)
+                || !view.executed(member.context, member.definition, definition)
             {
                 return Err(failure());
             }

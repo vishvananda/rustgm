@@ -384,7 +384,7 @@ impl<S: Sources> Engine<'_, S> {
             .charge(1, 4 * size_of::<Invocation>())
             .map_err(|message| call.diagnostic(message))?;
         self.paths
-            .invocation(context, parent, &self.definitions[definition])
+            .invocation(context, parent, (definition, &self.definitions[definition]))
             .map_err(|message| call.diagnostic(message))?;
         let original = self.loader.package.unit(call.file).configured.effects
             [call.capture as usize]

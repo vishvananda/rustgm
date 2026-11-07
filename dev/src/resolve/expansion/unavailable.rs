@@ -84,7 +84,6 @@ impl<S: Sources> Engine<'_, S> {
             edition: declared.edition,
             edition_panic,
             header: declared.header,
-            imported: None,
         });
         // Deliberately leave the legacy textual scope and export path untouched.
         Ok(())
@@ -158,7 +157,7 @@ impl<S: Sources> Engine<'_, S> {
         // An imported builtin row runs only an expander that needs no defining
         // source declaration, exactly the set the bootstrap prelude binds, or
         // a panic role, which delegates to its provider's rows by crate id.
-        if actual.imported.is_some()
+        if super::transported_macros::imported(&self.paths.state.facts, definition).is_some()
             && matches!(actual.body, Body::Builtin(role) if !role.context_free() && !role.imported_delegation())
         {
             return Err(self.unavailable_error(
@@ -189,7 +188,8 @@ impl<S: Sources> Engine<'_, S> {
         let span = error.span;
         error.expansions.push(super::diagnostics::frame(
             &self.loader.package,
-            &self.definitions[definition],
+            &self.paths.state.facts,
+            (definition, &self.definitions[definition]),
             super::Location { file, span },
         ));
         error

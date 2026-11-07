@@ -30,7 +30,7 @@ impl<'a> FrameView<'a> {
             .definitions
             .get(frame.definition)
             .is_some_and(|actual| {
-                self.executed(frame.context, actual)
+                self.executed(frame.context, frame.definition, actual)
                     && unavailable_role(actual).is_none()
                     && actual.node == frame.owner
                     && actual.module == frame.module
@@ -38,8 +38,13 @@ impl<'a> FrameView<'a> {
                     && actual.edition_panic == frame.skip
             })
     }
-    pub(super) fn executed(&self, context: ExpansionId, definition: &Definition) -> bool {
-        let scope = definition.site_scope(self.facts);
+    pub(super) fn executed(
+        &self,
+        context: ExpansionId,
+        index: usize,
+        definition: &Definition,
+    ) -> bool {
+        let scope = definition.site_scope(index, self.facts);
         self.facts
             .introductions
             .definition_scope(context)
@@ -81,7 +86,7 @@ impl<'a> FrameView<'a> {
             // An imported row carries its edition-panic contract and panic
             // role as re-authenticated row data, never a source header.
             if definition.header.is_some()
-                || (definition.imported.is_none()
+                || (super::transported_macros::imported(self.facts, index).is_none()
                     && (definition.edition_panic
                         || matches!(definition.body, Body::Builtin(role) if role.source_only())))
             {
@@ -170,7 +175,7 @@ impl<'a> FrameView<'a> {
             return Err(error("invalid panic expansion call site"));
         }
         let definition = self.definition(invocation.definition)?;
-        if !self.executed(context, definition) {
+        if !self.executed(context, invocation.definition, definition) {
             return Err(error(
                 "macro declaration differs from its executed expansion frame",
             ));

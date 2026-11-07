@@ -4,7 +4,10 @@ use super::{
     Span, Stream,
 };
 use crate::support::hash::HashSet;
-use crate::{lex::token::LexError, resolve::package::ExpansionTrace};
+use crate::{
+    lex::token::LexError,
+    resolve::{model::Resolution, package::ExpansionTrace},
+};
 
 impl<S: Sources> Engine<'_, S> {
     pub(super) fn failed_invocation(
@@ -17,7 +20,8 @@ impl<S: Sources> Engine<'_, S> {
         let call = &self.calls[index];
         error.expansions.push(frame(
             &self.loader.package,
-            &self.definitions[definition],
+            &self.paths.state.facts,
+            (definition, &self.definitions[definition]),
             Location {
                 file: call.file,
                 span: self
@@ -39,6 +43,7 @@ impl<S: Sources> Engine<'_, S> {
     ) -> Result<Error, Error> {
         checked_projection(
             &self.loader.package,
+            &self.paths.state.facts,
             &self.definitions,
             &self.invocations,
             error,
@@ -48,6 +53,7 @@ impl<S: Sources> Engine<'_, S> {
     pub(super) fn diagnostic(&self, error: Error) -> Error {
         project(
             &self.loader.package,
+            &self.paths.state.facts,
             &self.definitions,
             &self.invocations,
             error,
@@ -62,6 +68,7 @@ impl Report {
     ) -> Result<Error, Error> {
         checked_projection(
             &self.package,
+            &self.resolution,
             &self.definitions,
             &self.invocations,
             error,
@@ -71,10 +78,22 @@ impl Report {
     /// Project a phase error through retained source and expansion provenance.
     #[must_use]
     pub fn diagnostic(&self, error: Error) -> Error {
-        project(&self.package, &self.definitions, &self.invocations, error)
+        project(
+            &self.package,
+            &self.resolution,
+            &self.definitions,
+            &self.invocations,
+            error,
+        )
     }
 }
-pub(super) fn frame(package: &Package, definition: &Definition, call: Location) -> ExpansionTrace {
+/// The trace frame of definition `index` called at `call`.
+pub(super) fn frame(
+    package: &Package,
+    facts: &Resolution,
+    (index, definition): (usize, &Definition),
+    call: Location,
+) -> ExpansionTrace {
     ExpansionTrace {
         macro_name: package.names.get(definition.name).to_owned(),
         call,
@@ -86,7 +105,7 @@ pub(super) fn frame(package: &Package, definition: &Definition, call: Location) 
                 span: package.unit(key.file).configured.ast.node(key.node).span,
             })
             .or_else(|| {
-                let file = definition.imported?.file?;
+                let file = super::transported_macros::imported(facts, index)?.image?;
                 Some(Location {
                     file,
                     span: crate::syntax::token_tree::Span {
@@ -197,11 +216,15 @@ fn project_frame(
 }
 fn project(
     package: &Package,
+    facts: &Resolution,
     definitions: &[Definition],
     invocations: &[Invocation],
     error: Error,
 ) -> Error {
-    let (mut error, result) = projected(package, definitions, invocations, error, |_, _| Ok(()));
+    let (mut error, result) =
+        projected((package, facts), definitions, invocations, error, |_, _| {
+            Ok(())
+        });
     if let Err(message) = result {
         error.message.push_str("; ");
         error.message.push_str(message);
@@ -209,7 +232,7 @@ fn project(
     error
 }
 fn projected(
-    package: &Package,
+    (package, facts): (&Package, &Resolution),
     definitions: &[Definition],
     invocations: &[Invocation],
     mut error: Error,
@@ -257,7 +280,8 @@ fn projected(
             )?;
             let mut trace = frame(
                 package,
-                definition,
+                facts,
+                (call.definition, definition),
                 Location {
                     file: call.node.file,
                     span: call.original,
@@ -275,6 +299,7 @@ fn projected(
 
 fn checked_projection(
     package: &Package,
+    facts: &Resolution,
     definitions: &[Definition],
     invocations: &[Invocation],
     error: Error,
@@ -289,7 +314,7 @@ fn checked_projection(
         return Err(error);
     };
     let original = (file, error.span, error.introduction);
-    let (mut error, result) = projected(package, definitions, invocations, error, charge);
+    let (mut error, result) = projected((package, facts), definitions, invocations, error, charge);
     if result.is_err() {
         error.file = crate::resolve::package::DiagnosticFile::Source(original.0);
         error.span = original.1;

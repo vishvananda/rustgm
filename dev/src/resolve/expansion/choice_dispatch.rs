@@ -124,8 +124,7 @@ impl<S: Sources> Engine<'_, S> {
         let installed = self.loader.package.units[file.0 as usize]
             .install_prepared_choice(prepared)
             .map_err(|error| Error::at(file, error.offset, error.message))?;
-        self.paths
-            .invocation(context, visit.introduction, &self.definitions[definition])
+        self.introduce(context, visit.introduction, definition)
             .map_err(failure)?;
         self.invocations.push(Invocation {
             context,

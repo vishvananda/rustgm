@@ -49,7 +49,7 @@ impl<S: Sources> Engine<'_, S> {
         let original = units[file.0 as usize].configured.ast.node(call).span;
         let entry = &mut self.definitions[definition];
         let (definition_file, crate_id) = entry
-            .spelling()
+            .spelling(definition, &self.paths.state.facts)
             .ok_or_else(|| Error::at(file, original.start, "declarative macro has no source"))?;
         let (compiled, mode) = match &mut entry.body {
             Body::Declarative(compiled) => (compiled, Transparency::SemiOpaque),

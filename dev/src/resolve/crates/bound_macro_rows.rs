@@ -6,8 +6,8 @@
 //! definition its owner's row identity names, so every path to one macro
 //! reaches one definition.
 use super::{
-    Access, Binding, DefId, DefKind, Definition, Error, ExternalDef, ExternalKind, Imported,
-    Interface, Namespace, Origin, Resolver, ScopeId, error,
+    Access, Binding, DefId, DefKind, Definition, Error, ExternalDef, ExternalKind, FileId,
+    Imported, Interface, Namespace, Origin, Resolver, ScopeId, error,
 };
 use crate::support::{
     crates::{generics::source as s, owner_catalog::DeclarationRef},
@@ -22,12 +22,20 @@ pub(crate) use crate::support::crates::exported_macros::DefinitionRow as Importe
 pub(super) type MacroDefinitions = HashMap<(usize, ImportedRow), DefId>;
 
 /// One transported row, bound at `definition` in its provider's module tree.
+/// Expansion installs row `n` as its definition `n` and records the image unit
+/// it spelled the row in, so a local definition carries no imported data.
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct ImportedMacro {
     pub definition: DefId,
-    /// The provider's dependency index; its `$crate` id is one more.
+    /// The provider's dependency index.
     pub artifact: usize,
+    /// One more than `artifact`; `$crate` carries it.
+    pub crate_id: u32,
     pub row: ImportedRow,
+    /// The consumer's image unit of an installed declarative or semiopaque
+    /// row: the spelling source, with the transported edition. A builtin row
+    /// has no image.
+    pub image: Option<FileId>,
 }
 
 /// The unspellable path root that `$crate` from the provider with this crate
@@ -43,11 +51,47 @@ pub(crate) fn root_spelling(crate_id: u32) -> String {
 pub(super) struct MacroImports {
     rows: Vec<ImportedMacro>,
     roots: HashMap<NameId, DefId>,
+    /// How many leading rows expansion has installed as definitions.
+    installed: usize,
 }
 
 impl Imported {
     pub(crate) fn macros(&self) -> &[ImportedMacro] {
         self.cold.as_deref().map_or(&[], |cold| &cold.macros.rows)
+    }
+    /// The rows expansion has installed, in order: row `n` is definition `n`.
+    pub(crate) fn installed_macros(&self) -> &[ImportedMacro] {
+        self.cold
+            .as_deref()
+            .and_then(|cold| cold.macros.rows.get(..cold.macros.installed))
+            .unwrap_or_default()
+    }
+    /// Record that expansion installed the next bound row as definition
+    /// `index`, spelled in `image`. Rows are installed once, in order, before
+    /// any local definition exists.
+    pub(crate) fn install_macro(
+        &mut self,
+        index: usize,
+        image: Option<FileId>,
+    ) -> Result<(), &'static str> {
+        let macros = &mut self
+            .cold
+            .as_deref_mut()
+            .ok_or("installed macro has no bound row")?
+            .macros;
+        if index != macros.installed {
+            return Err("imported macro rows are installed out of order");
+        }
+        let row = macros
+            .rows
+            .get_mut(index)
+            .ok_or("installed macro has no bound row")?;
+        if image.is_some() == matches!(row.row, ImportedRow::Builtin(_)) {
+            return Err("imported macro image does not match its row kind");
+        }
+        row.image = image;
+        macros.installed = index + 1;
+        Ok(())
     }
     /// The imported root that a provider's `$crate` names.
     pub(crate) fn macro_root(&self, name: NameId) -> Option<DefId> {
@@ -214,7 +258,9 @@ impl Resolver<'_> {
             imported.macro_imports().rows.push(ImportedMacro {
                 definition,
                 artifact: artifact_index,
+                crate_id,
                 row,
+                image: None,
             });
         }
         Ok(())

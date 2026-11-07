@@ -3,7 +3,9 @@ mod bound_macro_rows;
 mod original_declarations;
 mod public_names;
 mod token_images;
-pub(crate) use bound_macro_rows::{ImportedRow, root_spelling as macro_root_spelling};
+pub(crate) use bound_macro_rows::{
+    ImportedMacro, ImportedRow, root_spelling as macro_root_spelling,
+};
 #[cfg_attr(
     not(test),
     expect(
