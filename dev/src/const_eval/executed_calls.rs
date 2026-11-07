@@ -44,10 +44,12 @@ impl Machine<'_, '_> {
             Some(kind)
                 if crate::sema::compiler_items::wrapping_operator(kind).is_some()
                     || crate::sema::compiler_items::bit_counts::operation(kind).is_some()
+                    || crate::sema::compiler_items::assume_contract::is_assumption(kind)
                     || crate::sema::compiler_items::guaranteed_compare::is_operation(kind) =>
             {
-                // The reached direct-call arithmetic owner authenticates and
-                // executes this operation; it is not a callback selector.
+                // The reached direct-call arithmetic or `assume` owner
+                // authenticates and executes this operation; it is not a
+                // callback selector.
                 return Ok(Selected::Unrelated);
             }
             Some(kind) if crate::sema::compiler_items::field_offset_intrinsic(kind) => {
@@ -155,6 +157,9 @@ impl Machine<'_, '_> {
             return Ok(answer);
         }
         if let Some(answer) = self.source_bit_count(body, frame, position, target)? {
+            return Ok(answer);
+        }
+        if let Some(answer) = self.source_assume(body, frame, position, target)? {
             return Ok(answer);
         }
         if let Some(answer) = self.source_three_way(body, frame, position, target)? {

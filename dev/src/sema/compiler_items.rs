@@ -54,6 +54,7 @@ pub(in crate::sema) use runtime_panics::runtime_body as runtime_panic_body;
 #[path = "compiler_items/location_intrinsic.rs"]
 mod caller_location;
 pub(crate) use caller_location::CallerLocationSelection;
+pub(crate) mod assume_contract;
 pub(crate) mod bit_counts;
 mod cold_fallback;
 pub(crate) mod guaranteed_compare;

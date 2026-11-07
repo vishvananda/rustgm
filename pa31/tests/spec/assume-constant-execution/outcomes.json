@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "declared": "2026-11-07, before the frozen rustc 1.98.0 oracle of these exact bytes. The drafts' lang-item and feature prerequisites (a `not` lang item for `!b`, u32 Copy, literal rather than range patterns) were settled against rustc 1.98.0 in obj/parallel/census-batch7/repro first; each outcome follows the stated rule (CTFE executes `assume` itself, never its fallback body), not that exploration",
+ "declaration_sha256": "f9f0fba02bd2214a1199fa16cb24bb1b5675f2088a614fb8433004481c68bb21",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "assume-true-length.rs": {
+   "sha256": "bbd328f143500880ee63b04b95fbfc4f53f5f01f196c44b101277b1114a664fc",
+   "declared": 0,
+   "reason": "core's exact `assume` declaration and fallback body; a const fn assumes a true condition before returning the array length 3",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "assert-unchecked-length.rs": {
+   "sha256": "ee82f9776461d811554f806960a51428d7f6d55b37e22263e8d1b07c5bb88394",
+   "declared": 0,
+   "reason": "core's `hint::assert_unchecked` shape calls `assume` on a condition over a source ctpop result, which is the ilog10 path in core",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "associated-buffer-length.rs": {
+   "sha256": "e90d3316fcb51251eb532ab691fb882d43a5e438778ce68221b6214f9ac3c805",
+   "declared": 0,
+   "reason": "core's NumBufferTrait shape: an impl's associated type and associated const both use a length that reaches assert_unchecked",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "bodiless-assume-length.rs": {
+   "sha256": "9854630437d3249870d31dd1ba1bb8d5bd41e467e9c2502d15c71a5f539b2f88",
+   "declared": 0,
+   "reason": "a bodiless `assume` intrinsic declaration assumes a true condition in an anonymous length block",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "assume-length-mismatch.rs": {
+   "sha256": "52eebd913a3997b3ac5893ed7f200ccc1f311a76f6fbb36bd3441df4d2b44554",
+   "declared": 1,
+   "reason": "opponent: the assumed-true length is 3, so a [u8; 3] is not [u8; 4] (E0308)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  },
+  "assume-false-length.rs": {
+   "sha256": "444573733556f0c4ae4ded299e2352d5380df6ac7783055a15ea9f6ae5553e56",
+   "declared": 1,
+   "reason": "opponent: the condition is false, which is undefined behavior, so constant evaluation fails (E0080)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0080"
+   ]
+  },
+  "empty-fallback-false.rs": {
+   "sha256": "11d130e3f8b21592e5b3fdb977612597d6bd73cb67179fb1bb6d489ec158a1b7",
+   "declared": 1,
+   "reason": "opponent: the fallback body is empty and would accept, but CTFE executes `assume` itself, so a false condition still fails (E0080)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0080"
+   ]
+  }
+ }
+}

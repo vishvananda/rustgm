@@ -3,6 +3,7 @@ mod byte_codec;
 mod relocations;
 pub use relocations::{ImageFragment, WordTarget};
 pub(crate) use relocations::{MetadataShape, WordAddress, WordShape};
+mod assume_values;
 mod bit_count_values;
 mod callables;
 #[path = "values/site_constants.rs"]
