@@ -59,7 +59,9 @@ These rules are typed `LegacyRule` diagnostics:
 - bare trait objects;
 - `...` range patterns;
 - array `into_iter` method dispatch;
-- source-core panic macro delegation (`panic_2015`).
+- pre-2021 `panic!` and `assert!` delegation (`panic_2015`). Pre-2021
+  `unreachable!` now delegates to `unreachable_2015`, and 2015/2018 source
+  clients are admitted ([definition-lineage](definition-lineage.md#5-rust-20152018-as-cfg-if-and-rustc-demangle-need-them)).
 
 ## Shared builtin model
 

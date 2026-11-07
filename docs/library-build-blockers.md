@@ -5,6 +5,34 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane B [definition side table, lineage ledger and sugar-determined impl
+parameters](parallel/definition-lineage.md) repairs the expansion `Definition`
+regression and the census's largest cause. It also brings in std's two profile
+decisions.
+
+- The expansion `Definition` is 136 bytes again. Imported macro identities and
+  images live in their bound rows, which install first, so definition `i` below
+  the installed count is row `i`. Every exported macro table is byte-identical.
+- The import-lineage ledger is granted per admitted source byte (8 steps,
+  128 attempted bytes) above its former fixed floor, like the lint ledger, and
+  shares its work record.
+- A callable-sugar clause whose binder binds no region is now an ordinary impl
+  condition, so `T` in core's `impl<T, F> Iterator for FromFn<F> where
+  F: FnMut() -> Option<T>` resolves. Lane B's own census on base `e84a85783`
+  (pin `4cb211bb`, a separate run from Lane A's census 5) checks 42,122
+  declarations: 62 failed and 126 blocked, down from census 4's 74 and 127. "Associated type requires an
+  unambiguous implementation" falls from 35/26 to 23/25, with no new failure.
+  Specialization (14), user callable-trait `Self::Output` (5) and
+  region-binding sugar (2) remain. A newly exposed gap is override conformance
+  of a repeated `Self::Assoc` where-clause, which fails without sugar too.
+- Std builds as an rlib only: a `dylib` beside `rlib`/`lib` is dropped and
+  recorded per unit; dylib-only, cdylib-only and staticlib-only targets stay
+  typed gaps.
+- 2015 and 2018 source clients are admitted, and a pre-2021 `unreachable!`
+  delegates to `unreachable_2015`. Those are the only legacy rules cfg-if and
+  rustc-demangle need beyond the ones already implemented. Pre-2021 `panic!` and
+  `assert!` stay rejected by name.
+
 Lane A [census batch 4](parallel/census-batch4.md) repairs census 4's largest
 blocking cause and its roots. Census 5 (`5cb7e00c`) checks 42,194
 declarations, with 62 failed and 55 blocked (census 4: 42,109, 74 and 127).
@@ -324,17 +352,13 @@ the same frontier and byte-identical census as under the observer's explicit
 caps. With Cargo's lint policy, core still stops first on the
 `implicit_provenance_casts` producer.
 
-Known regression: the expansion `Definition` record is 168 bytes, not the 136
-that eight private layout invariants assert, for example
-`resolve::expansion::derive_lists::tests::marker_shape_ordinary_storage_and_derive_owner_layouts_preserve_boundaries`.
-The macro metadata rows (`cbef4d469`) added `imported: Option<ImportedDefinition>`
-(32 bytes). Lane B owns the repair: an out-of-line table for imported
-definitions, so the hot record keeps 136 bytes. The same test's per-crate
-`Report` assertion (3096) now reads 3104: census batch 3's `granted` word on
-the lint ledger `Work` also sits in the inline import-lineage budget. That word
-is accepted and the assertion is amended with the `Definition` repair. The
-`Imported` (160 bytes) and `consumer-grant-not-request` regressions are
-repaired in `d77e1c445` and `139078dbb`.
+The expansion `Definition` regression (168 bytes against the 136 that eight
+private layout invariants assert) is repaired by Lane B's
+[definition side table](parallel/definition-lineage.md). The per-crate `Report`
+assertion reads 3104 and the `Engine` 4152, 8 bytes each for the lineage
+ledger's grant word. The `Imported` (160
+bytes) and `consumer-grant-not-request` regressions are repaired in
+`d77e1c445` and `139078dbb`.
 
 Lane C [declared associated-result transport](parallel/associated-result-transport.md)
 is joined on main. Version 13 now carries trait associated results, impl

@@ -160,6 +160,31 @@ table already holds the 2015/2018 switch and named per-rule rejections.
   rules after its current core work, in the same batch as the executor's dylib
   rule.
 
+Follow-up decisions after [Lane B's batch](parallel/definition-lineage.md),
+2026-11-07:
+
+- **Rust 2021 source clients are admitted too.** libc (edition 2021, two
+  build units and a build-script run) is in std's graph, and it builds
+  against source core. It goes through the same source-client gate as 2015 and
+  2018. Any 2021 rule that RustGM has not implemented still fails by name.
+- **`#![no_std]` source clients are required, not deferred.** alloc, cfg-if,
+  rustc-demangle and libc are `#![no_std]` crates over core. A source client
+  must therefore get the implicit `core` extern-prelude entry, bound to the
+  authenticated `--source-client core` identity, and its edition's
+  `core::prelude::rust_20xx` glob, checked against rustc. The `#![no_core]`
+  form stays available.
+  - Trade-off: this opens alloc's first gate before core passes, and its
+    controls can use small original-shaped cores. A real alloc build still
+    waits for core.
+- **Ledger factors stay per ledger.** The lint ledger keeps 8 steps and 64
+  bytes per byte; the import-lineage ledger uses 8 and 128. Each is sized from
+  its own attribution, with at least 2× headroom over its densest linear
+  family.
+  - Trade-off: one shared pair would be simpler, but it would double the lint
+    ledger's runaway bound.
+- **The per-crate `Engine` grows from 4144 to 4152 bytes**, one grant word,
+  as `Report` did. It is accepted.
+
 ## Process
 
 - Qualify a batch of related repairs with one focused gate and one short
