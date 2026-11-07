@@ -5,6 +5,7 @@ use crate::{
     resolve::{
         body_origin::{Catalog, ImportedDeclarationId},
         crates::Imported,
+        expansion::Report,
         lookup::{BindingKey, Observations, Selection},
         model::{DefId, DefKind, Namespace, Resolution, Target},
         names::Names,
@@ -22,7 +23,11 @@ use crate::{
 };
 pub(in crate::resolve) use path_compatibility::PathKind;
 pub(crate) use path_compatibility::visit_warnings;
-use std::{cell::Cell, rc::Rc, sync::Arc};
+use std::{
+    cell::{Cell, RefCell},
+    rc::Rc,
+    sync::Arc,
+};
 
 impl crate::resolve::index::Resolver<'_> {
     pub(in crate::resolve) fn availability_trace(
@@ -115,7 +120,15 @@ pub(in crate::resolve) struct Imports {
     entries: Vec<PathEntry>,
     paths: Vec<path_compatibility::PathUse>,
     paths_complete: bool,
+    /// Denied uses inside expansions, awaiting their frames' allowance lists.
+    deferred: RefCell<Vec<Deferred>>,
     budget: Cell<Budget>,
+}
+/// A use of an unstable imported API whose site lies in a macro expansion: an
+/// imported or local definition's `allow_internal_unstable` list may admit it.
+struct Deferred {
+    site: NodeKey,
+    feature: String,
 }
 impl Imports {
     fn charge(&self, steps: usize, bytes: usize) -> Result<(), Error> {
@@ -212,17 +225,71 @@ impl Imports {
         let reference =
             reference.ok_or_else(|| Error::unlocated("denied policy has no actual row"))?;
         let feature = &self.rows(artifact)?.policies[reference.0 as usize].feature;
+        let start = package
+            .unit(site.file)
+            .configured
+            .ast
+            .node(site.node)
+            .span
+            .start;
+        let context = package.syntax_context(site.file, start)?;
+        if package
+            .marks
+            .outer(context)
+            .map_err(Error::unlocated)?
+            .is_some()
+        {
+            let feature = self.spelling(feature)?;
+            let growth = retained::Growth::vector::<Deferred>(
+                self.deferred.borrow().len(),
+                self.deferred.borrow().capacity(),
+                1,
+            );
+            self.charge(growth.work.saturating_add(1), growth.bytes)?;
+            self.deferred.borrow_mut().push(Deferred { site, feature });
+            return Ok(());
+        }
         Err(Error::at(
             site.file,
-            package
-                .unit(site.file)
-                .configured
-                .ast
-                .node(site.node)
-                .span
-                .start,
+            start,
             format!("use of unstable library API requires feature `{feature}`"),
         ))
+    }
+    /// Admit each deferred use from `start` on only through its own expansion
+    /// frame's allowance list, then drop it.
+    fn admit_deferred(&self, report: &Report, start: usize) -> Result<(), Error> {
+        let deferred = self.deferred.borrow_mut().split_off(start);
+        if deferred.is_empty() {
+            return Ok(());
+        }
+        let mut session = report.macro_allowances();
+        for entry in deferred {
+            self.charge(1, 0)?;
+            let span = report
+                .package
+                .unit(entry.site.file)
+                .configured
+                .ast
+                .node(entry.site.node)
+                .span;
+            let feature = crate::resolve::bindings::FeatureName::new(&entry.feature)
+                .map_err(Error::unlocated)?;
+            let site = crate::expand::stream::Location {
+                file: entry.site.file,
+                span,
+            };
+            if !session.allows(site, &feature)? {
+                return Err(Error::at(
+                    site.file,
+                    span.start,
+                    format!(
+                        "use of unstable library API requires feature `{}`",
+                        entry.feature
+                    ),
+                ));
+            }
+        }
+        Ok(())
     }
     pub(in crate::resolve) fn declaration(
         &self,
@@ -306,21 +373,25 @@ impl Imports {
         }
         Ok(())
     }
-    fn feature(&mut self, written: &str) -> Result<(), Error> {
-        self.charge(written.len().saturating_add(1), 0)?;
-        let normalized;
+    /// The canonical spelling of one written feature name.
+    fn spelling(&self, written: &str) -> Result<String, Error> {
+        self.charge(written.len().saturating_add(1), written.len())?;
         let spelling = if written.is_ascii() {
-            written
+            written.to_owned()
         } else {
-            normalized = Names::normalize_paid(written, &mut |growth| {
+            Names::normalize_paid(written, &mut |growth| {
                 self.charge(growth.work, growth.bytes)
                     .map_err(|_| "availability normalization budget exhausted")
             })
-            .map_err(Error::unlocated)?;
-            &normalized
+            .map_err(Error::unlocated)?
         };
+        crate::resolve::bindings::FeatureName::new(&spelling).map_err(Error::unlocated)?;
+        Ok(spelling)
+    }
+    fn feature(&mut self, written: &str) -> Result<(), Error> {
+        let spelling = self.spelling(written)?;
         let feature =
-            crate::resolve::bindings::FeatureName::new(spelling).map_err(Error::unlocated)?;
+            crate::resolve::bindings::FeatureName::new(&spelling).map_err(Error::unlocated)?;
         if self.features.contains(feature.spelling()) {
             return Ok(());
         }
@@ -426,6 +497,7 @@ pub(in crate::resolve) fn prepare(
         entries: Vec::new(),
         paths: Vec::new(),
         paths_complete: false,
+        deferred: RefCell::default(),
         budget: Cell::new(budget),
     };
     result.charge(0, size_of::<Imports>())?;
@@ -551,7 +623,19 @@ pub(crate) fn check(
     let Some(availability) = owner(&report.package, report.resolution.crates.as_deref())? else {
         return Ok(());
     };
-    availability.declaration(&report.package, site, definition, constant)
+    let start = availability.deferred.borrow().len();
+    availability.declaration(&report.package, site, definition, constant)?;
+    availability.admit_deferred(report, start)
+}
+/// After ordinary resolution, admit every use deferred inside an expansion
+/// through its frame's allowance list.
+/// # Errors
+/// Rejects a deferred use that no enclosing frame admits, by its feature.
+pub(in crate::resolve) fn admit_expanded(report: &Report) -> Result<(), Error> {
+    let Some(availability) = owner(&report.package, report.resolution.crates.as_deref())? else {
+        return Ok(());
+    };
+    availability.admit_deferred(report, 0)
 }
 pub(in crate::resolve) fn check_all(
     package: &Package,

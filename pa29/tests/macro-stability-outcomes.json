@@ -1,9 +1,10 @@
 {
  "profile": "Rust 1.98.0 x86_64-unknown-linux-gnu, -Cpanic=abort --cap-lints=allow, RUSTC_BOOTSTRAP=1 where declared, per-case editions; declared 2026-11-07 before any rustc or RustGM run of these files (exploratory probes of similar shapes ran first under obj/parallel/imported-builtins-v1/probe)",
  "plan_sha256": "b8f21bfc7e45249b7f671c298d43b957c1df4b1e5bc689b6d20307bde37100da",
- "oracle_sha256": "4475f61efadba3b612c29a17df221cbdec4c51453fab56f13cbb09feecc80acb",
- "oracle_runs_sha256": "069da92b564133c566ca4c447964325f3b506fc3caa08fc608ddd5eb451d3b5f",
- "oracle_result": "all nine declared rustc outcomes held, including four E0658 rejections and the native values 6 7 1; round 1 rejected the declared provider for a missing stability attribute on its re-export, and round 2 reran every case after that fixture amendment",
+ "plan2_sha256": "fdf105071df00bbe0853ecb9c1a8987f0bb63f9c34457aa0395419ad0d8e611f",
+ "oracle_sha256": "85a4a2278b3e395184ffd5a023d8d0d29894588eec160ba2c8f1739e95785d0b",
+ "oracle_runs_sha256": "51f4c1174434f476dbcc342a87d38beb6ce36e7cedb64127de3c0b390d8f6bc5",
+ "oracle_result": "all fourteen declared rustc outcomes held, including six E0658 rejections and the native values 6 7 1; round 1 rejected the declared provider for a missing stability attribute on its re-export, and round 2 reran every case after that fixture amendment; plan 2 added five API-gate cases, round 3 could not link the declared native API client under the driver-only harness, and round 4 reran every case after that case became non-native",
  "rustc_version": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
  "cases": [
@@ -200,6 +201,111 @@
    "native_stdout": "6 7 1\n",
    "frontend_expected_after_implementation": 0,
    "note": "listed expansions run natively: the call-site line, the gated answer and cfg"
+  },
+  {
+   "name": "api-provider",
+   "path": "tests/spec/macro-stability-rows/api-provider.rs",
+   "source_sha256": "1507449abf4bddcc1d1e11e8a0c1c238863a9f0145216b17bbd3b478726b0bf2",
+   "kind": "rlib",
+   "crate": "apis",
+   "edition": "2024",
+   "deps": {},
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_core": true,
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "metadata_version": 2,
+   "native": false,
+   "frontend_expected_after_implementation": 0,
+   "note": "a staged provider with an unstable function and two stable rows calling it, one listed"
+  },
+  {
+   "name": "api-client",
+   "path": "tests/spec/macro-stability-rows/api-client.rs",
+   "source_sha256": "b4d8a71ea416ac04f5c2b2b9ca0bebdf05aaab318207ef8c4090393b0da20e22",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "apis": "api-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_client": "api-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 0,
+   "note": "the listed row admits the unstable function at a site inside its imported expansion"
+  },
+  {
+   "name": "api-leaky-client",
+   "path": "tests/spec/macro-stability-rows/leaky-api-client.rs",
+   "source_sha256": "6711cefee2f6d8e020138c1a40083fc88049d3a163ed3833c97a8e9974905d94",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "apis": "api-provider"
+   },
+   "rustc": 1,
+   "rustc_codes": [
+    "E0658"
+   ],
+   "source_client": "api-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_diagnostic": "use of unstable library API requires feature `gated_api`",
+   "frontend_expected_after_implementation": 1,
+   "note": "an unlisted row does not admit the unstable function inside its expansion"
+  },
+  {
+   "name": "api-direct-client",
+   "path": "tests/spec/macro-stability-rows/direct-api-client.rs",
+   "source_sha256": "5c0654dda1512af63ed93db29ad19c3a7110d5edb11e1dc5d8a154d91f3ad757",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "apis": "api-provider"
+   },
+   "rustc": 1,
+   "rustc_codes": [
+    "E0658"
+   ],
+   "source_client": "api-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_diagnostic": "use of unstable library API requires feature `gated_api`",
+   "frontend_expected_after_implementation": 1,
+   "note": "a direct call outside any expansion stays gated"
+  },
+  {
+   "name": "api-native-client",
+   "path": "tests/spec/macro-stability-rows/api-native-client.rs",
+   "source_sha256": "3463020d583f39fc845c693fc2b8dc97043ec81f53dbe40556377192b9554339",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "apis": "api-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_client": "api-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 0,
+   "note": "the admitted call beside line and cfg in exported C functions; amended from a native case because the harness links an object client with its driver alone, so a provider function cannot link"
   }
  ]
 }
