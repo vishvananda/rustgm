@@ -48,8 +48,8 @@ impl<S: Sources> Engine<'_, S> {
         let units = &package.units;
         let original = units[file.0 as usize].configured.ast.node(call).span;
         let entry = &mut self.definitions[definition];
-        let node = entry
-            .node
+        let (definition_file, crate_id) = entry
+            .spelling()
             .ok_or_else(|| Error::at(file, original.start, "declarative macro has no source"))?;
         let (compiled, mode) = match &mut entry.body {
             Body::Declarative(compiled) => (compiled, Transparency::SemiOpaque),
@@ -62,7 +62,7 @@ impl<S: Sources> Engine<'_, S> {
                 ));
             }
         };
-        let definition_source = units[node.file.0 as usize].source.text();
+        let definition_source = units[definition_file.0 as usize].source.text();
         let source = units[file.0 as usize].source.text();
         let view = self
             .captures
@@ -91,13 +91,13 @@ impl<S: Sources> Engine<'_, S> {
         .map_err(|e| Error::at(file, original.start, e.message))?;
         let environment = Environment {
             definition: Source {
-                file: node.file,
+                file: definition_file,
                 text: definition_source,
             },
             invocation: Source { file, text: source },
             context: entry.context,
             introduction: context,
-            crate_id: 0,
+            crate_id,
             edition: entry.edition,
         };
         let mut stream = Stream::transcribe_with(

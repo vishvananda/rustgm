@@ -51,6 +51,8 @@ mod spelled_roles;
 mod static_transport;
 #[path = "crate_linking/transitive.rs"]
 mod transitive;
+#[path = "crate_linking/transported_rows.rs"]
+mod transported_rows;
 #[path = "crate_linking/variadic_transport.rs"]
 mod variadic_transport;
 #[path = "crate_linking/versioned_clients.rs"]

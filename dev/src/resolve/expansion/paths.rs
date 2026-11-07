@@ -60,20 +60,9 @@ impl Paths {
         parent: ExpansionId,
         definition: &super::Definition,
     ) -> Result<(), &'static str> {
-        let scope = if let Some(node) = definition.node {
-            self.state
-                .facts
-                .node_scopes
-                .get(&(definition.module, node.node))
-                .copied()
-        } else {
-            self.state
-                .facts
-                .module_scopes
-                .get(definition.module.0 as usize)
-                .copied()
-        }
-        .ok_or("missing macro definition scope")?;
+        let scope = definition
+            .site_scope(&self.state.facts)
+            .ok_or("missing macro definition scope")?;
         self.state
             .facts
             .introductions
@@ -807,6 +796,62 @@ impl Paths {
             (scope, name, Namespace::Macro, ItemContext::ROOT),
         );
         Ok(())
+    }
+    /// `#[macro_use] extern crate krate;` puts every macro row of that artifact
+    /// into the macro-use prelude. A later crate's rows replace an earlier one's.
+    pub(super) fn macro_use(
+        &mut self,
+        package: &mut Package,
+        context: Context,
+        node: NodeId,
+        item: crate::syntax::item::Item,
+    ) -> Result<(), Error> {
+        let resolver = self.state.bind(package);
+        let (Some(span), Some(crates), Some(external)) = (
+            item.name,
+            resolver.facts.crates.as_deref(),
+            resolver.facts.extern_scope,
+        ) else {
+            return Ok(());
+        };
+        let name = resolver.package.name(context.file, span)?;
+        let Some(root) = resolver
+            .facts
+            .bindings
+            .get(external, name, Namespace::Type)
+            .and_then(|binding| resolver.facts.definitions[binding.target.0 as usize].members)
+        else {
+            return Err(resolver.error(context, node, "macro_use requires an imported crate"));
+        };
+        let rows: Vec<_> = crates
+            .macros()
+            .iter()
+            .map(|row| {
+                (
+                    row.definition,
+                    &resolver.facts.definitions[row.definition.0 as usize],
+                )
+            })
+            .filter(|(_, definition)| definition.scope == root)
+            .map(|(id, definition)| (definition.name, id))
+            .collect();
+        let scope = resolver.facts.module_scopes[0];
+        for (name, id) in rows {
+            resolver.facts.macro_prelude.insert(name, id);
+            self.work.extend(resolver.facts);
+            self.work.declared(
+                &resolver.facts.bindings,
+                (scope, name, Namespace::Macro, ItemContext::ROOT),
+            );
+        }
+        Ok(())
+    }
+    /// An authenticated imported row executes as this declarative definition.
+    pub(super) fn imported_macro(&mut self, id: DefId, index: usize) {
+        self.macro_targets
+            .insert(id, MacroTarget::Declarative(index));
+        self.macros.resize(index + 1, None);
+        self.macros[index] = Some(id);
     }
     pub fn take_error(&mut self) -> Option<Error> {
         self.work.take_error()

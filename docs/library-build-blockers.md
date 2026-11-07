@@ -5,17 +5,18 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
-[Exported macro metadata](parallel/macro-metadata.md) (Lane B, PA29): library
-metadata now publishes root `#[macro_export]` definitions in a separate
-version-one envelope (tag 14), nested inside native links. Each row carries a
-canonical body image, typed token-tree rows, the edition, `local_inner_macros`
-and the rule count. Crates without exported macros keep their exact bytes.
-Malformed, relabelled, nested and trailing rows are rejected by name, as are
-generated, documented, builtin, scoped and permissioned definitions. Original
-cfg-if 1.0.4 now exports its `cfg_if` row (edition 2018, 4 rules). Twelve pinned
-rustc outcomes are frozen in `pa29/tests/macro-metadata-outcomes.json`. Consumer
-import is still to do: authentication, `$crate` bound to the provider's identity,
-the `use`, path and `#[macro_use]` forms, native runs and the cfg-if unit.
+[Macro metadata consumer](parallel/macro-metadata.md#consumer-import) (Lane B,
+PA29): clients now import exported `macro_rules!` rows. Each image is lexed
+once, its rows are rebuilt and must be equal, and it is compiled in the
+transported edition with its rule count checked. Each image gets an empty image
+unit. `$crate` resolves through the dependency-indexed crate id to the
+provider's identity. `use`, path and `#[macro_use] extern crate` forms are
+supported, and later macro-use crates shadow earlier ones. All 15 frozen PA29
+cases match rustc (`scripts/check_macro_metadata.py`), and the 7 binaries match
+natively. All six PA34 mixed-edition rows now match through metadata, including
+original cfg-if 1.0.4 into both consumers. The census of core's exported macros
+finds 58 builtin rows of 102, so the proposed next profile row is a builtin
+identity with no image.
 
 [Jointness-preserving macro image](parallel/macro-metadata.md#jointness-preserving-image)
 (Lane B, PA29): the tag-14 image now keeps source adjacency. Pieces are adjacent
@@ -27,6 +28,27 @@ transcribed tokens print alone, while paren and brace delimiters keep their
 source spacing, and a space always follows a bracket group. RustGM's local
 printer now spaces after a transcribed `]` as well, and its local copy passes
 natively.
+
+[Source-prelude validation once per phase](parallel/macro-budget.md#source-prelude-validation-once-per-phase)
+(Lane B): the retained source-prelude selector is now re-authenticated once per
+phase (selection, end of expansion, end of resolution, each sema method index),
+not on every lookup. Each lookup still pays one work unit and rechecks its
+selected module row. On unchanged core the ledger's work fell from 8,398,273 to
+6,913,407 (prelude lookups: 1,619,907 to 135,041), with byte-identical census
+output and the same `flatten.rs` 8286 frontier. The grant factors are unchanged;
+work headroom grows from 3.5× to 4.2×.
+
+[Exported macro metadata](parallel/macro-metadata.md) (Lane B, PA29): library
+metadata now publishes root `#[macro_export]` definitions in a separate
+version-one envelope (tag 14), nested inside native links. Each row carries a
+canonical body image, typed token-tree rows, the edition, `local_inner_macros`
+and the rule count. Crates without exported macros keep their exact bytes.
+Malformed, relabelled, nested and trailing rows are rejected by name, as are
+generated, documented, builtin, scoped and permissioned definitions. Original
+cfg-if 1.0.4 now exports its `cfg_if` row (edition 2018, 4 rules). Twelve pinned
+rustc outcomes are frozen in `pa29/tests/macro-metadata-outcomes.json`. Consumer
+import is still to do: authentication, `$crate` bound to the provider's identity,
+the `use`, path and `#[macro_use]` forms, native runs and the cfg-if unit.
 
 Lane C [callable-role transport](parallel/callable-role-transport.md) is
 joined on main. Version 13 now carries a no-core `Tuple`
@@ -52,15 +74,6 @@ Its new first gap is `flatten.rs` 8286, "missing associated result contract",
 the same frontier and byte-identical census as under the observer's explicit
 caps. With Cargo's lint policy, core still stops first on the
 `implicit_provenance_casts` producer.
-
-[Source-prelude validation once per phase](parallel/macro-budget.md#source-prelude-validation-once-per-phase)
-(Lane B): the retained source-prelude selector is now re-authenticated once per
-phase (selection, end of expansion, end of resolution, each sema method index),
-not on every lookup. Each lookup still pays one work unit and rechecks its
-selected module row. On unchanged core the ledger's work fell from 8,398,273 to
-6,913,407 (prelude lookups: 1,619,907 to 135,041), with byte-identical census
-output and the same `flatten.rs` 8286 frontier. The grant factors are unchanged;
-work headroom grows from 3.5× to 4.2×.
 
 Known regression: since LIB-193's input-graph header bound (`d2bcb1f89`),
 PA20 `assoc-bounds/{wide16,deep16,wide64,deep64}.rs` fail with "source header

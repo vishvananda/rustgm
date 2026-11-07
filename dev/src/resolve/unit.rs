@@ -137,26 +137,59 @@ impl Unit {
         Self::parsed(source, config, Some(context), names)
     }
 
+    /// The spelling unit of one transported macro image. The image is its
+    /// source text and the definition edition its edition. It holds an empty
+    /// items fragment, so module traversal and the unvisited-syntax checks never
+    /// see it; its tokens are lexed once, by the consumer's authentication.
+    ///
+    /// # Errors
+    /// Propagates storage-range overflows of the empty fragment.
+    pub(crate) fn image(
+        source: SourceFile,
+        edition: crate::support::edition::Edition,
+        names: &mut Names,
+    ) -> Result<Self, LexError> {
+        let context = MacroContext::Items(crate::syntax::item::ItemContext::Module);
+        let config = Config::in_edition(edition);
+        Self::configured(source, &config, Some(context), names, |_, names| {
+            crate::syntax::expression::fragment::parse_include_in_edition(
+                "",
+                context,
+                Some(names),
+                edition,
+            )
+        })
+    }
+
     fn parsed(
         source: SourceFile,
         config: &Config,
         context: Option<MacroContext>,
         names: &mut Names,
     ) -> Result<Self, LexError> {
-        let ast = if let Some(context) = context {
-            crate::syntax::expression::fragment::parse_include_in_edition(
-                source.text(),
-                context,
-                Some(names),
-                config.edition(),
-            )?
-        } else {
-            crate::syntax::expression::parse_crate_in_edition(
-                source.text(),
-                Some(names),
-                config.edition(),
-            )?
-        };
+        let edition = config.edition();
+        Self::configured(source, config, context, names, |text, names| {
+            if let Some(context) = context {
+                crate::syntax::expression::fragment::parse_include_in_edition(
+                    text,
+                    context,
+                    Some(names),
+                    edition,
+                )
+            } else {
+                crate::syntax::expression::parse_crate_in_edition(text, Some(names), edition)
+            }
+        })
+    }
+
+    fn configured(
+        source: SourceFile,
+        config: &Config,
+        context: Option<MacroContext>,
+        names: &mut Names,
+        parse: impl for<'a> FnOnce(&'a str, &mut Names) -> Result<crate::syntax::ast::Ast<'a>, LexError>,
+    ) -> Result<Self, LexError> {
+        let ast = parse(source.text(), names)?;
         let report = crate_syntax::configure(source.text(), ast, config)?;
         let mut literals = Storage::default();
         let ast = report.ast.map_literals(|value| {

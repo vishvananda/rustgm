@@ -104,6 +104,7 @@ fn actual() -> Result<(
         edition: declared.edition,
         edition_panic: false,
         header: declared.header,
+        imported: None,
     };
     Ok((package, paths, vec![definition]))
 }
@@ -147,7 +148,9 @@ fn selected_builtin_requires_exact_canonical_item_header_role_and_provider() -> 
         .insert(ModuleId(0), owner.file, owner.node, scope);
     checked_contract(&package, &paths, &definitions, 0, Builtin::CfgSelect)?;
     let source = package.source_core().ok_or("source owner")?;
-    assert!(source.macros.charge(1_000_001, 0).is_err());
+    // The allowance grows with admitted source bytes, so only an unbounded
+    // charge is sure to exhaust it whatever the fixture's size.
+    assert!(source.macros.charge(usize::MAX, 0).is_err());
     assert!(
         checked_contract(&package, &paths, &definitions, 0, Builtin::CfgSelect).is_err(),
         "warm identity cannot bypass global failed work"

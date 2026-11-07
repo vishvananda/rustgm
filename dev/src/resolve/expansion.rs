@@ -56,6 +56,8 @@ mod endpoint_permissions;
 mod format_inputs;
 mod format_sites;
 mod format_values;
+mod transported_macros;
+pub use transported_macros::ImportedDefinition;
 mod location;
 mod metavariables;
 mod panic_dispatch;
@@ -118,6 +120,8 @@ pub struct Definition {
     pub edition: Edition,
     pub edition_panic: bool,
     pub(super) header: Option<std::rc::Rc<super::bindings::panic_contracts::HeaderData>>,
+    /// Set for a definition transported in a dependency's macro metadata.
+    pub imported: Option<transported_macros::ImportedDefinition>,
 }
 impl Definition {
     /// Checked definition-site contracts (internal unstable, edition panic) are
@@ -432,6 +436,7 @@ impl<'a, S: Sources> Engine<'a, S> {
             attribute_effects: None,
             cfg_memo: None,
         };
+        engine.import_macros()?;
         engine
             .push_visit(Visit {
                 module: ModuleId(0),
@@ -582,6 +587,8 @@ impl<'a, S: Sources> Engine<'a, S> {
             let offset =
                 super::hygiene::name_offset(&self.loader.package, NodeKey { file, node: path });
             let context = self.context(file, offset)?;
+            // `local_inner_macros` names the defining crate: `crate` locally,
+            // or an imported provider's root by its crate id.
             let local_inner = self
                 .loader
                 .package
@@ -590,13 +597,20 @@ impl<'a, S: Sources> Engine<'a, S> {
                 .map_err(|message| Error::at(file, offset, message))?
                 .and_then(|expansion| expansion.0.checked_sub(1))
                 .and_then(|index| self.invocations.get(index as usize))
-                .is_some_and(|call| self.definitions[call.definition].local_inner_macros);
-            if local_inner {
+                .map(|call| &self.definitions[call.definition])
+                .filter(|definition| definition.local_inner_macros)
+                .map(|definition| definition.imported.map_or(0, |imported| imported.crate_id));
+            if let Some(crate_id) = local_inner {
+                let spelling = if crate_id == 0 {
+                    "crate".to_owned()
+                } else {
+                    super::crates::macro_root_spelling(crate_id)
+                };
                 let root = self
                     .loader
                     .package
                     .names
-                    .intern("crate")
+                    .intern(&spelling)
                     .map_err(|e| Error::at(file, offset, e))?;
                 names.prepend_root(root);
             }
@@ -853,6 +867,7 @@ impl<'a, S: Sources> Engine<'a, S> {
                     item,
                     visit.introduction,
                 )?);
+                self.extern_macro_use(visit, file, item)?;
                 self.unnamed_visibility(visit, item, tail)?;
             }
         }
@@ -1131,6 +1146,7 @@ impl<'a, S: Sources> Engine<'a, S> {
                     .allows(super::bindings::KnownFeature::EditionPanic)
             }),
             header: contract,
+            imported: None,
         });
         self.head = self
             .scopes
@@ -1260,6 +1276,7 @@ impl<'a, S: Sources> Engine<'a, S> {
             local_inner_macros: false,
             edition: self.loader.package.units[0].edition(),
             edition_panic: false,
+            imported: None,
         });
         self.builtin_definitions[slot] = Some(index);
         Ok(index)

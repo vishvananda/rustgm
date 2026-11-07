@@ -84,6 +84,7 @@ impl<S: Sources> Engine<'_, S> {
             edition: declared.edition,
             edition_panic,
             header: declared.header,
+            imported: None,
         });
         // Deliberately leave the legacy textual scope and export path untouched.
         Ok(())

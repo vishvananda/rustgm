@@ -337,6 +337,30 @@ impl Resolver<'_> {
                 }
                 scope = Some(self.facts.module_scopes[module.0 as usize]);
             }
+            spelling if spelling.starts_with('$') => {
+                // Only a provider's `$crate` appends this root; it names the
+                // imported crate root registered for that provider's identity.
+                let root = self
+                    .facts
+                    .crates
+                    .as_deref()
+                    .and_then(|crates| crates.macro_root(first))
+                    .ok_or_else(|| self.error(c, node, "unknown external defining crate"))?;
+                if path.len() == 1 {
+                    return Ok(if namespace == Namespace::Type {
+                        Lookup::Found(Binding {
+                            target: root,
+                            access: Access::Public,
+                            origin: Origin::Direct,
+                            ambiguous: false,
+                        })
+                    } else {
+                        Lookup::Missing
+                    });
+                }
+                scope = self.facts.definitions[root.0 as usize].members;
+                index = 1;
+            }
             _ => {}
         }
         if index == path.len() {

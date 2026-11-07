@@ -582,4 +582,25 @@ impl<S: Sources> Loader<'_, S> {
         self.include_requests.insert(requested, id);
         Ok((id, parsed))
     }
+
+    /// One spelling unit per imported macro image. Its label names the
+    /// provider's crate identity and the macro; nothing is read from disk.
+    pub(crate) fn macro_image(
+        &mut self,
+        label: PathBuf,
+        image: &str,
+        edition: crate::support::edition::Edition,
+    ) -> Result<FileId, Error> {
+        let id = FileId(
+            u32::try_from(self.package.units.len())
+                .map_err(|_| Error::at(FileId(0), 0, "too many macro image units"))?,
+        );
+        let source = SourceFile::new(image.as_bytes().to_vec()).map_err(|e| Error::at(id, 0, e))?;
+        let unit = Unit::image(source, edition, &mut self.package.names)
+            .map_err(|e| Error::at(id, e.offset, e.message))?;
+        self.package.units.push(unit);
+        self.package.file_paths.push(label.clone());
+        self.identities.push(label);
+        Ok(id)
+    }
 }

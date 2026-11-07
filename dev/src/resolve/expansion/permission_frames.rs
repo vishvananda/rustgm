@@ -39,15 +39,11 @@ impl<'a> FrameView<'a> {
             })
     }
     pub(super) fn executed(&self, context: ExpansionId, definition: &Definition) -> bool {
-        let scope = if let Some(node) = definition.node {
-            self.facts.node_scopes.get(&(definition.module, node.node))
-        } else {
-            self.facts.module_scopes.get(definition.module.0 as usize)
-        };
+        let scope = definition.site_scope(self.facts);
         self.facts
             .introductions
             .definition_scope(context)
-            .is_ok_and(|actual| Some(&actual) == scope)
+            .is_ok_and(|actual| Some(actual) == scope)
             && self
                 .facts
                 .introductions

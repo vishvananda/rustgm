@@ -1,7 +1,9 @@
 //! External metadata keeps its origin while local scopes receive canonical IDs.
+mod bound_macro_rows;
 mod original_declarations;
 mod public_names;
 mod token_images;
+pub(crate) use bound_macro_rows::{ImportedMacro, root_spelling as macro_root_spelling};
 #[cfg_attr(
     not(test),
     expect(
@@ -42,6 +44,9 @@ pub struct Imported {
     constants: Vec<(DefId, usize, usize)>,
     records: Vec<(DefId, usize, usize)>,
     statics: Vec<(DefId, usize, usize)>,
+    macros: Vec<ImportedMacro>,
+    /// `$crate` roots of macro providers, keyed by their unspellable root name.
+    macro_roots: HashMap<crate::support::names::NameId, DefId>,
 }
 impl Imported {
     pub(crate) fn has_availability(&self) -> bool {
@@ -63,6 +68,8 @@ impl Imported {
             constants: Vec::new(),
             records: Vec::new(),
             statics: Vec::new(),
+            macros: Vec::new(),
+            macro_roots: HashMap::default(),
         }
     }
     pub(crate) fn origin_catalog(
@@ -236,6 +243,7 @@ impl Resolver<'_> {
         let mut imported = Imported::new(dependencies);
         for (artifact_index, artifact) in artifacts.artifacts().iter().enumerate() {
             let scope = self.reserve_artifact_root(artifact, &mut imported)?;
+            self.import_macros(scope, artifact, artifact_index, &mut imported)?;
             if artifact.public_names().is_some() {
                 self.reserve_public_modules(scope, artifact, &mut imported)?;
             }

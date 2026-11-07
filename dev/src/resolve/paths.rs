@@ -155,11 +155,16 @@ impl Package {
                 segments.append(self, file, span, name)?;
                 Ok(false)
             }
-            Kind::CrateRoot(_) => Err(Error::at(
-                file,
-                span.start,
-                "external defining crate requires metadata",
-            )),
+            // An imported definition's `$crate` names its provider's root by
+            // crate id; lookup maps the unspellable root to that identity.
+            Kind::CrateRoot(id) => {
+                let name = self
+                    .names
+                    .intern(&crate::resolve::crates::macro_root_spelling(id))
+                    .map_err(|e| Error::at(file, span.start, e))?;
+                segments.append(self, file, span, name)?;
+                Ok(false)
+            }
             Kind::Name(span, name) => {
                 let name = self.parsed_name(file, span, name)?;
                 segments.append(self, file, span, name)?;

@@ -89,8 +89,8 @@ binding against a local name, `pat` fragments in the provider's edition,
 root-only publication, unexported macros and colliding names. All twelve rustc
 predictions were declared before the run. The
 `crate_linking::declarative_exports` controls check the provider envelope.
-Consumer import and native execution remain required work
-(`docs/parallel/macro-metadata.md`).
+`scripts/check_macro_metadata.py` runs both macro files, with consumer import
+and native execution (`docs/parallel/macro-metadata.md`).
 
 `macro-spacing-outcomes.json` freezes definition-site `stringify!` spellings
 through an exported macro (`spacing-provider.rs`). It covers a cross-crate 2024

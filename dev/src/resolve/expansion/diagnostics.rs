@@ -78,10 +78,28 @@ pub(super) fn frame(package: &Package, definition: &Definition, call: Location) 
     ExpansionTrace {
         macro_name: package.names.get(definition.name).to_owned(),
         call,
-        definition: definition.node.map(|key| Location {
-            file: key.file,
-            span: package.unit(key.file).configured.ast.node(key.node).span,
-        }),
+        // An imported definition points into its transported image.
+        definition: definition
+            .node
+            .map(|key| Location {
+                file: key.file,
+                span: package.unit(key.file).configured.ast.node(key.node).span,
+            })
+            .or_else(|| {
+                definition.imported.map(|imported| Location {
+                    file: imported.file,
+                    span: crate::syntax::token_tree::Span {
+                        start: 0,
+                        end: package
+                            .unit(imported.file)
+                            .source
+                            .text()
+                            .len()
+                            .try_into()
+                            .unwrap_or(u32::MAX),
+                    },
+                })
+            }),
     }
 }
 pub(super) fn stream_error(

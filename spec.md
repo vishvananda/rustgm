@@ -6165,8 +6165,10 @@ rather than dropped. Decoding checks the closed edition, flag, class and delimit
 that the rows lay out the image exactly. A consumer must not trust these rows: it
 lexes the image once, rebuilds the rows and requires them to be equal, and then
 recompiles every rule in the transported edition. It binds `$crate` to the
-provider's crate identity, never to a name or alias. Generated spellings are
-never re-lexed. The [macro metadata checkpoint](docs/parallel/macro-metadata.md)
+provider's crate identity, never to a name or alias. Rows are bound publicly in
+the provider's imported root, for `use` and path forms. `#[macro_use] extern
+crate` adds them to the macro-use prelude, where a later crate shadows an
+earlier one. Generated spellings are never re-lexed. The [macro metadata checkpoint](docs/parallel/macro-metadata.md)
 records the profile and its consumer requirements.
 
 ## Lowering and backend facts
