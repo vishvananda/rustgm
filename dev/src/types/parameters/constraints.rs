@@ -4,6 +4,7 @@
 mod tests;
 use super::{
     ParameterId,
+    clauses::Clause,
     predicates::{Bound, Predicate},
     uses::Uses,
 };
@@ -51,31 +52,53 @@ impl Constraints {
         Ok(result)
     }
 
-    /// Add a directional dependency without proving the equality or inferring inputs.
+    /// Add a directional dependency without proving the equality or inferring
+    /// inputs. A clause quantifier binds only lifetimes. Its own bound lifetimes are
+    /// neither inputs nor outputs, the impl's lifetimes are read one binder
+    /// deeper, and type and const parameters keep their identities. Non-type
+    /// clauses determine nothing.
     /// # Errors
-    /// Rejects malformed projection identities and exhausted graph resources.
-    pub fn equality(&mut self, store: &Store, predicate: Predicate) -> Result<(), &'static str> {
+    /// Rejects unknown clauses, malformed projections and exhausted graph resources.
+    pub fn clause(&mut self, store: &Store, clause: Clause) -> Result<(), &'static str> {
+        match clause {
+            Clause::Predicate(predicate) => self.dependency(store, predicate, 0),
+            Clause::ForAll(id) => {
+                let value = store
+                    .quantified(id)
+                    .ok_or("invalid impl constraint clause")?;
+                self.dependency(store, value.predicate, 1)
+            }
+            Clause::UnstableFeature(id) => {
+                store
+                    .feature_name(id)
+                    .ok_or("invalid non-type impl constraint clause")?;
+                self.account(1)
+            }
+        }
+    }
+
+    fn dependency(
+        &mut self,
+        store: &Store,
+        predicate: Predicate,
+        depth: u16,
+    ) -> Result<(), &'static str> {
         let Bound::ProjectionEqual(result) = predicate.bound else {
             return Ok(());
         };
         let Some(Kind::Projection(application)) = store.kind(predicate.ty) else {
             return Err("impl constraint requires an unreduced associated equality");
         };
-        if self.header
-            == (Predicate {
-                ty: application.subject,
-                bound: Bound::Trait(application.trait_application),
-            })
-        {
+        if self.projects_header(store, application, depth)? {
             // The implementation being defined cannot determine its own outputs.
             return Ok(());
         }
-        let mut outputs = self.occurrences(store, result, true)?;
+        let mut outputs = self.occurrences(store, result, true, depth)?;
         outputs.retain(|parameter| !self.known.contains(parameter));
         if outputs.is_empty() {
             return Ok(());
         }
-        let mut inputs = self.occurrences(store, predicate.ty, false)?;
+        let mut inputs = self.occurrences(store, predicate.ty, false, depth)?;
         inputs.retain(|parameter| !self.known.contains(parameter));
         self.account(inputs.len().saturating_add(outputs.len()).saturating_add(1))?;
         let index = self.dependencies.len();
@@ -88,6 +111,45 @@ impl Constraints {
             self.ready.push(index);
         }
         Ok(())
+    }
+
+    /// Outside a clause binder the header is compared exactly. Beneath one, the
+    /// impl's lifetimes are shifted, so a header containing lifetimes matches any
+    /// lifetime-bearing subject of its own trait. That can only reject more.
+    fn projects_header(
+        &self,
+        store: &Store,
+        application: crate::types::projection::Application,
+        depth: u16,
+    ) -> Result<bool, &'static str> {
+        let own = Predicate {
+            ty: application.subject,
+            bound: Bound::Trait(application.trait_application),
+        };
+        if depth == 0 || self.header == own {
+            return Ok(self.header == own);
+        }
+        let Some((header, _)) = self.header.bound.trait_parts() else {
+            return Ok(false);
+        };
+        let item = |id| {
+            store
+                .trait_application(id)
+                .map(|application| application.item)
+                .ok_or("invalid impl constraint trait application")
+        };
+        if item(header)? != item(application.trait_application)? {
+            return Ok(false);
+        }
+        if store
+            .contains_regions(self.header.ty)
+            .ok_or("invalid impl constraint header")?
+        {
+            return store
+                .contains_regions(application.subject)
+                .ok_or("invalid impl constraint subject");
+        }
+        Ok(application.subject == self.header.ty)
     }
 
     /// Each newly determined parameter wakes only the equalities depending on it.
@@ -125,6 +187,7 @@ impl Constraints {
         store: &Store,
         root: TypeId,
         constraining: bool,
+        depth: u16,
     ) -> Result<HashSet<Parameter>, &'static str> {
         let (mut uses, mut regions) = if constraining {
             (Uses::constraining(), bound_uses::Uses::constraining())
@@ -132,7 +195,7 @@ impl Constraints {
             (Uses::default(), bound_uses::Uses::default())
         };
         uses.collect(store, root)?;
-        regions.collect(store, root)?;
+        regions.collect_beneath(store, root, depth)?;
         self.account(uses.steps.saturating_add(regions.steps))?;
         Ok(parameters(uses, regions))
     }

@@ -12965,6 +12965,38 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/binders/constrained-results/bound-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.binders"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/determined_impl_parameters.rs:CONTROLS",
+      "mode": "--emit-generic-semantics",
+      "source_sha256": "b28e609245e620826659e85ec3257350b5952b4cf604037d400e25b184977c60"
+    },
+    {
+      "path": "tests/spec/binders/constrained-results/bound-unknown-subject.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.binders"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/determined_impl_parameters.rs:CONTROLS",
+      "mode": "--emit-generic-semantics",
+      "source_sha256": "fdf68908e04271027cbe6f8544e99968e7806429a477111c587811ec06378603"
     }
   ]
 }

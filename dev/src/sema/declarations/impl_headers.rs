@@ -298,9 +298,7 @@ impl Checker<'_> {
                 .unreduced
                 .predicate(predicate.source)
                 .unwrap_or(predicate.value);
-            constraints
-                .equality(types, original.ordinary().map_err(error)?)
-                .map_err(error)?;
+            constraints.clause(types, original).map_err(error)?;
         }
         constraints.solve().map_err(error)?;
         if parameters.into_iter().all(|id| constraints.determines(id)) {
@@ -402,3 +400,7 @@ impl Checker<'_> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/determined_impl_parameters.rs"]
+mod tests;

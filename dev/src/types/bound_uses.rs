@@ -102,6 +102,19 @@ impl Uses {
     pub fn collect(&mut self, store: &Store, root: TypeId) -> Result<(), &'static str> {
         self.collect_inside(store, root, 0)
     }
+    /// Accumulate this binder's uses from a root nested beneath `depth` clause
+    /// binders; regions those binders introduce are not this binder's uses.
+    ///
+    /// # Errors
+    /// Rejects invalid canonical data and exhausted traversal resources.
+    pub(crate) fn collect_beneath(
+        &mut self,
+        store: &Store,
+        root: TypeId,
+        depth: u16,
+    ) -> Result<(), &'static str> {
+        self.collect_inside(store, root, depth)
+    }
     fn collect_inside(
         &mut self,
         store: &Store,

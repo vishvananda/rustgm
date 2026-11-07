@@ -32,11 +32,11 @@ fn long_reverse_dependencies_and_unseeded_cycles_use_bounded_work() -> Result<()
     let mut unseeded = Constraints::new(&store, header, Uses::constraining())?;
     for pair in parameters.windows(2).rev() {
         let equality = equality(&mut store, pair[0].1, pair[1].1)?;
-        constraints.equality(&store, equality)?;
-        unseeded.equality(&store, equality)?;
+        constraints.clause(&store, equality.into())?;
+        unseeded.clause(&store, equality.into())?;
     }
     let back = equality(&mut store, parameters[10_000].1, parameters[0].1)?;
-    unseeded.equality(&store, back)?;
+    unseeded.clause(&store, back.into())?;
     constraints.solve()?;
     unseeded.solve()?;
     assert!(parameters.iter().all(|(id, _)| constraints.determines(*id)));

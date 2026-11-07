@@ -8701,6 +8701,142 @@
         "status": 1,
         "default_lints": true
       }
+    },
+    {
+      "path": "tests/spec/constrained-call-outputs/trait-output.rs",
+      "source_sha256": "19c97a51c3218226f0e462764f98084118b3583bfd0a3b145946f083bbaa7d87",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constrained-call-outputs/inherent-output.rs",
+      "source_sha256": "0b2ae22044f8d815e5ec4bf232b956666591ea2063e4d820430adcf32a3235f7",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constrained-call-outputs/chained-outputs.rs",
+      "source_sha256": "80c7496b549fec4eeef362356bb77d2fd0affe4976ba170a167c5eefac4e6d96",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constrained-call-outputs/higher-ranked-output.rs",
+      "source_sha256": "d7484efe675d57fbb45e09849ccbc2870994aae4b6fb49a5c766dd7de04ba1a4",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constrained-call-outputs/input-only.rs",
+      "source_sha256": "e4911a78e79150bd45d64e024694c72444b425f2ff7b915ac2d875896bc2e530",
+      "exit_status": 1,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/constrained-call-outputs/unknown-input.rs",
+      "source_sha256": "5acb8a82596e4589ebbfb2e96769fab265199c181b1995dde84993e4bd6635b4",
+      "exit_status": 1,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/constrained-call-outputs/impl-lifetime-input.rs",
+      "source_sha256": "241d2a5e3af3c52962fa7b2605e9068ca29e06da006a50c3f6674ccf1d207479",
+      "exit_status": 1,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/constrained-call-outputs/inherent-input-only.rs",
+      "source_sha256": "92d38ae303d9f919cd86d6a3e486015541e5bbdc22b05d09082055477cdf0547",
+      "exit_status": 1,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
     }
   ]
 }
