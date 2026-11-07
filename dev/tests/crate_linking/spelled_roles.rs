@@ -1,6 +1,6 @@
 //! Fresh CLI processes consume version-thirteen operator language roles, trait
 //! parameter defaults, checked Add/Sub/Mul rows and `Add` with its declared
-//! `Output`; forged role rows reject.
+//! `Output`, and apply imported roles themselves; forged role rows reject.
 use super::fresh_packets::{Packet, Result, relabel, unique, with_id};
 use rustgm::support::crates;
 use std::{fmt::Write as _, os::unix::process::ExitStatusExt};
@@ -56,11 +56,15 @@ fn operator_roles_defaults_and_checked_rows_survive_wire_and_fresh_consumers() -
         &mut packet.client("mismatch"),
         "incompatible types",
     )?;
-    packet.rejected(
+    // Amended boundary: the consumer's own `+=` resolves through the imported
+    // role's validated declaration identity and lowers one checked add.
+    super::artifacts::checked(
         "own-operator",
+        &packet.folder,
         &mut packet.client("own-operator"),
-        "source binary operator requires its actual language declaration",
     )?;
+    let text = std::fs::read_to_string(packet.folder.join("own-operator.lowir"))?;
+    assert_eq!(text.matches(" = binary add i32 ").count(), 2);
     // Amended boundary: `Add` with its associated `Output` now exports through
     // version-thirteen declared results, and its consumer instantiates `sum`.
     let output = Packet::publish(GROUP, SPEC, "output", "output", PROFILE)?;
@@ -69,6 +73,7 @@ fn operator_roles_defaults_and_checked_rows_survive_wire_and_fresh_consumers() -
         &output.folder,
         &mut output.client("sum-in-range"),
     )?;
+    own_controls(&output)?;
     let source = packet.fixture("provider");
     for profile in ["module-branches-v12", "module-nominals-v10"] {
         let older = packet.folder.join(format!("{profile}.rgcrate"));
@@ -81,6 +86,30 @@ fn operator_roles_defaults_and_checked_rows_survive_wire_and_fresh_consumers() -
     }
     Ok(())
 }
+/// Generated controls from the frozen clients, run against `output.rs`. The
+/// consumer's own `+` uses the imported `Add` role and its declared `Output`
+/// (rustc 1.98.0 exits 42). Without an imported `add_assign` role its own `+=`
+/// stays rejected by name, whatever the spelling (rustc E0368).
+fn own_controls(output: &Packet) -> Result {
+    let add = output.folder.join("own-add.rs");
+    std::fs::write(
+        &add,
+        "#![feature(no_core)]\n#![no_core]\nextern crate base;\n#[unsafe(no_mangle)]\npub extern \"C\" fn entry() -> i32 { base::sum(1i32, 40i32, 0i32).count + 1i32 + 1i32 }\n",
+    )?;
+    let mut consumer = output.consumer(&add, "own-add", &output.metadata, &output.owner());
+    super::artifacts::checked("own-add", &output.folder, &mut consumer)?;
+    let text = std::fs::read_to_string(output.folder.join("own-add.lowir"))?;
+    // Two own checked adds and the `sum` instance's own.
+    assert_eq!(text.matches(" = binary add i32 ").count(), 3);
+    let missing = output.folder.join("own-missing.rs");
+    let source = std::fs::read_to_string(output.fixture("own-operator"))?;
+    std::fs::write(&missing, source.replace("base::bump", "base::sum"))?;
+    output.rejected(
+        "own-missing",
+        &mut output.consumer(&missing, "own-missing", &output.metadata, &output.owner()),
+        "source binary operator requires its actual language declaration",
+    )
+}
 #[test]
 fn forged_role_rows_and_older_wires_reject_in_fresh_consumers() -> Result {
     let packet = publish("wire")?;
@@ -89,7 +118,10 @@ fn forged_role_rows_and_older_wires_reject_in_fresh_consumers() -> Result {
     let [add, ..] = binary_nodes(&bytes, 9)[..] else {
         return Err("no Add node".into());
     };
-    let client = packet.fixture("bump-in-range");
+    let (client, own) = (
+        packet.fixture("bump-in-range"),
+        packet.fixture("own-operator"),
+    );
     for (name, wire, diagnostic) in [
         (
             "unknown-role",
@@ -121,6 +153,10 @@ fn forged_role_rows_and_older_wires_reject_in_fresh_consumers() -> Result {
         std::fs::write(&path, wire)?;
         let mut consumer = packet.consumer(&client, name, &path, &packet.owner());
         packet.rejected(name, &mut consumer, diagnostic)?;
+        // The consumer's own `+=` trusts the forged role no more than imports do.
+        let label = format!("{name}-own");
+        let mut consumer = packet.consumer(&own, &label, &path, &packet.owner());
+        packet.rejected(&label, &mut consumer, diagnostic)?;
     }
     assert!(crates::decode(&relabel(&bytes, 12)).is_err());
     let relabelled = packet.folder.join("relabelled.rgcrate");
@@ -145,7 +181,7 @@ fn checked_rows_and_fresh_consumers_grow_linearly_with_operators() -> Result {
         &client,
         "#![feature(no_core)]\n#![no_core]\nextern crate base;\n#[unsafe(no_mangle)]\npub extern \"C\" fn entry() -> i32 { base::steps(1i32, 1i32, 0i32) }\n",
     )?;
-    let (mut sizes, mut lowir) = (Vec::new(), Vec::new());
+    let (mut sizes, mut lowir, mut owned) = (Vec::new(), Vec::new(), Vec::new());
     for width in [6, 24, 96] {
         let steps = (0..width).try_fold(String::new(), |mut text, _| {
             write!(text, "total += step; ").map(|()| text)
@@ -171,6 +207,25 @@ fn checked_rows_and_fresh_consumers_grow_linearly_with_operators() -> Result {
         assert!(text.contains("call void @abort()"), "{label}");
         sizes.push(std::fs::metadata(&metadata)?.len());
         lowir.push(text.len());
+        // The consumer's own `+=` statements resolve the imported role per use.
+        let own = packet.folder.join(format!("own{width}.rs"));
+        std::fs::write(
+            &own,
+            format!(
+                "#![feature(no_core)]\n#![no_core]\nextern crate base;\n#[unsafe(no_mangle)]\npub extern \"C\" fn entry() -> i32 {{ let mut total = base::steps(1i32, 1i32, 0i32); {}total }}\n",
+                steps.replace("step", "1i32")
+            ),
+        )?;
+        let label = format!("own{width}");
+        let mut consumer = packet.consumer(&own, &label, &metadata, &packet.owner());
+        super::artifacts::checked(&label, &packet.folder, &mut consumer)?;
+        let text = std::fs::read_to_string(packet.folder.join(format!("{label}.lowir")))?;
+        assert_eq!(
+            text.matches(" = binary add i32 ").count(),
+            2 * width,
+            "{label}"
+        );
+        owned.push(text.len());
     }
     // Fixed-width nodes: every statement adds the same wire bytes.
     let ([small, middle, large], [first, second, third]) = (
@@ -179,6 +234,8 @@ fn checked_rows_and_fresh_consumers_grow_linearly_with_operators() -> Result {
     );
     assert_eq!((middle - small) * 4, large - middle, "{sizes:?}");
     assert!(third - second <= 5 * (second - first), "{lowir:?}");
+    let [first, second, third] = <[usize; 3]>::try_from(owned.as_slice())?;
+    assert!(third - second <= 5 * (second - first), "{owned:?}");
     Ok(())
 }
 #[test]
@@ -203,5 +260,11 @@ fn operator_role_instances_execute_natively() -> Result {
         &mut output.client("sum-in-range"),
     )?;
     assert_eq!(output.native("sum-in-range")?.status.code(), Some(42));
+    super::artifacts::checked(
+        "own-operator",
+        &packet.folder,
+        &mut packet.client("own-operator"),
+    )?;
+    assert_eq!(packet.native("own-operator")?.status.code(), Some(42));
     Ok(())
 }

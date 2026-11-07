@@ -83,7 +83,8 @@
       "native_exit": 42,
       "sha256": "d7a1d7bc01a6a1e61f48873168e160b88fd927741bf7926954ce557b96844520",
       "candidate": "rejected: source binary operator requires its actual language declaration",
-      "reason": "a consumer's own use of an imported operator role is not resolved yet"
+      "reason": "a consumer's own use of an imported operator role is not resolved yet",
+      "amended": "own-operator checkpoint (2026-11-07): the consumer's own += resolves through the imported role's validated declaration identity and re-runs the imported operator contract; the fresh consumer accepts own-operator with native exit 42, the frozen rustc outcome"
     },
     {
       "file": "spec/language-roles/sum-in-range.rs",

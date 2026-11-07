@@ -14,8 +14,9 @@ functions `bump` (`+=`), `lower` (two `-=`) and `scale` (`*=`) lower to checked
 primitive Add, Sub and Mul. Three clients stay in range (42) and three overflow
 (SIGABRT). `mismatch.rs` passes a u8 count (E0308). `own-operator.rs` applies
 `+=` itself through the imported role, and `output.rs` with `sum-in-range.rs`
-uses `Add` with its associated `Output`; rustc accepts both, and the candidate
-boundaries record why RustGM still rejects them.
+uses `Add` with its associated `Output`; rustc accepts both. The candidate
+boundaries record why RustGM first rejected them, and their `amended` reasons
+record the checkpoints that now accept them.
 
 The providers carry a rustc-only shim under `--cfg rustc_oracle`:
 `panic_location`, a safe foreign `abort` and the three `panic_const_*_overflow`

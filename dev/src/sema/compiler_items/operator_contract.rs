@@ -228,6 +228,15 @@ pub(super) fn pending_default(
         .as_deref()
         .ok_or_else(|| error("source binary default lost its actual catalog"))?;
     catalog.require_provider_report(report).map_err(error)?;
+    // An imported role's defaults arrived complete with its validated header.
+    if catalog.language(operator.role()).is_none()
+        && catalog
+            .validated_role(operator.role())
+            .map_err(error)?
+            .is_some()
+    {
+        return Ok(None);
+    }
     let declaration = catalog
         .language(operator.role())
         .ok_or_else(|| error("source binary default requires its actual trait"))?;
@@ -313,22 +322,36 @@ pub(super) fn imported(
         .into_iter()
         .find(|operator| operator.role() == role)
         .ok_or("imported operator admission requested another language role")?;
-    if operator.indexing() {
-        return Err("imported indexing operator roles require their wider result profile");
-    }
-    facts.associated.require_imported_role(declaration)?;
-    let header = headers::Trait::current(report, facts, declaration, steps)?;
     let mut work = Work(*steps);
-    let result = if operator.assignment() {
-        imported_assignment(report, facts, &header, operator, &mut work)
-    } else {
-        imported_value(report, facts, &header, operator, &mut work)
-    };
+    let result = imported_operator(report, facts, declaration, operator, &mut work);
     *steps = work.0;
-    result.map_err(|failure| match failure {
+    result.map(|_| ()).map_err(|failure| match failure {
         Failure::Header(_) => "imported operator role lost its completed header",
         Failure::Contract(message) => message,
     })
+}
+/// The one imported contract: admission and a consumer's own operator use
+/// both re-run it on the imported header named by the validated role.
+fn imported_operator(
+    report: &Report,
+    facts: &Declarations,
+    declaration: super::Role,
+    operator: Operator,
+    work: &mut Work,
+) -> Result<SourceOperator, Failure> {
+    if operator.indexing() {
+        return Err("imported indexing operator roles require their wider result profile".into());
+    }
+    facts.associated.require_imported_role(declaration)?;
+    let mut steps = work.0;
+    let header = headers::Trait::current(report, facts, declaration, &mut steps);
+    work.0 = steps;
+    let header = header?;
+    if operator.assignment() {
+        imported_assignment(report, facts, &header, operator, work)
+    } else {
+        imported_value(report, facts, &header, operator, work)
+    }
 }
 fn imported_assignment(
     report: &Report,
@@ -336,7 +359,7 @@ fn imported_assignment(
     header: &headers::Trait<'_>,
     operator: Operator,
     work: &mut Work,
-) -> Result<(), Failure> {
+) -> Result<SourceOperator, Failure> {
     work.charge(8)?;
     header.profile(
         &facts.types,
@@ -383,7 +406,14 @@ fn imported_assignment(
         return Err("imported operator method requires a safe Rust signature".into());
     };
     assignment_signature(facts, header, rhs, parameters, result, bound_regions)?;
-    imported_item(facts, *method, function.signature)
+    imported_item(facts, *method, function.signature)?;
+    Ok(SourceOperator {
+        definition: header.definition,
+        method: *method,
+        signature: function.signature,
+        rhs,
+        output: None,
+    })
 }
 /// A by-value operator: exactly its declared `Output` result and required
 /// method `(Self[, Rhs]) -> <Self as Op[<Rhs>]>::Output`.
@@ -393,7 +423,7 @@ fn imported_value(
     header: &headers::Trait<'_>,
     operator: Operator,
     work: &mut Work,
-) -> Result<(), Failure> {
+) -> Result<SourceOperator, Failure> {
     work.charge(8)?;
     let arity = usize::from(operator.has_rhs());
     header.profile(
@@ -463,7 +493,14 @@ fn imported_value(
         return Err("imported value operator requires its exact by-value Self receiver".into());
     }
     output_projection(facts, header, output, rhs, result)?;
-    imported_item(facts, method, function.signature)
+    imported_item(facts, method, function.signature)?;
+    Ok(SourceOperator {
+        definition: header.definition,
+        method,
+        signature: function.signature,
+        rhs,
+        output: Some(output),
+    })
 }
 fn imported_item(facts: &Declarations, method: DefId, signature: TypeId) -> Result<(), Failure> {
     let ty = facts.definitions[method.0 as usize]
@@ -501,6 +538,13 @@ fn checked(
         .as_deref()
         .ok_or("source unary has no actual source catalog")?;
     catalog.require_provider_report(report)?;
+    // A consumer's own use resolves through the imported role's validated
+    // declaration identity, never a spelling or path, and re-runs its contract.
+    if catalog.language(operator.role()).is_none()
+        && let Some(role) = catalog.validated_role(operator.role())?
+    {
+        return imported_operator(report, facts, role, operator, work);
+    }
     let declaration = catalog.language(operator.role()).ok_or(match operator {
         Operator::Not => "source ! requires its actual Not language declaration",
         Operator::Neg => "source - requires its actual Neg language declaration",
