@@ -29,3 +29,14 @@ closure. This does not establish the no-core panic family or RustGM execution.
 diagnostics and native execution. No historical source or generated oracle was
 changed. These reference-only successors do not activate an unfinished course
 suite or complete PA25, PA31, closure transport or original library compilation.
+
+The separately frozen v5 `execution-pure.rs` uses the exact source-support
+prefix before the authored Add declaration and the same original drop_glue
+interval (pinned core `ptr/mod.rs` lines 821–829). It omits that unrelated
+arithmetic support rather than supplying a replacement panic body. Metadata,
+object and C linking accept; actual execution with operand 23 prints
+`closure-source 23 47 23 23 47`. This observes CTFE shared/mutable/owned-consuming
+captures and runtime shared/mutable environment data through a real no-core
+object. `semantics-reference-v5.json` binds the prediction and raw evidence.
+The old arithmetic object failure, const Drop, generic conditional callers,
+adapters and RustGM execution remain separate required contracts.

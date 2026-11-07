@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "state": "predictions frozen before Rust and RustGM execution-pure observations",
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "bootstrap": "1",
+    "threads": 2,
+    "crate_type": "lib"
+  },
+  "case": {
+    "file": "execution-pure.rs",
+    "sha256": "e098649f51efcf69ba6adeb2c0e1dc73e3c5cfa722aee3519cbc045be19cb65a",
+    "metadata": 0,
+    "object": 0,
+    "hypothesis": "pure CTFE shared/mutable/owned-once capture and runtime captures require no arithmetic assertion graph",
+    "native": {
+      "observer": "execution-pure.c",
+      "observer_sha256": "9ffe9ce70a3a7ef055322c1c4ce4a5225a2b9c6203737495cc29fd53b278c3e1",
+      "arguments": [
+        "23"
+      ],
+      "status": 0,
+      "stdout": "closure-source 23 47 23 23 47\n"
+    }
+  },
+  "provenance": {
+    "foundation": "source-execution-v3.rs prefix before authored Add declaration; retained exactly",
+    "foundation_sha256": "bbccde24cdb863860d1de24a3cc3e53b5c6aa8fc791a6e16b9bfc65b1df04e88",
+    "drop_glue": "pa31/tests/spec/cstr-source/original-drop-glue.rs",
+    "drop_glue_sha256": "5a60a9b1a527f153e485e5d7cc760531d7cd28ea055e539b645271ea559d10af",
+    "scope": "original v3 and arithmetic object failure unchanged; only this separate pure-data companion omits unused authored Add support"
+  }
+}

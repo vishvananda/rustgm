@@ -36,6 +36,10 @@
       "sha256": "73bba6eb81cca5167558191ab370044ac61b8b5a6a1653e63fb5d9fe1d5228db"
     },
     {
+      "path": "execution-pure.rs",
+      "sha256": "e098649f51efcf69ba6adeb2c0e1dc73e3c5cfa722aee3519cbc045be19cb65a"
+    },
+    {
       "path": "missing-feature.rs",
       "sha256": "6495dd7fd1399cddbf5d5f07ced26397fedfbfa109cfb476ce6513f0c19ba468"
     },
@@ -98,6 +102,10 @@
   ],
   "auxiliary": [
     {
+      "path": "execution-pure.c",
+      "sha256": "9ffe9ce70a3a7ef055322c1c4ce4a5225a2b9c6203737495cc29fd53b278c3e1"
+    },
+    {
       "path": "source-execution.c",
       "sha256": "181b231387d4ab38a077558b6232742c4aa94379990799148da8c6f481258113"
     }
@@ -118,10 +126,18 @@
     {
       "path": "semantics-predictions-v4.json",
       "sha256": "25d8d54912e6591a5eab987a79c9f1c6544e2259edb7372851c523656f33b5fa"
+    },
+    {
+      "path": "semantics-predictions-v5.json",
+      "sha256": "50ea4e30a01496acf519b667cd0655162dc28f0deab146e4746868921e757d78"
     }
   ],
   "reference": {
     "path": "semantics-reference-v1.json",
     "sha256": "8c5588249c5f8b7ff98cd9db7c3f52f3259acb73d3912419a5b1d32e87cf068e"
+  },
+  "successor_reference": {
+    "path": "semantics-reference-v5.json",
+    "sha256": "b7eb69f933f13f0bb45fb2ed4ba2b4b03f83655e5b9da392fcbecc5996ade661"
   }
 }

@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "state": "independently observed; no RustGM execution-pure observation",
+  "prediction": {
+    "path": "semantics-predictions-v5.json",
+    "sha256": "50ea4e30a01496acf519b667cd0655162dc28f0deab146e4746868921e757d78"
+  },
+  "source": {
+    "path": "execution-pure.rs",
+    "sha256": "e098649f51efcf69ba6adeb2c0e1dc73e3c5cfa722aee3519cbc045be19cb65a"
+  },
+  "observer": {
+    "path": "execution-pure.c",
+    "sha256": "9ffe9ce70a3a7ef055322c1c4ce4a5225a2b9c6203737495cc29fd53b278c3e1"
+  },
+  "raw_receipt": {
+    "path": "obj/parallel/const-closure-reference/v5/receipt.json",
+    "sha256": "3682a922c8a40d215f69b7f00b24b568bb54b530eb84b77b09f71de255da0453"
+  },
+  "compiler": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "bootstrap": "1",
+    "threads": 2,
+    "crate_type": "lib"
+  },
+  "cases": [
+    {
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/execution-pure.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v5/actual.rmeta"
+      ],
+      "status": 0,
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "artifact_sha256": "92ab4c4125a5a379a83aa2b57d4bf478da27f224f3b72d2944466b505e4e56ba"
+    },
+    {
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/execution-pure.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v5/actual.o"
+      ],
+      "status": 0,
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "artifact_sha256": "8873025bbb3ace50f019ca13a57a0a16a643201fc1d15c2e22f4b080bcdd5a31"
+    }
+  ],
+  "link": {
+    "command": [
+      "/usr/bin/cc",
+      "-std=c11",
+      "-no-pie",
+      "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v5/actual.o",
+      "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/execution-pure.c",
+      "-o",
+      "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v5/native"
+    ],
+    "status": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifact_sha256": "ea862efa05fb8511c551e3d22d7fd49969db2a337a2bf7167865c4af3f52d719"
+  },
+  "native": {
+    "command": [
+      "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v5/native",
+      "23"
+    ],
+    "status": 0,
+    "stdout": "closure-source 23 47 23 23 47\n",
+    "stdout_sha256": "d0233025e68f37f04c81dfb5aba860faf05c27701124b23b68302642f48178a6",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prediction_matches": true
+  },
+  "scope": "five pure-data CTFE/runtime capture contracts; original arithmetic graph/const Drop/generic conditional caller and receiver adapter requirements are unchanged",
+  "raw_output_sha256": {
+    "cc-version.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "cc-version.stdout": "f6ab9d76ae8dcab3e133254944fbc77f41e0ba766287e289345c1ab77df09c45",
+    "execute.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "execute.stdout": "d0233025e68f37f04c81dfb5aba860faf05c27701124b23b68302642f48178a6",
+    "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "link.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "metadata.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "metadata.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "obj.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "obj.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}
