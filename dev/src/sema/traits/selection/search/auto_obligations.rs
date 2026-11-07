@@ -23,6 +23,12 @@ struct Leaf {
     reveal: bool,
 }
 
+/// An object's own written or inherited auto bounds are its source premise.
+fn object_premise(facts: &Declarations, obligation: Obligation) -> bool {
+    matches!(facts.types.kind(obligation.ty), Some(Kind::Dynamic { shape, .. })
+        if facts.types.dynamic_has_auto(shape, obligation.marker))
+}
+
 impl Search<'_> {
     pub(super) fn auto_condition(
         &mut self,
@@ -60,7 +66,8 @@ impl Search<'_> {
                     if obligation == root {
                         // An abstract source application requires its actual
                         // caller premise; physical shape supplies no permission.
-                        pending.query.answer(obligation, false)?;
+                        let premise = object_premise(facts, obligation);
+                        pending.query.answer(obligation, premise)?;
                     } else {
                         pending.needed = Some(Leaf {
                             requested: obligation,

@@ -39,6 +39,14 @@ Two are core's own auto traits counted as a second object principal (`any.rs:162
 "invalid or exhausted canonical projection premise" hides the inner error and was
 classified as a budget stop. Evidence: `rustgm-pa29-work/obj/parallel/core-census-1/`.
 
+Census batch 1 ([auto-trait object principals](parallel/object-auto-principals.md)):
+object bounds now classify core's own auto traits using the declaration's
+`auto` header and its catalog role, not the name. Pinned-Rust fixtures: 14
+inputs, of which 13 match. A custom auto trait beside a principal is the
+recorded gap. The analysis-only re-census (candidate CLI `a071a3a3`, 22.2 s)
+checked 1,199 declarations with 5 failed. Both `any.rs` records are gone, there
+are no new object-related records, and it still stops at `flatten.rs:316`.
+
 The [target unit executor](parallel/target-unit-executor.md) now runs on core,
 alloc and std graphs re-planned under RustGM's fixed profile. The dev-profile
 graphs are kept as history. One combined run executes the real host build

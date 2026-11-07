@@ -57,6 +57,8 @@ mod object_members;
 mod object_requirements;
 #[path = "../../premise_contracts.rs"]
 mod premise_contracts;
+#[path = "../../principal_auto_sources.rs"]
+mod principal_auto_sources;
 #[path = "../../helpers/qualify.rs"]
 pub(crate) mod qualify;
 #[path = "../../quantified_aliases.rs"]

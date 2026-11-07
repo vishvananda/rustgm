@@ -1,0 +1,130 @@
+{
+  "schema": 1,
+  "owner": "PA31 source-declared auto traits in PA23 trait-object bounds",
+  "profile": "Rust 1.98 edition2024 lib panicabort overflowyes debugassertionsno ubchecksno; default lint policy; metadata and obj",
+  "cases": [
+    {
+      "file": "principal-send.rs",
+      "sha256": "d5b266b118ffcea3e3091fa02489305fdb4fd5fad134ff1e1186d7fe2fceea32",
+      "expected": 0,
+      "error_codes": [],
+      "hypothesis": "actual source Send/Sync beside one principal are three distinct impl self types (core any.rs:162/169 shape)"
+    },
+    {
+      "file": "demand-send.rs",
+      "sha256": "02a76a511afa9d89c66e90210b728772c16d810b5ee98b2f1480759aeedee99a",
+      "expected": 0,
+      "error_codes": [],
+      "hypothesis": "object auto markers discharge actual source Send/Sync demands"
+    },
+    {
+      "file": "supertrait-send.rs",
+      "sha256": "9ef28b7291f31f014ae22817f689a095eaccf03d8f885486ca6fae787ed30b51",
+      "expected": 0,
+      "error_codes": [],
+      "hypothesis": "a principal's source Send supertrait discharges dyn Job: Send"
+    },
+    {
+      "file": "two-principals.rs",
+      "sha256": "06ee8cd6fe276859731aa2966b2469f69984ead2f7787c3722d94e0c224dd273",
+      "expected": 1,
+      "error_codes": [
+        "E0225"
+      ],
+      "hypothesis": "two non-auto traits remain an E0225 second principal"
+    },
+    {
+      "file": "ordinary-named-send.rs",
+      "sha256": "18983ff0d0121f66392ce2661168fa461a2c42591306c4fa7d98d1fbe7c7ebdc",
+      "expected": 1,
+      "error_codes": [
+        "E0225"
+      ],
+      "hypothesis": "a non-auto trait spelled Send is an ordinary second principal; no name authority"
+    },
+    {
+      "file": "generic-auto.rs",
+      "sha256": "5b344f00b666b44dd9adb3330f5dd823b34210745e0fd9cec27c37e55b8dcb1c",
+      "expected": 1,
+      "error_codes": [
+        "E0107"
+      ],
+      "hypothesis": "source auto traits take no generic arguments"
+    },
+    {
+      "file": "demand-missing.rs",
+      "sha256": "48e59dddc9c3c3906818b8f865b52efedb199a6864eb431ef101ce7510ace965",
+      "expected": 1,
+      "error_codes": [
+        "E0277"
+      ],
+      "hypothesis": "dyn Any+Sync does not satisfy a source Send demand"
+    },
+    {
+      "file": "duplicate-object-impl.rs",
+      "sha256": "fb328556f50a31ea2ba5d6ccbf966e0723faa6f5d302b846eea8a3cc37940f0c",
+      "expected": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "hypothesis": "dyn Any+Send and dyn Send+Any are one type, so the impls conflict"
+    },
+    {
+      "file": "v2/auto-first.rs",
+      "sha256": "0682b7edf24de7f7a926f68aa71a822b9e11ab9f88e0782e58e78acb205fc6e5",
+      "expected": 0,
+      "error_codes": [],
+      "hypothesis": "a source auto trait may precede the principal; object identity ignores bound order"
+    },
+    {
+      "file": "v2/auto-only.rs",
+      "sha256": "d3d2682de19696cb638a6f9bdb5b7dcd43dbde52b85fb10ca8baeb5b0d51025f",
+      "expected": 0,
+      "error_codes": [],
+      "hypothesis": "source auto-only objects have no principal; set identity ignores order"
+    },
+    {
+      "file": "v2/unpin-object.rs",
+      "sha256": "1fe367fc490cc91478aad4780b6bc5f9e307e8fc59b3ba24130dba164ea61d4e",
+      "expected": 0,
+      "error_codes": [],
+      "hypothesis": "lang Unpin is an object auto trait beside a principal"
+    },
+    {
+      "file": "v2/custom-auto.rs",
+      "sha256": "941782dee535c380d377e10fb7e7008cc276062484e805523028d994930b1ca9",
+      "expected": 0,
+      "error_codes": [],
+      "hypothesis": "a custom source auto trait beside a principal is an auto bound, not a principal"
+    },
+    {
+      "file": "v2/inherent-send.rs",
+      "sha256": "ddf632706e3351ca076f9cffbd558eabeef4e4b4f8b570622bb68768c0d6f0ad",
+      "expected": 0,
+      "error_codes": [],
+      "hypothesis": "local principal objects with source autos accept inherent impls"
+    },
+    {
+      "file": "v2/inherent-auto-only.rs",
+      "sha256": "7cc10a9ed7413e4bb94c329ca6410f0302b6da652724062c20909e5e234bff54",
+      "expected": 1,
+      "error_codes": [
+        "E0785"
+      ],
+      "hypothesis": "an auto-only object has no principal for an inherent impl"
+    }
+  ],
+  "retained_setup_inputs": {
+    "auto-first.rs": "4cb63c4ecb7b819e33c5c17ac8a6e6d94281d1f20aaaf21e1158b342a0997f27",
+    "auto-only.rs": "a5c90e5cc2a1302c2b4c11d52c7023e0df6b344a409e42261291f89187f1467b",
+    "unpin-object.rs": "45dc9e7efec8296025df0c37406b96f1e0cb54bb659520b48d377c703e4f8179",
+    "custom-auto.rs": "83a8772beac4856ce74a09019b4247ffa79c5e12a0d20e6da992b87ba6c20401",
+    "inherent-send.rs": "13a329bf0e7faa6a7e24d275df0e55a0473f252fdcf402d7cd5c5f61d41100d8",
+    "inherent-auto-only.rs": "92ae511c60a23c70dd1bfc33bc1e2e34072ccb584161531c1319798fa2c5b5d1"
+  },
+  "maintainer_origin": "dev/tests/principal_auto_sources.rs",
+  "reference": {
+    "file": "reference-v1.json",
+    "sha256": "3e320e82442a13b316f594cfcaef569834399eff1e8210a2a5fd591824560a2d"
+  }
+}

@@ -31,6 +31,19 @@ pub(super) fn bound(facts: &mut Declarations, marker: AutoTrait) -> Result<Bound
         )?,
     ))
 }
+/// The actual catalog role of a source trait declaration, never its spelling.
+/// Only markers with an existing object meaning are represented; callers
+/// separately require that declaration's own `auto` header.
+pub(in crate::sema) fn object_marker(facts: &Declarations, definition: DefId) -> Option<AutoTrait> {
+    let catalog = facts.source_bindings.as_deref()?;
+    [AutoTrait::Send, AutoTrait::Sync, AutoTrait::Unpin]
+        .into_iter()
+        .find(|&marker| {
+            role(marker)
+                .and_then(|role| catalog.language(role))
+                .is_some_and(|declaration| declaration.definition == definition)
+        })
+}
 impl Search<'_> {
     pub(super) fn source_auto_kind(
         facts: &Declarations,

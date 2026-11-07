@@ -165,7 +165,7 @@ impl Checker<'_> {
         bounds: List,
         context: regions::Context,
     ) -> Result<Pending, Error> {
-        let mut principal = None;
+        let mut principal: Option<Principal> = None;
         let mut region = None;
         let mut autos = Vec::new();
         let nodes = self
@@ -216,8 +216,23 @@ impl Checker<'_> {
             else {
                 return Err(self.error(source, "object principal must be dyn compatible"));
             };
-            if principal.is_some() {
-                return Err(self.error(source, "object requires exactly one principal trait"));
+            if let Some(marker) = self.source_object_auto(path, definition)? {
+                if quantified {
+                    self.bound_scope(source, Some(binders), context, false)?;
+                }
+                autos.push(marker);
+                continue;
+            }
+            if let Some(first) = &principal {
+                // Custom auto declarations have no represented object marker.
+                return Err(self.error(
+                    source,
+                    if self.declared_auto(first.definition) || self.declared_auto(definition) {
+                        "object auto traits without a represented marker are not implemented"
+                    } else {
+                        "object requires exactly one principal trait"
+                    },
+                ));
             }
             let scope = self.bound_scope(source, quantified.then_some(binders), context, false)?;
             let scope = self.call_bound_scope(source, written, scope, context)?;
@@ -238,6 +253,43 @@ impl Checker<'_> {
             region,
             autos,
         })
+    }
+
+    /// The declaration's own `auto` header classifies it; its catalog role,
+    /// not its spelling, selects the represented structural marker.
+    fn declared_auto(&self, definition: DefId) -> bool {
+        self.facts
+            .associated
+            .owner(definition)
+            .and_then(|owner| self.facts.associated.get(owner))
+            .is_some_and(|owner| {
+                matches!(owner.kind, crate::sema::associated::OwnerKind::Trait {
+                    definition: actual, auto_: true, ..
+                } if actual == definition)
+            })
+    }
+    fn source_object_auto(
+        &self,
+        path: NodeKey,
+        definition: DefId,
+    ) -> Result<Option<crate::types::auto_traits::AutoTrait>, Error> {
+        let Some(marker) =
+            crate::sema::traits::selection::source_object_marker(&self.facts, definition)
+        else {
+            return Ok(None);
+        };
+        if !self.declared_auto(definition) {
+            return Err(self.error(
+                path,
+                "source auto role requires its actual auto trait declaration",
+            ));
+        }
+        if crate::sema::lifetimes::arguments(self.report, path, false)?
+            .is_some_and(|list| list.start != list.end)
+        {
+            return Err(self.error(path, "auto traits do not accept generic arguments"));
+        }
+        Ok(Some(marker))
     }
 
     fn object_bound_regions(

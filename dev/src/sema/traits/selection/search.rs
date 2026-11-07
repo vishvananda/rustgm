@@ -75,6 +75,7 @@ mod forwarding;
 mod forwarding_tests;
 mod frames;
 mod freezing;
+pub(in crate::sema) use freezing::object_marker as source_object_marker;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/selection_headers.rs"]
 mod header_tests;

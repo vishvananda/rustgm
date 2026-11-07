@@ -37,6 +37,12 @@ map distinguish local source intent from imported transport and whole-library
 artifacts. Independent and candidate outcomes are recorded separately in its
 qualification file.
 
+`spec/source-object-autos/` has 14 inputs on how source-declared auto traits
+classify PA23 object bounds. Their pinned Rust outcomes (28 checks) were frozen
+before observation, and six v1 no_core setup failures are kept. A custom auto
+trait beside a principal is still a recorded candidate gap. See the
+[checkpoint](../../docs/parallel/object-auto-principals.md).
+
 `spec/source-offset-of/provider/reached-contract.json` adds an independently
 frozen direct intrinsic consumer; it does not replace the original macro exit.
 The actual source pipeline and locked backend now match `1 4 8 0 0 8 16`,

@@ -39,6 +39,7 @@ pub(in crate::sema) use search::automatic_predicate;
 pub(in crate::sema) use search::callable_layouts;
 #[cfg(test)]
 pub(crate) use search::copy_trace;
+pub(in crate::sema) use search::source_object_marker;
 #[cfg(test)]
 pub(in crate::sema) use search::specialization_layouts;
 pub(in crate::sema) use search::{Conjunction, prove_conjunction};

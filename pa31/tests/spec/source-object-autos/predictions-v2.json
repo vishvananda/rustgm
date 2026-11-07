@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "state": "frozen-before-v2-Rust-or-candidate-observation",
+  "owner": "PA31 source-declared auto traits in PA23 trait-object bounds",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "crate_type": "lib",
+    "panic": "abort",
+    "overflow_checks": "yes",
+    "debug_assertions": "no",
+    "ub_checks": "no",
+    "lints": "default",
+    "RUSTC_BOOTSTRAP": "1",
+    "stages": [
+      "metadata",
+      "obj"
+    ]
+  },
+  "predecessor_sha256": "1bba4992abef30ff0a853a4de61e9c9d6c3bfb0b0f1c6d975a6439dc0d14a1a8",
+  "correction": "v1 observed six no_core setup failures (missing copy or legacy_receiver lang items), not semantic outcomes. V2 adds only the LegacyReceiver, Clone and Copy foundation lines; each case line and expectation is unchanged.",
+  "foundation": "no_core prefix with PointeeSized/MetaSized/Sized, diagnostic-item Send, lang Sync and lang Unpin declared as in pinned core; plus LegacyReceiver for &T/&mut T, lang Clone/clone_fn and lang Copy",
+  "cases": [
+    {
+      "file": "v2/auto-first.rs",
+      "sha256": "0682b7edf24de7f7a926f68aa71a822b9e11ab9f88e0782e58e78acb205fc6e5",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "hypothesis": "a source auto trait may precede the principal; object identity ignores bound order",
+      "replaces_setup_failure": "auto-first.rs"
+    },
+    {
+      "file": "v2/auto-only.rs",
+      "sha256": "d3d2682de19696cb638a6f9bdb5b7dcd43dbde52b85fb10ca8baeb5b0d51025f",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "hypothesis": "source auto-only objects have no principal; set identity ignores order",
+      "replaces_setup_failure": "auto-only.rs"
+    },
+    {
+      "file": "v2/unpin-object.rs",
+      "sha256": "1fe367fc490cc91478aad4780b6bc5f9e307e8fc59b3ba24130dba164ea61d4e",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "hypothesis": "lang Unpin is an object auto trait beside a principal",
+      "replaces_setup_failure": "unpin-object.rs"
+    },
+    {
+      "file": "v2/custom-auto.rs",
+      "sha256": "941782dee535c380d377e10fb7e7008cc276062484e805523028d994930b1ca9",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "hypothesis": "a custom source auto trait beside a principal is an auto bound, not a principal",
+      "replaces_setup_failure": "custom-auto.rs"
+    },
+    {
+      "file": "v2/inherent-send.rs",
+      "sha256": "ddf632706e3351ca076f9cffbd558eabeef4e4b4f8b570622bb68768c0d6f0ad",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "hypothesis": "local principal objects with source autos accept inherent impls",
+      "replaces_setup_failure": "inherent-send.rs"
+    },
+    {
+      "file": "v2/inherent-auto-only.rs",
+      "sha256": "7cc10a9ed7413e4bb94c329ca6410f0302b6da652724062c20909e5e234bff54",
+      "expected_code": 1,
+      "expected_error_codes": [
+        "E0785"
+      ],
+      "hypothesis": "an auto-only object has no principal for an inherent impl",
+      "replaces_setup_failure": "inherent-auto-only.rs"
+    }
+  ]
+}
