@@ -223,18 +223,20 @@ fn exhausted_attribute_payer_blocks_children_and_failed_retries() -> TestResult 
             engine.ensure_attribute_policy(key)?;
             let policy = payer(engine)?;
             let work = policy.work();
+            // Amended: the lint limits include the admitted-source grant.
+            let limit = work.limits().0 + 1;
             assert!(
                 policy
                     .attribute_read(
                         key,
-                        10_000_001_usize
+                        limit
                             .checked_sub(work.steps)
                             .ok_or("unexpected initial attribute work")?
                     )
                     .is_err()
             );
             let exhausted = payer(engine)?.work().steps;
-            assert_eq!(exhausted, 10_000_001);
+            assert_eq!(exhausted, limit);
             let before = counts(engine);
             let error = engine
                 .run()

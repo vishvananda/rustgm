@@ -1032,6 +1032,7 @@ impl<'a, S: Sources> Engine<'a, S> {
             visit.in_block,
             visit.include,
         )?;
+        self.grant_lint_admissions();
         let path_scope = self.paths.module(
             &mut self.loader.package,
             Context {

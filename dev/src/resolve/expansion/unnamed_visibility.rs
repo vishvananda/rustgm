@@ -251,7 +251,7 @@ impl<S: Sources> Engine<'_, S> {
             .map_err(|_| Error::at(key.file, 0, "visibility lint call index overflow"))?;
         let bytes = 4 * size_of::<Record>() + size_of::<Causes>() + size_of::<Effects>();
         if self.attribute_effects.is_none() {
-            let mut producer = Producer::new(frames, calls);
+            let mut producer = Producer::admitted(frames, calls, &self.loader.package);
             producer.reserve_diagnostic(key, bytes)?;
             self.attribute_effects = Some(Box::new(Effects {
                 policy: Some(producer),
@@ -262,7 +262,7 @@ impl<S: Sources> Engine<'_, S> {
                 .as_deref_mut()
                 .ok_or_else(|| Error::at(key.file, 0, "visibility owner disappeared"))?
                 .policy
-                .get_or_insert_with(|| Producer::new(frames, calls))
+                .get_or_insert_with(|| Producer::admitted(frames, calls, &self.loader.package))
                 .reserve_diagnostic(key, bytes)?;
         }
         Ok(())

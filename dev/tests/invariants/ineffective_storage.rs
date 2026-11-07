@@ -206,7 +206,8 @@ fn exhausted_annotation_observation_keeps_each_failed_attempt_paid() -> TestResu
         "impl annotation effect belongs to another attribute consumer"
     );
     let mut reads = producer.reads.get();
-    reads.steps = 10_000_000;
+    // Amended: the lint limits include the admitted-source grant.
+    reads.steps = producer.work().limits().0;
     producer.reads.set(reads);
     let before = producer.work();
     for _ in 0..2 {

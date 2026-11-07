@@ -224,7 +224,7 @@ impl Report {
             return Ok(());
         }
         let pending = if self.lint_producer().is_none() {
-            Some(Producer::capped(0, 0, self.package.lint_cap(), owner)?)
+            Some(Producer::capped(0, 0, &self.package, owner)?)
         } else {
             None
         };

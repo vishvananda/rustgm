@@ -77,6 +77,7 @@ fn decoded_hint_and_exact_argument_span_stay_in_existing_cold_owner() -> TestRes
     );
     assert_eq!(size_of::<super::super::expectations::Deprecation>(), 72);
     assert_eq!(size_of::<super::super::producer::Owner>(), 160);
-    assert_eq!(size_of::<Producer>(), 368);
+    // Amended: both ledgers record their admitted-source grant.
+    assert_eq!(size_of::<Producer>(), 384);
     Ok(())
 }

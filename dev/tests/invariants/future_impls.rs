@@ -256,7 +256,8 @@ fn reservation_source_witnesses_are_current_and_failed_queries_retain_work() -> 
         .declaration_annotation(&report.package, key)
         .map_err(crate::resolve::package::Error::from)?;
     assert_eq!(producer.work().bytes, warm.bytes);
-    let _ = producer.diagnostic_payload(key, 10_000_000, 0);
+    // Amended: the lint limits include the admitted-source grant.
+    let _ = producer.diagnostic_payload(key, producer.work().limits().0, 0);
     let failed = producer.work();
     for _ in 0..2 {
         assert!(

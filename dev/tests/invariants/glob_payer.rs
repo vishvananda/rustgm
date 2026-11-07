@@ -81,7 +81,8 @@ fn failed_new_diagnostic_allocations_are_sticky_and_publish_no_prefix() -> TestR
     let mut work = report.imports.take().ok_or("actual import work")?;
     let producer = report.lint_producer().ok_or("source policy owner")?;
     producer
-        .diagnostic_read(key, 64 * 1024 * 1024 - producer.work().bytes)
+        // Amended: the lint limits include the admitted-source grant.
+        .diagnostic_read(key, producer.work().limits().1 - producer.work().bytes)
         .map_err(Error::from)?;
     for _ in 0..2 {
         let before = producer.work();
@@ -115,11 +116,11 @@ fn completion_checks_both_failed_owners_and_the_actual_cap_before_empty_results(
                     .is_err()
             );
         } else {
+            // Amended: the lint limits include the admitted-source grant.
+            let producer = report.lint_producer().ok_or("source policy")?;
             assert!(
-                report
-                    .lint_producer()
-                    .ok_or("source policy")?
-                    .diagnostic_read(key, 64 * 1024 * 1024 + 1)
+                producer
+                    .diagnostic_read(key, producer.work().limits().1 + 1)
                     .is_err()
             );
         }

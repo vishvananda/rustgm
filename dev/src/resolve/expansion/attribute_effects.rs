@@ -83,14 +83,25 @@ impl<S: Sources> Engine<'_, S> {
             .as_deref()
             .is_none_or(|effects| effects.policy.is_none())
         {
-            let mut producer =
-                Producer::capped(frames, calls, self.loader.package.lint_cap(), key)?;
+            let mut producer = Producer::capped(frames, calls, &self.loader.package, key)?;
             if self.attribute_effects.is_none() {
                 producer.reserve_diagnostic(key, size_of::<Effects>())?;
             }
             self.attribute_effects.get_or_insert_default().policy = Some(producer);
         }
         Ok(())
+    }
+    /// A module or include admission grants the existing lint ledger before
+    /// expansion visits the admitted source.
+    pub(super) fn grant_lint_admissions(&mut self) {
+        let admitted = self.loader.package.admitted_source_bytes();
+        if let Some(producer) = self
+            .attribute_effects
+            .as_deref_mut()
+            .and_then(|effects| effects.policy.as_mut())
+        {
+            producer.admit(admitted);
+        }
     }
     pub(super) fn visit_key(visit: Visit) -> NodeKey {
         NodeKey {

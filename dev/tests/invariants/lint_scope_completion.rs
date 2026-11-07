@@ -128,7 +128,8 @@ fn failed_completion_payment_retains_attempted_work_without_finalization() -> Re
         .node
         .ok_or("actual parent source")?;
     producer
-        .diagnostic_payload(key, 10_000_000 - producer.work().steps, 0)
+        // Amended: the lint limits include the admitted-source grant.
+        .diagnostic_payload(key, producer.work().limits().0 - producer.work().steps, 0)
         .map_err(crate::resolve::package::Error::from)?;
     let before = producer.work().steps;
     let error = facts

@@ -28,6 +28,8 @@ pub struct Package {
     pub(super) macro_features: super::bindings::policy::MacroFeatures,
     pub(super) runtime_checks: crate::support::runtime_checks::RuntimeCheckConfig,
     pub(super) lint_cap: crate::support::diagnostics::LintCap,
+    /// Original bytes of the authenticated sources admitted so far, saturating.
+    pub(super) admitted_source_bytes: u32,
     pub no_std: bool,
     pub units: Vec<Unit>,
     pub file_paths: Vec<std::path::PathBuf>,
@@ -230,6 +232,12 @@ impl Package {
     #[must_use]
     pub const fn lint_cap(&self) -> crate::support::diagnostics::LintCap {
         self.lint_cap
+    }
+    /// The authenticated input that grants the source lint-policy ledger: the
+    /// original bytes of each admitted source identity, counted once. Copied
+    /// instances, aliases and expansion output are not admissions.
+    pub(crate) const fn admitted_source_bytes(&self) -> usize {
+        self.admitted_source_bytes as usize
     }
 
     pub(crate) fn requested_internal_attributes(&self) -> bool {

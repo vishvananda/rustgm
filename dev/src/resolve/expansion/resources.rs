@@ -114,6 +114,7 @@ impl<S: Sources> Engine<'_, S> {
     ) -> Result<(Span, FileId, bool), Error> {
         let (_, path) = self.include_path(file, target, arguments)?;
         let (included, parsed) = self.loader.include(&path, grammar)?;
+        self.grant_lint_admissions();
         // Cached source templates are never expanded in place. Each insertion
         // copies typed arenas into the caller and keeps a physical origin boundary.
         let (destination, source) = if file.0 < included.0 {

@@ -131,7 +131,12 @@ fn generated_endpoint_permission_rejects_copied_nodes_changed_roots_and_foreign_
         .nodes[row.base.get() as usize] = original;
     assert!(report.pattern_endpoint(key).is_ok());
     let producer = report.lint_producer().ok_or("source payer")?;
-    assert!(producer.diagnostic_payload(key, 10_000_000, 0).is_err());
+    // Amended: the lint limits include the admitted-source grant.
+    assert!(
+        producer
+            .diagnostic_payload(key, producer.work().limits().0, 0)
+            .is_err()
+    );
     let before = producer.work().steps;
     assert!(report.pattern_endpoint(key).is_err());
     assert_eq!(producer.work().steps, before + 24);

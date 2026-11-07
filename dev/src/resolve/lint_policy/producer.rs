@@ -75,6 +75,16 @@ pub(super) struct Owner {
     ),
     pub(super) parsed: Parsed,
 }
+/// Fixed per-crate setup floor: the former whole-crate limits, so no previously
+/// accepted input loses budget.
+const SETUP_STEPS: usize = 10_000_000;
+const SETUP_BYTES: usize = 64 * 1024 * 1024;
+/// Steps granted per original byte of an admitted source. Factors are sized
+/// in `docs/parallel/census-batch3.md` from original core's payer attribution
+/// and from the densest linear attribute and invocation families.
+pub(crate) const STEPS_PER_BYTE: usize = 8;
+/// Attempted-allocation bytes granted per original byte of an admitted source.
+pub(crate) const BYTES_PER_BYTE: usize = 64;
 #[derive(Clone, Copy, Default)]
 pub(crate) struct Work {
     pub attributes: usize,
@@ -86,10 +96,20 @@ pub(crate) struct Work {
     pub compositions: usize,
     pub steps: usize,
     pub bytes: usize,
+    /// Admitted original source bytes granted to this ledger; zero leaves the floor.
+    pub granted: usize,
 }
 impl Work {
+    /// The step and attempted-byte limits: the setup floor plus the grant.
+    pub(crate) const fn limits(&self) -> (usize, usize) {
+        (
+            SETUP_STEPS.saturating_add(self.granted.saturating_mul(STEPS_PER_BYTE)),
+            SETUP_BYTES.saturating_add(self.granted.saturating_mul(BYTES_PER_BYTE)),
+        )
+    }
     fn exhaustion(&self) -> Option<&'static str> {
-        match (self.steps > 10_000_000, self.bytes > 64 * 1024 * 1024) {
+        let (steps, bytes) = self.limits();
+        match (self.steps > steps, self.bytes > bytes) {
             (false, false) => None,
             (true, false) => Some("source lint policy work budget exceeded"),
             (false, true) => Some("source lint policy storage budget exceeded"),
@@ -166,17 +186,38 @@ impl Producer {
         work.bytes = work.bytes.saturating_add(reads.bytes);
         work
     }
+    /// A production ledger is granted every source admitted so far before its
+    /// first charge.
+    pub(crate) fn admitted(frames: u32, calls: u32, package: &Package) -> Self {
+        let mut producer = Self::new(frames, calls);
+        producer.admit(package.admitted_source_bytes());
+        producer
+    }
     pub(crate) fn capped(
         frames: u32,
         calls: u32,
-        cap: crate::support::diagnostics::LintCap,
+        package: &Package,
         key: NodeKey,
     ) -> Result<Self, Violation> {
-        let mut producer = Self::new(frames, calls);
+        let mut producer = Self::admitted(frames, calls, package);
+        let cap = package.lint_cap();
         if cap.suppresses_lints() {
             producer.ensure_cap_domain(key, cap)?;
         }
         Ok(producer)
+    }
+    /// Grant the cumulative admitted source bytes before a charge reads them.
+    /// The grant only grows, and an exhausted ledger is never granted again, so
+    /// failure stays sticky and no failed attempt is refunded.
+    pub(crate) fn admit(&mut self, admitted: usize) {
+        if self.work().exhaustion().is_some() {
+            return;
+        }
+        let granted = self.work.granted.max(admitted);
+        self.work.granted = granted;
+        let mut reads = self.reads.get();
+        reads.granted = granted;
+        self.reads.set(reads);
     }
     pub(super) fn require_cap(&self, package: &Package, key: NodeKey) -> Result<(), Violation> {
         self.attribute_read(key, 1)?;

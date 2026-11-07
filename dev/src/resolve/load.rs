@@ -170,6 +170,7 @@ impl<'a, S: Sources> Loader<'a, S> {
         let unit = Unit::parse(root.source, config, &mut names)
             .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
         let root_node = unit.configured.ast.root;
+        let root_bytes = u32::try_from(unit.source.original().len()).unwrap_or(u32::MAX);
         let no_std = unit
             .word_attribute(Some(root_node), "no_std")
             .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
@@ -192,6 +193,7 @@ impl<'a, S: Sources> Loader<'a, S> {
                 macro_features: prepared.macros,
                 runtime_checks: config.runtime_checks(),
                 lint_cap: config.lint_cap(),
+                admitted_source_bytes: root_bytes,
                 no_std,
                 file_paths: vec![root.path.components().collect()],
                 crate_name: if root.path == Path::new("<anon>") {
@@ -451,13 +453,18 @@ impl<'a, S: Sources> Loader<'a, S> {
         Ok(id)
     }
     /// The first parse of an authenticated source identity grants the source
-    /// contract ledger before expansion reads it. Copied instances, aliases and
-    /// expansion output are not admissions and grant nothing.
+    /// contract and lint-policy ledgers before expansion reads it. Copied
+    /// instances, aliases and expansion output are not admissions and grant nothing.
     fn admit(&mut self, identity: &Path, file: FileId) -> Result<(), Error> {
         if self.admitted.contains(identity) {
             return Ok(());
         }
         self.admitted.insert(identity.to_path_buf());
+        let bytes = self.package.unit(file).source.original().len();
+        self.package.admitted_source_bytes = self
+            .package
+            .admitted_source_bytes
+            .saturating_add(u32::try_from(bytes).unwrap_or(u32::MAX));
         let error = |message| Error::at(file, 0, message);
         if let Some(payer) = self.package.source_contract_payer().map_err(error)? {
             payer

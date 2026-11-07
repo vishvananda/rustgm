@@ -1851,6 +1851,17 @@ matching manifest and producer caps, passes them as compiler arguments and
 records null for an absent cap. Never suppress real operations. The
 [budget checkpoint](docs/parallel/macro-budget.md) records the sizing attribution.
 
+The source lint-policy ledger (owners, witnesses, frames, calls, reads and their
+storage) is bounded the same way. It starts at a fixed setup floor of ten million
+steps and 64 MiB of attempted storage, the former whole-crate limits. Each
+admitted source identity then grants 8 steps and 64 attempted bytes per original
+byte. A producer created after admissions is granted their total before its first
+charge, and an existing producer is granted each later module or `include!`
+admission before expansion visits it. Expansion output and copied instances grant
+nothing. An exhausted producer is never granted again, so its first failure stays
+sticky. The [census batch 3 record](docs/parallel/census-batch3.md) records the
+payer attribution and the linear and superlinear controls.
+
 Efficiency comes from removing repeated work and from the complexity and scaling
 rules under "Ownership, allocation and complexity", not from a fixed whole-crate
 number. When a phase's required work and retention are linear in its input, bound

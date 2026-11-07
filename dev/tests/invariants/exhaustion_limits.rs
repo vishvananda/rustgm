@@ -273,21 +273,26 @@ fn granted(report: &crate::resolve::expansion::Report) -> TestResult<allowance::
     let context = report.package.macro_context()?.ok_or("contract owner")?;
     Ok(context.contracts().0.borrow().granted)
 }
+/// Copies and aliases of two identities, plus macro-generated requests for them.
+fn admission_family(copies: usize) -> TestResult<String> {
+    let mut source = CORE.to_owned();
+    for copy in 0..copies {
+        use std::fmt::Write as _;
+        let alias = if copy % 2 == 0 { "" } else { "./" };
+        write!(
+            source,
+            "mod i{copy}{{include!(\"{alias}piece.rs\");}}#[path=\"{alias}unit.rs\"]mod u{copy};"
+        )?;
+    }
+    source.push_str(
+        "macro_rules!more{()=>{mod generated{include!(\"piece.rs\");}#[path=\"unit.rs\"]mod generated_unit;};}more!{}",
+    );
+    Ok(source)
+}
 #[test]
 fn each_admitted_identity_grants_once_and_expansion_output_grants_nothing() -> TestResult {
     for copies in [1, 4, 32] {
-        let mut source = CORE.to_owned();
-        for copy in 0..copies {
-            use std::fmt::Write as _;
-            let alias = if copy % 2 == 0 { "" } else { "./" };
-            write!(
-                source,
-                "mod i{copy}{{include!(\"{alias}piece.rs\");}}#[path=\"{alias}unit.rs\"]mod u{copy};"
-            )?;
-        }
-        source.push_str(
-            "macro_rules!more{()=>{mod generated{include!(\"piece.rs\");}#[path=\"unit.rs\"]mod generated_unit;};}more!{}",
-        );
+        let source = admission_family(copies)?;
         let report = provider(&source, &Config::default())?;
         let actual = granted(&report)?;
         let admitted = source.len() + PIECE.len() + UNIT.len();
@@ -388,6 +393,152 @@ fn linear_invocation_family_scales_and_exponential_expansion_still_fails() -> Te
         .to_string();
     assert!(
         error.contains("budget exceeded") || error.contains("exceed their"),
+        "{error}"
+    );
+    Ok(())
+}
+fn lint_work(
+    report: &crate::resolve::expansion::Report,
+) -> TestResult<crate::resolve::lint_policy::producer::Work> {
+    Ok(report.lint_producer().ok_or("lint producer")?.work())
+}
+fn lint_limits(granted: usize) -> (usize, usize) {
+    crate::resolve::lint_policy::producer::Work {
+        granted,
+        ..Default::default()
+    }
+    .limits()
+}
+#[test]
+fn lint_ledger_grants_each_admitted_identity_once_before_reading_it() -> TestResult {
+    assert_eq!(lint_limits(0), (10_000_000, 64 * 1024 * 1024));
+    assert_eq!(
+        lint_limits(1000),
+        (10_000_000 + 8 * 1000, 64 * 1024 * 1024 + 64 * 1000)
+    );
+    for copies in [1, 4, 32] {
+        let source = admission_family(copies)?;
+        let report = provider(&source, &Config::default())?;
+        let admitted = source.len() + PIECE.len() + UNIT.len();
+        // The root producer exists before any module or include is admitted.
+        assert_eq!(report.package.admitted_source_bytes(), admitted, "{copies}");
+        let work = lint_work(&report)?;
+        assert_eq!(work.granted, admitted, "{copies}");
+        assert_eq!(work.limits(), lint_limits(admitted), "{copies}");
+        assert!(report.package.units.len() > copies + 2, "{copies}");
+    }
+    Ok(())
+}
+#[test]
+fn lint_grants_only_grow_and_never_reset_an_exhausted_ledger() -> TestResult {
+    let report = provider(CORE, &Config::default())?;
+    let key = crate::resolve::unit::NodeKey {
+        file: crate::resolve::unit::FileId(0),
+        node: report.package.modules[0].root,
+    };
+    let mut producer = crate::resolve::lint_policy::producer::Producer::new(0, 0);
+    producer.admit(1000);
+    producer.admit(10);
+    assert_eq!(producer.work().granted, 1000);
+    let (steps, _) = lint_limits(1000);
+    producer
+        .attribute_read(key, steps)
+        .map_err(crate::resolve::package::Error::from)?;
+    assert!(!producer.diagnostic_budget_exhausted());
+    let error = producer
+        .attribute_read(key, 1)
+        .err()
+        .ok_or("over the grant")?;
+    assert_eq!(error.message, "source lint policy work budget exceeded");
+    // A later admission neither refunds the failed attempt nor clears it.
+    producer.admit(1_000_000);
+    assert_eq!(producer.work().granted, 1000);
+    assert_eq!(producer.work().steps, steps + 1);
+    assert!(producer.diagnostic_budget_exhausted());
+    assert!(producer.attribute_read(key, 0).is_err());
+    Ok(())
+}
+/// One attributed item per source line with `lints` names in its one attribute.
+fn attributed(count: usize, lints: usize) -> TestResult<String> {
+    let names = vec!["unused"; lints];
+    let mut source = CORE.to_owned();
+    for index in 0..count {
+        use std::fmt::Write as _;
+        writeln!(source, "#[allow({})]const C{index}:u8=1;", names.join(","))?;
+    }
+    Ok(source)
+}
+/// Per-item lint work at 512 and 4096 items, inside the per-byte factors.
+fn lint_family(
+    family: &str,
+    source: impl Fn(usize) -> TestResult<String>,
+) -> TestResult<[(usize, usize); 2]> {
+    use crate::resolve::lint_policy::producer::{BYTES_PER_BYTE, STEPS_PER_BYTE};
+    let mut ratios = [(0, 0); 2];
+    for (ratio, count) in ratios.iter_mut().zip([512, 4096]) {
+        let source = source(count)?;
+        let work = lint_work(&provider(&source, &Config::default())?)?;
+        let bytes = source.len();
+        eprintln!(
+            "{family}={count} bytes={bytes} steps={} attempted={}",
+            work.steps, work.bytes
+        );
+        assert_eq!(work.granted, bytes, "{family}");
+        assert!(
+            work.steps <= STEPS_PER_BYTE * bytes,
+            "{family} {count}: {} steps",
+            work.steps
+        );
+        assert!(
+            work.bytes <= BYTES_PER_BYTE * bytes,
+            "{family} {count}: {} bytes",
+            work.bytes
+        );
+        *ratio = (work.steps / count, work.bytes / count);
+    }
+    Ok(ratios)
+}
+#[test]
+fn linear_attribute_family_scales_and_exponential_output_grants_nothing() -> TestResult {
+    for lints in [1, 16] {
+        let ratios = lint_family(&format!("attributed-{lints}"), |count| {
+            attributed(count, lints)
+        })?;
+        assert!(4 * ratios[1].0 <= 5 * ratios[0].0, "{ratios:?}");
+        assert!(4 * ratios[1].1 <= 5 * ratios[0].1, "{ratios:?}");
+    }
+    // Each macro frame lookup is a binary search over the sparse frame table:
+    // its log factor is bounded by the 32-bit frame domain.
+    let ratios = lint_family("invocations", |count| Ok(invocations(count)))?;
+    assert!(ratios[1].0 <= ratios[0].0 + 4, "{ratios:?}");
+    assert!(4 * ratios[1].1 <= 5 * ratios[0].1, "{ratios:?}");
+    let doubling = |depth: usize| {
+        format!(
+            "{CORE}macro_rules!e{{()=>{{#[allow(unused)]const _:u8=1;}};(x $($t:tt)*)=>{{e!{{$($t)*}}e!{{$($t)*}}}};}}e!{{{}}}",
+            "x ".repeat(depth)
+        )
+    };
+    // Exponential attributed output grants nothing beyond its admitted bytes.
+    let mut usage = Vec::new();
+    for depth in [9, 12] {
+        let source = doubling(depth);
+        let work = lint_work(&provider(&source, &Config::default())?)?;
+        assert_eq!(work.granted, source.len(), "{depth}");
+        assert_eq!(work.limits(), lint_limits(source.len()), "{depth}");
+        usage.push((work.steps, work.bytes));
+    }
+    eprintln!("attributed doubling work at depths 9 and 12: {usage:?}");
+    assert!(usage[1].0 >= 7 * usage[0].0, "{usage:?}");
+    assert!(usage[1].1 >= 7 * usage[0].1, "{usage:?}");
+    // About 1.1 KB of lint storage per generated owner: sixteen doublings
+    // exceed the grant of the same small input while macro work stays under
+    // its own floor.
+    let error = provider(&doubling(16), &Config::default())
+        .err()
+        .ok_or("exponential attributed output accepted")?
+        .to_string();
+    assert!(
+        error.contains("source lint policy storage budget exceeded"),
         "{error}"
     );
     Ok(())
