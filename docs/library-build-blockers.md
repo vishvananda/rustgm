@@ -11,10 +11,11 @@ feature and each builtin row's `allow_internal_unstable` list. Every call of
 an imported unstable row needs the feature, either requested by the crate or
 granted by the enclosing imported expansion's list (E0658 otherwise). Source
 clients and staged consumers now own the imported-allowance ledger, so listed
-rows such as `cfg(ub_checks)` wrappers work there. Builtins with
+rows such as `cfg(ub_checks)` wrappers work there. Uses of unstable imported
+APIs inside expansions are admitted by the frame's list, as rustc does. Builtins with
 `allow_internal_unsafe` or edition-panic contracts are now rejected at
-publication instead of losing their contract. All nine declared rustc outcomes
-held, and the candidate passes all 53 macro cases natively. Imported `assert`,
+publication instead of losing their contract. All fourteen declared rustc
+outcomes held, and the candidate passes all 58 macro cases natively. Imported `assert`,
 `panic`, `unreachable` and `format_args` still do not run. Their next blockers
 are `&'static str`/`!` signature transport for `$crate::panicking::panic`,
 semiopaque `pub macro` rows for `panic_2021`/`unreachable_2021`, and typed

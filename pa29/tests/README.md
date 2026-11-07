@@ -160,6 +160,10 @@ allowance list, listed and unlisted wrappers, and a staged re-export. Seven
 source clients cover a listed `cfg(ub_checks)` expansion, direct calls with and
 without the feature, the unstable builtin, listed wrappers, an unlisted wrapper
 and a re-export reached through `use`. `native-client.rs` links with the
-`builtin-macro-rows` native driver. All nine outcomes were declared before any
-rustc or RustGM run. The provider's re-export stability attribute was added
-after oracle round 1 (`docs/parallel/macro-metadata.md`).
+`builtin-macro-rows` native driver. A second staged provider
+(`api-provider.rs`) has an unstable function called by a listed and an
+unlisted row; four clients cover both rows, a direct call, and the listed row
+beside `line` and `cfg`. All fourteen outcomes were declared before any rustc or
+RustGM run of their files. The provider's re-export stability attribute was
+added after oracle round 1, and the API client was made non-native after
+round 3 (`docs/parallel/macro-metadata.md`).

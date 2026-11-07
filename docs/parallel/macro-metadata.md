@@ -808,6 +808,15 @@ published without their contract.
   re-export and `#[macro_use]` route.
 - A row's feature counts as a library feature of its dependency, so a source
   client's `#![feature(F)]` passes request validation.
+- Imported API availability now has the same ledger. Suppose a use of an
+  unstable imported item is denied by crate requests, and its site lies inside
+  a macro expansion. The use is deferred instead of failing at once. After
+  `bindings::finish`, `availability_imports::admit_expanded` admits it only
+  through its own frame's allowance list. Without such a list, the original
+  "use of unstable library API requires feature `F`" is reported at the same
+  site. Typed body checks (`check_imported_api`) admit their deferred uses
+  immediately, against the same report. A direct use outside any expansion
+  still fails at once.
 - Source clients and staged consumers build the imported-only local ledger
   (`LocalMacros`) whenever a dependency row carries a list, as ordinary crates
   already did. Before this change a source client could not apply an imported
@@ -845,9 +854,10 @@ The blockers, in order:
 
 ### Qualification (version 3)
 
-All nine outcomes in `pa29/tests/macro-stability-outcomes.json` (plan sha256
-`b8f21bfc…`, `obj/parallel/imported-builtins-v1/declared/`) were declared
-before any rustc or RustGM run of these files. Exploratory probes of similar
+All fourteen outcomes in `pa29/tests/macro-stability-outcomes.json` were
+declared before any rustc or RustGM run of their files: nine in the first plan
+(sha256 `b8f21bfc…`, `obj/parallel/imported-builtins-v1/declared/`) and five in
+the second. Exploratory probes of similar
 shapes (`obj/parallel/imported-builtins-v1/probe`) ran first. The fixtures in
 `pa29/tests/spec/macro-stability-rows/` are:
 
@@ -855,23 +865,32 @@ shapes (`obj/parallel/imported-builtins-v1/probe`) ran first. The fixtures in
   unstable builtin row (`line`), a builtin row with a list (`stringify`),
   listed wrappers, an unlisted wrapper and a staged re-export;
 - seven source clients;
-- a native object client driven by the `builtin-macro-rows` driver.
+- a native object client driven by the `builtin-macro-rows` driver;
+- a second plan (`declared/plan2.json`, sha256 `fdf10507…`): a staged provider
+  with an unstable function (`seven`) and a listed and an unlisted row calling
+  it, plus four source clients.
 
 Results:
 
 - **Oracle.** Round 1 rejected the declared provider: rustc requires a stability
   attribute on a staged crate's public re-export. The fixture was amended
-  (`declared/amendments.txt`) and round 2 reran every case. Pinned rustc 1.98.0
-  then matched all 53 macro cases natively, including four E0658 rejections and
-  the native `6 7 1` (`oracle.json` sha256 `4475f61e…`).
-- **Candidate.** `scripts/check_macro_metadata.py` runs all 53 cases. With CLI
-  `d7af1f75…`, all 53 passed both non-native
-  (`obj/qualification/fast/1794061449063891192`) and native
-  (`1794061547550973425`, evidence
-  `obj/parallel/pa29-macro-metadata/maintainer-1435107-true-1794061575021107648`).
-  The native client prints `6 7 1`, as rustc does. RustGM's four rejections
-  name the feature and frame, for example "use of unstable library macro
-  requires feature `gated_answer`" in macro `leaky`.
+  (`declared/amendments.txt`) and round 2 reran every case. Round 3 ran the
+  second plan. rustc compiled the declared native API client, but the harness
+  links an object client only with its driver, so the call into the provider
+  could not link. That case became a non-native rlib, and round 4 reran every
+  case. Pinned rustc 1.98.0 then matched all 58 macro cases natively, including
+  six E0658 rejections and the native `6 7 1` (`oracle.json` sha256
+  `85a4a227…`).
+- **Candidate.** `scripts/check_macro_metadata.py` runs all 58 cases. With CLI
+  `937cfb53…`, all 58 passed both non-native
+  (`obj/qualification/fast/1794062145860304497`) and native
+  (`1794062325290343354`, evidence
+  `obj/parallel/pa29-macro-metadata/maintainer-1737550-true-1794062351840556631`).
+  The native client prints `6 7 1`, as rustc does. The first 53 had already
+  passed with CLI `d7af1f75…` before the API ledger. RustGM's rejections name
+  the feature and frame, for example "use of unstable library macro requires
+  feature `gated_answer`" in macro `leaky`, and "use of unstable library API
+  requires feature `gated_api`" in macro `leaky_api`.
 - **Integration tests.** `crate_linking::expander_rows` gains three tests:
   - publication and round trip of the stability fields, the builtin list,
     gating through a re-export, and admission by a requested feature; the
@@ -885,13 +904,53 @@ Results:
   All nine `expander_rows` tests passed (`1794061301030997286`).
 - **Private tests.** Strict private Clippy and 12 private tests passed
   (`1794061632402438057`): `macro_context`, `permission_session`, `cfg_gates`,
-  the source-client selection tests and an encoded-consumer test.
+  the source-client selection tests and an encoded-consumer test. After the
+  API ledger, strict private Clippy and eight of nine availability, deprecation
+  and allowance tests passed (`1794062373407432923`). These include the staged
+  provider's per-API gate test. The ninth,
+  `legacy_availability_remains_unknown_and_hot_records_do_not_grow`, fails on
+  its exact `size_of::<s::Columns>()` (864, expected 768). That assertion is
+  already stale on main: `Columns` grew with the version-13 enum columns
+  (`682507cd1`), and this lane does not touch it.
 
 **Amended controls.**
 
 - `declarative_exports` used version 3 as its unknown-version forgery. It now
   uses 4, and also checks that version-one rows relabelled as version 3 fail
   with "unknown exported macro row kind".
-- `transported_rows`'s runner count rises from 44 to 53.
+- `transported_rows`'s runner count rises from 44 to 58.
+- `api-native-client` was declared native and became a non-native rlib after
+  oracle round 3 (harness linking, above).
 - Behavior: a builtin with `allow_internal_unsafe` or an edition-panic contract
   is now rejected at publication, where it used to publish without its contract.
+
+### Census by blocker after re-export rows and version 3
+
+This census of alloc library code (not tests) reuses the earlier
+analysis-only counts (`obj/parallel/builtin-rows-v1/census/uses.json`, over
+the pinned 1.98.0 sources). Each site is classified by its first macro-level
+blocker on main before this lane (`a48d752ae`) and now, using core's actual
+attributes. alloc requests `bstr_internals`, `ub_checks`, `panic_internals`
+and `fmt_internals`.
+
+| Macros (alloc library sites) | Sites | Before | Now |
+| --- | ---: | --- | --- |
+| builtin derives (`Debug` 21, `Clone` 19, `PartialEq` 14, `Eq` 14, `PartialOrd` 5, `Ord` 5, `Hash` 2, `Default` 2, `Copy` 2) and `derive` 29 | 113 | re-export rows (prelude) | imported builtin derives do not run |
+| `impl_partial_eq`, `impl_partial_eq_ord`, `impl_partial_eq_n` | 12 | re-export rows (`core::bstr`) | none: unstable `bstr_internals` rows, requested |
+| `debug_assert` | 92 | edition-panic contract at publication | same |
+| `assert` 49, `panic` 17, `unreachable` 9 | 75 | non-context-free imported builtin; list silently dropped | edition-panic contract at publication |
+| `format_args` 2, `write` 6 | 8 | non-context-free imported builtin | `allow_internal_unsafe` at publication |
+| `debug_assert_eq` 27, `debug_assert_ne` 2 | 29 | none | none (listed `assert_eq`/`assert_ne` rows; ledger now present) |
+| `assert_unsafe_precondition` | 3 | none, but its `ub_checks` gate was not transported | none: gate transported and requested |
+| `cfg` | 4 | none | none |
+| `const_error` (`pub macro`) | 1 | macros 2.0 | macros 2.0 |
+
+All 125 sites that needed re-export rows now resolve to definition rows.
+Sites with no macro-level blocker rise from 36 to 48. Their next blockers are
+item transport for the paths their expansions name (`panicking::assert_failed`,
+`panic_nounwind(&'static str)`, the `bstr` trait impls). The other 289 sites
+wait on three things: imported derives (113), the edition-panic contract
+behind the panic family (167), and `format_args` (8). The panic family then
+also needs `&'static str`/`!` signatures and semiopaque `pub macro` rows. std
+was not reclassified, because its largest groups are the same derives (1,023
+sites) and `const_error!` (237).

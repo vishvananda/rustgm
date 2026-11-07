@@ -6257,7 +6257,9 @@ rejected by name. Every call of an imported unstable row, through any path,
 import or re-export, requires either the crate's request for that feature or
 a call span inside an expansion whose definition may use it; otherwise it fails
 by name, as rustc's E0658 does. A row's feature is a library feature of its
-dependency. Source clients and staged consumers own the same imported-only
+dependency. A denied use of an unstable imported API whose site lies inside a
+macro expansion is admitted only by that frame's allowance list, after
+resolution completes; a use outside any expansion fails immediately. Source clients and staged consumers own the same imported-only
 allowance ledger as ordinary crates whenever a dependency row carries a list.
 
 ## Lowering and backend facts
