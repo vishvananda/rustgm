@@ -19,5 +19,5 @@ The lang-item prefix is the exact pinned Rust core fragment from the census
 batch 2 controls, with its attributes and comments. It keeps Rust's
 MIT/Apache-2.0 attribution; see root NOTICE and `third_party/sources.json`.
 
-`dev/tests/invariants/static_constant_modules.rs` checks every case. See
+`dev/tests/invariants/binderless_constant_modules.rs` checks every case. See
 `docs/parallel/census-batch4.md`.

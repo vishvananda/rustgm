@@ -553,3 +553,13 @@ impl of a callable trait on a struct or on `&mut Adapter` (core `SyncView`,
 mismatched-output and a missing-impl opponent. Each outcome was declared
 before its rustc 1.98.0 oracle. A private invariant checks them; there is no
 graded manifest.
+
+`spec/generic-copy-waits/` and `spec/generic-non-null-patterns/` freeze
+seventeen declared no_core controls from census batch 6: declaration-phase
+constants that wait for a generic nominal `Copy` impl's validation (core
+`Option` and `NonZero` shapes), with length, move, non-`Copy` field and cycle
+opponents and one recorded gap, and non-null pattern types over type
+parameters (core's pattern-type `DispatchFromDyn`), with missing-impl and
+shape opponents and three bases rustc accepts that this analysis rejects by
+name. Each outcome was declared before its rustc 1.98.0 oracle. Private
+invariants check them; there is no graded manifest.
