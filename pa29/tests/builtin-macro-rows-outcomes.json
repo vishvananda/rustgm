@@ -208,10 +208,10 @@
    "rustc_environment": {
     "RUSTC_BOOTSTRAP": "1"
    },
-   "frontend_diagnostic": "macro re-exports are outside the macro metadata profile",
+   "metadata_version": 2,
    "native": false,
-   "frontend_expected_after_implementation": 1,
-   "note": "requirement: core's prelude shape, a public re-export of a placed builtin row; the provider rejects it by name"
+   "frontend_expected_after_implementation": 0,
+   "note": "core's prelude shape, a public re-export of a placed builtin row; amended 2026-11-07 from a by-name rejection to publication now that re-export rows exist (macro-reexport-outcomes.json)"
   },
   {
    "name": "internal-provider",

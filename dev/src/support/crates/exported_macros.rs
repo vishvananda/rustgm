@@ -10,7 +10,8 @@
 //! Version two adds `#[rustc_builtin_macro]` rows, which carry no image but the
 //! expander identity, and typed `allow_internal_unstable` feature lists on
 //! declarative rows. Every row has a module placement; names are unique per
-//! placement.
+//! placement. Re-export rows bind a further placement and name to one
+//! definition row of this crate or of a dependency, by that row's identity.
 use crate::support::edition::Edition;
 
 /// Exported macros in one artifact.
@@ -349,12 +350,7 @@ impl BuiltinMacro {
         if !valid_identifier(&identity, MAX_IDENTITY_BYTES) {
             return Err("invalid exported builtin macro identity");
         }
-        if placement.len() > MAX_PLACEMENT_DEPTH {
-            return Err("invalid exported macro placement");
-        }
-        for component in &placement {
-            super::identity::validate_component(component)?;
-        }
+        validate_placement(&placement)?;
         if syntax == Syntax::MacroRules && !placement.is_empty() {
             return Err("exported builtin macro_rules rows belong to the crate root");
         }
@@ -407,6 +403,95 @@ impl BuiltinMacro {
             .saturating_add(names_bytes(&self.placement))
             .saturating_add(names_bytes(&self.helpers))
     }
+}
+
+fn validate_placement(placement: &[String]) -> Result<(), &'static str> {
+    if placement.len() > MAX_PLACEMENT_DEPTH {
+        return Err("invalid exported macro placement");
+    }
+    for component in placement {
+        super::identity::validate_component(component)?;
+    }
+    Ok(())
+}
+
+/// One more public binding of a definition row: this crate's own row when the
+/// owner is 0, otherwise a row of dependency `owner - 1`. The target is that
+/// row's identity, its placement and name in its owner's table, never a path
+/// a consumer resolves.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ReexportMacro {
+    placement: Vec<String>,
+    name: String,
+    owner: u32,
+    target_placement: Vec<String>,
+    target_name: String,
+}
+impl ReexportMacro {
+    /// # Errors
+    /// Rejects invalid names and placements of the binding or its target.
+    pub fn new(
+        placement: Vec<String>,
+        name: String,
+        owner: u32,
+        target_placement: Vec<String>,
+        target_name: String,
+    ) -> Result<Self, &'static str> {
+        if !valid_identifier(&name, MAX_NAME_BYTES)
+            || !valid_identifier(&target_name, MAX_NAME_BYTES)
+        {
+            return Err("invalid exported macro name");
+        }
+        validate_placement(&placement)?;
+        validate_placement(&target_placement)?;
+        Ok(Self {
+            placement,
+            name,
+            owner,
+            target_placement,
+            target_name,
+        })
+    }
+    /// The module path of the scope that binds this re-export.
+    #[must_use]
+    pub fn placement(&self) -> &[String] {
+        &self.placement
+    }
+    #[must_use]
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+    /// 0 for this artifact, otherwise one more than the dependency's index.
+    #[must_use]
+    pub const fn owner(&self) -> u32 {
+        self.owner
+    }
+    /// The placement of the definition row in its owner's table.
+    #[must_use]
+    pub fn target_placement(&self) -> &[String] {
+        &self.target_placement
+    }
+    #[must_use]
+    pub fn target_name(&self) -> &str {
+        &self.target_name
+    }
+    fn key(&self) -> (&[String], &str) {
+        (&self.placement, &self.name)
+    }
+    fn bytes(&self) -> usize {
+        self.name
+            .len()
+            .saturating_add(self.target_name.len())
+            .saturating_add(names_bytes(&self.placement))
+            .saturating_add(names_bytes(&self.target_placement))
+    }
+}
+
+/// Which definition row of one table a placement and name identify.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum DefinitionRow {
+    Declarative(usize),
+    Builtin(usize),
 }
 
 /// The body is one root group laid out as [`ImageBuilder`] spells it: pieces
@@ -474,12 +559,14 @@ fn validate_layout(image: &[u8], rows: &[Row]) -> Result<(), &'static str> {
 }
 
 /// Exported macros of one crate. Declarative rows sit at the crate root,
-/// sorted strictly by name; builtin rows are sorted strictly by placement and
-/// name. No root name is both.
+/// sorted strictly by name; builtin and re-export rows are each sorted
+/// strictly by placement and name. No scope binds one name twice, and every
+/// re-export of this crate's own row names a definition row of this table.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Macros {
     rows: Vec<Macro>,
     builtins: Vec<BuiltinMacro>,
+    reexports: Vec<ReexportMacro>,
 }
 impl Macros {
     /// # Errors
@@ -494,7 +581,21 @@ impl Macros {
         rows: Vec<Macro>,
         builtins: Vec<BuiltinMacro>,
     ) -> Result<Self, &'static str> {
-        let count = rows.len().saturating_add(builtins.len());
+        Self::with_reexports(rows, builtins, Vec::new())
+    }
+    /// # Errors
+    /// Rejects empty, oversized, unsorted and duplicate tables, one name bound
+    /// twice in a scope, and a local re-export whose target is not a
+    /// definition row of this table.
+    pub fn with_reexports(
+        rows: Vec<Macro>,
+        builtins: Vec<BuiltinMacro>,
+        reexports: Vec<ReexportMacro>,
+    ) -> Result<Self, &'static str> {
+        let count = rows
+            .len()
+            .saturating_add(builtins.len())
+            .saturating_add(reexports.len());
         if count == 0 || count > MAX_MACROS {
             return Err("invalid exported macro count");
         }
@@ -502,17 +603,36 @@ impl Macros {
             || builtins
                 .windows(2)
                 .any(|pair| pair[0].key() >= pair[1].key())
+            || reexports
+                .windows(2)
+                .any(|pair| pair[0].key() >= pair[1].key())
         {
             return Err("exported macros must be unique and sorted by name");
         }
-        let mut declarative = rows.iter().map(Macro::name).peekable();
-        for builtin in builtins.iter().take_while(|row| row.placement.is_empty()) {
-            while declarative.next_if(|name| *name < builtin.name()).is_some() {}
-            if declarative.peek() == Some(&builtin.name()) {
-                return Err("duplicate exported macro name in one scope");
-            }
+        let mut keys: Vec<(&[String], &str)> = rows
+            .iter()
+            .map(|row| (&[][..], row.name()))
+            .chain(builtins.iter().map(BuiltinMacro::key))
+            .chain(reexports.iter().map(ReexportMacro::key))
+            .collect();
+        keys.sort_unstable();
+        if keys.windows(2).any(|pair| pair[0] == pair[1]) {
+            return Err("duplicate exported macro name in one scope");
         }
-        Ok(Self { rows, builtins })
+        let table = Self {
+            rows,
+            builtins,
+            reexports,
+        };
+        if table.reexports.iter().any(|row| {
+            row.owner == 0
+                && table
+                    .definition(&row.target_placement, &row.target_name)
+                    .is_none()
+        }) {
+            return Err("exported macro re-export names no definition row of its crate");
+        }
+        Ok(table)
     }
     /// The declarative root rows.
     #[must_use]
@@ -524,17 +644,47 @@ impl Macros {
         &self.builtins
     }
     #[must_use]
+    pub fn reexports(&self) -> &[ReexportMacro] {
+        &self.reexports
+    }
+    #[must_use]
     pub fn get(&self, name: &str) -> Option<&Macro> {
         self.rows
             .binary_search_by(|row| row.name.as_str().cmp(name))
             .ok()
             .map(|index| &self.rows[index])
     }
+    /// The definition row this table publishes at one placement and name. A
+    /// re-export row is never a definition.
+    #[must_use]
+    pub fn definition(&self, placement: &[String], name: &str) -> Option<DefinitionRow> {
+        if placement.is_empty()
+            && let Ok(index) = self
+                .rows
+                .binary_search_by(|row| row.name.as_str().cmp(name))
+        {
+            return Some(DefinitionRow::Declarative(index));
+        }
+        self.builtins
+            .binary_search_by(|row| row.key().cmp(&(placement, name)))
+            .ok()
+            .map(DefinitionRow::Builtin)
+    }
+    /// The largest dependency ordinal a re-export row names.
+    #[must_use]
+    pub fn max_owner(&self) -> u32 {
+        self.reexports
+            .iter()
+            .map(ReexportMacro::owner)
+            .max()
+            .unwrap_or(0)
+    }
     /// Whether any row needs envelope version two; otherwise the table keeps
     /// its exact version-one bytes.
     #[must_use]
     pub fn requires_version_two(&self) -> bool {
         !self.builtins.is_empty()
+            || !self.reexports.is_empty()
             || self
                 .rows
                 .iter()
@@ -542,8 +692,11 @@ impl Macros {
     }
     /// Rows plus placement components, for the shared component budget.
     pub(super) fn atoms(&self) -> usize {
-        self.builtins.iter().fold(self.rows.len(), |total, row| {
+        let builtins = self.builtins.iter().fold(self.rows.len(), |total, row| {
             total.saturating_add(1 + row.placement.len())
+        });
+        self.reexports.iter().fold(builtins, |total, row| {
+            total.saturating_add(1 + row.placement.len() + row.target_placement.len())
         })
     }
     pub(super) fn bytes(&self) -> usize {
@@ -551,8 +704,12 @@ impl Macros {
             .rows
             .iter()
             .fold(0usize, |total, row| total.saturating_add(row.bytes()));
-        self.builtins
+        let builtins = self
+            .builtins
             .iter()
-            .fold(declarative, |total, row| total.saturating_add(row.bytes()))
+            .fold(declarative, |total, row| total.saturating_add(row.bytes()));
+        self.reexports
+            .iter()
+            .fold(builtins, |total, row| total.saturating_add(row.bytes()))
     }
 }

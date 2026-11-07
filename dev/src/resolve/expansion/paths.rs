@@ -797,8 +797,9 @@ impl Paths {
         );
         Ok(())
     }
-    /// `#[macro_use] extern crate krate;` puts every macro row of that artifact
-    /// into the macro-use prelude. A later crate's rows replace an earlier one's.
+    /// `#[macro_use] extern crate krate;` puts every macro bound at that
+    /// artifact's root, definition and re-export rows alike, into the
+    /// macro-use prelude. A later crate's rows replace an earlier one's.
     pub(super) fn macro_use(
         &mut self,
         package: &mut Package,
@@ -823,18 +824,18 @@ impl Paths {
         else {
             return Err(resolver.error(context, node, "macro_use requires an imported crate"));
         };
-        let rows: Vec<_> = crates
-            .macros()
-            .iter()
-            .map(|row| {
-                (
-                    row.definition,
-                    &resolver.facts.definitions[row.definition.0 as usize],
-                )
-            })
-            .filter(|(_, definition)| definition.scope == root)
-            .map(|(id, definition)| (definition.name, id))
+        if crates.macros().is_empty() {
+            return Ok(());
+        }
+        let mut rows: Vec<_> = resolver
+            .facts
+            .bindings
+            .scope(root)
+            .filter(|&(_, namespace, _)| namespace == Namespace::Macro)
+            .map(|(name, _, binding)| (binding.target, name))
             .collect();
+        rows.sort_unstable_by_key(|&(id, name)| (id.0, name.0));
+        let rows = rows.into_iter().map(|(id, name)| (name, id));
         let scope = resolver.facts.module_scopes[0];
         for (name, id) in rows {
             resolver.facts.macro_prelude.insert(name, id);

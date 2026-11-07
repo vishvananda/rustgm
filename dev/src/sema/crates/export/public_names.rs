@@ -32,9 +32,9 @@ pub(super) fn collect(report: &Report, identity: &CrateIdentity) -> Result<Plan,
     while let Some((scope, path)) = work.pop() {
         let mut bindings = Vec::new();
         for (name, namespace, binding) in report.resolution.bindings.scope(scope) {
-            // Public local macro bindings travel in their own macro table.
+            // Public macro bindings travel in their own macro table.
             if binding.access != Access::Public
-                || super::declarative_rows::exported(report, namespace, binding)
+                || super::declarative_rows::exported(namespace, binding)
             {
                 continue;
             }

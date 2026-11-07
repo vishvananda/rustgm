@@ -2,7 +2,9 @@
 //! their provider's imported module tree. Placements resolve through the
 //! provider's own module identities, never through a binding name or alias.
 //! `$crate` in their expansions names that root through the dependency-indexed
-//! crate id, never through a name or alias.
+//! crate id, never through a name or alias. A re-export row binds the very
+//! definition its owner's row identity names, so every path to one macro
+//! reaches one definition.
 use super::{
     Access, Binding, DefId, DefKind, Definition, Error, ExternalDef, ExternalKind, Imported,
     Interface, Namespace, Origin, Resolver, ScopeId, error,
@@ -14,11 +16,10 @@ use crate::support::{
 };
 
 /// Which table of the provider's macro metadata one imported row comes from.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(crate) enum ImportedRow {
-    Declarative(usize),
-    Builtin(usize),
-}
+pub(crate) use crate::support::crates::exported_macros::DefinitionRow as ImportedRow;
+
+/// Imported definitions by artifact index and definition row.
+pub(super) type MacroDefinitions = HashMap<(usize, ImportedRow), DefId>;
 
 /// One transported row, bound at `definition` in its provider's module tree.
 #[derive(Clone, Copy, Debug)]
@@ -124,14 +125,16 @@ impl Resolver<'_> {
         }
         module.members.ok_or_else(|| error(MISSING))
     }
-    /// Bind every exported macro of one artifact publicly at its placement,
-    /// and register its `$crate` root by the artifact's crate identity.
+    /// Bind every exported macro definition row of one artifact publicly at
+    /// its placement, and register its `$crate` root by the artifact's crate
+    /// identity.
     pub(super) fn import_macros(
         &mut self,
         scope: ScopeId,
         artifact: &Interface,
         artifact_index: usize,
         imported: &mut Imported,
+        definitions: &mut MacroDefinitions,
     ) -> Result<(), Error> {
         let Some(macros) = artifact.macros() else {
             return Ok(());
@@ -170,7 +173,22 @@ impl Resolver<'_> {
             placed.push((scope, entry.name(), ImportedRow::Builtin(row)));
         }
         for (scope, name, row) in declarative.chain(placed) {
-            let definition = self.bind_imported_macro(scope, name)?;
+            let spelling = self.package.names.intern(name).map_err(error)?;
+            let definition = DefId(
+                u32::try_from(self.facts.definitions.len())
+                    .map_err(|_| error("too many imported definitions"))?,
+            );
+            self.facts.definitions.push(Definition {
+                name: spelling,
+                namespace: Namespace::Macro,
+                kind: DefKind::Macro,
+                scope,
+                node: None,
+                access: Access::Public,
+                members: None,
+            });
+            self.bind_imported_macro(scope, spelling, definition)?;
+            definitions.insert((artifact_index, row), definition);
             imported.macros.push(ImportedMacro {
                 definition,
                 artifact: artifact_index,
@@ -179,21 +197,58 @@ impl Resolver<'_> {
         }
         Ok(())
     }
-    fn bind_imported_macro(&mut self, scope: ScopeId, spelling: &str) -> Result<DefId, Error> {
-        let name = self.package.names.intern(spelling).map_err(error)?;
-        let definition = DefId(
-            u32::try_from(self.facts.definitions.len())
-                .map_err(|_| error("too many imported definitions"))?,
-        );
-        self.facts.definitions.push(Definition {
-            name,
-            namespace: Namespace::Macro,
-            kind: DefKind::Macro,
-            scope,
-            node: None,
-            access: Access::Public,
-            members: None,
-        });
+    /// Bind every re-export row of one artifact at its placement to the
+    /// definition its target identity names: the owner crate is this artifact
+    /// or one of its own dependencies, found by crate identity, and the target
+    /// is that owner's definition row at the transported placement and name.
+    /// No binding name, alias or consumer path is consulted.
+    pub(super) fn import_macro_reexports(
+        &mut self,
+        scope: ScopeId,
+        artifact: &Interface,
+        artifact_index: usize,
+        imported: &Imported,
+        definitions: &MacroDefinitions,
+    ) -> Result<(), Error> {
+        let Some(macros) = artifact
+            .macros()
+            .filter(|macros| !macros.reexports().is_empty())
+        else {
+            return Ok(());
+        };
+        let artifacts = imported.dependencies.artifacts();
+        let mut modules = None;
+        for row in macros.reexports() {
+            let owner = match row.owner().checked_sub(1) {
+                None => artifact_index,
+                Some(ordinal) => {
+                    let identity = artifact
+                        .dependencies()
+                        .get(ordinal as usize)
+                        .ok_or_else(|| error("exported macro re-export names an unknown owner"))?;
+                    artifacts
+                        .binary_search_by(|candidate| candidate.identity().cmp(identity))
+                        .map_err(|_| error("macro re-export owner has no imported artifact"))?
+                }
+            };
+            let target = artifacts[owner]
+                .macros()
+                .and_then(|owner| owner.definition(row.target_placement(), row.target_name()))
+                .and_then(|target| definitions.get(&(owner, target)).copied())
+                .ok_or_else(|| error("macro re-export names no imported definition row"))?;
+            let placed =
+                self.placement_scope(scope, artifact, imported, &mut modules, row.placement())?;
+            let name = self.package.names.intern(row.name()).map_err(error)?;
+            self.bind_imported_macro(placed, name, target)?;
+        }
+        Ok(())
+    }
+    fn bind_imported_macro(
+        &mut self,
+        scope: ScopeId,
+        name: NameId,
+        definition: DefId,
+    ) -> Result<(), Error> {
         let previous = self
             .facts
             .bindings
@@ -212,6 +267,6 @@ impl Resolver<'_> {
         if previous.is_some() {
             return Err(error("duplicate imported macro binding in one scope"));
         }
-        Ok(definition)
+        Ok(())
     }
 }

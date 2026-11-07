@@ -282,11 +282,18 @@ impl Resolver<'_> {
             self.bind_public_modules(artifact, &imported)?;
         }
         // Every provider module exists now, so each macro row binds at its
-        // placement through the provider's own module identities.
-        for (artifact_index, (artifact, scope)) in
-            artifacts.artifacts().iter().zip(roots).enumerate()
+        // placement through the provider's own module identities. Re-exports
+        // bind after every artifact's definitions, whatever the order.
+        let mut macros = bound_macro_rows::MacroDefinitions::default();
+        for (artifact_index, (artifact, &scope)) in
+            artifacts.artifacts().iter().zip(&roots).enumerate()
         {
-            self.import_macros(scope, artifact, artifact_index, &mut imported)?;
+            self.import_macros(scope, artifact, artifact_index, &mut imported, &mut macros)?;
+        }
+        for (artifact_index, (artifact, &scope)) in
+            artifacts.artifacts().iter().zip(&roots).enumerate()
+        {
+            self.import_macro_reexports(scope, artifact, artifact_index, &imported, &macros)?;
         }
         self.bind_crate_aliases(external, &imported)?;
         self.facts.extern_scope = Some(external);

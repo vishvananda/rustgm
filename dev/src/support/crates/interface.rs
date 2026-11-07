@@ -159,7 +159,7 @@ impl Interface {
     pub fn macros(&self) -> Option<&super::exported_macros::Macros> {
         self.macros.as_deref()
     }
-    /// Attach this crate's own `#[macro_export]` definitions at its root.
+    /// Attach this crate's own macro rows and its macro re-exports.
     /// # Errors
     /// Rejects duplicate attachments and combined name/storage budget exhaustion.
     pub fn with_macros(
@@ -168,6 +168,10 @@ impl Interface {
     ) -> Result<Self, &'static str> {
         if self.macros.is_some() {
             return Err("duplicate exported macro metadata");
+        }
+        // A re-export owner is this crate or one of its own dependencies.
+        if macros.max_owner() as usize > self.dependencies.len() {
+            return Err("exported macro re-export names an unknown owner");
         }
         let atoms = self.atoms.saturating_add(macros.atoms());
         if atoms > MAX_COMPONENTS || macros.bytes() > super::MAX_BYTES {

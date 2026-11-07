@@ -2,14 +2,15 @@
 //! Canonical nesting is native links, then macros, then the core table.
 //!
 //! Version one holds only declarative root rows. Version two prefixes every
-//! row with a kind byte and its module placement, and adds builtin rows and
-//! typed internal-unstable feature lists. A table that needs neither keeps its
-//! exact version-one bytes, and a version-two table must need one of them.
+//! row with a kind byte and its module placement, and adds builtin rows,
+//! re-export rows and typed internal-unstable feature lists. A table that needs
+//! none of them keeps its exact version-one bytes, and a version-two table must
+//! need one of them.
 use super::{Interface, MAGIC, Reader, SCHEMA, Writer};
 use crate::support::{
     crates::exported_macros::{
         BuiltinMacro, Delimiter, MAX_FEATURES, MAX_IDENTITY_BYTES, MAX_IMAGE_BYTES, MAX_MACROS,
-        MAX_NAME_BYTES, MAX_ROWS, Macro, MacroKind, Macros, Row, Syntax, TokenClass,
+        MAX_NAME_BYTES, MAX_ROWS, Macro, MacroKind, Macros, ReexportMacro, Row, Syntax, TokenClass,
     },
     edition::Edition,
 };
@@ -19,6 +20,7 @@ const VERSION_TWO: u8 = 2;
 const GROUP: u8 = 0x80;
 const DECLARATIVE: u8 = 0;
 const BUILTIN: u8 = 1;
+const REEXPORT: u8 = 2;
 const EDITIONS: [Edition; 4] = [
     Edition::Rust2015,
     Edition::Rust2018,
@@ -30,25 +32,28 @@ const EDITIONS: [Edition; 4] = [
 enum Entry<'a> {
     Declarative(&'a Macro),
     Builtin(&'a BuiltinMacro),
+    Reexport(&'a ReexportMacro),
+}
+impl Entry<'_> {
+    fn key(&self) -> (&[String], &str) {
+        match self {
+            Self::Declarative(row) => (&[], row.name()),
+            Self::Builtin(row) => (row.placement(), row.name()),
+            Self::Reexport(row) => (row.placement(), row.name()),
+        }
+    }
 }
 
-/// Declarative rows are root rows, so they merge by name into the root prefix
-/// of the builtin rows, which are already sorted by placement and name.
+/// Every row of the table, ordered by its unique (placement, name) key.
 fn merged(macros: &Macros) -> Vec<Entry<'_>> {
-    let mut entries = Vec::with_capacity(macros.rows().len() + macros.builtins().len());
-    let mut rows = macros.rows().iter().peekable();
-    for builtin in macros.builtins() {
-        while let Some(row) =
-            rows.next_if(|row| builtin.placement().is_empty() && row.name() < builtin.name())
-        {
-            entries.push(Entry::Declarative(row));
-        }
-        if !builtin.placement().is_empty() {
-            entries.extend(rows.by_ref().map(Entry::Declarative));
-        }
-        entries.push(Entry::Builtin(builtin));
-    }
-    entries.extend(rows.map(Entry::Declarative));
+    let mut entries: Vec<_> = macros
+        .rows()
+        .iter()
+        .map(Entry::Declarative)
+        .chain(macros.builtins().iter().map(Entry::Builtin))
+        .chain(macros.reexports().iter().map(Entry::Reexport))
+        .collect();
+    entries.sort_unstable_by(|left, right| left.key().cmp(&right.key()));
     entries
 }
 
@@ -71,6 +76,14 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
                     names(&mut output, row.internal_unstable())?;
                 }
                 Entry::Builtin(row) => encode_builtin(&mut output, row)?,
+                Entry::Reexport(row) => {
+                    output.u8(REEXPORT)?;
+                    output.path(row.placement())?;
+                    output.string(row.name())?;
+                    output.u32(row.owner() as usize)?;
+                    output.path(row.target_placement())?;
+                    output.string(row.target_name())?;
+                }
             }
         }
     } else {
@@ -141,7 +154,7 @@ pub(super) fn decode(input: &mut Reader<'_>) -> Result<Interface, &'static str> 
 fn decode_version_two(input: &mut Reader<'_>) -> Result<Macros, &'static str> {
     // Kind, placement count and name length.
     let count = input.count(MAX_MACROS, 7)?;
-    let (mut rows, mut builtins) = (Vec::new(), Vec::new());
+    let (mut rows, mut builtins, mut reexports) = (Vec::new(), Vec::new(), Vec::new());
     let mut previous: Option<(Vec<String>, String)> = None;
     for _ in 0..count {
         let kind = input.u8()?;
@@ -163,6 +176,18 @@ fn decode_version_two(input: &mut Reader<'_>) -> Result<Macros, &'static str> {
                 builtins.push(row);
                 key
             }
+            REEXPORT => {
+                let name = input.string(MAX_NAME_BYTES)?;
+                let owner =
+                    u32::try_from(input.u32()?).map_err(|_| "invalid exported macro owner")?;
+                let target_placement = input.module_path()?;
+                let target_name = input.string(MAX_NAME_BYTES)?;
+                let row =
+                    ReexportMacro::new(placement, name, owner, target_placement, target_name)?;
+                let key = (row.placement().to_vec(), row.name().to_owned());
+                reexports.push(row);
+                key
+            }
             _ => return Err("unknown exported macro row kind"),
         };
         if previous.as_ref().is_some_and(|previous| *previous >= key) {
@@ -170,7 +195,7 @@ fn decode_version_two(input: &mut Reader<'_>) -> Result<Macros, &'static str> {
         }
         previous = Some(key);
     }
-    let macros = Macros::with_builtins(rows, builtins)?;
+    let macros = Macros::with_reexports(rows, builtins, reexports)?;
     if !macros.requires_version_two() {
         return Err("version-two exported macro table has only version-one rows");
     }

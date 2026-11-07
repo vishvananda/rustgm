@@ -1,5 +1,6 @@
 //! Builtin macro rows travel in tag-14 version two with their module placement
-//! and expander identity; declarative rows there carry allowance lists.
+//! and expander identity; declarative rows there carry allowance lists, and
+//! re-export rows name a definition row by its owner and key.
 use super::{
     exports::compile,
     fresh_packets::{Packet, Result, unique},
@@ -143,7 +144,7 @@ fn forged_and_relabelled_builtin_rows_are_rejected_by_name() -> Result {
         copy[offset] = value;
         copy
     };
-    rejected(&forge(18, 2), "unknown exported macro row kind")?;
+    rejected(&forge(18, 3), "unknown exported macro row kind")?;
     rejected(&forge(28, 2), "unknown exported builtin macro syntax")?;
     rejected(&forge(36, 3), "unknown exported builtin macro kind")?;
     rejected(
@@ -250,6 +251,279 @@ fn builtin_row_metadata_grows_linearly_with_row_count() -> Result {
     }
     // Fixed-width module names: every row adds the same table bytes, and the
     // consumer's output does not depend on how many rows it imported.
+    let [small, middle, large] = <[usize; 3]>::try_from(sizes.as_slice())?;
+    assert_eq!((middle - small) * 4, large - middle, "{sizes:?}");
+    assert!(outputs.windows(2).all(|pair| pair[0] == pair[1]));
+    Ok(())
+}
+
+const REEXPORTS: &str = "pa29/tests/spec/macro-reexport-rows";
+
+/// (placement, name, owner, target placement, target name) of one re-export row.
+type Reexport = (String, String, u32, String, String);
+fn reexport_rows(interface: &crates::Interface) -> Result<Vec<Reexport>> {
+    Ok(interface
+        .macros()
+        .ok_or("missing macro table")?
+        .reexports()
+        .iter()
+        .map(|row| {
+            (
+                row.placement().join("::"),
+                row.name().to_owned(),
+                row.owner(),
+                row.target_placement().join("::"),
+                row.target_name().to_owned(),
+            )
+        })
+        .collect())
+}
+
+#[test]
+fn reexport_rows_bind_placements_to_definition_identities_in_version_two() -> Result {
+    let packet = Packet::publish(GROUP, REEXPORTS, "reexports", "exporter", PROFILE)?;
+    let bytes = std::fs::read(&packet.metadata)?;
+    assert_eq!(bytes[12..14], [14, 2]);
+    let interface = crates::decode(&bytes)?;
+    assert_eq!(crates::encode(&interface)?, bytes);
+    let macros = interface.macros().ok_or("missing macro table")?;
+    let names: Vec<_> = macros
+        .rows()
+        .iter()
+        .map(crates::exported_macros::Macro::name)
+        .collect();
+    assert_eq!(names, ["forty_two"]);
+    // The hidden `concat` definition sits at its least public re-export key.
+    let builtins: Vec<_> = macros
+        .builtins()
+        .iter()
+        .map(|row| (row.placement().join("::"), row.name(), row.identity()))
+        .collect();
+    assert_eq!(
+        builtins,
+        [
+            (String::new(), "cfg", "cfg"),
+            (String::new(), "column", "column"),
+            (String::new(), "line", "line"),
+            (String::new(), "stringify", "stringify"),
+            ("alternate".into(), "file", "file"),
+            ("builtin".into(), "concat", "concat"),
+            ("builtin".into(), "file", "file"),
+        ]
+    );
+    let row = |placement: &str, name: &str, target: &str, target_name: &str| {
+        (
+            placement.to_owned(),
+            name.to_owned(),
+            0,
+            target.to_owned(),
+            target_name.to_owned(),
+        )
+    };
+    let mut expected = vec![
+        row("", "file", "builtin", "file"),
+        row("", "spelled", "", "stringify"),
+    ];
+    for prelude in ["prelude::rust_2024", "prelude::v1"] {
+        for (name, target) in [
+            ("cfg", ""),
+            ("column", ""),
+            ("concat", "builtin"),
+            ("file", "builtin"),
+            ("forty_two", ""),
+            ("line", ""),
+            ("stringify", ""),
+        ] {
+            expected.push(row(prelude, name, target, name));
+        }
+    }
+    assert_eq!(reexport_rows(&interface)?, expected);
+    // A crate without re-exports keeps its version-one bytes.
+    let (_, plain) = compile(
+        "#[macro_export] macro_rules! plain { () => { 1 }; }",
+        "plain",
+    )?;
+    assert_eq!(crates::encode(&plain)?[12..14], [14, 1]);
+    Ok(())
+}
+
+/// A source client of `packet`'s provider that re-exports its rows, published
+/// as `bridge.rgcrate`.
+fn bridge(packet: &Packet) -> Result<std::path::PathBuf> {
+    let source = client(
+        packet,
+        "bridge",
+        "pub use base::builtin::concat;\npub use base::prelude::v1::line as here;",
+    )?;
+    let metadata = packet.folder.join("bridge.rgcrate");
+    let mut command = packet.consumer(&source, "bridge", &packet.metadata, &packet.owner());
+    command.arg("--metadata-output").arg(&metadata);
+    super::artifacts::checked("bridge", &packet.folder, &mut command)?;
+    Ok(metadata)
+}
+/// A client that reaches the provider only through `bridge` and the inventory.
+fn bridged(
+    packet: &Packet,
+    label: &str,
+    bridge: &std::path::Path,
+) -> Result<std::process::Command> {
+    let source = packet.folder.join(format!("{label}.rs"));
+    std::fs::write(
+        &source,
+        "#![feature(no_core)]\n#![no_core]\nextern crate bridge;\npub fn f() -> u32 { let _t: &str = bridge::concat!(\"a\"); bridge::here!() }\n",
+    )?;
+    let mut command = std::process::Command::new(env!("CARGO_BIN_EXE_rustgm"));
+    command
+        .args(["--emit-lowir", "--crate-type=lib", "--crate-name", "client"])
+        .args(["--crate-disambiguator", "bridged", "--source-client"])
+        .arg(packet.owner())
+        .arg("--extern")
+        .arg(format!("bridge={}", bridge.display()))
+        .arg("--dependency-metadata")
+        .arg(&packet.metadata)
+        .arg("-o")
+        .arg(packet.folder.join(format!("{label}.lowir")))
+        .arg(source);
+    Ok(command)
+}
+
+#[test]
+fn forged_and_relabelled_reexport_rows_are_rejected_by_name() -> Result {
+    let packet = Packet::publish(GROUP, REEXPORTS, "forged-reexports", "exporter", PROFILE)?;
+    let bytes = std::fs::read(&packet.metadata)?;
+    // The root `spelled` row: kind 2, no placement, owner 0, target `stringify`.
+    let spelled =
+        b"\x02\x00\x00\x07\x00\x00\x00spelled\x00\x00\x00\x00\x00\x00\x09\x00\x00\x00stringify";
+    unique(&bytes, spelled)?;
+    let owned = b"spelled\x00\x00\x00\x00\x00\x00\x09\x00\x00\x00stringify";
+    rejected(
+        &respelled(
+            &bytes,
+            owned,
+            b"spelled\x01\x00\x00\x00\x00\x00\x09\x00\x00\x00stringify",
+        )?,
+        "exported macro re-export names an unknown owner",
+    )?;
+    rejected(
+        &respelled(
+            &bytes,
+            owned,
+            b"spelled\x00\x00\x00\x00\x00\x00\x09\x00\x00\x00stringifz",
+        )?,
+        "exported macro re-export names no definition row of its crate",
+    )?;
+    // A target is a definition row, never another re-export.
+    rejected(
+        &respelled(
+            &bytes,
+            owned,
+            b"spelled\x00\x00\x00\x00\x00\x00\x04\x00\x00\x00file",
+        )?,
+        "exported macro re-export names no definition row of its crate",
+    )?;
+    let mut unknown = bytes.clone();
+    unknown[unique(&bytes, spelled)?] = 3;
+    rejected(&unknown, "unknown exported macro row kind")?;
+    // A re-export renamed out of canonical order.
+    rejected(
+        &respelled(
+            &bytes,
+            b"\x02\x00\x00\x07\x00\x00\x00spelled",
+            b"\x02\x00\x00\x07\x00\x00\x00stringz",
+        )?,
+        "exported macros must be unique and sorted by placement and name",
+    )?;
+    // A dependency's re-export row names its target by owner identity; a
+    // target that the owner's table lacks fails in the consumer by name.
+    let bridge = bridge(&packet)?;
+    let published = std::fs::read(&bridge)?;
+    assert_eq!(published[12..14], [14, 2]);
+    let decoded = crates::decode(&published)?;
+    assert_eq!(
+        reexport_rows(&decoded)?,
+        [
+            (
+                String::new(),
+                "concat".into(),
+                1,
+                "builtin".into(),
+                "concat".into()
+            ),
+            (
+                String::new(),
+                "here".into(),
+                1,
+                String::new(),
+                "line".into()
+            ),
+        ]
+    );
+    super::artifacts::checked(
+        "bridged",
+        &packet.folder,
+        &mut bridged(&packet, "bridged", &bridge)?,
+    )?;
+    let forged = packet.folder.join("bridge-forged.rgcrate");
+    std::fs::write(
+        &forged,
+        respelled(
+            &published,
+            b"\x07\x00\x00\x00builtin\x06\x00\x00\x00concat",
+            b"\x07\x00\x00\x00builtin\x06\x00\x00\x00concaz",
+        )?,
+    )?;
+    packet.rejected(
+        "bridged-forged",
+        &mut bridged(&packet, "bridged-forged", &forged)?,
+        "macro re-export names no imported definition row",
+    )?;
+    Ok(())
+}
+
+#[test]
+fn reexport_row_metadata_grows_linearly_with_row_count() -> Result {
+    let packet = Packet::new(GROUP, REEXPORTS, "reexport-scaling", "rows")?;
+    let fixture = std::fs::read_to_string(packet.fixture("exporter"))?;
+    let foundation = fixture
+        .split("#[rustc_builtin_macro]")
+        .next()
+        .ok_or("missing provider foundation")?;
+    let definition =
+        "#[rustc_builtin_macro]\n#[macro_export]\nmacro_rules! stringify { ($($t:tt)*) => {} }\n";
+    let (mut sizes, mut outputs) = (Vec::new(), Vec::new());
+    for modules in [4, 16, 64] {
+        let rows = (0..modules).try_fold(String::new(), |mut text, index| {
+            writeln!(
+                text,
+                "pub mod m{index:03} {{ pub use crate::stringify; pub use crate::stringify as spelled; }}"
+            )
+            .map(|()| text)
+        })?;
+        let source = packet.folder.join(format!("rows{modules}.rs"));
+        std::fs::write(&source, format!("{foundation}{definition}{rows}"))?;
+        let metadata = packet.folder.join(format!("rows{modules}.rgcrate"));
+        let mut export = packet.export(PROFILE, &source, &metadata);
+        super::artifacts::checked("provider", &packet.folder, &mut export)?;
+        let bytes = std::fs::read(&metadata)?;
+        let interface = crates::decode(&bytes)?;
+        let table = interface.macros().ok_or("missing macro table")?;
+        assert_eq!(
+            (table.builtins().len(), table.reexports().len()),
+            (1, 2 * modules)
+        );
+        sizes.push(table_bytes(&bytes)?);
+        let label = format!("client{modules}");
+        let body = format!(
+            "pub fn f() -> u32 {{ let _text: &str = base::m{:03}::spelled!(a); 1 }}",
+            modules - 1
+        );
+        let source = client(&packet, &label, &body)?;
+        let mut consumer = packet.consumer(&source, &label, &metadata, &packet.owner());
+        super::artifacts::checked(&label, &packet.folder, &mut consumer)?;
+        outputs.push(std::fs::read(packet.folder.join(format!("{label}.lowir")))?);
+    }
+    // Fixed-width module names: every re-export row adds the same table
+    // bytes, and the consumer's output does not depend on the row count.
     let [small, middle, large] = <[usize; 3]>::try_from(sizes.as_slice())?;
     assert_eq!((middle - small) * 4, large - middle, "{sizes:?}");
     assert!(outputs.windows(2).all(|pair| pair[0] == pair[1]));

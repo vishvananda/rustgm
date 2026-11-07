@@ -10,7 +10,8 @@ from crate_qualification import Check as CommandCheck
 ROOT = Path(__file__).resolve().parents[1]
 MANIFESTS = [ROOT / 'pa29/tests/macro-metadata-outcomes.json',
              ROOT / 'pa29/tests/macro-spacing-outcomes.json',
-             ROOT / 'pa29/tests/builtin-macro-rows-outcomes.json']
+             ROOT / 'pa29/tests/builtin-macro-rows-outcomes.json',
+             ROOT / 'pa29/tests/macro-reexport-outcomes.json']
 SOURCE_PROFILE = 'module-bodies-v13'
 
 
@@ -32,6 +33,9 @@ class Check(CommandCheck):
             entries.reverse()
         for alias, dependency in entries:
             command += ['--extern', f'{alias}={libraries[dependency]}']
+        # Inventory artifacts are visible only by crate identity, never by alias.
+        for dependency in case.get('inventory', []):
+            command += ['--dependency-metadata', libraries[dependency]]
         if case['kind'] in ('rlib', 'object'):
             command += ['--crate-type=lib', '--crate-name', case['crate'],
                         '--crate-disambiguator', case['name'].replace('-', '_'),
@@ -110,7 +114,8 @@ def native_case(check, case, lowir, lowirs, artifact):
         right = driven(check, case, name + '-rust', [artifact])
     else:
         candidate = check.folder / (name + '.candidate')
-        linked = [lowirs[dependency] for dependency in case['deps'].values()]
+        linked = [lowirs[dependency]
+                  for dependency in [*case['deps'].values(), *case.get('inventory', [])]]
         check.run(name + '-backend', ['python3', ROOT / 'scripts/backend.py', *linked, lowir,
                                      '-o', candidate])
         exit_status = case['rustc_native_exit']

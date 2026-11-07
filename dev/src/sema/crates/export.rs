@@ -146,13 +146,15 @@ pub(crate) fn export_with_originals(
     roots.sort_unstable_by_key(|definition| definition.0);
     Ok(Exports { interface, roots })
 }
-/// The crate's public macro rows, for any publication profile.
+/// The crate's public macro rows, for any publication profile. Re-export
+/// owners index `dependencies`, the publication's own sorted dependency list.
 /// # Errors
 /// Rejects macro exports outside the macro metadata profile by name.
 pub(crate) fn macro_table(
     report: &Report,
+    dependencies: &[CrateIdentity],
 ) -> Result<Option<crate::support::crates::exported_macros::Macros>, Error> {
-    declarative_rows::collect(report)
+    declarative_rows::collect(report, dependencies)
 }
 /// Macro rows and native links wrap the completed core table.
 fn with_envelopes(
@@ -160,11 +162,12 @@ fn with_envelopes(
     facts: &Declarations,
     interface: Interface,
 ) -> Result<Interface, Error> {
-    let interface = if let Some(macros) = declarative_rows::collect(report)? {
-        interface.with_macros(macros).map_err(error)?
-    } else {
-        interface
-    };
+    let interface =
+        if let Some(macros) = declarative_rows::collect(report, interface.dependencies())? {
+            interface.with_macros(macros).map_err(error)?
+        } else {
+            interface
+        };
     if let Some(plan) = facts
         .foreign
         .as_deref()

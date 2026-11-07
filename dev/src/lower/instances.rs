@@ -359,7 +359,8 @@ pub fn build_source_library_profile(
             let interface = source
                 .complete_publication(report, facts, base, modules, profile)
                 .map_err(|error| facts.retain_error_warnings(error))?;
-            let interface = match crate::sema::crates::macro_table(report)? {
+            let table = crate::sema::crates::macro_table(report, interface.dependencies())?;
+            let interface = match table {
                 Some(macros)
                     if interface.macros().is_none() && interface.native_links().is_none() =>
                 {
