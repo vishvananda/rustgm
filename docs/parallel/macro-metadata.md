@@ -86,9 +86,15 @@ ordinary definition comes from one file.
   their image and the normal semi-transparent mark of each invocation, exactly
   like local `macro_rules!`. Items named by definition tokens resolve at the call
   site, and locals and labels stay hygienic. Diagnostics inside a definition point
-  into the image, which needs a file-like image source owned by the package so
-  that `contexts::at` and `editions::token` see the provider edition. A full
-  parsed `Unit` does not fit: the image is a token body, not a Rust file.
+  into the image. Three lookups need a package `Unit` for the image:
+  `unit::contexts::at` (it returns ROOT inside the physical source),
+  `unit::editions::at` (the unit's own edition) and transcription, which reads
+  `Definition::node.file` for the definition text. One candidate is an image unit
+  parsed once as a provenance-only include template
+  (`Unit::parse_include` with an items context, as cached `include!` templates
+  are kept today). It must be held out of module traversal and the
+  unvisited-syntax checks. Its `Config` edition is the transported edition.
+  Settle this before writing the consumer.
 - **Binding forms.**
   - `use krate::m;` and `krate::m!`: a `DefKind::Macro` definition bound
     publicly in the imported root scope (`Namespace::Macro`), classified as
@@ -159,7 +165,9 @@ The pinned dev-fast CLI (`obj/parallel/macro-metadata-v1/slice1/rustgm`,
    `macro-metadata-outcomes.json`.
 3. **cfg-if.** Rerun the original crate through metadata into the PA34
    `cfg-if-consumer.rs` consumers (2024 and 2015), and the target-unit executor's
-   cfg_if unit.
+   cfg_if unit. In the combined std plan, cfg_if (unit 1) is blocked behind core
+   (unit 5, the `flatten.rs` gap). Its `rustc-dep-of-std` build depends on core,
+   so the executor cannot exercise it until core passes.
 4. **Spacing.** The canonical spacing loses punctuation jointness. Stringifying
    definition tokens (`stringify!` of definition-site punctuation) may then differ
    from rustc. A joint bit per punctuation row would close this if a frozen case
