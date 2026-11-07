@@ -1,0 +1,326 @@
+{
+  "schema": 1,
+  "base_commit": "5775efbef38e39060b85302501c8318c8c237f25",
+  "scope": "exact source-header producer allocation/accounting; unchanged data/permissions and local/global finite limits",
+  "limits": {
+    "local_work": 1000000,
+    "local_bytes": 16000000,
+    "global_source": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    }
+  },
+  "diagnostic": {
+    "receipt": "obj/parallel/source-transport/header-budget/diagnostic1/receipt.json",
+    "sha256": "34afff946e94e789cc4b56dc215a05f16c18ae75687d0e30ca01f0c3252399f8",
+    "instrumentation_patch": "obj/parallel/source-transport/header-budget/diagnostic1/instrumentation.patch",
+    "core": {
+      "infrastructure_failure": false,
+      "classification": "observed original-core blocker",
+      "lint_cap": "allow",
+      "source_contract_limits": {
+        "work": 14500624,
+        "attempted_bytes": 1073741824,
+        "retained_bytes": 67108864
+      },
+      "expected_cli_sha256": "a62b62ab6472f0e9bf35648e16f818cf67f82a8119aa864d528b4e316a5812a1",
+      "expected_cli_source": "explicit caller input",
+      "status": 1,
+      "first_error": "ERROR: file 343: 18932: observe_owner: input: source header attribute producer exceeds storage budget: steps=128510 bytes=16000370 delta_bytes=656 declaration_rows=23219 declaration_capacity=28672 definition_rows=0 definition_capacity=0 owners=23219 owner_capacity=92876 cold_prepares=0 cold_nodes=0 cold_visits=0",
+      "inputs_unchanged": true,
+      "opened_source_count": 375,
+      "total_seconds": 19.88805652607698,
+      "raw_sha256": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "deed7013a8ac1d6df5f1ad4d030439ab36a909ad5b80ff0dc72bb6d5ce26f3eb",
+        "whole-core.openat": "440a187010e81cc30f9a1d64be856159fa731b6998e8452f54956cdc6dbd3e05",
+        "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+      }
+    },
+    "mapped_error": {
+      "file": 343,
+      "byte": 18932,
+      "line": 526,
+      "path": "library/portable-simd/crates/core_simd/src/swizzle.rs",
+      "sha256": "9803145df0f1d4e6d2f4196691b0ecda3e79428fc4d9a172a4da9f5e8ccc41be",
+      "bytes": 24920,
+      "line_text": "    /// Rotates the mask such that the first `self.len() - OFFSET` elements of the mask move to",
+      "context": "   unsafe { Self::from_simd_unchecked(self.to_simd().rotate_elements_left::<OFFSET>()) }\n    }\n\n    /// Rotates the mask such that the first `self.len() - OFFSET` elements of the mask move to\n    /// the end while the last `OFFSET` elements move to the front. After calling `rotate_elements_right`,\n    /// the element previously at index `self.len() - OFFSET` will become the first element in the sl"
+    },
+    "temporary_diagnostics_removed": true
+  },
+  "qualified": {
+    "receipt": "obj/parallel/source-transport/header-budget/fix1/receipt.json",
+    "sha256": "9f0c673961ea42d0a367909dc35c433a8debdbe4c471a7ec5d688eb34d190cf5",
+    "stages": [
+      {
+        "stage": "format",
+        "argv": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--all"
+        ],
+        "code": 0,
+        "seconds": 14.166331658954732
+      },
+      {
+        "stage": "audit",
+        "argv": [
+          "obj/audit-venv/bin/python",
+          "scripts/rust_audit.py",
+          "--root",
+          ".",
+          "--cache",
+          "obj/fast-audit.json"
+        ],
+        "code": 0,
+        "seconds": 4.302828070009127
+      },
+      {
+        "stage": "strict",
+        "argv": [
+          "cargo",
+          "clippy",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--lib",
+          "--test",
+          "suite_frontend",
+          "--bin",
+          "rustgm",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "code": 0,
+        "seconds": 63.71913906408008
+      },
+      {
+        "stage": "source",
+        "argv": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_frontend",
+          "cold_sources::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 110.09301961702295
+      },
+      {
+        "stage": "word",
+        "argv": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_frontend",
+          "overflow_words::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 0.15896522800903767
+      },
+      {
+        "stage": "weak",
+        "argv": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_frontend",
+          "weak_symbols::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 0.25271610205527395
+      },
+      {
+        "stage": "native",
+        "argv": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_frontend",
+          "cold_sources::actual_source_cold_closure_keeps_runtime_captures_and_control_flow",
+          "--",
+          "--ignored",
+          "--exact",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 0.2890817360021174
+      },
+      {
+        "stage": "cli",
+        "argv": [
+          "cargo",
+          "build",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--bin",
+          "rustgm"
+        ],
+        "code": 0,
+        "seconds": 0.07832931296434253
+      }
+    ],
+    "rust_source_files": 3648,
+    "cli": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/header-budget/fix1/rustgm",
+      "sha256": "5bd46ec7a415c6fcebe71520b363e8057e670f335b0d12e4a46cd2d99dcaa358"
+    }
+  },
+  "core": {
+    "receipt": "obj/parallel/source-transport/header-budget/core-fix1/receipt.json",
+    "sha256": "1a764647d7f9efa2aa8859c663012fca59da06a7646d1fc67163c747ebdac6db",
+    "result": {
+      "infrastructure_failure": false,
+      "classification": "observed original-core blocker",
+      "lint_cap": "allow",
+      "source_contract_limits": {
+        "work": 14500624,
+        "attempted_bytes": 1073741824,
+        "retained_bytes": 67108864
+      },
+      "expected_cli_sha256": "5bd46ec7a415c6fcebe71520b363e8057e670f335b0d12e4a46cd2d99dcaa358",
+      "expected_cli_source": "explicit caller input",
+      "status": 1,
+      "first_error": "ERROR: file 47: 88680: source do-not-const-check requires its actual supported panic role and indirect marker",
+      "inputs_unchanged": true,
+      "opened_source_count": 375,
+      "total_seconds": 18.11961835308466,
+      "raw_sha256": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "acab931ae86970e8072649a2c6adf5562477df348def472fc3bdb60c0d2f1004",
+        "whole-core.openat": "679dd45c9e00274c70b8cc5701f11b05718a37125fc752fc910f8934513bb35b",
+        "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+      }
+    },
+    "mapped_error": {
+      "file": 47,
+      "offset": 88680,
+      "path": "library/core/src/intrinsics/mod.rs",
+      "line": 2297,
+      "source_sha256": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+      "source_bytes": 142635,
+      "line_text": "pub const fn ptr_guaranteed_cmp<T>(ptr: *const T, other: *const T) -> u8 {",
+      "snippet": "rinsic]\n#[rustc_nounwind]\n#[rustc_do_not_const_check]\n#[inline]\n#[miri::intrinsic_fallback_is_spec]\npub const fn ptr_guaranteed_cmp<T>(ptr: *const T, other: *const T) -> u8 {\n    (ptr == other) as u8\n}\n\n/// Determines whether the raw bytes of the two values are equal.\n///\n/// This is particularly handy for arrays, since it allows things like just\n/",
+      "message": "source do-not-const-check requires its actual supported panic role and indirect marker",
+      "mapping": "actual unique successful pinned source open order; all opened files .rs"
+    },
+    "pins": {
+      "dev/bin/rustgm.rs": {
+        "expected": "f72403a0f2358a4750c75db8075e4ad8d564e07f1cdedb93abe4bdad22a06c81",
+        "actual": "f72403a0f2358a4750c75db8075e4ad8d564e07f1cdedb93abe4bdad22a06c81"
+      },
+      "dev/bin/crates.rs": {
+        "expected": "570e7f3e93e29426cf03b3d92b096d628b59e03405d191c8f56836d5032cfbe5",
+        "actual": "570e7f3e93e29426cf03b3d92b096d628b59e03405d191c8f56836d5032cfbe5"
+      },
+      "dev/src/expand/config.rs": {
+        "expected": "9147ac7cbae6b13798e839812dbeda1d542499056f52dac00c07fc507c85989a",
+        "actual": "9147ac7cbae6b13798e839812dbeda1d542499056f52dac00c07fc507c85989a"
+      },
+      "dev/src/support/runtime_checks.rs": {
+        "expected": "dcfe4c885fc7a255dae372d84a4eac7c693808f10081b13dc2bdcd8ed0fa7cf0",
+        "actual": "dcfe4c885fc7a255dae372d84a4eac7c693808f10081b13dc2bdcd8ed0fa7cf0"
+      },
+      "dev/src/support/edition.rs": {
+        "expected": "a071d955a31bdcb5dbe5bfb0bf60e4754626ed0fff2215fefe09085cb1fd76f3",
+        "actual": "a071d955a31bdcb5dbe5bfb0bf60e4754626ed0fff2215fefe09085cb1fd76f3"
+      },
+      "dev/src/const_eval/values.rs": {
+        "expected": "d6ac8c5f665ce374587c99ded423a5efad76cfbc2da1f0321da7365b064398ad",
+        "actual": "d6ac8c5f665ce374587c99ded423a5efad76cfbc2da1f0321da7365b064398ad"
+      }
+    },
+    "manifest_changes": [
+      "expected_cli_sha256",
+      "predecessor_manifest_sha256"
+    ]
+  },
+  "final": {
+    "receipt": "obj/parallel/source-transport/header-budget/final1/receipt.json",
+    "sha256": "9c0493f905d4f5fa4c0cc65ef517dbf87c9ee90cc21bd5cce5fd6dcc88b36203",
+    "stages": [
+      {
+        "stage": "strict-all",
+        "argv": [
+          "cargo",
+          "clippy",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--all-targets",
+          "--all-features",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "code": 0,
+        "seconds": 90.73805413104128
+      },
+      {
+        "stage": "harness",
+        "argv": [
+          "make",
+          "test-harness"
+        ],
+        "code": 0,
+        "seconds": 13.309622161090374
+      },
+      {
+        "stage": "upstream",
+        "argv": [
+          "make",
+          "test-upstream"
+        ],
+        "code": 0,
+        "seconds": 0.14408106508199126
+      }
+    ]
+  },
+  "layouts": {
+    "Header": 80,
+    "Owner": 56,
+    "Headers": 120,
+    "Declarations": 7120,
+    "Code": 304
+  },
+  "private_execution": "pending full CI; metadata compilation qualified",
+  "preserved_no_body_commit": "44f0e08a278aaea6c2a9cfcb9cf6fcceaafeadb8"
+}

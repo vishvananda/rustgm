@@ -130,9 +130,15 @@ fn observe_selected_owner(
             return Ok(());
         }
     }
-    let bytes =
-        retained::new_map::<NodeKey, Header>(1) + size_of::<Header>() + 4 * size_of::<Owner>();
-    let headers = &mut ledger(facts, bytes)?.local;
+    let (new_header, growth) = owner_reservation(facts, declaration);
+    let headers = &mut ledger(facts, growth.bytes)?.local;
+    charge_query(headers, growth.work)?;
+    if new_header {
+        headers
+            .declarations
+            .try_reserve(1)
+            .map_err(|_| Error::at(owner.file, 0, "source header row allocation failed"))?;
+    }
     let unit = report.package.unit(declaration.file);
     let header = headers
         .declarations
@@ -150,6 +156,14 @@ fn observe_selected_owner(
         .flatten()
         .ok_or_else(|| Error::at(owner.file, 0, "source header owner was not configured"))?;
     let configured = &unit.configured.owners[index.get() as usize - 1];
+    if header.owners.capacity() == 0 {
+        // Almost every declaration has one configured owner. Avoid the ordinary
+        // Vec push minimum of four wide Owner records for that common case.
+        header.owners.try_reserve_exact(1)
+    } else {
+        header.owners.try_reserve(1)
+    }
+    .map_err(|_| Error::at(owner.file, 0, "source header owner allocation failed"))?;
     header.owners.push(Owner {
         key: owner,
         syntax: unit.configured.ast.node(owner.node).kind,
@@ -157,6 +171,57 @@ fn observe_selected_owner(
     });
     Ok(())
 }
+
+/// Four slots per new key prepay the existing conservative map growth bound.
+/// Header values live inside those slots; occupied rows own no second Header.
+fn owner_reservation(facts: &Declarations, key: NodeKey) -> (bool, retained::Growth) {
+    let row = facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .and_then(|ledger| ledger.local.declarations.get(&key));
+    let mut growth = row.filter(|row| row.owners.capacity() != 0).map_or(
+        retained::Growth {
+            bytes: size_of::<Owner>(),
+            work: 0,
+        },
+        |row| retained::Growth::vector::<Owner>(row.owners.len(), row.owners.capacity(), 1),
+    );
+    if row.is_none() {
+        growth.bytes = growth
+            .bytes
+            .saturating_add(retained::new_map::<NodeKey, Header>(1));
+        growth.work = growth.work.saturating_add(4);
+    }
+    (row.is_none(), growth)
+}
+fn definition_reservation(
+    facts: &Declarations,
+    definition: DefId,
+    key: NodeKey,
+) -> (bool, bool, retained::Growth) {
+    let headers = facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .map(|ledger| &ledger.local);
+    let new_header = headers.is_none_or(|headers| !headers.declarations.contains_key(&key));
+    let new_definition =
+        headers.is_none_or(|headers| !headers.definitions.contains_key(&definition));
+    let mut growth = retained::Growth::default();
+    if new_header {
+        growth.bytes = retained::new_map::<NodeKey, Header>(1);
+        growth.work = 4;
+    }
+    if new_definition {
+        growth.bytes = growth
+            .bytes
+            .saturating_add(retained::new_map::<DefId, NodeKey>(1));
+        growth.work = growth.work.saturating_add(4);
+    }
+    (new_header, new_definition, growth)
+}
+
 pub(in crate::sema) fn bind_definition(
     report: &Report,
     facts: &mut Declarations,
@@ -188,10 +253,25 @@ pub(in crate::sema) fn bind_definition(
     {
         return Ok(());
     }
-    let bytes = retained::new_map::<DefId, NodeKey>(1)
-        + retained::new_map::<NodeKey, Header>(1)
-        + size_of::<Header>();
-    let headers = &mut ledger(facts, bytes)?.local;
+    let (new_header, new_definition, growth) =
+        definition_reservation(facts, definition, declaration);
+    let headers = &mut ledger(facts, growth.bytes)?.local;
+    charge_query(headers, growth.work)?;
+    if new_header {
+        headers
+            .declarations
+            .try_reserve(1)
+            .map_err(|_| Error::at(declaration.file, 0, "source header row allocation failed"))?;
+    }
+    if new_definition {
+        headers.definitions.try_reserve(1).map_err(|_| {
+            Error::at(
+                declaration.file,
+                0,
+                "source header binding allocation failed",
+            )
+        })?;
+    }
     let unit = report.package.unit(declaration.file);
     headers
         .declarations
@@ -844,3 +924,7 @@ pub(in crate::sema) fn attribute_storage(facts: &Declarations) -> Option<[usize;
         ledger.local.definitions.capacity(),
     ])
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/ledger_capacity.rs"]
+mod capacity_tests;
