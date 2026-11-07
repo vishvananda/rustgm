@@ -5,6 +5,35 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 4](parallel/census-batch4.md) repairs census 4's largest
+blocking cause and its roots. Census 5 (`5cb7e00c`) checks 42,194
+declarations, with 62 failed and 55 blocked (census 4: 42,109, 74 and 127).
+
+- "missing storage opaque declaration" (4 failed, 101 blocked) was confirmed
+  by an analysis-only diagnostic. An opaque result is interned before its
+  declaration, and storage preparation for a later `size_of` length met it and
+  failed the unrelated item. Such an application now waits on its own identity.
+  An ordinary crate whose opaque waits for a GAT const argument is accepted.
+- Its eight roots, `impl Trait + '_` results ("outlives bound requires a named
+  lifetime"), read `'_` as the elided output lifetime, as rustc does. A
+  where-clause `T: '_` stays rejected (E0637).
+- `repr_bitpacked`'s four "semantic type or associated item is private": a
+  binderless const or static annotation now types its constants in its own
+  module, not the crate root.
+- The declaration own-bound check groups assumptions by their first closed
+  value. The 256-bound budget family is linear (2 steps per bound at 64, 256 and
+  1,024), and a genuinely ambiguous opponent is still rejected. Batch 3's
+  160-to-192 regime was an attribution-probe dump artifact; the pin's cap was
+  at about 250 bounds.
+- Thirteen PA31 no_core controls were declared before the rustc 1.98.0 oracle
+  (all agree). Every PA1 to PA24 suite passes, and PA20 is 1451/1451.
+- Census into bodies was not implemented: about 30 later declaration passes
+  are not isolated per item, and the second one stops on a census-poisoned
+  declaration. Four causes the cascade hid now appear. They hold the two
+  largest blocking roots (`nonzero.rs`, 12; `int_log10.rs`, 11), plus `ctpop`
+  const execution and an enum-discriminant layout. "invalid canonical trait
+  selection" (18) is still unreduced.
+
 Lane C [`&'static str`, `!` and static text](parallel/static-str-never-transport.md)
 is joined on main. Version 13 carries:
 

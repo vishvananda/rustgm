@@ -81,6 +81,19 @@ The census supplies the first progress measures (declarations and bodies checked
 out of the whole crate). Repairs are then grouped by cause rather than by
 discovery order.
 
+The census does not enter bodies while declarations fail (integrator decision,
+2026-11-07, after [census batch 4](parallel/census-batch4.md)).
+- Why: about 30 later declaration passes each consume every declaration's
+  facts and stop at the first error. Continuing into bodies would need per-item
+  isolation in every pass, plus a body-to-declaration dependency map. That work
+  is no longer needed once declarations pass.
+- Trade-off: body causes stay invisible until then.
+- Instead, batches drive declaration failures to zero (census 5: 62 failed,
+  55 blocked). Per-pass isolation is reconsidered only if that stalls.
+
+Where RustGM is stricter than rustc 1.98.0 on an observed program, it follows
+rustc, for example type privacy in array lengths in signatures.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |
