@@ -106,7 +106,10 @@ impl Store {
     }
     pub(super) fn valid_refinement(&self, base: TypeId, constraint: Constraint) -> bool {
         match constraint {
-            Constraint::NonNull => matches!(self.kind(base), Some(Kind::Pointer { .. })),
+            Constraint::NonNull => matches!(
+                self.kind(base),
+                Some(Kind::Pointer { .. } | Kind::Parameter(_))
+            ),
             Constraint::ScalarRange(id) => self.scalar_range(id).is_some_and(|r| r.base == base),
         }
     }

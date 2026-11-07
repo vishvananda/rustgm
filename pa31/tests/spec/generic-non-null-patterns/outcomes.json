@@ -1,0 +1,77 @@
+{
+ "schema": 1,
+ "declared": "2026-11-07, before the frozen rustc 1.98.0 oracle of these exact bytes. The drafts' lang-item and feature prerequisites were settled against rustc 1.98.0 in obj/parallel/census-batch6/repro first; each outcome follows the stated rule, not that exploration",
+ "declaration_sha256": "722d68ec9a7b5ab3f58c890d09e5f359aa1c3fa94087db131400964ee3b8bbef",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "core-pattern-dispatch.rs": {
+   "sha256": "f7708afed25bd94b17eeac74bab29afd78af4358f4363c6254903e46e776ca20",
+   "declared": 0,
+   "reason": "core's exact `impl<T: DispatchFromDyn<U>, U> DispatchFromDyn<pattern_type!(U is !null)> for pattern_type!(T is !null)` over type parameter bases",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "unbounded-pattern-dispatch.rs": {
+   "sha256": "6056296495a7878ed935debaa096bcfdeaa177473dcf24a619d2f7f7912cec18",
+   "declared": 0,
+   "reason": "the same pattern-type DispatchFromDyn impl without the recursive T: DispatchFromDyn<U> bound",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "generic-pattern-field.rs": {
+   "sha256": "240f72dc82eb0ecf8cdc664ca7803dacaba2909e86b243d1ed6a30c72bd38152",
+   "declared": 0,
+   "reason": "a generic struct field `pattern_type!(T is !null)` over its own type parameter",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "non-null-pointer-dispatch.rs": {
+   "sha256": "c533cc77bf4c587edb7e3b3d5850a7d35e748b1e0a3f22eb22aadf6d6f8639af",
+   "declared": 0,
+   "reason": "core NonNull shape: a repr(transparent) struct over `pattern_type!(*const T is !null)` implements DispatchFromDyn through the generic pattern impl and the raw pointer impl",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "missing-pattern-dispatch.rs": {
+   "sha256": "23209c728f1b18d666d827858f14b3c50f433991a0401a5b1bb6217270a58497",
+   "declared": 1,
+   "reason": "opponent: the same struct without the pattern-type impl, so its field does not implement DispatchFromDyn (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "pattern-to-pointer-dispatch.rs": {
+   "sha256": "d92a121c7e939d6753fb0e11448b4ca68aad5f1a9e083458d1a8c5b7e8bda455",
+   "declared": 1,
+   "reason": "opponent: DispatchFromDyn from a raw pointer to a non-null pattern type changes the type's shape (E0377)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0377"
+   ]
+  },
+  "integer-base.rs": {
+   "sha256": "c550955de76c90c30784440afd1bf2c132c7f40b8f0dd8c7eb74c5cff7c52d98",
+   "declared": 0,
+   "reason": "a non-null pattern over u32",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "reference-base.rs": {
+   "sha256": "9ac1d07d8f744c77a5f2d651d3c2264c42a7258a8ae101b23f0e268b62c2e327",
+   "declared": 0,
+   "reason": "a non-null pattern over a reference",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "integer-instance.rs": {
+   "sha256": "ea8321345a4e86c668e75c28d7975a7a3bd8f8d39765f826d255ea1182677e66",
+   "declared": 0,
+   "reason": "a generic non-null pattern field instantiated at u32 in a signature",
+   "rustc_status": 0,
+   "error_codes": []
+  }
+ }
+}

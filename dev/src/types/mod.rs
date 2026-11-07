@@ -505,6 +505,19 @@ impl Store {
     pub fn intern(&mut self, kind: Kind) -> Result<TypeId, &'static str> {
         self.intern_observed::<false>(kind, &|_, _| Ok(()))
     }
+    /// A generic non-null pattern instantiated at another base is named apart
+    /// from every other invalid child.
+    fn invalid_child(&self, kind: &Kind) -> &'static str {
+        match *kind {
+            Kind::Pattern {
+                base,
+                constraint: Constraint::NonNull,
+            } if self.kind(base).is_some() => {
+                "non-null pattern instance requires a raw pointer base"
+            }
+            _ => "invalid canonical type child or signature",
+        }
+    }
     pub(crate) fn intern_observed<const CHARGED: bool>(
         &mut self,
         mut kind: Kind,
@@ -595,7 +608,7 @@ impl Store {
             }
         };
         if !valid {
-            return Err("invalid canonical type child or signature");
+            return Err(self.invalid_child(&kind));
         }
         let id = TypeId(u32::try_from(self.kinds.len()).map_err(|_| "too many canonical types")?);
         if CHARGED {

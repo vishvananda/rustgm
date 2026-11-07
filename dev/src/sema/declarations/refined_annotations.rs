@@ -5,6 +5,9 @@ use crate::{
     types::{Constraint, Primitive, ScalarRange},
 };
 #[cfg(test)]
+#[path = "../../../tests/invariants/nonnull_pattern_bases.rs"]
+mod non_null_tests;
+#[cfg(test)]
 #[path = "../../../tests/invariants/constrained_scalars.rs"]
 mod tests;
 
@@ -46,10 +49,15 @@ impl Checker<'_> {
         let base = self.ty(NodeKey { node: base, ..key })?;
         let constraint = match constraint {
             TypeConstraint::NonNull => {
-                if !matches!(self.facts.types.kind(base), Some(Type::Pointer { .. })) {
+                // A type parameter base stays generic, as in core's pattern
+                // `DispatchFromDyn`; each instance must supply a raw pointer.
+                if !matches!(
+                    self.facts.types.kind(base),
+                    Some(Type::Pointer { .. } | Type::Parameter(_))
+                ) {
                     return Err(self.error(
                         key,
-                        "non-pointer non-null patterns require their wider profile",
+                        "non-null pattern base must be a raw pointer or type parameter",
                     ));
                 }
                 Constraint::NonNull
