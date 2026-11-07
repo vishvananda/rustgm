@@ -88,13 +88,19 @@ fn imported_missing_edges_never_become_direct_and_failed_work_remains_paid() -> 
         .ok_or("accepted missing imported edge")?;
     assert!(error.to_string().contains("source lineage is required"));
     assert!(work.lineage_budget.steps > before);
-    work.lineage_budget.steps = 10_000_000;
+    // Amended: the lineage limits include the admitted-source grant.
+    let (limit, _) = work.lineage_budget.limits();
+    assert_eq!(
+        work.lineage_budget.granted,
+        report.package.admitted_source_bytes()
+    );
+    work.lineage_budget.steps = limit;
     let error = work
         .record_source(owner, edge.0, edge.1 as usize, binding, None)
         .err()
         .ok_or("accepted unpaid lineage publication")?;
     assert!(error.to_string().contains("work budget exceeded"));
-    assert!(work.lineage_budget.steps > 10_000_000);
+    assert!(work.lineage_budget.steps > limit);
     assert!(
         !work
             .lineage

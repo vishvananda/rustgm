@@ -62,7 +62,7 @@ fn glob_withdrawal_and_direct_masking_keep_sibling_contexts_independent()
         origin: Origin::Direct,
         ..glob
     };
-    let mut work = Work::new(resolver.facts);
+    let mut work = Work::new(resolver.facts, 0);
     work.observe();
     // Identical spelling, namespace and import origin; only contexts differ.
     resolver.contribute(0, root, Some(glob), &mut work)?;
@@ -149,7 +149,7 @@ fn actual_glob_journals_remap_names_and_withdraw_only_the_mapped_context()
     let mut state = State::default();
     state.facts = std::mem::take(&mut report.resolution);
     let mut resolver = state.bind(&mut report.package);
-    let mut work = Work::new(resolver.facts);
+    let mut work = Work::new(resolver.facts, 0);
     resolver.drive_imports(&mut work)?;
     assert!(work.errors.iter().all(Option::is_none));
     assert_eq!(

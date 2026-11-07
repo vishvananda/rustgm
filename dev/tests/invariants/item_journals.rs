@@ -40,7 +40,7 @@ fn a_preexisting_local_first_publishes_exactly_one_item_delta() -> Result {
         false,
     )?;
     facts.bindings.insert_key(opaque, binding(1))?;
-    let mut work = Work::new(&facts);
+    let mut work = Work::new(&facts, 0);
     work.observe();
     facts.bindings.insert_key(root, binding(2))?;
     work.declared(&facts.bindings, root);
@@ -64,7 +64,7 @@ fn lazy_journals_distinguish_root_and_opaque_keys_across_the_snapshot() -> Resul
     let root = (ScopeId(0), NameId(1), Namespace::Type, ItemContext::ROOT);
     let opaque = (root.0, root.1, root.2, context);
     facts.bindings.insert_key(root, binding(0))?;
-    let mut work = Work::new(&facts);
+    let mut work = Work::new(&facts, 0);
     facts.bindings.insert_key(opaque, binding(1))?;
     work.declared(&facts.bindings, opaque);
     assert_eq!(
@@ -96,7 +96,7 @@ fn a_batch_of_old_local_entries_is_not_seeded_before_its_declared_events() -> Re
                 false,
             )?;
         }
-        let mut work = Work::new(&facts);
+        let mut work = Work::new(&facts, 0);
         let e = (a.0, a.1, a.2, context);
         let batch = [e, b, a];
         for (index, key) in batch.iter().enumerate() {
@@ -137,7 +137,7 @@ fn waiting_paths_wake_only_for_their_complete_context_key() -> Result {
     let facts = Resolution::default();
     let root = (ScopeId(0), NameId(1), Namespace::Macro, ItemContext::ROOT);
     let opaque = (root.0, root.1, root.2, context);
-    let mut work = Work::new(&facts);
+    let mut work = Work::new(&facts, 0);
     work.queued = vec![false; 3];
     work.watch(0, vec![root]);
     work.watch(1, vec![opaque]);

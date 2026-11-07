@@ -91,10 +91,11 @@ impl<S: Sources> Engine<'_, S> {
         }
         Ok(())
     }
-    /// A module or include admission grants the existing lint ledger before
-    /// expansion visits the admitted source.
-    pub(super) fn grant_lint_admissions(&mut self) {
+    /// A module or include admission grants the existing lint ledger and the
+    /// import-lineage ledger before expansion visits the admitted source.
+    pub(super) fn grant_admissions(&mut self) {
         let admitted = self.loader.package.admitted_source_bytes();
+        self.paths.admit(admitted);
         if let Some(producer) = self
             .attribute_effects
             .as_deref_mut()

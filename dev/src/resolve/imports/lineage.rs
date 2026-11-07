@@ -40,7 +40,7 @@ impl Lineage {
         owner: NodeKey,
         edge: Edge,
         source: Source,
-        budget: &mut super::super::lint_policy::producer::Work,
+        budget: &mut super::Budget,
     ) -> Result<(), Error> {
         let selected = self.selections.get(&source).copied();
         let additional = usize::from(selected.is_none());

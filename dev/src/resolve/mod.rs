@@ -90,10 +90,9 @@ pub fn analyze_expanded(
         &state.facts.node_scopes,
     ));
     let pending = std::mem::take(&mut report.pending);
-    let mut work = report
-        .imports
-        .take()
-        .unwrap_or_else(|| imports::Work::new(&state.facts));
+    let mut work = report.imports.take().unwrap_or_else(|| {
+        imports::Work::new(&state.facts, report.package.admitted_source_bytes())
+    });
     let mut resolver = state.bind(&mut report.package);
     let result = resolver
         .primitives()

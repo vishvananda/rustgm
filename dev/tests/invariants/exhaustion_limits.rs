@@ -403,7 +403,7 @@ fn lint_work(
     Ok(report.lint_producer().ok_or("lint producer")?.work())
 }
 fn lint_limits(granted: usize) -> (usize, usize) {
-    crate::resolve::lint_policy::producer::Work {
+    crate::resolve::lint_policy::producer::Work::<crate::resolve::lint_policy::producer::Lint> {
         granted,
         ..Default::default()
     }
@@ -536,6 +536,185 @@ fn linear_attribute_family_scales_and_exponential_output_grants_nothing() -> Tes
     let error = provider(&doubling(16), &Config::default())
         .err()
         .ok_or("exponential attributed output accepted")?
+        .to_string();
+    assert!(
+        error.contains("source lint policy storage budget exceeded"),
+        "{error}"
+    );
+    Ok(())
+}
+type LineageWork =
+    crate::resolve::lint_policy::producer::Work<crate::resolve::lint_policy::producer::Lineage>;
+fn lineage_work(report: &crate::resolve::expansion::Report) -> TestResult<LineageWork> {
+    Ok(report
+        .imports
+        .as_ref()
+        .ok_or("expansion import work")?
+        .lineage_budget)
+}
+fn lineage_limits(granted: usize) -> (usize, usize) {
+    LineageWork {
+        granted,
+        ..Default::default()
+    }
+    .limits()
+}
+#[test]
+fn lineage_ledger_grants_each_admitted_identity_once_before_reading_it() -> TestResult {
+    assert_eq!(lineage_limits(0), (10_000_000, 64 * 1024 * 1024));
+    assert_eq!(
+        lineage_limits(1000),
+        (10_000_000 + 8 * 1000, 64 * 1024 * 1024 + 128 * 1000)
+    );
+    for copies in [1, 4, 32] {
+        let source = admission_family(copies)?;
+        let report = provider(&source, &Config::default())?;
+        let admitted = source.len() + PIECE.len() + UNIT.len();
+        assert_eq!(report.package.admitted_source_bytes(), admitted, "{copies}");
+        // The import worklist exists before any module or include is admitted.
+        let work = lineage_work(&report)?;
+        assert_eq!(work.granted, admitted, "{copies}");
+        assert_eq!(work.limits(), lineage_limits(admitted), "{copies}");
+    }
+    Ok(())
+}
+#[test]
+fn lineage_grants_only_grow_and_never_reset_an_exhausted_ledger() -> TestResult {
+    let report = provider(CORE, &Config::default())?;
+    let key = crate::resolve::unit::NodeKey {
+        file: crate::resolve::unit::FileId(0),
+        node: report.package.modules[0].root,
+    };
+    let mut work = lineage_work(&report)?;
+    assert_eq!(work.granted, CORE.len());
+    work.admit(1000);
+    work.admit(10);
+    assert_eq!(work.granted, 1000);
+    let (steps, _) = lineage_limits(1000);
+    work.charge(key, steps - work.steps, 0)
+        .map_err(crate::resolve::package::Error::from)?;
+    let error = work.charge(key, 1, 0).err().ok_or("over the grant")?;
+    assert_eq!(error.message, "source lint policy work budget exceeded");
+    // A later admission neither refunds the failed attempt nor clears it.
+    work.admit(1_000_000);
+    assert_eq!(work.granted, 1000);
+    assert_eq!(work.steps, steps + 1);
+    assert!(work.charge(key, 0, 0).is_err());
+    Ok(())
+}
+/// One module of `count` items, each imported by its own single import.
+fn single_imports(count: usize) -> TestResult<String> {
+    use std::fmt::Write as _;
+    let mut source = format!("{CORE}mod m{{");
+    for index in 0..count {
+        write!(source, "pub fn a{index}(){{}}")?;
+    }
+    source.push('}');
+    for index in 0..count {
+        writeln!(source, "use m::a{index};")?;
+    }
+    Ok(source)
+}
+/// Fixed-width fan-out: per block, eight modules glob-import one eight-item
+/// module, 64 edges per block.
+fn glob_blocks(count: usize) -> TestResult<String> {
+    use std::fmt::Write as _;
+    let mut source = CORE.to_owned();
+    for block in 0..count / 64 {
+        write!(
+            source,
+            "mod m{block}{{pub fn a(){{}}pub fn b(){{}}pub fn c(){{}}pub fn d(){{}}pub fn e(){{}}pub fn f(){{}}pub fn g(){{}}pub fn h(){{}}}}"
+        )?;
+        for importer in 0..8 {
+            writeln!(source, "mod g{block}_{importer}{{use super::m{block}::*;}}")?;
+        }
+    }
+    Ok(source)
+}
+/// A chain of glob re-exports, each module re-exporting its predecessor's name.
+fn glob_chain(count: usize) -> TestResult<String> {
+    use std::fmt::Write as _;
+    let mut source = format!("{CORE}pub mod c0{{pub fn f(){{}}}}");
+    for index in 1..count {
+        writeln!(
+            source,
+            "pub mod c{index}{{pub use super::c{}::*;}}",
+            index - 1
+        )?;
+    }
+    Ok(source)
+}
+/// Square fan-out: `width` modules glob-import one module of `width` items,
+/// so edges grow with the square of the admitted bytes.
+fn square_fanout(width: usize) -> TestResult<String> {
+    use std::fmt::Write as _;
+    let mut source = format!("{CORE}mod m{{");
+    for index in 0..width {
+        write!(source, "pub fn a{index}(){{}}")?;
+    }
+    source.push('}');
+    for index in 0..width {
+        writeln!(source, "mod g{index}{{use super::m::*;}}")?;
+    }
+    Ok(source)
+}
+/// Per-edge lineage work at 512 and 4096 edges, with 2x headroom inside the
+/// per-byte factors.
+fn lineage_family(
+    family: &str,
+    source: impl Fn(usize) -> TestResult<String>,
+) -> TestResult<[(usize, usize); 2]> {
+    use crate::resolve::lint_policy::producer::{Factors, Lineage};
+    let mut ratios = [(0, 0); 2];
+    for (ratio, count) in ratios.iter_mut().zip([512, 4096]) {
+        let source = source(count)?;
+        let work = lineage_work(&provider(&source, &Config::default())?)?;
+        let bytes = source.len();
+        eprintln!(
+            "{family}={count} bytes={bytes} steps={} attempted={}",
+            work.steps, work.bytes
+        );
+        assert_eq!(work.granted, bytes, "{family}");
+        assert!(
+            2 * work.steps <= Lineage::STEPS_PER_BYTE * bytes,
+            "{family} {count}: {} steps",
+            work.steps
+        );
+        assert!(
+            2 * work.bytes <= Lineage::BYTES_PER_BYTE * bytes,
+            "{family} {count}: {} bytes",
+            work.bytes
+        );
+        *ratio = (work.steps / count, work.bytes / count);
+    }
+    Ok(ratios)
+}
+#[test]
+fn linear_import_families_scale_and_square_fanout_still_fails() -> TestResult {
+    for (family, source) in [
+        ("singles", single_imports as fn(usize) -> TestResult<String>),
+        ("glob-blocks", glob_blocks),
+        ("glob-chain", glob_chain),
+    ] {
+        let ratios = lineage_family(family, source)?;
+        assert!(4 * ratios[1].0 <= 5 * ratios[0].0, "{family} {ratios:?}");
+        assert!(4 * ratios[1].1 <= 5 * ratios[0].1, "{family} {ratios:?}");
+    }
+    // Doubling the fan-out width doubles the admitted bytes and quadruples
+    // the edges, so the grant falls behind the paid work.
+    let mut usage = Vec::new();
+    for width in [64, 128] {
+        let source = square_fanout(width)?;
+        let work = lineage_work(&provider(&source, &Config::default())?)?;
+        assert_eq!(work.granted, source.len(), "{width}");
+        usage.push((source.len(), work.steps, work.bytes));
+    }
+    eprintln!("square fan-out at widths 64 and 128: {usage:?}");
+    assert!(usage[1].0 <= 2 * usage[0].0 + 64, "{usage:?}");
+    assert!(usage[1].1 >= 3 * usage[0].1, "{usage:?}");
+    let error = provider(&square_fanout(1024)?, &Config::default())
+        .err()
+        .ok_or("square fan-out accepted")?
         .to_string();
     assert!(
         error.contains("source lint policy storage budget exceeded"),

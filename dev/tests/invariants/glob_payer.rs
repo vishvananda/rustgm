@@ -108,7 +108,7 @@ fn completion_checks_both_failed_owners_and_the_actual_cap_before_empty_results(
     for failed_imports in [false, true] {
         let mut report = expanded("#[doc=\"retained\"]fn ordinary(){}", LintCap::Allow)?;
         let key = root(&report);
-        let mut work = Work::new(&report.resolution);
+        let mut work = Work::new(&report.resolution, 0);
         if failed_imports {
             assert!(
                 work.lineage_budget

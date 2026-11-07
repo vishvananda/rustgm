@@ -14,6 +14,7 @@ use crate::{
 };
 use std::collections::VecDeque;
 type Key = (NameId, Namespace, ItemContext);
+type Budget = super::lint_policy::producer::Work<super::lint_policy::producer::Lineage>;
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum TextualSource {
     Missing,
@@ -22,7 +23,7 @@ pub(crate) enum TextualSource {
 }
 pub(crate) struct Work {
     lineage: Option<Box<lineage::Lineage>>,
-    pub(super) lineage_budget: super::lint_policy::producer::Work,
+    pub(super) lineage_budget: Budget,
     queue: VecDeque<usize>,
     queued: Vec<bool>,
     waiting: HashMap<BindingKey, HashSet<usize>>,
@@ -50,11 +51,15 @@ pub(crate) struct Work {
     pub events: Vec<BindingKey>,
 }
 impl Work {
-    pub fn new(facts: &super::model::Resolution) -> Self {
+    /// The lineage ledger is granted every source admitted so far before its
+    /// first charge, like the lint-policy ledger it shares a type with.
+    pub fn new(facts: &super::model::Resolution, admitted: usize) -> Self {
         let count = facts.imports.len();
+        let mut lineage_budget = Budget::default();
+        lineage_budget.admit(admitted);
         Self {
             lineage: None,
-            lineage_budget: super::lint_policy::producer::Work::default(),
+            lineage_budget,
             queue: (0..count).collect(),
             queued: vec![true; count],
             waiting: HashMap::default(),
@@ -208,7 +213,7 @@ impl Resolver<'_> {
         if self.facts.imports.is_empty() {
             return Ok(());
         }
-        let mut work = Work::new(self.facts);
+        let mut work = Work::new(self.facts, self.package.admitted_source_bytes());
         self.drive_imports(&mut work)?;
         self.diagnose_imports(&mut work)
     }

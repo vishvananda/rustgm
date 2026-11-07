@@ -85,8 +85,31 @@ const SETUP_BYTES: usize = 64 * 1024 * 1024;
 pub(crate) const STEPS_PER_BYTE: usize = 8;
 /// Attempted-allocation bytes granted per original byte of an admitted source.
 pub(crate) const BYTES_PER_BYTE: usize = 64;
+/// The per-byte grant factors of one input-bounded ledger. Both ledgers keep
+/// the same setup floor; a zero-sized marker selects the factors, so neither
+/// record grows.
+pub(crate) trait Factors: Copy + Default {
+    const STEPS_PER_BYTE: usize;
+    const BYTES_PER_BYTE: usize;
+}
+/// The source lint-policy ledger.
 #[derive(Clone, Copy, Default)]
-pub(crate) struct Work {
+pub(crate) struct Lint;
+impl Factors for Lint {
+    const STEPS_PER_BYTE: usize = STEPS_PER_BYTE;
+    const BYTES_PER_BYTE: usize = BYTES_PER_BYTE;
+}
+/// The import-lineage ledger. Its factors are sized in
+/// `docs/parallel/definition-lineage.md` from original core's lineage payers
+/// and from the densest linear import families.
+#[derive(Clone, Copy, Default)]
+pub(crate) struct Lineage;
+impl Factors for Lineage {
+    const STEPS_PER_BYTE: usize = 8;
+    const BYTES_PER_BYTE: usize = 128;
+}
+#[derive(Clone, Copy, Default)]
+pub(crate) struct Work<F = Lint> {
     pub attributes: usize,
     pub expectations: usize,
     pub entries: usize,
@@ -98,13 +121,14 @@ pub(crate) struct Work {
     pub bytes: usize,
     /// Admitted original source bytes granted to this ledger; zero leaves the floor.
     pub granted: usize,
+    pub factors: std::marker::PhantomData<F>,
 }
-impl Work {
+impl<F: Factors> Work<F> {
     /// The step and attempted-byte limits: the setup floor plus the grant.
     pub(crate) const fn limits(&self) -> (usize, usize) {
         (
-            SETUP_STEPS.saturating_add(self.granted.saturating_mul(STEPS_PER_BYTE)),
-            SETUP_BYTES.saturating_add(self.granted.saturating_mul(BYTES_PER_BYTE)),
+            SETUP_STEPS.saturating_add(self.granted.saturating_mul(F::STEPS_PER_BYTE)),
+            SETUP_BYTES.saturating_add(self.granted.saturating_mul(F::BYTES_PER_BYTE)),
         )
     }
     fn exhaustion(&self) -> Option<&'static str> {
@@ -114,6 +138,13 @@ impl Work {
             (true, false) => Some("source lint policy work budget exceeded"),
             (false, true) => Some("source lint policy storage budget exceeded"),
             (true, true) => Some("source lint policy work and storage budgets exceeded"),
+        }
+    }
+    /// Grant the cumulative admitted source bytes before a charge reads them.
+    /// The grant only grows, and an exhausted ledger is never granted again.
+    pub(crate) fn admit(&mut self, admitted: usize) {
+        if self.exhaustion().is_none() {
+            self.granted = self.granted.max(admitted);
         }
     }
     pub(in crate::resolve) fn charge(

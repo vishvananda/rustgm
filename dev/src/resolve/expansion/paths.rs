@@ -49,10 +49,15 @@ impl Paths {
         if seed.is_some() {
             // This is still before the first scan/import observation, matching
             // ordinary Paths::new's ordering after import_crates completes.
-            self.work = Work::new(&self.state.facts);
+            self.work = Work::new(&self.state.facts, package.admitted_source_bytes());
             self.work.observe();
         }
         Ok(seed)
+    }
+    /// Grant the import-lineage ledger every source admitted so far, before
+    /// the new source's imports are read.
+    pub(super) fn admit(&mut self, admitted: usize) {
+        self.work.lineage_budget.admit(admitted);
     }
     pub fn invocation(
         &mut self,
@@ -156,7 +161,7 @@ impl Paths {
         if let Some(dependencies) = dependencies {
             state.bind(package).import_crates(dependencies)?;
         }
-        let mut work = Work::new(&state.facts);
+        let mut work = Work::new(&state.facts, package.admitted_source_bytes());
         work.observe();
         Ok(Self {
             state,
