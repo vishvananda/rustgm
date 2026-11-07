@@ -172,9 +172,13 @@ pub(in crate::sema) fn has_comptime_headers(facts: &Declarations) -> bool {
         .and_then(|owner| owner.headers.as_deref())
         .is_some_and(|headers| !headers.local.declarations.is_empty())
 }
-fn ledger(facts: &mut Declarations, bytes: usize) -> Result<&mut Ledger, Error> {
+/// The crate's header ledger, created with its local input-graph bound by
+/// whichever producer needs it first. The imported contract ingest may run
+/// before any local header is observed; it must not leave the local half with
+/// an empty bound that every later local query would exceed.
+pub(super) fn bounded_ledger(facts: &mut Declarations) -> &mut Ledger {
     let bound = facts.header_bound;
-    let ledger = facts
+    facts
         .must_use_contracts
         .get_or_insert_default()
         .headers
@@ -186,7 +190,10 @@ fn ledger(facts: &mut Declarations, bytes: usize) -> Result<&mut Ledger, Error> 
                 },
                 imported: None,
             })
-        });
+        })
+}
+fn ledger(facts: &mut Declarations, bytes: usize) -> Result<&mut Ledger, Error> {
+    let ledger = bounded_ledger(facts);
     ledger
         .local
         .steps

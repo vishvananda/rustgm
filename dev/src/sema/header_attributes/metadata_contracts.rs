@@ -181,12 +181,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
         }
     }
     if !headers.entries.is_empty() {
-        facts
-            .must_use_contracts
-            .get_or_insert_default()
-            .headers
-            .get_or_insert_default()
-            .imported = Some(Box::new(headers));
+        super::local::bounded_ledger(facts).imported = Some(Box::new(headers));
     }
     Ok(())
 }
