@@ -1,0 +1,182 @@
+{
+  "schema": 1,
+  "base": "71c65125a6832b5e81318235843a1ca51f3d1173",
+  "qualification": "obj/parallel/source-transport/future-deprecation/final1/receipt.json",
+  "stages": [
+    {
+      "stage": "reference",
+      "argv": [
+        "python3",
+        "obj/parallel/source-transport/future-deprecation/reference-unused.py"
+      ],
+      "code": 0,
+      "seconds": 0.919277096982114
+    },
+    {
+      "stage": "format",
+      "argv": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--all"
+      ],
+      "code": 0,
+      "seconds": 14.504603630979545
+    },
+    {
+      "stage": "audit",
+      "argv": [
+        "obj/audit-venv/bin/python",
+        "scripts/rust_audit.py",
+        "--root",
+        ".",
+        "--cache",
+        "obj/fast-audit.json"
+      ],
+      "code": 0,
+      "seconds": 2.435848920024
+    },
+    {
+      "stage": "strict",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "code": 0,
+      "seconds": 88.23506050102878
+    },
+    {
+      "stage": "source",
+      "argv": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_frontend",
+        "deprecation_releases::",
+        "--",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 14.755265278043225
+    },
+    {
+      "stage": "old",
+      "argv": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_frontend",
+        "guaranteed_pointers::",
+        "--",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 0.6497964400332421
+    },
+    {
+      "stage": "native",
+      "argv": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_frontend",
+        "deprecation_releases::future_metadata_preserves_actual_ordinary_native_body",
+        "--",
+        "--ignored",
+        "--exact",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 0.2932169099804014
+    },
+    {
+      "stage": "cli",
+      "argv": [
+        "cargo",
+        "build",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--bin",
+        "rustgm"
+      ],
+      "code": 0,
+      "seconds": 0.0798981070984155
+    },
+    {
+      "stage": "harness",
+      "argv": [
+        "make",
+        "test-harness"
+      ],
+      "code": 0,
+      "seconds": 12.483825500006787
+    },
+    {
+      "stage": "upstream",
+      "argv": [
+        "make",
+        "test-upstream"
+      ],
+      "code": 0,
+      "seconds": 0.13275141397025436
+    }
+  ],
+  "cli": {
+    "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/final1/rustgm",
+    "sha256": "dfbd113eedd0a6f1cb454b34876bdf3f0b4d0000808bf23372e98efa480be643"
+  },
+  "source_count": 3654,
+  "reference": {
+    "cases": 39,
+    "compiler_observations": 78,
+    "native_stdout": "future-deprecation 23\n",
+    "packets": {
+      "reference-unused-v1.json": "7deeb7a6a9017badff7e79a4d6497fa183e95907474ed8ebddbb4f7b512d9233",
+      "reference-v1.json": "0ac93cccee3a17fcb40b099f4412d77ef6852e80c71f0bbe7ca84ad15c50b7a7"
+    }
+  },
+  "widths": {
+    "Deprecation": 72,
+    "DeprecationSince": 8,
+    "Parsed": 104,
+    "Owner": 160
+  },
+  "failed_evidence": [
+    "obj/parallel/source-transport/future-deprecation/static1/receipt.json",
+    "obj/parallel/source-transport/future-deprecation/static2/receipt.json"
+  ],
+  "original_observation": "obj/parallel/source-transport/guaranteed-compare/original-core-v1/receipt.json",
+  "mapping": "Original bytes202/1256/2046 lines7/33/53; raw file7:2756 is generated append-only semantic spelling beyond original2706, no physical line72 claim",
+  "private_execution": "metadata compiled; execution CI pending",
+  "source_transport": "Local deprecated rows including inactive Future still require actual explicit transport; no privilege added",
+  "next_core": "No post-repair unchanged-core probe; Root owns combined join observation"
+}

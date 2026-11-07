@@ -1,5 +1,6 @@
 //! Source-owned lexical lint rules are shared by expansion diagnostics and semantics.
 mod attribute_changes;
+mod deprecated_since;
 mod expectations;
 mod ineffective_headers;
 mod suggestions;

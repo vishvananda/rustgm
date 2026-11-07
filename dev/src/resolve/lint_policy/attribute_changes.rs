@@ -5,20 +5,24 @@ use super::{
 };
 use crate::{
     lex::token::Punctuation,
-    resolve::unit::{NodeKey, Unit},
+    resolve::{
+        package::Package,
+        unit::{NodeKey, Unit},
+    },
     syntax::{
         attribute::{Attribute, Input},
         token_tree::{Forest, Tree, TreeRange},
     },
 };
 pub(super) fn owner(
-    unit: &Unit,
+    package: &Package,
     key: NodeKey,
     tail: super::producer::Tail,
     effects: std::ops::Range<usize>,
     work: &mut Work,
     cap: crate::support::diagnostics::LintCap,
 ) -> Result<(Parsed, u32), Violation> {
+    let unit = package.unit(key.file);
     let (rows, pairs) = counts(unit, key, effects.clone(), work)?;
     let bytes = rows
         .saturating_mul(size_of::<Witness>())
@@ -86,6 +90,10 @@ pub(super) fn owner(
             key,
             "lint witness allocation changed its exact extent",
         ));
+    }
+    if let Some(deprecated) = &parsed.deprecated {
+        work.charge(key, 4, 0)?;
+        deprecated.validate_staged(package, key)?;
     }
     parsed.witnesses = witnesses.into_boxed_slice();
     parsed.trees = trees.into_boxed_slice();
@@ -482,7 +490,7 @@ fn deprecation(
         note: None,
         since: None,
         suggestion: None,
-        staged_unsupported: false,
+        release: super::deprecated_since::Since::Unspecified,
     };
     if attribute.input == Input::Empty {
         return Ok(result);
@@ -547,19 +555,16 @@ fn deprecation(
             index += 1;
         }
     }
-    result.staged_unsupported = result.since.as_deref().is_some_and(|since| {
-        let mut parts = since.split('.');
-        let Some(major) = parts.next().and_then(|part| part.parse::<u32>().ok()) else {
-            return true;
-        };
-        let Some(minor) = parts.next().and_then(|part| part.parse::<u32>().ok()) else {
-            return true;
-        };
-        let Some(_patch) = parts.next().and_then(|part| part.parse::<u32>().ok()) else {
-            return true;
-        };
-        parts.next().is_some() || major > 1 || (major == 1 && minor > 98)
-    });
+    work.charge(
+        key,
+        result
+            .since
+            .as_deref()
+            .map_or(0, |text| text.len().saturating_mul(2))
+            .saturating_add(1),
+        0,
+    )?;
+    result.release = super::deprecated_since::Since::parse(result.since.as_deref());
     Ok(result)
 }
 fn invalid(key: NodeKey, attribute: Attribute, message: &'static str) -> Violation {

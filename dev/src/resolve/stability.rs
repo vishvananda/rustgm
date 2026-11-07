@@ -1,5 +1,6 @@
 //! Local library availability is distinct from language and const-call permission.
 mod attributes;
+pub(in crate::resolve) use attributes::version as parse_version;
 pub(in crate::resolve) mod availability_imports;
 mod budget;
 mod compatibility_notes;
@@ -26,6 +27,19 @@ use std::rc::Rc;
 pub enum Since {
     Current,
     Version { major: u16, minor: u16, patch: u16 },
+}
+impl Since {
+    /// The target language version is independent of the compiler's host.
+    pub(crate) const fn release(self) -> (u16, u16, u16) {
+        match self {
+            Self::Current => (1, 98, 0),
+            Self::Version {
+                major,
+                minor,
+                patch,
+            } => (major, minor, patch),
+        }
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(crate) enum PolicyKind {
@@ -85,6 +99,10 @@ pub struct Library {
     inventory: Option<Inventory>,
 }
 impl Library {
+    pub(crate) const fn is_staged(&self) -> bool {
+        self.staged
+    }
+
     pub(super) fn request(&mut self, name: &str) -> Result<(), &'static str> {
         if name == "staged_api" {
             self.staged = true;

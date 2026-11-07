@@ -297,14 +297,8 @@ impl Producer {
             .and_then(NonZeroU32::new)
             .ok_or_else(|| invalid(key, "source lint owner identities exceed 32 bits"))?;
         let tail = Tail(value);
-        let (parsed, deferred) = attribute_changes::owner(
-            package.unit(key.file),
-            key,
-            tail,
-            effects.clone(),
-            &mut self.work,
-            cap,
-        )?;
+        let (parsed, deferred) =
+            attribute_changes::owner(package, key, tail, effects.clone(), &mut self.work, cap)?;
         self.publish_deferred(key, deferred)?;
         let next = if parsed.has_policy() {
             Some(tail)

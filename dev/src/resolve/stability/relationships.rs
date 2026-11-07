@@ -1,5 +1,5 @@
 //! Exact policy links share cold storage; a former name never enables an API.
-use super::{Draft, Inventory, Level, PolicyId, Since};
+use super::{Draft, Inventory, Level, PolicyId};
 use crate::{
     resolve::{
         package::{Error, Package},
@@ -180,14 +180,7 @@ pub(super) fn release(level: &Level) -> Option<(u16, u16, u16)> {
         Level::Stable(since) | Level::StableWithCompatibility { since, .. } => since,
         Level::Unstable { .. } => return None,
     };
-    Some(match since {
-        Since::Current => (1, 98, 0),
-        Since::Version {
-            major,
-            minor,
-            patch,
-        } => (*major, *minor, *patch),
-    })
+    Some(since.release())
 }
 impl Inventory {
     pub(crate) fn has_relationships(&self) -> bool {

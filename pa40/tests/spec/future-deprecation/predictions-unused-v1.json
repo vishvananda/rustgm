@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "file": "staged-soon-unused.rs",
+      "sha256": "9199b536d12120144bbaed6e2043b0953cd6527e6ea689083f56720ee30d8eb0",
+      "expected": 1,
+      "cap_lints": "allow",
+      "hypothesis": "Actual unused declaration legality is checked before any use or optional diagnostic; no body demand to validate staged fields",
+      "uncertain": false
+    },
+    {
+      "file": "staged-missing-since-unused.rs",
+      "sha256": "acb03f63f9b3719544e958bb7b2d4aa75c3b251362ebadb00a0a84479d39b441",
+      "expected": 1,
+      "cap_lints": "allow",
+      "hypothesis": "Actual unused declaration legality is checked before any use or optional diagnostic; no body demand to validate staged fields",
+      "uncertain": false
+    },
+    {
+      "file": "staged-missing-note-unused.rs",
+      "sha256": "603f4fedf513d0892203a88b14b0fd7e37de81873fb2b335a0e436cef6cd9ee8",
+      "expected": 1,
+      "cap_lints": "allow",
+      "hypothesis": "Actual unused declaration legality is checked before any use or optional diagnostic; no body demand to validate staged fields",
+      "uncertain": false
+    },
+    {
+      "file": "staged-tbd-unused.rs",
+      "sha256": "df706b5011f60064044703dc7faedc4fead8e77e4dde89066aaf21adb8153b7c",
+      "expected": 0,
+      "cap_lints": "allow",
+      "hypothesis": "Actual unused declaration legality is checked before any use or optional diagnostic; no body demand to validate staged fields",
+      "uncertain": false
+    },
+    {
+      "file": "staged-99-0-0-unused.rs",
+      "sha256": "f83a4a1d68cacea6ee781ad11733450af1c2d3a33b2ec6b159858610a79cde54",
+      "expected": 0,
+      "cap_lints": "allow",
+      "hypothesis": "Actual unused declaration legality is checked before any use or optional diagnostic; no body demand to validate staged fields",
+      "uncertain": false
+    },
+    {
+      "file": "ordinary-soon-unused.rs",
+      "sha256": "f4667e83a7f3ecbc3eef08e5a4c0ffa4ff358ba99f7bbaa0c200edd42907bb85",
+      "expected": 0,
+      "cap_lints": "allow",
+      "hypothesis": "Actual unused declaration legality is checked before any use or optional diagnostic; no body demand to validate staged fields",
+      "uncertain": false
+    }
+  ],
+  "native": {}
+}

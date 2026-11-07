@@ -232,3 +232,6 @@ mod guaranteed_pointers;
 
 #[path = "../../cold_prototypes.rs"]
 mod cold_prototypes;
+
+#[path = "../../deprecation_releases.rs"]
+mod deprecation_releases;

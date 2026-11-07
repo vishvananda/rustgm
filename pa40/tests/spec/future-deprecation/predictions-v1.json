@@ -1,0 +1,280 @@
+{
+  "schema": 1,
+  "owner": "PA40 annotation/version/lint semantics; PA31 source declaration prerequisite",
+  "profile": "Rust1.98 edition2024 x86_64 panicabort overflowyes debugassertionsno ubchecksno bootstrap1; explicit per-case cap",
+  "original": {
+    "path": "library/core/src/num/shells/legacy_int_modules.rs",
+    "sha256": "b5e5541e59e1120035c4a371264c3c5e4c00f2ffb6b11935788a30c2e9701cd8",
+    "bytes": 2706
+  },
+  "cases": [
+    {
+      "file": "ordinary-tbd.rs",
+      "sha256": "c411795c09c3cfc5be51a48e000d68f0ec177c661ece4fb143035bde7532324a",
+      "expected": 0,
+      "hypothesis": "Actual staged version/Future semantics vs non-staged nonstandard string; deny active use",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "ordinary-1-0-0.rs",
+      "sha256": "b41d6e7a2c5695a33b0181b7f3071b983ff6da12cfc3862a63a00f3db3ea1705",
+      "expected": 1,
+      "hypothesis": "Actual staged version/Future semantics vs non-staged nonstandard string; deny active use",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "ordinary-1-98-0.rs",
+      "sha256": "f6d7d3c7cf314429b1075fc131c437d2609f8a57de2e6480d4102800f7a79e70",
+      "expected": 1,
+      "hypothesis": "Actual staged version/Future semantics vs non-staged nonstandard string; deny active use",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "ordinary-1-98-1.rs",
+      "sha256": "ccb141da3a302191deb0a218a771dc697b8d6dccecb552c8a72b4fd2b5fc432d",
+      "expected": 1,
+      "hypothesis": "Actual staged version/Future semantics vs non-staged nonstandard string; deny active use",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "ordinary-99-0-0.rs",
+      "sha256": "4e1484c89dc637566bd5c7370c6023a342c0e7221523a4572df4214f2932e8d0",
+      "expected": 1,
+      "hypothesis": "Actual staged version/Future semantics vs non-staged nonstandard string; deny active use",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "ordinary-current_rustc_version.rs",
+      "sha256": "ed4822fec1a3ff4c4e2bb6d8774357c2f6f7f77a6e9b93c110670d1660c8e3a7",
+      "expected": 1,
+      "hypothesis": "Actual staged version/Future semantics vs non-staged nonstandard string; deny active use",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "ordinary-soon.rs",
+      "sha256": "aeaf552c27f7d715d22ff5689f60747eda724b39d43be50366b6457ccc11641d",
+      "expected": 1,
+      "hypothesis": "Actual staged version/Future semantics vs non-staged nonstandard string; deny active use",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "staged-tbd.rs",
+      "sha256": "100a1471d5dd31aa27d946783350ad0628839228d84950aaf3caf9c2f5930d0c",
+      "expected": 0,
+      "hypothesis": "Actual staged version/Future semantics vs non-staged nonstandard string; deny active use",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "staged-1-0-0.rs",
+      "sha256": "335ed4e4f9559f8e95a14cf63647fb5faa83d0f157884b9f982167df21e00d13",
+      "expected": 1,
+      "hypothesis": "Actual staged version/Future semantics vs non-staged nonstandard string; deny active use",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "staged-1-98-0.rs",
+      "sha256": "4b6196a6d781beab6850a75a65d001829c5a550a6798308fc300614dd205a033",
+      "expected": 1,
+      "hypothesis": "Actual staged version/Future semantics vs non-staged nonstandard string; deny active use",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "staged-1-98-1.rs",
+      "sha256": "8297c8222eb830a7b58a90fabb1210d825d57f5e3a32a45a0e1b49396b7b7845",
+      "expected": 0,
+      "hypothesis": "Actual staged version/Future semantics vs non-staged nonstandard string; deny active use",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "staged-99-0-0.rs",
+      "sha256": "436033f443f4d1dc0a79028b0ef71537e7a226c96ff4e0f70788db7435d99248",
+      "expected": 0,
+      "hypothesis": "Actual staged version/Future semantics vs non-staged nonstandard string; deny active use",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "staged-current_rustc_version.rs",
+      "sha256": "839d3187c4795ad6b425f7077db33e4ffe14583a7e9f9c1acb363149180fb717",
+      "expected": 1,
+      "hypothesis": "Actual staged version/Future semantics vs non-staged nonstandard string; deny active use",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "staged-soon.rs",
+      "sha256": "02b0f2fd52a8ef79e9caecf6a8606fa6fa4cfa8899d8e5f7392e03a07ef33449",
+      "expected": 1,
+      "hypothesis": "Actual staged version/Future semantics vs non-staged nonstandard string; deny active use",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "active-allow.rs",
+      "sha256": "cf8374648c21e05ad0dcc2e2263df227742e3a4cbb5f516d313d59842c691342",
+      "expected": 0,
+      "hypothesis": "Actual active diagnostic selection and expectation fulfillment",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "active-warn.rs",
+      "sha256": "23a6de89b576c4fffdb9f12ed29f26bae6449e68844fa90920ca4920891d7c45",
+      "expected": 0,
+      "hypothesis": "Actual active diagnostic selection and expectation fulfillment",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "active-deny.rs",
+      "sha256": "335ed4e4f9559f8e95a14cf63647fb5faa83d0f157884b9f982167df21e00d13",
+      "expected": 1,
+      "hypothesis": "Actual active diagnostic selection and expectation fulfillment",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "active-expect.rs",
+      "sha256": "a438a29ed4eec38da4b7e2a52f8fdd41dd43551f2a9e2cb13f49b0d7e7019b1e",
+      "expected": 0,
+      "hypothesis": "Actual active diagnostic selection and expectation fulfillment",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "future-expect-unfulfilled.rs",
+      "sha256": "5bf21fd698d17d041487fd525bff39bf51aafa29fafbc4c7c400e3e182101f10",
+      "expected": 1,
+      "hypothesis": "Future since emits no deprecated event and cannot fulfill expectation",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "future-deny-cap-allow.rs",
+      "sha256": "100a1471d5dd31aa27d946783350ad0628839228d84950aaf3caf9c2f5930d0c",
+      "expected": 0,
+      "hypothesis": "Suppression profile does not alter future classification",
+      "cap_lints": "allow",
+      "uncertain": false
+    },
+    {
+      "file": "active-deny-cap-allow.rs",
+      "sha256": "335ed4e4f9559f8e95a14cf63647fb5faa83d0f157884b9f982167df21e00d13",
+      "expected": 0,
+      "hypothesis": "Actual cap suppresses optional active warning without granting semantics",
+      "cap_lints": "allow",
+      "uncertain": false
+    },
+    {
+      "file": "invalid-staged-cap-allow.rs",
+      "sha256": "11580f85f72762f9743263e62731525454dfdad0c56f992818ccd1bb8e94dadb",
+      "expected": 1,
+      "hypothesis": "Malformed staged since remains a hard annotation error under cap",
+      "cap_lints": "allow",
+      "uncertain": false
+    },
+    {
+      "file": "staged-missing-since.rs",
+      "sha256": "bbaab9a0530af88093b3beaa36a1748397f19e7492dfea9782cc5bae1e3559b6",
+      "expected": 1,
+      "hypothesis": "Actual staged required field checked independent of use",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "staged-missing-note.rs",
+      "sha256": "722314659150e7ce23ac695c75b89ce9df7000cf7908dcf6c21bc365e9430243",
+      "expected": 1,
+      "hypothesis": "Actual staged required field checked independent of use",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "duplicate-key.rs",
+      "sha256": "eef42dcee8cd4b75a43f35f801481c2c42567c35b77914fea453d44f434b58f4",
+      "expected": 1,
+      "hypothesis": "Duplicate argument remains a hard parser error",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "nonstring.rs",
+      "sha256": "4e57fbadbc36f66ea0391d6c20f3e85ba331f8554a115107d8e1787016179f51",
+      "expected": 1,
+      "hypothesis": "Since must be a string literal",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "invalid-version-components.rs",
+      "sha256": "03d00128b7f222ce168cc0d4af0123f9535e47cac59517d412fe31b71aecccec",
+      "expected": 1,
+      "hypothesis": "Staged malformed version is not a future release",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "lowercase-tbd.rs",
+      "sha256": "0d6f10b2db3b6686b5116c4966197e5e286783b5c31bc7bcb3effc34882d295e",
+      "expected": 1,
+      "hypothesis": "Only exact TBD sentinel is Future",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "macro-TBD.rs",
+      "sha256": "4d2a1948aaddf82521119bf6bd1ce1c6b9567c7c35a359312b244ddfc6887015",
+      "expected": 0,
+      "hypothesis": "Actual macro definition/use path carries the same future semantics",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "macro-1-0-0.rs",
+      "sha256": "8e15acabccaf233e497e3cc8f96958b4eac92f7f23295c5b7354cb644905c6ea",
+      "expected": 1,
+      "hypothesis": "Actual macro definition/use path carries the same future semantics",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    },
+    {
+      "file": "future-body-type-error.rs",
+      "sha256": "0e20088420615da2775d5a881a47734fb889c083561ad17f6b54a9a36c34f813",
+      "expected": 1,
+      "hypothesis": "Inactive metadata does not bypass body typing",
+      "cap_lints": "allow",
+      "uncertain": false
+    },
+    {
+      "file": "future-unsafe-call.rs",
+      "sha256": "b1fc15afd59c7c663acb39100b282e9b4e08ab2c327b35a98c8c703970f9e37a",
+      "expected": 1,
+      "hypothesis": "Inactive metadata grants no unsafe permission",
+      "cap_lints": "allow",
+      "uncertain": false
+    },
+    {
+      "file": "native-future.rs",
+      "sha256": "6ea4c87f63c94aeb995d12ece31ce71c55ceef08c2fa721086393b70e38f33c3",
+      "expected": 0,
+      "hypothesis": "Actual advisory metadata preserves ordinary C-call execution",
+      "cap_lints": "uncapped",
+      "uncertain": false
+    }
+  ],
+  "native": {
+    "native-future.rs": "future-deprecation 23\n"
+  },
+  "original_role": "Whole original file retained unchanged as provenance; no standalone module-closure claim"
+}

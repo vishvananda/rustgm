@@ -32,7 +32,7 @@ pub(super) struct Deprecation {
     pub note: Option<Box<str>>,
     pub since: Option<Box<str>>,
     pub suggestion: Option<(Box<str>, Span)>,
-    pub staged_unsupported: bool,
+    pub release: super::deprecated_since::Since,
 }
 pub(crate) struct PendingExpectation<'a> {
     pub id: ExpectationId,
@@ -351,7 +351,9 @@ impl Producer {
     ) -> Result<Vec<(NodeKey, crate::resolve::package::Warning)>, Violation> {
         let mut result = Vec::new();
         for event in &self.early {
-            let note = self.deprecation_note(package, event.origin, event.target)?;
+            let Some(note) = self.deprecation_note(package, event.origin, event.target)? else {
+                continue;
+            };
             self.diagnostic_read(event.key, note.len().saturating_add(40))?;
             let mut raw = crate::resolve::package::Error::at(
                 event.key.file,
@@ -406,7 +408,7 @@ impl Producer {
         if let Some(tail) = self.deprecation_owner(package, key)? {
             return self
                 .deprecation_note(package, tail, key)
-                .map(|note| Some((tail, note)));
+                .map(|note| note.map(|note| (tail, note)));
         }
         for _ in 0..package.modules.len() {
             self.attribute_read(key, 1)?;
@@ -427,7 +429,7 @@ impl Producer {
                 if let Some(tail) = self.deprecation_owner(package, source)? {
                     return self
                         .deprecation_note(package, tail, key)
-                        .map(|note| Some((tail, note)));
+                        .map(|note| note.map(|note| (tail, note)));
                 }
             }
             let Some(parent) = entry.parent else {
@@ -445,7 +447,7 @@ impl Producer {
         package: &Package,
         tail: Tail,
         key: NodeKey,
-    ) -> Result<&'a str, Violation> {
+    ) -> Result<Option<&'a str>, Violation> {
         let owner = self.record(tail, key)?;
         owner.validate(package, &self.reads)?;
         let row = owner
@@ -453,17 +455,12 @@ impl Producer {
             .deprecated
             .as_ref()
             .ok_or_else(|| invalid(key, "deprecation origin lost its annotation"))?;
-        if package.source_core().is_some() && row.staged_unsupported && row.since.is_some() {
-            return Err(Violation {
-                key: owner.key,
-                offset: row.span.start,
-                message: "staged future or nonnumeric deprecation policy is not implemented",
-            });
-        }
-        Ok(row
-            .note
-            .as_deref()
-            .unwrap_or("use of deprecated declaration"))
+        row.validate_staged(package, owner.key)?;
+        Ok(row.active(package).then(|| {
+            row.note
+                .as_deref()
+                .unwrap_or("use of deprecated declaration")
+        }))
     }
 }
 

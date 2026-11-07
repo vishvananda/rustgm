@@ -110,7 +110,9 @@ pub(super) fn check(
     let Some(origin) = facts.safety_policies.deprecated_origin(key) else {
         return Ok(());
     };
-    let note = producer.deprecation_note(&report.package, origin, key)?;
+    let Some(note) = producer.deprecation_note(&report.package, origin, key)? else {
+        return Ok(());
+    };
     if facts.safety_policies.deprecated_origin(site) == Some(origin) {
         return Ok(());
     }

@@ -1,0 +1,2047 @@
+{
+  "prediction_sha256": "0b18ca1a135da124b666001ce91e105130eba4278e712199b51d320ed9fb793b",
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "version": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+    "driver": {
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+    }
+  },
+  "observations": [
+    {
+      "file": "ordinary-tbd.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/ordinary-tbd.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/ordinary-tbd.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.023128047003410757,
+      "errors": []
+    },
+    {
+      "file": "ordinary-tbd.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/ordinary-tbd.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/ordinary-tbd.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.024434665916487575,
+      "errors": []
+    },
+    {
+      "file": "ordinary-1-0-0.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/ordinary-1-0-0.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/ordinary-1-0-0.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.021144062979146838,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "ordinary-1-0-0.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/ordinary-1-0-0.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/ordinary-1-0-0.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.018003451987169683,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "ordinary-1-98-0.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/ordinary-1-98-0.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/ordinary-1-98-0.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.018389984965324402,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "ordinary-1-98-0.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/ordinary-1-98-0.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/ordinary-1-98-0.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.016880020033568144,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "ordinary-1-98-1.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/ordinary-1-98-1.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/ordinary-1-98-1.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.023761161020956933,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "ordinary-1-98-1.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/ordinary-1-98-1.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/ordinary-1-98-1.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.020603873999789357,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "ordinary-99-0-0.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/ordinary-99-0-0.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/ordinary-99-0-0.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.019105385057628155,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "ordinary-99-0-0.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/ordinary-99-0-0.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/ordinary-99-0-0.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.015688411076553166,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "ordinary-current_rustc_version.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/ordinary-current_rustc_version.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/ordinary-current_rustc_version.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.01739417004864663,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "ordinary-current_rustc_version.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/ordinary-current_rustc_version.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/ordinary-current_rustc_version.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.021799149923026562,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "ordinary-soon.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/ordinary-soon.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/ordinary-soon.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.02432993403635919,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "ordinary-soon.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/ordinary-soon.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/ordinary-soon.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.021118942997418344,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "staged-tbd.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-tbd.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-tbd.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.021572077996097505,
+      "errors": []
+    },
+    {
+      "file": "staged-tbd.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-tbd.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-tbd.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.024299190030433238,
+      "errors": []
+    },
+    {
+      "file": "staged-1-0-0.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-1-0-0.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-1-0-0.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.021512837964110076,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "staged-1-0-0.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-1-0-0.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-1-0-0.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.01977121294476092,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "staged-1-98-0.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-1-98-0.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-1-98-0.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.02384919300675392,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "staged-1-98-0.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-1-98-0.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-1-98-0.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.02196941594593227,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "staged-1-98-1.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-1-98-1.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-1-98-1.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.021535889012739062,
+      "errors": []
+    },
+    {
+      "file": "staged-1-98-1.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-1-98-1.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-1-98-1.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.021345574059523642,
+      "errors": []
+    },
+    {
+      "file": "staged-99-0-0.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-99-0-0.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-99-0-0.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.025014949962496758,
+      "errors": []
+    },
+    {
+      "file": "staged-99-0-0.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-99-0-0.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-99-0-0.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.021071873954497278,
+      "errors": []
+    },
+    {
+      "file": "staged-current_rustc_version.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-current_rustc_version.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-current_rustc_version.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.019798318040557206,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "staged-current_rustc_version.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-current_rustc_version.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-current_rustc_version.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.022580562043003738,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "staged-soon.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-soon.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-soon.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.02385602507274598,
+      "errors": [
+        {
+          "code": null,
+          "message": "'since' must be a Rust version number, such as \"1.31.0\""
+        },
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 2 previous errors"
+        }
+      ]
+    },
+    {
+      "file": "staged-soon.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-soon.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-soon.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.021871300996281207,
+      "errors": [
+        {
+          "code": null,
+          "message": "'since' must be a Rust version number, such as \"1.31.0\""
+        },
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 2 previous errors"
+        }
+      ]
+    },
+    {
+      "file": "active-allow.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/active-allow.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/active-allow.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.024107679957523942,
+      "errors": []
+    },
+    {
+      "file": "active-allow.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/active-allow.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/active-allow.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.022373242070898414,
+      "errors": []
+    },
+    {
+      "file": "active-warn.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/active-warn.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/active-warn.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.02601423906162381,
+      "errors": []
+    },
+    {
+      "file": "active-warn.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/active-warn.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/active-warn.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.024225597037002444,
+      "errors": []
+    },
+    {
+      "file": "active-deny.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/active-deny.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/active-deny.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.021970137022435665,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "active-deny.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/active-deny.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/active-deny.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.019062747014686465,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "active-expect.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/active-expect.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/active-expect.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.021913358010351658,
+      "errors": []
+    },
+    {
+      "file": "active-expect.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/active-expect.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/active-expect.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.027013334911316633,
+      "errors": []
+    },
+    {
+      "file": "future-expect-unfulfilled.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/future-expect-unfulfilled.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/future-expect-unfulfilled.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.026576952077448368,
+      "errors": [
+        {
+          "code": "unfulfilled_lint_expectations",
+          "message": "this lint expectation is unfulfilled"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "future-expect-unfulfilled.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/future-expect-unfulfilled.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/future-expect-unfulfilled.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.024046413018368185,
+      "errors": [
+        {
+          "code": "unfulfilled_lint_expectations",
+          "message": "this lint expectation is unfulfilled"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "future-deny-cap-allow.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--cap-lints=allow",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/future-deny-cap-allow.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/future-deny-cap-allow.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.02166758698876947,
+      "errors": []
+    },
+    {
+      "file": "future-deny-cap-allow.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--cap-lints=allow",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/future-deny-cap-allow.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/future-deny-cap-allow.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.02558898995630443,
+      "errors": []
+    },
+    {
+      "file": "active-deny-cap-allow.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--cap-lints=allow",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/active-deny-cap-allow.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/active-deny-cap-allow.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.023873626021668315,
+      "errors": []
+    },
+    {
+      "file": "active-deny-cap-allow.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--cap-lints=allow",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/active-deny-cap-allow.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/active-deny-cap-allow.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.02446067100390792,
+      "errors": []
+    },
+    {
+      "file": "invalid-staged-cap-allow.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--cap-lints=allow",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/invalid-staged-cap-allow.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/invalid-staged-cap-allow.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.021692384034395218,
+      "errors": [
+        {
+          "code": null,
+          "message": "'since' must be a Rust version number, such as \"1.31.0\""
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "invalid-staged-cap-allow.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--cap-lints=allow",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/invalid-staged-cap-allow.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/invalid-staged-cap-allow.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.01851992099545896,
+      "errors": [
+        {
+          "code": null,
+          "message": "'since' must be a Rust version number, such as \"1.31.0\""
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "staged-missing-since.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-missing-since.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-missing-since.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.01853386510629207,
+      "errors": [
+        {
+          "code": "E0542",
+          "message": "missing 'since'"
+        },
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 2 previous errors"
+        }
+      ]
+    },
+    {
+      "file": "staged-missing-since.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-missing-since.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-missing-since.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.020242339000105858,
+      "errors": [
+        {
+          "code": "E0542",
+          "message": "missing 'since'"
+        },
+        {
+          "code": "deprecated",
+          "message": "use of deprecated function `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 2 previous errors"
+        }
+      ]
+    },
+    {
+      "file": "staged-missing-note.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-missing-note.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-missing-note.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.01838679297361523,
+      "errors": [
+        {
+          "code": "E0543",
+          "message": "missing 'note'"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "staged-missing-note.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/staged-missing-note.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/staged-missing-note.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.020220465026795864,
+      "errors": [
+        {
+          "code": "E0543",
+          "message": "missing 'note'"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "duplicate-key.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/duplicate-key.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/duplicate-key.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.019767459947615862,
+      "errors": [
+        {
+          "code": "E0538",
+          "message": "malformed `deprecated` attribute input"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "duplicate-key.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/duplicate-key.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/duplicate-key.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.019729524035938084,
+      "errors": [
+        {
+          "code": "E0538",
+          "message": "malformed `deprecated` attribute input"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "nonstring.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/nonstring.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/nonstring.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.01829296606592834,
+      "errors": [
+        {
+          "code": "E0539",
+          "message": "malformed `deprecated` attribute input"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "nonstring.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/nonstring.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/nonstring.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.017116324044764042,
+      "errors": [
+        {
+          "code": "E0539",
+          "message": "malformed `deprecated` attribute input"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "invalid-version-components.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/invalid-version-components.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/invalid-version-components.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.019436473958194256,
+      "errors": [
+        {
+          "code": null,
+          "message": "'since' must be a Rust version number, such as \"1.31.0\""
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "invalid-version-components.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/invalid-version-components.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/invalid-version-components.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.018670185934752226,
+      "errors": [
+        {
+          "code": null,
+          "message": "'since' must be a Rust version number, such as \"1.31.0\""
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "lowercase-tbd.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/lowercase-tbd.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/lowercase-tbd.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.019056526944041252,
+      "errors": [
+        {
+          "code": null,
+          "message": "'since' must be a Rust version number, such as \"1.31.0\""
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "lowercase-tbd.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/lowercase-tbd.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/lowercase-tbd.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.021054003038443625,
+      "errors": [
+        {
+          "code": null,
+          "message": "'since' must be a Rust version number, such as \"1.31.0\""
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "macro-TBD.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/macro-TBD.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/macro-TBD.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.02242166397627443,
+      "errors": []
+    },
+    {
+      "file": "macro-TBD.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/macro-TBD.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/macro-TBD.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.025973896961659193,
+      "errors": []
+    },
+    {
+      "file": "macro-1-0-0.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/macro-1-0-0.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/macro-1-0-0.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.02132727298885584,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated macro `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "macro-1-0-0.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/macro-1-0-0.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/macro-1-0-0.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.01983576500788331,
+      "errors": [
+        {
+          "code": "deprecated",
+          "message": "use of deprecated macro `old`: retained reason"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "future-body-type-error.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--cap-lints=allow",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/future-body-type-error.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/future-body-type-error.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.020266098901629448,
+      "errors": [
+        {
+          "code": "E0308",
+          "message": "mismatched types"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "future-body-type-error.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--cap-lints=allow",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/future-body-type-error.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/future-body-type-error.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.02064369199797511,
+      "errors": [
+        {
+          "code": "E0308",
+          "message": "mismatched types"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "future-unsafe-call.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--cap-lints=allow",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/future-unsafe-call.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/future-unsafe-call.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.02151124202646315,
+      "errors": [
+        {
+          "code": "E0133",
+          "message": "call to unsafe function `dangerous` is unsafe and requires unsafe function or block"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "future-unsafe-call.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--cap-lints=allow",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/future-unsafe-call.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/future-unsafe-call.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.024428546894341707,
+      "errors": [
+        {
+          "code": "E0133",
+          "message": "call to unsafe function `dangerous` is unsafe and requires unsafe function or block"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "native-future.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/native-future.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/native-future.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.02054475189652294,
+      "errors": []
+    },
+    {
+      "file": "native-future.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/native-future.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/native-future.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.02469160791952163,
+      "errors": []
+    },
+    {
+      "file": "native-future.rs",
+      "stage": "link",
+      "argv": [
+        "cc",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa40/tests/spec/future-deprecation/observer.c",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/native-future.obj",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/native-future-observer"
+      ],
+      "code": 0,
+      "seconds": 0.04505109693855047,
+      "stdout": ""
+    },
+    {
+      "file": "native-future.rs",
+      "stage": "native",
+      "argv": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/future-deprecation/reference-v1/native-future-observer"
+      ],
+      "code": 0,
+      "seconds": 0.001592805958352983,
+      "stdout": "future-deprecation 23\n"
+    }
+  ]
+}

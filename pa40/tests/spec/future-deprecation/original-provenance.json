@@ -1,0 +1,40 @@
+{
+  "observation": "obj/parallel/source-transport/guaranteed-compare/original-core-v1/receipt.json",
+  "cli": "b800cc1ea38edc3a2f75d41245840a5d6ce99591edfb690280029a7893490031",
+  "raw": "ERROR: file 7: 2756: staged future or nonnumeric deprecation policy is not implemented",
+  "physical": {
+    "path": "library/core/src/num/shells/legacy_int_modules.rs",
+    "bytes": 2706,
+    "sha256": "b5e5541e59e1120035c4a371264c3c5e4c00f2ffb6b11935788a30c2e9701cd8"
+  },
+  "location": {
+    "kind": "generated append-only semantic spelling",
+    "file": 7,
+    "offset": 2756,
+    "physical_line": null
+  },
+  "producer_intervals": [
+    {
+      "offset": 202,
+      "line": 7
+    },
+    {
+      "offset": 1256,
+      "line": 33
+    },
+    {
+      "offset": 2046,
+      "line": 53
+    }
+  ],
+  "first_invocation": {
+    "offset": 2284,
+    "line": 60
+  },
+  "mapping_evidence": [
+    "SourceFile::append_offset in dev/src/support/source.rs uses existing semantic text length+1",
+    "Unit::append_derived shifts generated spans by append base in dev/src/resolve/unit/expansion.rs",
+    "Raw offset2756 exceeds physical source2706; do not use receipt naive physical line72",
+    "Three original macro-body deprecation attributes all carry exact TBD; exact selected generated annotation/invocation requires retained expansion-origin view, not inferred from open order"
+  ]
+}

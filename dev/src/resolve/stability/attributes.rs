@@ -317,7 +317,7 @@ pub(super) fn identifier(name: &str) -> bool {
         && chars.all(unicode_ident::is_xid_continue)
 }
 
-fn version(text: &str) -> Option<Since> {
+pub(in crate::resolve) fn version(text: &str) -> Option<Since> {
     if text == "CURRENT_RUSTC_VERSION" {
         return Some(Since::Current);
     }
