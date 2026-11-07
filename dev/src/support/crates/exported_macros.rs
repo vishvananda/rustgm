@@ -1,9 +1,11 @@
 //! Exported declarative macros travel as canonical token images with typed rows.
 //!
-//! The image spells one delimited `macro_rules!` body with exactly one space
-//! between token-tree pieces. The rows classify every piece. This module only
-//! checks the structural agreement it can see without a lexer; a consumer must
-//! re-lex the image once, rebuild the rows and recompile every rule.
+//! The image spells one delimited `macro_rules!` body. Two token-tree pieces are
+//! adjacent exactly when they were adjacent in the definition source, and one
+//! space separates them exactly when whitespace or comments did, so the image
+//! keeps every token's jointness. The rows classify every piece. This module
+//! only checks the structural agreement it can see without a lexer; a consumer
+//! must re-lex the image once, rebuild the rows and recompile every rule.
 use crate::support::edition::Edition;
 
 /// Exported macros in one artifact.
@@ -88,8 +90,9 @@ pub enum Row {
 }
 
 /// Builds the canonical image and its rows from one preorder token-tree walk.
-/// Every piece (token, open or close delimiter) follows the previous one after
-/// exactly one space, except the close of an empty group.
+/// Every piece (token, open or close delimiter) directly follows the previous
+/// one, or follows it after exactly one space when its caller says the source
+/// separated them. The first piece is never separated.
 #[derive(Default)]
 pub struct ImageBuilder {
     image: String,
@@ -97,19 +100,32 @@ pub struct ImageBuilder {
     open: Vec<(usize, Delimiter)>,
 }
 impl ImageBuilder {
-    fn separate(&mut self) -> Result<(), &'static str> {
-        if !self.image.is_empty() {
+    fn separate(&mut self, separated: bool) -> Result<(), &'static str> {
+        if separated {
+            if self.image.is_empty() {
+                return Err("exported macro image cannot begin with a separator");
+            }
             self.image.push(' ');
         }
+        Ok(())
+    }
+    /// Separates one new row and admits it under the budget.
+    fn admit(&mut self, separated: bool) -> Result<(), &'static str> {
+        self.separate(separated)?;
         if self.image.len() >= MAX_IMAGE_BYTES || self.rows.len() >= MAX_ROWS {
             return Err("exported macro body exceeds the token metadata budget");
         }
         Ok(())
     }
     /// # Errors
-    /// Rejects empty spellings and budget overflow.
-    pub fn token(&mut self, class: TokenClass, spelling: &str) -> Result<(), &'static str> {
-        self.separate()?;
+    /// Rejects empty spellings, a leading separator and budget overflow.
+    pub fn token(
+        &mut self,
+        class: TokenClass,
+        spelling: &str,
+        separated: bool,
+    ) -> Result<(), &'static str> {
+        self.admit(separated)?;
         let length = u32::try_from(spelling.len())
             .map_err(|_| "exported macro body exceeds the token metadata budget")?;
         if length == 0 {
@@ -120,9 +136,9 @@ impl ImageBuilder {
         Ok(())
     }
     /// # Errors
-    /// Rejects budget overflow.
-    pub fn open(&mut self, delimiter: Delimiter) -> Result<(), &'static str> {
-        self.separate()?;
+    /// Rejects a leading separator and budget overflow.
+    pub fn open(&mut self, delimiter: Delimiter, separated: bool) -> Result<(), &'static str> {
+        self.admit(separated)?;
         self.image.push(char::from(delimiter.open()));
         self.open.push((self.rows.len(), delimiter));
         self.rows.push(Row::Group { delimiter, rows: 0 });
@@ -130,7 +146,7 @@ impl ImageBuilder {
     }
     /// # Errors
     /// Rejects an unbalanced close.
-    pub fn close(&mut self) -> Result<(), &'static str> {
+    pub fn close(&mut self, separated: bool) -> Result<(), &'static str> {
         let (start, delimiter) = self
             .open
             .pop()
@@ -138,9 +154,7 @@ impl ImageBuilder {
         let rows = u32::try_from(self.rows.len() - start - 1)
             .map_err(|_| "exported macro body exceeds the token metadata budget")?;
         self.rows[start] = Row::Group { delimiter, rows };
-        if rows != 0 {
-            self.image.push(' ');
-        }
+        self.separate(separated)?;
         self.image.push(char::from(delimiter.close()));
         Ok(())
     }
@@ -232,7 +246,8 @@ impl Macro {
     }
 }
 
-/// The body is one root group laid out exactly as [`ImageBuilder`] spells it.
+/// The body is one root group laid out as [`ImageBuilder`] spells it: pieces
+/// directly adjacent or separated by exactly one space.
 fn validate_layout(image: &[u8], rows: &[Row]) -> Result<(), &'static str> {
     const MALFORMED: &str = "exported macro rows disagree with their canonical image";
     match rows.first() {
@@ -245,11 +260,18 @@ fn validate_layout(image: &[u8], rows: &[Row]) -> Result<(), &'static str> {
         *cursor += 1;
         found.then_some(()).ok_or(MALFORMED)
     };
-    // Each open group keeps its delimiter, emptiness and exclusive end row.
-    let mut open: Vec<(Delimiter, bool, usize)> = Vec::new();
+    // Every piece but the first may follow one separating space. No piece
+    // begins with a space, so the layout stays unambiguous.
+    let separator = |cursor: &mut usize| {
+        if image.get(*cursor) == Some(&b' ') {
+            *cursor += 1;
+        }
+    };
+    // Each open group keeps its delimiter and exclusive end row.
+    let mut open: Vec<(Delimiter, usize)> = Vec::new();
     for (index, row) in rows.iter().enumerate() {
         if index > 0 {
-            expect(&mut cursor, b' ')?;
+            separator(&mut cursor);
         }
         match *row {
             Row::Token { length, .. } => {
@@ -268,20 +290,18 @@ fn validate_layout(image: &[u8], rows: &[Row]) -> Result<(), &'static str> {
             } => {
                 expect(&mut cursor, delimiter.open())?;
                 let end = index.checked_add(count as usize + 1).ok_or(MALFORMED)?;
-                if open.last().is_some_and(|&(.., outer)| end > outer) {
+                if open.last().is_some_and(|&(_, outer)| end > outer) {
                     return Err(MALFORMED);
                 }
-                open.push((delimiter, count == 0, end));
+                open.push((delimiter, end));
             }
         }
-        while let Some(&(delimiter, empty, end)) = open.last() {
+        while let Some(&(delimiter, end)) = open.last() {
             if end != index + 1 {
                 break;
             }
             open.pop();
-            if !empty {
-                expect(&mut cursor, b' ')?;
-            }
+            separator(&mut cursor);
             expect(&mut cursor, delimiter.close())?;
         }
     }

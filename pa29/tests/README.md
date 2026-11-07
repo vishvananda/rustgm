@@ -91,3 +91,12 @@ predictions were declared before the run. The
 `crate_linking::declarative_exports` controls check the provider envelope.
 Consumer import and native execution remain required work
 (`docs/parallel/macro-metadata.md`).
+
+`macro-spacing-outcomes.json` freezes definition-site `stringify!` spellings
+through an exported macro (`spacing-provider.rs`). It covers a cross-crate 2024
+client and a local 2021 copy of the same definition. Each client asserts all
+nine spellings, and any mismatch aborts. Round one's prediction (transcription
+keeps punctuation jointness) was declared first and refuted. Round two froze
+rustc's observed spellings: transcribed tokens print alone, paren and brace
+delimiters keep their source spacing, and a bracket group is always followed by
+a space. Local and cross-crate spellings are identical.

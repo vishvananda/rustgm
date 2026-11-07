@@ -17,6 +17,17 @@ rustc outcomes are frozen in `pa29/tests/macro-metadata-outcomes.json`. Consumer
 import is still to do: authentication, `$crate` bound to the provider's identity,
 the `use`, path and `#[macro_use]` forms, native runs and the cfg-if unit.
 
+[Jointness-preserving macro image](parallel/macro-metadata.md#jointness-preserving-image)
+(Lane B, PA29): the tag-14 image now keeps source adjacency. Pieces are adjacent
+exactly when they were in the definition, and are otherwise separated by one
+space. Lexing it again rebuilds the same image and rows. Pinned rustc froze a
+cross-crate `stringify!` control in `pa29/tests/macro-spacing-outcomes.json`.
+The first prediction (punctuation jointness survives transcription) was refuted:
+transcribed tokens print alone, while paren and brace delimiters keep their
+source spacing, and a space always follows a bracket group. RustGM's local
+printer now spaces after a transcribed `]` as well, and its local copy passes
+natively.
+
 Lane C [callable-role transport](parallel/callable-role-transport.md) is
 joined on main. Version 13 now carries a no-core `Tuple`
 marker, `FnOnce` with its declared `Output`, `FnMut` and `Fn`, together with

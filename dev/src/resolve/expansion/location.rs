@@ -159,7 +159,10 @@ impl crate::expand::stringify::Sources for TokenSources<'_> {
             if let Some(joint) = origin.joint {
                 return Ok(joint);
             }
-            let delimiter = matches!(
+            // A transcribed definition token is alone, but its group keeps its
+            // delimiter spacing, except that rustc's transcriber always spaces
+            // after a bracket group (its `hex-literal` workaround).
+            let kept = matches!(
                 token.kind,
                 crate::lex::token::Kind::Punctuation(
                     crate::lex::token::Punctuation::OpenParen
@@ -167,10 +170,9 @@ impl crate::expand::stringify::Sources for TokenSources<'_> {
                         | crate::lex::token::Punctuation::OpenBrace
                         | crate::lex::token::Punctuation::CloseBrace
                         | crate::lex::token::Punctuation::OpenBracket
-                        | crate::lex::token::Punctuation::CloseBracket
                 )
             );
-            if (origin.introduction.0 != 0 && !delimiter)
+            if (origin.introduction.0 != 0 && !kept)
                 || origin.generated.end - origin.generated.start
                     != origin.original.span.end - origin.original.span.start
             {

@@ -71,7 +71,9 @@ fn root_macro_exports_publish_canonical_rows_and_macro_free_crates_keep_bytes() 
     let names: Vec<_> = macros.rows().iter().map(Macro::name).collect();
     assert_eq!(names, ["call_f", "nested_export", "select"]);
     let call = macros.get("call_f").ok_or("missing call_f")?;
-    assert_eq!(call.image(), "{ () => { $ crate :: f () } ; }");
+    // Amended: the image now keeps the source adjacency of the definition
+    // `macro_rules! call_f { () => { $crate::f() }; }`.
+    assert_eq!(call.image(), "{ () => { $crate::f() }; }");
     assert_eq!(call.rules(), 1);
     assert!(!call.local_inner_macros());
     assert_eq!(

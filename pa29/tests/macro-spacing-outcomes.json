@@ -1,0 +1,74 @@
+{
+ "profile": "Rust 1.98.0 x86_64-unknown-linux-gnu, -Cpanic=abort --cap-lints=allow, per-case editions; two declared rounds, each frozen before its rustc run",
+ "round_one": {
+  "plan_sha256": "3fe406ac32cf0f71e3ffaed80891b29cf6be7b48550ad8f6d2aeb96b49c3fa9b",
+  "receipt_sha256": "062ee0e886badeb54737b622c0c86b5a6608d98e5e7badd03764f1363fe8dc6a",
+  "hypothesis": "transcription keeps definition-site punctuation jointness",
+  "result": "refuted: every case's spelling differed from the prediction except 1 and 2; local and cross-crate spellings were identical"
+ },
+ "plan_sha256": "3677b36bc91a13b0950c5cb1cdc2f7da1f52e773d39e2a6dd70b4cf3941c4bc5",
+ "oracle_sha256": "460d5cf30e327a9a68bc8ee612e46a0a0738f88c6a48b965986b8a0f6ee49456",
+ "receipt_sha256": "2720c250fe3b2f7d36b756ea86f7c7402a4f888cf1d27400f5d15b7b9d8f7844",
+ "rustc_version": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+ "spellings": [
+  "a += b",
+  "a + = b",
+  "a += b",
+  "x < - y, x <- y",
+  "f(a)[b] {c}{ d }",
+  "& 'a ('b') r#\"s /* t */\"#",
+  "a - - b, a - - b",
+  "#[a] # ! [b] # ! [c]",
+  "a :: b, a :: b, a :: b"
+ ],
+ "local_spellings_equal": true,
+ "cases": [
+  {
+   "name": "spacing-provider",
+   "path": "tests/spec/macro-metadata/spacing-provider.rs",
+   "source_sha256": "b3b55d4a6342f9143b1f84dada1c378aa9daeb9832f30078591eccfe34cd271b",
+   "kind": "rlib",
+   "crate": "spacing_provider",
+   "edition": "2021",
+   "deps": {},
+   "rustc": 0,
+   "rustc_codes": [],
+   "native": false,
+   "frontend_expected_after_implementation": 0,
+   "note": "exports spelled!(0..=8), each a definition-site stringify!"
+  },
+  {
+   "name": "spacing-client",
+   "path": "tests/spec/macro-metadata/spacing-client.rs",
+   "source_sha256": "9cc79c65c49a4e11fdf66c3707c01f42c337135e903b84b3adc9827b47d51ec1",
+   "kind": "bin",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "spacing_provider": "spacing-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_native_exit": 0,
+   "native": true,
+   "frontend_expected_after_implementation": 0,
+   "note": "cross-crate spellings equal round one's observed strings (a mismatch aborts)"
+  },
+  {
+   "name": "spacing-local",
+   "path": "tests/spec/macro-metadata/spacing-local.rs",
+   "source_sha256": "b4800f663fee50375b896c235e3b42b0904a683d02be330bbf547a66a71f62da",
+   "kind": "bin",
+   "crate": "client",
+   "edition": "2021",
+   "deps": {},
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_native_exit": 0,
+   "native": true,
+   "frontend_expected_after_implementation": 0,
+   "note": "the same definition used locally spells the same strings"
+  }
+ ]
+}

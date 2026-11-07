@@ -1695,6 +1695,14 @@ fn stringify_uses_template_spacing_and_original_opaque_tokens() -> Result<(), St
             "$crate :: a",
             0,
         ),
+        // Transcription keeps paren and brace spacing but always spaces after a
+        // bracket group (checked against pinned rustc 1.98.0).
+        (
+            "macro_rules! m{()=>{stringify!(f(a)[b]{c}{ d } [e].f [g]+h)}}",
+            "m!()",
+            "f(a)[b] {c}{ d } [e].f [g] + h",
+            0,
+        ),
         (
             "macro_rules! m{($x:ident)=>{stringify!($x where)}}",
             "m!(name)",

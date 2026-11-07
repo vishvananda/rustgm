@@ -6154,12 +6154,14 @@ Exported `macro_rules!` definitions travel in their own version-one envelope
 profile. A crate that exports no macros writes no envelope and keeps its exact
 bytes. Each row holds the crate-root name, the definition edition, the
 `local_inner_macros` bit, the rule count, a canonical image and typed preorder
-token-tree rows. The image spells the single delimited body with one space
-between pieces; an empty group is written `()`, `[]` or `{}`. Rows are sorted by
-unique name. Only direct root `#[macro_export]` source definitions are exported.
-Macro-generated definitions, doc comments in the body, builtin or scoped macros
-and checked definition-site permissions are rejected by name rather than
-dropped. Decoding checks the closed edition, flag, class and delimiter codes and
+token-tree rows. The image spells the single delimited body. Two pieces
+(tokens, open and close delimiters) are adjacent exactly when they were adjacent
+in the definition source, and one space separates them exactly when whitespace
+or comments did, so lexing the image keeps every token's jointness. Rows are
+sorted by unique name. Only direct root `#[macro_export]` source definitions are
+exported. Macro-generated definitions, doc comments in the body, builtin or
+scoped macros and checked definition-site permissions are rejected by name
+rather than dropped. Decoding checks the closed edition, flag, class and delimiter codes and
 that the rows lay out the image exactly. A consumer must not trust these rows: it
 lexes the image once, rebuilds the rows and requires them to be equal, and then
 recompiles every rule in the transported edition. It binds `$crate` to the
