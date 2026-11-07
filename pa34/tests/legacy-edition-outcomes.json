@@ -928,7 +928,8 @@
     "edition": "2024"
    },
    "rustc": 1,
-   "rustgm": "requirement; RustGM imports carry no macro_rules definitions"
+   "rustgm": "rejected",
+   "amended": "macro metadata consumer checkpoint (2026-11-07, docs/parallel/macro-metadata.md#consumer-import): tag-14 rows now carry the provider's macro_rules definitions, so this row runs through metadata; the declared requirement \"requirement; RustGM imports carry no macro_rules definitions\" is met; the consumer rejects with \"no macro rule matches this invocation\" (the 2018 `pat` fragment excludes `|`), matching rustc"
   },
   {
    "name": "pat-provider-2018-consumer-2018",
@@ -943,7 +944,8 @@
     "edition": "2018"
    },
    "rustc": 1,
-   "rustgm": "requirement; RustGM imports carry no macro_rules definitions"
+   "rustgm": "rejected",
+   "amended": "macro metadata consumer checkpoint (2026-11-07, docs/parallel/macro-metadata.md#consumer-import): tag-14 rows now carry the provider's macro_rules definitions, so this row runs through metadata; the declared requirement \"requirement; RustGM imports carry no macro_rules definitions\" is met; the consumer rejects with \"no macro rule matches this invocation\" (the 2018 `pat` fragment excludes `|`), matching rustc"
   },
   {
    "name": "pat-provider-2021-consumer-2024",
@@ -958,7 +960,8 @@
     "edition": "2024"
    },
    "rustc": 0,
-   "rustgm": "requirement; RustGM imports carry no macro_rules definitions"
+   "rustgm": "accepted",
+   "amended": "macro metadata consumer checkpoint (2026-11-07, docs/parallel/macro-metadata.md#consumer-import): tag-14 rows now carry the provider's macro_rules definitions, so this row runs through metadata; the declared requirement \"requirement; RustGM imports carry no macro_rules definitions\" is met; the consumer accepts with no diagnostic, matching rustc"
   },
   {
    "name": "pat-provider-2021-consumer-2018",
@@ -973,7 +976,8 @@
     "edition": "2018"
    },
    "rustc": 0,
-   "rustgm": "requirement; RustGM imports carry no macro_rules definitions"
+   "rustgm": "accepted",
+   "amended": "macro metadata consumer checkpoint (2026-11-07, docs/parallel/macro-metadata.md#consumer-import): tag-14 rows now carry the provider's macro_rules definitions, so this row runs through metadata; the declared requirement \"requirement; RustGM imports carry no macro_rules definitions\" is met; the consumer accepts with no diagnostic, matching rustc"
   },
   {
    "name": "original-cfg-if-2018-consumer-2024",
@@ -988,7 +992,8 @@
     "edition": "2024"
    },
    "rustc": 0,
-   "rustgm": "requirement; RustGM imports carry no macro_rules definitions"
+   "rustgm": "accepted",
+   "amended": "macro metadata consumer checkpoint (2026-11-07, docs/parallel/macro-metadata.md#consumer-import): tag-14 rows now carry the provider's macro_rules definitions, so this row runs through metadata; the declared requirement \"requirement; RustGM imports carry no macro_rules definitions\" is met; the consumer accepts with no diagnostic, matching rustc"
   },
   {
    "name": "original-cfg-if-2018-consumer-2015",
@@ -1003,7 +1008,8 @@
     "edition": "2015"
    },
    "rustc": 0,
-   "rustgm": "requirement; RustGM imports carry no macro_rules definitions"
+   "rustgm": "accepted",
+   "amended": "macro metadata consumer checkpoint (2026-11-07, docs/parallel/macro-metadata.md#consumer-import): tag-14 rows now carry the provider's macro_rules definitions, so this row runs through metadata; the declared requirement \"requirement; RustGM imports carry no macro_rules definitions\" is met; the consumer accepts with no diagnostic, matching rustc"
   }
  ]
 }

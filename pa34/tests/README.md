@@ -45,8 +45,10 @@ modifiers still fail before any process is launched.
 `legacy-edition-outcomes.json` freezes 100 pinned rustc outcomes for Rust
 2015/2018 rules, declared before execution, with 82 RustGM expectations
 (accepted, rejected, typed fence or the 2021 outcome). `dev/tests/legacy_editions.rs`
-runs each through the CLI. Six mixed-edition macro cases stay rustc-only until
-metadata carries macro definitions. See the [legacy edition checkpoint](../../docs/parallel/legacy-editions.md).
+runs each through the CLI. The six mixed-edition macro cases now run through
+macro metadata; their `rustgm` column is amended to the matching outcome (see the
+[macro metadata consumer](../../docs/parallel/macro-metadata.md#consumer-import)).
+See the [legacy edition checkpoint](../../docs/parallel/legacy-editions.md).
 
 Follow the [owning brief](../README.md) and
 [library bootstrap plan](../../docs/library-bootstrap-roadmap.md).
