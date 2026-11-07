@@ -1,0 +1,193 @@
+{
+  "prediction_sha256": "0daeffb6795042e5c0dea743a35a3b7471d8eb1e8cf3336e1e0ee975ca74294f",
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "version": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+    "driver": {
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+    }
+  },
+  "observations": [
+    {
+      "file": "source-marked-unused.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-marked-unused.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-policy-v1/source-marked-unused.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.029438943951390684,
+      "errors": []
+    },
+    {
+      "file": "source-marked-unused.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-marked-unused.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-policy-v1/source-marked-unused.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.029963043984025717,
+      "errors": []
+    },
+    {
+      "file": "source-marked-pointer-called.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-marked-pointer-called.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-policy-v1/source-marked-pointer-called.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.024075606022961438,
+      "errors": [
+        {
+          "code": "E0080",
+          "message": "calling non-const function `ordinary_marked::<u8>`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "source-marked-pointer-called.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-marked-pointer-called.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-policy-v1/source-marked-pointer-called.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.02327113994397223,
+      "errors": [
+        {
+          "code": "E0080",
+          "message": "calling non-const function `ordinary_marked::<u8>`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "source-marked-ordinary-called.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-marked-ordinary-called.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-policy-v1/source-marked-ordinary-called.metadata"
+      ],
+      "code": 1,
+      "expected": 0,
+      "seconds": 0.020638472051359713,
+      "errors": [
+        {
+          "code": "E0080",
+          "message": "calling non-const function `ordinary_marked::<u8>`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "source-marked-ordinary-called.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-marked-ordinary-called.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-policy-v1/source-marked-ordinary-called.obj"
+      ],
+      "code": 1,
+      "expected": 0,
+      "seconds": 0.0223364420235157,
+      "errors": [
+        {
+          "code": "E0080",
+          "message": "calling non-const function `ordinary_marked::<u8>`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    }
+  ]
+}

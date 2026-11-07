@@ -1,0 +1,61 @@
+{
+  "prediction_sha256": "2c5d4a0694905a0c81a5b04b7f5387b149c050078bb0a7d46e2f0f2326a3b708",
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "version": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+    "driver": {
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+    }
+  },
+  "observations": [
+    {
+      "file": "ordinary-indirect-policy.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/ordinary-indirect-policy.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-indirect-v1/ordinary-indirect-policy.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.03383044200018048,
+      "errors": []
+    },
+    {
+      "file": "ordinary-indirect-policy.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/ordinary-indirect-policy.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-indirect-v1/ordinary-indirect-policy.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.03531297401059419,
+      "errors": []
+    }
+  ]
+}

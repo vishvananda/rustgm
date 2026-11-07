@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "file": "source-altered-equality-profile.rs",
+      "sha256": "48c330e77c5a5d49e3e28fd577ed949f4c0e2523e4568204101d4e8713184977",
+      "expected": 0,
+      "hypothesis": "Actual raw-pointer operator syntax remains primitive even with altered real PartialEq body; explicit method dispatch executes false body",
+      "uncertain": false
+    }
+  ],
+  "native": {
+    "source-altered-equality-profile.rs": "primitive-pointer 1 0 0 0\n"
+  }
+}

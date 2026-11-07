@@ -1,0 +1,257 @@
+{
+  "schema": 1,
+  "owner": "PA31 actual source/header/defining contexts; PA28 intrinsic execution; PA25 CTFE pointer provenance",
+  "profile": "pinned Rust1.98 edition2024 x86_64 panicabort overflowyes debugassertionsno ubchecksno, bootstrap1",
+  "cases": [
+    {
+      "file": "int-equal.rs",
+      "sha256": "170c164a917c4606de311820472cbf61a720b5bb268c1cbf98a231ea7169e153",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result1; source provenance class int-equal",
+      "uncertain": false
+    },
+    {
+      "file": "int-different.rs",
+      "sha256": "f8ef556e8736674e841ac0a267e3e11e42c15f5dcb3f1a83cd8ced14202ba9a3",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result0; source provenance class int-different",
+      "uncertain": false
+    },
+    {
+      "file": "static-same.rs",
+      "sha256": "65786421596bacc499029ec495a845d1e3358de88b0e3c864d4774052c2ee5d1",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result1; source provenance class static-same",
+      "uncertain": false
+    },
+    {
+      "file": "static-different.rs",
+      "sha256": "a5b10f7f87076a31355ad5abf5163a5a283b15cba00fafb5dafb1b59bd9d8736",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result0; source provenance class static-different",
+      "uncertain": false
+    },
+    {
+      "file": "static-offset.rs",
+      "sha256": "6553bd8bfd8157c1355b0ffc1e5f80f082176e799852bd63a09230d44a120639",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result0; source provenance class static-offset",
+      "uncertain": false
+    },
+    {
+      "file": "static-one-past.rs",
+      "sha256": "881a53c776e63d8b9bdb677972aaee68a5c79d7d3158441c638574aeacbbe692",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result2; source provenance class static-one-past",
+      "uncertain": false
+    },
+    {
+      "file": "static-null.rs",
+      "sha256": "1d061253f13ccb99b75fd7db7063b742f5bed9e5c085d3ae56ce47816472e136",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result0; source provenance class static-null",
+      "uncertain": false
+    },
+    {
+      "file": "static-one-past-null.rs",
+      "sha256": "a0ce8bece7eb0b1d2941c7f4c34a8301d3140ed87db42d8a3e3255e8b6777667",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result0; source provenance class static-one-past-null",
+      "uncertain": false
+    },
+    {
+      "file": "static-far-aligned.rs",
+      "sha256": "5cfab448106178cf618a12a8a0f9deddf21f994a87fe286d1a67fe2b7011f14c",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result2; source provenance class static-far-aligned",
+      "uncertain": false
+    },
+    {
+      "file": "static-far-residue.rs",
+      "sha256": "291f5b037d07c466b249849cd315d3e3fa09ad7ebabc1fb5a90ac09ad0be79f0",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result0; source provenance class static-far-residue",
+      "uncertain": false
+    },
+    {
+      "file": "memory-same.rs",
+      "sha256": "adf68b2ddd530ab2754e369acf39e8e530a8ec1ee99b91c836af1f2f4d29710b",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result2; source provenance class memory-same",
+      "uncertain": false
+    },
+    {
+      "file": "memory-null.rs",
+      "sha256": "51f7aaf791a7aa5fd74ab9c45b63616b0836e68c55b96429b13a7cc59804aa6e",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result0; source provenance class memory-null",
+      "uncertain": false
+    },
+    {
+      "file": "memory-residue.rs",
+      "sha256": "18223033b363dac21471f706199460400636293f9d6a01e005dfe15bc93c2ea6",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result0; source provenance class memory-residue",
+      "uncertain": false
+    },
+    {
+      "file": "zst-same.rs",
+      "sha256": "efd61d02619fe51d1804eca23c9cea1a01ac6191155e1a6aca87e88f597d3a81",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result1; source provenance class zst-same",
+      "uncertain": false
+    },
+    {
+      "file": "zst-different.rs",
+      "sha256": "cebfb1b3231d6e5d77bba52ec246e5d2183d75a0df800dc5508c36787812a3a6",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result2; source provenance class zst-different",
+      "uncertain": false
+    },
+    {
+      "file": "function-same.rs",
+      "sha256": "9cbdf30f2633372c54566bf06c17967bc49770af4a84fd5d506fe039a73f5370",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result2; source provenance class function-same",
+      "uncertain": false
+    },
+    {
+      "file": "function-null.rs",
+      "sha256": "87f72b01c22776f778f7488b83cb67e6ced521731180c90fb2fd2ba14f1250d6",
+      "expected": 0,
+      "hypothesis": "actual pinned guaranteed_cmp result0; source provenance class function-null",
+      "uncertain": false
+    },
+    {
+      "file": "marker-missing.rs",
+      "sha256": "48df5aead9cb0ae15c17094985da61b0b2f61b8b08a3c2c3f455307974911426",
+      "expected": 1,
+      "hypothesis": "ordinary const pointer comparison remains definition-time forbidden",
+      "uncertain": false
+    },
+    {
+      "file": "intrinsics-feature-missing.rs",
+      "sha256": "2cc12cd9ec2d4672b25ce3c6f4dd8a8df86c5d472481bce8351d9ec439ec72ec",
+      "expected": 1,
+      "hypothesis": "actual rustc_intrinsic feature remains mandatory",
+      "uncertain": false
+    },
+    {
+      "file": "internal-feature-missing.rs",
+      "sha256": "1a6119821277155f161dcf64318efe6471366abd8a46d7fac90182410719f104",
+      "expected": 1,
+      "hypothesis": "internal marker request remains mandatory",
+      "uncertain": false
+    },
+    {
+      "file": "signature-unsafe.rs",
+      "sha256": "708d9b9f84f56f5144e13c506db1c68a3b7e8d27171c2d70648351122bffbec2",
+      "expected": 1,
+      "hypothesis": "actual canonical intrinsic safety is safe",
+      "uncertain": false
+    },
+    {
+      "file": "signature-result.rs",
+      "sha256": "7ec44f40f0cf2c8444a86790cc678ac597ee54e16a52716febc9387ccff93602",
+      "expected": 1,
+      "hypothesis": "actual canonical intrinsic result is u8",
+      "uncertain": false
+    },
+    {
+      "file": "signature-generics.rs",
+      "sha256": "53cd20c379d00cd9db072c3d12f50f572adec514713ed1688637d3be80da353d",
+      "expected": 1,
+      "hypothesis": "actual intrinsic has one generic type parameter",
+      "uncertain": false
+    },
+    {
+      "file": "ordinary-const-lookalike.rs",
+      "sha256": "d380ef1a3d8d07f499933495e7f815693f82df58b932db97fde9156c877987cd",
+      "expected": 1,
+      "hypothesis": "ordinary const function gets no intrinsic defining exemption",
+      "uncertain": false
+    },
+    {
+      "file": "ordinary-runtime-lookalike.rs",
+      "sha256": "902d2a2e434f633e25357267c92e7e53bda7ba2916456a058be3cdef680f99a4",
+      "expected": 1,
+      "hypothesis": "familiar spelling gives no const call permission",
+      "uncertain": false
+    },
+    {
+      "file": "nonconst-intrinsic-call.rs",
+      "sha256": "eaab081cfb06102f919fc9ec88288c6a1402e3cf75a6faa4da2f7684e3f7e974",
+      "expected": 1,
+      "hypothesis": "actual written nonconst signature stays nonconst",
+      "uncertain": false
+    },
+    {
+      "file": "reification.rs",
+      "sha256": "2b10c92e94606f7745bc39cb72788f68ff36985a4f3f3c9e55bf47db4418fb24",
+      "expected": 1,
+      "hypothesis": "actual intrinsic item cannot be reified",
+      "uncertain": false
+    },
+    {
+      "file": "unsafe-body.rs",
+      "sha256": "b3445ada80d3c821bf30d19315adf5b1bf02de4a95bf47d2dc2237121c422178",
+      "expected": 1,
+      "hypothesis": "do-not-const-check never pays ordinary unsafe body proof",
+      "uncertain": false
+    },
+    {
+      "file": "ordinary-marked-unused.rs",
+      "sha256": "5d06b3bd07894bd557b338a597efca2ebb87deff9011d3cea7509be2dd318d0f",
+      "expected": 0,
+      "hypothesis": "independent unused ordinary marker legality; broader profile may remain required",
+      "uncertain": true
+    },
+    {
+      "file": "native-standard.rs",
+      "sha256": "8b2146633f0dbcde300f40076b0749f66b46969708651f97917491964e6ab5fc",
+      "expected": 0,
+      "hypothesis": "real native fallback body and separate actual CTFE semantics",
+      "uncertain": false
+    },
+    {
+      "file": "native-changed.rs",
+      "sha256": "4d3b3070d152bf9e11a35d67a60400e68044477daf6369cb97da404056b889cd",
+      "expected": 0,
+      "hypothesis": "real native fallback body and separate actual CTFE semantics",
+      "uncertain": false
+    },
+    {
+      "file": "expired-pointer-null.rs",
+      "sha256": "0e350cb2d3d1cfa36e373a3f8f8578f2d2a6cecc76f192821ced2c8ae202f661",
+      "expected": 0,
+      "hypothesis": "comparison does not read expired storage; actual allocation may-be-null law",
+      "uncertain": false
+    },
+    {
+      "file": "signature-mutability.rs",
+      "sha256": "84d7bc51094575fe6dbe6d436bf583b5718a13a5a3d87239d66b49d888f2f531",
+      "expected": 1,
+      "hypothesis": "actual intrinsic signature requires immutable raw pointers",
+      "uncertain": false
+    },
+    {
+      "file": "wide-call.rs",
+      "sha256": "90dfaca0e670014c31f7a17dff48a288bd424bd228d597ce249f71dad888f58a",
+      "expected": 1,
+      "hypothesis": "actual declared generic Sized premise remains required; wide comparison is not this operation",
+      "uncertain": false
+    }
+  ],
+  "native": {
+    "native-standard.rs": "guaranteed 1 0 1\n",
+    "native-changed.rs": "guaranteed 99 99 1\n"
+  },
+  "observer_sha256": "77cc0a9f5de44bd08c6a2163f04d9e2a01917dbf5a9cc436699613b67887f9f6",
+  "original": {
+    "path": "library/core/src/intrinsics/mod.rs",
+    "whole_sha256": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+    "offset": 88569,
+    "bytes": 213,
+    "fragment_sha256": "8deb29e97cba617d1f0998fc2418e1e32532e4808a992941d641e41f79d9357b"
+  }
+}

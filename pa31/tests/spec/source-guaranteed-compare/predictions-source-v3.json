@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "file": "source-static-offset-v3.rs",
+      "sha256": "5caf9cde6ef3a6c7a6e5886b973788609535bb7a0bbf1358e70e28a631b5ae48",
+      "expected": 0,
+      "hypothesis": "Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result0; source provenance class static-offset",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-one-past-v3.rs",
+      "sha256": "bd0729d3af6f3c4f2d97ae17d99ba62a28c38892135826156d4f1fd0862d59df",
+      "expected": 0,
+      "hypothesis": "Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result2; source provenance class static-one-past",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-far-aligned-v3.rs",
+      "sha256": "cac23730ff253d9371bc23c2735b6516806365c0a0c12a795887cceab51ba7ec",
+      "expected": 0,
+      "hypothesis": "Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result2; source provenance class static-far-aligned",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-far-residue-v3.rs",
+      "sha256": "516744f9204aa02044b19aa046ba52ea093f7ff2bd6b91b55fef43eee5af8ab8",
+      "expected": 0,
+      "hypothesis": "Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result0; source provenance class static-far-residue",
+      "uncertain": false
+    },
+    {
+      "file": "source-memory-residue-v3.rs",
+      "sha256": "f107961dc5c1dadf7733ed5d2e80c556103eca9ba65000f7e17746a3d43e2cc4",
+      "expected": 0,
+      "hypothesis": "Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result0; source provenance class memory-residue",
+      "uncertain": false
+    },
+    {
+      "file": "source-zst-same-v3.rs",
+      "sha256": "dd35756f087a7bb5bff24142eb1ee33f92e9246fe8c0897cd705dd0e411f545f",
+      "expected": 0,
+      "hypothesis": "Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result1; source provenance class zst-same",
+      "uncertain": false
+    },
+    {
+      "file": "source-zst-different-v3.rs",
+      "sha256": "b549f789a28756f6dcbac8c0d5c48f970c8992adaffd39d7f0674ce03ca547a3",
+      "expected": 0,
+      "hypothesis": "Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result2; source provenance class zst-different",
+      "uncertain": false
+    },
+    {
+      "file": "source-function-same-v3.rs",
+      "sha256": "e6a5dfac4e5888ff863b02932dd5f63c3a265cf80cd8a954a267520ecef89483",
+      "expected": 0,
+      "hypothesis": "Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result2; source provenance class function-same",
+      "uncertain": false
+    },
+    {
+      "file": "source-function-null-v3.rs",
+      "sha256": "f7d5b1f277003f118ac09bcb9feb97b61206f8681ad43c9c9d53b4d314a61419",
+      "expected": 0,
+      "hypothesis": "Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result0; source provenance class function-null",
+      "uncertain": false
+    }
+  ],
+  "native": {}
+}

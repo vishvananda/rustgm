@@ -11,6 +11,7 @@ mod conversion_reads;
 mod enumerations;
 mod environments;
 mod footprints;
+mod guaranteed_pointers;
 mod interned_products;
 mod niches;
 mod physical_types;

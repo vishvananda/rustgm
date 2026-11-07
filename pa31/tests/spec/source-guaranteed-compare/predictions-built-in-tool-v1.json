@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "file": "source-int-equal-v2-builtin-tool.rs",
+      "sha256": "2ce11d5b7bda41ef66692fe589d27ee971142d2865e2baf47e5880d4807e2657",
+      "expected": 0,
+      "hypothesis": "Separate authored support with built-in miri tool, complete original intrinsic attrs/body retained; no register_tool declaration",
+      "uncertain": true
+    },
+    {
+      "file": "source-native-standard-v2-builtin-tool.rs",
+      "sha256": "a1ae27abd21aedda523c40efe7c77a92816c0f4fd59d730c5d84da3462647933",
+      "expected": 0,
+      "hypothesis": "Separate authored support with built-in miri tool, complete original intrinsic attrs/body retained; no register_tool declaration",
+      "uncertain": true
+    },
+    {
+      "file": "source-native-changed-v2-builtin-tool.rs",
+      "sha256": "3e7f4cf36447acb74a7559a2b3560ccf0f17659cf9f1700f879528ae981d42f8",
+      "expected": 0,
+      "hypothesis": "Separate authored support with built-in miri tool, complete original intrinsic attrs/body retained; no register_tool declaration",
+      "uncertain": true
+    }
+  ],
+  "native": {}
+}

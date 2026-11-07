@@ -28,8 +28,8 @@ impl FunctionContext {
     }
 }
 impl Declarations {
-    /// Only the checked source panic roles have a runtime-checked defining body.
-    /// Their const declaration and every reached const-call obligation remain.
+    /// Authenticated source policy can defer defining const checks.
+    /// The const declaration and every reached executable obligation remain.
     pub(crate) fn source_function_context(
         &self,
         report: &crate::resolve::expansion::Report,
@@ -65,7 +65,10 @@ impl Declarations {
             }
         }
         Ok(
-            if super::compiler_items::runtime_panic_body(report, self, definition, body)? {
+            if super::compiler_items::runtime_panic_body(report, self, definition, body)?
+                || (matches!(context, FunctionContext::ConstFunction)
+                    && self.unchecked_const_body(report, definition, body)?)
+            {
                 FunctionContext::Runtime
             } else {
                 context

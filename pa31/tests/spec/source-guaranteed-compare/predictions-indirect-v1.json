@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "file": "ordinary-indirect-policy.rs",
+      "sha256": "6f8a2658f2c6d42f28fb7442f949794aba9b856cf9931cd88ffe8a7deb50f15a",
+      "expected": 0,
+      "hypothesis": "Unchanged prior private opponent: actual general defining marker plus indirect API marker, no runtime/CTFE call",
+      "uncertain": true
+    }
+  ],
+  "native": {}
+}

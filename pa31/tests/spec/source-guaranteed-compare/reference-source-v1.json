@@ -1,0 +1,906 @@
+{
+  "prediction_sha256": "be674c1f8b19902c7f94b274952898828ad5d98b0da2239142f7f83f6d042c87",
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "version": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+    "driver": {
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+    }
+  },
+  "observations": [
+    {
+      "file": "source-int-equal.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-int-equal.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-int-equal.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.03204571001697332,
+      "errors": []
+    },
+    {
+      "file": "source-int-equal.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-int-equal.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-int-equal.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.039329149993136525,
+      "errors": []
+    },
+    {
+      "file": "source-int-different.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-int-different.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-int-different.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.032623036997392774,
+      "errors": []
+    },
+    {
+      "file": "source-int-different.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-int-different.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-int-different.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.03766598703805357,
+      "errors": []
+    },
+    {
+      "file": "source-static-same.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-static-same.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-static-same.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.0353155730990693,
+      "errors": []
+    },
+    {
+      "file": "source-static-same.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-static-same.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-static-same.obj"
+      ],
+      "code": 1,
+      "expected": 0,
+      "seconds": 0.0401289650471881,
+      "errors": [
+        {
+          "code": null,
+          "message": "requires `drop_glue` lang_item"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error; 1 warning emitted"
+        }
+      ]
+    },
+    {
+      "file": "source-static-different.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-static-different.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-static-different.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.035656810039654374,
+      "errors": []
+    },
+    {
+      "file": "source-static-different.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-static-different.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-static-different.obj"
+      ],
+      "code": 1,
+      "expected": 0,
+      "seconds": 0.03713842702563852,
+      "errors": [
+        {
+          "code": null,
+          "message": "requires `drop_glue` lang_item"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error; 1 warning emitted"
+        }
+      ]
+    },
+    {
+      "file": "source-static-null.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-static-null.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-static-null.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.03306119306944311,
+      "errors": []
+    },
+    {
+      "file": "source-static-null.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-static-null.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-static-null.obj"
+      ],
+      "code": 1,
+      "expected": 0,
+      "seconds": 0.03404443000908941,
+      "errors": [
+        {
+          "code": null,
+          "message": "requires `drop_glue` lang_item"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error; 1 warning emitted"
+        }
+      ]
+    },
+    {
+      "file": "source-memory-same.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-memory-same.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-memory-same.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.03047429397702217,
+      "errors": []
+    },
+    {
+      "file": "source-memory-same.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-memory-same.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-memory-same.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.03431604604702443,
+      "errors": []
+    },
+    {
+      "file": "source-memory-null.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-memory-null.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-memory-null.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.031376619008369744,
+      "errors": []
+    },
+    {
+      "file": "source-memory-null.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-memory-null.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-memory-null.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.03560356900561601,
+      "errors": []
+    },
+    {
+      "file": "source-expired-pointer-null.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-expired-pointer-null.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-expired-pointer-null.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.033049310091882944,
+      "errors": []
+    },
+    {
+      "file": "source-expired-pointer-null.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-expired-pointer-null.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-expired-pointer-null.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.03640879993326962,
+      "errors": []
+    },
+    {
+      "file": "source-marker-missing.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-marker-missing.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-marker-missing.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.031457902980037034,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `*const T: [const] PartialEq` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "source-marker-missing.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-marker-missing.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-marker-missing.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.03362589795142412,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `*const T: [const] PartialEq` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "source-unsafe-body.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-unsafe-body.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-unsafe-body.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.03336466592736542,
+      "errors": [
+        {
+          "code": "E0133",
+          "message": "call to unsafe function `dangerous` is unsafe and requires unsafe block"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "source-unsafe-body.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-unsafe-body.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-unsafe-body.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.03258319792803377,
+      "errors": [
+        {
+          "code": "E0133",
+          "message": "call to unsafe function `dangerous` is unsafe and requires unsafe block"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "source-ordinary-const-lookalike.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-ordinary-const-lookalike.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-ordinary-const-lookalike.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.030963749042712152,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `*const T: [const] PartialEq` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "source-ordinary-const-lookalike.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-ordinary-const-lookalike.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-ordinary-const-lookalike.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.03413521801121533,
+      "errors": [
+        {
+          "code": "E0277",
+          "message": "the trait bound `*const T: [const] PartialEq` is not satisfied"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "source-ordinary-runtime-lookalike.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-ordinary-runtime-lookalike.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-ordinary-runtime-lookalike.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.03331879898905754,
+      "errors": [
+        {
+          "code": "E0015",
+          "message": "cannot call non-const function `ptr_guaranteed_cmp::<u8>` in constants"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "source-ordinary-runtime-lookalike.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-ordinary-runtime-lookalike.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-ordinary-runtime-lookalike.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.03347240400034934,
+      "errors": [
+        {
+          "code": "E0015",
+          "message": "cannot call non-const function `ptr_guaranteed_cmp::<u8>` in constants"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "source-nonconst-intrinsic-call.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-nonconst-intrinsic-call.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-nonconst-intrinsic-call.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.03103661595378071,
+      "errors": [
+        {
+          "code": null,
+          "message": "cannot call non-const intrinsic `ptr_guaranteed_cmp` in constants"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "source-nonconst-intrinsic-call.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-nonconst-intrinsic-call.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-nonconst-intrinsic-call.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.033702287008054554,
+      "errors": [
+        {
+          "code": null,
+          "message": "cannot call non-const intrinsic `ptr_guaranteed_cmp` in constants"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "source-native-standard.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-native-standard.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-native-standard.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.033206320949830115,
+      "errors": []
+    },
+    {
+      "file": "source-native-standard.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-native-standard.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-native-standard.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.03628069197293371,
+      "errors": []
+    },
+    {
+      "file": "source-native-standard.rs",
+      "stage": "link",
+      "argv": [
+        "cc",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/observer.c",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-native-standard.obj",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-native-standard-observer"
+      ],
+      "code": 0,
+      "seconds": 0.06170844507869333,
+      "stdout": ""
+    },
+    {
+      "file": "source-native-standard.rs",
+      "stage": "native",
+      "argv": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-native-standard-observer"
+      ],
+      "code": 0,
+      "seconds": 0.004251830046996474,
+      "stdout": "guaranteed 1 0 1\n"
+    },
+    {
+      "file": "source-native-changed.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-native-changed.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-native-changed.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.031699043000116944,
+      "errors": []
+    },
+    {
+      "file": "source-native-changed.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "guaranteed_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/source-native-changed.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-native-changed.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.03575444407761097,
+      "errors": []
+    },
+    {
+      "file": "source-native-changed.rs",
+      "stage": "link",
+      "argv": [
+        "cc",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-guaranteed-compare/observer.c",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-native-changed.obj",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-native-changed-observer"
+      ],
+      "code": 0,
+      "seconds": 0.06140797201078385,
+      "stdout": ""
+    },
+    {
+      "file": "source-native-changed.rs",
+      "stage": "native",
+      "argv": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/reference-source-v1/source-native-changed-observer"
+      ],
+      "code": 0,
+      "seconds": 0.0018267609411850572,
+      "stdout": "guaranteed 99 99 1\n"
+    }
+  ]
+}

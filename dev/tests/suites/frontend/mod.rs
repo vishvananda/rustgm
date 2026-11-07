@@ -226,3 +226,6 @@ mod overflow_words;
 
 #[path = "../../cold_sources.rs"]
 mod cold_sources;
+
+#[path = "../../guaranteed_pointers.rs"]
+mod guaranteed_pointers;

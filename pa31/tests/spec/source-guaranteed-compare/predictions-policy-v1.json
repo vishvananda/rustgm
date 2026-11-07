@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "file": "source-marked-unused.rs",
+      "sha256": "c2a799ad41da7a96a302a8592eddc292a1221b10f1dd5b26fabb311283fa3482",
+      "expected": 0,
+      "hypothesis": "General genuine do-not-const-check defining policy, separate reached evaluator body semantics",
+      "uncertain": false
+    },
+    {
+      "file": "source-marked-pointer-called.rs",
+      "sha256": "9858477f1061f075c521bb064941ccc446f29597cc2209d2067767acad877b74",
+      "expected": 1,
+      "hypothesis": "General genuine do-not-const-check defining policy, separate reached evaluator body semantics",
+      "uncertain": false
+    },
+    {
+      "file": "source-marked-ordinary-called.rs",
+      "sha256": "3ecb1f7cd6b0494e038fb8d1213a3cc1b171ccb33ad765d3fa54bd962133be4b",
+      "expected": 0,
+      "hypothesis": "General genuine do-not-const-check defining policy, separate reached evaluator body semantics",
+      "uncertain": true
+    }
+  ],
+  "native": {}
+}

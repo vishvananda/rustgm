@@ -1,0 +1,256 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "file": "source-int-equal-v2-builtin-tool.rs",
+      "sha256": "2ce11d5b7bda41ef66692fe589d27ee971142d2865e2baf47e5880d4807e2657",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result1; source provenance class int-equal",
+      "uncertain": false
+    },
+    {
+      "file": "source-int-different-v2-builtin-tool.rs",
+      "sha256": "abafa6767f7dbd8ca5f462de3409964102e78f42af4d517189682e2d98c2a650",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result0; source provenance class int-different",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-same-v2-builtin-tool.rs",
+      "sha256": "4842f8a96b30ee3ba8aa906e81a49a34e485f1fbb054b041e3631fc3ec40824a",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result1; source provenance class static-same",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-different-v2-builtin-tool.rs",
+      "sha256": "1bc6d5e7d0b17d1be32eb201877aa5a98d1c469bd6963175c507c4a6bf5478f3",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result0; source provenance class static-different",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-null-v2-builtin-tool.rs",
+      "sha256": "d0d0c03f8a418e02988bc06533276d1660e847f6f30ca30b5e1e52d369240bf4",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result0; source provenance class static-null",
+      "uncertain": false
+    },
+    {
+      "file": "source-memory-same-v2-builtin-tool.rs",
+      "sha256": "759e0987bc327db82c8b885b01de080d98b98fbfcb242c2959d5c0399b304dcf",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result2; source provenance class memory-same",
+      "uncertain": false
+    },
+    {
+      "file": "source-memory-null-v2-builtin-tool.rs",
+      "sha256": "8398c6b2a6cb216923c808887bcd1d3d9c7b28db73b3185f6d3e8b7baac82673",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result0; source provenance class memory-null",
+      "uncertain": false
+    },
+    {
+      "file": "source-expired-pointer-null-v2-builtin-tool.rs",
+      "sha256": "e82dea0cd3fac08aeb8b8f8ea04170f2be1fe0a4363c788b8a66dc843c4aea3f",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; comparison does not read expired storage; actual allocation may-be-null law",
+      "uncertain": false
+    },
+    {
+      "file": "source-marker-missing-v2-builtin-tool.rs",
+      "sha256": "26bed86affab43a4c484789b3a5223ad35a0ced2840831727e97cf69143aa598",
+      "expected": 1,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; ordinary const pointer comparison remains definition-time forbidden",
+      "uncertain": false
+    },
+    {
+      "file": "source-unsafe-body-v2-builtin-tool.rs",
+      "sha256": "7e240c7c61ee86c45cf569b6a4ce075ebae7c7bcc9db702988583b1b9514f394",
+      "expected": 1,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; do-not-const-check never pays ordinary unsafe body proof",
+      "uncertain": false
+    },
+    {
+      "file": "source-ordinary-const-lookalike-v2-builtin-tool.rs",
+      "sha256": "7e1c850eab665b689f4eb96cf792068e1efbed45098c799dd75fc61abd3aa3f2",
+      "expected": 1,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; ordinary const function gets no intrinsic defining exemption",
+      "uncertain": false
+    },
+    {
+      "file": "source-ordinary-runtime-lookalike-v2-builtin-tool.rs",
+      "sha256": "f76bdbe245d447ff2842d6bf68c660630562ec09d3cbb0ae3d55ab678e94351f",
+      "expected": 1,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; familiar spelling gives no const call permission",
+      "uncertain": false
+    },
+    {
+      "file": "source-nonconst-intrinsic-call-v2-builtin-tool.rs",
+      "sha256": "b5701fbeef987914a03cd00bd92632d17e48f7c9243377c26dbcc9bdce396843",
+      "expected": 1,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; actual written nonconst signature stays nonconst",
+      "uncertain": false
+    },
+    {
+      "file": "source-native-standard-v2-builtin-tool.rs",
+      "sha256": "a1ae27abd21aedda523c40efe7c77a92816c0f4fd59d730c5d84da3462647933",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; real native fallback body and separate actual CTFE semantics",
+      "uncertain": false
+    },
+    {
+      "file": "source-native-changed-v2-builtin-tool.rs",
+      "sha256": "3e7f4cf36447acb74a7559a2b3560ccf0f17659cf9f1700f879528ae981d42f8",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; real native fallback body and separate actual CTFE semantics",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-offset-v3-builtin-tool.rs",
+      "sha256": "35b389b8a81606279ae7a79322b7e0bd767bb32a1dde0b8c3d1080a88b6b6d53",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result0; source provenance class static-offset",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-one-past-v3-builtin-tool.rs",
+      "sha256": "c6c252898ff8efea581e2901aaf24814be1ce1e702d746088e7326a4621080eb",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result2; source provenance class static-one-past",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-far-aligned-v3-builtin-tool.rs",
+      "sha256": "da13f33e26d16829e11ae9201f824f7fefcfc6de50d298dbdab2dcb84ae06d62",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result2; source provenance class static-far-aligned",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-far-residue-v3-builtin-tool.rs",
+      "sha256": "d5d04f0569075a9de0cc75b4fef0699d7eb3c77a300f3112abc76ed9c17bdf37",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result0; source provenance class static-far-residue",
+      "uncertain": false
+    },
+    {
+      "file": "source-memory-residue-v3-builtin-tool.rs",
+      "sha256": "7d6fca6e041d2a6efd341b6bcb2a515bd3262b921eda78364aa7ef180fbd0d7b",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result0; source provenance class memory-residue",
+      "uncertain": false
+    },
+    {
+      "file": "source-zst-same-v3-builtin-tool.rs",
+      "sha256": "27b8cc6a61875cce82578c78cbfe5f37b3e8394ca63d6dfebf6a5531ad3105ad",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result1; source provenance class zst-same",
+      "uncertain": false
+    },
+    {
+      "file": "source-zst-different-v3-builtin-tool.rs",
+      "sha256": "27ea03756e6bf24e51fc46e866b68fa16df8eafaf74ff548fb21212adfe35313",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result2; source provenance class zst-different",
+      "uncertain": false
+    },
+    {
+      "file": "source-function-same-v3-builtin-tool.rs",
+      "sha256": "621f4dfb56efcbe15cb4f50cf22d5d379e0d03fd55b3f1bf2c205c8972e506d5",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result2; source provenance class function-same",
+      "uncertain": false
+    },
+    {
+      "file": "source-function-null-v3-builtin-tool.rs",
+      "sha256": "04a870e9dae3c318bd37d30e27e4ee930018ec5a178f0fdd22e9e79b27d17ac6",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result0; source provenance class function-null",
+      "uncertain": false
+    },
+    {
+      "file": "source-marked-unused-builtin-tool.rs",
+      "sha256": "90fad4e846e8083ae810934e5a2402d708197f655a8279ccc603c6739a56d2d8",
+      "expected": 0,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. General genuine do-not-const-check defining policy, separate reached evaluator body semantics",
+      "uncertain": false
+    },
+    {
+      "file": "source-marked-pointer-called-builtin-tool.rs",
+      "sha256": "6533a1504f0a364932d5acbb1edef546d124b9a78b2a259e7dbd507105c05460",
+      "expected": 1,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. General genuine do-not-const-check defining policy, separate reached evaluator body semantics",
+      "uncertain": false
+    },
+    {
+      "file": "source-marked-ordinary-called-builtin-tool.rs",
+      "sha256": "24511867b56a933e555402b7cdd6c0aefcb65d62dfae3e780df55a5f161d012a",
+      "expected": 1,
+      "hypothesis": "Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. General genuine do-not-const-check defining policy, separate reached evaluator body semantics Previous uncertain positive disproved by pinned E0080 non-const call.",
+      "uncertain": false
+    },
+    {
+      "file": "source-intrinsics-feature-missing-builtin-tool.rs",
+      "sha256": "d5409af992342a0b03b45c1572fb874376aebd3e06db5764c28aa94d1ae0098c",
+      "expected": 1,
+      "hypothesis": "Actual no_core source one-fault intrinsic/feature opponent, matching independently frozen std source",
+      "uncertain": false
+    },
+    {
+      "file": "source-internal-feature-missing-builtin-tool.rs",
+      "sha256": "5f3f815fffde876e30ad4edb93c16e0925a577f10cb6a108271ac169f328b433",
+      "expected": 1,
+      "hypothesis": "Actual no_core source one-fault intrinsic/feature opponent, matching independently frozen std source",
+      "uncertain": false
+    },
+    {
+      "file": "source-signature-unsafe-builtin-tool.rs",
+      "sha256": "7c5fccc7fa2e20cfc441c17c4ef912877c1a8a875259cd73721839680019473f",
+      "expected": 1,
+      "hypothesis": "Actual no_core source one-fault intrinsic/feature opponent, matching independently frozen std source",
+      "uncertain": false
+    },
+    {
+      "file": "source-signature-result-builtin-tool.rs",
+      "sha256": "671ef409fe886c77970829c8ae700703425b09725bfa8220fbec59976eae3d37",
+      "expected": 1,
+      "hypothesis": "Actual no_core source one-fault intrinsic/feature opponent, matching independently frozen std source",
+      "uncertain": false
+    },
+    {
+      "file": "source-signature-generics-builtin-tool.rs",
+      "sha256": "b02ff9ea5abb524786130df04a4bae85585cf53fa87d1f6019452da172306230",
+      "expected": 1,
+      "hypothesis": "Actual no_core source one-fault intrinsic/feature opponent, matching independently frozen std source",
+      "uncertain": false
+    },
+    {
+      "file": "source-signature-mutability-builtin-tool.rs",
+      "sha256": "bbfb31db7e9bcb63af2a6ebbf80eaf37796f17f3be2ed96f8a7d3d221466664e",
+      "expected": 1,
+      "hypothesis": "Actual no_core source one-fault intrinsic/feature opponent, matching independently frozen std source",
+      "uncertain": false
+    },
+    {
+      "file": "source-reification-builtin-tool.rs",
+      "sha256": "bb5b3dc6a2c8c3d07e6e1623b209f6ea0d5f7c61f5a2c478554cbd8dc92a20ce",
+      "expected": 1,
+      "hypothesis": "Actual no_core source one-fault intrinsic/feature opponent, matching independently frozen std source",
+      "uncertain": false
+    },
+    {
+      "file": "source-wide-call-builtin-tool.rs",
+      "sha256": "dea696146b1f6dd711b63430f2305d6ecefdc078d8852c38a7de258727bcf797",
+      "expected": 1,
+      "hypothesis": "Actual no_core source one-fault intrinsic/feature opponent, matching independently frozen std source",
+      "uncertain": false
+    }
+  ],
+  "native": {
+    "source-native-standard-v2-builtin-tool.rs": "guaranteed 1 0 1\n",
+    "source-native-changed-v2-builtin-tool.rs": "guaranteed 99 99 1\n"
+  },
+  "profile": "identical pinned compiler/argv as std; explicit no_core support without authored register_tool statement",
+  "source_request_gap": "Original register_tool-bearing v1/v2 inputs remain required PA40 setup, not counted as candidate passes"
+}

@@ -187,6 +187,24 @@ impl Checker<'_> {
         right: TypeId,
         result: TypeId,
     ) -> Result<bool, Error> {
+        if left == right
+            && matches!(self.facts.types.kind(left), Some(Type::Pointer { .. }))
+            && matches!(op, Punctuation::EqualEqual | Punctuation::BangEqual)
+        {
+            if self.facts.types.kind(result) != Some(Type::Primitive(crate::types::Primitive::Bool))
+            {
+                return Err(self.error(node, "source pointer comparison result must be bool"));
+            }
+            if self.callee_use_effect()? != crate::support::constness::Constness::Ordinary {
+                return Err(self.error(
+                    node,
+                    "raw pointer comparisons are not allowed in const contexts",
+                ));
+            }
+            // The actual source trait/where proof remains. Only operator syntax
+            // is primitive; explicit method calls execute their real source body.
+            return Ok(true);
+        }
         let (Some(Type::Primitive(a)), Some(Type::Primitive(b))) =
             (self.facts.types.kind(left), self.facts.types.kind(right))
         else {

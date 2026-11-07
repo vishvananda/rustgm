@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "owner": "PA31 source intrinsic actual defining context and PA28/25 reached pointer operation",
+  "profile": "same argv/env as predictions-v1, authored no_core support explicitly scoped",
+  "cases": [
+    {
+      "file": "source-int-equal.rs",
+      "sha256": "2ab972ef4be7be53964e34147d2e9ae284453900a9d3e9c06887424c4e21b7b5",
+      "expected": 0,
+      "hypothesis": "Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result1; source provenance class int-equal",
+      "uncertain": false
+    },
+    {
+      "file": "source-int-different.rs",
+      "sha256": "4ffd2e01113a1022e851306d47c9aafc9c1b03117f91c6c4943322711d50e259",
+      "expected": 0,
+      "hypothesis": "Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result0; source provenance class int-different",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-same.rs",
+      "sha256": "c8eec20deb86c9af887a690357da3f6023aad5ce6723bc3a004068bd097299ba",
+      "expected": 0,
+      "hypothesis": "Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result1; source provenance class static-same",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-different.rs",
+      "sha256": "8f18b0fd587f457e5ff2221bf46e4289b94bb8b95d72664e268c10f52082df96",
+      "expected": 0,
+      "hypothesis": "Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result0; source provenance class static-different",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-null.rs",
+      "sha256": "d52cd2241293980f37b3303ddf78637ddb404bb7d67553978a49f03706989023",
+      "expected": 0,
+      "hypothesis": "Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result0; source provenance class static-null",
+      "uncertain": false
+    },
+    {
+      "file": "source-memory-same.rs",
+      "sha256": "e16b39d88ec69a0b61e66bb969385361c89bb86a32e8cc42d2a30e2e04f37dd8",
+      "expected": 0,
+      "hypothesis": "Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result2; source provenance class memory-same",
+      "uncertain": false
+    },
+    {
+      "file": "source-memory-null.rs",
+      "sha256": "e2f6e21c911bf6166ffb3a770ad2f6eb552dde1fa9993427b98d53d8da0a2aa8",
+      "expected": 0,
+      "hypothesis": "Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result0; source provenance class memory-null",
+      "uncertain": false
+    },
+    {
+      "file": "source-expired-pointer-null.rs",
+      "sha256": "f5f1a3160337bcb7b85a0071b17b02cc75b5005b955a8ecb27fba56dbcd95cbb",
+      "expected": 0,
+      "hypothesis": "Same original operation/body with separately authored actual no_core support; comparison does not read expired storage; actual allocation may-be-null law",
+      "uncertain": false
+    },
+    {
+      "file": "source-marker-missing.rs",
+      "sha256": "5e0664ac1174d1bacd05178cad1f401bd9f2602b2f379396ce0763721edc4189",
+      "expected": 1,
+      "hypothesis": "Same original operation/body with separately authored actual no_core support; ordinary const pointer comparison remains definition-time forbidden",
+      "uncertain": false
+    },
+    {
+      "file": "source-unsafe-body.rs",
+      "sha256": "ad78889556d893ee8ceb68b9fc59b7a9e1607ea54afa978a2530c5590214aea9",
+      "expected": 1,
+      "hypothesis": "Same original operation/body with separately authored actual no_core support; do-not-const-check never pays ordinary unsafe body proof",
+      "uncertain": false
+    },
+    {
+      "file": "source-ordinary-const-lookalike.rs",
+      "sha256": "b2280c189616fdb9af77afe72fd689b8aeb7f80b6755ed63b458f073f1a1dc32",
+      "expected": 1,
+      "hypothesis": "Same original operation/body with separately authored actual no_core support; ordinary const function gets no intrinsic defining exemption",
+      "uncertain": false
+    },
+    {
+      "file": "source-ordinary-runtime-lookalike.rs",
+      "sha256": "7d680e2d2b09ecf3e51063daccb04592ceb812e72e86cb2c78956376703d0571",
+      "expected": 1,
+      "hypothesis": "Same original operation/body with separately authored actual no_core support; familiar spelling gives no const call permission",
+      "uncertain": false
+    },
+    {
+      "file": "source-nonconst-intrinsic-call.rs",
+      "sha256": "6f3eacaae966fbe9746bf21e9430afce791c6c6d7c03698ea5b37c976f97d940",
+      "expected": 1,
+      "hypothesis": "Same original operation/body with separately authored actual no_core support; actual written nonconst signature stays nonconst",
+      "uncertain": false
+    },
+    {
+      "file": "source-native-standard.rs",
+      "sha256": "00ccb3de8f1f95614870b41ca87ca22131ecd90d0db621911f0fa865b9c29d94",
+      "expected": 0,
+      "hypothesis": "Same original operation/body with separately authored actual no_core support; real native fallback body and separate actual CTFE semantics",
+      "uncertain": false
+    },
+    {
+      "file": "source-native-changed.rs",
+      "sha256": "05a85f83d8e44d82324f4c2c9cc2e83616f04ddc9fc7fc78b97bdc4290127b51",
+      "expected": 0,
+      "hypothesis": "Same original operation/body with separately authored actual no_core support; real native fallback body and separate actual CTFE semantics",
+      "uncertain": false
+    }
+  ],
+  "native": {
+    "source-native-standard.rs": "guaranteed 1 0 1\n",
+    "source-native-changed.rs": "guaranteed 99 99 1\n"
+  }
+}

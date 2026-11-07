@@ -1,0 +1,256 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "file": "source-int-equal-v2-builtin-tool-source-profile.rs",
+      "sha256": "3323226bfb22e6aa6eb71fd0e7da734009d1d18c1466da1fff32e51e6d05b1ec",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result1; source provenance class int-equal",
+      "uncertain": false
+    },
+    {
+      "file": "source-int-different-v2-builtin-tool-source-profile.rs",
+      "sha256": "c5a173706186ba1269c653bbc38b939898ccb8aa749d886db49ab68a5d26dcb6",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result0; source provenance class int-different",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-same-v2-builtin-tool-source-profile.rs",
+      "sha256": "44aee00e28bb11f04a724a7728d5e887194f82168576e6b8fffb08ba04f1dbcb",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result1; source provenance class static-same",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-different-v2-builtin-tool-source-profile.rs",
+      "sha256": "00a01d7e34f7198ed19e10e1a04cde3a12a9ab6e6d956dd7bd5c00b7acef842f",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result0; source provenance class static-different",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-null-v2-builtin-tool-source-profile.rs",
+      "sha256": "60ea2e3e8fcde8872ab92b47005694679d73e45233b17f59a023579710d1424c",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result0; source provenance class static-null",
+      "uncertain": false
+    },
+    {
+      "file": "source-memory-same-v2-builtin-tool-source-profile.rs",
+      "sha256": "277cc119e013059af2decd424cb99d769a7fa8991e7c0503c1b43d206f5f953b",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result2; source provenance class memory-same",
+      "uncertain": false
+    },
+    {
+      "file": "source-memory-null-v2-builtin-tool-source-profile.rs",
+      "sha256": "bdea34a7753857e78f3a9ee0a25e18b13219656251a16c94c2efbc69e839902f",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; actual pinned guaranteed_cmp result0; source provenance class memory-null",
+      "uncertain": false
+    },
+    {
+      "file": "source-expired-pointer-null-v2-builtin-tool-source-profile.rs",
+      "sha256": "31540a66d17ed10640325455771b85d8e2003d0978691c43c4054d0a797b6aff",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; comparison does not read expired storage; actual allocation may-be-null law",
+      "uncertain": false
+    },
+    {
+      "file": "source-marker-missing-v2-builtin-tool-source-profile.rs",
+      "sha256": "17cbc524adbc736400bfbea435e91956b0a30a0ac987ba74159060592b6d12ae",
+      "expected": 1,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; ordinary const pointer comparison remains definition-time forbidden",
+      "uncertain": false
+    },
+    {
+      "file": "source-unsafe-body-v2-builtin-tool-source-profile.rs",
+      "sha256": "332dd2d79b512154a5e8be2c3782178143870c5cac6170058540157b8b4ff9d8",
+      "expected": 1,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; do-not-const-check never pays ordinary unsafe body proof",
+      "uncertain": false
+    },
+    {
+      "file": "source-ordinary-const-lookalike-v2-builtin-tool-source-profile.rs",
+      "sha256": "b0b65a76887a2b7e5bca2c10cee8bbf71dfafd032137d1b8f6f94218a750832a",
+      "expected": 1,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; ordinary const function gets no intrinsic defining exemption",
+      "uncertain": false
+    },
+    {
+      "file": "source-ordinary-runtime-lookalike-v2-builtin-tool-source-profile.rs",
+      "sha256": "4e63209d4d243fad4d81434a59bceb3bbfc71451f505022fa8d496698a679cdb",
+      "expected": 1,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; familiar spelling gives no const call permission",
+      "uncertain": false
+    },
+    {
+      "file": "source-nonconst-intrinsic-call-v2-builtin-tool-source-profile.rs",
+      "sha256": "a9880ceab88db93f91c0ca48a0e1433b0bac0d1a8512016fbfef5ddd9395cf6e",
+      "expected": 1,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; actual written nonconst signature stays nonconst",
+      "uncertain": false
+    },
+    {
+      "file": "source-native-standard-v2-builtin-tool-source-profile.rs",
+      "sha256": "f903c9ebf1c664d3f48040145f8f58c5b6dd8bfa5dbb8c6658c62d55414434d8",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; real native fallback body and separate actual CTFE semantics",
+      "uncertain": false
+    },
+    {
+      "file": "source-native-changed-v2-builtin-tool-source-profile.rs",
+      "sha256": "8c3afff34b40f8e3c67bd5e26bc7f8fc47e7e1e913802e80775f9de8f88deb59",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Same original operation/body with separately authored actual no_core support; real native fallback body and separate actual CTFE semantics",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-offset-v3-builtin-tool-source-profile.rs",
+      "sha256": "21c964e16df74ee593e222aff31812a8c3ee43196c5f8a6a2c3d03d600cee710",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result0; source provenance class static-offset",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-one-past-v3-builtin-tool-source-profile.rs",
+      "sha256": "88fc19994ff3a2b8c84f27dc8dbfd49b87d0da001678e5c04a4d6ee5cd683b02",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result2; source provenance class static-one-past",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-far-aligned-v3-builtin-tool-source-profile.rs",
+      "sha256": "c93fbac8a867256e65336f4ffaae388e2e50ca5645a673500835767178efb791",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result2; source provenance class static-far-aligned",
+      "uncertain": false
+    },
+    {
+      "file": "source-static-far-residue-v3-builtin-tool-source-profile.rs",
+      "sha256": "94ee6d7450502001ca00ea8a1507e6cf93cfe68fccff3fa3ac896c1da8182507",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result0; source provenance class static-far-residue",
+      "uncertain": false
+    },
+    {
+      "file": "source-memory-residue-v3-builtin-tool-source-profile.rs",
+      "sha256": "d5de5536efd1d0cd05c1b3df1e2d38d663570621f9af083960522913ca2d43fa",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result0; source provenance class memory-residue",
+      "uncertain": false
+    },
+    {
+      "file": "source-zst-same-v3-builtin-tool-source-profile.rs",
+      "sha256": "856a1ac56e815e5c1ee7a68dbe8dfe98b1c6f0152dbc250704dbd6e3bdd439a9",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result1; source provenance class zst-same",
+      "uncertain": false
+    },
+    {
+      "file": "source-zst-different-v3-builtin-tool-source-profile.rs",
+      "sha256": "88ca8be2c21a9f263975b9ea96d56912367067ae2d4d005663f8b267332f65c6",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result2; source provenance class zst-different",
+      "uncertain": false
+    },
+    {
+      "file": "source-function-same-v3-builtin-tool-source-profile.rs",
+      "sha256": "3a12e63f5f1f99070ee3002328aff6a8519ca1ef3db4fc9fe3ce8ab40f2f6a54",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result2; source provenance class function-same",
+      "uncertain": false
+    },
+    {
+      "file": "source-function-null-v3-builtin-tool-source-profile.rs",
+      "sha256": "f803519a165c80214f56f507943462fe9ea5983355c452fdc8c9d1b9220aa41d",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. Authored real no_core support + actual arith_offset declaration where needed; actual pinned guaranteed_cmp result0; source provenance class function-null",
+      "uncertain": false
+    },
+    {
+      "file": "source-marked-unused-builtin-tool-source-profile.rs",
+      "sha256": "d68395e4c10b77cca83577c3a0e687d2cd5af49372db7b650abd6fbeaf6b1f7f",
+      "expected": 0,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. General genuine do-not-const-check defining policy, separate reached evaluator body semantics",
+      "uncertain": false
+    },
+    {
+      "file": "source-marked-pointer-called-builtin-tool-source-profile.rs",
+      "sha256": "5f58fc6b4741674f8608432fa0f7f12b2efb7817dd32ee5e03b7459ac53e377a",
+      "expected": 1,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. General genuine do-not-const-check defining policy, separate reached evaluator body semantics",
+      "uncertain": false
+    },
+    {
+      "file": "source-marked-ordinary-called-builtin-tool-source-profile.rs",
+      "sha256": "5e2f435a93c0df912e68b80ab9e96389c2e9466137bc1a1e0d39613634134f23",
+      "expected": 1,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Separately authored built-in miri support; full original intrinsic attr/body retained where applicable. General genuine do-not-const-check defining policy, separate reached evaluator body semantics Previous uncertain positive disproved by pinned E0080 non-const call.",
+      "uncertain": false
+    },
+    {
+      "file": "source-intrinsics-feature-missing-builtin-tool-source-profile.rs",
+      "sha256": "e87c795328663df8426bd4a5982ae54f317414620cd25b6a26eb2f77e06a1c9a",
+      "expected": 1,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Actual no_core source one-fault intrinsic/feature opponent, matching independently frozen std source",
+      "uncertain": false
+    },
+    {
+      "file": "source-internal-feature-missing-builtin-tool-source-profile.rs",
+      "sha256": "0a12a8ef9518ddaea83b4ade0e57bc4fde7a4926221e8f823c6b3a49da822981",
+      "expected": 1,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Actual no_core source one-fault intrinsic/feature opponent, matching independently frozen std source",
+      "uncertain": false
+    },
+    {
+      "file": "source-signature-unsafe-builtin-tool-source-profile.rs",
+      "sha256": "997f1d72f9df546302bb16e12a795b5eb58f3f1b3cdb1900eaa7a14266b88d97",
+      "expected": 1,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Actual no_core source one-fault intrinsic/feature opponent, matching independently frozen std source",
+      "uncertain": false
+    },
+    {
+      "file": "source-signature-result-builtin-tool-source-profile.rs",
+      "sha256": "8b2e2603da1e8173008c8b7676083aad2eb7f8edf8d223751f6886da9c879a41",
+      "expected": 1,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Actual no_core source one-fault intrinsic/feature opponent, matching independently frozen std source",
+      "uncertain": false
+    },
+    {
+      "file": "source-signature-generics-builtin-tool-source-profile.rs",
+      "sha256": "b795964f09969a0521d976f29f559d8cc4e208e84b3a5d040fc56c46e01b90a2",
+      "expected": 1,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Actual no_core source one-fault intrinsic/feature opponent, matching independently frozen std source",
+      "uncertain": false
+    },
+    {
+      "file": "source-signature-mutability-builtin-tool-source-profile.rs",
+      "sha256": "d62057c79a38aac7cc9d43327a78785f71e13e6b1e22a84b1fb5135b16617820",
+      "expected": 1,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Actual no_core source one-fault intrinsic/feature opponent, matching independently frozen std source",
+      "uncertain": false
+    },
+    {
+      "file": "source-reification-builtin-tool-source-profile.rs",
+      "sha256": "b6a3d9fa691a22f465bb59424046178763fbc9ccb44f677e4d543c1fb98fb857",
+      "expected": 1,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Actual no_core source one-fault intrinsic/feature opponent, matching independently frozen std source",
+      "uncertain": false
+    },
+    {
+      "file": "source-wide-call-builtin-tool-source-profile.rs",
+      "sha256": "d4a31bf8c5cbede5e58aaaee9df35bd8492c97e5274064f7722ba601af1bf114",
+      "expected": 1,
+      "hypothesis": "Separate authored Source support feature profile omits unused registration request/declaration; Actual no_core source one-fault intrinsic/feature opponent, matching independently frozen std source",
+      "uncertain": false
+    }
+  ],
+  "native": {
+    "source-native-standard-v2-builtin-tool-source-profile.rs": "guaranteed 1 0 1\n",
+    "source-native-changed-v2-builtin-tool-source-profile.rs": "guaranteed 99 99 1\n"
+  },
+  "profile": "Same pinned compiler argv/env; no_core supported feature profile omits unused register_tool request/declaration while preserving complete intrinsic function",
+  "source_request_gap": "Original register_tool-bearing v1/v2 inputs remain required PA40 setup, not counted as candidate passes"
+}

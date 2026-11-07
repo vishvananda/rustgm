@@ -73,6 +73,11 @@ fn require_source_body(
         && !facts
             .source_bindings
             .as_deref()
+            .ok_or("source intrinsic fallback catalog is missing")?
+            .guaranteed_fallback(facts, instance)?
+        && !facts
+            .source_bindings
+            .as_deref()
             .ok_or("source vararg fallback catalog is missing")?
             .vararg_fallback(facts, instance)?
     {

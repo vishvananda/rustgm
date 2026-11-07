@@ -17,6 +17,7 @@ mod caller_locations;
 mod compare_calls;
 mod entry_policy;
 mod function_calls;
+mod guaranteed_calls;
 mod operator_calls;
 mod panicking;
 mod place_cache;

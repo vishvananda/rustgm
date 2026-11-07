@@ -1,0 +1,224 @@
+{
+  "schema": 1,
+  "base": "5775efbef38e39060b85302501c8318c8c237f25",
+  "allocation_parent": "ee9735cd8f8823c1fbf9f786133a50bae6dc180b",
+  "qualification": "obj/parallel/source-transport/guaranteed-compare/final2/receipt.json",
+  "stages": [
+    {
+      "stage": "format",
+      "argv": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--all"
+      ],
+      "code": 0,
+      "seconds": 14.54856067604851
+    },
+    {
+      "stage": "audit",
+      "argv": [
+        "obj/audit-venv/bin/python",
+        "scripts/rust_audit.py",
+        "--root",
+        ".",
+        "--cache",
+        "obj/fast-audit.json"
+      ],
+      "code": 0,
+      "seconds": 2.3315564149525017
+    },
+    {
+      "stage": "strict",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "code": 0,
+      "seconds": 95.97725489991717
+    },
+    {
+      "stage": "source",
+      "argv": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_frontend",
+        "guaranteed_pointers::",
+        "--",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 114.07072260405403
+    },
+    {
+      "stage": "word",
+      "argv": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_frontend",
+        "overflow_words::",
+        "--",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 0.19686214509420097
+    },
+    {
+      "stage": "weak",
+      "argv": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_frontend",
+        "weak_symbols::",
+        "--",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 0.2548058630200103
+    },
+    {
+      "stage": "cold",
+      "argv": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_frontend",
+        "cold_sources::",
+        "--",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 0.20128304907120764
+    },
+    {
+      "stage": "native",
+      "argv": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--test",
+        "suite_frontend",
+        "guaranteed_pointers::native_",
+        "--",
+        "--ignored",
+        "--nocapture"
+      ],
+      "code": 0,
+      "seconds": 0.5049922929611057
+    },
+    {
+      "stage": "cli",
+      "argv": [
+        "cargo",
+        "build",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--profile",
+        "dev-fast",
+        "--bin",
+        "rustgm"
+      ],
+      "code": 0,
+      "seconds": 0.10315832600463182
+    },
+    {
+      "stage": "harness",
+      "argv": [
+        "make",
+        "test-harness"
+      ],
+      "code": 0,
+      "seconds": 14.317630217061378
+    },
+    {
+      "stage": "upstream",
+      "argv": [
+        "make",
+        "test-upstream"
+      ],
+      "code": 0,
+      "seconds": 0.15118037001229823
+    }
+  ],
+  "cli": {
+    "cli": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/guaranteed-compare/final2/rustgm",
+    "sha256": "b800cc1ea38edc3a2f75d41245840a5d6ce99591edfb690280029a7893490031"
+  },
+  "source_count": 3652,
+  "reference_packets": {
+    "reference-built-in-tool-v1.json": "aa49de432d6ac1f55443a2c87a78ec28e2ab676624448075ab5d43bbc83a2baa",
+    "reference-built-in-tool-v2.json": "e6cade6938c44d442b97c543b257f19a4cec8cf4eb4d8913be358ec7ca4504df",
+    "reference-indirect-v1.json": "ce6c7099ee8e3c05a3297d2a71cccbf97562ce6bbaaf9c7e6aa359077f2e2570",
+    "reference-operator-v1.json": "7ffa4fe3a0508844d113cba0eb7de1032eb5baabc2d1d7b3697b1ca8ab6926cd",
+    "reference-policy-v1.json": "7e46e356f1160d59f38177c2a44f68e376f5134add96ec3dac86a00c8031ca13",
+    "reference-source-profile-v1.json": "fcc42af8fba72779a9339d65bef9d702f63b8f267d5c1476fdd49f061867a41b",
+    "reference-source-v1.json": "b747245d01454451429bf9b430cf838ab1f1a3a6d2b681b190025429404a610d",
+    "reference-source-v2.json": "22fb86cd2601fb3183085c1b018a7eb23acf88339afb0ec076f09cebeb824a72",
+    "reference-std-v1.json": "5fcb6d9f26416740414e6ec2fd0d756091112c1a0a0f36fb1a53717fba9762f1",
+    "reference-storage-v1.json": "7cd3ba095b5467ff323bb2ac31d07f06ff402965e9cce2ff36baa18a78a1c716"
+  },
+  "failed_evidence": [
+    "static1/receipt.json",
+    "static2/receipt.json",
+    "static3/receipt.json",
+    "semantic1/receipt.json",
+    "final1/receipt.json",
+    "reference-source-v1/receipt.json",
+    "reference-policy-v1/receipt.json"
+  ],
+  "widths": {
+    "Selection": 12,
+    "Word": 32,
+    "Declarations": 7120,
+    "Body": 456,
+    "Value": 24,
+    "Code": 304,
+    "Frame": 248
+  },
+  "private_execution": "pending CI; metadata compiled",
+  "native_outputs": [
+    "guaranteed 1 0 1\n",
+    "guaranteed 99 99 1\n",
+    "primitive-pointer 1 0 0 0\n"
+  ],
+  "original_core": "No observation for this compiler yet; Root owns next unchanged722 observation"
+}

@@ -112,10 +112,15 @@ fn malformed_const_words_unknown_roles_and_explicit_stable_pairing_remain_closed
     for tail in [
         "#[rustc_const_stable_indirect(x)]const fn malformed(){}",
         "#[rustc_const_stable_indirect]trait Wrong{}",
-        "#[rustc_do_not_const_check]#[rustc_const_stable_indirect]const fn unclaimed(){loop{}}",
         "#[stable(feature=\"rust1\",since=\"1.0.0\")]#[rustc_const_stable(feature=\"already_stable\",since=\"1.0.0\")]#[rustc_const_stable_indirect]const fn conflicting(){}",
         "#[lang=\"panic_fmt\"]#[rustc_do_not_const_check]#[rustc_const_stable_indirect]const fn wrong_signature()->!{loop{}}",
     ] {
         assert!(check(tail).is_err(), "{tail}");
     }
+}
+
+#[test]
+fn general_defining_marker_keeps_unused_indirect_declaration_legal() -> Result {
+    check("#[rustc_do_not_const_check]#[rustc_const_stable_indirect]const fn unclaimed(){loop{}}")?;
+    Ok(())
 }

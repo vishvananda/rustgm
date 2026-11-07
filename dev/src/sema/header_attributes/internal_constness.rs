@@ -66,29 +66,6 @@ pub(super) fn validate_words(
             ));
         }
     }
-    if words.0 {
-        let role = report
-            .resolution
-            .source_bindings
-            .as_deref()
-            .is_some_and(|bindings| {
-                [
-                    crate::support::bindings::LangItem::PanicFmt,
-                    crate::support::bindings::LangItem::PanicDisplay,
-                ]
-                .into_iter()
-                .any(|role| {
-                    bindings.language(role).is_some_and(|actual| {
-                        actual.definition == definition && actual.origin == declaration
-                    })
-                })
-            });
-        if !role || !words.1 {
-            return Err(error(
-                "source do-not-const-check requires its actual supported panic role and indirect marker",
-            ));
-        }
-    }
     Ok(())
 }
 
@@ -248,6 +225,48 @@ impl Declarations {
     }
     /// Each query authenticates the completed physical header before reading
     /// the retained words. No marker result is a role, instance or call proof.
+    /// Defining-body policy only; executable Code still needs its own const proof.
+    pub(in crate::sema) fn unchecked_const_body(
+        &self,
+        report: &Report,
+        definition: DefId,
+        body: NodeKey,
+    ) -> Result<bool, &'static str> {
+        if report.package.source_core().is_none() {
+            return Ok(false);
+        }
+        let Some(catalog) = self.source_bindings.as_deref() else {
+            return Err("defining const policy lost its actual source catalog");
+        };
+        catalog.require_provider_report(report)?;
+        super::charge_source_contract_query(self, 8)
+            .map_err(|_| "defining const policy work budget exhausted")?;
+        if !self
+            .const_panic_markers(report, definition)
+            .map_err(|_| "defining const policy lost its completed source header")?
+            .0
+        {
+            return Ok(false);
+        }
+        let function = self
+            .function_indices
+            .get(&definition)
+            .and_then(|&index| self.functions.get(index))
+            .ok_or("defining const policy requires its actual completed function")?;
+        let ast = &report.package.unit(function.node.file).configured.ast;
+        if function.definition != definition
+            || function.body != Some(body)
+            || body.file != function.node.file
+            || !matches!(ast.node(function.node.node).kind,
+                Kind::Item(index) if matches!(ast.items[index as usize].kind,
+                    ItemKind::Function { flags, body: Some(actual), .. }
+                        if flags.constant && !flags.asynchronous && actual == body.node))
+        {
+            return Err("defining const policy changed its actual const function/body");
+        }
+        Ok(true)
+    }
+
     pub(in crate::sema) fn const_panic_markers(
         &self,
         report: &Report,

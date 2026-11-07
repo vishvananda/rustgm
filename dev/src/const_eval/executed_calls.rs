@@ -41,7 +41,10 @@ impl Machine<'_, '_> {
             return Ok(Selected::Unrelated);
         };
         match catalog.intrinsic_kind(crate::resolve::model::DefId(item.0))? {
-            Some(kind) if crate::sema::compiler_items::wrapping_operator(kind).is_some() => {
+            Some(kind)
+                if crate::sema::compiler_items::wrapping_operator(kind).is_some()
+                    || crate::sema::compiler_items::guaranteed_compare::is_operation(kind) =>
+            {
                 // The reached direct-call arithmetic owner authenticates and
                 // executes this operation; it is not a callback selector.
                 return Ok(Selected::Unrelated);
@@ -136,6 +139,9 @@ impl Machine<'_, '_> {
             .checked_sub(1)
             .ok_or("source intrinsic call has no current statement")?;
         if let Some(answer) = self.source_caller_location(body, frame, position, target)? {
+            return Ok(answer);
+        }
+        if let Some(answer) = self.source_guaranteed_compare(body, frame, position, target)? {
             return Ok(answer);
         }
         if let Some(answer) = self.source_wrapping_offset(body, frame, position, target)? {

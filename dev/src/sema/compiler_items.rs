@@ -53,6 +53,7 @@ pub(in crate::sema) use runtime_panics::runtime_body as runtime_panic_body;
 mod caller_location;
 pub(crate) use caller_location::CallerLocationSelection;
 mod cold_fallback;
+pub(crate) mod guaranteed_compare;
 mod subtraction_contract;
 mod wrapping_contract;
 pub(crate) use subtraction_contract::SubtractionSelection;

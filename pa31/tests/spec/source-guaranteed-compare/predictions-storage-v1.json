@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "file": "source-one-past-null-profile.rs",
+      "sha256": "1c8552f0ea5bdccafd0271fa4152fd8499d6018e61b1edb0102c7323c587ae96",
+      "expected": 0,
+      "hypothesis": "Pure guaranteed comparison grants no pointee access/liveness; one-past remains non-null while actual read requires live allocation",
+      "uncertain": false
+    },
+    {
+      "file": "source-live-read-profile.rs",
+      "sha256": "320e008099e15012a3228ed664d7fdb32a95c9a4de0d9770401c79d9a6cf60bc",
+      "expected": 0,
+      "hypothesis": "Pure guaranteed comparison grants no pointee access/liveness; one-past remains non-null while actual read requires live allocation",
+      "uncertain": false
+    },
+    {
+      "file": "source-expired-read-profile.rs",
+      "sha256": "48a1260f1723ddd72d8e6f1b5f2671103bec1a402d1ddf9486c348abcaba84ea",
+      "expected": 1,
+      "hypothesis": "Pure guaranteed comparison grants no pointee access/liveness; one-past remains non-null while actual read requires live allocation",
+      "uncertain": false
+    }
+  ],
+  "native": {}
+}
