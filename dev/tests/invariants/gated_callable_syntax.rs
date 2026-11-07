@@ -127,7 +127,9 @@ fn real_keyword_authority_and_cfg_removed_hard_gate_match_pinned_rust() -> Resul
             .err()
             .ok_or("bootstrap const closure invocation unexpectedly accepted")?;
         assert!(
-            error.message.contains("non-const calls are not allowed in constant initializers"),
+            error
+                .message
+                .contains("non-const calls are not allowed in constant initializers"),
             "{error}"
         );
     }
