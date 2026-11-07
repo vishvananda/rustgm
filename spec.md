@@ -6266,6 +6266,20 @@ and derives each reborrow's bounds from its own borrowed places. Older
 profiles reject these forms by name, and originals without them keep their
 exact bytes.
 
+A version-thirteen function header may also carry two callable advisories.
+The byte that marks an inline contract becomes a flag set: bit 0 is the
+inline contract, bit 1 the written `#[cold]` advisory and bit 2 the written
+`#[track_caller]` caller policy. Other bits are rejected, and older profiles
+reject bits 1 and 2 by name. Trait and nominal header rows carry neither
+advisory. Caller tracking requires an exported original body on a free
+function or an inherent method. A role row may also name a `#[lang =
+"panic"]` function. No completion is transported: a fresh consumer re-proves
+the named declaration as a free, const, safe Rust-ABI `fn(&'static str) -> !`
+with no generics, and re-proves each caller-tracking flag against its own
+installed signature and owner. Until caller locations transport, a consumer
+rejects a call to a tracked imported function, both in its own bodies and in
+rebuilt ones. Rows without the advisories keep their exact earlier bytes.
+
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core
 profile. A crate that exports no macros writes no envelope and keeps its exact

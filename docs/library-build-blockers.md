@@ -5,6 +5,19 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [cold, caller-tracking and `panic` role rows](parallel/panic-attributes-transport.md)
+is joined on main. Version 13 carries two new bits in a
+function header row's inline byte (`#[cold]`, `#[track_caller]`) and a
+spelled `panic` role row. Rows without the bits keep their exact bytes. A
+fresh consumer re-proves each tracking flag against its own installed header
+and the role's `fn(&'static str) -> !` signature. It runs a provider with
+core 1.98's `panic` attributes and role natively. Calls to tracked functions
+stay fenced by name until `Location` and the caller ABI transport. Five named
+forgeries and every strict prefix are rejected, and one cleared flag is
+accepted as sound. The next blocker is lifetime-parameterized nominals
+(`Arguments<'a>`, `Location<'a>`, `PanicInfo<'a>`), which stop at "source
+lifetime binding has no actual original slot". PA20 passes 1,451/1,451.
+
 Lane B [definition side table, lineage ledger and sugar-determined impl
 parameters](parallel/definition-lineage.md) repairs the expansion `Definition`
 regression and the census's largest cause. It also brings in std's two profile
