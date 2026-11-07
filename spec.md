@@ -6246,6 +6246,20 @@ enters every macro bound at the provider's root. Ambiguous bindings, an
 unknown owner, a target that is not a definition row and a public macro binding
 reachable only through a module alias are rejected by name.
 
+Version 3 of the macro envelope is written only when a definition row is
+`#[unstable]` or a builtin row has an `allow_internal_unstable` list;
+otherwise the version-1 or version-2 bytes are unchanged. It keeps the
+version-2 layout. A declarative row appends a stability tag (0 for none, 1
+followed by the feature). A builtin row appends its sorted, unique feature
+list and then the tag. A builtin's list passes the same checks as a
+declarative one, so `allow_internal_unsafe` and edition-panic contracts are
+rejected by name. Every call of an imported unstable row, through any path,
+import or re-export, requires either the crate's request for that feature or
+a call span inside an expansion whose definition may use it; otherwise it fails
+by name, as rustc's E0658 does. A row's feature is a library feature of its
+dependency. Source clients and staged consumers own the same imported-only
+allowance ledger as ordinary crates whenever a dependency row carries a list.
+
 ## Lowering and backend facts
 
 Lower only checked, typed facts. Give every emitted instance, drop shim, vtable,

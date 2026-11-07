@@ -761,3 +761,137 @@ and a requirement provider whose macro module is reached only through an alias.
     prelude from nested modules. That gap is unrelated to macro rows, so the
     fixture now names the root `extern crate` item
     (`pub use crate::exporter::forty_two`), and the rustc oracle was rerun.
+
+## Stability rows and imported allowance ledgers (version 3)
+
+Follow-up (Lane B, PA29). Tag-14 version 3 carries each definition row's
+`#[unstable]` feature and each builtin row's `allow_internal_unstable` list. A
+consumer now gates every call of an unstable row. Source clients and staged
+consumers now own the allowance ledger that imported lists need. Tables with
+neither field keep their exact version-1 or version-2 bytes.
+
+**Wire layout.** Version 3 is the version-2 layout plus two fields:
+
+- a declarative row appends its stability after its allowance list;
+- a builtin row appends, after its helpers, its allowance list (a `u32` count
+  of feature identifiers) and then its stability.
+
+Stability is a tag byte: 0 when the definition has no `#[unstable]`
+attribute, or 1 followed by the feature string. Re-export rows are unchanged,
+because rustc checks the stability of the macro definition and not of the
+re-export. `Macros::version` writes version 3 exactly when some row is
+unstable or some builtin row has a list. Decoding rejects by name an unknown
+stability tag, an invalid feature, an unsorted or invalid list, and a version-3
+table with neither field. A stable `since` is not transported, since no
+consumer check reads it.
+
+**Provider.** `declarative_rows` looks up each published definition's regular
+policy in the completed staged inventory, by declaration node. It publishes
+only `Unstable` features. A builtin row now publishes its allowance list
+through the same `exported_internal_unstable` check that declarative rows use.
+Version 2 silently dropped a builtin's list. Builtins with
+`allow_internal_unsafe` or edition-panic contracts (core's `format_args`,
+`panic`, `assert` and `unreachable`) are now rejected by name, instead of being
+published without their contract.
+
+**Consumer.**
+
+- Each imported definition records its `DefinitionRow`, declarative or builtin.
+  A builtin frame therefore grants its own list, as a declarative frame does
+  (`permission_session`).
+- `resolve::expansion::unstable_calls` checks every call of an imported row
+  after `bindings::finish`, once the library requests are complete. Either the
+  crate requests the feature, or the call's own span lies in an expansion
+  allowed to use it (`macro_allowances().allows`). Otherwise the call fails with
+  "use of unstable library macro requires feature `F`" (rustc E0658). The check
+  reads the definition row behind the call, so it covers every path, `use`,
+  re-export and `#[macro_use]` route.
+- A row's feature counts as a library feature of its dependency, so a source
+  client's `#![feature(F)]` passes request validation.
+- Source clients and staged consumers build the imported-only local ledger
+  (`LocalMacros`) whenever a dependency row carries a list, as ordinary crates
+  already did. Before this change a source client could not apply an imported
+  list: `cfg(ub_checks)` inside a listed imported expansion failed. A side
+  effect is that such a client has a macro context, which `#[prelude_import]`
+  also requires.
+- Not checked: a `use` of an unstable row that is never called. rustc's
+  import-path check was not probed.
+
+### Imported context-dependent builtins
+
+These builtins are still not runnable when imported. They stay rejected by name
+("imported builtin macro requires its provider's source declaration").
+The blockers, in order:
+
+1. `assert!(cond)` expands to `$crate::panicking::panic("assertion failed: …")`.
+   The consumer's own expander could emit that path, anchoring `$crate` at the
+   row's crate id (`Kind::CrateRoot(id)`, as imported declarative rows already
+   do). But the callee cannot be imported. Source metadata has no transport for
+   `&'static str` or `!` signatures ("str is outside the scalar metadata
+   profile"), so a probe provider defining that function fails publication.
+   This transport is outside the macro lane (`sema::crates::authored_export`).
+2. `assert!(cond, msg)`, `panic!` and `unreachable!` delegate to `panic_2021` or
+   `unreachable_2021`. Both are `pub macro` definitions with
+   `#[rustc_macro_transparency = "semiopaque"]`, and macros 2.0 rows are still
+   rejected. A semiopaque `pub macro` has `macro_rules!` hygiene, so it could
+   travel as a declarative row with a syntax flag, without a new hygiene model.
+   The core rows also need the edition-panic contract, which is rejected by
+   name above.
+3. `format_args!`, and `write!` through it, build typed `FormatConstructor`
+   nodes, charge the source-core ledger and name `fmt::Arguments`
+   constructors. Core's row also carries `allow_internal_unsafe`.
+4. `debug_assert*`, `write` and `assert_unsafe_precondition` are declarative
+   rows that already travel. They stop at the builtins they call.
+
+### Qualification (version 3)
+
+All nine outcomes in `pa29/tests/macro-stability-outcomes.json` (plan sha256
+`b8f21bfc…`, `obj/parallel/imported-builtins-v1/declared/`) were declared
+before any rustc or RustGM run of these files. Exploratory probes of similar
+shapes (`obj/parallel/imported-builtins-v1/probe`) ran first. The fixtures in
+`pa29/tests/spec/macro-stability-rows/` are:
+
+- a staged no_core provider with an unstable declarative row (`answer`), an
+  unstable builtin row (`line`), a builtin row with a list (`stringify`),
+  listed wrappers, an unlisted wrapper and a staged re-export;
+- seven source clients;
+- a native object client driven by the `builtin-macro-rows` driver.
+
+Results:
+
+- **Oracle.** Round 1 rejected the declared provider: rustc requires a stability
+  attribute on a staged crate's public re-export. The fixture was amended
+  (`declared/amendments.txt`) and round 2 reran every case. Pinned rustc 1.98.0
+  then matched all 53 macro cases natively, including four E0658 rejections and
+  the native `6 7 1` (`oracle.json` sha256 `4475f61e…`).
+- **Candidate.** `scripts/check_macro_metadata.py` runs all 53 cases. With CLI
+  `d7af1f75…`, all 53 passed both non-native
+  (`obj/qualification/fast/1794061449063891192`) and native
+  (`1794061547550973425`, evidence
+  `obj/parallel/pa29-macro-metadata/maintainer-1435107-true-1794061575021107648`).
+  The native client prints `6 7 1`, as rustc does. RustGM's four rejections
+  name the feature and frame, for example "use of unstable library macro
+  requires feature `gated_answer`" in macro `leaky`.
+- **Integration tests.** `crate_linking::expander_rows` gains three tests:
+  - publication and round trip of the stability fields, the builtin list,
+    gating through a re-export, and admission by a requested feature; the
+    version-2 provider keeps version 2;
+  - forged rows: an unknown stability tag, an invalid feature, an invalid
+    builtin list, a version-3 table with neither field and a version-2
+    relabel all fail. An unlisted wrapper and an unstable builtin are
+    rejected, while listed wrappers and the `cfg(ub_checks)` row are accepted;
+  - linear growth: 8, 32 and 128 unstable rows grow the table by equal bytes
+    per row, and the consumer's LowIR does not change.
+  All nine `expander_rows` tests passed (`1794061301030997286`).
+- **Private tests.** Strict private Clippy and 12 private tests passed
+  (`1794061632402438057`): `macro_context`, `permission_session`, `cfg_gates`,
+  the source-client selection tests and an encoded-consumer test.
+
+**Amended controls.**
+
+- `declarative_exports` used version 3 as its unknown-version forgery. It now
+  uses 4, and also checks that version-one rows relabelled as version 3 fail
+  with "unknown exported macro row kind".
+- `transported_rows`'s runner count rises from 44 to 53.
+- Behavior: a builtin with `allow_internal_unsafe` or an edition-panic contract
+  is now rejected at publication, where it used to publish without its contract.

@@ -152,3 +152,14 @@ clients, one of which keeps the gate of an unlisted row. A requirement
 provider whose macro module is reached only through an alias is accepted by
 rustc and rejected by name. All 15 outcomes were declared before any rustc or
 RustGM run.
+
+`macro-stability-outcomes.json` freezes tag-14 version 3 under
+`spec/macro-stability-rows/`. A staged no_core provider (`provider.rs`) has an
+unstable declarative row, an unstable builtin row, a builtin row with an
+allowance list, listed and unlisted wrappers, and a staged re-export. Seven
+source clients cover a listed `cfg(ub_checks)` expansion, direct calls with and
+without the feature, the unstable builtin, listed wrappers, an unlisted wrapper
+and a re-export reached through `use`. `native-client.rs` links with the
+`builtin-macro-rows` native driver. All nine outcomes were declared before any
+rustc or RustGM run. The provider's re-export stability attribute was added
+after oracle round 1 (`docs/parallel/macro-metadata.md`).

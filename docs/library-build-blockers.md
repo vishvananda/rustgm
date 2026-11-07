@@ -5,6 +5,21 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+[Macro stability rows and imported allowance ledgers](parallel/macro-metadata.md#stability-rows-and-imported-allowance-ledgers-version-3)
+(Lane B, PA29): tag-14 version 3 carries each definition row's `#[unstable]`
+feature and each builtin row's `allow_internal_unstable` list. Every call of
+an imported unstable row needs the feature, either requested by the crate or
+granted by the enclosing imported expansion's list (E0658 otherwise). Source
+clients and staged consumers now own the imported-allowance ledger, so listed
+rows such as `cfg(ub_checks)` wrappers work there. Builtins with
+`allow_internal_unsafe` or edition-panic contracts are now rejected at
+publication instead of losing their contract. All nine declared rustc outcomes
+held, and the candidate passes all 53 macro cases natively. Imported `assert`,
+`panic`, `unreachable` and `format_args` still do not run. Their next blockers
+are `&'static str`/`!` signature transport for `$crate::panicking::panic`,
+semiopaque `pub macro` rows for `panic_2021`/`unreachable_2021`, and typed
+format constructors.
+
 [Macro re-export rows](parallel/macro-metadata.md#re-export-rows) (Lane B,
 PA29): every public macro binding of a crate's public modules is now published.
 `pub use` of a macro, including globs and core-shaped preludes, writes a
