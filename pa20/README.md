@@ -46,10 +46,15 @@ Keep retained declaration field types available for variance while layout consum
 normalized storage. Associated equality is not injective: equal output types do
 not establish equality of Self or any trait argument.
 
-The pinned stable profile does not support default associated type definitions
-or inherent associated types; see the
+The stable foundation does not support default associated type definitions or
+ungated inherent associated types; see the
 [Reference](../doc/rust-reference/src/items/associated-items.md#associated-types).
-Generic associated type families and higher-ranked trait bounds belong to PA21.
+The explicitly feature-gated [inherent alias extension](tests/spec/inherent-associated/README.md)
+adds21 finite closed-owner cases. Its pinned Rust oracle explicitly uses the
+bootstrap profile already frozen by that packet; this does not enable a feature
+without its source request. Generic/lifetime owners, members and conditions
+outside the finite extension remain required work. Generic associated type
+families and higher-ranked trait bounds belong to PA21.
 
 ### Associated constants
 

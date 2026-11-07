@@ -22925,7 +22925,10 @@
         "tests/spec/inherent-associated/shadow-qualified-self.rs",
         "tests/spec/inherent-associated/private-qualified-self.rs",
         "tests/spec/inherent-associated/specialized-qualified-self.rs"
-      ]
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/lookup.rs",
@@ -22940,7 +22943,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/explicit.rs",
@@ -22955,7 +22961,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/self-use.rs",
@@ -22970,7 +22979,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/public.rs",
@@ -22985,7 +22997,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/specialized.rs",
@@ -23000,7 +23015,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/disjoint.rs",
@@ -23015,7 +23033,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/unsized.rs",
@@ -23030,7 +23051,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/disjoint-kinds.rs",
@@ -23045,7 +23069,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/trait-control.rs",
@@ -23060,7 +23087,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/native.rs",
@@ -23075,7 +23105,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/missing-feature.rs",
@@ -23090,7 +23123,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/missing-result.rs",
@@ -23105,7 +23141,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/written-bound.rs",
@@ -23120,7 +23159,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/invalid-unused.rs",
@@ -23135,7 +23177,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/wrong-owner.rs",
@@ -23150,7 +23195,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/private.rs",
@@ -23165,7 +23213,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/duplicate.rs",
@@ -23180,7 +23231,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/wrong-result-closed.rs",
@@ -23195,7 +23249,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/namespaces.rs",
@@ -23210,7 +23267,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/inherent-associated/overlap.rs",
@@ -23225,7 +23285,10 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/qualified_types.rs",
-      "input": "file"
+      "input": "file",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/custom-auto-source/ordinary.rs",
@@ -23287,7 +23350,10 @@
         "tests/spec/custom-auto-source/zero-array-negative.rs",
         "tests/spec/custom-auto-source/unused-regions-1.rs",
         "tests/spec/custom-auto-source/unused-regions-400.rs"
-      ]
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     }
   ]
 }

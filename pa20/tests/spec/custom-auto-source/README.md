@@ -103,3 +103,9 @@ the actual trait cause and the latter at its work limit. The touched-only payer
 restores the actual negative cause for400 without changing the declared source or
 raising its limits. Both are public full-lowering opponents and auxiliaries of the
 existing ordinary PA20 primary. The original independent34-source packet is unchanged.
+
+The published finite primary case profiles explicitly set RUSTC_BOOTSTRAP=1 for
+pinned Rust qualification, matching these frozen independent observations.
+Stable cases elsewhere keep their original environments. Missing source feature
+permission still rejects; no source/status/oracle byte changes accompany this
+[profile repair](../../../../docs/parallel/pa20-oracle-profile-repair.md).
