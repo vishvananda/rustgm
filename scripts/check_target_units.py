@@ -32,16 +32,19 @@ CASES = {
     'legacy-edition-library': {'client': 'pass-construct.rs', 'edition': '2018',
                                'expected': {'state': 'complete', 'completed': ['records', 'client'],
                                             'failure': None}},
-    'unsupported-crate-type': {'client': 'pass-construct.rs', 'edition': '2024', 'kind': 'dylib',
+    'rlib-beside-dylib': {'client': 'pass-construct.rs', 'edition': '2024', 'kinds': ['dylib', 'rlib'],
+                          'expected': {'state': 'complete', 'completed': ['records', 'client'],
+                                       'failure': None, 'dropped': {'records': ['dylib']}}},
+    'unsupported-crate-type': {'client': 'pass-construct.rs', 'edition': '2024', 'kinds': ['dylib'],
                                'expected': {'state': 'failed', 'completed': [],
                                             'failure': {'crate': 'records', 'kind': 'unsupported'},
                                             'blocked': ['client']}},
 }
 
 
-def unit(name, kind, source, edition, dependencies=()):
+def unit(name, kinds, source, edition, dependencies=()):
     return dict(pkg_id=f'path+file://{FIXTURES}#{name}@1.0.0',
-                target=dict(kind=[kind], crate_types=[kind], name=name, src_path=str(source),
+                target=dict(kind=kinds, crate_types=kinds, name=name, src_path=str(source),
                             edition=edition, doc=False, doctest=False, test=False),
                 profile=PROFILE, platform=TRIPLE, mode='build', features=[],
                 dependencies=[dict(index=index, extern_crate_name=alias, public=False,
@@ -53,8 +56,8 @@ def graph(case):
     library = FIXTURES / 'first.rs'
     client = FIXTURES / case['client']
     data = json.dumps(dict(version=1, roots=[1], units=[
-        unit('records', case.get('kind', 'lib'), library, case['edition']),
-        unit('client', 'bin', client, '2024', [(0, 'one')])])).encode()
+        unit('records', case.get('kinds', ['lib']), library, case['edition']),
+        unit('client', ['bin'], client, '2024', [(0, 'one')])])).encode()
     plan = parse(data, TRIPLE)
     packages = {}
     for row in plan.units:
@@ -68,9 +71,12 @@ def graph(case):
 
 def observed(receipt):
     failure = receipt['failure']
+    dropped = {row['crate']: row['dropped_crate_types'] for row in receipt['completed']
+               if row['dropped_crate_types']}
     return {'state': receipt['state'], 'completed': [row['crate'] for row in receipt['completed']],
             'failure': None if failure is None else {'crate': failure['crate'], 'kind': failure['kind']},
-            **({'blocked': [row['crate'] for row in receipt['blocked']]} if receipt['blocked'] else {})}
+            **({'blocked': [row['crate'] for row in receipt['blocked']]} if receipt['blocked'] else {}),
+            **({'dropped': dropped} if dropped else {})}
 
 
 def run(rustgm, out):

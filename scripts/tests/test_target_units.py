@@ -128,14 +128,22 @@ class FrozenPlans(unittest.TestCase):
     def test_every_std_unit_reports_only_settings_rustgm_cannot_express(self):
         steps = plan_frozen('std')
         expected = {name: {'package.environment'} for name in steps}
-        expected['std'] |= {'crate_types', 'build-script.output'}
+        # Amended for the rlib-only std decision: std's dylib is dropped, not a gap.
+        expected['std'].add('build-script.output')
         expected['compiler_builtins'].add('build-script.output')
         expected['libc'].add('build-script.output')
         self.assertEqual({name: {gap.field for gap in step.gaps} for name, step in steps.items()}, expected)
         self.assertEqual(list(steps), ['core', 'compiler_builtins', 'alloc', 'rustc_std_workspace_core',
                                        'cfg_if', 'rustc_std_workspace_alloc', 'hashbrown', 'libc',
                                        'panic_abort', 'rustc_demangle', 'std_detect', 'unwind', 'std'])
-        self.assertIn(('crate_types', 'dylib'), {(gap.field, gap.value) for gap in steps['std'].gaps})
+        plan, _ = stdlib_targets.load()[1]['std']
+        std = next(unit for unit in plan.units if unit.target.name == 'std')
+        self.assertEqual(std.target.crate_types, ('dylib', 'rlib'))
+        self.assertEqual({name: step.dropped_crate_types for name, step in steps.items() if step.dropped_crate_types},
+                         {'std': ('dylib',)})
+        self.assertIn('--crate-type=lib', steps['std'].arguments)
+        metadata = steps['std'].arguments[steps['std'].arguments.index('--metadata-output') + 1]
+        self.assertTrue(metadata.endswith('/std.rgcrate'), metadata)
         # panic_abort's -Cpanic=abort only restates the fixed abort target.
         self.assertNotIn('rustflags', {gap.field for gap in steps['panic_abort'].gaps})
         self.assertEqual({name for name, step in steps.items() if step.lint_cap == 'allow'},
@@ -275,6 +283,24 @@ class Expressibility(unittest.TestCase):
         self.assertEqual([(gap.field, gap.value) for gap in steps['root'].gaps], [('dependency.noprelude', 'old')])
         self.assertTrue({'public dependency shared', 'nounused dependency flags'} <= set(steps['root'].lint_inputs))
 
+    def test_an_rlib_beside_a_dylib_builds_only_the_rlib_and_other_artifacts_stay_gaps(self):
+        def kinds(name, *types):
+            unit = row(name)
+            unit['target'] |= dict(kind=list(types), crate_types=list(types))
+            return unit
+        units = [kinds('both', 'dylib', 'rlib'), kinds('lib_both', 'lib', 'dylib'), kinds('only', 'dylib'),
+                 kinds('c_only', 'cdylib'), kinds('static', 'rlib', 'staticlib'), kinds('cdylib', 'rlib', 'cdylib'),
+                 row('root', dependencies=[edge(0, 'both'), edge(1, 'lib_both')])]
+        plan, packages = authored(units, [6, 2, 3, 4, 5])
+        steps = {step.crate_name: step for step in plan_units(plan, packages, OUT)}
+        for name in ('both', 'lib_both'):
+            self.assertEqual((steps[name].gaps, steps[name].dropped_crate_types), ((), ('dylib',)))
+            self.assertTrue({'--crate-type=lib', '--metadata-output'} <= set(steps[name].arguments))
+        for name, kind in (('only', 'dylib'), ('c_only', 'cdylib'), ('static', 'staticlib'), ('cdylib', 'cdylib')):
+            self.assertEqual([(gap.field, gap.value) for gap in steps[name].gaps], [('crate_types', kind)])
+            self.assertEqual(steps[name].dropped_crate_types, ())
+        self.assertEqual((steps['root'].gaps, steps['root'].dropped_crate_types), ((), ()))
+
     def test_lint_caps_and_timeouts_are_explicit_per_unit(self):
         steps = plan_frozen('std', timeouts={'core': 240})
         self.assertEqual({name: step.timeout_seconds for name, step in steps.items() if step.timeout_seconds != 120},
@@ -401,6 +427,19 @@ class Execution(unittest.TestCase):
         receipt = execute(plan_units(plan, packages, folder), packages, rustgm, sha, folder, {})
         self.assertEqual(receipt['failure']['kind'], 'usage')
         self.assertEqual(receipt['failure']['detail'], {'status': 2, 'diagnostic': 'USAGE: refused base'})
+
+    def test_receipts_record_the_dropped_dylib_of_each_completed_unit(self):
+        units = [row('base'), row('app', kind='bin', dependencies=[edge(0, 'base')])]
+        units[0]['target'] |= dict(kind=['dylib', 'rlib'], crate_types=['dylib', 'rlib'])
+        plan, packages = authored(units, [1])
+        folder = self.root / 'dropped'
+        rustgm, sha = self.fake()
+        receipt = execute(plan_units(plan, packages, folder), packages, rustgm, sha, folder, {'root': 'authored'})
+        self.assertEqual(receipt['state'], 'complete')
+        saved = json.loads((folder / 'receipt.json').read_text())
+        self.assertEqual([row['dropped_crate_types'] for row in saved['steps']], [['dylib'], []])
+        self.assertEqual([row['dropped_crate_types'] for row in saved['completed']], [['dylib'], []])
+        self.assertIn('--crate-type=lib', self.invocations()[0])
 
     def test_unsupported_unit_fails_before_any_process_starts(self):
         steps, packages, folder = self.graph(base_kind='dylib')

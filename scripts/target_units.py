@@ -22,6 +22,10 @@ from local_package import LocalPackage
 ENVIRONMENT = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'}
 EDITIONS = {'2015', '2018', '2021', '2024'}
 LIBRARY_TYPES = {'lib', 'rlib'}
+# Under the course profile a library that lists a Rust dylib beside its rlib
+# (original std) builds only the rlib; consumers link it statically, as rustc
+# does without -C prefer-dynamic. The omitted type is recorded per unit.
+DROPPED_BESIDE_RLIB = {'dylib'}
 # RustGM's fixed course target: Linux x86-64, panic abort, overflow checks on,
 # debug assertions off, no optimizer and no debug information.
 FIXED_PROFILE = (('opt_level', '0'), ('lto', 'false'), ('codegen_backend', None),
@@ -98,6 +102,7 @@ class Step:
     recorded_directives: tuple[str, ...]
     lint_cap: str | None
     timeout_seconds: int
+    dropped_crate_types: tuple[str, ...] = ()
 
 
 def profile_gaps(unit):
@@ -121,14 +126,18 @@ def profile_gaps(unit):
 
 
 def kind_gaps(unit):
+    """Whether the unit is a library, its typed gaps and its dropped crate types."""
     target = unit.target
     if target.kind == ('bin',) and target.crate_types == ('bin',):
-        return False, []
+        return False, [], ()
     if target.kind == ('lib',) or set(target.kind) <= LIBRARY_TYPES | {'dylib', 'cdylib', 'staticlib'}:
-        unsupported = [kind for kind in target.crate_types if kind not in LIBRARY_TYPES]
+        dropped = ()
+        if LIBRARY_TYPES & set(target.crate_types):
+            dropped = tuple(kind for kind in target.crate_types if kind in DROPPED_BESIDE_RLIB)
+        unsupported = [kind for kind in target.crate_types if kind not in LIBRARY_TYPES and kind not in dropped]
         return True, [Gap('crate_types', kind, f'RustGM cannot produce a {kind} artifact')
-                      for kind in unsupported]
-    return False, [Gap('target.kind', ','.join(target.kind), 'RustGM compiles only libraries and binaries')]
+                      for kind in unsupported], dropped
+    return False, [Gap('target.kind', ','.join(target.kind), 'RustGM compiles only libraries and binaries')], ()
 
 
 class Planner:
@@ -239,7 +248,7 @@ class Planner:
         if package is None:
             raise ValueError('target unit lacks its bound package')
         gaps, lint_inputs, recorded = profile_gaps(unit), [], []
-        library, kinds = kind_gaps(unit)
+        library, kinds, dropped = kind_gaps(unit)
         gaps += kinds
         if unit.target.edition not in EDITIONS:
             gaps.append(Gap('edition', unit.target.edition, 'RustGM supports only Rust 2015, 2018, 2021 and 2024'))
@@ -282,7 +291,7 @@ class Planner:
         return Step(index, package.identity, name, disambiguator, library, str(source), tuple(arguments),
                     tuple(sorted(environment.items())), tuple(outputs), tuple(closure), tuple(gaps),
                     tuple(lint_inputs), tuple(recorded), lint_cap,
-                    self.timeouts.get(name, DEFAULT_TIMEOUT))
+                    self.timeouts.get(name, DEFAULT_TIMEOUT), dropped)
 
 
 def plan_units(plan, packages, folder, *, source_core=None, scripts=None, timeouts=None, lint_cap=None):
@@ -383,7 +392,8 @@ class Run:
                 if set(outputs) != {name for name, _ in step.outputs}:
                     self.fail(step, 'output', {'missing': sorted({n for n, _ in step.outputs} - set(outputs))})
                     break
-                self.receipt['completed'].append({'unit': step.unit, 'crate': step.crate_name, 'outputs': outputs})
+                self.receipt['completed'].append({'unit': step.unit, 'crate': step.crate_name, 'outputs': outputs,
+                                                  'dropped_crate_types': list(step.dropped_crate_types)})
                 self.save()
             for package in packages.values():
                 if package.snapshot is not None:
