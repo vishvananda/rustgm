@@ -1837,7 +1837,8 @@ Efficiency comes from removing repeated work and from the complexity and scaling
 rules under "Ownership, allocation and complexity", not from a fixed whole-crate
 number. When a phase's required work and retention are linear in its input, bound
 its ledger by a documented constant factor of that phase's authenticated input
-graph (definitions, owners, AST nodes and edges), as declaration checking does.
+graph, such as its definitions, owners, effects, AST nodes, edges and retained
+attribute tokens, as declaration checking does.
 Never reuse a constant from another domain, such as a metadata decoding bound.
 Compute the bound once before the first charge and keep failure sticky. A
 proportional bound never justifies repeated or superlinear work: never raise its
