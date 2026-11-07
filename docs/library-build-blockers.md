@@ -5,8 +5,25 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [`&'static str`, `!` and static text](parallel/static-str-never-transport.md)
+is joined on main. Version 13 carries:
+
+- `str` and `!` type rows (recipe tags 10 and 11);
+- static text literals (value node 7), with a text column present exactly
+  when a body has a literal;
+- plain reborrow inputs, so `&x` arguments and merged literals cross;
+- SSA snapshots in branching bodies, when each use stays in its block.
+
+A fresh consumer now runs the shapes of core's `panicking::panic(&'static
+str) -> !` and generic `assert_failed` natively. Lane B's alloc census
+counts 120 and 22 sites behind these two. The consumer checks each literal's
+type and bytes and interns it itself. Six named forgeries and every strict
+prefix are rejected, and a rewritten literal is accepted as another sound
+program. Core's own `panic` still needs `#[track_caller]`, `#[cold]`,
+`#[lang = "panic"]` and the fmt roles. PA20 passes 1,451/1,451.
+
 Lane C [provider-body guards and single-variant matches](parallel/provider-guards-transport.md)
-is a local checkpoint, not yet joined. Version 13 carries match guards in
+is joined on main. Version 13 carries match guards in
 provider bodies:
 
 - guard view locals (local kind 3);

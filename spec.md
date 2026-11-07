@@ -6247,6 +6247,25 @@ view and re-selected place, and follows only real edges. As in local lowering,
 a variant whose enum has no other variant needs no test. Older profiles reject
 guard forms by name, and originals without guards keep their exact bytes.
 
+A version-thirteen original may also use `str`, `!` and static text.
+
+- Type recipe tag 10 is `str` and tag 11 is `!`. Neither has operands.
+- Value node 7 is a text literal `[Flag(ordinal)]` of type `&'static str`.
+  Text columns follow the guard columns exactly when a value is a text
+  literal: one UTF-8 string per literal, with ordinals dense in value order.
+- A coercion input whose reference conversion selects at least one
+  dereference, with no unsizing and no two-phase borrow at either level, is a
+  plain reborrow. A borrow whose outermost projection is a dereference may
+  take a region variable without borrow-expression provenance.
+- In a body with a two-way exit, each SSA snapshot dependency is evaluated
+  earlier in its user's own block.
+
+No literal or reborrow proof is transported. A fresh consumer checks each
+literal's type and bytes and interns it itself, demands every coercion type,
+and derives each reborrow's bounds from its own borrowed places. Older
+profiles reject these forms by name, and originals without them keep their
+exact bytes.
+
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core
 profile. A crate that exports no macros writes no envelope and keeps its exact
