@@ -5,6 +5,16 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+The first original-core census (analysis-only, joined CLI `87c8e187`, 20.6 s/375
+opens, unchanged inputs and limits) checked 1,197 declarations: 7 failed, none
+blocked, and bodies were not reached. Five failures are impl parameters
+constrained only through `Fn(..) -> T` bounds, which the impl-header constraint
+check reads as unscoped quantified clauses (`array/drain.rs`, `iter/adapters/filter_map.rs`).
+Two are core's own auto traits counted as a second object principal (`any.rs:162`,
+`:169`). The census stopped at `iter/adapters/flatten.rs:316`, whose fixed message
+"invalid or exhausted canonical projection premise" hides the inner error and was
+classified as a budget stop. Evidence: `rustgm-pa29-work/obj/parallel/core-census-1/`.
+
 The [target unit executor](parallel/target-unit-executor.md) plans each frozen
 target unit as an exact RustGM invocation, or as typed gaps, and runs units
 dependency-first with blocked dependents recorded. On all three frozen graphs,
