@@ -791,7 +791,9 @@ fn role_header(
         ) => {}
         (LangItem::FutureOutput, Some(super::super::HeaderRef::AssociatedType(_)))
             if profile == BindingProfile::CompilerOperations => {}
+        // A bound `panic` names a free function; consumers re-prove its header.
         (LangItem::FnOnceOutput, Some(super::super::HeaderRef::AssociatedType(_)))
+        | (LangItem::Panic, Some(super::super::HeaderRef::Function(_)))
             if profile == BindingProfile::Languages => {}
         (
             _,

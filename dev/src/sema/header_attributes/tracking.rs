@@ -132,8 +132,7 @@ impl Declarations {
             origin,
             Some(crate::resolve::body_origin::DeclarationOrigin::Imported(_))
         ) {
-            super::super::imported::caller_tracking_absent(self, definition)?;
-            return Ok(false);
+            return super::super::imported::caller_tracking(self, definition);
         }
         if self.source_bindings.is_none() {
             return Ok(false);
@@ -200,9 +199,8 @@ impl Declarations {
             if super::super::bootstrap_owner(report, definition)? {
                 return Ok(false);
             }
-            super::super::imported::caller_tracking_absent(self, definition)
-                .map_err(Error::unlocated)?;
-            return Ok(false);
+            return super::super::imported::caller_tracking(self, definition)
+                .map_err(Error::unlocated);
         };
         if report.package.source_core().is_none() {
             return Ok(false);

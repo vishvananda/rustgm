@@ -63,7 +63,7 @@ pub(super) fn headers(
             &mut contract_bytes,
             work,
         )?;
-        if row.contract.inline.is_some() {
+        if row.contract.inline.is_some() || row.contract.callable_advisories() {
             return Err("source nominal cannot carry effective callable inline policy");
         }
         let declaration = rows

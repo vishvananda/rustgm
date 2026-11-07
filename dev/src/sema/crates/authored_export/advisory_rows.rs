@@ -95,7 +95,7 @@ impl Stage {
             }
             let row = self.definitions[index]
                 .ok_or_else(|| Error::unlocated("selected attribute declaration disappeared"))?;
-            facts.reject_function_advisory_transport(report, definition)?;
+            facts.reject_profiled_advisory_transport(report, definition, self.body_nodes())?;
             let view = facts.publication_header_contracts(report, definition)?;
             if view
                 .origin
@@ -108,7 +108,10 @@ impl Stage {
                     "source contract completion belongs to another actual header",
                 ));
             }
-            let contract = self.header_contract(row, view)?;
+            let mut contract = self.header_contract(row, view)?;
+            if self.body_nodes() {
+                self.callable_advisories(report, facts, definition, &mut contract)?;
+            }
             if completed[row.0 as usize].replace(contract).is_some() {
                 return Err(Error::at(
                     declaration.file,
@@ -239,6 +242,8 @@ impl Stage {
             declaration_site,
             must_use,
             inline,
+            cold: false,
+            caller_tracking: false,
         })
     }
 }
@@ -316,13 +321,62 @@ impl Stage {
         }
         source_header(report, facts, definition, declaration, actual.kind)?;
         if actual.kind == DefKind::Function && facts.checked_caller_tracking(report, definition)? {
-            return Err(Error::at(
-                declaration.file,
-                0,
-                "source caller tracking policy transport is not implemented",
-            ));
+            if !self.body_nodes() {
+                return Err(Error::at(
+                    declaration.file,
+                    0,
+                    "source caller tracking policy transport is not implemented",
+                ));
+            }
+            // A tracked trait method makes every implementation tracked; that
+            // inherited policy needs trait implementation transport.
+            if facts
+                .associated
+                .owner(definition)
+                .and_then(|owner| facts.associated.get(owner))
+                .is_some_and(|owner| {
+                    !matches!(
+                        owner.kind,
+                        crate::sema::associated::OwnerKind::Impl {
+                            trait_type: None,
+                            ..
+                        }
+                    )
+                })
+            {
+                return Err(Error::at(
+                    declaration.file,
+                    0,
+                    "source trait member caller tracking requires its trait implementation transport",
+                ));
+            }
         }
         Ok(Some((definition, declaration)))
+    }
+    /// Version thirteen: the written cold advisory and caller ABI policy of a
+    /// function row, from the completed current source header.
+    fn callable_advisories(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        definition: DefId,
+        contract: &mut s::HeaderContract,
+    ) -> Result<(), Error> {
+        if report.resolution.definitions[definition.0 as usize].kind != DefKind::Function {
+            return Ok(());
+        }
+        self.charge(2).map_err(Error::unlocated)?;
+        contract.cold = match facts.cold_advisory(report, definition)? {
+            ContractKnowledge::Unknown => {
+                return Err(Error::unlocated(
+                    "source cold advisory producer is incomplete",
+                ));
+            }
+            ContractKnowledge::KnownAbsent => false,
+            ContractKnowledge::KnownPresent(()) => true,
+        };
+        contract.caller_tracking = facts.checked_caller_tracking(report, definition)?;
+        Ok(())
     }
 }
 

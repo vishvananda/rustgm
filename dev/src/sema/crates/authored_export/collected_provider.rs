@@ -188,6 +188,7 @@ impl Stage {
         let result = contracts.validate(
             &self.rows,
             before.reserved_bytes.saturating_add(names_bytes),
+            false,
             &mut validation,
         );
         self.charge(validation.steps.saturating_sub(start))

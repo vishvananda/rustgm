@@ -629,6 +629,7 @@ impl Checker<'_> {
         super::compiler_items::pointee::prepare(self.report, &mut self.facts)?;
         super::compiler_items::discriminant::prepare(self.report, &mut self.facts)?;
         super::compiler_items::site_records::complete(self.report, &mut self.facts)?;
+        super::compiler_items::complete_runtime_panic_roles(self.report, &mut self.facts)?;
         super::compiler_items::transmutability::complete_options(self.report, &mut self.facts)?;
         super::compiler_items::reflection::complete(self.report, &mut self.facts)
     }

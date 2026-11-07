@@ -713,6 +713,18 @@ pub(super) fn complete_value_declaration(
     record_completion(facts, role, declaration)
 }
 
+/// Only the conforming runtime-panic producer completes these exact roles.
+pub(super) fn complete_panic_role(
+    facts: &mut Declarations,
+    role: LangItem,
+    declaration: Declaration,
+) -> Result<(), Error> {
+    if role != LangItem::Panic {
+        return Err(Error::unlocated("invalid source runtime panic completion"));
+    }
+    record_completion(facts, role, declaration)
+}
+
 /// Only the actual completed ordinary associated-member producer enters this gate.
 pub(super) fn complete_reflection_member(
     facts: &mut Declarations,

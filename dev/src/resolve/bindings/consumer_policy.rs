@@ -113,7 +113,12 @@ impl ProviderAdmission {
             .ok_or_else(|| Error::unlocated("private admission lost its complete source data"))?;
         work.charge(1)?;
         let mut validation = Work::default();
-        let result = contracts.validate_columns(&descriptor.rows(), 0, &mut validation);
+        let result = contracts.validate_columns(
+            &descriptor.rows(),
+            0,
+            descriptor.profile().body_nodes(),
+            &mut validation,
+        );
         work.charge(validation.steps)?;
         let bytes = result.map_err(Error::unlocated)?;
         let names_bytes = if let Some(names) = names.as_mut() {

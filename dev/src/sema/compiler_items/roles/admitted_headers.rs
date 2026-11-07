@@ -275,6 +275,10 @@ fn trait_headers(
             }
             // The callable family is admitted together once the loop completes.
             LangItem::FnOnce | LangItem::FnMut | LangItem::Fn | LangItem::FnOnceOutput => {}
+            LangItem::Panic => {
+                super::super::runtime_panics::imported(facts, declaration, role, steps)?;
+                complete.insert(role);
+            }
             _ => return Err("imported source role requires its wider explicit header profile"),
         }
     }

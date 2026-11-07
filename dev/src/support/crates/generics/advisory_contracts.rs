@@ -38,6 +38,16 @@ pub struct HeaderContract {
     pub declaration_site: u32,
     pub must_use: Option<MustUseContract>,
     pub inline: Option<InlineContract>,
+    /// Version thirteen only, on function rows: the written cold advisory.
+    pub cold: bool,
+    /// Version thirteen only, on function rows: the written caller ABI policy.
+    pub caller_tracking: bool,
+}
+impl HeaderContract {
+    #[must_use]
+    pub const fn callable_advisories(&self) -> bool {
+        self.cold || self.caller_tracking
+    }
 }
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct HeaderAttributeColumns {
@@ -45,17 +55,18 @@ pub struct HeaderAttributeColumns {
     pub traits: Vec<HeaderContract>,
 }
 impl HeaderAttributeColumns {
+    /// `callable_advisories` is true exactly for the version-thirteen profile.
     pub(crate) fn validate(
         &self,
         rows: &SourceRows,
         base: usize,
+        callable_advisories: bool,
         work: &mut Work,
     ) -> Result<usize, &'static str> {
         self.validate_headers(
-            &rows.declarations,
-            &rows.functions,
-            &rows.traits,
+            (&rows.declarations, &rows.functions, &rows.traits),
             base,
+            callable_advisories,
             work,
         )
     }
@@ -63,22 +74,25 @@ impl HeaderAttributeColumns {
         &self,
         rows: &super::Columns,
         base: usize,
+        callable_advisories: bool,
         work: &mut Work,
     ) -> Result<usize, &'static str> {
         self.validate_headers(
-            &rows.declarations,
-            &rows.functions,
-            &rows.traits,
+            (&rows.declarations, &rows.functions, &rows.traits),
             base,
+            callable_advisories,
             work,
         )
     }
     fn validate_headers(
         &self,
-        declarations: &[super::Declaration],
-        functions: &[super::FunctionHeader],
-        traits: &[super::TraitHeader],
+        (declarations, functions, traits): (
+            &[super::Declaration],
+            &[super::FunctionHeader],
+            &[super::TraitHeader],
+        ),
         base: usize,
+        callable_advisories: bool,
         work: &mut Work,
     ) -> Result<usize, &'static str> {
         work.charge(self.functions.len().saturating_add(self.traits.len()))?;
@@ -96,11 +110,25 @@ impl HeaderAttributeColumns {
             }) {
                 return Err("source inline applicability differs from its actual function body");
             }
+            if contract.callable_advisories() && !callable_advisories {
+                return Err(
+                    "source cold and caller tracking rows require the version-thirteen header profile",
+                );
+            }
+            // Caller tracking changes the call ABI of a defined Rust function;
+            // consumers re-prove its convention on their installed signature.
+            if contract.caller_tracking && !matches!(header.body, super::FunctionBody::Original(_))
+            {
+                return Err("source caller tracking requires an exported original body");
+            }
         }
         for (contract, header) in self.traits.iter().zip(traits) {
             Self::check_row(contract, header.declaration, declarations, &mut bytes, work)?;
             if contract.inline.is_some() {
                 return Err("source trait header cannot carry an effective inline hint");
+            }
+            if contract.callable_advisories() {
+                return Err("source trait header cannot carry a callable advisory");
             }
         }
         if base.saturating_add(bytes) > MAX_BYTES {

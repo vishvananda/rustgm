@@ -123,15 +123,7 @@ impl Stage {
                         *slot = true;
                     }
                 }
-                DefKind::TypeAlias
-                    if role == LangItem::FutureOutput && self.compiler_operations => {}
-                DefKind::Function
-                    if role == LangItem::AsyncDropInPlace && self.compiler_operations => {}
-                DefKind::Function if role == LangItem::FuturePoll && self.compiler_operations => {}
-                DefKind::Function if role == LangItem::CloneFn => {}
-                // FnOnce's declared result travels as its kind-9 result row.
-                DefKind::TypeAlias if role == LangItem::FnOnceOutput && self.body_nodes() => {}
-                _ => return Err("source role form is outside the complete first transport family"),
+                kind => self.declared_role_form(kind, role)?,
             }
         }
         self.rows.policy.roles = g::Range {
@@ -169,6 +161,27 @@ impl Stage {
 
     /// Version thirteen authenticates operator roles with their own contract;
     /// every other role must already be a completed header role.
+    /// A non-trait role row carries only its declaration address.
+    fn declared_role_form(&self, kind: DefKind, role: LangItem) -> Result<(), &'static str> {
+        match kind {
+            DefKind::TypeAlias if role == LangItem::FutureOutput && self.compiler_operations => {}
+            DefKind::Function if role == LangItem::AsyncDropInPlace && self.compiler_operations => {
+            }
+            DefKind::Function if role == LangItem::FuturePoll && self.compiler_operations => {}
+            DefKind::Function if role == LangItem::CloneFn => {}
+            // FnOnce's declared result travels as its kind-9 result row.
+            DefKind::TypeAlias if role == LangItem::FnOnceOutput && self.body_nodes() => {}
+            // The consumer re-proves the named declaration's installed header.
+            DefKind::Function if role == LangItem::Panic => {
+                if !self.body_nodes() {
+                    return Err("source panic role requires the version-thirteen role profile");
+                }
+            }
+            _ => return Err("source role form is outside the complete first transport family"),
+        }
+        Ok(())
+    }
+
     fn exported_role(
         &mut self,
         report: &Report,

@@ -170,10 +170,21 @@ impl Declarations {
             ContractKnowledge::KnownAbsent
         })
     }
+    /// The boundary of every profile without the version-thirteen cold bit.
     pub(crate) fn reject_function_advisory_transport(
         &self,
         report: &Report,
         definition: DefId,
+    ) -> Result<(), Error> {
+        self.reject_profiled_advisory_transport(report, definition, false)
+    }
+    /// `cold_rows` is true exactly when the selected profile carries the
+    /// version-thirteen cold advisory column bit.
+    pub(crate) fn reject_profiled_advisory_transport(
+        &self,
+        report: &Report,
+        definition: DefId,
+        cold_rows: bool,
     ) -> Result<(), Error> {
         let actual = report
             .resolution
@@ -216,7 +227,9 @@ impl Declarations {
                 Some("rustc_as_ptr") => {
                     Some("source rustc_as_ptr diagnostic marker transport is not implemented")
                 }
-                Some("cold") => Some("source cold advisory marker transport is not implemented"),
+                Some("cold") if !cold_rows => {
+                    Some("source cold advisory marker transport is not implemented")
+                }
                 _ => None,
             };
             if required.is_none() {
@@ -231,6 +244,26 @@ impl Declarations {
             Some(message) => Err(Error::unlocated(message)),
             None => Ok(()),
         }
+    }
+
+    /// The written cold advisory of a completed current function header. It
+    /// carries no behavioral claim; consumers retain it as a header fact.
+    pub(crate) fn cold_advisory(
+        &self,
+        report: &Report,
+        definition: DefId,
+    ) -> Result<ContractKnowledge<()>, Error> {
+        let mut present = false;
+        if !visit_words(self, report, definition, |name| {
+            present |= name == Some("cold");
+        })? {
+            return Ok(ContractKnowledge::Unknown);
+        }
+        Ok(if present {
+            ContractKnowledge::KnownPresent(())
+        } else {
+            ContractKnowledge::KnownAbsent
+        })
     }
 
     pub(in crate::sema) fn no_implicit_autorefs(

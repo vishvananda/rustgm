@@ -27,7 +27,12 @@ pub(super) fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(),
             out.string(reason)?;
         }
     }
-    out.u8(u8::from(row.inline.is_some()))?;
+    // Version thirteen widens the inline presence byte into a flag set: bit 0
+    // is the inline hint, bit 1 the cold advisory and bit 2 caller tracking.
+    // Rows without the two advisories keep their exact earlier bytes.
+    out.u8(u8::from(row.inline.is_some())
+        | u8::from(row.cold) << 1
+        | u8::from(row.caller_tracking) << 2)?;
     if let Some(value) = row.inline {
         id(out, value.owner_site)?;
         out.u8(match value.hint {
@@ -43,38 +48,55 @@ pub(super) fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(),
     Ok(())
 }
 pub(super) fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'static str> {
+    let declaration = DeclarationRef(read.id()?);
+    let declaration_site = read.id()?;
+    let must_use = if read.boolean()? {
+        Some(s::MustUseContract {
+            owner_site: read.id()?,
+            reason: if read.boolean()? {
+                Some(reason_read(read)?)
+            } else {
+                None
+            },
+        })
+    } else {
+        None
+    };
+    let flags = read.reader.u8()?;
+    if flags > 7 {
+        return Err("unknown transported inline or callable advisory flags");
+    }
+    if flags > 1 && !read.profile.body_nodes() {
+        return Err(
+            "source cold and caller tracking rows require the version-thirteen header profile",
+        );
+    }
     Ok(s::HeaderContract {
-        declaration: DeclarationRef(read.id()?),
-        declaration_site: read.id()?,
-        must_use: if read.boolean()? {
-            Some(s::MustUseContract {
-                owner_site: read.id()?,
-                reason: if read.boolean()? {
-                    Some(reason_read(read)?)
-                } else {
-                    None
-                },
-            })
+        declaration,
+        declaration_site,
+        must_use,
+        inline: if flags & 1 == 1 {
+            Some(inline_read(read)?)
         } else {
             None
         },
-        inline: if read.boolean()? {
-            Some(s::InlineContract {
-                owner_site: read.id()?,
-                hint: match read.reader.u8()? {
-                    0 => s::InlineHint::Hint,
-                    1 => s::InlineHint::Always,
-                    2 => s::InlineHint::Never,
-                    _ => return Err("unknown transported inline hint"),
-                },
-                applicability: match read.reader.u8()? {
-                    0 => s::InlineApplicability::FunctionBody,
-                    1 => s::InlineApplicability::DiagnosedNoBody,
-                    _ => return Err("unknown transported inline applicability"),
-                },
-            })
-        } else {
-            None
+        cold: flags & 2 != 0,
+        caller_tracking: flags & 4 != 0,
+    })
+}
+fn inline_read(read: &mut Input<'_, '_>) -> Result<s::InlineContract, &'static str> {
+    Ok(s::InlineContract {
+        owner_site: read.id()?,
+        hint: match read.reader.u8()? {
+            0 => s::InlineHint::Hint,
+            1 => s::InlineHint::Always,
+            2 => s::InlineHint::Never,
+            _ => return Err("unknown transported inline hint"),
+        },
+        applicability: match read.reader.u8()? {
+            0 => s::InlineApplicability::FunctionBody,
+            1 => s::InlineApplicability::DiagnosedNoBody,
+            _ => return Err("unknown transported inline applicability"),
         },
     })
 }

@@ -36,6 +36,8 @@ impl Stage {
             declaration_site: self.site(declaration, key)?,
             must_use: None,
             inline: None,
+            cold: false,
+            caller_tracking: false,
         })
     }
     /// Record one exported variant constructor's declaration row.

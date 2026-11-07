@@ -1,0 +1,166 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+ "providers": [
+  {
+   "file": "spec/panic-attributes/provider.rs",
+   "sha256": "a34d672128b1151717acc4d7dcd45ae1723ca35ada15580a7e6597564384df71",
+   "amended": "oracle round 1 rejected the provider (E0428, E0152): the authored section repeated the oracle-only `panic_location` shim that lines 1-126 already carry. The repeated shim was removed before any candidate run; no outcome changed"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "development_note": "the provider shapes were probed with rustc and the candidate during development (generated files under obj/, not these fixtures); the fixtures, their outcomes and every wire control below were written down before any rustc or RustGM run of these files",
+ "cases": [
+  {
+   "file": "spec/panic-attributes/check.rs",
+   "provider": "spec/panic-attributes/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "da86d9677540c34ebae83f7a84c67a4ab0797eaeee3a487ee2ff250754ba172a",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/panic-attributes/role.rs",
+   "provider": "spec/panic-attributes/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "1aedc6e7675d71bcd46648d82c652fd59cc23a11deee56ffe608745e3b3ab87b",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/panic-attributes/rare.rs",
+   "provider": "spec/panic-attributes/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "4f84c8d1afd38069b3e6402bf96a6ff1cff2031e598172bcc8c0fdf74768dbe3",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/panic-attributes/traced.rs",
+   "provider": "spec/panic-attributes/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "candidate_boundary": "imported caller tracking requires its provider's transported Location",
+   "boundary_note": "rustc accepts and exits 42; RustGM rejects by name until the provider's Location and caller ABI transport",
+   "sha256": "3edf2b3e115977f077090a0a4da1314c9b3aca0281cc7afc244910b3438e63f6",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/panic-attributes/method.rs",
+   "provider": "spec/panic-attributes/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "candidate_boundary": "imported caller tracking requires its provider's transported Location",
+   "boundary_note": "rustc accepts and exits 42; RustGM rejects by name until the provider's Location and caller ABI transport",
+   "sha256": "d5861e1b6274584a2a4fa37aedf4ce7feebb70279eb89b8931fd98ff14a2f75d",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/panic-attributes/panic-type.rs",
+   "provider": "spec/panic-attributes/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_error": "E0308",
+   "candidate_diagnostic": "incompatible types",
+   "sha256": "7ed2981c912a565dc0b0648cbe4bbef37a250fa11fe7b4d49de5badd0e457a52",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/panic-attributes/rare-arity.rs",
+   "provider": "spec/panic-attributes/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_error": "E0061",
+   "candidate_diagnostic": "call argument count mismatch",
+   "sha256": "5bf0da5700dc4a2d1d9b8974ded4a333bcb25cf55ff3ebf644ed5caa8947b868",
+   "observed": "as declared"
+  }
+ ],
+ "generated_controls": [
+  {
+   "control": "spec/source-nominals/provider.rs plus `#[cold] pub fn rare(x: u8) -> u8 { x }`, exported under module-branches-v12, module-nominals-v10 and module-bodies-v13",
+   "expected": "rejected by name with `source cold advisory marker transport is not implemented` under both older profiles; exported under version 13",
+   "observed": "as declared"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `#[track_caller] pub fn traced(x: u8) -> u8 { x }`, under the same three profiles",
+   "expected": "rejected by name with `source caller tracking policy transport is not implemented` under both older profiles; exported under version 13",
+   "observed": "as declared"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus a conforming `#[lang = \"panic\"] pub const fn panic(expr: &'static str) -> ! { loop {} }`, under the same three profiles",
+   "expected": "rejected by name with `source panic role requires the version-thirteen role profile` under both older profiles; exported under version 13",
+   "observed": "as declared"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus a nonconforming `#[lang = \"panic\"] pub const fn panic(code: u8) -> u8 { code }`, under version 13",
+   "expected": "the role stays pending, so export rejects it with `source trait role requires completed declaration validation`, the earlier diagnostic",
+   "observed": "as declared"
+  },
+  {
+   "control": "the full provider exported under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected by name with `named, associated or generic alias transport requires its wider profile`, as the shared inherent-methods lines already require version 13",
+   "observed": "as declared"
+  },
+  {
+   "control": "6, 24 and 96 generated functions `#[cold] #[track_caller] pub fn tNNN(x: u8) -> u8 { x }` after provider lines 1-126, the `panicking` module and `rare`, and one client calling `rare(42)`",
+   "expected": "packet bytes grow exactly linearly; the client LowIR stays bounded",
+   "observed": "33,558, 45,150 and 91,518 bytes (644 bytes per function, exactly linear); the client LowIR is 624 bytes at every width"
+  }
+ ],
+ "wire_controls": [
+  {
+   "mutation": "none: a generated minimal provider (provider lines 1-126, a `panicking` module whose `panic` carries only the role, `#[cold] rare`, `relay` calling `rare`, and `#[track_caller] traced`) and clients calling `relay`, `rare` and `traced`",
+   "expected": "accepted; the `traced` client is rejected with the caller-tracking boundary above",
+   "observed": "as declared"
+  },
+  {
+   "mutation": "`rare`'s header flag byte set to 8 (an unknown bit)",
+   "expected": "unknown transported inline or callable advisory flags",
+   "observed": "as declared"
+  },
+  {
+   "mutation": "`rare`'s header flags set to cold and caller tracking (6), with the `relay` client",
+   "expected": "transported call to a tracked function requires its caller-location rows",
+   "observed": "rejected, as declared, but with `tracked call lacks its actual sealed caller site`: the consumer's own lowering requires a sealed caller site for a call to a tracked function, and no rebuilt body carries one. The declared earlier check was removed rather than kept unreached",
+   "amended": "diagnostic recorded from candidate round 1"
+  },
+  {
+   "mutation": "the same packet with a client calling `rare`",
+   "expected": "imported caller tracking requires its provider's transported Location",
+   "observed": "as declared"
+  },
+  {
+   "mutation": "the `panic` role row retargeted to `rare`'s declaration",
+   "expected": "source panic role requires a const declaration with never result",
+   "observed": "as declared"
+  },
+  {
+   "mutation": "relabelled version 12",
+   "expected": "unknown source declaration kind",
+   "observed": "as declared"
+  },
+  {
+   "mutation": "every strict prefix",
+   "expected": "fails to decode",
+   "observed": "as declared"
+  },
+  {
+   "mutation": "`traced`'s caller-tracking flag cleared (4 to 0), with the `traced` client",
+   "expected": "accepted (sound): the consumer re-lowers `traced` itself and no body can read the dropped location",
+   "observed": "as declared"
+  }
+ ],
+ "native": {
+  "expected": "check, role and rare exit 42 natively, as rustc's do",
+  "observed": "as declared"
+ },
+ "oracle": {
+  "round_1": "the provider was rejected (E0428, E0152); see the provider amendment",
+  "round_2": "the provider compiles; check, role, rare, traced and method exit 42; panic-type fails with E0308 and rare-arity with E0061, as declared"
+ }
+}

@@ -283,24 +283,26 @@ pub(super) fn query<'a>(
     })
 }
 
-/// These checked legacy profiles cannot encode tracking: their authored producer
-/// rejects tracked headers before publication. A missing descriptor is not absence.
-pub(super) fn caller_tracking_absent(
+/// Checked legacy profiles cannot encode tracking: their authored producer
+/// rejects tracked headers before publication. Version thirteen carries the
+/// written policy in its function row, which every consumer re-proves against
+/// its own installed header. A missing descriptor is not absence.
+pub(super) fn caller_tracking(
     facts: &Declarations,
     definition: DefId,
-) -> Result<(), &'static str> {
+) -> Result<bool, &'static str> {
     if let Some(linkage) = facts.crates.as_deref()
         && linkage.legacy_caller_tracking_absent(definition)?
     {
         facts
             .declaration_header(definition)?
             .ok_or("legacy caller policy lacks its canonical function")?;
-        return Ok(());
+        return Ok(false);
     }
     if let Some(linkage) = facts.crates.as_deref()
         && linkage.selected_caller_tracking_absent(facts, definition)?
     {
-        return Ok(());
+        return Ok(false);
     }
     let headers = facts
         .must_use_contracts
@@ -354,6 +356,47 @@ pub(super) fn caller_tracking_absent(
         || coordinate.2 != descriptor.edition()
     {
         return Err("imported caller policy changed its function/profile coordinate");
+    }
+    if !descriptor.profile().body_nodes() {
+        return Ok(false);
+    }
+    let tracked = descriptor
+        .rows()
+        .header_contract(header.declaration)?
+        .ok_or("imported caller policy lacks its complete function row")?
+        .caller_tracking;
+    if tracked {
+        tracked_header(facts, definition, semantic.signature)?;
+    }
+    Ok(tracked)
+}
+
+/// A transported caller policy is re-proved on the consumer's installed header:
+/// a safe or unsafe Rust-ABI function that is free or an inherent method.
+fn tracked_header(
+    facts: &Declarations,
+    definition: DefId,
+    signature: crate::types::TypeId,
+) -> Result<(), &'static str> {
+    use crate::types::{Kind, callable::Abi};
+    if !matches!(
+        facts.types.kind(signature),
+        Some(Kind::Function { convention, .. }) if convention.abi == Abi::Rust
+    ) {
+        return Err("imported caller tracking requires its Rust-ABI function signature");
+    }
+    if facts
+        .associated
+        .owner(definition)
+        .and_then(|owner| facts.associated.get(owner))
+        .is_some_and(|owner| {
+            !matches!(
+                owner.kind,
+                crate::sema::associated::OwnerKind::ImportedInherent(_)
+            )
+        })
+    {
+        return Err("imported caller tracking belongs to a trait member");
     }
     Ok(())
 }

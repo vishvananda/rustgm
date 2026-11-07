@@ -230,3 +230,17 @@ and `!` packet under `spec/static-str-never/`. The packet holds:
   reborrow rows and a 6/24/96 scaling control.
 
 The `crate_linking::str_never_transport` integration controls consume it.
+
+`panic-attribute-outcomes.json` freezes the version-thirteen panic-attributes
+packet under `spec/panic-attributes/`. The packet holds:
+
+- core 1.98's `panicking::panic` attributes and `#[lang = "panic"]` role;
+- `#[cold]` advisories, alone and with an inline hint, and `#[track_caller]`
+  on a free function and an inherent method;
+- three accepted clients, two clients that rustc accepts and RustGM fences
+  by name, and two opponents (E0308 and E0061);
+- generated controls: older-profile cold, caller-tracking and role gates, a
+  pending nonconforming role, forged flag and role rows and a 6/24/96
+  scaling control.
+
+The `crate_linking::cold_transport` integration controls consume it.

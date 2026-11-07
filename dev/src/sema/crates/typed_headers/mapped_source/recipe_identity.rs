@@ -170,7 +170,7 @@ impl Graph {
         kind: crate::support::bindings::LangItem,
         steps: &mut usize,
     ) -> Result<(), &'static str> {
-        use crate::resolve::{body_origin::DeclarationOrigin, model::DefKind};
+        use crate::resolve::model::DefKind;
         use crate::support::bindings::LangItem;
         self.require_store(&facts.types)?;
         let descriptor = self.descriptor(&self.origins)?;
@@ -179,14 +179,85 @@ impl Graph {
                 "declared future/operation roles require their explicit version-eleven imported profile",
             );
         }
-        let DeclarationOrigin::Imported(id) = role.origin else {
-            return Err("imported compiler role requires its actual catalog declaration");
-        };
         let expected = match kind {
             LangItem::Future => DefKind::Trait,
             LangItem::FutureOutput => DefKind::TypeAlias,
             LangItem::FuturePoll | LangItem::AsyncDropInPlace => DefKind::Function,
             _ => return Err("invalid imported compiler-operation role"),
+        };
+        let (row, headers) = self.bound_role(facts, role, kind, expected, steps)?;
+        let rows = descriptor.rows();
+        if kind == LangItem::Future {
+            let owner = facts
+                .associated
+                .owner(role.definition)
+                .ok_or("imported Future lost its actual member owner")?;
+            for &member in facts
+                .associated
+                .owner_members(owner)
+                .ok_or("imported Future lost its complete actual member inventory")?
+            {
+                self.readiness(&self.origins, facts, headers, member, steps)?;
+            }
+        }
+        if kind == LangItem::FutureOutput {
+            let Some(s::HeaderRef::AssociatedType(index)) = rows.header(row)? else {
+                return Err("imported Output lacks its actual associated header");
+            };
+            if role.parent
+                != Some(self.origins.definition_at(
+                    descriptor.identity(),
+                    rows.associated_types[index as usize].parent,
+                )?)
+            {
+                return Err("imported Output changed its actual trait association");
+            }
+        }
+        Ok(())
+    }
+
+    /// The version-thirteen `panic` role names this exact declaration. Binding
+    /// and readiness are proved here; callers re-authenticate its header.
+    pub(in crate::sema) fn declared_panic_role(
+        &self,
+        facts: &Declarations,
+        role: crate::sema::compiler_items::Role,
+        kind: crate::support::bindings::LangItem,
+        steps: &mut usize,
+    ) -> Result<(), &'static str> {
+        use crate::{resolve::model::DefKind, support::bindings::LangItem};
+        self.require_store(&facts.types)?;
+        let descriptor = self.descriptor(&self.origins)?;
+        if !descriptor.profile().body_nodes() {
+            return Err("imported panic role requires its version-thirteen profile");
+        }
+        *steps = steps.saturating_add(descriptor.rows().roles.len());
+        if kind != LangItem::Panic {
+            return Err("invalid imported panic role");
+        }
+        self.bound_role(facts, role, kind, DefKind::Function, steps)
+            .map(|_| ())
+    }
+
+    /// The row names this exact declaration of this provider, and its header is
+    /// installed.
+    fn bound_role<'a>(
+        &self,
+        facts: &'a Declarations,
+        role: crate::sema::compiler_items::Role,
+        kind: crate::support::bindings::LangItem,
+        expected: crate::resolve::model::DefKind,
+        steps: &mut usize,
+    ) -> Result<
+        (
+            crate::support::crates::owner_catalog::DeclarationRef,
+            &'a super::super::Headers,
+        ),
+        &'static str,
+    > {
+        let descriptor = self.descriptor(&self.origins)?;
+        let DeclarationOrigin::Imported(id) = role.origin else {
+            return Err("imported compiler role requires its actual catalog declaration");
         };
         self.origins
             .validate_declaration(id, role.definition, expected)?;
@@ -207,33 +278,7 @@ impl Graph {
             .and_then(|linkage| linkage.originals.as_deref())
             .ok_or("imported compiler role lost its actual canonical header owner")?;
         self.readiness(&self.origins, facts, headers, role.definition, steps)?;
-        if kind == LangItem::Future {
-            let owner = facts
-                .associated
-                .owner(role.definition)
-                .ok_or("imported Future lost its actual member owner")?;
-            for &member in facts
-                .associated
-                .owner_members(owner)
-                .ok_or("imported Future lost its complete actual member inventory")?
-            {
-                self.readiness(&self.origins, facts, headers, member, steps)?;
-            }
-        }
-        if kind == LangItem::FutureOutput {
-            let Some(s::HeaderRef::AssociatedType(index)) = rows.header(row)? else {
-                return Err("imported Output lacks its actual associated header");
-            };
-            if role.parent
-                != Some(
-                    self.origins
-                        .definition_at(owner, rows.associated_types[index as usize].parent)?,
-                )
-            {
-                return Err("imported Output changed its actual trait association");
-            }
-        }
-        Ok(())
+        Ok((row, headers))
     }
 }
 
