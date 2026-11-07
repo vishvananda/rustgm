@@ -155,6 +155,11 @@ PA20 `assoc-bounds/{wide16,deep16,wide64,deep64}.rs` fail with "source header
 attribute producer exceeds storage budget". The bound has no setup term, and the
 LIB-193 join did not run the PA20 text suite. Lane A owns the repair.
 
+Known regression: since the enum-and-match join (`682507cd1`), the private
+invariant `resolve::stability::transport_tests::legacy_availability_remains_unknown_and_hot_records_do_not_grow`
+fails: `size_of::<s::Columns>()` grew from 768 to 864 bytes with the enum column
+groups. The join's private selection did not include it. Lane C owns the repair.
+
 Lane C [declared associated-result transport](parallel/associated-result-transport.md)
 is joined on main. Version 13 now carries trait associated results, impl
 definitions and projections as header columns. These are present only when a
