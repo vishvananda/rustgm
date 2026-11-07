@@ -108,3 +108,11 @@ executes the actual provided initializer and reached intrinsic/layout, preservin
 ordinary/generic/lifetime proof. Its full original native observer, eight private
 controls and15 regular/scaling/initializer checks pass. Full reflection/field_of,
 transport and original library/whole-assignment gates remain required.
+
+The [captured closure/pointer integration](docs/parallel/captured-pointer-main-join.md)
+qualifies actual shared/mutable/owned const calls and existing-component reuse,
+pointer CTFE and real native fallback bodies together with Field. Six private,
+28 regular and6 native controls pass; the unchanged original-core source now
+reaches LIB192 staged deprecation in19.1083s. Conditional/generic caller proof,
+receiver adapters, bootstrap and authenticated transport remain required. No
+whole-assignment status or original library artifact gate changes.

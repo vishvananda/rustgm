@@ -1,6 +1,13 @@
 # RustGM Programming Assignment 25: Constant evaluation
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
+
+The [captured closure integration](../docs/parallel/captured-pointer-main-join.md)
+executes real checked shared/mutable/owned captures and reuses their originals
+through existing source components. Reached pointer guarantees use actual CTFE
+provenance and native fallback bodies. Generic/conditional caller obligations,
+receiver adapters, bootstrap calls, complete capture destruction and imported
+transport remain required; this finite checkpoint does not release PA25.
 Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
 

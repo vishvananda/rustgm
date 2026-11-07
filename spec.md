@@ -1761,6 +1761,25 @@ normal original/body/const permissions. See the
 [subtraction checkpoint](docs/pa28-source-subtraction-checkpoint.md), including
 the real native width failure that structural checks alone did not catch.
 
+The actual local `rustc_do_not_const_check` marker controls its authenticated
+defining body independently of reached-call eligibility. Retain completed
+provider/header/function/source identity and the ordinary runtime body checks;
+the marker supplies no const execution permission. A reached marked ordinary
+call still requires executable const Code. Wider declaration profiles retain
+their own source and body contracts.
+
+Source `ptr_guaranteed_cmp` authenticates its actual safe const Rust declaration,
+one Sized type argument, exact pointer/result signature and reached proved call.
+Reuse WordAddress, Origin and actual layouts to distinguish proved equal,
+proved different and unknown values without reading pointed storage. Preserve
+allocation/static identity, offset, alignment residues and expired provenance.
+Runtime calls execute the real ordinary fallback body. Primitive same-type raw
+pointer equality consumes its normal source trait obligations before existing
+pointer lowering; explicit method calls execute their selected source bodies.
+Ordinary pointer comparison retains its const restrictions. The
+[pointer checkpoint](docs/parallel/source-guaranteed-compare.md) records actual
+fallback mutation, explicit-method and native provenance controls.
+
 Source Debug derives use the pinned small-field helpers through five fields,
 then real field-name and typed `&[&dyn Debug]` arrays with the larger helpers.
 Preserve source labels, field order, enum binding provenance and the extra
@@ -1973,6 +1992,27 @@ subjects use actual source impl selection rather than effect-erasing forwarding.
 The [eligibility checkpoint](docs/pa31-callable-const-eligibility.md) records
 source selection independently of the closed execution profile above. A complete
 signature alone grants neither an execution entry nor another call's payment.
+
+Captured const calls consume the actual checked closure original, its selected
+entry, full instance and ordinary region/loan proof. Retain and reuse originals
+through the existing indexed source-component owner; specialize the borrowed
+original through the same materialization and publication kernel as functions.
+Keep displaced source contracts separate from primary contracts during Copy
+preparation. Share one paid body index, reject duplicate source inputs, and
+consume each primary body exactly once with its exhaustive ownership checks.
+
+Executable capture records belong to their final proved Code. Store the optional
+shared context and ordered call rows in the existing operand vector, binding the
+current arena, owner, source, optional instance, statement/site, destination,
+receiver and evaluated full target/signature/result. Prepay context/Rc payloads
+and vector growth. Build records in linear statement/call work, perform charged
+indexed reached lookups, and validate frame replay in constant time. Ordinary
+bodies allocate no capture context. Source snapshots, another Store or copied
+operand rows cannot supply execution authority. Generic/conditional caller
+debts, receiver adapters, capture destruction and imported transport retain their
+own required proofs. The [execution](docs/parallel/const-closure-execution.md) and
+[component reuse](docs/parallel/const-closure-components.md) checkpoints record
+the qualified finite local profile and remaining requirements.
 
 Runtime `const_eval_select` lowering consumes the actual registered declaration,
 proved caller body and reached Call, preserving its logical type arguments and

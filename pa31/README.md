@@ -2,6 +2,13 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [captured closure/pointer integration](../docs/parallel/captured-pointer-main-join.md)
+qualifies genuine ptr_guaranteed_cmp declaration/CTFE/native fallback and real
+captured const execution together with Field. Original core now reaches LIB192
+staged deprecation; all original source hashes/profile/limits remain unchanged.
+Generic/conditional const caller proof, adapters, bootstrap and authenticated
+source transport remain required. PA31 and original artifact gates stay open.
+
 The [complete Field offset/native checkpoint](../docs/parallel/field-offset-execution.md)
 executes the genuine provided initializer, actual reached field_offset and shared
 layout with full source/caller/generic/lifetime proof. The complete frozen native

@@ -1,3 +1,15 @@
+The [captured closure/pointer integration](parallel/captured-pointer-main-join.md)
+passes6 actual private,28 regular and6 native tests, with strict selected/private
+Clippy, format, architecture,282 harness/458 roots and pinned upstream checks.
+JoinedCLI987578c2 clears original-core LIB191 to192 in19.1083s/375opens; all722
+source hashes/profile/limits stay unchanged, with reviewed values.rs code-pin
+rebinding.48 calibrated output-equal ordinary/creation observations are retained.
+Source owns staged deprecation; Async owns remaining generic/conditional const
+callable proof, adapters and bootstrap. Root publishes this checkpoint and
+integrates the separately qualified no-body cold follow-up next. Same btrfs
+trees/2heavy/16GiB/150GiB/300s and scoped cleanup; no original artifact or whole
+PA after24 is complete. Earlier checkpoints retain their historical scope below.
+
 The [complete Field offset checkpoint](parallel/field-offset-execution.md) passes
 8 private controls,2 actual native observers and15 regular/scaling/initializer
 controls; full output is field4/23/29/37/41/47/31/1. Same-profile immutable A/A+ABBA
