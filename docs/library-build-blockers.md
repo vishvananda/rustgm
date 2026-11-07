@@ -101,8 +101,8 @@ allocated forms reject by name, and older profiles keep their bytes. A genuine
 Panic producer stays blocked by operator-role, parameter-default and
 associated-type header transport; enum declarations and closures also remain.
 Lane C found that RustGM accepts the negative range pattern `-5..=-1` without a
-`neg` language item, which rustc 1.98.0 rejects; this ordinary false acceptance
-is unowned.
+`neg` language item, which rustc 1.98.0 rejects. PA31 `source-negative-patterns`
+now owns and rejects it.
 
 Current qualified LIB-193 observation reports `object requires exactly one
 principal trait` at file 97 (original `core/src/any.rs`, byte 6032, the `Send`

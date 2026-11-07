@@ -55,8 +55,6 @@ pub enum LegacyRule {
     PanicMacros,
     /// Older array method probes skip by-value `IntoIterator`.
     ArrayIntoIterator,
-    /// Rust 2015 module paths in macro-generated or nested import shapes.
-    Paths2015,
 }
 
 impl LegacyRule {
@@ -83,9 +81,8 @@ impl LegacyRule {
             UnreservedPrefixes => "unreserved identifier prefixes",
             BareTraitObjects => "trait objects without dyn",
             DotDotDotPatterns => "`...` range patterns",
-            PanicMacros => "the Rust 2015 panic macro form",
+            PanicMacros => "the pre-2021 panic macro form",
             ArrayIntoIterator => "array method dispatch that skips by-value into_iter",
-            Paths2015 => "this Rust 2015 path form",
         }
     }
 }
