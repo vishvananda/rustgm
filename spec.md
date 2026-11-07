@@ -6170,8 +6170,21 @@ installed enum, and over its own rebuilt CFG proves each downcast use by a
 live constructor-test fact and each reachable unreachable exit as following
 an impossible variant path or a never value.
 Record variants, negative discriminants, lifetime-generic and `must_use`
-enums, called variant constructors and match guards stay rejected by name.
-Packets without enums keep their exact bytes.
+enums and match guards stay rejected by name. Packets without enums keep their
+exact bytes.
+
+A version-thirteen function application may also name a tuple variant: a
+called constructor, with the same `Function` value, `Call` value and call
+request as a function call and no new node. Its type formals, premises and Self
+are its enum's. Its signature is `fn(payload..) -> Enum`, safe, Rust ABI and
+without a late binder, and its request carries no opening and no method. The
+signature's parameters, the call's arguments and the variant's payload have one
+length. A unit variant is never called. Constructor bodies are synthesized,
+never exported originals. A consumer registers each imported tuple variant as a
+callable over its enum's formals and binds each imported variant name once in
+its enum's member scope; its own paths, calls and patterns resolve through that
+binding. It synthesizes every constructor that its own or a rebuilt body
+references from the re-authenticated enum header.
 
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core

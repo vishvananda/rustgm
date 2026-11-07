@@ -5,6 +5,20 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [called constructors and imported variants](parallel/enum-methods-transport.md)
+is joined on main. Version 13 now carries called
+tuple-variant constructors (`Opt::Some(f(x))`, `Pair::Two(a, b)`) as ordinary
+function applications that name the variant, with no new wire tag. Validators
+read the enum's formals, payload and Self, and require a safe call with no
+binder or method. Consumers register each imported constructor's template,
+bind each imported variant in its enum's member scope, and synthesize every
+referenced constructor body. Consumer constructor calls, unit paths, patterns,
+guards, `match &o` and reference parameters over imported enums return 42
+natively, as rustc does. Older exports and all 420 existing fixture outputs
+are byte-identical. The enum-match `called` control is amended. Still open
+toward `Option::map`: inherent enum impls (`self`/`&self`), late-region
+reference parameters and guards in provider bodies, and const callable bounds.
+
 [Builtin macro rows and allowance lists](parallel/macro-metadata.md#builtin-rows-and-allowance-lists-version-2)
 (Lane B, PA29): tag-14 version 2 adds builtin rows and per-row
 `allow_internal_unstable` lists. Each builtin row carries a name, syntax,
