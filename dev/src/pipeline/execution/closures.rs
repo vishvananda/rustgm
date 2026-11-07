@@ -1,5 +1,5 @@
 //! A reached const closure consumes its actual source template and normal instance proof.
-use super::{Declarations, Engine, Error, ProofPurpose, Report, body};
+use super::{BodyKey, Declarations, Engine, Error, ProofPurpose, Report, body};
 use crate::types::{Kind, instance::Instance};
 
 impl Engine {
@@ -30,6 +30,51 @@ impl Engine {
                 .map_err(|e| report.body_error(source.source, e))?;
             return Ok(true);
         }
+        let key = BodyKey::Closure(identity);
+        if self.component_original(key).is_none() {
+            self.retain_closure_original(report, facts, source)?;
+        }
+        let original = self.component_original(key).ok_or_else(|| {
+            report.body_error(
+                source.source,
+                "const closure lost its checked component original",
+            )
+        })?;
+        original
+            .validate(facts)
+            .map_err(|e| report.body_error(source.source, e))?;
+        if original.template.retained_bytes() > 64 * 1024 * 1024 {
+            return Err(report.body_error(
+                source.source,
+                "constant instance copy exceeds 64 MiB budget",
+            ));
+        }
+        body::assembly::prepay_instance(report, &original.template.body)?;
+        let materialized = body::instantiate::with_contract(
+            facts,
+            &original.template,
+            instance,
+            &original.contract,
+        )
+        .map_err(|e| report.body_error(source.source, e))?;
+        let environment = super::Arc::clone(&original.template.environment);
+        self.finish_specialization(report, facts, instance, materialized, &environment, None)?;
+        let index = *self.catalog.functions.get(&instance).ok_or_else(|| {
+            report.body_error(source.source, "const closure Code was not published")
+        })?;
+        self.catalog
+            .get(index)
+            .ok_or_else(|| report.body_error(source.source, "const closure Code disappeared"))?
+            .validate_closure_family(facts, instance)
+            .map_err(|e| report.body_error(source.source, e))?;
+        Ok(true)
+    }
+    fn retain_closure_original(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        source: crate::sema::closures::Body,
+    ) -> Result<(), Error> {
         let owner = source.owner.ok_or_else(|| {
             report.body_error(
                 source.source,
@@ -44,15 +89,13 @@ impl Engine {
         // The constructor and compact qualifier are not proof. Check the real
         // original, then specialize/reprove it through the existing owning path.
         self.prove(report, facts, &template, &input, ProofPurpose::Original)?;
-        self.specialize(report, facts, instance, &template, &input, None)?;
-        let index = *self.catalog.functions.get(&instance).ok_or_else(|| {
-            report.body_error(source.source, "const closure Code was not published")
-        })?;
-        self.catalog
-            .get(index)
-            .ok_or_else(|| report.body_error(source.source, "const closure Code disappeared"))?
-            .validate_closure_family(facts, instance)
-            .map_err(|e| report.body_error(source.source, e))?;
-        Ok(true)
+        self.retain_original_component(
+            report,
+            facts,
+            crate::pipeline::original_contexts::Original {
+                template,
+                contract: input,
+            },
+        )
     }
 }

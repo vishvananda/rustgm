@@ -227,6 +227,46 @@ fn source_copy_unmatched_original_contract_is_an_error() -> Result {
     Ok(())
 }
 #[test]
+fn displaced_source_inputs_prove_again_without_consuming_primary_owners() -> Result {
+    let (mut facts, templates, contracts) = fixture()?;
+    let body = &templates.bodies.first().ok_or("template")?.body;
+    let input = contracts
+        .iter()
+        .find(|c| c.key == body.key())
+        .ok_or("contract")?;
+    let mut primary = input.clone();
+    let mut source = input.clone();
+    originals_and_source(
+        &mut facts,
+        std::iter::once(body),
+        std::iter::once(&mut primary),
+        std::iter::once(&mut source),
+    )?;
+    for fault in 0..5 {
+        let mut primaries = vec![input.clone()];
+        let mut sources = vec![input.clone()];
+        match fault {
+            0 => sources.push(input.clone()),
+            1 => primaries.push(input.clone()),
+            2 => primaries.clear(),
+            3 => sources[0].key = BodyKey::Anonymous(body.source.source().ok_or("source")?),
+            _ => sources[0].signature = None,
+        }
+        assert!(
+            originals_and_source(
+                &mut facts,
+                std::iter::once(body),
+                &mut primaries,
+                &mut sources,
+            )
+            .is_err(),
+            "overlay fault {fault}"
+        );
+    }
+    Ok(())
+}
+
+#[test]
 fn source_copy_record_sizes_are_explicit() {
     println!(
         "BorrowEnvironment={} Body={} Contract={} BodyBuiltins={} SourceRequirements={} Prepared={}",

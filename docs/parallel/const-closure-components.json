@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "state": "qualified existing-component closure-original reuse and independent displaced-source Copy preparation; full const closure C/D remains required",
+  "base_commit": "a1bb1294524ec4e2400fe09ff9fd778cdf5492cc",
+  "receipts": {
+    "failed": {
+      "path": "obj/qualification/fast/1794019361736767587/receipt.json",
+      "sha256": "811298e86dda42e2fd5cf60a5207a55f8d861a1aa27452f694546d78b65e7030",
+      "state": "failed"
+    },
+    "public": {
+      "path": "obj/qualification/fast/1794019763195241345/receipt.json",
+      "sha256": "7ec9187f437de7b8ae99a1703500e80d9396a3e9544e5a93450c1a3e2488d5f8",
+      "state": "passed"
+    },
+    "native": {
+      "path": "obj/qualification/fast/1794019898948626366/receipt.json",
+      "sha256": "1211835c84380aa52ce2d49ee0bba09906bbf19a45daeca2120c554e9cf10507",
+      "state": "passed"
+    }
+  },
+  "public_tests": 10,
+  "public_seconds": 113.79,
+  "native_tests": 1,
+  "native_contracts": 5,
+  "native_seconds": 23.94,
+  "native_stdout": "closure-source 23 47 23 23 47\n",
+  "production_keys": 2158,
+  "source_keys": 3705,
+  "production_digest": "4f99e9691e2af64a9dc2036085ad8552d5fc26985ae8ada48b2ee1579c6953f8",
+  "source_binding_equal": true,
+  "production_current_equal": true,
+  "changed_source_files": [
+    "dev/src/body/copy_requirements.rs",
+    "dev/src/lower/instances.rs",
+    "dev/src/pipeline/execution.rs",
+    "dev/src/pipeline/execution/closures.rs",
+    "dev/src/pipeline/execution/components.rs",
+    "dev/tests/invariants/copy_carriers.rs",
+    "dev/tests/invariants/sealed_environments.rs",
+    "dev/src/body/copy_requirements/indexed_inputs.rs"
+  ],
+  "pending": [
+    "cfg(test) compile/runtime for five overlay fault cases and prior sealed environment adversaries",
+    "all-target metadata and full CI",
+    "generic/conditional defining clause continuation, proved receiver adapters, bootstrap const calls, wider binders and full capture cleanup remain required"
+  ],
+  "failure_retained": "First reuse gate built and passed8/10 controls; two failed at legitimate retained/source contract pair because the original Copy index consumed the BodyKey twice. Independent source proof was preserved through a separate typed inventory."
+}

@@ -868,8 +868,27 @@ impl Engine {
             return Err(report.body_error(source, "constant instance copy exceeds 64 MiB budget"));
         }
         body::assembly::prepay_instance(report, &template.body)?;
-        let mut materialized = body::instantiate::with_contract(facts, template, instance, input)
+        let materialized = body::instantiate::with_contract(facts, template, instance, input)
             .map_err(|e| report.body_error(source, e))?;
+        self.finish_specialization(
+            report,
+            facts,
+            instance,
+            materialized,
+            &template.environment,
+            default,
+        )
+    }
+    fn finish_specialization(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        instance: crate::types::instance::Instance,
+        mut materialized: body::instantiate::Materialized,
+        environment: &Arc<Environment>,
+        default: Option<&crate::sema::function_context::DefaultExecution>,
+    ) -> Result<(), Error> {
+        let source = materialized.body.source;
         if let Some(default) = default {
             body::constants::prepare_default_execution(
                 report,
@@ -897,7 +916,7 @@ impl Engine {
             facts,
             &materialized.body,
             &materialized.destruction,
-            ProofInput::materialized(&template.environment, &materialized),
+            ProofInput::materialized(environment, &materialized),
         )?;
         let index = self
             .publish_code(facts, checked, Some(instance))

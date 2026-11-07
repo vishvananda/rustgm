@@ -816,7 +816,7 @@ fn prepare_original_contracts(
             .chain(&contexts.bodies.bodies)
             .map(|template| template.body.key())
             .collect();
-        body::copy_requirements::originals(
+        body::copy_requirements::originals_and_source(
             facts,
             templates
                 .bodies
@@ -825,21 +825,22 @@ fn prepare_original_contracts(
                 .map(|template| &template.body),
             inputs
                 .iter_mut()
-                .chain(&mut contexts.source)
                 .filter(|contract| originals.contains(&contract.key)),
+            contexts.source.iter_mut(),
         )
         .map_err(|e| diagnostic(report, None, e))?;
     } else {
         // The existing helper stays lazy outside source mode: ordinary
         // contracts allocate no index; only an actual Required carrier opens it.
-        body::copy_requirements::originals(
+        body::copy_requirements::originals_and_source(
             facts,
             templates
                 .bodies
                 .iter()
                 .chain(&contexts.bodies.bodies)
                 .map(|template| &template.body),
-            inputs.iter_mut().chain(&mut contexts.source),
+            inputs.iter_mut(),
+            contexts.source.iter_mut(),
         )
         .map_err(|e| diagnostic(report, None, e))?;
     }

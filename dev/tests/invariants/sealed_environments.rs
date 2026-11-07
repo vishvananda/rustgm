@@ -122,12 +122,7 @@ fn exact_records_replay_but_foreign_store_code_and_call_rows_reject() -> TestRes
         let mut work = 0;
         assert!(
             original
-                .closure_call(
-                    &analysis.facts.types,
-                    statement,
-                    destination,
-                    &mut work
-                )?
+                .closure_call(&analysis.facts.types, statement, destination, &mut work)?
                 .is_some()
         );
         assert!(work > 0);

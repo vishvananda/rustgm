@@ -26,6 +26,26 @@ impl Engine {
         facts: &mut Declarations,
         seed: Original,
     ) -> Result<(Template, Contract), Error> {
+        let source = seed.template.body.source.source().ok_or_else(|| {
+            Error::unlocated("source component cannot collect an imported original")
+        })?;
+        if !matches!(seed.template.body.owner, body::ir::Owner::AnonymousConstant) {
+            return Err(report.body_error(
+                source,
+                "anonymous component request has another original owner",
+            ));
+        }
+        self.retain_original_component(report, facts, seed)?;
+        self.anonymous.remove(&source).ok_or_else(|| {
+            report.body_error(source, "component lost its proved anonymous original")
+        })
+    }
+    pub(super) fn retain_original_component(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        seed: Original,
+    ) -> Result<(), Error> {
         let origin = seed.template.body.source;
         let source = origin.source().ok_or_else(|| {
             Error::unlocated("source component cannot collect an imported original")
@@ -69,7 +89,7 @@ impl Engine {
         retained: &mut Retained,
         seed: Original,
         work: &mut usize,
-    ) -> Result<(Template, Contract), Error> {
+    ) -> Result<(), Error> {
         let origin = seed.template.body.source;
         let source = origin.source().ok_or_else(|| {
             Error::unlocated("source component cannot collect an imported original")
@@ -119,10 +139,7 @@ impl Engine {
         if seed.is_some() {
             return Err(error("component lost its requested original"));
         }
-        self.prove_component(report, facts, rows, retained)?;
-        self.anonymous
-            .remove(&source)
-            .ok_or_else(|| error("component lost its proved anonymous original"))
+        self.prove_component(report, facts, rows, retained)
     }
     fn component_row(
         &mut self,
