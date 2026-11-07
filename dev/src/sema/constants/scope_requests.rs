@@ -24,7 +24,7 @@ impl Queries<'_> {
                 self.work.push(Work::Enter(Query::Variant(variant)));
                 return Ok(true);
             }
-            Requirement::NominalFields(_) => None,
+            Requirement::NominalFields(_) | Requirement::Selection(_) => None,
             Requirement::FunctionBody(instance) | Requirement::CleanupBody(instance) => {
                 let Some(crate::types::Kind::FunctionItem { item, .. }) =
                     self.typing.facts.types.kind(instance.ty())

@@ -308,7 +308,12 @@ impl Inference<'_> {
                 .list(variant.fields)
                 .ok_or("missing outlives field templates")?
             {
-                if self.scan.budget.1.is_some() && types.contains_projections(ty) != Some(false) {
+                // A region-free projected field records no projection pair; a
+                // pair a nominal use instantiates is still refused when enqueued.
+                if self.scan.budget.1.is_some()
+                    && types.contains_projections(ty) != Some(false)
+                    && types.contains_regions(ty) != Some(false)
+                {
                     return Err("demanded projected nominal outlives contracts require completion");
                 }
                 self.scan.visit(types, ty)?;

@@ -277,7 +277,10 @@ impl Checker<'_> {
                 .map_err(|e| e.message)
         };
         pay(1, size_of::<Option<Arc<Assumptions>>>()).map_err(|e| self.error(source, e))?;
-        if !matches!(self.facts.types.kind(subject), Some(Kind::Parameter(_))) {
+        if !matches!(
+            self.facts.types.kind(subject),
+            Some(Kind::Parameter(_) | Kind::Adt(..))
+        ) {
             return Ok(None);
         }
         pay(1, size_of::<Assumptions>() + 2 * size_of::<usize>())
@@ -325,21 +328,40 @@ impl Checker<'_> {
                 {
                     return Ok(false);
                 }
-                let Some(environment) = self.facts.generics.environments.get(&owner) else {
+                Ok(self.own_type_parameters(owner).is_some_and(|parameters| {
+                    parameters
+                        .iter()
+                        .any(|p| p.argument == crate::types::arguments::Argument::Type(subject))
+                }))
+            }
+            // A nominal subject applies exactly the impl's own type parameters
+            // in order, as derived `impl<T: Copy> Copy for Option<T>` does.
+            Some(Kind::Adt(_, arguments)) => {
+                let Some(actual) = self.facts.types.arguments(arguments) else {
                     return Ok(false);
                 };
-                Ok(self.facts.generics.parameters.get(&owner).is_some_and(|parameters| {
-                    parameters.iter().any(|p| p.argument == crate::types::arguments::Argument::Type(subject))
-                    && parameters.iter().enumerate().all(|(index, parameter)| {
-                        matches!(parameter.argument, crate::types::arguments::Argument::Type(ty)
-                            if matches!(self.facts.types.kind(ty), Some(Kind::Parameter(id))
-                                if self.facts.types.parameter(id).is_some_and(|p| p.owner.0 == owner.0 && p.index as usize == index)
-                                    && environment.abilities(id).is_some()))
-                    })
+                Ok(self.own_type_parameters(owner).is_some_and(|parameters| {
+                    actual.eq(parameters.iter().map(|parameter| parameter.argument))
                 }))
             }
             _ => Ok(false),
         }
+    }
+    /// Every impl parameter is an indexed own type parameter with its actual
+    /// environment abilities; lifetime and const parameters stay unsupported.
+    fn own_type_parameters(&self, owner: DefId) -> Option<&[crate::sema::generics::Parameter]> {
+        let environment = self.facts.generics.environments.get(&owner)?;
+        let parameters = self.facts.generics.parameters.get(&owner)?;
+        parameters
+            .iter()
+            .enumerate()
+            .all(|(index, parameter)| {
+                matches!(parameter.argument, crate::types::arguments::Argument::Type(ty)
+                    if matches!(self.facts.types.kind(ty), Some(Kind::Parameter(id))
+                        if self.facts.types.parameter(id).is_some_and(|p| p.owner.0 == owner.0 && p.index as usize == index)
+                            && environment.abilities(id).is_some()))
+            })
+            .then_some(parameters.as_slice())
     }
 
     fn scalar_member_profile(
@@ -477,7 +499,8 @@ impl Checker<'_> {
             pending
                 .charge(&mut self.facts, 1)
                 .map_err(|e| self.error(source, e))?;
-            if !matches!(self.facts.types.kind(ty), Some(Kind::Primitive(_)))
+            if ty != predicate.ty
+                && !matches!(self.facts.types.kind(ty), Some(Kind::Primitive(_)))
                 && !matches!(self.facts.types.kind(ty), Some(Kind::Parameter(id))
                     if self.facts.types.parameter(id).is_some_and(|p| p.owner.0 == owner.0))
             {

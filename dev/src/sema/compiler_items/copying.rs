@@ -9,6 +9,8 @@ use crate::{
 };
 use std::sync::Arc;
 
+use crate::sema::nominals::traits::Waiting;
+
 pub(crate) struct Decisions {
     pub choices: Vec<(TypeId, bool)>,
     pub proof: Obligations,
@@ -65,6 +67,42 @@ pub(crate) fn copy_decisions(
         goals,
         State::copy_decision,
     )
+}
+/// A pending decision records the one queued fact it awaits; a later attempt
+/// repeats every decision in the same caller scope. Its failure text is the
+/// ordinary pending failure for consumers that cannot wait.
+pub(crate) fn copy_decisions_waiting(
+    facts: &mut Declarations,
+    environment: Option<Arc<Environment>>,
+    universals: u32,
+    first: u32,
+    goals: &[Predicate],
+) -> Result<Decisions, &'static str> {
+    let decided = decisions(
+        facts,
+        environment,
+        universals,
+        first,
+        goals,
+        State::copy_decision_waiting,
+    );
+    decided.map_err(|waiting| {
+        if let Waiting::Pending(dependency) = waiting {
+            facts.pending_copy_selection = Some(dependency);
+        }
+        waiting.message()
+    })
+}
+/// The fact the latest waiting decision recorded, only when `message` is that
+/// decision's own failure; the record is consumed either way.
+pub(crate) fn awaited_copy_selection(
+    facts: &mut Declarations,
+    message: &str,
+) -> Option<crate::sema::traits::selection::Dependency> {
+    facts
+        .pending_copy_selection
+        .take()
+        .filter(|&dependency| message == Waiting::Pending(dependency).message())
 }
 pub(crate) fn copy_decisions_prepared(
     facts: &mut Declarations,

@@ -379,6 +379,10 @@ pub struct Declarations {
     pub mutable_statics: Option<std::sync::Arc<crate::support::hash::HashSet<DefId>>>,
     pub constant_work: super::values::execution::Work,
     pub(crate) constant_executor: Option<Box<dyn super::values::execution::Executor>>,
+    /// The one queued declaration fact the latest failed source Copy decision
+    /// awaited. Constant execution clears it before each attempt and turns only
+    /// that decision's own failure into a wait.
+    pub(crate) pending_copy_selection: Option<super::traits::selection::Dependency>,
     pub(crate) function_indices: crate::support::hash::HashMap<DefId, usize>,
     pub(crate) typed_function_bodies: crate::support::hash::HashSet<DefId>,
     pub(crate) array_lengths: crate::support::hash::HashMap<NodeKey, u64>,
@@ -683,6 +687,7 @@ impl Declarations {
             opaques: super::opaque::Opaques::default(),
             body_work: BodyWork::default(),
             constant_executor: None,
+            pending_copy_selection: None,
             constant_work: super::values::execution::Work::default(),
             function_indices: crate::support::hash::HashMap::default(),
             typed_function_bodies: crate::support::hash::HashSet::default(),

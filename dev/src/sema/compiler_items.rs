@@ -104,8 +104,8 @@ pub(crate) use runtime_checks::RuntimeCheckSelection;
 mod select_calls;
 mod select_contract;
 pub(crate) use copying::{
-    copy_decisions, copy_decisions_prepared, copy_declaration, prove_body_requirements,
-    reserved_copy_declaration,
+    awaited_copy_selection, copy_decisions, copy_decisions_prepared, copy_decisions_waiting,
+    copy_declaration, prove_body_requirements, reserved_copy_declaration,
 };
 pub(crate) use select_calls::{Select, check_const_select, prepare_select, source_select};
 #[path = "compiler_items/boundary_contract.rs"]

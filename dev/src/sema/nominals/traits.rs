@@ -30,7 +30,29 @@ use std::sync::Arc;
 
 enum CopyFailure {
     Ordinary(&'static str),
+    Pending(selection::Dependency),
     Prepared(crate::sema::dispatch::Failure),
+}
+const PENDING_DECLARATIONS: &str = "canonical trait selection requires pending declarations";
+/// An Executable selection either fails with its actual cause or names the one
+/// queued declaration fact it awaits; pending is never converted to absence.
+#[derive(Clone, Copy)]
+pub(crate) enum Waiting {
+    Failed(&'static str),
+    Pending(selection::Dependency),
+}
+impl From<&'static str> for Waiting {
+    fn from(message: &'static str) -> Self {
+        Self::Failed(message)
+    }
+}
+impl Waiting {
+    pub(crate) const fn message(self) -> &'static str {
+        match self {
+            Self::Failed(message) => message,
+            Self::Pending(_) => PENDING_DECLARATIONS,
+        }
+    }
 }
 impl From<&'static str> for CopyFailure {
     fn from(message: &'static str) -> Self {
@@ -129,8 +151,25 @@ impl State {
         self.copy_decision_using(facts, predicate, None)
             .map_err(|error| match error {
                 CopyFailure::Ordinary(message) => message,
+                CopyFailure::Pending(_) => PENDING_DECLARATIONS,
                 CopyFailure::Prepared(_) => {
                     "source Copy preparation requires its actual selected service"
+                }
+            })
+    }
+    /// A declaration-time constant waits for the named fact and then repeats
+    /// this same caller-scoped decision.
+    pub(crate) fn copy_decision_waiting(
+        &mut self,
+        facts: &mut Declarations,
+        predicate: Predicate,
+    ) -> Result<bool, Waiting> {
+        self.copy_decision_using(facts, predicate, None)
+            .map_err(|error| match error {
+                CopyFailure::Ordinary(message) => Waiting::Failed(message),
+                CopyFailure::Pending(dependency) => Waiting::Pending(dependency),
+                CopyFailure::Prepared(_) => {
+                    Waiting::Failed("source Copy preparation requires its actual selected service")
                 }
             })
     }
@@ -143,6 +182,7 @@ impl State {
         self.copy_decision_using(facts, predicate, Some(preparation))
             .map_err(|error| match error {
                 CopyFailure::Ordinary(message) => message.into(),
+                CopyFailure::Pending(_) => PENDING_DECLARATIONS.into(),
                 CopyFailure::Prepared(error) => error,
             })
     }
@@ -199,7 +239,7 @@ impl State {
             selection::select_prepared(facts, &mut self.context, &goal, &caller, preparation)
                 .map_err(CopyFailure::Prepared)?
         } else {
-            select_requirement(
+            select_requirement_waiting(
                 facts,
                 &mut self.context,
                 predicate,
@@ -207,7 +247,11 @@ impl State {
                 self.availability,
                 false,
                 None,
-            )?
+            )
+            .map_err(|waiting| match waiting {
+                Waiting::Failed(message) => CopyFailure::Ordinary(message),
+                Waiting::Pending(dependency) => CopyFailure::Pending(dependency),
+            })?
         };
         #[cfg(test)]
         selection::copy_trace::record(|| {
@@ -526,6 +570,26 @@ fn select_requirement(
     normalized_inputs: bool,
     reuse: Option<&mut selection::Reuse>,
 ) -> Result<selection::Selection, &'static str> {
+    select_requirement_waiting(
+        facts,
+        context,
+        requirement,
+        caller,
+        availability,
+        normalized_inputs,
+        reuse,
+    )
+    .map_err(Waiting::message)
+}
+fn select_requirement_waiting(
+    facts: &mut Declarations,
+    context: &mut Context,
+    requirement: Predicate,
+    caller: selection::Caller<'_>,
+    availability: Availability,
+    normalized_inputs: bool,
+    reuse: Option<&mut selection::Reuse>,
+) -> Result<selection::Selection, Waiting> {
     if let Some(selected) = reuse
         .as_ref()
         .map(|reuse| reuse.selection(facts, requirement, caller.first_region))
@@ -571,25 +635,27 @@ fn select_requirement(
                 )
                 .map_err(|failure| match failure {
                     selection::Failure::Pending(
-                        selection::Dependency::ImplementationValidated(owner),
+                        dependency @ selection::Dependency::ImplementationValidated(owner),
                     ) => match facts
                         .generics
                         .implementations
                         .as_ref()
                         .map_or(Ok(false), |r| r.early_unavailable(&facts.types, owner))
                     {
-                        Ok(true) => "implementation validation is outside the early scalar profile",
-                        Ok(false) => "canonical trait selection requires pending declarations",
-                        Err(error) => error,
+                        Ok(true) => Waiting::Failed(
+                            "implementation validation is outside the early scalar profile",
+                        ),
+                        Ok(false) => Waiting::Pending(dependency),
+                        Err(error) => Waiting::Failed(error),
                     },
-                    selection::Failure::Pending(_) => {
-                        "canonical trait selection requires pending declarations"
+                    selection::Failure::Pending(dependency) => Waiting::Pending(dependency),
+                    failure @ selection::Failure::Invalid(_) => {
+                        Waiting::Failed(crate::sema::census::fold_cause(
+                            &failure,
+                            "canonical trait selection work exhausted",
+                            "invalid canonical trait selection",
+                        ))
                     }
-                    failure @ selection::Failure::Invalid(_) => crate::sema::census::fold_cause(
-                        &failure,
-                        "canonical trait selection work exhausted",
-                        "invalid canonical trait selection",
-                    ),
                 });
             }
         }
@@ -597,10 +663,10 @@ fn select_requirement(
     selected.map_err(|error| {
         #[cfg(test)]
         selection::copy_trace::record(|| format!("declaration selection: {error}"));
-        crate::sema::census::fold_cause(
+        Waiting::Failed(crate::sema::census::fold_cause(
             &error,
             "canonical trait selection work exhausted",
             "invalid canonical trait selection",
-        )
+        ))
     })
 }

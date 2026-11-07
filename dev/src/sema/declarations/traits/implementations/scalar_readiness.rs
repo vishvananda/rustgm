@@ -337,6 +337,13 @@ impl Checker<'_> {
                         .rev()
                         .map(|&m| Work::Definition(m, false)),
                 );
+                // A nominal subject's field template precedes its lifetime
+                // contract and every field Copy obligation of this impl.
+                if let Some(Kind::Adt(item, _)) = self.facts.types.kind(plan.predicate.ty)
+                    && self.nominal_registered(item)
+                {
+                    self.work.push(Work::Fields(item, false));
+                }
                 pending
                     .active
                     .insert(owner, super::prerequisite_queries::Attempt::new(plan));
@@ -441,6 +448,9 @@ impl Checker<'_> {
                 plan,
             }
         };
+        if let Some(Kind::Adt(item, _)) = self.facts.types.kind(plan.predicate.ty) {
+            self.demand_subject_outlives(plan.source, item)?;
+        }
         let result = self.validate_impl_owner(
             owner,
             plan.source,
@@ -455,5 +465,52 @@ impl Checker<'_> {
             )
             .map_err(|e| self.error(plan.source, e))?;
         result
+    }
+    /// An early nominal-subject impl demands only its subject's reached
+    /// lifetime contracts; the later complete inference republishes them.
+    fn demand_subject_outlives(
+        &mut self,
+        source: crate::resolve::unit::NodeKey,
+        item: crate::types::ItemId,
+    ) -> Result<(), Error> {
+        if self
+            .facts
+            .lifetimes
+            .nominal_requirements
+            .get(item)
+            .is_some()
+        {
+            return Ok(());
+        }
+        let payments = crate::sema::header_attributes::source_payments(
+            self.facts.must_use_contracts.as_deref(),
+        )?;
+        let bounds = &self.facts.lifetimes.nominal_bounds;
+        payments
+            .charge(
+                bounds.len().saturating_add(1),
+                size_of_val(bounds.as_slice()),
+            )
+            .map_err(|e| self.error(source, e))?;
+        let mut explicit = HashMap::<_, Vec<_>>::default();
+        for &(owner, pair) in bounds {
+            explicit.entry(owner).or_default().push(pair);
+        }
+        let predicates = &self.facts.generics.predicates;
+        let result = self.facts.lifetimes.nominal_requirements.append_reached(
+            &mut self.facts.types,
+            &self.facts.aggregates,
+            item,
+            &explicit,
+            |owner| {
+                predicates
+                    .get(&DefId(owner.0))
+                    .into_iter()
+                    .flatten()
+                    .map(|predicate| predicate.value)
+            },
+            &|work, bytes| payments.charge(work, bytes),
+        );
+        result.map_err(|e| self.error(source, e))
     }
 }

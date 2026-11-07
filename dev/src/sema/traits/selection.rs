@@ -52,7 +52,7 @@ pub(in crate::sema) use search::{copying_predicate, no_drop_predicate};
 pub(in crate::sema) use search::{may_overlap, may_overlap_with};
 use std::sync::Arc;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(crate) enum Dependency {
     Header(DefId),
     ImplementationValidated(DefId),

@@ -49,6 +49,25 @@ use crate::{
 pub(crate) use inputs::Context;
 use std::{cell::RefCell, rc::Rc, sync::Arc};
 
+/// Runs one execution step; only a pending Copy decision's own failure
+/// becomes the selection wait it names, and any other failure keeps its cause.
+fn awaiting<T>(
+    facts: &mut Declarations,
+    step: impl FnOnce(&mut Declarations) -> Result<T, Error>,
+) -> Result<Result<T, Requirement>, Error> {
+    facts.pending_copy_selection = None;
+    match step(facts) {
+        Ok(value) => Ok(Ok(value)),
+        Err(error) => crate::sema::compiler_items::awaited_copy_selection(facts, &error.message)
+            .map(|dependency| {
+                Err(Requirement::Selection(values::execution::SelectionWait(
+                    dependency,
+                )))
+            })
+            .ok_or(error),
+    }
+}
+
 pub(super) struct Proxy(pub Rc<RefCell<Engine>>);
 impl Executor for Proxy {
     fn check(
@@ -60,8 +79,7 @@ impl Executor for Proxy {
         self.0
             .try_borrow_mut()
             .map_err(|_| Error::at(FileId(0), 0, "reentrant constant eligibility request"))?
-            .root(report, facts, target)
-            .map(|_| ())
+            .check_root(report, facts, target)
     }
     fn advance(
         &mut self,
@@ -320,19 +338,20 @@ impl Engine {
         let mut session = self.take_session(request)?;
         loop {
             if let Some(requirement) = session.waiting {
-                self.pending_fields = None;
-                if !self.prepare(report, facts, requirement, session.state.as_mut())? {
-                    // The session keeps its own requirement; only the missing
-                    // declaration fact is surfaced to the declaration pipeline.
-                    let surfaced = self
-                        .pending_fields
-                        .take()
-                        .map_or(requirement, Requirement::NominalFields);
+                let state = session.state.as_mut();
+                if let Some(surfaced) = self.prepare_session(report, facts, requirement, state)? {
                     return self.retain_session(facts, request, session, surfaced);
                 }
                 session.waiting = None;
             }
-            let root = self.root(report, facts, request.target)?;
+            let target = request.target;
+            let root = match awaiting(facts, |facts| self.root(report, facts, target))? {
+                Ok(root) => root,
+                Err(waiting) => {
+                    session.waiting = Some(waiting);
+                    return self.retain_session(facts, request, session, waiting);
+                }
+            };
             let preparation = self.values.preparation_steps();
             let evaluator =
                 Evaluator::with_scratch(report, facts, std::mem::take(&mut self.values));
@@ -385,6 +404,44 @@ impl Engine {
                 }
             }
         }
+    }
+    /// A root whose Copy decision awaits a queued declaration fact is checked
+    /// again, and waits, when its execution request repeats this same root.
+    fn check_root(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        target: Target,
+    ) -> Result<(), Error> {
+        awaiting(facts, |facts| self.root(report, facts, target)).map(|_| ())
+    }
+    /// Prepares a suspended session's requirement. `Some` names the fact still
+    /// awaited; the session itself keeps its own requirement.
+    fn prepare_session(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        requirement: Requirement,
+        state: Option<&mut const_eval::State>,
+    ) -> Result<Option<Requirement>, Error> {
+        self.pending_fields = None;
+        Ok(
+            match awaiting(facts, |facts| {
+                self.prepare(report, facts, requirement, state)
+            })? {
+                Ok(true) => None,
+                // The session repeats its own requirement once the
+                // declaration worklist publishes the awaited fact.
+                Err(waiting) => Some(waiting),
+                // Only the missing declaration fact is surfaced to the
+                // declaration pipeline.
+                Ok(false) => Some(
+                    self.pending_fields
+                        .take()
+                        .map_or(requirement, Requirement::NominalFields),
+                ),
+            },
+        )
     }
     fn take_session(&mut self, request: &Request) -> Result<Session, Error> {
         let session = self.sessions.remove(request).unwrap_or_default();
@@ -458,6 +515,7 @@ impl Engine {
                 .map(|value| value.is_some())
                 .map_err(|e| Error::at(FileId(0), 0, e)),
             Requirement::NominalFields(item) => Ok(facts.aggregates.get(item).is_some()),
+            Requirement::Selection(wait) => Ok(wait.ready(facts)),
             Requirement::FunctionBody(instance) => {
                 self.prepare_reached_function(report, facts, instance, state)
             }

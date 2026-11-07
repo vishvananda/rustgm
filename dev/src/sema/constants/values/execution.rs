@@ -67,6 +67,19 @@ pub enum Requirement {
         instance: Instance,
         result: TypeId,
     },
+    /// A reached body's Copy decision selected a source implementation, field
+    /// template or contract that the declaration worklist has not yet published.
+    Selection(SelectionWait),
+}
+
+/// The one declaration fact a suspended Copy decision awaits. It is prepared
+/// by the declaration worklist, never answered from declaration availability.
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct SelectionWait(pub(crate) crate::sema::traits::selection::Dependency);
+impl SelectionWait {
+    pub(crate) fn ready(self, facts: &Declarations) -> bool {
+        self.0.ready(facts)
+    }
 }
 
 pub enum Progress {

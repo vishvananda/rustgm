@@ -29,6 +29,9 @@ pub(super) struct Pending {
 }
 
 #[cfg(test)]
+#[path = "../../../tests/invariants/waited_copy_selections.rs"]
+mod copy_wait_tests;
+#[cfg(test)]
 #[path = "../../../tests/invariants/binderless_constant_modules.rs"]
 mod module_tests;
 
@@ -262,6 +265,16 @@ impl Checker<'_> {
             constants::ArgumentDependency::Execution(
                 constants::values::execution::Requirement::NominalFields(item),
             ) => self.require_nominal_fields(key, item)?,
+            constants::ArgumentDependency::Execution(
+                constants::values::execution::Requirement::Selection(wait),
+            ) => {
+                // A published fact that still fails to resume its constant
+                // would otherwise repeat this wait indefinitely.
+                if wait.ready(&self.facts) {
+                    return Err(self.error(key, "missing selected declaration fact"));
+                }
+                self.work.push(Work::selection_dependency(wait.0));
+            }
             constants::ArgumentDependency::Execution(requirement) => {
                 self.work.push(Work::Execution(
                     super::execution::Request::Constant(requirement),

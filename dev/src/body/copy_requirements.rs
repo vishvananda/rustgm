@@ -219,7 +219,8 @@ fn prepare_using(
                 &mut **service,
             )?
         } else {
-            crate::sema::compiler_items::copy_decisions(
+            // A declaration-time constant may wait for the recorded fact.
+            crate::sema::compiler_items::copy_decisions_waiting(
                 facts,
                 environment.clone(),
                 contract.universals,

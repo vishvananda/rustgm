@@ -1,0 +1,74 @@
+{
+ "schema": 1,
+ "declared": "2026-11-07, before the frozen rustc 1.98.0 oracle of these exact bytes. The drafts' lang-item and feature prerequisites were settled against rustc 1.98.0 in obj/parallel/census-batch6/repro first; each outcome follows the stated rule, not that exploration",
+ "declaration_sha256": "81878381a208301fa1119ae25593d296213663b2088e1bd97a39b6f43df85370",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "option-copy-wait.rs": {
+   "sha256": "c7b273a7be5b64f2a7a3043b4c238a6529cffddd21a3e274a0bfbfa8335c4e62",
+   "declared": 0,
+   "reason": "a declaration-phase array length runs a const fn that copies Choice<u32>; the generic `impl<T: Copy> Copy for Choice<T>` and its const Clone are validated on demand, so the copy waits instead of failing",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "root-copy-wait.rs": {
+   "sha256": "5ce4ffb085531358cf938855325069d83d9259132f89d04b7287ec075e343ee4",
+   "declared": 0,
+   "reason": "the same copy of Choice<u32> in the anonymous length block itself, so the waiting body is the constant's root",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "nonzero-copy-wait.rs": {
+   "sha256": "59a7af7c056dde57806ecca0bbc545ab7659976ba4111f3d2b98606849be3b6b",
+   "declared": 0,
+   "reason": "core NonZero shape: Wide<T: Zeroable>(T::Inner) with `impl<T> Copy for Wide<T> where T: Zeroable`, copied inside Choice<Wide<u32>>; the projected field's lifetime contract is demanded early",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "copy-length-mismatch.rs": {
+   "sha256": "df71ecc17d6e8ff92524b6e7800effdbfbd2382f4e546346cac8dbae61d8e1bb",
+   "declared": 1,
+   "reason": "opponent: the waiting copy returns 3, so a [u8; 3] is not [u8; 4] (E0308)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  },
+  "not-copy-move.rs": {
+   "sha256": "dad2802fd539591e5701c039dc3fb29a6ab690179d710e5910f528065bf164e1",
+   "declared": 1,
+   "reason": "opponent: Choice<Plain> has no Copy impl for Plain, so the second use reads a moved value (E0382)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0382"
+   ]
+  },
+  "field-not-copy.rs": {
+   "sha256": "fb63411dd4e1318a83a8acff75381c17df67d9fd5303d3d345447fcbd11dc271",
+   "declared": 1,
+   "reason": "opponent: `impl<T: Copy> Copy for Holder<T>` with a non-Copy Plain field cannot be implemented (E0204), so the waiting constant cannot use it",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0204"
+   ]
+  },
+  "validation-cycle.rs": {
+   "sha256": "4e77a46ad007c05d93f1cef99ae7051e08fbce76d39cb4de93bf41f52ef436a7",
+   "declared": 1,
+   "reason": "opponent: the Copy impl's where-clause names an array whose length is the waiting constant itself, a cycle (E0391)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0391"
+   ]
+  },
+  "later-projected-copy-wait.rs": {
+   "sha256": "70387bfbd0aad9ed4410a9b5cf1936785463022a4577e8e6a6ed807e56e9ae6d",
+   "declared": 0,
+   "reason": "the NonZero shape with the trait, its scalar impl and the wrapper declared after the waiting const fn, which destructures the projected field",
+   "rustc_status": 0,
+   "error_codes": []
+  }
+ }
+}

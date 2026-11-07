@@ -285,6 +285,13 @@ impl Checker<'_> {
                     "nominal field readiness must remain in its constant dependency graph",
                 ));
             }
+            Requirement::Selection(_) => {
+                return Err(Error::at(
+                    FileId(0),
+                    0,
+                    "selection readiness must remain in its constant dependency graph",
+                ));
+            }
             Requirement::AnonymousBody { instance, .. } => {
                 return Err(self.error(
                     instance.source(),
