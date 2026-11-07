@@ -186,9 +186,10 @@ fn scope_walk_rejects_unknown_definition_sites_and_counts_failed_work() -> TestR
     assert_eq!(size_of::<crate::sema::methods::Methods>(), 312);
     // Includes the sparse SIMD and coherence owners once per compilation.
     // Source member identity and the cold async destructor family add two words.
+    // The once-per-crate header input bound adds two more.
     assert_eq!(
         size_of::<Declarations>(),
-        7048 + size_of::<Vec<()>>() + 6 * size_of::<usize>()
+        7048 + size_of::<Vec<()>>() + 6 * size_of::<usize>() + 2 * size_of::<usize>()
     );
     assert_eq!(size_of::<crate::resolve::model::Scope>(), 32);
     Ok(())

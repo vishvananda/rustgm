@@ -183,9 +183,10 @@ fn range_catalog_preserves_ordinary_record_sizes() {
     // The compilation-wide owner has an interned-policy Vec and cold request,
     // SIMD and coherence pointers; dense nodes and body rows are unchanged.
     // Source member identity and the cold async destructor family add two words.
+    // The once-per-crate header input bound adds two more.
     assert_eq!(
         size_of::<Declarations>(),
-        7048 + size_of::<Vec<()>>() + 6 * size_of::<usize>()
+        7048 + size_of::<Vec<()>>() + 6 * size_of::<usize>() + 2 * size_of::<usize>()
     );
     // A lazy item-scope owner adds eight bytes; per-item and body rows are unchanged.
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);

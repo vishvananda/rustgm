@@ -41,7 +41,8 @@ fn registry_retains_distinct_identities_and_shared_finite_profiles() -> TestResu
     assert_eq!(size_of::<SourceIntrinsic>(), 4);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
-    assert_eq!(size_of::<Declarations>(), 7120);
+    // The once-per-crate header input bound adds 16 bytes.
+    assert_eq!(size_of::<Declarations>(), 7136);
     Ok(())
 }
 
