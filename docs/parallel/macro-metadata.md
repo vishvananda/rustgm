@@ -631,3 +631,133 @@ ordinary `pub macro` site (`const_error!`). It does matter for std, where
 A third, smaller gap is the source-client allowance ledger. alloc is a source
 client of core, and source clients have no macro context. So even a listed row
 (`assert_unsafe_precondition` with `cfg_ub_checks`) would fail there by name.
+
+## Re-export rows
+
+Follow-up (Lane B, PA29). A `pub use` of a macro, including a glob, now
+publishes a re-export row instead of failing by name. This covers core's
+prelude (`pub use crate::{assert, cfg, ...}`, `pub use super::v1::*`), root
+re-exports such as `pub use crate::macros::builtin::derive` and `core::bstr`'s
+`impl_partial_eq*` imports. Row kind 2 is part of tag-14 version 2. Tables
+without re-exports keep their exact version-1 or version-2 bytes.
+
+**Wire layout.** After the shared kind byte, placement and name, a kind-2 row
+holds its owner ordinal (`u32`), the target placement (`u16` count, then each
+component) and the target name. Owner 0 is the artifact itself; owner `k`
+is entry `k - 1` of the artifact's own sorted dependency list, as in the
+public-name table. The target is the key of a definition row (kind 0 or 1) in
+that owner's table, never another re-export. Rows of all three kinds share one
+order, sorted strictly by (placement, name), so one scope never binds a name
+twice. Decoding rejects by name:
+
+- an owner ordinal past the dependency list ("names an unknown owner");
+- a local target (owner 0) that is no definition row of the table, including a
+  target that is itself a re-export ("names no definition row of its crate");
+- unsorted or duplicate keys and unknown row kinds.
+
+A table with only re-export rows also needs version 2. Budgets: re-export rows
+count against the 4,096 rows and pay one atom per row plus one per placement
+and target component.
+
+**Provider.** `sema::crates::export::declarative_rows` walks every module that
+public direct module declarations reach from the root, once, and collects every
+public macro binding there, whatever its origin (direct, import or glob). Every
+such binding is published or rejected by name; none is dropped. The scalar
+public-name table now skips every public macro binding.
+
+- A local definition gets exactly one definition row. It sits at the
+  definition's own direct binding when that binding is published. Otherwise
+  (the definition's module is private, like `core::fmt::macros::Debug`) the
+  row sits at the least (placement, name) key among its public bindings. Every
+  other public binding of the definition becomes a re-export row of owner 0
+  naming that key.
+- A binding of an imported definition becomes a re-export row naming the
+  owner's definition row. Chains flatten: a re-export of a re-export names the
+  defining row, because the consumer bound the intermediate re-export to the
+  definition itself. The owner must be one of the crate's own dependencies
+  ("macro re-export target's crate is not a direct dependency").
+- Rejected by name: ambiguous public macro bindings; bindings of a non-macro
+  definition such as a bootstrap builtin; a public macro binding in a module
+  that only a public re-export alias reaches, since that module has no public
+  placement (`aliased-provider`); and every definition form the earlier
+  sections reject (macros 2.0, macro-generated definitions, edition-panic and
+  `allow_internal_unsafe` contracts).
+
+**Consumer.** `resolve::crates::bound_macro_rows` binds in two passes. First
+every artifact's definition rows are bound and recorded by
+(artifact, definition row). Then every re-export row is bound at its own
+placement to the definition its target names. The owner is found by crate
+identity among the imported artifacts, the target row by its key in that
+owner's table. No binding name, alias or consumer path is consulted, and the
+definition order of artifacts does not matter. So every path to one macro
+reaches one `DefId`:
+
+- explicit `use` of two paths to one name still collides
+  (`duplicate imported macro name`, rustc E0252);
+- two globs that bring one identity are not ambiguous, while two globs that
+  bring two definitions sharing an expander are (`ambiguous macro name`,
+  rustc E0659);
+- `#[macro_use] extern crate` now enters every macro bound at the provider's
+  root, re-exports included, as rustc's `for_each_child` does. It used to
+  enter the definition rows whose scope was the root;
+- allowance lists follow the definition, so a re-export of an unlisted row
+  keeps its gates (`facade-unchecked-client`).
+
+### Qualification (re-export rows)
+
+All 15 outcomes were declared in `pa29/tests/macro-reexport-outcomes.json`
+(plan sha256 `81ee2852…`, `obj/parallel/macro-reexports-v1/declared/`) before
+any rustc or RustGM run. The fixtures are in `pa29/tests/spec/macro-reexport-rows/`:
+a no_core source-core provider (`exporter.rs`) with a private-module builtin
+reached only through re-exports, root and renamed re-exports and a core-shaped
+prelude; eight source clients; a source-client bridge and its inventory-only
+client; an ordinary facade over `internal-provider` with two binary clients;
+and a requirement provider whose macro module is reached only through an alias.
+
+- **Oracle.** Pinned rustc 1.98.0 matched all 15 declared statuses and codes
+  (`E0659`, `E0603`, `E0252`, `E0658`), the native line/column/cfg value
+  `7 9 1` and the facade client's exit 0 (`oracle/round1`, then `round2`
+  after the bridge amendment below; `oracle.json` sha256 `237558ec…`).
+- **Candidate.** `scripts/check_macro_metadata.py` now runs all 44 cases and
+  passes `--dependency-metadata` for a case's `inventory`. Both runs passed
+  44 of 44 with CLI `90a8d3e5…`: non-native
+  (`obj/qualification/fast/1794059085991598230`) and native
+  (`1794059133535519860`, evidence
+  `obj/parallel/pa29-macro-metadata/maintainer-419851-true-1794059162635632131`).
+  `exporter-path-client` prints `7 9 1` beside rustc, and `facade-client` exits
+  0 beside rustc. The one requirement row (`aliased-provider`) is accepted by
+  rustc and rejected by name.
+- **Integration tests.** `crate_linking::expander_rows` gains three tests:
+  - publication and round trip of the exporter's 7 builtin, 1 declarative and
+    16 re-export rows, including the relocated private-module `concat`;
+  - forged and relabelled rows: an unknown owner, a missing local target, a
+    target that is a re-export, an unknown row kind 3, an unsorted key, and a
+    bridge artifact whose re-export names a row its owner lacks, which a fresh
+    inventory consumer rejects by name;
+  - linear growth: 8, 32 and 128 re-export rows grow the table by equal bytes
+    per row, and the consumer's LowIR does not change.
+  All six `expander_rows` tests passed (`1794058592100564194`), as did
+  `declarative_exports`, `reexports` and the other `transported_rows` tests
+  (`1794058776842740197`). Strict private Clippy and the 11 private
+  `macro_context`, `permission_session`, `token_images` and `cfg_gates` tests
+  passed (`1794059192987416343`).
+
+**Amended controls.**
+
+- `builtin-macro-rows-outcomes.json`'s `reexport-provider` was a requirement
+  row rejected by name. It now publishes version 2 (frontend 0); its rustc
+  outcome is unchanged.
+- `expander_rows`'s unknown-row-kind forgery used kind 2, which is now the
+  re-export kind; it forges kind 3.
+- `transported_rows`'s runner count rises from 29 to 44.
+- Candidate round 1 changed two declarations of the new file, recorded in
+  `declared/amendments.txt`:
+  - `exporter-private-client` declared the diagnostic `unresolved macro`.
+    RustGM exits 1 as declared, but with `private type name \`hidden\``, the
+    reason rustc gives (E0603), so only the diagnostic substring changed.
+  - `bridge` failed with `unresolved import` at `pub use exporter::forty_two`
+    inside a nested module. A probe shows the same failure for a function
+    (`pub use exporter::base`): no_core source clients do not reach the extern
+    prelude from nested modules. That gap is unrelated to macro rows, so the
+    fixture now names the root `extern crate` item
+    (`pub use crate::exporter::forty_two`), and the rustc oracle was rerun.

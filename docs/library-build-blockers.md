@@ -5,6 +5,21 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+[Macro re-export rows](parallel/macro-metadata.md#re-export-rows) (Lane B,
+PA29): every public macro binding of a crate's public modules is now published.
+`pub use` of a macro, including globs and core-shaped preludes, writes a
+tag-14 version-2 re-export row (kind 2) naming the defining row by owner
+ordinal and key; private-module definitions relocate to their least public
+key. Consumers bind re-exports to the definition's `DefId` by crate identity,
+never by name, so globs of one macro do not conflict and `#[macro_use]` enters
+root re-exports as rustc does. Tables without re-exports keep their exact
+bytes. All 15 declared rustc outcomes held; the candidate passes all 44 macro
+cases natively. `reexport-provider` is amended from a rejected requirement row
+to version 2. Still rejected by name: bindings reachable only through a module
+alias, macros 2.0 and context-dependent imported builtins. No_core source
+clients do not reach the extern prelude from nested modules (found while
+qualifying; unrelated to macros).
+
 Lane C [called constructors and imported variants](parallel/enum-methods-transport.md)
 is joined on main. Version 13 now carries called
 tuple-variant constructors (`Opt::Some(f(x))`, `Pair::Two(a, b)`) as ordinary

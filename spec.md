@@ -6224,9 +6224,27 @@ module at its placement, resolved by module identity and never by a name or
 alias. It runs its own expander of that identity and rejects an unknown identity
 or a changed kind by name. An imported expansion frame grants exactly its row's
 re-authenticated features, charged per feature, as a local definition's
-permissions would, and never grants `allow_internal_unsafe`. Macro re-exports,
-macros 2.0 definitions and imported expanders that need their provider's source
+permissions would, and never grants `allow_internal_unsafe`. Macros 2.0
+definitions and imported expanders that need their provider's source
 declaration remain rejected by name.
+
+Every public macro binding of a crate's public modules is published, or the
+export fails by name; none is dropped. A local definition has one definition
+row, at its own binding when that is public, otherwise at the least public
+(placement, name) key. Every other public macro binding, direct, imported or
+glob, is a re-export row: kind byte 2, its placement and name, then an owner
+ordinal (`u32`; 0 is the artifact itself, `k` its `k`-th sorted dependency),
+the target placement and the target name. The target is the key of a
+definition row of that owner, never another re-export, so chains flatten to the
+defining row. Re-export rows sort with the other rows and alone also require
+version 2. A consumer first binds every definition row, then binds each
+re-export at its placement to the `DefId` of the owner's definition row, found
+by crate identity and row key and never by name or alias. Every path to one
+macro thus denotes one identity: globs bringing it twice are not ambiguous,
+while explicit imports of one name still collide. `#[macro_use] extern crate`
+enters every macro bound at the provider's root. Ambiguous bindings, an
+unknown owner, a target that is not a definition row and a public macro binding
+reachable only through a module alias are rejected by name.
 
 ## Lowering and backend facts
 

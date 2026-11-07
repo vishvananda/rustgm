@@ -120,10 +120,11 @@ placed row expected in the macro-use prelude, and `compile_error`. A
 requirement row has rustc accept the imported `test` attribute while RustGM
 rejects it by name. `path-client.rs` links with `native-driver.c`, which prints
 the consumer's `line!`, `column!` and `cfg!` values. Two more providers are
-requirement rows: an ordinary macros 2.0 export and a prelude-style re-export,
-both rejected by name. `internal-provider.rs` exports `allow_internal_unstable`
-lists (two features, one, none); its three clients check that each list
-applies per feature. Every rustc outcome was declared before any rustc or
+requirement rows: an ordinary macros 2.0 export, rejected by name, and a
+prelude-style re-export, amended to a version-2 export once re-export rows
+landed. `internal-provider.rs` exports `allow_internal_unstable` lists (two
+features, one, none); its three clients check that each list applies per
+feature. Every rustc outcome was declared before any rustc or
 RustGM run, and `scripts/check_macro_metadata.py` runs the file with the other
 two macro files (`docs/parallel/macro-metadata.md`).
 
@@ -134,3 +135,20 @@ bodies, clients that name imported variants in constructor calls, paths,
 patterns, a guard and `match &o`, three opponents (E0004, E0308 and E0061), the
 forged constructor-application controls and a 6/24/96 scaling control. The
 `crate_linking::constructor_transport` integration controls consume it.
+
+macro files (`docs/parallel/macro-metadata.md`).
+
+`macro-reexport-outcomes.json` freezes the re-export rows of tag-14 version 2
+under `spec/macro-reexport-rows/`. A no_core source-core provider
+(`exporter.rs`) defines a builtin in a private module, reached only through
+re-exports, and adds root and renamed re-exports and a core-shaped prelude
+glob. Eight source clients cover paths, a renamed `extern crate`, globs of one
+identity, an ambiguous glob pair, a duplicate explicit import, a private path,
+a placed row in the macro-use prelude and `#[macro_use]` re-exports.
+`path-client.rs` links with the `builtin-macro-rows` native driver. A
+source-client `bridge.rs` re-exports the provider's macro for an
+inventory-only client. A facade over `internal-provider.rs` has two binary
+clients, one of which keeps the gate of an unlisted row. A requirement
+provider whose macro module is reached only through an alias is accepted by
+rustc and rejected by name. All 15 outcomes were declared before any rustc or
+RustGM run.
