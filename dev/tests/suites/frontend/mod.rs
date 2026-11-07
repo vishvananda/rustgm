@@ -229,3 +229,6 @@ mod cold_sources;
 
 #[path = "../../guaranteed_pointers.rs"]
 mod guaranteed_pointers;
+
+#[path = "../../cold_prototypes.rs"]
+mod cold_prototypes;

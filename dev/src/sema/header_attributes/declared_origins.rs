@@ -23,7 +23,11 @@ pub(in crate::sema) use implicit_receivers::{consume_no_implicit_autorefs, consu
 mod comptime;
 mod legacy_indices;
 pub(in crate::sema) use legacy_indices::consume as consume_legacy_indices;
+mod bodyless_targets;
 mod nonconst_members;
+pub(in crate::sema) use bodyless_targets::{
+    bind as bind_cold_prototype, capture as capture_cold_prototype,
+};
 pub(in crate::sema) use nonconst_members::consume as consume_nonconst_member;
 mod definition_policy;
 mod incoherent_targets;

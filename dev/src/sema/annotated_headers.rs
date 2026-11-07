@@ -175,13 +175,13 @@ impl Declarations {
 }
 pub(super) use bootstrap::owner as bootstrap_owner;
 pub(super) use imported::prepare as prepare_imported;
-pub(super) use local::{bind_definition, finish, observe_owner};
 pub(in crate::sema) use local::{
-    caller_payments, charge_attribute_retention, charge_source_contract_query,
-    charge_source_retention, completed_source_image, intrinsic_fallback_is_spec,
-    require_protocol_variant, require_recorded_pointee_image, reserve_source_contracts,
-    role_source_image, source_payments,
+    bind_cold_prototype, caller_payments, capture_cold_prototype, charge_attribute_retention,
+    charge_source_contract_query, charge_source_retention, completed_source_image,
+    intrinsic_fallback_is_spec, require_protocol_variant, require_recorded_pointee_image,
+    reserve_source_contracts, role_source_image, source_payments,
 };
+pub(super) use local::{bind_definition, finish, observe_owner};
 pub(super) fn has_imported(facts: &Declarations, definition: DefId) -> bool {
     facts
         .must_use_contracts

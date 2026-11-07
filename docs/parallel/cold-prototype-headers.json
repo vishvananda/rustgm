@@ -1,0 +1,202 @@
+{
+  "schema": 1,
+  "base_commit": "178095b86ac285c2efe9cb5afafd309d9981ea4c",
+  "qualified_source_files": 3640,
+  "reference": {
+    "receipt": "pa31/tests/spec/source-cold-prototypes/reference-v2.json",
+    "sha256": "201ac0a9487d4f257e16f50ccf7355461ee0eb9c87fc07d1d9c711d883d9816f",
+    "sources": 20,
+    "metadata": 20,
+    "objects": 20,
+    "positives": 8,
+    "negatives": 12,
+    "native_stdout": "cold-foreign 28 36 2\n",
+    "preserved_failed_setup": "obj/parallel/source-transport/cold-prototypes/reference-v1/receipt.json"
+  },
+  "final": {
+    "receipt": "obj/parallel/source-transport/cold-prototypes/final1/receipt.json",
+    "sha256": "a0f3a37469cf4825c8813c6b566f9a56d1783661a624dbb55776d5ca9768c752",
+    "stages": [
+      {
+        "stage": "format",
+        "argv": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--all"
+        ],
+        "code": 0,
+        "seconds": 15.4645089879632
+      },
+      {
+        "stage": "audit",
+        "argv": [
+          "obj/audit-venv/bin/python",
+          "scripts/rust_audit.py",
+          "--root",
+          ".",
+          "--cache",
+          "obj/fast-audit.json"
+        ],
+        "code": 0,
+        "seconds": 2.453233683016151
+      },
+      {
+        "stage": "strict-all",
+        "argv": [
+          "cargo",
+          "clippy",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--all-targets",
+          "--all-features",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "code": 0,
+        "seconds": 105.54000148596242
+      },
+      {
+        "stage": "prototypes",
+        "argv": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_frontend",
+          "cold_prototypes::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 14.707337821950205
+      },
+      {
+        "stage": "old-cold",
+        "argv": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_frontend",
+          "cold_sources::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 0.22141376801300794
+      },
+      {
+        "stage": "word",
+        "argv": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_frontend",
+          "overflow_words::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 0.16542914498131722
+      },
+      {
+        "stage": "native",
+        "argv": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_frontend",
+          "cold_prototypes::cold_foreign_declarations_execute_real_unsafe_and_safe_c_calls",
+          "--",
+          "--ignored",
+          "--exact",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 0.29353328503202647
+      },
+      {
+        "stage": "cli",
+        "argv": [
+          "cargo",
+          "build",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--bin",
+          "rustgm"
+        ],
+        "code": 0,
+        "seconds": 0.10006444901227951
+      },
+      {
+        "stage": "harness",
+        "argv": [
+          "make",
+          "test-harness"
+        ],
+        "code": 0,
+        "seconds": 13.910309207974933
+      },
+      {
+        "stage": "upstream",
+        "argv": [
+          "make",
+          "test-upstream"
+        ],
+        "code": 0,
+        "seconds": 0.15016675903461874
+      }
+    ],
+    "cli": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/final1/rustgm",
+      "sha256": "d06fcb72371dfc3a49b14a8d226322fe42b603afd96a50bc90b93731add54ac5"
+    }
+  },
+  "native": {
+    "path": "obj/parallel/source-transport/cold-prototypes/native-4176263/cold-foreign-execute.stdout",
+    "sha256": "ae0226597ff04824daefef34ea2dbe1c13fd42fe29362c280c8f506cbcf00f0e"
+  },
+  "layouts": {
+    "ColdState": 16,
+    "AnnotationState": 64,
+    "Header": 80,
+    "Owner": 56,
+    "Headers": 120,
+    "Declarations": 7120,
+    "Code": 304
+  },
+  "ownership": "actual bound DefId and retained owner/effect row; actual associated trait or foreign block; no new registry, hot or wire fields",
+  "pending": [
+    "private execution in full CI",
+    "joined integration and original-core observation",
+    "existing advisory transport/source-parent fences",
+    "remaining const/async closure body profiles owned separately"
+  ]
+}

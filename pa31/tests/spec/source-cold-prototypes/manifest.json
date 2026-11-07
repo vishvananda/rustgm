@@ -1,0 +1,140 @@
+{
+  "schema": 1,
+  "owner": "PA31 source cold advisory declarations; ordinary PA29 foreign ABI and PA20 required methods",
+  "profile": "Rust 1.98 edition2024 panicabort overflowyes debugassertionsno ubchecksno; default lint policy",
+  "cases": [
+    {
+      "file": "trait-prototype-allow.rs",
+      "sha256": "7652459b242568503ed5a8bc9e1eb9331038effc448f1a5f8fb95e03050102f2",
+      "expected": 0,
+      "hypothesis": "ordinary unused trait prototype advisory"
+    },
+    {
+      "file": "trait-prototype-deny.rs",
+      "sha256": "7624a3b85bb5e21cb980bcf0c280dbea7a54f8be3235f71ac440c7c4f6689a47",
+      "expected": 1,
+      "hypothesis": "actual no-body trait cold advisory has no effect and is linted"
+    },
+    {
+      "file": "trait-required-call.rs",
+      "sha256": "dad22b8a41eff486cf87b719904875fb5a881b43d99a6a21c00e1622d6019158",
+      "expected": 0,
+      "hypothesis": "real required trait method, implementation and generic caller"
+    },
+    {
+      "file": "trait-missing-method.rs",
+      "sha256": "25ab09b1dee2700fe21f22e893a82e8e9f1e9aa582cfd7c8993b9d679375c5cf",
+      "expected": 1,
+      "hypothesis": "cold never provides a missing implementation body"
+    },
+    {
+      "file": "trait-missing-bound.rs",
+      "sha256": "d2c7ca065063ffcc5f3c8bec6a12876edb80da5d7f799899d09e83ab0cfa4011",
+      "expected": 1,
+      "hypothesis": "cold never provides a generic caller premise"
+    },
+    {
+      "file": "foreign-deny.rs",
+      "sha256": "7a06306b18b45c99e1772b8e8e3bd4a9bf8381b5b3089241656304bbdbc3ffdc",
+      "expected": 0,
+      "hypothesis": "real foreign function is an allowed target under deny"
+    },
+    {
+      "file": "foreign-duplicate-deny.rs",
+      "sha256": "b65a21ae024250d260a5cb965e4ff1554a98e4a28eeace7555a110a3d9ce7c3a",
+      "expected": 1,
+      "hypothesis": "duplicate policy remains independent of foreign acceptance"
+    },
+    {
+      "file": "foreign-duplicate-allow.rs",
+      "sha256": "bec4bfccb340ec7104e4dd75a81366ac0942f4bfe0165d4df405cad183b7fb61",
+      "expected": 0,
+      "hypothesis": "first foreign advisory retained under normal Allow"
+    },
+    {
+      "file": "foreign-unsafe-call.rs",
+      "sha256": "c908fe59c9058472728fd2694ca8652daa796e302027b6a8d7fc2e16af92e466",
+      "expected": 1,
+      "hypothesis": "advisory never grants unsafe call context"
+    },
+    {
+      "file": "foreign-safe-call.rs",
+      "sha256": "77b6e7f1207492704ccbc35ea4f293f22606cb812d194321c945ad6cd684e202",
+      "expected": 0,
+      "hypothesis": "actual explicit safe foreign signature governs call"
+    },
+    {
+      "file": "foreign-const-call.rs",
+      "sha256": "3f554662035bc3d5e240f7bc363ee19d8ed850dc6e20c8518c830edb9e5b75f1",
+      "expected": 1,
+      "hypothesis": "advisory never grants const execution"
+    },
+    {
+      "file": "foreign-wrong-result.rs",
+      "sha256": "393cae8b35b86b0c3b466c488ded1c0b8e099a0bcdd7f0c0170c7088c6ab44b4",
+      "expected": 1,
+      "hypothesis": "real foreign result identity remains checked"
+    },
+    {
+      "file": "foreign-wrong-abi.rs",
+      "sha256": "b81b0a88a893a485653df85beeef391dd27269efc5615498a1143717b088d6dd",
+      "expected": 1,
+      "hypothesis": "unknown ABI remains invalid"
+    },
+    {
+      "file": "foreign-generic.rs",
+      "sha256": "838ece59b5c5aa0abf4bd6b959059a0ce4d1bbc759d082c99e443af0c4e10b5d",
+      "expected": 1,
+      "hypothesis": "foreign type parameter restriction remains"
+    },
+    {
+      "file": "free-prototype.rs",
+      "sha256": "d9c42410f274699acdd6c8ca951a8af16ddb5b6421c8ae243b7ede077950de01",
+      "expected": 1,
+      "hypothesis": "ordinary free function still requires body"
+    },
+    {
+      "file": "macro-prototype.rs",
+      "sha256": "248f8ce9119153135b2817069a0037eb752d3a6bc4e5e876c3ff8df271093b43",
+      "expected": 0,
+      "hypothesis": "actual expanded no-body trait owner remains authoritative"
+    },
+    {
+      "file": "macro-prototype-deny.rs",
+      "sha256": "ccd96df7eb0e19aa87c1499b54288fb93b7a906a611828d0cad4ecf22921b4aa",
+      "expected": 1,
+      "hypothesis": "expanded no-body target retains actual lint policy"
+    },
+    {
+      "file": "duplicate-prototype-allow.rs",
+      "sha256": "00983fe6003c92a2c27cc1db04add12bfded5069825c43543123bcc2112ffd06",
+      "expected": 0,
+      "hypothesis": "duplicate ignored prototype words remain ordinary Allow"
+    },
+    {
+      "file": "source-free-prototype.rs",
+      "sha256": "06e6fed3095c23e44f995a6d16e1f194c00b69245831e61155caf576d7e27839",
+      "expected": 1,
+      "hypothesis": "actual no_core free function is not a trait/foreign header"
+    },
+    {
+      "file": "source-native.rs",
+      "sha256": "934ff10136c905f56a372a15ce6d6643343fe9046770b1491541b821b5961407",
+      "expected": 0,
+      "hypothesis": "actual unsafe and explicit-safe C signatures and runtime foreign calls"
+    }
+  ],
+  "native": {
+    "stdout": "cold-foreign 28 36 2\n",
+    "observer_sha256": "8211c6c95b996769ec8b2df4c5000102acd87fe04519c377820a6e3e292fd278"
+  },
+  "maintainer_origin": "dev/tests/cold_sources.rs",
+  "reference": {
+    "file": "reference-v2.json",
+    "sha256": "201ac0a9487d4f257e16f50ccf7355461ee0eb9c87fc07d1d9c711d883d9816f"
+  },
+  "prior_source_sha256": {
+    "prototype-required.rs": "289552dfc30773d43982f5da99d882332204079f19708ec3ae497d2666bbc1a9",
+    "foreign-required.rs": "9e410447012214a34e0efed8f8f5d42995c83598e16cc3a042749671dcf26ca1"
+  }
+}

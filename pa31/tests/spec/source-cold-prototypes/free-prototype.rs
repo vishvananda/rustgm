@@ -1,0 +1,1 @@
+#[cold]pub fn absent();

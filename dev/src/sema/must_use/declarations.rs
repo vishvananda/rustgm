@@ -124,6 +124,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
         &by_source,
         &mut pointer_markers,
         &mut mir_boundaries,
+        flags.cold.has_prototypes(),
     )?;
     crate::sema::specialization::finish(facts)?;
     complete_imports(report, facts)
@@ -585,9 +586,11 @@ fn bind_definitions(
     by_source: &HashMap<NodeKey, usize>,
     pointer_markers: &mut HashMap<NodeKey, bool>,
     mir_boundaries: &mut crate::sema::inlining::MirBoundaries,
+    cold_prototypes: bool,
 ) -> Result<(), Error> {
     mir_boundaries.prepare_binding(report, facts)?;
-    if !pointer_markers.is_empty()
+    if cold_prototypes
+        || !pointer_markers.is_empty()
         || crate::sema::coherence_policy::pending(facts)
         || report
             .lint_producer()
@@ -630,6 +633,9 @@ fn bind_definitions(
                 );
                 crate::sema::coherence_policy::bind(facts, id, definition)?;
                 crate::sema::header_attributes::bind_definition(report, facts, id, key)?;
+                if cold_prototypes {
+                    crate::sema::header_attributes::bind_cold_prototype(report, facts, id, key)?;
+                }
                 crate::sema::specialization::bind_trait(report, facts, id, key)?;
             }
             let Some(&contract) = definition.node.as_ref().and_then(|key| by_source.get(key))

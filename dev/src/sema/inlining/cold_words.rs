@@ -11,9 +11,13 @@ use crate::{
 #[derive(Default)]
 pub(in crate::sema) struct ColdState<'unit> {
     seen: bool,
+    has_prototypes: bool,
     positions: Option<Box<AttributePositions<'unit>>>,
 }
 impl ColdState<'_> {
+    pub(in crate::sema) fn has_prototypes(&self) -> bool {
+        self.has_prototypes
+    }
     pub(in crate::sema) fn begin_owner(&mut self) {
         self.seen = false;
     }
@@ -25,15 +29,7 @@ fn body_target<L>(ast: &Syntax<L>, node: NodeId) -> Result<bool, &'static str> {
         _ => node,
     };
     Ok(match ast.node(node).kind {
-        Kind::Item(index) => match ast.items[index as usize].kind {
-            ItemKind::Function { body: Some(_), .. } => true,
-            ItemKind::Function { body: None, .. } => {
-                return Err(
-                    "cold function-body profile is not implemented for this wider Rust target",
-                );
-            }
-            _ => false,
-        },
+        Kind::Item(index) => matches!(ast.items[index as usize].kind, ItemKind::Function { .. }),
         Kind::Closure { .. }
         | Kind::Block {
             flavor: BlockFlavor::Async | BlockFlavor::AsyncMove,
@@ -108,6 +104,13 @@ pub(in crate::sema) fn consume_cold<'unit>(
                 "source expression attributes require stmt_expr_attributes",
             ));
         }
+    }
+    if !state.seen
+        && matches!(ast.node(declaration.node).kind, Kind::Item(index)
+        if matches!(ast.items[index as usize].kind, ItemKind::Function { body: None, .. }))
+    {
+        crate::sema::header_attributes::capture_cold_prototype(report, facts, owner, declaration)?;
+        state.has_prototypes = true;
     }
     let target = body_target(ast, declaration.node).map_err(error)?;
     let message = if state.seen {

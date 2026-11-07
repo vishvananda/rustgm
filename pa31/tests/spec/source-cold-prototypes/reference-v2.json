@@ -1,0 +1,1215 @@
+{
+  "prediction_sha256": "f5222794d2b81f2d4c86eefeaf5567bff37d6ec458a9a96be4c0081b9a6150f1",
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "version": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+    "driver": {
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+    }
+  },
+  "observations": [
+    {
+      "file": "trait-prototype-allow.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/trait-prototype-allow.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/trait-prototype-allow.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.02833157207351178,
+      "errors": []
+    },
+    {
+      "file": "trait-prototype-allow.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/trait-prototype-allow.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/trait-prototype-allow.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.023587103001773357,
+      "errors": []
+    },
+    {
+      "file": "trait-prototype-deny.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/trait-prototype-deny.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/trait-prototype-deny.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.023028113064356148,
+      "errors": [
+        {
+          "code": "unused_attributes",
+          "message": "`#[cold]` attribute cannot be used on required trait methods"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error; 1 warning emitted"
+        }
+      ]
+    },
+    {
+      "file": "trait-prototype-deny.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/trait-prototype-deny.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/trait-prototype-deny.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.024561909027397633,
+      "errors": [
+        {
+          "code": "unused_attributes",
+          "message": "`#[cold]` attribute cannot be used on required trait methods"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error; 1 warning emitted"
+        }
+      ]
+    },
+    {
+      "file": "trait-required-call.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/trait-required-call.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/trait-required-call.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.0451430770335719,
+      "errors": []
+    },
+    {
+      "file": "trait-required-call.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/trait-required-call.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/trait-required-call.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.048253771965391934,
+      "errors": []
+    },
+    {
+      "file": "trait-missing-method.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/trait-missing-method.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/trait-missing-method.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.02943338407203555,
+      "errors": [
+        {
+          "code": "E0046",
+          "message": "not all trait items implemented, missing: `prototype`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error; 1 warning emitted"
+        }
+      ]
+    },
+    {
+      "file": "trait-missing-method.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/trait-missing-method.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/trait-missing-method.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.02810580306686461,
+      "errors": [
+        {
+          "code": "E0046",
+          "message": "not all trait items implemented, missing: `prototype`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error; 1 warning emitted"
+        }
+      ]
+    },
+    {
+      "file": "trait-missing-bound.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/trait-missing-bound.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/trait-missing-bound.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.057828253018669784,
+      "errors": [
+        {
+          "code": "E0599",
+          "message": "no associated function or constant named `prototype` found for type parameter `T` in the current scope"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error; 1 warning emitted"
+        }
+      ]
+    },
+    {
+      "file": "trait-missing-bound.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/trait-missing-bound.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/trait-missing-bound.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.05708090297412127,
+      "errors": [
+        {
+          "code": "E0599",
+          "message": "no associated function or constant named `prototype` found for type parameter `T` in the current scope"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error; 1 warning emitted"
+        }
+      ]
+    },
+    {
+      "file": "foreign-deny.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-deny.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-deny.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.030666862963698804,
+      "errors": []
+    },
+    {
+      "file": "foreign-deny.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-deny.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-deny.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.025235760025680065,
+      "errors": []
+    },
+    {
+      "file": "foreign-duplicate-deny.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-duplicate-deny.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-duplicate-deny.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.0261600730009377,
+      "errors": [
+        {
+          "code": "unused_attributes",
+          "message": "unused attribute"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error; 1 warning emitted"
+        }
+      ]
+    },
+    {
+      "file": "foreign-duplicate-deny.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-duplicate-deny.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-duplicate-deny.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.0267124290112406,
+      "errors": [
+        {
+          "code": "unused_attributes",
+          "message": "unused attribute"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error; 1 warning emitted"
+        }
+      ]
+    },
+    {
+      "file": "foreign-duplicate-allow.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-duplicate-allow.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-duplicate-allow.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.02818187396042049,
+      "errors": []
+    },
+    {
+      "file": "foreign-duplicate-allow.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-duplicate-allow.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-duplicate-allow.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.02862375194672495,
+      "errors": []
+    },
+    {
+      "file": "foreign-unsafe-call.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-unsafe-call.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-unsafe-call.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.040029251016676426,
+      "errors": [
+        {
+          "code": "E0133",
+          "message": "call to unsafe function `external` is unsafe and requires unsafe block"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "foreign-unsafe-call.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-unsafe-call.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-unsafe-call.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.03785493294708431,
+      "errors": [
+        {
+          "code": "E0133",
+          "message": "call to unsafe function `external` is unsafe and requires unsafe block"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "foreign-safe-call.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-safe-call.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-safe-call.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.025322654051706195,
+      "errors": []
+    },
+    {
+      "file": "foreign-safe-call.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-safe-call.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-safe-call.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.029466950916685164,
+      "errors": []
+    },
+    {
+      "file": "foreign-const-call.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-const-call.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-const-call.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.038442955003120005,
+      "errors": [
+        {
+          "code": "E0015",
+          "message": "cannot call non-const function `external` in constants"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "foreign-const-call.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-const-call.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-const-call.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.03656239889096469,
+      "errors": [
+        {
+          "code": "E0015",
+          "message": "cannot call non-const function `external` in constants"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "foreign-wrong-result.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-wrong-result.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-wrong-result.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.03735441097524017,
+      "errors": [
+        {
+          "code": "E0308",
+          "message": "mismatched types"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "foreign-wrong-result.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-wrong-result.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-wrong-result.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.03961969004012644,
+      "errors": [
+        {
+          "code": "E0308",
+          "message": "mismatched types"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "foreign-wrong-abi.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-wrong-abi.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-wrong-abi.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.025646805996075273,
+      "errors": [
+        {
+          "code": "E0703",
+          "message": "invalid ABI: found `cold_invalid`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "foreign-wrong-abi.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-wrong-abi.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-wrong-abi.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.02597662794869393,
+      "errors": [
+        {
+          "code": "E0703",
+          "message": "invalid ABI: found `cold_invalid`"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "foreign-generic.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-generic.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-generic.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.027137716999277472,
+      "errors": [
+        {
+          "code": "E0044",
+          "message": "foreign items may not have type parameters"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "foreign-generic.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/foreign-generic.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/foreign-generic.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.024120689020492136,
+      "errors": [
+        {
+          "code": "E0044",
+          "message": "foreign items may not have type parameters"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "free-prototype.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/free-prototype.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/free-prototype.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.027271425002254546,
+      "errors": [
+        {
+          "code": null,
+          "message": "free function without a body"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "free-prototype.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/free-prototype.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/free-prototype.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.029715233016759157,
+      "errors": [
+        {
+          "code": null,
+          "message": "free function without a body"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "macro-prototype.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/macro-prototype.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/macro-prototype.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.02617909701075405,
+      "errors": []
+    },
+    {
+      "file": "macro-prototype.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/macro-prototype.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/macro-prototype.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.02670001902151853,
+      "errors": []
+    },
+    {
+      "file": "macro-prototype-deny.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/macro-prototype-deny.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/macro-prototype-deny.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.02318708598613739,
+      "errors": [
+        {
+          "code": "unused_attributes",
+          "message": "`#[cold]` attribute cannot be used on required trait methods"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error; 1 warning emitted"
+        }
+      ]
+    },
+    {
+      "file": "macro-prototype-deny.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/macro-prototype-deny.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/macro-prototype-deny.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.02734516595955938,
+      "errors": [
+        {
+          "code": "unused_attributes",
+          "message": "`#[cold]` attribute cannot be used on required trait methods"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error; 1 warning emitted"
+        }
+      ]
+    },
+    {
+      "file": "duplicate-prototype-allow.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/duplicate-prototype-allow.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/duplicate-prototype-allow.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.029189132037572563,
+      "errors": []
+    },
+    {
+      "file": "duplicate-prototype-allow.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/duplicate-prototype-allow.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/duplicate-prototype-allow.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.02965751790907234,
+      "errors": []
+    },
+    {
+      "file": "source-free-prototype.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/source-free-prototype.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/source-free-prototype.metadata"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.029464863007888198,
+      "errors": [
+        {
+          "code": null,
+          "message": "free function without a body"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "source-free-prototype.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/source-free-prototype.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/source-free-prototype.obj"
+      ],
+      "code": 1,
+      "expected": 1,
+      "seconds": 0.027005745912902057,
+      "errors": [
+        {
+          "code": null,
+          "message": "free function without a body"
+        },
+        {
+          "code": null,
+          "message": "aborting due to 1 previous error"
+        }
+      ]
+    },
+    {
+      "file": "source-native.rs",
+      "stage": "metadata",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/source-native.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/source-native.metadata"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.02915553899947554,
+      "errors": []
+    },
+    {
+      "file": "source-native.rs",
+      "stage": "obj",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--crate-name",
+        "cold_reference",
+        "-Cpanic=abort",
+        "-Coverflow-checks=yes",
+        "-Cdebug-assertions=no",
+        "-Zub-checks=no",
+        "--error-format=json",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/source-native.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/source-native.obj"
+      ],
+      "code": 0,
+      "expected": 0,
+      "seconds": 0.031063320115208626,
+      "errors": []
+    },
+    {
+      "stage": "link",
+      "argv": [
+        "cc",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-cold-prototypes/observer.c",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/source-native.obj",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/observer"
+      ],
+      "code": 0,
+      "seconds": 0.04961780190933496,
+      "stdout": ""
+    },
+    {
+      "stage": "native",
+      "argv": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/cold-prototypes/reference-v2/observer"
+      ],
+      "code": 0,
+      "seconds": 0.0018906559562310576,
+      "stdout": "cold-foreign 28 36 2\n"
+    }
+  ]
+}

@@ -95,13 +95,7 @@ fn const_target_has_a_checked_body_and_async_headers_keep_their_execution_requir
     }
     for name in ["prototype-required", "foreign-required"] {
         let report = crate::resolve::resolve(&input(name)?, true)?;
-        let error = full(&report)
-            .err()
-            .ok_or_else(|| format!("unqualified no-body profile {name}"))?;
-        assert!(
-            error.contains("cold function-body profile is not implemented"),
-            "{name}: {error}"
-        );
+        full(&report).map_err(|error| format!("{name}: {error}"))?;
     }
     Ok(())
 }
