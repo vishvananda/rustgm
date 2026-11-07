@@ -16,7 +16,7 @@ The [analysis-only census mode](parallel/core-census-mode.md) is on main:
 `--census-output PATH` and observer `--census`. It records every isolated
 declaration and body failure, each blocked dependent once, sticky budget stops
 and per-phase counts. It always exits 1 and is never a qualification. Its first
-original-core run awaits the joined LIB-193 repair.
+original-core census is recorded below.
 
 Source profile `module-branches-v12` is on main: transported originals keep typed
 Branch and checked Panic exits, with fresh per-instance proof and native execution
@@ -24,7 +24,17 @@ Branch and checked Panic exits, with fresh per-instance proof and native executi
 bytes. No source construct emits Panic yet, and match, drops, closures, impl
 methods, references and constants remain untransported.
 
-Current joined original-core observation reports **LIB-193**, the unlocated
+Current qualified LIB-193 observation reports `object requires exactly one
+principal trait` at file 97 (original `core/src/any.rs`, byte 6032, the `Send`
+bound of `dyn Any + Send` at line 162), in 20.09 s/375 opens. The
+[header budget checkpoint](parallel/lib193-header-budget.md) attributes the
+crossing to linear producers plus per-site `enable` reparsing (6,292 sites, 85
+spellings). It validates each spelling once per collection walk and replaces
+the borrowed fixed header caps with a once-computed input-graph bound (16 work
+units and 128 attempted bytes per element). Manifest, pins, cap-lints and limits
+are unchanged. No original artifact or whole assignment is complete.
+
+The preceding joined original-core observation reported **LIB-193**, the unlocated
 source-header query-work guard, in19.6071s/375opens. The
 [cold/deprecation integration](parallel/cold-deprecation-main-join.md) clears
 LIB192 with genuine staged release semantics and actual prototype owners.
