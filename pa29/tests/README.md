@@ -80,3 +80,14 @@ capturing closures, three opponents (a wrong result, a mutating `Fn` closure
 and a consuming `FnMut` closure), a fenced provider closure and the forged
 call-operator controls. The `crate_linking::fn_roles` integration
 controls consume it; the owning checkpoint records candidate results.
+
+`macro-metadata-outcomes.json` freezes the exported `macro_rules!` family under
+`spec/macro-metadata/`. It covers a 2021 provider (with a 2018 copy) and a
+second provider. Its clients use `use` imports, paths and
+`#[macro_use] extern crate` in 2015, 2018 and 2024. Their cases cover `$crate`
+binding against a local name, `pat` fragments in the provider's edition,
+root-only publication, unexported macros and colliding names. All twelve rustc
+predictions were declared before the run. The
+`crate_linking::declarative_exports` controls check the provider envelope.
+Consumer import and native execution remain required work
+(`docs/parallel/macro-metadata.md`).

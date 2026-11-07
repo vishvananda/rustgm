@@ -1,4 +1,5 @@
 //! Library exports consume resolved bindings and completed signature/member facts.
+mod declarative_rows;
 mod named_values;
 mod public_names;
 mod records;
@@ -139,19 +140,31 @@ pub(crate) fn export_with_originals(
     } else {
         interface
     };
-    let interface = if let Some(plan) = facts
-        .foreign
-        .as_deref()
-        .and_then(crate::sema::foreign::Registry::native_links)
-    {
-        interface.with_native_links(plan.clone()).map_err(error)?
-    } else {
-        interface
-    };
+    let interface = with_envelopes(report, facts, interface)?;
     let linkage = facts.crates.get_or_insert_default();
     linkage.set_identity(identity).map_err(error)?;
     roots.sort_unstable_by_key(|definition| definition.0);
     Ok(Exports { interface, roots })
+}
+/// Root macro rows and native links wrap the completed core table.
+fn with_envelopes(
+    report: &Report,
+    facts: &Declarations,
+    interface: Interface,
+) -> Result<Interface, Error> {
+    let interface = if let Some(macros) = declarative_rows::collect(report)? {
+        interface.with_macros(macros).map_err(error)?
+    } else {
+        interface
+    };
+    if let Some(plan) = facts
+        .foreign
+        .as_deref()
+        .and_then(crate::sema::foreign::Registry::native_links)
+    {
+        return interface.with_native_links(plan.clone()).map_err(error);
+    }
+    Ok(interface)
 }
 fn validate_profile(
     report: &Report,

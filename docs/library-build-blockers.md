@@ -5,6 +5,18 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+[Exported macro metadata](parallel/macro-metadata.md) (Lane B, PA29): library
+metadata now publishes root `#[macro_export]` definitions in a separate
+version-one envelope (tag 14), nested inside native links. Each row carries a
+canonical body image, typed token-tree rows, the edition, `local_inner_macros`
+and the rule count. Crates without exported macros keep their exact bytes.
+Malformed, relabelled, nested and trailing rows are rejected by name, as are
+generated, documented, builtin, scoped and permissioned definitions. Original
+cfg-if 1.0.4 now exports its `cfg_if` row (edition 2018, 4 rules). Twelve pinned
+rustc outcomes are frozen in `pa29/tests/macro-metadata-outcomes.json`. Consumer
+import is still to do: authentication, `$crate` bound to the provider's identity,
+the `use`, path and `#[macro_use]` forms, native runs and the cfg-if unit.
+
 Lane C [callable-role transport](parallel/callable-role-transport.md) is
 joined on main. Version 13 now carries a no-core `Tuple`
 marker, `FnOnce` with its declared `Output`, `FnMut` and `Fn`, together with

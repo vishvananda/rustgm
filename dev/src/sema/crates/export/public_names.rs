@@ -31,8 +31,11 @@ pub(super) fn collect(report: &Report, identity: &CrateIdentity) -> Result<Plan,
     let mut visits = 0usize;
     while let Some((scope, path)) = work.pop() {
         let mut bindings = Vec::new();
-        for (name, _, binding) in report.resolution.bindings.scope(scope) {
-            if binding.access != Access::Public {
+        for (name, namespace, binding) in report.resolution.bindings.scope(scope) {
+            // Root `#[macro_export]` rows travel in their own macro table.
+            if binding.access != Access::Public
+                || (scope == root && super::declarative_rows::exported(report, namespace, binding))
+            {
                 continue;
             }
             if binding.ambiguous {

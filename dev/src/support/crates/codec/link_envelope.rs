@@ -14,7 +14,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     {
         return Err("static native archive bundling in crate metadata is not implemented");
     }
-    let inner = super::encode_core(interface)?;
+    let inner = super::encode_inner(interface)?;
     let mut output = Writer::default();
     output.bytes(MAGIC)?;
     output.u16(SCHEMA)?;

@@ -6,6 +6,8 @@ mod borrowed;
 mod branch_transport;
 #[path = "crate_linking/convention_transport.rs"]
 mod convention_transport;
+#[path = "crate_linking/declarative_exports.rs"]
+mod declarative_exports;
 #[path = "crate_linking/direct_calls.rs"]
 mod direct_calls;
 #[path = "crate_linking/exports.rs"]

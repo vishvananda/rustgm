@@ -96,6 +96,7 @@ pub struct Interface {
     public_names: Option<Box<PublicNames>>,
     generic_payload: Option<Box<super::generics::Payload>>,
     native_links: Option<Box<crate::support::linker_libraries::Plan>>,
+    macros: Option<Box<super::exported_macros::Macros>>,
     atoms: usize,
     names: usize,
 }
@@ -112,6 +113,7 @@ impl PartialEq for Interface {
             && self.public_names == other.public_names
             && self.generic_payload == other.generic_payload
             && self.native_links == other.native_links
+            && self.macros == other.macros
     }
 }
 impl Eq for Interface {}
@@ -151,6 +153,28 @@ impl Interface {
         self.atoms = atoms;
         self.names = names;
         self.native_links = Some(Box::new(plan));
+        Ok(self)
+    }
+    #[must_use]
+    pub fn macros(&self) -> Option<&super::exported_macros::Macros> {
+        self.macros.as_deref()
+    }
+    /// Attach this crate's own `#[macro_export]` definitions at its root.
+    /// # Errors
+    /// Rejects duplicate attachments and combined name/storage budget exhaustion.
+    pub fn with_macros(
+        mut self,
+        macros: super::exported_macros::Macros,
+    ) -> Result<Self, &'static str> {
+        if self.macros.is_some() {
+            return Err("duplicate exported macro metadata");
+        }
+        let atoms = self.atoms.saturating_add(macros.rows().len());
+        if atoms > MAX_COMPONENTS || macros.bytes() > super::MAX_BYTES {
+            return Err("exported macros exceed combined profile budget");
+        }
+        self.atoms = atoms;
+        self.macros = Some(Box::new(macros));
         Ok(self)
     }
     /// Publish a bounded canonical table before any resolver/inference allocation.
@@ -340,6 +364,7 @@ impl Interface {
             public_names: None,
             generic_payload: None,
             native_links: None,
+            macros: None,
             atoms: components,
             names: bytes,
         })

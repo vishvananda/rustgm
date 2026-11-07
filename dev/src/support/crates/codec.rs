@@ -1,4 +1,5 @@
 //! Versioned little-endian metadata validates bounded tables before inference.
+mod declarative_envelope;
 mod link_envelope;
 mod nominals;
 mod ordinary_columns;
@@ -32,6 +33,13 @@ const PROFILE: [u8; 3] = [TARGET_LINUX_X86_64, LANGUAGE_RUST_1_98_EDITION_2024, 
 pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     if interface.native_links().is_some() {
         return link_envelope::encode(interface);
+    }
+    encode_inner(interface)
+}
+/// Macro rows sit inside native links; crates exporting no macros keep old bytes.
+fn encode_inner(interface: &Interface) -> Result<Vec<u8>, &'static str> {
+    if interface.macros().is_some() {
+        return declarative_envelope::encode(interface);
     }
     encode_core(interface)
 }
@@ -117,6 +125,9 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
     let tag = input.u8()?;
     if tag == link_envelope::TAG {
         return link_envelope::decode(&mut input);
+    }
+    if tag == declarative_envelope::TAG {
+        return declarative_envelope::decode(&mut input);
     }
     if tag == packet_envelope::TAG {
         return packet_envelope::decode(&mut input);

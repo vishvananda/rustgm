@@ -120,6 +120,11 @@ pub struct Definition {
     pub(super) header: Option<std::rc::Rc<super::bindings::panic_contracts::HeaderData>>,
 }
 impl Definition {
+    /// Checked definition-site contracts (internal unstable, edition panic) are
+    /// source permissions that macro metadata does not transport.
+    pub(crate) const fn has_definition_permissions(&self) -> bool {
+        self.header.is_some() || self.edition_panic
+    }
     fn macro_kind(&self) -> builtin::BuiltinKind {
         match self.body {
             Body::Builtin(role) => role.kind(),

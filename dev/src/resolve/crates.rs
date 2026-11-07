@@ -1,6 +1,7 @@
 //! External metadata keeps its origin while local scopes receive canonical IDs.
 mod original_declarations;
 mod public_names;
+mod token_images;
 #[cfg_attr(
     not(test),
     expect(
@@ -9,6 +10,7 @@ mod public_names;
     )
 )]
 pub(crate) use original_declarations::{OwnedNamespaceCatalog, PendingNamespace};
+pub(crate) use token_images::canonical as macro_image;
 mod consumer_inputs;
 #[path = "crates/dormant_catalog.rs"]
 pub(crate) mod unpaid_provided;

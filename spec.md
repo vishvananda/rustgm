@@ -6149,6 +6149,24 @@ environment. No provider selection or proof is trusted. Closures inside
 provider bodies and closure call entries stay rejected by name. Packets
 without these rows keep their exact bytes.
 
+Exported `macro_rules!` definitions travel in their own version-one envelope
+(tag 14), nested inside the native-link envelope and outside every core
+profile. A crate that exports no macros writes no envelope and keeps its exact
+bytes. Each row holds the crate-root name, the definition edition, the
+`local_inner_macros` bit, the rule count, a canonical image and typed preorder
+token-tree rows. The image spells the single delimited body with one space
+between pieces; an empty group is written `()`, `[]` or `{}`. Rows are sorted by
+unique name. Only direct root `#[macro_export]` source definitions are exported.
+Macro-generated definitions, doc comments in the body, builtin or scoped macros
+and checked definition-site permissions are rejected by name rather than
+dropped. Decoding checks the closed edition, flag, class and delimiter codes and
+that the rows lay out the image exactly. A consumer must not trust these rows: it
+lexes the image once, rebuilds the rows and requires them to be equal, and then
+recompiles every rule in the transported edition. It binds `$crate` to the
+provider's crate identity, never to a name or alias. Generated spellings are
+never re-lexed. The [macro metadata checkpoint](docs/parallel/macro-metadata.md)
+records the profile and its consumer requirements.
+
 ## Lowering and backend facts
 
 Lower only checked, typed facts. Give every emitted instance, drop shim, vtable,

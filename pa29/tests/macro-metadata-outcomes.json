@@ -1,0 +1,214 @@
+{
+ "profile": "Rust 1.98.0 x86_64-unknown-linux-gnu, -Cpanic=abort --cap-lints=allow, per-case editions; independently frozen before any RustGM run",
+ "plan_sha256": "47fda8443e2ebc75e2797264b6ff528406444a3739060d3233b3705f06e9f34f",
+ "oracle_sha256": "251df08999a057c6bb82fce504240e68ce573302517ecb6de4d9d007ba578909",
+ "receipt_sha256": "075f03c208c0a4ac51b0090991664de2d70bb5b6db1e39f4d645883cf02d9b3c",
+ "rustc_version": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+ "cases": [
+  {
+   "name": "provider",
+   "path": "tests/spec/macro-metadata/provider.rs",
+   "source_sha256": "7587bb72a93111ef31109baa05af1264383a3122352d255e9abecff3ea9bdab6",
+   "kind": "rlib",
+   "crate": "provider",
+   "edition": "2021",
+   "deps": {},
+   "rustc": 0,
+   "rustc_codes": [],
+   "native": false,
+   "frontend_expected_after_implementation": 0,
+   "note": "exports call_f/select/nested_export; private_only stays local"
+  },
+  {
+   "name": "other",
+   "path": "tests/spec/macro-metadata/other.rs",
+   "source_sha256": "20e081322a1703a111094c202b453376c61c4a727bc8f2fb5203177abfb3dad0",
+   "kind": "rlib",
+   "crate": "other",
+   "edition": "2021",
+   "deps": {},
+   "rustc": 0,
+   "rustc_codes": [],
+   "native": false,
+   "frontend_expected_after_implementation": 0,
+   "note": "second provider exporting call_f"
+  },
+  {
+   "name": "provider-2018",
+   "path": "tests/spec/macro-metadata/provider.rs",
+   "source_sha256": "7587bb72a93111ef31109baa05af1264383a3122352d255e9abecff3ea9bdab6",
+   "kind": "rlib",
+   "crate": "provider",
+   "edition": "2018",
+   "deps": {},
+   "rustc": 0,
+   "rustc_codes": [],
+   "native": false,
+   "frontend_expected_after_implementation": 0,
+   "note": "same source with 2018 pat fragments"
+  },
+  {
+   "name": "use-client",
+   "path": "tests/spec/macro-metadata/use-client.rs",
+   "source_sha256": "7741ea2e0b84fb69e164271212f2ffb37c4e76c0fbf6d0fdb3939b7d70065252",
+   "kind": "bin",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "provider": "provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_native_exit": 0,
+   "native": true,
+   "frontend_expected_after_implementation": 0,
+   "note": "use import; $crate::f binds provider not local f; 2021 pat or-pattern; root placement of inner macro_export"
+  },
+  {
+   "name": "use-client-2018",
+   "path": "tests/spec/macro-metadata/use-client.rs",
+   "source_sha256": "7741ea2e0b84fb69e164271212f2ffb37c4e76c0fbf6d0fdb3939b7d70065252",
+   "kind": "bin",
+   "crate": "client",
+   "edition": "2018",
+   "deps": {
+    "provider": "provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_native_exit": 0,
+   "native": true,
+   "frontend_expected_after_implementation": 0,
+   "note": "consumer edition differs; provider edition keeps 2021 pat"
+  },
+  {
+   "name": "macro-use-client",
+   "path": "tests/spec/macro-metadata/macro-use-client.rs",
+   "source_sha256": "afa34676356d0f94473236b785450c174ec2700be17707d09a2748ef6648ef36",
+   "kind": "bin",
+   "crate": "client",
+   "edition": "2015",
+   "deps": {
+    "provider": "provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_native_exit": 0,
+   "native": true,
+   "frontend_expected_after_implementation": 0,
+   "note": "#[macro_use] extern crate in a 2015 consumer"
+  },
+  {
+   "name": "pat-client",
+   "path": "tests/spec/macro-metadata/pat-client.rs",
+   "source_sha256": "cbfca4af6cc444c852319c02bd44b32460d50428097f9d6fe158ae7a97691482",
+   "kind": "bin",
+   "crate": "client",
+   "edition": "2015",
+   "deps": {
+    "provider": "provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_native_exit": 0,
+   "native": true,
+   "frontend_expected_after_implementation": 0,
+   "note": "2015 consumer still gets the 2021 provider pat fragment"
+  },
+  {
+   "name": "pat-client-provider-2018",
+   "path": "tests/spec/macro-metadata/pat-client.rs",
+   "source_sha256": "cbfca4af6cc444c852319c02bd44b32460d50428097f9d6fe158ae7a97691482",
+   "kind": "bin",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "provider": "provider-2018"
+   },
+   "rustc": 1,
+   "rustc_codes": [],
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "2024 consumer cannot widen a 2018 provider pat fragment"
+  },
+  {
+   "name": "private-client",
+   "path": "tests/spec/macro-metadata/private-client.rs",
+   "source_sha256": "482ee9d307c6fc2d669b0950fe91dbf0e5db7a80f84093b6951d3237cd776c19",
+   "kind": "bin",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "provider": "provider"
+   },
+   "rustc": 1,
+   "rustc_codes": [
+    "E0433"
+   ],
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "unexported macro_rules is not in metadata"
+  },
+  {
+   "name": "inner-path-client",
+   "path": "tests/spec/macro-metadata/inner-path-client.rs",
+   "source_sha256": "76025b4321979e1eeb48ab79058f3adacdbcec753230692b528e18c10cb75659",
+   "kind": "bin",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "provider": "provider"
+   },
+   "rustc": 1,
+   "rustc_codes": [
+    "E0433"
+   ],
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "macro_export publishes at the crate root only"
+  },
+  {
+   "name": "duplicate-use-client",
+   "path": "tests/spec/macro-metadata/duplicate-use-client.rs",
+   "source_sha256": "5f53e297f1883d0e94fbff23be70e35bde57c239a7d66c66ccf562fdfa2057b3",
+   "kind": "bin",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "provider": "provider",
+    "other": "other"
+   },
+   "rustc": 1,
+   "rustc_codes": [
+    "E0252"
+   ],
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "two use imports of one macro name collide"
+  },
+  {
+   "name": "shadow-client",
+   "path": "tests/spec/macro-metadata/shadow-client.rs",
+   "source_sha256": "4dee70d8cc74880806a3310586a65a19e1039adb90c916e4d28ab71cf5a2a6df",
+   "kind": "bin",
+   "crate": "client",
+   "edition": "2015",
+   "deps": {
+    "provider": "provider",
+    "other": "other"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_native_exit": 0,
+   "native": true,
+   "frontend_expected_after_implementation": 0,
+   "note": "later #[macro_use] extern crate shadows earlier macro_use prelude name; path form unaffected"
+  }
+ ],
+ "requirements": [
+  "RustGM-only: forged, relabelled, truncated and reordered macro rows are rejected by name before any consumer binding",
+  "RustGM-only: crates exporting no macros keep byte-identical metadata",
+  "RustGM-only: the consumer re-lexes the canonical image once and recompiles every rule; no provider proof is trusted"
+ ]
+}
