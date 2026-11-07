@@ -275,3 +275,123 @@ goal are excluded without a trial unification. That makes the own-bound check
 linear in the matching candidates. Its controls would be this family at 64,
 256 and 1,024 bounds with flat work per bound, plus a genuinely ambiguous
 opponent (two bounds that unify with the goal), which must still be rejected.
+
+## 5. Census 4
+
+The pin `6e53028c` (`obj/parallel/census-batch3/qualified-1/pin/rustgm`) was
+built from commit `8c6da24a9` with the same flags as batch 2's pin. It uses
+batch 2's manifest. Only `dev/bin/rustgm.rs` and `dev/src/support/edition.rs`
+are rebound, because base `7a54504d7` added editions 2015 and 2018. The core
+observation passes `--edition=2024`, and no default, used option or limit
+changed. The census is analysis-only, with original core inputs unchanged:
+375 opens in 47 s. Its records are in
+`rustgm-pa29-work/obj/parallel/core-census-4/`.
+
+The census reaches the end of the declaration loop for the first time. It
+checked 42,109 declarations: 74 failed and 127 blocked. Its terminal record is
+"stopped declarations", not a budget. Bodies are not entered while
+declarations fail. The ordinary first error is now `core/src/pat.rs:2692`
+("non-pointer non-null patterns require their wider profile"). That is
+batch 2's explicit cause 4.
+
+| Census 3 → 4 | Checked | Failed | Blocked | End |
+|---|---|---|---|---|
+| Census 3 (`e29c6ab1`) | 37,780 | 92 | 622 | lint-policy work cap, `ops/arith.rs` |
+| Census 4 (`6e53028c`) | 42,109 | 74 | 127 | declaration loop complete |
+
+### Failures by cause
+
+"Blocked" counts every record whose blocking chain ends at a failure with that
+message.
+
+| Cause | Census 3 failed / blocked | Census 4 failed / blocked | Sites |
+|---|---|---|---|
+| associated type requires an unambiguous implementation | 35 / 26 | 35 / 26 | `ops/control_flow.rs`, `array/drain.rs`, `iter/adapters/step_by.rs` |
+| invalid canonical trait selection | 18 / 0 | 18 / 0 | `iter/adapters/flatten.rs` |
+| outlives bound requires a named lifetime | 8 / 0 | 8 / 0 | `iter/adapters/filter_map.rs`, `flatten.rs` |
+| missing storage opaque declaration | 3 / 89 | 4 / 101 | `mem/mod.rs` (`to_be_bytes`), `num/{int,uint}_macros.rs` |
+| semantic type or associated item is private | 4 / 0 | 4 / 0 | `io/error/repr_bitpacked.rs` |
+| invalid associated equality selection | 3 / 0 | 3 / 0 | `array/mod.rs`, `iter/traits/iterator.rs` |
+| non-pointer non-null patterns require their wider profile | 1 / 0 | 1 / 0 | `pat.rs` |
+| nominal or associated types require later semantic assignments | 1 / 0 | 1 / 0 | `ops/control_flow.rs` |
+| object requires exactly one principal trait | 16 / 18 | 0 / 0 | `any.rs`, `error.rs` |
+| incompatible types (builtin binop) | 2 / 478 | 0 / 0 | `to_bytes.rs`, `array/mod.rs` |
+| associated type projection requires normalization | 1 / 11 | 0 / 0 | `int_macros.rs` `Buf` (now the opaque cause) |
+
+### Largest blocking roots
+
+| Blocked | Root | Cause |
+|---|---|---|
+| 75 | `to_be_bytes`, `mem/mod.rs:13723` | missing storage opaque declaration |
+| 11 | `Buf`, `num/int_macros.rs:1892` | missing storage opaque declaration |
+| 11 | `Buf`, `num/uint_macros.rs:1981` | missing storage opaque declaration |
+| 4 | `prepare`, `num/uint_macros.rs:2307` | missing storage opaque declaration |
+| 4 each | `spec_nth`, `spec_try_fold`, `spec_fold` in `step_by.rs` | associated type requires an unambiguous implementation |
+| 3 each | `spec_next_back`, `spec_nth_back`, `spec_try_rfold`, `spec_rfold` in `step_by.rs` | associated type requires an unambiguous implementation |
+
+### `any.rs`: "object requires exactly one principal trait"
+
+Census 3's 16 failures were `impl fmt::Debug for dyn Any + Send`,
+`impl dyn Any + Send + Sync` and `impl dyn Error + 'static + Send`. Its pin was
+built from `38de5c8d3`. In source-core mode, `builtin_traits.identify` has no
+library scope, so core's own `auto trait Send` and `Sync` resolved as ordinary
+user traits. The second bound therefore counted as a second principal (E0225).
+`b9af97afd` classifies an object bound as an auto marker from the
+declaration's `auto trait` header and its catalog role
+([object auto principals](object-auto-principals.md)). That commit is in
+`7a54504d7` but not in census 3's base, which is why batch 2 still reported
+`any.rs` as the ordinary first error. Census 4 has no record with that message
+and no `any.rs` or `error.rs` record at all. The 18 items it blocked are now
+checked. No change in this batch was needed.
+
+### Next cause, not repaired
+
+The largest remaining cause by blocked items is "missing storage opaque
+declaration" (4 failed, 101 blocked, 80% of all blocked). The census message
+names the constant that needed storage (`size_of` behind `to_be_bytes`, `MAX`,
+`BITS`), not the opaque. Code reading gives a hypothesis that has not been
+probed:
+
+- `declarations/abstract_types.rs` interns `Type::Opaque(id, captures)` before
+  `opaque_clauses` completes, and inserts the opaque's `Declaration` only after.
+  An opaque whose clauses wait, or that fails item-locally in census mode,
+  leaves an interned application with no declaration.
+- `opaque/reveal.rs::collect_opaque_applications` scans every interned type from
+  `storage_cursor`. It reports the first such opaque against whichever item
+  next prepares storage.
+
+To confirm, a diagnostic build that names the opaque's origin at that error is
+needed. If confirmed, the repair is to defer or wait on undeclared opaques in
+the storage scan, rather than to make the message item-local. Its controls
+would be a waiting `impl Trait` declared before a `size_of` constant, and a
+failing one. The largest cause by failures is "associated type requires an
+unambiguous implementation" (35 failed, 26 blocked).
+
+## Checks
+
+Task 1's private run used that commit's sources (`cd74b7c79`). Every other
+check used the final sources (`8c6da24a9`, docs aside), the same source
+fingerprint as the pin.
+
+| Check | Result | Receipt |
+|---|---|---|
+| Task 1 private at `cd74b7c79` (18 lib cases, strict private Clippy, format, architecture) | pass | `obj/qualification/fast/1794069155529993010` |
+| Tasks 2/3 private (18 lib cases) | pass, 126 s | `obj/qualification/fast/1794070184057444934` |
+| Tasks 2/3 integration (`opfamily` 4, `mutops` 2, `definition_readiness` 2) | pass, 135 s | `obj/qualification/fast/1794070511278165751` |
+| PA1–PA12 | all pass | `obj/qualification/fast/1794071024507685815` |
+| PA13–PA19, PA21–PA24 | all pass | `obj/qualification/fast/1794071101807393781` |
+| PA20 | 1,451/1,451 | `obj/qualification/fast/1794071181493959999` |
+| `make test-upstream` | 127 fixtures, 126 Reference files | `obj/parallel/census-batch3/gate-upstream.log` |
+| `make test-harness` | 302 tests, 464 roots in 13 binaries, layout ok | `obj/parallel/census-batch3/gate-harness.log` |
+| `make test-target-units` (dev-fast CLI `0a61f14a`) | passed, reproducible | `obj/parallel/census-batch3/gate-target-units.log` |
+
+The known Lane C regression
+`resolve::stability::transport_tests::legacy_availability_remains_unknown_and_hot_records_do_not_grow`
+(Columns 864 vs 768) was excluded and not run.
+
+## Storage
+
+`census-batch3/qualified-1/pin` (`6e53028c`) is the one qualified census pin.
+Batch 2's `qualified-2` pin (`e29c6ab1`) and the analysis-only binop CLI
+(`51f09109`) were retired and pruned. Their hashes are in
+`obj/parallel/census-batch3/retired-batch3-end-pins.json`.

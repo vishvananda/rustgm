@@ -5,6 +5,35 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+[Census batch 3](parallel/census-batch3.md) bounds the source lint-policy
+ledger by its input. It keeps the former fixed limits as a floor, and adds
+8 steps and 64 attempted bytes per admitted original source byte. Each grant is
+made before the producer's first charge, and a failed ledger stays failed.
+Core uses 0.69 steps and 3.65 bytes per byte. The batch also applies rustc's
+builtin scalar operand rule before operator impl selection. Arithmetic,
+bitwise, shift, comparison and compound operators then unify integer and float
+operands, or relate the result, as rustc does, so `{ $size * $elems }` and
+`($n - 1)` no longer face two candidate impls. Unary operand classification
+leaves definition waits to the body loop, which fixes `static-length-neg-sync`.
+Twelve new PA31 controls agree with rustc 1.98.0. One existing control is
+amended: `source-shift-or/readiness/shared.rs`, recorded as an unresolved
+frontier, is now accepted, as rustc accepts it. The 256-bound "type constraint
+work budget exceeded" is a quadratic own-bound ambiguity scan in `choose`, not
+linear work. It is left unchanged, with a repair proposed.
+
+Census 4 (analysis-only, pin `6e53028c`, inputs unchanged, 47 s, 375 opens) is
+the first to complete the declaration loop. It checked 42,109 declarations:
+74 failed and 127 blocked (census 3: 92 and 622). It ended at "stopped
+declarations", not at a budget, and bodies were not reached. The `any.rs`
+"object requires exactly one principal trait" failures are gone. They predated
+`b9af97afd` (source auto-trait object markers), which census 3's pin lacked.
+The ordinary first error is now cause 4 (`pat.rs`, non-pointer `!null`).
+The largest blocker is "missing storage opaque declaration" (4 failed, 101
+blocked, behind `to_be_bytes` and the integer `Buf` aliases), with a
+hypothesis recorded but not yet probed. The most frequent failure is
+"associated type requires an unambiguous implementation" (35). Evidence:
+`rustgm-pa29-work/obj/parallel/core-census-4/`.
+
 Lane C [inherent methods and late-region originals](parallel/inherent-methods-transport.md)
 is joined on main. Version 13 carries:
 
