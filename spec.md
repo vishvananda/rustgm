@@ -6186,6 +6186,29 @@ its enum's member scope; its own paths, calls and patterns resolve through that
 binding. It synthesizes every constructor that its own or a rebuilt body
 references from the re-authenticated enum header.
 
+A version-thirteen impl header may also have no trait application. That is
+an inherent impl, and its member links name implementations with no trait
+member.
+
+- Its Self is a struct or enum of the same artifact, and it carries no
+  `unsafe`, `const` or negative modifier.
+- Its members are methods. Inherent associated constants and types stay
+  rejected.
+- Older profiles reject an inherent row by name.
+
+A consumer re-reads the Self from its own installed type and records an
+imported inherent owner distinct from every trait impl. It publishes each
+method in its nominal's inherent bucket, so method lookup, auto-ref,
+auto-deref and path calls select it as they select a local method. A call to
+such a method is an ordinary function application.
+
+A version-thirteen free provided original with no captures and no early
+regions may also bind late region formals. Each named formal is a region
+parameter declaration of that function. A header's original result is
+admitted against its body's result by shape only. Every consumer therefore
+re-proves, in the rebuilt environment, that the body's result coerces to the
+declared result.
+
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core
 profile. A crate that exports no macros writes no envelope and keeps its exact

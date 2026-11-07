@@ -5,6 +5,20 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [inherent methods and late-region originals](parallel/inherent-methods-transport.md)
+is joined on main. Version 13 carries:
+
+- inherent impls on provider structs and enums, as the absent-trait impl
+  header and member links, with no new wire tag;
+- free originals with late region formals, including named ones.
+
+Consumers publish imported methods in their nominal's inherent bucket. Their
+own lookup, auto-ref and path calls select those methods, and each call is an
+ordinary application. Consumers also re-prove each original's body result
+against its declared result. A forged `-> &'b u8` was accepted before this
+change and is now rejected. The frozen `Columns` record is back to 768 bytes:
+the version-13 cold groups moved out of line.
+
 [Census batch 2](parallel/census-batch2.md) prepares impl header facts on demand
 through the declaration worklist, with cycle detection:
 
@@ -177,10 +191,18 @@ the same frontier and byte-identical census as under the observer's explicit
 caps. With Cargo's lint policy, core still stops first on the
 `implicit_provenance_casts` producer.
 
-Known regression: since the enum-and-match join (`682507cd1`), the private
-invariant `resolve::stability::transport_tests::legacy_availability_remains_unknown_and_hot_records_do_not_grow`
-fails: `size_of::<s::Columns>()` grew from 768 to 864 bytes with the enum column
-groups. The join's private selection did not include it. Lane C owns the repair.
+Known regression: the private invariant
+`resolve::stability::transport_tests::legacy_availability_remains_unknown_and_hot_records_do_not_grow`
+still fails. The inherent-methods join moved the version-13 enum and
+associated-definition groups out of line, so `Columns` is 768 bytes again and
+`SourceRows` is 792 (one box pointer). `Imported` grew from 160 to 216 bytes
+with the macro metadata rows (`cbef4d469`); Lane B owns that repair.
+
+Known regression: the private test
+`resolve::stability::fn_allowances::tests::transport::genuine_original_const_bodies_roundtrip_and_execute_without_client_feature_requests`
+fails at least since `abcfea354`. Its `consumer-grant-not-request` opponent is
+still rejected, but by "const defining body lost its actual source declaration
+contract" instead of a feature diagnostic. Lane B owns the bisection and repair.
 
 Lane C [declared associated-result transport](parallel/associated-result-transport.md)
 is joined on main. Version 13 now carries trait associated results, impl
