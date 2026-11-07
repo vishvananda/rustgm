@@ -120,12 +120,14 @@ fn real_keyword_authority_and_cfg_removed_hard_gate_match_pinned_rust() -> Resul
             forwarded?;
         }
         assert!(report(&fixture("inactive-malformed")?, edition).is_err());
+        // This Rust-positive input still requires the bootstrap const-call join.
+        // Creation now reaches its actual call check; the old syntax-only fence is gone.
         let enabled = report(&fixture("enabled")?, edition)?;
         let error = crate::pipeline::analyze_source(&enabled)
             .err()
-            .ok_or("syntax granted execution")?;
+            .ok_or("bootstrap const closure invocation unexpectedly accepted")?;
         assert!(
-            error.message.contains("const closure callable semantics"),
+            error.message.contains("non-const calls are not allowed in constant initializers"),
             "{error}"
         );
     }

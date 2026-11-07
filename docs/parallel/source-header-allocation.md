@@ -29,7 +29,11 @@ three cold tests, three inherited-overflow tests, four foreign-header/call tests
 and the real cold capture native observer. Header 80, Owner 56, Headers 120,
 Declarations 7120 and Code 304 layouts remain unchanged. The private 28,000-row,
 duplicate-binding/no-phantom-storage and exhausted-owner-growth controls compile
-under all-target metadata; their execution remains for CI.
+under all-target metadata and now pass focused execution in the integrated scratch
+tree (fastcheck1794016474547976334). The entire eight-case gate remains failed on
+three separate unmerged Field/query cases; its five passing controls include these
+three storage regressions, the const-keyword authority repair and the zero-retention
+completed-query control. No full-gate pass is claimed.
 
 The new immutable production CLI 5bd46ec7 reaches the actual next source fence in
 18.1196s with all 722 input hashes, six configuration pins, 375 source opens, fifteen
