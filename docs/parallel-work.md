@@ -1,3 +1,13 @@
+The [cold/deprecation integration](parallel/cold-deprecation-main-join.md) passes
+4 private/23 regular/6 native controls and282 harness/460 roots. JoinedCLI48a0b12a
+clears LIB192 to unlocated query-work guard193 in19.6071s/375opens on unchanged722
+hashes/sixpins/profile/limits. Source's separate97574 diagnostic without cold44f0
+crosses local1M work during target-feature collection; prior contribution
+distribution remains unmeasured, and no permanent repair/limit change is made.
+Both workers are idle for user-requested handoff/pause. Source resumes attribution;
+Async resumes isolated unqualified conditional WIP. See root handoff.md before
+resuming. Same existing btrfs trees/2heavy/16GiB/150GiB/300s guards and cleanup.
+
 The [captured closure/pointer integration](parallel/captured-pointer-main-join.md)
 passes6 actual private,28 regular and6 native tests, with strict selected/private
 Clippy, format, architecture,282 harness/458 roots and pinned upstream checks.

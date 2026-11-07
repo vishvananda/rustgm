@@ -116,3 +116,10 @@ pointer CTFE and real native fallback bodies together with Field. Six private,
 reaches LIB192 staged deprecation in19.1083s. Conditional/generic caller proof,
 receiver adapters, bootstrap and authenticated transport remain required. No
 whole-assignment status or original library artifact gate changes.
+
+The [cold/deprecation integration](docs/parallel/cold-deprecation-main-join.md)
+qualifies actual prototype owner binding and staged release semantics, clearing
+LIB192 to an unlocated shared work-budget guard193. Four private,23 regular and
+six native controls pass on the same compiler snapshot; no limit/source change
+or original artifact is claimed. Assignment status is unchanged. Root handoff.md
+records the user-requested pause and exact restart boundary.

@@ -639,6 +639,17 @@ expectations remain pending; suppression never produces fulfillment. Keep the
 uncapped path and actual macro definition/execution checks unchanged. This
 cap-aware boundary adds no cache or common record field.
 
+Deprecation release data is decoded once into the existing sparse boxed
+annotation, sharing the stability-version parser and pinned target release.
+Actual Library staging controls version meaning: exact TBD is inactive, numeric
+future releases are inactive only for staged APIs, and ordinary arbitrary
+strings remain active. Validate staged since/note legality in the real owner
+parser before publication, independently of use and lint cap. An inactive query
+returns no event or expectation fulfillment while retaining the annotation's
+actual source origin. Macro, early-warning and semantic consumers share this
+result; nearest-annotation identity and explicit metadata fences remain intact.
+See the [release checkpoint](docs/parallel/source-deprecation-release.md).
+
 Legacy imported admission asserts no deprecation absence, and local deprecated
 exports stay closed until explicit transport exists. The
 [finite checkpoint](docs/pa40-lint-expectations-checkpoint.md) records its scope
@@ -1779,6 +1790,17 @@ pointer lowering; explicit method calls execute their selected source bodies.
 Ordinary pointer comparison retains its const restrictions. The
 [pointer checkpoint](docs/parallel/source-guaranteed-compare.md) records actual
 fallback mutation, explicit-method and native provenance controls.
+
+Cold advisories on no-body functions retain their actual source owner in the
+existing header ledger. Bind required methods through their real trait member
+scope and foreign declarations through their resolver-owned active foreign
+block. Required methods retain unused-attribute policy; foreign declarations
+retain ordinary ABI, safety, const and definition rules. Capture ordinary local
+rows only when needed; SourceCore reuses its retained rows. Activate the existing
+prepaid definition-binding walk with transient pass state, using matched header
+lookups rather than a second identity map or repeated whole-inventory scans.
+The [prototype checkpoint](docs/parallel/cold-prototype-headers.md) records
+source replay, actual owner, bounded-noise and real foreign-call controls.
 
 Source Debug derives use the pinned small-field helpers through five fields,
 then real field-name and typed `&[&dyn Debug]` arrays with the larger helpers.
