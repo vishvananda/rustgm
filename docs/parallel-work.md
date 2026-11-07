@@ -1,3 +1,14 @@
+The [actual Field operation checkpoint](parallel/field-proof-projection-checkpoint.md)
+passes11 public controls, full strict metadata, native projection/callback and282
+harness checks; no dense Catalog/Declarations/Frame/body fields are added. Root
+continues genuine provided OFFSET/intrinsic/layout execution. Source owns actual
+cold positions and feature/macro context; Async owns const-closure creation,
+conditional caller proof and real captured CTFE execution. Both existing workers
+remain active, no new cache/tree. Original core stays last observed LIB189; no
+library artifact or whole assignment after24 is complete. Full ac104 qualification
+passes release/course and is executing native; Field successor CI remains due.
+Keep existing btrfs,2heavy/16GiB/150GiB/300s guards and scoped cleanup.
+
 The [overflow/automatic/CI join](parallel/overflow-auto-ci-main-join.md) passes
 nine focused public controls, selected strict Clippy, architecture and282 harness
 checks. The actual joined CLI clears LIB188 to LIB189, cold closure at

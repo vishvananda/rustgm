@@ -1,0 +1,57 @@
+{
+  "scope": "independent Field bound-only demand metadata/object outcomes",
+  "prediction_sha256": "bc40debeab636cc3469582e6d362806fa2ad3ba1a268a2e53d83dda2ec6105de",
+  "compiler": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "observations": [
+    {
+      "mode": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/field-operations/proof-demand-only.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/field-demand-reference-v1/actual.rmeta"
+      ],
+      "status": 0,
+      "seconds": 0.06452614697627723,
+      "source_sha256": "34a028b0157857d7f83ea462b70818ddaa81882ec162b98cbb352297affc413b",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "artifact_sha256": "b5b708429fa27cad1fd20a09b43ccdedc89fe0d4e1025b580e8142221bdb0738",
+      "prediction_matches": true
+    },
+    {
+      "mode": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/field-operations/proof-demand-only.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/field-demand-reference-v1/actual.o"
+      ],
+      "status": 0,
+      "seconds": 0.06433661899063736,
+      "source_sha256": "34a028b0157857d7f83ea462b70818ddaa81882ec162b98cbb352297affc413b",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "artifact_sha256": "0dc4ec2b539135fb5ad2572919bffaffe27a6628009c045a63f6bc8144aea2ff",
+      "prediction_matches": true
+    }
+  ],
+  "state": "passed independent observation"
+}

@@ -19,6 +19,7 @@ pub(in crate::sema) enum Requirement {
     ImplHeader(DefId),
     ImplementationValidated(DefId),
     Fields(ItemId),
+    NominalContract(ItemId),
     Opaque(crate::types::opaque::OpaqueId),
     SourceResultContracts(DefId),
     CallerLocation(DefId),
@@ -31,6 +32,7 @@ impl From<crate::sema::traits::selection::Dependency> for Requirement {
             Dependency::Header(owner) => Self::ImplHeader(owner),
             Dependency::ImplementationValidated(owner) => Self::ImplementationValidated(owner),
             Dependency::Fields(item) => Self::Fields(item),
+            Dependency::NominalContract(item) => Self::NominalContract(item),
             Dependency::Opaque(id) => Self::Opaque(id),
             Dependency::SourceResultContracts(id) => Self::SourceResultContracts(id),
         }
@@ -187,6 +189,7 @@ impl Checker<'_> {
                 Requirement::ImplHeader(_) => "missing prepared implementation header",
                 Requirement::ImplementationValidated(_) => "missing validated implementation",
                 Requirement::Fields(_) => "missing nominal field declarations",
+                Requirement::NominalContract(_) => "missing nominal declaration requirements",
                 Requirement::Opaque(_) => "missing completed opaque hidden type",
                 Requirement::SourceResultContracts(_) => "missing checked source Pointee contracts",
                 Requirement::CallerLocation(_) => "missing checked source caller-location data",

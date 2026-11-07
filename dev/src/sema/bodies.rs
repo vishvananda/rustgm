@@ -148,6 +148,8 @@ pub(crate) fn analyze_defining(
         .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
     super::compiler_items::discriminant::authenticate(report, &facts)
         .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
+    super::compiler_items::field_protocol::authenticate(report, &facts)
+        .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
     let mut checker = Checker::new(report, &mut facts);
     checker.functions(&mut close).map_err(|error| {
         checker
@@ -171,6 +173,8 @@ pub(crate) fn analyze_defining(
     super::compiler_items::pointee::authenticate(report, &facts)
         .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
     super::compiler_items::discriminant::authenticate(report, &facts)
+        .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
+    super::compiler_items::field_protocol::authenticate(report, &facts)
         .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
     Ok(facts)
 }
@@ -808,6 +812,16 @@ impl Checker<'_> {
     pub(super) fn advance_body(&mut self) -> Result<Option<Dependency>, Error> {
         loop {
             if let Some(dependency) = self.advance_current_body()? {
+                if let Requirement::SourceResultContracts(member) = dependency.requirement
+                    && super::compiler_items::field_protocol::prepare_result_dependency(
+                        self.report,
+                        self.facts,
+                        member,
+                        self.availability,
+                    )?
+                {
+                    continue;
+                }
                 let owner = match dependency.requirement {
                     Requirement::ImplHeader(owner) | Requirement::Definition(owner) => Some(owner),
                     _ => None,

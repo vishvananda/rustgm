@@ -58,6 +58,9 @@ mod wrapping_contract;
 pub(crate) use subtraction_contract::SubtractionSelection;
 pub(crate) use subtraction_contract::{scalar_arithmetic, wrapping_operator};
 pub(crate) use wrapping_contract::WrappingOffsetSelection;
+#[path = "compiler_items/reflection_fields.rs"]
+pub(in crate::sema) mod field_protocol;
+pub(crate) use field_protocol::authenticate as authenticate_field;
 pub(in crate::sema) mod reflection;
 pub(in crate::sema) use headers::reflection_members::complete as complete_field_headers;
 pub(in crate::sema) mod transmutability;

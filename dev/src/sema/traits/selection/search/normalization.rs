@@ -463,6 +463,23 @@ impl Search<'_> {
             Source::Pointee(_) => {
                 return Err("source Metadata bypassed its checked result plan".into());
             }
+            Source::Field(selected) => {
+                let application = opened
+                    .application
+                    .associated()
+                    .ok_or("Field proof requires an associated result")?;
+                let parent = self.query.nodes[node].goal;
+                let application = crate::types::projection::Application {
+                    subject: parent.ty,
+                    trait_application: parent
+                        .bound
+                        .trait_parts()
+                        .ok_or("Field lost its proved parent")?
+                        .0,
+                    ..application
+                };
+                Resolution::Type(selected.output(facts, application)?)
+            }
         };
         Ok((Some(resolution), node))
     }

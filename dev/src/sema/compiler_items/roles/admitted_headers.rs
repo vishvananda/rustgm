@@ -99,6 +99,7 @@ pub(in crate::sema) fn selected_roles(
             pointee: None,
             discriminant: None,
             range: None,
+            field: None,
         }));
     }
     Ok(())
@@ -182,6 +183,7 @@ pub(in crate::sema::compiler_items) fn traits(
         pointee: None,
         discriminant: None,
         range: None,
+        field: None,
     }));
     Ok(())
 }

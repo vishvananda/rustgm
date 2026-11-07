@@ -56,6 +56,7 @@ pub(crate) enum Dependency {
     Header(DefId),
     ImplementationValidated(DefId),
     Fields(crate::types::ItemId),
+    NominalContract(crate::types::ItemId),
     Opaque(crate::types::opaque::OpaqueId),
     SourceResultContracts(DefId),
 }
@@ -90,9 +91,13 @@ impl Dependency {
                 .as_ref()
                 .is_some_and(|registry| registry.is_validated(owner)),
             Self::Fields(item) => facts.aggregates.get(item).is_some(),
+            Self::NominalContract(item) => {
+                facts.generics.nominal_contracts.contains(&DefId(item.0))
+            }
             Self::SourceResultContracts(id) => {
                 crate::sema::compiler_items::pointee::ready(facts, id)
                     || crate::sema::compiler_items::discriminant::ready(facts, id)
+                    || crate::sema::compiler_items::field_protocol::ready(facts, id)
             }
             Self::Opaque(id) => facts
                 .opaques
@@ -112,6 +117,7 @@ pub(in crate::sema) enum Source {
     /// obligations remain owned by the actual projection query.
     Pointee(crate::sema::compiler_items::pointee::Selection),
     Discriminant(crate::sema::compiler_items::discriminant::Selection),
+    Field(crate::sema::compiler_items::field_protocol::Selection),
     /// A language callable implementation with its selected, scoped Output.
     Callable {
         output: TypeId,

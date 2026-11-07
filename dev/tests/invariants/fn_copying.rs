@@ -422,7 +422,11 @@ fn other_copy_subjects_do_not_allocate_callable_formation() -> TestResult {
             let assumptions = Assumptions::default();
             let mut search =
                 Search::new(tests::caller(&assumptions, None), Availability::Validated);
-            assert!(!search.prepare_nominal_formation(&mut facts, &mut frame)?);
+            assert!(
+                search
+                    .prepare_nominal_formation(&mut facts, &mut frame)?
+                    .is_none()
+            );
             assert!(frame.formation.is_none());
             assert!(search.query.families.is_empty());
         }

@@ -221,17 +221,9 @@ impl Query {
                     .resume_at(self.frontier.max(self.state.obligations.regions.end))?;
             }
             if let Some(source) = selected.as_ref()
-                && source.callable_result()
+                && let Some(result) = self.direct_result(facts, source)?
             {
                 self.source = Some(source.clone());
-                let definition = crate::sema::projections::Definition::alias(
-                    facts,
-                    self.alias,
-                    self.alias.arguments(),
-                    source.clone(),
-                )?
-                .ok_or("callable evidence has no associated output")?;
-                let result = definition.result(facts)?.ok_or("missing callable output")?;
                 return self.finish(facts, Some(Resolution::Type(result)));
             }
             if self.closed && selected.is_none() {
@@ -301,6 +293,52 @@ impl Query {
                 }
             }
         }
+    }
+
+    /// Direct language results keep the same selected parent and lifetime proof.
+    fn direct_result(
+        &mut self,
+        facts: &mut Declarations,
+        source: &selection::Source,
+    ) -> Result<Option<crate::types::TypeId>, &'static str> {
+        if let selection::Source::Field(selected) = source {
+            let goal = self
+                .state
+                .context
+                .resolved_predicate(&mut facts.types, &self.goal)
+                .map_err(|_| "Field result lost its resolved selected parent")?;
+            let application = self
+                .alias
+                .associated()
+                .ok_or("Field requires its actual associated result")?;
+            let application = Application {
+                subject: goal.ty,
+                trait_application: goal
+                    .bound
+                    .trait_parts()
+                    .ok_or("Field result lost its actual trait application")?
+                    .0,
+                ..application
+            };
+            return selected
+                .output(facts, application)
+                .map(Some)
+                .map_err(|_| "Field result lost its checked selected field");
+        }
+        if !source.callable_result() {
+            return Ok(None);
+        }
+        let definition = crate::sema::projections::Definition::alias(
+            facts,
+            self.alias,
+            self.alias.arguments(),
+            source.clone(),
+        )?
+        .ok_or("callable evidence has no associated output")?;
+        definition
+            .result(facts)?
+            .map(Some)
+            .ok_or("missing callable output")
     }
 
     fn select(

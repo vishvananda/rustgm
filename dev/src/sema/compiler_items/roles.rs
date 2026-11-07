@@ -39,6 +39,7 @@ pub(super) struct Validated {
     pub(super) pointee: Option<std::rc::Rc<super::pointee::Contracts>>,
     pub(super) discriminant: Option<std::rc::Rc<super::discriminant::Contracts>>,
     pub(super) range: Option<Box<range_members::Contracts>>,
+    pub(super) field: Option<std::rc::Rc<super::field_protocol::Contracts>>,
 }
 impl Catalog {
     /// The declaration-validation ledger is complete and its retained catalog
@@ -149,6 +150,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         pointee: None,
         discriminant: None,
         range: None,
+        field: None,
     };
     let mut callables = Vec::new();
     for role in TRAIT_ROLES {
@@ -331,7 +333,7 @@ fn require_distinct_pointee(
         expected.insert(LangItem::DiscriminantKind);
         expected.insert(LangItem::DiscriminantType);
     }
-    if expected.is_empty()
+    if expected.is_empty() && prior.field.is_none()
         || prior.roles != expected
         || prior.roles.intersects(roles)
         || prior.methods != [None; 3]
@@ -756,6 +758,7 @@ fn record_completion(
             pointee: None,
             discriminant: None,
             range: None,
+            field: None,
         })
     });
     if ledger.roles.contains(role) {

@@ -8,6 +8,9 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Action, String> {
+        if let Some(action) = self.prepare_nominal_formation(facts, frame)? {
+            return Ok(action);
+        }
         if let Some(action) = self.source_future_result(facts, frame)? {
             return Ok(action);
         }
@@ -15,6 +18,9 @@ impl Search<'_> {
             return Ok(action);
         }
         if let Some(action) = self.source_pointee_result(facts, frame)? {
+            return Ok(action);
+        }
+        if let Some(action) = self.source_field_result(facts, frame)? {
             return Ok(action);
         }
         if let Some(action) = Self::source_unsizing_result(facts, frame)? {
@@ -47,6 +53,26 @@ impl Search<'_> {
         if let Some(action) = self.clone_marker_result(facts, frame)? {
             return Ok(action);
         }
+        if let Some(action) = self.primitive_result(facts, frame)? {
+            return Ok(action);
+        }
+        let decision = if frame.deferred || frame.partial.is_some() {
+            Decision::Deferred
+        } else {
+            frame
+                .selected
+                .map_or(Decision::Absent, super::frames::Chosen::decision)
+        };
+        Ok(Action::Complete(
+            self.coherence_absence(facts, frame, decision)?,
+        ))
+    }
+    /// Primitive descriptor publication is separate from source protocol selection.
+    fn primitive_result(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+    ) -> Result<Option<Action>, String> {
         match primitive_methods::candidate(
             facts,
             &mut frame.inputs.context,
@@ -56,7 +82,7 @@ impl Search<'_> {
             Ok(Candidate::Present(descriptor)) => {
                 // An automatic method never suppresses a second matching impl.
                 if frame.selected.is_some() {
-                    return Ok(Action::Complete(Decision::Deferred));
+                    return Ok(Some(Action::Complete(Decision::Deferred)));
                 }
                 let goal = frame
                     .inputs
@@ -88,7 +114,11 @@ impl Search<'_> {
                 descriptor,
                 prerequisite,
             }) => {
-                return Ok(Self::start_comparison(frame, descriptor, prerequisite));
+                return Ok(Some(Self::start_comparison(
+                    frame,
+                    descriptor,
+                    prerequisite,
+                )));
             }
             Ok(Candidate::Unrelated) => {}
             Ok(Candidate::Deferred)
@@ -97,15 +127,6 @@ impl Search<'_> {
             ) => frame.deferred = true,
             Err(error) => return Err(inference(error)),
         }
-        let decision = if frame.deferred || frame.partial.is_some() {
-            Decision::Deferred
-        } else {
-            frame
-                .selected
-                .map_or(Decision::Absent, super::frames::Chosen::decision)
-        };
-        Ok(Action::Complete(
-            self.coherence_absence(facts, frame, decision)?,
-        ))
+        Ok(None)
     }
 }

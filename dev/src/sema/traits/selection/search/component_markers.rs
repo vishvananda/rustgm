@@ -251,13 +251,15 @@ impl Search<'_> {
             .context
             .resolved_predicate(&mut facts.types, &frame.goal)
             .map_err(inference)?;
+        let source = crate::sema::compiler_items::field_protocol::complete_selection(facts, goal)?
+            .map_or(Source::Builtin, Source::Field);
         let node = self.query.push(
             Node {
                 debt_free: false,
                 cycle_dependent: false,
                 provisional_size: false,
                 goal,
-                source: Some(Source::Builtin),
+                source: Some(source),
                 children,
                 first: frame.first,
                 end,

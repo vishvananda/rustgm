@@ -30,6 +30,7 @@ mod fn_copying_tests;
 mod pinning_tests;
 mod pointee;
 mod refined_markers;
+mod reflected_fields;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/refutation_layout.rs"]
 mod refutation_layout;
@@ -534,8 +535,8 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Action, String> {
-        if self.prepare_nominal_formation(facts, frame)? {
-            return Ok(Action::Continue);
+        if let Some(action) = self.prepare_nominal_formation(facts, frame)? {
+            return Ok(action);
         }
         if let Some(action) = self.start_callable(facts, frame)? {
             return Ok(action);

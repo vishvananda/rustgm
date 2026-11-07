@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "state": "frozen-before-any-projection-native-Rust-or-candidate-observation",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "cases": [
+    {
+      "file": "projection-native.rs",
+      "sha256": "dae297ea82220a0f5e8caedc3751c0bd52d13e931ded586a5fc52ddf78957afc",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_classification": "semantic",
+      "hypothesis": "Actual Field Base/Type projections retain runtime operands and ordinary C callbacks execute once; default OFFSET remains present but undemanded.",
+      "native": {
+        "observer": "projection-native.c",
+        "observer_sha256": "0bb4c14e568cf0c56d006b75f331df368da04c42cce76a298e35095760c23094",
+        "expected_stdout": "projection 23 29 1 1\n"
+      }
+    }
+  ]
+}

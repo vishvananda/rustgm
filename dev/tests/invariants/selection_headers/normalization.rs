@@ -238,7 +238,7 @@ fn declaration_projection_templates_restore_results_before_fresh_rebasing() -> T
         }
     };
     let definition = Definition::select(
-        &f.facts,
+        &mut f.facts,
         crate::types::projection::Application {
             arguments: projected.family,
             ..request
@@ -335,7 +335,7 @@ fn closed_projection_fallback_keeps_assumptions_and_discarded_trials_separate() 
         if base == "u8" {
             assert!(matches!(source, Source::Implementation { .. }));
             let definition = Definition::select(
-                &f.facts,
+                &mut f.facts,
                 crate::types::projection::Application {
                     arguments: projected.family,
                     ..application

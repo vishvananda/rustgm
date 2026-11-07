@@ -324,6 +324,21 @@ impl Checker<'_> {
             match self.poll_projections(body)? {
                 Advance::Ready(progress) => return Ok(progress),
                 Advance::Definition(dependency) => {
+                    if let super::Requirement::SourceResultContracts(member) =
+                        dependency.requirement
+                        && crate::sema::compiler_items::field_protocol::prepare_result_dependency(
+                            self.report,
+                            self.facts,
+                            member,
+                            self.availability,
+                        )?
+                    {
+                        self.state
+                            .infer
+                            .account_work(1)
+                            .map_err(|e| self.error(body, e))?;
+                        continue;
+                    }
                     if let super::Requirement::ImplHeader(owner) = dependency.requirement
                         && crate::sema::declarations::iteration::range_contracts::prepare_dependency(
                             self.report,
@@ -718,6 +733,18 @@ impl Checker<'_> {
             ty,
             self.availability,
             (completed, &mut |facts, dependency| {
+                if let crate::sema::traits::selection::Dependency::SourceResultContracts(member) =
+                    dependency
+                    && crate::sema::compiler_items::field_protocol::prepare_result_dependency(
+                        report,
+                        facts,
+                        member,
+                        availability,
+                    )
+                    .map_err(|_| "Field result contract preparation failed")?
+                {
+                    return Ok(true);
+                }
                 crate::sema::declarations::iteration::range_contracts::prepare_dependency(
                     report,
                     facts,

@@ -6346,6 +6346,20 @@ reading completed layout. Source field_of lookup keeps its own contextual
 privacy and stability authority. Full reflection and authenticated transport
 remain separate required consumers.
 
+Builtin Field evidence retains a sparse seal in the existing source-trait ledger,
+not every ordinary declaration or solver frame. Capture actual nominal/trait/
+Base/Type/OFFSET identities and retained source images after their ordinary facts
+finish. Canonical authored trait inputs precede synthesized Self assumptions.
+Use ordinary scoped children for all real supertraits and sizing duties; a
+representing type's Copy evidence never confers Copy on its selected field.
+Normalize actual semantic field types with full mixed arguments and retain the
+same selected parent/member/application through every result consumer. Missing
+nominal contracts yield the ordinary typed worklist dependency. In validated body
+checking, seal completed result data only at its actual first demand; earlier
+work still belongs to the declaration coordinator. Authenticate the actual Report
+again at instance/publication boundaries. The [qualified finite consumers](docs/parallel/field-proof-projection-checkpoint.md)
+retain genuine OFFSET/default execution and complete reflection as required work.
+
 Owned unsized function parameters require actual crate permission and direct
 parameter identity. A lazy pass-local, prepaid index is shared across body
 checks; ordinary sized bindings build no index. Keep parameter ownership

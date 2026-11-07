@@ -98,3 +98,15 @@ privacy/name resolution, actual field access, full original Debug/reflection and
 remaining method bodies, alternate demanded profiles and authenticated transport
 remain required. This reference packet neither grants those permissions nor
 completes a whole assignment or original library artifact.
+
+## Bound-only and native projection successors
+
+`predictions-v3.json`/`reference-v2.json` independently accept the unchanged
+`proof-only` prefix with both unrelated projection functions removed. The actual
+Field bound demand must prepare its own completed source result metadata.
+`predictions-v4.json`/`reference-v3.json` additionally qualify
+`projection-native.rs` and its literal C observer in metadata/object/native modes:
+`projection 23 29 1 1`. The projected word and callback result retain caller
+operands, the Base reference retains its identity, and the callback runs once.
+Neither companion demands OFFSET; the full existing offset/native packet remains
+required. All original packet bytes and historical reference receipts stay intact.

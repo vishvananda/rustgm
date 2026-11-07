@@ -1,5 +1,5 @@
 //! Immediate nominal contracts share formation-only proofs in one caller query.
-use super::{Declarations, Frame, Search, inference};
+use super::{Action, Declarations, Frame, Search, inference};
 use super::{
     frames::Chosen,
     member_conditions::{Entry, Formation, Key, Purpose},
@@ -54,17 +54,18 @@ impl Search<'_> {
         &mut self,
         facts: &mut Declarations,
         frame: &mut Frame,
-    ) -> Result<bool, String> {
+    ) -> Result<Option<Action>, String> {
         if frame.formation.is_some()
             || (facts.source_bindings.is_none()
                 && !Self::declared_automatic_goal(facts, &frame.goal)?)
         {
-            return Ok(false);
+            return Ok(None);
         }
         // Actual source marker roles share formation independently of their
         // effect eligibility. Item arguments retain their formation duties;
         // their declaration signature was proved before forming the item.
         let source_rule = Self::source_future_goal(facts, frame)?
+            || Self::source_field_goal(facts, &frame.goal)
             || Self::source_auto_goal(facts, &frame.goal)?
             || matches!(
                 Self::source_sizing_kind(facts, &frame.goal)?,
@@ -76,7 +77,7 @@ impl Search<'_> {
             || Self::source_fn_pointer_goal(facts, &frame.goal)?
             || Self::source_refinement_marker_goal(facts, frame)?;
         if !source_rule {
-            return Ok(false);
+            return Ok(None);
         }
         let goal = match frame
             .inputs
@@ -84,7 +85,7 @@ impl Search<'_> {
             .resolved_predicate(&mut facts.types, &frame.goal)
         {
             Ok(goal) => goal,
-            Err(crate::types::infer::Error::Unresolved) => return Ok(false),
+            Err(crate::types::infer::Error::Unresolved) => return Ok(None),
             Err(error) => return Err(inference(error)),
         };
         if facts.types.contains_nominals(goal.ty) == Some(false)
@@ -93,9 +94,23 @@ impl Search<'_> {
                 Some(crate::types::Kind::Future { .. })
             )
         {
-            return Ok(false);
+            return Ok(None);
+        }
+        if let Some(dependency) = Self::nominal_contract_dependency(facts, goal.ty) {
+            return Ok(Some(Action::Wait(dependency)));
         }
         self.begin_nominal_formation(facts, frame, goal.ty, 0, true)
+            .map(|started| started.then_some(Action::Continue))
+    }
+    pub(super) fn nominal_contract_dependency(
+        facts: &Declarations,
+        ty: TypeId,
+    ) -> Option<super::Dependency> {
+        let crate::types::Kind::Adt(item, _) = facts.types.kind(ty)? else {
+            return None;
+        };
+        (!facts.generics.nominal_contracts.contains(&DefId(item.0)))
+            .then_some(super::Dependency::NominalContract(item))
     }
     pub(super) fn begin_nominal_formation(
         &mut self,

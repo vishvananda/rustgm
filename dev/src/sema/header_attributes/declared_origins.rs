@@ -632,6 +632,11 @@ fn retained_role_site(report: &Report, key: NodeKey) -> bool {
                 LangItem::DiscriminantKind,
                 LangItem::DiscriminantType,
                 LangItem::DynMetadata,
+                LangItem::FieldRepresentingType,
+                LangItem::Field,
+                LangItem::FieldBase,
+                LangItem::FieldType,
+                LangItem::FieldOffset,
                 LangItem::ControlFlowContinue,
                 LangItem::ControlFlowBreak,
                 LangItem::Option,
@@ -674,6 +679,11 @@ pub(in crate::sema) fn role_source_image(
                 (LangItem::RangeMin, DefKind::Const),
                 (LangItem::RangeMax, DefKind::Const),
                 (LangItem::Option, DefKind::Enum),
+                (LangItem::FieldRepresentingType, DefKind::Struct),
+                (LangItem::Field, DefKind::Trait),
+                (LangItem::FieldBase, DefKind::TypeAlias),
+                (LangItem::FieldType, DefKind::TypeAlias),
+                (LangItem::FieldOffset, DefKind::Const),
             ]
             .into_iter()
             .any(|(role, kind)| reserved.language(role) == Some(declaration) && actual.kind == kind)

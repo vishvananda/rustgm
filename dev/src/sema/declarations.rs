@@ -168,6 +168,7 @@ impl Work {
                 Self::ValidateImpl(owner, traits::ImplementationPhase::Begin)
             }
             Requirement::Fields(item) => Self::Fields(item, false),
+            Requirement::NominalContract(item) => Self::NominalContract(item, false),
             Requirement::Opaque(id) => Self::OpaqueHidden(id),
             Requirement::SourceResultContracts(id) => {
                 Self::SourceResultContracts(id, traits::MetadataPhase::Begin)
@@ -185,6 +186,9 @@ impl Work {
                 Self::ValidateImpl(owner, traits::ImplementationPhase::Begin)
             }
             super::traits::selection::Dependency::Fields(item) => Self::Fields(item, false),
+            super::traits::selection::Dependency::NominalContract(item) => {
+                Self::NominalContract(item, false)
+            }
             super::traits::selection::Dependency::Opaque(id) => Self::OpaqueHidden(id),
             super::traits::selection::Dependency::SourceResultContracts(id) => {
                 Self::SourceResultContracts(id, traits::MetadataPhase::Begin)
@@ -669,7 +673,13 @@ impl Checker<'_> {
                 }
                 Work::NominalContract(item, finish) => self.nominal_contract(item, finish)?,
                 Work::Fields(item, finish) => self.nominal_fields(item, finish)?,
-                Work::SourceResultContracts(id, phase) => self.pointee_member_work(id, phase)?,
+                Work::SourceResultContracts(id, phase) => {
+                    if super::compiler_items::field_protocol::is_result(&self.facts, ItemId(id.0)) {
+                        self.reflected_result_work(id, phase)?;
+                    } else {
+                        self.pointee_member_work(id, phase)?;
+                    }
+                }
                 Work::CallerLocation(id, finish) => self.caller_location_data(id, finish)?,
                 Work::GenericDefault(binding) => self.demand_generic_default(binding)?,
                 Work::OpaqueHidden(id) => {

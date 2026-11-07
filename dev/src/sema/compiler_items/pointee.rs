@@ -178,6 +178,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
             pointee: None,
             discriminant: None,
             range: None,
+            field: None,
         })
     });
     ledger.roles.insert(LangItem::PointeeTrait);

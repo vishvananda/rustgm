@@ -4,6 +4,7 @@ mod early_metadata;
 pub(in crate::sema::declarations) use early_metadata::Phase as MetadataPhase;
 mod families;
 mod parameters;
+mod reflected_results;
 mod required;
 use super::super::generics::bounds::Syntax;
 use super::super::{Checker, DefId, Error, ItemId, Kind, NodeKey, Type};
@@ -150,6 +151,10 @@ impl Checker<'_> {
                         &self.facts,
                         member.definition,
                     )? && !crate::sema::compiler_items::discriminant::prepared_member(
+                        self.report,
+                        &self.facts,
+                        member.definition,
+                    )? && !crate::sema::compiler_items::field_protocol::prepared_member(
                         self.report,
                         &self.facts,
                         member.definition,

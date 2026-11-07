@@ -139,7 +139,7 @@ impl Checker<'_> {
         }
     }
 
-    fn source_metadata_owner(
+    pub(in crate::sema::declarations) fn source_metadata_owner(
         &self,
         member: crate::resolve::bindings::Declaration,
         trait_: crate::resolve::bindings::Declaration,
@@ -190,7 +190,11 @@ impl Checker<'_> {
         Ok(owner)
     }
 
-    fn prepay_source_result(&self, id: DefId, key: NodeKey) -> Result<(), Error> {
+    pub(in crate::sema::declarations) fn prepay_source_result(
+        &self,
+        id: DefId,
+        key: NodeKey,
+    ) -> Result<(), Error> {
         use crate::support::retained;
         let reserved = self
             .associated_type_bounds
@@ -225,7 +229,11 @@ impl Checker<'_> {
         )
     }
 
-    fn prepay_result_bound_completion(&self, id: DefId, key: NodeKey) -> Result<(), Error> {
+    pub(in crate::sema::declarations) fn prepay_result_bound_completion(
+        &self,
+        id: DefId,
+        key: NodeKey,
+    ) -> Result<(), Error> {
         let inputs = self
             .facts
             .associated

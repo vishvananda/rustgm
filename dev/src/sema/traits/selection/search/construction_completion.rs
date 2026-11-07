@@ -26,6 +26,14 @@ impl Search<'_> {
                 _ => Err("source nominal formation prerequisite is unsatisfied".into()),
             };
         }
+        if formation.cursor >= formation.requirements.clauses.len()
+            && let Some(&(ty, _)) = formation
+                .nominals
+                .get(formation.cursor - formation.requirements.clauses.len())
+            && let Some(dependency) = Self::nominal_contract_dependency(facts, ty)
+        {
+            return Ok(Action::Wait(dependency));
+        }
         if formation.cursor < formation.requirements.clauses.len() + formation.nominals.len() {
             return Ok(Action::Descend);
         }

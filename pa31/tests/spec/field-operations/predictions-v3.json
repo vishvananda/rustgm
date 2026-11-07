@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "state": "frozen-before-Rust-or-candidate-observation",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "RUSTC_BOOTSTRAP": "1",
+    "threads": 2
+  },
+  "cases": [
+    {
+      "file": "proof-demand-only.rs",
+      "sha256": "34a028b0157857d7f83ea462b70818ddaa81882ec162b98cbb352297affc413b",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_classification": "semantic",
+      "hypothesis": "An actual concrete Field bound demand is sufficient; unrelated Base/Type projection functions must not supply prerequisite metadata readiness.",
+      "source_derivation": {
+        "file": "proof-only.rs",
+        "sha256": "13736284f48c8a923fa92df348f0d718f41ce1fe686f00150d73fa70b4f5a6e9",
+        "operation": "retain exact original bytes preceding the unrelated field_type/field_base functions"
+      }
+    }
+  ]
+}

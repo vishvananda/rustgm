@@ -370,6 +370,12 @@ impl Checker<'_> {
                         .map_err(|error| self.error(node, error.to_string()))?;
                     continue;
                 }
+                Some(Source::Field(selected)) => {
+                    selected
+                        .current(self.facts)
+                        .map_err(|error| self.error(node, error))?;
+                    continue;
+                }
                 Some(Source::Discriminant(selected)) => {
                     selected
                         .current(self.facts)

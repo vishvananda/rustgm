@@ -1,0 +1,216 @@
+{
+  "scope": "actual Field evidence, Base/Type projection, source authentication and native value consumers; OFFSET remains required",
+  "parent": "9bfc77373e2a92921f4fcedad2e2755b4d119788",
+  "compiler_source_digest": "9fe62a5c90cad5b7384a59340712fbebe54fdcd1e682e41284bea8d7cbb5adb1",
+  "compiler_source_files": 2156,
+  "regular": [
+    {
+      "receipt": "obj/qualification/fast/1794009825240221420/receipt.json",
+      "sha256": "e00c649f4d5b8ac847826fb79faed153482304f48ac23478628dce7bd83d0613",
+      "steps": [
+        {
+          "name": "assignment-metadata",
+          "status": 0,
+          "seconds": 2.219457438099198
+        },
+        {
+          "name": "format",
+          "status": 0,
+          "seconds": 31.766201100079343
+        },
+        {
+          "name": "architecture",
+          "status": 0,
+          "seconds": 4.535011839005165
+        },
+        {
+          "name": "clippy",
+          "status": 0,
+          "seconds": 3.7278961489209905
+        },
+        {
+          "name": "build",
+          "status": 0,
+          "seconds": 9.349756666109897
+        },
+        {
+          "name": "suite_frontend-inventory",
+          "status": 0,
+          "seconds": 0.016701664892025292
+        },
+        {
+          "name": "suite_frontend-ignored",
+          "status": 0,
+          "seconds": 0.008376612095162272
+        },
+        {
+          "name": "suite_frontend",
+          "status": 0,
+          "seconds": 0.6661980770295486
+        }
+      ],
+      "selected": {
+        "suite_frontend": [
+          "reflection_sources::actual_field_proof_and_both_projections_share_the_selected_application",
+          "reflection_sources::actual_field_source_is_reauthenticated_before_instance_publication",
+          "reflection_sources::builtin_field_evidence_rejects_ineligible_bases_fields_and_impostors",
+          "reflection_sources::exact_original_headers_and_provided_offset_body_are_checked",
+          "reflection_sources::exact_original_nominal_trait_and_copy_clone_intervals_are_preserved",
+          "reflection_sources::ordinary_constant_types_and_explicit_implementation_policy_remain",
+          "reflection_sources::selected_results_preserve_full_generic_arguments_and_payload_lifetimes",
+          "reflection_sources::unused_alternative_headers_and_unrelated_trait_members_remain_ordinary",
+          "reflection_sources::written_targets_and_parent_generic_counts_reject_before_completion",
+          "automatic_sources::automatic_source_headers_and_structural_consumers"
+        ]
+      }
+    },
+    {
+      "receipt": "obj/qualification/fast/1794010498497822899/receipt.json",
+      "sha256": "74c4f41ea8e79f01356cec1a4f3f9af7ffdcc9e3afe76485f5cb94cbbb13cb61",
+      "steps": [
+        {
+          "name": "assignment-metadata",
+          "status": 0,
+          "seconds": 1.870172850904055
+        },
+        {
+          "name": "format",
+          "status": 0,
+          "seconds": 17.165581479901448
+        },
+        {
+          "name": "architecture",
+          "status": 0,
+          "seconds": 2.9238075140165165
+        },
+        {
+          "name": "clippy",
+          "status": 0,
+          "seconds": 2.071062556002289
+        },
+        {
+          "name": "build",
+          "status": 0,
+          "seconds": 4.729880078928545
+        },
+        {
+          "name": "suite_frontend-inventory",
+          "status": 0,
+          "seconds": 0.01653995702508837
+        },
+        {
+          "name": "suite_frontend-ignored",
+          "status": 0,
+          "seconds": 0.008114185999147594
+        },
+        {
+          "name": "suite_frontend",
+          "status": 0,
+          "seconds": 0.16499299893621355
+        }
+      ],
+      "selected": {
+        "suite_frontend": [
+          "reflection_sources::reflected_results_keep_ordinary_move_lifetime_and_parent_requirements"
+        ]
+      }
+    }
+  ],
+  "regular_exact_tests": 11,
+  "qualification": {
+    "receipt": "obj/parallel/field-projections/qualification-v2/receipt.json",
+    "sha256": "64c74a93b1c76dedec421023f10a6bb368842bc19bb7fe450167df64226263d8",
+    "steps": [
+      {
+        "name": "format",
+        "command": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "status": 0,
+        "seconds": 15.663276976090856
+      },
+      {
+        "name": "all-target-metadata",
+        "command": [
+          "cargo",
+          "clippy",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--all-targets",
+          "--all-features",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "status": 0,
+        "seconds": 97.18342618807219
+      },
+      {
+        "name": "native",
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/deps/suite_frontend-96ae30d9a27bd3bd",
+          "--exact",
+          "reflection_sources::genuine_field_projections_and_actual_callback_execute",
+          "--ignored",
+          "--nocapture"
+        ],
+        "status": 0,
+        "seconds": 0.3666721489280462
+      },
+      {
+        "name": "harness-upstream",
+        "command": [
+          "make",
+          "test-harness",
+          "test-upstream"
+        ],
+        "status": 0,
+        "seconds": 14.457647735951468
+      }
+    ],
+    "seconds": 128.4871865559835,
+    "cfg_test_only_adapters": {
+      "dev/tests/invariants/fn_copying.rs": {
+        "before": "8a93179c8c95e5ca50b6ef2ff47089c1ea7af7c90a44ea41483f0c4e2307af7d",
+        "after": "cee3c0562d2e6aed4491b3576d693f1d3c40bcff487003142cdf5d4e0c02525b"
+      },
+      "dev/tests/invariants/selection_headers/normalization.rs": {
+        "before": "48727013727bdcb6191af70bc8d34eab69a463a7e0860d076e493b7510fe26fb",
+        "after": "0428551f1e79820f884ace0742b52c56cbaabf9814dd82e4c5140554df7a54b2"
+      },
+      "dev/tests/invariants/wf_scope_cache.rs": {
+        "before": "c279a755dc80bd9c59c96e85ce75e293f47a371dbe6026d2dbfe481e3e95d108",
+        "after": "ce0790c53b225b25ce508ee2497878f533fcdd4cc51a58a59ed9a9f0b726326c"
+      }
+    }
+  },
+  "native": {
+    "stdout": "projection 23 29 1 1\n",
+    "trace": "obj/parallel/field-projections/native-3614920/field_projection-execute.stdout",
+    "sha256": "caaa309399dba20e12b61a408c9fb7583b48a703e4e05aa5fdcdf03186f5458d",
+    "backend_pin": "b7c6b8e72595a524e1b3f147212d69c02b257dd8",
+    "reference": "pa31/tests/spec/field-operations/reference-v3.json"
+  },
+  "retained_original_core_frontier": {
+    "blocker": "LIB-189",
+    "scope": "last actual joined main observation before this Field-only checkpoint; not reprobed for unchanged blocker",
+    "reference": "docs/parallel/overflow-auto-ci-main-join.json"
+  },
+  "pending": [
+    "actual provided OFFSET selection/initializer/field_offset execution and native full packet",
+    "field_of privacy/stability and complete reflection",
+    "additional result/quantified contract closure",
+    "authenticated cross-crate Field transport",
+    "private execution/full successor CI",
+    "original core/alloc/std artifacts and whole PA31 release"
+  ]
+}

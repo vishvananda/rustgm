@@ -86,3 +86,9 @@ all722 inputs/profile/limits unchanged. Nine focused controls, strict selected
 Clippy, architecture and282 harness checks pass. Full successor CI, genuine
 const-closure callable/capture/CTFE semantics, Field consumers and all original
 library artifact gates remain required; no new whole assignment is complete.
+
+The [actual Field operation checkpoint](docs/parallel/field-proof-projection-checkpoint.md)
+qualifies builtin proof, Base/Type, generic/move/lifetime constraints and actual
+native projection/callback values with11 focused controls and strict metadata.
+Provided OFFSET/intrinsic/layout execution, full reflection and transport stay
+required. Whole-PA statuses and original core/alloc/std artifact gates are unchanged.

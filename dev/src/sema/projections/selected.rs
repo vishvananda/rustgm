@@ -17,12 +17,22 @@ enum Value {
 }
 impl Definition {
     pub fn select(
-        facts: &Declarations,
+        facts: &mut Declarations,
         application: crate::types::projection::Application,
         source: &Source,
     ) -> Result<Self, &'static str> {
         let item = application.item;
         let family = application.arguments;
+        if let Source::Field(selected) = source {
+            return Ok(Self {
+                id: DefId(item.0),
+                value: Value::Ready(
+                    selected
+                        .output(facts, application)
+                        .map_err(|_| "Field result lost its checked selected field")?,
+                ),
+            });
+        }
         if let Source::AsyncCallable(selected) = source {
             return Ok(Self {
                 id: DefId(item.0),

@@ -2,6 +2,13 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [Field proof/projection checkpoint](../docs/parallel/field-proof-projection-checkpoint.md)
+qualifies actual compiler-provided Field evidence, full Base/Type normalization,
+generic/lifetime/ordinary ownership constraints, source reauthentication and a
+real native value/callback observer. Genuine provided OFFSET selection and its
+initializer/intrinsic/layout execution, field_of privacy/stability, complete
+reflection and authenticated transport remain required. PA31 stays planned.
+
 The [Field/inherent checkpoint](../docs/parallel/field-headers-main-join.md)
 qualifies the actual five ordinary Field headers and unrelated/inherent owners.
 Original core clears their language-item fence to UnwindSafe/custom auto traits;

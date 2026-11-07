@@ -57,7 +57,11 @@ fn active_completed_and_binder_depth_formation_entries_remain_distinct() -> Resu
     assert_ne!(root, prefix);
     assert!(search.query.nodes[prefix].source.is_none());
     let mut parent = Frame::new(&facts, &mut context, &goal, 1)?;
-    assert!(!search.prepare_nominal_formation(&mut facts, &mut parent)?);
+    assert!(
+        search
+            .prepare_nominal_formation(&mut facts, &mut parent)?
+            .is_none()
+    );
     assert!(parent.formation_cacheable());
     search.query.nodes[prefix].debt_free = false;
     assert!(

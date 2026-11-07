@@ -295,7 +295,7 @@ fn selected_definition_retains_both_argument_groups_and_member_identity() -> Tes
                             arguments,
                         })?;
                 let selected = Definition::select(
-                    &facts,
+                    &mut facts,
                     crate::types::projection::Application {
                         item: ItemId(declared.0),
                         subject,

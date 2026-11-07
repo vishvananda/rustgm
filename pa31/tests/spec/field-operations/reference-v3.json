@@ -1,0 +1,94 @@
+{
+  "scope": "independent Field projection metadata/object/native observer",
+  "prediction_sha256": "31bb5ed8eb30cb39c57a50453d95145c6b52e4fd75f86782f75e0bd5421bc7e4",
+  "compiler": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "cc": {
+    "path": "/usr/bin/cc",
+    "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88"
+  },
+  "observations": [
+    {
+      "name": "metadata",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=metadata",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/field-operations/projection-native.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/field-projection-reference-v1/actual.rmeta"
+      ],
+      "status": 0,
+      "seconds": 0.0646561369067058,
+      "source_sha256": "dae297ea82220a0f5e8caedc3751c0bd52d13e931ded586a5fc52ddf78957afc",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "artifact_sha256": "c5fe982c605304611f74a183d38405816157cf7e14d4c104156252381808fbf7",
+      "prediction_matches": true
+    },
+    {
+      "name": "obj",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--cap-lints=allow",
+        "-Zthreads=2",
+        "--emit=obj",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/field-operations/projection-native.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/field-projection-reference-v1/actual.o"
+      ],
+      "status": 0,
+      "seconds": 0.06475479807704687,
+      "source_sha256": "dae297ea82220a0f5e8caedc3751c0bd52d13e931ded586a5fc52ddf78957afc",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "artifact_sha256": "e2668aa9146df1bc209bebeefcd9a0c3a28f8ca5641776372d5103a578f9dbc5",
+      "prediction_matches": true
+    },
+    {
+      "name": "link",
+      "command": [
+        "/usr/bin/cc",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/field-operations/projection-native.c",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/field-projection-reference-v1/actual.o",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/field-projection-reference-v1/observe"
+      ],
+      "status": 0,
+      "seconds": 0.06500476296059787,
+      "source_sha256": "dae297ea82220a0f5e8caedc3751c0bd52d13e931ded586a5fc52ddf78957afc",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "artifact_sha256": "6e55a4448393e763fb3cb2ebfb68634f4f3be392a1cb03f18dc523f036ffd7a4",
+      "prediction_matches": true
+    },
+    {
+      "name": "native",
+      "command": [
+        "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/field-projection-reference-v1/observe"
+      ],
+      "status": 0,
+      "seconds": 0.002390987006947398,
+      "source_sha256": "dae297ea82220a0f5e8caedc3751c0bd52d13e931ded586a5fc52ddf78957afc",
+      "stdout_sha256": "caaa309399dba20e12b61a408c9fb7583b48a703e4e05aa5fdcdf03186f5458d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "prediction_matches": true
+    }
+  ],
+  "state": "passed independent metadata/object/native observation"
+}

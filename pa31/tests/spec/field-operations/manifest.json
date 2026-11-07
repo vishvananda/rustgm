@@ -1243,6 +1243,165 @@
         }
       ],
       "qualification": "qualified metadata/object outcome"
+    },
+    {
+      "file": "proof-demand-only.rs",
+      "sha256": "34a028b0157857d7f83ea462b70818ddaa81882ec162b98cbb352297affc413b",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_classification": "semantic",
+      "hypothesis": "An actual concrete Field bound demand is sufficient; unrelated Base/Type projection functions must not supply prerequisite metadata readiness.",
+      "source_derivation": {
+        "file": "proof-only.rs",
+        "sha256": "13736284f48c8a923fa92df348f0d718f41ce1fe686f00150d73fa70b4f5a6e9",
+        "operation": "retain exact original bytes preceding the unrelated field_type/field_base functions"
+      },
+      "prediction_file": "predictions-v3.json",
+      "qualification": "qualified metadata/object outcome",
+      "observations": [
+        {
+          "mode": "metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=metadata",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/field-operations/proof-demand-only.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/field-demand-reference-v1/actual.rmeta"
+          ],
+          "status": 0,
+          "seconds": 0.06452614697627723,
+          "source_sha256": "34a028b0157857d7f83ea462b70818ddaa81882ec162b98cbb352297affc413b",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "b5b708429fa27cad1fd20a09b43ccdedc89fe0d4e1025b580e8142221bdb0738",
+          "prediction_matches": true
+        },
+        {
+          "mode": "obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=obj",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/field-operations/proof-demand-only.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/field-demand-reference-v1/actual.o"
+          ],
+          "status": 0,
+          "seconds": 0.06433661899063736,
+          "source_sha256": "34a028b0157857d7f83ea462b70818ddaa81882ec162b98cbb352297affc413b",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "0dc4ec2b539135fb5ad2572919bffaffe27a6628009c045a63f6bc8144aea2ff",
+          "prediction_matches": true
+        }
+      ]
+    },
+    {
+      "file": "projection-native.rs",
+      "sha256": "dae297ea82220a0f5e8caedc3751c0bd52d13e931ded586a5fc52ddf78957afc",
+      "expected_code": 0,
+      "expected_error_codes": [],
+      "expected_classification": "semantic",
+      "hypothesis": "Actual Field Base/Type projections retain runtime operands and ordinary C callbacks execute once; default OFFSET remains present but undemanded.",
+      "native": {
+        "observer": "projection-native.c",
+        "observer_sha256": "0bb4c14e568cf0c56d006b75f331df368da04c42cce76a298e35095760c23094",
+        "expected_stdout": "projection 23 29 1 1\n"
+      },
+      "prediction_file": "predictions-v4.json",
+      "qualification": "qualified metadata/object/native outcome",
+      "observations": [
+        {
+          "name": "metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=metadata",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/field-operations/projection-native.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/field-projection-reference-v1/actual.rmeta"
+          ],
+          "status": 0,
+          "seconds": 0.0646561369067058,
+          "source_sha256": "dae297ea82220a0f5e8caedc3751c0bd52d13e931ded586a5fc52ddf78957afc",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "c5fe982c605304611f74a183d38405816157cf7e14d4c104156252381808fbf7",
+          "prediction_matches": true
+        },
+        {
+          "name": "obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=obj",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/field-operations/projection-native.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/field-projection-reference-v1/actual.o"
+          ],
+          "status": 0,
+          "seconds": 0.06475479807704687,
+          "source_sha256": "dae297ea82220a0f5e8caedc3751c0bd52d13e931ded586a5fc52ddf78957afc",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "e2668aa9146df1bc209bebeefcd9a0c3a28f8ca5641776372d5103a578f9dbc5",
+          "prediction_matches": true
+        },
+        {
+          "name": "link",
+          "command": [
+            "/usr/bin/cc",
+            "-std=c11",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/field-operations/projection-native.c",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/field-projection-reference-v1/actual.o",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/field-projection-reference-v1/observe"
+          ],
+          "status": 0,
+          "seconds": 0.06500476296059787,
+          "source_sha256": "dae297ea82220a0f5e8caedc3751c0bd52d13e931ded586a5fc52ddf78957afc",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "6e55a4448393e763fb3cb2ebfb68634f4f3be392a1cb03f18dc523f036ffd7a4",
+          "prediction_matches": true
+        },
+        {
+          "name": "native",
+          "command": [
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/field-projection-reference-v1/observe"
+          ],
+          "status": 0,
+          "seconds": 0.002390987006947398,
+          "source_sha256": "dae297ea82220a0f5e8caedc3751c0bd52d13e931ded586a5fc52ddf78957afc",
+          "stdout_sha256": "caaa309399dba20e12b61a408c9fb7583b48a703e4e05aa5fdcdf03186f5458d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "prediction_matches": true
+        }
+      ]
     }
   ],
   "native_observer": {
