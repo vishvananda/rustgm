@@ -1,13 +1,26 @@
 # RustGM handoff — 2026-11-07
 
-The goal is active again: **complete all assignment requirements to build the
+The goal is active: **complete all assignment requirements to build the
 original std crates**. Execution follows the
-[core census and transport plan](docs/core-census-plan.md), adopted 2026-11-07.
-The backend stays frozen. Lanes: A (Source tree) LIB-193 attribution and repair;
-B (Root tree) analysis-only census mode; C (Async tree) branching body
-transport; D (next free lane) target-unit executor, Rust 2015/2018 and runtime
-shims. The const-callable WIP stays isolated on its branch. Commits use the
-repository's single-line subjects without trailers.
+[core census and transport plan](docs/core-census-plan.md). The backend stays
+frozen. Commits use the repository's single-line subjects without trailers.
+
+Progress on main: LIB-193 repaired (memoized `enable` spellings, input-graph
+header bound); analysis-only census mode; body transport v12 (branches) and v13
+(stable generic body IR); target-unit executor; census batch 1. Census 2 of
+original core checks 10,408 declarations with 6 failed and 31 blocked, and stops
+at the first-error `finish_constant_headers` check before associated types and
+the per-definition loop. Bodies are not reached yet.
+
+Active lanes, each committing locally for integrator review:
+- A, `rustgm-pa29-work`, census batch 2: on-demand preparation for impl-header
+  ordering gaps, isolation of the terminal check, invalid/exhausted message split.
+- B, `rustgm-pa26-work`: re-plan the frozen unit graphs with RustGM's profile,
+  then core's auto traits as object markers (`any.rs:162/169`).
+- C, `rustgm-async-work`: imported language-role transport under v13, with
+  parameter defaults, associated types and checked-arithmetic Panic.
+The integrator cherry-picks each lane's commits onto main, runs the joined
+focused checks and harness in an idle worktree, and pushes.
 
 ## Published checkpoint and assignment status
 
