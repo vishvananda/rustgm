@@ -67,6 +67,10 @@ test-harness:
 	$(PYTHON) -m unittest discover -s scripts/tests -v
 	$(PYTHON) scripts/maintainer_suites.py check
 	$(PYTHON) scripts/check_layout.py
+.PHONY: test-target-units
+TARGET_UNITS_RUSTGM ?= $(ROOT)/obj/rust/release/rustgm
+test-target-units:
+	$(PYTHON) scripts/storage.py run --prune-under obj/qualification/target-units -- $(PYTHON) scripts/check_target_units.py --rustgm "$(TARGET_UNITS_RUSTGM)"
 .PHONY: test-host-builds
 test-host-builds:
 	$(PYTHON) scripts/storage.py run --prune-under obj/qualification/host-graph -- $(PYTHON) scripts/check_host_graph.py

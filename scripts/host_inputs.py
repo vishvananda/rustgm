@@ -25,6 +25,20 @@ def identifier(value):
     return value
 
 
+def declared_features(document):
+    """Manifest features plus implicit optional-dependency features, as Cargo declares."""
+    declared = document.get('features', {})
+    suppressed = {value[4:] for values in declared.values() for value in values
+                  if isinstance(value, str) and value.startswith('dep:')}
+    features = set(declared)
+    for table in [document, *document.get('target', {}).values()]:
+        for kind in ('dependencies', 'build-dependencies', 'dev-dependencies'):
+            features.update(name for name, dependency in table.get(kind, {}).items()
+                            if isinstance(dependency, dict) and dependency.get('optional')
+                            and name not in suppressed)
+    return tuple(sorted(features))
+
+
 @dataclass(frozen=True)
 class Package:
     snapshot: object
@@ -43,20 +57,12 @@ class Package:
         links = document['package'].get('links')
         if links is not None:
             identifier(links)
-        declared = document.get('features', {})
-        suppressed = {value[4:] for values in declared.values() for value in values
-                      if isinstance(value, str) and value.startswith('dep:')}
-        features = set(declared)
-        for table in [document, *document.get('target', {}).values()]:
-            for kind in ('dependencies', 'build-dependencies', 'dev-dependencies'):
-                features.update(name for name, dependency in table.get(kind, {}).items()
-                                if isinstance(dependency, dict) and dependency.get('optional')
-                                and name not in suppressed)
+        features = declared_features(document)
         inputs = (snapshot.identity, snapshot.files, snapshot.directories)
         if lint_cap is not None:
             inputs += (('lint_cap', lint_cap),)
         key = fingerprint(inputs)
-        return cls(snapshot, environment, links, tuple(sorted(features)), key,
+        return cls(snapshot, environment, links, features, key,
                    frozenset(str(snapshot.root / name) for name, _, _ in snapshot.files),
                    manifest_lints.arguments(document.get('lints', {}))
                    + manifest_lints.cap_arguments(lint_cap))

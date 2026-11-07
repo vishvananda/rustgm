@@ -5,6 +5,13 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+The [target unit executor](parallel/target-unit-executor.md) plans each frozen
+target unit as an exact RustGM invocation, or as typed gaps, and runs units
+dependency-first with blocked dependents recorded. On all three frozen graphs,
+core fails first, before any process starts: the dev profile's `debuginfo=2` and
+`debug_assertions=true` differ from RustGM's fixed profile. The std plan also needs
+Rust 2015/2018, the std dylib and host script outputs.
+
 The [analysis-only census mode](parallel/core-census-mode.md) is on main:
 `--census-output PATH` and observer `--census`. It records every isolated
 declaration and body failure, each blocked dependent once, sticky budget stops
