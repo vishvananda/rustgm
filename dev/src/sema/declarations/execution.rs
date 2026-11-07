@@ -28,6 +28,12 @@ pub(super) struct Pending {
     active: HashSet<DefId>,
     suspended: HashMap<DefId, Box<bodies::State>>,
 }
+impl Pending {
+    /// Const and initializer bodies whose typing began and has not finished.
+    pub(super) fn active(&self) -> impl Iterator<Item = DefId> + '_ {
+        self.active.iter().copied()
+    }
+}
 
 /// Header/WF preparation plus explicit current bodies; unrelated bodies stay Pending.
 pub(crate) fn analyze_local_roots(
@@ -96,6 +102,7 @@ impl Checker<'_> {
             return Ok(());
         }
         if phase == Phase::Begin && !self.execution_bodies.active.insert(definition) {
+            self.census_abandoned_body(definition);
             return Err(Error::at(
                 FileId(0),
                 0,
@@ -309,6 +316,7 @@ impl Checker<'_> {
                     })?;
                 if phase == Phase::Begin {
                     if !self.execution_bodies.active.insert(definition) {
+                        self.census_abandoned_body(definition);
                         return Err(self.error(source, "cycle in required initializer bodies"));
                     }
                     self.work.push(Work::Execution(

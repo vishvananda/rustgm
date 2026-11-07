@@ -21,6 +21,8 @@ enum Unit {
     Environment(DefId),
     SourceContracts(DefId),
     CallerLocation(DefId),
+    /// A const body whose typing a failed root left active and suspended.
+    Execution(DefId),
 }
 impl Unit {
     /// The guarded owner a work item enters, whether or not it already began.
@@ -67,7 +69,8 @@ impl Unit {
             | Self::ValidateImpl(id)
             | Self::Environment(id)
             | Self::SourceContracts(id)
-            | Self::CallerLocation(id) => id,
+            | Self::CallerLocation(id)
+            | Self::Execution(id) => id,
             Self::Fields(item) | Self::Contract(item) => DefId(item.0),
         }
     }
@@ -85,6 +88,8 @@ pub(super) struct Ledger {
     trail: Vec<DefId>,
     /// The innermost work item whose dispatch failed in the current root.
     failing: Option<Work>,
+    /// The record whose failure left a const body active that this root needs.
+    abandoned: Option<usize>,
 }
 impl Ledger {
     pub(super) fn new(census: Census) -> Self {
@@ -118,6 +123,26 @@ impl Checker<'_> {
         self.census
             .as_deref()
             .is_some_and(|ledger| ledger.poison.contains_key(&Unit::Definition(id)))
+    }
+    /// A census-failed impl header never publishes its self type's schema, so
+    /// a later use of that self type is blocked by the header's own record.
+    pub(super) fn census_isolated_self(&mut self, id: DefId) {
+        if let Some(ledger) = self.census.as_deref_mut()
+            && ledger.poison.contains_key(&Unit::ImplHeader(id))
+        {
+            ledger
+                .failing
+                .get_or_insert(Work::ImplHeader(id, impl_headers::Phase::Begin));
+        }
+    }
+    /// A failed root leaves the const bodies it was typing active, so a later
+    /// demand for one is blocked by that root's record, not a dependency cycle.
+    pub(super) fn census_abandoned_body(&mut self, id: DefId) {
+        if let Some(ledger) = self.census.as_deref_mut()
+            && let Some(&cause) = ledger.poison.get(&Unit::Execution(id))
+        {
+            ledger.abandoned.get_or_insert(cause);
+        }
     }
     pub(super) fn census_stops(&self) -> bool {
         self.census
@@ -154,6 +179,7 @@ impl Checker<'_> {
                 return Ok(());
             }
             ledger.failing = None;
+            ledger.abandoned = None;
         }
         self.work.push(work);
         match self.drain(steps, limit) {
@@ -204,8 +230,10 @@ impl Checker<'_> {
         }
         let error = self.report.diagnostic(error);
         let entered = ledger.failing.take().and_then(Unit::entered);
-        let blocker = entered
-            .and_then(|unit| ledger.poison.get(&unit).copied())
+        let blocker = ledger
+            .abandoned
+            .take()
+            .or_else(|| entered.and_then(|unit| ledger.poison.get(&unit).copied()))
             .or_else(|| {
                 owner.and_then(|owner| ledger.poison.get(&Unit::ImplHeader(owner)).copied())
             })
@@ -236,6 +264,9 @@ impl Checker<'_> {
         }
         if let Some(unit) = entered {
             ledger.poison.entry(unit).or_insert(cause);
+        }
+        for id in self.execution_bodies.active() {
+            ledger.poison.entry(Unit::Execution(id)).or_insert(cause);
         }
         for &work in &self.work {
             if let Some(unit) = Unit::continued(work) {

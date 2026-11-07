@@ -225,6 +225,73 @@ fn an_opaque_failing_after_interning_leaves_later_storage_to_its_items() -> Resu
 }
 
 #[test]
+fn a_failed_header_blocks_later_uses_of_its_self_type() -> Result {
+    let input = input(
+        "header-self",
+        "pub trait Tr { fn make() -> Self; }\n\
+         impl<const N: usize> Tr for N { fn make() -> Self { loop {} } }\n",
+    )?;
+    let text = census("--emit-types", &input, "types", &[])?;
+    // The failed header never assigns its self type a schema; the member's
+    // `Self` is blocked by the header, not a later-assignment failure.
+    assert_eq!(
+        records(&text),
+        [
+            [
+                "declarations",
+                "failed",
+                "self-type `Self`",
+                "-",
+                "const parameter cannot be used as a type"
+            ],
+            ["declarations", "blocked", "function `make`", "1", BLOCKED],
+            [
+                "declarations",
+                "stopped",
+                "-",
+                "-",
+                "later passes were not run after 1 failed and 1 blocked items in declarations"
+            ],
+        ]
+    );
+    ordinary_matches_first_record(&input, &text)
+}
+
+#[test]
+fn a_const_body_left_active_by_a_failed_root_blocks_its_later_demands() -> Result {
+    let input = input(
+        "abandoned-body",
+        "pub const fn f() -> usize { let x: u8 = 1u16; 1 }\n\
+         pub fn a() -> [u8; f()] { loop {} }\n\
+         pub fn b() -> [u8; f()] { loop {} }\n",
+    )?;
+    let text = census("--emit-types", &input, "types", &[])?;
+    // `a`'s failure leaves `f`'s body active; `b` needs it and is blocked
+    // instead of reporting a dependency cycle.
+    assert_eq!(
+        records(&text),
+        [
+            [
+                "declarations",
+                "failed",
+                "function `a`",
+                "-",
+                "incompatible types"
+            ],
+            ["declarations", "blocked", "function `b`", "1", BLOCKED],
+            [
+                "declarations",
+                "stopped",
+                "-",
+                "-",
+                "later passes were not run after 1 failed and 1 blocked items in declarations"
+            ],
+        ]
+    );
+    ordinary_matches_first_record(&input, &text)
+}
+
+#[test]
 fn body_failures_in_plain_and_hidden_type_schedules_are_all_reported() -> Result {
     let plain = input(
         "plain-bodies",

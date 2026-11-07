@@ -1406,6 +1406,7 @@ impl Checker<'_> {
                     ));
                 }
             }
+            self.census_isolated_self(id);
             return Err(self.error(
                 key,
                 "nominal or associated types require later semantic assignments",
