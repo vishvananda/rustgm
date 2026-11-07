@@ -54,6 +54,7 @@ pub(super) use readiness::{Dependency, Requirement};
 mod addresses;
 mod displacement_inputs;
 mod intrinsic_items;
+mod isolation;
 mod pointer_casts;
 mod pointers;
 mod privacy;
@@ -122,15 +123,20 @@ pub fn analyze_with_hidden(
         crate::types::opaque::OpaqueId,
     ) -> Result<(), Error>,
 ) -> Result<Declarations, Error> {
-    analyze_defining(report, facts, |report, facts, request| match request {
-        DefiningRequest::Hidden(id) => close(report, facts, id),
-        DefiningRequest::ComptimeDefinition(_) => Err(Error::unlocated(
-            "comptime defining bodies require a checked CFG provider",
-        )),
-        // Ordinary const readiness is a type fact. Complete lowering checks
-        // its unused CFG as well as every CFG actually reached by evaluation.
-        DefiningRequest::ConstDefinition(_) => Ok(()),
-    })
+    analyze_defining(
+        report,
+        facts,
+        |report, facts, request| match request {
+            DefiningRequest::Hidden(id) => close(report, facts, id),
+            DefiningRequest::ComptimeDefinition(_) => Err(Error::unlocated(
+                "comptime defining bodies require a checked CFG provider",
+            )),
+            // Ordinary const readiness is a type fact. Complete lowering checks
+            // its unused CFG as well as every CFG actually reached by evaluation.
+            DefiningRequest::ConstDefinition(_) => Ok(()),
+        },
+        None,
+    )
 }
 #[derive(Clone, Copy)]
 pub(crate) enum DefiningRequest {
@@ -138,10 +144,13 @@ pub(crate) enum DefiningRequest {
     ComptimeDefinition(DefId),
     ConstDefinition(DefId),
 }
+/// In census mode each function and initializer is isolated; any body record ends
+/// the census before constant patterns, which may consume every checked body.
 pub(crate) fn analyze_defining(
     report: &Report,
     mut facts: Declarations,
     mut close: impl FnMut(&Report, &mut Declarations, DefiningRequest) -> Result<(), Error>,
+    mut census: Option<&mut super::census::Census>,
 ) -> Result<Declarations, Error> {
     facts.require_lint_context(report)?;
     super::compiler_items::pointee::authenticate(report, &facts)
@@ -151,19 +160,30 @@ pub(crate) fn analyze_defining(
     super::compiler_items::field_protocol::authenticate(report, &facts)
         .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
     let mut checker = Checker::new(report, &mut facts);
-    checker.functions(&mut close).map_err(|error| {
-        checker
-            .facts
-            .retain_error_warnings(report.diagnostic(error))
-    })?;
+    checker
+        .functions(&mut close, census.as_deref_mut())
+        .map_err(|error| {
+            checker
+                .facts
+                .retain_error_warnings(report.diagnostic(error))
+        })?;
     for index in 0..checker.facts.initializers.len() {
         if !checker.facts.initializers[index].type_checked() {
-            checker.initializer(index).map_err(|error| {
-                checker
-                    .facts
-                    .retain_error_warnings(report.diagnostic(error))
-            })?;
+            checker
+                .census_initializer(index, census.as_deref_mut())
+                .map_err(|error| {
+                    checker
+                        .facts
+                        .retain_error_warnings(report.diagnostic(error))
+                })?;
         }
+    }
+    if census
+        .as_deref()
+        .is_some_and(|census| census.has_failures(super::census::Phase::Bodies))
+    {
+        drop(checker);
+        return Ok(facts);
     }
     checker.complete_constant_patterns().map_err(|error| {
         checker
@@ -373,6 +393,96 @@ impl Scratch {
         }
     }
 }
+impl State {
+    /// Every per-body field starts unset; reusable scratch keeps only its capacity.
+    fn fresh(scratch: Scratch) -> Self {
+        Self {
+            closures: None,
+            closure_children: Vec::new(),
+            closure_cursor: 0,
+            steps: 0,
+            completion: readiness::Completion::Inactive,
+            alignment: alignment::Pending::default(),
+            terms: scratch.terms,
+            diverges: scratch.diverges,
+            locals: scratch.locals,
+            file: FileId(0),
+            body: NodeKey {
+                file: FileId(0),
+                node: NodeId::new(0),
+            },
+            module: ModuleId(0),
+            field_seen: Vec::new(),
+            result: TypeId::UNIT,
+            result_term: None,
+            opaque_terms: Vec::new(),
+            opaque_callables: None,
+            in_function: true,
+            safety: safety::Context::default(),
+            infer: Context::default(),
+            touched: scratch.touched,
+            bindings: Vec::new(),
+            pattern_work: Vec::new(),
+            pattern_types: Vec::new(),
+            pattern_refutable: false,
+            pending_patterns: None,
+            pattern_constants: false,
+            coverage_cache: super::patterns::coverage::Cache::default(),
+            range_work: Vec::new(),
+            pattern_requirements: Vec::new(),
+            matches: Vec::new(),
+            work: scratch.work,
+            children: Vec::new(),
+            checks: scratch.checks,
+            negated: HashSet::default(),
+            adjustments: Vec::new(),
+            value_reborrows: None,
+            reference_adjustments: crate::support::hash::HashMap::default(),
+            unsizing_adjustments: crate::support::hash::HashMap::default(),
+            pointer_adjustments: crate::support::hash::HashMap::default(),
+            callable_adjustments: crate::support::hash::HashMap::default(),
+            pointer_casts: Vec::new(),
+            reference_expected: HashSet::default(),
+            address_dereferences: HashSet::default(),
+            raw_address_places: HashSet::default(),
+            union_write_places: HashSet::default(),
+            language_places: None,
+            unsizing_contexts: crate::support::hash::HashMap::default(),
+            reference_work: Vec::new(),
+            reference_steps: 0,
+            break_roots: crate::support::hash::HashMap::default(),
+            discarded_adjustments: crate::support::hash::HashMap::default(),
+            calls: Vec::new(),
+            pending_indexes: crate::support::hash::HashMap::default(),
+            call_types: scratch.call_types.unwrap_or_default(),
+            parameter_copies: None,
+            parameter_shapes: None,
+            nominal_shapes: None,
+            body_binders: 0,
+            method_constants: None,
+            method_environment: None,
+            environment_owner: None,
+            trait_environment: None,
+            canonical_trait_inference: None,
+            canonical_trait_proofs: None,
+            canonical_requirements: None,
+            annotations: super::annotations::Scratch::default(),
+            projections: projections::Pending::default(),
+            notifications: notifications::Notifications::default(),
+            storage: None,
+            finalization: None,
+            trait_goals: None,
+            type_children: Vec::new(),
+            annotation_checks: Vec::new(),
+            annotation_children: HashSet::default(),
+            type_annotations: HashSet::default(),
+            frames: Vec::new(),
+            pending_label: None,
+            assignments: Vec::new(),
+            breaks: Vec::new(),
+        }
+    }
+}
 impl<'a> Checker<'a> {
     pub(super) fn new(report: &'a Report, facts: &'a mut Declarations) -> Self {
         Self::with_scratch(report, facts, Scratch::default())
@@ -389,91 +499,7 @@ impl<'a> Checker<'a> {
             facts,
             pattern_queries: None,
             unsized_parameters: super::unsized_parameters::Draft::default(),
-            state: State {
-                closures: None,
-                closure_children: Vec::new(),
-                closure_cursor: 0,
-                steps: 0,
-                completion: readiness::Completion::Inactive,
-                alignment: alignment::Pending::default(),
-                terms: scratch.terms,
-                diverges: scratch.diverges,
-                locals: scratch.locals,
-                file: FileId(0),
-                body: NodeKey {
-                    file: FileId(0),
-                    node: NodeId::new(0),
-                },
-                module: ModuleId(0),
-                field_seen: Vec::new(),
-                result: TypeId::UNIT,
-                result_term: None,
-                opaque_terms: Vec::new(),
-                opaque_callables: None,
-                in_function: true,
-                safety: safety::Context::default(),
-                infer: Context::default(),
-                touched: scratch.touched,
-                bindings: Vec::new(),
-                pattern_work: Vec::new(),
-                pattern_types: Vec::new(),
-                pattern_refutable: false,
-                pending_patterns: None,
-                pattern_constants: false,
-                coverage_cache: super::patterns::coverage::Cache::default(),
-                range_work: Vec::new(),
-                pattern_requirements: Vec::new(),
-                matches: Vec::new(),
-                work: scratch.work,
-                children: Vec::new(),
-                checks: scratch.checks,
-                negated: HashSet::default(),
-                adjustments: Vec::new(),
-                value_reborrows: None,
-                reference_adjustments: crate::support::hash::HashMap::default(),
-                unsizing_adjustments: crate::support::hash::HashMap::default(),
-                pointer_adjustments: crate::support::hash::HashMap::default(),
-                callable_adjustments: crate::support::hash::HashMap::default(),
-                pointer_casts: Vec::new(),
-                reference_expected: HashSet::default(),
-                address_dereferences: HashSet::default(),
-                raw_address_places: HashSet::default(),
-                union_write_places: HashSet::default(),
-                language_places: None,
-                unsizing_contexts: crate::support::hash::HashMap::default(),
-                reference_work: Vec::new(),
-                reference_steps: 0,
-                break_roots: crate::support::hash::HashMap::default(),
-                discarded_adjustments: crate::support::hash::HashMap::default(),
-                calls: Vec::new(),
-                pending_indexes: crate::support::hash::HashMap::default(),
-                call_types: scratch.call_types.unwrap_or_default(),
-                parameter_copies: None,
-                parameter_shapes: None,
-                nominal_shapes: None,
-                body_binders: 0,
-                method_constants: None,
-                method_environment: None,
-                environment_owner: None,
-                trait_environment: None,
-                canonical_trait_inference: None,
-                canonical_trait_proofs: None,
-                canonical_requirements: None,
-                annotations: super::annotations::Scratch::default(),
-                projections: projections::Pending::default(),
-                notifications: notifications::Notifications::default(),
-                storage: None,
-                finalization: None,
-                trait_goals: None,
-                type_children: Vec::new(),
-                annotation_checks: Vec::new(),
-                annotation_children: HashSet::default(),
-                type_annotations: HashSet::default(),
-                frames: Vec::new(),
-                pending_label: None,
-                assignments: Vec::new(),
-                breaks: Vec::new(),
-            },
+            state: State::fresh(scratch),
         }
     }
     pub(super) fn has_pending_patterns(&self) -> bool {

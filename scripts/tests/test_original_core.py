@@ -12,8 +12,8 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from observe_original_core import (
-    SOURCE_CONTRACT_DEFAULTS, lint_profile_arguments, source_contract_profile_arguments,
-    verify_sources, worker,
+    CENSUS_HEADER, SOURCE_CONTRACT_DEFAULTS, lint_profile_arguments,
+    source_contract_profile_arguments, verify_sources, worker,
 )
 
 
@@ -73,7 +73,7 @@ class OriginalCoreInputs(unittest.TestCase):
                            "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}]}))
             args = argparse.Namespace(cli=cli, producer_binding=binding, out=root / "out",
                                       manifest=manifest, source_root=source, cap_lints=None,
-                                      expected_cli_sha256=None)
+                                      expected_cli_sha256=None, census=False)
             commands = []
 
             def observed(command, out, _deadline):
@@ -96,6 +96,66 @@ class OriginalCoreInputs(unittest.TestCase):
             for name in ("binding.json", "result.json"):
                 self.assertEqual(json.loads((args.out / name).read_text())["source_contract_limits"], limits)
             self.assertEqual(json.loads((args.out / "result.json").read_text())["status"], 1)
+
+    def test_census_is_analysis_only_and_requires_one_complete_failing_file(self):
+        complete = "\n".join([
+            CENSUS_HEADER,
+            "record\t1\tdeclarations\tfailed\tstruct `A`\tfile 0:4\t-\tfixture failure",
+            "record\t2\tdeclarations\tblocked\tfunction `b`\tfile 0:9\t1\tblocked",
+            *(f"summary\t{phase}\tchecked\t1\tfailed\t0\tblocked\t0"
+              for phase in ("frontend", "declarations", "bodies", "completion")),
+            "terminal\t2\tdeclarations\tstopped", "end\t2", ""])
+        for name, status, text, accepted in (
+                ("complete", 1, complete, True), ("passing-status", 0, complete, False),
+                ("truncated", 1, complete.rsplit("end", 1)[0], False), ("missing", 1, None, False)):
+            with self.subTest(name), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                source = root / "source"
+                path = source / "library/core/src/lib.rs"
+                path.parent.mkdir(parents=True)
+                path.write_bytes(b"pub fn f() {}")
+                cli = root / "cli"
+                cli.write_bytes(b"immutable test compiler")
+                digest = hashlib.sha256(cli.read_bytes()).hexdigest()
+                binding = root / "producer.json"
+                binding.write_text(json.dumps({"candidate_sha256": digest, "compiler_source_sha256": {}}))
+                manifest = root / "manifest.json"
+                manifest.write_text(json.dumps({"revision": "fixture", "expected_cli_sha256": digest,
+                    "config_source_sha256": {}, "profile": {},
+                    "files": [{"path": "library/core/src/lib.rs", "bytes": path.stat().st_size,
+                               "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}]}))
+                args = argparse.Namespace(cli=cli, producer_binding=binding, out=root / "out",
+                                          manifest=manifest, source_root=source, cap_lints=None,
+                                          expected_cli_sha256=None, census=True)
+                commands = []
+
+                def observed(command, out, _deadline, text=text, status=status):
+                    commands.append(command)
+                    census = out / "census.tsv"
+                    if text is not None:
+                        census.write_text(text)
+                    (out / "stdout").write_bytes(b"")
+                    (out / "stderr").write_text(
+                        "census declarations: checked 1 failed 1 blocked 1\n"
+                        f"ERROR: analysis-only census written to {census}; a census is never a passing build\n")
+                    (out / "whole-core.openat").write_bytes(b"immutable fake trace")
+                    return status
+
+                with patch("observe_original_core.shutil.which", return_value=sys.executable), \
+                        patch("observe_original_core.observe", side_effect=observed), \
+                        patch("observe_original_core.opened_sources", return_value=[{"path": str(path)}]), \
+                        redirect_stdout(io.StringIO()):
+                    self.assertEqual(worker(args), 0 if accepted else 1)
+                index = commands[0].index("--census-output")
+                self.assertEqual(commands[0][index + 1], str(args.out.resolve() / "census.tsv"))
+                result = json.loads((args.out / "result.json").read_text())
+                self.assertIs(result["infrastructure_failure"], not accepted)
+                if accepted:
+                    self.assertEqual(result["classification"], "analysis-only census; not a qualification")
+                    self.assertIs(result["qualification"], False)
+                    self.assertEqual(result["census"]["categories"], {"failed": 1, "blocked": 1})
+                    self.assertEqual(result["census"]["terminal"],
+                                     {"record": "2", "phase": "declarations", "category": "stopped"})
 
     def test_strict_observation_cannot_silently_reuse_a_capped_profile_or_producer(self):
         for profile, producer in (({}, {}), ({"lint_cap": "uncapped"}, {"lint_cap": "uncapped"})):

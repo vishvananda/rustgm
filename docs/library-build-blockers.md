@@ -5,6 +5,13 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane B adds an [analysis-only census mode](parallel/core-census-mode.md):
+`--census-output PATH` and observer `--census`, on `implement/core-census-20261107`,
+not joined. It records every isolated declaration and body failure, each blocked
+dependent once, sticky budget stops and per-phase counts. It always exits 1 and is
+never a qualification. It has not run on original core, because LIB-193 still
+fails in `Checker::from_facts` before any isolated loop.
+
 Current joined original-core observation reports **LIB-193**, the unlocated
 source-header query-work guard, in19.6071s/375opens. The
 [cold/deprecation integration](parallel/cold-deprecation-main-join.md) clears

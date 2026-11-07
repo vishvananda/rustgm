@@ -3,6 +3,7 @@ pub mod alias_requirements;
 mod annotations;
 pub mod associated;
 pub mod bodies;
+pub mod census;
 pub mod closures;
 mod constants;
 pub(crate) mod coroutine_methods;

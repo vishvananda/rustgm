@@ -1,4 +1,5 @@
 mod budget_options;
+mod census;
 mod crates;
 mod link_manifest;
 mod modules;
@@ -101,6 +102,7 @@ fn options() -> Result<Options, String> {
                     Some(args.next().ok_or("--crate-disambiguator requires an ID")?);
             }
             "--native-links-output" => options.crates.select_native_output(args.next())?,
+            "--census-output" => census::select(&mut options.crates.census, args.next())?,
             "--metadata-output" => {
                 options.crates.metadata =
                     Some(args.next().ok_or("--metadata-output requires a path")?);

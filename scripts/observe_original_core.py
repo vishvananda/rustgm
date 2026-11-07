@@ -24,6 +24,8 @@ SOURCE_CONTRACT_OPTIONS = {
     "attempted_bytes": "--source-contract-attempted-bytes",
     "retained_bytes": "--source-contract-retained-bytes",
 }
+CENSUS_HEADER = "rustgm-census\t1\tanalysis-only\tnot-a-qualification"
+CENSUS_PHASES = ("frontend", "declarations", "bodies", "completion")
 
 
 def sha(path):
@@ -154,6 +156,27 @@ def verify_sources(manifest, source):
             raise ValueError("missing or changed pinned source: " + row["path"])
 
 
+def census_summary(path):
+    """Summarize a complete analysis-only census; any truncation is infrastructure."""
+    lines = path.read_text().splitlines()
+    if not lines or lines[0] != CENSUS_HEADER:
+        raise ValueError("census file lacks its analysis-only header")
+    rows = [line.split("\t") for line in lines[1:]]
+    records = [row for row in rows if row[0] == "record"]
+    if rows[-1:] != [["end", str(len(records))]] or any(len(row) != 8 for row in records):
+        raise ValueError("census file is incomplete or malformed")
+    categories = {}
+    for row in records:
+        categories[row[3]] = categories.get(row[3], 0) + 1
+    phases = {row[1]: {key: int(value) for key, value in zip(row[2::2], row[3::2])}
+              for row in rows if row[0] == "summary" and row[2::2] == ["checked", "failed", "blocked"]}
+    terminal = [row[1:] for row in rows if row[0] == "terminal"]
+    if tuple(phases) != CENSUS_PHASES or len(terminal) != 1:
+        raise ValueError("census file lacks its phase summary or terminal record")
+    stop = None if terminal[0] == ["none"] else dict(zip(("record", "phase", "category"), terminal[0]))
+    return {"records": len(records), "categories": categories, "phases": phases, "terminal": stop}
+
+
 def observe(command, out, deadline):
     with (out / "stdout").open("xb") as stdout, (out / "stderr").open("xb") as stderr:
         process = subprocess.Popen(command, stdout=stdout, stderr=stderr,
@@ -245,9 +268,11 @@ def worker(args):
             source = args.source_root.resolve(strict=True)
             archive = {"source": "existing pinned tree", "root": str(source)}
         verify_sources(manifest, source)
+        census = out / "census.tsv" if args.census else None
+        census_args = ["--census-output", str(census)] if census else []
         command = [strace, "-f", "-qq", "-yy", "-s", "4096", "-e", "trace=openat", "-o",
                    str(out / "whole-core.openat"), str(cli), *lint_args, *contract_args,
-                   "--emit-types", "--edition=2024",
+                   "--emit-types", *census_args, "--edition=2024",
                    "--crate-name", "core", "--crate-disambiguator", "core_1_98_88d9",
                    "--source-core", "core@core_1_98_88d9", str(source / "library/core/src/lib.rs")]
         immutable = {str(path): sha(path) for path in (cli, producer, Path(strace), manifest_path, Path(__file__))}
@@ -255,6 +280,7 @@ def worker(args):
               "expected_cli_sha256": expected_cli, "expected_cli_source": expectation_source,
               "profile": manifest["profile"], "lint_cap": lint_cap, "source_files": len(manifest["files"]),
               "source_contract_limits": contract_limits,
+              **({"mode": "analysis-only census; not a qualification"} if census else {}),
               "core_files": sum(row["path"].startswith("library/core/") for row in manifest["files"]),
               "producer": binding, "path_adaptation": {"source_root": str(source),
               "old_source_root": "/home/vishvananda/rustgm-sources/rust-1.98.0-" + manifest["revision"]},
@@ -268,17 +294,31 @@ def worker(args):
         verify_sources(manifest, source)
         stable = all(sha(path) == digest for path, digest in immutable.items())
         bounded = all((out / name).stat().st_size < LIMIT for name in ("stdout", "stderr", "whole-core.openat"))
-        infra = (status not in (0, 1) or not stable or not bounded or "panicked at" in text
-                 or (status == 1 and first is None))
-        result.update(status=status, infrastructure_failure=infra, first_error=first,
-                      inputs_unchanged=stable, opened_source_count=len(opened),
-                      classification="infrastructure/plan failure" if infra else
-                      "observed original-core blocker" if status == 1 else "types view only; no artifact/native claim")
+        if census:
+            # A census always exits 1 with one complete file and no view output.
+            summary = census_summary(census) if census.is_file() else None
+            written = text.splitlines()[-1:] == [f"ERROR: analysis-only census written to {census}; "
+                                                 "a census is never a passing build"]
+            infra = (status != 1 or summary is None or not written or not stable or not bounded
+                     or "panicked at" in text or (out / "stdout").stat().st_size != 0)
+            result.update(status=status, infrastructure_failure=infra, census=summary, first_error=None,
+                          analysis_only=True, qualification=False, inputs_unchanged=stable,
+                          opened_source_count=len(opened), classification="infrastructure/plan failure"
+                          if infra else "analysis-only census; not a qualification")
+        else:
+            infra = (status not in (0, 1) or not stable or not bounded or "panicked at" in text
+                     or (status == 1 and first is None))
+            result.update(status=status, infrastructure_failure=infra, first_error=first,
+                          inputs_unchanged=stable, opened_source_count=len(opened),
+                          classification="infrastructure/plan failure" if infra else
+                          "observed original-core blocker" if status == 1 else
+                          "types view only; no artifact/native claim")
     except (OSError, ValueError, KeyError, tarfile.TarError, TimeoutError) as error:
         result["error"] = str(error)
     result["total_seconds"] = time.monotonic() - started
     result["raw_sha256"] = {name: sha(out / name) for name in
-                            ("stdout", "stderr", "whole-core.openat", "opened-sources.json") if (out / name).is_file()}
+                            ("stdout", "stderr", "whole-core.openat", "opened-sources.json", "census.tsv")
+                            if (out / name).is_file()}
     write(out, "result.json", result)
     print(json.dumps(result, indent=2))
     return int(result["infrastructure_failure"])
@@ -297,6 +337,8 @@ def main():
                         help="reuse an existing pinned tree after checking every manifest file")
     parser.add_argument("--cap-lints", choices=("allow",),
                         help="explicit bring-up cap; requires separate matching profile and producer binding")
+    parser.add_argument("--census", action="store_true",
+                        help="analysis-only keep-going census; never a qualification or passing observation")
     parser.add_argument("--max-output-gib", type=float,
                         help="absolute local resource cap including retained output")
     parser.add_argument("--worker", action="store_true", help="caller already holds storage guard and hard190s timeout")

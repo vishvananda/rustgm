@@ -122,11 +122,15 @@ impl Checker<'_> {
                     ..
                 }
             ) {
-                self.work.push(super::Work::ImplHeader(
+                self.drain_root(
                     owner.self_definition,
-                    super::impl_headers::Phase::Begin,
-                ));
-                self.drain(steps, limit)?;
+                    super::Work::ImplHeader(
+                        owner.self_definition,
+                        super::impl_headers::Phase::Begin,
+                    ),
+                    steps,
+                    limit,
+                )?;
             }
         }
         Ok(())

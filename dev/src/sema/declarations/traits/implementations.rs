@@ -74,11 +74,15 @@ impl Checker<'_> {
                 .self_type(owner.self_definition)
                 .is_none()
             {
-                self.work.push(Work::ImplHeader(
+                self.drain_root(
                     owner.self_definition,
-                    super::super::impl_headers::Phase::Begin,
-                ));
-                self.drain(steps, limit)?;
+                    Work::ImplHeader(
+                        owner.self_definition,
+                        super::super::impl_headers::Phase::Begin,
+                    ),
+                    steps,
+                    limit,
+                )?;
             }
         }
         if let Some(selected) = self.selected.as_deref_mut() {

@@ -33,6 +33,7 @@ mod impl_headers;
 mod implicit_methods;
 mod inherent_headers;
 mod intrinsics;
+mod isolation;
 pub(in crate::sema) mod iteration;
 mod language_hooks;
 pub(in crate::sema) use language_hooks::prepare as prepare_assignment;
@@ -205,6 +206,8 @@ struct Signature {
 }
 struct Checker<'a> {
     selected: Option<Box<super::crates::SelectedConsumer<'a>>>,
+    /// Present only during an analysis-only census.
+    census: Option<Box<isolation::Ledger>>,
     trait_aliases: Option<Box<aliases::Pending>>,
     annotation_inputs: annotations::Inputs,
     call_paths: crate::support::hash::HashSet<NodeKey>,
@@ -291,6 +294,61 @@ pub fn analyze_with_executor(
     })?;
     Ok(checker.facts)
 }
+/// Check declarations for an analysis-only census with the checked constant service.
+/// Facts are returned only when every declaration pass finished without a record;
+/// otherwise the census holds the records and its terminal record.
+pub(crate) fn census_with_executor(
+    report: &Report,
+    executor: Box<dyn super::values::execution::Executor>,
+    census: &mut super::census::Census,
+) -> Option<Declarations> {
+    use super::census::Phase;
+    let mut checker = match Checker::new(report) {
+        Ok(checker) => checker,
+        Err(error) => {
+            census.stop(Phase::Declarations, &error);
+            return None;
+        }
+    };
+    checker.facts.set_constant_executor(executor);
+    checker.census = Some(Box::new(isolation::Ledger::new(std::mem::take(census))));
+    let result = checker.run();
+    let blocker = checker.census_blocker();
+    let consistent = checker.census_consistent();
+    let stopped = checker.census_stops();
+    let Some(ledger) = checker.census.take() else {
+        census.stop(
+            Phase::Declarations,
+            &Error::unlocated("declaration census lost its ledger"),
+        );
+        return None;
+    };
+    *census = ledger.into_census();
+    match result {
+        Err(error) => {
+            let error = report.diagnostic(error);
+            match blocker {
+                Some(cause) if !super::census::exhausts_budget(&error.message) => {
+                    census.stop_blocked(Phase::Declarations, &error, cause);
+                }
+                _ => census.stop(Phase::Declarations, &error),
+            }
+            None
+        }
+        Ok(()) if !consistent => {
+            census.stop(
+                Phase::Declarations,
+                &Error::unlocated("census isolation completed a poisoned declaration"),
+            );
+            None
+        }
+        Ok(()) if stopped => {
+            census.stop_after_failures(Phase::Declarations);
+            None
+        }
+        Ok(()) => Some(checker.facts),
+    }
+}
 /// Resume the genuine staged consumer without reconstructing its semantic arena.
 pub(in crate::sema) fn analyze_reserved<'a>(
     report: &'a Report,
@@ -355,6 +413,7 @@ impl<'a> Checker<'a> {
         super::header_attributes::finish(report, &mut facts)?;
         Ok(Self {
             selected: None,
+            census: None,
             trait_aliases: aliases::collect(report)?,
             annotation_inputs: annotations::Inputs::default(),
             linkage_sources,
@@ -513,8 +572,11 @@ impl Checker<'_> {
             ) {
                 continue;
             }
-            self.work.push(Work::Definition(id, false));
-            self.drain(&mut steps, work_limit)?;
+            self.drain_root(id, Work::Definition(id, false), &mut steps, work_limit)?;
+        }
+        // Later passes consume completed facts of every declaration.
+        if self.census_stops() {
+            return Ok(());
         }
         self.complete_deferred_declarations(&mut steps, work_limit)?;
         self.complete_nominals(&mut steps, work_limit)?;
@@ -588,10 +650,6 @@ impl Checker<'_> {
                 .is_some_and(|m| m.read_latent && m.read.definition == id)
     }
 
-    #[expect(
-        clippy::too_many_lines,
-        reason = "the exhaustive worklist dispatch keeps every declaration continuation in one match"
-    )]
     fn drain(&mut self, steps: &mut usize, limit: usize) -> Result<(), Error> {
         let mut scan = Vec::new();
         while let Some(work) = self.work.pop() {
@@ -603,138 +661,155 @@ impl Checker<'_> {
                     "declaration type work budget exceeded",
                 ));
             }
-            match work {
-                Work::ScalarPattern(key, context) => self.scalar_pattern_inputs(key, context)?,
-                Work::Execution(requirement, phase) => self.execution_body(requirement, phase)?,
-                Work::ClosureAnnotation(key, context, first) => {
-                    self.closure_annotation(key, context, first, steps, limit, &mut scan)?;
+            if let Err(error) = self.dispatch(work, steps, limit, &mut scan) {
+                self.census_failing(work);
+                return Err(error);
+            }
+        }
+        Ok(())
+    }
+    #[expect(
+        clippy::too_many_lines,
+        reason = "the exhaustive worklist dispatch keeps every declaration continuation in one match"
+    )]
+    fn dispatch(
+        &mut self,
+        work: Work,
+        steps: &mut usize,
+        limit: usize,
+        scan: &mut Vec<NodeId>,
+    ) -> Result<(), Error> {
+        match work {
+            Work::ScalarPattern(key, context) => self.scalar_pattern_inputs(key, context)?,
+            Work::Execution(requirement, phase) => self.execution_body(requirement, phase)?,
+            Work::ClosureAnnotation(key, context, first) => {
+                self.closure_annotation(key, context, first, steps, limit, scan)?;
+            }
+            Work::CallTraitInputs(binder) => self.regions.begin_callable(binder),
+            Work::CallTraitOutput(key, context) => self.call_trait_output(key, context)?,
+            Work::ImplHeader(owner, phase) => self.advance_impl_header(owner, phase)?,
+            Work::ValidateImpl(owner, phase) => self.advance_impl_validation(owner, phase)?,
+            Work::ConstantMember(request, finish) => {
+                self.constant_member(request, finish)?;
+            }
+            Work::MethodPrefix(key, context) => {
+                self.complete_method_prefix(key, context, steps, limit, scan)?;
+            }
+            Work::InherentHeaders(item, name) => {
+                self.prepare_inherent_bucket(item, name);
+            }
+            Work::InherentMethod(key, path, context) => {
+                self.complete_method_path(key, &path, context, steps, limit, scan)?;
+            }
+            Work::InherentType(key, context) => self.complete_inherent_type(key, context)?,
+            Work::InherentTypeResult(key, member, context) => {
+                self.complete_inherent_type_result(key, member, context)?;
+            }
+            Work::EvaluateConstant(request, resume) => {
+                self.evaluate_constant(request, resume)?;
+            }
+            Work::InitializerReady(definition) => {
+                self.complete_initializer_readiness(definition);
+            }
+            Work::TraitCallable(key, callable) => {
+                self.complete_trait_callable(key, callable)?;
+            }
+            Work::ImplicitMethod(key, context) => {
+                self.complete_implicit_method(key, context, steps, limit, scan)?;
+            }
+            Work::MethodArguments(key, suffix) => {
+                self.complete_method_arguments(key, suffix)?;
+            }
+            Work::ProjectionPath(key, context) => {
+                self.complete_projection_path(key, context)?;
+            }
+            Work::ImplicitProjection(key, context) => {
+                self.complete_implicit_projection(key, context)?;
+            }
+            Work::ProjectionArguments(key, context, application) => {
+                self.complete_projection_arguments(key, context, application)?;
+            }
+            Work::HeaderProjection(key, context) => {
+                self.complete_header_projection(key, context)?;
+            }
+            Work::ProjectionBound(seed, finish) => {
+                self.complete_projection_bound(seed, finish)?;
+            }
+            Work::ProjectionResult(key) => {
+                self.complete_projection_result(key)?;
+            }
+            Work::ProjectionSelection(key, request) => {
+                self.complete_projection_selection(key, request)?;
+            }
+            Work::ProjectionEnvironment(owner, context, finish) => {
+                self.complete_projection_environment(owner, context, finish)?;
+            }
+            Work::NormalizeBound(key, context) => {
+                self.normalize_annotation(key, self.ty(key)?, context)?;
+            }
+            Work::NominalContract(item, finish) => self.nominal_contract(item, finish)?,
+            Work::Fields(item, finish) => self.nominal_fields(item, finish)?,
+            Work::SourceResultContracts(id, phase) => {
+                if super::compiler_items::field_protocol::is_result(&self.facts, ItemId(id.0)) {
+                    self.reflected_result_work(id, phase)?;
+                } else {
+                    self.pointee_member_work(id, phase)?;
                 }
-                Work::CallTraitInputs(binder) => self.regions.begin_callable(binder),
-                Work::CallTraitOutput(key, context) => self.call_trait_output(key, context)?,
-                Work::ImplHeader(owner, phase) => self.advance_impl_header(owner, phase)?,
-                Work::ValidateImpl(owner, phase) => self.advance_impl_validation(owner, phase)?,
-                Work::ConstantMember(request, finish) => {
-                    self.constant_member(request, finish)?;
+            }
+            Work::CallerLocation(id, finish) => self.caller_location_data(id, finish)?,
+            Work::GenericDefault(binding) => self.demand_generic_default(binding)?,
+            Work::OpaqueHidden(id) => {
+                let declaration = self
+                    .facts
+                    .opaques
+                    .declarations
+                    .get(&id)
+                    .ok_or_else(|| Error::at(FileId(0), 0, "missing opaque declaration"))?;
+                return Err(self.report.body_error(
+                    declaration.site(&self.facts).map_err(Error::unlocated)?,
+                    "opaque hidden type requires its completed defining body",
+                ));
+            }
+            Work::Constructor(id) => self.constructor(id)?,
+            Work::SelfConstructor(key, owner, context) => {
+                self.complete_self_constructor(key, owner, context)?;
+            }
+            Work::PrepareConstructor(id) => self.constant_constructor(id)?,
+            Work::ValueType(id) => self.constant_value_type(id),
+            Work::ValueContract(ty, finish) => self.constant_type_contract(ty, finish)?,
+            Work::ValueShape(ty) => self.constant_value_shape(ty)?,
+            Work::ConstantUse(key, context) => {
+                self.constant_use(key, context, steps, limit, scan)?;
+            }
+            Work::ConstantArguments(key) => self.constant_arguments(key)?,
+            Work::Bounds(owner, context) => self.complete_bounds(owner, context)?,
+            Work::AliasVariant(key, owner, context) => {
+                self.complete_alias_variant(key, owner, context)?;
+            }
+            Work::ItemArguments(key, owner) => {
+                self.complete_item_arguments(key, owner)?;
+            }
+            Work::Generic(declaration) => self.generic_declaration(declaration)?,
+            Work::Default(id, finish) => self.generic_default(id, finish)?,
+            Work::PathArguments(key, id, context) => self.path_arguments(key, id, context)?,
+            Work::AssociatedPrefix(key, owner, context) => {
+                self.complete_associated_prefix(key, owner, context)?;
+            }
+            Work::Definition(id, finish) => self.definition(id, finish)?,
+            Work::Node(key, finish, context) => self.annotation(key, finish, context)?,
+            Work::Reference(key, region) => self.reference_type(key, region)?,
+            Work::Parameter(id, finish) => {
+                if finish {
+                    self.regions.end_parameter(id);
+                } else {
+                    self.regions.begin_parameter(id);
                 }
-                Work::MethodPrefix(key, context) => {
-                    self.complete_method_prefix(key, context, steps, limit, &mut scan)?;
-                }
-                Work::InherentHeaders(item, name) => {
-                    self.prepare_inherent_bucket(item, name);
-                }
-                Work::InherentMethod(key, path, context) => {
-                    self.complete_method_path(key, &path, context, steps, limit, &mut scan)?;
-                }
-                Work::InherentType(key, context) => self.complete_inherent_type(key, context)?,
-                Work::InherentTypeResult(key, member, context) => {
-                    self.complete_inherent_type_result(key, member, context)?;
-                }
-                Work::EvaluateConstant(request, resume) => {
-                    self.evaluate_constant(request, resume)?;
-                }
-                Work::InitializerReady(definition) => {
-                    self.complete_initializer_readiness(definition);
-                }
-                Work::TraitCallable(key, callable) => {
-                    self.complete_trait_callable(key, callable)?;
-                }
-                Work::ImplicitMethod(key, context) => {
-                    self.complete_implicit_method(key, context, steps, limit, &mut scan)?;
-                }
-                Work::MethodArguments(key, suffix) => {
-                    self.complete_method_arguments(key, suffix)?;
-                }
-                Work::ProjectionPath(key, context) => {
-                    self.complete_projection_path(key, context)?;
-                }
-                Work::ImplicitProjection(key, context) => {
-                    self.complete_implicit_projection(key, context)?;
-                }
-                Work::ProjectionArguments(key, context, application) => {
-                    self.complete_projection_arguments(key, context, application)?;
-                }
-                Work::HeaderProjection(key, context) => {
-                    self.complete_header_projection(key, context)?;
-                }
-                Work::ProjectionBound(seed, finish) => {
-                    self.complete_projection_bound(seed, finish)?;
-                }
-                Work::ProjectionResult(key) => {
-                    self.complete_projection_result(key)?;
-                }
-                Work::ProjectionSelection(key, request) => {
-                    self.complete_projection_selection(key, request)?;
-                }
-                Work::ProjectionEnvironment(owner, context, finish) => {
-                    self.complete_projection_environment(owner, context, finish)?;
-                }
-                Work::NormalizeBound(key, context) => {
-                    self.normalize_annotation(key, self.ty(key)?, context)?;
-                }
-                Work::NominalContract(item, finish) => self.nominal_contract(item, finish)?,
-                Work::Fields(item, finish) => self.nominal_fields(item, finish)?,
-                Work::SourceResultContracts(id, phase) => {
-                    if super::compiler_items::field_protocol::is_result(&self.facts, ItemId(id.0)) {
-                        self.reflected_result_work(id, phase)?;
-                    } else {
-                        self.pointee_member_work(id, phase)?;
-                    }
-                }
-                Work::CallerLocation(id, finish) => self.caller_location_data(id, finish)?,
-                Work::GenericDefault(binding) => self.demand_generic_default(binding)?,
-                Work::OpaqueHidden(id) => {
-                    let declaration = self
-                        .facts
-                        .opaques
-                        .declarations
-                        .get(&id)
-                        .ok_or_else(|| Error::at(FileId(0), 0, "missing opaque declaration"))?;
-                    return Err(self.report.body_error(
-                        declaration.site(&self.facts).map_err(Error::unlocated)?,
-                        "opaque hidden type requires its completed defining body",
-                    ));
-                }
-                Work::Constructor(id) => self.constructor(id)?,
-                Work::SelfConstructor(key, owner, context) => {
-                    self.complete_self_constructor(key, owner, context)?;
-                }
-                Work::PrepareConstructor(id) => self.constant_constructor(id)?,
-                Work::ValueType(id) => self.constant_value_type(id),
-                Work::ValueContract(ty, finish) => self.constant_type_contract(ty, finish)?,
-                Work::ValueShape(ty) => self.constant_value_shape(ty)?,
-                Work::ConstantUse(key, context) => {
-                    self.constant_use(key, context, steps, limit, &mut scan)?;
-                }
-                Work::ConstantArguments(key) => self.constant_arguments(key)?,
-                Work::Bounds(owner, context) => self.complete_bounds(owner, context)?,
-                Work::AliasVariant(key, owner, context) => {
-                    self.complete_alias_variant(key, owner, context)?;
-                }
-                Work::ItemArguments(key, owner) => {
-                    self.complete_item_arguments(key, owner)?;
-                }
-                Work::Generic(declaration) => self.generic_declaration(declaration)?,
-                Work::Default(id, finish) => self.generic_default(id, finish)?,
-                Work::PathArguments(key, id, context) => self.path_arguments(key, id, context)?,
-                Work::AssociatedPrefix(key, owner, context) => {
-                    self.complete_associated_prefix(key, owner, context)?;
-                }
-                Work::Definition(id, finish) => self.definition(id, finish)?,
-                Work::Node(key, finish, context) => self.annotation(key, finish, context)?,
-                Work::Reference(key, region) => self.reference_type(key, region)?,
-                Work::Parameter(id, finish) => {
-                    if finish {
-                        self.regions.end_parameter(id);
-                    } else {
-                        self.regions.begin_parameter(id);
-                    }
-                }
-                Work::Signature(key, owner, phase) => {
-                    self.signature(key, owner, phase, steps, limit)?;
-                }
-                Work::Receiver(key, owner, binder) => {
-                    self.complete_receiver(key, owner, binder)?;
-                }
+            }
+            Work::Signature(key, owner, phase) => {
+                self.signature(key, owner, phase, steps, limit)?;
+            }
+            Work::Receiver(key, owner, binder) => {
+                self.complete_receiver(key, owner, binder)?;
             }
         }
         Ok(())
@@ -982,6 +1057,7 @@ impl Checker<'_> {
                 ));
             }
             self.states[declaration.definition.0 as usize] = State::Active;
+            self.census_activate(declaration.definition);
             self.comparison_family(declaration)?;
             if let Some(contracts) = &mut self.facts.generics.traits {
                 contracts.complete_results();
@@ -1001,6 +1077,7 @@ impl Checker<'_> {
                 ));
             }
             self.states[declaration.definition.0 as usize] = State::Active;
+            self.census_activate(declaration.definition);
             self.language_contract(declaration)?;
             if let Some(contracts) = &mut self.facts.generics.traits {
                 contracts.complete_results();
@@ -1010,6 +1087,11 @@ impl Checker<'_> {
         Ok(false)
     }
     fn definition(&mut self, id: DefId, finish: bool) -> Result<(), Error> {
+        if self.census_blocks(id) {
+            return Err(Error::unlocated(
+                "declaration depends on a definition that failed earlier in this census",
+            ));
+        }
         if self.activate_iteration_definition(id)? {
             return Ok(());
         }
@@ -1047,6 +1129,7 @@ impl Checker<'_> {
                 return Err(self.error(key, "recursive type alias"));
             }
             self.states[id.0 as usize] = State::Active;
+            self.census_activate(id);
             if matches!(item.kind, ItemKind::Function { .. }) {
                 self.work.push(Work::Signature(
                     key,

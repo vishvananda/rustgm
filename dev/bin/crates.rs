@@ -15,6 +15,8 @@ pub struct Options {
     pub source_core: Option<String>,
     pub source_client: Option<String>,
     pub source_profile: Option<rustgm::lower::instances::SourcePublication>,
+    /// Analysis-only census records; never a build output.
+    pub census: Option<String>,
 }
 impl Options {
     pub fn select_native_output(&mut self, path: Option<String>) -> Result<(), String> {
@@ -111,6 +113,14 @@ impl Options {
         }
         if self.source_core.is_some() && self.source_client.is_some() {
             return Err("--source-core and --source-client are mutually exclusive".into());
+        }
+        if self.census.is_some()
+            && (self.source_core.is_none()
+                || !matches!(mode, "--emit-types" | "--emit-semantics")
+                || count
+                || output.is_some())
+        {
+            return Err("--census-output requires --source-core with --emit-types or --emit-semantics, without -o or counting".into());
         }
         if self.source_client.is_some() {
             if mode != "--emit-lowir" {

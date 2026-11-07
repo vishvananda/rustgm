@@ -122,8 +122,11 @@ pub fn run(
             | Mode::Lowir
     ) {
         let report = resolve::expansion::analyze_with_context(root, &mut Files, config, &context)
-            .and_then(resolve::analyze_expanded)
-            .map_err(|error| semantic_error(&error))?;
+            .and_then(resolve::analyze_expanded);
+        if let Some(path) = &crates.census {
+            return crate::census::run(report, path, matches!(mode, Mode::Semantics));
+        }
+        let report = report.map_err(|error| semantic_error(&error))?;
         if matches!(
             mode,
             Mode::Types

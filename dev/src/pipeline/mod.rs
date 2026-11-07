@@ -16,6 +16,7 @@ use crate::{
     resolve::{expansion::Report, model::DefId, package::Error},
     sema::{
         self,
+        census::{Census, Phase},
         model::{Declarations, Function},
     },
     types::{ItemId, opaque::OpaqueId},
@@ -66,16 +67,19 @@ struct Demand {
 /// # Errors
 /// Reports semantic, lifetime, ownership and loan failures at their original source.
 pub fn analyze(report: &Report, facts: Declarations) -> Result<Analysis, Error> {
-    analyze_defining(report, facts, None)
+    analyze_defining(report, facts, None, None)
 }
 fn analyze_defining(
     report: &Report,
     facts: Declarations,
     context: Option<&execution::Context>,
+    census: Option<&mut Census>,
 ) -> Result<Analysis, Error> {
     let mut demand = Demand::default();
-    let facts =
-        sema::bodies::analyze_defining(report, facts, |report, facts, request| match request {
+    let facts = sema::bodies::analyze_defining(
+        report,
+        facts,
+        |report, facts, request| match request {
             sema::bodies::DefiningRequest::Hidden(id) => demand.close(report, facts, id, context),
             sema::bodies::DefiningRequest::ComptimeDefinition(definition) => {
                 demand.complete_const_definition(report, facts, definition, context)
@@ -83,7 +87,9 @@ fn analyze_defining(
             sema::bodies::DefiningRequest::ConstDefinition(definition) => {
                 Demand::const_readiness(report, facts, definition)
             }
-        })?;
+        },
+        census,
+    )?;
     Ok(Analysis {
         facts,
         prepared: demand.prepared,
@@ -95,7 +101,49 @@ fn analyze_defining(
 pub fn analyze_source(report: &Report) -> Result<Analysis, Error> {
     let context = execution::Context::default();
     let facts = sema::declarations::analyze_with_executor(report, context.executor())?;
-    let mut analysis = analyze_defining(report, facts, Some(&context))?;
+    let analysis = analyze_defining(report, facts, Some(&context), None)?;
+    complete_source(report, context, analysis)
+}
+/// Run the same source analysis as an analysis-only census.
+///
+/// Isolated declaration and body loops record every failure they reach; budget
+/// exhaustion and failures outside those loops end the census. The analysis is
+/// returned only when every pass completed without a record. It is diagnostic
+/// evidence for the caller's census and must never be lowered or published.
+#[must_use]
+pub fn census_source(report: &Report) -> (Census, Option<Analysis>) {
+    let mut census = Census::default();
+    let context = execution::Context::default();
+    let Some(facts) =
+        sema::declarations::census_with_executor(report, context.executor(), &mut census)
+    else {
+        return (census, None);
+    };
+    let analysis = match analyze_defining(report, facts, Some(&context), Some(&mut census)) {
+        Ok(analysis) => analysis,
+        Err(error) => {
+            census.stop(Phase::Bodies, &error);
+            return (census, None);
+        }
+    };
+    if census.has_failures(Phase::Bodies) {
+        census.stop_after_failures(Phase::Bodies);
+        return (census, None);
+    }
+    match complete_source(report, context, analysis) {
+        Ok(analysis) => (census, Some(analysis)),
+        Err(error) => {
+            census.stop(Phase::Completion, &error);
+            (census, None)
+        }
+    }
+}
+/// Complete constants, the panic handler and lints after every body is checked.
+fn complete_source(
+    report: &Report,
+    context: execution::Context,
+    mut analysis: Analysis,
+) -> Result<Analysis, Error> {
     complete_constants(
         report,
         &context,

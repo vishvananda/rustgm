@@ -235,3 +235,6 @@ mod cold_prototypes;
 
 #[path = "../../deprecation_releases.rs"]
 mod deprecation_releases;
+
+#[path = "../../census_mode.rs"]
+mod census_mode;

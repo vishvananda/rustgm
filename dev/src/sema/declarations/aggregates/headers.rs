@@ -65,8 +65,7 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         for index in 0..self.nominals.entries.len() {
             let owner = DefId(self.nominals.entries[index].item.0);
-            self.work.push(Work::Definition(owner, false));
-            self.drain(steps, limit)?;
+            self.drain_root(owner, Work::Definition(owner, false), steps, limit)?;
         }
         Ok(())
     }
@@ -81,6 +80,7 @@ impl Checker<'_> {
                 return Err(self.error(key, "cycle in nominal parameter declarations"));
             }
             self.states[owner.0 as usize] = State::Active;
+            self.census_activate(owner);
             let context = self.template_context(owner, key)?;
             if context.binder.is_some() {
                 self.nominal_regions.insert(ItemId(owner.0), context);
