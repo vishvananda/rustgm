@@ -34,9 +34,15 @@ fn unrelated_rigid_subjects_do_not_make_proof_quadratic() -> Result<(), Box<dyn 
         predicates.push(predicate);
     }
     let mut context = Context::default();
+    let mut discriminants = super::Discriminants::default();
     let mut substitution = Instantiation::new(&mut context, &store, &[])?;
     for predicate in predicates {
-        assert!(assumptions.unambiguous_declaration(&mut store, &mut context, predicate)?);
+        assert!(assumptions.unambiguous_declaration(
+            &mut store,
+            &mut context,
+            predicate,
+            &mut discriminants
+        )?);
         let goal = context.instantiate_predicate(&mut store, predicate, &mut substitution)?;
         let evidence = assumptions
             .prove(&mut store, &mut context, &goal)?

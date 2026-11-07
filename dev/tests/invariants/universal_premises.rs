@@ -507,7 +507,12 @@ fn flat_shortcuts_and_ambiguous_trials_cannot_drop_quantified_candidates() -> Te
     );
     assert!(
         assumptions
-            .unambiguous_declaration(&mut facts.types, &mut context, ordinary)
+            .unambiguous_declaration(
+                &mut facts.types,
+                &mut context,
+                ordinary,
+                &mut crate::sema::traits::assumptions::Discriminants::default()
+            )
             .is_err()
     );
     assert!(matches!(

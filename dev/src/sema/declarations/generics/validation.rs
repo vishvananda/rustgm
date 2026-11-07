@@ -9,6 +9,7 @@ use crate::{
 };
 struct TraitEvidence {
     assumptions: crate::sema::traits::assumptions::Assumptions,
+    discriminants: crate::sema::traits::assumptions::Discriminants,
     context: crate::types::infer::Context,
 }
 impl Checker<'_> {
@@ -241,6 +242,7 @@ impl Checker<'_> {
         }
         Ok(TraitEvidence {
             assumptions,
+            discriminants: crate::sema::traits::assumptions::Discriminants::default(),
             context: crate::types::infer::Context::default(),
         })
     }
@@ -276,7 +278,12 @@ impl Checker<'_> {
         }
         if !state
             .assumptions
-            .unambiguous_declaration(&mut self.facts.types, &mut state.context, requirement)
+            .unambiguous_declaration(
+                &mut self.facts.types,
+                &mut state.context,
+                requirement,
+                &mut state.discriminants,
+            )
             .map_err(|e| self.error(predicate.source, e.to_string()))?
         {
             return Err(self.error(

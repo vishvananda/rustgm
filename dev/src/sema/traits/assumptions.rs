@@ -1,5 +1,6 @@
 //! Caller assumptions are indexed once; alternatives use isolated complete-goal equations.
 mod alternatives;
+mod discriminants;
 #[cfg(test)]
 use crate::types::parameters::predicates::Bound;
 mod universal;
@@ -15,6 +16,7 @@ use crate::types::{
         premise_index::{ClauseIndex, QuantifiedIndex},
     },
 };
+pub(in crate::sema) use discriminants::Discriminants;
 use std::sync::Arc;
 pub(in crate::sema) use universal::{Openings, ScopedEvidence, ScopedSelection};
 #[cfg(test)]
@@ -302,11 +304,14 @@ impl Assumptions {
 
     /// A declaration's own exact bound needs equations only when alternatives exist.
     /// This checks ambiguity, not whether an implementation satisfies a new goal.
+    /// `discriminants` belongs to these assumptions; a bound with a closed first
+    /// value is equated only with assumptions that have that value or an open one.
     pub fn unambiguous_declaration(
         &self,
         store: &mut Store,
         context: &mut Context,
         predicate: Predicate,
+        discriminants: &mut Discriminants,
     ) -> Result<bool, infer::Error> {
         context.account_work(1)?;
         if self
@@ -330,12 +335,36 @@ impl Assumptions {
                 .kind(predicate.ty)
                 .ok_or(infer::Error::InvalidIdentity)?,
         );
-        if self.candidates(application.item, head).count() == 1 {
+        let Some(value) = discriminants::value(store, predicate)? else {
+            if self.candidates(application.item, head).count() == 1 {
+                return Ok(true);
+            }
+            let mut substitution = infer::Instantiation::new(context, store, &[])?;
+            let goal = context.instantiate_predicate(store, predicate, &mut substitution)?;
+            return Ok(self.prove(store, context, &goal)?.is_some());
+        };
+        discriminants.build(self, store, context)?;
+        if discriminants
+            .candidates(application.item, head, value)
+            .nth(1)
+            .is_none()
+        {
             return Ok(true);
         }
         let mut substitution = infer::Instantiation::new(context, store, &[])?;
         let goal = context.instantiate_predicate(store, predicate, &mut substitution)?;
-        Ok(self.prove(store, context, &goal)?.is_some())
+        let Some(subject) = alternatives::subject(store, context, &goal)? else {
+            return Ok(false);
+        };
+        let candidates = subject.heads().flat_map(|head| {
+            discriminants
+                .candidates(application.item, head, value)
+                .map(|predicate| (predicate, None))
+        });
+        Ok(matches!(
+            Self::choose_flat(store, context, &goal, candidates)?,
+            Selection::Proven(_)
+        ))
     }
 
     /// Unknown Self is not guessed from the available assumptions. Other unresolved
@@ -370,11 +399,31 @@ impl Assumptions {
         let Some(subject) = alternatives::subject(store, context, goal)? else {
             return Ok(Selection::Deferred);
         };
-        alternatives::choose(
+        Self::choose_flat(
             store,
             context,
             goal,
             subject.heads().flat_map(|head| self.candidates(item, head)),
+        )
+    }
+
+    /// One flat selection among `candidates`, each in an isolated trial.
+    fn choose_flat<'a>(
+        store: &mut Store,
+        context: &mut Context,
+        goal: &Goal,
+        candidates: impl Iterator<
+            Item = (
+                Predicate,
+                Option<&'a Arc<crate::types::parameters::premise_index::Opening>>,
+            ),
+        >,
+    ) -> Result<Selection, infer::Error> {
+        alternatives::choose(
+            store,
+            context,
+            goal,
+            candidates,
             |store, context, (predicate, opening)| {
                 let predicate = opening.map_or(Ok(predicate), |opening| {
                     opening.predicate(store, context, predicate)
