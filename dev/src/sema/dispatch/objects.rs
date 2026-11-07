@@ -1,5 +1,5 @@
 //! Automatic object implementations preserve virtual callable identity and proof.
-use super::{Declarations, Dispatcher, Obligations, arguments, implementation, selection};
+use super::{Declarations, Dispatcher, Obligations, arguments, selection};
 use crate::{
     resolve::model::DefId,
     types::{GenericArgs, Kind, TypeId, parameters::predicates::Predicate},
@@ -105,32 +105,7 @@ impl Dispatcher {
                     proof,
                 });
         }
-        let before = self.normalize.steps;
-        let predicate = self.normalize.predicate(&mut facts.types, predicate)?;
-        self.context
-            .account_work(
-                self.normalize
-                    .steps
-                    .saturating_sub(before)
-                    .saturating_add(1),
-            )
-            .map_err(|e| e.to_string())?;
-        let empty = super::Assumptions::default();
-        let caller = self.caller.as_ref();
-        let evidence = implementation::select_source_using(
-            facts,
-            &mut self.context,
-            predicate,
-            selection::Caller {
-                assumptions: caller.map_or(&empty, |caller| &caller.assumptions),
-                environment: caller.and_then(|caller| caller.environment.as_ref()),
-                first_region: self.obligations.regions.end,
-                retain_sized: false,
-            },
-            self.availability,
-            preparation,
-        )?;
-        self.provisional_size |= evidence.provisional_size;
+        let evidence = self.source_evidence(facts, predicate, preparation)?;
         match evidence.source {
             selection::Source::Builtin if fn_pointer => Ok(Method::FunctionPointer {
                 proof: evidence.proof,

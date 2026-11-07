@@ -173,6 +173,33 @@ impl Selection {
         self.0.contract.current(facts)
     }
 
+    /// A builtin implementation uses the real source default, including its type and body.
+    pub(in crate::sema) fn provided_constant(
+        &self,
+        facts: &Declarations,
+        member: DefId,
+    ) -> Result<(), String> {
+        self.current(facts)?;
+        let parent = self.0.contract.declarations[1];
+        if facts.associated.trait_owner(member) != Some(parent.definition)
+            || facts.associated.owner(member) != facts.associated.owner(parent.definition)
+        {
+            return Err("Field constant has another actual declaration owner".into());
+        }
+        let initializer = facts
+            .initializer_index(member)
+            .and_then(|index| facts.initializers.get(index))
+            .ok_or("Field constant requires its actual provided initializer")?;
+        if initializer.definition != member
+            || !matches!(initializer.kind, crate::sema::model::InitializerKind::Const)
+            || (member == self.0.contract.declarations[4].definition
+                && initializer.node != self.0.contract.declarations[4].origin)
+        {
+            return Err("Field constant changed its actual provided declaration".into());
+        }
+        Ok(())
+    }
+
     pub(in crate::sema) fn output(
         &self,
         facts: &mut Declarations,

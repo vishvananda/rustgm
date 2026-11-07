@@ -49,23 +49,7 @@ impl Dispatcher {
         if self.caller.is_none() && predicate.contains_parameters(&facts.types)? {
             return Err("concrete constant retains unresolved arguments".into());
         }
-        let (owner, arguments, evidence) = self.implementation(facts, predicate)?;
-        let definition = facts
-            .generics
-            .implementations
-            .as_ref()
-            .and_then(|registry| {
-                registry.available_constant(owner, instance.definition, self.availability)
-            })
-            .ok_or("selected implementation lacks the trait constant")?;
-        let result = if definition == instance.definition {
-            instance
-        } else {
-            Instance {
-                definition,
-                arguments,
-            }
-        };
+        let (result, evidence) = self.constant_target(facts, instance, predicate)?;
         let result = implementation::restore_constant(
             facts,
             &mut self.context,

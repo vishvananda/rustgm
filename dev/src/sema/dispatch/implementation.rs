@@ -68,6 +68,44 @@ pub(super) fn select_source_using(
     Ok(evidence)
 }
 
+impl super::Dispatcher {
+    /// Reuse the same caller opening and normalization for every actual source selection.
+    pub(super) fn source_evidence(
+        &mut self,
+        facts: &mut Declarations,
+        predicate: Predicate,
+        preparation: Option<&mut dyn super::Preparation>,
+    ) -> Result<selection::Evidence, super::Failure> {
+        let before = self.normalize.steps;
+        let predicate = self.normalize.predicate(&mut facts.types, predicate)?;
+        self.context
+            .account_work(
+                self.normalize
+                    .steps
+                    .saturating_sub(before)
+                    .saturating_add(1),
+            )
+            .map_err(|e| e.to_string())?;
+        let empty = super::Assumptions::default();
+        let caller = self.caller.as_ref();
+        let evidence = select_source_using(
+            facts,
+            &mut self.context,
+            predicate,
+            selection::Caller {
+                assumptions: caller.map_or(&empty, |caller| &caller.assumptions),
+                environment: caller.and_then(|caller| caller.environment.as_ref()),
+                first_region: self.obligations.regions.end,
+                retain_sized: false,
+            },
+            self.availability,
+            preparation,
+        )?;
+        self.provisional_size |= evidence.provisional_size;
+        Ok(evidence)
+    }
+}
+
 /// Return a reusable target only when its complete arguments can escape the
 /// private proof and every obligation holds in an empty lifetime environment.
 /// An unanchored private argument retains the original caller-owned proof.

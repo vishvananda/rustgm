@@ -73,12 +73,10 @@ fn cold_never_pays_feature_safety_move_lifetime_const_or_attribute_obligations()
     Ok(())
 }
 #[test]
-fn const_and_async_targets_are_actual_headers_without_callable_permission() -> Result {
+fn const_target_has_a_checked_body_and_async_headers_keep_their_execution_requirements() -> Result {
+    let report = crate::resolve::resolve(&input("const-closure")?, true)?;
+    full(&report)?;
     for (name, required) in [
-        (
-            "const-closure",
-            "const closure callable semantics are not implemented",
-        ),
         (
             "async-block",
             "body construct requires later semantic implementation",

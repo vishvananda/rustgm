@@ -1,0 +1,76 @@
+{
+  "scope": "genuine provided Field default and joined cold/const creation development checkpoint",
+  "receipt": "obj/parallel/cold-creation-field-default-join-v1/receipt.json",
+  "receipt_sha256": "b028b43f49e7856dd260d518e54cb27f0a375b485528851ad1f353fa0c47953d",
+  "cli_sha256": "b5f57efdd65b89afb9824df9f11ab6429bf7de82c0ca40df24c886da3552c2f7",
+  "steps": [
+    {
+      "name": "cli",
+      "status": 0,
+      "seconds": 0.11495196993928403
+    },
+    {
+      "name": "all-target-metadata",
+      "status": 0,
+      "seconds": 103.21857271599583
+    },
+    {
+      "name": "stable-baseline",
+      "status": 1,
+      "seconds": 0.032161638024263084
+    },
+    {
+      "name": "course-compare",
+      "status": 0,
+      "seconds": 0.5662551870336756
+    },
+    {
+      "name": "scoped-profile-provenance",
+      "status": 0,
+      "seconds": 1.368815539055504
+    },
+    {
+      "name": "independent-pa20",
+      "status": 0,
+      "seconds": 67.18525017995853
+    },
+    {
+      "name": "harness-upstream",
+      "status": 0,
+      "seconds": 13.452483583940193
+    },
+    {
+      "name": "original-core",
+      "status": 0,
+      "seconds": 18.82186784397345
+    }
+  ],
+  "seconds": 208.33448899001814,
+  "core": {
+    "status": 1,
+    "first_error": "ERROR: input: source header attribute producer exceeds storage budget",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 18.643348346929997,
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "lint_cap": "allow"
+  },
+  "pending": [
+    "field_offset intrinsic and full offset/native consumers",
+    "local source-header producer budget diagnosis without changing limits",
+    "full const closure calls/captures/CTFE and conditional caller debts",
+    "source transport and original library artifacts",
+    "successor complete CI"
+  ],
+  "independent_profile_observations": {
+    "count": 44,
+    "all_expected_statuses": true,
+    "E0554_absent_under_declared_profile": true,
+    "missing_feature_still": "E0658",
+    "oracle_bytes_unchanged": true
+  }
+}

@@ -10,6 +10,7 @@ mod effect_requirements;
 pub(crate) use consteval_defaults::check_const_default;
 mod observed_constants;
 mod proven_methods;
+mod reflected_constants;
 pub(in crate::sema) use observed_constants::{ConstantDecision, ConstantProof};
 pub(in crate::sema) use proven_methods::selected_definition;
 pub(crate) use proven_methods::{callable_requirement, requested_callable, selected_callable};
@@ -160,9 +161,26 @@ impl Dispatcher {
             return Ok(None);
         };
         let predicate = arguments::Arguments::constant(facts, instance)?.goal(facts, owner)?;
-        let (owner, _, evidence) = self.implementation(facts, predicate)?;
-        self.extend_evidence(evidence)?;
-        Ok(Some(owner))
+        let (owner, proof) = if let Some(evidence) = self.field_constant_owner(facts, predicate)? {
+            let owner = match evidence.source {
+                selection::Source::Implementation { owner, .. } => Some(owner),
+                selection::Source::Field(selected) => {
+                    selected.provided_constant(facts, instance.definition)?;
+                    None
+                }
+                _ => {
+                    return Err(
+                        "constant preparation cannot use a symbolic Field assumption".into(),
+                    );
+                }
+            };
+            (owner, evidence.proof)
+        } else {
+            let (owner, _, proof) = self.implementation(facts, predicate)?;
+            (Some(owner), proof)
+        };
+        self.extend_evidence(proof)?;
+        Ok(owner)
     }
     /// Patterns must select a definition before monomorphization. Rigid caller
     /// parameters may remain in unused arguments, but an assumption is not a value.

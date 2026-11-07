@@ -277,3 +277,32 @@ fn reflected_results_keep_ordinary_move_lifetime_and_parent_requirements() -> Re
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }
+
+#[test]
+fn builtin_field_constant_executes_the_actual_alternative_default_type_and_value() -> Result {
+    let analysis = analyze_in("pa31/tests/spec/field-operations", "alternate-demand")?;
+    let initializer = analysis
+        .facts
+        .initializers
+        .iter()
+        .find(|initializer| {
+            matches!(
+                initializer.kind,
+                rustgm::sema::model::InitializerKind::Static { .. }
+            )
+        })
+        .ok_or("actual static OFFSET demand")?;
+    let reader = rustgm::sema::values::Reader::new(&analysis.facts);
+    let value = reader
+        .definition(initializer.definition)
+        .ok_or("completed provided OFFSET value")?;
+    assert!(matches!(
+        reader.view(value)?,
+        rustgm::sema::values::View::Scalar(rustgm::sema::model::Scalar::Integer(7))
+    ));
+    assert_eq!(
+        initializer.ty,
+        rustgm::types::TypeId::primitive(rustgm::types::Primitive::U8)
+    );
+    Ok(())
+}
