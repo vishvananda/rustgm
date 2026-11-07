@@ -6132,6 +6132,23 @@ re-runs the same imported operator contract; the role's parameter defaults
 arrive complete with its header. Without an imported or own role, the
 expression stays rejected by name.
 
+Version thirteen also carries the callable roles. A provider may declare the
+`tuple_trait` marker, `FnOnce<Args: Tuple>` with its `fn_once_output` result
+and rust-call `call_once`, `FnMut: FnOnce<Args>` and `Fn: [const]
+FnMut<Args>`, each with exactly its header, Args parameter and call member;
+the conditional effect is admitted only on these roles' own clauses. Type
+recipe tag 9 is a non-unit tuple, and requirement tag 4 binds a declared
+result (`ProjectionEqual`). Body IR node 29 is a call operator with its call
+trait, caller-side signature and arguments, and borrow flag 1 is a two-phase
+borrow; unique borrows stay rejected by name. Only the vacuous binder that
+parenthesized sugar opens is lifted. A fresh consumer re-authenticates every
+imported role and call method, and re-proves each call operator: the receiver
+form of its call trait, its untupled inputs, its result as the callee's
+declared `Output`, and the callee's call-trait obligation in the rebuilt
+environment. No provider selection or proof is trusted. Closures inside
+provider bodies and closure call entries stay rejected by name. Packets
+without these rows keep their exact bytes.
+
 ## Lowering and backend facts
 
 Lower only checked, typed facts. Give every emitted instance, drop shim, vtable,

@@ -5,6 +5,17 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [callable-role transport](parallel/callable-role-transport.md) is
+joined on main. Version 13 now carries a no-core `Tuple`
+marker, `FnOnce` with its declared `Output`, `FnMut` and `Fn`, together with
+tuple recipes, declared-result bindings, `Rvalue::Invoke` call operators and
+two-phase receiver borrows. Fresh consumers re-authenticate every role header
+and call method, and re-prove each call operator's trait and `Output` in
+their own rebuilt environment. Function-item, own-closure and own-capturing
+clients of `apply`, `apply_mut` and `apply_ref` return 42 natively, as rustc
+does. Older exports are byte-identical. Still open: enums with match,
+closures inside provider bodies, and consumer-written callable bounds.
+
 [Input-proportional macro budget](parallel/macro-budget.md) (Lane B): the
 resolve-phase macro-contract and inventory ledger is no longer capped by a fixed
 whole-crate 1M/64 MiB default. It starts from that setup floor. Then the first
