@@ -1,0 +1,231 @@
+{
+  "schema": 1,
+  "state": "observed frozen Cargo unit graphs under the RustGM course profile; no RustGM target compilation or library artifact",
+  "base_outcomes": {
+    "path": "pa34/tests/stdlib-graph-outcomes.json",
+    "sha256": "71821c799948e0d665e2710b9bb950bb981f6a373ca1a882364f530eeba10ca8"
+  },
+  "configuration": {
+    "target": "x86_64-unknown-linux-gnu",
+    "profile": "dev",
+    "settings": {
+      "opt-level": "0",
+      "debug": "0",
+      "debug-assertions": "false",
+      "overflow-checks": "true",
+      "panic": "abort"
+    },
+    "mechanism": "explicit CARGO_PROFILE_DEV_* planner environment",
+    "panic": "abort",
+    "default_features": true,
+    "features": []
+  },
+  "rationale": "bootstrap ships std without debug assertions or debuginfo; RustGM has no optimizer and fixes overflow checks on, so opt-level 0 and overflow checks on are RustGM settings rather than bootstrap settings",
+  "structure": "equal to the historical dev-profile graph except profiles",
+  "tool_sha256": {
+    "cargo_sha256": "ff3022fcbd13b08434ea7afde9a0ef9d5b3f5c17b5fc7a40031be3ee000a6a24",
+    "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "declaration_sha256": "f679f3ae86e75fbc3dc4e3825cbe8a96fb1ad323fdc9101f24a3fbed51528b97",
+  "implementation_sha256": {
+    "stdlib_plan.py": "2906c916a817fbfb39943658554a200d03cfccd9aacf17955a81163c172a719f",
+    "stdlib_inputs.py": "8330a4d6f4d919b9001f481cb85279ea7315c8ac1059d01544d168efccdf7d8c",
+    "stdlib_targets.py": "c7c692fcd025e21fd4bcbf391e289b6feaaef57dffa5627fc76eec26b9c70064",
+    "cargo_plan.py": "04860d22a69a72d78d928b497c584beeae2930873b4bf267c5628b94e1efd1bb"
+  },
+  "observations": [
+    {
+      "root": "core",
+      "units": 1,
+      "receipt_sha256": "e398ef29ecda791ab0a7d6b04cf9dac41284ca569ff37c25421eb74df9bc6aa0",
+      "graph_sha256": "20ca274e6c0d0486d5acd7d372f01cd354e6e72849ef1882c92bcd95bb00afbc",
+      "profiles": {
+        "target-compile": [
+          {
+            "codegen_backend": null,
+            "codegen_units": null,
+            "debug_assertions": false,
+            "debuginfo": 0,
+            "incremental": false,
+            "lto": "false",
+            "name": "dev",
+            "opt_level": "0",
+            "overflow_checks": true,
+            "panic": "abort",
+            "rpath": false,
+            "split_debuginfo": null,
+            "strip": {
+              "resolved": {
+                "Named": "debuginfo"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "root": "alloc",
+      "units": 5,
+      "receipt_sha256": "c4e45646f7436bab655e5b71cfb6c8d6bb4c4ddc6ba9e50edaefcfb646109301",
+      "graph_sha256": "33d20363049c3fcdc286c09b9b82dfc89a8eff3fa6b9a00835e2cdf6c74a0fe0",
+      "profiles": {
+        "target-compile": [
+          {
+            "codegen_backend": null,
+            "codegen_units": null,
+            "debug_assertions": false,
+            "debuginfo": 0,
+            "incremental": false,
+            "lto": "false",
+            "name": "dev",
+            "opt_level": "0",
+            "overflow_checks": true,
+            "panic": "abort",
+            "rpath": false,
+            "split_debuginfo": null,
+            "strip": {
+              "resolved": {
+                "Named": "debuginfo"
+              }
+            }
+          }
+        ],
+        "host-run": [
+          {
+            "codegen_backend": null,
+            "codegen_units": null,
+            "debug_assertions": false,
+            "debuginfo": 0,
+            "incremental": false,
+            "lto": "false",
+            "name": "dev",
+            "opt_level": "0",
+            "overflow_checks": false,
+            "panic": "unwind",
+            "rpath": false,
+            "split_debuginfo": null,
+            "strip": {
+              "resolved": {
+                "Named": "debuginfo"
+              }
+            }
+          }
+        ],
+        "host-compile": [
+          {
+            "codegen_backend": null,
+            "codegen_units": null,
+            "debug_assertions": false,
+            "debuginfo": 0,
+            "incremental": false,
+            "lto": "false",
+            "name": "dev",
+            "opt_level": "0",
+            "overflow_checks": true,
+            "panic": "unwind",
+            "rpath": false,
+            "split_debuginfo": null,
+            "strip": {
+              "resolved": {
+                "Named": "debuginfo"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "root": "std",
+      "units": 19,
+      "receipt_sha256": "de4b74c36eab5ee72162db72ddb5ed2118365cf194a5cac30f45c77aef4071b9",
+      "graph_sha256": "0278c38f4515fadab309a52f355f039798a9efff7a301675d799c783e8c6a197",
+      "profiles": {
+        "target-compile": [
+          {
+            "codegen_backend": null,
+            "codegen_units": null,
+            "debug_assertions": false,
+            "debuginfo": 0,
+            "incremental": false,
+            "lto": "false",
+            "name": "dev",
+            "opt_level": "0",
+            "overflow_checks": true,
+            "panic": "abort",
+            "rpath": false,
+            "split_debuginfo": null,
+            "strip": {
+              "resolved": {
+                "Named": "debuginfo"
+              }
+            }
+          },
+          {
+            "codegen_backend": null,
+            "codegen_units": null,
+            "debug_assertions": false,
+            "debuginfo": 0,
+            "incremental": false,
+            "lto": "false",
+            "name": "dev",
+            "opt_level": "0",
+            "overflow_checks": true,
+            "panic": "abort",
+            "rpath": false,
+            "rustflags": [
+              "-Cpanic=abort"
+            ],
+            "split_debuginfo": null,
+            "strip": {
+              "resolved": {
+                "Named": "debuginfo"
+              }
+            }
+          }
+        ],
+        "host-run": [
+          {
+            "codegen_backend": null,
+            "codegen_units": null,
+            "debug_assertions": false,
+            "debuginfo": 0,
+            "incremental": false,
+            "lto": "false",
+            "name": "dev",
+            "opt_level": "0",
+            "overflow_checks": false,
+            "panic": "unwind",
+            "rpath": false,
+            "split_debuginfo": null,
+            "strip": {
+              "resolved": {
+                "Named": "debuginfo"
+              }
+            }
+          }
+        ],
+        "host-compile": [
+          {
+            "codegen_backend": null,
+            "codegen_units": null,
+            "debug_assertions": false,
+            "debuginfo": 0,
+            "incremental": false,
+            "lto": "false",
+            "name": "dev",
+            "opt_level": "0",
+            "overflow_checks": true,
+            "panic": "unwind",
+            "rpath": false,
+            "split_debuginfo": null,
+            "strip": {
+              "resolved": {
+                "Named": "debuginfo"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

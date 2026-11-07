@@ -39,12 +39,17 @@ Two are core's own auto traits counted as a second object principal (`any.rs:162
 "invalid or exhausted canonical projection premise" hides the inner error and was
 classified as a budget stop. Evidence: `rustgm-pa29-work/obj/parallel/core-census-1/`.
 
-The [target unit executor](parallel/target-unit-executor.md) plans each frozen
-target unit as an exact RustGM invocation, or as typed gaps, and runs units
-dependency-first with blocked dependents recorded. On all three frozen graphs,
-core fails first, before any process starts: the dev profile's `debuginfo=2` and
-`debug_assertions=true` differ from RustGM's fixed profile. The std plan also needs
-Rust 2015/2018, the std dylib and host script outputs.
+The [target unit executor](parallel/target-unit-executor.md) now runs on core,
+alloc and std graphs re-planned under RustGM's fixed profile. The dev-profile
+graphs are kept as history. One combined run executes the real host build
+scripts, which reproduce their frozen outputs, and feeds them to the target
+units. No profile gap remains. With main CLI `7051deee`, core fails first under
+Cargo's lint policy, where core is uncapped: `strict provenance lint producer is
+not implemented` at `lib.rs:3519`, `#![deny(implicit_provenance_casts)]`. With
+analysis-only capped lints, core instead stops at `source macro contracts exceed
+their work budget` (`net/ip_addr.rs:9035`), under default source-contract limits.
+Alloc has no other gap. Std still needs Rust 2018 (cfg_if), Rust 2015
+(rustc_demangle) and the std dylib.
 
 The [analysis-only census mode](parallel/core-census-mode.md) is on main:
 `--census-output PATH` and observer `--census`. It records every isolated

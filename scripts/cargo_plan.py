@@ -17,6 +17,12 @@ from crate_vendor import Vendor
 from host_build_script import digest
 import local_package
 
+# Explicit Cargo dev-profile settings, in Cargo's own spellings. They are passed
+# as Cargo's documented CARGO_PROFILE_DEV_* configuration, never inherited.
+PROFILE_SETTINGS = {'opt-level': ('0', '1', '2', '3', 's', 'z'), 'debug': ('0', '1', '2'),
+                    'debug-assertions': ('false', 'true'), 'overflow-checks': ('false', 'true'),
+                    'panic': ('abort', 'unwind')}
+
 
 @dataclass(frozen=True)
 class Job:
@@ -35,6 +41,7 @@ class Job:
     vendor: Vendor | None = None
     local_packages: tuple[local_package.LocalPackage, ...] = ()
     panic: str | None = None
+    profile: tuple[tuple[str, str], ...] = ()
 
     def validate(self):
         for path, expected in ((self.cargo, self.cargo_sha256),
@@ -62,6 +69,12 @@ class Job:
             raise ValueError('default features must be explicitly enabled or disabled')
         if self.panic not in (None, 'abort', 'unwind'):
             raise ValueError('panic strategy must be abort, unwind or the manifest default')
+        keys = [row[0] if isinstance(row, tuple) and len(row) == 2 else None for row in self.profile]
+        if (not isinstance(self.profile, tuple) or None in keys or len(keys) != len(set(keys))
+                or any(value not in PROFILE_SETTINGS.get(key, ()) for key, value in self.profile)):
+            raise ValueError('dev-profile settings must be unique supported Cargo values')
+        if self.panic is not None and 'panic' in keys:
+            raise ValueError('select the panic strategy once, explicitly or in the profile')
         if self.vendor is not None:
             self.vendor.verify(self.lockfile)
             if any(path.is_relative_to(self.vendor.root) for path in paths):
@@ -98,6 +111,8 @@ def execute(job, folder):
     }
     if job.panic is not None:
         environment['CARGO_PROFILE_DEV_PANIC'] = job.panic
+    for key, value in job.profile:
+        environment['CARGO_PROFILE_DEV_' + key.upper().replace('-', '_')] = value
     command = [str(job.cargo), 'build', '--manifest-path', str(job.manifest),
                '-p', job.package, '--lib', '--target', job.target,
                '--frozen', '--unit-graph', '-Z', 'unstable-options']
@@ -110,7 +125,8 @@ def execute(job, folder):
     receipt = {'state': 'running', 'command': command, 'environment': environment,
                'cwd': str(job.manifest.parent), 'inputs': [(str(p), sha) for p, sha in job.inputs],
                'cargo_sha256': job.cargo_sha256, 'implementation_sha256': implementation,
-               'query_compiler_sha256': job.query_compiler_sha256, 'status': None}
+               'query_compiler_sha256': job.query_compiler_sha256, 'status': None,
+               'profile': {'name': 'dev', 'panic': job.panic, 'settings': dict(job.profile)}}
     if job.vendor is not None:
         receipt['vendor'] = [dict(package.identity, root=str(package.root), files=package.files,
                                   directories=package.directories)

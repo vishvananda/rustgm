@@ -16,7 +16,7 @@ import time
 from build_script_output import Kind
 from build_units import Execution
 from host_inputs import fingerprint, identifier
-from host_process import CommandLog, digest
+from host_process import DEFAULT_TIMEOUT, CommandLog, digest
 from local_package import LocalPackage
 
 ENVIRONMENT = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'}
@@ -35,6 +35,18 @@ LINK_KINDS = {Kind.LINK_ARGUMENT, Kind.LINK_LIBRARY, Kind.LINK_SEARCH}
 RECORDED_KINDS = {Kind.RERUN_FILE, Kind.RERUN_ENVIRONMENT, Kind.WARNING, Kind.METADATA}
 IMPLEMENTATION = ('target_units.py', 'build_units.py', 'build_script_output.py',
                   'host_inputs.py', 'host_process.py')
+# Cargo without -vv caps non-local packages with allow and leaves path packages
+# uncapped; bootstrap builds the sysroot through the same rule.
+LINT_POLICY = {
+    'cap': 'registry packages: --cap-lints=allow; local path packages: uncapped (Cargo without -vv)',
+    'enforcement': 'interim gap: cfg expectations, manifest lint tables and public/nounused edges '
+                   'are recorded per unit in lint_inputs, not enforced; RustGM implements neither '
+                   'unexpected_cfgs nor the private-dependency lints and has no deny-warnings switch',
+}
+# RustGM exits 1 for a diagnosed rejection and 2 for a refused command line.
+STATUS_KINDS = {1: 'compile', 2: 'usage'}
+DIAGNOSTIC_BYTES = 4096
+MAX_STDERR_BYTES = 16 * 1024 * 1024
 
 
 @dataclass(frozen=True)
@@ -84,6 +96,8 @@ class Step:
     gaps: tuple[Gap, ...]
     lint_inputs: tuple[str, ...]
     recorded_directives: tuple[str, ...]
+    lint_cap: str | None
+    timeout_seconds: int
 
 
 def profile_gaps(unit):
@@ -118,8 +132,9 @@ def kind_gaps(unit):
 
 
 class Planner:
-    def __init__(self, plan, packages, source_core, scripts):
-        self.plan, self.packages, self.scripts = plan, packages, scripts
+    def __init__(self, plan, packages, source_core, scripts, timeouts, lint_cap):
+        self.plan, self.packages, self.scripts, self.timeouts = plan, packages, scripts, timeouts
+        self.lint_cap = lint_cap
         self.position = {index: order for order, index in enumerate(plan.order)}
         self.steps = {}
         self.source_core = source_core
@@ -252,8 +267,9 @@ class Planner:
                      '--crate-type=lib' if library else '--crate-type=bin',
                      '--crate-name', name, '--crate-disambiguator', disambiguator,
                      '--ub-checks=no', *self.mode(unit, name, disambiguator, closure)]
-        if package.registry:
-            arguments.append('--cap-lints=allow')
+        lint_cap = self.lint_cap or ('allow' if package.registry else None)
+        if lint_cap is not None:
+            arguments.append(f'--cap-lints={lint_cap}')
         for feature in sorted(unit.features):
             arguments += ['--cfg', 'feature=' + json.dumps(feature)]
         arguments += script_arguments + dependency_arguments
@@ -265,17 +281,32 @@ class Planner:
                        **script_environment}
         return Step(index, package.identity, name, disambiguator, library, str(source), tuple(arguments),
                     tuple(sorted(environment.items())), tuple(outputs), tuple(closure), tuple(gaps),
-                    tuple(lint_inputs), tuple(recorded))
+                    tuple(lint_inputs), tuple(recorded), lint_cap,
+                    self.timeouts.get(name, DEFAULT_TIMEOUT))
 
 
-def plan_units(plan, packages, folder, *, source_core=None, scripts=None):
-    """Plan every target compile unit in dependency order; gaps are data."""
-    planner = Planner(plan, packages, source_core, scripts or {})
+def plan_units(plan, packages, folder, *, source_core=None, scripts=None, timeouts=None, lint_cap=None):
+    """Plan every target compile unit in dependency order; gaps are data.
+
+    `timeouts` names crates whose whole-library compile receives an explicit
+    longer limit; every other unit keeps the shared default. `lint_cap='allow'`
+    is an analysis-only departure from Cargo's policy that caps local packages
+    too. Each unit records its limit and cap.
+    """
+    timeouts = dict(timeouts or {})
+    if any(type(seconds) is not int or seconds <= 0 for seconds in timeouts.values()):
+        raise ValueError('unit timeouts must be positive whole numbers of seconds')
+    if lint_cap not in (None, 'allow'):
+        raise ValueError('the only analysis lint cap is allow')
+    planner = Planner(plan, packages, source_core, scripts or {}, timeouts, lint_cap)
     for index in plan.order:
         if plan.units[index].execution is Execution.TARGET_COMPILE:
             planner.steps[index] = planner.unit(index, Path(folder).absolute())
     if not planner.steps:
         raise ValueError('graph selects no target compile unit; a target build cannot pass empty')
+    names = [step.crate_name for step in planner.steps.values()]
+    if set(timeouts) - set(names) or any(names.count(name) != 1 for name in timeouts):
+        raise ValueError('unit timeouts must name exactly one planned target crate each')
     return tuple(planner.steps.values())
 
 
@@ -285,7 +316,7 @@ class Run:
         self.implementation = {name: digest(Path(__file__).with_name(name)) for name in IMPLEMENTATION}
         self.receipt = {'state': 'running', 'analysis': 'RustGM target units; no Cargo or rustc target compile',
                         'graph': graph, 'rustgm': {'path': str(rustgm), 'sha256': rustgm_sha256},
-                        'implementation_sha256': self.implementation,
+                        'implementation_sha256': self.implementation, 'lint_policy': LINT_POLICY,
                         'steps': [asdict(step) for step in steps], 'completed': [], 'failure': None,
                         'blocked': [], 'not_run': [], 'commands': []}
 
@@ -304,13 +335,24 @@ class Run:
             else:
                 self.receipt['not_run'].append({'unit': other.unit, 'crate': other.crate_name})
 
+    def diagnostic(self, step):
+        """RustGM's own first ERROR/USAGE line, bounded; the full stream stays on disk."""
+        with (self.folder / f'unit-{step.unit}' / 'compile.stderr').open('rb') as stream:
+            text = stream.read(MAX_STDERR_BYTES).decode('utf-8', 'replace')
+        line = next((line for line in text.splitlines() if line.startswith(('ERROR:', 'USAGE:'))), None)
+        return (text.strip()[-DIAGNOSTIC_BYTES:] if line is None else line[:DIAGNOSTIC_BYTES])
+
     def compile(self, step):
         unit_folder = self.folder / f'unit-{step.unit}'
         unit_folder.mkdir()
         commands = self.receipt['commands']
         # Every planned path is absolute; the unit's own folder is a stable cwd.
         log = CommandLog(unit_folder, unit_folder, commands, self.save)
-        status = log.run('compile', [self.rustgm, *step.arguments], dict(step.environment))
+        try:
+            status = log.run('compile', [self.rustgm, *step.arguments], dict(step.environment),
+                             step.timeout_seconds)
+        except subprocess.TimeoutExpired:
+            status = None
         outputs = {}
         for name, path in step.outputs:
             path = Path(path)
@@ -331,8 +373,12 @@ class Run:
                     self.fail(step, 'unsupported', [asdict(gap) for gap in step.gaps])
                     break
                 status, outputs = self.compile(step)
+                if status is None:
+                    self.fail(step, 'timeout', {'timeout_seconds': step.timeout_seconds})
+                    break
                 if status != 0:
-                    self.fail(step, 'compile', {'status': status})
+                    self.fail(step, STATUS_KINDS.get(status, 'abnormal'),
+                              {'status': status, 'diagnostic': self.diagnostic(step)})
                     break
                 if set(outputs) != {name for name, _ in step.outputs}:
                     self.fail(step, 'output', {'missing': sorted({n for n, _ in step.outputs} - set(outputs))})

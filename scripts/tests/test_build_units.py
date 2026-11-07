@@ -240,6 +240,30 @@ class Planning(unittest.TestCase):
                 with self.subTest(panic=panic), self.assertRaisesRegex(ValueError, 'panic strategy'):
                     replace(job, panic=panic).validate()
 
+    def test_dev_profile_settings_are_explicit_closed_and_recorded(self):
+        settings = (('opt-level', '0'), ('debug', '0'), ('debug-assertions', 'false'),
+                    ('overflow-checks', 'true'), ('panic', 'abort'))
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            job, source = self.job(root)
+            ambient = {'CARGO_PROFILE_DEV_DEBUG': '2', 'CARGO_PROFILE_DEV_LTO': 'fat'}
+            with patch.dict('os.environ', ambient), \
+                    patch('cargo_plan.subprocess.run', side_effect=self.process(source)) as run:
+                execute(replace(job, profile=settings), root / 'output')
+            environment = run.call_args.kwargs['env']
+            self.assertEqual({key: value for key, value in environment.items() if key.startswith('CARGO_PROFILE_')},
+                             {'CARGO_PROFILE_DEV_OPT_LEVEL': '0', 'CARGO_PROFILE_DEV_DEBUG': '0',
+                              'CARGO_PROFILE_DEV_DEBUG_ASSERTIONS': 'false',
+                              'CARGO_PROFILE_DEV_OVERFLOW_CHECKS': 'true', 'CARGO_PROFILE_DEV_PANIC': 'abort'})
+            receipt = json.loads((root / 'output/receipt.json').read_text())
+            self.assertEqual(receipt['profile'], {'name': 'dev', 'panic': None, 'settings': dict(settings)})
+            for profile in ((('lto', 'fat'),), (('debug', 'full'),), (('debug', 0),), (('debug', '0'), ('debug', '0')),
+                            (('debug',),), [('debug', '0')]):
+                with self.subTest(profile=profile), self.assertRaisesRegex(ValueError, 'dev-profile settings'):
+                    replace(job, profile=profile).validate()
+            with self.assertRaisesRegex(ValueError, 'panic strategy once'):
+                replace(job, panic='abort', profile=(('panic', 'abort'),)).validate()
+
     def test_input_mutation_during_planning_invalidates_output(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

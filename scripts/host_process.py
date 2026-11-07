@@ -6,6 +6,9 @@ import subprocess
 import time
 from typing import Callable
 
+# Shared default; a longer limit is an explicit per-call argument, recorded per row.
+DEFAULT_TIMEOUT = 120
+
 
 def digest(path):
     result = hashlib.sha256()
@@ -22,18 +25,20 @@ class CommandLog:
     commands: list
     save: Callable[[], None]
 
-    def run(self, name, command, environment):
+    def run(self, name, command, environment, timeout=DEFAULT_TIMEOUT):
+        if type(timeout) is not int or timeout <= 0:
+            raise ValueError('process timeout must be a positive whole number of seconds')
         command = [str(part) for part in command]
         started = time.monotonic()
         row = {'name': name, 'command': command, 'cwd': str(self.cwd),
-               'environment': environment, 'status': None}
+               'environment': environment, 'timeout_seconds': timeout, 'status': None}
         self.commands.append(row)
         self.save()
         with (self.folder / f'{name}.stdout').open('xb') as stdout, \
                 (self.folder / f'{name}.stderr').open('xb') as stderr:
             try:
                 result = subprocess.run(command, cwd=self.cwd, env=environment,
-                                        stdout=stdout, stderr=stderr, timeout=120)
+                                        stdout=stdout, stderr=stderr, timeout=timeout)
             except subprocess.TimeoutExpired:
                 row['error'] = 'timeout'
                 raise

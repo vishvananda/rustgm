@@ -9,8 +9,10 @@ pattern-fragment opponents for Rust 2015/2018 target dependencies. All four
 pinned rustc metadata observations match. These editions remain required compiler
 work; no library build is implied by the planning observations.
 
-`spec/stdlib-unit-graphs/` keeps the raw, hash-authenticated unit graphs behind
-those observations for the [target unit executor](../../docs/parallel/target-unit-executor.md).
+`stdlib-course-profile-outcomes.json` records the same graphs re-planned under
+RustGM's fixed profile; it pins the original observations as its base.
+`spec/stdlib-unit-graphs/` keeps both sets of raw, hash-authenticated unit graphs
+for the [target unit executor](../../docs/parallel/target-unit-executor.md).
 
 `foreign-edition-outcomes.json` declares 32 paired source outcomes and 13 native
 outcomes for extern blocks, member safety and supported linkage attributes.
