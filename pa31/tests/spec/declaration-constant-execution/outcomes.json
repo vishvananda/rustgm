@@ -1,0 +1,108 @@
+{
+ "schema": 1,
+ "declared": "2026-11-07, before the frozen rustc 1.98.0 oracle of these exact bytes. The drafts' lang-item and feature prerequisites were settled against rustc 1.98.0 in obj/parallel/census-batch5/repro first; each outcome follows the stated rule, not that exploration",
+ "declaration_sha256": "251790709332ac521cfd0140adab787fff18a392037e6a784c5214ae1b4e1dbc",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [
+  "2026-11-07 after oracle v1 (obj/parallel/census-batch5/oracle/declaration-constant-execution.rustc-oracle.json, 9/9 agree): the pinned census 5 compiler already accepts implicit-discriminant-length, so it does not exercise the core `const _` failure, which is a layout read of an implicit-discriminant enum. v2 adds implicit-discriminant-layout, its mismatch opponent and projected-choice-length, each declared here before oracle v2; no v1 case or outcome changed."
+ ],
+ "cases": {
+  "bit-count-lengths.rs": {
+   "sha256": "aa275bc447fc16b290016df348bb53e33d62879705d49bc4c9f5f36fef49cfb2",
+   "declared": 0,
+   "reason": "source ctpop, ctlz, cttz and their nonzero forms evaluate in array lengths at u8/u16/u32/i64 widths, including zero inputs to the total forms (8 and 32)",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "bit-count-mismatch.rs": {
+   "sha256": "77ba6c2b560c80362f5e090ebfcd609c78bad7879a15a9eaacb77e0a9f462e6c",
+   "declared": 1,
+   "reason": "opponent: ctpop(0b1011_0110u8) is 5, so a [u8; 5] is not [u8; 4] (E0308)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  },
+  "bit-count-nonzero-zero.rs": {
+   "sha256": "7488d22a231f98228a34fefce9ce90c616610bded719bb1f2612a6448faa33fc",
+   "declared": 1,
+   "reason": "opponent: ctlz_nonzero(0u8) is undefined, so constant evaluation fails (E0080)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0080"
+   ]
+  },
+  "implicit-discriminant-length.rs": {
+   "sha256": "010a725e5b88d2a686861f4a4a8093ebc73e5142ac12a276307c1f5ff742eca3",
+   "declared": 0,
+   "reason": "a declaration-phase constant stores a fieldless enum with only implicit discriminants and matches on it, and casts another variant",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "implicit-discriminant-mismatch.rs": {
+   "sha256": "297aa4eb349a4b3cae91c5c4298518dc255965b36d68bdd42b53ea3bcdd5f5b7",
+   "declared": 1,
+   "reason": "opponent: Mode::Third as usize is 2, so a [u8; 2] is not [u8; 3] (E0308)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  },
+  "later-field-template.rs": {
+   "sha256": "3e0e1610183f7aba827401984e709f4208b0820c8402e38e6821ff4db91d5ad6",
+   "declared": 0,
+   "reason": "a const fn executed for an array length builds a struct declared later in source order",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "later-field-template-mismatch.rs": {
+   "sha256": "7c7489c4c5472c45ef90c33093d6df5a26346cfcdfd1382ce987e47e3f1c2e57",
+   "declared": 1,
+   "reason": "opponent: the later struct's selected field is 3, so a [u8; 3] is not [u8; 2] (E0308)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  },
+  "later-associated-value.rs": {
+   "sha256": "e0bb58c0585119015fd301ccb75fdc8fe26dde1509058b5061d297d2087e63cb",
+   "declared": 0,
+   "reason": "a scalar impl validated for an early length names a later-declared Copy struct as its associated type value",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "later-associated-value-not-copy.rs": {
+   "sha256": "adad8009750167aec400fd2c0d24d5bff04aaeed19cf78dc2ffdb34507abf9b1",
+   "declared": 1,
+   "reason": "opponent: the later associated type value does not implement the required Copy (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "implicit-discriminant-layout.rs": {
+   "sha256": "0f9c8e15203b6311cbf8a02b742eb4f09fc777a424b3f960b0cc4b1d340de25d",
+   "declared": 0,
+   "reason": "size_of reads the layout of a generic enum with only implicit discriminants, declared after its uses, in a fn length and an unnamed const's annotation length (the core lib.rs `const _` shape)",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "implicit-discriminant-layout-mismatch.rs": {
+   "sha256": "1ecd6acf787c89580290549d942c0cc96c719f00b34d259168afc53c1b7d8374",
+   "declared": 1,
+   "reason": "opponent: Choice<u8> has a one-byte tag and a u8 payload, so a [u8; 2] is not [u8; 1] (E0308)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  },
+  "projected-choice-length.rs": {
+   "sha256": "df0579ad9f5a57054e0e45e906338fe86ae3f2adac6863c0e56125f41bcac12c",
+   "declared": 0,
+   "reason": "a const fn executed for an array length stores an implicit-discriminant enum around a later-declared struct whose field is a projection through an impl's associated type",
+   "rustc_status": 0,
+   "error_codes": []
+  }
+ }
+}

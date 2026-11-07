@@ -230,6 +230,9 @@ impl Checker<'_> {
                         .map(|request| Work::ConstantMember(request, false)),
                 );
             }
+            constants::ArgumentDependency::Execution(
+                constants::values::execution::Requirement::NominalFields(item),
+            ) => self.require_nominal_fields(key, item)?,
             constants::ArgumentDependency::Execution(requirement) => {
                 self.work.push(Work::Execution(
                     super::execution::Request::Constant(requirement),

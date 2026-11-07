@@ -1,0 +1,42 @@
+{
+ "schema": 1,
+ "declared": "2026-11-07, before the frozen rustc 1.98.0 oracle of these exact bytes. The drafts' lang-item and feature prerequisites were settled against rustc 1.98.0 in obj/parallel/census-batch5/repro first; each outcome follows the stated rule, not that exploration",
+ "declaration_sha256": "6c3c5b43c78d8dd2a12fd1852f4bb4c48b84cfaff755a366b955fbbcee55e17a",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "residual-with-object.rs": {
+   "sha256": "ad3d59550924989a8957ec74a63c8bf58fa304477e86334bd15636091fb25987",
+   "declared": 0,
+   "reason": "core's ChangeOutputType rigid projection result in a const fn signature, in a crate that also forms a trait object, so dynamic shapes exist while the projection's own equations are selected",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "residual-output-equation.rs": {
+   "sha256": "c4f1ff4ffdc7c3f0252c3b38d55370203bfe87e741630275352ff117b8c27a92",
+   "declared": 0,
+   "reason": "the declared `TryType: Try<Output = O, Residual = Self>` equations normalize the rigid result's Output to u8 and Residual to R::Residual",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "residual-output-mismatch.rs": {
+   "sha256": "c1a010d61aafe06710bf402e29b77b6df9cd4fc8d2be2e51459418f2047656b9",
+   "declared": 1,
+   "reason": "opponent: the normalized Output is u8, not u16 (E0308)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  },
+  "residual-try-type-mismatch.rs": {
+   "sha256": "b3876e671129df39313f5493d7073b7e47548cfb3cd88718538f2ba6c419ae2f",
+   "declared": 1,
+   "reason": "opponent: the rigid TryType is not R itself (E0308)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  }
+ }
+}

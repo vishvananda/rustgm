@@ -204,12 +204,13 @@ pub(super) fn equalities(
     item: ItemId,
 ) -> Result<Equations, String> {
     if facts.types.has_dynamic_shapes()
-        && matches!(
-            context
-                .head(&facts.types, subject)
-                .map_err(|e| e.to_string())?,
-            Some(crate::types::infer::Constructor::Dynamic { .. })
-        )
+        && match context.head(&facts.types, subject) {
+            Ok(head) => matches!(head, Some(crate::types::infer::Constructor::Dynamic { .. })),
+            // A rigid projection subject has no constructor head and no object
+            // bounds; its declaration equations come from its result identity.
+            Err(crate::types::infer::Error::Normalization) => false,
+            Err(error) => return Err(error.to_string()),
+        }
     {
         let ty = context
             .resolved(&mut facts.types, subject)

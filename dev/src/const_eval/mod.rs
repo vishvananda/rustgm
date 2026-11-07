@@ -12,6 +12,7 @@ mod use_calls;
 pub(crate) mod use_inputs;
 pub(crate) use use_calls::Reached as ReachedConstCall;
 mod argument_witness;
+mod bit_count_calls;
 #[path = "tracked_frames.rs"]
 mod caller_locations;
 mod compare_calls;

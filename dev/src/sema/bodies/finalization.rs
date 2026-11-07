@@ -23,6 +23,8 @@ pub(super) struct Publication {
     evidence: HashMap<usize, Source>,
     storage: Option<Batch>,
     implementation_cursor: usize,
+    /// The nominal whose field template publication last waited for.
+    field_wait: Option<crate::types::ItemId>,
 }
 impl Checker<'_> {
     pub(super) fn finish(&mut self, body: NodeId) -> Result<Option<Dependency>, Error> {
@@ -88,6 +90,7 @@ impl Checker<'_> {
             evidence,
             storage,
             implementation_cursor: 0,
+            field_wait: None,
         })
     }
     pub(super) fn resume_finalization(
@@ -125,6 +128,16 @@ impl Checker<'_> {
         if let Some(dependency) = self.caller_location_dependency(&publication.solved)? {
             self.state.finalization = Some(Box::new(Finalization::Caller(Box::new(publication))));
             return Ok(Some(dependency));
+        }
+        if let Some(requirement) =
+            self.field_template_dependency(&publication.solved, &mut publication.field_wait)?
+        {
+            let source = self.key(self.state.body.node);
+            self.state.finalization = Some(Box::new(Finalization::Caller(Box::new(publication))));
+            return Ok(Some(Dependency {
+                requirement,
+                source,
+            }));
         }
         // Solved calls do not change while storage dependencies are prepared.
         // Keep this completed phase out of every later storage resumption.

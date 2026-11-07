@@ -156,6 +156,7 @@ pub(super) struct Engine {
     runtime_template_indices: HashMap<DefId, usize>,
     retained_expressions: usize,
     charged_templates: crate::support::hash::HashSet<DefId>,
+    pending_fields: Option<crate::types::ItemId>,
 }
 impl Engine {
     pub(super) fn transfer(
@@ -319,8 +320,15 @@ impl Engine {
         let mut session = self.take_session(request)?;
         loop {
             if let Some(requirement) = session.waiting {
+                self.pending_fields = None;
                 if !self.prepare(report, facts, requirement, session.state.as_mut())? {
-                    return self.retain_session(facts, request, session, requirement);
+                    // The session keeps its own requirement; only the missing
+                    // declaration fact is surfaced to the declaration pipeline.
+                    let surfaced = self
+                        .pending_fields
+                        .take()
+                        .map_or(requirement, Requirement::NominalFields);
+                    return self.retain_session(facts, request, session, surfaced);
                 }
                 session.waiting = None;
             }
@@ -449,6 +457,7 @@ impl Engine {
                 .discriminant(variant)
                 .map(|value| value.is_some())
                 .map_err(|e| Error::at(FileId(0), 0, e)),
+            Requirement::NominalFields(item) => Ok(facts.aggregates.get(item).is_some()),
             Requirement::FunctionBody(instance) => {
                 self.prepare_reached_function(report, facts, instance, state)
             }

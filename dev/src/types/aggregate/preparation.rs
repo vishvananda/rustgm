@@ -1,7 +1,7 @@
 //! Complete demanded field/argument instances before immutable property queries.
 use super::Definitions;
 use crate::support::hash::HashSet;
-use crate::types::{Kind, ListId, Store, TypeId};
+use crate::types::{ItemId, Kind, ListId, Store, TypeId};
 
 impl Definitions {
     /// Prepare this root's fields and nominal type arguments without expanding
@@ -11,7 +11,7 @@ impl Definitions {
     /// # Errors
     /// Rejects missing/malformed fields and bounded substitution/graph exhaustion.
     pub fn prepare(&mut self, types: &mut Store, root: TypeId) -> Result<(), &'static str> {
-        self.prepare_with(types, root, false, true)
+        self.prepare_with(types, root, false, true, &mut None)
     }
     /// Equality additionally inspects reference referents. Raw pointer targets
     /// and function signatures remain outside that dependency graph.
@@ -22,7 +22,7 @@ impl Definitions {
         types: &mut Store,
         root: TypeId,
     ) -> Result<(), &'static str> {
-        self.prepare_with(types, root, true, true)
+        self.prepare_with(types, root, true, true, &mut None)
     }
     /// A layout demand may meet a declaration that is still being completed.
     /// Reuse real substitution, but never publish that pending root as failed.
@@ -32,7 +32,26 @@ impl Definitions {
         types: &mut Store,
         root: TypeId,
     ) -> Result<(), &'static str> {
-        self.prepare_with(types, root, false, false)
+        self.prepare_with(types, root, false, false, &mut None)
+    }
+    /// The same storage preparation, naming a nominal whose field template its
+    /// declaration has not yet published instead of failing on it.
+    /// # Errors
+    /// Rejects malformed fields and bounded substitution/graph exhaustion.
+    pub(crate) fn prepare_storage_fields_pending(
+        &mut self,
+        types: &mut Store,
+        root: TypeId,
+    ) -> Result<Option<ItemId>, &'static str> {
+        let mut missing = None;
+        match (
+            self.prepare_with(types, root, false, false, &mut missing),
+            missing,
+        ) {
+            (Ok(()), _) => Ok(None),
+            (Err(_), Some(item)) => Ok(Some(item)),
+            (Err(error), None) => Err(error),
+        }
     }
     fn prepare_with(
         &mut self,
@@ -40,6 +59,7 @@ impl Definitions {
         root: TypeId,
         references: bool,
         cache_failures: bool,
+        missing: &mut Option<ItemId>,
     ) -> Result<(), &'static str> {
         if let Some(result) = self
             .instances
@@ -50,7 +70,8 @@ impl Definitions {
             return result;
         }
         let mut seen = HashSet::default();
-        let result = self.prepare_graph(types, root, references, cache_failures, &mut seen);
+        let result =
+            self.prepare_graph(types, root, references, cache_failures, &mut seen, missing);
         let instances = self.instances.get_or_insert_with(Default::default);
         if result.is_ok() {
             if !cache_failures {
@@ -61,8 +82,9 @@ impl Definitions {
             for ty in seen {
                 instances.prepared.insert(ty, references, Ok(()));
             }
-        } else if cache_failures && seen.contains(&root) {
+        } else if cache_failures && seen.contains(&root) && missing.is_none() {
             // A failed query cannot publish unfinished descendants as prepared.
+            // A template its declaration has yet to publish is not a failure.
             instances.prepared.insert(root, references, result);
         }
         result
@@ -74,6 +96,7 @@ impl Definitions {
         references: bool,
         reuse_failures: bool,
         seen: &mut HashSet<TypeId>,
+        missing: &mut Option<ItemId>,
     ) -> Result<(), &'static str> {
         let mut work = vec![root];
         while let Some(ty) = work.pop() {
@@ -91,7 +114,11 @@ impl Definitions {
             instances.retain(64)?;
             seen.insert(ty);
             match types.kind(ty).ok_or("invalid field preparation type")? {
-                Kind::Adt(_, arguments) => {
+                Kind::Adt(item, arguments) => {
+                    if self.get(item).is_none() {
+                        *missing = Some(item);
+                        return Err("missing aggregate field template");
+                    }
                     self.instantiate(types, ty)?;
                     let shape = self.raw_shape(types, ty)?;
                     let mut count = 0_usize;

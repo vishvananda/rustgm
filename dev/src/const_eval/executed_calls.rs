@@ -43,6 +43,7 @@ impl Machine<'_, '_> {
         match catalog.intrinsic_kind(crate::resolve::model::DefId(item.0))? {
             Some(kind)
                 if crate::sema::compiler_items::wrapping_operator(kind).is_some()
+                    || crate::sema::compiler_items::bit_counts::operation(kind).is_some()
                     || crate::sema::compiler_items::guaranteed_compare::is_operation(kind) =>
             {
                 // The reached direct-call arithmetic owner authenticates and
@@ -151,6 +152,9 @@ impl Machine<'_, '_> {
             return Ok(answer);
         }
         if let Some(answer) = self.source_subtraction(body, frame, position, target)? {
+            return Ok(answer);
+        }
+        if let Some(answer) = self.source_bit_count(body, frame, position, target)? {
             return Ok(answer);
         }
         if let Some(answer) = self.source_three_way(body, frame, position, target)? {

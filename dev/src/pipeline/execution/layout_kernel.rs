@@ -22,11 +22,10 @@ impl Engine {
         else {
             return Ok(false);
         };
-        prepare_layout(facts, element).map_err(|error| Error::at(FileId(0), 0, error))?;
-        Ok(true)
+        self.storage_ready(facts, element)
     }
     fn source_field_layout(
-        &self,
+        &mut self,
         report: &Report,
         facts: &mut Declarations,
         instance: Instance,
@@ -51,11 +50,20 @@ impl Engine {
                 .ok_or_else(|| Error::at(FileId(0), 0, "source field_offset catalog disappeared"))?
                 .require_field_offset_report(report, facts, &call)
                 .map_err(|error| Error::at(FileId(0), 0, error))?;
-            prepare_layout(facts, call.coordinates.base)
-                .map_err(|error| Error::at(FileId(0), 0, error))?;
-            return Ok(true);
+            return self.storage_ready(facts, call.coordinates.base);
         }
         Ok(false)
+    }
+    /// A source nominal still awaiting its declared fields is surfaced to the
+    /// declaration pipeline; the session resumes with this same requirement.
+    fn storage_ready(
+        &mut self,
+        facts: &mut Declarations,
+        element: crate::types::TypeId,
+    ) -> Result<bool, Error> {
+        let pending = prepare_layout(facts, element).map_err(|e| Error::at(FileId(0), 0, e))?;
+        self.pending_fields = pending;
+        Ok(pending.is_none())
     }
     pub(super) fn source_layout(
         &mut self,
@@ -81,9 +89,7 @@ impl Engine {
                 .ok_or_else(|| Error::at(FileId(0), 0, "source offset_of catalog disappeared"))?
                 .require_offset_report(report, facts, call.definition())
                 .map_err(|error| Error::at(FileId(0), 0, error))?;
-            prepare_layout(facts, call.element())
-                .map_err(|error| Error::at(FileId(0), 0, error))?;
-            return Ok(true);
+            return self.storage_ready(facts, call.element());
         }
         if let Some(call) = state
             .map(|state| state.source_transmute_call(report, facts, &self.catalog, instance))
@@ -92,11 +98,8 @@ impl Engine {
             .flatten()
         {
             let selected = call.selection();
-            prepare_layout(facts, selected.source)
-                .map_err(|error| Error::at(FileId(0), 0, error))?;
-            prepare_layout(facts, selected.destination)
-                .map_err(|error| Error::at(FileId(0), 0, error))?;
-            return Ok(true);
+            return Ok(self.storage_ready(facts, selected.source)?
+                && self.storage_ready(facts, selected.destination)?);
         }
         if let Some(selection) = facts
             .source_bindings
@@ -154,7 +157,9 @@ impl Engine {
         if selected.fallback && !self.function(report, facts, instance)? {
             return Ok(false);
         }
-        prepare_layout(facts, selected.element).map_err(error)?;
+        if !self.storage_ready(facts, selected.element)? {
+            return Ok(false);
+        }
         let layout = facts
             .layouts
             .get(selected.element)
@@ -173,7 +178,7 @@ impl Engine {
 fn prepare_layout(
     facts: &mut Declarations,
     element: crate::types::TypeId,
-) -> Result<(), &'static str> {
+) -> Result<Option<crate::types::ItemId>, &'static str> {
     let limit = crate::support::crates::MAX_COMPONENTS;
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
     if facts.body_work.canonical_steps > limit {
@@ -182,14 +187,16 @@ fn prepare_layout(
     let before = facts.aggregates.instantiation_steps();
     let fields = facts
         .aggregates
-        .prepare_storage_fields(&mut facts.types, element);
+        .prepare_storage_fields_pending(&mut facts.types, element);
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(
         facts
             .aggregates
             .instantiation_steps()
             .saturating_sub(before),
     );
-    fields?;
+    if let Some(item) = fields? {
+        return Ok(Some(item));
+    }
     facts.body_work.canonical_steps = facts
         .body_work
         .canonical_steps
@@ -206,7 +213,7 @@ fn prepare_layout(
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
     readiness?;
     if facts.layouts.get(element).is_some() {
-        return Ok(());
+        return Ok(None);
     }
     let before = facts.layouts.steps;
     let result = facts.layouts.demand_bounded(
@@ -219,7 +226,7 @@ fn prepare_layout(
         .body_work
         .canonical_steps
         .saturating_add(facts.layouts.steps.saturating_sub(before));
-    result.map(|_| ()).map_err(|error| error.message)
+    result.map(|_| None).map_err(|error| error.message)
 }
 
 #[cfg(test)]

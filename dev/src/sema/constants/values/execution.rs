@@ -48,6 +48,9 @@ pub struct Request {
 pub enum Requirement {
     SourceAssociatedBody(SourceComputation),
     DiscriminantValue(crate::sema::members::VariantId),
+    /// Storage of a reached value needs a source nominal whose field template
+    /// its declaration has not yet published.
+    NominalFields(crate::types::ItemId),
     FunctionBody(instance::Instance),
     /// A real selected cleanup event, never an invented source Call expression.
     CleanupBody(instance::Instance),

@@ -5,8 +5,13 @@ use super::{
     scalar_readiness::{Pending, Phase},
 };
 use crate::{
+    resolve::model::DefKind,
     sema::traits::{assumptions::Assumptions, selection},
-    types::infer::{Context, Instantiation, predicates::Predicate as Goal},
+    types::{
+        TypeId,
+        arguments::Argument,
+        infer::{Context, Instantiation, predicates::Predicate as Goal},
+    },
 };
 use std::sync::Arc;
 
@@ -20,6 +25,7 @@ pub(super) struct Attempt {
     query_context_start: usize,
     query_work: usize,
     charged_work: usize,
+    formation_prepared: bool,
 }
 enum Step {
     Complete,
@@ -38,6 +44,7 @@ impl Attempt {
             query_context_start: 0,
             query_work: 0,
             charged_work: 0,
+            formation_prepared: false,
         }
     }
 
@@ -159,6 +166,18 @@ impl Checker<'_> {
         let progress = progress.map_err(|error| self.error(attempt.plan.source, error))?;
         charged.map_err(|error| self.error(attempt.plan.source, error))?;
         match progress {
+            Step::Complete if !attempt.formation_prepared => {
+                attempt.formation_prepared = true;
+                let types = self.scalar_formation_types(&attempt.plan)?;
+                pending
+                    .charge(&mut self.facts, types.len())
+                    .map_err(|error| self.error(attempt.plan.source, error))?;
+                pending.active.insert(owner, attempt);
+                self.work
+                    .push(Work::ValidateImpl(owner, Phase::Requirements));
+                self.work.extend(types.into_iter().map(Work::ValueShape));
+                Ok(())
+            }
             Step::Complete => self.complete_scalar_impl(owner, &attempt.plan, pending),
             Step::Unsupported(reason) => {
                 pending
@@ -188,6 +207,39 @@ impl Checker<'_> {
                 Ok(())
             }
         }
+    }
+
+    /// Completion forms the header and every associated type value, and the
+    /// constant execution that demanded this early validation stores the values
+    /// it selects. Their nominals may be declared later in source order, so
+    /// their contracts and value shapes are prepared once before conformance.
+    fn scalar_formation_types(&self, plan: &Plan) -> Result<Vec<TypeId>, Error> {
+        let mut types = vec![plan.predicate.ty];
+        if let Some((application, _)) = plan.predicate.bound.trait_parts() {
+            let application = self
+                .facts
+                .types
+                .trait_application(application)
+                .ok_or_else(|| self.error(plan.source, "missing scalar trait application"))?;
+            let arguments = self
+                .facts
+                .types
+                .arguments(application.arguments)
+                .ok_or_else(|| self.error(plan.source, "missing scalar trait arguments"))?;
+            types.extend(arguments.filter_map(|argument| match argument {
+                Argument::Type(ty) => Some(ty),
+                _ => None,
+            }));
+        }
+        types.extend(plan.members.iter().filter_map(|member| {
+            matches!(
+                self.report.resolution.definitions[member.0 as usize].kind,
+                DefKind::TypeAlias
+            )
+            .then(|| self.facts.definitions[member.0 as usize])
+            .flatten()
+        }));
+        Ok(types)
     }
 }
 

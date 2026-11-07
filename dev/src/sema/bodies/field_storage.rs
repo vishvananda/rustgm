@@ -20,24 +20,7 @@ impl Checker<'_> {
         if !self.facts.aggregates.has_projected_templates() && self.state.pointer_casts.is_empty() {
             return Ok(None);
         }
-        let mut roots = vec![self.state.result];
-        roots.extend(self.pointer_storage(solved));
-        roots.extend(self.pointer_cast_storage(solved)?);
-        for &node in &self.state.touched {
-            if !self.state.type_annotations.contains(&node) {
-                roots.push(solved.types[self.term(node)?.0 as usize]);
-            }
-        }
-        roots.extend(
-            self.state
-                .call_types
-                .field_receivers
-                .iter()
-                .map(|term| solved.types[term.0 as usize]),
-        );
-        for (_, method) in &self.state.call_types.methods {
-            roots.extend(method.value_types(solved));
-        }
+        let roots = self.storage_roots(solved)?;
         let node = self.state.body.node;
         let first = self
             .facts
@@ -59,6 +42,62 @@ impl Checker<'_> {
             evidence: Evidence::new(proof),
             normalizing: false,
         }))
+    }
+
+    fn storage_roots(&self, solved: &crate::types::infer::Solved) -> Result<Vec<TypeId>, Error> {
+        let mut roots = vec![self.state.result];
+        roots.extend(self.pointer_storage(solved));
+        roots.extend(self.pointer_cast_storage(solved)?);
+        for &node in &self.state.touched {
+            if !self.state.type_annotations.contains(&node) {
+                roots.push(solved.types[self.term(node)?.0 as usize]);
+            }
+        }
+        roots.extend(
+            self.state
+                .call_types
+                .field_receivers
+                .iter()
+                .map(|term| solved.types[term.0 as usize]),
+        );
+        for (_, method) in &self.state.call_types.methods {
+            roots.extend(method.value_types(solved));
+        }
+        Ok(roots)
+    }
+
+    /// Declaration-time typing of a demanded body can reach a nominal whose
+    /// declaration has not yet published its field template. Without projected
+    /// templates no storage batch waits for it, so publication waits here, once
+    /// per nominal: a second miss means its declaration cannot publish one.
+    pub(super) fn field_template_dependency(
+        &mut self,
+        solved: &crate::types::infer::Solved,
+        waited: &mut Option<crate::types::ItemId>,
+    ) -> Result<Option<Requirement>, Error> {
+        if matches!(
+            self.availability,
+            crate::sema::traits::implementations::Availability::Validated
+        ) || self.facts.aggregates.has_projected_templates()
+            || !self.state.pointer_casts.is_empty()
+        {
+            return Ok(None);
+        }
+        let node = self.state.body.node;
+        for root in self.storage_roots(solved)? {
+            let missing = self
+                .facts
+                .aggregates
+                .prepare_storage_fields_pending(&mut self.facts.types, root)
+                .map_err(|error| self.error(node, error))?;
+            if let Some(item) = missing {
+                if waited.replace(item) == Some(item) {
+                    return Err(self.error(node, "missing aggregate field template"));
+                }
+                return Ok(Some(Requirement::Nominal(item)));
+            }
+        }
+        Ok(None)
     }
 
     pub(super) fn advance_body_storage(

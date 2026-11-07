@@ -271,6 +271,13 @@ impl Checker<'_> {
                     "enum value readiness must remain in its constant dependency graph",
                 ));
             }
+            Requirement::NominalFields(_) => {
+                return Err(Error::at(
+                    FileId(0),
+                    0,
+                    "nominal field readiness must remain in its constant dependency graph",
+                ));
+            }
             Requirement::AnonymousBody { instance, .. } => {
                 return Err(self.error(
                     instance.source(),

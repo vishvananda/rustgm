@@ -39,6 +39,10 @@ struct DeclaredFields {
     declared: Option<crate::types::ListId>,
     contexts: Option<Vec<ItemContext>>,
 }
+#[cfg(test)]
+#[path = "../../../tests/invariants/early_constant_execution.rs"]
+mod execution_tests;
+
 impl Checker<'_> {
     fn nominal_defaults(&mut self) -> Result<(), Error> {
         for index in 0..self.nominals.entries.len() {
@@ -75,6 +79,24 @@ impl Checker<'_> {
         self.copy_obligations()?;
         self.equality_obligations()?;
         self.constructors()
+    }
+    /// A storage demand waits only for a source declaration that can still
+    /// publish its field template; anything else would resume into the same miss.
+    pub(super) fn require_nominal_fields(
+        &mut self,
+        key: NodeKey,
+        item: ItemId,
+    ) -> Result<(), Error> {
+        if self
+            .nominals
+            .index
+            .get(&item)
+            .is_none_or(|&index| self.nominals.entries[index].state == State::Complete)
+        {
+            return Err(self.error(key, "missing aggregate field template"));
+        }
+        self.work.push(Work::Fields(item, false));
+        Ok(())
     }
     pub(super) fn nominal_fields(&mut self, item: ItemId, finish: bool) -> Result<(), Error> {
         if self.external_record(item) {
@@ -167,6 +189,9 @@ impl Checker<'_> {
             self.facts.enum_casts.insert(item);
         }
         self.publish_shape(item, key, kind, repr, &variants)?;
+        if kind == aggregate::Kind::Enum {
+            self.publish_implicit_discriminants(item, index, tag)?;
+        }
         self.source_nullable_members(item)?;
         self.nominals.entries[index].state = State::Complete;
         if let Some(pending) = &mut self.facts.generics.size_rules {
@@ -436,6 +461,45 @@ impl Checker<'_> {
             members.insert(owner, ordinal, group.key, group.shape, &fields.fields)
         };
         variant.map_err(|error| self.error(group.key, error))
+    }
+    /// Without an explicit discriminant every value is its ordinal, so it is
+    /// final with the shape: storage demanded during declarations need not wait
+    /// for the crate-wide pass, which republishes the same values. A count that
+    /// overflows the tag stays pending so that pass reports the overflow.
+    fn publish_implicit_discriminants(
+        &mut self,
+        item: ItemId,
+        index: usize,
+        tag: Primitive,
+    ) -> Result<(), Error> {
+        let groups = &self.nominals.entries[index].groups;
+        let key = self.nominals.entries[index].key;
+        if groups.iter().any(|group| group.discriminant.is_some()) {
+            return Ok(());
+        }
+        let count =
+            u32::try_from(groups.len()).map_err(|_| self.error(key, "too many variants"))?;
+        let Some((signed, width)) = tag.integer() else {
+            return Err(self.error(key, "enum discriminant tag is not an integer"));
+        };
+        let largest = if signed {
+            (1_u128 << (width - 1)) - 1
+        } else {
+            u128::MAX >> (128 - width)
+        };
+        if count
+            .checked_sub(1)
+            .is_some_and(|last| u128::from(last) > largest)
+        {
+            return Ok(());
+        }
+        for ordinal in 0..count {
+            self.facts
+                .aggregates
+                .set_discriminant(item, ordinal, u128::from(ordinal))
+                .map_err(|e| self.error(key, e))?;
+        }
+        Ok(())
     }
     fn check_discriminant_forms(
         &self,

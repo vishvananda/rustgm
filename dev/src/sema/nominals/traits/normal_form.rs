@@ -1,6 +1,9 @@
 //! Canonical projections retain opened lifetimes and selection across header dependencies.
 mod application_anchors;
 mod data_result;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/residual_object_equalities.rs"]
+mod equality_tests;
 mod opening;
 mod origin_results;
 mod tag_result;
