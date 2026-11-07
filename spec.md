@@ -6205,8 +6205,9 @@ each enum's layout and nullable policy, re-checks every variant against its
 installed enum, and over its own rebuilt CFG proves each downcast use by a
 live constructor-test fact and each reachable unreachable exit as following
 an impossible variant path or a never value.
-Record variants, negative discriminants and lifetime-generic or `must_use`
-enums stay rejected by name. Packets without enums keep their exact bytes.
+Record variants, negative discriminants and `must_use` enums stay rejected by
+name; lifetime-generic enums follow the nominal lifetime rule below. Packets
+without enums keep their exact bytes.
 
 A version-thirteen function application may also name a tuple variant: a
 called constructor, with the same `Function` value, `Call` value and call
@@ -6296,6 +6297,27 @@ with no generics, and re-proves each caller-tracking flag against its own
 installed signature and owner. Until caller locations transport, a consumer
 rejects a call to a tracked imported function, both in its own bodies and in
 rebuilt ones. Rows without the advisories keep their exact earlier bytes.
+
+A version-thirteen struct or enum may also declare lifetimes. Each lifetime
+is a region slot of the nominal, and its region slots precede its type slots.
+The index of a region slot is its lifetime's declaration position. The index
+of a type slot counts only the nominal's type slots. A field or variant
+payload names a lifetime as region `Parameter { slot, depth: 0 }`, in the
+nominal's own frame. The nominal's Self recipe and every application of it
+carry the region arguments first, in slot order. A tuple variant's
+constructor binds its enum's lifetimes late. Its applications carry the
+enum's full arguments, regions first. No variance, implied outlives
+requirement or well-formedness claim is transported. A fresh consumer
+derives the variance of each lifetime and the implied requirements such as
+`T: 'a` from the transported fields, as it does for a local nominal. Older
+profiles reject a nominal's region slot by name. Rows that a consumer could
+not re-prove are rejected by name:
+
+- a declared lifetime bound such as `'b: 'a`;
+- a method whose impl captures a lifetime;
+- an imported nominal's region argument in another provider's signature.
+
+Packets without nominal lifetimes keep their exact bytes.
 
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core

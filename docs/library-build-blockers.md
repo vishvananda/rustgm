@@ -5,6 +5,19 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [lifetime-parameterized structs and enums](parallel/lifetime-nominals-transport.md)
+is joined on main. Version 13 carries a struct's or
+enum's lifetimes as leading region slots, which its fields name in its own
+frame. Its Self recipe, applications and tuple-variant constructor calls
+carry region arguments first. No variance or outlives claim travels: a fresh
+consumer derives both from the imported fields, accepts covariant shrinking
+and rejects invariant shrinking, lifetime growth, escapes and a missing
+implied `T: 'a`, as rustc does. Nine clients run natively and exit 42.
+Packets without nominal lifetimes are byte-identical. Declared lifetime
+bounds and methods of `impl<'a> X<'a>` are rejected by name. The next blocker
+is the captured callable frame of such methods (`Arguments::new_const`,
+`Location::caller`, `PanicInfo::new`).
+
 Lane B [specialization selection, user callable outputs and no_std source
 clients](parallel/specialization-nostd.md) clears 19 of the 23 failed
 "associated type requires an unambiguous implementation" sites. Lane B's census

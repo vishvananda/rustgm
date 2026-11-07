@@ -112,6 +112,43 @@ failed, 52 blocked):
 - `pat.rs` (core's ordinary first error) is Lane A's: generic `!null` pattern
   types and pattern-type `DispatchFromDyn` coherence.
 
+Decisions after Lane B's [specialization and no_std batch](parallel/specialization-nostd.md)
+and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
+
+- **`--extern core=` names the direct dependency, as rustc does.** std's
+  graph gives six units (cfg-if, hashbrown, panic_abort, rustc-demangle,
+  std_detect, unwind) the `rustc_std_workspace_core` shim (`pub use core::*`)
+  as `core`. Only alloc, compiler_builtins, the shim and std get real core.
+  The no_std injection resolves `core` through the extern prelude, so through
+  the shim a client reaches core's prelude by the shim's glob re-export.
+  - Rejected: refusing `--extern core=` and passing core as inventory only.
+    The executor would then have to rewrite Cargo's edges and hide the shim's
+    real semantics.
+  - Cost: cross-crate glob re-exports must resolve through the shim.
+- **`compiler_builtins` follows rustc's injection rule.** RustGM injects it
+  where rustc does, bound through the ordinary dependency path. A missing
+  crate fails by name, as rustc requires. alloc and the shim also depend on it
+  directly.
+- **Variant re-exports and override conformance go to Lane B.** Variant
+  re-exports (core's `prelude::v1`: `pub use crate::option::Option::{self,
+  None, Some}`) block no_std clients of real core. Override conformance of a
+  repeated `Self::Assoc` where-clause (`traits/conformance/mapping.rs`) is the
+  other item. Lane B diagnosed both. If a variant re-export needs a new
+  version-13 row, Lane B reports the tag to the integrator before using it,
+  because Lane C is adding version-13 shapes at the same time.
+- **Lane C's next slice:**
+  1. methods of `impl<'a> X<'a>` (captured callable frames), which core's
+     `Arguments`, `Location` and `PanicInfo` need;
+  2. tuple and unit structs, for `NonNull` and `PhantomData`;
+  3. writes through a `&mut` field of an immutable binding. rustc accepts
+     them, so the fix lands under version 13 only.
+  Declared nominal lifetime bounds and region function-pointer fields stay
+  fenced by name until a demanded item needs them; core's panic types declare
+  none.
+- **Forged shared region rows** may be rejected by the earlier Self-identity
+  or field-substitution check. A forgery must be rejected by name, but it
+  needs no check of its own.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |
