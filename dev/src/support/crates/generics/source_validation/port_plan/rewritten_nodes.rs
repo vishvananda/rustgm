@@ -45,6 +45,9 @@ pub(super) enum Node {
         next: NodeId,
     },
     Scalar(Scalar),
+    /// Version thirteen: the unsized `str` and the never type.
+    Str,
+    Never,
     Parameter(s::SlotRef),
     Reference {
         mutable: bool,
@@ -262,7 +265,9 @@ impl Arena {
                 facts.0 &= !NodeFacts::FORMED;
                 facts
             }
-            Node::NominalEnd | Node::Scalar(_) => NodeFacts(NodeFacts::FORMED),
+            Node::NominalEnd | Node::Scalar(_) | Node::Str | Node::Never => {
+                NodeFacts(NodeFacts::FORMED)
+            }
             Node::NominalArgument { ty, next } => {
                 self.facts_of(ty, work)?.combine(self.facts_of(next, work)?)
             }

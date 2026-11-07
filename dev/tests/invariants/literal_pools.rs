@@ -21,7 +21,7 @@ fn fresh_scalar_storage_rejects_changed_missing_extra_and_foreign_slots() -> Res
     let view = crate::sema::crates::source_original(&analysis.facts, definition, &mut steps)?
         .ok_or("actual retained source view")?;
     let body = rebuilt_operations::build(&view, &mut ImportedOriginals::default())?;
-    rebuilt_operations::validate(&view, &body, &mut steps)?;
+    rebuilt_operations::validate(&view, &analysis.facts.texts, &body, &mut steps)?;
     assert_eq!(body.scalars, [Scalar::Integer(7)]);
     let edits: [fn(&mut crate::body::ir::Body); 4] = [
         |b| b.scalars[0] = Scalar::Integer(8),
@@ -38,7 +38,10 @@ fn fresh_scalar_storage_rejects_changed_missing_extra_and_foreign_slots() -> Res
     for edit in edits {
         let mut changed = body.clone();
         edit(&mut changed);
-        assert!(rebuilt_operations::validate(&view, &changed, &mut steps).is_err());
+        assert!(
+            rebuilt_operations::validate(&view, &analysis.facts.texts, &changed, &mut steps)
+                .is_err()
+        );
     }
     let mut limited = ImportedOriginals {
         steps: crates::MAX_COMPONENTS,

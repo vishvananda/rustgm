@@ -100,6 +100,9 @@ pub enum ValueKind {
     /// Version thirteen: a fieldless enum's `as` conversion to its integer
     /// result; the discriminants come from the consumer's validated header.
     EnumCast(u32),
+    /// Version thirteen: a `&'static str` literal, the original's text with
+    /// this ordinal. Ordinals follow value order densely.
+    Text(u32),
 }
 /// The reconstructable primitive operators. Add, Sub and Mul are checked: each
 /// consumer instance lowers its own overflow guard and abort exit. Div, Rem and
@@ -248,6 +251,27 @@ impl Value {
         }
         ScalarValue::new(ty, u128::from_le_bytes(bits))
     }
+    /// A text value is exactly a shared `'static` reference to `str`.
+    pub(crate) fn text_type(
+        self,
+        types: &[super::Type],
+        regions: &[super::Region],
+    ) -> Result<(), &'static str> {
+        let Some(&super::Type::Reference {
+            mutable: false,
+            region,
+            referent,
+        }) = types.get(self.ty.0 as usize)
+        else {
+            return Err("source text value is not a shared reference");
+        };
+        if regions.get(region.0 as usize) != Some(&super::Region::Static)
+            || types.get(referent.0 as usize) != Some(&super::Type::Str)
+        {
+            return Err("source text value is not a static str reference");
+        }
+        Ok(())
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Action {
@@ -304,6 +328,12 @@ pub struct Guard {
 pub struct Guards {
     pub rows: Vec<Guard>,
     pub places: Vec<Place>,
+}
+/// Version thirteen's cold literal column, present exactly when an original
+/// has a text value: each literal's UTF-8 contents, in value order.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Texts {
+    pub rows: Vec<Box<str>>,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Statement {
@@ -388,4 +418,6 @@ pub struct Original {
     pub calls: Vec<CallRequest>,
     /// Version thirteen: out of line, absent unless the body starts a guard.
     pub guards: Option<Box<Guards>>,
+    /// Version thirteen: out of line, absent unless the body has a text value.
+    pub texts: Option<Box<Texts>>,
 }

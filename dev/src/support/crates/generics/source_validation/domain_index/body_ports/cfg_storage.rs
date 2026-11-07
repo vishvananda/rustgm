@@ -17,6 +17,7 @@ impl DomainIndex<'_, '_> {
         Self::scopes(original, work)?;
         self.statements(original, work)?;
         Self::guards(original, work)?;
+        Self::texts(original, work)?;
         for exit in &original.exits {
             Self::location(original, exit.location, work)?;
             match exit.end {
@@ -176,6 +177,24 @@ impl DomainIndex<'_, '_> {
         work.charge(covered.len())?;
         if covered.contains(&false) {
             return Err("source CFG statements have incomplete block coverage");
+        }
+        Ok(())
+    }
+    /// Text ordinals follow value order densely and cover the text column.
+    fn texts(original: &s::Original, work: &mut Work) -> Result<(), &'static str> {
+        let mut next = 0_u32;
+        for value in &original.values {
+            work.charge(1)?;
+            if let s::ValueKind::Text(ordinal) = value.kind {
+                if ordinal != next {
+                    return Err("source text ordinal leaves its value order");
+                }
+                next = next.saturating_add(1);
+            }
+        }
+        let count = original.texts.as_ref().map_or(0, |texts| texts.rows.len());
+        if count != next as usize {
+            return Err("source text column differs from its text values");
         }
         Ok(())
     }

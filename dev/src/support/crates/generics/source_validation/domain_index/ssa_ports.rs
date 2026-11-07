@@ -17,7 +17,11 @@ pub(super) fn allocation(original: &s::Original) -> usize {
 }
 
 /// Caller prepays the complete cold scratch bound before any collection exists.
-pub(super) fn validate(original: &s::Original, work: &mut Work) -> Result<(), &'static str> {
+pub(super) fn validate(
+    original: &s::Original,
+    work: &mut Work,
+    branching: bool,
+) -> Result<(), &'static str> {
     let count = original
         .values
         .len()
@@ -77,7 +81,83 @@ pub(super) fn validate(original: &s::Original, work: &mut Work) -> Result<(), &'
     }
     work.charge(count)?;
     state.fill(0);
+    if branching
+        && original
+            .blocks
+            .iter()
+            .any(|block| block.terminator.successors()[1].is_some())
+    {
+        return blocks(original, &mut state, work);
+    }
     execute(original, &mut state, work)
+}
+
+/// Version thirteen: in a branching body each snapshot dependency must be
+/// evaluated earlier in its user's own block, which then dominates the use.
+/// Every block is walked once and forgets its definitions at its end.
+fn blocks(original: &s::Original, state: &mut [u8], work: &mut Work) -> Result<(), &'static str> {
+    let mut defined = Vec::new();
+    for current in &original.blocks {
+        for statement in current.statements.slice(&original.statements)? {
+            work.charge(1)?;
+            uses(original, state, statement.action, work)?;
+            if let Some(node) = definition(original, statement.action)? {
+                state[node] = 1;
+                defined.push(node);
+            }
+        }
+        match current.terminator {
+            g::Terminator::Return(value)
+            | g::Terminator::Branch {
+                condition: value, ..
+            } => {
+                require(state, Some(value as usize))?;
+            }
+            g::Terminator::Jump(_)
+            | g::Terminator::FalseEdge { .. }
+            | g::Terminator::Unreachable
+            | g::Terminator::Panic => {}
+        }
+        work.charge(defined.len())?;
+        for node in defined.drain(..) {
+            state[node] = 0;
+        }
+    }
+    Ok(())
+}
+
+/// One statement's dependencies must already be available.
+fn uses(
+    original: &s::Original,
+    state: &[u8],
+    action: s::Action,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    if let Some(node) = definition(original, action)? {
+        let mut ordinal = 0;
+        loop {
+            work.charge(1)?;
+            let Some(child) = dependency(original, node, ordinal)? else {
+                return Ok(());
+            };
+            require(state, Some(child))?;
+            ordinal += 1;
+        }
+    }
+    match action {
+        s::Action::Store {
+            place: target,
+            value,
+        } => {
+            require(state, place(original, target)?)?;
+            require(state, Some(value as usize))
+        }
+        s::Action::CheckInitialized(target)
+        | s::Action::Mention(target)
+        | s::Action::BindView { place: target, .. }
+        | s::Action::Select { anchor: target, .. } => require(state, place(original, target)?),
+        _ => Ok(()),
+    }
 }
 
 fn definition(original: &s::Original, action: s::Action) -> Result<Option<usize>, &'static str> {

@@ -59,6 +59,8 @@ mod spelled_roles;
 
 #[path = "crate_linking/static_transport.rs"]
 mod static_transport;
+#[path = "crate_linking/str_never_transport.rs"]
+mod str_never_transport;
 #[path = "crate_linking/transitive.rs"]
 mod transitive;
 #[path = "crate_linking/transported_rows.rs"]

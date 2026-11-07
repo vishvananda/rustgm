@@ -146,6 +146,27 @@ impl Coverage {
                     expected,
                 });
             }
+            s::InputKind::Coercion {
+                actual,
+                expected,
+                unsize: false,
+                reference:
+                    Some(s::ReferenceConversion {
+                        dereferences: 1..,
+                        unsize: false,
+                        two_phase: false,
+                    }),
+            } if domains.bodies => {
+                // Version thirteen: a plain reborrow only adds the bounds of
+                // its selected dereferences. The consumer derives the same
+                // bounds from its own borrowed places, and the Constrain
+                // relation is still requested, so no operation pays for it.
+                // Both types must still root in this original's scope.
+                for ty in [actual, expected] {
+                    let key = uses::key(domains, ty, Rewrite::Original, Some(context), work)?;
+                    arena.root(domains, key, work)?;
+                }
+            }
             s::InputKind::Coercion { .. } => {
                 return Err(
                     "source adjusted/unsizing coercion requires a complete wider input profile",

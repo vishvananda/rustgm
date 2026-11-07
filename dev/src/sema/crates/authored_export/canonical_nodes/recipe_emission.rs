@@ -236,6 +236,8 @@ impl Stage {
             Kind::FunctionItem {
                 item, arguments, ..
             } => s::Type::FunctionItem(self.function_application(facts, item, arguments, context)?),
+            Kind::Primitive(crate::types::Primitive::Str) if self.body_nodes() => s::Type::Str,
+            Kind::Never if self.body_nodes() => s::Type::Never,
             Kind::Primitive(_) | Kind::Tuple(_)
                 if key.ty == TypeId::UNIT || matches!(kind, Kind::Primitive(_)) =>
             {

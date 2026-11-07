@@ -10,6 +10,7 @@ impl DomainIndex<'_, '_> {
         &mut self,
         work: &mut Work,
         conversions: bool,
+        branching: bool,
     ) -> Result<(), &'static str> {
         let rows = self.headers.rows();
         for original in &rows.originals {
@@ -50,7 +51,7 @@ impl DomainIndex<'_, '_> {
             self.input_ports(context, original, input, work)?;
             if snapshots {
                 self.scratch(super::snapshots::allocation(original), work)?;
-                super::snapshots::validate(original, work)?;
+                super::snapshots::validate(original, work, branching)?;
             }
         }
         Ok(())
@@ -91,6 +92,10 @@ impl DomainIndex<'_, '_> {
         match value.kind {
             s::ValueKind::Scalar(_) => {
                 value.scalar_value(&self.headers.rows().types)?;
+            }
+            s::ValueKind::Text(_) => {
+                let rows = self.headers.rows();
+                value.text_type(&rows.types, &rows.regions)?;
             }
             s::ValueKind::Read(s::Place::Temporary(value)) => {
                 prefix_value(original, value, index, work)?;

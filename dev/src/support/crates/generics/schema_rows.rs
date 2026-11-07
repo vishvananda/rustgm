@@ -196,6 +196,11 @@ pub enum Type {
     /// Version thirteen: a non-unit tuple whose element types are `roots`
     /// entries, in order. Unit keeps its scalar row.
     Tuple(Range),
+    /// Version thirteen: the unsized `str` primitive, outside every scalar
+    /// profile, reachable only behind a reference or pointer recipe.
+    Str,
+    /// Version thirteen: the never type `!`.
+    Never,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TraitApplication {

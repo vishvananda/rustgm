@@ -37,9 +37,10 @@ impl Builder<'_, '_, '_> {
             s::ValueKind::EnumCast(operand) => self.enum_cast(original, value.ty, operand, work),
             // Domain validation checked the exact primitive type and canonical bits.
             // Formation above remains an ordinary unpaid request.
-            s::ValueKind::Scalar(_) | s::ValueKind::ScalarCast(_) | s::ValueKind::Binary { .. } => {
-                Ok(())
-            }
+            s::ValueKind::Scalar(_)
+            | s::ValueKind::ScalarCast(_)
+            | s::ValueKind::Binary { .. }
+            | s::ValueKind::Text(_) => Ok(()),
             s::ValueKind::Read(place) => self.read_input(
                 original,
                 OperationSite { port, site },
@@ -175,21 +176,30 @@ impl Builder<'_, '_, '_> {
         let s::Region::Variable { body, slot } = rows.regions[region.0 as usize] else {
             return Err("source Borrow did not retain its actual owned allocation");
         };
-        if body != original.body
-            || original.variables[slot as usize].allocation
-                != (s::RegionAllocation::Inference {
-                    needs_provenance: true,
-                })
-        {
-            return Err("source Borrow lost its actual provenance allocation");
-        }
-        self.coverage.variable(body, slot, true, work)?;
+        let allocation = original
+            .variables
+            .get(slot as usize)
+            .filter(|_| body == original.body)
+            .map(|variable| variable.allocation);
+        let provenance = match allocation {
+            Some(s::RegionAllocation::Inference {
+                needs_provenance: true,
+            }) => true,
+            // Version thirteen: an implicit reborrow of a dereferenced place
+            // takes an inference region with no borrow-expression provenance.
+            // The consumer derives its bounds from its own place walk.
+            Some(s::RegionAllocation::Inference {
+                needs_provenance: false,
+            }) if self.domains.bodies && reborrowed(original, place) => false,
+            _ => return Err("source Borrow lost its actual provenance allocation"),
+        };
+        self.coverage.variable(body, slot, provenance, work)?;
         self.emit(
             port,
             s::InputSite::Body(site),
             RequiredKind::Variable {
                 slot,
-                needs_provenance: true,
+                needs_provenance: provenance,
             },
             work,
         )?;
@@ -295,4 +305,14 @@ impl Builder<'_, '_, '_> {
             work,
         )
     }
+}
+/// A borrow whose outermost projection dereferences a reference.
+fn reborrowed(original: &s::Original, place: s::Place) -> bool {
+    let s::Place::Projection(id) = place else {
+        return false;
+    };
+    original
+        .projections
+        .get(id as usize)
+        .is_some_and(|projection| matches!(projection.kind, s::ProjectionKind::Dereference { .. }))
 }

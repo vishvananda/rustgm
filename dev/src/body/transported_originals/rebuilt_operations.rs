@@ -1,6 +1,6 @@
 //! Reconstruct the admitted source operation domain from its sealed current view.
 use super::{
-    ImportedOriginals, encoded_literals,
+    ImportedOriginals, encoded_literals, encoded_texts,
     operations::{self, lexical},
     regional_records,
 };
@@ -122,6 +122,7 @@ fn value_kind(
             },
         },
         s::ValueKind::Scalar(_) => encoded_literals::append(view, value, body)?,
+        s::ValueKind::Text(_) => encoded_texts::append(view)?,
         s::ValueKind::Read(place) => Rvalue::Read(regional_records::place(view, place)?),
         s::ValueKind::Borrow(place) => {
             regional_records::borrow(view, place, BorrowKind::Immediate)?
@@ -457,6 +458,7 @@ pub(super) fn allocation(
 
 pub(super) fn validate(
     view: &SourceOriginal<'_>,
+    texts: &crate::sema::text::Texts,
     body: &Body,
     steps: &mut usize,
 ) -> Result<(), &'static str> {
@@ -491,6 +493,7 @@ pub(super) fn validate(
     }
     regional_records::validate(view, body, steps)?;
     ports(view, body, steps)?;
+    encoded_texts::validate(texts, view, body, steps)?;
     for (actual, record) in body.statements.iter().zip(&record.statements) {
         *steps = steps.saturating_add(1);
         if actual.source != view.site(record.site, steps)?
@@ -646,7 +649,8 @@ fn same_value(
         return Ok(same);
     }
     Ok(match (actual.kind, record.kind) {
-        (Rvalue::Unit, s::ValueKind::Unit) => true,
+        // Each literal and its ordinal are compared with the arena afterwards.
+        (Rvalue::Unit, s::ValueKind::Unit) | (Rvalue::Text(_), s::ValueKind::Text(_)) => true,
         (
             Rvalue::Aggregate {
                 variant: Some(actual),

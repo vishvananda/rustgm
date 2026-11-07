@@ -1,6 +1,7 @@
 //! Immutable imported originals share one owner; no row is a Checked or Permit.
 mod decoded_bodies;
 mod encoded_literals;
+mod encoded_texts;
 #[path = "transported_originals/reconstruction.rs"]
 mod selected_original;
 pub(crate) use selected_original::{demand as demand_selected, validate as validate_selected};
@@ -207,7 +208,7 @@ pub(crate) fn validate_source_parts(
     }
     let view = crate::sema::crates::source_original(facts, definition, steps)?
         .ok_or("source original cannot execute an absent required method")?;
-    rebuilt_operations::validate(&view, body, steps)?;
+    rebuilt_operations::validate(&view, &facts.texts, body, steps)?;
     rebuilt_inputs::validate(facts, &view, body, contract, steps)?;
     Ok(true)
 }

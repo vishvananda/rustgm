@@ -230,6 +230,8 @@ impl Arena {
                     );
                 }
                 s::Type::Scalar(scalar) => Recipe::Leaf(Node::Scalar(scalar)),
+                s::Type::Str => Recipe::Leaf(Node::Str),
+                s::Type::Never => Recipe::Leaf(Node::Never),
                 s::Type::Tuple(elements) => Recipe::Tuple(elements),
                 s::Type::Parameter(slot) if matches!(key.rewrite, Rewrite::Nominal { .. }) => {
                     let Rewrite::Nominal { owner, arguments } = key.rewrite else {

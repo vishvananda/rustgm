@@ -69,10 +69,23 @@ pub(super) fn prepare<'rows, P: ports::OwnedPort<'rows>>(
     // Formation roots enter the frontier: an erased primitive operator keeps its
     // selected method's formations, whose function item is that request port.
     work.charge(inputs.obligations.len())?;
+    let bodies = rows.descriptor().profile().body_nodes();
     for obligation in &inputs.obligations {
-        if let s::InputKind::WellFormed(ty) = obligation.kind {
-            Port::require_context(&port.port, store, work)?;
-            port.ty(store, ty, work)?;
+        match obligation.kind {
+            s::InputKind::WellFormed(ty) => {
+                Port::require_context(&port.port, store, work)?;
+                port.ty(store, ty, work)?;
+            }
+            // Version thirteen: a coercion's types may occur only in its
+            // input rows, as when a static literal flows into a merge.
+            s::InputKind::Coercion {
+                actual, expected, ..
+            } if bodies => {
+                Port::require_context(&port.port, store, work)?;
+                port.ty(store, actual, work)?;
+                port.ty(store, expected, work)?;
+            }
+            _ => {}
         }
     }
     if rows.descriptor().profile().conversion_roles() {

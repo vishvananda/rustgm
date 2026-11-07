@@ -73,18 +73,23 @@ pub struct DomainIndex<'index, 'rows> {
     // for every application. Broader nested function-item-only forms reject.
     used_functions: Vec<bool>,
     used_traits: Vec<bool>,
+    /// Version thirteen: branching snapshot bodies and plain reborrow inputs.
+    bodies: bool,
 }
 impl<'index, 'rows> DomainIndex<'index, 'rows> {
     pub(super) fn new(
         headers: &'index HeaderIndex<'rows>,
         work: &mut Work,
     ) -> Result<Self, &'static str> {
-        Self::new_mode(headers, work, false)
+        Self::new_mode(headers, work, false, false)
     }
+    /// `bodies` is version thirteen, whose snapshot bodies may branch when
+    /// every snapshot use follows its evaluation in the same block.
     pub(super) fn new_mode(
         headers: &'index HeaderIndex<'rows>,
         work: &mut Work,
         conversions: bool,
+        bodies: bool,
     ) -> Result<Self, &'static str> {
         let first = work.steps;
         let roots = work.roots;
@@ -114,9 +119,10 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
             observed: DomainWork::default(),
             used_functions: vec![false; functions],
             used_traits: vec![false; traits],
+            bodies,
         };
         index.header_roots(work)?;
-        index.originals(work, conversions)?;
+        index.originals(work, conversions, bodies)?;
         work.charge(applications)?;
         if index.used_functions.contains(&false) || index.used_traits.contains(&false) {
             return Err("source application has no actual owning header/body request");

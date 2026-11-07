@@ -88,14 +88,39 @@ fn original_profile(
     // Version thirteen's guard columns follow the calls exactly when a
     // statement starts a guard; presence is never read from trailing bytes.
     match (&row.guards, starts_guard(&row.statements)) {
-        (None, false) => Ok(()),
+        (None, false) => {}
         (Some(guards), true) if generation == Generation::Bodies => {
             write(out, &guards.rows, guard_write)?;
-            write_copy(out, &guards.places, ir_nodes::place_write)
+            write_copy(out, &guards.places, ir_nodes::place_write)?;
         }
-        (Some(_), true) => Err("source guard facts require the version-thirteen body IR profile"),
-        _ => Err("source guard columns differ from the guards its body starts"),
+        (Some(_), true) => {
+            return Err("source guard facts require the version-thirteen body IR profile");
+        }
+        _ => return Err("source guard columns differ from the guards its body starts"),
     }
+    // Text literals follow exactly when a value is text, in value order.
+    match (&row.texts, has_text(&row.values)) {
+        (None, false) => Ok(()),
+        (Some(texts), true) if generation == Generation::Bodies => {
+            write(out, &texts.rows, |out, text| out.string(text))
+        }
+        (Some(_), true) => Err("source text literals require the version-thirteen body IR profile"),
+        _ => Err("source text columns differ from the text values of its body"),
+    }
+}
+fn has_text(values: &[s::Value]) -> bool {
+    values
+        .iter()
+        .any(|value| matches!(value.kind, s::ValueKind::Text(_)))
+}
+/// Each literal is charged one atom per byte, outside the name budget.
+fn text_read(read: &mut Input<'_, '_>) -> Result<Box<str>, &'static str> {
+    let length = read.reader.count(crates::MAX_COMPONENTS, 1)?;
+    read.reader.atoms(length)?;
+    read.reserve(length)?;
+    std::str::from_utf8(read.reader.bytes(length)?)
+        .map(Box::from)
+        .map_err(|_| "source text literal is not UTF-8")
 }
 fn starts_guard(statements: &[s::Statement]) -> bool {
     statements
@@ -173,6 +198,13 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
     } else {
         None
     };
+    let texts = if read.profile.body_nodes() && has_text(&values) {
+        Some(Box::new(s::Texts {
+            rows: read.list(crates::MAX_COMPONENTS, 4, text_read)?,
+        }))
+    } else {
+        None
+    };
     Ok(s::Original {
         body,
         declaration,
@@ -194,6 +226,7 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
         openings,
         calls,
         guards,
+        texts,
     })
 }
 pub(super) fn place_write(out: &mut Writer, place: s::Place) -> Result<(), &'static str> {
@@ -261,6 +294,9 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
         | s::ValueKind::IsVariant { .. }
         | s::ValueKind::EnumCast(_) => {
             Err("source enum operations require the version-thirteen body IR profile")
+        }
+        s::ValueKind::Text(_) => {
+            Err("source text literals require the version-thirteen body IR profile")
         }
         s::ValueKind::Call {
             signature,

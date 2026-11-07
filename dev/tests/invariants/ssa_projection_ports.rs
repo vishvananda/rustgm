@@ -89,13 +89,14 @@ fn snapshot() -> s::Original {
         openings: Vec::new(),
         calls: Vec::new(),
         guards: None,
+        texts: None,
     }
 }
 
 #[test]
 fn evaluated_snapshot_survives_local_overwrite_and_distinct_block_numbering() -> Result {
     let mut original = snapshot();
-    validate(&original, &mut Work::default())?;
+    validate(&original, &mut Work::default(), false)?;
     assert_eq!(original.projections[0].base, s::Place::Temporary(0));
     // Physical block numbering is not dominance. Execution still visits 0,2,1.
     original.blocks = vec![
@@ -115,9 +116,9 @@ fn evaluated_snapshot_survives_local_overwrite_and_distinct_block_numbering() ->
             terminator: g::Terminator::Jump(1),
         },
     ];
-    validate(&original, &mut Work::default())?;
+    validate(&original, &mut Work::default(), false)?;
     original.blocks[1].terminator = g::Terminator::Jump(2);
-    validate(&original, &mut Work::default())?;
+    validate(&original, &mut Work::default(), false)?;
     assert_eq!(size_of::<s::Place>(), 8);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
@@ -137,9 +138,9 @@ fn evaluated_snapshot_survives_local_overwrite_and_distinct_block_numbering() ->
         }
         wide.blocks[0].statements.end = u32::try_from(wide.statements.len())?;
         let mut work = Work::default();
-        validate(&wide, &mut work)?;
+        validate(&wide, &mut work, false)?;
         let mut repeated = Work::default();
-        validate(&wide, &mut repeated)?;
+        validate(&wide, &mut repeated, false)?;
         assert_eq!(repeated.steps, work.steps);
         if let Some(previous) = previous {
             assert!(work.steps < previous * 5);
@@ -163,7 +164,7 @@ fn snapshot_rejects_forward_unevaluated_duplicate_and_cyclic_dependencies() {
             _ => unreachable!(),
         }
         assert!(
-            validate(&original, &mut Work::default()).is_err(),
+            validate(&original, &mut Work::default(), false).is_err(),
             "{mutation}"
         );
     }
@@ -186,13 +187,13 @@ fn disconnected_definitions_cannot_authorize_reached_snapshot_and_failure_is_pai
     ];
     let mut work = Work::default();
     assert!(matches!(
-        validate(&original, &mut work),
+        validate(&original, &mut work, false),
         Err(error) if error.contains("not dominated")
     ));
     assert!(work.steps > 0);
     work.steps = crate::support::crates::MAX_COMPONENTS;
     for _ in 0..2 {
-        assert!(validate(&original, &mut work).is_err());
+        assert!(validate(&original, &mut work, false).is_err());
     }
     assert!(work.steps > crate::support::crates::MAX_COMPONENTS);
 }
@@ -201,24 +202,76 @@ fn disconnected_definitions_cannot_authorize_reached_snapshot_and_failure_is_pai
 fn direct_ssa_reads_retain_exact_evaluations_and_reject_invalid_dependencies() -> Result {
     let mut original = snapshot();
     original.values[2].kind = s::ValueKind::Read(s::Place::Temporary(0));
-    validate(&original, &mut Work::default())?;
+    validate(&original, &mut Work::default(), false)?;
     assert!(matches!(
         original.values[2].kind,
         s::ValueKind::Read(s::Place::Temporary(0))
     ));
     original.statements.swap(0, 4);
     assert!(matches!(
-        validate(&original, &mut Work::default()),
+        validate(&original, &mut Work::default(), false),
         Err(error) if error.contains("not dominated")
     ));
     original.statements.swap(0, 4);
     original.values[0].kind = s::ValueKind::Read(s::Place::Temporary(2));
     assert!(matches!(
-        validate(&original, &mut Work::default()),
+        validate(&original, &mut Work::default(), false),
         Err(error) if error.contains("cyclic")
     ));
     original.values[0].kind = s::ValueKind::Read(s::Place::Local(0));
     original.values[2].kind = s::ValueKind::Read(s::Place::Temporary(u32::MAX));
-    assert!(validate(&original, &mut Work::default()).is_err());
+    assert!(validate(&original, &mut Work::default(), false).is_err());
     Ok(())
+}
+
+/// Version thirteen: a branching body keeps each snapshot use in the block
+/// that evaluated it. Older profiles still refuse every two-way exit.
+#[test]
+fn branching_snapshots_are_block_local_only_in_version_thirteen() {
+    let branch = g::Terminator::Branch {
+        condition: 1,
+        yes: 1,
+        no: 2,
+    };
+    let block = |start, end, terminator| g::Block {
+        statements: g::Range { start, end },
+        site: 0,
+        terminator,
+    };
+    let mut local = snapshot();
+    local.blocks = vec![
+        block(0, 5, branch),
+        block(5, 5, g::Terminator::Unreachable),
+        block(5, 5, g::Terminator::Unreachable),
+    ];
+    assert!(validate(&local, &mut Work::default(), true).is_ok());
+    assert!(matches!(
+        validate(&local, &mut Work::default(), false),
+        Err(error) if error.contains("two-way exits")
+    ));
+    // The projection and its read follow the branch, away from `v0`.
+    let mut crossing = snapshot();
+    crossing.blocks = vec![
+        block(0, 3, branch),
+        block(3, 5, g::Terminator::Return(2)),
+        block(5, 5, g::Terminator::Unreachable),
+    ];
+    let mut work = Work::default();
+    assert!(matches!(
+        validate(&crossing, &mut work, true),
+        Err(error) if error.contains("not dominated")
+    ));
+    assert!(work.steps > 0);
+    // A terminator's condition is a use in its own block too.
+    local.blocks[0] = block(
+        0,
+        1,
+        g::Terminator::Branch {
+            condition: 2,
+            yes: 1,
+            no: 2,
+        },
+    );
+    local.blocks[1] = block(1, 5, g::Terminator::Unreachable);
+    assert!(validate(&local, &mut Work::default(), true).is_err());
 }

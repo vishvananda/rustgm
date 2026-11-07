@@ -31,6 +31,9 @@ pub(super) fn emit(
             ir::Rvalue::Scalar(id) if stage.feature_predicates() => {
                 scalar(facts, body, value.ty, id)?
             }
+            ir::Rvalue::Text(text) if stage.body_nodes() => {
+                text_literal(stage, facts, raw, value.ty, text)?
+            }
             ir::Rvalue::Read(ir::Place::Temporary(value)) if stage.conversion_roles() => {
                 s::ValueKind::Read(s::Place::Temporary(value.0))
             }
@@ -294,6 +297,34 @@ pub(super) fn requested_formation(
     ty: crate::types::TypeId,
 ) -> bool {
     stage.body_nodes() && facts.types.contains_nominals(ty) == Some(true)
+}
+/// Version thirteen: a literal joins its original's text column in value
+/// order. Only a shared `'static` reference to `str` is a text value.
+fn text_literal(
+    stage: &mut Stage,
+    facts: &Declarations,
+    raw: &mut s::Original,
+    ty: crate::types::TypeId,
+    text: crate::sema::text::Id,
+) -> Result<s::ValueKind, &'static str> {
+    if !matches!(
+        facts.types.kind(ty),
+        Some(crate::types::Kind::Reference {
+            mutable: false,
+            region: crate::types::RegionId::STATIC,
+            referent,
+        }) if referent == crate::types::TypeId::primitive(crate::types::Primitive::Str)
+    ) {
+        return Err("source text literal is not a shared static str reference");
+    }
+    let bytes = facts.texts.get(text)?;
+    stage.charge(bytes.len().saturating_add(1))?;
+    stage.reserve(bytes.len().saturating_add(4 * size_of::<Box<str>>()))?;
+    let contents = std::str::from_utf8(bytes).map_err(|_| "source text literal is not UTF-8")?;
+    let texts = raw.texts.get_or_insert_with(Box::default);
+    let ordinal = u32::try_from(texts.rows.len()).map_err(|_| "source text column overflow")?;
+    texts.rows.push(contents.into());
+    Ok(s::ValueKind::Text(ordinal))
 }
 /// A constructor test or a fieldless enum's integer conversion.
 fn variant_operation(stage: &mut Stage, kind: ir::Rvalue) -> Result<s::ValueKind, &'static str> {

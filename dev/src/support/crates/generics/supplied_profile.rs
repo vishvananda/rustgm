@@ -122,6 +122,9 @@ fn original_operations(rows: &SourceRows, work: &mut Work) -> Result<(), &'stati
                     "source Binary operations require the version-thirteen body IR profile",
                 );
             }
+            if matches!(value.kind, s::ValueKind::Text(_)) {
+                return Err("source text literals require the version-thirteen body IR profile");
+            }
         }
     }
     Ok(())

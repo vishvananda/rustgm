@@ -123,7 +123,7 @@ const FORMS: [s::OperandForm; 5] = [
 ];
 
 /// Reconstructable codes in this consumer, by family.
-const VALUE_FORMS: [u8; 12] = [2, 3, 6, 10, 12, 14, 16, 24, 27, 28, 29, 30];
+const VALUE_FORMS: [u8; 13] = [2, 3, 6, 7, 10, 12, 14, 16, 24, 27, 28, 29, 30];
 /// Stable `Rvalue::Invoke` call-trait flags.
 const CALLABLES: [crate::support::call_traits::CallTrait; 3] = [
     crate::support::call_traits::CallTrait::FnOnce,
@@ -259,6 +259,7 @@ pub(super) fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'stat
             &[Operand::Place(place), Operand::Declaration(variant.0)],
         ),
         s::ValueKind::Scalar(bits) => node_write(out, 6, &[Operand::Bits(bits)]),
+        s::ValueKind::Text(ordinal) => node_write(out, 7, &[Operand::Flag(ordinal)]),
         s::ValueKind::Read(place) => node_write(out, 10, &[Operand::Place(place)]),
         // Flag zero is the immediate kind; two-phase and unique borrows own 1 and 2.
         s::ValueKind::Borrow(place) => {
@@ -339,6 +340,7 @@ pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static 
             variant: DeclarationRef(variant),
         },
         (6, &[Operand::Bits(bits)]) => s::ValueKind::Scalar(bits),
+        (7, &[Operand::Flag(ordinal)]) => s::ValueKind::Text(ordinal),
         (10, &[Operand::Place(place)]) => s::ValueKind::Read(place),
         (12, &[Operand::Place(place), Operand::Flag(0)]) => s::ValueKind::Borrow(place),
         (12, &[Operand::Place(place), Operand::Flag(1)]) => s::ValueKind::TwoPhaseBorrow(place),

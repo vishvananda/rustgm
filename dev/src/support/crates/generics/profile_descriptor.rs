@@ -466,7 +466,9 @@ impl ValidatedRows {
             indexed.retained_bytes(),
             work,
         )?;
-        let domains = if profile.conversion_roles() {
+        let domains = if profile.body_nodes() {
+            indexed.body_domains(work)?
+        } else if profile.conversion_roles() {
             indexed.conversion_domains(work)?
         } else {
             indexed.domains(work)?

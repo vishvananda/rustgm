@@ -174,12 +174,25 @@ fn obligation_read(read: &mut Input<'_, '_>) -> Result<s::Obligation, &'static s
                 read.require_provided("source adjusted coercion requires a wider source profile")?;
             }
             let reference = if read.boolean()? {
-                read.require_provided("source adjusted coercion requires a wider source profile")?;
-                Some(s::ReferenceConversion {
+                // Version thirteen admits a plain reborrow: no unsizing and no
+                // two-phase borrow, at either level.
+                let plain = !unsize && read.profile.body_nodes();
+                if !plain {
+                    read.require_provided(
+                        "source adjusted coercion requires a wider source profile",
+                    )?;
+                }
+                let reference = s::ReferenceConversion {
                     dereferences: read.id()?,
                     unsize: read.boolean()?,
                     two_phase: read.boolean()?,
-                })
+                };
+                if plain && (reference.unsize || reference.two_phase) {
+                    read.require_provided(
+                        "source adjusted coercion requires a wider source profile",
+                    )?;
+                }
+                Some(reference)
             } else {
                 None
             };

@@ -17,6 +17,8 @@ pub(super) fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static
             out.u8(9)?;
             range(out, elements)
         }
+        s::Type::Str => out.u8(10),
+        s::Type::Never => out.u8(11),
         s::Type::Scalar(scalar) => out.bytes(&[0, scalar as u8]),
         s::Type::Nominal {
             declaration,
@@ -62,6 +64,8 @@ pub(super) fn type_read(read: &mut Input<'_, '_>) -> Result<s::Type, &'static st
             s::Type::OpaqueFuture(s::OpaqueFutureRef(read.id()?))
         }
         9 if read.profile.body_nodes() => s::Type::Tuple(read.range()?),
+        10 if read.profile.body_nodes() => s::Type::Str,
+        11 if read.profile.body_nodes() => s::Type::Never,
         0 => s::Type::Scalar(read.reader.scalar()?),
         1 => s::Type::Parameter(s::SlotRef(read.id()?)),
         6 if read.profile.nominals() => s::Type::Nominal {

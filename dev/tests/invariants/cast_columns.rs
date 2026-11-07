@@ -71,6 +71,7 @@ fn original() -> s::Original {
         openings: Vec::new(),
         calls: Vec::new(),
         guards: None,
+        texts: None,
     }
 }
 

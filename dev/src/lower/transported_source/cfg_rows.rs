@@ -37,6 +37,7 @@ pub(super) fn emit(
         openings: Vec::new(),
         calls: Vec::new(),
         guards: None,
+        texts: None,
     };
     locals(stage, facts, body, context, &mut raw, sites)?;
     projections(stage, facts, body, context, &mut raw)?;

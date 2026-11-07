@@ -211,3 +211,16 @@ packet under `spec/provider-guards/`. The packet holds:
   `guarded` control, forged guard rows and a 6/24/96 scaling control.
 
 The `crate_linking::guard_transport` integration controls consume it.
+
+`static-str-never-outcomes.json` freezes the version-thirteen `&'static str`
+and `!` packet under `spec/static-str-never/`. The packet holds:
+
+- the shapes of core's `panicking::panic(&'static str) -> !` and generic
+  `assert_failed`, called from an `if` branch, a match arm and with
+  reborrowed arguments;
+- static literals returned, forwarded and merged, and a `!` signature;
+- eight accepted clients and three opponents (E0308, E0061 and E0599);
+- generated controls: older-profile `str` and `!` gates, forged text and
+  reborrow rows and a 6/24/96 scaling control.
+
+The `crate_linking::str_never_transport` integration controls consume it.

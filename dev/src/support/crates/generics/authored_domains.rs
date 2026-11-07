@@ -100,7 +100,17 @@ impl<'a> HeaderIndex<'a> {
         &'index self,
         work: &mut Work,
     ) -> Result<DomainIndex<'index, 'a>, &'static str> {
-        DomainIndex::new_mode(self, work, true)
+        DomainIndex::new_mode(self, work, true, false)
+    }
+    /// Inspect version-thirteen bodies, whose snapshot uses may cross a
+    /// branching body when each one follows its evaluation in its own block.
+    /// # Errors
+    /// Rejects malformed applications, changed owners and attempted budget exhaustion.
+    pub fn body_domains<'index>(
+        &'index self,
+        work: &mut Work,
+    ) -> Result<DomainIndex<'index, 'a>, &'static str> {
+        DomainIndex::new_mode(self, work, true, true)
     }
     /// Index the complete original declaration/header/body association once.
     /// # Errors

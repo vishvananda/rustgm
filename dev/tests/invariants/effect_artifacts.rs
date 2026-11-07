@@ -344,7 +344,7 @@ fn reconstructed_const_mode_is_revalidated_without_claiming_a_checked_body() -> 
     assert!(denied > crate::support::crates::MAX_COMPONENTS);
     let mut body = super::build(&view, &mut work)?;
     assert!(body.const_context);
-    super::validate(&view, &body, &mut work.steps)?;
+    super::validate(&view, &analysis.facts.texts, &body, &mut work.steps)?;
     let mut contract =
         super::super::rebuilt_inputs::build(&analysis.facts, &view, &body, &mut work)?;
     let retained = contract.builtins.clone();
@@ -376,7 +376,7 @@ fn reconstructed_const_mode_is_revalidated_without_claiming_a_checked_body() -> 
         &mut work.steps,
     )?;
     body.const_context = false;
-    assert!(super::validate(&view, &body, &mut work.steps).is_err());
+    assert!(super::validate(&view, &analysis.facts.texts, &body, &mut work.steps).is_err());
     Ok(())
 }
 

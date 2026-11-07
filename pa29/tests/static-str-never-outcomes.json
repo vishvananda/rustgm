@@ -1,0 +1,176 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+  "providers": [
+    {
+      "file": "spec/static-str-never/provider.rs",
+      "sha256": "92f791ba3f1a8e8d38b7710de804200b715e0151033c170d51f26da42d884206"
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "development_note": "the provider shapes were probed with the candidate during development (generated files under obj/, not these fixtures); the fixtures, their outcomes and every wire control below were written down before any rustc or RustGM run of these files",
+  "cases": [
+    {
+      "file": "spec/static-str-never/check.rs",
+      "provider": "spec/static-str-never/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "da86d9677540c34ebae83f7a84c67a4ab0797eaeee3a487ee2ff250754ba172a"
+    },
+    {
+      "file": "spec/static-str-never/untaken.rs",
+      "provider": "spec/static-str-never/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "1aedc6e7675d71bcd46648d82c652fd59cc23a11deee56ffe608745e3b3ab87b"
+    },
+    {
+      "file": "spec/static-str-never/arm.rs",
+      "provider": "spec/static-str-never/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "4e2b37bf2eb151f5e513bdfc2dffe237fc0ed82b52ca7c6ff39464e4e124138d"
+    },
+    {
+      "file": "spec/static-str-never/name.rs",
+      "provider": "spec/static-str-never/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "b98cda1835df45d16310767bcd29bab69bee1ea1775d8c7da91d841ca21e61b5"
+    },
+    {
+      "file": "spec/static-str-never/literal.rs",
+      "provider": "spec/static-str-never/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "ae744e67505a85095262056099910ea9cba6af8ba8b1d27358bf5b590339a687"
+    },
+    {
+      "file": "spec/static-str-never/spin.rs",
+      "provider": "spec/static-str-never/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "891970e062d4427a45753ca0a7dfe1b50fefb9f2045e404fce5cc30f30c30915"
+    },
+    {
+      "file": "spec/static-str-never/expect.rs",
+      "provider": "spec/static-str-never/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "10cb46a303a11ae86aa11ca60607200cf298cfc1ba6311ac41ad23b6204ebc3c"
+    },
+    {
+      "file": "spec/static-str-never/pick.rs",
+      "provider": "spec/static-str-never/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "80fee8d72305a42ab3d501c66c044e096f66e04d9ea2ebecc95ec463ed868422"
+    },
+    {
+      "file": "spec/static-str-never/name-type.rs",
+      "provider": "spec/static-str-never/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0308",
+      "candidate_diagnostic": "incompatible types",
+      "sha256": "5ac8660ce97974e7e45045171fe9c328a31e18ec754895be129f4ce3eecbed2c"
+    },
+    {
+      "file": "spec/static-str-never/panic-arity.rs",
+      "provider": "spec/static-str-never/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0061",
+      "candidate_diagnostic": "call argument count mismatch",
+      "candidate_note": "rejected, as declared; the diagnostic text was not predicted and was recorded from candidate round 1",
+      "sha256": "d22b186b4b09f65efde66c9d93a7c6f35046143f9b9c3c9c434b1db51289f666"
+    },
+    {
+      "file": "spec/static-str-never/str-method.rs",
+      "provider": "spec/static-str-never/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0599",
+      "candidate_diagnostic": "receiver has no inherent nominal method",
+      "candidate_note": "rejected, as declared; the diagnostic text was not predicted and was recorded from candidate round 1",
+      "sha256": "0155081730083511c033f1469b70521d089115bf1777a2502fb2c70c66565825"
+    }
+  ],
+  "generated_controls": [
+    {
+      "control": "spec/source-nominals/provider.rs plus `pub fn name() -> &'static str { \"base\" }`, exported under module-branches-v12 and module-nominals-v10",
+      "expected": "rejected by name with `source scalar type is outside the supported profile`",
+      "basis": "observed under module-branches-v12 in a development probe before this file was frozen; the module-nominals-v10 outcome is predicted",
+      "observed": "rejected by name with `source scalar type is outside the supported profile` under both profiles"
+    },
+    {
+      "control": "spec/source-nominals/provider.rs plus `pub fn spin() -> ! { loop {} }`, exported under module-branches-v12 and module-nominals-v10",
+      "expected": "rejected by name with `source type form requires an explicitly supported transport row`",
+      "basis": "observed under module-branches-v12 in a development probe before this file was frozen; the module-nominals-v10 outcome is predicted",
+      "observed": "rejected by name with `source type form requires an explicitly supported transport row` under both profiles"
+    },
+    {
+      "control": "the full provider exported under module-branches-v12 and module-nominals-v10",
+      "expected": "rejected by name with `named, associated or generic alias transport requires its wider profile`, as the shared inherent-methods lines already require version 13",
+      "observed": "as declared under both profiles"
+    },
+    {
+      "control": "6, 24 and 96 generated functions `tNNN(ok: bool) -> &'static str { if ok { \"tNNN\" } else { panicking::panic(\"fNNN\") } }` after provider lines 1-126 and the `panicking` module, and one client reading the first byte of `t005(true)`",
+      "expected": "packet bytes grow exactly linearly; the client LowIR stays bounded",
+      "observed": "34,550, 55,340 and 138,500 bytes (1,155 bytes per function, exactly linear); the client LowIR is 2,223 bytes at every width"
+    }
+  ],
+  "wire_controls": [
+    {
+      "mutation": "none: a generated minimal provider (provider lines 1-126 plus `name` and `pick`) and the `pick` client",
+      "expected": "accepted",
+      "observed": "as declared"
+    },
+    {
+      "mutation": "the second text value of `pick` (`Text`, value node 7, operand Flag 1) relabelled to ordinal 0",
+      "expected": "source text ordinal leaves its value order",
+      "observed": "as declared"
+    },
+    {
+      "mutation": "the first byte of the literal `second` replaced by 0xFF",
+      "expected": "source text literal is not UTF-8",
+      "observed": "as declared"
+    },
+    {
+      "mutation": "the `str` type row (tag 10) relabelled to `!` (tag 11)",
+      "expected": "source text value is not a static str reference",
+      "observed": "as declared"
+    },
+    {
+      "mutation": "every plain reborrow input row given a two-phase flag",
+      "expected": "source adjusted coercion requires a wider source profile",
+      "observed": "as declared"
+    },
+    {
+      "mutation": "every plain reborrow input row given zero dereferences",
+      "expected": "source adjusted/unsizing coercion requires a complete wider input profile",
+      "observed": "as declared"
+    },
+    {
+      "mutation": "the packet relabelled version 12",
+      "expected": "fails to decode with `unknown source declaration kind`, as the shared inherent-methods lines need version 13",
+      "observed": "as declared"
+    },
+    {
+      "mutation": "every strict prefix",
+      "expected": "fails to decode",
+      "observed": "as declared"
+    },
+    {
+      "mutation": "the literal `second` rewritten to `sxcond` (same length, valid UTF-8)",
+      "expected": "accepted: a different but sound program; the client still reads `s`",
+      "observed": "as declared"
+    }
+  ],
+  "block_local_snapshots": "version 13 accepts SSA snapshot uses in a branching body when each dependency is evaluated earlier in the user's own block; `expect` needs this rule. The private invariant `branching_snapshots_are_block_local_only_in_version_thirteen` covers the rule and its rejections",
+  "native": "the eight accepted clients exit 42 natively through the CPPGM backend, as rustc's do"
+}

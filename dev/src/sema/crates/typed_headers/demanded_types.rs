@@ -541,7 +541,7 @@ impl<M: Storage> Worklist<M> {
                     store.intern_arguments(&mapped).map_err(error)?,
                 )
             }
-            s::Type::Scalar(scalar) => return Ok(Demand::Ready(super::super::scalar(scalar))),
+            s::Type::Scalar(_) | s::Type::Str | s::Type::Never => return leaf(row),
             s::Type::Parameter(slot) => {
                 return match port.slot(store, slot, budget)? {
                     Argument::Type(ty) => Ok(Demand::Ready(ty)),
@@ -667,7 +667,7 @@ fn next(
                 });
             std::iter::once(row.subject).chain(args).nth(cursor)
         }
-        s::Type::Scalar(_) | s::Type::Parameter(_) => None,
+        s::Type::Scalar(_) | s::Type::Str | s::Type::Never | s::Type::Parameter(_) => None,
         s::Type::Nominal { arguments, .. } => arguments
             .slice(&rows.arguments)
             .map_err(error)?
@@ -763,4 +763,13 @@ pub(super) fn prepare_functions(
         }
     }
     cursor.into_complete(budget)
+}
+/// Closed leaf rows need neither the port nor a store entry.
+fn leaf(row: s::Type) -> Result<Demand<TypeId>, Error> {
+    Ok(Demand::Ready(match row {
+        s::Type::Scalar(scalar) => super::super::scalar(scalar),
+        s::Type::Str => TypeId::primitive(crate::types::Primitive::Str),
+        s::Type::Never => TypeId::NEVER,
+        _ => return Err(error("source type row is not a closed leaf")),
+    }))
 }

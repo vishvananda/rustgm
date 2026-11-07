@@ -78,7 +78,7 @@ impl Builder<'_, '_> {
                         "source application signature recipes require a complete wider profile",
                     );
                 }
-                s::Type::Scalar(_) | s::Type::Parameter(_) => {}
+                s::Type::Scalar(_) | s::Type::Str | s::Type::Never | s::Type::Parameter(_) => {}
             }
         } else {
             let offset = node - self.result.type_count;
@@ -117,7 +117,7 @@ impl Builder<'_, '_> {
         Ok(match rows.types[node] {
             s::Type::Projection(reference) => self.projection_summary(reference, work)?,
             s::Type::OpaqueFuture(reference) => self.opaque_summary(reference, work)?,
-            s::Type::Scalar(_) => Summary::default(),
+            s::Type::Scalar(_) | s::Type::Str | s::Type::Never => Summary::default(),
             s::Type::Nominal {
                 declaration,
                 arguments,

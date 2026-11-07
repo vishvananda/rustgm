@@ -111,7 +111,7 @@ fn build(
     allowance: &Allowance,
 ) -> Result<Original, Error> {
     let report = context.report;
-    let (body, contract, environment, pending) = {
+    let (body, contract, environment, pending, texts) = {
         let view = crate::sema::crates::source_original(facts, definition, &mut work.steps)
             .map_err(|e| report.body_optional_error(None, e))?
             .ok_or_else(|| {
@@ -130,6 +130,8 @@ fn build(
         let pending = selected
             .prepare(&view, facts, &body, work)
             .map_err(|e| report.body_error(source, e))?;
+        let texts =
+            super::encoded_texts::copy(&view, work).map_err(|e| report.body_error(source, e))?;
         (
             body,
             contract,
@@ -138,6 +140,7 @@ fn build(
                     .map_err(|e| report.body_error(source, e))?,
             ),
             pending,
+            texts,
         )
     };
     super::versioned_calls::prove(
@@ -150,17 +153,19 @@ fn build(
         allowance,
     )
     .map_err(|e| report.body_error(body.source, e))?;
-    finish(report, facts, scratch, body, contract, environment)
+    finish(report, facts, scratch, (body, texts), contract, environment)
 }
 pub(super) fn finish(
     report: &crate::resolve::expansion::Report,
     facts: &mut Declarations,
     scratch: &mut promote::Scratch,
-    mut body: crate::body::ir::Body,
+    (mut body, texts): (crate::body::ir::Body, super::encoded_texts::Pending),
     contract: crate::body::regions::Contract,
     environment: Arc<crate::types::parameters::environment::Environment>,
 ) -> Result<Original, Error> {
     let source = body.source;
+    super::encoded_texts::intern(facts, &mut body, texts)
+        .map_err(|error| report.body_error(source, error))?;
     super::untupled_calls::check(facts, &body, &contract, &environment)
         .map_err(|error| report.body_error(source, error))?;
     super::variant_facts::check(facts, &body).map_err(|error| report.body_error(source, error))?;
