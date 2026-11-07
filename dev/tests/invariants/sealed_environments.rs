@@ -35,7 +35,7 @@ fn records(types: &mut Store, body: &Body) -> TestResult<super::super::Prepared>
     Ok(super::super::Prepared::from_proved(
         types,
         body,
-        Default::default(),
+        std::collections::HashMap::default(),
         None,
         64 * 1024 * 1024,
         &mut work,
@@ -83,7 +83,7 @@ fn binding_rejects_prepublication_header_source_and_operand_changes() -> TestRes
                     .first()
                     .ok_or("actual function")?
                     .node
-                    .into()
+                    .into();
             }
             3 => {
                 let changed = code.source.root_body_site();
