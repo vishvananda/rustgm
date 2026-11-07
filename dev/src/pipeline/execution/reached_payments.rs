@@ -20,6 +20,9 @@ impl Engine {
         instance: Instance,
         state: Option<&mut const_eval::State>,
     ) -> Result<bool, Error> {
+        if matches!(facts.types.kind(instance.ty()), Some(Kind::Closure { .. })) {
+            return self.closure_body(report, facts, instance);
+        }
         let error = |e| Error::at(FileId(0), 0, e);
         crate::sema::compiler_items::check_const_drop_glue(facts, instance).map_err(error)?;
         if facts

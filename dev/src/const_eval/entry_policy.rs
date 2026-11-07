@@ -5,6 +5,14 @@ impl Machine<'_, '_> {
     pub(super) fn check_source_function_root(&self, index: usize) -> Result<(), Failure> {
         self.evaluator.check_source_call_policy()?;
         let facts = self.evaluator.facts();
+        if self.bodies.code(index).is_some_and(|code| {
+            matches!(
+                code.owner,
+                Owner::Closure { .. } | Owner::ClosureAdapter { .. }
+            )
+        }) {
+            return Err("closure root requires its actual reached checked caller".into());
+        }
         if let Some(code) = self.bodies.code(index)
             && let Owner::Function { definition, .. } = code.owner
         {

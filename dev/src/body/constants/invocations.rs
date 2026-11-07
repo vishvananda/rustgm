@@ -39,18 +39,7 @@ pub(super) fn check_calls(
     expected: (usize, usize),
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    let definition = if expected.0 == 0 {
-        None
-    } else {
-        Some(defining_owner(facts, body, work)?)
-    };
-    let receivers = if let Some(definition) = definition {
-        work.charge(3)?;
-        crate::sema::compiler_items::callable_role(facts, CallTrait::FnOnce)?;
-        Some(receivers::Bindings::new(facts, body, definition, work)?)
-    } else {
-        None
-    };
+    let mut receivers = None;
     let mut member_context = None;
     let mut seen = HashSet::default();
     let mut members = 0;
@@ -108,6 +97,15 @@ pub(super) fn check_calls(
         work.charge(1)?;
         if !seen.insert(id) {
             return Err("const invocation value is evaluated at multiple source sites");
+        }
+        if super::qualified_invocations::check(report, facts, body, statement, work)? {
+            continue;
+        }
+        if receivers.is_none() {
+            let definition = defining_owner(facts, body, work)?;
+            work.charge(3)?;
+            crate::sema::compiler_items::callable_role(facts, CallTrait::FnOnce)?;
+            receivers = Some(receivers::Bindings::new(facts, body, definition, work)?);
         }
         check_invocation(
             facts,

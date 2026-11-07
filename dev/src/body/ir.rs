@@ -375,7 +375,7 @@ pub struct Block {
     pub terminator: Terminator,
     pub source: BodySite,
 }
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Owner {
     /// The single authored deferred body; it is never its public constructor.
     AsyncBody {

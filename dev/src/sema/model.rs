@@ -159,7 +159,7 @@ pub struct Function {
     pub parameters: List,
     pub body: Option<NodeKey>,
 }
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum InitializerKind {
     Const,
     Static { mutable: bool },

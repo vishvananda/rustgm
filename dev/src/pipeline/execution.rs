@@ -1,6 +1,7 @@
 //! Checked constant execution shares demanded CFGs with ordinary compilation.
 mod always_defs;
 mod anonymous;
+mod closures;
 mod code_inputs;
 mod component_index;
 mod components;
@@ -522,6 +523,9 @@ impl Engine {
         facts: &mut Declarations,
         instance: crate::types::instance::Instance,
     ) -> Result<bool, Error> {
+        if matches!(facts.types.kind(instance.ty()), Some(Kind::Closure { .. })) {
+            return self.closure_body(report, facts, instance);
+        }
         crate::sema::compiler_items::check_const_instance(facts, instance)
             .map_err(|e| Error::at(FileId(0), 0, e))?;
         crate::sema::compiler_items::check_const_drop_glue(facts, instance)
@@ -588,8 +592,10 @@ impl Engine {
             template
         };
         let retained = body::templates::owns(facts, definition);
-        let specialize =
-            default.is_some() || retained || Self::needs_method_dispatch(facts, &template.body);
+        let specialize = default.is_some()
+            || retained
+            || Self::needs_method_dispatch(facts, &template.body)
+                .map_err(|e| report.body_error(source, e))?;
         let purpose = if specialize {
             ProofPurpose::Original
         } else {
@@ -635,7 +641,7 @@ impl Engine {
             // A lent original still carries abstract source member operands.
             // Resolve them through the existing materialized-instance producer
             // before a Code-purpose proof can authorize actual const entry.
-            if Self::needs_method_dispatch(facts, body) {
+            if Self::needs_method_dispatch(facts, body).map_err(|e| report.body_error(source, e))? {
                 return Ok(false);
             }
             body::constants::eligibility_charged(report, facts, body)?;
@@ -664,15 +670,35 @@ impl Engine {
         }
         Ok(false)
     }
-    fn needs_method_dispatch(facts: &mut Declarations, body: &Body) -> bool {
+    fn needs_method_dispatch(facts: &mut Declarations, body: &Body) -> Result<bool, &'static str> {
         if facts.source_bindings.is_none() {
-            return false;
+            return Ok(false);
         }
         let mut visits = 0;
-        let needed = body.values.iter().any(|value| {
-            visits += 1;
-            body::dispatch::trait_function(facts, value)
-        });
+        let needed = (|| {
+            for (index, value) in body.values.iter().enumerate() {
+                visits += 1;
+                if body::dispatch::trait_function(facts, value) {
+                    return Ok(true);
+                }
+                if matches!(value.kind, body::ir::Rvalue::Invoke { .. }) {
+                    let id = body::ir::ValueId(
+                        u32::try_from(index)
+                            .map_err(|_| "constant invocation value identity overflow")?,
+                    );
+                    if let Some((ty, _)) = const_eval::code::closure_subject(
+                        &facts.types,
+                        &body.values,
+                        &body.arguments,
+                        id,
+                    )? && matches!(facts.types.kind(ty), Some(Kind::Closure { environment, .. }) if environment != crate::types::TypeId::UNIT)
+                    {
+                        return Ok(true);
+                    }
+                }
+            }
+            Ok(false)
+        })();
         facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(visits);
         needed
     }

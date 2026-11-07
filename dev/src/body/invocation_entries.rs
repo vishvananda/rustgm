@@ -36,6 +36,60 @@ pub struct Entry {
     adapter: Option<crate::types::closure::Adapter>,
 }
 impl Entry {
+    /// A solved storage fold transports data, never a new call or adapter proof.
+    pub(crate) fn stored(
+        self,
+        types: &crate::types::Store,
+        instance: Instance,
+        execution: TypeId,
+        receiver: Option<TypeId>,
+    ) -> Result<Self, &'static str> {
+        let identity = |ty| match types.kind(ty) {
+            Some(Type::Closure { identity, .. }) => Some(identity),
+            _ => None,
+        };
+        if identity(self.instance.ty()).is_none()
+            || identity(self.instance.ty()) != identity(instance.ty())
+        {
+            return Err("stored closure entry changed its actual source identity");
+        }
+        let adapter = match (self.adapter, receiver) {
+            (None, None) => None,
+            (Some(_), Some(receiver)) => Some(crate::types::closure::Adapter::for_receiver(
+                types,
+                instance,
+                receiver,
+                self.requested,
+            )?),
+            _ => return Err("stored closure entry changed its adapter selection"),
+        };
+        let Some(Type::Function {
+            parameters,
+            bound_regions: 0,
+            unsafe_: false,
+            convention,
+            ..
+        }) = types.kind(execution)
+        else {
+            return Err("stored closure entry lost its opened execution signature");
+        };
+        let receiver = *types
+            .list(parameters)
+            .and_then(|p| p.first())
+            .ok_or("stored closure entry has no receiver")?;
+        if convention != crate::types::callable::Convention::RUST
+            || borrowed::subject(types, receiver, self.requested)?
+                != adapter.map_or(instance.ty(), crate::types::closure::Adapter::receiver)
+        {
+            return Err("stored closure entry changed its receiver or ABI");
+        }
+        Ok(Self {
+            instance,
+            execution,
+            adapter,
+            ..self
+        })
+    }
     /// Mechanical runtime identity; the selected caller debts and sealed bodies
     /// remain the authority for execution, not this descriptor.
     pub(crate) const fn target(self) -> crate::sema::vtable_plans::Captured {

@@ -540,7 +540,18 @@ impl Machine<'_, '_> {
                 return Err("future frame execution is not a constant operation".into());
             }
             ProjectionKind::CaptureBoundary { .. } => {
-                return Err("captured closure execution is not implemented in constants".into());
+                let code = self
+                    .bodies
+                    .code(frame.body)
+                    .ok_or("capture body is absent")?;
+                let instance = code
+                    .instance
+                    .ok_or("capture requires its actual closure instance")?;
+                code.validate_closure_family(self.evaluator.facts(), instance)?;
+                if address.ty != projection.ty {
+                    return Err("capture boundary changed its actual referent type".into());
+                }
+                return Ok(Some(address));
             }
             ProjectionKind::Dereference { .. } | ProjectionKind::RawDereference { .. } => {
                 let Some(value) = self.read(address)? else {

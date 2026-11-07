@@ -106,7 +106,9 @@ impl Engine {
         facts: &mut Declarations,
         body: &Body,
     ) -> Result<Option<Body>, Error> {
-        if !Self::needs_method_dispatch(facts, body) {
+        if !Self::needs_method_dispatch(facts, body)
+            .map_err(|e| report.body_error(body.source, e))?
+        {
             return Ok(None);
         }
         let retained = facts

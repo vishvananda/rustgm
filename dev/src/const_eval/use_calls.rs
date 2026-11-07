@@ -180,6 +180,16 @@ impl State {
 }
 impl Machine<'_, '_> {
     pub(super) fn validate_const_resume(&mut self, frame: &Frame) -> Result<(), &'static str> {
+        let mut work = 0;
+        let checked = self
+            .bodies
+            .code(frame.body)
+            .ok_or("constant frame lost its actual Code")?
+            .validate_closure_resume(&self.evaluator.facts().types, &mut work);
+        self.work
+            .charge(work, self.limits.steps)
+            .map_err(crate::sema::values::Failure::message)?;
+        checked?;
         let Some(expected) = self
             .paid_call
             .as_ref()

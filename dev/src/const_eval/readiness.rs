@@ -64,6 +64,8 @@ impl Machine<'_, '_> {
                 PreparedOperand::CallerSites(_)
                     | PreparedOperand::Cleanup(_)
                     | PreparedOperand::Reborrows(_)
+                    | PreparedOperand::ClosureCall { .. }
+                    | PreparedOperand::ClosureContext(_)
             ) {
                 frame.advance_operand()?;
                 continue;

@@ -10,11 +10,14 @@ use crate::{
     types::instance::Instance,
 };
 use std::ops::Index;
+mod invoked_closures;
 #[path = "proven_storage.rs"]
 mod proven_storage;
 #[path = "code_publication.rs"]
 mod publication;
 mod reborrow_records;
+pub(crate) use invoked_closures::subject as closure_subject;
+pub(crate) use invoked_closures::{Plan as ClosurePlan, Preparation as ClosurePreparation};
 pub(crate) use publication::{Prepared, Registration};
 
 #[derive(Clone, Copy)]
@@ -33,6 +36,11 @@ pub(crate) enum PreparedOperand {
     Cleanup(std::rc::Rc<super::ctglue::Bundle>),
     CallerSites(std::sync::Arc<[crate::body::ir::CallerSite]>),
     Reborrows(std::sync::Arc<crate::body::reborrow_inputs::Inputs>),
+    ClosureCall {
+        destination: ValueId,
+        call: std::rc::Rc<invoked_closures::Call>,
+    },
+    ClosureContext(std::rc::Rc<invoked_closures::Context>),
 }
 
 pub(crate) struct Code {
@@ -53,6 +61,8 @@ pub(crate) struct Code {
     pub operands: Vec<PreparedOperand>,
     callables: HashMap<Instance, Instance>,
 }
+const _: [(); 32] = [(); size_of::<PreparedOperand>()];
+const _: [(); 304] = [(); size_of::<Code>()];
 
 impl Code {
     pub(crate) fn cleanup_growth_bound(
@@ -82,6 +92,7 @@ impl Code {
         if let Some(bundle) = code.cleanup() {
             bundle.bind(code)?;
         }
+        Self::bind_closure_context(code)?;
         Ok(())
     }
     pub(super) fn cleanup_bytes(&self) -> usize {

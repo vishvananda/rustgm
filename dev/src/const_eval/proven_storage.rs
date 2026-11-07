@@ -2,6 +2,27 @@
 use super::{Code, PreparedOperand, Rvalue};
 use crate::types::{Kind, Store, TypeId, instance::Instance, substitute::Bound};
 
+pub(super) fn closure_entry(
+    types: &mut Store,
+    fold: &mut Bound,
+    entry: crate::body::invocation_entries::Entry,
+    work: &mut usize,
+) -> Result<crate::body::invocation_entries::Entry, &'static str> {
+    let mut restore = Restore { types, fold, work };
+    let instance = restore.storage(entry.instance().ty())?;
+    let receiver = entry
+        .adapter()
+        .map(|adapter| restore.storage(adapter.receiver()))
+        .transpose()?;
+    let execution = restore.signature(entry.execution())?;
+    entry.stored(
+        restore.types,
+        Instance::closure(restore.types, instance)?,
+        execution,
+        receiver,
+    )
+}
+
 struct Restore<'a> {
     types: &'a mut Store,
     fold: &'a mut Bound,

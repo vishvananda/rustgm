@@ -103,14 +103,36 @@ impl Engine {
             };
             crate::borrow::solved_callables(&mut facts.types, body, regions, extra, &mut work)
                 .and_then(|solved| {
-                    let mut code = const_eval::code::Prepared::from_proved(
-                        &mut facts.types,
+                    let plan = const_eval::code::ClosurePlan::collect(
+                        &facts.types,
                         solved.body,
-                        solved.targets,
-                        solved.storage,
-                        available,
                         &mut work,
                     )?;
+                    let mut code = if plan.needed() && facts.source_bindings.is_some() {
+                        let (types, payments) = facts.caller_input_store()?;
+                        const_eval::code::Prepared::from_proved(
+                            types,
+                            solved.body,
+                            solved.targets,
+                            solved.storage,
+                            available,
+                            &mut work,
+                            const_eval::code::ClosurePreparation {
+                                plan,
+                                pay: Some(&|w, b| payments.charge(w, b)),
+                            },
+                        )?
+                    } else {
+                        const_eval::code::Prepared::from_proved(
+                            &mut facts.types,
+                            solved.body,
+                            solved.targets,
+                            solved.storage,
+                            available,
+                            &mut work,
+                            const_eval::code::ClosurePreparation { plan, pay: None },
+                        )?
+                    };
                     if let Some(cleanup) = cleanup {
                         code.attach_cleanup(cleanup, available, &mut work)?;
                     }

@@ -24,7 +24,11 @@ pub(super) fn integer(value: Constant) -> Result<u128, Failure> {
     }
 }
 impl Machine<'_, '_> {
-    fn arguments(&mut self, frame: &Frame, list: ValueList) -> Result<Vec<Constant>, Failure> {
+    pub(super) fn arguments(
+        &mut self,
+        frame: &Frame,
+        list: ValueList,
+    ) -> Result<Vec<Constant>, Failure> {
         let body = self.bodies[frame.body].clone();
         let arguments = body
             .arguments
@@ -315,29 +319,7 @@ impl Machine<'_, '_> {
                     }
                 }
             }
-            Rvalue::Invoke {
-                kind,
-                signature,
-                arguments,
-            } => {
-                let (target, arguments) =
-                    self.invoked_item(&body, frame, id, kind, signature, arguments)?;
-                let arguments = self.arguments(frame, arguments)?;
-                match self.function_call(
-                    &body,
-                    frame,
-                    target,
-                    super::function_calls::Form::Invoke,
-                )? {
-                    super::function_calls::Outcome::Enter(index) => {
-                        return Ok(Some((index, arguments, id)));
-                    }
-                    super::function_calls::Outcome::Pending => return Ok(None),
-                    super::function_calls::Outcome::Constant(_) => {
-                        return Err("const Invoke cannot substitute an intrinsic result".into());
-                    }
-                }
-            }
+            Rvalue::Invoke { .. } => return self.invoke(&body, frame, id),
             Rvalue::Unsize { value, conversion } => {
                 let value = Self::value(frame, value)?;
                 match conversion {

@@ -1,0 +1,145 @@
+{
+  "schema": 1,
+  "state": "qualified finite actual source capture execution; full const-closure C/D remains required",
+  "base_commit": "8f79adbf5d3e3592ab12340b01a353ed4b7aee89",
+  "qualification": {
+    "public": {
+      "receipt": "obj/qualification/fast/1794018000445688468/receipt.json",
+      "sha256": "96f2a482aa27f448a89378f9802bd09ff2ac3db1ecec46b4ce5b0298a50062b3",
+      "seconds": 30.49,
+      "tests": {
+        "suite_closures": [
+          "source_closures::source_bodies_retain_constraints_and_control_ownership"
+        ],
+        "suite_frontend": [
+          "closureconst::actual_wrapper_and_child_preserve_creation_effect_and_nested_contexts",
+          "closureconst::const_qualification_keeps_existing_hot_record_widths",
+          "closureconst::real_const_closure_calls_execute_shared_mutable_and_owned_captures",
+          "closureconst::real_source_calls_keep_capture_loans_moves_and_lifetime_opponents",
+          "closureconst::unused_const_body_checks_calls_without_changing_ordinary_child_effects",
+          "overflow_words::actual_runtime_checks_and_const_overflow_remain_independent",
+          "overflow_words::inherited_word_does_not_supply_target_or_feature_authority",
+          "overflow_words::original_const_closure_word_consumes_its_actual_wrapper_and_child",
+          "ctfe_selector::source_ctfe_selector_uses_owned_tuple_and_actual_callback_without_placeholder"
+        ]
+      }
+    },
+    "native": {
+      "receipt": "obj/qualification/fast/1794018106093946111/receipt.json",
+      "sha256": "a110b76380aa01fef762a138c6375a92b942251aa25aa94884575c05c9bb29bd",
+      "seconds": 23.61,
+      "tests": {
+        "suite_frontend": [
+          "closureconst::captured_ctfe_values_and_ordinary_const_closure_calls_reach_native"
+        ]
+      },
+      "contracts": 5,
+      "arguments": [
+        "23"
+      ],
+      "stdout": "closure-source 23 47 23 23 47\n",
+      "stdout_sha256": "d0233025e68f37f04c81dfb5aba860faf05c27701124b23b68302642f48178a6"
+    },
+    "source_keys": 3698,
+    "production_keys": 2154,
+    "production_digest": "bac6b5c567d4e531570ab9b87fa363632bd2ae94271bfb064beb59e997dc5de1",
+    "production_matches_current": true,
+    "source_binding_exception": {
+      "path": "dev/tests/invariants/sealed_environments.rs",
+      "reason": "private test name clarified and checked integer conversion after public/native runs; no cfg(test) compile/runtime claim",
+      "current_sha256": "570909fa26fe08b0267a80bbff16ccc6daa2000db80b6cc5ff03cfc5a73dc104"
+    }
+  },
+  "changed_source_files": [
+    "dev/src/body/constants.rs",
+    "dev/src/body/constants/invocations.rs",
+    "dev/src/body/constants/qualified_invocations.rs",
+    "dev/src/body/invocation_entries.rs",
+    "dev/src/body/ir.rs",
+    "dev/src/const_eval/code.rs",
+    "dev/src/const_eval/code/invoked_closures.rs",
+    "dev/src/const_eval/code_publication.rs",
+    "dev/src/const_eval/entry_policy.rs",
+    "dev/src/const_eval/invoked_values.rs",
+    "dev/src/const_eval/memory.rs",
+    "dev/src/const_eval/mod.rs",
+    "dev/src/const_eval/proven_storage.rs",
+    "dev/src/const_eval/readiness.rs",
+    "dev/src/const_eval/use_calls.rs",
+    "dev/src/const_eval/values.rs",
+    "dev/src/pipeline/execution.rs",
+    "dev/src/pipeline/execution/closures.rs",
+    "dev/src/pipeline/execution/code_inputs.rs",
+    "dev/src/pipeline/execution/initializers.rs",
+    "dev/src/pipeline/execution/reached_payments.rs",
+    "dev/src/sema/model.rs",
+    "dev/tests/closureconst.rs",
+    "dev/tests/invariants/sealed_environments.rs"
+  ],
+  "layout": {
+    "Context": 64,
+    "Call": 64,
+    "Rc_header_charge": 16,
+    "Code": 304,
+    "PreparedOperand": 32,
+    "Frame": 248,
+    "Body": 456,
+    "Owner": 20,
+    "Value": 24,
+    "SemanticClosureBody": 76,
+    "ClosureDeclaration": 1
+  },
+  "cost": {
+    "construction": "O(statements+calls), ordered contiguous rows in existing operand vector; same memoized storage Bound folds selected Entry",
+    "lookup": "O(log calls), actual binary-search comparisons charged even on error",
+    "replay": "O(1) current frame footer/header/store/Weak-Code checks; no stack scan",
+    "bytes": "actual sizeof Context/Call plus Rc headers, vector growth and first arena prepaid; no historical allocation audit or throughput claim"
+  },
+  "retained_failures": [
+    {
+      "receipt": "obj/qualification/fast/1794014619956635011/receipt.json",
+      "sha256": "fb3d3f90e96b276eb8bf1d99b76e41ae1690b2bc21794e5c7fd769383fbed128",
+      "scope": "architecture dispatch length/stem, before compiler"
+    },
+    {
+      "receipt": "obj/qualification/fast/1794014869111358183/receipt.json",
+      "sha256": "23df6801482c75b5319bd87a3ada76e0bf88adc467595b53e93c2f1d8752a16e",
+      "scope": "private visibility compile errors, before execution"
+    },
+    {
+      "receipt": "obj/qualification/fast/1794015282517322005/receipt.json",
+      "sha256": "483c8a759bba95f10417c7009c6044e2d9a53311779361b22a89ad5f6c6c6eee",
+      "scope": "one strict function-length lint, before execution"
+    },
+    {
+      "receipt": "obj/qualification/fast/1794015495826385506/receipt.json",
+      "sha256": "422cc2df3e08489023544a0c02db1b2dbfd0aced2b93049283e66ca2edce0669",
+      "scope": "real captured Invoke lacked selected environment entry"
+    },
+    {
+      "receipt": "obj/qualification/fast/1794015886679287592/receipt.json",
+      "sha256": "d03d3059a0f26e8d7343df1837e3dcc071a3b42595bd14df789de68d1305ca4b",
+      "scope": "missed fallible-classifier initializer caller, before execution"
+    },
+    {
+      "receipt": "obj/qualification/fast/1794016602377497681/receipt.json",
+      "sha256": "bd26d38bdfe773f9bbffdd0ef0baa2520d891e05cc0c92df46d6502c89537551",
+      "scope": "predicted Context72 disproved: actual64"
+    },
+    {
+      "receipt": "obj/qualification/fast/1794017555287126295/receipt.json",
+      "sha256": "df85d55bbe1698217fb81e5f43991472b2a897dfbf5dfbc2d460f1a62d19669b",
+      "scope": "moved-read diagnostic assertion omitted genuine uninitialized wording"
+    }
+  ],
+  "pending": [
+    "cfg(test) sealed_environments metadata and actual execution",
+    "full release/debug/independent/native inventory in CI",
+    "generic/conditional defining premises and checked component original reuse",
+    "actual receiver adapter proof through prove_adapter",
+    "bootstrap const closure Invoke, anonymous-owner and wider binder/result views",
+    "actual checked arithmetic panic graph, const Drop and recursive capture cleanup",
+    "closure owned metadata/transport preserving qualification or explicit unsupported boundary",
+    "original Iterator/standard-library/full assignment completion"
+  ]
+}

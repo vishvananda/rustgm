@@ -81,12 +81,31 @@ impl Prepared {
         storage: Option<Box<crate::types::substitute::Bound>>,
         budget: usize,
         work: &mut usize,
+        closure: super::ClosurePreparation<'_>,
     ) -> Result<Self, &'static str> {
         let mut prepared = Self::snapshot(body, targets, budget)?;
-        if let Some(mut fold) = storage {
-            prepared.code.restore_storage(types, &mut fold, work)?;
+        let mut storage = storage;
+        if let Some(fold) = storage.as_deref_mut() {
+            prepared.code.restore_storage(types, fold, work)?;
         }
-        // Substitution changes canonical IDs, never the snapshot's allocation shape.
+        let remaining = budget
+            .checked_sub(Self::storage(&prepared.code))
+            .ok_or("constant closure snapshot has no remaining storage budget")?;
+        closure.plan.install(
+            &mut prepared.code,
+            types,
+            body,
+            storage.as_deref_mut(),
+            super::invoked_closures::Cost {
+                budget: remaining,
+                work,
+                pay: closure.pay,
+            },
+        )?;
+        prepared.bytes = Self::storage(&prepared.code);
+        if prepared.bytes > budget {
+            return Err("constant closure snapshot exceeds its actual storage budget");
+        }
         Ok(prepared)
     }
     pub(crate) fn snapshot(
@@ -127,6 +146,7 @@ impl Prepared {
             code.caller_site_bytes(),
             code.cleanup_bytes(),
             code.reborrow_bytes(),
+            code.closure_record_bytes(),
             map(&code.promotions),
             map(&code.callables),
         ])
