@@ -42,6 +42,12 @@ complete package inventory pin and the explicit abort-target/unwind-host context
 The public-dependency request preserves target edges while unsupported host-edge
 modifiers still fail before any process is launched.
 
+`legacy-edition-outcomes.json` freezes 100 pinned rustc outcomes for Rust
+2015/2018 rules, declared before execution, with 82 RustGM expectations
+(accepted, rejected, typed fence or the 2021 outcome). `dev/tests/legacy_editions.rs`
+runs each through the CLI. Six mixed-edition macro cases stay rustc-only until
+metadata carries macro definitions. See the [legacy edition checkpoint](../../docs/parallel/legacy-editions.md).
+
 Follow the [owning brief](../README.md) and
 [library bootstrap plan](../../docs/library-bootstrap-roadmap.md).
 Declare independent outcomes before creating text references. Register every

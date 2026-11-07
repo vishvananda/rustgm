@@ -54,6 +54,8 @@ pub struct Graph {
     work: usize,
     limit: usize,
     failed: bool,
+    /// Before Rust 2021, every used place is covered by its whole root variable.
+    whole_variables: bool,
 }
 impl Default for Graph {
     fn default() -> Self {
@@ -64,6 +66,7 @@ impl Default for Graph {
             work: 0,
             limit: 1_000_000,
             failed: false,
+            whole_variables: false,
         }
     }
 }
@@ -161,6 +164,15 @@ impl Graph {
         self.edges.insert((parent, step), id);
         Ok(id)
     }
+    /// Select the pre-2021 rule: each used place is captured by its whole root
+    /// variable with the strongest mode required anywhere below it.
+    pub fn capture_whole_variables(&mut self) {
+        self.whole_variables = true;
+    }
+    #[must_use]
+    pub const fn captures_whole_variables(&self) -> bool {
+        self.whole_variables
+    }
     /// Record an actual use after choosing the required precision and capture mode.
     /// # Errors
     /// Rejects missing paths and exhausted work, including repeated cached uses.
@@ -203,7 +215,9 @@ impl Graph {
             self.charge()?;
             let path = self.paths[index];
             covering[index] = path.parent.and_then(|(p, _)| covering[p.0 as usize]);
-            if covering[index].is_none() && path.used {
+            // A root's mode is set exactly when it or a descendant was used.
+            let whole = self.whole_variables && path.parent.is_none() && path.mode.is_some();
+            if covering[index].is_none() && (path.used || whole) {
                 let mode = path.mode.ok_or("required capture lacks a mode")?;
                 let id = u32::try_from(index).map_err(|_| "closure capture identity overflow")?;
                 covering[index] = Some(

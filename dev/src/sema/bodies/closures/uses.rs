@@ -113,6 +113,10 @@ impl Checker<'_> {
             moving,
             work: 0,
         };
+        // The closure introducer's own edition selects its capture precision.
+        if self.introducer_edition(source)?.legacy().is_some() {
+            collector.places.graph.capture_whole_variables();
+        }
         collector.push(root, Use::Value);
         while let Some(work) = collector.pending.pop() {
             collector.work += 1;
@@ -247,6 +251,18 @@ impl Collector<'_> {
         if matches!(work.usage, Use::Mention) {
             if self.mentioned.insert(place.path) {
                 self.mentions.push(place.path);
+            }
+            if self.places.graph.captures_whole_variables() {
+                // Before 2021 a wildcard still captures its mentioned variable.
+                let mode = if self.moving {
+                    Mode::Value
+                } else {
+                    Mode::Shared
+                };
+                self.places
+                    .graph
+                    .require(place.capture_path(self.moving), mode)
+                    .map_err(|e| checker.error(work.node, e))?;
             }
             return Ok(true);
         }

@@ -27,6 +27,7 @@ impl Resolver<'_> {
         }
         let mut path = self.paths.pop().unwrap_or_default();
         path.truncate(0);
+        let root = node;
         let mut pending = vec![Step::Tree {
             node,
             absolute: false,
@@ -48,6 +49,11 @@ impl Resolver<'_> {
                 return Err(self.error(c, node, "expected import tree"));
             };
             let tree = self.package.unit(c.file).configured.ast.use_trees[index as usize];
+            if node == root
+                && let Some(span) = self.legacy_import_start(c, node, tree)?
+            {
+                self.package.legacy_root(c.file, span, &mut path)?;
+            }
             let start = path.names.len();
             let local_absolute = tree
                 .prefix
@@ -103,6 +109,38 @@ impl Resolver<'_> {
         }
         self.recycle_path(path);
         Ok(())
+    }
+
+    /// The token whose edition decides whether a `use` path starts at the crate
+    /// root: a plain first segment, or the empty prefix of a root group.
+    fn legacy_import_start(
+        &mut self,
+        c: Context,
+        node: NodeId,
+        tree: crate::syntax::item::UseTree,
+    ) -> Result<Option<crate::syntax::token_tree::Span>, Error> {
+        let ast = &self.package.unit(c.file).configured.ast;
+        let Some(prefix) = tree.prefix else {
+            let nested = tree.children.start != tree.children.end;
+            return Ok(nested.then(|| ast.node(node).span));
+        };
+        let first = match ast.node(prefix).kind {
+            Kind::Path {
+                absolute: false,
+                segments,
+            } if segments.start < segments.end => ast.edges[segments.start as usize],
+            Kind::Path { .. } => return Ok(None),
+            _ => prefix,
+        };
+        let Kind::Name(span, name) = ast.node(first).kind else {
+            return Ok(None);
+        };
+        let name = self.package.parsed_name(c.file, span, name)?;
+        Ok((!matches!(
+            self.package.names.get(name),
+            "crate" | "self" | "super" | "Self"
+        ))
+        .then_some(span))
     }
 
     fn import_alias(&mut self, c: Context, node: NodeId) -> Result<(NameId, ItemContext), Error> {

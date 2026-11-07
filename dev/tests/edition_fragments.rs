@@ -31,7 +31,7 @@ fn defining_edition_selects_top_level_expression_grammar() -> Result<(), String>
             assert_eq!(invoke(edition, rules, source)?.rule, 0);
         }
         let (constant, underscore) = match edition {
-            Edition::Rust2021 => (1, 2),
+            Edition::Rust2015 | Edition::Rust2018 | Edition::Rust2021 => (1, 2),
             Edition::Rust2024 => (0, 0),
         };
         assert_eq!(invoke(edition, rules, "const { 7 }")?.rule, constant);

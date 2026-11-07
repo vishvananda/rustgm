@@ -223,6 +223,8 @@ pub(super) fn native(
 ) -> Result<(), Box<dyn std::error::Error>> {
     use std::process::Command;
     let flag = match edition {
+        Edition::Rust2015 => "--edition=2015",
+        Edition::Rust2018 => "--edition=2018",
         Edition::Rust2021 => "--edition=2021",
         Edition::Rust2024 => "--edition=2024",
     };

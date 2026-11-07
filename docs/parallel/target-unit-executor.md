@@ -20,7 +20,7 @@ Setting rules:
   20 hex digits hashes the package identity and inventory, target, edition,
   features, profile, dependency identities and script output key. The unit's own
   paths and row indices do not enter it; a script key comes from the host graph.
-- **Mapped settings:** edition 2021/2024 becomes `--edition`, `lib`/`rlib`
+- **Mapped settings:** edition 2015/2018/2021/2024 becomes `--edition`, `lib`/`rlib`
   becomes `--crate-type=lib` with `--metadata-output`, and `bin` becomes
   `--crate-type=bin`. Features become `--cfg feature="..."`.
 - **Script output:** the unit's own script `rustc-cfg` rows become `--cfg`,

@@ -89,6 +89,8 @@ mod into_future;
 mod inventory_ordering;
 #[path = "../../keyed_parameters.rs"]
 mod keyed_parameters;
+#[path = "../../legacy_editions.rs"]
+mod legacy_editions;
 #[path = "../../lending_calls.rs"]
 mod lending_calls;
 #[path = "../../lexer.rs"]

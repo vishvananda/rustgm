@@ -40,6 +40,7 @@ impl Parser<'_, '_> {
     }
     pub(super) fn try_block(&mut self) -> Result<NodeId, LexError> {
         let token = self.required()?;
+        super::legacy_keyword(self.inputs.edition(token)?, token)?;
         let body = self.block(BlockFlavor::Plain)?;
         let gate = self.ast.next_expression_gate()?;
         let node = self.node(token.start, Kind::TryBlock { body, gate })?;
@@ -518,7 +519,9 @@ impl Parser<'_, '_> {
     }
 
     pub(super) fn async_expression(&mut self) -> Result<NodeId, LexError> {
-        let start = self.required()?.start;
+        let token = self.required()?;
+        super::legacy_keyword(self.inputs.edition(token)?, token)?;
+        let start = token.start;
         let moving = self.eat_word(Word::Move)?;
         if self.cursor.at(P::OpenBrace)? {
             let block = self.block(if moving {

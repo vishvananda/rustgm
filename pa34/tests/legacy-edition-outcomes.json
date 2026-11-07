@@ -1,0 +1,1009 @@
+{
+ "schema": 1,
+ "profile": "Rust 1.98.0; x86_64-unknown-linux-gnu; panic abort; --emit=metadata; outcomes declared before execution",
+ "plan_sha256": "93c4a3852f054ca226cc3ffbab5d89a9d9c87305cb490987a2c1927d504336b3",
+ "receipt_sha256": "3727962a6807f88491512b2551c0a3a3d433f11c1f1c721921268f28409996be",
+ "oracle_sha256": "3cae3a33f649f58e137007128990cc5f2976151bc43080688965c6eca5739dcd",
+ "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+ "rustc_version": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "cfg_if_archive_sha256": "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801",
+ "rustgm_kinds": {
+  "accepted": "RustGM implements the edition rule and accepts",
+  "rejected": "RustGM implements the edition rule and rejects",
+  "fenced": "RustGM fails with the typed \"is not implemented for edition\" diagnostic",
+  "same-as-2021": "the rule is edition-independent before 2024; RustGM must give its own Rust 2021 outcome and first diagnostic"
+ },
+ "commands": 108,
+ "mismatches": [],
+ "addenda": [
+  {
+   "plan": "legacy-editions-v2",
+   "plan_sha256": "6be7719a509cb5bc3f75db633700688a94fe56ebf5fef0fbcfdbf57032ea0666",
+   "receipt_sha256": "a67fefcf85c88adc09fd7bc531d98b44f1bfc9b4c94aa997b7886f3859a9ea53",
+   "oracle_sha256": "3cae3a33f649f58e137007128990cc5f2976151bc43080688965c6eca5739dcd",
+   "commands": 4,
+   "mismatches": [],
+   "note": "addendum to legacy-editions-v1: 2015 crate-root use of the injected core in a module and a body"
+  }
+ ],
+ "cases": [
+  {
+   "name": "root-import",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/root-import.rs",
+   "sha256": "18e36e2ed94d3c3335ae751f321b9ec42284d731116302ee89d821480104c86f",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "accepted"
+  },
+  {
+   "name": "root-import",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/root-import.rs",
+   "sha256": "18e36e2ed94d3c3335ae751f321b9ec42284d731116302ee89d821480104c86f",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "pattern-fragment",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/pattern-fragment.rs",
+   "sha256": "df3b11a9ccc41d9945fcbaf0a235ca06386e4ca1c90354bbb7e103af65d73e4c",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "accepted"
+  },
+  {
+   "name": "pattern-fragment",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/pattern-fragment.rs",
+   "sha256": "df3b11a9ccc41d9945fcbaf0a235ca06386e4ca1c90354bbb7e103af65d73e4c",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "accepted"
+  },
+  {
+   "name": "pattern-fragment",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/pattern-fragment.rs",
+   "sha256": "df3b11a9ccc41d9945fcbaf0a235ca06386e4ca1c90354bbb7e103af65d73e4c",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "prelude-convert",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/prelude-convert.rs",
+   "sha256": "7495d8bb1a3bc3fd2a80c5c7e3afbded2e717dc96b28de0f4600f50ac4265bf2",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "prelude-convert",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/prelude-convert.rs",
+   "sha256": "7495d8bb1a3bc3fd2a80c5c7e3afbded2e717dc96b28de0f4600f50ac4265bf2",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "prelude-convert",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/prelude-convert.rs",
+   "sha256": "7495d8bb1a3bc3fd2a80c5c7e3afbded2e717dc96b28de0f4600f50ac4265bf2",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 0
+  },
+  {
+   "name": "prelude-convert",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/prelude-convert.rs",
+   "sha256": "7495d8bb1a3bc3fd2a80c5c7e3afbded2e717dc96b28de0f4600f50ac4265bf2",
+   "crate_type": "lib",
+   "edition": "2024",
+   "rustc": 0
+  },
+  {
+   "name": "prelude-convert-import",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/prelude-convert-import.rs",
+   "sha256": "268aae381db37f94258d4352a559cf5cee8220c67871f64f1c1b31232f24a1a6",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "prelude-convert-import",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/prelude-convert-import.rs",
+   "sha256": "268aae381db37f94258d4352a559cf5cee8220c67871f64f1c1b31232f24a1a6",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "prelude-convert-import",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/prelude-convert-import.rs",
+   "sha256": "268aae381db37f94258d4352a559cf5cee8220c67871f64f1c1b31232f24a1a6",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 0
+  },
+  {
+   "name": "prelude-from-iterator",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/prelude-from-iterator.rs",
+   "sha256": "6d64e39171a3ddc4927912108fb5581a9a9f6b7dbe9e4966088896ba04f32cb2",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "prelude-from-iterator",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/prelude-from-iterator.rs",
+   "sha256": "6d64e39171a3ddc4927912108fb5581a9a9f6b7dbe9e4966088896ba04f32cb2",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "prelude-from-iterator",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/prelude-from-iterator.rs",
+   "sha256": "6d64e39171a3ddc4927912108fb5581a9a9f6b7dbe9e4966088896ba04f32cb2",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 0
+  },
+  {
+   "name": "prelude-future",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/prelude-future.rs",
+   "sha256": "2871b283c29588f2a02fa9e622a7c19003ce708152507c00a68853ee45012439",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "prelude-future",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/prelude-future.rs",
+   "sha256": "2871b283c29588f2a02fa9e622a7c19003ce708152507c00a68853ee45012439",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "prelude-future",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/prelude-future.rs",
+   "sha256": "2871b283c29588f2a02fa9e622a7c19003ce708152507c00a68853ee45012439",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 1
+  },
+  {
+   "name": "prelude-future",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/prelude-future.rs",
+   "sha256": "2871b283c29588f2a02fa9e622a7c19003ce708152507c00a68853ee45012439",
+   "crate_type": "lib",
+   "edition": "2024",
+   "rustc": 0
+  },
+  {
+   "name": "keyword-async",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/keyword-async.rs",
+   "sha256": "90b968f2fc4133c7201b0e22f7b1d393b6bbc59070636410267cc73fb06156a3",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "fenced"
+  },
+  {
+   "name": "keyword-async",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/keyword-async.rs",
+   "sha256": "90b968f2fc4133c7201b0e22f7b1d393b6bbc59070636410267cc73fb06156a3",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "keyword-dyn",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/keyword-dyn.rs",
+   "sha256": "202f6345abbaa27422f205a83ae87f8503c7a9ab764548b926e9588df6db9630",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "fenced"
+  },
+  {
+   "name": "keyword-dyn",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/keyword-dyn.rs",
+   "sha256": "202f6345abbaa27422f205a83ae87f8503c7a9ab764548b926e9588df6db9630",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "dyn-type",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/dyn-type.rs",
+   "sha256": "42cee6d5a3788a8476d4b801b2c5afec1586c72836b477db5cec77de3f17dd18",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "accepted"
+  },
+  {
+   "name": "dyn-type",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/dyn-type.rs",
+   "sha256": "42cee6d5a3788a8476d4b801b2c5afec1586c72836b477db5cec77de3f17dd18",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "accepted"
+  },
+  {
+   "name": "async-fn",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/async-fn.rs",
+   "sha256": "e6fed62246e370005d03358ae4d43ebb32a3dd6bdf8358fb6d07a09a8f574aae",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 1,
+   "rustgm": "fenced"
+  },
+  {
+   "name": "async-fn",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/async-fn.rs",
+   "sha256": "e6fed62246e370005d03358ae4d43ebb32a3dd6bdf8358fb6d07a09a8f574aae",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "reserved-prefix",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/reserved-prefix.rs",
+   "sha256": "9d2f4a3eb18058bae6e9345b7177a8c4ba5f3ff9e20dfad4ef83d9aa010cb993",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "fenced"
+  },
+  {
+   "name": "reserved-prefix",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/reserved-prefix.rs",
+   "sha256": "9d2f4a3eb18058bae6e9345b7177a8c4ba5f3ff9e20dfad4ef83d9aa010cb993",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "fenced"
+  },
+  {
+   "name": "reserved-prefix",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/reserved-prefix.rs",
+   "sha256": "9d2f4a3eb18058bae6e9345b7177a8c4ba5f3ff9e20dfad4ef83d9aa010cb993",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 1
+  },
+  {
+   "name": "guarded-string",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/guarded-string.rs",
+   "sha256": "557295a68ec84ab659b7a2ca25b1f8836e677a49f483d58cf87ea1647862e749",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "guarded-string",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/guarded-string.rs",
+   "sha256": "557295a68ec84ab659b7a2ca25b1f8836e677a49f483d58cf87ea1647862e749",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "guarded-string",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/guarded-string.rs",
+   "sha256": "557295a68ec84ab659b7a2ca25b1f8836e677a49f483d58cf87ea1647862e749",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 0
+  },
+  {
+   "name": "guarded-string",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/guarded-string.rs",
+   "sha256": "557295a68ec84ab659b7a2ca25b1f8836e677a49f483d58cf87ea1647862e749",
+   "crate_type": "lib",
+   "edition": "2024",
+   "rustc": 1
+  },
+  {
+   "name": "expression-fragment",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/expression-fragment.rs",
+   "sha256": "d6184c2c936a2bee054a94454dfc247d38c5a8a234b8be789b81671aeb7dc855",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "expression-fragment",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/expression-fragment.rs",
+   "sha256": "d6184c2c936a2bee054a94454dfc247d38c5a8a234b8be789b81671aeb7dc855",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "expression-fragment",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/expression-fragment.rs",
+   "sha256": "d6184c2c936a2bee054a94454dfc247d38c5a8a234b8be789b81671aeb7dc855",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 0
+  },
+  {
+   "name": "expression-fragment",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/expression-fragment.rs",
+   "sha256": "d6184c2c936a2bee054a94454dfc247d38c5a8a234b8be789b81671aeb7dc855",
+   "crate_type": "lib",
+   "edition": "2024",
+   "rustc": 1
+  },
+  {
+   "name": "panic-brace",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/panic-brace.rs",
+   "sha256": "728551086a5269949985513d227fe134a4687454162dde27cd6b1ee772040323",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "panic-brace",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/panic-brace.rs",
+   "sha256": "728551086a5269949985513d227fe134a4687454162dde27cd6b1ee772040323",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "panic-brace",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/panic-brace.rs",
+   "sha256": "728551086a5269949985513d227fe134a4687454162dde27cd6b1ee772040323",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 1
+  },
+  {
+   "name": "panic-payload",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/panic-payload.rs",
+   "sha256": "40b952bb2b89f48bd72092a94e10fe8d7a93acd0d65ee950986f0c41ce7897a2",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "panic-payload",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/panic-payload.rs",
+   "sha256": "40b952bb2b89f48bd72092a94e10fe8d7a93acd0d65ee950986f0c41ce7897a2",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "panic-payload",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/panic-payload.rs",
+   "sha256": "40b952bb2b89f48bd72092a94e10fe8d7a93acd0d65ee950986f0c41ce7897a2",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 1
+  },
+  {
+   "name": "unreachable-brace",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/unreachable-brace.rs",
+   "sha256": "1d59d2b93cd2c0465ae2cd290461284e778f8cb3811411af7a438b4787ec286e",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "unreachable-brace",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/unreachable-brace.rs",
+   "sha256": "1d59d2b93cd2c0465ae2cd290461284e778f8cb3811411af7a438b4787ec286e",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "unreachable-brace",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/unreachable-brace.rs",
+   "sha256": "1d59d2b93cd2c0465ae2cd290461284e778f8cb3811411af7a438b4787ec286e",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 1
+  },
+  {
+   "name": "assert-brace",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/assert-brace.rs",
+   "sha256": "12ccb1e9ba9924b23cf7aedd95b9396622f7f9a69acc3bc2f76a00b270ee6978",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "assert-brace",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/assert-brace.rs",
+   "sha256": "12ccb1e9ba9924b23cf7aedd95b9396622f7f9a69acc3bc2f76a00b270ee6978",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "assert-brace",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/assert-brace.rs",
+   "sha256": "12ccb1e9ba9924b23cf7aedd95b9396622f7f9a69acc3bc2f76a00b270ee6978",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 1
+  },
+  {
+   "name": "bare-trait-object",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/bare-trait-object.rs",
+   "sha256": "7e609b74f7f883fd2c3fec71124f143aab634f1aff008820c5921f4a50508a50",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "fenced"
+  },
+  {
+   "name": "bare-trait-object",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/bare-trait-object.rs",
+   "sha256": "7e609b74f7f883fd2c3fec71124f143aab634f1aff008820c5921f4a50508a50",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "fenced"
+  },
+  {
+   "name": "bare-trait-object",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/bare-trait-object.rs",
+   "sha256": "7e609b74f7f883fd2c3fec71124f143aab634f1aff008820c5921f4a50508a50",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 1
+  },
+  {
+   "name": "dot-dot-dot-pattern",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/dot-dot-dot-pattern.rs",
+   "sha256": "e0e65e20a18b0f1d28b22c71c209757af016237cd477892eac836436a406ce12",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "fenced"
+  },
+  {
+   "name": "dot-dot-dot-pattern",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/dot-dot-dot-pattern.rs",
+   "sha256": "e0e65e20a18b0f1d28b22c71c209757af016237cd477892eac836436a406ce12",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "fenced"
+  },
+  {
+   "name": "dot-dot-dot-pattern",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/dot-dot-dot-pattern.rs",
+   "sha256": "e0e65e20a18b0f1d28b22c71c209757af016237cd477892eac836436a406ce12",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 1
+  },
+  {
+   "name": "anonymous-parameter",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/anonymous-parameter.rs",
+   "sha256": "dade5370c0858e94134318295bff7f51fcf502c8430f0e6281b8b531756978ca",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "fenced"
+  },
+  {
+   "name": "anonymous-parameter",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/anonymous-parameter.rs",
+   "sha256": "dade5370c0858e94134318295bff7f51fcf502c8430f0e6281b8b531756978ca",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "absolute-root",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/absolute-root.rs",
+   "sha256": "2c0cad5031ebfc15533f48580edd910a40d189252345c80144a2c05c573a1752",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "accepted"
+  },
+  {
+   "name": "absolute-root",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/absolute-root.rs",
+   "sha256": "2c0cad5031ebfc15533f48580edd910a40d189252345c80144a2c05c573a1752",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "nested-import",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/nested-import.rs",
+   "sha256": "2dbbe8163fdc61070a856c124604768b533d78fed31abf4475371a66a35aa6fe",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "nested-import",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/nested-import.rs",
+   "sha256": "2dbbe8163fdc61070a856c124604768b533d78fed31abf4475371a66a35aa6fe",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "accepted"
+  },
+  {
+   "name": "injected-core",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/injected-core.rs",
+   "sha256": "881a56aa5812429015c17044d34e4e3f7e921aef83939704516286f106487aa0",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "accepted"
+  },
+  {
+   "name": "injected-core",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/injected-core.rs",
+   "sha256": "881a56aa5812429015c17044d34e4e3f7e921aef83939704516286f106487aa0",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "use-core",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/use-core.rs",
+   "sha256": "994064dbd765c5e89545a761e189c01f7b1aec499f616c2e6b08c83c3c9526ca",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "use-core",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/use-core.rs",
+   "sha256": "994064dbd765c5e89545a761e189c01f7b1aec499f616c2e6b08c83c3c9526ca",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "closure-disjoint",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/closure-disjoint.rs",
+   "sha256": "78fef5e2ad2e8fff38a8533f2eb4964906388634d77b119151336a096035e129",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "closure-disjoint",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/closure-disjoint.rs",
+   "sha256": "78fef5e2ad2e8fff38a8533f2eb4964906388634d77b119151336a096035e129",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "closure-disjoint",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/closure-disjoint.rs",
+   "sha256": "78fef5e2ad2e8fff38a8533f2eb4964906388634d77b119151336a096035e129",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 0,
+   "rustgm": "accepted"
+  },
+  {
+   "name": "closure-wildcard",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/closure-wildcard.rs",
+   "sha256": "b23a0486c6933e31392eb7f972a462668f680ae87e186999b943c0afc6b0944f",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "closure-wildcard",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/closure-wildcard.rs",
+   "sha256": "b23a0486c6933e31392eb7f972a462668f680ae87e186999b943c0afc6b0944f",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "closure-wildcard",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/closure-wildcard.rs",
+   "sha256": "b23a0486c6933e31392eb7f972a462668f680ae87e186999b943c0afc6b0944f",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 0,
+   "rustgm": "accepted"
+  },
+  {
+   "name": "closure-move-field",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/closure-move-field.rs",
+   "sha256": "1d406a7d59c75592d52884f556f99916721b56e28e9b650fd87927b469668a9b",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "closure-move-field",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/closure-move-field.rs",
+   "sha256": "1d406a7d59c75592d52884f556f99916721b56e28e9b650fd87927b469668a9b",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 1,
+   "rustgm": "rejected"
+  },
+  {
+   "name": "closure-move-field",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/closure-move-field.rs",
+   "sha256": "1d406a7d59c75592d52884f556f99916721b56e28e9b650fd87927b469668a9b",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 0,
+   "rustgm": "accepted"
+  },
+  {
+   "name": "closure-unique",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/closure-unique.rs",
+   "sha256": "c85f99af20be26820f497005044598e463ff9e4e29a4abc3fe1cef0e3366f0c3",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "accepted"
+  },
+  {
+   "name": "closure-unique",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/closure-unique.rs",
+   "sha256": "c85f99af20be26820f497005044598e463ff9e4e29a4abc3fe1cef0e3366f0c3",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "accepted"
+  },
+  {
+   "name": "closure-unique",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/closure-unique.rs",
+   "sha256": "c85f99af20be26820f497005044598e463ff9e4e29a4abc3fe1cef0e3366f0c3",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 0,
+   "rustgm": "accepted"
+  },
+  {
+   "name": "array-into-iter",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/array-into-iter.rs",
+   "sha256": "b4368435c84f2bb3b235433f46bfab9e55403d7f28a8b65514cc252631b9a2ed",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "fenced"
+  },
+  {
+   "name": "array-into-iter",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/array-into-iter.rs",
+   "sha256": "b4368435c84f2bb3b235433f46bfab9e55403d7f28a8b65514cc252631b9a2ed",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "fenced"
+  },
+  {
+   "name": "array-into-iter",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/array-into-iter.rs",
+   "sha256": "b4368435c84f2bb3b235433f46bfab9e55403d7f28a8b65514cc252631b9a2ed",
+   "crate_type": "lib",
+   "edition": "2021",
+   "rustc": 1
+  },
+  {
+   "name": "mixed-matches",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/mixed-matches.rs",
+   "sha256": "5c0e838a95b65caf999103be5c9e723f7d794f8c014535eda0b26aa2f8c15965",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "mixed-matches",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/mixed-matches.rs",
+   "sha256": "5c0e838a95b65caf999103be5c9e723f7d794f8c014535eda0b26aa2f8c15965",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "driver-edition/keyword",
+   "path": "pa34/tests/spec/driver-edition/keyword.rs",
+   "sha256": "071ae2a4d389a1cb915f10cd6b365c0ff58f5c7321f5b208764bd288b0fab23c",
+   "crate_type": "bin",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "accepted"
+  },
+  {
+   "name": "driver-edition/keyword",
+   "path": "pa34/tests/spec/driver-edition/keyword.rs",
+   "sha256": "071ae2a4d389a1cb915f10cd6b365c0ff58f5c7321f5b208764bd288b0fab23c",
+   "crate_type": "bin",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "accepted"
+  },
+  {
+   "name": "foreign-editions/plain-block",
+   "path": "pa34/tests/spec/foreign-editions/plain-block.rs",
+   "sha256": "2b811e98ab91d541ce5b268b90ba03fd2caf86021484a3e5e400dc1ca9f8d800",
+   "crate_type": "bin",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "foreign-editions/plain-block",
+   "path": "pa34/tests/spec/foreign-editions/plain-block.rs",
+   "sha256": "2b811e98ab91d541ce5b268b90ba03fd2caf86021484a3e5e400dc1ca9f8d800",
+   "crate_type": "bin",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "foreign-editions/bare-no-mangle",
+   "path": "pa34/tests/spec/foreign-editions/bare-no-mangle.rs",
+   "sha256": "9bb010327a0770459ccc961719adf539f1a30d03d61733f72bf82b8c2a9747b8",
+   "crate_type": "bin",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "foreign-editions/bare-no-mangle",
+   "path": "pa34/tests/spec/foreign-editions/bare-no-mangle.rs",
+   "sha256": "9bb010327a0770459ccc961719adf539f1a30d03d61733f72bf82b8c2a9747b8",
+   "crate_type": "bin",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "pattern-editions/mut-reset",
+   "path": "pa34/tests/spec/pattern-editions/mut-reset.rs",
+   "sha256": "7a8b82e3b5119461a84c33caedb5dae03cdcec493e011a8b7f88214bef8515a1",
+   "crate_type": "bin",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "pattern-editions/mut-reset",
+   "path": "pa34/tests/spec/pattern-editions/mut-reset.rs",
+   "sha256": "7a8b82e3b5119461a84c33caedb5dae03cdcec493e011a8b7f88214bef8515a1",
+   "crate_type": "bin",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "temporary-editions/tail-borrow",
+   "path": "pa34/tests/spec/temporary-editions/tail-borrow.rs",
+   "sha256": "6bf1e9db0d3320d1e8ffd9411bc1e1c7c65d87aff343d1a3f6663edb413682bd",
+   "crate_type": "bin",
+   "edition": "2015",
+   "rustc": 1,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "temporary-editions/tail-borrow",
+   "path": "pa34/tests/spec/temporary-editions/tail-borrow.rs",
+   "sha256": "6bf1e9db0d3320d1e8ffd9411bc1e1c7c65d87aff343d1a3f6663edb413682bd",
+   "crate_type": "bin",
+   "edition": "2018",
+   "rustc": 1,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "opaque-editions/implicit-hidden-reference",
+   "path": "pa34/tests/spec/opaque-editions/implicit-hidden-reference.rs",
+   "sha256": "2fa0cf3c4b655725b04d4b0b11752b3655c32bd6ce8b4b5a5c5c640dcdcc04d9",
+   "crate_type": "bin",
+   "edition": "2015",
+   "rustc": 1,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "opaque-editions/implicit-hidden-reference",
+   "path": "pa34/tests/spec/opaque-editions/implicit-hidden-reference.rs",
+   "sha256": "2fa0cf3c4b655725b04d4b0b11752b3655c32bd6ce8b4b5a5c5c640dcdcc04d9",
+   "crate_type": "bin",
+   "edition": "2018",
+   "rustc": 1,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "never-editions/unit-only-2021",
+   "path": "pa34/tests/spec/never-editions/unit-only-2021.rs",
+   "sha256": "83009e3b869bc1b2ff3b2f39edad3cb52ee0da8c5fa7276e813e7770d4b277f1",
+   "crate_type": "bin",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "same-as-2021"
+  },
+  {
+   "name": "use-core-option",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/use-core-option.rs",
+   "sha256": "cf5349de8f3d96d48196cbbaf3141eba0383581845e6859277b8b5801f89261a",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "accepted",
+   "plan": "legacy-editions-v2"
+  },
+  {
+   "name": "use-core-option",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/use-core-option.rs",
+   "sha256": "cf5349de8f3d96d48196cbbaf3141eba0383581845e6859277b8b5801f89261a",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "accepted",
+   "plan": "legacy-editions-v2"
+  },
+  {
+   "name": "body-use-core",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/body-use-core.rs",
+   "sha256": "43df907485203483bb9286c131061713c9f8bca863b11a180c26541cc63643dd",
+   "crate_type": "lib",
+   "edition": "2015",
+   "rustc": 0,
+   "rustgm": "accepted",
+   "plan": "legacy-editions-v2"
+  },
+  {
+   "name": "body-use-core",
+   "path": "pa34/tests/spec/legacy-stdlib-editions/body-use-core.rs",
+   "sha256": "43df907485203483bb9286c131061713c9f8bca863b11a180c26541cc63643dd",
+   "crate_type": "lib",
+   "edition": "2018",
+   "rustc": 0,
+   "rustgm": "accepted",
+   "plan": "legacy-editions-v2"
+  }
+ ],
+ "mixed": [
+  {
+   "name": "pat-provider-2018-consumer-2024",
+   "provider": {
+    "path": "pa34/tests/spec/legacy-stdlib-editions/macro-provider.rs",
+    "sha256": "71f5921c08d4893b002b58af1d940d292161a25831185f78fe5a1043a2c16bb1",
+    "edition": "2018"
+   },
+   "consumer": {
+    "path": "pa34/tests/spec/legacy-stdlib-editions/macro-consumer.rs",
+    "sha256": "033a3451257a92ec5f12c042031622bb4298a2eb14c15851b21c8d6fc7914d66",
+    "edition": "2024"
+   },
+   "rustc": 1,
+   "rustgm": "requirement; RustGM imports carry no macro_rules definitions"
+  },
+  {
+   "name": "pat-provider-2018-consumer-2018",
+   "provider": {
+    "path": "pa34/tests/spec/legacy-stdlib-editions/macro-provider.rs",
+    "sha256": "71f5921c08d4893b002b58af1d940d292161a25831185f78fe5a1043a2c16bb1",
+    "edition": "2018"
+   },
+   "consumer": {
+    "path": "pa34/tests/spec/legacy-stdlib-editions/macro-consumer.rs",
+    "sha256": "033a3451257a92ec5f12c042031622bb4298a2eb14c15851b21c8d6fc7914d66",
+    "edition": "2018"
+   },
+   "rustc": 1,
+   "rustgm": "requirement; RustGM imports carry no macro_rules definitions"
+  },
+  {
+   "name": "pat-provider-2021-consumer-2024",
+   "provider": {
+    "path": "pa34/tests/spec/legacy-stdlib-editions/macro-provider.rs",
+    "sha256": "71f5921c08d4893b002b58af1d940d292161a25831185f78fe5a1043a2c16bb1",
+    "edition": "2021"
+   },
+   "consumer": {
+    "path": "pa34/tests/spec/legacy-stdlib-editions/macro-consumer.rs",
+    "sha256": "033a3451257a92ec5f12c042031622bb4298a2eb14c15851b21c8d6fc7914d66",
+    "edition": "2024"
+   },
+   "rustc": 0,
+   "rustgm": "requirement; RustGM imports carry no macro_rules definitions"
+  },
+  {
+   "name": "pat-provider-2021-consumer-2018",
+   "provider": {
+    "path": "pa34/tests/spec/legacy-stdlib-editions/macro-provider.rs",
+    "sha256": "71f5921c08d4893b002b58af1d940d292161a25831185f78fe5a1043a2c16bb1",
+    "edition": "2021"
+   },
+   "consumer": {
+    "path": "pa34/tests/spec/legacy-stdlib-editions/macro-consumer.rs",
+    "sha256": "033a3451257a92ec5f12c042031622bb4298a2eb14c15851b21c8d6fc7914d66",
+    "edition": "2018"
+   },
+   "rustc": 0,
+   "rustgm": "requirement; RustGM imports carry no macro_rules definitions"
+  },
+  {
+   "name": "original-cfg-if-2018-consumer-2024",
+   "provider": {
+    "path": "cfg-if-1.0.4/src/lib.rs (authenticated registry archive)",
+    "sha256": "c09723e0890d15810374009e96b20bf0eb2f65f383006516f34db36240835c85",
+    "edition": "2018"
+   },
+   "consumer": {
+    "path": "pa34/tests/spec/legacy-stdlib-editions/cfg-if-consumer.rs",
+    "sha256": "e379329d4bffed0a8044cd8cff1029e9f45f6e19d38bde627a170f62aedbca52",
+    "edition": "2024"
+   },
+   "rustc": 0,
+   "rustgm": "requirement; RustGM imports carry no macro_rules definitions"
+  },
+  {
+   "name": "original-cfg-if-2018-consumer-2015",
+   "provider": {
+    "path": "cfg-if-1.0.4/src/lib.rs (authenticated registry archive)",
+    "sha256": "c09723e0890d15810374009e96b20bf0eb2f65f383006516f34db36240835c85",
+    "edition": "2018"
+   },
+   "consumer": {
+    "path": "pa34/tests/spec/legacy-stdlib-editions/cfg-if-consumer.rs",
+    "sha256": "e379329d4bffed0a8044cd8cff1029e9f45f6e19d38bde627a170f62aedbca52",
+    "edition": "2015"
+   },
+   "rustc": 0,
+   "rustgm": "requirement; RustGM imports carry no macro_rules definitions"
+  }
+ ]
+}

@@ -65,7 +65,7 @@ fn generated_from_other_edition(source: &str, edition: Edition) -> Result<Vec<u8
         &mut crate::edition_packages::Files::default(),
     )?;
     let other = match edition {
-        Edition::Rust2021 => Edition::Rust2024,
+        Edition::Rust2015 | Edition::Rust2018 | Edition::Rust2021 => Edition::Rust2024,
         Edition::Rust2024 => Edition::Rust2021,
     };
     let definition = report

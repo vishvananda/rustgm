@@ -657,9 +657,10 @@ impl Context {
             self.terms[id.0 as usize].value,
             Value::Variable(Domain::Any)
         ) {
-            self.terms[id.0 as usize].value = Value::Known(match edition {
-                crate::support::edition::Edition::Rust2021 => TypeId::UNIT,
-                crate::support::edition::Edition::Rust2024 => TypeId::NEVER,
+            self.terms[id.0 as usize].value = Value::Known(if edition.before_2024() {
+                TypeId::UNIT
+            } else {
+                TypeId::NEVER
             });
             self.wake_resolution(dependencies::Dependency::Type(id))?;
         }

@@ -131,7 +131,7 @@ fn safety(
             report.package.units.get(file.0 as usize)
         })
         .map_err(|failure| error(failure.message))?;
-        if edition == crate::support::edition::Edition::Rust2021 {
+        if edition.before_2024() {
             return Ok(());
         }
     }

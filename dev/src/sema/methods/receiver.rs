@@ -67,6 +67,9 @@ pub(in crate::sema) fn choose(
         .head(&facts.types, base)
         .map_err(inference)
         .map_err(error)?;
+    if depth == 0 && array(head) {
+        legacy_array_into_iter(report, key, site).map_err(error)?;
+    }
     let mut inherent =
         inherent_candidates(report, facts, source, (term, base), head, site, identifier)
             .map_err(error)?;
@@ -584,6 +587,22 @@ fn inference(_: crate::types::infer::Error) -> &'static str {
     "invalid or exhausted receiver inference graph"
 }
 
+/// Before 2021 a by-value array receiver skips `IntoIterator::into_iter`; the
+/// method name's own edition selects that probe, which is fenced explicitly.
+fn legacy_array_into_iter(report: &Report, key: NodeKey, site: MethodCall) -> Result<(), &str> {
+    if report.package.names.get(site.name) != "into_iter" {
+        return Ok(());
+    }
+    let node = site.method.unwrap_or(key.node);
+    let span = report.package.unit(key.file).configured.ast.node(node).span;
+    let edition = crate::resolve::unit::editions::introducer(key.file, span, |file| {
+        report.package.units.get(file.0 as usize)
+    })
+    .map_err(|error| error.message)?;
+    edition.legacy().map_or(Ok(()), |legacy| {
+        Err(crate::support::edition::LegacyRule::ArrayIntoIterator.unsupported(legacy))
+    })
+}
 fn array(head: Option<Constructor>) -> bool {
     matches!(
         head,

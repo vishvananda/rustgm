@@ -398,12 +398,20 @@ fn fragment(name: &str, edition: Edition) -> Option<Fragment> {
         "meta" => Fragment::Metadata,
         "vis" => Fragment::Visibility,
         "block" => Fragment::Syntax(FragmentKind::Block),
-        "expr" if edition == Edition::Rust2021 => Fragment::Syntax(FragmentKind::Expression2021),
-        "expr" => Fragment::Syntax(FragmentKind::Expression),
+        "expr" => Fragment::Syntax(match edition {
+            Edition::Rust2015 | Edition::Rust2018 | Edition::Rust2021 => {
+                FragmentKind::Expression2021
+            }
+            Edition::Rust2024 => FragmentKind::Expression,
+        }),
         "expr_2021" => Fragment::Syntax(FragmentKind::Expression2021),
         "item" => Fragment::Syntax(FragmentKind::Item),
         "literal" => Fragment::Syntax(FragmentKind::Literal),
-        "pat" => Fragment::Syntax(FragmentKind::Pattern),
+        // Before 2021, `pat` excludes top-level alternatives and keeps `|` as a follower.
+        "pat" => Fragment::Syntax(match edition {
+            Edition::Rust2015 | Edition::Rust2018 => FragmentKind::PatternParameter,
+            Edition::Rust2021 | Edition::Rust2024 => FragmentKind::Pattern,
+        }),
         "pat_param" => Fragment::Syntax(FragmentKind::PatternParameter),
         "path" => Fragment::Syntax(FragmentKind::Path),
         "stmt" => Fragment::Syntax(FragmentKind::Statement),

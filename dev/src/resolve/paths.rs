@@ -46,6 +46,16 @@ impl<'a> Identified<'a> {
         }
     }
 
+    /// The path after its first `start` segments, with aligned contexts.
+    pub fn suffix(self, start: usize) -> Self {
+        Self {
+            names: self.names.get(start..).unwrap_or_default(),
+            contexts: self
+                .contexts
+                .map(|contexts| contexts.get(start..).unwrap_or_default()),
+        }
+    }
+
     pub fn context(self, index: usize) -> Result<ItemContext, &'static str> {
         if index >= self.names.len() {
             return Err("missing path identifier");
@@ -106,6 +116,28 @@ impl Segments for Vec<NameId> {
 }
 
 impl Package {
+    /// Before 2018, a path whose first token (`::` or a plain `use` segment)
+    /// originates in Rust 2015 is relative to the crate root. That token's own
+    /// edition selects the rule; this appends the explicit `crate` segment.
+    pub(super) fn legacy_root(
+        &mut self,
+        file: FileId,
+        span: Span,
+        segments: &mut impl Segments,
+    ) -> Result<bool, Error> {
+        let edition =
+            super::unit::editions::introducer(file, span, |file| self.units.get(file.0 as usize))
+                .map_err(|error| Error::at(file, error.offset, error.message))?;
+        if edition != crate::support::edition::Edition::Rust2015 {
+            return Ok(false);
+        }
+        let name = self
+            .names
+            .intern("crate")
+            .map_err(|e| Error::at(file, span.start, e))?;
+        segments.append(self, file, span, name)?;
+        Ok(true)
+    }
     pub(super) fn append_path(
         &mut self,
         file: FileId,
@@ -138,7 +170,9 @@ impl Package {
                 absolute,
                 segments: nodes,
             } => {
-                segments.reserve((nodes.end - nodes.start) as usize);
+                segments.reserve((nodes.end - nodes.start) as usize + 1);
+                // A Rust 2015 `::` names the crate root rather than the extern prelude.
+                let absolute = absolute && !self.legacy_root(file, span, segments)?;
                 for offset in nodes.start..nodes.end {
                     let node = self.unit(file).configured.ast.edges[offset as usize];
                     self.append_path(file, node, segments)?;

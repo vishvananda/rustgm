@@ -165,6 +165,7 @@ impl Resolver<'_> {
         if self.package.uses_source_bindings() {
             return Ok(());
         }
+        let (absolute, path) = self.injected_path(absolute, path);
         // Every step below keys on a spelling recognized by `builtin_spelling`.
         let mut relevant = false;
         for &name in path.names {

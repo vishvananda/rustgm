@@ -1376,6 +1376,27 @@ impl Checker<'_> {
             && (self.facts.associated.schema(id).is_some()
                 || self.alias_self_schema(id)?.is_some())))
         {
+            if kind == DefKind::Trait {
+                // Before 2021 the path's own edition makes it a trait object type.
+                let span = self
+                    .report
+                    .package
+                    .unit(key.file)
+                    .configured
+                    .ast
+                    .node(key.node)
+                    .span;
+                let edition = crate::resolve::unit::editions::introducer(key.file, span, |file| {
+                    self.report.package.units.get(file.0 as usize)
+                })
+                .map_err(|error| self.error(key, error.message))?;
+                if let Some(legacy) = edition.legacy() {
+                    return Err(self.error(
+                        key,
+                        crate::support::edition::LegacyRule::BareTraitObjects.unsupported(legacy),
+                    ));
+                }
+            }
             return Err(self.error(
                 key,
                 "nominal or associated types require later semantic assignments",

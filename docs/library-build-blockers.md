@@ -5,6 +5,16 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+[Legacy editions](parallel/legacy-editions.md) (Lane B): the CLI and the target
+unit executor accept Rust 2015 and 2018. Pinned rustc froze 100 outcomes, 82 of
+which are declared RustGM expectations. Two rules are implemented: the pre-2021
+`pat` fragment and whole-variable closure captures. So are the 2015 crate-root
+`use`/`::` paths and the injected root crate. Other differences fail with a typed
+fence. The original cfg-if 1.0.4 passes all analysis phases under 2018. Its
+library metadata stops on the exported `macro_rules!`, because metadata carries
+no macro definitions. That gap is edition-independent. Original rustc-demangle
+under 2015 stops on the bootstrap library model (`core::char`, `unreachable!`).
+
 Lane C [language-role transport](parallel/language-role-transport.md) is joined
 on main. Version 13 now carries spelled
 language roles, trait `Self` defaults and checked Add/Sub/Mul rows. Imported

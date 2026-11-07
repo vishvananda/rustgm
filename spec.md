@@ -97,6 +97,17 @@ after selecting the default binding mode; legacy syntax is not proof of Copy or
 mutable access. The [pattern checkpoint](docs/pa34-pattern-editions.md) records
 the paired Rust 2021/2024 semantic and native controls.
 
+Rust 2015 and 2018 keep every rule that changed only in 2024. Each of their own
+differences selects a defining context or fails with a typed legacy-rule
+diagnostic naming the edition, never the 2021 rule. Before 2021 a macro's `pat`
+fragment excludes top-level alternatives, selected by definition edition. A
+closure whose introducer originates before 2021 captures each used root variable
+whole, with the strongest mode required below it, and a wildcard mention still
+captures. In Rust 2015, a `use` path with a plain first segment and a `::` path
+are crate-root relative, by that first token's edition. The compiling crate's
+edition decides whether its injected `core` or `std` is a nameable root item.
+The [legacy edition checkpoint](docs/parallel/legacy-editions.md) lists the fenced rules.
+
 ```text
 source image -> Rust lexer -> token-tree/parser/expansion/resolution worklist
              -> syntax with canonical semantic facts

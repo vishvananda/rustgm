@@ -492,7 +492,9 @@ pub fn parse_include_in_edition<'s>(
             ));
         }
     };
-    let mut parser = Parser::with_cursor(Cursor::source(source, items)?, true);
+    let mut cursor = Cursor::source(source, items)?;
+    cursor.fence_legacy_prefixes(edition);
+    let mut parser = Parser::with_cursor(cursor, true);
     parser.names = names;
     parser.inputs = &edition;
     let root = if items {

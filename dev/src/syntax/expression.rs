@@ -166,6 +166,16 @@ impl<'source> Parser<'source, '_> {
     fn eat_word(&mut self, word: Word) -> Result<bool, LexError> {
         self.cursor.eat_word(word)
     }
+    /// `async` and `await` are Rust 2015 identifiers; their keyword uses are fenced there.
+    fn eat_edition_keyword(&mut self, word: Word) -> Result<bool, LexError> {
+        if self.cursor.peek_word(0)? != word {
+            return Ok(false);
+        }
+        if let Some(token) = self.cursor.peek(0)? {
+            legacy_keyword(self.inputs.edition(token)?, token)?;
+        }
+        self.eat_word(word)
+    }
     #[cfg_attr(not(debug_assertions), inline(always))]
     #[cfg_attr(
         not(debug_assertions),
@@ -691,7 +701,7 @@ impl<'source> Parser<'source, '_> {
 
     /// The member access after a consumed `.`: await, field, tuple index or method call.
     fn member(&mut self, value: NodeId, start: u32) -> Result<NodeId, LexError> {
-        if self.eat_word(Word::Await)? {
+        if self.eat_edition_keyword(Word::Await)? {
             return self.node(
                 start,
                 Kind::Unary {
@@ -827,6 +837,12 @@ impl<'source> Parser<'source, '_> {
             TokenKind::Identifier if word == Word::Gen => {
                 !word.reserved_in(self.inputs.edition(token)?)
             }
+            TokenKind::Identifier
+                if matches!(word, Word::Async | Word::Await | Word::Dyn | Word::Try) =>
+            {
+                legacy_keyword(self.inputs.edition(token)?, token)?;
+                false
+            }
             TokenKind::Identifier => !word.reserved(),
             TokenKind::RawIdentifier => {
                 let spelling = self.cursor.spelling(token);
@@ -954,4 +970,18 @@ fn precedence(op: P) -> Option<(u8, u8)> {
         _ => return None,
     };
     Some((power, power + 1))
+}
+
+/// Rust 2015 `async`, `await`, `dyn` and `try` identifiers are fenced, not keywords.
+pub(super) fn legacy_keyword(
+    edition: crate::support::edition::Edition,
+    token: Token,
+) -> Result<(), LexError> {
+    match edition.legacy() {
+        Some(legacy @ crate::support::edition::Legacy::Rust2015) => Err(error(
+            token.start,
+            crate::support::edition::LegacyRule::LegacyKeywords.unsupported(legacy),
+        )),
+        _ => Ok(()),
+    }
 }

@@ -20,7 +20,7 @@ from host_process import DEFAULT_TIMEOUT, CommandLog, digest
 from local_package import LocalPackage
 
 ENVIRONMENT = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'}
-EDITIONS = {'2021', '2024'}
+EDITIONS = {'2015', '2018', '2021', '2024'}
 LIBRARY_TYPES = {'lib', 'rlib'}
 # RustGM's fixed course target: Linux x86-64, panic abort, overflow checks on,
 # debug assertions off, no optimizer and no debug information.
@@ -242,7 +242,7 @@ class Planner:
         library, kinds = kind_gaps(unit)
         gaps += kinds
         if unit.target.edition not in EDITIONS:
-            gaps.append(Gap('edition', unit.target.edition, 'RustGM supports only Rust 2021 and 2024'))
+            gaps.append(Gap('edition', unit.target.edition, 'RustGM supports only Rust 2015, 2018, 2021 and 2024'))
         if package.environment is None:
             gaps.append(Gap('package.environment', package.identity,
                             'package manifest unavailable; its Cargo environment cannot be reproduced'))

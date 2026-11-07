@@ -168,9 +168,9 @@ impl Word {
     /// Classifying an edition-sensitive spelling does not change other keywords.
     #[must_use]
     pub const fn reserved_in(self, edition: crate::support::edition::Edition) -> bool {
-        self.reserved()
-            && !(matches!(self, Self::Gen)
-                && matches!(edition, crate::support::edition::Edition::Rust2021))
+        // Rust 2015 identifiers `async`, `await`, `dyn` and `try` stay reserved
+        // here; parser identifier queries fence that older spelling explicitly.
+        self.reserved() && !(matches!(self, Self::Gen) && edition.before_2024())
     }
 
     /// Path-segment keywords accepted where other reserved words are not.

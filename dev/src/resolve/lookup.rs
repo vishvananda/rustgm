@@ -54,6 +54,47 @@ pub(crate) enum Lookup {
     Missing,
 }
 impl Resolver<'_> {
+    /// Rust 2015 injects its `std` (or `core` for `no_std`) crate as a nameable
+    /// crate-root item; later editions keep that injected name unnameable. The
+    /// compiling crate's own edition selects the injection, as for rustc.
+    pub(super) fn injected_crate(&self, name: NameId) -> bool {
+        let injected = if self.package.no_std { "core" } else { "std" };
+        !self.package.uses_source_bindings()
+            && self.package.units.first().map(super::unit::Unit::edition)
+                == Some(crate::support::edition::Edition::Rust2015)
+            && self.package.names.get(name) == injected
+    }
+    /// A Rust 2015 `crate::core` path names the injected crate, as `::core` does.
+    pub(super) fn injected_path<'a>(
+        &self,
+        absolute: bool,
+        path: crate::resolve::paths::Identified<'a>,
+    ) -> (bool, crate::resolve::paths::Identified<'a>) {
+        match path.names {
+            [root, name, ..]
+                if !absolute
+                    && self.package.names.get(*root) == "crate"
+                    && self.injected_crate(*name) =>
+            {
+                (true, path.suffix(1))
+            }
+            _ => (absolute, path),
+        }
+    }
+    fn injected_root(
+        &self,
+        c: Context,
+        (name, namespace, context): (NameId, Namespace, ItemContext),
+        observed: Option<&mut Observations>,
+    ) -> Result<Option<super::contextual_lookup::Selected>, &'static str> {
+        if namespace != Namespace::Type || !self.injected_crate(name) {
+            return Ok(None);
+        }
+        let Some(external) = self.facts.extern_scope else {
+            return Ok(None);
+        };
+        self.item_in_scope(c, (external, name, namespace, context), observed)
+    }
     /// Rust's value-form Self crosses item barriers only when its eventual type
     /// is closed. Keep that distinction for the typed constructor elaborator.
     pub fn self_constructor(&self, c: Context, name: NameId) -> Lookup {
@@ -343,9 +384,16 @@ impl Resolver<'_> {
                 _ => None,
             };
             let found = if let Some(scope) = scope {
-                self.item_in_scope(c, (scope, name, ns, context), observed.as_deref_mut())
-                    .map_err(|e| self.error(c, node, e))?
-                    .filter(|selected| filter.is_none_or(|f| f.permits(selected.binding.target)))
+                let found = self
+                    .item_in_scope(c, (scope, name, ns, context), observed.as_deref_mut())
+                    .map_err(|e| self.error(c, node, e))?;
+                let found = if found.is_none() && Some(&scope) == self.facts.module_scopes.first() {
+                    self.injected_root(c, (name, ns, context), observed.as_deref_mut())
+                        .map_err(|e| self.error(c, node, e))?
+                } else {
+                    found
+                };
+                found.filter(|selected| filter.is_none_or(|f| f.permits(selected.binding.target)))
             } else if self.hygiene.is_some()
                 && matches!(ns, Namespace::Value | Namespace::Label)
                 && !matches!(mode, LookupMode::Import(_))

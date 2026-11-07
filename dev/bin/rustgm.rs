@@ -131,11 +131,13 @@ fn options() -> Result<Options, String> {
                     .add(&setting)
                     .map_err(|e| format!("--cfg: {}: {}", e.offset, e.message))?;
             }
-            "--edition=2021" | "--edition=2024" => {
-                options.config.set_edition(if arg == "--edition=2021" {
-                    rustgm::support::edition::Edition::Rust2021
-                } else {
-                    rustgm::support::edition::Edition::Rust2024
+            "--edition=2015" | "--edition=2018" | "--edition=2021" | "--edition=2024" => {
+                use rustgm::support::edition::Edition;
+                options.config.set_edition(match arg.as_str() {
+                    "--edition=2015" => Edition::Rust2015,
+                    "--edition=2018" => Edition::Rust2018,
+                    "--edition=2021" => Edition::Rust2021,
+                    _ => Edition::Rust2024,
                 });
             }
             "--ub-checks=yes" | "--ub-checks=no" => {

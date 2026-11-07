@@ -208,6 +208,18 @@ impl<S: Sources> Engine<'_, S> {
             (Builtin::Unreachable, Edition::Rust2021 | Edition::Rust2024) => {
                 Handler::Unreachable2021
             }
+            (
+                Builtin::Assert | Builtin::CorePanic | Builtin::StdPanic | Builtin::Unreachable,
+                Edition::Rust2015 | Edition::Rust2018,
+            ) => {
+                return Err(error(
+                    edition
+                        .legacy()
+                        .map_or("invalid source panic delegation role", |legacy| {
+                            crate::support::edition::LegacyRule::PanicMacros.unsupported(legacy)
+                        }),
+                ));
+            }
             _ => return Err(error("invalid source panic delegation role")),
         };
         Ok(Call {

@@ -369,7 +369,7 @@ impl Checker<'_> {
         let (by_ref, mutable) = written;
         if mode != Mode::Value
             && (by_ref || mutable)
-            && self.pattern_edition(node)? == crate::support::edition::Edition::Rust2024
+            && self.introducer_edition(node)? == crate::support::edition::Edition::Rust2024
         {
             return Err(self.error(
                 node,
@@ -425,7 +425,7 @@ impl Checker<'_> {
         pattern: NodeId,
     ) -> Result<PatternKind, Error> {
         if mode != Mode::Value
-            && self.pattern_edition(node)? == crate::support::edition::Edition::Rust2024
+            && self.introducer_edition(node)? == crate::support::edition::Edition::Rust2024
         {
             return Err(self.error(
                 node,
@@ -459,7 +459,11 @@ impl Checker<'_> {
             pattern,
         })
     }
-    fn pattern_edition(&self, node: NodeId) -> Result<crate::support::edition::Edition, Error> {
+    /// The edition of the syntax's first source byte, following expansion origins.
+    pub(in crate::sema::bodies) fn introducer_edition(
+        &self,
+        node: NodeId,
+    ) -> Result<crate::support::edition::Edition, Error> {
         let package = &self.report.package;
         let span = package.unit(self.state.file).configured.ast.node(node).span;
         crate::resolve::unit::editions::introducer(self.state.file, span, |file| {

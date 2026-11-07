@@ -2,8 +2,9 @@
 """Run small authored target graphs through an actual RustGM binary.
 
 Outcomes are declared before execution: a library plus binary consumer builds
-completely and reproducibly, a rejected consumer stops after its library, and an
-unsupported edition fails before any process starts.
+completely and reproducibly, including from a Rust 2018 library, a rejected
+consumer stops after its library, and an unsupported crate type fails before any
+process starts.
 """
 import argparse
 import json
@@ -28,10 +29,13 @@ CASES = {
     'rejected-binary': {'client': 'reject-private-field.rs', 'edition': '2024',
                         'expected': {'state': 'failed', 'completed': ['records'],
                                      'failure': {'crate': 'client', 'kind': 'compile'}}},
-    'unsupported-edition': {'client': 'pass-construct.rs', 'edition': '2018',
-                            'expected': {'state': 'failed', 'completed': [],
-                                         'failure': {'crate': 'records', 'kind': 'unsupported'},
-                                         'blocked': ['client']}},
+    'legacy-edition-library': {'client': 'pass-construct.rs', 'edition': '2018',
+                               'expected': {'state': 'complete', 'completed': ['records', 'client'],
+                                            'failure': None}},
+    'unsupported-crate-type': {'client': 'pass-construct.rs', 'edition': '2024', 'kind': 'dylib',
+                               'expected': {'state': 'failed', 'completed': [],
+                                            'failure': {'crate': 'records', 'kind': 'unsupported'},
+                                            'blocked': ['client']}},
 }
 
 
@@ -49,7 +53,7 @@ def graph(case):
     library = FIXTURES / 'first.rs'
     client = FIXTURES / case['client']
     data = json.dumps(dict(version=1, roots=[1], units=[
-        unit('records', 'lib', library, case['edition']),
+        unit('records', case.get('kind', 'lib'), library, case['edition']),
         unit('client', 'bin', client, '2024', [(0, 'one')])])).encode()
     plan = parse(data, TRIPLE)
     packages = {}

@@ -180,3 +180,36 @@ fn covering_a_deep_use_does_not_copy_or_rescan_its_prefix() -> Result<(), &'stat
     }
     Ok(())
 }
+
+#[test]
+fn whole_variable_captures_cover_disjoint_places_and_reborrows() -> Result<(), &'static str> {
+    let mut graph = Graph::default();
+    graph.capture_whole_variables();
+    let pair = graph.root(DefId(7))?;
+    let first = graph.project(pair, Step::Field(crate::sema::members::Selection::Tuple(0)))?;
+    let second = graph.project(pair, Step::Field(crate::sema::members::Selection::Tuple(1)))?;
+    let formatter = graph.root(DefId(8))?;
+    let referent = graph.project(formatter, Step::Dereference { mutable: true })?;
+    graph.require(first, Mode::Mutable)?;
+    graph.require(second, Mode::Shared)?;
+    graph.require(referent, Mode::Mutable)?;
+    let plan = graph.finish()?;
+    assert_eq!(
+        plan.captures,
+        [
+            super::Capture {
+                path: pair,
+                mode: Mode::Mutable
+            },
+            super::Capture {
+                path: formatter,
+                mode: Mode::UniqueImmutable
+            }
+        ]
+    );
+    for place in [first, second] {
+        assert_eq!(plan.covering(place), plan.captures.first());
+    }
+    assert_eq!(plan.covering(referent), plan.captures.get(1));
+    Ok(())
+}

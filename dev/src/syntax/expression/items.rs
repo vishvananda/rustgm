@@ -50,6 +50,7 @@ pub fn parse_crate_in_edition<'s>(
     let mut parser = Parser::new(source, true)?;
     parser.names = names;
     parser.inputs = &edition;
+    parser.cursor.fence_legacy_prefixes(edition);
     let attrs = parser.attributes(true)?;
     parser.item_attributes(attrs);
     let items = parser.item_list(false, Scope::Module)?;
@@ -349,7 +350,7 @@ impl Parser<'_, '_> {
             } else {
                 false
             };
-            let asynchronous = self.eat_word(Word::Async)?;
+            let asynchronous = self.eat_edition_keyword(Word::Async)?;
             let unsafe_ = self.eat_word(Word::Unsafe)?;
             let safe = self.cursor.at_word(Word::Safe)?
                 && self
@@ -763,12 +764,29 @@ impl Parser<'_, '_> {
         }
     }
 
+    /// Rust 2015 trait methods may omit parameter patterns; that form is fenced.
+    fn untyped_parameter(
+        &mut self,
+        first: Option<crate::lex::token::Token>,
+    ) -> Result<LexError, LexError> {
+        if let Some(token) = first
+            && let Some(legacy @ crate::support::edition::Legacy::Rust2015) =
+                self.inputs.edition(token)?.legacy()
+        {
+            return Ok(error(
+                token.start,
+                crate::support::edition::LegacyRule::AnonymousParameters.unsupported(legacy),
+            ));
+        }
+        self.error("function parameter requires a type")
+    }
     pub(super) fn function_parameters(&mut self, pointer: bool) -> Result<List, LexError> {
         self.expect(P::OpenParen)?;
         let mark = self.scratch.len();
         while !self.eat(P::CloseParen)? {
             let attrs = self.attributes(false)?;
-            let start = self.cursor.peek(0)?.map_or(self.cursor.end(), |t| t.start);
+            let first = self.cursor.peek(0)?;
+            let start = first.map_or(self.cursor.end(), |t| t.start);
             let parameter = if self.eat(P::DotDotDot)? {
                 self.node(start, Kind::Variadic)?
             } else if pointer {
@@ -833,7 +851,7 @@ impl Parser<'_, '_> {
                 } else if self.self_pattern(pattern) {
                     None
                 } else {
-                    return Err(self.error("function parameter requires a type")?);
+                    return Err(self.untyped_parameter(first)?);
                 };
                 self.node(start, Kind::Parameter { pattern, ty })?
             };

@@ -49,7 +49,9 @@ impl Checker<'_> {
             self.report.package.units.get(file.0 as usize)
         })
         .map_err(|error| self.error(key, error.message))?;
-        Ok((edition == crate::support::edition::Edition::Rust2021)
+        // Every edition before 2024 captures only explicitly named lifetimes.
+        Ok(edition
+            .before_2024()
             .then(|| Box::new(ExplicitLifetimes::default())))
     }
 

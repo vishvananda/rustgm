@@ -62,6 +62,8 @@ pub struct Cursor<'source> {
     /// The failure for the probe that is currently returning one.
     failure: Option<LexError>,
     pub high_water: usize,
+    /// Physical pre-2021 source, whose `ident#`, `ident"` and `ident'` are fenced.
+    legacy_prefixes: Option<crate::support::edition::Legacy>,
 }
 
 impl<'source> Cursor<'source> {
@@ -97,7 +99,18 @@ impl<'source> Cursor<'source> {
             last_word: Word::Other,
             failure: None,
             high_water: 0,
+            legacy_prefixes: None,
         }
+    }
+
+    /// Before 2021 an identifier and an adjacent `#`, string or char are
+    /// separate tokens. This lexer reserves them, so physical legacy source
+    /// fails explicitly instead of receiving the 2021 token.
+    pub(crate) const fn fence_legacy_prefixes(
+        &mut self,
+        edition: crate::support::edition::Edition,
+    ) {
+        self.legacy_prefixes = edition.legacy();
     }
 
     /// Consume already classified macro tokens with the ordinary bounded parser.
@@ -314,6 +327,17 @@ impl<'source> Cursor<'source> {
         };
         while self.ready < BATCH {
             match lexer.next_significant(&mut self.produced) {
+                Ok(Some(token))
+                    if token.kind == Kind::UnknownPrefix
+                        && let Some(legacy) = self.legacy_prefixes =>
+                {
+                    self.deferred = Some(error(
+                        token.start,
+                        crate::support::edition::LegacyRule::UnreservedPrefixes.unsupported(legacy),
+                    ));
+                    self.exhausted = true;
+                    return;
+                }
                 Ok(Some(token)) => {
                     let slot = (self.head + self.ready) & MASK;
                     self.ring[slot] = Pending {

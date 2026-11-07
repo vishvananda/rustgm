@@ -128,8 +128,6 @@ class FrozenPlans(unittest.TestCase):
     def test_every_std_unit_reports_only_settings_rustgm_cannot_express(self):
         steps = plan_frozen('std')
         expected = {name: {'package.environment'} for name in steps}
-        expected['cfg_if'].add('edition')
-        expected['rustc_demangle'].add('edition')
         expected['std'] |= {'crate_types', 'build-script.output'}
         expected['compiler_builtins'].add('build-script.output')
         expected['libc'].add('build-script.output')
@@ -253,7 +251,15 @@ def replace_namespace(value, **changes):
 
 
 class Expressibility(unittest.TestCase):
-    def test_editions_crate_types_flags_profiles_and_modifiers_are_typed_gaps(self):
+    def test_legacy_editions_map_to_their_explicit_driver_option(self):
+        units = [row('old', edition='2015'), row('mid', edition='2018', dependencies=[edge(0, 'old')])]
+        plan, packages = authored(units, [1])
+        steps = {step.crate_name: step for step in plan_units(plan, packages, OUT)}
+        for name, edition in (('old', '2015'), ('mid', '2018')):
+            self.assertEqual(steps[name].gaps, ())
+            self.assertEqual(steps[name].arguments[1], f'--edition={edition}')
+
+    def test_crate_types_flags_profiles_and_modifiers_are_typed_gaps(self):
         flagged = deepcopy(PROFILE) | {'rustflags': ['-Cpanic=abort', '-C', 'panic=abort', '-Zfoo'],
                                        'debuginfo': 1, 'panic': 'unwind', 'opt_level': '3'}
         units = [row('old', edition='2015'), row('shared', kind='dylib'), row('flags', profile=flagged),
@@ -261,7 +267,7 @@ class Expressibility(unittest.TestCase):
                                            edge(2, 'flags', nounused=True)])]
         plan, packages = authored(units, [3])
         steps = {step.crate_name: step for step in plan_units(plan, packages, OUT)}
-        self.assertEqual([(gap.field, gap.value) for gap in steps['old'].gaps], [('edition', '2015')])
+        self.assertEqual(steps['old'].gaps, ())
         self.assertEqual([(gap.field, gap.value) for gap in steps['shared'].gaps], [('crate_types', 'dylib')])
         self.assertEqual([(gap.field, gap.value) for gap in steps['flags'].gaps], [
             ('profile.opt_level', '"3"'), ('profile.debuginfo', '1'), ('profile.panic', '"unwind"'),
@@ -339,8 +345,8 @@ class Execution(unittest.TestCase):
         path.chmod(path.stat().st_mode | stat.S_IXUSR)
         return path, hashlib.sha256(path.read_bytes()).hexdigest()
 
-    def graph(self, base_edition='2024', **options):
-        units = [row('base', edition=base_edition), row('mid', edition='2021', dependencies=[edge(0, 'base')]),
+    def graph(self, base_kind='lib', **options):
+        units = [row('base', kind=base_kind), row('mid', edition='2021', dependencies=[edge(0, 'base')]),
                  row('other'), row('app', kind='bin', dependencies=[edge(1, 'mid')])]
         plan, packages = authored(units, [3, 2])
         folder = self.root / 'out'
@@ -397,11 +403,11 @@ class Execution(unittest.TestCase):
         self.assertEqual(receipt['failure']['detail'], {'status': 2, 'diagnostic': 'USAGE: refused base'})
 
     def test_unsupported_unit_fails_before_any_process_starts(self):
-        steps, packages, folder = self.graph(base_edition='2018')
+        steps, packages, folder = self.graph(base_kind='dylib')
         rustgm, sha = self.fake()
         receipt = execute(steps, packages, rustgm, sha, folder, {'root': 'authored'})
         self.assertEqual(receipt['failure']['kind'], 'unsupported')
-        self.assertEqual(receipt['failure']['detail'][0]['field'], 'edition')
+        self.assertEqual(receipt['failure']['detail'][0]['field'], 'crate_types')
         self.assertEqual([row['unit'] for row in receipt['blocked']], [1, 3])
         self.assertEqual(self.invocations(), [])
 

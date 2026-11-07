@@ -207,8 +207,15 @@ impl Parser<'_, '_> {
         } else {
             Some(self.pattern_atom()?)
         };
-        if self.cursor.at(P::DotDotDot)? {
-            return Err(self.error("obsolete range pattern is unavailable in edition 2024")?);
+        if self.cursor.at(P::DotDotDot)?
+            && let Some(token) = self.cursor.peek(0)?
+        {
+            // The `...` token's own edition selects the older inclusive range.
+            let message = self.inputs.edition(token)?.legacy().map_or(
+                "obsolete range pattern is unavailable in edition 2024",
+                |legacy| crate::support::edition::LegacyRule::DotDotDotPatterns.unsupported(legacy),
+            );
+            return Err(error(token.start, message));
         }
         let inclusive = self.cursor.at(P::DotDotEqual)?;
         if inclusive || self.cursor.at(P::DotDot)? {
