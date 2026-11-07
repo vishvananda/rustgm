@@ -523,3 +523,9 @@ census batch 4 for the lexical module of const and static annotation
 constants: two `pub(super)` array lengths and a crate-root initializer
 opponent. Each outcome was declared before its rustc 1.98.0 oracle. A private
 invariant checks them; there is no graded manifest.
+
+`spec/fn-sugar-impl-parameters/` freezes eleven declared no_core controls for
+impl parameters that only a parenthesized callable bound determines (core
+`FromFn`, `Map`, `RepeatWith` shapes), with mismatch, non-`Option` and region
+opponents and four recorded gaps. Each outcome was declared before its rustc
+1.98.0 oracle. A private invariant checks them; there is no graded manifest.

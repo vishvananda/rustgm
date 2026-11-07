@@ -1,0 +1,97 @@
+{
+ "schema": 1,
+ "declared": "2026-11-07, before the frozen oracle and before any implementation change",
+ "declaration_sha256": "026036126a5aea226487fc86ab458486298547ec447009e392955844a16fa3e4",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [
+  "2026-11-07 after oracle v1 (rustc-oracle-v1.json): const-call-adapter.rs v1 was rejected by rustc for the fixture itself (\"requires `freeze` lang_item\": const checking of the const impl body needs it), which is not an outcome. v2 adds core's `Freeze` auto trait and the `auto_traits` feature, as the PA28 source-transmute fixtures do; the case body and the declared outcome 0 are unchanged. Declared before oracle v2."
+ ],
+ "cases": {
+  "from-fn-item.rs": {
+   "sha256": "e96183281312dd3b9960886f3107536f18f99d0678e440d4046444c791eddbd7",
+   "declared": 0,
+   "reason": "core iter::from_fn shape: impl<T, F> Iterator for FromFn<F> where F: FnMut() -> Option<T>; T is determined only by the sugar output equality, and Self::Item in next selects this impl",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "map-adapter.rs": {
+   "sha256": "3d022dffddf970e143d55e0320bd2ec0bf5251d5c3a85de27fec43fbd4138779",
+   "declared": 0,
+   "reason": "core Map shape: B determined by F: FnMut(I::Item) -> B; Self::Item in a method where-clause of a second impl with the same where-clause",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "inline-bound.rs": {
+   "sha256": "fe96619ff1b34827d89b2e5ebfc6e1b7127b8b9f01be5ae95171b0860c712c31",
+   "declared": 0,
+   "reason": "core RepeatWith shape: the sugar bound is inline on the parameter list, impl<A, F: FnMut() -> A>",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "caller-premise.rs": {
+   "sha256": "c6b17b2021ee7a5ee1cc4167486309199b33da6debb8b819ab8d7ed4f5ec7e67",
+   "declared": 0,
+   "reason": "a caller premise F: FnMut() -> Option<u8> selects the impl and normalizes <FromFn<F> as Iterator>::Item to u8",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "caller-mismatch.rs": {
+   "sha256": "ef1ebdf79d1107f384d019b024bfeda91f4aeaf0284dcd84872e6f2c68a7e0a0",
+   "declared": 1,
+   "reason": "opponent: the normalized item is u8, returned as u16 (E0308)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  },
+  "output-not-option.rs": {
+   "sha256": "8f2b8d902cfadded0a05acbdd5d0685d74da481345fcb1c39831a4817bb4315d",
+   "declared": 1,
+   "reason": "opponent: F::Output is u8, so the impl output equality Option<T> cannot hold and no impl applies (E0271 or E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0271"
+   ]
+  },
+  "elided-lifetime.rs": {
+   "sha256": "282efb64204f3bb542c894c31655630b477d3c9d785272fbb5824826080fee3e",
+   "declared": 0,
+   "reason": "core Scan shape: F: FnMut(&mut St) -> Option<B> has an elided lifetime, so the sugar binder quantifies one region; rustc still determines B",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "explicit-binding.rs": {
+   "sha256": "6f6d292690dc7deb4a6435d6709a03f04381a160792c68118b7693e6da9cf6db",
+   "declared": 0,
+   "reason": "control: the same equality written as F: FnOnce<(), Output = Option<T>> without sugar",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "const-call-adapter.rs": {
+   "sha256": "d4facd902f9edff1277745921345ad49d30305e58cf2bd2be70133758e658260",
+   "declared": 0,
+   "reason": "core array Drain shape: const impl FnOnce<(usize,)> for &mut Drain<T, F> where F: [const] FnMut(T) -> U; U determined by the const sugar bound",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "impl-lifetime-output.rs": {
+   "sha256": "5ca032993339bfaada4fa9812f0b777aee3b3d3a28f7c2331d7778a470cfd07d",
+   "declared": 0,
+   "reason": "the zero-region sugar body names the impl lifetime: impl<'a, T: 'a, F> Iterator for Borrowing<'a, F> where F: FnMut() -> Option<&'a T>; a caller premise normalizes Item to &'b u8",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "impl-lifetime-mismatch.rs": {
+   "sha256": "e7a7a7e1c3afd9d5f8a7a1aead5ba73cb35c58f5c6a12edc86d4c8b3a8a657d6",
+   "declared": 1,
+   "reason": "opponent: the same normalized &'b u8 returned as &'static u8 (a region error)",
+   "rustc_status": 1,
+   "error_codes": []
+  }
+ },
+ "second_declaration": {
+  "declared": "2026-11-07, after the implementation change and before their oracle and before any RustGM run on them",
+  "declaration_sha256": "75f4ff38a0edf0fc259d19fac62ed1a0b1385e9bd22366800e710c17a3a9deae"
+ }
+}

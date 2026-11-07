@@ -1,4 +1,7 @@
 //! One header substitution shares all type/const variables and fresh lifetime captures.
+#[cfg(test)]
+#[path = "../../../../tests/invariants/fn_sugar_impl_parameters.rs"]
+mod sugar_tests;
 use super::{Context, Declarations, DefId, Goal, RegionId, inference};
 use crate::types::{
     arguments::Argument as Canonical,
@@ -78,6 +81,7 @@ pub(super) fn instantiate(
         }
     }
     let mut quantified = None;
+    let mut lowering = None;
     for predicate in
         crate::sema::declaration_inputs::declared(&facts.generics, facts.crates.as_deref(), owner)?
     {
@@ -86,7 +90,7 @@ pub(super) fn instantiate(
             predicate.value,
             effect.unwrap_or(crate::support::constness::Constness::Ordinary),
         )?;
-        match value {
+        match vacuous(&mut facts.types, &mut lowering, value)? {
             Clause::Predicate(predicate) => predicates.push(predicate),
             clause @ (Clause::ForAll(_) | Clause::UnstableFeature(_)) => {
                 let clause = fold.clause(&mut facts.types, clause)?;
@@ -113,7 +117,10 @@ pub(super) fn instantiate(
                 .map_err(inference)?,
         );
     }
-    context.account_work(fold.steps).map_err(inference)?;
+    let lowered = lowering.as_ref().map_or(0, |lowering| lowering.steps);
+    context
+        .account_work(fold.steps.saturating_add(lowered))
+        .map_err(inference)?;
     Ok(Instance {
         owner,
         goal,
@@ -123,6 +130,31 @@ pub(super) fn instantiate(
         regions,
         outlives,
     })
+}
+
+/// Parenthesized callable sugar quantifies its clause even when the binder
+/// binds no region. Lowered out of that empty binder, the body is an ordinary
+/// impl condition: it shares the trial's inference, so an impl parameter that
+/// only its `Output` equality determines resolves with the trial instead of
+/// waiting for a resolved parent. One lowering serves every such clause.
+fn vacuous(
+    types: &mut crate::types::Store,
+    lowering: &mut Option<substitute::Bound>,
+    clause: Clause,
+) -> Result<Clause, &'static str> {
+    let Clause::ForAll(id) = clause else {
+        return Ok(clause);
+    };
+    let scoped = types
+        .quantified(id)
+        .ok_or("missing quantified impl clause")?;
+    if scoped.bound_regions != 0 {
+        return Ok(clause);
+    }
+    lowering
+        .get_or_insert_with(|| substitute::Bound::lower(1))
+        .predicate(types, scoped.predicate)
+        .map(Clause::Predicate)
 }
 
 fn capability(

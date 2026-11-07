@@ -237,25 +237,33 @@ fn ordinary_equalities_resolve_parent_types_before_universal_conditions() -> Tes
     Ok(())
 }
 
+/// An empty binder is an ordinary impl condition: instantiation lowers it out of
+/// the binder, so its proof, scopes and flat completed cache equal those of the
+/// same clause written without a quantifier.
 #[test]
-fn an_empty_quantifier_cannot_enter_the_flat_completed_cache() -> TestResult {
-    let (report, mut facts) = tests::declarations(
-        "trait A{}trait B{}trait C{}impl A for u8{}impl<T:A>B for T{}impl<T:B>C for T{}",
-    )?;
-    quantify(&mut facts, &report, "B", "A", 0, &[])?;
-    let root = root(&mut facts, &report, "C")?;
-    let (mut context, goal) = tests::instantiate(&mut facts, root)?;
-    let assumptions = Assumptions::default();
-    let mut search = Search::new(tests::caller(&assumptions, None), Availability::Validated);
-    let first = Frame::new(&facts, &mut context, &goal, 1)?;
-    let Decision::Proven(root) = search.run(&mut facts, first)? else {
-        return Err("missing empty-binder proof".into());
-    };
-    assert!(search.query.completed.is_empty());
-    let evidence = search.evidence(&facts, root)?;
-    assert_eq!(evidence.proof.scope_count(), 1);
-    assert!(evidence.proof.regions.is_empty());
-    assert!(quantified_tests::valid(&facts, &evidence.proof, 0)?);
+fn an_empty_quantifier_is_proven_and_cached_as_its_ordinary_condition() -> TestResult {
+    let source = "trait A{}trait B{}trait C{}impl A for u8{}impl<T:A>B for T{}impl<T:B>C for T{}";
+    let mut observed = Vec::new();
+    for quantified in [false, true] {
+        let (report, mut facts) = tests::declarations(source)?;
+        if quantified {
+            quantify(&mut facts, &report, "B", "A", 0, &[])?;
+        }
+        let root = root(&mut facts, &report, "C")?;
+        let (mut context, goal) = tests::instantiate(&mut facts, root)?;
+        let assumptions = Assumptions::default();
+        let mut search = Search::new(tests::caller(&assumptions, None), Availability::Validated);
+        let first = Frame::new(&facts, &mut context, &goal, 1)?;
+        let Decision::Proven(root) = search.run(&mut facts, first)? else {
+            return Err("missing empty-binder proof".into());
+        };
+        let completed = search.query.completed.len();
+        let evidence = search.evidence(&facts, root)?;
+        assert!(evidence.proof.regions.is_empty());
+        assert!(quantified_tests::valid(&facts, &evidence.proof, 0)?);
+        observed.push((completed, evidence.proof.scope_count()));
+    }
+    assert_eq!(observed[0], observed[1]);
     Ok(())
 }
 
