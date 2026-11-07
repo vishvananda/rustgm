@@ -187,16 +187,18 @@ impl Checker<'_> {
         let mut lifetimes = Vec::new();
         let mut substitution: Option<crate::types::substitute::Bound> = None;
         for &expected in members.owners.get(&trait_owner).into_iter().flatten() {
-            let actual = self
-                .facts
-                .associated
-                .type_definition(impl_owner, expected)
-                .ok_or_else(|| {
-                    self.error(
-                        source,
-                        "implementation is missing a required associated type",
-                    )
-                })?;
+            let Some(actual) = self.facts.associated.type_definition(impl_owner, expected) else {
+                // A specializing impl inherits the type its ancestor checks.
+                if crate::sema::specialization::inherited_type(&self.facts, owner, expected)
+                    .map_err(|e| self.error(source, e))?
+                {
+                    continue;
+                }
+                return Err(self.error(
+                    source,
+                    "implementation is missing a required associated type",
+                ));
+            };
             let key = self.report.resolution.definitions[actual.0 as usize]
                 .node
                 .ok_or_else(|| self.error(source, "missing associated type definition"))?;

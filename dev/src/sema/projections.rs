@@ -37,6 +37,26 @@ pub(super) fn definition(
         .ok_or("selected implementation is missing the associated type")
 }
 
+/// The selected impl's own definition, or rustc's `assoc_def`: under
+/// specialization an omitted type comes from the nearest defining ancestor,
+/// whose arguments are translated from the selected impl's.
+pub(super) fn defining(
+    facts: &mut Declarations,
+    owner: DefId,
+    arguments: crate::types::GenericArgs,
+    item: ItemId,
+) -> Result<(DefId, crate::types::GenericArgs, DefId), &'static str> {
+    if let Some(iteration) = facts.iteration.as_deref()
+        && let Some(definition) = iteration.associated_definition(owner, item)?
+    {
+        return Ok((owner, arguments, definition));
+    }
+    let (owner, arguments) =
+        crate::sema::specialization::defining_type(facts, owner, arguments, DefId(item.0))?
+            .unwrap_or((owner, arguments));
+    Ok((owner, arguments, definition(facts, owner, item)?))
+}
+
 /// Keep private result lifetimes in the selected proof's allocation interval.
 pub(super) fn implementation_result(
     facts: &mut Declarations,

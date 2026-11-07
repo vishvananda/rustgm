@@ -69,11 +69,12 @@ impl Definition {
         let Source::Implementation { owner, arguments } = source else {
             return Err("associated type requires an unambiguous validated implementation");
         };
+        let (owner, arguments, id) = super::defining(facts, *owner, *arguments, item)?;
         Ok(Self {
-            id: super::definition(facts, *owner, item)?,
+            id,
             value: Value::Implementation {
-                owner: *owner,
-                arguments: *arguments,
+                owner,
+                arguments,
                 family,
                 result: None,
             },

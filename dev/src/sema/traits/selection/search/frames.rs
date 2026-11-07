@@ -247,20 +247,27 @@ impl Search<'_> {
                 } else {
                     Chosen::Negative(node)
                 };
-                frame.selected = Some(if let Some(previous) = frame.selected {
-                    let Some(preferred) = self.preferred_candidate(
+                let selected = match frame.selected {
+                    Some(previous) => match self.preferred_candidate(
                         facts,
                         previous,
                         chosen,
                         frame.canonical.is_some(),
-                    )?
-                    else {
-                        return Ok(Action::Complete(Decision::Deferred));
-                    };
-                    preferred
-                } else {
-                    chosen
-                });
+                    )? {
+                        Preference::Chosen(preferred) => preferred,
+                        Preference::Unordered => return Ok(Action::Complete(Decision::Deferred)),
+                        Preference::Await(dependency) => {
+                            // Retry this candidate once its pair comparison can advance.
+                            frame.cursor = frame
+                                .cursor
+                                .checked_sub(1)
+                                .ok_or("contested candidate lost its cursor")?;
+                            return Ok(Action::Wait(dependency));
+                        }
+                    },
+                    None => chosen,
+                };
+                frame.selected = Some(selected);
             }
         }
         Ok(Action::Continue)
@@ -367,22 +374,28 @@ impl Search<'_> {
     }
 }
 
+enum Preference {
+    Chosen(Chosen),
+    Unordered,
+    Await(super::Dependency),
+}
 impl Search<'_> {
-    /// Each alternative already owns its complete isolated proof. A sealed
-    /// graph may order those answers only for a fully resolved requesting goal;
-    /// inference alternatives and every non-graph ambiguity keep deferring.
+    /// Each alternative already owns its complete isolated proof. Specialization
+    /// may order those answers only for a fully resolved requesting goal, as
+    /// rustc's winnowing does; inference alternatives and every other ambiguity
+    /// keep deferring. Only a use query may complete the pair's comparison.
     fn preferred_candidate(
         &self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         previous: Chosen,
         next: Chosen,
         known: bool,
-    ) -> Result<Option<Chosen>, String> {
+    ) -> Result<Preference, String> {
         let (Chosen::Positive(a), Chosen::Positive(b)) = (previous, next) else {
-            return Ok(None);
+            return Ok(Preference::Unordered);
         };
         if !known {
-            return Ok(None);
+            return Ok(Preference::Unordered);
         }
         let owner = |index: usize| -> Result<Option<DefId>, &'static str> {
             Ok(
@@ -399,9 +412,19 @@ impl Search<'_> {
             )
         };
         let (Some(a), Some(b)) = (owner(a)?, owner(b)?) else {
-            return Ok(None);
+            return Ok(Preference::Unordered);
         };
-        Ok(crate::sema::specialization::prefer(facts, a, b)?
-            .map(|winner| if winner == a { previous } else { next }))
+        let compare = self.query.purpose == crate::sema::traits::implementations::Purpose::Use;
+        Ok(
+            match crate::sema::specialization::order(facts, a, b, compare)? {
+                crate::sema::specialization::Order::Prefer(winner) => {
+                    Preference::Chosen(if winner == a { previous } else { next })
+                }
+                crate::sema::specialization::Order::Unordered => Preference::Unordered,
+                crate::sema::specialization::Order::Await(dependency) => {
+                    Preference::Await(dependency)
+                }
+            },
+        )
     }
 }

@@ -175,7 +175,7 @@ fn ordinary(
         inherited: None,
     })
 }
-fn translate(
+pub(super) fn translate(
     facts: &mut Declarations,
     relation: Relation,
     arguments: GenericArgs,

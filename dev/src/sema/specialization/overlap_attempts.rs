@@ -1,7 +1,7 @@
 //! Early and final coherence queues share one retained comparison per actual pair.
 use super::{
     proof_attempt::{Attempt, Progress},
-    registry_graph::{Comparison, EdgeId, Graph, PairKey, State},
+    registry_graph::{Comparison, EdgeId, Graph, PairKey, Relation, State},
 };
 use crate::{
     resolve::{expansion::Report, model::DefId},
@@ -180,17 +180,19 @@ fn advance(facts: &mut Declarations, key: PairKey) -> Result<(), String> {
             );
         }
         Ok(Progress::Complete(Some(relation))) => {
-            let witness = builder
+            // A selection may order its pair before coherence authenticates
+            // the sources; closure authenticates every child before admission.
+            if builder
                 .sources
                 .get(&relation.child)
-                .ok_or("specializing child lost its authenticated source")?;
-            if !witness.policy.may_specialize() {
+                .is_some_and(|witness| !witness.policy.may_specialize())
+            {
                 graph.fail();
                 return Err(
                     "specializing implementation requires its actual feature authority".into(),
                 );
             }
-            let growth = Growth::vector::<super::registry_graph::Relation>(
+            let growth = Growth::vector::<Relation>(
                 builder.relations.len(),
                 builder.relations.capacity(),
                 1,
@@ -228,13 +230,27 @@ pub(in crate::sema) fn drain(facts: &mut Declarations, report: &Report) -> Resul
     let keys: Vec<_> = builder
         .attempts
         .iter()
-        .filter_map(|(&key, value)| matches!(value, Comparison::Pending { .. }).then_some(key))
+        .map(|(&key, value)| (key, matches!(value, Comparison::Pending { .. })))
         .collect();
-    for key in keys {
+    for (key, pending) in keys {
         authenticate(facts, report, key)?;
-        advance(facts, key)?;
+        if pending {
+            advance(facts, key)?;
+        }
     }
     let graph = active_graph(facts)?;
+    let budget = graph.budget.alias()?;
+    let builder = graph.building()?;
+    budget.charge(builder.relations.len(), 0)?;
+    if builder.relations.iter().any(|relation| {
+        builder
+            .sources
+            .get(&relation.child)
+            .is_none_or(|witness| !witness.policy.may_specialize())
+    }) {
+        graph.fail();
+        return Err("specializing implementation requires its actual feature authority".into());
+    }
     if graph
         .building()?
         .attempts
@@ -254,4 +270,59 @@ pub(in crate::sema) fn drain(facts: &mut Declarations, report: &Report) -> Resul
         ));
     }
     Ok(())
+}
+pub(super) enum Settled {
+    Ordered(Relation),
+    Waiting(crate::sema::traits::selection::Dependency),
+    Undecided,
+}
+/// Complete one pair's comparison for a selection that proved both candidates.
+/// Closure authenticates its source witnesses before any relation is admitted;
+/// a recursive or ambiguous comparison leaves the pair undecided.
+pub(super) fn settle(facts: &mut Declarations, key: PairKey) -> Result<Settled, String> {
+    let graph = active_graph(facts)?;
+    let budget = graph.budget.alias()?;
+    let builder = graph.building()?;
+    match builder.attempts.get(&key) {
+        Some(
+            Comparison::Running
+            | Comparison::Pending {
+                dependency: None, ..
+            },
+        ) => {
+            return Ok(Settled::Undecided);
+        }
+        Some(Comparison::Ordered(_) | Comparison::Pending { .. }) => {}
+        None => {
+            let growth = Growth::map::<PairKey, Comparison>(
+                builder.attempts.len(),
+                builder.attempts.capacity(),
+                1,
+            );
+            budget.charge(growth.work, growth.bytes)?;
+            let attempt = Attempt::new(key, budget.alias()?)?;
+            builder.attempts.insert(
+                key,
+                Comparison::Pending {
+                    attempt,
+                    dependency: None,
+                },
+            );
+        }
+    }
+    advance(facts, key)?;
+    let builder = active_graph(facts)?.building()?;
+    Ok(match builder.attempts.get(&key) {
+        Some(Comparison::Ordered(edge)) => Settled::Ordered(
+            *builder
+                .relations
+                .get(edge.index())
+                .ok_or("specialization comparison lost its relation")?,
+        ),
+        Some(Comparison::Pending {
+            dependency: Some(dependency),
+            ..
+        }) => Settled::Waiting(*dependency),
+        _ => Settled::Undecided,
+    })
 }

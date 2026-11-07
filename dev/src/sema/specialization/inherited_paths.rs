@@ -1,4 +1,4 @@
-//! Sealed ancestry orders successful candidates; conformance reads only real parent members.
+//! Closed ancestry orders conformance; inherited members are read only from real parents.
 use super::{
     graph_pairs,
     registry_graph::{Forest, State},
@@ -32,35 +32,6 @@ pub(super) fn checked<'a>(
         return Err("specialization candidate header changed after closure");
     }
     Ok(Some(vertex))
-}
-pub(in crate::sema) fn prefer(
-    facts: &Declarations,
-    previous: DefId,
-    next: DefId,
-) -> Result<Option<DefId>, &'static str> {
-    let registry = graph_pairs::registry(facts)?;
-    let Some(graph) = registry.specialization_graph() else {
-        return Ok(None);
-    };
-    graph.current(facts)?;
-    let State::Sealed(forest) = &graph.state else {
-        return Ok(None);
-    };
-    graph.budget.charge(2, 0)?;
-    let a = registry.entry_key(previous)?;
-    let b = registry.entry_key(next)?;
-    let (Some(a), Some(b)) = (checked(forest, registry, a)?, checked(forest, registry, b)?) else {
-        return Ok(None);
-    };
-    graph.budget.charge(1, 0)?;
-    if a.preorder < b.preorder && b.preorder <= a.subtree_end {
-        return Ok(Some(next));
-    }
-    graph.budget.charge(1, 0)?;
-    if b.preorder < a.preorder && a.preorder <= b.subtree_end {
-        return Ok(Some(previous));
-    }
-    Ok(None)
 }
 pub(in crate::sema) fn conformance_order(
     facts: &Declarations,
@@ -130,6 +101,44 @@ pub(in crate::sema) fn inherited_body(
         }
         key = relation.parent;
         if registry.direct_method(key, member)?.is_some() {
+            return Ok(true);
+        }
+    }
+}
+/// Under `min_specialization` an omitted associated type is final in the
+/// nearest defining ancestor; conformance checks it there, not in the child.
+pub(in crate::sema) fn inherited_type(
+    facts: &Declarations,
+    owner: DefId,
+    member: DefId,
+) -> Result<bool, &'static str> {
+    let registry = graph_pairs::registry(facts)?;
+    let Some(graph) = registry.specialization_graph() else {
+        return Ok(false);
+    };
+    graph.current(facts)?;
+    let (State::Conforming(forest) | State::Sealed(forest)) = &graph.state else {
+        return Ok(false);
+    };
+    let mut key = registry.entry_key(owner)?;
+    loop {
+        graph.budget.charge(1, 0)?;
+        let Some(edge) = checked(forest, registry, key)?.and_then(|vertex| vertex.parent) else {
+            return Ok(false);
+        };
+        let relation = forest
+            .parents
+            .get(edge.index())
+            .ok_or("missing inherited type edge")?;
+        if relation.child != key {
+            return Err("inherited type edge changed child identity");
+        }
+        key = relation.parent;
+        if facts
+            .associated
+            .type_definition(key.owner(), member)
+            .is_some()
+        {
             return Ok(true);
         }
     }

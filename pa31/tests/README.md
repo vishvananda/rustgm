@@ -537,3 +537,12 @@ impl parameters that only a parenthesized callable bound determines (core
 `FromFn`, `Map`, `RepeatWith` shapes), with mismatch, non-`Option` and region
 opponents and four recorded gaps. Each outcome was declared before its rustc
 1.98.0 oracle. A private invariant checks them; there is no graded manifest.
+
+`spec/specialization-selection/` freezes nine declared no_core controls for
+rustc's `min_specialization` selection: the most specific applicable impl is
+selected and an omitted associated type comes from its nearest defining
+ancestor (core `StepBy`, `Fuse`, `Zip` shapes). Its opponents are an unordered
+overlap, a final method override, a non-always-applicable child, a final type
+override, an inherited type mismatch and `default type`. Each outcome was
+declared before its rustc 1.98.0 oracle. A private invariant checks them;
+there is no graded manifest.

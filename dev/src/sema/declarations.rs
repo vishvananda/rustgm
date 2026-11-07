@@ -555,6 +555,7 @@ impl Checker<'_> {
         }
         super::traits::results::prepare_outlives(&mut self.facts)
             .map_err(|e| Error::at(FileId(0), 0, e))?;
+        self.open_specialization()?;
         for index in 0..self.report.resolution.definitions.len() {
             let id = DefId(
                 u32::try_from(index)
@@ -621,6 +622,15 @@ impl Checker<'_> {
         super::api_exposure::check(self.report, &self.facts)?;
         self.reject_alias_execution()?;
         super::specialization::require_execution(&self.facts)
+    }
+    /// Declaration selections order specializing candidates as rustc does. A
+    /// staged consumer's imported conformance never seals a local graph.
+    fn open_specialization(&mut self) -> Result<(), Error> {
+        if self.selected.is_some() {
+            return Ok(());
+        }
+        super::specialization::open(&mut self.facts, self.report)
+            .map_err(|e| Error::at(FileId(0), 0, e))
     }
     /// Value/member roles consume ordinary completed types and nominal fields.
     fn complete_compiler_value_headers(&mut self) -> Result<(), Error> {

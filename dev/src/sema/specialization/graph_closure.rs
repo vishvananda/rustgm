@@ -49,7 +49,7 @@ pub(in crate::sema) fn prepare(facts: &mut Declarations, report: &Report) -> Res
     let mut forest = super::forest_edges::build(*builder, &budget)?;
     super::forest_order::number(&mut forest, &budget)?;
     families(facts, &mut forest, &budget)?;
-    functions_only(facts, report, &forest, &budget)?;
+    member_kinds(facts, report, &forest, minimal, &budget)?;
     if minimal {
         super::minimal_admission::validate(facts, report, &forest, &budget)?;
     }
@@ -98,10 +98,13 @@ fn families(
     }
     Ok(())
 }
-fn functions_only(
+/// Methods specialize at every vertex. Associated types are final under
+/// `min_specialization`, so only a root defines them; children inherit them.
+fn member_kinds(
     facts: &Declarations,
     report: &Report,
     forest: &Forest,
+    minimal: bool,
     budget: &Budget,
 ) -> Result<(), &'static str> {
     for vertex in &forest.vertices {
@@ -115,13 +118,20 @@ fn functions_only(
             .ok_or("specialization source members are incomplete")?;
         budget.charge(members.len(), 0)?;
         for member in members {
-            if report
+            match report
                 .resolution
                 .definitions
                 .get(member.0 as usize)
-                .is_none_or(|actual| actual.kind != DefKind::Function)
+                .map(|actual| actual.kind)
             {
-                return Err("specialization of associated values or types is not implemented");
+                Some(DefKind::Function) => {}
+                Some(DefKind::TypeAlias) if vertex.parent.is_none() => {}
+                Some(DefKind::TypeAlias) if minimal => {
+                    return Err(
+                        "specializing implementation overrides a final parent associated type",
+                    );
+                }
+                _ => return Err("specialization of associated values or types is not implemented"),
             }
         }
     }

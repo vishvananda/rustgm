@@ -1,0 +1,96 @@
+{
+ "schema": 1,
+ "declared": "2026-11-07, before any rustc oracle run on these sources and before any implementation change",
+ "declaration_sha256": "cb581fefb64f5d34042b772886751f62b43f7870cef2af98f05dfc7f3796efe0",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [
+  "2026-11-07 after oracle v1: the three positive controls (step-by-inherited, fuse-marker, zip-chain) v1 were rejected by rustc for the fixture itself (\"requires `copy` lang_item\": MIR building of a by-value parameter needs it), which is not an outcome; the six opponents gave their declared errors (no-relation E0119, final-method-override E0520, not-always-applicable \"cannot specialize on trait `Plain`\", type-override E0520, inherited-mismatch E0308, default-type E0658 with E0053). v2 replaces every case's reduced lang-item prefix with the exact pinned core fragments of spec/fn-sugar-impl-parameters (PointeeSized through Copy, with their attributes and comments) and Clone/Copy impls for usize, u8 and u16. Case bodies and declared outcomes are unchanged. Declared before oracle v2."
+ ],
+ "cases": {
+  "step-by-inherited.rs": {
+   "sha256": "1ef81eb274fd3171832dc3ecc8865c742e281a0c26109e8feda43cb0e8ff0f63",
+   "v1_sha256": "731418e1e610b4fe4175f78d9859e81d40d40da7d2c5f95a8bf4a28be860507c",
+   "declared": 0,
+   "reason": "core StepBy shape: a concrete Range<u8> child that omits `type Item` and names Self::Item in its own signatures; rustc selects the child and normalizes through the parent's final `type Item = I::Item`; a generic I sees only the parent",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "fuse-marker.rs": {
+   "sha256": "32b8b5c19b3997fde10b60a2e31f0449839c056895c7429a97bcdbcd6ac7aa96",
+   "v1_sha256": "8b13b2ff0b5319ad00dda0e74e57d6eefa757ec485ba5ee844601ce2db57a625",
+   "declared": 0,
+   "reason": "core Fuse shape: the child impl's where-clause names an unsafe specialization marker (FusedIterator); Self::Item in the child's own method signature, with a method where-clause, normalizes through the parent",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "zip-chain.rs": {
+   "sha256": "428372d27c93a7b82498ae07de5deb45732324bacb707272b5b7f03ec0129401",
+   "v1_sha256": "7df03817636035d6830a392a5810c97990b0bde9b90437e14ad4874e27e4c883",
+   "declared": 0,
+   "reason": "core Zip shape: a three-level chain over two specialization traits; the most specific of three applicable impls is selected and Item comes from the root",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "no-relation.rs": {
+   "sha256": "cdccd710d4008b2329c1c8776104600af0fb91fd8932451f5636624879b1f269",
+   "v1_sha256": "a030ff147b74726f22ef84a363facecf0c6bb09128ef6093786daec5543e99b7",
+   "declared": 1,
+   "reason": "opponent: two complete impls whose where-clauses (T: A, T: B) neither imply the other overlap at u8 (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "final-method-override.rs": {
+   "sha256": "b107595fda1844a5e89460db592d8e315cfd072cdb7fbb3e18711776986f5dba",
+   "v1_sha256": "84df6902d1b4501ed47cea241de9424df71047dc2210a734fb710145d089420f",
+   "declared": 1,
+   "reason": "opponent: the child overrides g, which the parent does not mark default (E0520)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0520"
+   ]
+  },
+  "not-always-applicable.rs": {
+   "sha256": "4e24e67a3ed2eadb11539292638115b3bdae075b89417a8d19d5db38343cf923",
+   "v1_sha256": "ca92a7e68248c69cbaf746a5159d1addbb1a294f1933f1837de22a885bf9a329",
+   "declared": 1,
+   "reason": "opponent: the child adds T: Plain, an ordinary trait rather than a specialization marker, so it is not always applicable (min_specialization rejects it)",
+   "rustc_status": 1,
+   "error_codes": [],
+   "rustc_message": "cannot specialize on trait `Plain`"
+  },
+  "type-override.rs": {
+   "sha256": "d92b0eb9dd39ed139cbb65da23bacd52c1797844ab894b17a025baa1228147d8",
+   "v1_sha256": "09fe0f815ae0731827cdad1ed6692835db96523f6a68ad2eda914a757876c698",
+   "declared": 1,
+   "reason": "opponent: the child redefines the parent's final associated type Out (E0520)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0520"
+   ]
+  },
+  "inherited-mismatch.rs": {
+   "sha256": "c19c030ef87ac1d809d174c662b9b1105e75a46728b49dca44b6502b97170d50",
+   "v1_sha256": "7fc995ededc4e65184b8bd04dd61d51d74e7f6e1170f08917ae3b58c6d254187",
+   "declared": 1,
+   "reason": "opponent: the inherited Item normalizes to u8 and is returned as u16 (E0308)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  },
+  "default-type.rs": {
+   "sha256": "0ab7a5b5286835a15282f78ce6f993bd8ba4eed9402900c032f0ea36a1f8a8fd",
+   "v1_sha256": "cbbd5631cc6257338585dc42d1352c52e2dd8f0c5ed3f2dd9d55d45a0394f522",
+   "declared": 1,
+   "reason": "opponent: `default type` needs the full specialization feature, not min_specialization (E0658)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0053",
+    "E0658"
+   ]
+  }
+ }
+}

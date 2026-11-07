@@ -4,6 +4,7 @@ mod annotation_rows;
 mod annotation_store;
 mod applicable_rules;
 mod argument_closure;
+mod candidate_order;
 mod forest_edges;
 mod forest_order;
 mod graph_closure;
@@ -35,7 +36,9 @@ pub(in crate::sema) use graph_pairs::{compare, remembered, requested};
 
 pub(in crate::sema) use graph_closure::{prepare as prepare_graph, require_execution, seal};
 
-pub(in crate::sema) use member_paths::{conformance_order, inherited_body, prefer};
+pub(in crate::sema) use member_paths::{conformance_order, inherited_body, inherited_type};
+
+pub(in crate::sema) use candidate_order::{Order, defining_type, open, order};
 
 pub(in crate::sema) use obligation_chain::{ProjectionRequirements, ProofInputs};
 pub(in crate::sema) use selected_member::{SelectedMethod, resolve as selected_method};
@@ -45,3 +48,7 @@ pub(in crate::sema) use header_conditions::Conditions as DefiningConditions;
 #[cfg(test)]
 #[path = "../../tests/invariants/marker_contracts.rs"]
 mod component_tests;
+
+#[cfg(test)]
+#[path = "../../tests/invariants/candidate_winnowing.rs"]
+mod selection_tests;

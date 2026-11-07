@@ -223,16 +223,14 @@ impl Checker<'_> {
         // Arguments use the private selection's original identities. Keep their
         // restoration before rebasing a canonical declaration template.
         self.retain_selection_proof(key, request, context, proof, delivery)?;
-        let definition = crate::sema::projections::definition(
-            &self.facts,
-            owner,
-            request
-                .alias
-                .associated()
-                .ok_or_else(|| self.error(key, "unexpected trait result selection"))?
-                .item,
-        )
-        .map_err(|e| self.error(key, e))?;
+        let item = request
+            .alias
+            .associated()
+            .ok_or_else(|| self.error(key, "unexpected trait result selection"))?
+            .item;
+        let (owner, arguments, definition) =
+            crate::sema::projections::defining(&mut self.facts, owner, arguments, item)
+                .map_err(|e| self.error(key, e))?;
         Ok(Selection::Definition(Selected {
             request,
             owner,

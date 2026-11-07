@@ -44,6 +44,10 @@ impl Requests {
     pub(crate) fn min_checks(&self) -> bool {
         self.minimal
     }
+    /// The crate itself requests specialization, independently of any token.
+    pub(crate) fn crate_request(&self) -> bool {
+        self.minimal || self.full
+    }
     pub(crate) fn validate(&self, report: &Report) -> Result<(), Error> {
         let unit = report
             .package
