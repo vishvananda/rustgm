@@ -4,7 +4,7 @@ use super::{
     package::{Error, Module, ModuleId, Package},
     unit::{FileId, NodeKey, Unit},
 };
-use crate::support::hash::{HashMap, HashSet};
+use crate::support::hash::HashMap;
 use crate::{
     expand::{config::Config, configured::Effect},
     literal::Value,
@@ -62,9 +62,9 @@ pub(crate) struct Loader<'a, S> {
     config: &'a Config,
     directories: Vec<Directory>,
     identities: Vec<PathBuf>,
-    cache: HashMap<PathBuf, FileId>,
-    /// Identities whose parsed bytes already granted source-contract allowance.
-    admitted: HashSet<PathBuf>,
+    /// Every admitted identity, whose parsed bytes already granted allowance,
+    /// with its parsed module unit; an identity only included has none.
+    cache: HashMap<PathBuf, Option<FileId>>,
     separate_instances: bool,
     includes: HashMap<(PathBuf, MacroContext), FileId>,
     include_requests: HashMap<(PathBuf, MacroContext), FileId>,
@@ -224,8 +224,7 @@ impl<'a, S: Sources> Loader<'a, S> {
                 relative: None,
             }],
             identities: vec![root.identity.clone()],
-            admitted: HashSet::from_iter([root.identity.clone()]),
-            cache: HashMap::from_iter([(root.identity, FileId(0))]),
+            cache: HashMap::from_iter([(root.identity, Some(FileId(0)))]),
             separate_instances: false,
             includes: HashMap::default(),
             include_requests: HashMap::default(),
@@ -395,7 +394,8 @@ impl<'a, S: Sources> Loader<'a, S> {
                     None
                 },
             };
-            let source_file = if let Some(id) = self.cache.get(&selected.identity).copied() {
+            let cached = self.cache.get(&selected.identity).copied().flatten();
+            let source_file = if let Some(id) = cached {
                 self.cached_instance(id, &selected.path)?
             } else {
                 let id = FileId(
@@ -404,12 +404,14 @@ impl<'a, S: Sources> Loader<'a, S> {
                 );
                 let unit = Unit::parse(selected.source, self.config, &mut self.package.names)
                     .map_err(|e| Error::at(id, e.offset, e.message))?;
-                self.cache.insert(selected.identity.clone(), id);
+                let included = self.cache.insert(selected.identity.clone(), Some(id));
                 self.package.units.push(unit);
                 self.package
                     .file_paths
                     .push(selected.path.components().collect());
-                self.admit(&selected.identity, id)?;
+                if included.is_none() {
+                    self.admit(id)?;
+                }
                 self.identities.push(selected.identity);
                 id
             };
@@ -453,13 +455,10 @@ impl<'a, S: Sources> Loader<'a, S> {
         Ok(id)
     }
     /// The first parse of an authenticated source identity grants the source
-    /// contract and lint-policy ledgers before expansion reads it. Copied
-    /// instances, aliases and expansion output are not admissions and grant nothing.
-    fn admit(&mut self, identity: &Path, file: FileId) -> Result<(), Error> {
-        if self.admitted.contains(identity) {
-            return Ok(());
-        }
-        self.admitted.insert(identity.to_path_buf());
+    /// contract and lint-policy ledgers before expansion reads it; `cache`
+    /// records each admitted identity once. Copied instances, aliases and
+    /// expansion output are not admissions and grant nothing.
+    fn admit(&mut self, file: FileId) -> Result<(), Error> {
         let bytes = self.package.unit(file).source.original().len();
         self.package.admitted_source_bytes = self
             .package
@@ -581,8 +580,9 @@ impl<S: Sources> Loader<'_, S> {
         self.package
             .file_paths
             .push(input.path.components().collect());
-        if parsed {
-            self.admit(&input.identity, id)?;
+        if parsed && !self.cache.contains_key(&input.identity) {
+            self.cache.insert(input.identity.clone(), None);
+            self.admit(id)?;
         }
         self.identities.push(input.identity);
         self.includes.entry(key).or_insert(id);

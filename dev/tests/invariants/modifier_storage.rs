@@ -158,9 +158,11 @@ fn cold_storage_and_enclosing_layouts() -> TestResult {
     // Full policies now live in interned cold rows, reached through dense u32 IDs.
     assert_eq!(size_of::<crate::resolve::lint_policy::Level>(), 1);
     assert_eq!(size_of::<crate::resolve::lint_policy::Policy>(), 160);
-    // One cold lineage pointer and its nine-counter budget belong to import Work.
-    assert_eq!(size_of::<Report>(), 3096);
-    assert_eq!(size_of::<Engine<'_, NoFiles>>(), 4144);
+    // One cold lineage pointer and its nine-counter budget belong to import
+    // Work, and the lineage ledger's admitted-byte grant (census batch 3).
+    assert_eq!(size_of::<Report>(), 3104);
+    // The engine's import Work holds the same lineage grant.
+    assert_eq!(size_of::<Engine<'_, NoFiles>>(), 4152);
     assert_eq!(size_of::<crate::resolve::expansion::Body>(), 96);
     assert_eq!(size_of::<crate::resolve::expansion::Definition>(), 136);
     assert_eq!(size_of::<crate::resolve::package::ErrorData>(), 128);
