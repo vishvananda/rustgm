@@ -74,31 +74,42 @@ fn enum_headers_and_matches_survive_wire_and_fresh_consumers() -> Result {
             "source declaration kind is outside the initial source profile",
         )?;
     }
-    // Called tuple-variant constructor items and match guards stay fenced.
-    for (name, item, diagnostic) in [
-        (
-            "called",
-            "pub fn wrap(x: u8) -> Opt<u8> { Opt::Some(x) }",
-            "source call target has no staged actual function header",
+    // Called tuple-variant constructors are the enum-methods checkpoint's;
+    // provider-body match guards stay fenced.
+    let called = packet.folder.join("called.rs");
+    std::fs::write(
+        &called,
+        format!(
+            "{}pub fn wrap(x: u8) -> Opt<u8> {{ Opt::Some(x) }}\n",
+            std::fs::read_to_string(&source)?
         ),
-        (
-            "guarded",
-            "pub fn large(x: u8) -> bool { match x { 0..=3 => false, _ => true } }\npub fn guard(o: Opt<u8>) -> u8 { match o { Opt::Some(x) if large(x) => x, _ => 0 } }",
-            "source guard facts require a wider transport profile",
+    )?;
+    let metadata = packet.folder.join("called.rgcrate");
+    super::artifacts::checked(
+        "called",
+        &packet.folder,
+        &mut packet.export(PROFILE, &called, &metadata),
+    )?;
+    let client = packet.folder.join("wrapped.rs");
+    std::fs::write(
+        &client,
+        "#![feature(no_core)]\n#![no_core]\nextern crate base;\n#[unsafe(no_mangle)]\npub extern \"C\" fn entry() -> i32 { match base::or(base::wrap(42u8), 1u8) { 42 => 42, _ => 7 } }\n",
+    )?;
+    let mut consumer = packet.consumer(&client, "wrapped", &metadata, &packet.owner());
+    super::artifacts::checked("wrapped", &packet.folder, &mut consumer)?;
+    let fenced = packet.folder.join("guarded.rs");
+    std::fs::write(
+        &fenced,
+        format!(
+            "{}pub fn large(x: u8) -> bool {{ match x {{ 0..=3 => false, _ => true }} }}\npub fn guard(o: Opt<u8>) -> u8 {{ match o {{ Opt::Some(x) if large(x) => x, _ => 0 }} }}\n",
+            std::fs::read_to_string(&source)?
         ),
-    ] {
-        let fenced = packet.folder.join(format!("{name}.rs"));
-        std::fs::write(
-            &fenced,
-            format!("{}{item}\n", std::fs::read_to_string(&source)?),
-        )?;
-        let metadata = packet.folder.join(format!("{name}.rgcrate"));
-        packet.rejected(
-            name,
-            &mut packet.export(PROFILE, &fenced, &metadata),
-            diagnostic,
-        )?;
-    }
+    )?;
+    packet.rejected(
+        "guarded",
+        &mut packet.export(PROFILE, &fenced, &packet.folder.join("guarded.rgcrate")),
+        "source guard facts require a wider transport profile",
+    )?;
     Ok(())
 }
 #[test]

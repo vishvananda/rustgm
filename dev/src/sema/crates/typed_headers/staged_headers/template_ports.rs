@@ -18,6 +18,7 @@ struct Active {
 
 pub(super) fn prepare(
     context: &mapped_source::Context<'_>,
+    graph: &mapped_source::Graph,
     facts: &mut Declarations,
     scopes: &[Scope],
     budget: &mut Headers,
@@ -35,7 +36,7 @@ pub(super) fn prepare(
     let mut parameters = Vec::with_capacity(rows.slots.len());
     let mut callables = Templates::default();
     let mut result = Vec::with_capacity(rows.functions.len());
-    for scope in scopes {
+    for (raw, scope) in rows.scopes.iter().zip(scopes) {
         budget.charge(1)?;
         while active.last().map(|a| a.owner) != scope.parent {
             budget.charge(1)?;
@@ -92,6 +93,14 @@ pub(super) fn prepare(
                 symbol,
             });
         }
+        constructors(
+            context,
+            graph,
+            facts,
+            &mut callables,
+            (raw.owner, scope.definition, &parameters[start..]),
+            budget,
+        )?;
         active.push(Active {
             owner: scope.definition,
             parameters: start,
@@ -102,6 +111,78 @@ pub(super) fn prepare(
     budget.charge(allocation.visits)?;
     budget.observed.include(allocation);
     Ok((callables, result))
+}
+
+/// Version thirteen: each tuple variant of an enum scope is a callable
+/// constructor over its enum's own formals, as local declarations register it.
+fn constructors(
+    context: &mapped_source::Context<'_>,
+    graph: &mapped_source::Graph,
+    facts: &mut Declarations,
+    callables: &mut Templates,
+    owner: (
+        crate::support::crates::owner_catalog::DeclarationRef,
+        DefId,
+        &[ParameterId],
+    ),
+    budget: &mut Headers,
+) -> Result<(), Error> {
+    let (row, enumeration, parameters) = owner;
+    let rows = context.descriptor.rows();
+    if rows.enums.headers.is_empty() {
+        return Ok(());
+    }
+    budget.charge(2 + rows.enums.headers.len().checked_ilog2().unwrap_or(0) as usize)?;
+    let Ok(position) = rows
+        .enums
+        .headers
+        .binary_search_by_key(&row.0, |header| header.declaration.0)
+    else {
+        return Ok(());
+    };
+    let header = &rows.enums.headers[position];
+    let Some(s::HeaderRef::Nominal(index)) = rows.header(row).map_err(error)? else {
+        return Err(error(
+            "source enum constructor lost its actual nominal header",
+        ));
+    };
+    let result = graph.ty(rows.nominals[index as usize].self_type)?;
+    for variant in header.variants.slice(&rows.enums.variants).map_err(error)? {
+        budget.charge(1)?;
+        if variant.shape != s::VariantShape::Tuple {
+            continue;
+        }
+        let payload = variant.fields.slice(&rows.enums.fields).map_err(error)?;
+        budget.reserve(
+            parameters
+                .len()
+                .saturating_mul(size_of::<ParameterId>())
+                .saturating_add(facts.types.node_allocation_bound(payload.len() + 2))
+                .saturating_add(callables.registration_allocation_bound(parameters.len(), 1)),
+        )?;
+        let signature = super::definition_cells::constructor_signature(
+            graph,
+            &mut facts.types,
+            payload,
+            result,
+            budget,
+        )?;
+        let item = ItemId(context.definition(variant.declaration, budget)?.0);
+        if parameters.is_empty() {
+            callables.insert_monomorphic(&facts.types, item, signature)
+        } else {
+            callables.insert_constructor(
+                &facts.types,
+                item,
+                ItemId(enumeration.0),
+                signature,
+                0,
+                parameters,
+            )
+        }
+        .map_err(error)?;
+    }
+    Ok(())
 }
 
 /// Both private preparation owners supply their already authenticated complete

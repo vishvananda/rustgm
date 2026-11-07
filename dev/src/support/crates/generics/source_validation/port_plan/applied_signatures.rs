@@ -1,5 +1,6 @@
 //! Full applied signatures share structure; each Call still supplies its own context.
 use super::{
+    super::Target,
     Context, DomainIndex, Work, g,
     matching::Opening,
     nodes::{Arena, NodeId, Rewrite},
@@ -16,7 +17,29 @@ pub(super) struct Key {
 pub(super) struct Template {
     roots: g::Range,
     result: NodeId,
-    signature: g::Signature,
+    flags: Flags,
+}
+/// The safety, convention and variadic flags two signatures must share.
+#[derive(Clone, Copy, PartialEq, Eq)]
+struct Flags {
+    unsafe_: bool,
+    convention: g::Convention,
+    variadic: bool,
+}
+impl Flags {
+    /// A called constructor is a safe, non-variadic Rust function.
+    const CONSTRUCTOR: Self = Self {
+        unsafe_: false,
+        convention: g::Convention::Rust,
+        variadic: false,
+    };
+    const fn of(signature: g::Signature) -> Self {
+        Self {
+            unsafe_: signature.unsafe_,
+            convention: signature.convention,
+            variadic: signature.variadic,
+        }
+    }
 }
 impl Arena {
     pub(super) fn signatures(
@@ -30,7 +53,7 @@ impl Arena {
             if s::operation_contracts::function_signatures(rows, domains.headers, header, work)? {
                 continue;
             }
-            same_flags(header.original, header.callable)?;
+            same_flags(Flags::of(header.original), Flags::of(header.callable))?;
             let original = header.original.parameters.slice(&rows.roots)?;
             let public = header.callable.parameters.slice(&rows.roots)?;
             if original.len() != public.len() {
@@ -89,7 +112,7 @@ impl Arena {
                 else {
                     return Err("source Call has no actual function signature");
                 };
-                same_flags(template.signature, *actual)?;
+                same_flags(template.flags, Flags::of(*actual))?;
                 if rows.binders[actual.binder.0 as usize].count != 0 {
                     return Err("source opened Call retained an uninstantiated outer binder");
                 }
@@ -152,8 +175,23 @@ impl Arena {
             .function_applications
             .get(application.0 as usize)
             .ok_or("source applied signature has no actual application")?;
-        let header = domains.function(raw.declaration.declaration, work)?;
-        let parameters = header.callable.parameters.slice(&rows.roots)?;
+        // A called constructor's inputs are its payload and its result is its
+        // enum, both in the enum's own frame.
+        let (parameters, result, flags) = match domains.target(raw.declaration.declaration, work)? {
+            Target::Function(header) => (
+                Parameters::Roots(header.callable.parameters.slice(&rows.roots)?),
+                header.callable.result,
+                Flags::of(header.callable),
+            ),
+            Target::Constructor {
+                enumeration,
+                payload,
+            } => (
+                Parameters::Payload(payload),
+                enumeration.self_type,
+                Flags::CONSTRUCTOR,
+            ),
+        };
         self.reserve(
             retained::new_map::<Key, Template>(1)
                 .saturating_add(parameters.len().saturating_mul(4 * size_of::<NodeId>())),
@@ -162,10 +200,10 @@ impl Arena {
         )?;
         let start = u32::try_from(self.signature_roots.len())
             .map_err(|_| "source applied signature-root index overflow")?;
-        for &root in parameters {
+        for index in 0..parameters.len() {
             let use_ = uses::key(
                 domains,
-                root,
+                parameters.get(index)?,
                 Rewrite::Application(application),
                 key.caller,
                 work,
@@ -180,7 +218,7 @@ impl Arena {
         };
         let use_ = uses::key(
             domains,
-            header.callable.result,
+            result,
             Rewrite::Application(application),
             key.caller,
             work,
@@ -190,17 +228,35 @@ impl Arena {
         let template = Template {
             roots,
             result,
-            signature: header.callable,
+            flags,
         };
         self.templates.insert(key, template);
         Ok(template)
     }
 }
-fn same_flags(expected: g::Signature, actual: g::Signature) -> Result<(), &'static str> {
-    if expected.unsafe_ != actual.unsafe_
-        || expected.convention != actual.convention
-        || expected.variadic != actual.variadic
-    {
+/// A target's input recipes: a function's signature roots or a variant's payload.
+#[derive(Clone, Copy)]
+enum Parameters<'rows> {
+    Roots(&'rows [g::TypeRef]),
+    Payload(&'rows [s::VariantField]),
+}
+impl Parameters<'_> {
+    const fn len(self) -> usize {
+        match self {
+            Self::Roots(roots) => roots.len(),
+            Self::Payload(fields) => fields.len(),
+        }
+    }
+    fn get(self, index: usize) -> Result<g::TypeRef, &'static str> {
+        match self {
+            Self::Roots(roots) => roots.get(index).copied(),
+            Self::Payload(fields) => fields.get(index).map(|field| field.ty),
+        }
+        .ok_or("source applied signature input is outside its target")
+    }
+}
+fn same_flags(expected: Flags, actual: Flags) -> Result<(), &'static str> {
+    if expected != actual {
         return Err("source callable signature changed safety, convention or variadicness");
     }
     Ok(())

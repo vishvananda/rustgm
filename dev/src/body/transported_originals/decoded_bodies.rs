@@ -164,6 +164,18 @@ pub(super) fn finish(
     super::untupled_calls::check(facts, &body, &contract, &environment)
         .map_err(|error| report.body_error(source, error))?;
     super::variant_facts::check(facts, &body).map_err(|error| report.body_error(source, error))?;
+    // A called imported constructor needs its consumer-synthesized template,
+    // exactly as a local generic constructor reference requests one.
+    for value in &body.values {
+        if let crate::body::ir::Rvalue::Function(definition) = value.kind
+            && facts.members.constructor(definition).is_some()
+        {
+            facts
+                .generics
+                .referenced_constructors
+                .insert(crate::types::ItemId(definition.0));
+        }
+    }
     // Imported templates have completed declarations but their exact generic
     // nominal applications still need the ordinary substituted-field demand.
     // This structural preparation supplies no formation or body permission.

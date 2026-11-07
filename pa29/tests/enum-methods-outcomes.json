@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+  "providers": [
+    {
+      "file": "spec/enum-methods/provider.rs",
+      "sha256": "bd81ca86a91404a4b98dba4c44556285b2f729b4cd5513c6bcee719818a9271d"
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "cases": [
+    {
+      "file": "spec/enum-methods/called.rs",
+      "provider": "spec/enum-methods/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "aea50ca7c2be40e09583416e863747a71e40ffc7b023331999866c1794aec80c"
+    },
+    {
+      "file": "spec/enum-methods/mapped.rs",
+      "provider": "spec/enum-methods/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "7431e3cd873656d7f52629714a2139086005af98b6f17183ecc55b7fbd73bd6d"
+    },
+    {
+      "file": "spec/enum-methods/named.rs",
+      "provider": "spec/enum-methods/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "896a53da50683ebf5fa98c400abaea1aaab73f109440a16e4a1a27ac24870563"
+    },
+    {
+      "file": "spec/enum-methods/guarded.rs",
+      "provider": "spec/enum-methods/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "683d62447c64f77327494bdaef43fdf37970b050f2fed039ddf9c0a579f527ac"
+    },
+    {
+      "file": "spec/enum-methods/by-ref.rs",
+      "provider": "spec/enum-methods/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "ba7821e48c243cd4132b4fcb981d9bfd9ddd32758e8e400b5fba85daf7bef1a4"
+    },
+    {
+      "file": "spec/enum-methods/non-exhaustive.rs",
+      "provider": "spec/enum-methods/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0004",
+      "candidate_diagnostic": "non-exhaustive match",
+      "sha256": "c988e0ea4862067f9f081abf2d46700020d52448edcdbd0b5d63c02f39e16393"
+    },
+    {
+      "file": "spec/enum-methods/wrong-payload.rs",
+      "provider": "spec/enum-methods/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0308",
+      "candidate_diagnostic": "incompatible types",
+      "sha256": "71696527763c450c76e306e5742478806947b7d124d18aac6a7538e6018d17ba"
+    },
+    {
+      "file": "spec/enum-methods/wrong-arity.rs",
+      "provider": "spec/enum-methods/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0061",
+      "candidate_diagnostic": "call argument count mismatch",
+      "sha256": "231e3cd779d68c73eaf9f607ea88ae9833f952d389ad326f9bfcc8f1d3e62714"
+    }
+  ],
+  "deviations": [
+    "lines 1-88 of spec/enum-match/provider.rs are reused unchanged; the authored section replaces its enums with `Opt<T>` and `Pair`",
+    "the authored section declares `impl Clone for bool` and `impl Copy for bool`, as the explored scratch guard provider did; round two showed they do not by themselves avoid the round-one rustc failure",
+    "`map`, `or` and `first` are free functions; inherent impl methods (`self`/`&self` receivers) are outside this checkpoint",
+    "provider bodies take no reference parameters and contain no match guard; the consumer clients carry the guard, `match &o` and the reference parameter",
+    "the guard predicate is a local range match (`0..=3 => false`) because no comparison role is declared; closures and results avoid arithmetic because no `Add` role is declared",
+    "clients compare results with nested literal matches"
+  ],
+  "older_profiles": {
+    "module-branches-v12 and module-nominals-v10 exports of spec/enum-methods/provider.rs": "rejected: named, associated or generic alias transport requires its wider profile (the callable-role section is rejected first)",
+    "byte_identity": "module-bodies-v13 exports of spec/source-nominals/provider.rs, spec/callable-roles/provider.rs, spec/source-body-ir/{provider,wire}.rs, spec/language-roles/provider.rs, spec/associated-results/provider.rs and spec/enum-match/provider.rs, module-branches-v12 exports of spec/source-branches/{provider,wait,spin}.rs and the module-nominals-v10 exports of spec/source-branches/spin.rs and spec/source-nominals/provider.rs, with every fresh consumer of each fixture directory (LowIR, status and diagnostics), equal the main 00d41a267 baseline bytes"
+  },
+  "generated_controls": [
+    {
+      "control": "spec/enum-match/provider.rs plus `pub fn wrap(x: u8) -> Opt<u8> { Opt::Some(x) }` (the enum-match `called` control)",
+      "expected": "rustc accepts; the candidate now exports it and a fresh consumer of `wrap` re-proves it (amends the enum-match control)"
+    },
+    {
+      "control": "spec/enum-match/provider.rs plus `large` and a guarded `guard` (the enum-match `guarded` control)",
+      "expected": "unchanged: the candidate export rejects the provider-body guard by name with `source guard facts require a wider transport profile`"
+    },
+    {
+      "control": "6, 24 and 96 generated one-field `Wide` variants, a provider `pick` calling every constructor and a `rank` match, and one client",
+      "expected": "packet bytes grow exactly linearly; the client LowIR grows at most linearly"
+    }
+  ],
+  "wire_controls": [
+    {
+      "mutation": "every function application naming Opt::Some renamed to the unit variant Opt::None",
+      "expected": "source unit variant has no called constructor"
+    },
+    {
+      "mutation": "every function application naming Opt::Some renamed to Pair::Two (another enum's constructor)",
+      "expected": "source application omitted or added actual unused type formals"
+    },
+    {
+      "mutation": "every strict prefix",
+      "expected": "fails to decode"
+    }
+  ],
+  "oracle_rounds": [
+    {
+      "round": 1,
+      "provider_sha256": "b52addae60bff7cf88ed05c6caff99e3e38f46b9db4446f97eb0a9a9117fd724",
+      "observed": "the provider and seven clients matched their declared outcomes; `guarded` stopped with a rustc internal compiler error (`error performing operation: fully_perform`) because the no_core provider declared no `Copy` for `bool`",
+      "action": "the provider gained the bool Clone/Copy impls; every declared outcome is unchanged and the oracle reran every case"
+    },
+    {
+      "round": 2,
+      "provider_sha256": "bd81ca86a91404a4b98dba4c44556285b2f729b4cd5513c6bcee719818a9271d",
+      "guarded_sha256": "6f190b87025e2a68a7bcac461718cf831eaffbba58acf1615906237ac7e93e48",
+      "observed": "every case except `guarded` matched again; `guarded` hit the same internal compiler error at its `match rank(..)` scrutinee, whose type `i32` has no `Copy` impl in the no_core provider",
+      "action": "`rank` returns `u8` (which the provider makes Copy) and `entry` casts the selected result; every declared outcome is unchanged and the oracle reran every case"
+    }
+  ]
+}

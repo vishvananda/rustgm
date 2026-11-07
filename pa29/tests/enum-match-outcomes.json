@@ -82,7 +82,8 @@
     {
       "control": "provider.rs plus `pub fn wrap(x: u8) -> Opt<u8> { Opt::Some(x) }`",
       "expected": "rustc accepts; the candidate export rejects the called tuple-variant constructor by name",
-      "observed": "source call target has no staged actual function header"
+      "observed": "source call target has no staged actual function header",
+      "amended": "enum-methods checkpoint: called tuple-variant constructors export under module-bodies-v13, so the control now exports and a fresh consumer of `wrap` re-proves it (see enum-methods-outcomes.json); the previous expectation was the by-name rejection `source call target has no staged actual function header`"
     },
     {
       "control": "provider.rs plus `large` and `pub fn guard(o: Opt<u8>) -> u8 { match o { Opt::Some(x) if large(x) => x, _ => 0 } }`",

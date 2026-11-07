@@ -21,7 +21,7 @@ mod nominal_contracts;
 #[path = "sum_contracts.rs"]
 mod sum_contracts;
 pub use sum_contracts::{
-    EnumColumns, EnumHeader, VariantField, VariantHeader, VariantShape, nominal_kind,
+    Constructor, EnumColumns, EnumHeader, VariantField, VariantHeader, VariantShape, nominal_kind,
 };
 #[path = "slot_domains.rs"]
 mod scopes;

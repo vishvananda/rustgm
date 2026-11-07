@@ -137,22 +137,8 @@ fn variant_cells(
                 s::VariantShape::Unit => owner,
                 s::VariantShape::Tuple => {
                     let payload = variant.fields.slice(&rows.enums.fields).map_err(error)?;
-                    budget.charge(payload.len())?;
-                    let fields = payload
-                        .iter()
-                        .map(|field| graph.ty(field.ty))
-                        .collect::<Result<Vec<_>, _>>()?;
-                    let parameters = facts.types.intern_list(&fields).map_err(error)?;
-                    let signature = facts
-                        .types
-                        .intern(crate::types::Kind::Function {
-                            bound_regions: 0,
-                            parameters,
-                            result: owner,
-                            unsafe_: false,
-                            convention: crate::types::callable::Convention::RUST,
-                        })
-                        .map_err(error)?;
+                    let signature =
+                        constructor_signature(graph, &mut facts.types, payload, owner, budget)?;
                     let item = context.definition(variant.declaration, budget)?;
                     facts
                         .types
@@ -168,6 +154,31 @@ fn variant_cells(
         }
     }
     Ok(())
+}
+/// A tuple variant's constructor signature `fn(payload..) -> Enum`, read from
+/// its own payload rows; the cell and the callable template share it.
+pub(super) fn constructor_signature(
+    graph: &mapped_source::Graph,
+    types: &mut crate::types::Store,
+    payload: &[s::VariantField],
+    owner: TypeId,
+    budget: &mut Headers,
+) -> Result<TypeId, Error> {
+    budget.charge(payload.len())?;
+    let fields = payload
+        .iter()
+        .map(|field| graph.ty(field.ty))
+        .collect::<Result<Vec<_>, _>>()?;
+    let parameters = types.intern_list(&fields).map_err(error)?;
+    types
+        .intern(crate::types::Kind::Function {
+            bound_regions: 0,
+            parameters,
+            result: owner,
+            unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
+        })
+        .map_err(error)
 }
 fn assign(
     cells: &mut [Option<TypeId>],

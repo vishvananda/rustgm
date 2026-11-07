@@ -189,6 +189,22 @@ impl Ports<'_> {
         let Some(Type::Function { bound_regions, .. }) = self.facts.types.kind(declared) else {
             return Err("source callee signature is not a function");
         };
+        // Version thirteen: a called tuple-variant constructor has no function
+        // header and binds no late region; its variant row is its declaration.
+        if self.source.stage.body_nodes()
+            && self
+                .facts
+                .members
+                .constructor(crate::resolve::model::DefId(item.0))
+                .is_some()
+        {
+            self.source.stage.charge(1)?;
+            return if bound_regions == 0 {
+                Ok(None)
+            } else {
+                Err("source constructor call changed its actual late binder")
+            };
+        }
         let (binder, count) = self.source.stage.callable_binder(item)?;
         if count != bound_regions {
             return Err("source application changed its actual late binder");

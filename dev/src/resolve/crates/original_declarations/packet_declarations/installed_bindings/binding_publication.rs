@@ -19,7 +19,8 @@ pub(super) fn prepare(
         .bindings
         .len()
         .saturating_add(if conversions { rows.functions.len() } else { 0 })
-        .saturating_add(rows.associated_types.len());
+        .saturating_add(rows.associated_types.len())
+        .saturating_add(rows.enums.variants.len());
     work.charge(names.bindings.len().saturating_add(rows.declarations.len()))?;
     work.reserve(
         retained::new_map::<(ScopeId, NameId, Namespace), ()>(count)
@@ -97,7 +98,52 @@ pub(super) fn prepare(
         }
         bindings.push(binding);
     }
+    variant_bindings(resolver, rows, definitions, &mut keys, &mut bindings, work)?;
     Ok(Pending { bindings, external })
+}
+/// Version thirteen: each variant is named once, in its enum's member scope.
+/// A consumer's variant paths, constructor calls and patterns resolve through
+/// this exact binding, never by spelling.
+fn variant_bindings(
+    resolver: &Resolver<'_>,
+    rows: s::ValidatedView<'_>,
+    definitions: &[DefId],
+    keys: &mut HashSet<(ScopeId, NameId, Namespace)>,
+    bindings: &mut Vec<PendingBinding>,
+    work: &mut Work,
+) -> Result<(), Error> {
+    for header in &rows.enums.headers {
+        work.charge(1)?;
+        let owner =
+            &resolver.facts.definitions[definitions[header.declaration.0 as usize].0 as usize];
+        for variant in header.variants.slice(&rows.enums.variants).map_err(error)? {
+            work.charge(1)?;
+            let target = definitions[variant.declaration.0 as usize];
+            let actual = &resolver.facts.definitions[target.0 as usize];
+            let key = (actual.scope, actual.name, actual.namespace);
+            if owner.members != Some(actual.scope)
+                || (actual.kind, actual.namespace) != kind(s::DefinitionKind::Variant)
+                || !keys.insert(key)
+                || resolver.facts.bindings.get(key.0, key.1, key.2).is_some()
+            {
+                return Err(error(
+                    "source variant changed its enum member scope or duplicates a binding",
+                ));
+            }
+            bindings.push(PendingBinding {
+                scope: actual.scope,
+                name: actual.name,
+                namespace: actual.namespace,
+                binding: Binding {
+                    target,
+                    access: actual.access,
+                    origin: Origin::Direct,
+                    ambiguous: false,
+                },
+            });
+        }
+    }
+    Ok(())
 }
 fn member(
     resolver: &Resolver<'_>,

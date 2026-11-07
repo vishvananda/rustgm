@@ -95,11 +95,11 @@ pub(super) fn argument(
         .function_applications
         .get(application.0 as usize)
         .ok_or("source signature application is unknown")?;
-    let target = domains.function(application.declaration.declaration, work)?;
+    let target = domains.target(application.declaration.declaration, work)?;
     let position = domains
         .headers
         .scopes()
-        .type_argument_position(target.scope, slot, work)?;
+        .type_argument_position(target.scope(), slot, work)?;
     let arguments = application
         .arguments
         .slice(&domains.headers.rows().arguments)?;

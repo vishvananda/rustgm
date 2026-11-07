@@ -30,11 +30,14 @@ impl Graph {
                 Some(rows.associated_types[index as usize].parent)
             }
             Some(s::HeaderRef::Trait(index)) => Some(rows.traits[index as usize].self_definition),
-            Some(s::HeaderRef::Implementation(_) | s::HeaderRef::Nominal(_)) => None,
+            // A called constructor, like a local one, owns no generic scope:
+            // its enum's premises arrive through the enum type's own inputs.
+            Some(
+                s::HeaderRef::Implementation(_)
+                | s::HeaderRef::Nominal(_)
+                | s::HeaderRef::Variant(_),
+            ) => None,
             Some(s::HeaderRef::AssociatedDefinition(_)) => raw.definition.parent,
-            Some(s::HeaderRef::Variant(_)) => {
-                return Err("source variant declarations own no input scope");
-            }
             None if raw.definition.kind == s::DefinitionKind::SelfType => None,
             None => return Ok(()),
         };
@@ -118,10 +121,10 @@ impl Graph {
                     "source function omitted its actual canonical input/header installation",
                 );
             }
-            // An implementation's result definition declares no inputs of its own.
-            Some(s::HeaderRef::AssociatedDefinition(_)) => return Ok(Some(&[])),
-            Some(s::HeaderRef::Variant(_)) => {
-                return Err("source variant declarations own no input scope");
+            // An implementation's result definition and a variant constructor
+            // declare no inputs of their own.
+            Some(s::HeaderRef::AssociatedDefinition(_) | s::HeaderRef::Variant(_)) => {
+                return Ok(Some(&[]));
             }
             None if raw.definition.kind == s::DefinitionKind::SelfType => {
                 let parent = raw

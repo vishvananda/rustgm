@@ -261,7 +261,10 @@ fn constructors(
         {
             continue;
         }
-        let source = variant.origin.require_diagnostic()?;
+        // An imported constructor has only its referenced template contract.
+        let Some(source) = variant.origin.diagnostic() else {
+            continue;
+        };
         if facts.members.at_node(source).is_some() && index.insert(source, bodies.len()).is_some() {
             return Err("duplicate constructor lifetime owner");
         }
@@ -269,6 +272,7 @@ fn constructors(
             facts,
             crate::resolve::model::DefId(item.0),
             variant,
+            source,
             signature,
         )?);
     }
@@ -339,13 +343,14 @@ pub(super) fn constructor(
     facts: &Declarations,
     definition: crate::resolve::model::DefId,
     variant: crate::sema::members::Variant,
+    source: NodeKey,
     signature: TypeId,
 ) -> Result<Contract, &'static str> {
     callable(
         facts,
         crate::resolve::model::DefId(variant.owner.0),
         definition,
-        variant.origin.require_diagnostic()?,
+        source,
         signature,
     )
 }

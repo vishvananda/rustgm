@@ -24,7 +24,7 @@ impl Stage {
             owners.iter().map(|row| row.results.len()).sum(),
         ))?;
         let (callables, functions) =
-            super::template_ports::prepare(context, facts, &self.scopes, budget)?;
+            super::template_ports::prepare(context, &self.graph, facts, &self.scopes, budget)?;
         let exact = super::verbatim_exports::prepare(context, facts, &functions, budget)?;
         let cells = super::definition_cells::prepare(
             context,

@@ -400,8 +400,25 @@ impl Original<'_> {
         }
         let definition = self.declaration(row.declaration.declaration, steps)?;
         let declaration = self.catalog.declaration(definition)?;
+        // Version thirteen: a called tuple-variant constructor is its variant.
+        let body_nodes = self.rows.descriptor().profile().body_nodes();
+        if body_nodes {
+            charge(steps)?;
+        }
+        let kind = if body_nodes
+            && s::Constructor::of(
+                (&self.rows.enums, &self.rows.declarations),
+                row.declaration.declaration,
+                |row| self.rows.header(row),
+            )?
+            .is_some()
+        {
+            DefKind::Variant
+        } else {
+            DefKind::Function
+        };
         self.catalog
-            .validate_declaration(declaration, definition, DefKind::Function)?;
+            .validate_declaration(declaration, definition, kind)?;
         Ok(definition)
     }
     pub(crate) fn site(&self, index: u32, steps: &mut usize) -> Result<BodySite, &'static str> {

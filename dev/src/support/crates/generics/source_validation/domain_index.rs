@@ -29,6 +29,38 @@ pub struct DomainWork {
 }
 pub use input_plan::{InputWork, OperationPort, OriginalInputPlan, RequiredInput, RequiredKind};
 
+/// What a function application calls. A constructor's formals, premises and
+/// Self are its enum header's; its inputs are the payload fields and its
+/// result is the enum. It has no late binder and is safe Rust.
+#[derive(Clone, Copy)]
+enum Target<'rows> {
+    Function(&'rows s::FunctionHeader),
+    Constructor {
+        enumeration: &'rows s::NominalHeader,
+        payload: &'rows [s::VariantField],
+    },
+}
+impl Target<'_> {
+    const fn scope(self) -> crate::support::crates::owner_catalog::DeclarationRef {
+        match self {
+            Self::Function(header) => header.scope,
+            Self::Constructor { enumeration, .. } => enumeration.scope,
+        }
+    }
+    const fn inputs(self) -> g::Range {
+        match self {
+            Self::Function(header) => header.inputs,
+            Self::Constructor { enumeration, .. } => enumeration.inputs,
+        }
+    }
+    const fn parent(self) -> Option<crate::support::crates::owner_catalog::DeclarationRef> {
+        match self {
+            Self::Function(header) => header.parent,
+            Self::Constructor { .. } => None,
+        }
+    }
+}
+
 /// This borrowed data view preserves exact ownership and coordinate domains;
 /// actual types, complete operation-derived goals and ordinary proof remain
 /// mandatory on import. It has no conversion to `ValidatedRows` or a descriptor.
@@ -143,6 +175,30 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
             .functions
             .get(index as usize)
             .ok_or("source function header is absent")
+    }
+    /// A function application's target: its function header, or under
+    /// version thirteen a called tuple-variant constructor.
+    fn target(
+        &self,
+        declaration: crate::support::crates::owner_catalog::DeclarationRef,
+        work: &mut Work,
+    ) -> Result<Target<'rows>, &'static str> {
+        let rows = self.headers.rows();
+        if let Some(constructor) =
+            s::Constructor::of((&rows.enums, &rows.declarations), declaration, |row| {
+                self.headers.header(row, work)
+            })?
+        {
+            let enumeration = rows
+                .nominals
+                .get(constructor.nominal as usize)
+                .ok_or("source constructor enum header is absent")?;
+            return Ok(Target::Constructor {
+                enumeration,
+                payload: constructor.variant.fields.slice(&rows.enums.fields)?,
+            });
+        }
+        self.function(declaration, work).map(Target::Function)
     }
     fn function_use(
         &mut self,

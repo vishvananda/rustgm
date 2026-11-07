@@ -15,7 +15,7 @@ impl Arena {
     ) -> Result<(), &'static str> {
         let rows = domains.headers.rows();
         let applied = &rows.function_applications[application.0 as usize];
-        let header = domains.function(applied.declaration.declaration, work)?;
+        let target = domains.target(applied.declaration.declaration, work)?;
         // DomainIndex already checked exact full arity and the actual caller's
         // scope. Visiting every argument retains unused formal formation debts.
         for argument in applied.arguments.slice(&rows.arguments)? {
@@ -29,8 +29,8 @@ impl Arena {
                 work,
             )?;
         }
-        self.applied_clauses(domains, application, caller, header.inputs, work)?;
-        if let Some(parent) = header.parent {
+        self.applied_clauses(domains, application, caller, target.inputs(), work)?;
+        if let Some(parent) = target.parent() {
             let range = match domains.headers.header(parent, work)? {
                 Some(super::super::HeaderRef::Trait(index)) => rows.traits[index as usize].inputs,
                 Some(super::super::HeaderRef::Implementation(index)) => {

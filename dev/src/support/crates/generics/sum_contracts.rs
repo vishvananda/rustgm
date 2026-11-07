@@ -2,7 +2,7 @@
 //! The enum's `NominalHeader` keeps its contract, frame, Self and premises with
 //! an empty field range; these columns own its variants, discriminants and
 //! payload fields. Every consumer re-proves them before any storage exists.
-use super::{DefinitionKind, HeaderRef, Profile, SourceRows};
+use super::{Declaration, DefinitionKind, HeaderRef, Profile, SourceRows};
 use crate::support::{
     crates::{
         RecordRepr, Scalar, ScalarValue,
@@ -72,6 +72,49 @@ impl EnumHeader {
     #[must_use]
     pub fn discriminant_type(self) -> Scalar {
         self.tag.unwrap_or(Scalar::Isize)
+    }
+}
+/// Version thirteen: a called tuple-variant constructor. Its function
+/// application names the variant declaration; its type formals are its enum's
+/// and its signature is `fn(payload..) -> Enum`, read from these rows only.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Constructor {
+    pub variant: VariantHeader,
+    /// The enum's nominal header row.
+    pub nominal: u32,
+}
+impl Constructor {
+    /// The constructor a call target names, or `None` for any non-variant
+    /// target. A unit variant is a value, never a called constructor.
+    /// # Errors
+    /// Rejects unit variants, unknown rows and a variant without its enum.
+    pub fn of(
+        (enums, declarations): (&EnumColumns, &[Declaration]),
+        declaration: DeclarationRef,
+        mut header: impl FnMut(DeclarationRef) -> Result<Option<HeaderRef>, &'static str>,
+    ) -> Result<Option<Self>, &'static str> {
+        // Packets without enums name no variant and pay nothing here.
+        if enums.variants.is_empty() {
+            return Ok(None);
+        }
+        let Some(HeaderRef::Variant(index)) = header(declaration)? else {
+            return Ok(None);
+        };
+        let variant = *enums
+            .variants
+            .get(index as usize)
+            .ok_or("source constructor variant row is unknown")?;
+        if variant.shape != VariantShape::Tuple {
+            return Err("source unit variant has no called constructor");
+        }
+        let owner = declarations
+            .get(declaration.0 as usize)
+            .and_then(|row| row.definition.parent)
+            .ok_or("source constructor lost its actual enum")?;
+        let Some(HeaderRef::Nominal(nominal)) = header(owner)? else {
+            return Err("source constructor enum has no nominal header");
+        };
+        Ok(Some(Self { variant, nominal }))
     }
 }
 

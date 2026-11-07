@@ -95,7 +95,6 @@ impl DomainIndex<'_, '_> {
         }
         self.function_use(context, request.target, work)?;
         let application = &rows.function_applications[request.target.0 as usize];
-        let header = self.function(application.declaration.declaration, work)?;
         let Some(s::Type::Function(signature)) = rows.types.get(request.signature.0 as usize)
         else {
             return Err("source Call request signature has a different type kind");
@@ -106,6 +105,27 @@ impl DomainIndex<'_, '_> {
             s::BinderKind::CallableType if frame.parent.is_none() => {}
             _ => return Err("source Call signature belongs to another actual original context"),
         }
+        if let Some(constructor) = s::Constructor::of(
+            (&rows.enums, &rows.declarations),
+            application.declaration.declaration,
+            |row| self.headers.header(row, work),
+        )? {
+            // A called constructor is safe, binds no late region and selects no
+            // method; its payload count is its variant's own.
+            let payload = constructor.variant.fields.slice(&rows.enums.fields)?.len();
+            if signature.unsafe_
+                || request.safety != s::CallSafety::Safe
+                || request.opening.is_some()
+                || request.method.is_some()
+                || rows.binders[signature.binder.0 as usize].count != 0
+                || signature.parameters.slice(&rows.roots)?.len() != payload
+                || arguments.slice(&original.arguments)?.len() != payload
+            {
+                return Err("source constructor Call changed its actual payload or safety");
+            }
+            return Ok(());
+        }
+        let header = self.function(application.declaration.declaration, work)?;
         if signature.unsafe_ != header.callable.unsafe_ {
             return Err("source Call changed its actual callable safety");
         }

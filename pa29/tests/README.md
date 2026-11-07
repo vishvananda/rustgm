@@ -126,3 +126,11 @@ lists (two features, one, none); its three clients check that each list
 applies per feature. Every rustc outcome was declared before any rustc or
 RustGM run, and `scripts/check_macro_metadata.py` runs the file with the other
 two macro files (`docs/parallel/macro-metadata.md`).
+
+`enum-methods-outcomes.json` freezes the version-thirteen called-constructor
+packet under `spec/enum-methods/`. The packet holds a generic `Opt<T>` and a
+monomorphic `Pair` built by called tuple-variant constructors in provider
+bodies, clients that name imported variants in constructor calls, paths,
+patterns, a guard and `match &o`, three opponents (E0004, E0308 and E0061), the
+forged constructor-application controls and a 6/24/96 scaling control. The
+`crate_linking::constructor_transport` integration controls consume it.

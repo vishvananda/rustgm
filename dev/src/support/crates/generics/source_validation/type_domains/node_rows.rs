@@ -262,27 +262,29 @@ impl Builder<'_, '_> {
                 "source function application requires authenticated wider artifact transport",
             );
         }
-        let Some(HeaderRef::Function(index)) = self
-            .headers
-            .header(application.declaration.declaration, work)?
-        else {
-            return Err("source application target has no actual function header");
+        let target = application.declaration.declaration;
+        let scope = if let Some(constructor) =
+            s::Constructor::of((&rows.enums, &rows.declarations), target, |row| {
+                self.headers.header(row, work)
+            })? {
+            // A called constructor's formals are exactly its enum's.
+            rows.nominals[constructor.nominal as usize].scope
+        } else {
+            let Some(HeaderRef::Function(index)) = self.headers.header(target, work)? else {
+                return Err("source application target has no actual function header");
+            };
+            let header = &rows.functions[index as usize];
+            if header.regions.captures != 0
+                || !header.regions.early.slice(&rows.region_slots)?.is_empty()
+            {
+                return Err(
+                    "source early/captured function applications require a wider complete profile",
+                );
+            }
+            header.scope
         };
-        let header = &rows.functions[index as usize];
-        if header.regions.captures != 0
-            || !header.regions.early.slice(&rows.region_slots)?.is_empty()
-        {
-            return Err(
-                "source early/captured function applications require a wider complete profile",
-            );
-        }
         let arguments = application.arguments.slice(&rows.arguments)?;
-        if arguments.len()
-            != self
-                .headers
-                .scopes()
-                .complete_type_slots(header.scope, work)? as usize
-        {
+        if arguments.len() != self.headers.scopes().complete_type_slots(scope, work)? as usize {
             return Err("source application omitted or added actual unused type formals");
         }
         let mut summary = Summary::default();

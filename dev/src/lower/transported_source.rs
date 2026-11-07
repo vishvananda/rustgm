@@ -397,6 +397,22 @@ impl Source {
         self.collect_body(facts, proved.body(), input)
     }
 
+    fn synthesized_variant(
+        &mut self,
+        facts: &Declarations,
+        definition: crate::resolve::model::DefId,
+    ) -> Result<bool, &'static str> {
+        self.stage.charge(1)?;
+        Ok(facts
+            .members
+            .constructor(definition)
+            .is_some_and(|variant| {
+                facts
+                    .aggregates
+                    .get(facts.members.variants[variant.0 as usize].owner)
+                    .is_some_and(|nominal| nominal.kind == crate::types::aggregate::Kind::Enum)
+            }))
+    }
     fn collect_body(
         &mut self,
         facts: &mut Declarations,
@@ -417,6 +433,12 @@ impl Source {
                 "source transport currently requires an original function owner without a relocated execution view",
             );
         };
+        // Version thirteen: a variant constructor is compiler-synthesized, not
+        // an authored original; every consumer synthesizes its own from the
+        // re-authenticated enum header.
+        if self.stage.body_nodes() && self.synthesized_variant(facts, definition)? {
+            return Ok(());
+        }
         let context = self.stage.original_context(definition)?;
         let header = facts
             .function_header(definition)?

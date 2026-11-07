@@ -4,6 +4,8 @@ mod artifacts;
 mod borrowed;
 #[path = "crate_linking/branch_transport.rs"]
 mod branch_transport;
+#[path = "crate_linking/constructor_transport.rs"]
+mod constructor_transport;
 #[path = "crate_linking/convention_transport.rs"]
 mod convention_transport;
 #[path = "crate_linking/declarative_exports.rs"]

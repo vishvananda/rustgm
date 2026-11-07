@@ -41,8 +41,11 @@ pub(super) fn concrete(
     mut query: Option<&mut NeedsDrop>,
 ) -> Result<(), Error> {
     for (definition, signature, variant) in selected(facts) {
-        let owner = facts.members.variants[variant.0 as usize].owner;
-        if facts.generics.has_parameters(DefId(owner.0)) {
+        let declaration = facts.members.variants[variant.0 as usize];
+        // An imported constructor is synthesized only as a referenced template.
+        if facts.generics.has_parameters(DefId(declaration.owner.0))
+            || declaration.origin.diagnostic().is_none()
+        {
             continue;
         }
         program.bodies.push(build(
@@ -72,22 +75,19 @@ pub fn templates(
     let query = NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item));
     let selected = selected(facts)
         .filter(|(definition, _, variant)| {
+            let declaration = facts.members.variants[variant.0 as usize];
             facts
                 .generics
                 .referenced_constructors
                 .contains(&crate::types::ItemId(definition.0))
-                && facts
-                    .generics
-                    .has_parameters(DefId(facts.members.variants[variant.0 as usize].owner.0))
+                && (facts.generics.has_parameters(DefId(declaration.owner.0))
+                    || declaration.origin.diagnostic().is_none())
         })
         .collect::<Vec<_>>();
     for (definition, signature, variant) in selected {
         let declaration = facts.members.variants[variant.0 as usize];
         let owner = DefId(declaration.owner.0);
-        let source = declaration
-            .origin
-            .require_diagnostic()
-            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
+        let source = anchor(report, declaration)?;
         let error = |message| report.body_error(source, message);
         let environment = match environments.entry(owner) {
             std::collections::hash_map::Entry::Occupied(entry) => Arc::clone(entry.get()),
@@ -118,7 +118,7 @@ pub fn templates(
         let destruction =
             crate::body::drops::requirements(facts, &body, &mut scoped).map_err(error)?;
         contracts.push(
-            crate::body::regions::constructor(facts, definition, declaration, signature)
+            crate::body::regions::constructor(facts, definition, declaration, source, signature)
                 .map_err(error)?,
         );
         templates.bodies.push(Template {
@@ -140,10 +140,7 @@ fn build(
 ) -> Result<Body, Error> {
     use super::{Local, LocalId, LocalKind, Statement, Value};
     let variant = facts.members.variants[variant_id.0 as usize];
-    let source = variant
-        .origin
-        .require_diagnostic()
-        .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
+    let source = anchor(report, variant)?;
     let error = |message| report.body_error(source, message);
     let Some(Type::Function { result, .. }) = facts.types.kind(signature) else {
         return Err(error("missing constructor signature"));
@@ -168,7 +165,7 @@ fn build(
         .iter()
         .enumerate()
     {
-        let field_source = field.origin.require_diagnostic().map_err(error)?;
+        let field_source = field.origin.diagnostic().unwrap_or(source);
         let ordinal = u32::try_from(ordinal).map_err(|_| error("too many constructor fields"))?;
         let local = LocalId(ordinal);
         body.locals.push(Local {
@@ -200,6 +197,32 @@ fn build(
         super::drops::constructor(facts, &mut body, query).map_err(error)?;
     }
     Ok(body)
+}
+
+/// A constructor's diagnostic anchor: its declaration, or for an imported
+/// variant, which has no syntax here, the root of the crate synthesizing it.
+fn anchor(
+    report: &Report,
+    variant: crate::sema::members::Variant,
+) -> Result<crate::resolve::unit::NodeKey, Error> {
+    if let Some(source) = variant.origin.diagnostic() {
+        return Ok(source);
+    }
+    report
+        .package
+        .modules
+        .first()
+        .map(|root| crate::resolve::unit::NodeKey {
+            file: root.file,
+            node: root.root,
+        })
+        .ok_or_else(|| {
+            Error::at(
+                crate::resolve::unit::FileId(0),
+                0,
+                "imported constructor has no synthesizing crate root",
+            )
+        })
 }
 
 fn finish_constructor(
