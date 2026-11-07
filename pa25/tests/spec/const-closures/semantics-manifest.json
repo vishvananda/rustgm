@@ -84,6 +84,10 @@
       "sha256": "65896e23c1550f96ed7b8b859956c8fbcf71a78ffc9a15bdab0a0f042c07d18a"
     },
     {
+      "path": "source-escaping-capture.rs",
+      "sha256": "b188d60131d8f578fa25ecd52673caf3cb2b70698d0791ea5637fd89d9cb57fe"
+    },
+    {
       "path": "source-execution-v2.rs",
       "sha256": "47389886cf31137d14922afb7007b998349583822e3e9c54fa9ae5de8b729d89"
     },
@@ -94,6 +98,30 @@
     {
       "path": "source-execution.rs",
       "sha256": "46a7b7884e2907182891f8c44d639e19f5e49b58f31f7e95825bd859791ce31f"
+    },
+    {
+      "path": "source-moved-owned-v2.rs",
+      "sha256": "7aae9f6fa689dcd18c766cfb1c76297d08027cc12b4c4887954bbc59ea23d09f"
+    },
+    {
+      "path": "source-moved-owned.rs",
+      "sha256": "e8bc2b101dec10c198795d2822e7c9638f4bacf25040f89b13dc3c2645b85a8d"
+    },
+    {
+      "path": "source-mutable-binding.rs",
+      "sha256": "a5cd52f27a9153ca2626f2534e865b639281588d9b7d325999e71c6ba10d0bba"
+    },
+    {
+      "path": "source-once-twice.rs",
+      "sha256": "f08416aec0a686d5670dc3982ec507471ff883920baadf94283f92edb8dbb2f8"
+    },
+    {
+      "path": "source-ordinary-call.rs",
+      "sha256": "79bfccc4bcebc06283db998b459be0fa06a5590583aa45f168a06f4c15b52389"
+    },
+    {
+      "path": "source-overlap.rs",
+      "sha256": "e9ab26af73a6bc44f9d996d67052efbc86798154b6d018c92575da3f2aafad7e"
     },
     {
       "path": "unused-runtime-effect.rs",
@@ -130,6 +158,14 @@
     {
       "path": "semantics-predictions-v5.json",
       "sha256": "50ea4e30a01496acf519b667cd0655162dc28f0deab146e4746868921e757d78"
+    },
+    {
+      "path": "semantics-predictions-v6.json",
+      "sha256": "266ffe8c96034b0cc67b45e22a63f6227b5ddb4c279ab096b1643f4daced8c6b"
+    },
+    {
+      "path": "semantics-predictions-v7.json",
+      "sha256": "b6774548edb10f4c90316ef3ece230ee399cae962ddb803b3dc007a7d1e7d994"
     }
   ],
   "reference": {
@@ -139,5 +175,9 @@
   "successor_reference": {
     "path": "semantics-reference-v5.json",
     "sha256": "b7eb69f933f13f0bb45fb2ed4ba2b4b03f83655e5b9da392fcbecc5996ade661"
+  },
+  "opponents_reference": {
+    "path": "semantics-reference-v6.json",
+    "sha256": "13b7bd8e7ef767cc5c8a7ac2ebd7c697adbe1f8519f36a5e9b7092c41c06c868"
   }
 }

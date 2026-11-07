@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "state": "prediction frozen before independent Rust and RustGM observations of real-read successor",
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "bootstrap": "1",
+    "threads": 2,
+    "crate_type": "lib"
+  },
+  "foundation": {
+    "path": "source-moved-owned.rs",
+    "sha256": "e8bc2b101dec10c198795d2822e7c9638f4bacf25040f89b13dc3c2645b85a8d",
+    "scope": "v6 wildcard reference acceptance preserved; this successor makes the actual field read explicit"
+  },
+  "cases": [
+    {
+      "file": "source-moved-owned-v2.rs",
+      "sha256": "7aae9f6fa689dcd18c766cfb1c76297d08027cc12b4c4887954bbc59ea23d09f",
+      "metadata": 1,
+      "obj": 1,
+      "hypothesis": "binding the scalar field performs a real read after the non-Copy value moved into FnOnce",
+      "mutation": {
+        "from": "let _=value.0;",
+        "to": "let after=value.0;"
+      }
+    }
+  ]
+}

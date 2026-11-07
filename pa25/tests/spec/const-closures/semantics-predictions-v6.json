@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "state": "predictions frozen before independent Rust and RustGM observations of these exact source opponents",
+  "foundation": {
+    "path": "execution-pure.rs",
+    "sha256": "e098649f51efcf69ba6adeb2c0e1dc73e3c5cfa722aee3519cbc045be19cb65a",
+    "scope": "same genuine original callable/drop-glue source prefix; no arithmetic or substitute panic body"
+  },
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "bootstrap": "1",
+    "threads": 2,
+    "crate_type": "lib"
+  },
+  "cases": [
+    {
+      "file": "source-ordinary-call.rs",
+      "sha256": "79bfccc4bcebc06283db998b459be0fa06a5590583aa45f168a06f4c15b52389",
+      "metadata": 1,
+      "obj": 1,
+      "hypothesis": "ordinary closure supplies no const-call qualification",
+      "mutation": {
+        "from": "let call=const ||value;call()",
+        "to": "let call=||value;call()"
+      }
+    },
+    {
+      "file": "source-overlap.rs",
+      "sha256": "e9ab26af73a6bc44f9d996d67052efbc86798154b6d018c92575da3f2aafad7e",
+      "metadata": 1,
+      "obj": 1,
+      "hypothesis": "mutable capture loan conflicts with parent write before use",
+      "mutation": {
+        "from": "};call();}value",
+        "to": "};value=31usize;call();}value"
+      }
+    },
+    {
+      "file": "source-moved-owned.rs",
+      "sha256": "e8bc2b101dec10c198795d2822e7c9638f4bacf25040f89b13dc3c2645b85a8d",
+      "metadata": 1,
+      "obj": 1,
+      "hypothesis": "owned non-Copy source remains moved after FnOnce invocation",
+      "mutation": {
+        "from": "let output=call();output.0",
+        "to": "let output=call();let _=value.0;output.0"
+      }
+    },
+    {
+      "file": "source-mutable-binding.rs",
+      "sha256": "a5cd52f27a9153ca2626f2534e865b639281588d9b7d325999e71c6ba10d0bba",
+      "metadata": 1,
+      "obj": 1,
+      "hypothesis": "FnMut call needs an actually mutable closure binding",
+      "mutation": {
+        "from": "let mut call=const ||{value=47usize;};call()",
+        "to": "let call=const ||{value=47usize;};call()"
+      }
+    },
+    {
+      "file": "source-once-twice.rs",
+      "sha256": "f08416aec0a686d5670dc3982ec507471ff883920baadf94283f92edb8dbb2f8",
+      "metadata": 1,
+      "obj": 1,
+      "hypothesis": "FnOnce consumes actual non-Copy closure environment once",
+      "mutation": {
+        "from": "let output=call();output.0",
+        "to": "let output=call();let _=call();output.0"
+      }
+    },
+    {
+      "file": "source-escaping-capture.rs",
+      "sha256": "b188d60131d8f578fa25ecd52673caf3cb2b70698d0791ea5637fd89d9cb57fe",
+      "metadata": 1,
+      "obj": 1,
+      "hypothesis": "const qualification does not extend actual captured reference to static",
+      "mutation": {
+        "append": "\nconst fn escape<'a>(value:&'a usize)->impl Fn()->&'static usize+'a {const move ||value}\n"
+      }
+    }
+  ]
+}

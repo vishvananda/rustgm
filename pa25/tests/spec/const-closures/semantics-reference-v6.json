@@ -1,0 +1,445 @@
+{
+  "schema": 1,
+  "state": "independent pinned Rust metadata/object observations; no candidate observation of these exact opponents",
+  "observations": [
+    {
+      "prediction": {
+        "path": "semantics-predictions-v6.json",
+        "sha256": "266ffe8c96034b0cc67b45e22a63f6227b5ddb4c279ab096b1643f4daced8c6b"
+      },
+      "raw_receipt": {
+        "path": "obj/parallel/const-closure-reference/v6/receipt.json",
+        "sha256": "b6abf6b0d84f246cd9640e1759411d9fc30089ade7d5833c6a9736fd411a44f4"
+      },
+      "compiler": {
+        "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+      },
+      "profile": {
+        "edition": "2024",
+        "target": "x86_64-unknown-linux-gnu",
+        "panic": "abort",
+        "cap_lints": "allow",
+        "bootstrap": "1",
+        "threads": 2,
+        "crate_type": "lib"
+      },
+      "state": "observed",
+      "seconds": 0.6369147929362953,
+      "cases": [
+        {
+          "file": "source-ordinary-call.rs",
+          "source_sha256": "79bfccc4bcebc06283db998b459be0fa06a5590583aa45f168a06f4c15b52389",
+          "mode": "metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=metadata",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/source-ordinary-call.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v6/source-ordinary-call-metadata.rmeta"
+          ],
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0015",
+              "message": "cannot call non-const closure in constant functions"
+            }
+          ],
+          "prediction_matches": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "af9c6bbaac231dc7e9efee2d569d2eb689438637bf87f539cca1934f22644f5e"
+        },
+        {
+          "file": "source-ordinary-call.rs",
+          "source_sha256": "79bfccc4bcebc06283db998b459be0fa06a5590583aa45f168a06f4c15b52389",
+          "mode": "obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=obj",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/source-ordinary-call.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v6/source-ordinary-call-obj.o"
+          ],
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0015",
+              "message": "cannot call non-const closure in constant functions"
+            }
+          ],
+          "prediction_matches": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "af9c6bbaac231dc7e9efee2d569d2eb689438637bf87f539cca1934f22644f5e"
+        },
+        {
+          "file": "source-overlap.rs",
+          "source_sha256": "e9ab26af73a6bc44f9d996d67052efbc86798154b6d018c92575da3f2aafad7e",
+          "mode": "metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=metadata",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/source-overlap.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v6/source-overlap-metadata.rmeta"
+          ],
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0506",
+              "message": "cannot assign to `value` because it is borrowed"
+            }
+          ],
+          "prediction_matches": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9a5c5d91329e11de10ebef9df8a8a68aff160d7ee00b23083c543637b3925c48"
+        },
+        {
+          "file": "source-overlap.rs",
+          "source_sha256": "e9ab26af73a6bc44f9d996d67052efbc86798154b6d018c92575da3f2aafad7e",
+          "mode": "obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=obj",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/source-overlap.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v6/source-overlap-obj.o"
+          ],
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0506",
+              "message": "cannot assign to `value` because it is borrowed"
+            }
+          ],
+          "prediction_matches": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9a5c5d91329e11de10ebef9df8a8a68aff160d7ee00b23083c543637b3925c48"
+        },
+        {
+          "file": "source-moved-owned.rs",
+          "source_sha256": "e8bc2b101dec10c198795d2822e7c9638f4bacf25040f89b13dc3c2645b85a8d",
+          "mode": "metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=metadata",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/source-moved-owned.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v6/source-moved-owned-metadata.rmeta"
+          ],
+          "status": 0,
+          "errors": [],
+          "prediction_matches": false,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "a71bef118b5707c1ff4953c52eabf20be23a2ffae24319d2b54196edb39cfc2b"
+        },
+        {
+          "file": "source-moved-owned.rs",
+          "source_sha256": "e8bc2b101dec10c198795d2822e7c9638f4bacf25040f89b13dc3c2645b85a8d",
+          "mode": "obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=obj",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/source-moved-owned.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v6/source-moved-owned-obj.o"
+          ],
+          "status": 0,
+          "errors": [],
+          "prediction_matches": false,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "artifact_sha256": "5d32c7187eb655986fd7ec500e98776cc1ac02294d0e0840998bae98757e2b86"
+        },
+        {
+          "file": "source-mutable-binding.rs",
+          "source_sha256": "a5cd52f27a9153ca2626f2534e865b639281588d9b7d325999e71c6ba10d0bba",
+          "mode": "metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=metadata",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/source-mutable-binding.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v6/source-mutable-binding-metadata.rmeta"
+          ],
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0596",
+              "message": "cannot borrow `call` as mutable, as it is not declared as mutable"
+            }
+          ],
+          "prediction_matches": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "fad9844f2a55bc59852e83d93a5a1babf28351974f06592b5202861fb08df3cb"
+        },
+        {
+          "file": "source-mutable-binding.rs",
+          "source_sha256": "a5cd52f27a9153ca2626f2534e865b639281588d9b7d325999e71c6ba10d0bba",
+          "mode": "obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=obj",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/source-mutable-binding.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v6/source-mutable-binding-obj.o"
+          ],
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0596",
+              "message": "cannot borrow `call` as mutable, as it is not declared as mutable"
+            }
+          ],
+          "prediction_matches": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "fad9844f2a55bc59852e83d93a5a1babf28351974f06592b5202861fb08df3cb"
+        },
+        {
+          "file": "source-once-twice.rs",
+          "source_sha256": "f08416aec0a686d5670dc3982ec507471ff883920baadf94283f92edb8dbb2f8",
+          "mode": "metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=metadata",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/source-once-twice.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v6/source-once-twice-metadata.rmeta"
+          ],
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0382",
+              "message": "use of moved value: `call`"
+            }
+          ],
+          "prediction_matches": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9f4f8186c253bd67457cc1c1902179aaa5df1ac6b547907aa67e3701ac9b3efc"
+        },
+        {
+          "file": "source-once-twice.rs",
+          "source_sha256": "f08416aec0a686d5670dc3982ec507471ff883920baadf94283f92edb8dbb2f8",
+          "mode": "obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=obj",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/source-once-twice.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v6/source-once-twice-obj.o"
+          ],
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0382",
+              "message": "use of moved value: `call`"
+            }
+          ],
+          "prediction_matches": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9f4f8186c253bd67457cc1c1902179aaa5df1ac6b547907aa67e3701ac9b3efc"
+        },
+        {
+          "file": "source-escaping-capture.rs",
+          "source_sha256": "b188d60131d8f578fa25ecd52673caf3cb2b70698d0791ea5637fd89d9cb57fe",
+          "mode": "metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=metadata",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/source-escaping-capture.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v6/source-escaping-capture-metadata.rmeta"
+          ],
+          "status": 1,
+          "errors": [
+            {
+              "code": null,
+              "message": "lifetime may not live long enough"
+            }
+          ],
+          "prediction_matches": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "45e47bd2d9bc500b55f9287bb1f81f8592076d0c5ee5de01f2974cc3eaaf38a8"
+        },
+        {
+          "file": "source-escaping-capture.rs",
+          "source_sha256": "b188d60131d8f578fa25ecd52673caf3cb2b70698d0791ea5637fd89d9cb57fe",
+          "mode": "obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=obj",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/source-escaping-capture.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v6/source-escaping-capture-obj.o"
+          ],
+          "status": 1,
+          "errors": [
+            {
+              "code": null,
+              "message": "lifetime may not live long enough"
+            }
+          ],
+          "prediction_matches": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "45e47bd2d9bc500b55f9287bb1f81f8592076d0c5ee5de01f2974cc3eaaf38a8"
+        }
+      ]
+    },
+    {
+      "prediction": {
+        "path": "semantics-predictions-v7.json",
+        "sha256": "b6774548edb10f4c90316ef3ece230ee399cae962ddb803b3dc007a7d1e7d994"
+      },
+      "raw_receipt": {
+        "path": "obj/parallel/const-closure-reference/v7/receipt.json",
+        "sha256": "4ef1713cddeae7630f992644e79a5052cb1c12fed4d911322d8977874adeacd8"
+      },
+      "compiler": {
+        "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+      },
+      "profile": {
+        "edition": "2024",
+        "target": "x86_64-unknown-linux-gnu",
+        "panic": "abort",
+        "cap_lints": "allow",
+        "bootstrap": "1",
+        "threads": 2,
+        "crate_type": "lib"
+      },
+      "state": "observed",
+      "seconds": 0.09713435103185475,
+      "cases": [
+        {
+          "file": "source-moved-owned-v2.rs",
+          "source_sha256": "7aae9f6fa689dcd18c766cfb1c76297d08027cc12b4c4887954bbc59ea23d09f",
+          "mode": "metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=metadata",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/source-moved-owned-v2.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v7/source-moved-owned-v2-metadata.rmeta"
+          ],
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0382",
+              "message": "use of moved value: `value`"
+            }
+          ],
+          "prediction_matches": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3e5a8991eb22f8ee49f2f84a63bc80eb841af7dac82ce95059b1594b3d13dc30"
+        },
+        {
+          "file": "source-moved-owned-v2.rs",
+          "source_sha256": "7aae9f6fa689dcd18c766cfb1c76297d08027cc12b4c4887954bbc59ea23d09f",
+          "mode": "obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "-Cpanic=abort",
+            "--cap-lints=allow",
+            "-Zthreads=2",
+            "--emit=obj",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/pa25/tests/spec/const-closures/source-moved-owned-v2.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/const-closure-reference/v7/source-moved-owned-v2-obj.o"
+          ],
+          "status": 1,
+          "errors": [
+            {
+              "code": "E0382",
+              "message": "use of moved value: `value`"
+            }
+          ],
+          "prediction_matches": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3e5a8991eb22f8ee49f2f84a63bc80eb841af7dac82ce95059b1594b3d13dc30"
+        }
+      ]
+    }
+  ],
+  "correction": "v6 source-moved-owned.rs uses a non-reading wildcard field mention and accepts0 in both modes; v7 source-moved-owned-v2.rs binds and reads the field and rejects E0382. V6 negative prediction retained unchanged."
+}

@@ -40,3 +40,13 @@ captures and runtime shared/mutable environment data through a real no-core
 object. `semantics-reference-v5.json` binds the prediction and raw evidence.
 The old arithmetic object failure, const Drop, generic conditional callers,
 adapters and RustGM execution remain separate required contracts.
+
+The v6/v7 source-role opponents retain the entire v5 no-core companion and
+actual declaration prefix. Five v6 variants reject for actual non-const call,
+conflicting loan, immutable FnMut, repeated FnOnce and escaping-lifetime causes.
+The original moved-owned hypothesis was disproved: `let _=value.0` is a
+non-reading wildcard mention and Rust accepts it after the move. That positive
+and frozen prediction are retained. The separately frozen v7 binds the field
+value and rejects E0382. `semantics-reference-v6.json` binds all fourteen
+metadata/object observations, including the prediction discrepancy; there is
+no native execution of rejected sources or candidate claim in this reference.
