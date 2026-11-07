@@ -105,8 +105,7 @@ impl OrdinaryRecords {
                 != header
                     .body
                     .ok_or_else(|| error("ordinary recording lost its header body"))?
-            || registration.0.signature != header.callable
-            || registration.0.parameters != 0
+            || !registered_callable(&facts.types, view, raw, header.callable, registration.0)
         {
             return Err(error(
                 "ordinary recording changed its current header or callable owner",
@@ -159,6 +158,47 @@ impl OrdinaryRecords {
             record: Arc::clone(record),
         })
     }
+}
+/// A callable's registration is its public signature, except that a
+/// version-thirteen inherent method's template, rebuilt at staging from the
+/// same header, leads with its captured slots as early parameters and keeps
+/// only its own late slots in its frame.
+fn registered_callable(
+    store: &crate::types::Store,
+    view: &RecipeView<'_>,
+    function: s::FunctionHeader,
+    callable: crate::types::TypeId,
+    template: crate::types::callable::Template,
+) -> bool {
+    use crate::types::Kind;
+    if function.regions.captures == 0 {
+        return template.signature == callable && template.parameters == 0;
+    }
+    let (
+        Some(Kind::Function {
+            bound_regions,
+            parameters,
+            unsafe_,
+            convention,
+            ..
+        }),
+        Some(Kind::Function {
+            parameters: public,
+            unsafe_: public_unsafe,
+            convention: public_convention,
+            ..
+        }),
+    ) = (store.kind(template.signature), store.kind(callable))
+    else {
+        return false;
+    };
+    view.rows().is_ok_and(|rows| {
+        super::staged_headers::scheme_ports::inherent_captures(rows.descriptor(), &function)
+    }) && template.parameters == function.regions.captures
+        && bound_regions == function.regions.total - function.regions.captures
+        && store.list(parameters).map(<[_]>::len) == store.list(public).map(<[_]>::len)
+        && unsafe_ == public_unsafe
+        && convention == public_convention
 }
 fn original_formals(
     view: &RecipeView<'_>,
@@ -302,9 +342,14 @@ impl OrdinaryDomain {
         if callables
             .registration(self.record.expected().item)
             .is_none_or(|(template, parameters)| {
-                template.signature != self.record.expected().pair.callable
-                    || template.parameters != 0
-                    || parameters.len() != self.record.expected().formals
+                let expected = self.record.expected();
+                !registered_callable(
+                    store,
+                    view,
+                    expected.header,
+                    expected.pair.callable,
+                    template,
+                ) || parameters.len() != expected.formals
             })
         {
             return Err(error(

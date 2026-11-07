@@ -32,19 +32,22 @@ impl Stage {
             .get(&item)
             .copied()
             .ok_or("source call target has no staged actual function header")?;
-        let binder = self
+        let header = self
             .rows
             .functions
             .get(index as usize)
-            .ok_or("source callable header index is stale")?
-            .callable
-            .binder;
+            .ok_or("source callable header index is stale")?;
+        let binder = header.callable.binder;
+        // Version thirteen: an inherent method's captured public slots come
+        // from its application, so a Call opens only the slots after them.
         let count = self
             .rows
             .binders
             .get(binder.0 as usize)
             .ok_or("source callable frame is unknown")?
-            .count;
+            .count
+            .checked_sub(header.regions.captures)
+            .ok_or("source callable captures exceed its public frame")?;
         Ok((binder, count))
     }
     pub(super) fn functions(
@@ -140,7 +143,15 @@ impl Stage {
             .functions
             .get(&function.definition)
             .ok_or("source function has no completed lifetime scheme")?;
-        if scheme.captures != 0 || !scheme.early.is_empty() {
+        // Version thirteen: a method of an inherent impl captures that impl's
+        // lifetimes as the leading slots of its own frames.
+        let captured = self.body_nodes()
+            && facts
+                .generics
+                .parents
+                .get(&function.definition)
+                .is_some_and(|&owner| super::scoped_parameters::inherent_owner(facts, owner));
+        if scheme.captures != 0 && !captured || !scheme.early.is_empty() {
             return Err(
                 "source function early/captured callable frame transport is not implemented",
             );

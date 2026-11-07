@@ -2,7 +2,7 @@
 use super::{
     OperationPort, OperationSite, RequiredKind, Work, g,
     matching::Opening,
-    nodes::{Node, Rewrite},
+    nodes::{Node, NodeId, Rewrite},
     ports::Ports,
     requests::Builder,
     s,
@@ -168,7 +168,9 @@ impl Builder<'_, '_, '_> {
             return Err("source Borrow has no actual reference result");
         };
         let actual = Ports::place_type(original, place, work)?;
-        if self.node(original, actual, work)? != self.node(original, referent, work)?
+        let referent = self.node(original, referent, work)?;
+        if self.node(original, actual, work)? != referent
+            && !self.coerced_reborrow(original, place, referent, work)?
             || mutable && !ports.writable(original, place, work)?
         {
             return Err("source Borrow changed its actual referent or writable place");
@@ -304,6 +306,41 @@ impl Builder<'_, '_, '_> {
             },
             work,
         )
+    }
+}
+impl Builder<'_, '_, '_> {
+    /// Version thirteen: an implicit reborrow at a coercion site borrows its
+    /// dereferenced place at the expected referent, whose region arguments
+    /// are this body's variables. The place's own reference must then be the
+    /// actual type of a recorded one-dereference reborrow coercion to exactly
+    /// that referent. Every consumer proves that coercion again, relating the
+    /// place's referent to the borrowed one under its own variances.
+    fn coerced_reborrow(
+        &mut self,
+        original: &s::Original,
+        place: s::Place,
+        referent: NodeId,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        work.charge(1)?;
+        let s::Place::Projection(id) = place else {
+            return Ok(false);
+        };
+        let Some(&s::Projection {
+            base,
+            kind: s::ProjectionKind::Dereference { .. },
+            ..
+        }) = original.projections.get(id as usize)
+        else {
+            return Ok(false);
+        };
+        if !self.domains.bodies {
+            return Ok(false);
+        }
+        let reference = Ports::place_type(original, base, work)?;
+        let reference = self.node(original, reference, work)?;
+        self.coverage
+            .reborrow(original.body, reference, referent, work)
     }
 }
 /// A borrow whose outermost projection dereferences a reference.

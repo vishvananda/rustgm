@@ -96,7 +96,7 @@ pub(super) fn header(
         && context.descriptor.profile().body_nodes()
         && raw.parent.is_some()
         && raw.body == s::FunctionBody::Absent;
-    if raw.regions.captures != 0
+    if raw.regions.captures != 0 && !super::scheme_ports::inherent_captures(context.descriptor, raw)
         || raw.regions.early.start != raw.regions.early.end
         || (raw.constness != crate::support::constness::Constness::Ordinary
             && !conditional

@@ -21,6 +21,9 @@ pub(super) fn relocations(
     arena.relocations = vec![0; rows.region_slots.len()];
     for header in &rows.functions {
         work.charge(1)?;
+        // Version thirteen: an inherent method's captured slots lead both of
+        // its frames unchanged; the late table relocates only its own slots.
+        let captures = header.regions.captures;
         for (public, slot) in header
             .regions
             .late
@@ -29,7 +32,10 @@ pub(super) fn relocations(
             .enumerate()
         {
             work.charge(1)?;
-            let canonical = rows.slots[slot.0 as usize].index;
+            let canonical = rows.slots[slot.0 as usize]
+                .index
+                .checked_sub(captures)
+                .ok_or("source public relocation names a captured slot")?;
             let index = (header.regions.late.start as usize)
                 .checked_add(canonical as usize)
                 .ok_or("source public relocation index overflow")?;
@@ -37,7 +43,10 @@ pub(super) fn relocations(
                 .relocations
                 .get_mut(index)
                 .ok_or("source public relocation exceeds its exact slot map")? =
-                u32::try_from(public).map_err(|_| "source public relocation slot overflow")?;
+                u32::try_from(public)
+                    .ok()
+                    .and_then(|public| public.checked_add(captures))
+                    .ok_or("source public relocation slot overflow")?;
         }
     }
     Ok(())
@@ -159,7 +168,24 @@ pub(super) fn region(
                         if binder != header.callable.binder {
                             return Err("source callable template captured another actual binder");
                         }
-                        Region::Late { binder, slot }
+                        // Version thirteen: an inherent method's captured slot
+                        // is its application's leading region argument, in the
+                        // caller's own frame; its late slots follow them.
+                        let captures = header.regions.captures;
+                        if slot < captures {
+                            let Some(&s::Argument::Region(argument)) =
+                                target.arguments.slice(&rows.arguments)?.get(slot as usize)
+                            else {
+                                return Err(
+                                    "source captured method application omitted its region argument",
+                                );
+                            };
+                            return region(domains, arena, argument, Rewrite::Original, work);
+                        }
+                        Region::Late {
+                            binder,
+                            slot: slot - captures,
+                        }
                     }
                 }
             }
@@ -178,8 +204,14 @@ fn public_region(
     if binder != header.original.binder {
         return Err("source public relocation captured a foreign actual original binder");
     }
+    let Some(own) = slot.checked_sub(header.regions.captures) else {
+        return Ok(Region::Bound {
+            binder: header.callable.binder,
+            slot,
+        });
+    };
     let index = (header.regions.late.start as usize)
-        .checked_add(slot as usize)
+        .checked_add(own as usize)
         .ok_or("source public relocation index overflow")?;
     let slot = *arena
         .relocations

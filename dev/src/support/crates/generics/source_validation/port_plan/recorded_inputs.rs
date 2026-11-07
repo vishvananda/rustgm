@@ -38,6 +38,9 @@ pub(super) struct Coverage {
     formed: HashSet<(BodyRef, NodeId)>,
     copies: HashSet<(BodyRef, NodeId)>,
     local_borrows: HashSet<(BodyRef, s::RegionRef)>,
+    /// Version thirteen: each one-dereference reborrow coercion's actual
+    /// reference and expected referent.
+    reborrows: HashSet<(BodyRef, NodeId, NodeId)>,
 }
 impl Coverage {
     pub(super) fn new(
@@ -152,20 +155,18 @@ impl Coverage {
                 unsize: false,
                 reference:
                     Some(s::ReferenceConversion {
-                        dereferences: 1..,
+                        dereferences: dereferences @ 1..,
                         unsize: false,
                         two_phase: false,
                     }),
             } if domains.bodies => {
-                // Version thirteen: a plain reborrow only adds the bounds of
-                // its selected dereferences. The consumer derives the same
-                // bounds from its own borrowed places, and the Constrain
-                // relation is still requested, so no operation pays for it.
-                // Both types must still root in this original's scope.
-                for ty in [actual, expected] {
-                    let key = uses::key(domains, ty, Rewrite::Original, Some(context), work)?;
-                    arena.root(domains, key, work)?;
-                }
+                self.plain_reborrow(
+                    domains,
+                    arena,
+                    context,
+                    (actual, expected, dereferences),
+                    work,
+                )?;
             }
             s::InputKind::Coercion { .. } => {
                 return Err(
@@ -272,6 +273,54 @@ impl Coverage {
         }
         Ok(())
     }
+    /// Version thirteen: a plain reborrow only adds the bounds of its selected
+    /// dereferences. The consumer derives the same bounds from its own
+    /// borrowed places, and the Constrain relation is still requested, so no
+    /// operation pays for it. Both types must still root in this original's
+    /// scope, and a one-dereference reborrow records the exact expected
+    /// referent its coerced Borrow value borrows at.
+    fn plain_reborrow(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        arena: &mut Arena,
+        context: Context,
+        coercion: (s::TypeRef, s::TypeRef, u32),
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let (actual, expected, dereferences) = coercion;
+        let body = context
+            .body
+            .ok_or("source coverage has no original body owner")?;
+        let mut nodes = [NodeId(0); 2];
+        for (node, ty) in nodes.iter_mut().zip([actual, expected]) {
+            let key = uses::key(domains, ty, Rewrite::Original, Some(context), work)?;
+            *node = arena.root(domains, key, work)?;
+        }
+        if let (1, Some(&s::Type::Reference { referent, .. })) = (
+            dereferences,
+            domains.headers.rows().types.get(expected.0 as usize),
+        ) {
+            let key = uses::key(domains, referent, Rewrite::Original, Some(context), work)?;
+            let referent = arena.root(domains, key, work)?;
+            arena.reserve(
+                retained::new_map::<(BodyRef, NodeId, NodeId), ()>(1),
+                0,
+                work,
+            )?;
+            self.reborrows.insert((body, nodes[0], referent));
+        }
+        Ok(())
+    }
+    pub(super) fn reborrow(
+        &self,
+        body: BodyRef,
+        reference: NodeId,
+        referent: NodeId,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        work.charge(1)?;
+        Ok(self.reborrows.contains(&(body, reference, referent)))
+    }
     pub(super) fn retained_bytes(&self) -> usize {
         self.variables
             .capacity()
@@ -296,5 +345,10 @@ impl Coverage {
                     .capacity()
                     .saturating_mul(size_of::<(BodyRef, s::RegionRef)>()),
             )
+            .saturating_add(self.reborrows.capacity().saturating_mul(size_of::<(
+                BodyRef,
+                NodeId,
+                NodeId,
+            )>()))
     }
 }

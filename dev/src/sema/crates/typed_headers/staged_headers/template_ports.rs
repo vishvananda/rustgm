@@ -79,12 +79,12 @@ pub(super) fn prepare(
                         crate::types::callable::Template,
                     >(1)),
             )?;
-            register(
-                &facts.types,
+            registration(
+                &mut facts.types,
                 &mut callables,
-                &owners,
-                &parameters,
-                header.callable,
+                (&owners, &parameters),
+                callable,
+                budget,
             )?;
             let ty = facts
                 .types
@@ -214,6 +214,60 @@ fn constructors(
         .map_err(error)?;
     }
     Ok(())
+}
+
+/// A callable without captured slots registers its public signature. Version
+/// thirteen: an inherent method's captured slots become its template's leading
+/// early parameters and its own late slots its public late frame, exactly as a
+/// local method template relocates them. That template is rebuilt here from
+/// the method's original signature and region scheme.
+fn registration(
+    types: &mut crate::types::Store,
+    callables: &mut Templates,
+    formals: (&[ItemId], &[ParameterId]),
+    callable: &super::formal_headers::Callable,
+    budget: &mut Headers,
+) -> Result<(), Error> {
+    let (owners, parameters) = formals;
+    let (signature, regions) = (callable.header.signature, &callable.regions);
+    if regions.captures == 0 {
+        return register(
+            types,
+            callables,
+            owners,
+            parameters,
+            callable.header.callable,
+        );
+    }
+    if !regions.bounds.is_empty() {
+        return Err(error(
+            "source captured method region bounds require their wider callable profile",
+        ));
+    }
+    let Some(Kind::Function {
+        parameters: inputs, ..
+    }) = types.kind(signature)
+    else {
+        return Err(error("source captured method lost its original signature"));
+    };
+    let inputs = types.list(inputs).map_or(0, <[TypeId]>::len);
+    budget.reserve(
+        (regions.total as usize)
+            .saturating_mul(size_of::<crate::types::RegionId>())
+            .saturating_add(types.node_allocation_bound(inputs.saturating_add(2)))
+            .saturating_add(callables.registration_allocation_bound(parameters.len(), 1)),
+    )?;
+    let mut work = 0;
+    let mapping = regions.callable_mapping(&mut work).map_err(error)?;
+    budget.charge(work)?;
+    let late = u32::try_from(regions.late.len())
+        .map_err(|_| error("source captured method has too many late slots"))?;
+    let template = crate::types::substitute::Bound::new(mapping)
+        .signature(types, signature, late)
+        .map_err(error)?;
+    callables
+        .insert_scoped(types, owners, template, regions.captures, &[], parameters)
+        .map_err(error)
 }
 
 /// Both private preparation owners supply their already authenticated complete

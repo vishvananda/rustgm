@@ -24,7 +24,10 @@ pub(in crate::sema::crates::typed_headers) fn from_rows<B: super::super::recipe_
     budget: &mut B,
     mut region: impl FnMut(s::RegionRef, &mut B) -> Result<crate::types::RegionId, Error>,
 ) -> Result<FunctionRegions, Error> {
-    if raw.regions.captures != 0 || raw.regions.early.start != raw.regions.early.end {
+    let captures = raw.regions.captures;
+    if captures != 0 && !inherent_captures(rows.descriptor(), raw)
+        || raw.regions.early.start != raw.regions.early.end
+    {
         return Err(error(
             "source callable requires its wider captured/early region scheme",
         ));
@@ -44,7 +47,7 @@ pub(in crate::sema::crates::typed_headers) fn from_rows<B: super::super::recipe_
     )?;
     let mut scheme = FunctionRegions {
         total: raw.regions.total,
-        captures: 0,
+        captures,
         early: Vec::new(),
         late: Vec::with_capacity(late.len()),
         has_declared_late: false,
@@ -58,6 +61,7 @@ pub(in crate::sema::crates::typed_headers) fn from_rows<B: super::super::recipe_
             .ok_or_else(|| error("source callable late slot is outside its actual table"))?;
         if slot.owner != raw.declaration
             || slot.kind != s::ParameterKind::Region
+            || slot.index < captures
             || slot.index >= scheme.total
         {
             return Err(error(
@@ -81,6 +85,27 @@ pub(in crate::sema::crates::typed_headers) fn from_rows<B: super::super::recipe_
         ));
     }
     Ok(scheme)
+}
+
+/// Version thirteen: a method of an inherent impl leads its frames with
+/// exactly that impl's captured lifetimes; validation admitted no other
+/// captured scheme. Each consumer rebuilds the callable template itself.
+pub(in crate::sema::crates::typed_headers) fn inherent_captures(
+    descriptor: s::Descriptor<'_>,
+    raw: &s::FunctionHeader,
+) -> bool {
+    let rows = descriptor.rows();
+    descriptor.profile().body_nodes()
+        && raw.parent.is_some_and(|parent| {
+            matches!(
+                rows.header(parent),
+                Ok(Some(s::HeaderRef::Implementation(index)))
+                    if rows.implementations.get(index as usize).is_some_and(|implementation| {
+                        implementation.trait_application.is_none()
+                            && implementation.region_captures == raw.regions.captures
+                    })
+            )
+        })
 }
 
 pub(super) fn receiver(

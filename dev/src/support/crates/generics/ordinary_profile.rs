@@ -7,6 +7,8 @@ use super::super::{HeaderIndex, SourceRows};
 mod callable_roles;
 #[path = "free_protocols.rs"]
 mod callable_traits;
+#[path = "frame_captures.rs"]
+mod captured;
 #[path = "conversion_profile.rs"]
 mod conversions;
 use crate::support::crates::generics::Convention;
@@ -268,6 +270,31 @@ fn trait_headers(
     }
     Ok(())
 }
+/// An associated original is admitted only by the method family its profile
+/// owns: primitive methods, conversion methods and, under version thirteen
+/// (`bodies`), inherent methods whose impl captures lifetimes.
+fn associated_method(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    header: &super::super::FunctionHeader,
+    work: &mut Work,
+    profile: NamespaceProfile,
+    bodies: bool,
+) -> Result<bool, &'static str> {
+    let primitive = matches!(
+        profile,
+        NamespaceProfile::FeaturePredicates
+            | NamespaceProfile::Definitions
+            | NamespaceProfile::Callables
+            | NamespaceProfile::Safety
+            | NamespaceProfile::Conversions
+            | NamespaceProfile::CompilerOperations
+    ) && primitive_method(rows, headers, header, work)?;
+    Ok(primitive
+        || profile.conversions()
+            && (conversions::method(rows, headers, header, work)?
+                || bodies && captured::method(rows, headers, header, work)?))
+}
 /// `bodies` is version thirteen, whose free originals may also bind late
 /// region formals; every consumer re-proves them in its rebuilt environment.
 fn functions(
@@ -327,17 +354,7 @@ fn functions(
                 "source free callable changed its actual original/public safety or convention",
             );
         }
-        let primitive_method = matches!(
-            profile,
-            NamespaceProfile::FeaturePredicates
-                | NamespaceProfile::Definitions
-                | NamespaceProfile::Callables
-                | NamespaceProfile::Safety
-                | NamespaceProfile::Conversions
-                | NamespaceProfile::CompilerOperations
-        ) && primitive_method(rows, headers, header, work)?;
-        let associated = primitive_method
-            || profile.conversions() && conversions::method(rows, headers, header, work)?;
+        let associated = associated_method(rows, headers, header, work, profile, bodies)?;
         if matches!(header.body, FunctionBody::Original(_))
             && header.parent.is_some()
             && !associated

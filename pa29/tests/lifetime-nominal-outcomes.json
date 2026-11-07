@@ -153,7 +153,8 @@
   {
    "control": "spec/source-nominals/provider.rs plus `pub struct Held<'a> { pub text: &'a str }` and `impl<'a> Held<'a> { pub fn get(self) -> &'a str { self.text } }`, under version 13",
    "expected": "rejected by name with `source function early/captured callable frame transport is not implemented`: a method capturing its impl's lifetime stays fenced",
-   "observed": "as declared"
+   "observed": "as declared",
+   "amended": "the impl-region-methods checkpoint transports methods of inherent impls that capture lifetimes, so this inherent control now exports (`impl-region-method-outcomes.json` keeps it as its own generated control, with a client). The integration control here now uses `pub trait Get { fn get(self) -> u8; }` and `impl<'a> Get for Held<'a> { fn get(self) -> u8 { 42 } }`, whose trait impl's captured lifetime stays fenced; it was observed rejected with the same diagnostic before the control changed"
   },
   {
    "control": "the full provider exported under module-branches-v12 and module-nominals-v10",

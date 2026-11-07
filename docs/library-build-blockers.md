@@ -5,6 +5,19 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [methods of inherent impls that capture lifetimes](parallel/impl-region-methods-transport.md)
+is joined on main. Version 13 carries methods of
+`impl<'a> X<'a>` with no new tag or shape. The impl's lifetimes lead each
+method's original and public frames. A call's application carries them as
+leading region arguments and opens only the method's own late slots. A fresh
+consumer rebuilds each method template with the captures as early
+parameters and re-proves every declared captured and late result. It rejects
+escapes, invariant shrinking, E0515 and E0597 cases, as rustc does. Thirteen
+clients run natively and exit 42. Trait impls that capture lifetimes, early
+or bounded method lifetimes and const inherent methods stay fenced by name.
+Core's `Arguments::from_str` is a const inherent method of
+`impl<'a> Arguments<'a>`, so the const fence is on the panic path.
+
 Lane B [override bounds, region-binding sugar and impl header
 projections](parallel/core-sites-reexports.md) clears the last four "associated
 type requires an unambiguous implementation" sites (`iter/mod.rs:376`,

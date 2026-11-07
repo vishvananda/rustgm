@@ -6358,10 +6358,32 @@ profiles reject a nominal's region slot by name. Rows that a consumer could
 not re-prove are rejected by name:
 
 - a declared lifetime bound such as `'b: 'a`;
-- a method whose impl captures a lifetime;
+- a method of a trait impl that captures a lifetime;
 - an imported nominal's region argument in another provider's signature.
 
 Packets without nominal lifetimes keep their exact bytes.
+
+A version-thirteen inherent impl may also capture lifetimes, as in
+`impl<'a> X<'a>` or `impl<'a> Slot<&'a u8>`. Its header frame binds the
+captured lifetimes as its region slots, and its Self recipe names them as
+bound regions of that frame. An impl type slot's ordinal and index count only
+the impl's type slots. Each method of such an impl declares as many captures
+as its impl, and its original and public binders both lead with the captured
+slots, followed by its own late slots. Its receiver names exactly the impl's
+Self, each impl region replaced by the same captured slot of the method's
+original binder. A call to such a method opens only the method's own late
+slots. The leading region arguments of its function application supply the
+captures in slot order, and the call names no method request. A Borrow whose
+referent differs from its place's type is admitted only where the original
+records a plain one-dereference reborrow coercion from that reference to a
+reference of exactly that referent. No region relation, outlives requirement
+or result proof is transported. A fresh consumer rebuilds each method's
+template with its captures as leading early parameters, as a local method
+template binds them, and re-proves its body against the declared captured and
+late results. Older profiles still reject such an impl's lifetime by name, as
+they reject every nominal lifetime. Methods with early lifetimes or lifetime bounds, const inherent
+methods and methods of trait impls that capture lifetimes stay rejected by
+name. Packets without such methods keep their exact bytes.
 
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core

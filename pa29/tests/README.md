@@ -269,3 +269,19 @@ packet under `spec/lifetime-nominals/`. The packet holds:
   6/24/96 scaling control.
 
 The `crate_linking::lifetime_transport` integration controls consume it.
+
+`impl-region-method-outcomes.json` freezes the version-thirteen captured-region
+method packet under `spec/impl-region-methods/`. The packet holds:
+
+- methods of `impl<'a> X<'a>` over covariant and invariant lifetime structs,
+  an impl with two lifetimes and a type, an impl on `Slot<&'a u8>` and a
+  struct that borrows another lifetime struct;
+- constructors, by-value and by-reference receivers, a method with its own
+  late lifetime, a path call and provider bodies that call the methods;
+- thirteen accepted clients and four opponents (two lifetime errors, E0515
+  and E0597);
+- generated controls: an older-profile method gate, fenced trait-impl,
+  early-lifetime and const methods, forged result, region-scheme, impl-header
+  and slot rows and a 6/24/96 scaling control.
+
+The `crate_linking::lifetime_methods` integration controls consume it.

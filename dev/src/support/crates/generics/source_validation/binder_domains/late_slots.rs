@@ -8,7 +8,8 @@ pub(super) fn validate(headers: &HeaderIndex<'_>, work: &mut Work) -> Result<(),
     let mut stamps = vec![0_u32; rows.slots.len()];
     for (ordinal, header) in rows.functions.iter().enumerate() {
         work.charge(1)?;
-        if header.regions.captures != 0
+        let captures = header.regions.captures;
+        if captures != 0 && !inherent_captures(headers, header, work)?
             || !header.regions.early.slice(&rows.region_slots)?.is_empty()
         {
             return Err("source early/captured region schemes require a complete wider profile");
@@ -17,7 +18,7 @@ pub(super) fn validate(headers: &HeaderIndex<'_>, work: &mut Work) -> Result<(),
         let frame = &rows.binders[header.callable.binder.0 as usize];
         let total = headers.scopes().complete_slots(header.scope, work)?;
         let types = headers.scopes().complete_type_slots(header.scope, work)?;
-        if late.len() != header.regions.total as usize
+        if late.len().checked_add(captures as usize) != Some(header.regions.total as usize)
             || frame.count != header.regions.total
             || total.checked_sub(types) != Some(header.regions.total)
         {
@@ -35,6 +36,7 @@ pub(super) fn validate(headers: &HeaderIndex<'_>, work: &mut Work) -> Result<(),
                 .ok_or("source late region slot is unknown")?;
             if slot.owner != header.declaration
                 || slot.kind != s::ParameterKind::Region
+                || slot.index < captures
                 || slot.index >= header.regions.total
             {
                 return Err("source late opening has foreign, repeated or nonregional formals");
@@ -56,4 +58,24 @@ pub(super) fn validate(headers: &HeaderIndex<'_>, work: &mut Work) -> Result<(),
         return Err("source late region-slot table has incomplete actual header ownership");
     }
     Ok(())
+}
+
+/// Version thirteen: a method's leading captured slots are exactly its
+/// inherent impl's lifetimes. Its own late slots follow them; the impl owns
+/// the captured slots, so no late opening may name one.
+fn inherent_captures(
+    headers: &HeaderIndex<'_>,
+    header: &s::FunctionHeader,
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    let Some(parent) = header.parent else {
+        return Ok(false);
+    };
+    let Some(s::HeaderRef::Implementation(index)) = headers.header(parent, work)? else {
+        return Ok(false);
+    };
+    let implementation = &headers.rows().implementations[index as usize];
+    Ok(implementation.self_definition == parent
+        && implementation.trait_application.is_none()
+        && implementation.region_captures == header.regions.captures)
 }

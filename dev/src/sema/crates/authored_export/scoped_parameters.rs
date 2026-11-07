@@ -75,7 +75,17 @@ impl Stage {
             if nominal {
                 self.nominal_region_slots(facts, owner, declaration, start)?;
             }
-            self.type_slots(facts, owner, declaration, kind == DefKind::Trait, nominal)?;
+            // An inherent impl's lifetimes also lead its template arguments.
+            // They stay its captured region slots, recorded after its types.
+            let leading = if nominal {
+                Leading::Nominal
+            } else if self.body_nodes() && kind == DefKind::SelfType && inherent_owner(facts, owner)
+            {
+                Leading::Inherent
+            } else {
+                Leading::None
+            };
+            self.type_slots(facts, owner, declaration, kind == DefKind::Trait, leading)?;
             if !nominal {
                 self.region_slots(facts, owner, declaration, start)?;
             }
@@ -130,11 +140,14 @@ impl Stage {
         owner: DefId,
         declaration: DeclarationRef,
         trait_owner: bool,
-        nominal: bool,
+        leading: Leading,
     ) -> Result<(), &'static str> {
         // A nominal's lifetimes are its leading template arguments. They own
         // the region slots already recorded, so a type slot's canonical index
-        // counts type slots only.
+        // counts type slots only. An inherent impl's leading lifetimes are
+        // its captured region slots, recorded after its types, so its type
+        // slot's ordinal and index both count type slots only.
+        let nominal = leading != Leading::None;
         let mut regions = 0_u32;
         for (ordinal, parameter) in facts
             .generics
@@ -199,9 +212,15 @@ impl Stage {
                 return Err("source parameter identity has duplicate slot rows");
             }
             self.reserve(4 * size_of::<s::ParameterSlot>())?;
+            let ordinal =
+                u32::try_from(ordinal).map_err(|_| "source parameter ordinal overflow")?;
             self.rows.slots.push(s::ParameterSlot {
                 owner: declaration,
-                ordinal: u32::try_from(ordinal).map_err(|_| "source parameter ordinal overflow")?,
+                ordinal: if leading == Leading::Inherent {
+                    ordinal - regions
+                } else {
+                    ordinal
+                },
                 index: actual
                     .index
                     .checked_sub(regions)
@@ -394,4 +413,33 @@ impl Stage {
         }
         Ok(())
     }
+}
+
+/// Where an owner's lifetimes stand among its template arguments.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Leading {
+    /// Functions, traits and older profiles: no lifetime is a template argument.
+    None,
+    /// Version thirteen: a struct's or enum's leading region slots.
+    Nominal,
+    /// Version thirteen: an inherent impl's captured region slots.
+    Inherent,
+}
+
+/// Whether a Self scope owner is an inherent impl, which has no trait.
+pub(super) fn inherent_owner(facts: &Declarations, owner: DefId) -> bool {
+    facts
+        .associated
+        .owner(owner)
+        .and_then(|id| facts.associated.get(id))
+        .is_some_and(|actual| {
+            actual.self_definition == owner
+                && matches!(
+                    actual.kind,
+                    crate::sema::associated::OwnerKind::Impl {
+                        trait_type: None,
+                        ..
+                    }
+                )
+        })
 }

@@ -18,14 +18,21 @@ impl Arena {
         let target = domains.target(applied.declaration.declaration, work)?;
         // DomainIndex already checked exact full arity and the actual caller's
         // scope. Visiting every argument retains unused formal formation debts.
-        for argument in applied.arguments.slice(&rows.arguments)? {
+        // A captured method's leading region arguments are its impl's lifetimes.
+        let captures = match target {
+            super::super::Target::Function(header) => header.regions.captures as usize,
+            super::super::Target::Constructor { .. } => 0,
+        };
+        for (index, argument) in applied.arguments.slice(&rows.arguments)?.iter().enumerate() {
             work.charge(1)?;
             let root = match *argument {
                 s::Argument::Type(root) => root,
-                // A lifetime-generic enum constructor's leading region has
-                // no formation root; its domain was checked with the caller.
+                // A lifetime-generic enum constructor's or captured method's
+                // leading region has no formation root; its domain was
+                // checked with the caller.
                 s::Argument::Region(_)
-                    if matches!(target, super::super::Target::Constructor { .. }) =>
+                    if matches!(target, super::super::Target::Constructor { .. })
+                        || index < captures =>
                 {
                     continue;
                 }

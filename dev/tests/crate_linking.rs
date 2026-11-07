@@ -34,6 +34,8 @@ mod imports;
 mod inherent_transport;
 #[path = "crate_linking/instantiable.rs"]
 mod instantiable;
+#[path = "crate_linking/lifetime_methods.rs"]
+mod lifetime_methods;
 #[path = "crate_linking/lifetime_transport.rs"]
 mod lifetime_transport;
 #[path = "crate_linking/match_transport.rs"]

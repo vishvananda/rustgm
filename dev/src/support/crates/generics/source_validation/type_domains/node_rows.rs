@@ -267,8 +267,7 @@ impl Builder<'_, '_> {
             );
         }
         let target = application.declaration.declaration;
-        let mut regions = 0_usize;
-        let scope = if let Some(constructor) =
+        let (scope, regions) = if let Some(constructor) =
             s::Constructor::of((rows.enums(), &rows.declarations), target, |row| {
                 self.headers.header(row, work)
             })? {
@@ -276,24 +275,23 @@ impl Builder<'_, '_> {
             // version-thirteen leading region slots included.
             let scope = rows.nominals[constructor.nominal as usize].scope;
             let scopes = self.headers.scopes();
-            regions = scopes
+            let regions = scopes
                 .complete_slots(scope, work)?
-                .saturating_sub(scopes.complete_type_slots(scope, work)?)
-                as usize;
-            scope
+                .saturating_sub(scopes.complete_type_slots(scope, work)?);
+            (scope, regions as usize)
         } else {
             let Some(HeaderRef::Function(index)) = self.headers.header(target, work)? else {
                 return Err("source application target has no actual function header");
             };
             let header = &rows.functions[index as usize];
-            if header.regions.captures != 0
-                || !header.regions.early.slice(&rows.region_slots)?.is_empty()
-            {
+            if !header.regions.early.slice(&rows.region_slots)?.is_empty() {
                 return Err(
                     "source early/captured function applications require a wider complete profile",
                 );
             }
-            header.scope
+            // Version thirteen: an inherent method's captured region arguments
+            // lead its type arguments; validation admitted no other capture.
+            (header.scope, header.regions.captures as usize)
         };
         let arguments = application.arguments.slice(&rows.arguments)?;
         if regions == 0

@@ -29,7 +29,9 @@ const OUTLIVES: &str = "required lifetime does not outlive its target";
 const OPPONENTS: [&str; 5] = ["inv-shrink", "args-grow", "text-grow", "escape", "outlives"];
 const GATE: &str = "// Generated lifetime gate.\npub struct Gate<'a> { pub text: &'a str }\n";
 const BOUNDED: &str = "// Generated lifetime-bound gate.\npub struct Bounded<'a, 'b: 'a> { pub a: &'a u8, pub b: &'b u8 }\n";
-const HELD: &str = "// Generated captured-lifetime gate.\npub struct Held<'a> { pub text: &'a str }\nimpl<'a> Held<'a> { pub fn get(self) -> &'a str { self.text } }\n";
+/// Inherent impl methods that capture lifetimes transport since the
+/// impl-region-methods checkpoint; a trait impl's captured lifetimes do not.
+const HELD: &str = "// Generated captured-lifetime gate.\npub struct Held<'a> { pub text: &'a str }\npub trait Get { fn get(self) -> u8; }\nimpl<'a> Get for Held<'a> { fn get(self) -> u8 { 42 } }\n";
 const WIRE: &str = "// Generated lifetime-nominal wire control.\npub struct Zinv<'a> { pub slot: &'a mut &'a u8 }\npub fn store<'a>(mut z: Zinv<'a>, v: &'a u8) -> u8 { *z.slot = v; **z.slot }\npub struct Zarg<'a> { pub text: &'a str }\npub fn take(a: Zarg<'_>) -> u8 { 42 }\n";
 /// `Zinv`'s region slot row (owner 60, ordinal and index 0, definition 80)
 /// and the start of `store`'s.

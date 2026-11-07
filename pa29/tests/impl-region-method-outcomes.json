@@ -1,0 +1,238 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+ "providers": [
+  {
+   "file": "spec/impl-region-methods/provider.rs",
+   "sha256": "a5dbc2cc0a3951c62bbcffc9001b8b44bd1cb2df7b9b4f89437e8765ad850741"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "development_note": "the provider shapes and most client shapes were probed with rustc and the candidate during development (generated files under obj/parallel/impl-regions, not these fixtures); the fixtures, their outcomes and every generated and wire control below were written down before any rustc or RustGM run of these files",
+ "cases": [
+  {
+   "file": "spec/impl-region-methods/new.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "41f30853e6468df697db96f103e4ed9b8029c78c1abe05508025f6c14bd1e593"
+  },
+  {
+   "file": "spec/impl-region-methods/from-static.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "bc889cb380baedaa0b367780630f2d4b2413ba9deb33f535914d57c76d47bbbf"
+  },
+  {
+   "file": "spec/impl-region-methods/get.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "ac3303e58ad750654f5c809e42633e4c01847683b0297cac650876078c0e5886"
+  },
+  {
+   "file": "spec/impl-region-methods/text.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "a9afef428b7a303522a83b68941d6fe1131912b52a0300c5c903100ba5458456"
+  },
+  {
+   "file": "spec/impl-region-methods/pick.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "ca03c5e3b84df86f1b173bbeb84095db6b168da11bdd4e75198d77e354d61774"
+  },
+  {
+   "file": "spec/impl-region-methods/cell.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "e1b095d8b668d66ed941c3b6a96c22dd84e506cef1d569b6b475df880333fb17"
+  },
+  {
+   "file": "spec/impl-region-methods/pair.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "2ea2769a37aee763e2b217dbbada11de1135bc9a3ee1c0920050502bf570c234"
+  },
+  {
+   "file": "spec/impl-region-methods/slot.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "0fcc6a559e4b3d6bc9e3d8895931e09e997f744ebfadbdd7f8b264853f201781"
+  },
+  {
+   "file": "spec/impl-region-methods/info.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "1abda8ddf68d3ad276766d03dfb9642ccdc3eb166406e401b9259290cb89a8a7"
+  },
+  {
+   "file": "spec/impl-region-methods/path.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "3a88e244d8ffb6c9801c41ef380feb494c0ab66baf5d83ae7dd788789f9a7ebf"
+  },
+  {
+   "file": "spec/impl-region-methods/make.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "52b2a54ba388df4a71832393188bba2d4177060276b5645662c166e2039b8c72"
+  },
+  {
+   "file": "spec/impl-region-methods/relay.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "6fd0aa83f27f61e77abd370e5c19383b26b20bf2bafd335875d4552459047343"
+  },
+  {
+   "file": "spec/impl-region-methods/wrap.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "9034e3602aa05f35aeaf89db167b5244ba092c7b6af73406cc7a126183b5eb4f"
+  },
+  {
+   "file": "spec/impl-region-methods/text-escape.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": false,
+   "rustc": "lifetime may not live long enough",
+   "rustgm": "required lifetime does not outlive its target",
+   "sha256": "f9edd1947b6d934c1a6fa2ea3e549968cda7d201f85a9fe81a61e9a1511d7d6d"
+  },
+  {
+   "file": "spec/impl-region-methods/info-local.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": false,
+   "rustc": "E0515",
+   "rustgm": "required lifetime does not outlive its target",
+   "sha256": "42a55478aae4206fc080e0c93db7171ab10e4520f37bbbf08008aa5d85985e6b"
+  },
+  {
+   "file": "spec/impl-region-methods/cell-shrink.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": false,
+   "rustc": "lifetime may not live long enough",
+   "rustgm": "required lifetime does not outlive its target",
+   "sha256": "8bef7cb69bdbfcf0936f078e6eb18a85bccc6a49c727105a72c121c03d67a3d3"
+  },
+  {
+   "file": "spec/impl-region-methods/pick-borrow.rs",
+   "provider": "spec/impl-region-methods/provider.rs",
+   "accepted": false,
+   "rustc": "E0597",
+   "rustgm": "access conflicts with a live reference loan",
+   "sha256": "aecb08029b1c3145d5490395dc8ebf6815d75e5bc55a4b6af61f8ba32a5075ed"
+  }
+ ],
+ "generated_controls": [
+  {
+   "control": "the full provider exported under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected by name with `named, associated or generic alias transport requires its wider profile`, as the shared lifetime-nominal and inherent-method lines already require version 13"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `pub struct Held<'a> { pub text: &'a str }` and `impl<'a> Held<'a> { pub fn get(self) -> &'a str { self.text } }` under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected by name with main's `source lifetime binding has no actual original slot` under both older profiles; exported under version 13, with a client calling `get` accepted",
+   "amended": {
+    "observed_first": "the generated client read the first byte of `get`'s result, and the fresh consumer rejected that read with `cannot move a non-Copy value out of a reference`: `spec/source-nominals/provider.rs` has no `Copy` for `u8`, so rustc would reject it too",
+    "change": "the client now binds the result as `&'static str` without reading through it, which still requires the captured result type",
+    "expected": "unchanged: rejected by name under both older profiles; exported under version 13, with the client accepted"
+   }
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `Held<'a>`, `pub trait Get { fn get(self) -> u8; }` and `impl<'a> Get for Held<'a> { fn get(self) -> u8 { 42 } }`, under version 13",
+   "expected": "rejected by name with `source function early/captured callable frame transport is not implemented`: a trait impl's captured lifetimes stay fenced"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `Held<'a>` and `impl<'a> Held<'a> { pub fn shorter<'b>(&self, x: &'b u8) -> &'b u8 where 'a: 'b { x } }`, under version 13",
+   "expected": "rejected by name with `source function early/captured callable frame transport is not implemented`: a declared lifetime bound makes `'b` early, which stays fenced"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `Held<'a>` and `impl<'a> Held<'a> { pub const fn count(&self) -> u8 { 42 } }`, under version 13",
+   "expected": "rejected by name with `source nonordinary callable effect/safety/convention requires a wider profile`: const inherent methods stay fenced"
+  },
+  {
+   "control": "6, 24 and 96 generated methods `pub fn mNNN(&self) -> &'a u8 { &*self.t }` in one `impl<'a> Wide<'a>` over `pub struct Wide<'a> { pub t: &'a u8 }`, after the lifetime-nominal provider, and one client calling `m005`",
+   "expected": "packet bytes grow exactly linearly; the client LowIR stays bounded"
+  }
+ ],
+ "wire_controls": [
+  {
+   "mutation": "none: a generated minimal provider (the lifetime-nominal provider, `Hold<'a> { pub t: &'a u8 }` and `impl<'a> Hold<'a> { pub fn choose<'b>(&self, a: &'a u8, b: &'b u8) -> &'b u8 { b } }`) and a client calling `choose`",
+   "expected": "accepted"
+  },
+  {
+   "mutation": "`choose`'s original and public results replaced by those of the variant `-> &'a u8 { a }`, over the unchanged body returning `b`",
+   "expected": "required lifetime does not outlive its target: the consumer re-proves the body against the claimed captured-region result"
+  },
+  {
+   "mutation": "only `choose`'s public result replaced by the variant's",
+   "expected": "source signature reference mutability or exact lifetime differs"
+  },
+  {
+   "mutation": "`choose`'s region scheme claims no captures",
+   "expected": "source public binder omitted actual late original region formals",
+   "amended": {
+    "observed_first": "the earlier frame check of the method-family admission (`ordinary_profile`'s captured-method family) rejected it with `source captured method changed its impl's exact lifetime frame`, before the binder check",
+    "expected": "source captured method changed its impl's exact lifetime frame",
+    "reason": "integrator decision 3: a forged region row may be rejected by name by an earlier identity check"
+   }
+  },
+  {
+   "mutation": "`choose`'s region scheme claims two captures",
+   "expected": "source early/captured region schemes require a complete wider profile",
+   "amended": {
+    "observed_first": "rejected with `source captured method changed its impl's exact lifetime frame` by the same earlier family check, before the region-scheme check",
+    "expected": "source captured method changed its impl's exact lifetime frame",
+    "reason": "integrator decision 3"
+   }
+  },
+  {
+   "mutation": "`Hold`'s impl header claims no captured lifetime",
+   "expected": "source header binder has foreign captures or duplicate ownership",
+   "amended": {
+    "observed_first": "the family check declined the method, which was then rejected with the generic `source provided associated bodies require a wider explicit profile`",
+    "change": "the family check now rejects a method that claims captures under an impl that declares none as a forged frame",
+    "expected": "source captured method changed its impl's exact lifetime frame",
+    "reason": "integrator decision 3, and a specific name for a capture disagreement; observed again after the change"
+   }
+  },
+  {
+   "mutation": "`choose`'s first late slot claims the captured index 0",
+   "expected": "source late opening has foreign, repeated or nonregional formals"
+  },
+  {
+   "mutation": "relabelled version 12",
+   "expected": "unknown source declaration kind"
+  },
+  {
+   "mutation": "every strict prefix",
+   "expected": "fails to decode"
+  }
+ ],
+ "native": {
+  "expected": "all thirteen accepted clients exit 42 natively, as rustc's do",
+  "observed": "as declared: all thirteen exit 42 with empty stdout"
+ },
+ "oracle": {
+  "round_1": "rustc 1.98.0 (88d9e12ae 2026-08-18): the provider compiles; new, from-static, get, text, pick, cell, pair, slot, info, path, make, relay and wrap exit 42; text-escape and cell-shrink fail with `lifetime may not live long enough`, info-local with E0515 and pick-borrow with E0597, as declared"
+ },
+ "observed": {
+  "candidate": "all seventeen outcomes as declared; the three lifetime opponents fail with `required lifetime does not outlive its target` and pick-borrow with `access conflicts with a live reference loan`",
+  "generated_controls": "as declared, with the held-client amendment",
+  "wire_controls": "as declared, with the three capture-count amendments"
+ }
+}

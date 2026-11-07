@@ -170,7 +170,12 @@ impl DomainIndex<'_, '_> {
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let rows = self.headers.rows();
-        let count = rows.binders[target.callable.binder.0 as usize].count;
+        // Version thirteen: an inherent method's captured public slots are its
+        // application's leading region arguments; the opening binds the rest.
+        let count = rows.binders[target.callable.binder.0 as usize]
+            .count
+            .checked_sub(target.regions.captures)
+            .ok_or("source Call target captures exceed its public frame")?;
         match request.opening {
             None if count == 0 => Ok(()),
             Some(opening) if count > 0 && opening.binder == target.callable.binder => {
@@ -256,6 +261,18 @@ impl DomainIndex<'_, '_> {
                 Ok(())
             }
             (None, None) => Ok(()),
+            // Version thirteen: an inherent method is a direct target with no
+            // trait goal; its consumer resolves the same impl member again.
+            (Some(parent), None)
+                if self.bodies
+                    && matches!(
+                        self.headers.header(parent, work)?,
+                        Some(HeaderRef::Implementation(index))
+                            if rows.implementations[index as usize].trait_application.is_none()
+                    ) =>
+            {
+                Ok(())
+            }
             _ => Err("source Call omitted or fabricated its actual associated method request"),
         }
     }

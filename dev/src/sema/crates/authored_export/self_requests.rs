@@ -26,6 +26,24 @@ impl Stage {
         };
         self.member_request(facts, item, arguments, callable, context)
     }
+    /// Version thirteen: an inherent method is a direct call target with no
+    /// trait goal; every consumer resolves and re-proves its owner.
+    fn direct_inherent(&self, facts: &Declarations, definition: DefId) -> bool {
+        self.body_nodes()
+            && facts
+                .associated
+                .owner(definition)
+                .and_then(|owner| facts.associated.get(owner))
+                .is_some_and(|actual| {
+                    matches!(
+                        actual.kind,
+                        crate::sema::associated::OwnerKind::Impl {
+                            trait_type: None,
+                            ..
+                        }
+                    )
+                })
+    }
     fn member_request(
         &mut self,
         facts: &mut Declarations,
@@ -50,7 +68,9 @@ impl Stage {
                 }
                 return Ok(Some(application));
             }
-            if facts.associated.owner(definition).is_some() {
+            if facts.associated.owner(definition).is_some()
+                && !self.direct_inherent(facts, definition)
+            {
                 return Err(
                     "source impl/inherent call requests need their exact selected trait-use producer",
                 );
