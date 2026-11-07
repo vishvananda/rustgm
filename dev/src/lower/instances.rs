@@ -359,6 +359,23 @@ pub fn build_source_library_profile(
             let interface = source
                 .complete_publication(report, facts, base, modules, profile)
                 .map_err(|error| facts.retain_error_warnings(error))?;
+            let interface = match crate::sema::crates::macro_table(report)? {
+                Some(macros)
+                    if interface.macros().is_none() && interface.native_links().is_none() =>
+                {
+                    interface
+                        .with_macros(macros)
+                        .map_err(|message| diagnostic(report, None, message.into()))?
+                }
+                Some(_) => {
+                    return Err(diagnostic(
+                        report,
+                        None,
+                        "source publication already wraps its macro table".into(),
+                    ));
+                }
+                None => interface,
+            };
             let interface = if interface.native_links().is_none() {
                 if let Some(plan) = facts
                     .foreign

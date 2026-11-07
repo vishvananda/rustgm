@@ -1,16 +1,24 @@
-//! Exported `macro_rules!` rows wrap an unchanged, independently bounded interface.
+//! Exported macro rows wrap an unchanged, independently bounded interface.
 //! Canonical nesting is native links, then macros, then the core table.
+//!
+//! Version one holds only declarative root rows. Version two prefixes every
+//! row with a kind byte and its module placement, and adds builtin rows and
+//! typed internal-unstable feature lists. A table that needs neither keeps its
+//! exact version-one bytes, and a version-two table must need one of them.
 use super::{Interface, MAGIC, Reader, SCHEMA, Writer};
 use crate::support::{
     crates::exported_macros::{
-        Delimiter, MAX_IMAGE_BYTES, MAX_MACROS, MAX_NAME_BYTES, MAX_ROWS, Macro, Macros, Row,
-        TokenClass,
+        BuiltinMacro, Delimiter, MAX_FEATURES, MAX_IDENTITY_BYTES, MAX_IMAGE_BYTES, MAX_MACROS,
+        MAX_NAME_BYTES, MAX_ROWS, Macro, MacroKind, Macros, Row, Syntax, TokenClass,
     },
     edition::Edition,
 };
 pub(super) const TAG: u8 = 14;
-const VERSION: u8 = 1;
+const VERSION_ONE: u8 = 1;
+const VERSION_TWO: u8 = 2;
 const GROUP: u8 = 0x80;
+const DECLARATIVE: u8 = 0;
+const BUILTIN: u8 = 1;
 const EDITIONS: [Edition; 4] = [
     Edition::Rust2015,
     Edition::Rust2018,
@@ -18,51 +26,178 @@ const EDITIONS: [Edition; 4] = [
     Edition::Rust2024,
 ];
 
+/// One row of the merged, canonically ordered version-two table.
+enum Entry<'a> {
+    Declarative(&'a Macro),
+    Builtin(&'a BuiltinMacro),
+}
+
+/// Declarative rows are root rows, so they merge by name into the root prefix
+/// of the builtin rows, which are already sorted by placement and name.
+fn merged(macros: &Macros) -> Vec<Entry<'_>> {
+    let mut entries = Vec::with_capacity(macros.rows().len() + macros.builtins().len());
+    let mut rows = macros.rows().iter().peekable();
+    for builtin in macros.builtins() {
+        while let Some(row) =
+            rows.next_if(|row| builtin.placement().is_empty() && row.name() < builtin.name())
+        {
+            entries.push(Entry::Declarative(row));
+        }
+        if !builtin.placement().is_empty() {
+            entries.extend(rows.by_ref().map(Entry::Declarative));
+        }
+        entries.push(Entry::Builtin(builtin));
+    }
+    entries.extend(rows.map(Entry::Declarative));
+    entries
+}
+
 pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     let macros = interface.macros().ok_or("missing exported macro table")?;
     let inner = super::encode_core(interface)?;
     let mut output = Writer::default();
     output.bytes(MAGIC)?;
     output.u16(SCHEMA)?;
-    output.bytes(&[0, 0, TAG, VERSION])?;
-    output.u32(macros.rows().len())?;
-    for row in macros.rows() {
-        output.string(row.name())?;
-        output.u8(row.edition() as u8)?;
-        output.u8(u8::from(row.local_inner_macros()))?;
-        output.u32(row.rules() as usize)?;
-        output.string(row.image())?;
-        output.u32(row.rows().len())?;
-        for tree in row.rows() {
-            let (code, value) = match *tree {
-                Row::Token { class, length } => (class as u8, length),
-                Row::Group { delimiter, rows } => (GROUP | delimiter as u8, rows),
-            };
-            output.u8(code)?;
-            output.u32(value as usize)?;
+    if macros.requires_version_two() {
+        output.bytes(&[0, 0, TAG, VERSION_TWO])?;
+        let entries = merged(macros);
+        output.u32(entries.len())?;
+        for entry in entries {
+            match entry {
+                Entry::Declarative(row) => {
+                    output.u8(DECLARATIVE)?;
+                    output.path(&[])?;
+                    encode_macro(&mut output, row)?;
+                    names(&mut output, row.internal_unstable())?;
+                }
+                Entry::Builtin(row) => encode_builtin(&mut output, row)?,
+            }
+        }
+    } else {
+        output.bytes(&[0, 0, TAG, VERSION_ONE])?;
+        output.u32(macros.rows().len())?;
+        for row in macros.rows() {
+            encode_macro(&mut output, row)?;
         }
     }
     output.u32(inner.len())?;
     output.bytes(&inner)?;
     Ok(output.finish())
 }
+fn encode_macro(output: &mut Writer, row: &Macro) -> Result<(), &'static str> {
+    output.string(row.name())?;
+    output.u8(row.edition() as u8)?;
+    output.u8(u8::from(row.local_inner_macros()))?;
+    output.u32(row.rules() as usize)?;
+    output.string(row.image())?;
+    output.u32(row.rows().len())?;
+    for tree in row.rows() {
+        let (code, value) = match *tree {
+            Row::Token { class, length } => (class as u8, length),
+            Row::Group { delimiter, rows } => (GROUP | delimiter as u8, rows),
+        };
+        output.u8(code)?;
+        output.u32(value as usize)?;
+    }
+    Ok(())
+}
+fn encode_builtin(output: &mut Writer, row: &BuiltinMacro) -> Result<(), &'static str> {
+    output.u8(BUILTIN)?;
+    output.path(row.placement())?;
+    output.string(row.name())?;
+    output.u8(row.syntax() as u8)?;
+    output.string(row.identity())?;
+    output.u8(row.kind() as u8)?;
+    names(output, row.helpers())
+}
+fn names(output: &mut Writer, names: &[String]) -> Result<(), &'static str> {
+    output.u32(names.len())?;
+    for name in names {
+        output.string(name)?;
+    }
+    Ok(())
+}
 pub(super) fn decode(input: &mut Reader<'_>) -> Result<Interface, &'static str> {
-    if input.u8()? != VERSION {
-        return Err("unknown exported macro metadata version");
-    }
-    // Name, edition, flags, rule count, image and row-count fields.
-    let count = input.count(MAX_MACROS, 18)?;
-    let mut rows = Vec::with_capacity(count);
-    for _ in 0..count {
-        rows.push(decode_macro(input)?);
-    }
-    let macros = Macros::new(rows)?;
+    let macros = match input.u8()? {
+        VERSION_ONE => {
+            // Name, edition, flags, rule count, image and row-count fields.
+            let count = input.count(MAX_MACROS, 18)?;
+            let mut rows = Vec::with_capacity(count);
+            for _ in 0..count {
+                rows.push(decode_macro(input)?);
+            }
+            Macros::new(rows)?
+        }
+        VERSION_TWO => decode_version_two(input)?,
+        _ => return Err("unknown exported macro metadata version"),
+    };
     let length = input.u32()?;
     let inner = input.bytes(length)?;
     if !input.done() || matches!(inner.get(12), Some(&(TAG | super::link_envelope::TAG))) {
         return Err("trailing or nested exported macro metadata");
     }
     super::decode(inner)?.with_macros(macros)
+}
+fn decode_version_two(input: &mut Reader<'_>) -> Result<Macros, &'static str> {
+    // Kind, placement count and name length.
+    let count = input.count(MAX_MACROS, 7)?;
+    let (mut rows, mut builtins) = (Vec::new(), Vec::new());
+    let mut previous: Option<(Vec<String>, String)> = None;
+    for _ in 0..count {
+        let kind = input.u8()?;
+        let placement = input.module_path()?;
+        let key = match kind {
+            DECLARATIVE => {
+                if !placement.is_empty() {
+                    return Err("declarative exported macros belong to the crate root");
+                }
+                let row = decode_macro(input)?;
+                let row = row.with_internal_unstable(decode_names(input)?)?;
+                let name = row.name().to_owned();
+                rows.push(row);
+                (placement, name)
+            }
+            BUILTIN => {
+                let row = decode_builtin(input, placement)?;
+                let key = (row.placement().to_vec(), row.name().to_owned());
+                builtins.push(row);
+                key
+            }
+            _ => return Err("unknown exported macro row kind"),
+        };
+        if previous.as_ref().is_some_and(|previous| *previous >= key) {
+            return Err("exported macros must be unique and sorted by placement and name");
+        }
+        previous = Some(key);
+    }
+    let macros = Macros::with_builtins(rows, builtins)?;
+    if !macros.requires_version_two() {
+        return Err("version-two exported macro table has only version-one rows");
+    }
+    Ok(macros)
+}
+fn decode_builtin(
+    input: &mut Reader<'_>,
+    placement: Vec<String>,
+) -> Result<BuiltinMacro, &'static str> {
+    let name = input.string(MAX_NAME_BYTES)?;
+    let syntax = *Syntax::ALL
+        .get(usize::from(input.u8()?))
+        .ok_or("unknown exported builtin macro syntax")?;
+    let identity = input.string(MAX_IDENTITY_BYTES)?;
+    let kind = *MacroKind::ALL
+        .get(usize::from(input.u8()?))
+        .ok_or("unknown exported builtin macro kind")?;
+    let helpers = decode_names(input)?;
+    BuiltinMacro::new(placement, name, syntax, identity, kind, helpers)
+}
+fn decode_names(input: &mut Reader<'_>) -> Result<Vec<String>, &'static str> {
+    let count = input.count(MAX_FEATURES, 4)?;
+    let mut names = Vec::with_capacity(count);
+    for _ in 0..count {
+        names.push(input.string(MAX_NAME_BYTES)?);
+    }
+    Ok(names)
 }
 fn decode_macro(input: &mut Reader<'_>) -> Result<Macro, &'static str> {
     let name = input.string(MAX_NAME_BYTES)?;

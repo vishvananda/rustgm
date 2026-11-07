@@ -53,10 +53,12 @@ mod argument_bindings;
 #[path = "expansion/identifier_ancestry.rs"]
 mod captured_origins;
 mod endpoint_permissions;
+mod exported_permissions;
 mod format_inputs;
 mod format_sites;
 mod format_values;
 mod transported_macros;
+pub use exported_permissions::ExportedBuiltin;
 pub use transported_macros::ImportedDefinition;
 mod location;
 mod metavariables;
@@ -124,11 +126,6 @@ pub struct Definition {
     pub imported: Option<transported_macros::ImportedDefinition>,
 }
 impl Definition {
-    /// Checked definition-site contracts (internal unstable, edition panic) are
-    /// source permissions that macro metadata does not transport.
-    pub(crate) const fn has_definition_permissions(&self) -> bool {
-        self.header.is_some() || self.edition_panic
-    }
     fn macro_kind(&self) -> builtin::BuiltinKind {
         match self.body {
             Body::Builtin(role) => role.kind(),

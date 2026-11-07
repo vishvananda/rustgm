@@ -49,6 +49,10 @@ impl HeaderData {
     pub(in crate::resolve) fn contains(&self, feature: &FeatureName<'_>) -> bool {
         self.features.contains(feature.spelling())
     }
+    /// The checked `allow_internal_unstable` features, in no particular order.
+    pub(in crate::resolve) fn features(&self) -> impl Iterator<Item = &str> {
+        self.features.iter().map(AsRef::as_ref)
+    }
     /// Read only after the existing selected-header authentication. This list
     /// does not itself authorize a helper on any attributed owner.
     pub(in crate::resolve) fn derive_helpers(

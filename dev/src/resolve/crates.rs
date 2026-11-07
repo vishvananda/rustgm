@@ -3,7 +3,9 @@ mod bound_macro_rows;
 mod original_declarations;
 mod public_names;
 mod token_images;
-pub(crate) use bound_macro_rows::{ImportedMacro, root_spelling as macro_root_spelling};
+pub(crate) use bound_macro_rows::{
+    ImportedMacro, ImportedRow, root_spelling as macro_root_spelling,
+};
 #[cfg_attr(
     not(test),
     expect(
@@ -241,9 +243,10 @@ impl Resolver<'_> {
         let external = self.new_scope(None, ModuleId(0), true)?;
         let artifacts = Arc::clone(&dependencies);
         let mut imported = Imported::new(dependencies);
+        let mut roots = Vec::with_capacity(artifacts.artifacts().len());
         for (artifact_index, artifact) in artifacts.artifacts().iter().enumerate() {
             let scope = self.reserve_artifact_root(artifact, &mut imported)?;
-            self.import_macros(scope, artifact, artifact_index, &mut imported)?;
+            roots.push(scope);
             if artifact.public_names().is_some() {
                 self.reserve_public_modules(scope, artifact, &mut imported)?;
             }
@@ -277,6 +280,13 @@ impl Resolver<'_> {
         }
         for artifact in artifacts.artifacts() {
             self.bind_public_modules(artifact, &imported)?;
+        }
+        // Every provider module exists now, so each macro row binds at its
+        // placement through the provider's own module identities.
+        for (artifact_index, (artifact, scope)) in
+            artifacts.artifacts().iter().zip(roots).enumerate()
+        {
+            self.import_macros(scope, artifact, artifact_index, &mut imported)?;
         }
         self.bind_crate_aliases(external, &imported)?;
         self.facts.extern_scope = Some(external);

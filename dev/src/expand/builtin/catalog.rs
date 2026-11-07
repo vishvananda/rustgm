@@ -282,6 +282,12 @@ impl Builtin {
                     | Self::Test
             )
     }
+    /// Roles whose expansion needs no defining source declaration: the
+    /// bootstrap prelude binds these, and an imported builtin row may run them.
+    #[must_use]
+    pub const fn context_free(self) -> bool {
+        self.bootstrap_slot().is_some() && !self.source_only() && !matches!(self, Self::OptionEnv)
+    }
     #[must_use]
     pub const fn formatting(self) -> bool {
         matches!(

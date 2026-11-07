@@ -86,12 +86,13 @@ pub(super) fn frame(package: &Package, definition: &Definition, call: Location) 
                 span: package.unit(key.file).configured.ast.node(key.node).span,
             })
             .or_else(|| {
-                definition.imported.map(|imported| Location {
-                    file: imported.file,
+                let file = definition.imported?.file?;
+                Some(Location {
+                    file,
                     span: crate::syntax::token_tree::Span {
                         start: 0,
                         end: package
-                            .unit(imported.file)
+                            .unit(file)
                             .source
                             .text()
                             .len()

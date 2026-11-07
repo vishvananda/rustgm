@@ -10,6 +10,8 @@ mod convention_transport;
 mod declarative_exports;
 #[path = "crate_linking/direct_calls.rs"]
 mod direct_calls;
+#[path = "crate_linking/expander_rows.rs"]
+mod expander_rows;
 #[path = "crate_linking/exports.rs"]
 mod exports;
 #[path = "crate_linking/fn_roles.rs"]

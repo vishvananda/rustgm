@@ -15,6 +15,9 @@ mod tests;
 
 pub(in crate::resolve) struct LocalMacros {
     root: NodeKey,
+    /// The ledger exists only for imported allowance lists, so the crate root
+    /// need not carry an attribute owner.
+    imported_only: bool,
     image: Arc<OriginalImage>,
     features: policy::Features,
     contracts: panic_contracts::Contracts,
@@ -24,6 +27,7 @@ impl LocalMacros {
         unit: &Unit,
         features: policy::Features,
         limits: crate::expand::config::SourceContractLimits,
+        imported_only: bool,
     ) -> Result<Self, Error> {
         let contracts = panic_contracts::Contracts::admitted(limits, &unit.source);
         contracts
@@ -34,6 +38,7 @@ impl LocalMacros {
                 file: FileId(0),
                 node: unit.configured.ast.root,
             },
+            imported_only,
             image: Arc::clone(unit.source.original_image()),
             features,
             contracts,
@@ -44,17 +49,24 @@ impl LocalMacros {
             .units
             .first()
             .ok_or("local macro root disappeared")?;
+        let owner = unit
+            .owner_indices
+            .get(self.root.node.get() as usize)
+            .copied()
+            .flatten();
+        let owner_changed = match owner {
+            Some(index) => unit
+                .configured
+                .owners
+                .get(index.get() as usize - 1)
+                .is_none_or(|owner| owner.node != self.root.node || !owner.enabled),
+            None => !self.imported_only,
+        };
         if self.root.file != FileId(0)
             || self.root.node != unit.configured.ast.root
             || !Arc::ptr_eq(&self.image, unit.source.original_image())
             || unit.configured.active.get(self.root.node.get() as usize) != Some(&true)
-            || unit
-                .owner_indices
-                .get(self.root.node.get() as usize)
-                .copied()
-                .flatten()
-                .and_then(|index| unit.configured.owners.get(index.get() as usize - 1))
-                .is_none_or(|owner| owner.node != self.root.node || !owner.enabled)
+            || owner_changed
         {
             return Err("local macro root incarnation or owner changed");
         }

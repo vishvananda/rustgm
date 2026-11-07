@@ -131,7 +131,7 @@ impl Paths {
         let bootstrap = !package.uses_source_bindings();
         for builtin in Builtin::BOOTSTRAP
             .into_iter()
-            .filter(|builtin| bootstrap && *builtin != Builtin::OptionEnv && !builtin.source_only())
+            .filter(|builtin| bootstrap && builtin.context_free())
         {
             let name = package
                 .names
@@ -846,10 +846,15 @@ impl Paths {
         }
         Ok(())
     }
-    /// An authenticated imported row executes as this declarative definition.
-    pub(super) fn imported_macro(&mut self, id: DefId, index: usize) {
+    /// An authenticated imported row executes as this definition of its kind.
+    pub(super) fn imported_macro(
+        &mut self,
+        id: DefId,
+        index: usize,
+        kind: crate::expand::builtin::BuiltinKind,
+    ) {
         self.macro_targets
-            .insert(id, MacroTarget::Declarative(index));
+            .insert(id, MacroTarget::local(index, kind));
         self.macros.resize(index + 1, None);
         self.macros[index] = Some(id);
     }

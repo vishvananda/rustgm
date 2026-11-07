@@ -109,3 +109,20 @@ consumers of each, two type opponents, fenced called-constructor and guard
 controls and the forged enum-header, constructor-test and downcast controls.
 The `crate_linking::match_transport` integration controls consume it; the
 owning checkpoint records candidate results.
+
+`builtin-macro-rows-outcomes.json` freezes the tag-14 version-2 family under
+`spec/builtin-macro-rows/`. A no_core source-core provider (`provider.rs`)
+exports five root builtin `macro_rules!` rows and four builtin `pub macro` rows
+in `builtin` and `builtin::deeper`. Seven source clients reach them through
+paths, `use`, a renamed `extern crate` beside a same-named local module and
+`#[macro_use]`. Their rejected cases cover a placed row named at the root, a
+placed row expected in the macro-use prelude, and `compile_error`. A
+requirement row has rustc accept the imported `test` attribute while RustGM
+rejects it by name. `path-client.rs` links with `native-driver.c`, which prints
+the consumer's `line!`, `column!` and `cfg!` values. Two more providers are
+requirement rows: an ordinary macros 2.0 export and a prelude-style re-export,
+both rejected by name. `internal-provider.rs` exports `allow_internal_unstable`
+lists (two features, one, none); its three clients check that each list
+applies per feature. Every rustc outcome was declared before any rustc or
+RustGM run, and `scripts/check_macro_metadata.py` runs the file with the other
+two macro files (`docs/parallel/macro-metadata.md`).

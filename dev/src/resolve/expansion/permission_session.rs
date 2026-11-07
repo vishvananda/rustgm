@@ -18,6 +18,14 @@ struct CachedHeader {
     image: Arc<crate::support::source::OriginalImage>,
 }
 
+/// What one expansion frame's definition permits.
+enum Grant<'view> {
+    None,
+    Header(Rc<HeaderData>),
+    /// An imported row's sorted, re-authenticated `allow_internal_unstable` list.
+    Imported(&'view [String]),
+}
+
 #[derive(Default)]
 pub(super) struct Memo {
     frames: HashMap<ExpansionId, Frame>,
@@ -138,7 +146,7 @@ pub(super) struct Query<'view, 'memo> {
     pub view: FrameView<'view>,
     pub memo: &'memo mut Option<Box<Memo>>,
 }
-impl Query<'_, '_> {
+impl<'view> Query<'view, '_> {
     /// The parser combines the introducer and real block spans. A captured
     /// endpoint can use its actual metavar-output frame, as in pinned
     /// `Span::prepare_to_combine`; a forwarded whole expression gains no frame.
@@ -220,27 +228,65 @@ impl Query<'_, '_> {
     /// # Errors
     /// Rejects changed source/owner/frame identities and exhausted work/storage.
     pub fn allows(&mut self, site: Location, feature: &FeatureName<'_>) -> Result<bool, Error> {
-        let data = self.header(site, feature.spelling().len())?;
-        Ok(data.as_ref().is_some_and(|data| data.contains(feature)))
+        Ok(match self.header(site, feature.spelling().len())? {
+            Grant::Header(data) => data.contains(feature),
+            Grant::Imported(features) => features
+                .binary_search_by(|allowed| allowed.as_str().cmp(feature.spelling()))
+                .is_ok(),
+            Grant::None => false,
+        })
     }
     /// Inspect only the actual token's outer unsafe-code lint metadata.
     /// This does not authorize an unsafe operation or enable a crate feature.
     /// # Errors
     /// Rejects changed owners/frames/witnesses and exhausted global budgets.
     pub fn allows_unsafe_code_lint(&mut self, site: Location) -> Result<bool, Error> {
-        let data = self.header(site, 0)?;
-        Ok(data
-            .as_ref()
-            .is_some_and(|data| data.declaration().unsafe_lint))
+        // Imported rows never transport `allow_internal_unsafe`.
+        Ok(match self.header(site, 0)? {
+            Grant::Header(data) => data.declaration().unsafe_lint,
+            Grant::Imported(_) | Grant::None => false,
+        })
     }
-    fn header(
-        &mut self,
-        site: Location,
-        extra_work: usize,
-    ) -> Result<Option<Rc<HeaderData>>, Error> {
+    /// An imported declarative row's frame carries exactly its transported,
+    /// re-authenticated feature list; each query pays for every listed feature.
+    fn imported_grant(&self, frame: Frame, extra_work: usize) -> Result<Grant<'view>, Error> {
+        let view = &self.view;
+        let error = |message| Error::at(frame.call.file, frame.original.start, message);
+        let Some(imported) = view
+            .definitions
+            .get(frame.definition)
+            .and_then(|definition| definition.imported)
+        else {
+            return Ok(Grant::None);
+        };
+        let Some(row) = imported.row else {
+            return Ok(Grant::None);
+        };
+        let features = view
+            .facts
+            .crates
+            .as_deref()
+            .and_then(|crates| {
+                let artifact = crates
+                    .dependencies()
+                    .artifacts()
+                    .get(usize::try_from(imported.crate_id.checked_sub(1)?).ok()?)?;
+                Some(artifact.macros()?.rows().get(row)?.internal_unstable())
+            })
+            .ok_or_else(|| error("imported macro allowance row disappeared"))?;
+        view.package
+            .macro_context()
+            .map_err(error)?
+            .ok_or_else(|| error("missing macro allowance provider"))?
+            .contracts()
+            .charge(1 + extra_work + features.len(), 0)
+            .map_err(error)?;
+        Ok(Grant::Imported(features))
+    }
+    fn header(&mut self, site: Location, extra_work: usize) -> Result<Grant<'view>, Error> {
         let (context, origin_links, origin_lookups) = self.context(site)?;
         let Some(context) = context else {
-            return Ok(None);
+            return Ok(Grant::None);
         };
         let package = self.view.package;
         let error = |message| Error::at(site.file, site.span.start, message);
@@ -258,7 +304,7 @@ impl Query<'_, '_> {
             self.view().frame(context)?
         };
         let Some(owner) = frame.owner else {
-            return Ok(None);
+            return self.imported_grant(frame, extra_work);
         };
         let cached = self
             .memo
@@ -291,7 +337,7 @@ impl Query<'_, '_> {
             memo.origin_links = memo.origin_links.saturating_add(origin_links);
             memo.origin_lookups = memo.origin_lookups.saturating_add(origin_lookups);
         }
-        Ok(data)
+        Ok(data.map_or(Grant::None, Grant::Header))
     }
     fn context(&self, site: Location) -> Result<(Option<ExpansionId>, usize, usize), Error> {
         let package = self.view.package;

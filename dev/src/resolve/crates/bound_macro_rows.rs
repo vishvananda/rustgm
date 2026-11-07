@@ -1,19 +1,32 @@
-//! Exported `macro_rules!` rows become public macro definitions in their
-//! provider's imported root. `$crate` in their expansions names that root
-//! through the dependency-indexed crate id, never through a name or alias.
+//! Exported macro rows become public macro definitions at their placement in
+//! their provider's imported module tree. Placements resolve through the
+//! provider's own module identities, never through a binding name or alias.
+//! `$crate` in their expansions names that root through the dependency-indexed
+//! crate id, never through a name or alias.
 use super::{
     Access, Binding, DefId, DefKind, Definition, Error, ExternalDef, ExternalKind, Imported,
     Interface, Namespace, Origin, Resolver, ScopeId, error,
 };
-use crate::support::names::NameId;
+use crate::support::{
+    crates::{generics::source as s, owner_catalog::DeclarationRef},
+    hash::HashMap,
+    names::NameId,
+};
 
-/// One transported row, bound at `definition` in its provider's root.
+/// Which table of the provider's macro metadata one imported row comes from.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum ImportedRow {
+    Declarative(usize),
+    Builtin(usize),
+}
+
+/// One transported row, bound at `definition` in its provider's module tree.
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct ImportedMacro {
     pub definition: DefId,
     /// The provider's dependency index; its `$crate` id is one more.
     pub artifact: usize,
-    pub row: usize,
+    pub row: ImportedRow,
 }
 
 /// The unspellable path root that `$crate` from the provider with this crate
@@ -32,8 +45,86 @@ impl Imported {
     }
 }
 
+/// Module rows of a source artifact, keyed by parent row and name.
+type SourceModules = HashMap<(DeclarationRef, String), DeclarationRef>;
+
+fn source_modules(rows: &[s::Declaration]) -> Result<SourceModules, Error> {
+    let mut modules = HashMap::default();
+    for (index, row) in rows.iter().enumerate() {
+        let (Some(parent), Some(name), s::DefinitionKind::Module) = (
+            row.definition.parent,
+            row.name.as_ref(),
+            row.definition.kind,
+        ) else {
+            continue;
+        };
+        let row = DeclarationRef(
+            u32::try_from(index).map_err(|_| error("source module ordinal overflow"))?,
+        );
+        if modules.insert((parent, name.clone()), row).is_some() {
+            return Err(error("source artifact repeats one module name in a scope"));
+        }
+    }
+    Ok(modules)
+}
+
 impl Resolver<'_> {
-    /// Bind every exported macro of one artifact publicly in its root scope,
+    /// The member scope of the provider's public module at `path`, found by
+    /// the module's own identity in the artifact's tables.
+    fn placement_scope(
+        &self,
+        root: ScopeId,
+        artifact: &Interface,
+        imported: &Imported,
+        modules: &mut Option<SourceModules>,
+        path: &[String],
+    ) -> Result<ScopeId, Error> {
+        const MISSING: &str = "exported macro placement has no public imported module";
+        if path.is_empty() {
+            return Ok(root);
+        }
+        let definition = if let Some(descriptor) = artifact.source_descriptor() {
+            let rows = &descriptor.rows().declarations;
+            let modules = match modules {
+                Some(modules) => modules,
+                None => modules.insert(source_modules(rows)?),
+            };
+            let mut row = DeclarationRef(
+                rows.iter()
+                    .position(|row| row.definition.parent.is_none())
+                    .and_then(|index| u32::try_from(index).ok())
+                    .ok_or_else(|| error("source artifact has no root declaration"))?,
+            );
+            for component in path {
+                row = *modules
+                    .get(&(row, component.clone()))
+                    .filter(|&&child| rows[child.0 as usize].public)
+                    .ok_or_else(|| error(MISSING))?;
+            }
+            imported
+                .origins
+                .get()
+                .ok_or_else(|| error(MISSING))?
+                .definition_at(artifact.identity(), row)
+                .map_err(error)?
+        } else {
+            let identity = ExternalDef::new(
+                artifact.identity().clone(),
+                path.to_vec(),
+                ExternalKind::Module,
+            )
+            .map_err(error)?;
+            imported
+                .definition(&identity)
+                .ok_or_else(|| error(MISSING))?
+        };
+        let module = &self.facts.definitions[definition.0 as usize];
+        if module.kind != DefKind::Module || module.access != Access::Public {
+            return Err(error(MISSING));
+        }
+        module.members.ok_or_else(|| error(MISSING))
+    }
+    /// Bind every exported macro of one artifact publicly at its placement,
     /// and register its `$crate` root by the artifact's crate identity.
     pub(super) fn import_macros(
         &mut self,
@@ -66,35 +157,20 @@ impl Resolver<'_> {
             .intern(&root_spelling(crate_id))
             .map_err(error)?;
         imported.macro_roots.insert(root_name, root);
-        for (row, entry) in macros.rows().iter().enumerate() {
-            let name = self.package.names.intern(entry.name()).map_err(error)?;
-            let definition = DefId(
-                u32::try_from(self.facts.definitions.len())
-                    .map_err(|_| error("too many imported definitions"))?,
-            );
-            self.facts.definitions.push(Definition {
-                name,
-                namespace: Namespace::Macro,
-                kind: DefKind::Macro,
-                scope,
-                node: None,
-                access: Access::Public,
-                members: None,
-            });
-            self.facts
-                .bindings
-                .insert(
-                    scope,
-                    name,
-                    Namespace::Macro,
-                    Binding {
-                        target: definition,
-                        access: Access::Public,
-                        origin: Origin::Direct,
-                        ambiguous: false,
-                    },
-                )
-                .map_err(error)?;
+        let declarative = macros
+            .rows()
+            .iter()
+            .enumerate()
+            .map(|(row, entry)| (scope, entry.name(), ImportedRow::Declarative(row)));
+        let mut modules = None;
+        let mut placed = Vec::with_capacity(macros.builtins().len());
+        for (row, entry) in macros.builtins().iter().enumerate() {
+            let scope =
+                self.placement_scope(scope, artifact, imported, &mut modules, entry.placement())?;
+            placed.push((scope, entry.name(), ImportedRow::Builtin(row)));
+        }
+        for (scope, name, row) in declarative.chain(placed) {
+            let definition = self.bind_imported_macro(scope, name)?;
             imported.macros.push(ImportedMacro {
                 definition,
                 artifact: artifact_index,
@@ -102,5 +178,40 @@ impl Resolver<'_> {
             });
         }
         Ok(())
+    }
+    fn bind_imported_macro(&mut self, scope: ScopeId, spelling: &str) -> Result<DefId, Error> {
+        let name = self.package.names.intern(spelling).map_err(error)?;
+        let definition = DefId(
+            u32::try_from(self.facts.definitions.len())
+                .map_err(|_| error("too many imported definitions"))?,
+        );
+        self.facts.definitions.push(Definition {
+            name,
+            namespace: Namespace::Macro,
+            kind: DefKind::Macro,
+            scope,
+            node: None,
+            access: Access::Public,
+            members: None,
+        });
+        let previous = self
+            .facts
+            .bindings
+            .insert(
+                scope,
+                name,
+                Namespace::Macro,
+                Binding {
+                    target: definition,
+                    access: Access::Public,
+                    origin: Origin::Direct,
+                    ambiguous: false,
+                },
+            )
+            .map_err(error)?;
+        if previous.is_some() {
+            return Err(error("duplicate imported macro binding in one scope"));
+        }
+        Ok(definition)
     }
 }

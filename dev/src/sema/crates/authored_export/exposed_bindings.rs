@@ -42,6 +42,8 @@ impl Stage {
                 let namespace = match namespace {
                     Namespace::Type => WireNamespace::Type,
                     Namespace::Value => WireNamespace::Value,
+                    // Public macro bindings travel in the separate macro table.
+                    Namespace::Macro => continue,
                     _ => return Err("namespace source binding requires a wider namespace profile"),
                 };
                 let spelling = report.package.names.get(name);

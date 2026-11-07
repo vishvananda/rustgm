@@ -146,7 +146,15 @@ pub(crate) fn export_with_originals(
     roots.sort_unstable_by_key(|definition| definition.0);
     Ok(Exports { interface, roots })
 }
-/// Root macro rows and native links wrap the completed core table.
+/// The crate's public macro rows, for any publication profile.
+/// # Errors
+/// Rejects macro exports outside the macro metadata profile by name.
+pub(crate) fn macro_table(
+    report: &Report,
+) -> Result<Option<crate::support::crates::exported_macros::Macros>, Error> {
+    declarative_rows::collect(report)
+}
+/// Macro rows and native links wrap the completed core table.
 fn with_envelopes(
     report: &Report,
     facts: &Declarations,

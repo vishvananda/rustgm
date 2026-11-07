@@ -155,6 +155,18 @@ impl<S: Sources> Engine<'_, S> {
                 role.unavailable_message(),
             ));
         }
+        // An imported builtin row runs only an expander that needs no defining
+        // source declaration, exactly the set the bootstrap prelude binds.
+        if actual.imported.is_some()
+            && matches!(actual.body, Body::Builtin(role) if !role.context_free())
+        {
+            return Err(self.unavailable_error(
+                definition,
+                file,
+                offset,
+                "imported builtin macro requires its provider's source declaration",
+            ));
+        }
         Ok(())
     }
 

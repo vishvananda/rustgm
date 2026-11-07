@@ -169,7 +169,7 @@ impl Interface {
         if self.macros.is_some() {
             return Err("duplicate exported macro metadata");
         }
-        let atoms = self.atoms.saturating_add(macros.rows().len());
+        let atoms = self.atoms.saturating_add(macros.atoms());
         if atoms > MAX_COMPONENTS || macros.bytes() > super::MAX_BYTES {
             return Err("exported macros exceed combined profile budget");
         }

@@ -792,7 +792,11 @@ fn kind(kind: DefKind, namespace: Namespace) -> Result<Option<s::DefinitionKind>
         DefKind::Lifetime => s::DefinitionKind::RegionParameter,
         DefKind::Parameter => s::DefinitionKind::ValueParameter,
         DefKind::Local => s::DefinitionKind::Local,
-        DefKind::Primitive | DefKind::BuiltinMacro | DefKind::BuiltinTrait => return Ok(None),
+        // Macro definitions are expansion facts: public ones travel in the
+        // separate macro table, and none of them has a semantic row.
+        DefKind::Primitive | DefKind::BuiltinMacro | DefKind::BuiltinTrait | DefKind::Macro => {
+            return Ok(None);
+        }
         _ => return Err("source declaration kind is outside the initial source profile"),
     }))
 }

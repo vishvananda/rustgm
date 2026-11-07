@@ -354,6 +354,21 @@ pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prep
     )
 }
 
+/// Imported macro rows that carry `allow_internal_unstable` lists charge their
+/// frames to the consumer's own allowance ledger, as local definitions do.
+fn imports_allowances(context: &Context) -> bool {
+    context.dependencies.as_deref().is_some_and(|dependencies| {
+        dependencies.artifacts().iter().any(|artifact| {
+            artifact.macros().is_some_and(|macros| {
+                macros
+                    .rows()
+                    .iter()
+                    .any(|row| !row.internal_unstable().is_empty())
+            })
+        })
+    })
+}
+
 pub(in crate::resolve) fn prepare_with_admission(
     unit: &Unit,
     context: &Context,
@@ -388,9 +403,13 @@ pub(in crate::resolve) fn prepare_with_admission(
             ));
         }
         return Ok(Prepared {
-            source: if features.needs_local_owner() {
+            source: if features.needs_local_owner() || imports_allowances(context) {
+                let imported_only = !features.needs_local_owner();
                 Some(Box::new(Source::LocalMacros(super::LocalMacros::new(
-                    unit, features, limits,
+                    unit,
+                    features,
+                    limits,
+                    imported_only,
                 )?)))
             } else {
                 None

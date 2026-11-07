@@ -1,20 +1,32 @@
 //! Imported `macro_rules!` rows are authenticated once and become ordinary
-//! declarative definitions spelled in their own image unit.
+//! declarative definitions spelled in their own image unit. Imported builtin
+//! rows bind this consumer's own expander of their identity.
 use super::{
     Body, Compiled, Definition, Engine, Error, ExpansionId, FileId, ModuleId, Scope, Sources,
     SyntaxContextId, compile,
 };
-use crate::{resolve::model::ScopeId, syntax::token_tree::Forest};
+use crate::{
+    expand::builtin::{Builtin, BuiltinKind},
+    resolve::{crates::ImportedRow, model::ScopeId},
+    support::crates::{
+        Interface,
+        exported_macros::{BuiltinMacro, MacroKind},
+    },
+    syntax::token_tree::Forest,
+};
 
 /// Where an imported definition's tokens were written.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ImportedDefinition {
-    /// The image unit: the spelling source, with the transported edition.
-    pub file: FileId,
+    /// The image unit of a declarative row: the spelling source, with the
+    /// transported edition. A builtin row has no image.
+    pub file: Option<FileId>,
     /// One more than the provider's dependency index; `$crate` carries it.
     pub crate_id: u32,
-    /// The provider's imported root scope, the definition site.
+    /// The provider's imported placement scope, the definition site.
     pub scope: ScopeId,
+    /// The declarative row whose internal-unstable features its frames carry.
+    pub row: Option<usize>,
 }
 
 impl Definition {
@@ -30,10 +42,45 @@ impl Definition {
     }
     /// The file holding this definition's spelling, and the crate id of its `$crate`.
     pub(super) fn spelling(&self) -> Option<(FileId, u32)> {
-        self.imported
-            .map(|imported| (imported.file, imported.crate_id))
-            .or_else(|| self.node.map(|node| (node.file, 0)))
+        if let Some(imported) = self.imported {
+            return imported.file.map(|file| (file, imported.crate_id));
+        }
+        self.node.map(|node| (node.file, 0))
     }
+}
+
+/// The consumer's own expander of one builtin row's identity. Unknown
+/// identities and a changed invocation kind are rejected by name.
+fn builtin_role(row: &BuiltinMacro) -> Result<Builtin, String> {
+    let role = Builtin::ALL
+        .into_iter()
+        .find(|role| role.name() == row.identity())
+        .ok_or_else(|| {
+            format!(
+                "imported builtin macro `{}` names unknown expander `{}`",
+                row.name(),
+                row.identity()
+            )
+        })?;
+    let kind = match role.kind() {
+        BuiltinKind::Bang => MacroKind::Bang,
+        BuiltinKind::Attribute => MacroKind::Attribute,
+        BuiltinKind::Derive => MacroKind::Derive,
+    };
+    if kind != row.kind() {
+        return Err(format!(
+            "imported builtin macro `{}` changed the macro kind of expander `{}`",
+            row.name(),
+            row.identity()
+        ));
+    }
+    if !row.helpers().is_empty() && role.kind() != BuiltinKind::Derive {
+        return Err(format!(
+            "imported builtin macro `{}` declares helpers for a non-derive expander",
+            row.name()
+        ));
+    }
+    Ok(role)
 }
 
 /// Lex one transported image, rebuild its rows and require them to be equal.
@@ -71,9 +118,10 @@ impl<S: Sources> Engine<'_, S> {
         self.paths
             .macro_use(&mut self.loader.package, context, visit.node, item)
     }
-    /// Install every imported row before any call is attempted. Each one is
-    /// lexed once, compiled in its transported edition and must keep its rule
-    /// count; matching and transcription reuse that compiled forest.
+    /// Install every imported row before any call is attempted. Each declarative
+    /// row is lexed once, compiled in its transported edition and must keep its
+    /// rule count; matching and transcription reuse that compiled forest. Each
+    /// builtin row binds this consumer's own expander of its identity.
     pub(super) fn import_macros(&mut self) -> Result<(), Error> {
         let Some(crates) = self.paths.state.facts.crates.as_deref() else {
             return Ok(());
@@ -85,32 +133,6 @@ impl<S: Sources> Engine<'_, S> {
                 .artifacts()
                 .get(entry.artifact)
                 .ok_or_else(|| Error::at(FileId(0), 0, "missing macro provider"))?;
-            let row = artifact
-                .macros()
-                .and_then(|macros| macros.rows().get(entry.row))
-                .ok_or_else(|| Error::at(FileId(0), 0, "missing imported macro row"))?;
-            let forest = authenticate(row).map_err(|message| Error::at(FileId(0), 0, message))?;
-            let identity = artifact.identity();
-            let label = format!(
-                "<macro {}@{}::{}>",
-                identity.name(),
-                identity.disambiguator(),
-                row.name()
-            );
-            let file = self
-                .loader
-                .macro_image(label.into(), row.image(), row.edition())?;
-            let package = &mut self.loader.package;
-            let compiled =
-                compile::in_edition(row.image(), &forest, &mut package.names, row.edition())
-                    .map_err(|e| Error::at(file, e.offset, e.message))?;
-            if u32::try_from(compiled.rules.len()).ok() != Some(row.rules()) {
-                return Err(Error::at(file, 0, "imported macro rule count changed"));
-            }
-            let name = package
-                .names
-                .intern(row.name())
-                .map_err(|e| Error::at(file, 0, e))?;
             let scope = self
                 .paths
                 .state
@@ -118,32 +140,136 @@ impl<S: Sources> Engine<'_, S> {
                 .definitions
                 .get(entry.definition.0 as usize)
                 .map(|definition| definition.scope)
-                .ok_or_else(|| Error::at(file, 0, "missing imported macro root"))?;
+                .ok_or_else(|| Error::at(FileId(0), 0, "missing imported macro placement"))?;
             let crate_id = u32::try_from(entry.artifact)
                 .ok()
                 .and_then(|index| index.checked_add(1))
-                .ok_or_else(|| Error::at(file, 0, "too many macro providers"))?;
+                .ok_or_else(|| Error::at(FileId(0), 0, "too many macro providers"))?;
+            let imported = ImportedDefinition {
+                file: None,
+                crate_id,
+                scope,
+                row: None,
+            };
+            let (definition, kind) = match entry.row {
+                ImportedRow::Declarative(row) => (
+                    self.import_declarative(artifact, row, imported)?,
+                    BuiltinKind::Bang,
+                ),
+                ImportedRow::Builtin(row) => {
+                    let row = artifact
+                        .macros()
+                        .and_then(|macros| macros.builtins().get(row))
+                        .ok_or_else(|| Error::at(FileId(0), 0, "missing imported builtin row"))?;
+                    let role =
+                        builtin_role(row).map_err(|message| Error::at(FileId(0), 0, message))?;
+                    let package = &mut self.loader.package;
+                    let name = package
+                        .names
+                        .intern(row.name())
+                        .map_err(|e| Error::at(FileId(0), 0, e))?;
+                    let edition = package.units[0].edition();
+                    (
+                        Definition {
+                            node: None,
+                            module: ModuleId(0),
+                            name,
+                            body: Body::Builtin(role),
+                            context: SyntaxContextId::ROOT,
+                            introduction: ExpansionId(0),
+                            preceding_scope: Scope::ROOT,
+                            local_inner_macros: false,
+                            edition,
+                            edition_panic: false,
+                            header: None,
+                            imported: Some(imported),
+                        },
+                        role.kind(),
+                    )
+                }
+            };
             let index = self.definitions.len();
-            self.definitions.push(Definition {
-                node: None,
-                module: ModuleId(0),
-                name,
-                body: Body::Declarative(Compiled::new(compiled)),
-                context: SyntaxContextId::ROOT,
-                introduction: ExpansionId(0),
-                preceding_scope: Scope::ROOT,
-                local_inner_macros: row.local_inner_macros(),
-                edition: row.edition(),
-                edition_panic: false,
-                header: None,
-                imported: Some(ImportedDefinition {
-                    file,
-                    crate_id,
-                    scope,
-                }),
-            });
-            self.paths.imported_macro(entry.definition, index);
+            self.definitions.push(definition);
+            self.paths.imported_macro(entry.definition, index, kind);
         }
         Ok(())
+    }
+    /// Re-check every transported feature spelling once and charge each one,
+    /// as the consumer's own header admission charges its declared features.
+    fn authenticate_internal_unstable(
+        &self,
+        file: FileId,
+        features: &[String],
+    ) -> Result<(), Error> {
+        let error = |message| Error::at(file, 0, message);
+        let mut bytes = 0usize;
+        for feature in features {
+            crate::resolve::bindings::FeatureName::new(feature).map_err(error)?;
+            bytes = bytes.saturating_add(feature.len());
+        }
+        if let Some(context) = self.loader.package.macro_context().map_err(error)? {
+            context
+                .contracts()
+                .charge(features.len(), bytes)
+                .map_err(error)?;
+        }
+        Ok(())
+    }
+    fn import_declarative(
+        &mut self,
+        artifact: &Interface,
+        index: usize,
+        imported: ImportedDefinition,
+    ) -> Result<Definition, Error> {
+        let row = artifact
+            .macros()
+            .and_then(|macros| macros.rows().get(index))
+            .ok_or_else(|| Error::at(FileId(0), 0, "missing imported macro row"))?;
+        let forest = authenticate(row).map_err(|message| Error::at(FileId(0), 0, message))?;
+        let identity = artifact.identity();
+        let label = format!(
+            "<macro {}@{}::{}>",
+            identity.name(),
+            identity.disambiguator(),
+            row.name()
+        );
+        let file = self
+            .loader
+            .macro_image(label.into(), row.image(), row.edition())?;
+        let compiled = compile::in_edition(
+            row.image(),
+            &forest,
+            &mut self.loader.package.names,
+            row.edition(),
+        )
+        .map_err(|e| Error::at(file, e.offset, e.message))?;
+        if u32::try_from(compiled.rules.len()).ok() != Some(row.rules()) {
+            return Err(Error::at(file, 0, "imported macro rule count changed"));
+        }
+        self.authenticate_internal_unstable(file, row.internal_unstable())?;
+        let name = self
+            .loader
+            .package
+            .names
+            .intern(row.name())
+            .map_err(|e| Error::at(file, 0, e))?;
+        Ok(Definition {
+            node: None,
+            module: ModuleId(0),
+            name,
+            body: Body::Declarative(Compiled::new(compiled)),
+            context: SyntaxContextId::ROOT,
+            introduction: ExpansionId(0),
+            preceding_scope: Scope::ROOT,
+            local_inner_macros: row.local_inner_macros(),
+            edition: row.edition(),
+            edition_panic: false,
+            header: None,
+            imported: Some(ImportedDefinition {
+                file: Some(file),
+                row: Some(index),
+                ..imported
+            }),
+        })
     }
 }

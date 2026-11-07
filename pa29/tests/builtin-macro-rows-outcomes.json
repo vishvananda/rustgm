@@ -1,0 +1,290 @@
+{
+ "profile": "Rust 1.98.0 x86_64-unknown-linux-gnu, -Cpanic=abort --cap-lints=allow, RUSTC_BOOTSTRAP=1 where declared, per-case editions; declared 2026-11-07 before any rustc or RustGM run of these files",
+ "plan_sha256": "7048944064d7a98e386389e61eb1c6b37c7ca0e1b7fc7c358d5511db921c998e",
+ "oracle_sha256": "cf819eadb269204ba7a0b3f5d19556f2300a7f0cb8abd66df4f6fb484bb4a239",
+ "oracle_runs_sha256": "849cb120184603d852ffb9ba43b9e101acad79312b2bc4cad394a55e0fe94fd4",
+ "oracle_result": "all fourteen declared rustc outcomes held, including the native line/column/cfg values 7 9 1",
+ "rustc_version": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+ "cases": [
+  {
+   "name": "builtin-provider",
+   "path": "tests/spec/builtin-macro-rows/provider.rs",
+   "source_sha256": "831dc1b2aa19d0c69c9378328bf83f70a67d29785c2449725da4632b822b631d",
+   "kind": "rlib",
+   "crate": "prov",
+   "edition": "2024",
+   "deps": {},
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_core": true,
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "metadata_version": 2,
+   "native": false,
+   "frontend_expected_after_implementation": 0,
+   "note": "no_core source-core provider: five root builtin macro_rules rows and four placed builtin pub macro rows; publishes tag-14 version 2"
+  },
+  {
+   "name": "path-client",
+   "path": "tests/spec/builtin-macro-rows/path-client.rs",
+   "source_sha256": "7fadc2ea352739adcbe840a8e6da0864d3ace70c49cdb20fe022f2f3eac9b216",
+   "kind": "object",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "prov": "builtin-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_client": "builtin-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": true,
+   "native_driver": "tests/spec/builtin-macro-rows/native-driver.c",
+   "native_driver_sha256": "d94ca57ba609c4b5fa6cc98fcc473c055df00c5cd6e736babc87207c8c350f88",
+   "native_stdout": "7 9 1\n",
+   "frontend_expected_after_implementation": 0,
+   "note": "path and use forms reach line/column/cfg/stringify at the root and concat/file/module_path at their placements; the consumer's own expanders run at the call site"
+  },
+  {
+   "name": "alias-client",
+   "path": "tests/spec/builtin-macro-rows/alias-client.rs",
+   "source_sha256": "8ba5e4179c597a81e5b045146c05619bb9c31db506a972813da73bf05276830d",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "prov": "builtin-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_client": "builtin-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 0,
+   "note": "a renamed extern crate and a local module named builtin: placements bind through the provider's module identity, never by name or alias"
+  },
+  {
+   "name": "macro-use-client",
+   "path": "tests/spec/builtin-macro-rows/macro-use-client.rs",
+   "source_sha256": "9ad0c2b0b30042d05462a8e0cdafc719b49a2579c33f8874f53cf51c4135aaec",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "prov": "builtin-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_client": "builtin-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 0,
+   "note": "#[macro_use] brings the provider's root rows, builtin macro_rules included"
+  },
+  {
+   "name": "macro-use-placed-client",
+   "path": "tests/spec/builtin-macro-rows/macro-use-placed-client.rs",
+   "source_sha256": "ac365660f63a53e2f5195c09eeba5f66663d20a7c56bf61038bf60b8088dd258",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "prov": "builtin-provider"
+   },
+   "rustc": 1,
+   "rustc_codes": [],
+   "source_client": "builtin-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "frontend_diagnostic": "unresolved macro",
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "macro_use brings only root rows; concat is placed in prov::builtin"
+  },
+  {
+   "name": "root-placement-client",
+   "path": "tests/spec/builtin-macro-rows/root-placement-client.rs",
+   "source_sha256": "3456f9790839d30c9a0d08b84d70517ff643afd4f2790e2d10dc5491a7115bb1",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "prov": "builtin-provider"
+   },
+   "rustc": 1,
+   "rustc_codes": [
+    "E0433"
+   ],
+   "source_client": "builtin-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "frontend_diagnostic": "unresolved macro",
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "prov::concat names the provider root, where no concat row is placed"
+  },
+  {
+   "name": "compile-error-client",
+   "path": "tests/spec/builtin-macro-rows/compile-error-client.rs",
+   "source_sha256": "f26caaa9e93317a18355201105925795a985df042ee25c66c34d1ca74c1c158f",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "prov": "builtin-provider"
+   },
+   "rustc": 1,
+   "rustc_codes": [],
+   "source_client": "builtin-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "frontend_diagnostic": "builtin row reached the consumer expander",
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "an imported compile_error row runs the consumer's own expander and fails with its message"
+  },
+  {
+   "name": "attribute-client",
+   "path": "tests/spec/builtin-macro-rows/attribute-client.rs",
+   "source_sha256": "8a7cbf8a76dad3dbe6870cefce7842e524e61df1bd260bafbfb05b1783367a51",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "prov": "builtin-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_client": "builtin-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "frontend_diagnostic": "imported builtin macro requires its provider's source declaration",
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "requirement: rustc removes the item outside test builds; the test identity is bound by its row but its expander is not context-free, so RustGM rejects it by name"
+  },
+  {
+   "name": "macro2-provider",
+   "path": "tests/spec/builtin-macro-rows/macro2-provider.rs",
+   "source_sha256": "a216440c2c88db9441de946c3f8c322f6de328b1c3a998725370dad6bd5aaf0c",
+   "kind": "rlib",
+   "crate": "prov",
+   "edition": "2024",
+   "deps": {},
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_core": true,
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "frontend_diagnostic": "macros 2.0 definitions are outside the macro metadata profile",
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "requirement: an ordinary macros 2.0 export needs definition-site hygiene; the provider rejects it by name"
+  },
+  {
+   "name": "reexport-provider",
+   "path": "tests/spec/builtin-macro-rows/reexport-provider.rs",
+   "source_sha256": "35774777a1a8d5d3a60f3a2c9e231bbb8c184a54f450da3514b4da4b8aa842dc",
+   "kind": "rlib",
+   "crate": "prov",
+   "edition": "2024",
+   "deps": {},
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_core": true,
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "frontend_diagnostic": "macro re-exports are outside the macro metadata profile",
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "requirement: core's prelude shape, a public re-export of a placed builtin row; the provider rejects it by name"
+  },
+  {
+   "name": "internal-provider",
+   "path": "tests/spec/builtin-macro-rows/internal-provider.rs",
+   "source_sha256": "d43ed5cf5512915975703cc84d6e290334fe913c16e27312e866a80400963cab",
+   "kind": "rlib",
+   "crate": "internal_provider",
+   "edition": "2021",
+   "deps": {},
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "metadata_version": 2,
+   "native": false,
+   "frontend_expected_after_implementation": 0,
+   "note": "ordinary provider: checked allows cfg_ub_checks and cfg_target_has_atomic, partial only cfg_ub_checks, unchecked none; publishes version 2 for the feature lists"
+  },
+  {
+   "name": "internal-client",
+   "path": "tests/spec/builtin-macro-rows/internal-client.rs",
+   "source_sha256": "81c21398889ef6f80010cbcd17a52680451256abd6ccf7a11e99182abf374eef",
+   "kind": "bin",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "internal_provider": "internal-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "native": true,
+   "rustc_native_exit": 0,
+   "frontend_expected_after_implementation": 0,
+   "note": "the transported list allows both gated cfgs in the expansion"
+  },
+  {
+   "name": "partial-client",
+   "path": "tests/spec/builtin-macro-rows/partial-client.rs",
+   "source_sha256": "2626071614387db1ec4bd3141828dfdb98fd522a4aeb40f8629ce7585d79bba1",
+   "kind": "bin",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "internal_provider": "internal-provider"
+   },
+   "rustc": 1,
+   "rustc_codes": [
+    "E0658"
+   ],
+   "frontend_diagnostic": "cfg(target_has_atomic_load_store) requires cfg_target_has_atomic or its actual macro allowance",
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "the transported list allows cfg_ub_checks only, so the atomic cfg stays gated"
+  },
+  {
+   "name": "unchecked-client",
+   "path": "tests/spec/builtin-macro-rows/unchecked-client.rs",
+   "source_sha256": "8d4f9f91cde17ea7702b1ece35e0172728da28f03b2faaf958e3d4eebc0bb092",
+   "kind": "bin",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "internal_provider": "internal-provider"
+   },
+   "rustc": 1,
+   "rustc_codes": [
+    "E0658"
+   ],
+   "frontend_diagnostic": "cfg(ub_checks) requires cfg_ub_checks or its actual macro allowance",
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "a row without an allowance list keeps cfg(ub_checks) gated"
+  }
+ ]
+}

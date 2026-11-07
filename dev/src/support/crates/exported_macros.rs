@@ -6,6 +6,11 @@
 //! keeps every token's jointness. The rows classify every piece. This module
 //! only checks the structural agreement it can see without a lexer; a consumer
 //! must re-lex the image once, rebuild the rows and recompile every rule.
+//!
+//! Version two adds `#[rustc_builtin_macro]` rows, which carry no image but the
+//! expander identity, and typed `allow_internal_unstable` feature lists on
+//! declarative rows. Every row has a module placement; names are unique per
+//! placement.
 use crate::support::edition::Edition;
 
 /// Exported macros in one artifact.
@@ -16,6 +21,62 @@ pub const MAX_IMAGE_BYTES: usize = 1 << 20;
 pub const MAX_ROWS: usize = 1 << 18;
 /// Bytes of one exported macro name.
 pub const MAX_NAME_BYTES: usize = 256;
+/// Bytes of one builtin expander identity spelling.
+pub const MAX_IDENTITY_BYTES: usize = 64;
+/// Components of one module placement.
+pub const MAX_PLACEMENT_DEPTH: usize = 64;
+/// Features of one `allow_internal_unstable` list, or helpers of one builtin derive.
+pub const MAX_FEATURES: usize = 64;
+
+/// The declaration syntax of a builtin row.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Syntax {
+    MacroRules,
+    Macro,
+}
+impl Syntax {
+    pub const ALL: [Self; 2] = [Self::MacroRules, Self::Macro];
+}
+
+/// How a builtin row is invoked.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum MacroKind {
+    Bang,
+    Attribute,
+    Derive,
+}
+impl MacroKind {
+    pub const ALL: [Self; 3] = [Self::Bang, Self::Attribute, Self::Derive];
+}
+
+/// ASCII identifiers: macro names, builtin identities, features and helpers.
+fn valid_identifier(name: &str, limit: usize) -> bool {
+    !name.is_empty()
+        && name.len() <= limit
+        && name
+            .bytes()
+            .all(|byte| byte == b'_' || byte.is_ascii_alphanumeric())
+        && !name.as_bytes()[0].is_ascii_digit()
+}
+
+/// A bounded list of identifiers, strictly sorted so that its spelling is canonical.
+fn validate_names(names: &[String], message: &'static str) -> Result<(), &'static str> {
+    if names.len() > MAX_FEATURES
+        || names
+            .iter()
+            .any(|name| !valid_identifier(name, MAX_NAME_BYTES))
+        || names.windows(2).any(|pair| pair[0] >= pair[1])
+    {
+        return Err(message);
+    }
+    Ok(())
+}
+
+fn names_bytes(names: &[String]) -> usize {
+    names
+        .iter()
+        .fold(0usize, |total, name| total.saturating_add(name.len()))
+}
 
 /// The metadata class of one non-delimiter token. Punctuation identity is its spelling.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -177,6 +238,7 @@ pub struct Macro {
     rules: u32,
     image: String,
     rows: Vec<Row>,
+    internal_unstable: Vec<String>,
 }
 impl Macro {
     /// # Errors
@@ -189,13 +251,7 @@ impl Macro {
         image: String,
         rows: Vec<Row>,
     ) -> Result<Self, &'static str> {
-        if name.is_empty()
-            || name.len() > MAX_NAME_BYTES
-            || !name
-                .bytes()
-                .all(|byte| byte == b'_' || byte.is_ascii_alphanumeric())
-            || name.as_bytes()[0].is_ascii_digit()
-        {
+        if !valid_identifier(&name, MAX_NAME_BYTES) {
             return Err("invalid exported macro name");
         }
         if rules == 0 {
@@ -212,11 +268,28 @@ impl Macro {
             rules,
             image,
             rows,
+            internal_unstable: Vec::new(),
         })
+    }
+    /// Attach the definition's typed `allow_internal_unstable` features.
+    /// # Errors
+    /// Rejects lists that are oversized, unsorted, duplicated or not identifiers.
+    pub fn with_internal_unstable(mut self, features: Vec<String>) -> Result<Self, &'static str> {
+        validate_names(
+            &features,
+            "invalid exported macro internal-unstable features",
+        )?;
+        self.internal_unstable = features;
+        Ok(self)
     }
     #[must_use]
     pub fn name(&self) -> &str {
         &self.name
+    }
+    /// Features an expansion of this definition may use, sorted and unique.
+    #[must_use]
+    pub fn internal_unstable(&self) -> &[String] {
+        &self.internal_unstable
     }
     #[must_use]
     pub const fn edition(&self) -> Edition {
@@ -243,6 +316,96 @@ impl Macro {
             .len()
             .saturating_add(self.image.len())
             .saturating_add(self.rows.len().saturating_mul(size_of::<Row>()))
+            .saturating_add(names_bytes(&self.internal_unstable))
+    }
+}
+
+/// One `#[rustc_builtin_macro]` export. It carries no image: a consumer binds
+/// its own expander of this identity.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct BuiltinMacro {
+    placement: Vec<String>,
+    name: String,
+    syntax: Syntax,
+    identity: String,
+    kind: MacroKind,
+    helpers: Vec<String>,
+}
+impl BuiltinMacro {
+    /// # Errors
+    /// Rejects invalid names, identities, placements and helper lists, a
+    /// `macro_rules!` row outside the crate root and helpers on a non-derive.
+    pub fn new(
+        placement: Vec<String>,
+        name: String,
+        syntax: Syntax,
+        identity: String,
+        kind: MacroKind,
+        helpers: Vec<String>,
+    ) -> Result<Self, &'static str> {
+        if !valid_identifier(&name, MAX_NAME_BYTES) {
+            return Err("invalid exported macro name");
+        }
+        if !valid_identifier(&identity, MAX_IDENTITY_BYTES) {
+            return Err("invalid exported builtin macro identity");
+        }
+        if placement.len() > MAX_PLACEMENT_DEPTH {
+            return Err("invalid exported macro placement");
+        }
+        for component in &placement {
+            super::identity::validate_component(component)?;
+        }
+        if syntax == Syntax::MacroRules && !placement.is_empty() {
+            return Err("exported builtin macro_rules rows belong to the crate root");
+        }
+        validate_names(&helpers, "invalid exported builtin derive helpers")?;
+        if !helpers.is_empty() && kind != MacroKind::Derive {
+            return Err("only builtin derive rows declare helper attributes");
+        }
+        Ok(Self {
+            placement,
+            name,
+            syntax,
+            identity,
+            kind,
+            helpers,
+        })
+    }
+    /// The module path of the scope that binds this row; empty is the crate root.
+    #[must_use]
+    pub fn placement(&self) -> &[String] {
+        &self.placement
+    }
+    #[must_use]
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+    #[must_use]
+    pub const fn syntax(&self) -> Syntax {
+        self.syntax
+    }
+    /// The expander that `#[rustc_builtin_macro]` or `#[rustc_builtin_macro(name)]` selects.
+    #[must_use]
+    pub fn identity(&self) -> &str {
+        &self.identity
+    }
+    #[must_use]
+    pub const fn kind(&self) -> MacroKind {
+        self.kind
+    }
+    #[must_use]
+    pub fn helpers(&self) -> &[String] {
+        &self.helpers
+    }
+    fn key(&self) -> (&[String], &str) {
+        (&self.placement, &self.name)
+    }
+    fn bytes(&self) -> usize {
+        self.name
+            .len()
+            .saturating_add(self.identity.len())
+            .saturating_add(names_bytes(&self.placement))
+            .saturating_add(names_bytes(&self.helpers))
     }
 }
 
@@ -310,26 +473,55 @@ fn validate_layout(image: &[u8], rows: &[Row]) -> Result<(), &'static str> {
         .ok_or(MALFORMED)
 }
 
-/// Exported macros of one crate, sorted strictly by name.
+/// Exported macros of one crate. Declarative rows sit at the crate root,
+/// sorted strictly by name; builtin rows are sorted strictly by placement and
+/// name. No root name is both.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Macros {
     rows: Vec<Macro>,
+    builtins: Vec<BuiltinMacro>,
 }
 impl Macros {
     /// # Errors
     /// Rejects empty, oversized, unsorted and duplicate tables.
     pub fn new(rows: Vec<Macro>) -> Result<Self, &'static str> {
-        if rows.is_empty() || rows.len() > MAX_MACROS {
+        Self::with_builtins(rows, Vec::new())
+    }
+    /// # Errors
+    /// Rejects empty, oversized, unsorted and duplicate tables, and one name
+    /// bound twice in a scope.
+    pub fn with_builtins(
+        rows: Vec<Macro>,
+        builtins: Vec<BuiltinMacro>,
+    ) -> Result<Self, &'static str> {
+        let count = rows.len().saturating_add(builtins.len());
+        if count == 0 || count > MAX_MACROS {
             return Err("invalid exported macro count");
         }
-        if rows.windows(2).any(|pair| pair[0].name >= pair[1].name) {
+        if rows.windows(2).any(|pair| pair[0].name >= pair[1].name)
+            || builtins
+                .windows(2)
+                .any(|pair| pair[0].key() >= pair[1].key())
+        {
             return Err("exported macros must be unique and sorted by name");
         }
-        Ok(Self { rows })
+        let mut declarative = rows.iter().map(Macro::name).peekable();
+        for builtin in builtins.iter().take_while(|row| row.placement.is_empty()) {
+            while declarative.next_if(|name| *name < builtin.name()).is_some() {}
+            if declarative.peek() == Some(&builtin.name()) {
+                return Err("duplicate exported macro name in one scope");
+            }
+        }
+        Ok(Self { rows, builtins })
     }
+    /// The declarative root rows.
     #[must_use]
     pub fn rows(&self) -> &[Macro] {
         &self.rows
+    }
+    #[must_use]
+    pub fn builtins(&self) -> &[BuiltinMacro] {
+        &self.builtins
     }
     #[must_use]
     pub fn get(&self, name: &str) -> Option<&Macro> {
@@ -338,9 +530,29 @@ impl Macros {
             .ok()
             .map(|index| &self.rows[index])
     }
+    /// Whether any row needs envelope version two; otherwise the table keeps
+    /// its exact version-one bytes.
+    #[must_use]
+    pub fn requires_version_two(&self) -> bool {
+        !self.builtins.is_empty()
+            || self
+                .rows
+                .iter()
+                .any(|row| !row.internal_unstable.is_empty())
+    }
+    /// Rows plus placement components, for the shared component budget.
+    pub(super) fn atoms(&self) -> usize {
+        self.builtins.iter().fold(self.rows.len(), |total, row| {
+            total.saturating_add(1 + row.placement.len())
+        })
+    }
     pub(super) fn bytes(&self) -> usize {
-        self.rows
+        let declarative = self
+            .rows
             .iter()
-            .fold(0usize, |total, row| total.saturating_add(row.bytes()))
+            .fold(0usize, |total, row| total.saturating_add(row.bytes()));
+        self.builtins
+            .iter()
+            .fold(declarative, |total, row| total.saturating_add(row.bytes()))
     }
 }

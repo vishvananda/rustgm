@@ -22,7 +22,9 @@ use crate::{
 };
 pub(crate) use closed_values::{decode as import_scalar_value, encode as export_scalar_value};
 pub use export::{Exports, export};
-pub(crate) use export::{GenericRequest, export_with_originals, scalar as export_scalar};
+pub(crate) use export::{
+    GenericRequest, export_with_originals, macro_table, scalar as export_scalar,
+};
 pub(in crate::sema) use imported_owners::ImportedOwners;
 pub(crate) use typed_headers::ProofSession;
 pub(in crate::sema) use typed_headers::predicate_remap::Prepared as PreparedSourceInputs;

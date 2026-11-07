@@ -142,6 +142,9 @@ impl Stage {
                 let namespace = match namespace {
                     Namespace::Type => WireNamespace::Type,
                     Namespace::Value => WireNamespace::Value,
+                    // Macro bindings travel only in the macro table, which
+                    // rejects every unsupported macro binding by name.
+                    Namespace::Macro => continue,
                     _ => return Err("module contract namespace is unsupported"),
                 };
                 let visibility = match binding.access {
