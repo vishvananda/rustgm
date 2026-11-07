@@ -1,0 +1,89 @@
+{
+ "schema": 1,
+ "declared": "2026-11-07, before the frozen rustc 1.98.0 oracle of these exact bytes. The drafts' lang-item and feature prerequisites were settled against rustc 1.98.0 in obj/parallel/census-batch5/repro first; each outcome follows the stated rule, not that exploration",
+ "declaration_sha256": "5c8e495ef797a47305c694e8faca89a867ebe95fb9770088765e7058e332a833",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "signature-fn-result-length.rs": {
+   "sha256": "3c5e6215d344ea6794466f188fd89f1836d417db0ea8caf3d999489659c26def",
+   "declared": 0,
+   "reason": "a crate-root fn result length names a `pub(super)` type through a public alias; rustc's type-privacy pass never visits an anonymous constant of an item signature",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "signature-field-length.rs": {
+   "sha256": "4f7de88b414a4888b756014c7c94951ab446843caf875878196001bf8a5a1f8b",
+   "declared": 0,
+   "reason": "a tuple struct field length names the private type through the alias",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "signature-const-argument.rs": {
+   "sha256": "de16b2754a68cd49238d10a8f42c8f909b17840709eb0d51cb57e6f2e9c24f75",
+   "declared": 0,
+   "reason": "a const argument in a fn result type names the private type",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "signature-discriminant.rs": {
+   "sha256": "e5522acafab9bddf2ca352d89f6e7fc8a54ef09f0afbec83d12ddc66d0b2187f",
+   "declared": 0,
+   "reason": "an enum discriminant is an item-level anonymous constant and names the private type",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "signature-leaked-value-length.rs": {
+   "sha256": "c44f28ea95678be26d87497f7825c82e932828fbd13d62c10a074ccbfa19a669",
+   "declared": 0,
+   "reason": "an unnamed const's annotation length and a fn result length evaluate public const fns returning the private type",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "signature-nested-length.rs": {
+   "sha256": "247ca2413e2ac5ed09c6172ed9cc6782bd848ab040c749f47943cd9980af15b8",
+   "declared": 0,
+   "reason": "a local annotation inside a signature length is still inside an item-level anonymous constant",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "signature-const-annotation-length.rs": {
+   "sha256": "4c6c74dea2de9dafda0de32beaffbaa1a79ab10fc805f73ebc4304e4358bb1d4",
+   "declared": 0,
+   "reason": "a pub const item's own annotation length names the private type; only its initializer is a body",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "body-local-length.rs": {
+   "sha256": "30d8dd6bc7c8823b7a5b24138419b230db9b83309612bbc4cda7246091dd300a",
+   "declared": 1,
+   "reason": "opponent: a local annotation length inside a crate-root fn body is a nested body constant and type privacy rejects the private type (no error code)",
+   "rustc_status": 1,
+   "error_codes": []
+  },
+  "body-repeat-count.rs": {
+   "sha256": "7abf116aca7c00f46fb7d353428416ac346ef960227892266ddadc817743eb78",
+   "declared": 1,
+   "reason": "opponent: a repeat count inside a fn body names the private type (no error code)",
+   "rustc_status": 1,
+   "error_codes": []
+  },
+  "body-const-argument.rs": {
+   "sha256": "180e4b0fa570f94a302794d59dd98b299702b5dd45fb1116105bd60cf7c44efd",
+   "declared": 1,
+   "reason": "opponent: a const argument in a local annotation inside a fn body names the private type (no error code)",
+   "rustc_status": 1,
+   "error_codes": []
+  },
+  "signature-private-method-length.rs": {
+   "sha256": "229b2bd612c9603980ee46aa1a44af9cfe5ebac838021b949ab5f26f064f5190",
+   "declared": 1,
+   "reason": "opponent: associated function privacy is a typeck rule that still holds in a signature length (E0624)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0624"
+   ]
+  }
+ }
+}

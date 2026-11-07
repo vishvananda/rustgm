@@ -9,6 +9,7 @@ pub(in crate::sema) struct Input {
     pub key: NodeKey,
     pub ty: TypeId,
     pub module: ModuleId,
+    pub privacy: crate::sema::bodies::TypePrivacy,
 }
 
 pub(in crate::sema) enum Progress {
@@ -28,7 +29,12 @@ pub(in crate::sema) fn advance(
     continuation: Option<Box<super::suspension::Continuation>>,
     ready: &crate::support::hash::HashSet<crate::resolve::model::DefId>,
 ) -> Result<Progress, Error> {
-    let Input { key, ty, module } = input;
+    let Input {
+        key,
+        ty,
+        module,
+        privacy,
+    } = input;
     scratch.typing.resumable();
     let mut queries =
         Queries::with_scratch(report, facts, Some(discriminants), std::mem::take(scratch));
@@ -44,7 +50,9 @@ pub(in crate::sema) fn advance(
         let dependency = if queries.typing.pending_root() {
             queries.typing.advance_body()?
         } else {
-            queries.typing.start_anonymous_constant(key, ty, module)?
+            queries
+                .typing
+                .start_anonymous_constant(key, ty, module, privacy)?
         };
         if let Some(dependency) = dependency {
             let (saved, continuation) = queries.suspend()?;
@@ -83,14 +91,20 @@ pub(in crate::sema) fn argument(
     facts: &mut Declarations,
     scratch: &mut super::Scratch,
     discriminants: &mut super::Discriminants,
-    key: NodeKey,
-    ty: TypeId,
-    module: ModuleId,
+    input: Input,
 ) -> Result<ConstId, Error> {
+    let Input {
+        key,
+        ty,
+        module,
+        privacy,
+    } = input;
     let mut queries =
         Queries::with_scratch(report, facts, Some(discriminants), std::mem::take(scratch));
     queries.value_scope = Some(super::instances::ValueScope::Anonymous { body: key, ty });
-    queries.typing.anonymous_constant(key, ty, module)?;
+    queries
+        .typing
+        .anonymous_constant(key, ty, module, privacy)?;
     queries.require_complete_patterns(Query::Node(key))?;
     queries.work.push(Work::Enter(Query::Node(key)));
     queries.prepare(key)?;

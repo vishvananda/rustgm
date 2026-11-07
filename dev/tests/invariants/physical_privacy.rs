@@ -26,7 +26,7 @@ fn actual_shared_signatures_have_linear_privacy_work_and_constant_repeated_use()
                 report.package.names.get(item.name) == "read"
             })
             .ok_or("actual public signature missing")?;
-        let mut privacy = Privacy::new(&report, &facts, ModuleId(0));
+        let mut privacy = Privacy::new(&report, &facts, ModuleId(0), true);
         privacy.check(function.signature)?;
         assert!(privacy.steps <= depth * 8 + 20, "{}", privacy.steps);
         assert!(privacy.visited.len() <= depth * 4 + 8);
@@ -49,7 +49,7 @@ fn actual_shared_signatures_have_linear_privacy_work_and_constant_repeated_use()
 fn primitive_privacy_uses_allocate_no_graph_and_failures_still_consume_work() -> TestResult {
     let report = crate::test_source::resolve("pub fn answer()->u32{7}", true)?;
     let crate::pipeline::Analysis { facts, .. } = crate::pipeline::analyze_source(&report)?;
-    let mut privacy = Privacy::new(&report, &facts, ModuleId(0));
+    let mut privacy = Privacy::new(&report, &facts, ModuleId(0), true);
     for _ in 0..128 {
         privacy.check(TypeId::primitive(crate::types::Primitive::U32))?;
     }

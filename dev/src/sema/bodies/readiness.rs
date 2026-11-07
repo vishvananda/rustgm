@@ -134,6 +134,7 @@ impl Checker<'_> {
         key: NodeKey,
         ty: TypeId,
         module: ModuleId,
+        privacy: super::TypePrivacy,
     ) -> Result<Option<Dependency>, Error> {
         if let Some(&prior) = self.facts.anonymous_constants.get(&key) {
             return if prior == ty {
@@ -143,7 +144,7 @@ impl Checker<'_> {
             };
         }
         let before = self.facts.lifetime_fact_count();
-        self.begin_constant(key, ty, module);
+        self.begin_constant(key, ty, module, privacy);
         self.state.completion = Completion::Anonymous { before };
         self.start_body(key.node)?;
         self.advance_body()

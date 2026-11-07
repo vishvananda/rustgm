@@ -49,7 +49,12 @@ impl Checker<'_> {
                         scratch: &mut cache.scratch,
                         discriminants: &mut cache.discriminants,
                     }
-                    .argument(key, ty, Some(self.state.module))?;
+                    .argument(
+                        key,
+                        ty,
+                        Some(self.state.module),
+                        self.state.type_privacy,
+                    )?;
                     SourceArgument::Const(argument)
                 }
                 _ => return Err(self.error(node, "method argument has the wrong generic kind")),

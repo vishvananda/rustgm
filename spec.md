@@ -2415,7 +2415,11 @@ predecessor query. Scoped item bindings and import dependencies must likewise
 carry their normalized item identity, including per-segment path contexts.
 Hygienic selection does not grant visibility or library-feature permission.
 Check semantic type visibility from the physical body module after publishing
-solved types, adjustments and selected calls. A hygienically selected private
+solved types, adjustments and selected calls. As in rustc 1.98, an anonymous
+constant of an item signature (a length, const argument, discriminant or item
+annotation, and the constants nested in it) skips this type check but keeps
+associated item and field privacy; one nested in a body keeps it. A
+hygienically selected private
 function still has a private function-item type; a public function pointer may
 erase that identity inside its defining module. Walk signatures, nominal and
 trait identities, associated items and generic arguments through completed typed

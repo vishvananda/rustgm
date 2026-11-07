@@ -16,10 +16,22 @@ use crate::{
     },
 };
 
+/// rustc 1.98's type-privacy pass visits bodies, including every anonymous
+/// constant nested in one, but never an anonymous constant of an item
+/// signature: an array length or const argument in a signature type, an enum
+/// discriminant, or a const or static item's annotation. Associated item
+/// privacy is a typeck rule and still holds in those constants.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(in crate::sema) enum TypePrivacy {
+    Checked,
+    Signature,
+}
+
 struct Privacy<'a> {
     report: &'a Report,
     facts: &'a Declarations,
     module: ModuleId,
+    types: bool,
     ancestors: Option<HashSet<ModuleId>>,
     visited: HashSet<TypeId>,
     opaques: HashSet<OpaqueId>,
@@ -28,12 +40,20 @@ struct Privacy<'a> {
 }
 
 #[cfg(test)]
+#[path = "../../../tests/invariants/privacy_of_signature_constants.rs"]
+mod signature_tests;
+#[cfg(test)]
 #[path = "../../../tests/invariants/physical_privacy.rs"]
 mod tests;
 
 impl Checker<'_> {
     pub(super) fn validate_type_privacy(&self) -> Result<(), Error> {
-        let mut privacy = Privacy::new(self.report, self.facts, self.state.module);
+        let mut privacy = Privacy::new(
+            self.report,
+            self.facts,
+            self.state.module,
+            self.state.type_privacy == TypePrivacy::Checked,
+        );
         // Patterns and written annotations enter the same retained touched list.
         // Each graph node is inspected once in this immutable physical module.
         for &node in &self.state.touched {
@@ -46,11 +66,12 @@ impl Checker<'_> {
 }
 
 impl<'a> Privacy<'a> {
-    fn new(report: &'a Report, facts: &'a Declarations, module: ModuleId) -> Self {
+    fn new(report: &'a Report, facts: &'a Declarations, module: ModuleId, types: bool) -> Self {
         Self {
             report,
             facts,
             module,
+            types,
             ancestors: None,
             visited: HashSet::default(),
             opaques: HashSet::default(),
@@ -69,33 +90,40 @@ impl<'a> Privacy<'a> {
     fn node(&mut self, key: crate::resolve::unit::NodeKey) -> Result<(), &'static str> {
         let facts = self.facts;
         let node = facts.node(key).ok_or("missing typed privacy use")?;
-        self.check(node.ty.ok_or("missing privacy use type")?)?;
-        if let Some(adjustment) = node.adjustment {
-            self.check(adjustment.target)?;
-        }
-        if let Some(adjustment) = facts.reference_adjustments.get(&key) {
-            self.check(adjustment.borrow)?;
-        }
-        if let Some(&ty) = facts.pointer_adjustments.get(&key) {
+        let ty = node.ty.ok_or("missing privacy use type")?;
+        if self.types {
             self.check(ty)?;
-        }
-        if let Some(&conversion) = facts.unsizing_adjustments.get(&key) {
-            conversion.try_map(|ty| self.check(ty))?;
+            if let Some(adjustment) = node.adjustment {
+                self.check(adjustment.target)?;
+            }
+            if let Some(adjustment) = facts.reference_adjustments.get(&key) {
+                self.check(adjustment.borrow)?;
+            }
+            if let Some(&ty) = facts.pointer_adjustments.get(&key) {
+                self.check(ty)?;
+            }
+            if let Some(&conversion) = facts.unsizing_adjustments.get(&key) {
+                conversion.try_map(|ty| self.check(ty))?;
+            }
         }
         if let Some(call) = facts.methods.calls.get(&key) {
             self.item(ItemId(call.method.0))?;
-            self.check(call.callable)?;
-            self.check(call.receiver)?;
-            if let Some(borrow) = call.borrow {
-                self.check(borrow)?;
+            if self.types {
+                self.check(call.callable)?;
+                self.check(call.receiver)?;
+                if let Some(borrow) = call.borrow {
+                    self.check(borrow)?;
+                }
             }
         }
         if let Some(instance) = facts.constant_uses.get(&key)
             && facts.associated.owner(instance.definition).is_some()
         {
             self.item(ItemId(instance.definition.0))?;
-            self.arguments(instance.arguments)?;
-            self.drain()?;
+            if self.types {
+                self.arguments(instance.arguments)?;
+                self.drain()?;
+            }
         }
         if let Some(Target::Definition(id)) = node.reference
             && facts.associated.owner(id).is_some()

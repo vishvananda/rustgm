@@ -271,7 +271,13 @@ impl Queries<'_> {
                     .captures
                     .check(self.report, self.typing.facts, key, module)?;
             }
-            self.typing.anonymous_constant(key, ty, module)?;
+            // A discriminant is an item-level anonymous constant.
+            self.typing.anonymous_constant(
+                key,
+                ty,
+                module,
+                super::bodies::TypePrivacy::Signature,
+            )?;
             self.require_complete_patterns(query)?;
             self.forward(query, Query::Node(key));
             self.prepare(key)?;

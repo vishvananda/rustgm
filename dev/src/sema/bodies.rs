@@ -58,6 +58,7 @@ mod isolation;
 mod pointer_casts;
 mod pointers;
 mod privacy;
+pub(in crate::sema) use privacy::TypePrivacy;
 mod protocol_control;
 mod range_values;
 mod reborrow_coercions;
@@ -310,6 +311,7 @@ pub(super) struct State {
     file: FileId,
     body: NodeKey,
     module: ModuleId,
+    type_privacy: TypePrivacy,
     field_seen: Vec<bool>,
     result: TypeId,
     result_term: Option<TermId>,
@@ -412,6 +414,7 @@ impl State {
                 node: NodeId::new(0),
             },
             module: ModuleId(0),
+            type_privacy: TypePrivacy::Checked,
             field_seen: Vec::new(),
             result: TypeId::UNIT,
             result_term: None,
@@ -533,6 +536,7 @@ impl<'a> Checker<'a> {
             key,
             ty,
             self.report.resolution.scopes[scope.0 as usize].module,
+            TypePrivacy::Checked,
         );
         self.state.body_binders = self
             .facts
@@ -541,7 +545,7 @@ impl<'a> Checker<'a> {
             .map_or(0, |s| s.captures);
         self.prepare_bound_environment(key.node, owner, None)
     }
-    fn begin_constant(&mut self, key: NodeKey, ty: TypeId, module: ModuleId) {
+    fn begin_constant(&mut self, key: NodeKey, ty: TypeId, module: ModuleId, privacy: TypePrivacy) {
         self.state.call_types.clear();
         self.state.projections = projections::Pending::default();
         self.state.notifications = notifications::Notifications::default();
@@ -561,6 +565,7 @@ impl<'a> Checker<'a> {
         self.facts.body_regions.activate(key);
         self.prepare_file(key.file);
         self.state.module = module;
+        self.state.type_privacy = privacy;
         self.state.result = ty;
         self.state.result_term = None;
         self.state.opaque_terms.clear();
@@ -573,8 +578,9 @@ impl<'a> Checker<'a> {
         key: NodeKey,
         ty: TypeId,
         module: ModuleId,
+        privacy: TypePrivacy,
     ) -> Result<(), Error> {
-        let progress = self.start_anonymous_constant(key, ty, module)?;
+        let progress = self.start_anonymous_constant(key, ty, module, privacy)?;
         self.require_complete_body(progress)
     }
     pub(super) fn initializer(&mut self, index: usize) -> Result<(), Error> {
@@ -772,6 +778,7 @@ impl Checker<'_> {
         self.prepare_bound_environment(body.node, function.definition, Some(function.signature))?;
         let scope = self.report.resolution.definitions[function.definition.0 as usize].scope;
         self.state.module = self.report.resolution.scopes[scope.0 as usize].module;
+        self.state.type_privacy = TypePrivacy::Checked;
         let Some(Type::Function {
             result, unsafe_, ..
         }) = self.facts.types.kind(function.signature)

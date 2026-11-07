@@ -2,7 +2,7 @@
 use super::{Checker, DefId, Error, NodeKey, TypeId, Work, regions};
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
-    sema::{arguments, constants},
+    sema::{arguments, bodies::TypePrivacy, constants},
     types::arguments::ConstId,
 };
 
@@ -12,6 +12,7 @@ pub(super) struct Request {
     ty: TypeId,
     owner: DefId,
     array_length: bool,
+    privacy: TypePrivacy,
 }
 struct Suspended {
     input: constants::ArgumentInput,
@@ -23,6 +24,8 @@ pub(super) struct Pending {
     suspended: HashMap<(NodeKey, TypeId), Suspended>,
     active_initializers: HashSet<DefId>,
     ready_initializers: HashSet<DefId>,
+    /// Anonymous constants nested in a body, whose own nested constants are too.
+    in_bodies: HashSet<NodeKey>,
 }
 
 #[cfg(test)]
@@ -42,6 +45,25 @@ impl Checker<'_> {
             })
             .unwrap_or(DefId(0))
     }
+    /// A constant nested in a body is type-privacy checked like that body; one
+    /// in a signature, discriminant or item annotation is not, nor are the
+    /// constants nested in it.
+    fn constant_privacy(&mut self, key: NodeKey, context: regions::Context) -> TypePrivacy {
+        let in_body = match context.position {
+            regions::Position::Local(_) => true,
+            regions::Position::Constant(root) => self
+                .constant_evaluations
+                .in_bodies
+                .contains(&NodeKey { node: root, ..key }),
+            _ => false,
+        };
+        if in_body {
+            self.constant_evaluations.in_bodies.insert(key);
+            TypePrivacy::Checked
+        } else {
+            TypePrivacy::Signature
+        }
+    }
     pub(super) fn schedule_typed_constant(
         &mut self,
         key: NodeKey,
@@ -52,12 +74,14 @@ impl Checker<'_> {
             return Ok(());
         }
         let owner = self.constant_owner(context);
+        let privacy = self.constant_privacy(key, context);
         self.work.push(Work::EvaluateConstant(
             Request {
                 key,
                 ty,
                 owner,
                 array_length: false,
+                privacy,
             },
             false,
         ));
@@ -78,12 +102,14 @@ impl Checker<'_> {
         if self.constant_evaluations.completed.contains_key(&(key, ty)) {
             return Ok(());
         }
+        let privacy = self.constant_privacy(key, context);
         self.work.push(Work::EvaluateConstant(
             Request {
                 key,
                 ty,
                 owner,
                 array_length: false,
+                privacy,
             },
             false,
         ));
@@ -99,12 +125,14 @@ impl Checker<'_> {
         }
         let ty = TypeId::primitive(crate::types::Primitive::Usize);
         let owner = self.constant_owner(context);
+        let privacy = self.constant_privacy(key, context);
         self.work.push(Work::EvaluateConstant(
             Request {
                 key,
                 ty,
                 owner,
                 array_length: true,
+                privacy,
             },
             false,
         ));
@@ -129,6 +157,7 @@ impl Checker<'_> {
             ty,
             owner,
             array_length,
+            privacy,
         } = request;
         if self.constant_evaluations.completed.contains_key(&(key, ty)) {
             return Ok(());
@@ -156,7 +185,7 @@ impl Checker<'_> {
                 scratch: &mut self.constant_scratch,
                 discriminants: &mut self.discriminants,
             }
-            .input(key, ty, module)?;
+            .input(key, ty, module, privacy)?;
             match input {
                 arguments::Input::Parameter(id) => {
                     self.constant_evaluations.completed.insert((key, ty), id);

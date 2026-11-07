@@ -123,8 +123,9 @@ impl Constants<'_> {
         key: NodeKey,
         ty: TypeId,
         module: Option<ModuleId>,
+        privacy: crate::sema::bodies::TypePrivacy,
     ) -> Result<ConstId, Error> {
-        let input = match self.input(key, ty, module)? {
+        let input = match self.input(key, ty, module, privacy)? {
             Input::Parameter(parameter) => return Ok(parameter),
             Input::Expression(input) => input,
         };
@@ -133,9 +134,7 @@ impl Constants<'_> {
             self.facts,
             self.scratch,
             self.discriminants,
-            input.key,
-            input.ty,
-            input.module,
+            input,
         )
     }
 
@@ -145,6 +144,7 @@ impl Constants<'_> {
         key: NodeKey,
         ty: TypeId,
         module: Option<ModuleId>,
+        privacy: crate::sema::bodies::TypePrivacy,
     ) -> Result<Input, Error> {
         if let Some(id) = self.facts.const_parameter(self.report, key) {
             if self.facts.types.const_type(id) != Some(ty) {
@@ -164,6 +164,7 @@ impl Constants<'_> {
             key,
             ty,
             module,
+            privacy,
         }))
     }
 }

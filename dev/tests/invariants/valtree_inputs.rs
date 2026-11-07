@@ -167,6 +167,7 @@ fn generic_value_queries_suspend_and_publish_actual_canonical_ids() -> Result {
         key: initializer.value,
         ty: initializer.ty,
         module,
+        privacy: crate::sema::bodies::TypePrivacy::Checked,
     };
     let mut scratch = Scratch::default();
     let mut discriminants = Discriminants::default();
@@ -213,15 +214,7 @@ fn generic_value_queries_suspend_and_publish_actual_canonical_ids() -> Result {
         Some(ConstKind::Aggregate(_))
     ));
     assert_eq!(
-        argument(
-            &report,
-            &mut facts,
-            &mut scratch,
-            &mut discriminants,
-            input.key,
-            input.ty,
-            module,
-        )?,
+        argument(&report, &mut facts, &mut scratch, &mut discriminants, input)?,
         id
     );
     Ok(())

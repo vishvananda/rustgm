@@ -524,12 +524,13 @@ constants: two `pub(super)` array lengths and a crate-root initializer
 opponent. Each outcome was declared before its rustc 1.98.0 oracle. A private
 invariant checks them; there is no graded manifest.
 
-`spec/projection-object-equalities/` and `spec/declaration-constant-execution/`
-freeze sixteen declared no_core controls from census batch 5: rigid projection
-equalities beside trait objects, and declaration-phase bit counts, implicit
-discriminants and later-declared nominals, each with opponents. Each outcome
-was declared before its rustc 1.98.0 oracle. Private invariants check them;
-there is no graded manifest.
+`spec/signature-constant-privacy/`, `spec/projection-object-equalities/` and
+`spec/declaration-constant-execution/` freeze twenty-seven declared no_core
+controls from census batch 5: type privacy in signature and body anonymous
+constants, rigid projection equalities beside trait objects, and
+declaration-phase bit counts, implicit discriminants and later-declared
+nominals, each with opponents. Each outcome was declared before its rustc
+1.98.0 oracle. Private invariants check them; there is no graded manifest.
 
 `spec/fn-sugar-impl-parameters/` freezes eleven declared no_core controls for
 impl parameters that only a parenthesized callable bound determines (core
