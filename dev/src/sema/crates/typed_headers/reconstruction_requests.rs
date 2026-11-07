@@ -50,6 +50,10 @@ pub(super) fn prepare<'rows, P: ports::OwnedPort<'rows>>(
                 port.ty(store, *subject, work)?;
                 port.region(*shorter, work)?;
             }
+            s::Requirement::ProjectionEqual { projection, value } => {
+                port.ty(store, *projection, work)?;
+                port.ty(store, *value, work)?;
+            }
             s::Requirement::Outlives(_) => {
                 return Err(error(
                     "regional clauses require their separate header relation remap",

@@ -7,6 +7,7 @@ enum Task {
     Reference(Key, Context),
     Nominal(Key, Context),
     Function(Key, Context, signatures::Parts),
+    Tuple(Key, Context, crate::types::ListId),
 }
 
 impl Stage {
@@ -30,7 +31,8 @@ impl Stage {
                 Task::Enter(key, context)
                 | Task::Reference(key, context)
                 | Task::Nominal(key, context)
-                | Task::Function(key, context, _) => (key, context),
+                | Task::Function(key, context, _)
+                | Task::Tuple(key, context, _) => (key, context),
             };
             if self.graph.types.contains_key(&key) {
                 self.graph.hits = self.graph.hits.saturating_add(1);
@@ -66,6 +68,18 @@ impl Stage {
                         self.enter_function(facts, key, context, &mut pending)?;
                         continue;
                     }
+                    Kind::Tuple(elements) if key.ty != TypeId::UNIT && self.body_nodes() => {
+                        self.type_work(&mut pending, Task::Tuple(key, context, elements))?;
+                        let elements = facts
+                            .types
+                            .list(elements)
+                            .ok_or("source tuple element list is unknown")?;
+                        for &element in elements.iter().rev() {
+                            let child = self.type_key(facts, element, context)?;
+                            self.type_work(&mut pending, Task::Enter(child, context))?;
+                        }
+                        continue;
+                    }
                     _ => self.type_row(facts, key, kind, context)?,
                 },
                 Task::Reference(_, _) | Task::Nominal(_, _) => {
@@ -77,6 +91,7 @@ impl Stage {
                     context,
                     signatures::Roots::Completed,
                 )?),
+                Task::Tuple(_, _, elements) => self.tuple_row(facts, elements, context)?,
             };
             self.reserve(4 * size_of::<s::Type>() + retained::new_map::<Key, g::TypeRef>(1))?;
             let id = g::TypeRef(
@@ -93,6 +108,36 @@ impl Stage {
             .get(&root)
             .copied()
             .ok_or("source type root did not complete")
+    }
+
+    /// Completed element recipes become one contiguous run of `roots`.
+    fn tuple_row(
+        &mut self,
+        facts: &Declarations,
+        elements: crate::types::ListId,
+        context: Context,
+    ) -> Result<s::Type, &'static str> {
+        let elements = facts
+            .types
+            .list(elements)
+            .ok_or("source tuple element list is unknown")?;
+        self.reserve(elements.len().saturating_mul(4 * size_of::<g::TypeRef>()))?;
+        let start =
+            u32::try_from(self.rows.roots.len()).map_err(|_| "source tuple roots overflow")?;
+        for &element in elements {
+            self.charge(1)?;
+            let child = self.type_key(facts, element, context)?;
+            let completed = self
+                .graph
+                .types
+                .get(&child)
+                .copied()
+                .ok_or("source tuple element was not completed before its tuple")?;
+            self.rows.roots.push(completed);
+        }
+        let end =
+            u32::try_from(self.rows.roots.len()).map_err(|_| "source tuple roots overflow")?;
+        Ok(s::Type::Tuple(g::Range { start, end }))
     }
 
     fn type_work(&mut self, pending: &mut Vec<Task>, value: Task) -> Result<(), &'static str> {

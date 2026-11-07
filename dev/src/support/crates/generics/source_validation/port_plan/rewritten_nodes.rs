@@ -57,6 +57,10 @@ pub(super) enum Node {
         ty: NodeId,
         next: NodeId,
     },
+    /// A non-unit tuple over a `NominalArgument` element chain.
+    Tuple {
+        elements: NodeId,
+    },
     /// Only zero-own-slot, region-independent Rust/nonvariadic frames enter.
     Function {
         signature: NodeId,
@@ -262,6 +266,7 @@ impl Arena {
             Node::NominalArgument { ty, next } => {
                 self.facts_of(ty, work)?.combine(self.facts_of(next, work)?)
             }
+            Node::Tuple { elements } => self.facts_of(elements, work)?,
             // Preserve the old parameter formation rule outside Functions.
             // A Function explicitly retains opaque parameter conditionality.
             Node::Parameter(_) => NodeFacts(NodeFacts::FORMED | NodeFacts::PARAMETER),

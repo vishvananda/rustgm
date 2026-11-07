@@ -86,9 +86,16 @@ pub(super) fn header(
     };
     let raw = &rows.functions[index as usize];
     let constant = raw.constness == crate::support::constness::Constness::Const;
+    // Version thirteen: a validated callable role's required call method is
+    // conditional; it imports as a declaration with no const eligibility.
+    let conditional = raw.constness == crate::support::constness::Constness::Conditional
+        && context.descriptor.profile().body_nodes()
+        && raw.parent.is_some()
+        && raw.body == s::FunctionBody::Absent;
     if raw.regions.captures != 0
         || raw.regions.early.start != raw.regions.early.end
         || (raw.constness != crate::support::constness::Constness::Ordinary
+            && !conditional
             && !(constant
                 && context.descriptor.profile().unconditional_callables()
                 && raw.parent.is_none()))

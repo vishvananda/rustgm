@@ -202,7 +202,11 @@ impl Stage {
             receiver,
             constness: if self.callable_effects() {
                 self.charge(if self.conversion_roles() { 20 } else { 4 })?;
-                written_constness(report, facts, function, self.conversion_roles())?
+                let roles = RequiredRoles {
+                    conversions: self.conversion_roles(),
+                    callables: self.body_nodes(),
+                };
+                written_constness(report, facts, function, roles)?
             } else if facts.is_const_function(function.definition) {
                 Constness::Const
             } else {
@@ -377,11 +381,18 @@ impl Stage {
     }
 }
 
+/// Which const-trait roles may own a conditional required member: `From`
+/// from version nine, and the three callable roles from version thirteen.
+#[derive(Clone, Copy)]
+struct RequiredRoles {
+    conversions: bool,
+    callables: bool,
+}
 fn written_constness(
     report: &Report,
     facts: &Declarations,
     function: &crate::sema::model::Function,
-    conversions: bool,
+    roles: RequiredRoles,
 ) -> Result<Constness, &'static str> {
     let ast = &report.package.unit(function.node.file).configured.ast;
     let crate::syntax::ast::Kind::Item(index) = ast.node(function.node.node).kind else {
@@ -395,7 +406,7 @@ fn written_constness(
     else {
         return Err("source callable effect owner is not a function");
     };
-    if conversions && required_conversion_member(report, facts, function)? {
+    if roles.conversions && required_conversion_member(report, facts, function, roles.callables)? {
         if flags.constant || facts.is_const_function(function.definition) {
             return Err(
                 "required conversion member changed its written/effective const eligibility",
@@ -415,11 +426,13 @@ fn written_constness(
 
 /// A required const-trait declaration is conditional, never a const body or an
 /// executable impl. The indexed actual parent supplies the declaration fact;
-/// a member's name and signature cannot create the language role.
+/// a member's name and signature cannot create the language role. With
+/// `callables`, the completed `FnOnce`, `FnMut` and `Fn` roles own their call methods.
 fn required_conversion_member(
     report: &Report,
     facts: &Declarations,
     function: &crate::sema::model::Function,
+    callables: bool,
 ) -> Result<bool, &'static str> {
     let Some(owner_id) = facts.associated.owner(function.definition) else {
         return Ok(false);
@@ -441,9 +454,23 @@ fn required_conversion_member(
         .as_deref()
         .ok_or("conversion member lost its actual language catalog")?;
     catalog.require_provider_report(report)?;
-    let role = catalog
-        .header_role(crate::support::bindings::LangItem::From)?
-        .ok_or("conditional member requires its actual From declaration")?;
+    let mut callable = None;
+    if callables {
+        use crate::support::bindings::LangItem;
+        for role in [LangItem::FnOnce, LangItem::FnMut, LangItem::Fn] {
+            if let Some(found) = catalog.header_role(role)?
+                && found.definition == definition
+            {
+                callable = Some(found);
+            }
+        }
+    }
+    let role = match callable {
+        Some(role) => role,
+        None => catalog
+            .header_role(crate::support::bindings::LangItem::From)?
+            .ok_or("conditional member requires its actual From declaration")?,
+    };
     if role.definition != definition {
         return Err("conditional member belongs to another actual trait");
     }

@@ -123,7 +123,13 @@ const FORMS: [s::OperandForm; 5] = [
 ];
 
 /// Reconstructable codes in this consumer, by family.
-const VALUE_FORMS: [u8; 10] = [2, 3, 6, 10, 12, 16, 24, 27, 28, 30];
+const VALUE_FORMS: [u8; 11] = [2, 3, 6, 10, 12, 16, 24, 27, 28, 29, 30];
+/// Stable `Rvalue::Invoke` call-trait flags.
+const CALLABLES: [crate::support::call_traits::CallTrait; 3] = [
+    crate::support::call_traits::CallTrait::FnOnce,
+    crate::support::call_traits::CallTrait::FnMut,
+    crate::support::call_traits::CallTrait::Fn,
+];
 const ACTION_FORMS: [u8; 8] = [0, 1, 5, 7, 8, 9, 10, 11];
 const TERMINATOR_FORMS: [u8; 5] = [0, 2, 3, 4, 5];
 const PROJECTION_FORMS: [u8; 2] = [1, 3];
@@ -237,6 +243,9 @@ pub(super) fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'stat
         s::ValueKind::Borrow(place) => {
             node_write(out, 12, &[Operand::Place(place), Operand::Flag(0)])
         }
+        s::ValueKind::TwoPhaseBorrow(place) => {
+            node_write(out, 12, &[Operand::Place(place), Operand::Flag(1)])
+        }
         s::ValueKind::Function(application) => {
             node_write(out, 16, &[Operand::Application(application.0)])
         }
@@ -258,6 +267,19 @@ pub(super) fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'stat
                 Operand::Value(right),
                 Operand::Flag(code(&OPERATORS, operator)?),
                 Operand::Flag(code(&FORMS, operands)?),
+            ],
+        ),
+        s::ValueKind::Invoke {
+            kind,
+            signature,
+            arguments,
+        } => node_write(
+            out,
+            29,
+            &[
+                Operand::Flag(code(&CALLABLES, kind)?),
+                Operand::Type(signature.0),
+                Operand::Range(arguments),
             ],
         ),
         s::ValueKind::Call {
@@ -284,8 +306,9 @@ pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static 
         (6, &[Operand::Bits(bits)]) => s::ValueKind::Scalar(bits),
         (10, &[Operand::Place(place)]) => s::ValueKind::Read(place),
         (12, &[Operand::Place(place), Operand::Flag(0)]) => s::ValueKind::Borrow(place),
-        (12, &[Operand::Place(_), Operand::Flag(1 | 2)]) => {
-            return Err("encoded two-phase or unique Rvalue::Borrow is not reconstructable");
+        (12, &[Operand::Place(place), Operand::Flag(1)]) => s::ValueKind::TwoPhaseBorrow(place),
+        (12, &[Operand::Place(_), Operand::Flag(2)]) => {
+            return Err("encoded unique Rvalue::Borrow is not reconstructable");
         }
         (16, &[Operand::Application(application)]) => {
             s::ValueKind::Function(s::FunctionApplicationRef(application))
@@ -301,6 +324,20 @@ pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static 
             ],
         ) => binary(left, right, operator, form)?,
         (28, &[Operand::Value(value), Operand::Flag(0)]) => s::ValueKind::ScalarCast(value),
+        (
+            29,
+            &[
+                Operand::Flag(kind),
+                Operand::Type(signature),
+                Operand::Range(arguments),
+            ],
+        ) => s::ValueKind::Invoke {
+            kind: *CALLABLES
+                .get(kind as usize)
+                .ok_or("body IR invoke node has an unknown call trait")?,
+            signature: g::TypeRef(signature),
+            arguments,
+        },
         (
             30,
             &[

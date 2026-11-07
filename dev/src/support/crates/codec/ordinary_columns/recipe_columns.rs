@@ -13,6 +13,10 @@ pub(super) fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static
             out.u8(8)?;
             id(out, reference.0)
         }
+        s::Type::Tuple(elements) => {
+            out.u8(9)?;
+            range(out, elements)
+        }
         s::Type::Scalar(scalar) => out.bytes(&[0, scalar as u8]),
         s::Type::Nominal {
             declaration,
@@ -57,6 +61,7 @@ pub(super) fn type_read(read: &mut Input<'_, '_>) -> Result<s::Type, &'static st
         8 if read.profile.compiler_operations() => {
             s::Type::OpaqueFuture(s::OpaqueFutureRef(read.id()?))
         }
+        9 if read.profile.body_nodes() => s::Type::Tuple(read.range()?),
         0 => s::Type::Scalar(read.reader.scalar()?),
         1 => s::Type::Parameter(s::SlotRef(read.id()?)),
         6 if read.profile.nominals() => s::Type::Nominal {
@@ -261,6 +266,11 @@ pub(super) fn requirement_write(
             out.u8(3)?;
             out.string(name)
         }
+        s::Requirement::ProjectionEqual { projection, value } => {
+            out.u8(4)?;
+            id(out, projection.0)?;
+            id(out, value.0)
+        }
     }
 }
 pub(super) fn requirement_read(read: &mut Input<'_, '_>) -> Result<s::Requirement, &'static str> {
@@ -287,6 +297,10 @@ pub(super) fn requirement_read(read: &mut Input<'_, '_>) -> Result<s::Requiremen
             }
             s::Requirement::UnstableFeature(read.string()?.into_boxed_str())
         }
+        4 if read.profile.body_nodes() => s::Requirement::ProjectionEqual {
+            projection: g::TypeRef(read.id()?),
+            value: g::TypeRef(read.id()?),
+        },
         _ => return Err("unknown source function requirement"),
     })
 }
@@ -302,7 +316,9 @@ pub(super) fn effect_read(
     unsupported: &'static str,
 ) -> Result<Constness, &'static str> {
     let tag = read.reader.u8()?;
-    if tag != 0 {
+    // Version thirteen carries the conditional hierarchy of the callable roles;
+    // validation admits it only on an actual callable role's own clauses.
+    if tag != 0 && !(tag == 2 && read.profile.body_nodes()) {
         read.require_provided(unsupported)?;
     }
     match tag {

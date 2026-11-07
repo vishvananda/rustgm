@@ -95,7 +95,9 @@ impl DomainIndex<'_, '_> {
             s::ValueKind::Read(s::Place::Temporary(value)) => {
                 prefix_value(original, value, index, work)?;
             }
-            s::ValueKind::Read(place) | s::ValueKind::Borrow(place) => {
+            s::ValueKind::Read(place)
+            | s::ValueKind::Borrow(place)
+            | s::ValueKind::TwoPhaseBorrow(place) => {
                 Self::place(original, place, None, work)?;
             }
             s::ValueKind::Constrain(operand) => prefix_value(original, operand, index, work)?,
@@ -123,6 +125,19 @@ impl DomainIndex<'_, '_> {
             } => {
                 self.types.root(self.headers, context, signature, work)?;
                 prefix_value(original, callee, index, work)?;
+                for &argument in arguments.slice(&original.arguments)? {
+                    prefix_value(original, argument, index, work)?;
+                }
+            }
+            s::ValueKind::Invoke {
+                signature,
+                arguments,
+                ..
+            } => {
+                self.types.root(self.headers, context, signature, work)?;
+                if arguments.slice(&original.arguments)?.is_empty() {
+                    return Err("source call operator lost its actual receiver");
+                }
                 for &argument in arguments.slice(&original.arguments)? {
                     prefix_value(original, argument, index, work)?;
                 }

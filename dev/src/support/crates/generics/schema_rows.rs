@@ -186,6 +186,9 @@ pub enum Type {
     ApplicationSignature(FunctionApplicationRef),
     Projection(ProjectionRef),
     OpaqueFuture(OpaqueFutureRef),
+    /// Version thirteen: a non-unit tuple whose element types are `roots`
+    /// entries, in order. Unit keeps its scalar row.
+    Tuple(Range),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TraitApplication {
@@ -211,6 +214,13 @@ pub enum Requirement {
         shorter: RegionRef,
     },
     Outlives(RegionBound),
+    /// Version thirteen: a declared-result binding such as the `-> U` of
+    /// `F: FnOnce(T) -> U`. The projection recipe equals `value`; consumers
+    /// normalize both again and never trust a provider normalization.
+    ProjectionEqual {
+        projection: TypeRef,
+        value: TypeRef,
+    },
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Clause {

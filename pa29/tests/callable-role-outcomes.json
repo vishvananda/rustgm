@@ -1,0 +1,163 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+  "providers": [
+    {
+      "file": "spec/callable-roles/provider.rs",
+      "sha256": "2fe97cbc9c02e8190ef869b8ad5286155188a47cd0637ff099708c6820acb8a7",
+      "oracle_shim": "#[cfg(rustc_oracle)] drop_glue, added after the first oracle run reported `requires drop_glue lang_item` for the FnMut/Fn clients; no candidate run on frozen files preceded it"
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "cases": [
+    {
+      "file": "spec/callable-roles/once-item.rs",
+      "provider": "spec/callable-roles/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "81fd1a07d4dfd6dc1b1920d3f487b6893cd32a1352d93de02b003eec404d1ec5"
+    },
+    {
+      "file": "spec/callable-roles/once-closure.rs",
+      "provider": "spec/callable-roles/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "341f54fa9464e6f5bce22b395c13a0162b9b0d002c5d458ce460508107d58db5"
+    },
+    {
+      "file": "spec/callable-roles/once-capture.rs",
+      "provider": "spec/callable-roles/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "2a83c6af1de695ea33237d7689ce30abae71d4223f28591f0366d80a610e96ec"
+    },
+    {
+      "file": "spec/callable-roles/mut-item.rs",
+      "provider": "spec/callable-roles/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "b7055e06dc434ed5799533754588798ad6b3d30bf7c19ceed043c9b5dce70cdf"
+    },
+    {
+      "file": "spec/callable-roles/mut-closure.rs",
+      "provider": "spec/callable-roles/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "f88dc1fd49143f9cf8fdaa769e9086c14e5785da41afb23de94c4ae190bab674"
+    },
+    {
+      "file": "spec/callable-roles/mut-capture.rs",
+      "provider": "spec/callable-roles/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "50f992649398d1b73fd0e84ab7d5b38b69d9d5e0724296ebdb710e28983ca4be"
+    },
+    {
+      "file": "spec/callable-roles/ref-item.rs",
+      "provider": "spec/callable-roles/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "46ccd276bcae37c595d9a6d0abd67e4cada904afedf9ac834d174c7b83cad4a5"
+    },
+    {
+      "file": "spec/callable-roles/ref-closure.rs",
+      "provider": "spec/callable-roles/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "ee1c9caca97ce2e698b9cf792f8f174b8e777033b6f284b60fd4ecf0a45a9101"
+    },
+    {
+      "file": "spec/callable-roles/ref-capture.rs",
+      "provider": "spec/callable-roles/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "7711bef5921c6a05e86c748b5c2e15d45934915d68a925ff304bdcc473f42f8c"
+    },
+    {
+      "file": "spec/callable-roles/wrong-output.rs",
+      "provider": "spec/callable-roles/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0271",
+      "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+      "sha256": "fae985e34cc884eaeaac8bd716f2ba6cf56fbdb2eef91deb62a432ed14cbb74b"
+    },
+    {
+      "file": "spec/callable-roles/ref-mutating.rs",
+      "provider": "spec/callable-roles/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0594",
+      "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+      "sha256": "47c6abcd1a28bc737bae4a496b4d178d1e74fc948af90e1db6051fe0b87b74f1"
+    },
+    {
+      "file": "spec/callable-roles/mut-consuming.rs",
+      "provider": "spec/callable-roles/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0507",
+      "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+      "sha256": "3f0751f5da7415b5829f95d264c65ecb3aead799c7d894fc8110408d9ed95660",
+      "declaration_note": "declared E0525 before the oracle; rustc deduces the FnMut closure kind from the expected bound and reports the move out of the capture (E0507); the frozen outcome follows the oracle"
+    }
+  ],
+  "older_profiles": {
+    "module-branches-v12 and module-nominals-v10 exports of spec/callable-roles/provider.rs": "rejected: named, associated or generic alias transport requires its wider profile",
+    "byte_identity": "module-bodies-v13 exports of spec/source-body-ir/{provider,wire}.rs, spec/language-roles/provider.rs and spec/associated-results/provider.rs, module-branches-v12 exports of spec/source-branches/{provider,wait,spin}.rs and the module-nominals-v10 exports of spec/source-branches/spin.rs and spec/source-nominals/provider.rs, with every fresh consumer of each fixture directory (LowIR, status and diagnostics; 330 files), equal the main 621108866 baseline bytes"
+  },
+  "generated_controls": [
+    {
+      "control": "provider.rs plus `pub fn twice(x: u8) -> u8 { apply(|y| y, x) }`",
+      "expected": "rustc accepts; the candidate export rejects the provider closure by name",
+      "observed": "nested callable source arguments require a wider transport profile"
+    },
+    {
+      "control": "6, 24 and 96 generated `applyNNN<F: FnOnce(u8) -> u8>` appliers with one closure client",
+      "expected": "packet bytes grow exactly linearly; the client LowIR stays bounded"
+    }
+  ],
+  "wire_controls": [
+    {
+      "mutation": "apply's Invoke call trait FnOnce -> Fn",
+      "observed": "source call operator receiver changed its call trait borrow"
+    },
+    {
+      "mutation": "apply's Invoke call trait FnOnce -> FnMut",
+      "observed": "source call operator receiver changed its call trait borrow"
+    },
+    {
+      "mutation": "apply's Invoke call trait flag 3",
+      "observed": "body IR invoke node has an unknown call trait"
+    },
+    {
+      "mutation": "apply_mut's Invoke call trait FnMut -> FnOnce (callee becomes &mut F)",
+      "observed": "source call operator result is not its callee's declared Output"
+    },
+    {
+      "mutation": "apply_mut's two-phase receiver borrow flag 1 -> 2 (unique)",
+      "observed": "encoded unique Rvalue::Borrow is not reconstructable"
+    },
+    {
+      "mutation": "apply_mut's two-phase receiver borrow flag 1 -> 0 (immediate)",
+      "observed": "accepted: the stricter immediate borrow is a different valid body, re-checked by the consumer's own borrow proof"
+    },
+    {
+      "mutation": "FnMut role spelling fn_mut -> unsize",
+      "observed": "source const/auto/unsafe traits require a wider explicit profile"
+    },
+    {
+      "mutation": "version byte relabelled 13 to 12",
+      "observed": "unknown source declaration kind"
+    },
+    {
+      "mutation": "every strict prefix",
+      "observed": "fails to decode"
+    }
+  ],
+  "expectations_recorded": "candidate diagnostics and wire-control observations recorded at first observation"
+}

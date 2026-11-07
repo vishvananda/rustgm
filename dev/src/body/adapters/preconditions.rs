@@ -16,12 +16,17 @@ impl Requirements {
     pub(super) fn pairs(&self) -> &[Pair] {
         &self.0
     }
+    /// A source catalog prepares the wrapper's own Copy queries. That carrier
+    /// adds no premise, pending predicate or defining request to the interface.
     pub(super) fn validate(&self, input: &Contract) -> Result<(), &'static str> {
         if input.assumptions != self.0
             || !input.type_assumptions.is_empty()
             || !input.parameters.is_empty()
             || input.output.is_some()
-            || input.builtins.is_some()
+            || input
+                .builtins
+                .as_deref()
+                .is_some_and(|builtins| !builtins.predicates.is_empty() || builtins.has_defining())
         {
             return Err("receiver adapter has undeclared interface assumptions");
         }

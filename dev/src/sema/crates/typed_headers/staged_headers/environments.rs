@@ -28,15 +28,25 @@ pub(in crate::sema::crates::typed_headers) trait LeafClauses:
 {
     fn clauses(&self) -> &[Clause];
     fn application(&self, bound: Bound) -> Result<ApplicationId, Error>;
+    /// Version thirteen lifts the vacuous clause binder that parenthesized
+    /// callable sugar opens; no other producer admits a quantified premise.
+    fn vacuous_scopes(&self) -> bool {
+        false
+    }
 }
-struct Ordinary<'a>(&'a [Clause]);
+struct Ordinary<'a>(&'a [Clause], bool);
 impl sealed::Sealed for Ordinary<'_> {}
 impl LeafClauses for Ordinary<'_> {
     fn clauses(&self) -> &[Clause] {
         self.0
     }
+    fn vacuous_scopes(&self) -> bool {
+        self.1
+    }
+    /// This consumer's row validation admits a conditional effect only on an
+    /// actual callable role's own hierarchy (`Fn: [const] FnMut<Args>`).
     fn application(&self, bound: Bound) -> Result<ApplicationId, Error> {
-        let Bound::Trait(id) = bound else {
+        let (Bound::Trait(id) | Bound::MaybeConstTrait(id)) = bound else {
             return Err(error(
                 "source assumption is outside the ordinary actual trait profile",
             ));
@@ -49,7 +59,7 @@ pub(in crate::sema::crates::typed_headers) fn prepare(
     facts: &Declarations,
     parent: Option<&Arc<Environment>>,
     parameters: &[(ParameterId, Abilities)],
-    clauses: &[Clause],
+    (clauses, vacuous_scopes): (&[Clause], bool),
     previous_parameters: usize,
     previous_clauses: usize,
     budget: &mut impl Accounting,
@@ -58,7 +68,7 @@ pub(in crate::sema::crates::typed_headers) fn prepare(
         facts,
         parent,
         parameters,
-        &Ordinary(clauses),
+        &Ordinary(clauses, vacuous_scopes),
         previous_parameters,
         previous_clauses,
         budget,
@@ -104,31 +114,7 @@ pub(in crate::sema::crates::typed_headers) fn prepare_checked(
                 .ok_or_else(|| error("foreign imported feature premise"))?;
             continue;
         }
-        let Clause::Predicate(predicate) = clause else {
-            return Err(error(
-                "quantified source assumptions require a wider environment profile",
-            ));
-        };
-        leaf(facts, predicate.ty)?;
-        let id = leaves.application(predicate.bound)?;
-        let application = facts
-            .types
-            .trait_application(id)
-            .ok_or_else(|| error("source environment lost its actual trait application"))?;
-        let arguments = facts
-            .types
-            .arguments(application.arguments)
-            .ok_or_else(|| error("source environment lost its full trait arguments"))?;
-        budget.charge(arguments.len().saturating_add(1))?;
-        roots = roots.saturating_add(arguments.len().saturating_add(1));
-        for argument in arguments {
-            let Argument::Type(ty) = argument else {
-                return Err(error(
-                    "source regional assumption requires a wider environment profile",
-                ));
-            };
-            leaf(facts, ty)?;
-        }
+        roots = roots.saturating_add(assumption(facts, leaves, *clause, budget)?);
     }
     budget.charge(parameters.len().saturating_add(copied))?;
     budget.reserve(Environment::trait_leaf_allocation_bound(
@@ -162,6 +148,81 @@ pub(in crate::sema::crates::typed_headers) fn prepare_checked(
         visits: 1,
     });
     Ok(environment)
+}
+/// One admitted leaf premise; returns its counted trait-input roots.
+fn assumption(
+    facts: &Declarations,
+    leaves: &impl LeafClauses,
+    clause: Clause,
+    budget: &mut impl Accounting,
+) -> Result<usize, Error> {
+    let predicate = match clause {
+        Clause::Predicate(predicate) => predicate,
+        Clause::ForAll(id) if leaves.vacuous_scopes() => {
+            facts
+                .types
+                .quantified(id)
+                .filter(|scoped| scoped.bound_regions == 0)
+                .ok_or_else(|| {
+                    error("quantified source assumptions require a wider environment profile")
+                })?
+                .predicate
+        }
+        _ => {
+            return Err(error(
+                "quantified source assumptions require a wider environment profile",
+            ));
+        }
+    };
+    let id = if let Bound::ProjectionEqual(value) = predicate.bound
+        && leaves.vacuous_scopes()
+    {
+        // A callable result binding: a leaf value for a declared result
+        // whose own trait application is a leaf premise below.
+        leaf(facts, value)?;
+        let Some(Kind::Projection(projection)) = facts.types.kind(predicate.ty) else {
+            return Err(error(
+                "source result assumption lost its actual declared-result projection",
+            ));
+        };
+        leaf(facts, projection.subject)?;
+        projection.trait_application
+    } else {
+        leaf(facts, predicate.ty)?;
+        leaves.application(predicate.bound)?
+    };
+    let application = facts
+        .types
+        .trait_application(id)
+        .ok_or_else(|| error("source environment lost its actual trait application"))?;
+    let arguments = facts
+        .types
+        .arguments(application.arguments)
+        .ok_or_else(|| error("source environment lost its full trait arguments"))?;
+    budget.charge(arguments.len().saturating_add(1))?;
+    let roots = arguments.len().saturating_add(1);
+    for argument in arguments {
+        let Argument::Type(ty) = argument else {
+            return Err(error(
+                "source regional assumption requires a wider environment profile",
+            ));
+        };
+        match facts.types.kind(ty) {
+            // A callable role's argument tuple of leaves.
+            Some(Kind::Tuple(elements)) if leaves.vacuous_scopes() && ty != TypeId::UNIT => {
+                let elements = facts
+                    .types
+                    .list(elements)
+                    .ok_or_else(|| error("source environment lost its tuple elements"))?;
+                budget.charge(elements.len())?;
+                for &element in elements {
+                    leaf(facts, element)?;
+                }
+            }
+            _ => leaf(facts, ty)?,
+        }
+    }
+    Ok(roots)
 }
 fn leaf(facts: &Declarations, ty: TypeId) -> Result<(), Error> {
     if ty != TypeId::UNIT

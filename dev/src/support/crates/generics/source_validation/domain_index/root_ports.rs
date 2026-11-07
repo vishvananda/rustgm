@@ -168,7 +168,9 @@ impl DomainIndex<'_, '_> {
                         rows.trait_applications[application.0 as usize].subject
                     }
                     s::Requirement::TypeOutlives { subject, .. } => *subject,
-                    s::Requirement::Outlives(_) | s::Requirement::UnstableFeature(_) => {
+                    s::Requirement::Outlives(_)
+                    | s::Requirement::UnstableFeature(_)
+                    | s::Requirement::ProjectionEqual { .. } => {
                         return Err("source regional clause cannot claim a typed Self subject");
                     }
                 };
@@ -206,6 +208,16 @@ impl DomainIndex<'_, '_> {
                 Types::region(self.headers, &self.binders, context, *shorter, work)
             }
             s::Requirement::Outlives(bound) => self.bound(context, *bound, work),
+            s::Requirement::ProjectionEqual { projection, value } => {
+                if !matches!(
+                    self.headers.rows().types.get(projection.0 as usize),
+                    Some(s::Type::Projection(_))
+                ) {
+                    return Err("source result binding does not name a declared-result projection");
+                }
+                self.types.root(self.headers, context, *projection, work)?;
+                self.types.root(self.headers, context, *value, work)
+            }
             // The whole declaration/call input remains in the semantic request plan;
             // this non-type row contributes no fictitious type root.
             s::Requirement::UnstableFeature(name) => work.charge(name.len().saturating_add(1)),

@@ -33,6 +33,10 @@ pub(super) fn emit(
                 place: target,
                 kind: ir::BorrowKind::Immediate,
             } => s::ValueKind::Borrow(place(target)?),
+            ir::Rvalue::Borrow {
+                place: target,
+                kind: ir::BorrowKind::TwoPhase,
+            } if stage.body_nodes() => s::ValueKind::TwoPhaseBorrow(place(target)?),
             ir::Rvalue::Constrain(value) => s::ValueKind::Constrain(value.0),
             ir::Rvalue::Binary {
                 operands,
@@ -63,6 +67,18 @@ pub(super) fn emit(
             ir::Rvalue::Function(definition) => {
                 function(stage, facts, value.ty, definition, context)?
             }
+            ir::Rvalue::Invoke {
+                kind,
+                signature,
+                arguments,
+            } => invoke(
+                stage,
+                facts,
+                (body, index, context),
+                kind,
+                signature,
+                arguments,
+            )?,
             ir::Rvalue::Call {
                 signature,
                 callee,
@@ -90,6 +106,37 @@ pub(super) fn emit(
         raw.values.push(s::Value { ty, kind });
     }
     Ok(())
+}
+
+/// A call operator keeps its call trait and caller-side signature; a closure
+/// call entry would need its closure transport.
+fn invoke(
+    stage: &mut Stage,
+    facts: &mut Declarations,
+    (body, index, context): (&Body, usize, Context),
+    kind: crate::support::call_traits::CallTrait,
+    signature: crate::types::TypeId,
+    arguments: ir::ValueList,
+) -> Result<s::ValueKind, &'static str> {
+    if !stage.body_nodes() {
+        return Err("source call operators require the version-thirteen body IR profile");
+    }
+    let value = ir::ValueId(u32::try_from(index).map_err(|_| "source call value overflow")?);
+    if body
+        .closure_calls
+        .as_deref()
+        .is_some_and(|entries| entries.get(value).is_some())
+    {
+        return Err("source closure call entries require their closure transport");
+    }
+    Ok(s::ValueKind::Invoke {
+        kind,
+        signature: stage.ty(facts, signature, context)?,
+        arguments: g::Range {
+            start: arguments.start,
+            end: arguments.end,
+        },
+    })
 }
 
 fn scalar_cast(

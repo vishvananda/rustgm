@@ -196,12 +196,15 @@ impl Checker<'_> {
         work: usize,
         bytes: usize,
     ) -> Result<(), Error> {
-        if self.facts.source_bindings.is_some()
-            || self
-                .facts
-                .must_use_contracts
-                .as_deref()
-                .is_some_and(|c| c.headers.is_some())
+        // A source client's own closures have no completed local source
+        // retention ledger; they pay the inference work budget instead.
+        if self.report.package.source_client().is_none()
+            && (self.facts.source_bindings.is_some()
+                || self
+                    .facts
+                    .must_use_contracts
+                    .as_deref()
+                    .is_some_and(|c| c.headers.is_some()))
         {
             self.facts
                 .charge_caller_inputs(work, bytes)

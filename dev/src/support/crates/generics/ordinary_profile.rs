@@ -3,6 +3,8 @@ use super::super::{
     Action, EnvironmentOrigin, FunctionBody, InputKind, Place, TraitFlags, ValueKind,
 };
 use super::super::{HeaderIndex, SourceRows};
+#[path = "rust_call_roles.rs"]
+mod callable_roles;
 #[path = "free_protocols.rs"]
 mod callable_traits;
 #[path = "conversion_profile.rs"]
@@ -169,7 +171,7 @@ fn validate_with(
     }
     for clause in &rows.clauses {
         work.charge(1)?;
-        ordinary(&clause.requirement)?;
+        ordinary(&clause.requirement, roles.callables.callable(clause.owner))?;
     }
     originals(
         rows,
@@ -178,6 +180,12 @@ fn validate_with(
         features,
         profile.callables(),
         profile.conversions(),
+    )?;
+    body_inputs(
+        rows,
+        work,
+        profile.conversions(),
+        binding == BindingProfile::Languages,
     )
 }
 fn trait_headers(
@@ -203,6 +211,9 @@ fn trait_headers(
         }
         if roles.freeze == Some(header.declaration) {
             callable_traits::freeze(rows, headers, header, work)?;
+            continue;
+        }
+        if callable_roles::trait_header(rows, headers, header, roles.callables, work)?.is_some() {
             continue;
         }
         if flags & TraitFlags::RESTRICTED_IMPL != 0
@@ -269,26 +280,30 @@ fn functions(
     for header in &rows.functions {
         work.charge(1 + 2 * rows.exact_callables.len().checked_ilog2().unwrap_or(0) as usize)?;
         let free_effects = profile.callables() && header.parent.is_none();
-        let required = profile.conversions()
-            && conversions::required_member(rows, headers, header, roles.conversion, work)?;
+        let callable = callable_roles::required_member(header, roles.callables, work)?;
+        let required = callable
+            || profile.conversions()
+                && conversions::required_member(rows, headers, header, roles.conversion, work)?;
         if (!free_effects && !required && header.constness != Constness::Ordinary)
             || !required && header.constness == Constness::Conditional
             || (!free_effects && header.original.unsafe_)
             || header.original.variadic
-            || !admitted_convention(
-                rows,
-                header.declaration,
-                header.original.convention,
-                profile,
-            )
+            || !(callable
+                || admitted_convention(
+                    rows,
+                    header.declaration,
+                    header.original.convention,
+                    profile,
+                ))
             || (!free_effects && header.callable.unsafe_)
             || header.callable.variadic
-            || !admitted_convention(
-                rows,
-                header.declaration,
-                header.callable.convention,
-                profile,
-            )
+            || !(callable
+                || admitted_convention(
+                    rows,
+                    header.declaration,
+                    header.callable.convention,
+                    profile,
+                ))
         {
             return Err(
                 "source nonordinary callable effect/safety/convention requires a wider profile",
@@ -451,9 +466,11 @@ fn originals(
                     && matches!(
                         value.kind,
                         ValueKind::Borrow(_)
+                            | ValueKind::TwoPhaseBorrow(_)
                             | ValueKind::Read(Place::Projection(_) | Place::Temporary(_))
                             | ValueKind::ScalarCast(_)
                             | ValueKind::Binary { .. }
+                            | ValueKind::Invoke { .. }
                     ))
             {
                 return Err("source value operation requires a wider explicit profile");
@@ -477,6 +494,16 @@ fn originals(
             }
         }
     }
+    Ok(())
+}
+/// Recorded preparation inputs: `scoped` admits only the vacuous formation
+/// scope that version-thirteen parenthesized callable sugar opens.
+fn body_inputs(
+    rows: &SourceRows,
+    work: &mut Work,
+    regional: bool,
+    scoped: bool,
+) -> Result<(), &'static str> {
     for input in &rows.body_inputs {
         work.charge(1)?;
         if matches!(
@@ -494,24 +521,31 @@ fn originals(
             }
             for request in &builtins.predicates {
                 work.charge(1)?;
-                ordinary(&request.value)?;
+                ordinary(&request.value, false)?;
             }
         }
         for request in &input.type_assumptions {
             work.charge(1)?;
-            ordinary(&request.value)?;
+            ordinary(&request.value, false)?;
         }
         normalization_ownership(input, work, regional)?;
         for obligation in &input.obligations {
             work.charge(1)?;
-            if matches!(
-                obligation.kind,
-                InputKind::Membership { .. } | InputKind::ScopedWellFormed { .. }
-            ) || !regional
+            // Parenthesized callable sugar opens a clause binder even when it
+            // binds no region; only that vacuous formation scope is admitted.
+            let vacuous = scoped
+                && matches!(obligation.kind, InputKind::ScopedWellFormed { frame, .. }
+                    if rows.binders.get(frame.0 as usize).is_some_and(|b| b.count == 0));
+            if !vacuous
                 && matches!(
                     obligation.kind,
-                    InputKind::Variable { .. } | InputKind::LocalBorrow(_)
+                    InputKind::Membership { .. } | InputKind::ScopedWellFormed { .. }
                 )
+                || !regional
+                    && matches!(
+                        obligation.kind,
+                        InputKind::Variable { .. } | InputKind::LocalBorrow(_)
+                    )
             {
                 return Err("source allocation/scoped input requires a wider explicit profile");
             }
@@ -573,11 +607,12 @@ fn recipes(
     }
     Ok(())
 }
-fn ordinary(request: &super::super::Requirement) -> Result<(), &'static str> {
+/// `callable` admits the conditional hierarchy of an actual callable role.
+fn ordinary(request: &super::super::Requirement, callable: bool) -> Result<(), &'static str> {
     if matches!(request, super::super::Requirement::Outlives(_)) {
         return Err("standalone regional clauses require their explicit wider header consumer");
     }
-    if matches!(request, super::super::Requirement::Trait { effect, .. } if *effect != Constness::Ordinary)
+    if matches!(request, super::super::Requirement::Trait { effect, .. } if *effect != Constness::Ordinary && !(callable && *effect == Constness::Conditional))
     {
         return Err("source qualified body request requires a wider source profile");
     }
@@ -598,6 +633,7 @@ pub(super) struct Bindings {
     destruct: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     freeze: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     conversion: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    callables: callable_roles::Roles,
 }
 fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
     if profile == BindingProfile::Languages {
@@ -664,48 +700,14 @@ pub(super) fn bindings(
         {
             return Err("source role binding is duplicated or belongs to a foreign provider");
         }
-        match (role.role, headers.header(address.declaration, work)?) {
-            (
-                LangItem::CloneFn | LangItem::FuturePoll | LangItem::AsyncDropInPlace,
-                Some(super::super::HeaderRef::Function(_)),
-            ) => {}
-            (LangItem::FutureOutput, Some(super::super::HeaderRef::AssociatedType(_)))
-                if profile == BindingProfile::CompilerOperations => {}
-            (
-                _,
-                Some(
-                    super::super::HeaderRef::AssociatedType(_)
-                    | super::super::HeaderRef::AssociatedDefinition(_),
-                ),
-            ) => {
-                return Err("source associated role has a different actual member kind");
-            }
-            (LangItem::CloneFn, _)
-            | (
-                _,
-                None
-                | Some(
-                    super::super::HeaderRef::Function(_)
-                    | super::super::HeaderRef::Implementation(_),
-                ),
-            ) => return Err("source role has a different actual declaration/header kind"),
-            (_, Some(super::super::HeaderRef::Trait(_))) => {}
-            (_, Some(super::super::HeaderRef::Nominal(_))) => {
-                return Err("ordinary source roles cannot claim a nominal declaration");
-            }
-        }
+        role_header(
+            profile,
+            role.role,
+            headers.header(address.declaration, work)?,
+        )?;
         declarations[role.role.index()] = Some(address.declaration);
     }
-    if let Some(clone) = declarations[LangItem::CloneFn.index()] {
-        let Some(super::super::HeaderRef::Function(index)) = headers.header(clone, work)? else {
-            return Err("source clone_fn has no exact method header");
-        };
-        if rows.functions[index as usize].parent != declarations[LangItem::Clone.index()]
-            || declarations[LangItem::Clone.index()].is_none()
-        {
-            return Err("source clone_fn belongs to another actual Clone declaration");
-        }
-    }
+    owned_role_members(rows, headers, work, &declarations)?;
     let sizing = [
         declarations[LangItem::Sized.index()],
         declarations[LangItem::MetaSized.index()],
@@ -715,7 +717,21 @@ pub(super) fn bindings(
         return Err("source functions require the real complete sizing trio");
     }
     slot_bindings(rows, headers, work, profile, sizing[0])?;
+    let callables = if profile == BindingProfile::Languages {
+        callable_roles::Roles(
+            [
+                LangItem::Tuple,
+                LangItem::FnOnce,
+                LangItem::FnMut,
+                LangItem::Fn,
+            ]
+            .map(|role| declarations[role.index()]),
+        )
+    } else {
+        callable_roles::Roles::default()
+    };
     Ok(Bindings {
+        callables,
         conversion: (matches!(
             profile,
             BindingProfile::Conversions
@@ -742,6 +758,75 @@ pub(super) fn bindings(
             None
         },
     })
+}
+
+/// The declaration/header kind each bound role may claim under `profile`.
+fn role_header(
+    profile: BindingProfile,
+    role: LangItem,
+    header: Option<super::super::HeaderRef>,
+) -> Result<(), &'static str> {
+    match (role, header) {
+        (
+            LangItem::CloneFn | LangItem::FuturePoll | LangItem::AsyncDropInPlace,
+            Some(super::super::HeaderRef::Function(_)),
+        ) => {}
+        (LangItem::FutureOutput, Some(super::super::HeaderRef::AssociatedType(_)))
+            if profile == BindingProfile::CompilerOperations => {}
+        (LangItem::FnOnceOutput, Some(super::super::HeaderRef::AssociatedType(_)))
+            if profile == BindingProfile::Languages => {}
+        (
+            _,
+            Some(
+                super::super::HeaderRef::AssociatedType(_)
+                | super::super::HeaderRef::AssociatedDefinition(_),
+            ),
+        ) => {
+            return Err("source associated role has a different actual member kind");
+        }
+        (LangItem::CloneFn, _)
+        | (
+            _,
+            None
+            | Some(super::super::HeaderRef::Function(_) | super::super::HeaderRef::Implementation(_)),
+        ) => return Err("source role has a different actual declaration/header kind"),
+        (_, Some(super::super::HeaderRef::Trait(_))) => {}
+        (_, Some(super::super::HeaderRef::Nominal(_))) => {
+            return Err("ordinary source roles cannot claim a nominal declaration");
+        }
+    }
+    Ok(())
+}
+/// `clone_fn` and `fn_once_output` are owned by their exact bound parents.
+fn owned_role_members(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+    declarations: &[Option<crate::support::crates::owner_catalog::DeclarationRef>;
+         LangItem::ALL.len()],
+) -> Result<(), &'static str> {
+    if let Some(clone) = declarations[LangItem::CloneFn.index()] {
+        let Some(super::super::HeaderRef::Function(index)) = headers.header(clone, work)? else {
+            return Err("source clone_fn has no exact method header");
+        };
+        if rows.functions[index as usize].parent != declarations[LangItem::Clone.index()]
+            || declarations[LangItem::Clone.index()].is_none()
+        {
+            return Err("source clone_fn belongs to another actual Clone declaration");
+        }
+    }
+    if let Some(output) = declarations[LangItem::FnOnceOutput.index()] {
+        let Some(super::super::HeaderRef::AssociatedType(index)) = headers.header(output, work)?
+        else {
+            return Err("source fn_once_output has no exact declared result header");
+        };
+        if Some(rows.associated_types[index as usize].parent)
+            != declarations[LangItem::FnOnce.index()]
+        {
+            return Err("source fn_once_output belongs to another actual FnOnce declaration");
+        }
+    }
+    Ok(())
 }
 
 /// Sized formals name the actual Sized role; a version-thirteen default is

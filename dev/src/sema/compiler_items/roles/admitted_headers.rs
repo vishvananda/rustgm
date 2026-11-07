@@ -8,7 +8,7 @@ use crate::{
         },
         crates,
     },
-    support::constness::Constness,
+    support::{call_traits::CallTrait, constness::Constness},
 };
 
 /// Only actual selected copying/conversion headers enter their existing ledger.
@@ -172,14 +172,28 @@ pub(in crate::sema::compiler_items) fn traits(
         0
     };
     crates::charge_source_headers(facts, steps, bytes)?;
-    let roles = checked.map_err(Error::unlocated)?;
+    let (roles, callables) = checked.map_err(Error::unlocated)?;
+    let entries: Vec<_> = [CallTrait::FnOnce, CallTrait::FnMut, CallTrait::Fn]
+        .into_iter()
+        .filter_map(|kind| {
+            Some((
+                callables.roles[kind as usize]?,
+                kind,
+                callables.methods[kind as usize]?,
+            ))
+        })
+        .collect();
+    facts
+        .associated
+        .register_imported_callables(&entries, callables.output)
+        .map_err(Error::unlocated)?;
     facts
         .source_bindings
         .as_deref_mut()
         .ok_or_else(|| Error::unlocated("source role catalog disappeared"))?
         .traits = Some(Box::new(Validated {
         roles,
-        methods: [None; 3],
+        methods: callables.methods,
         pointee: None,
         discriminant: None,
         range: None,
@@ -192,7 +206,7 @@ fn trait_headers(
     report: &Report,
     facts: &Declarations,
     steps: &mut usize,
-) -> Result<super::RoleSet, &'static str> {
+) -> Result<(super::RoleSet, super::invocation::Imported), &'static str> {
     let catalog = catalog(report, facts)?;
     if catalog.traits.is_some() {
         return Err("source roles were validated twice");
@@ -255,13 +269,55 @@ fn trait_headers(
                 super::super::operator_contract::imported(report, facts, declaration, role, steps)?;
                 complete.insert(role);
             }
+            LangItem::Tuple => {
+                tuple_marker(report, facts, declaration, steps)?;
+                complete.insert(role);
+            }
+            // The callable family is admitted together once the loop completes.
+            LangItem::FnOnce | LangItem::FnMut | LangItem::Fn | LangItem::FnOnceOutput => {}
             _ => return Err("imported source role requires its wider explicit header profile"),
         }
     }
     if catalog.role(LangItem::CloneFn)?.is_some() && !complete.contains(LangItem::CloneFn) {
         return Err("source language member has no validated actual trait owner");
     }
-    Ok(complete)
+    let callables = super::invocation::imported(report, facts, catalog, steps)?;
+    for (role, admitted) in [
+        (
+            LangItem::FnOnce,
+            callables.roles[CallTrait::FnOnce as usize],
+        ),
+        (LangItem::FnMut, callables.roles[CallTrait::FnMut as usize]),
+        (LangItem::Fn, callables.roles[CallTrait::Fn as usize]),
+        (LangItem::FnOnceOutput, callables.output),
+    ] {
+        if admitted.is_some() {
+            complete.insert(role);
+        }
+    }
+    Ok((complete, callables))
+}
+
+/// The imported Tuple marker: an empty, parameterless deny-implementation trait.
+fn tuple_marker(
+    report: &Report,
+    facts: &Declarations,
+    declaration: super::super::Role,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    facts.associated.require_imported_role(declaration)?;
+    let header = Trait::current(report, facts, declaration, steps)?;
+    header.profile(&facts.types, flags(), 0)?;
+    if header.written.parameters != 0
+        || header.written.supertraits != 0
+        || !header.members.is_empty()
+        || !facts
+            .associated
+            .imported_denies_implementation(declaration.definition)?
+    {
+        return Err("imported Tuple marker changed its empty deny-implementation declaration");
+    }
+    Ok(())
 }
 
 fn conversion(

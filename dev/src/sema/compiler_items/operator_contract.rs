@@ -502,12 +502,17 @@ fn imported_value(
         output: Some(output),
     })
 }
-fn imported_item(facts: &Declarations, method: DefId, signature: TypeId) -> Result<(), Failure> {
+/// The imported method's callable item is exactly its own header signature.
+pub(in crate::sema::compiler_items) fn imported_item(
+    facts: &Declarations,
+    method: DefId,
+    signature: TypeId,
+) -> Result<(), &'static str> {
     let ty = facts.definitions[method.0 as usize]
         .ok_or("imported operator method lost its callable item")?;
     if !matches!(facts.types.kind(ty), Some(Kind::FunctionItem {item, signature: actual, ..}) if item.0 == method.0 && actual == signature)
     {
-        return Err("imported operator callable item differs from its method header".into());
+        return Err("imported operator callable item differs from its method header");
     }
     Ok(())
 }

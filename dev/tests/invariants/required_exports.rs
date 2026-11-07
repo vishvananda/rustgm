@@ -2,6 +2,14 @@
 use super::*;
 use crate::{pipeline, resolve::model::DefKind, types::TypeId};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+const ROLES: RequiredRoles = RequiredRoles {
+    conversions: true,
+    callables: false,
+};
+const ORDINARY: RequiredRoles = RequiredRoles {
+    conversions: false,
+    callables: false,
+};
 
 fn prepared(name: &str) -> Result<(Report, Declarations)> {
     let source = crate::test_source::fixture(&format!("pa31/tests/spec/source-from/{name}.rs"))?;
@@ -40,11 +48,11 @@ fn actual_const_from_required_header_is_conditional_only_in_version_nine() -> Re
     let (report, facts) = prepared("original-trait")?;
     let function = required(&facts)?;
     assert_eq!(
-        written_constness(&report, &facts, &function, true)?,
+        written_constness(&report, &facts, &function, ROLES)?,
         Constness::Conditional
     );
     assert_eq!(
-        written_constness(&report, &facts, &function, false)?,
+        written_constness(&report, &facts, &function, ORDINARY)?,
         Constness::Ordinary
     );
     assert!(!facts.is_const_function(function.definition));
@@ -56,13 +64,13 @@ fn actual_const_from_required_header_is_conditional_only_in_version_nine() -> Re
         })
         .ok_or("ordinary observer")?;
     assert_eq!(
-        written_constness(&report, &facts, ordinary, true)?,
+        written_constness(&report, &facts, ordinary, ROLES)?,
         Constness::Ordinary
     );
     let (ordinary_report, ordinary_facts) = prepared("actual-role")?;
     let ordinary_member = required(&ordinary_facts)?;
     assert_eq!(
-        written_constness(&ordinary_report, &ordinary_facts, &ordinary_member, true)?,
+        written_constness(&ordinary_report, &ordinary_facts, &ordinary_member, ROLES)?,
         Constness::Ordinary
     );
     Ok(())
@@ -78,15 +86,15 @@ fn required_member_cannot_borrow_another_parent_function_or_effect() -> Result {
         .find(|function| function.body.is_some())
         .ok_or("other source function")?
         .node;
-    assert!(written_constness(&report, &facts, &changed, true).is_err());
+    assert!(written_constness(&report, &facts, &changed, ROLES).is_err());
     facts.constant_functions.insert(original.definition);
-    assert!(written_constness(&report, &facts, &original, true).is_err());
+    assert!(written_constness(&report, &facts, &original, ROLES).is_err());
     facts.constant_functions.remove(&original.definition);
     let mut changed = original;
     changed.body = Some(original.node);
-    assert!(written_constness(&report, &facts, &changed, true).is_err());
+    assert!(written_constness(&report, &facts, &changed, ROLES).is_err());
     assert_eq!(
-        written_constness(&report, &facts, &original, true)?,
+        written_constness(&report, &facts, &original, ROLES)?,
         Constness::Conditional
     );
     Ok(())

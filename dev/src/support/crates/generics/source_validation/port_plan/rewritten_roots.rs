@@ -18,6 +18,7 @@ enum Recipe {
     Function(g::Signature),
     Nominal(s::DeclarationAddress, g::Range),
     Projection(s::ProjectionRef),
+    Tuple(g::Range),
 }
 #[derive(Clone, Copy)]
 enum Task {
@@ -76,6 +77,15 @@ impl Arena {
                         Recipe::Function(signature) => {
                             self.function_children(domains, key, signature, pending, work)?;
                         }
+                        Recipe::Tuple(elements) => {
+                            for &element in
+                                elements.slice(&domains.headers.rows().roots)?.iter().rev()
+                            {
+                                let child =
+                                    uses::key(domains, element, key.rewrite, key.caller, work)?;
+                                self.push(pending, Task::Enter(child), work)?;
+                            }
+                        }
                         Recipe::Leaf(_) | Recipe::Existing(_) => {}
                     }
                 }
@@ -114,6 +124,9 @@ impl Arena {
                         }
                         Recipe::Function(signature) => {
                             self.finish_function(domains, key, signature, work)?
+                        }
+                        Recipe::Tuple(elements) => {
+                            self.finish_tuple(domains, key, elements, work)?
                         }
                     };
                     self.remember(key, node, work)?;
@@ -159,6 +172,21 @@ impl Arena {
         }
         Ok(tail)
     }
+    fn finish_tuple(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        key: Key,
+        elements: g::Range,
+        work: &mut Work,
+    ) -> Result<NodeId, &'static str> {
+        let mut tail = self.intern(Node::NominalEnd, work)?;
+        for &element in elements.slice(&domains.headers.rows().roots)?.iter().rev() {
+            let child = uses::key(domains, element, key.rewrite, key.caller, work)?;
+            let ty = self.child(child, work)?;
+            tail = self.intern(Node::NominalArgument { ty, next: tail }, work)?;
+        }
+        self.intern(Node::Tuple { elements: tail }, work)
+    }
     fn finish_projection(
         &mut self,
         domains: &DomainIndex<'_, '_>,
@@ -202,6 +230,7 @@ impl Arena {
                     );
                 }
                 s::Type::Scalar(scalar) => Recipe::Leaf(Node::Scalar(scalar)),
+                s::Type::Tuple(elements) => Recipe::Tuple(elements),
                 s::Type::Parameter(slot) if matches!(key.rewrite, Rewrite::Nominal { .. }) => {
                     let Rewrite::Nominal { owner, arguments } = key.rewrite else {
                         return Err("source nominal parameter lost its actual rewrite");

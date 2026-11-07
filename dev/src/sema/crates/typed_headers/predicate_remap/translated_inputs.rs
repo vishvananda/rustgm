@@ -266,6 +266,10 @@ fn clause<'rows, B: Budget>(
             ty: port.ty(store, *subject, budget)?,
             bound: Bound::Outlives(port.region(*shorter, budget)?),
         },
+        s::Requirement::ProjectionEqual { projection, value } => Predicate {
+            ty: port.ty(store, *projection, budget)?,
+            bound: Bound::ProjectionEqual(port.ty(store, *value, budget)?),
+        },
         s::Requirement::Outlives(_) => {
             return Err(error(
                 "regional clauses require their separate header relation remap",

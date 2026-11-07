@@ -7,7 +7,7 @@ use super::{
 use crate::{
     body::{
         drops::values,
-        ir::{Action, Body, LocalId, Owner, Rvalue, Statement, Value, ValueId},
+        ir::{Action, Body, BorrowKind, LocalId, Owner, Rvalue, Statement, Value, ValueId},
     },
     sema::crates::SourceOriginal,
     support::crates::generics::source as s,
@@ -73,7 +73,8 @@ pub(super) fn build(
             s::ValueKind::Aggregate {fields} => Rvalue::Aggregate {variant:Some(view.nominal_variant(value.ty,&mut work.steps)?),fields:crate::body::ir::ValueList {start:fields.start,end:fields.end}},
             s::ValueKind::Scalar(_) => encoded_literals::append(view, *value, &mut body)?,
             s::ValueKind::Read(place) => Rvalue::Read(regional_records::place(view, place)?),
-            s::ValueKind::Borrow(place) => regional_records::borrow(view, place)?,
+            s::ValueKind::Borrow(place) => regional_records::borrow(view, place, BorrowKind::Immediate)?,
+            s::ValueKind::TwoPhaseBorrow(place) => regional_records::borrow(view, place, BorrowKind::TwoPhase)?,
             s::ValueKind::Constrain(value) => Rvalue::Constrain(ValueId(value)),
             s::ValueKind::Binary { .. } => binary(view, value.kind)?,
             s::ValueKind::ScalarCast(_) => {
@@ -84,6 +85,10 @@ pub(super) fn build(
             s::ValueKind::Call {signature, callee, arguments} if v4(view) => Rvalue::Call {
                 signature:view.ty(signature, &mut work.steps)?, callee:ValueId(callee),
                 arguments:crate::body::ir::ValueList {start:arguments.start, end:arguments.end},
+            },
+            s::ValueKind::Invoke {kind, signature, arguments} if view.rows().descriptor().profile().body_nodes() => Rvalue::Invoke {
+                kind, signature: view.ty(signature, &mut work.steps)?,
+                arguments: crate::body::ir::ValueList {start: arguments.start, end: arguments.end},
             },
             _ => return Err("source value operation requires its wider actual reconstruction profile"),
         },
@@ -426,66 +431,7 @@ fn ports(view: &SourceOriginal<'_>, body: &Body, steps: &mut usize) -> Result<()
     let mut scalar = 0;
     for (actual, record) in body.values.iter().zip(&record.values) {
         *steps = steps.saturating_add(1);
-        let same = match (actual.kind, record.kind) {
-            (Rvalue::Unit, s::ValueKind::Unit) => true,
-            (
-                Rvalue::Aggregate {
-                    variant: Some(actual),
-                    fields,
-                },
-                s::ValueKind::Aggregate { fields: raw },
-            ) => {
-                actual == view.nominal_variant(record.ty, steps)?
-                    && fields.start == raw.start
-                    && fields.end == raw.end
-            }
-            (Rvalue::Scalar(id), s::ValueKind::Scalar(_)) => {
-                encoded_literals::same(view, *record, id, body, &mut scalar)?
-            }
-            (Rvalue::Read(actual), s::ValueKind::Read(record)) => {
-                actual == regional_records::place(view, record)?
-            }
-            (
-                Rvalue::Borrow {
-                    place,
-                    kind: crate::body::ir::BorrowKind::Immediate,
-                },
-                s::ValueKind::Borrow(raw),
-            ) => {
-                regional_records::require(view)?;
-                place == regional_records::place(view, raw)?
-            }
-            (
-                Rvalue::Cast {
-                    kind,
-                    operand,
-                    direct_variant: false,
-                },
-                s::ValueKind::ScalarCast(_),
-            ) => (kind, operand) == scalar_cast(view, *record)?,
-            (Rvalue::Constrain(actual), s::ValueKind::Constrain(record)) => actual.0 == record,
-            (Rvalue::Function(actual), s::ValueKind::Function(raw)) if v4(view) => {
-                actual == view.function(raw, steps)?
-            }
-            (
-                Rvalue::Call {
-                    signature,
-                    callee,
-                    arguments,
-                },
-                s::ValueKind::Call {
-                    signature: raw,
-                    callee: c,
-                    arguments: a,
-                },
-            ) if v4(view) => {
-                signature == view.ty(raw, steps)?
-                    && callee.0 == c
-                    && arguments.start == a.start
-                    && arguments.end == a.end
-            }
-            (actual, raw) => same_binary(view, actual, raw)?,
-        };
+        let same = same_value(view, (actual, *record), body, &mut scalar, steps)?;
         if !same || actual.ty != view.ty(record.ty, steps)? {
             return Err("source original changed an actual typed value operation");
         }
@@ -494,6 +440,99 @@ fn ports(view: &SourceOriginal<'_>, body: &Body, steps: &mut usize) -> Result<()
         return Err("source original changed its complete scalar storage domain");
     }
     Ok(())
+}
+/// One rebuilt value against its record; scalars advance their shared cursor.
+fn same_value(
+    view: &SourceOriginal<'_>,
+    (actual, record): (&Value, s::Value),
+    body: &Body,
+    scalar: &mut usize,
+    steps: &mut usize,
+) -> Result<bool, &'static str> {
+    Ok(match (actual.kind, record.kind) {
+        (Rvalue::Unit, s::ValueKind::Unit) => true,
+        (
+            Rvalue::Aggregate {
+                variant: Some(actual),
+                fields,
+            },
+            s::ValueKind::Aggregate { fields: raw },
+        ) => {
+            actual == view.nominal_variant(record.ty, steps)?
+                && fields.start == raw.start
+                && fields.end == raw.end
+        }
+        (Rvalue::Scalar(id), s::ValueKind::Scalar(_)) => {
+            encoded_literals::same(view, record, id, body, scalar)?
+        }
+        (Rvalue::Read(actual), s::ValueKind::Read(record)) => {
+            actual == regional_records::place(view, record)?
+        }
+        (
+            Rvalue::Borrow {
+                place,
+                kind: BorrowKind::Immediate,
+            },
+            s::ValueKind::Borrow(raw),
+        )
+        | (
+            Rvalue::Borrow {
+                place,
+                kind: BorrowKind::TwoPhase,
+            },
+            s::ValueKind::TwoPhaseBorrow(raw),
+        ) => {
+            regional_records::require(view)?;
+            place == regional_records::place(view, raw)?
+        }
+        (
+            Rvalue::Cast {
+                kind,
+                operand,
+                direct_variant: false,
+            },
+            s::ValueKind::ScalarCast(_),
+        ) => (kind, operand) == scalar_cast(view, record)?,
+        (Rvalue::Constrain(actual), s::ValueKind::Constrain(record)) => actual.0 == record,
+        (Rvalue::Function(actual), s::ValueKind::Function(raw)) if v4(view) => {
+            actual == view.function(raw, steps)?
+        }
+        (
+            Rvalue::Call {
+                signature,
+                callee,
+                arguments,
+            },
+            s::ValueKind::Call {
+                signature: raw,
+                callee: c,
+                arguments: a,
+            },
+        ) if v4(view) => {
+            signature == view.ty(raw, steps)?
+                && callee.0 == c
+                && arguments.start == a.start
+                && arguments.end == a.end
+        }
+        (
+            Rvalue::Invoke {
+                kind,
+                signature,
+                arguments,
+            },
+            s::ValueKind::Invoke {
+                kind: k,
+                signature: raw,
+                arguments: a,
+            },
+        ) if view.rows().descriptor().profile().body_nodes() => {
+            kind == k
+                && signature == view.ty(raw, steps)?
+                && arguments.start == a.start
+                && arguments.end == a.end
+        }
+        (actual, raw) => same_binary(view, actual, raw)?,
+    })
 }
 fn same_action(a: Action, b: Action) -> bool {
     match (a, b) {

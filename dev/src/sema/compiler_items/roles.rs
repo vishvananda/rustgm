@@ -16,7 +16,7 @@ pub(crate) use freezing::predicate as freeze_predicate;
 pub(crate) use glue::member as drop_glue_member;
 pub(super) mod admitted_headers;
 mod invocation;
-pub(crate) use invocation::definition as callable_role;
+pub(crate) use invocation::{definition as callable_role, output as callable_output_role};
 mod unsizing;
 use super::Catalog;
 use crate::{
@@ -29,7 +29,7 @@ use crate::{
     sema::model::{Declarations, Function},
     support::{bindings::LangItem, call_traits::CallTrait},
     syntax::{ast::Kind as Syntax, item::ItemKind},
-    types::{Kind, TypeId, parameters::predicates::Bound},
+    types::{Kind, TypeId},
 };
 pub(crate) use unsizing::{kind as unsizing_role, predicate as unsizing_predicate};
 

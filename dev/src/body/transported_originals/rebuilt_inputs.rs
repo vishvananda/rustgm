@@ -95,6 +95,36 @@ impl<'a, 'b> Expected<'a, 'b> {
             })
         })
     }
+    /// Version thirteen lifts only a vacuous clause binder, which parenthesized
+    /// callable sugar opens even when it binds no region. A declared result
+    /// binding is not a builtin debt: each caller proves the imported header's
+    /// own clauses, and the original's environment assumes it.
+    fn declared_predicate(&self, clause: Clause) -> Result<Option<Predicate>, &'static str> {
+        let body_nodes = self.view.rows().descriptor().profile().body_nodes();
+        let predicate = match clause {
+            Clause::Predicate(predicate) => predicate,
+            Clause::ForAll(id) if body_nodes => {
+                let scoped = self
+                    .facts
+                    .types
+                    .quantified(id)
+                    .ok_or("source quantified declaration debt is unknown")?;
+                if scoped.bound_regions != 0 {
+                    return Err(
+                        "source quantified declaration debt requires its wider original profile",
+                    );
+                }
+                scoped.predicate
+            }
+            _ => {
+                return Err(
+                    "source quantified declaration debt requires its wider original profile",
+                );
+            }
+        };
+        let binding = matches!(predicate.bound, Bound::ProjectionEqual(_));
+        Ok((!(body_nodes && binding)).then_some(predicate))
+    }
     fn predicates<'s>(
         &'s self,
         steps: &'s mut usize,
@@ -109,36 +139,56 @@ impl<'a, 'b> Expected<'a, 'b> {
             .saturating_add(self.declared.len())
             .saturating_add(record.parameters.len())
             .saturating_add(self.ports());
-        (0..count).map(move |mut index| {
-            *steps = steps.saturating_add(1);
-            if index < builtin.len() {
-                let input = &builtin[index];
-                return Ok(Some((self.view.input_site(input.site, steps)?, self.view.predicate(&input.value, steps)?)));
-            }
-            index -= builtin.len();
-            if index < self.declared.len() {
-                let input = self.declared.get(index).ok_or("source original omitted its complete declaration debt")?;
-                if matches!(input.value, Clause::UnstableFeature(_)) {
-                    // Retained in the whole imported header and its environment;
-                    // callee_premises discharges it for each actual caller/instance.
-                    // It is not a builtin/type Copy query.
-                    return Ok(None);
+        (0..count)
+            .map(move |mut index| {
+                *steps = steps.saturating_add(1);
+                if index < builtin.len() {
+                    let input = &builtin[index];
+                    return Ok(Some((
+                        self.view.input_site(input.site, steps)?,
+                        self.view.predicate(&input.value, steps)?,
+                    )));
                 }
-                let Clause::Predicate(predicate) = input.value else {
-                    return Err("source quantified declaration debt requires its wider original profile");
+                index -= builtin.len();
+                if index < self.declared.len() {
+                    let input = self
+                        .declared
+                        .get(index)
+                        .ok_or("source original omitted its complete declaration debt")?;
+                    if matches!(input.value, Clause::UnstableFeature(_)) {
+                        // Retained in the whole imported header and its environment;
+                        // callee_premises discharges it for each actual caller/instance.
+                        // It is not a builtin/type Copy query.
+                        return Ok(None);
+                    }
+                    return Ok(self
+                        .declared_predicate(input.value)?
+                        .map(|predicate| (input.source, predicate)));
+                }
+                index -= self.declared.len();
+                let ty = if index < record.parameters.len() {
+                    let id =
+                        self.view
+                            .parameter(record.parameters[index], &self.facts.types, steps)?;
+                    if !matches!(
+                        self.facts.types.parameter(id).map(|p| p.kind),
+                        Some(crate::types::parameters::ParameterKind::Type { sized: true })
+                    ) {
+                        return Ok(None);
+                    }
+                    self.view.slot_type(record.parameters[index], steps)?
+                } else {
+                    self.port(index - record.parameters.len(), steps)?
                 };
-                return Ok(Some((input.source, predicate)));
-            }
-            index -= self.declared.len();
-            let ty = if index < record.parameters.len() {
-                let id = self.view.parameter(record.parameters[index], &self.facts.types, steps)?;
-                if !matches!(self.facts.types.parameter(id).map(|p| p.kind), Some(crate::types::parameters::ParameterKind::Type { sized: true })) {
-                    return Ok(None);
-                }
-                self.view.slot_type(record.parameters[index], steps)?
-            } else { self.port(index - record.parameters.len(), steps)? };
-            Ok(Some((self.root, Predicate { ty, bound: self.sized })))
-        }).filter_map(Result::transpose)
+                Ok(Some((
+                    self.root,
+                    Predicate {
+                        ty,
+                        bound: self.sized,
+                    },
+                )))
+            })
+            .filter_map(Result::transpose)
     }
 }
 
@@ -350,6 +400,20 @@ fn obligation(
                 two_phase: r.two_phase,
             }),
         },
+        s::InputKind::ScopedWellFormed { ty, frame }
+            if view.rows().descriptor().profile().body_nodes()
+                && view
+                    .rows()
+                    .binders
+                    .get(frame.0 as usize)
+                    .is_some_and(|binder| binder.count == 0) =>
+        {
+            // A vacuous clause scope from parenthesized callable sugar.
+            Kind::ScopedWellFormed {
+                ty: view.ty(ty, steps)?,
+                bound_regions: 0,
+            }
+        }
         _ => return Err("source allocation/scoped obligation requires its wider original profile"),
     };
     Ok(Obligation {
@@ -553,6 +617,16 @@ fn same_kind(actual: Kind, expected: Kind) -> bool {
         (Kind::Equality(actual), Kind::Equality(expected))
         | (Kind::Outlives(actual), Kind::Outlives(expected)) => actual == expected,
         (Kind::WellFormed(actual), Kind::WellFormed(expected)) => actual == expected,
+        (
+            Kind::ScopedWellFormed {
+                ty: actual,
+                bound_regions: actual_regions,
+            },
+            Kind::ScopedWellFormed {
+                ty: expected,
+                bound_regions: expected_regions,
+            },
+        ) => actual == expected && actual_regions == expected_regions,
         (
             Kind::TypeOutlives {
                 ty: actual,

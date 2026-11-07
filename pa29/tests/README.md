@@ -71,3 +71,12 @@ in-range and aborting fresh consumers, a type opponent, an unimplemented
 opponent and the forged result-row controls. The
 `crate_linking::normalized_results` integration controls consume it; the owning
 checkpoint records candidate results.
+
+`callable-role-outcomes.json` freezes the version-thirteen callable-role packet
+under `spec/callable-roles/`: the `tuple_trait` marker, `FnOnce` with its
+declared `Output`, `FnMut` and `Fn`, generic `FnOnce`/`FnMut`/`Fn` appliers,
+fresh consumers passing function items and their own non-capturing and
+capturing closures, three opponents (a wrong result, a mutating `Fn` closure
+and a consuming `FnMut` closure), a fenced provider closure and the forged
+call-operator controls. The `crate_linking::fn_roles` integration
+controls consume it; the owning checkpoint records candidate results.

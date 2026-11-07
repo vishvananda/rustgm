@@ -33,28 +33,14 @@ impl Builder<'_, '_, '_> {
             s::ValueKind::Scalar(_) | s::ValueKind::ScalarCast(_) | s::ValueKind::Binary { .. } => {
                 Ok(())
             }
-            s::ValueKind::Read(place) => {
-                let expected = Ports::place_type(original, place, work)?;
-                self.exact_relation(original, port, site, value.ty, expected, work)?;
-                let node = self.node(original, value.ty, work)?;
-                self.coverage.copy(original.body, node, work)?;
-                let copy = self.domains.headers.rows().body_inputs
-                    [self.domains.headers.original_index(original.body)?]
-                .builtins
-                .as_ref()
-                .and_then(|b| b.source_copy.as_ref())
-                .ok_or("source Read lost its active Copy query carrier")?;
-                self.emit(
-                    port,
-                    s::InputSite::Body(site),
-                    RequiredKind::CopyQuery {
-                        ty: value.ty,
-                        declaration: copy.declaration,
-                    },
-                    work,
-                )
-            }
-            s::ValueKind::Borrow(place) => self.borrow_input(
+            s::ValueKind::Read(place) => self.read_input(
+                original,
+                OperationSite { port, site },
+                value.ty,
+                place,
+                work,
+            ),
+            s::ValueKind::Borrow(place) | s::ValueKind::TwoPhaseBorrow(place) => self.borrow_input(
                 original,
                 ports,
                 OperationSite { port, site },
@@ -99,6 +85,17 @@ impl Builder<'_, '_, '_> {
                 }
                 Ok(())
             }
+            s::ValueKind::Invoke {
+                signature,
+                arguments,
+                ..
+            } => self.invoke_inputs(
+                original,
+                OperationSite { port, site },
+                (value.ty, signature),
+                arguments,
+                work,
+            ),
             s::ValueKind::Call {
                 signature,
                 arguments,
@@ -112,6 +109,36 @@ impl Builder<'_, '_, '_> {
                 work,
             ),
         }
+    }
+    /// A read relates its exact place type and requests the active Copy query.
+    fn read_input(
+        &mut self,
+        original: &s::Original,
+        location: OperationSite,
+        ty: g::TypeRef,
+        place: s::Place,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let OperationSite { port, site } = location;
+        let expected = Ports::place_type(original, place, work)?;
+        self.exact_relation(original, port, site, ty, expected, work)?;
+        let node = self.node(original, ty, work)?;
+        self.coverage.copy(original.body, node, work)?;
+        let copy = self.domains.headers.rows().body_inputs
+            [self.domains.headers.original_index(original.body)?]
+        .builtins
+        .as_ref()
+        .and_then(|b| b.source_copy.as_ref())
+        .ok_or("source Read lost its active Copy query carrier")?;
+        self.emit(
+            port,
+            s::InputSite::Body(site),
+            RequiredKind::CopyQuery {
+                ty,
+                declaration: copy.declaration,
+            },
+            work,
+        )
     }
     fn borrow_input(
         &mut self,
@@ -172,6 +199,41 @@ impl Builder<'_, '_, '_> {
         // no loan/provenance fact is inferred from successful raw shape checks.
         super::uses::region(self.domains, &self.arena, region, Rewrite::Original, work)?;
         Ok(())
+    }
+    /// A call operator relates its untupled inputs and its value to the
+    /// caller-side signature; the receiver's own call trait is selected again
+    /// by every consumer and contributes no planned relation here.
+    fn invoke_inputs(
+        &mut self,
+        original: &s::Original,
+        location: OperationSite,
+        (result, signature): (g::TypeRef, g::TypeRef),
+        arguments: g::Range,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let OperationSite { port, site } = location;
+        let rows = self.domains.headers.rows();
+        let s::Type::Function(signature) = rows.types[signature.0 as usize] else {
+            return Err("source call operator type changed from its checked signature");
+        };
+        let [_, inputs @ ..] = arguments.slice(&original.arguments)? else {
+            return Err("source call operator lost its actual receiver");
+        };
+        let expected = signature.parameters.slice(&rows.roots)?;
+        if inputs.len() != expected.len() {
+            return Err("source call operator arguments are incomplete");
+        }
+        for (&argument, &expected) in inputs.iter().zip(expected) {
+            self.exact_relation(
+                original,
+                port,
+                site,
+                original.values[argument as usize].ty,
+                expected,
+                work,
+            )?;
+        }
+        self.exact_relation(original, port, site, result, signature.result, work)
     }
     fn call_inputs(
         &mut self,

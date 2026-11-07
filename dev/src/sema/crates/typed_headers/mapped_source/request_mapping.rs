@@ -41,6 +41,16 @@ pub(super) fn map(
         s::Requirement::Outlives(_) => {
             Err("standalone region request requires its wider source relation profile")
         }
+        s::Requirement::ProjectionEqual { projection, value } => Ok(Predicate {
+            ty: mapping
+                .ty(*projection)
+                .map_err(|_| "source request has an unknown actual type")?,
+            bound: Bound::ProjectionEqual(
+                mapping
+                    .ty(*value)
+                    .map_err(|_| "source request has an unknown actual type")?,
+            ),
+        }),
     }
 }
 impl Requests for &Graph {

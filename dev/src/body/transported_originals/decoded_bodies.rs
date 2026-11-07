@@ -161,6 +161,8 @@ pub(super) fn finish(
     environment: Arc<crate::types::parameters::environment::Environment>,
 ) -> Result<Original, Error> {
     let source = body.source;
+    super::untupled_calls::check(facts, &body, &contract, &environment)
+        .map_err(|error| report.body_error(source, error))?;
     // Imported templates have completed declarations but their exact generic
     // nominal applications still need the ordinary substituted-field demand.
     // This structural preparation supplies no formation or body permission.

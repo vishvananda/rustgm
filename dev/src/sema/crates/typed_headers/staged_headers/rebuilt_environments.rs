@@ -201,7 +201,15 @@ impl ContractParts {
         facts: &Declarations,
         budget: &mut impl super::environments::Accounting,
     ) -> Result<Arc<crate::types::parameters::environment::Environment>, Error> {
-        super::environments::prepare(facts, None, &self.parameters, &self.clauses, 0, 0, budget)
+        super::environments::prepare(
+            facts,
+            None,
+            &self.parameters,
+            (&self.clauses, false),
+            0,
+            0,
+            budget,
+        )
     }
 }
 

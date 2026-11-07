@@ -10,6 +10,8 @@ mod convention_transport;
 mod direct_calls;
 #[path = "crate_linking/exports.rs"]
 mod exports;
+#[path = "crate_linking/fn_roles.rs"]
+mod fn_roles;
 #[path = "crate_linking/fresh_packets.rs"]
 mod fresh_packets;
 #[path = "crate_linking/imported_records.rs"]

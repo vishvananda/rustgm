@@ -53,6 +53,9 @@ pub enum ValueKind {
     /// Immediate only. The producer must reject `TwoPhase` and `UniqueImmutable`;
     /// absence of a kind field must never erase their distinct semantics.
     Borrow(Place),
+    /// Version thirteen: a call operator's two-phase receiver borrow. Its
+    /// reference type decides mutability; it is never an immediate borrow.
+    TwoPhaseBorrow(Place),
     Constrain(u32),
     /// A closed primitive `as` conversion. The operand and result types determine
     /// its operation; no provider cast decision or semantic proof is serialized.
@@ -71,6 +74,15 @@ pub enum ValueKind {
         operands: OperandForm,
         left: u32,
         right: u32,
+    },
+    /// Version thirteen: a call operator. `arguments` starts with the owned or
+    /// borrowed receiver, then the untupled inputs. The signature is the
+    /// caller-side `fn(inputs) -> Output`; no selected impl, closure entry or
+    /// trait proof is serialized, and every consumer selects the call again.
+    Invoke {
+        kind: crate::support::call_traits::CallTrait,
+        signature: TypeRef,
+        arguments: Range,
     },
 }
 /// The reconstructable primitive operators. Add, Sub and Mul are checked: each

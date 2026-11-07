@@ -13,7 +13,7 @@ pub(super) fn check(
     expected: Option<(DeclarationRef, s::BinderKind)>,
     raw: g::Signature,
 ) -> Result<u32, Error> {
-    if expected.is_none() && !admitted(rows, raw) {
+    if expected.is_none() && !admitted(rows, raw, false) {
         return Err(error(
             "source callable convention/variadic form needs a wider profile",
         ));
@@ -30,7 +30,7 @@ pub(super) fn check(
             "source signature changed its exact declaration/binder kind",
         ));
     }
-    if !admitted(rows, raw) {
+    if !admitted(rows, raw, expected.is_some()) {
         return Err(error(
             "source signature convention requires its wider explicit profile",
         ));
@@ -93,7 +93,7 @@ pub(super) fn require(
         || bound_regions != frame.count
         || unsafe_ != raw.unsafe_
         || raw.variadic
-        || !admitted(rows, raw)
+        || !admitted(rows, raw, true)
         || convention != self::convention(raw)?
         || mapped(raw.result).map_err(|_| "missing actual source result type")? != result
     {
@@ -115,10 +115,14 @@ pub(super) fn require(
     Ok(())
 }
 
-fn admitted(rows: s::ValidatedView<'_>, raw: g::Signature) -> bool {
+/// Version thirteen admits rust-call only on declared signatures, which row
+/// validation restricts to the required methods of actual callable roles.
+fn admitted(rows: s::ValidatedView<'_>, raw: g::Signature, declared: bool) -> bool {
+    let profile = rows.descriptor().profile();
     !raw.variadic
         && (raw.convention == g::Convention::Rust
-            || (raw.convention == g::Convention::C && rows.descriptor().profile().definitions()))
+            || (raw.convention == g::Convention::C && profile.definitions())
+            || (raw.convention == g::Convention::RustCall && declared && profile.body_nodes()))
 }
 /// Shape conversion only. Callers authenticate profile/owner before interning.
 pub(super) fn convention(raw: g::Signature) -> Result<Convention, &'static str> {
@@ -128,8 +132,6 @@ pub(super) fn convention(raw: g::Signature) -> Result<Convention, &'static str> 
     match raw.convention {
         g::Convention::Rust => Ok(Convention::RUST),
         g::Convention::C => Ok(Convention::C),
-        g::Convention::RustCall => {
-            Err("source rust-call convention requires its wider explicit profile")
-        }
+        g::Convention::RustCall => Ok(Convention::RUST_CALL),
     }
 }

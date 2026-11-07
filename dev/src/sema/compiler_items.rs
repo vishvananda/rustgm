@@ -112,8 +112,8 @@ mod roles;
 pub(in crate::sema) use range_contract::{RangeHelper, SourceRangeMember, source_range_member};
 pub(in crate::sema) mod site_records;
 pub(in crate::sema) use roles::admitted_headers::selected_roles;
-pub(crate) use roles::callable_role;
 pub(crate) use roles::float_default;
+pub(crate) use roles::{callable_output_role, callable_role};
 pub(crate) use roles::{destruct_predicate, drop_glue_member, freeze_predicate};
 pub(crate) use roles::{unsizing_predicate, unsizing_role};
 mod comparison_contract;
@@ -301,7 +301,8 @@ impl Catalog {
             LangItem::Fn,
             LangItem::FnOnceOutput,
         ] {
-            if self.validated_language(role)?.is_none() {
+            // The neutral identity also admits a consumer's imported family.
+            if self.validated_role(role)?.is_none() {
                 return Err(
                     "source closure typing requires actual source Copy and callable declarations",
                 );
@@ -417,8 +418,7 @@ pub(crate) fn tuple_predicate(
         .types
         .trait_application(application)
         .ok_or("invalid Tuple trait application")?;
-    let Some(declaration) =
-        catalog.validated_language(crate::support::bindings::LangItem::Tuple)?
+    let Some(declaration) = catalog.validated_role(crate::support::bindings::LangItem::Tuple)?
     else {
         return Ok(false);
     };

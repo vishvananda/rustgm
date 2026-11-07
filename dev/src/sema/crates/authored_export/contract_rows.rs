@@ -161,6 +161,18 @@ impl Stage {
                     effect: Constness::Ordinary,
                 })
             }
+            Bound::ProjectionEqual(value)
+                if self.body_nodes()
+                    && matches!(
+                        facts.types.kind(predicate.ty),
+                        Some(crate::types::Kind::Projection(_))
+                    ) =>
+            {
+                Ok(s::Requirement::ProjectionEqual {
+                    projection: self.ty(facts, predicate.ty, context)?,
+                    value: self.ty(facts, value, context)?,
+                })
+            }
             _ => Err("source requirement form has no complete supported transport row"),
         }
     }

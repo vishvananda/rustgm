@@ -46,11 +46,18 @@ pub(super) fn place(view: &SourceOriginal<'_>, raw: s::Place) -> Result<Place, &
     }
 }
 
-pub(super) fn borrow(view: &SourceOriginal<'_>, raw: s::Place) -> Result<Rvalue, &'static str> {
+pub(super) fn borrow(
+    view: &SourceOriginal<'_>,
+    raw: s::Place,
+    kind: BorrowKind,
+) -> Result<Rvalue, &'static str> {
     require(view)?;
+    if kind == BorrowKind::TwoPhase && !view.rows().descriptor().profile().body_nodes() {
+        return Err("source two-phase borrows require the version-thirteen body IR profile");
+    }
     Ok(Rvalue::Borrow {
         place: place(view, raw)?,
-        kind: BorrowKind::Immediate,
+        kind,
     })
 }
 

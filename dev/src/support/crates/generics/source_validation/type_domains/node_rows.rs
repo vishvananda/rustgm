@@ -48,6 +48,11 @@ impl Builder<'_, '_> {
                     }
                 }
                 s::Type::Reference { referent, .. } => self.push_type(referent, work)?,
+                s::Type::Tuple(elements) => {
+                    for &element in elements.slice(&rows.roots)?.iter().rev() {
+                        self.push_type(element, work)?;
+                    }
+                }
                 s::Type::Function(signature) => {
                     self.push_type(signature.result, work)?;
                     for &input in signature.parameters.slice(&rows.roots)?.iter().rev() {
@@ -168,6 +173,17 @@ impl Builder<'_, '_> {
                 work,
             )?,
             s::Type::Function(signature) => self.signature(signature, work)?,
+            s::Type::Tuple(elements) => {
+                let elements = elements.slice(&rows.roots)?;
+                if elements.is_empty() {
+                    return Err("source unit type requires its scalar recipe");
+                }
+                let mut result = Summary::default();
+                for &element in elements {
+                    result = self.merge(result, self.child(element, work)?, work)?;
+                }
+                result
+            }
             s::Type::FunctionItem(application) => {
                 let child = self
                     .result

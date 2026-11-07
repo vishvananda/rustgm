@@ -212,6 +212,12 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
         s::ValueKind::Binary { .. } => {
             Err("source Binary operations require the version-thirteen body IR profile")
         }
+        s::ValueKind::TwoPhaseBorrow(_) => {
+            Err("source two-phase borrows require the version-thirteen body IR profile")
+        }
+        s::ValueKind::Invoke { .. } => {
+            Err("source call operators require the version-thirteen body IR profile")
+        }
         s::ValueKind::Call {
             signature,
             callee,

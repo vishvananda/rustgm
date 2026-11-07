@@ -44,6 +44,10 @@ pub(super) fn prepare(
                 ..
             } => application(rows, *reference, demand)?,
             s::Requirement::TypeOutlives { subject, .. } => demand(*subject)?,
+            s::Requirement::ProjectionEqual { projection, value } => {
+                demand(*projection)?;
+                demand(*value)?;
+            }
             s::Requirement::Outlives(_) | s::Requirement::UnstableFeature(_) => {}
         }
     }

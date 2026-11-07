@@ -10,7 +10,8 @@ pub(super) struct Declarations {
     pub schemas: HashMap<DefId, Schema>,
     pub members: HashMap<DefId, DefId>,
     pub inherent_members: HashMap<DefId, DefId>,
-    callables: HashMap<DefId, (CallTrait, crate::resolve::unit::NodeKey)>,
+    /// Imported callable roles have no source node.
+    callables: HashMap<DefId, (CallTrait, Option<crate::resolve::unit::NodeKey>)>,
     output: Option<DefId>,
     pub hooks: Vec<super::super::model::Function>,
     pub hook_members: Vec<(DefId, DefId)>,
@@ -91,6 +92,45 @@ impl Inventory {
         self.language.get_or_insert_default().output = output.map(|d| d.definition);
         Ok(())
     }
+    /// Publish a consumer's re-authenticated imported callable roles over its
+    /// installed imported owner graph. Members must belong to their roles.
+    pub(in crate::sema) fn register_imported_callables(
+        &mut self,
+        entries: &[(DefId, CallTrait, DefId)],
+        output: Option<DefId>,
+    ) -> Result<(), &'static str> {
+        if entries.is_empty() && output.is_none() {
+            return Ok(());
+        }
+        let language = self
+            .language
+            .as_ref()
+            .ok_or("imported callable publication lacks its imported owner graph")?;
+        if language.imported.is_none()
+            || !language.callables.is_empty()
+            || language.output.is_some()
+        {
+            return Err("imported callable publication cannot replace existing identities");
+        }
+        let once = entries
+            .iter()
+            .find(|entry| entry.1 == CallTrait::FnOnce)
+            .map(|entry| entry.0);
+        if entries
+            .iter()
+            .any(|&(definition, _, method)| self.trait_owner(method) != Some(definition))
+            || output.is_some_and(|output| once.is_none() || self.trait_owner(output) != once)
+        {
+            return Err("imported callable publication requires its actual role ownership");
+        }
+        let language = self.language.get_or_insert_default();
+        for &(definition, kind, _) in entries {
+            language.callables.insert(definition, (kind, None));
+            language.callable_definitions[kind as usize] = Some(definition);
+        }
+        language.output = output;
+        Ok(())
+    }
     pub(in crate::sema) fn library_impl_member(
         &mut self,
         owner: DefId,
@@ -136,7 +176,7 @@ impl Inventory {
         origin: crate::resolve::unit::NodeKey,
     ) {
         let language = self.language.get_or_insert_with(Default::default);
-        language.callables.insert(definition, (kind, origin));
+        language.callables.insert(definition, (kind, Some(origin)));
         language.callable_definitions[kind as usize] = Some(definition);
         if output.is_some() {
             language.output = output;
@@ -159,7 +199,7 @@ impl Inventory {
         language
             .callables
             .get(&definition)
-            .map(|&(_, origin)| origin)
+            .and_then(|&(_, origin)| origin)
             .or_else(|| language.origins.get(&definition).copied())
     }
 

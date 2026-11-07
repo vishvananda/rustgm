@@ -81,7 +81,7 @@ impl Lazy {
                 .saturating_add(original.calls.len())
                 .saturating_add(1),
         )?;
-        // A Call's result type does not include its separate applied signature.
+        // A Call's or Invoke's result type does not include its separate signature.
         // Reconstruct only this actual original's complete operation frontier.
         for root in original
             .locals
@@ -89,7 +89,8 @@ impl Lazy {
             .map(|local| local.ty)
             .chain(original.values.iter().flat_map(|value| {
                 std::iter::once(value.ty).chain(match value.kind {
-                    s::ValueKind::Call { signature, .. } => Some(signature),
+                    s::ValueKind::Call { signature, .. }
+                    | s::ValueKind::Invoke { signature, .. } => Some(signature),
                     _ => None,
                 })
             }))

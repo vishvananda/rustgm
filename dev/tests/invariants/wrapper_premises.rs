@@ -93,5 +93,19 @@ fn wrapper_contract_cannot_inject_or_replace_declared_premises() -> Result {
     let input = Requirements(vec![pair]);
     input.validate(&contract)?;
     assert!(validate(&types, execution, 2, adapter, &[(RegionId(1), pair.1)]).is_err());
+    // A source catalog's own Copy carrier adds no interface premise; a pending
+    // predicate in that carrier still does.
+    let mut carrier = crate::body::regions::BuiltinRequirements::empty();
+    contract.builtins = Some(std::sync::Arc::new(carrier.clone()));
+    input.validate(&contract)?;
+    carrier.predicates.push((
+        crate::body::ir::ProofSite::Source(source),
+        crate::types::parameters::predicates::Predicate {
+            ty: TypeId::UNIT,
+            bound: crate::types::parameters::predicates::Bound::Copy,
+        },
+    ));
+    contract.builtins = Some(std::sync::Arc::new(carrier));
+    assert!(input.validate(&contract).is_err());
     Ok(())
 }

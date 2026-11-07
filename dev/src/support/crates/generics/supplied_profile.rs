@@ -107,6 +107,7 @@ fn original_operations(rows: &SourceRows, work: &mut Work) -> Result<(), &'stati
                 value.kind,
                 s::ValueKind::Read(s::Place::Temporary(_))
                     | s::ValueKind::Borrow(s::Place::Temporary(_))
+                    | s::ValueKind::TwoPhaseBorrow(s::Place::Temporary(_))
             ) {
                 return Err("source SSA reads require their explicit v9 ordinary profile");
             }

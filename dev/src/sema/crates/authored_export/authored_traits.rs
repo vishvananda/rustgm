@@ -129,6 +129,8 @@ impl Stage {
                     if role == LangItem::AsyncDropInPlace && self.compiler_operations => {}
                 DefKind::Function if role == LangItem::FuturePoll && self.compiler_operations => {}
                 DefKind::Function if role == LangItem::CloneFn => {}
+                // FnOnce's declared result travels as its kind-9 result row.
+                DefKind::TypeAlias if role == LangItem::FnOnceOutput && self.body_nodes() => {}
                 _ => return Err("source role form is outside the complete first transport family"),
             }
         }

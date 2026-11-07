@@ -79,6 +79,10 @@ impl Arena {
                         self.applied_root(domains, application, caller, root, work)?;
                     }
                 }
+                s::Requirement::ProjectionEqual { projection, value } => {
+                    self.applied_root(domains, application, caller, *projection, work)?;
+                    self.applied_root(domains, application, caller, *value, work)?;
+                }
                 s::Requirement::TypeOutlives { .. } | s::Requirement::Outlives(_) => {
                     return Err(
                         "source applied lifetime debts require a complete wider opening profile",

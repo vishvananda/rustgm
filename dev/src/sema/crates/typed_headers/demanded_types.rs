@@ -591,6 +591,17 @@ impl<M: Storage> Worklist<M> {
                     .map_application(store, row, &|root| self.child(root), budget)
                     .map(Demand::Ready);
             }
+            s::Type::Tuple(elements) => {
+                let rows = port.rows();
+                let roots = elements.slice(&rows.roots).map_err(error)?;
+                budget.charge(roots.len().saturating_add(1))?;
+                budget.reserve(roots.len().saturating_mul(4 * size_of::<TypeId>()))?;
+                let elements = roots
+                    .iter()
+                    .map(|&root| self.child(root))
+                    .collect::<Result<Vec<_>, _>>()?;
+                Kind::Tuple(store.intern_list(&elements).map_err(error)?)
+            }
         };
         store.intern(kind).map(Demand::Ready).map_err(error)
     }
@@ -667,6 +678,11 @@ fn next(
             })
             .nth(cursor),
         s::Type::Reference { referent, .. } => (cursor == 0).then_some(referent),
+        s::Type::Tuple(elements) => elements
+            .slice(&rows.roots)
+            .map_err(error)?
+            .get(cursor)
+            .copied(),
         s::Type::Function(signature) => {
             let parameters = signature.parameters.slice(&rows.roots).map_err(error)?;
             if cursor == parameters.len() {

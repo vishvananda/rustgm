@@ -164,10 +164,20 @@ impl Coverage {
                 arena.reserve(retained::new_map::<(BodyRef, s::RegionRef), ()>(1), 0, work)?;
                 self.local_borrows.insert((body, region));
             }
-            s::InputKind::ScopedWellFormed { .. } => {
-                return Err(
-                    "source scoped operation formation requires its complete wider input profile",
-                );
+            s::InputKind::ScopedWellFormed { frame, .. } => {
+                // Profile admission permits only a vacuous clause scope, which
+                // no operation request consumes.
+                if domains
+                    .headers
+                    .rows()
+                    .binders
+                    .get(frame.0 as usize)
+                    .is_none_or(|binder| binder.count != 0)
+                {
+                    return Err(
+                        "source scoped operation formation requires its complete wider input profile",
+                    );
+                }
             }
             s::InputKind::Membership { .. }
             | s::InputKind::Equality(_)
