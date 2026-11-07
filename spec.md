@@ -6188,9 +6188,8 @@ each enum's layout and nullable policy, re-checks every variant against its
 installed enum, and over its own rebuilt CFG proves each downcast use by a
 live constructor-test fact and each reachable unreachable exit as following
 an impossible variant path or a never value.
-Record variants, negative discriminants, lifetime-generic and `must_use`
-enums and match guards stay rejected by name. Packets without enums keep their
-exact bytes.
+Record variants, negative discriminants and lifetime-generic or `must_use`
+enums stay rejected by name. Packets without enums keep their exact bytes.
 
 A version-thirteen function application may also name a tuple variant: a
 called constructor, with the same `Function` value, `Call` value and call
@@ -6227,6 +6226,26 @@ parameter declaration of that function. A header's original result is
 admitted against its body's result by shape only. Every consumer therefore
 re-proves, in the rebuilt environment, that the body's result coerces to the
 declared result.
+
+A version-thirteen original may also carry match guards.
+
+- Local kind 3 is a guard view followed by its guard ordinal. It carries no
+  declaration; its arm's binding local owns that.
+- Action nodes 2 and 3 start a guard and keep it live; their flag operand is
+  the guard ordinal. Node 4 binds a guard view `[local, place]`, and node 6
+  re-selects a pattern place `[projection, anchor]`.
+- Terminator node 1 is an imaginary edge `[real, imaginary]`. Its imaginary
+  successor never executes.
+- Guard columns follow the calls exactly when a statement starts a guard: guard
+  rows `(tested range, view range)`, then their tested places. Every guard is
+  started and owns one contiguous range of tested places and one of its own
+  guard views, and every guard view lies in its guard's range.
+
+No protection or decision proof is transported. A fresh consumer runs its own
+guard ownership proof, requires a live constructor-test fact at every bound
+view and re-selected place, and follows only real edges. As in local lowering,
+a variant whose enum has no other variant needs no test. Older profiles reject
+guard forms by name, and originals without guards keep their exact bytes.
 
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core

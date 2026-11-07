@@ -5,6 +5,23 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [provider-body guards and single-variant matches](parallel/provider-guards-transport.md)
+is a local checkpoint, not yet joined. Version 13 carries match guards in
+provider bodies:
+
+- guard view locals (local kind 3);
+- guard start, use, view-binding and select actions (nodes 2, 3, 4 and 6);
+- the imaginary edge (terminator 1);
+- guard columns after the calls, present exactly when a body starts a guard.
+
+Fresh consumers run their own guard ownership proof and require a live
+constructor-test fact at each bound view, following only real edges. A
+single-variant `match` or `let` now crosses: local lowering and the consumer
+share one rule, under which a variant with no sibling needs no test. Six
+named forgeries and every strict prefix are rejected; two sound relabels are
+accepted. Packets without guards keep their exact bytes, and PA20 passes
+1,451/1,451.
+
 Lane B [imported panic family and semiopaque rows](parallel/macro-metadata.md#imported-panic-family-and-semiopaque-rows-version-4)
 adds tag-14 version 4. A fresh 2024 consumer now runs an imported `panic!`,
 `unreachable!`, `assert!` and the wrappers around them. Each delegates to its
