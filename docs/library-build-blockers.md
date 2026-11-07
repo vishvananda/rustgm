@@ -5,6 +5,17 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [declared associated-result transport](parallel/associated-result-transport.md)
+is joined on main. Version 13 now carries trait associated results, impl
+definitions and projections as header columns. These are present only when a
+kind-9 declaration exists, so older packets keep their bytes. Fresh consumers
+re-prove each definition, check impl methods against it and normalize every
+projection themselves. Imported `Add`/`Sub`/`Mul` roles with `Output` are
+admitted. Generic `<T as Shape>::Item` and `<T as Add>::Output` bodies return 42
+natively, and the overflow client aborts, as rustc does. The language-roles
+`Output` boundary is amended. Still open: the `Fn*` roles (tuple recipes,
+rust-call), enums with match, closures and a consumer's own operator use.
+
 [Legacy editions](parallel/legacy-editions.md) (Lane B): the CLI and the target
 unit executor accept Rust 2015 and 2018. Pinned rustc froze 100 outcomes, 82 of
 which are declared RustGM expectations. Two rules are implemented: the pre-2021

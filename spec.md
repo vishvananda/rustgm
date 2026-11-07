@@ -6098,6 +6098,28 @@ formation is the owning request port of its application, and every
 well-formedness root is demanded. Profiles without these rows keep their exact
 bytes.
 
+Version thirteen also carries declared associated results. A trait's result
+is a kind-9 declaration with version eleven's header row. An implementation's
+definition is also a kind-9 declaration; its header is a definition row
+`(declaration, value)` whose value is a type recipe in the impl's own frame,
+linked after the impl's method links by its trait member. Definition rows
+follow implementation and link order. The result, definition and projection
+columns precede the optional const-body trailer exactly when the declaration
+table names a kind-9 declaration. A result admits no own inputs, formals or
+region captures; its canonical projection is `<Self as Trait<P..>>::Member`
+over the trait's own type formals, and its bounds are direct promises naming
+no trait argument. Body ports compare projection types structurally. No
+normalization, selection or conformance result is transported: a fresh
+consumer binds each definition to its trait member, re-proves its formation
+and bounds in the rebuilt impl environment, checks the impl's methods against
+the definitions and normalizes every projection itself. An imported by-value
+operator role is admitted with exactly its `Output` result and its `(Self[,
+Rhs]) -> <Self as Op[<Rhs>]>::Output` method; indexing roles stay rejected by
+name. Quantified normalization evidence that binds no region and records no
+gap or relation is its flat evidence. Earlier profiles reject associated
+results by name, and packets without kind-9 declarations keep their exact
+bytes.
+
 ## Lowering and backend facts
 
 Lower only checked, typed facts. Give every emitted instance, drop shim, vtable,
