@@ -66,6 +66,9 @@ impl Checker<'_> {
         {
             self.state.negated.insert(operand);
             self.state.checks.push(node);
+            if self.facts.source_bindings.is_some() {
+                self.source_negative_pattern(node, term)?;
+            }
             (operand, true)
         } else {
             (node, false)

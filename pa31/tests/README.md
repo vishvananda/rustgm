@@ -10,6 +10,10 @@ opponents reject for their recorded causes. Earlier setup failures are preserved
 Compiler-built Field proof, OFFSET CTFE, full reflection and transport remain
 separate demanded contracts; no RustGM candidate or native execution is claimed.
 
+`spec/source-negative-patterns/` freezes five no_core negative literal pattern
+outcomes. A negated literal pattern requires the `neg` language item and
+`T: Neg`; positive ranges need neither. The candidate matches all five.
+
 `spec/full-drop-source/` retains the complete pinned Drop source in twelve
 independently predicted providers, with four real ordinary/pinned/generic native
 traces. The selected runtime callable retains the actual provided body rather

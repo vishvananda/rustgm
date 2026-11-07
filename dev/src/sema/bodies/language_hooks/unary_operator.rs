@@ -74,6 +74,22 @@ impl Checker<'_> {
         }
     }
 
+    /// A negative literal pattern calls no method, but like rustc it still
+    /// requires the `neg` language item and proves `T: Neg` for its type.
+    pub(in crate::sema::bodies) fn source_negative_pattern(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+    ) -> Result<(), Error> {
+        let site = self.key(node);
+        let selected = compiler_items::source_neg(self.report, self.facts, site)?;
+        self.state.call_types.obligations.push((
+            node,
+            Predicate::trait_application(term, ItemId(selected.definition.0), Vec::new()),
+        ));
+        Ok(())
+    }
+
     pub(in crate::sema::bodies) fn source_scalar_unary_type(
         &self,
         node: NodeId,

@@ -25,6 +25,8 @@ mod guard_view_lowering;
 mod guard_views;
 #[path = "../../harness/native_references.rs"]
 pub(crate) mod native_references;
+#[path = "../../negative_literal_patterns.rs"]
+mod negative_literal_patterns;
 #[path = "../../patterns.rs"]
 mod patterns;
 #[path = "../../helpers/qualify.rs"]

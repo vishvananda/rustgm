@@ -1,0 +1,65 @@
+{
+ "scope": "Authored no_core reductions for negative literal patterns; not replacement core traits. rustc pat.rs requires the neg language item and registers T: Neg for a negated literal pattern.",
+ "profile": "Rust 1.98.0; x86_64-unknown-linux-gnu; panic abort; --emit=metadata; RUSTC_BOOTSTRAP for no_core; outcomes declared before execution",
+ "plan_sha256": "a81b9c2d52903066056e0cb3234383a4297b92d7a5d99f2e4fe0bdf20b21d4d9",
+ "receipt_sha256": "52e24ef9f5f260a3eb18dac77c3b67bad56a5023403118b9b36bd5a3e38dd47f",
+ "oracle_sha256": "3cae3a33f649f58e137007128990cc5f2976151bc43080688965c6eca5739dcd",
+ "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+ "rustc_version": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "predecessor": {
+  "plan_sha256": "f6865eddd9c86ae326d96bd24cfc975b75bff440289d753b0efe652ad19f9e99",
+  "receipt_sha256": "3e6617c2218b128147d8f923025bd385d629bf464d66cbc19d01a4eb336ce57c",
+  "mismatches": [
+   "positive-range-2024",
+   "ordinary-impl-2024"
+  ],
+  "cause": "setup: the positive controls lacked Clone/Copy for i32 and hit a rustc borrowck delayed-bug ICE (status 101); declared outcomes were unchanged in v2"
+ },
+ "rows": [
+  {
+   "file": "missing-range.rs",
+   "sha256": "4b92abebad1e64eb24de876a024798bc1cdc18421dfb6917ac6d56a6e57c8a19",
+   "edition": "2024",
+   "expected_status": 1,
+   "actual_status": 1,
+   "rustc_cause": "neg lang item required",
+   "rustgm": "rejected"
+  },
+  {
+   "file": "missing-literal.rs",
+   "sha256": "f72b2efef051bea8b1fdc53c1838f01a184e07dbb248e1a5e4a09a1b4649718c",
+   "edition": "2024",
+   "expected_status": 1,
+   "actual_status": 1,
+   "rustc_cause": "neg lang item required",
+   "rustgm": "rejected"
+  },
+  {
+   "file": "positive-range.rs",
+   "sha256": "5fa0dd933ef9d6da51faf4b0985b6d9a3bef14bb858e7a6a5f3f47169c19c548",
+   "edition": "2024",
+   "expected_status": 0,
+   "actual_status": 0,
+   "rustc_cause": null,
+   "rustgm": "accepted"
+  },
+  {
+   "file": "ordinary-impl.rs",
+   "sha256": "820e3506c8ab0fc6c4679f466f6c0fd60384971e90ffd3332405cc2c51a972db",
+   "edition": "2024",
+   "expected_status": 0,
+   "actual_status": 0,
+   "rustc_cause": null,
+   "rustgm": "accepted"
+  },
+  {
+   "file": "unimplemented.rs",
+   "sha256": "601e9ad2c3c274344d3de2eb6b0e9d2f7eaf3695d7b95c0dd7d7efa13f7c6362",
+   "edition": "2024",
+   "expected_status": 1,
+   "actual_status": 1,
+   "rustc_cause": "E0277 i32: Neg",
+   "rustgm": "rejected"
+  }
+ ]
+}

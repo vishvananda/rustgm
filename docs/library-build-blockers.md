@@ -14,6 +14,8 @@ fence. The original cfg-if 1.0.4 passes all analysis phases under 2018. Its
 library metadata stops on the exported `macro_rules!`, because metadata carries
 no macro definitions. That gap is edition-independent. Original rustc-demangle
 under 2015 stops on the bootstrap library model (`core::char`, `unreachable!`).
+No_core negative literal patterns now require the `neg` item and `T: Neg`, as
+rustc does (PA31 `source-negative-patterns`).
 
 Lane C [language-role transport](parallel/language-role-transport.md) is joined
 on main. Version 13 now carries spelled
