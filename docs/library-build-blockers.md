@@ -5,6 +5,35 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane B [specialization selection, user callable outputs and no_std source
+clients](parallel/specialization-nostd.md) clears 19 of the 23 failed
+"associated type requires an unambiguous implementation" sites. Lane B's census
+on base `67c01c493` (pin `bab534e4`) checks 42,250 declarations: 31 failed and
+30 blocked. Lane B's previous census had 42,122, 62 and 126. That cause falls
+from 23/25 to 4/1.
+
+- Selection follows rustc's `min_specialization` winnowing. Before the graph
+  closes, one pairwise comparison drops a candidate that another applicable
+  candidate specializes. An omitted associated type comes from the nearest
+  defining ancestor. All 14 `StepBy`, `Fuse` and `Zip` sites pass. A child
+  that overrides a final parent type is rejected by name.
+- A user callable-trait impl for a struct, or for `&mut X` whose referent is
+  not callable, is selected beside language evidence. This clears five sites
+  in `SyncView` and `array::Drain`.
+- `#![no_std]` source clients over a provider named `core` get rustc's
+  injected `core` extern-prelude entry and their edition's
+  `core::prelude::rust_20xx` glob. Rust 2021 clients pass the same gate.
+  Thirteen declared controls match rustc natively.
+- Still open:
+  - region-binding sugar (`scan.rs`, `map_windows.rs`);
+  - override conformance of a repeated `Self::Item` where-clause
+    (`iter/mod.rs:376`), a `sema::traits` fix assigned to Lane B;
+  - `control_flow.rs:427`;
+  - variant re-exports in a source-core export, which original core's
+    `prelude::v1` uses, assigned to Lane B;
+  - `--extern core=` naming the direct dependency, as rustc does. std's
+    graph passes the `rustc_std_workspace_core` shim as `core` to six units.
+
 Lane A [census batch 5](parallel/census-batch5.md) repairs six of census 5's
 causes and two that those repairs exposed. Census 6 (`1c0cac9f`) checks 42,226
 declarations, with 32 failed and 52 blocked (census 5: 42,194, 62 and 55).

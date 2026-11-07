@@ -310,6 +310,19 @@ wire flags, while ordinary unencoded trait policy fails publication/import.
 The [applicable-trait checkpoint](docs/pa31-applicable-traits-checkpoint.md) retains
 quantified-predicate work and the other assignment requirements explicitly.
 
+Selection in a crate that requests specialization follows rustc's winnowing.
+Of the applicable candidates proven for one fully known goal, a candidate that
+another applicable candidate specializes is dropped, so the most specific impl
+is selected before the graph closes. A contested pair is ordered once, by one
+pairwise comparison whose own declaration facts the selection may wait for.
+Closure later authenticates the recorded relation's source witness and its
+feature authority. Candidates that neither specializes stay ambiguous, and an
+overlap without an ordering remains a coherence error. An associated type that
+the selected impl omits comes from its nearest defining ancestor, with its
+arguments translated through each relation, as rustc's `assoc_def` does. Under
+`min_specialization` only a root may define one, so a child that overrides its
+parent's associated type is rejected.
+
 Fundamental policy belongs to the actual struct or trait and uses its distinct
 `fundamental` feature or genuine attribute-name macro allowance; `rustc_attrs`
 and sizing-language identity are not substitutes. Reuse the configured header
@@ -6379,9 +6392,16 @@ definition's parsed contract is rejected at publication. An imported `panic`,
 `unreachable` or `assert` builtin row delegates to its provider's rows through
 `$crate`, bound to the provider's crate identity. A Rust 2015 or 2018 call site
 of `unreachable` delegates to `unreachable_2015`; pre-2021 `panic` and `assert`
-call sites stay rejected by name. Source clients are admitted in Rust 2015,
-2018 and 2024, as original std's cfg-if and rustc-demangle need; a Rust 2021
-source client stays rejected. An imported row's
+call sites stay rejected by name. Source clients of every edition pass one
+gate. Each pre-2021 rule they reach is selected or rejected by name, and Rust
+2021 shares the before-2024 rules. A source client is either `#![no_core]`
+with its source feature or `#![no_std]` over a provider named `core`. In the
+second case, as for rustc, the authenticated provider is the injected `core`
+extern-prelude entry, which Rust 2015 also names as a crate-root item. That
+provider's public `prelude::rust_20xx` module for the client's own edition is
+the client's glob prelude. Injected `core` carries no `macro_use`, and no
+`--extern` alias may spell `core`. A provider without that prelude module is
+rejected by name. An imported row's
 `allow_internal_unsafe` covers only sites in its own expansion frame, never a
 nested expansion of another definition. A single `use` import binding an
 unstable imported row needs the same feature or allowance as a call of it,
