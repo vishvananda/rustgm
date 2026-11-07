@@ -131,7 +131,10 @@ pub(super) fn claim(
     if !matches!(item.kind, ItemKind::Use(_)) || context.file != owner.file {
         return Err(error("prelude_import requires its actual use item"));
     }
-    if configured.attributes.is_empty() || facts.introductions.source_prelude().is_some() {
+    if configured.attributes.is_empty()
+        || facts.introductions.source_prelude().is_some()
+        || facts.introductions.injected_prelude().is_some()
+    {
         return Err(error(
             "multiple source prelude selectors are not implemented",
         ));
@@ -236,10 +239,18 @@ impl Prelude {
 }
 impl Introductions {
     pub(super) fn has_source_prelude(&self) -> bool {
-        self.source_prelude().is_some()
+        self.source_prelude().is_some() || self.injected_prelude().is_some()
     }
     fn source_prelude(&self) -> Option<&Prelude> {
         self.item_scopes.as_deref()?.prelude.as_deref()
+    }
+    pub(super) fn injected_prelude(&self) -> Option<(DefId, ScopeId)> {
+        let injected = self.item_scopes.as_deref()?.injected?;
+        Some((injected.prelude, injected.scope))
+    }
+    /// The provider root that a `no_std` client's injected `core` names.
+    pub(super) fn injected_core(&self) -> Option<DefId> {
+        Some(self.item_scopes.as_deref()?.injected?.core)
     }
 }
 /// A phase whose lookups read the selection re-authenticates it once when it
@@ -259,6 +270,9 @@ impl Resolution {
         &self,
         package: &Package,
     ) -> Result<Option<ScopeId>, &'static str> {
+        if let Some(selected) = self.introductions.injected_prelude() {
+            return self.injected_module(package, selected);
+        }
         let Some(prelude) = self.introductions.source_prelude() else {
             return Ok(None);
         };
@@ -271,11 +285,33 @@ impl Resolution {
         &self,
         package: &Package,
     ) -> Result<Option<ScopeId>, &'static str> {
+        if let Some(selected) = self.introductions.injected_prelude() {
+            return self.injected_module(package, selected);
+        }
         let Some(prelude) = self.introductions.source_prelude() else {
             return Ok(None);
         };
         pay(package, 1, 0)?;
         self.selected_module(prelude)
+    }
+    /// The injected prelude needs no `prelude_import` request; each lookup
+    /// still pays its constant cost and rechecks the selected module row.
+    fn injected_module(
+        &self,
+        package: &Package,
+        (definition, scope): (DefId, ScopeId),
+    ) -> Result<Option<ScopeId>, &'static str> {
+        if let Some(context) = package.macro_context()? {
+            context.contracts().charge(1, 0)?;
+        }
+        if self
+            .definitions
+            .get(definition.0 as usize)
+            .is_none_or(|row| row.kind != DefKind::Module || row.members != Some(scope))
+        {
+            return Err("injected prelude module changed");
+        }
+        Ok(Some(scope))
     }
     fn selected_module(&self, prelude: &Prelude) -> Result<Option<ScopeId>, &'static str> {
         let Some((definition, scope)) = prelude.selected else {

@@ -205,6 +205,16 @@ Three frontend expectations were amended after candidate rounds 1 and 2
 (`docs/parallel/macro-metadata.md`). Plan 4 restored the two 2018 rows'
 originally declared outcomes (`docs/parallel/definition-lineage.md`).
 
+`no-std-client-outcomes.json` freezes rustc's `no_std` injection for source
+clients, under `spec/no-std-clients/`. The provider is a no_core source-core
+`core` with core's per-edition prelude modules. Native object clients in
+2015, 2018, 2021 and 2024 reach it through the injected `core` and their own
+edition's prelude glob. The opponents are a 2024-only prelude item named in
+2021, `crate::core` after 2015, a path through `std`, and a `core` without
+prelude modules. A rustc-only `compiler_builtins` stand-in serves rustc's
+injection in an empty sysroot. All thirteen outcomes were declared before any
+rustc or RustGM run of these files.
+
 `provider-guard-outcomes.json` freezes the version-thirteen provider-guard
 packet under `spec/provider-guards/`. The packet holds:
 

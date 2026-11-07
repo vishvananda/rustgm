@@ -160,6 +160,7 @@ impl Paths {
         }
         if let Some(dependencies) = dependencies {
             state.bind(package).import_crates(dependencies)?;
+            state.bind(package).inject_core()?;
         }
         let mut work = Work::new(&state.facts, package.admitted_source_bytes());
         work.observe();

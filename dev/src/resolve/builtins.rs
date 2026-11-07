@@ -393,11 +393,13 @@ impl Resolver<'_> {
                 || binding.access != Access::Public
                 || binding.origin != Origin::Direct
                 || binding.ambiguous
-                || !self
+                || !(self
                     .facts
                     .crates
                     .as_deref()?
                     .alias_root(self.package.names.get(name), binding.target)
+                    || self.package.names.get(name) == "core"
+                        && self.facts.introductions.injected_core() == Some(binding.target))
             {
                 return None;
             }

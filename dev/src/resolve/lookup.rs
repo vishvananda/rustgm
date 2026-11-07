@@ -59,7 +59,7 @@ impl Resolver<'_> {
     /// compiling crate's own edition selects the injection, as for rustc.
     pub(super) fn injected_crate(&self, name: NameId) -> bool {
         let injected = if self.package.no_std { "core" } else { "std" };
-        !self.package.uses_source_bindings()
+        (!self.package.uses_source_bindings() || self.facts.introductions.injected_core().is_some())
             && self.package.units.first().map(super::unit::Unit::edition)
                 == Some(crate::support::edition::Edition::Rust2015)
             && self.package.names.get(name) == injected

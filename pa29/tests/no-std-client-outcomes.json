@@ -1,0 +1,344 @@
+{
+  "profile": "Rust 1.98.0 x86_64-unknown-linux-gnu, -Cpanic=abort --cap-lints=allow, RUSTC_BOOTSTRAP=1, an empty sysroot with -L crate= for the injected core and compiler_builtins, per-case editions; declared 2026-11-07 before any rustc or RustGM run of these files (exploratory probes of similar shapes ran first under obj/lane-b/nostd)",
+  "plan_sha256": "7a4254da0a8fb61bb80a525fba5f8c26929767d014bff7a67304ad3a2996e1d1",
+  "oracle_sha256": "5560c4320b32f3639460564c9e6cf3a2e4668acb29dbe4ece3feed5143be18a5",
+  "oracle_runs_sha256": "42122a937b8792016b0d06a73b42b5f4522eccc721e1a63d0ece0eaea60737d3",
+  "oracle_result": "all thirteen declared rustc outcomes held natively, including 42 40 from each of the four edition clients, E0405 and two E0433 opponents and the prelude-import rejection; declared before this oracle and before any RustGM run of these files",
+  "rustc_version": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "cases": [
+    {
+      "name": "nostd-core",
+      "path": "tests/spec/no-std-clients/provider.rs",
+      "source_sha256": "ea2b3e1912cd08a78d64396c8d43111c083f23d96790a495f13ed6044cd22f14",
+      "kind": "rlib",
+      "crate": "core",
+      "edition": "2024",
+      "deps": {},
+      "source_core": true,
+      "rustc": 0,
+      "rustc_codes": [],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 0,
+      "native": false,
+      "note": "no_core source-core provider named core, with core's prelude shape: v1 re-exports Option and a macro_export row, rust_2015 through rust_2021 glob v1, and only rust_2024 adds IntoFuture"
+    },
+    {
+      "name": "nostd-builtins",
+      "path": "tests/spec/no-std-clients/builtins.rs",
+      "source_sha256": "d99ad3683a2997aebf6142c624aa25dce56e6103e4f026d3cfb0c2141fde60c2",
+      "kind": "rlib",
+      "crate": "compiler_builtins",
+      "edition": "2021",
+      "deps": {},
+      "rustc_only": true,
+      "rustc_deps": {
+        "core": "nostd-core"
+      },
+      "rustc": 0,
+      "rustc_codes": [],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "native": false,
+      "note": "rustc-only support crate: without a sysroot, rustc's no_std injection also needs an `extern crate compiler_builtins`; RustGM injects no such crate and never compiles this file"
+    },
+    {
+      "name": "nostd-2015-client",
+      "path": "tests/spec/no-std-clients/client-2015.rs",
+      "source_sha256": "2eb80fe9d5df8715dd2dbd5ae2163fecc50d89071720d5e3b93439df06a80cde",
+      "kind": "object",
+      "crate": "client",
+      "edition": "2015",
+      "deps": {},
+      "rustc_deps": {
+        "core": "nostd-core"
+      },
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "native": true,
+      "native_driver": "tests/spec/no-std-clients/native-driver.c",
+      "native_driver_sha256": "f826a9b3aa306043f0cec7848e130647bc58c11f68f216ba8f537ac5be8dac24",
+      "native_stdout": "42 40\n",
+      "rustc": 0,
+      "rustc_codes": [],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 0,
+      "note": "a 2015 no_std client reaches the injected core as a crate-root item through a use path and crate::core, and Option and forty_two! through the rust_2015 prelude glob"
+    },
+    {
+      "name": "nostd-2018-client",
+      "path": "tests/spec/no-std-clients/client.rs",
+      "source_sha256": "00cf37bd11ed0987f148ce863a1661250c23dd1d52fac5b697ec26ab80734f20",
+      "kind": "object",
+      "crate": "client",
+      "edition": "2018",
+      "deps": {},
+      "rustc_deps": {
+        "core": "nostd-core"
+      },
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "native": true,
+      "native_driver": "tests/spec/no-std-clients/native-driver.c",
+      "native_driver_sha256": "f826a9b3aa306043f0cec7848e130647bc58c11f68f216ba8f537ac5be8dac24",
+      "native_stdout": "42 40\n",
+      "rustc": 0,
+      "rustc_codes": [],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 0,
+      "note": "a 2018 no_std client reaches core through the extern prelude (core:: and ::core::) and its names through the rust_2018 prelude glob"
+    },
+    {
+      "name": "nostd-2021-client",
+      "path": "tests/spec/no-std-clients/client.rs",
+      "source_sha256": "00cf37bd11ed0987f148ce863a1661250c23dd1d52fac5b697ec26ab80734f20",
+      "kind": "object",
+      "crate": "client",
+      "edition": "2021",
+      "deps": {},
+      "rustc_deps": {
+        "core": "nostd-core"
+      },
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "native": true,
+      "native_driver": "tests/spec/no-std-clients/native-driver.c",
+      "native_driver_sha256": "f826a9b3aa306043f0cec7848e130647bc58c11f68f216ba8f537ac5be8dac24",
+      "native_stdout": "42 40\n",
+      "rustc": 0,
+      "rustc_codes": [],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 0,
+      "note": "the same client in 2021 is admitted through the same source-client gate and reads the rust_2021 prelude"
+    },
+    {
+      "name": "nostd-2024-client",
+      "path": "tests/spec/no-std-clients/client.rs",
+      "source_sha256": "00cf37bd11ed0987f148ce863a1661250c23dd1d52fac5b697ec26ab80734f20",
+      "kind": "object",
+      "crate": "client",
+      "edition": "2024",
+      "deps": {},
+      "rustc_deps": {
+        "core": "nostd-core"
+      },
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "native": true,
+      "native_driver": "tests/spec/no-std-clients/native-driver.c",
+      "native_driver_sha256": "f826a9b3aa306043f0cec7848e130647bc58c11f68f216ba8f537ac5be8dac24",
+      "native_stdout": "42 40\n",
+      "rustc": 0,
+      "rustc_codes": [],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 0,
+      "note": "the same client in 2024 reads the rust_2024 prelude"
+    },
+    {
+      "name": "nostd-future-client",
+      "path": "tests/spec/no-std-clients/future.rs",
+      "source_sha256": "028f83e5c0509ea1a5d7a154d35fc5547263b588d9be816f6372d9daaf8671ea",
+      "kind": "rlib",
+      "crate": "client",
+      "edition": "2024",
+      "deps": {},
+      "rustc_deps": {
+        "core": "nostd-core"
+      },
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "rustc": 0,
+      "rustc_codes": [],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 0,
+      "native": false,
+      "note": "a 2024 client implements IntoFuture, which only the rust_2024 prelude carries"
+    },
+    {
+      "name": "nostd-future-2021-client",
+      "path": "tests/spec/no-std-clients/future.rs",
+      "source_sha256": "028f83e5c0509ea1a5d7a154d35fc5547263b588d9be816f6372d9daaf8671ea",
+      "kind": "rlib",
+      "crate": "client",
+      "edition": "2021",
+      "deps": {},
+      "rustc_deps": {
+        "core": "nostd-core"
+      },
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0405"
+      ],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 1,
+      "frontend_diagnostic": "unresolved type name",
+      "native": false,
+      "note": "opponent: the same file in 2021 reads rust_2021, which lacks IntoFuture"
+    },
+    {
+      "name": "nostd-crate-core-2015-client",
+      "path": "tests/spec/no-std-clients/crate-core.rs",
+      "source_sha256": "2ffcbd8786a3ee5b74f8276b812d3040bfe5e0eb22f265fad949540e44c27129",
+      "kind": "rlib",
+      "crate": "client",
+      "edition": "2015",
+      "deps": {},
+      "rustc_deps": {
+        "core": "nostd-core"
+      },
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "rustc": 0,
+      "rustc_codes": [],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 0,
+      "native": false,
+      "note": "crate::core names the injected crate in 2015"
+    },
+    {
+      "name": "nostd-crate-core-2018-client",
+      "path": "tests/spec/no-std-clients/crate-core.rs",
+      "source_sha256": "2ffcbd8786a3ee5b74f8276b812d3040bfe5e0eb22f265fad949540e44c27129",
+      "kind": "rlib",
+      "crate": "client",
+      "edition": "2018",
+      "deps": {},
+      "rustc_deps": {
+        "core": "nostd-core"
+      },
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0433"
+      ],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 1,
+      "frontend_diagnostic": "unresolved value name",
+      "native": false,
+      "note": "opponent: from 2018 on, the injected core is not a nameable crate-root item"
+    },
+    {
+      "name": "nostd-std-client",
+      "path": "tests/spec/no-std-clients/names-std.rs",
+      "source_sha256": "575f94fdeec8bbbfb79b30d71b044c1817d8c3c67025a68b3461babff3304438",
+      "kind": "rlib",
+      "crate": "client",
+      "edition": "2024",
+      "deps": {},
+      "rustc_deps": {
+        "core": "nostd-core"
+      },
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0433"
+      ],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 1,
+      "frontend_diagnostic": "unresolved value name",
+      "native": false,
+      "note": "opponent: a no_std client has no std in its extern prelude"
+    },
+    {
+      "name": "nostd-bare-core",
+      "path": "tests/spec/no-std-clients/bare-core.rs",
+      "source_sha256": "0dd96cc6e46306e65eeeb11b49eb8a9dce67da51bfc0503f3174098e9176e5a3",
+      "kind": "rlib",
+      "crate": "core",
+      "edition": "2024",
+      "deps": {},
+      "source_core": true,
+      "rustc": 0,
+      "rustc_codes": [],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 0,
+      "native": false,
+      "note": "a no_core provider named core without core's prelude modules"
+    },
+    {
+      "name": "nostd-bare-client",
+      "path": "tests/spec/no-std-clients/bare-client.rs",
+      "source_sha256": "b498af68c0c731b16ce1a6c486ca0bd36ca87a95ecea7b1662ec406b1746a2a4",
+      "kind": "rlib",
+      "crate": "client",
+      "edition": "2024",
+      "deps": {},
+      "rustc_deps": {
+        "core": "nostd-bare-core"
+      },
+      "inventory": [
+        "nostd-bare-core"
+      ],
+      "source_client": "nostd-bare-core",
+      "rustc": 1,
+      "rustc_codes": [
+        "cannot resolve a prelude import"
+      ],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 1,
+      "frontend_diagnostic": "no_std source client's core provider lacks its edition prelude",
+      "native": false,
+      "note": "opponent: the injected prelude glob needs prelude::rust_2024 in the provider; rustc also reports E0152 because the shared compiler_builtins support crate loads nostd-core beside it"
+    }
+  ]
+}

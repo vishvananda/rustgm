@@ -24,6 +24,7 @@ pub mod load;
 mod lookup;
 pub mod model;
 mod prelude_scope;
+mod standard_imports;
 pub use crate::support::names;
 #[path = "unstable_aliases.rs"]
 mod alias_gates;

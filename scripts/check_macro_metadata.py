@@ -13,7 +13,8 @@ MANIFESTS = [ROOT / 'pa29/tests/macro-metadata-outcomes.json',
              ROOT / 'pa29/tests/builtin-macro-rows-outcomes.json',
              ROOT / 'pa29/tests/macro-reexport-outcomes.json',
              ROOT / 'pa29/tests/macro-stability-outcomes.json',
-             ROOT / 'pa29/tests/imported-panic-outcomes.json']
+             ROOT / 'pa29/tests/imported-panic-outcomes.json',
+             ROOT / 'pa29/tests/no-std-client-outcomes.json']
 SOURCE_PROFILE = 'module-bodies-v13'
 
 
@@ -65,7 +66,13 @@ def rust_command(case, libraries, folder):
                '--target=x86_64-unknown-linux-gnu', '--cap-lints=allow', '-C', 'panic=abort',
                '--crate-name', case['crate'], '-C', 'metadata=' + case['name'].replace('-', '_'),
                '-L', f'dependency={folder}']
-    for alias, dependency in case['deps'].items():
+    # A no_std client of a source provider has no sysroot: rustc finds its
+    # injected core by --extern and compiler_builtins in the oracle folder.
+    if case.get('rustc_sysroot') == 'empty':
+        sysroot = folder / 'empty-sysroot'
+        sysroot.mkdir(exist_ok=True)
+        command += ['--sysroot', sysroot, '-L', f'crate={folder}']
+    for alias, dependency in {**case['deps'], **case.get('rustc_deps', {})}.items():
         command += ['--extern', f'{alias}={libraries[dependency]}']
     return command
 
@@ -133,6 +140,10 @@ def qualify_case(check, case, state, native):
     if sha(source) != case['source_sha256']:
         raise ValueError(f'changed frozen source: {source}')
     name = case['name']
+    # A support crate that only the independent compiler's injection needs.
+    if case.get('rustc_only'):
+        rustc_case(check, case, rust_libraries)
+        return
     library = case['kind'] == 'rlib'
     libraries['identity:' + name] = identity(case)
     lowir = check.frontend(case, libraries)

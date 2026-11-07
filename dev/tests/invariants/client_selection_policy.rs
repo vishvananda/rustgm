@@ -72,29 +72,33 @@ fn client_identity_and_source_gate_precede_dependency_admission() -> Result {
     )?;
     request = context()?;
     rejected(
-        HEADER,
-        Edition::Rust2021,
+        "#![no_core]",
+        Edition::Rust2024,
         &request,
-        "source client requires the Rust 2024 source profile",
+        "source client requires no_core and its explicit source feature",
     )?;
-    for source in ["", "#![no_core]", "#![feature(no_core)]"] {
+    for source in ["", "#![feature(no_core)]"] {
         rejected(
             source,
             Edition::Rust2024,
             &request,
-            "source client requires no_core and its explicit source feature",
+            "source client requires no_core with its source feature or no_std over core",
         )?;
     }
     Ok(())
 }
 
-/// Original std's cfg-if (2018) and rustc-demangle (2015) are clients of core:
-/// both editions pass the edition gate and reach dependency admission, while
-/// Rust 2021, which no std unit needs, stays rejected.
+/// Original std's cfg-if (2018) and rustc-demangle (2015) are clients of core,
+/// and 2021 shares their gate: every edition reaches dependency admission.
 #[test]
-fn legacy_source_clients_pass_the_edition_gate_and_2021_stays_rejected() -> Result {
+fn source_clients_of_every_edition_pass_the_edition_gate() -> Result {
     let request = context()?;
-    for edition in [Edition::Rust2015, Edition::Rust2018] {
+    for edition in [
+        Edition::Rust2015,
+        Edition::Rust2018,
+        Edition::Rust2021,
+        Edition::Rust2024,
+    ] {
         rejected(
             HEADER,
             edition,
@@ -102,12 +106,31 @@ fn legacy_source_clients_pass_the_edition_gate_and_2021_stays_rejected() -> Resu
             "source client requires an authenticated dependency inventory",
         )?;
     }
+    Ok(())
+}
+
+/// Without `no_core`, rustc injects `core` into a `no_std` crate, so only a
+/// provider named `core` can be that crate.
+#[test]
+fn no_std_source_clients_require_their_core_provider() -> Result {
+    let mut request = context()?;
     rejected(
-        HEADER,
+        "#![no_std]",
         Edition::Rust2021,
         &request,
-        "source client requires the Rust 2024 source profile",
+        "no_std source client requires its core provider",
     )?;
+    request.mode = Mode::SourceClient {
+        provider: CrateIdentity::new("core", "provider_v1")?,
+    };
+    for edition in [Edition::Rust2015, Edition::Rust2021, Edition::Rust2024] {
+        rejected(
+            "#![no_std]",
+            edition,
+            &request,
+            "source client requires an authenticated dependency inventory",
+        )?;
+    }
     Ok(())
 }
 

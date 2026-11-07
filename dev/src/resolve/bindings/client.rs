@@ -145,15 +145,28 @@ pub(super) fn identity<'a>(
             "source client requires its distinct exact current crate identity",
         ));
     }
-    // Original std's cfg-if (2018) and rustc-demangle (2015) are clients of
-    // core; each legacy rule they reach is selected or rejected by name.
-    if unit.edition() == Edition::Rust2021 {
-        return Err(error("source client requires the Rust 2024 source profile"));
+    // Every edition reaches the same gate: each pre-2021 rule is selected or
+    // rejected by name, and 2021 shares the before-2024 rules of its contexts.
+    if no_core {
+        if !features.has(Feature::NoCore) {
+            return Err(error(
+                "source client requires no_core and its explicit source feature",
+            ));
+        }
+        return Ok(current);
     }
-    if !no_core || !features.has(Feature::NoCore) {
+    // Without no_core, rustc injects `core` and its edition prelude for a
+    // no_std crate, so the authenticated provider must be that core.
+    if !unit
+        .word_attribute(Some(unit.configured.ast.root), "no_std")
+        .map_err(|e| Error::at(FileId(0), e.offset, e.message))?
+    {
         return Err(error(
-            "source client requires no_core and its explicit source feature",
+            "source client requires no_core with its source feature or no_std over core",
         ));
+    }
+    if provider.name() != "core" {
+        return Err(error("no_std source client requires its core provider"));
     }
     Ok(current)
 }

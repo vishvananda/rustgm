@@ -10,6 +10,8 @@ use crate::{
 #[derive(Default)]
 pub(crate) struct ItemScopes {
     pub(super) prelude: Option<Box<super::prelude_scope::Prelude>>,
+    /// The `core` crate and edition prelude injected for a `no_std` client.
+    pub(super) injected: Option<super::standard_imports::Injected>,
     introduced: HashMap<ScopeId, ExpansionId>,
     definitions: Vec<DefinitionSite>,
     /// Original item/statement-macro blocks remain lookup boundaries even when
