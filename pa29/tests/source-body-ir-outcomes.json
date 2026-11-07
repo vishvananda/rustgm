@@ -1,0 +1,202 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "providers": [
+    {
+      "file": "spec/source-body-ir/provider.rs",
+      "sha256": "505451bd74e3dcd270b09f9b1f7db69c15980735214eab1996dd75bae6229f66"
+    },
+    {
+      "file": "spec/source-body-ir/wire.rs",
+      "sha256": "731a0950ff1b1a2d82db11a31f6d37791cd7e7dcb5bc92342e8995cd2058094e"
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "cases": [
+    {
+      "file": "spec/source-body-ir/grade-low.rs",
+      "provider": "spec/source-body-ir/provider.rs",
+      "accepted": true,
+      "native_exit": 3,
+      "sha256": "911d505548716088e714437746ad563c8b664217050273dd616ff2b4dbd5d43e"
+    },
+    {
+      "file": "spec/source-body-ir/grade-edge.rs",
+      "provider": "spec/source-body-ir/provider.rs",
+      "accepted": true,
+      "native_exit": 41,
+      "sha256": "b235171e5b20189fdb569d72366abb18354b01ed1c62923f2a7afd7abb033c2e"
+    },
+    {
+      "file": "spec/source-body-ir/grade-high.rs",
+      "provider": "spec/source-body-ir/provider.rs",
+      "accepted": true,
+      "native_exit": 44,
+      "sha256": "47213304faa17b170067413d028f7d3d3e2dd7c63c9e21d832e5f0551abfd77b"
+    },
+    {
+      "file": "spec/source-body-ir/band-middle.rs",
+      "provider": "spec/source-body-ir/provider.rs",
+      "accepted": true,
+      "native_exit": 32,
+      "sha256": "2915c14b8789a17fd2f8103a4b3b616e4e4acd3cebf304d1430c8fd5093a2106"
+    },
+    {
+      "file": "spec/source-body-ir/band-over.rs",
+      "provider": "spec/source-body-ir/provider.rs",
+      "accepted": true,
+      "native_exit": 36,
+      "sha256": "91e48844d8fd221a65cf05c05331a8a8704a09ec8ea9139cd24d619fc483ab26"
+    },
+    {
+      "file": "spec/source-body-ir/exact-hit.rs",
+      "provider": "spec/source-body-ir/provider.rs",
+      "accepted": true,
+      "native_exit": 21,
+      "sha256": "efdd941225e8ba9b0d2b597c58194db00022456e60808f4c31babbe9b3850a8f"
+    },
+    {
+      "file": "spec/source-body-ir/exact-bool.rs",
+      "provider": "spec/source-body-ir/provider.rs",
+      "accepted": true,
+      "native_exit": 23,
+      "sha256": "2379fd70d929e14072f93e8d10e0e4b05f3d6efd770f508533f9e17ca057c6f9"
+    },
+    {
+      "file": "spec/source-body-ir/either-or.rs",
+      "provider": "spec/source-body-ir/provider.rs",
+      "accepted": true,
+      "native_exit": 24,
+      "sha256": "d7e0737705119c70f9b10fd5b07fcaa4516f40777808ffd5dfde2a926d61321a"
+    },
+    {
+      "file": "spec/source-body-ir/either-hit.rs",
+      "provider": "spec/source-body-ir/provider.rs",
+      "accepted": true,
+      "native_exit": 38,
+      "sha256": "1a14cfd82b2e40cd3c0aed988b2be6b64d29332a6d8781138cb89ce44102aff6"
+    },
+    {
+      "file": "spec/source-body-ir/letter-hit.rs",
+      "provider": "spec/source-body-ir/provider.rs",
+      "accepted": true,
+      "native_exit": 27,
+      "sha256": "2f7b3050afb84be7d9ac83792239d80e002ca03996a1e6073048b0881d1f158e"
+    },
+    {
+      "file": "spec/source-body-ir/letter-miss.rs",
+      "provider": "spec/source-body-ir/provider.rs",
+      "accepted": true,
+      "native_exit": 30,
+      "sha256": "bd8feed34cd6d9c686e01984a42b76310a8cf19b14ea0e57b4e062e4f8fa9ed0"
+    },
+    {
+      "file": "spec/source-body-ir/flag-off.rs",
+      "provider": "spec/source-body-ir/provider.rs",
+      "accepted": true,
+      "native_exit": 14,
+      "sha256": "a5f0e37fc293f78efab49f9ebb94aa9f938afc7cc2f43feda81a878a3f28caf6"
+    },
+    {
+      "file": "spec/source-body-ir/exact-hit.rs",
+      "provider": "spec/source-body-ir/wire.rs",
+      "accepted": true,
+      "native_exit": 21,
+      "sha256": "efdd941225e8ba9b0d2b597c58194db00022456e60808f4c31babbe9b3850a8f"
+    },
+    {
+      "file": "spec/source-body-ir/mismatch.rs",
+      "provider": "spec/source-body-ir/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "sha256": "629f1aeb28956096f5f5b32a0acb7ddde947e30a5b99631a9ec3e07ec3856315",
+      "required_rustc_error": "E0308",
+      "candidate_diagnostic": "incompatible types"
+    },
+    {
+      "file": "spec/source-body-ir/copyless.rs",
+      "provider": "spec/source-body-ir/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "sha256": "9de31336f57eb767df79048771705d786c3ed658acd657946a4ace7229cae0b4",
+      "required_rustc_error": "E0277",
+      "candidate_diagnostic": "trait obligation requires"
+    }
+  ],
+  "equivalence": {
+    "description": "Each positive source-branches client consumes a module-bodies-v13 export of its provider with LowIR byte-identical to its module-branches-v12 consumer and the same native exit.",
+    "providers": [
+      "spec/source-branches/provider.rs",
+      "spec/source-branches/wait.rs"
+    ]
+  },
+  "older_profiles": {
+    "module-branches-v12 and module-nominals-v10 export of spec/source-body-ir/provider.rs": "rejected: source Binary operations require the version-thirteen body IR profile",
+    "byte_identity": "module-branches-v12 exports of spec/source-branches/{provider,wait,spin}.rs and the module-nominals-v10 export of spin.rs equal the main 2947cc817 baseline bytes"
+  },
+  "wire_controls": [
+    {
+      "mutation": "binary operator flag 9 (Add)",
+      "expected": "encoded checked arithmetic or shift Rvalue::Binary is not reconstructable by this consumer"
+    },
+    {
+      "mutation": "binary operator flag 200",
+      "expected": "body IR binary node has an unknown operator"
+    },
+    {
+      "mutation": "binary operand form flag 5",
+      "expected": "body IR binary node has an unknown operand form"
+    },
+    {
+      "mutation": "binary operator flag 6 (BitAnd) over u8 operands with a bool result",
+      "expected": "source binary operation changed its primitive result type"
+    },
+    {
+      "mutation": "binary node code 14",
+      "expected": "encoded Rvalue::IsVariant is not reconstructable by this consumer"
+    },
+    {
+      "mutation": "binary node code 200",
+      "expected": "unknown body IR value form"
+    },
+    {
+      "mutation": "binary node code 3 with Binary operands",
+      "expected": "body IR value node has malformed operands"
+    },
+    {
+      "mutation": "first binary operand kind 14",
+      "expected": "encoded static places are not reconstructable by this consumer"
+    },
+    {
+      "mutation": "first binary operand kind 99",
+      "expected": "unknown body IR operand kind"
+    },
+    {
+      "mutation": "binary node arity 7",
+      "expected": "body IR node arity exceeds its stable bound"
+    },
+    {
+      "mutation": "right operand names the Binary value itself",
+      "expected": "rejected by consumer row validation (operand must precede its use)"
+    },
+    {
+      "mutation": "Branch terminator code 1",
+      "expected": "encoded Terminator::FalseEdge is not reconstructable by this consumer"
+    },
+    {
+      "mutation": "version byte relabelled 13 to 12",
+      "expected": "rejected: version-twelve decoder cannot read node rows"
+    },
+    {
+      "mutation": "every strict prefix",
+      "expected": "decode fails"
+    },
+    {
+      "mutation": "foreign or swapped provider owner",
+      "expected": "provider metadata is missing"
+    }
+  ]
+}

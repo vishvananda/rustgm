@@ -45,3 +45,11 @@ under `spec/source-branches/`: generic two-way, else-if, loop-exit and non-Copy
 move providers, fresh consumers at several types, move/type/Copy opponents and
 the wire-mutation anchors. The `crate_linking::branch_transport` integration
 controls consume it; the owning checkpoint records candidate results.
+
+`source-body-ir-outcomes.json` freezes the version-thirteen generic body IR
+packet under `spec/source-body-ir/`: primitive literal, or- and range-pattern
+decisions in generic providers, fresh consumers at i32 and bool, scrutinee and
+Copy opponents, the re-encoding equivalence of the source-branches packet and
+the named-rejection wire controls. The `crate_linking::node_transport`
+integration controls consume it; the owning checkpoint records candidate
+results.

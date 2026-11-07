@@ -63,6 +63,44 @@ pub enum ValueKind {
         callee: u32,
         arguments: Range,
     },
+    /// Version thirteen: a closed primitive comparison or bitwise operation. The
+    /// operand and result types decide its typed operation; no provider operator
+    /// selection, overflow decision or proof is serialized.
+    Binary {
+        operator: BinaryOperator,
+        operands: OperandForm,
+        left: u32,
+        right: u32,
+    },
+}
+/// The reconstructable primitive operators. Checked arithmetic and shifts own
+/// stable wire codes but no row form until their consumer proof exists.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum BinaryOperator {
+    Equal,
+    NotEqual,
+    Less,
+    LessEqual,
+    Greater,
+    GreaterEqual,
+    BitAnd,
+    BitOr,
+    BitXor,
+}
+impl BinaryOperator {
+    #[must_use]
+    pub const fn comparison(self) -> bool {
+        !matches!(self, Self::BitAnd | Self::BitOr | Self::BitXor)
+    }
+}
+/// Retained lexical operand form; data for promotion, never execution permission.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum OperandForm {
+    NotRequired,
+    Neither,
+    Left,
+    Right,
+    Both,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Value {
@@ -104,6 +142,50 @@ impl Value {
             return Err("source scalar cast has an invalid primitive conversion");
         }
         Ok((from, to))
+    }
+
+    /// Both operands share one closed non-unit primitive; comparisons yield bool
+    /// and bitwise operations keep their bool or integer operand type.
+    pub(crate) fn binary_types(
+        self,
+        original: &Original,
+        types: &[super::Type],
+    ) -> Result<crate::support::crates::Scalar, &'static str> {
+        use crate::support::crates::Scalar;
+        let ValueKind::Binary {
+            operator,
+            left,
+            right,
+            ..
+        } = self.kind
+        else {
+            return Err("source binary request belongs to another value operation");
+        };
+        let scalar = |value: u32| {
+            let operand = original
+                .values
+                .get(value as usize)
+                .ok_or("source binary operation lost its actual operand")?;
+            match types.get(operand.ty.0 as usize) {
+                Some(&super::Type::Scalar(ty)) if ty != Scalar::Unit => Ok(ty),
+                _ => Err("source binary operation requires closed primitive operands"),
+            }
+        };
+        let operand = scalar(left)?;
+        if scalar(right)? != operand {
+            return Err("source binary operation changed its shared operand type");
+        }
+        let result = if operator.comparison() {
+            Scalar::Bool
+        } else if matches!(operand, Scalar::Char | Scalar::F32 | Scalar::F64) {
+            return Err("source bitwise operation requires bool or integer operands");
+        } else {
+            operand
+        };
+        if types.get(self.ty.0 as usize) != Some(&super::Type::Scalar(result)) {
+            return Err("source binary operation changed its primitive result type");
+        }
+        Ok(operand)
     }
 
     pub(crate) fn scalar_value(

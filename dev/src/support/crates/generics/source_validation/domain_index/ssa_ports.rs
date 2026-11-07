@@ -130,6 +130,7 @@ fn dependency(
         s::ValueKind::Constrain(value) | s::ValueKind::ScalarCast(value) if ordinal == 0 => {
             Some(value)
         }
+        s::ValueKind::Binary { left, right, .. } => [left, right].get(ordinal).copied(),
         s::ValueKind::Aggregate { fields } => {
             fields.slice(&original.arguments)?.get(ordinal).copied()
         }

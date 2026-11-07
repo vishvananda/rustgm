@@ -116,6 +116,11 @@ fn original_operations(rows: &SourceRows, work: &mut Work) -> Result<(), &'stati
             if matches!(value.kind, s::ValueKind::ScalarCast(_)) {
                 return Err("source scalar cast requires its explicit v9 ordinary profile");
             }
+            if matches!(value.kind, s::ValueKind::Binary { .. }) {
+                return Err(
+                    "source Binary operations require the version-thirteen body IR profile",
+                );
+            }
         }
     }
     Ok(())

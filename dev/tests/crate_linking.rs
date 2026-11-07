@@ -10,6 +10,8 @@ mod convention_transport;
 mod direct_calls;
 #[path = "crate_linking/exports.rs"]
 mod exports;
+#[path = "crate_linking/fresh_packets.rs"]
+mod fresh_packets;
 #[path = "crate_linking/imported_records.rs"]
 mod imported_records;
 #[path = "crate_linking/imported_regions.rs"]
@@ -22,6 +24,8 @@ mod instantiable;
 mod named_values;
 #[path = "crate_linking/namespace_clients.rs"]
 mod namespace_clients;
+#[path = "crate_linking/node_transport.rs"]
+mod node_transport;
 #[path = "crate_linking/non_exhaustive.rs"]
 mod non_exhaustive;
 #[path = "crate_linking/packet_libraries.rs"]
@@ -34,6 +38,7 @@ mod reexports;
 mod representations;
 #[path = "crate_linking/serialized_records.rs"]
 mod source_nominals;
+
 #[path = "crate_linking/static_transport.rs"]
 mod static_transport;
 #[path = "crate_linking/transitive.rs"]

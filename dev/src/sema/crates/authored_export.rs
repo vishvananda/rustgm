@@ -140,15 +140,26 @@ pub(crate) struct Stage {
     role_installation_steps: usize,
     nominal_transport: bool,
     compiler_operations: bool,
-    /// Version twelve only: original CFGs may retain Branch and Panic exits.
-    branch_transport: bool,
+    body_transport: BodyTransport,
+}
+/// The original body vocabulary a module publication may retain.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum BodyTransport {
+    Ordinary,
+    /// Versions twelve and thirteen: original CFGs may retain Branch and Panic exits.
+    Branches,
+    /// Version thirteen: branches plus primitive Binary operations.
+    Nodes,
 }
 impl Stage {
     pub(crate) const fn nominal_transport(&self) -> bool {
         self.nominal_transport
     }
-    pub(crate) const fn branch_transport(&self) -> bool {
-        self.branch_transport
+    pub(crate) fn branch_transport(&self) -> bool {
+        self.body_transport != BodyTransport::Ordinary
+    }
+    pub(crate) fn body_nodes(&self) -> bool {
+        self.body_transport == BodyTransport::Nodes
     }
     pub(crate) fn callable_effects(&self) -> bool {
         self.functions.callable_effects
@@ -381,7 +392,17 @@ impl Stage {
         identity: &CrateIdentity,
     ) -> Result<Self, &'static str> {
         let mut stage = Self::begin_mode(report, facts, identity, ExportMode::Nominals)?;
-        stage.branch_transport = true;
+        stage.body_transport = BodyTransport::Branches;
+        Ok(stage)
+    }
+    /// The version-twelve collection; originals also keep primitive Binary values.
+    pub(crate) fn begin_module_bodies(
+        report: &Report,
+        facts: &mut Declarations,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        let mut stage = Self::begin_mode(report, facts, identity, ExportMode::Nominals)?;
+        stage.body_transport = BodyTransport::Nodes;
         Ok(stage)
     }
     fn begin_mode(
@@ -414,7 +435,7 @@ impl Stage {
                 ExportMode::Nominals | ExportMode::CompilerOperations
             ),
             compiler_operations: mode == ExportMode::CompilerOperations,
-            branch_transport: false,
+            body_transport: BodyTransport::Ordinary,
             role_installation_steps: facts
                 .source_bindings
                 .as_deref()

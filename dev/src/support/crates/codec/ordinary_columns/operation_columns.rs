@@ -1,7 +1,8 @@
 //! The ordinary move profile retains complete CFG, cleanup and owned-value rows.
 use super::{
     BodyRef, DeclarationRef, Input, Writer, allocation_columns as allocations,
-    cfg_columns as storage, crates, g, id, index_write, invoked_rows, s, write, write_copy,
+    cfg_columns as storage, crates, g, id, index_write, invoked_rows, ir_nodes, s, write,
+    write_copy,
 };
 
 /// Encoder generations, each a superset of the previous one's row vocabulary.
@@ -11,6 +12,7 @@ enum Generation {
     Safety,
     Nominals,
     Branches,
+    Bodies,
 }
 pub(super) fn original_write(out: &mut Writer, row: &s::Original) -> Result<(), &'static str> {
     original_profile(out, row, Generation::Ordinary)
@@ -23,6 +25,9 @@ pub(super) fn nominal_write(out: &mut Writer, row: &s::Original) -> Result<(), &
 }
 pub(super) fn branch_write(out: &mut Writer, row: &s::Original) -> Result<(), &'static str> {
     original_profile(out, row, Generation::Branches)
+}
+pub(super) fn body_write(out: &mut Writer, row: &s::Original) -> Result<(), &'static str> {
+    original_profile(out, row, Generation::Bodies)
 }
 fn original_profile(
     out: &mut Writer,
@@ -42,17 +47,24 @@ fn original_profile(
     write(out, &row.variables, allocations::owned_write)?;
     write(out, &row.locals, storage::local_write)?;
     write(out, &row.parameter_bindings, storage::parameter_write)?;
-    if nominals {
-        write(out, &row.projections, allocations::nominal_projection_write)?;
+    if generation == Generation::Bodies {
+        write(out, &row.projections, ir_nodes::projection_write)?;
+        write(out, &row.values, ir_nodes::value_write)?;
+        write(out, &row.statements, ir_nodes::statement_write)?;
+        write(out, &row.blocks, ir_nodes::block_write)?;
     } else {
-        write(out, &row.projections, allocations::projection_write)?;
-    }
-    write(out, &row.values, value_write)?;
-    write(out, &row.statements, statement_write)?;
-    if generation == Generation::Branches {
-        write(out, &row.blocks, storage::branch_block_write)?;
-    } else {
-        write(out, &row.blocks, storage::block_write)?;
+        if nominals {
+            write(out, &row.projections, allocations::nominal_projection_write)?;
+        } else {
+            write(out, &row.projections, allocations::projection_write)?;
+        }
+        write(out, &row.values, value_write)?;
+        write(out, &row.statements, statement_write)?;
+        if generation == Generation::Branches {
+            write(out, &row.blocks, storage::branch_block_write)?;
+        } else {
+            write(out, &row.blocks, storage::block_write)?;
+        }
     }
     write(out, &row.scopes, storage::scope_write)?;
     write(out, &row.exits, storage::exit_write)?;
@@ -90,11 +102,21 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
     let variables = read.regional_list(crates::MAX_COMPONENTS, 6, allocations::owned_read)?;
     let locals = read.list(crates::MAX_COMPONENTS, 16, storage::local_read)?;
     let parameter_bindings = read.list(crates::MAX_COMPONENTS, 12, storage::parameter_read)?;
-    let projections =
-        read.regional_list(crates::MAX_COMPONENTS, 14, allocations::projection_read)?;
-    let values = read.list(crates::MAX_COMPONENTS, 5, value_read)?;
-    let statements = read.list(crates::MAX_COMPONENTS, 9, statement_read)?;
-    let blocks = read.list(crates::MAX_COMPONENTS, 13, storage::block_read)?;
+    let (projections, values, statements, blocks) = if read.profile.body_nodes() {
+        (
+            read.regional_list(crates::MAX_COMPONENTS, 11, ir_nodes::projection_read)?,
+            read.list(crates::MAX_COMPONENTS, 6, ir_nodes::value_read)?,
+            read.list(crates::MAX_COMPONENTS, 6, ir_nodes::statement_read)?,
+            read.list(crates::MAX_COMPONENTS, 14, ir_nodes::block_read)?,
+        )
+    } else {
+        (
+            read.regional_list(crates::MAX_COMPONENTS, 14, allocations::projection_read)?,
+            read.list(crates::MAX_COMPONENTS, 5, value_read)?,
+            read.list(crates::MAX_COMPONENTS, 9, statement_read)?,
+            read.list(crates::MAX_COMPONENTS, 13, storage::block_read)?,
+        )
+    };
     let scopes = read.list(crates::MAX_COMPONENTS, 6, storage::scope_read)?;
     let exits = read.list(crates::MAX_COMPONENTS, 15, storage::exit_read)?;
     let temporaries = read.list(crates::MAX_COMPONENTS, 21, storage::temporary_read)?;
@@ -186,6 +208,9 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
         s::ValueKind::Function(application) => {
             out.u8(4)?;
             id(out, application.0)
+        }
+        s::ValueKind::Binary { .. } => {
+            Err("source Binary operations require the version-thirteen body IR profile")
         }
         s::ValueKind::Call {
             signature,

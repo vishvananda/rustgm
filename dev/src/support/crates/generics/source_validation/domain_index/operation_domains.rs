@@ -103,6 +103,11 @@ impl DomainIndex<'_, '_> {
                 prefix_value(original, operand, index, work)?;
                 value.scalar_cast_types(original, &self.headers.rows().types)?;
             }
+            s::ValueKind::Binary { left, right, .. } => {
+                prefix_value(original, left, index, work)?;
+                prefix_value(original, right, index, work)?;
+                value.binary_types(original, &self.headers.rows().types)?;
+            }
             s::ValueKind::Function(application) => {
                 self.function_use(context, application, work)?;
                 if self.headers.rows().types.get(value.ty.0 as usize)

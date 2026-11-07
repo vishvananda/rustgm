@@ -81,6 +81,9 @@ pub enum Profile {
     /// Version twelve: complete version-ten rows plus explicit two-way Branch and
     /// checked Panic CFG exits. It adds no operation, nominal or compiler grant.
     Source2024ModuleBranches,
+    /// Version thirteen: the version-twelve vocabulary in the stable generic body
+    /// IR node encoding. Allocated forms beyond that vocabulary reject explicitly.
+    Source2024ModuleBodies,
 }
 impl Profile {
     #[must_use]
@@ -96,6 +99,7 @@ impl Profile {
                 | Self::Source2024ModuleNominals
                 | Self::Source2024ModuleCompilerOperations
                 | Self::Source2024ModuleBranches
+                | Self::Source2024ModuleBodies
         )
     }
     #[must_use]
@@ -113,6 +117,7 @@ impl Profile {
                 | Self::Source2024ModuleNominals
                 | Self::Source2024ModuleCompilerOperations
                 | Self::Source2024ModuleBranches
+                | Self::Source2024ModuleBodies
         )
     }
     #[must_use]
@@ -136,6 +141,7 @@ impl Profile {
                 | Self::Source2024ModuleNominals
                 | Self::Source2024ModuleCompilerOperations
                 | Self::Source2024ModuleBranches
+                | Self::Source2024ModuleBodies
         )
     }
 }
@@ -565,7 +571,8 @@ impl ValidatedRows {
             | Profile::Source2024ModuleConversions
             | Profile::Source2024ModuleNominals
             | Profile::Source2024ModuleCompilerOperations
-            | Profile::Source2024ModuleBranches => {
+            | Profile::Source2024ModuleBranches
+            | Profile::Source2024ModuleBodies => {
                 return Err(
                     "module contracts require their complete namespace/domain/attribute columns",
                 );

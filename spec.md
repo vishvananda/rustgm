@@ -6049,6 +6049,27 @@ Metadata supplies no invented syntax, initializer bodies or generic execution
 permission. Older profiles retain their exact bytes when no named storage is
 exported.
 
+The explicit PA29 `module-branches-v12` source profile is `module-nominals-v10`
+plus typed two-way `Branch` and checked `Panic` original CFG exits. A Branch
+names a value and two successors of its own body; each fresh consumer re-proves
+the bool condition, value dominance, initialization, moves, storage, regions and
+drops per instance. Panic has no unwind or cleanup edge and lowers to the shared
+abort exit. Earlier profiles and the version-eleven compiler-operation profile
+reject both exits; a branch-free version-twelve export differs from its
+version-ten bytes only at the version byte.
+
+The explicit PA29 `module-bodies-v13` source profile carries the version-twelve
+vocabulary as stable generic typed body IR nodes: one code per Statement,
+Rvalue, Terminator and projection form in body IR order, an explicit arity, and
+self-describing operands that reference the type, declaration, application and
+region tables by index. It adds closed primitive comparison and bitwise Binary
+values. A consumer rebuilds only the forms it can prove. Every other allocated
+form, operator, operand kind or flag is rejected by name and never skipped,
+erased or approximated. A wider consumer may accept more forms without a new
+version. Supported rows keep version twelve's validation, owner/remap authority
+and per-instance proof. Their work and storage are linear in the decoded rows.
+Earlier profiles reject Binary values and keep their exact bytes.
+
 ## Lowering and backend facts
 
 Lower only checked, typed facts. Give every emitted instance, drop shim, vtable,

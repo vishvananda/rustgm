@@ -285,6 +285,8 @@ pub enum SourcePublication {
     CompilerOperations,
     /// Version twelve: version-ten rows plus explicit Branch/Panic CFG exits.
     ModuleBranches,
+    /// Version thirteen: the version-twelve rows as stable generic body IR nodes.
+    ModuleBodies,
 }
 
 /// Publish only an explicitly selected ordinary source row profile.

@@ -27,6 +27,8 @@ const CONVERSIONS_VERSION: u16 = 9;
 const NOMINALS_VERSION: u16 = 10;
 /// Version-ten rows plus explicit Branch/Panic exits; earlier tag-10 versions keep their bytes.
 const BRANCHES_VERSION: u16 = 12;
+/// Version-twelve rows as stable generic body-IR nodes; tag-10 versions up to twelve keep their bytes.
+const BODIES_VERSION: u16 = 13;
 const DEFINING_RUST2024: u8 = 0;
 
 pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
@@ -48,7 +50,8 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         | Profile::Source2024ModuleSafety
         | Profile::Source2024ModuleConversions
         | Profile::Source2024ModuleNominals
-        | Profile::Source2024ModuleBranches => TAG,
+        | Profile::Source2024ModuleBranches
+        | Profile::Source2024ModuleBodies => TAG,
         Profile::Source2024ModuleCompilerOperations => OPERATIONS_TAG,
         Profile::Source2024Provided
         | Profile::Source2024ProvidedContracts
@@ -77,6 +80,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         Profile::Source2024ModuleConversions => CONVERSIONS_VERSION,
         Profile::Source2024ModuleNominals => NOMINALS_VERSION,
         Profile::Source2024ModuleBranches => BRANCHES_VERSION,
+        Profile::Source2024ModuleBodies => BODIES_VERSION,
         Profile::Source2024ModuleCompilerOperations => OPERATIONS_VERSION,
         Profile::Source2024ModuleAvailability => AVAILABILITY_VERSION,
         Profile::Source2024ModuleContracts => MODULE_CONTRACT_VERSION,
@@ -229,6 +233,7 @@ fn availability_version(version: u16) -> bool {
             | NOMINALS_VERSION
             | OPERATIONS_VERSION
             | BRANCHES_VERSION
+            | BODIES_VERSION
     )
 }
 fn publish_availability(
@@ -245,6 +250,7 @@ fn publish_availability(
         CONVERSIONS_VERSION => Payload::from_source_module_conversions,
         NOMINALS_VERSION => Payload::from_source_module_nominals,
         BRANCHES_VERSION => Payload::from_source_module_branches,
+        BODIES_VERSION => Payload::from_source_module_bodies,
         OPERATIONS_VERSION => Payload::from_source_compiler_operations,
         DEFINITIONS_VERSION => Payload::from_source_module_definitions,
         FEATURE_PREDICATE_VERSION => Payload::from_source_module_feature_predicates,
@@ -274,6 +280,7 @@ fn availability_packet(
         CONVERSIONS_VERSION => ordinary_columns::decode_module_conversions(input, base),
         NOMINALS_VERSION => ordinary_columns::decode_module_nominals(input, base),
         BRANCHES_VERSION => ordinary_columns::decode_module_branches(input, base),
+        BODIES_VERSION => ordinary_columns::decode_module_bodies(input, base),
         OPERATIONS_VERSION => ordinary_columns::decode_compiler_operations(input, base),
         DEFINITIONS_VERSION => ordinary_columns::decode_module_definitions(input, base),
         FEATURE_PREDICATE_VERSION => {
@@ -316,6 +323,7 @@ fn defining_version(
                     | CONVERSIONS_VERSION
                     | NOMINALS_VERSION
                     | BRANCHES_VERSION
+                    | BODIES_VERSION
             ))
         || input.u8()? != DEFINING_RUST2024
     {

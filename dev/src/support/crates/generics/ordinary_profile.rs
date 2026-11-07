@@ -434,6 +434,7 @@ fn originals(
                         ValueKind::Borrow(_)
                             | ValueKind::Read(Place::Projection(_) | Place::Temporary(_))
                             | ValueKind::ScalarCast(_)
+                            | ValueKind::Binary { .. }
                     ))
             {
                 return Err("source value operation requires a wider explicit profile");

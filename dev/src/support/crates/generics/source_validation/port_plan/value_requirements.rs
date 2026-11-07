@@ -30,7 +30,9 @@ impl Builder<'_, '_, '_> {
             }
             // Domain validation checked the exact primitive type and canonical bits.
             // Formation above remains an ordinary unpaid request.
-            s::ValueKind::Scalar(_) | s::ValueKind::ScalarCast(_) => Ok(()),
+            s::ValueKind::Scalar(_) | s::ValueKind::ScalarCast(_) | s::ValueKind::Binary { .. } => {
+                Ok(())
+            }
             s::ValueKind::Read(place) => {
                 let expected = Ports::place_type(original, place, work)?;
                 self.exact_relation(original, port, site, value.ty, expected, work)?;

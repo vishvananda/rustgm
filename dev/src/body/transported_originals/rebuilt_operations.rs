@@ -75,6 +75,7 @@ pub(super) fn build(
             s::ValueKind::Read(place) => Rvalue::Read(regional_records::place(view, place)?),
             s::ValueKind::Borrow(place) => regional_records::borrow(view, place)?,
             s::ValueKind::Constrain(value) => Rvalue::Constrain(ValueId(value)),
+            s::ValueKind::Binary { .. } => binary(view, value.kind)?,
             s::ValueKind::ScalarCast(_) => {
                 let (kind, operand) = scalar_cast(view, *value)?;
                 Rvalue::Cast { kind, operand, direct_variant: false }
@@ -149,6 +150,67 @@ fn scalar_cast(
     let kind = crate::sema::crates::scalar_cast(from, to)
         .ok_or("source scalar cast has no ordinary primitive conversion")?;
     Ok((kind, ValueId(operand)))
+}
+/// Rebuild the primitive operator the validated row names; its types were
+/// re-proved by the consumer's row validation, not taken from the provider.
+fn binary(view: &SourceOriginal<'_>, kind: s::ValueKind) -> Result<Rvalue, &'static str> {
+    use crate::{body::ir::BinaryOperands as Form, lex::token::Punctuation as P};
+    let s::ValueKind::Binary {
+        operator,
+        operands,
+        left,
+        right,
+    } = kind
+    else {
+        return Err("source binary reconstruction belongs to another operation");
+    };
+    if !view.rows().descriptor().profile().body_nodes() {
+        return Err("source Binary operations require the version-thirteen body IR profile");
+    }
+    let operator = match operator {
+        s::BinaryOperator::Equal => P::EqualEqual,
+        s::BinaryOperator::NotEqual => P::BangEqual,
+        s::BinaryOperator::Less => P::Less,
+        s::BinaryOperator::LessEqual => P::LessEqual,
+        s::BinaryOperator::Greater => P::Greater,
+        s::BinaryOperator::GreaterEqual => P::GreaterEqual,
+        s::BinaryOperator::BitAnd => P::And,
+        s::BinaryOperator::BitOr => P::Or,
+        s::BinaryOperator::BitXor => P::Caret,
+    };
+    let operands = match operands {
+        s::OperandForm::NotRequired => Form::NotRequired,
+        s::OperandForm::Neither => Form::Neither,
+        s::OperandForm::Left => Form::Left,
+        s::OperandForm::Right => Form::Right,
+        s::OperandForm::Both => Form::Both,
+    };
+    Ok(Rvalue::Binary {
+        operands,
+        operator,
+        left: ValueId(left),
+        right: ValueId(right),
+    })
+}
+/// Any other pairing is a changed operation; a Binary row must rebuild exactly.
+fn same_binary(
+    view: &SourceOriginal<'_>,
+    actual: Rvalue,
+    raw: s::ValueKind,
+) -> Result<bool, &'static str> {
+    let fields = |value| match value {
+        Rvalue::Binary {
+            operands,
+            operator,
+            left,
+            right,
+        } => Some((operands, operator, left, right)),
+        _ => None,
+    };
+    if !matches!(raw, s::ValueKind::Binary { .. }) || fields(actual).is_none() {
+        return Ok(false);
+    }
+    Ok(fields(actual) == fields(binary(view, raw)?))
 }
 fn owned(
     view: &SourceOriginal<'_>,
@@ -419,7 +481,7 @@ fn ports(view: &SourceOriginal<'_>, body: &Body, steps: &mut usize) -> Result<()
                     && arguments.start == a.start
                     && arguments.end == a.end
             }
-            _ => false,
+            (actual, raw) => same_binary(view, actual, raw)?,
         };
         if !same || actual.ty != view.ty(record.ty, steps)? {
             return Err("source original changed an actual typed value operation");

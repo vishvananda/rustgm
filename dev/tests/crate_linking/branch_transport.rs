@@ -1,11 +1,7 @@
 //! Fresh CLI processes consume version-twelve Branch rows; malformed or older wires reject.
+use super::fresh_packets::{Packet, Result, relabel, unique, with_id};
 use rustgm::support::crates;
-use std::{
-    os::unix::process::ExitStatusExt,
-    path::{Path, PathBuf},
-    process::{Command, Output},
-};
-type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+use std::os::unix::process::ExitStatusExt;
 const SPEC: &str = "pa29/tests/spec/source-branches";
 /// An entry Branch row: condition value 0, yes block 1, no block 2 (unique in `wait`).
 const ENTRY_BRANCH: [u8; 13] = [3, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0];
@@ -31,159 +27,24 @@ const POSITIVE: [(&str, &str, i32, usize); 8] = [
     ("wait", "wait-ready", 5, 1),
 ];
 const COPY: &str = "impl Clone for bool { fn clone(&self) -> Self { *self } }\nimpl Copy for bool {}\nimpl Clone for i32 { fn clone(&self) -> Self { *self } }\nimpl Copy for i32 {}\n";
-struct Packet {
-    root: PathBuf,
-    folder: PathBuf,
-    provider: &'static str,
-    metadata: PathBuf,
-}
-impl Packet {
-    fn new(label: &str, provider: &'static str) -> Result<Self> {
-        let root = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .parent()
-            .ok_or("root")?
-            .to_owned();
-        let folder = root.join(format!(
-            "obj/parallel/body-branches/{label}-{provider}-{}",
-            std::process::id()
-        ));
-        std::fs::create_dir_all(&folder)?;
-        let metadata = folder.join(format!("{provider}.rgcrate"));
-        Ok(Self {
-            root,
-            folder,
+struct Branches;
+impl Branches {
+    fn packet(label: &str, provider: &'static str) -> Result<Packet> {
+        Packet::new("body-branches", SPEC, label, provider)
+    }
+    fn publish(label: &str, provider: &'static str) -> Result<Packet> {
+        Packet::publish(
+            "body-branches",
+            SPEC,
+            label,
             provider,
-            metadata,
-        })
-    }
-    fn publish(label: &str, provider: &'static str) -> Result<Self> {
-        let packet = Self::new(label, provider)?;
-        let source = packet.fixture(provider);
-        super::artifacts::checked(
-            "provider",
-            &packet.folder,
-            &mut packet.export("module-branches-v12", &source, &packet.metadata),
-        )?;
-        Ok(packet)
-    }
-    fn fixture(&self, name: &str) -> PathBuf {
-        self.root.join(format!("{SPEC}/{name}.rs"))
-    }
-    fn owner(&self) -> String {
-        format!("base@{}_v12", self.provider)
-    }
-    fn export(&self, profile: &str, source: &Path, metadata: &Path) -> Command {
-        let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
-        command
-            .args(["--emit-lowir", "--crate-type=lib", "--crate-name", "base"])
-            .arg("--crate-disambiguator")
-            .arg(format!("{}_v12", self.provider))
-            .arg("--source-core")
-            .arg(self.owner())
-            .args(["--source-profile", profile, "--metadata-output"])
-            .arg(metadata)
-            .arg("-o")
-            .arg(metadata.with_extension("lowir"))
-            .arg(source);
-        command
-    }
-    fn consumer(&self, source: &Path, label: &str, metadata: &Path, owner: &str) -> Command {
-        let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
-        command
-            .args(["--emit-lowir", "--crate-type=lib", "--crate-name", "client"])
-            .args([
-                "--crate-disambiguator",
-                "branch_client",
-                "--source-client",
-                owner,
-            ])
-            .arg("--extern")
-            .arg(format!("base={}", metadata.display()))
-            .arg("-o")
-            .arg(self.folder.join(format!("{label}.lowir")))
-            .arg(source);
-        command
-    }
-    fn client(&self, fixture: &str) -> Command {
-        self.consumer(
-            &self.fixture(fixture),
-            fixture,
-            &self.metadata,
-            &self.owner(),
+            "module-branches-v12",
         )
     }
-    fn native(&self, label: &str) -> Result<Output> {
-        let object = self.folder.join(format!("{label}.o"));
-        super::artifacts::checked(
-            "backend",
-            &self.folder,
-            Command::new("python3")
-                .arg(self.root.join("scripts/backend.py"))
-                .arg("--emit-object")
-                .arg(self.folder.join(format!("{label}.lowir")))
-                .arg("-o")
-                .arg(&object),
-        )?;
-        let observer = self.folder.join("observer.c");
-        std::fs::write(
-            &observer,
-            "int entry(void); int main(void) { return entry(); }\n",
-        )?;
-        let executable = self.folder.join(label);
-        super::artifacts::checked(
-            "link",
-            &self.folder,
-            Command::new("cc")
-                .arg(&observer)
-                .arg(&object)
-                .arg("-o")
-                .arg(&executable),
-        )?;
-        // An abnormal exit must not leave a core image in the output tree.
-        Ok(Command::new("sh")
-            .args(["-c", "ulimit -c 0; exec \"$0\""])
-            .arg(&executable)
-            .output()?)
-    }
-    fn rejected(&self, label: &str, command: &mut Command, diagnostic: &str) -> Result {
-        let output = command.output()?;
-        std::fs::write(self.folder.join(format!("{label}.stderr")), &output.stderr)?;
-        let text = String::from_utf8_lossy(&output.stderr);
-        assert_eq!(output.status.code(), Some(1), "{label}: {text}");
-        assert!(text.contains(diagnostic), "{label}: {text}");
-        let emitted = self.folder.join(format!("{label}.lowir"));
-        assert!(
-            !emitted.exists() || std::fs::metadata(emitted)?.len() == 0,
-            "{label} emitted executable LowIR after rejection"
-        );
-        Ok(())
-    }
-}
-fn unique(bytes: &[u8], pattern: &[u8]) -> Result<usize> {
-    let mut found = bytes
-        .windows(pattern.len())
-        .enumerate()
-        .filter(|(_, window)| *window == pattern)
-        .map(|(offset, _)| offset);
-    let first = found.next().ok_or("anchored row is absent")?;
-    if found.next().is_some() {
-        return Err("anchored row is ambiguous".into());
-    }
-    Ok(first)
-}
-fn relabel(bytes: &[u8], version: u8) -> Vec<u8> {
-    let mut changed = bytes.to_vec();
-    changed[13] = version;
-    changed
-}
-fn with_id(bytes: &[u8], offset: usize, value: u32) -> Vec<u8> {
-    let mut changed = bytes.to_vec();
-    changed[offset..offset + 4].copy_from_slice(&value.to_le_bytes());
-    changed
 }
 #[test]
 fn source_branches_survive_wire_and_fresh_instance_consumers() -> Result {
-    let packet = Packet::publish("frontend", "provider")?;
+    let packet = Branches::publish("frontend", "provider")?;
     let bytes = std::fs::read(&packet.metadata)?;
     assert_eq!(bytes.get(13..15), Some([12, 0].as_slice()));
     let interface = crates::decode(&bytes)?;
@@ -229,7 +90,7 @@ fn source_branches_survive_wire_and_fresh_instance_consumers() -> Result {
 }
 #[test]
 fn malformed_older_and_foreign_branch_wires_reject_in_fresh_consumers() -> Result {
-    let packet = Packet::publish("wire", "wait")?;
+    let packet = Branches::publish("wire", "wait")?;
     let bytes = std::fs::read(&packet.metadata)?;
     let row = unique(&bytes, &ENTRY_BRANCH)?;
     let ready = packet.fixture("wait-ready");
@@ -276,7 +137,7 @@ fn malformed_older_and_foreign_branch_wires_reject_in_fresh_consumers() -> Resul
     }
     let mut foreign = packet.consumer(&ready, "foreign", &packet.metadata, "base@other_v12");
     packet.rejected("foreign", &mut foreign, "provider metadata is missing")?;
-    let other = Packet::publish("wire", "provider")?;
+    let other = Branches::publish("wire", "provider")?;
     let owner = packet.owner();
     let mut swapped = packet.consumer(&ready, "swapped", &other.metadata, &owner);
     packet.rejected("swapped", &mut swapped, "provider metadata is missing")?;
@@ -284,7 +145,7 @@ fn malformed_older_and_foreign_branch_wires_reject_in_fresh_consumers() -> Resul
 }
 #[test]
 fn version_twelve_keeps_older_bytes_and_gates_panic_rows() -> Result {
-    let packet = Packet::publish("panic-gate", "spin")?;
+    let packet = Branches::publish("panic-gate", "spin")?;
     let current = std::fs::read(&packet.metadata)?;
     let older_path = packet.folder.join("older.rgcrate");
     let source = packet.fixture("spin");
@@ -317,7 +178,7 @@ fn version_twelve_keeps_older_bytes_and_gates_panic_rows() -> Result {
 }
 #[test]
 fn branch_rows_and_fresh_consumers_grow_linearly_with_exits() -> Result {
-    let packet = Packet::new("scaling", "chain")?;
+    let packet = Branches::packet("scaling", "chain")?;
     let fixture = std::fs::read_to_string(packet.fixture("wait"))?;
     let foundation = fixture
         .split("// Authored")
@@ -363,8 +224,8 @@ fn branch_rows_and_fresh_consumers_grow_linearly_with_exits() -> Result {
 #[test]
 #[ignore = "requires configured locked CPPGM object backend and host C compiler"]
 fn source_branch_instances_and_forged_panic_exit_execute_natively() -> Result {
-    let main = Packet::publish("native", "provider")?;
-    let wait = Packet::publish("native", "wait")?;
+    let main = Branches::publish("native", "provider")?;
+    let wait = Branches::publish("native", "wait")?;
     for (provider, name, exit, _) in POSITIVE {
         let packet = if provider == "wait" { &wait } else { &main };
         super::artifacts::checked(name, &packet.folder, &mut packet.client(name))?;

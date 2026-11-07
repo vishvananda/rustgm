@@ -8,6 +8,7 @@ mod exemption_wire;
 #[path = "ordinary_columns/annotation_rows.rs"]
 mod header_facts;
 mod invoked_rows;
+mod ir_nodes;
 mod namespace_rows;
 #[path = "ordinary_columns/record_wire.rs"]
 mod nominal_rows;
@@ -153,6 +154,12 @@ pub(super) fn decode_module_branches(
 ) -> Result<AvailabilityPacket, &'static str> {
     decode_availability_profile(reader, base, s::Profile::Source2024ModuleBranches)
 }
+pub(super) fn decode_module_bodies(
+    reader: &mut Reader<'_>,
+    base: usize,
+) -> Result<AvailabilityPacket, &'static str> {
+    decode_availability_profile(reader, base, s::Profile::Source2024ModuleBodies)
+}
 pub(super) fn decode_module_conversions(
     reader: &mut Reader<'_>,
     base: usize,
@@ -274,7 +281,9 @@ fn encode_profile(
     } else {
         write(out, &rows.roles, contract_columns::role_write)?;
     }
-    if rows.descriptor().profile().branches() {
+    if rows.descriptor().profile().body_nodes() {
+        write(out, &rows.originals, operation_columns::body_write)?;
+    } else if rows.descriptor().profile().branches() {
         write(out, &rows.originals, operation_columns::branch_write)?;
     } else if rows.descriptor().profile().nominals() {
         write(out, &rows.originals, operation_columns::nominal_write)?;
