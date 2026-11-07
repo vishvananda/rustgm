@@ -16,6 +16,7 @@ impl DomainIndex<'_, '_> {
         )?;
         Self::scopes(original, work)?;
         self.statements(original, work)?;
+        Self::guards(original, work)?;
         for exit in &original.exits {
             Self::location(original, exit.location, work)?;
             match exit.end {
@@ -119,6 +120,22 @@ impl DomainIndex<'_, '_> {
                 s::Action::CheckInitialized(place) | s::Action::Mention(place) => {
                     Self::place(original, place, None, work)?;
                 }
+                s::Action::GuardStart(guard) | s::Action::GuardUse(guard) => {
+                    Self::guard(original, guard)?;
+                }
+                s::Action::BindView { view, place } => {
+                    Self::place(original, place, None, work)?;
+                    let Some(g::LocalKind::Guard(guard)) =
+                        original.locals.get(view as usize).map(|local| local.kind)
+                    else {
+                        return Err("source guard view binds an ordinary local");
+                    };
+                    Self::guard(original, guard)?;
+                }
+                s::Action::Select { projection, anchor } => {
+                    Self::place(original, s::Place::Projection(projection), None, work)?;
+                    Self::place(original, anchor, None, work)?;
+                }
             }
         }
         work.charge(original.statements.len())?;
@@ -159,6 +176,69 @@ impl DomainIndex<'_, '_> {
         work.charge(covered.len())?;
         if covered.contains(&false) {
             return Err("source CFG statements have incomplete block coverage");
+        }
+        Ok(())
+    }
+    fn guard(original: &s::Original, guard: u32) -> Result<(), &'static str> {
+        if original
+            .guards
+            .as_ref()
+            .is_none_or(|guards| guard as usize >= guards.rows.len())
+        {
+            return Err("source guard ordinal is outside its guard table");
+        }
+        Ok(())
+    }
+    /// Each guard owns one contiguous range of guard-view locals and of
+    /// tested places, and is started by the body; every guard view lies in
+    /// its own guard's range. Which places a guard protects is re-proved by
+    /// the consumer's ownership checker over the rebuilt body.
+    fn guards(original: &s::Original, work: &mut Work) -> Result<(), &'static str> {
+        let Some(guards) = original.guards.as_deref() else {
+            return Ok(());
+        };
+        work.charge(
+            guards
+                .rows
+                .len()
+                .saturating_add(guards.places.len())
+                .saturating_add(original.locals.len())
+                .saturating_add(original.statements.len()),
+        )?;
+        for &place in &guards.places {
+            Self::place(original, place, None, work)?;
+        }
+        let mut started = vec![false; guards.rows.len()];
+        for statement in &original.statements {
+            if let s::Action::GuardStart(guard) = statement.action
+                && let Some(slot) = started.get_mut(guard as usize)
+            {
+                *slot = true;
+            }
+        }
+        if started.contains(&false) {
+            return Err("source guard table names a guard its body never starts");
+        }
+        let mut owner = vec![None; original.locals.len()];
+        for (ordinal, guard) in (0_u32..).zip(&guards.rows) {
+            guard.tested.slice(&guards.places)?;
+            for local in guard.views.start..guard.views.end {
+                let slot = owner
+                    .get_mut(local as usize)
+                    .ok_or("source guard views leave their body locals")?;
+                if slot.replace(ordinal).is_some() {
+                    return Err("source guard view ranges overlap");
+                }
+            }
+        }
+        for (local, owner) in original.locals.iter().zip(owner) {
+            match (local.kind, owner) {
+                (g::LocalKind::Guard(guard), Some(owner)) if guard == owner => {}
+                (g::LocalKind::Guard(_), _) | (_, Some(_)) => {
+                    return Err("source guard view belongs to another guard");
+                }
+                _ => {}
+            }
         }
         Ok(())
     }

@@ -12,7 +12,7 @@ pub(super) fn emit(
     variables: Vec<s::OwnedRegion>,
     sites: &mut Sites,
 ) -> Result<s::Original, &'static str> {
-    validate(facts, body, stage.feature_predicates())?;
+    validate(facts, body, stage.feature_predicates(), stage.body_nodes())?;
     let reference = context
         .body()
         .ok_or("source CFG has no actual original body identity")?;
@@ -36,6 +36,7 @@ pub(super) fn emit(
         arguments: Vec::new(),
         openings: Vec::new(),
         calls: Vec::new(),
+        guards: None,
     };
     locals(stage, facts, body, context, &mut raw, sites)?;
     projections(stage, facts, body, context, &mut raw)?;
@@ -44,12 +45,17 @@ pub(super) fn emit(
         stage.reserve(4 * size_of::<s::Statement>())?;
         raw.statements.push(s::Statement {
             site: sites.body(stage, statement.source)?,
-            action: action(statement.action)?,
+            action: action(statement.action, stage.body_nodes())?,
         });
     }
+    guards(stage, body, &mut raw)?;
     for block in &body.blocks {
         stage.reserve(4 * size_of::<g::Block>())?;
-        let terminator = terminator(block.terminator, stage.branch_transport())?;
+        let terminator = terminator(
+            block.terminator,
+            stage.branch_transport(),
+            stage.body_nodes(),
+        )?;
         raw.blocks.push(g::Block {
             statements: g::Range {
                 start: block.start,
@@ -130,7 +136,11 @@ fn projections(
     }
     Ok(())
 }
-fn terminator(terminator: ir::Terminator, branches: bool) -> Result<g::Terminator, &'static str> {
+fn terminator(
+    terminator: ir::Terminator,
+    branches: bool,
+    guards: bool,
+) -> Result<g::Terminator, &'static str> {
     Ok(match terminator {
         ir::Terminator::Jump(block) => g::Terminator::Jump(block.0),
         ir::Terminator::Return(value) => g::Terminator::Return(value.0),
@@ -144,8 +154,12 @@ fn terminator(terminator: ir::Terminator, branches: bool) -> Result<g::Terminato
         ir::Terminator::Branch { .. } | ir::Terminator::Panic => {
             return Err("source Branch/Panic CFG exits require the version-twelve profile");
         }
-        // Imaginary ownership edges belong to pattern decisions; no profile yet
-        // retains their guard/decision tables, so they cannot be dropped here.
+        // Imaginary ownership edges belong to pattern decisions; version
+        // thirteen retains them with the guard tables they protect.
+        ir::Terminator::FalseEdge { real, imaginary } if guards => g::Terminator::FalseEdge {
+            real: real.0,
+            imaginary: imaginary.0,
+        },
         ir::Terminator::FalseEdge { .. } => {
             return Err("source imaginary CFG edges require a wider transport profile");
         }
@@ -162,8 +176,11 @@ fn locals(
     for (index, local) in body.locals.iter().enumerate() {
         stage.charge(1)?;
         stage.prepare_type_arena(facts, local.ty)?;
+        // A guard view previews the binding its arm later declares; that
+        // binding's own local carries the declaration.
         let definition = local
             .definition
+            .filter(|_| !matches!(local.kind, ir::LocalKind::Guard(_)))
             .map(|definition| stage.declaration(definition))
             .transpose()?;
         if let Some(declaration) = definition {
@@ -189,6 +206,7 @@ fn locals(
             ir::LocalKind::Variadic => {
                 return Err("source variadic locals require a wider transport profile");
             }
+            ir::LocalKind::Guard(guard) if stage.body_nodes() => g::LocalKind::Guard(guard.0),
             ir::LocalKind::Guard(_) => {
                 return Err("source guard locals require a wider transport profile");
             }
@@ -211,6 +229,40 @@ fn locals(
     Ok(())
 }
 
+/// Version thirteen retains each guard's tested places and view range as
+/// recorded; every consumer re-validates them against its rebuilt body.
+fn guards(stage: &mut Stage, body: &Body, raw: &mut s::Original) -> Result<(), &'static str> {
+    if body.guards.is_empty() && body.guard_places.is_empty() {
+        return Ok(());
+    }
+    stage.charge(body.guards.len().saturating_add(body.guard_places.len()))?;
+    stage.reserve(
+        size_of::<s::Guards>()
+            .saturating_add(4 * size_of::<s::Guard>() * body.guards.len())
+            .saturating_add(4 * size_of::<s::Place>() * body.guard_places.len()),
+    )?;
+    let rows = body
+        .guards
+        .iter()
+        .map(|guard| s::Guard {
+            tested: g::Range {
+                start: guard.tested_start,
+                end: guard.tested_end,
+            },
+            views: g::Range {
+                start: guard.views_start,
+                end: guard.views_end,
+            },
+        })
+        .collect();
+    let places = body
+        .guard_places
+        .iter()
+        .map(|&tested| place(tested))
+        .collect::<Result<_, _>>()?;
+    raw.guards = Some(Box::new(s::Guards { rows, places }));
+    Ok(())
+}
 fn call_context(facts: &Declarations, body: &Body) -> Result<s::CallContext, &'static str> {
     let Owner::Function { definition, .. } = body.owner else {
         return Err("source call context has no function owner");
@@ -230,14 +282,19 @@ fn call_context(facts: &Declarations, body: &Body) -> Result<s::CallContext, &'s
         }
     })
 }
-fn validate(facts: &Declarations, body: &Body, scalar_values: bool) -> Result<(), &'static str> {
+fn validate(
+    facts: &Declarations,
+    body: &Body,
+    scalar_values: bool,
+    guards: bool,
+) -> Result<(), &'static str> {
     let Owner::Function { definition, .. } = body.owner else {
         return Err("source CFG has no actual function owner");
     };
     if body.const_context != facts.is_const_function(definition) {
         return Err("source original changed its actual executable const context");
     }
-    if !body.guards.is_empty() || !body.guard_places.is_empty() {
+    if !guards && (!body.guards.is_empty() || !body.guard_places.is_empty()) {
         return Err("source guard facts require a wider transport profile");
     }
     if !scalar_values && !body.scalars.is_empty() {
@@ -281,7 +338,7 @@ pub(super) fn place(place: ir::Place) -> Result<s::Place, &'static str> {
         _ => Err("source place transport supports locals and reference projections only"),
     }
 }
-fn action(action: ir::Action) -> Result<s::Action, &'static str> {
+fn action(action: ir::Action, guards: bool) -> Result<s::Action, &'static str> {
     Ok(match action {
         ir::Action::FutureTake { .. } => {
             return Err(
@@ -305,6 +362,19 @@ fn action(action: ir::Action) -> Result<s::Action, &'static str> {
         },
         ir::Action::CheckInitialized(target) => s::Action::CheckInitialized(place(target)?),
         ir::Action::Mention(target) => s::Action::Mention(place(target)?),
+        ir::Action::GuardStart(guard) if guards => s::Action::GuardStart(guard.0),
+        ir::Action::GuardUse(guard) if guards => s::Action::GuardUse(guard.0),
+        ir::Action::BindView {
+            view,
+            place: target,
+        } if guards => s::Action::BindView {
+            view: view.0,
+            place: place(target)?,
+        },
+        ir::Action::Select { projection, anchor } if guards => s::Action::Select {
+            projection: projection.0,
+            anchor: place(anchor)?,
+        },
         _ => return Err("source statement requires a wider transport profile"),
     })
 }

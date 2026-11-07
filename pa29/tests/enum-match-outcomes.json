@@ -70,7 +70,7 @@
     "payload values use the braced tuple-variant constructor `Opt::Some { 0: x }`; a called constructor item stays fenced (generated control `called`)",
     "the by-reference binding is `Opt::Some(ref x) => *x` over an owned scrutinee; `match &o` and reference parameters are outside the checkpoint",
     "`map` is a free generic function; inherent impl methods on enums are outside the checkpoint",
-    "no match guard appears in a frozen fixture; guards stay fenced (generated control `guarded`)",
+    "no match guard appears in a frozen fixture; guards stay fenced (generated control `guarded`); amended: guards now export (provider-guard-outcomes.json)",
     "clients compare results with nested literal matches; no imported comparison operator is declared"
   ],
   "older_profiles": {
@@ -88,7 +88,8 @@
     {
       "control": "provider.rs plus `large` and `pub fn guard(o: Opt<u8>) -> u8 { match o { Opt::Some(x) if large(x) => x, _ => 0 } }`",
       "expected": "rustc accepts; the candidate export rejects the guard by name",
-      "observed": "source guard facts require a wider transport profile"
+      "observed": "source guard facts require a wider transport profile",
+      "amended": "provider-guard checkpoint: provider-body match guards export under module-bodies-v13 (guard views, guard starts and uses, re-selected places, imaginary edges and guard columns), so the control now exports and a fresh consumer of `guard` reaches LowIR (see provider-guard-outcomes.json); the previous expectation was the by-name rejection `source guard facts require a wider transport profile`"
     },
     {
       "control": "6, 24 and 96 generated fieldless `Wide` variants with a constant-arm `rank` match and one client",

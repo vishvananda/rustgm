@@ -180,11 +180,12 @@ fn require(state: &[u8], node: Option<usize>) -> Result<(), &'static str> {
 // need dominance, not this chain, so it is refused before the walk (the block
 // scan is prepaid by `validate`).
 fn execute(original: &s::Original, state: &mut [u8], work: &mut Work) -> Result<(), &'static str> {
-    if original
-        .blocks
-        .iter()
-        .any(|block| matches!(block.terminator, g::Terminator::Branch { .. }))
-    {
+    if original.blocks.iter().any(|block| {
+        matches!(
+            block.terminator,
+            g::Terminator::Branch { .. } | g::Terminator::FalseEdge { .. }
+        )
+    }) {
         return Err("source SSA snapshots across two-way exits require a wider dominance proof");
     }
     let mut seen = vec![false; original.blocks.len()];
@@ -231,7 +232,7 @@ fn execute(original: &s::Original, state: &mut [u8], work: &mut Work) -> Result<
             g::Terminator::Jump(next) => block = next as usize,
             g::Terminator::Return(value) => return require(state, Some(value as usize)),
             g::Terminator::Unreachable | g::Terminator::Panic => return Ok(()),
-            g::Terminator::Branch { .. } => {
+            g::Terminator::Branch { .. } | g::Terminator::FalseEdge { .. } => {
                 return Err("source SSA snapshot walk reached an actual two-way exit");
             }
         }

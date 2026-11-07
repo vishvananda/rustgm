@@ -253,12 +253,57 @@ impl Value {
 pub enum Action {
     StorageLive(u32),
     StorageDead(u32),
-    StorageEnd { first: u32, last: u32 },
+    StorageEnd {
+        first: u32,
+        last: u32,
+    },
     Project(u32),
     Evaluate(u32),
-    Store { place: Place, value: u32 },
+    Store {
+        place: Place,
+        value: u32,
+    },
     CheckInitialized(Place),
     Mention(Place),
+    /// Version thirteen: start the attempt of the guard with this ordinal.
+    GuardStart(u32),
+    /// Version thirteen: keep that guard's protections live to its end.
+    GuardUse(u32),
+    /// Version thirteen: select a guard view's protected address.
+    BindView {
+        view: u32,
+        place: Place,
+    },
+    /// Version thirteen: re-form a pattern place relative to its scrutinee.
+    Select {
+        projection: u32,
+        anchor: Place,
+    },
+}
+impl Action {
+    /// Guard and pattern-selection actions exist only in version thirteen.
+    #[must_use]
+    pub const fn is_guard_form(self) -> bool {
+        matches!(
+            self,
+            Self::GuardStart(_) | Self::GuardUse(_) | Self::BindView { .. } | Self::Select { .. }
+        )
+    }
+}
+/// A guard protects its tested places shallowly and its views deeply.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Guard {
+    /// Range of the original's tested guard places.
+    pub tested: Range,
+    /// Range of the original's locals that are this guard's views.
+    pub views: Range,
+}
+/// Version thirteen's cold guard columns, present exactly when an original
+/// starts a guard. Tested places are proof-only and never evaluated.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Guards {
+    pub rows: Vec<Guard>,
+    pub places: Vec<Place>,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Statement {
@@ -341,4 +386,6 @@ pub struct Original {
     pub arguments: Vec<u32>,
     pub openings: Vec<RegionRef>,
     pub calls: Vec<CallRequest>,
+    /// Version thirteen: out of line, absent unless the body starts a guard.
+    pub guards: Option<Box<Guards>>,
 }

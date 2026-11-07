@@ -54,13 +54,7 @@ impl Builder<'_> {
             Kind::Product {
                 variant: Some(variant),
                 ..
-            } if self
-                .facts
-                .members
-                .variants(self.facts.members.variants[variant.0 as usize].owner)
-                .len()
-                > 1 =>
-            {
+            } if self.facts.members.needs_test(variant) => {
                 self.evaluate(node, boolean, Rvalue::IsVariant { place, variant })?
             }
             _ => return Ok(None),

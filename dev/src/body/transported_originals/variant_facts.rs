@@ -244,7 +244,11 @@ impl<'a> Prover<'a> {
         self.memory = now;
     }
     /// A live positive fact names `variant`, or every other variant is excluded.
+    /// The local rule needs no test for the only variant of its enum.
     fn proved(&self, shape: Key, variant: VariantId) -> bool {
+        if !self.facts.members.needs_test(variant) {
+            return true;
+        }
         if let Some(&(positive, at)) = self.positive.get(&shape.canon)
             && self.live(shape, at)
         {
@@ -419,7 +423,10 @@ impl<'a> Prover<'a> {
                         self.clobber();
                     }
                 }
-                Action::Project(projection) => self.require(Place::Projection(projection))?,
+                Action::Project(projection) | Action::Select { projection, .. } => {
+                    self.require(Place::Projection(projection))?;
+                }
+                Action::GuardStart(_) | Action::GuardUse(_) => {}
                 Action::CheckInitialized(place) | Action::Mention(place) => {
                     self.require(place)?;
                 }
@@ -430,8 +437,15 @@ impl<'a> Prover<'a> {
                         self.kill(local);
                     }
                 }
-                Action::BindView { view, .. } => self.kill(view.0),
-                _ => return Err("source variant facts cannot follow this statement form"),
+                // A guard view selects its place's address once the decision
+                // succeeds; a downcast place needs its live test there.
+                Action::BindView { view, place } => {
+                    self.require(place)?;
+                    self.kill(view.0);
+                }
+                Action::FutureTake { .. } => {
+                    return Err("source variant facts cannot follow this statement form");
+                }
             }
         }
         match block.terminator {

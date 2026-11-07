@@ -1,0 +1,170 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+  "providers": [
+    {
+      "file": "spec/provider-guards/provider.rs",
+      "sha256": "b734113deafda593f3e558e36900a3f56900ffed63099667a767782573664291"
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "cases": [
+    {
+      "file": "spec/provider-guards/guarded.rs",
+      "provider": "spec/provider-guards/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "bdc9c5a86f2e0176ce123b1925d1aa9ef0178d4df19a40c5af991dc297761b00"
+    },
+    {
+      "file": "spec/provider-guards/fallback.rs",
+      "provider": "spec/provider-guards/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "667f44625ba1eb9106ced821854f30a8cc518c0fb7d426ec9a880d3ae624c967"
+    },
+    {
+      "file": "spec/provider-guards/retry.rs",
+      "provider": "spec/provider-guards/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "a110b19f6db092a8e511e3ca4f783bf300c143adce7608ae6069ccd7e65a462d"
+    },
+    {
+      "file": "spec/provider-guards/predicate.rs",
+      "provider": "spec/provider-guards/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "6f98ff430f60311fd37823ae469aa4ab1167b787ac024d1f631467eded27607e"
+    },
+    {
+      "file": "spec/provider-guards/method.rs",
+      "provider": "spec/provider-guards/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "256a3d72e062e7acb3724a765a0f2a97b9ec01cb0110444d6a286db96656fe7a"
+    },
+    {
+      "file": "spec/provider-guards/single.rs",
+      "provider": "spec/provider-guards/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "db540ded8460cc6161317460fcf522a3e4ead2856a0bf047f4312eddb28b7835"
+    },
+    {
+      "file": "spec/provider-guards/single-guard.rs",
+      "provider": "spec/provider-guards/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "83d01f9cd20b807f8461b420ee2a2a3b50b31500e057a6f409e4e222ce39b194"
+    },
+    {
+      "file": "spec/provider-guards/own-single.rs",
+      "provider": "spec/provider-guards/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "866db6d6f702a2d60263f9f726497b01603723a155e7719e765c8f5cbc8b8ca9"
+    },
+    {
+      "file": "spec/provider-guards/moved-scrutinee.rs",
+      "provider": "spec/provider-guards/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0382",
+      "candidate_diagnostic": "uninitialized or moved",
+      "sha256": "66bf306492f45fca2175a1f0c95c8c2689266e4911b2fe892a657369c5945463"
+    },
+    {
+      "file": "spec/provider-guards/wrong-predicate.rs",
+      "provider": "spec/provider-guards/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0271",
+      "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+      "sha256": "0768454b80731993ad77856531a1e1c16c93d6ba77f01823794356fa1c04c857"
+    },
+    {
+      "file": "spec/provider-guards/wrong-single.rs",
+      "provider": "spec/provider-guards/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0308",
+      "candidate_diagnostic": "incompatible types",
+      "sha256": "4e050bca9b77c8cfe72757c4f6a269e8c9fa692690aa0d50650530ee5899d880"
+    }
+  ],
+  "generated_controls": [
+    {
+      "control": "spec/source-nominals/provider.rs plus `pub fn either(x: bool, y: bool) -> bool { match x { true if y => true, _ => false } }`, exported under module-branches-v12 and module-nominals-v10",
+      "expected": "rejected by name with `source guard facts require a wider transport profile`",
+      "observed": "rejected by name with `source guard facts require a wider transport profile` under both profiles"
+    },
+    {
+      "control": "the same provider exported under module-bodies-v13, and a fresh client returning 42 when `base::either(true, true)` holds",
+      "expected": "rustc accepts (exit 42); the candidate exports it and the fresh client exits 42 natively",
+      "oracle_rework": "the first oracle run of the generated provider hit a rustc internal compiler error (`error performing operation: fully_perform`), because spec/source-nominals/provider.rs declares no `Copy` for `bool`; the oracle's copy of the provider adds `impl Clone for bool` and `impl Copy for bool` under `#[cfg(rustc_oracle)]`, which RustGM never configures, so the candidate input is unchanged",
+      "candidate_rework": "the first client was `match base::either(true, true) { true => 42, false => 7 }`; the provider exported and the imported body was re-proved, but the candidate rejected the client's own match on the returned `bool` (exit 1, `local may be uninitialized or moved at this read`), because this provider declares no `Copy` for `bool` (rustc saw the oracle-only shim). The client is now `if base::either(true, true) { 42 } else { 7 }`; rustc round 2 exits 42"
+    },
+    {
+      "control": "the enum-match `guarded` control (spec/enum-match/provider.rs plus `large` and a guarded `guard`)",
+      "expected": "amended: it now exports under module-bodies-v13 and a fresh consumer of `guard` reaches LowIR; it was rejected by name with `source guard facts require a wider transport profile`"
+    },
+    {
+      "control": "6, 24 and 96 generated guarded functions `gNNN(o: Opt<u8>) -> u8 { match o { Opt::Some(x) if large(x) => x, _ => NNN } }` and one client calling one of them",
+      "expected": "packet bytes grow exactly linearly; the client LowIR stays bounded"
+    }
+  ],
+  "wire_controls": [
+    {
+      "mutation": "the guard view local of `pick` relabelled from local kind 3 (Guard) to kind 1 (Binding)",
+      "expected": "rejected by name in a fresh consumer",
+      "observed": "source guard view binds an ordinary local",
+      "note": "the generated minimal provider (provider lines 1-126 plus `large` and `guard`) is used, because its guard start, guard use, view binding and imaginary edge are each unique in the packet; kind 1 carries no ordinal, so the relabel also removes the view's four-byte guard ordinal"
+    },
+    {
+      "mutation": "the guard ordinal of a GuardStart action in `guard` relabelled past its guard table",
+      "expected": "rejected by name in a fresh consumer",
+      "observed": "source guard ordinal is outside its guard table"
+    },
+    {
+      "mutation": "the real and imaginary successors of the FalseEdge that enters `guard`'s guarded decision swapped",
+      "expected": "rejected in a fresh consumer, because the arm's downcast is no longer dominated by its variant test",
+      "observed": "ACCEPTED (exit 0): with the successors swapped, execution always takes the fallback arm and the guarded arm is reachable only through the imaginary edge, which never executes, so no downcast runs",
+      "candidate_rework": "the declared rejection was wrong: the swapped body is a different but sound program (the provider could have written it), as with the accepted two-phase-to-immediate borrow relabel in the callable-role packet. The swap stays as an accepted control, and the new control below retargets the real successor past the constructor test"
+    },
+    {
+      "mutation": "the FalseEdge's real successor retargeted to the `yes` block of the guarded decision's constructor test, skipping the test",
+      "expected": "source downcast field use is not dominated by its variant test",
+      "added": "after the swap control was observed accepted, before this mutation was run"
+    },
+    {
+      "mutation": "the GuardUse ordinal relabelled past the guard table",
+      "expected": "source guard ordinal is outside its guard table",
+      "added": "to the forged-wire probe before its first run, after this file was frozen"
+    },
+    {
+      "mutation": "the BindView view operand relabelled to local 0 (the parameter `o`)",
+      "expected": "source guard view binds an ordinary local",
+      "added": "to the forged-wire probe before its first run, after this file was frozen"
+    },
+    {
+      "mutation": "the guard row's tested range emptied",
+      "expected": "accepted: the guard keeps its views' deep protection and every downcast is still re-proved by its own constructor test, so dropping the shallow tested-place protection only admits a body that rustc would reject for mutating its scrutinee in a guard, never an unsound one",
+      "added": "to the forged-wire probe before its first run, after this file was frozen"
+    },
+    {
+      "mutation": "the guarded packet relabelled version 12",
+      "expected": "fails to decode",
+      "observed": "unknown source declaration kind"
+    },
+    {
+      "mutation": "every strict prefix",
+      "expected": "fails to decode"
+    }
+  ],
+  "single_variant": "a match or irrefutable let on a single-variant enum carries no constructor test, as the local lowering emits none; the consumer proves its downcast from the enum's installed variant count"
+}

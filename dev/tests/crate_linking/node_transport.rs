@@ -114,6 +114,22 @@ fn version_thirteen_reencodes_branch_packets_without_changing_consumers() -> Res
     }
     Ok(())
 }
+/// Amended with the provider-guard checkpoint: terminator code 1 is now a
+/// reconstructable imaginary edge whose operands differ; code 6 is unknown.
+fn terminator_relabels(bytes: &[u8], branch: usize) -> [(&'static str, Vec<u8>, &'static str); 2] {
+    [
+        (
+            "false-edge",
+            set(bytes, branch, 1),
+            "body IR terminator node has malformed operands",
+        ),
+        (
+            "unknown-terminator",
+            set(bytes, branch, 6),
+            "unknown body IR terminator form",
+        ),
+    ]
+}
 #[test]
 fn unsupported_malformed_and_relabelled_nodes_reject_in_fresh_consumers() -> Result {
     let packet = publish("wire", "wire")?;
@@ -191,12 +207,10 @@ fn unsupported_malformed_and_relabelled_nodes_reject_in_fresh_consumers() -> Res
             with_id(&bytes, node + 8, 1000),
             "cyclic, forward or unknown",
         ),
-        (
-            "false-edge",
-            set(&bytes, branch, 1),
-            "encoded Terminator::FalseEdge is not reconstructable by this consumer",
-        ),
-    ] {
+    ]
+    .into_iter()
+    .chain(terminator_relabels(&bytes, branch))
+    {
         let path = packet.folder.join(format!("{name}.rgcrate"));
         std::fs::write(&path, wire)?;
         let mut consumer = packet.consumer(&client, name, &path, &packet.owner());

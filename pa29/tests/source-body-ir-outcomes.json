@@ -195,7 +195,12 @@
     },
     {
       "mutation": "Branch terminator code 1",
-      "expected": "encoded Terminator::FalseEdge is not reconstructable by this consumer"
+      "expected": "body IR terminator node has malformed operands",
+      "amended": "provider-guard checkpoint: terminator code 1 is now the reconstructable FalseEdge [Block(real), Block(imaginary)], so the relabelled Branch's three operands are malformed; the previous expectation was `encoded Terminator::FalseEdge is not reconstructable by this consumer`. Every allocated terminator code is now reconstructable, so the new control `Branch terminator code 6` keeps an unknown code under test"
+    },
+    {
+      "mutation": "Branch terminator code 6",
+      "expected": "unknown body IR terminator form"
     },
     {
       "mutation": "version byte relabelled 13 to 12",

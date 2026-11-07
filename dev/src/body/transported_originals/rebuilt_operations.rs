@@ -7,7 +7,9 @@ use super::{
 use crate::{
     body::{
         drops::values,
-        ir::{Action, Body, BorrowKind, LocalId, Owner, Rvalue, Statement, Value, ValueId},
+        ir::{
+            Action, Body, BorrowKind, GuardId, LocalId, Owner, Rvalue, Statement, Value, ValueId,
+        },
     },
     sema::crates::SourceOriginal,
     support::crates::generics::source as s,
@@ -89,6 +91,7 @@ pub(super) fn build(
     body.blocks = operations::blocks(&record.blocks, branches, &mut |index| {
         view.site(index, &mut work.steps)
     })?;
+    guards_into(view, &mut body, work)?;
     lexical::fill_records(
         lexical::Records {
             scopes: &record.scopes,
@@ -200,7 +203,79 @@ fn action(view: &SourceOriginal<'_>, record: s::Action) -> Result<Action, &'stat
         }
         s::Action::Mention(place) => Action::Mention(regional_records::place(view, place)?),
         s::Action::Project(index) => regional_records::project(view, index)?,
+        s::Action::GuardStart(guard) if guards(view) => Action::GuardStart(GuardId(guard)),
+        s::Action::GuardUse(guard) if guards(view) => Action::GuardUse(GuardId(guard)),
+        s::Action::BindView { view: local, place } if guards(view) => Action::BindView {
+            view: LocalId(local),
+            place: regional_records::place(view, place)?,
+        },
+        s::Action::Select { projection, anchor } if guards(view) => {
+            let Action::Project(projection) = regional_records::project(view, projection)? else {
+                return Err("source selected pattern place changed its actual kind");
+            };
+            Action::Select {
+                projection,
+                anchor: regional_records::place(view, anchor)?,
+            }
+        }
+        s::Action::GuardStart(_)
+        | s::Action::GuardUse(_)
+        | s::Action::BindView { .. }
+        | s::Action::Select { .. } => {
+            return Err("source guard facts require their version-thirteen reconstruction");
+        }
     })
+}
+fn guards(view: &SourceOriginal<'_>) -> bool {
+    view.rows().descriptor().profile().body_nodes()
+}
+/// Version thirteen: the guard table as recorded. Its ranges were checked by
+/// the consumer's validation; the ownership checker re-proves protections.
+fn guards_of(
+    view: &SourceOriginal<'_>,
+) -> Result<(Vec<crate::body::ir::Guard>, Vec<crate::body::ir::Place>), &'static str> {
+    let Some(raw) = view.raw().guards.as_deref() else {
+        return Ok((Vec::new(), Vec::new()));
+    };
+    if !guards(view) {
+        return Err("source guard facts require their version-thirteen reconstruction");
+    }
+    let rows = raw
+        .rows
+        .iter()
+        .map(|guard| crate::body::ir::Guard {
+            tested_start: guard.tested.start,
+            tested_end: guard.tested.end,
+            views_start: guard.views.start,
+            views_end: guard.views.end,
+        })
+        .collect();
+    let places = raw
+        .places
+        .iter()
+        .map(|&place| regional_records::place(view, place))
+        .collect::<Result<_, _>>()?;
+    Ok((rows, places))
+}
+fn guards_into(
+    view: &SourceOriginal<'_>,
+    body: &mut Body,
+    work: &mut ImportedOriginals,
+) -> Result<(), &'static str> {
+    if let Some(raw) = view.raw().guards.as_deref() {
+        work.charge(raw.rows.len().saturating_add(raw.places.len()))?;
+    }
+    (body.guards, body.guard_places) = guards_of(view)?;
+    Ok(())
+}
+fn same_guards(view: &SourceOriginal<'_>, body: &Body) -> Result<bool, &'static str> {
+    let (rows, places) = guards_of(view)?;
+    Ok(places == body.guard_places
+        && rows.len() == body.guards.len()
+        && rows.iter().zip(&body.guards).all(|(a, b)| {
+            (a.tested_start, a.tested_end, a.views_start, a.views_end)
+                == (b.tested_start, b.tested_end, b.views_start, b.views_end)
+        }))
 }
 fn scalar_cast(
     view: &SourceOriginal<'_>,
@@ -400,8 +475,7 @@ pub(super) fn validate(
         || body.mutable_statics.is_some()
         || body.resolved_callables.is_some()
         || body.closure_calls.is_some()
-        || !body.guards.is_empty()
-        || !body.guard_places.is_empty()
+        || !same_guards(view, body)?
         || body.arguments.len() != record.arguments.len()
         || body
             .arguments
@@ -442,6 +516,13 @@ pub(super) fn validate(
                 },
             ) => branches && condition.0 == c && yes.0 == y && no.0 == n,
             (T::Panic, R::Panic) => branches,
+            (
+                T::FalseEdge { real, imaginary },
+                R::FalseEdge {
+                    real: r,
+                    imaginary: i,
+                },
+            ) => branches && real.0 == r && imaginary.0 == i,
             _ => false,
         };
         if !same
@@ -473,6 +554,9 @@ fn ports(view: &SourceOriginal<'_>, body: &Body, steps: &mut usize) -> Result<()
                 crate::body::ir::LocalKind::Binding
             }
             crate::support::crates::generics::LocalKind::Merge => crate::body::ir::LocalKind::Merge,
+            crate::support::crates::generics::LocalKind::Guard(guard) => {
+                crate::body::ir::LocalKind::Guard(GuardId(guard))
+            }
         };
         if actual.ty != view.ty(record.ty, steps)?
             || actual.source != view.site(record.site, steps)?
@@ -660,6 +744,21 @@ fn same_action(a: Action, b: Action) -> bool {
         }
         (Action::CheckInitialized(a), Action::CheckInitialized(b))
         | (Action::Mention(a), Action::Mention(b)) => a == b,
+        (Action::GuardStart(a), Action::GuardStart(b))
+        | (Action::GuardUse(a), Action::GuardUse(b)) => a == b,
+        (Action::BindView { view: a, place: b }, Action::BindView { view: x, place: y }) => {
+            a == x && b == y
+        }
+        (
+            Action::Select {
+                projection: a,
+                anchor: b,
+            },
+            Action::Select {
+                projection: x,
+                anchor: y,
+            },
+        ) => a == x && b == y,
         _ => false,
     }
 }

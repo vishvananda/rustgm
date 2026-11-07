@@ -2,6 +2,13 @@
 use super::{DeclarationRef, Input, Writer, g, id, option, range};
 
 pub(super) fn local_write(out: &mut Writer, row: &g::Local) -> Result<(), &'static str> {
+    profile_local_write(out, row, false)
+}
+/// Version thirteen appends local kind 3, a guard view and its guard ordinal.
+pub(super) fn body_local_write(out: &mut Writer, row: &g::Local) -> Result<(), &'static str> {
+    profile_local_write(out, row, true)
+}
+fn profile_local_write(out: &mut Writer, row: &g::Local, guards: bool) -> Result<(), &'static str> {
     id(out, row.scope)?;
     option(out, row.storage_parent)?;
     id(out, row.ty.0)?;
@@ -12,6 +19,13 @@ pub(super) fn local_write(out: &mut Writer, row: &g::Local) -> Result<(), &'stat
         }
         g::LocalKind::Binding => out.u8(1)?,
         g::LocalKind::Merge => out.u8(2)?,
+        g::LocalKind::Guard(guard) => {
+            if !guards {
+                return Err("source guard locals require the version-thirteen encoder");
+            }
+            out.u8(3)?;
+            id(out, guard)?;
+        }
     }
     option(out, row.definition.map(|r| r.0))?;
     out.u8(u8::from(row.mutable))?;
@@ -25,6 +39,7 @@ pub(super) fn local_read(read: &mut Input<'_, '_>) -> Result<g::Local, &'static 
         0 => g::LocalKind::Parameter(read.id()?),
         1 => g::LocalKind::Binding,
         2 => g::LocalKind::Merge,
+        3 if read.profile.body_nodes() => g::LocalKind::Guard(read.id()?),
         _ => return Err("unknown source original local kind"),
     };
     Ok(g::Local {
@@ -83,6 +98,9 @@ pub(super) fn branch_block_write(out: &mut Writer, row: &g::Block) -> Result<(),
             Ok(())
         }
         g::Terminator::Panic => out.u8(4),
+        g::Terminator::FalseEdge { .. } => {
+            Err("source imaginary CFG edges require the version-thirteen encoder")
+        }
     }
 }
 pub(super) fn block_read(read: &mut Input<'_, '_>) -> Result<g::Block, &'static str> {

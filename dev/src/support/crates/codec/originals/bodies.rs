@@ -37,7 +37,9 @@ pub(super) fn encode(
                 id(out, target)?;
             }
             g::Terminator::Unreachable => out.u8(2)?,
-            g::Terminator::Branch { .. } | g::Terminator::Panic => {
+            g::Terminator::Branch { .. }
+            | g::Terminator::Panic
+            | g::Terminator::FalseEdge { .. } => {
                 return Err("legacy generic rows cannot encode Branch/Panic CFG exits");
             }
         }
@@ -301,6 +303,9 @@ fn locals_write(out: &mut Writer, locals: &[g::Local]) -> Result<(), &'static st
             }
             g::LocalKind::Binding => out.u8(1)?,
             g::LocalKind::Merge => out.u8(2)?,
+            g::LocalKind::Guard(_) => {
+                return Err("legacy generic rows cannot encode guard views");
+            }
         }
         option(out, local.definition.map(|d| d.0))?;
         out.u8(u8::from(local.mutable))?;

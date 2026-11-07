@@ -88,6 +88,7 @@ fn snapshot() -> s::Original {
         arguments: Vec::new(),
         openings: Vec::new(),
         calls: Vec::new(),
+        guards: None,
     }
 }
 

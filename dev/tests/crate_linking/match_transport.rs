@@ -75,7 +75,7 @@ fn enum_headers_and_matches_survive_wire_and_fresh_consumers() -> Result {
         )?;
     }
     // Called tuple-variant constructors are the enum-methods checkpoint's;
-    // provider-body match guards stay fenced.
+    // provider-body match guards are the provider-guard checkpoint's.
     let called = packet.folder.join("called.rs");
     std::fs::write(
         &called,
@@ -97,19 +97,29 @@ fn enum_headers_and_matches_survive_wire_and_fresh_consumers() -> Result {
     )?;
     let mut consumer = packet.consumer(&client, "wrapped", &metadata, &packet.owner());
     super::artifacts::checked("wrapped", &packet.folder, &mut consumer)?;
-    let fenced = packet.folder.join("guarded.rs");
+    // Amended: this guard was fenced by name until the provider-guard
+    // checkpoint; it now exports and a fresh consumer re-proves it.
+    let guarded = packet.folder.join("guarded.rs");
     std::fs::write(
-        &fenced,
+        &guarded,
         format!(
             "{}pub fn large(x: u8) -> bool {{ match x {{ 0..=3 => false, _ => true }} }}\npub fn guard(o: Opt<u8>) -> u8 {{ match o {{ Opt::Some(x) if large(x) => x, _ => 0 }} }}\n",
             std::fs::read_to_string(&source)?
         ),
     )?;
-    packet.rejected(
+    let metadata = packet.folder.join("guarded.rgcrate");
+    super::artifacts::checked(
         "guarded",
-        &mut packet.export(PROFILE, &fenced, &packet.folder.join("guarded.rgcrate")),
-        "source guard facts require a wider transport profile",
+        &packet.folder,
+        &mut packet.export(PROFILE, &guarded, &metadata),
     )?;
+    let client = packet.folder.join("guard-client.rs");
+    std::fs::write(
+        &client,
+        "#![feature(no_core)]\n#![no_core]\nextern crate base;\n#[unsafe(no_mangle)]\npub extern \"C\" fn entry() -> i32 { match base::guard(base::Opt::Some(42u8)) { 42 => 42, _ => 7 } }\n",
+    )?;
+    let mut consumer = packet.consumer(&client, "guard-client", &metadata, &packet.owner());
+    super::artifacts::checked("guard-client", &packet.folder, &mut consumer)?;
     Ok(())
 }
 #[test]

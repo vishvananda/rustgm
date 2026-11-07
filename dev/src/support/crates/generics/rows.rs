@@ -132,6 +132,9 @@ pub enum LocalKind {
     Parameter(u32),
     Binding,
     Merge,
+    /// Version-thirteen source rows only: a guard's shared binding view,
+    /// owned by the guard with this ordinal in its original's guard table.
+    Guard(u32),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Local {
@@ -192,6 +195,12 @@ pub enum Terminator {
     /// Version-twelve source rows only. A checked diverging failure under the
     /// abort runtime contract: no successor, no unwinding and no cleanup edge.
     Panic,
+    /// Version-thirteen source rows only. Execution continues at `real`; the
+    /// imaginary successor exists for ownership proof and never executes.
+    FalseEdge {
+        real: u32,
+        imaginary: u32,
+    },
 }
 impl Terminator {
     /// Actual body-local successors in wire order; absent slots are `None`.
@@ -200,13 +209,18 @@ impl Terminator {
         match self {
             Self::Jump(target) => [Some(target), None],
             Self::Branch { yes, no, .. } => [Some(yes), Some(no)],
+            Self::FalseEdge { real, imaginary } => [Some(real), Some(imaginary)],
             Self::Return(_) | Self::Unreachable | Self::Panic => [None, None],
         }
     }
-    /// Two-way and checked-failure exits require the explicit branch profile.
+    /// Two-way, imaginary and checked-failure exits require the explicit
+    /// branch profile; imaginary edges additionally require version thirteen.
     #[must_use]
     pub const fn requires_branch_profile(self) -> bool {
-        matches!(self, Self::Branch { .. } | Self::Panic)
+        matches!(
+            self,
+            Self::Branch { .. } | Self::Panic | Self::FalseEdge { .. }
+        )
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

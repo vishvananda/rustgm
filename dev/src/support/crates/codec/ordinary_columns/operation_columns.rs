@@ -45,7 +45,11 @@ fn original_profile(
         s::CallContext::ClosedConst => 2,
     })?;
     write(out, &row.variables, allocations::owned_write)?;
-    write(out, &row.locals, storage::local_write)?;
+    if generation == Generation::Bodies {
+        write(out, &row.locals, storage::body_local_write)?;
+    } else {
+        write(out, &row.locals, storage::local_write)?;
+    }
     write(out, &row.parameter_bindings, storage::parameter_write)?;
     if generation == Generation::Bodies {
         write(out, &row.projections, ir_nodes::projection_write)?;
@@ -77,10 +81,36 @@ fn original_profile(
     write_copy(out, &row.arguments, index_write)?;
     write_copy(out, &row.openings, super::recipe_columns::root_region_write)?;
     if safety {
-        write(out, &row.calls, invoked_rows::safety_write)
+        write(out, &row.calls, invoked_rows::safety_write)?;
     } else {
-        write(out, &row.calls, invoked_rows::write)
+        write(out, &row.calls, invoked_rows::write)?;
     }
+    // Version thirteen's guard columns follow the calls exactly when a
+    // statement starts a guard; presence is never read from trailing bytes.
+    match (&row.guards, starts_guard(&row.statements)) {
+        (None, false) => Ok(()),
+        (Some(guards), true) if generation == Generation::Bodies => {
+            write(out, &guards.rows, guard_write)?;
+            write_copy(out, &guards.places, ir_nodes::place_write)
+        }
+        (Some(_), true) => Err("source guard facts require the version-thirteen body IR profile"),
+        _ => Err("source guard columns differ from the guards its body starts"),
+    }
+}
+fn starts_guard(statements: &[s::Statement]) -> bool {
+    statements
+        .iter()
+        .any(|statement| matches!(statement.action, s::Action::GuardStart(_)))
+}
+fn guard_write(out: &mut Writer, row: &s::Guard) -> Result<(), &'static str> {
+    super::range(out, row.tested)?;
+    super::range(out, row.views)
+}
+fn guard_read(read: &mut Input<'_, '_>) -> Result<s::Guard, &'static str> {
+    Ok(s::Guard {
+        tested: read.range()?,
+        views: read.range()?,
+    })
 }
 pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'static str> {
     let body = BodyRef(read.id()?);
@@ -135,6 +165,14 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
         super::recipe_columns::root_region_read,
     )?;
     let calls = read.call_list(crates::MAX_COMPONENTS, 19, invoked_rows::read)?;
+    let guards = if read.profile.body_nodes() && starts_guard(&statements) {
+        Some(Box::new(s::Guards {
+            rows: read.list(crates::MAX_COMPONENTS, 16, guard_read)?,
+            places: read.list(crates::MAX_COMPONENTS, 5, ir_nodes::place_read)?,
+        }))
+    } else {
+        None
+    };
     Ok(s::Original {
         body,
         declaration,
@@ -155,6 +193,7 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
         arguments,
         openings,
         calls,
+        guards,
     })
 }
 pub(super) fn place_write(out: &mut Writer, place: s::Place) -> Result<(), &'static str> {
@@ -306,6 +345,12 @@ fn statement_write(out: &mut Writer, row: &s::Statement) -> Result<(), &'static 
         s::Action::Project(projection) => {
             out.u8(7)?;
             id(out, projection)
+        }
+        s::Action::GuardStart(_)
+        | s::Action::GuardUse(_)
+        | s::Action::BindView { .. }
+        | s::Action::Select { .. } => {
+            Err("source guard facts require the version-thirteen body IR profile")
         }
     }
 }

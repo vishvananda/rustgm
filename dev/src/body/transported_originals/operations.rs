@@ -176,6 +176,7 @@ pub(super) fn locals(
                     g::LocalKind::Parameter(index) => LocalKind::Parameter(index),
                     g::LocalKind::Binding => LocalKind::Binding,
                     g::LocalKind::Merge => LocalKind::Merge,
+                    g::LocalKind::Guard(guard) => LocalKind::Guard(crate::body::ir::GuardId(guard)),
                 },
                 definition: data.definition,
                 mutable: local.mutable,
@@ -242,7 +243,15 @@ pub(super) fn blocks(
                         }
                     }
                     g::Terminator::Panic if branches => Terminator::Panic,
-                    g::Terminator::Branch { .. } | g::Terminator::Panic => {
+                    g::Terminator::FalseEdge { real, imaginary } if branches => {
+                        Terminator::FalseEdge {
+                            real: BlockId(real),
+                            imaginary: BlockId(imaginary),
+                        }
+                    }
+                    g::Terminator::Branch { .. }
+                    | g::Terminator::Panic
+                    | g::Terminator::FalseEdge { .. } => {
                         return Err(
                             "imported Branch/Panic exits require the version-twelve profile",
                         );

@@ -342,13 +342,7 @@ impl Builder<'_> {
             Kind::Slice { .. } => true,
             Kind::Product {
                 variant: Some(v), ..
-            } => {
-                self.facts
-                    .members
-                    .variants(self.facts.members.variants[v.0 as usize].owner)
-                    .len()
-                    > 1
-            }
+            } => self.facts.members.needs_test(v),
             _ => false,
         };
         if tested {

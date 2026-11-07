@@ -95,7 +95,8 @@
     },
     {
       "control": "spec/enum-match/provider.rs plus `large` and a guarded `guard` (the enum-match `guarded` control)",
-      "expected": "unchanged: the candidate export rejects the provider-body guard by name with `source guard facts require a wider transport profile`"
+      "expected": "unchanged: the candidate export rejects the provider-body guard by name with `source guard facts require a wider transport profile`",
+      "amended": "provider-guard checkpoint: the control now exports under module-bodies-v13 and a fresh consumer re-proves the guard (provider-guard-outcomes.json); the previous expectation was the by-name rejection `source guard facts require a wider transport profile`"
     },
     {
       "control": "6, 24 and 96 generated one-field `Wide` variants, a provider `pick` calling every constructor and a `rank` match, and one client",

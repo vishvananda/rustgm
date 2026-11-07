@@ -20,6 +20,8 @@ mod exports;
 mod fn_roles;
 #[path = "crate_linking/fresh_packets.rs"]
 mod fresh_packets;
+#[path = "crate_linking/guard_transport.rs"]
+mod guard_transport;
 #[path = "crate_linking/imported_records.rs"]
 mod imported_records;
 #[path = "crate_linking/imported_regions.rs"]

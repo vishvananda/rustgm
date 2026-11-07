@@ -198,3 +198,16 @@ needs. Eleven outcomes were declared in plan 1, two in plan 2 (the uncalled
 `use`) and one in plan 3 (the glob), each before any rustc or RustGM run of its
 files; three frontend expectations were amended after candidate rounds 1 and
 2 (`docs/parallel/macro-metadata.md`).
+
+`provider-guard-outcomes.json` freezes the version-thirteen provider-guard
+packet under `spec/provider-guards/`. The packet holds:
+
+- match guards in provider bodies: by-value and borrowed scrutinees, retried
+  arms, a generic predicate and a guard in an inherent method;
+- single-variant enum matches and an irrefutable `let`, with no constructor
+  test;
+- eight accepted clients and three opponents (E0382, E0271 and E0308);
+- generated controls: an older-profile guard gate, the amended enum-match
+  `guarded` control, forged guard rows and a 6/24/96 scaling control.
+
+The `crate_linking::guard_transport` integration controls consume it.

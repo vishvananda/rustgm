@@ -336,6 +336,14 @@ impl Members {
     pub fn variants(&self, owner: ItemId) -> &[VariantId] {
         self.by_owner.get(&owner).map_or(&[], Vec::as_slice)
     }
+    /// A variant needs a constructor test only when its enum has another
+    /// variant; a single-variant pattern is irrefutable and emits none.
+    #[must_use]
+    pub fn needs_test(&self, variant: VariantId) -> bool {
+        self.variants
+            .get(variant.0 as usize)
+            .is_none_or(|row| self.variants(row.owner).len() > 1)
+    }
     #[must_use]
     pub fn at_node(&self, node: NodeKey) -> Option<VariantId> {
         self.by_node.get(&node).copied()

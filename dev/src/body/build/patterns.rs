@@ -56,12 +56,7 @@ impl Builder<'_> {
                 }
                 Kind::Product { variant, fields } => {
                     if let Some(variant) = variant
-                        && self
-                            .facts
-                            .members
-                            .variants(self.facts.members.variants[variant.0 as usize].owner)
-                            .len()
-                            > 1
+                        && self.facts.members.needs_test(variant)
                     {
                         self.scratch.match_patterns.clear();
                         return true;

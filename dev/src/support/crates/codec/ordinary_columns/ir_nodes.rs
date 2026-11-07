@@ -130,8 +130,8 @@ const CALLABLES: [crate::support::call_traits::CallTrait; 3] = [
     crate::support::call_traits::CallTrait::FnMut,
     crate::support::call_traits::CallTrait::Fn,
 ];
-const ACTION_FORMS: [u8; 8] = [0, 1, 5, 7, 8, 9, 10, 11];
-const TERMINATOR_FORMS: [u8; 5] = [0, 2, 3, 4, 5];
+const ACTION_FORMS: [u8; 12] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+const TERMINATOR_FORMS: [u8; 6] = [0, 1, 2, 3, 4, 5];
 const PROJECTION_FORMS: [u8; 2] = [1, 3];
 
 struct Node {
@@ -232,6 +232,16 @@ fn operand_read(read: &mut Input<'_, '_>) -> Result<Operand, &'static str> {
     })
 }
 
+/// A guard's tested place is one place operand.
+pub(super) fn place_write(out: &mut Writer, place: s::Place) -> Result<(), &'static str> {
+    operand_write(out, Operand::Place(place))
+}
+pub(super) fn place_read(read: &mut Input<'_, '_>) -> Result<s::Place, &'static str> {
+    match operand_read(read)? {
+        Operand::Place(place) => Ok(place),
+        _ => Err("source guard tested place is not a place operand"),
+    }
+}
 pub(super) fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
     id(out, row.ty.0)?;
     match row.kind {
@@ -427,6 +437,17 @@ pub(super) fn statement_write(out: &mut Writer, row: &s::Statement) -> Result<()
         s::Action::Store { place, value } => {
             node_write(out, 11, &[Operand::Place(place), Operand::Value(value)])
         }
+        // A guard ordinal indexes its original's guard table.
+        s::Action::GuardStart(guard) => node_write(out, 2, &[Operand::Flag(guard)]),
+        s::Action::GuardUse(guard) => node_write(out, 3, &[Operand::Flag(guard)]),
+        s::Action::BindView { view, place } => {
+            node_write(out, 4, &[Operand::Local(view), Operand::Place(place)])
+        }
+        s::Action::Select { projection, anchor } => node_write(
+            out,
+            6,
+            &[Operand::Projection(projection), Operand::Place(anchor)],
+        ),
     }
 }
 pub(super) fn statement_read(read: &mut Input<'_, '_>) -> Result<s::Statement, &'static str> {
@@ -443,6 +464,12 @@ pub(super) fn statement_read(read: &mut Input<'_, '_>) -> Result<s::Statement, &
         }
         (10, &[Operand::Value(value)]) => s::Action::Evaluate(value),
         (11, &[Operand::Place(place), Operand::Value(value)]) => s::Action::Store { place, value },
+        (2, &[Operand::Flag(guard)]) => s::Action::GuardStart(guard),
+        (3, &[Operand::Flag(guard)]) => s::Action::GuardUse(guard),
+        (4, &[Operand::Local(view), Operand::Place(place)]) => s::Action::BindView { view, place },
+        (6, &[Operand::Projection(projection), Operand::Place(anchor)]) => {
+            s::Action::Select { projection, anchor }
+        }
         (code, _) => {
             return Err(rejected(
                 &ACTIONS,
@@ -460,6 +487,9 @@ pub(super) fn block_write(out: &mut Writer, row: &g::Block) -> Result<(), &'stat
     id(out, row.site)?;
     match row.terminator {
         g::Terminator::Jump(block) => node_write(out, 0, &[Operand::Block(block)]),
+        g::Terminator::FalseEdge { real, imaginary } => {
+            node_write(out, 1, &[Operand::Block(real), Operand::Block(imaginary)])
+        }
         g::Terminator::Branch { condition, yes, no } => node_write(
             out,
             2,
@@ -480,6 +510,10 @@ pub(super) fn block_read(read: &mut Input<'_, '_>) -> Result<g::Block, &'static 
     let node = node_read(read)?;
     let terminator = match (node.code, node.operands()) {
         (0, &[Operand::Block(block)]) => g::Terminator::Jump(block),
+        (1, &[Operand::Block(executed), Operand::Block(imaginary)]) => g::Terminator::FalseEdge {
+            real: executed,
+            imaginary,
+        },
         (
             2,
             &[
