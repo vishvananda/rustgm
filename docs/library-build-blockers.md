@@ -5,6 +5,19 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [enum-and-match transport](parallel/enum-match-transport.md) is
+joined on main. Version 13 now carries enum and variant
+declarations, enum header columns (representation tag, variant shapes,
+discriminants and payload fields), constructor tests, variant aggregates,
+downcast fields and fieldless enum casts. Fresh consumers re-derive each
+enum's layout and nullable policy, re-check discriminant range and
+uniqueness, and re-prove every downcast and match exhaustiveness over their
+own rebuilt CFG. Fieldless, `#[repr(u8)]`, generic `Opt<T>`, `FnOnce` `map`
+and by-reference binding clients return 42 natively, as rustc does. Older
+exports are byte-identical. Still open toward `Option::map`: called variant
+constructors, inherent enum methods, const callable bounds, guards and
+reference scrutinees.
+
 [Macro metadata consumer](parallel/macro-metadata.md#consumer-import) (Lane B,
 PA29): clients now import exported `macro_rules!` rows. Each image is lexed
 once, its rows are rebuilt and must be equal, and it is compiled in the

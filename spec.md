@@ -6149,6 +6149,30 @@ environment. No provider selection or proof is trusted. Closures inside
 provider bodies and closure call entries stay rejected by name. Packets
 without these rows keep their exact bytes.
 
+Version thirteen also carries enums. Declaration kind 10 is an enum, whose
+nominal header has no record fields, and kind 11 is one of its variants,
+parented by the enum and published once as its value-namespace constructor.
+Exactly when the declaration table names a kind-10 declaration, enum columns
+follow the associated-result columns: headers `(enum, tag, variants)` in
+declaration order, where tag 0 is the default representation and tag 1 is
+followed by an integer scalar; variants `(declaration, ordinal, shape,
+discriminant, fields)`, where shape 0 is unit and 1 is tuple and the
+discriminant is 16 little-endian bytes; and payload fields `(variant, ordinal,
+type, site)`. Ordinals are dense, ranges cover the columns contiguously,
+discriminants fit the tag (or `isize`) and are unique, a data enum without a
+tag keeps ordinal discriminants and a unit variant has no fields. Body IR node
+14 is a `bool` constructor test `[place, variant]`; node 3 with a second
+variant operand is a variant aggregate; cast flag 1 converts a fieldless enum
+to an integer; a field projection whose owner is a variant is a downcast field.
+No layout, niche or match proof is transported: a fresh consumer re-derives
+each enum's layout and nullable policy, re-checks every variant against its
+installed enum, and over its own rebuilt CFG proves each downcast use by a
+live constructor-test fact and each reachable unreachable exit as following
+an impossible variant path or a never value.
+Record variants, negative discriminants, lifetime-generic and `must_use`
+enums, called variant constructors and match guards stay rejected by name.
+Packets without enums keep their exact bytes.
+
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core
 profile. A crate that exports no macros writes no envelope and keeps its exact
