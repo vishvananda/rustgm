@@ -194,10 +194,49 @@ fn actual_field_source_is_reauthenticated_before_instance_publication() -> Resul
 #[test]
 #[ignore = "requires the pinned CPPGM object backend and a C compiler"]
 fn genuine_field_projections_and_actual_callback_execute() -> Result {
-    let input = source::fixture("pa31/tests/spec/field-operations/projection-native.rs")?;
+    native(
+        "projection-native",
+        "field_projection",
+        "projection 23 29 1 1\n",
+    )
+}
+
+#[test]
+#[ignore = "requires the pinned CPPGM object backend and a C compiler"]
+fn original_field_offsets_and_all_actual_projection_operands_execute() -> Result {
+    native("native", "field_native", "field 4 23 29 37 41 47 31 1\n")
+}
+
+fn native(name: &str, crate_name: &str, expected: &str) -> Result {
+    let (program, _) = compile(name, crate_name)?;
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let folder = root.join(format!(
+        "obj/parallel/field-projections/native-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    crate::ffi_program::check(
+        &root,
+        &folder,
+        crate_name,
+        &program,
+        &source::fixture(&format!("pa31/tests/spec/field-operations/{name}.c"))?,
+        expected,
+    )?;
+    Ok(())
+}
+
+fn compile(
+    name: &str,
+    crate_name: &str,
+) -> Result<(
+    rustgm::lowir::program::Program,
+    rustgm::sema::model::Declarations,
+)> {
+    let input = source::fixture(&format!("pa31/tests/spec/field-operations/{name}.rs"))?;
     let mut config = Config::default();
     config.set_lint_cap(LintCap::Allow);
-    let report = source::source_provider_config(&input, "field_projection", &config)?;
+    let report = source::source_provider_config(&input, crate_name, &config)?;
     let pipeline::Analysis {
         mut facts,
         prepared,
@@ -211,20 +250,12 @@ fn genuine_field_projections_and_actual_callback_execute() -> Result {
         },
         prepared,
     )?;
-    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
-    let folder = root.join(format!(
-        "obj/parallel/field-projections/native-{}",
-        std::process::id()
-    ));
-    std::fs::create_dir_all(&folder)?;
-    crate::ffi_program::check(
-        &root,
-        &folder,
-        "field_projection",
-        &program,
-        &source::fixture("pa31/tests/spec/field-operations/projection-native.c")?,
-        "projection 23 29 1 1\n",
-    )?;
+    Ok((program, facts))
+}
+
+#[test]
+fn original_field_offset_defaults_and_generic_projection_bodies_lower() -> Result {
+    compile("native", "field_native")?;
     Ok(())
 }
 

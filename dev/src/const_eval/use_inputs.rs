@@ -166,9 +166,15 @@ impl Inputs {
                     .source_bindings
                     .as_deref()
                     .ok_or("source catalog disappeared")?;
-                if catalog.intrinsic_kind(definition)?
-                    == Some(crate::support::bindings::SourceIntrinsic::ConstEvalSelect)
-                {
+                let intrinsic = catalog.intrinsic_kind(definition)?;
+                // This intrinsic consumes a real Field premise from this proved
+                // caller. Retain the existing exact Code/contract row, even when
+                // it has no conditional-const effect or callback selectors.
+                if intrinsic.is_some_and(crate::sema::compiler_items::field_offset_intrinsic) {
+                    uses.needed = true;
+                    continue;
+                }
+                if intrinsic == Some(crate::support::bindings::SourceIntrinsic::ConstEvalSelect) {
                     let raw = Instance::new(&facts.types, ty)?;
                     let selection = crate::sema::compiler_items::prepare_select(facts, raw)?
                         .ok_or("source selector preparation lost its actual declaration")?;

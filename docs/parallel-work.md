@@ -1,3 +1,12 @@
+The [complete Field offset checkpoint](parallel/field-offset-execution.md) passes
+8 private controls,2 actual native observers and15 regular/scaling/initializer
+controls; full output is field4/23/29/37/41/47/31/1. Same-profile immutable A/A+ABBA
+retains48 output-equal observations and no whole-core speed claim. Actual source
+core remains LIB191 on all722/sixpins/profile/limits unchanged,20.7917s/375opens.
+Root now integrates the real captured-const and pointer-fallback handoffs. Full
+field_of/reflection/transport, original library artifacts and whole assignments
+remain required. Existing btrfs trees,2heavy/16GiB/150GiB/300s guards stay.
+
 The [cold/creation/provided-default join](parallel/field-provided-default.md)
 passes21 public controls, strict all-target metadata, actual u8 default7,44 pinned
 Rust profile outcomes, unchanged22 course triples/full PA20 independent and282

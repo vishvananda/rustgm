@@ -371,18 +371,7 @@ impl Query {
                 caller,
                 state.availability,
             )
-        } else if facts
-            .generics
-            .implementations
-            .as_ref()
-            .map(|registry| {
-                registry.selection_goal_ready(&facts.types, &mut state.context, &self.goal)
-            })
-            .transpose()
-            .map_err(|_| "invalid pending trait header readiness")?
-            .unwrap_or(true)
-            && !facts.types.nominal_sizes_pending()
-        {
+        } else {
             let empty = Assumptions::default();
             let caller = selection::Caller {
                 assumptions: if self.closed {
@@ -398,46 +387,17 @@ impl Query {
                 first_region: state.obligations.regions.end,
                 retain_sized: state.retain_sized,
             };
-            if !self.closed
-                && let Some(reuse) = reuse
-            {
-                selection::select_reusing(
-                    facts,
-                    &mut state.context,
-                    &self.goal,
-                    caller,
-                    (state.availability, true),
-                    reuse,
-                )
-            } else {
-                let select = if self.closed {
-                    selection::select_available
-                } else {
-                    selection::select_normalized
-                };
-                select(
-                    facts,
-                    &mut state.context,
-                    &self.goal,
-                    caller,
-                    state.availability,
-                )
-            }
-            .map(selection::Progress::Ready)
-        } else {
-            let caller = state.owned_caller(&mut self.assumptions, self.closed);
-            let begin = if self.closed {
-                selection::begin
-            } else {
-                selection::begin_normalized
-            };
-            begin(
+            selection::begin_borrowed(
                 facts,
                 &mut state.context,
                 &self.goal,
                 caller,
-                state.availability,
+                (state.availability, !self.closed),
+                if self.closed { None } else { reuse },
             )
+            .map(|progress| {
+                progress.retain(|| state.owned_caller(&mut self.assumptions, self.closed))
+            })
         };
         selected.map_err(|error| {
             #[cfg(test)]

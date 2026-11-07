@@ -12,6 +12,14 @@ one slot and only genuinely new rows/bindings pay their map envelope. Real sourc
 records, attempted work and sticky failures remain. No limit was raised.
 No original core/alloc/std artifact or whole PA after24 is complete.
 
+The [complete Field offset/native checkpoint](parallel/field-offset-execution.md)
+now executes the actual initializer/intrinsic/layout and full frozen observer
+`field 4 23 29 37 41 47 31 1`. Eight private, two native and15 regular/scaling/
+initializer controls pass. Its immutablee95 core observation preserves LIB191 in
+20.7917s/all722/pins/limits unchanged. Actual typed waits and fresh excluded trial
+identities retain their caller/body proof; no physical answer supplies permission.
+Full field_of/reflection/transport and all original artifact gates remain required.
+
 The join passes21 exact public controls, strict all-target metadata,44 explicit
 unstable Rust profile observations, all22 unchanged course output triples,
 complete PA20 independent checks and282 harness checks. Full ac104 CI passes
@@ -19,7 +27,7 @@ release/course/native/debug and fails only the missing explicit unstable oracle
 profile. The [case-scoped repair](parallel/pa20-oracle-profile-repair.md) preserves
 all existing oracle bytes and missing-feature rejection; successor CI remains due.
 
-Root continues genuine field_offset/layout consumers; Async owns actual const
+Root integrates the qualified Field/closure/pointer checkpoints; Async owns actual const
 closure calls/captured CTFE/conditional requirements and adapters. Source owns
 the actual pointer-comparison declaration/operation prerequisite, preserving its
 separately qualified no-body cold commit. Existing btrfs trees and2heavy/16GiB/150GiB/300s guards remain in force.

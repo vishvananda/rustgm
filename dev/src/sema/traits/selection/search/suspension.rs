@@ -11,6 +11,61 @@ pub(in crate::sema) struct Pending {
     caller: OwnedCaller,
     query: Query,
 }
+
+/// A completed search borrows its caller; only an actual suspension retains it.
+pub(in crate::sema) struct BorrowedProgress(Borrowed);
+enum Borrowed {
+    Ready(Selection),
+    Pending(Dependency, Box<Query>),
+    Inferred(Box<Query>),
+}
+impl BorrowedProgress {
+    pub(in crate::sema) fn retain(self, caller: impl FnOnce() -> OwnedCaller) -> Progress {
+        match self.0 {
+            Borrowed::Ready(selection) => Progress::Ready(selection),
+            Borrowed::Pending(dependency, query) => Progress::Pending(
+                dependency,
+                Box::new(Pending {
+                    caller: caller(),
+                    query: *query,
+                }),
+            ),
+            Borrowed::Inferred(query) => Progress::Inferred {
+                query: Box::new(Pending {
+                    caller: caller(),
+                    query: *query,
+                }),
+            },
+        }
+    }
+}
+
+/// Run once and preserve every typed dependency instead of guessing readiness.
+pub(in crate::sema) fn begin_borrowed(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: Caller<'_>,
+    mode: (Availability, bool),
+    reuse: Option<&mut super::Reuse>,
+) -> Result<BorrowedProgress, String> {
+    begin_borrowed_inputs(
+        facts,
+        context,
+        goal,
+        caller,
+        mode.0,
+        if mode.1 {
+            Mode::Normalized
+        } else {
+            Mode::Plain
+        },
+        Hooks {
+            reuse,
+            ..Hooks::default()
+        },
+    )
+}
 /// Optional caller observers of one search.
 #[derive(Default)]
 struct Hooks<'a> {
@@ -122,25 +177,6 @@ pub(in crate::sema) fn begin_scoped_refining(
         caller,
         availability,
         Mode::Refining((!ambient.is_empty()).then_some(ambient)),
-        Hooks::default(),
-    )
-}
-
-/// The enclosing normalizer retains the complete formation proof of these inputs.
-pub(in crate::sema) fn begin_normalized(
-    facts: &mut Declarations,
-    context: &mut Context,
-    goal: &Goal,
-    caller: OwnedCaller,
-    availability: Availability,
-) -> Result<Progress, String> {
-    begin_with_inputs(
-        facts,
-        context,
-        goal,
-        caller,
-        availability,
-        Mode::Normalized,
         Hooks::default(),
     )
 }
@@ -278,6 +314,27 @@ fn begin_with_inputs(
     mode: Mode<'_>,
     hooks: Hooks<'_>,
 ) -> Result<Progress, String> {
+    Ok(begin_borrowed_inputs(
+        facts,
+        context,
+        goal,
+        caller.borrowed(),
+        availability,
+        mode,
+        hooks,
+    )?
+    .retain(|| caller))
+}
+
+fn begin_borrowed_inputs(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: Caller<'_>,
+    availability: Availability,
+    mode: Mode<'_>,
+    hooks: Hooks<'_>,
+) -> Result<BorrowedProgress, String> {
     let Hooks {
         formation,
         mut reuse,
@@ -295,10 +352,10 @@ fn begin_with_inputs(
             &mut facts.types,
             context,
             goal,
-            &caller.borrowed(),
+            &caller,
         ) {
             Ok(Selection::Absent) | Err(crate::types::infer::Error::Normalization) => {}
-            Ok(proof) => return Ok(Progress::Ready(proof)),
+            Ok(proof) => return Ok(BorrowedProgress(Borrowed::Ready(proof))),
             Err(error) => return Err(error.to_string()),
         }
     }
@@ -310,7 +367,7 @@ fn begin_with_inputs(
     if let Mode::Projection(application) = mode {
         first.prepare_formation(facts, application, formation)?;
     }
-    let mut search = Search::new(caller.borrowed(), availability);
+    let mut search = Search::new(caller, availability);
     if let Some(reuse) = reuse.as_deref_mut() {
         if !facts.types.nominal_sizes_sealed() {
             return Err("proof reuse requires sealed nominal sizes".into());
@@ -341,24 +398,21 @@ fn begin_with_inputs(
             if let Some(untouched) = untouched {
                 *untouched = search.query.allocations.untouched();
             }
-            search.return_reuse(facts, decision, reuse)?;
+            search.return_reuse(facts, decision, reuse, !matches!(mode, Mode::Normalized))?;
             search
                 .result_observed(facts, context, goal, decision, attempted)
-                .map(Progress::Ready)
+                .map(|selection| BorrowedProgress(Borrowed::Ready(selection)))
         }
         continuation::Progress::Pending(owner) => {
+            context.account_work(1).map_err(super::inference)?;
             let query = search.query;
-            Ok(Progress::Pending(
-                owner,
-                Box::new(Pending { caller, query }),
-            ))
+            Ok(BorrowedProgress(Borrowed::Pending(owner, Box::new(query))))
         }
         continuation::Progress::Inferred => {
             search.publish_inputs(facts, context)?;
+            context.account_work(1).map_err(super::inference)?;
             let query = search.query;
-            Ok(Progress::Inferred {
-                query: Box::new(Pending { caller, query }),
-            })
+            Ok(BorrowedProgress(Borrowed::Inferred(Box::new(query))))
         }
     }
 }
@@ -446,7 +500,7 @@ impl Pending {
         let progress = progress?;
         match progress {
             continuation::Progress::Ready(decision) => {
-                search.return_reuse(facts, decision, reuse)?;
+                search.return_reuse(facts, decision, reuse, true)?;
                 search
                     .result_observed(facts, context, goal, decision, attempted)
                     .map(Progress::Ready)
@@ -472,9 +526,12 @@ impl Search<'_> {
         facts: &Declarations,
         decision: super::Decision,
         reuse: Option<&mut super::Reuse>,
+        export: bool,
     ) -> Result<(), String> {
         if let Some(reuse) = reuse {
-            self.query.export_completed(facts, decision)?;
+            if export {
+                self.query.export_completed(facts, decision)?;
+            }
             if let Some(active) = self.query.reuse.take() {
                 *reuse = active.reuse;
             }

@@ -46,6 +46,9 @@ impl Machine<'_, '_> {
                 // executes this operation; it is not a callback selector.
                 return Ok(Selected::Unrelated);
             }
+            Some(kind) if crate::sema::compiler_items::field_offset_intrinsic(kind) => {
+                return Ok(Selected::Unrelated);
+            }
             Some(crate::support::bindings::SourceIntrinsic::Declaration(_)) => {
                 return Err("source intrinsic constant execution is not implemented".into());
             }
@@ -151,6 +154,9 @@ impl Machine<'_, '_> {
             return Ok(answer);
         }
         if let Some(answer) = self.source_offset(body, frame, position, target)? {
+            return Ok(answer);
+        }
+        if let Some(answer) = self.source_field_offset(body, frame, position, target)? {
             return Ok(answer);
         }
         if let Some(answer) = self.source_raw_parts(body, frame, position, target)? {

@@ -20,6 +20,16 @@ impl Reader<'_> {
     }
 }
 impl Evaluator<'_> {
+    pub(crate) fn check_source_field_offset_report(
+        &self,
+        selected: &crate::sema::compiler_items::FieldOffsetSelection,
+    ) -> Result<(), &'static str> {
+        self.facts()
+            .source_bindings
+            .as_deref()
+            .ok_or("source field_offset catalog disappeared")?
+            .require_field_offset_report(self.queries.report, self.facts(), selected)
+    }
     pub(crate) fn check_source_offset_report(
         &self,
         definition: crate::resolve::model::DefId,

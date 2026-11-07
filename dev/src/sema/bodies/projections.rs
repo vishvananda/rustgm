@@ -731,7 +731,7 @@ impl Checker<'_> {
             proof,
             scope,
             ty,
-            self.availability,
+            (self.availability, Some(self.state.body)),
             (completed, &mut |facts, dependency| {
                 if let crate::sema::traits::selection::Dependency::SourceResultContracts(member) =
                     dependency

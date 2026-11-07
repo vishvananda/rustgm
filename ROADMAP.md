@@ -102,3 +102,9 @@ policy in18.1196s, with no limit increase. The [PA20 oracle profile repair](docs
 preserves all oracle bytes and passes complete independent checking. Field-offset
 intrinsic/layout, actual captured const execution and original library artifacts
 remain required; whole-PA statuses are unchanged.
+
+The [complete Field offset/native checkpoint](docs/parallel/field-offset-execution.md)
+executes the actual provided initializer and reached intrinsic/layout, preserving
+ordinary/generic/lifetime proof. Its full original native observer, eight private
+controls and15 regular/scaling/initializer checks pass. Full reflection/field_of,
+transport and original library/whole-assignment gates remain required.

@@ -61,6 +61,8 @@ pub(crate) use wrapping_contract::WrappingOffsetSelection;
 #[path = "compiler_items/reflection_fields.rs"]
 pub(in crate::sema) mod field_protocol;
 pub(crate) use field_protocol::authenticate as authenticate_field;
+mod representing_offsets;
+pub(crate) use representing_offsets::{FieldOffsetSelection, field_offset_intrinsic};
 pub(in crate::sema) mod reflection;
 pub(in crate::sema) use headers::reflection_members::complete as complete_field_headers;
 pub(in crate::sema) mod transmutability;

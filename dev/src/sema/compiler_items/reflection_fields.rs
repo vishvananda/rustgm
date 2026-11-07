@@ -12,6 +12,7 @@ use crate::{
     types::{ItemId, TypeId, arena, parameters::predicates::Predicate, projection},
 };
 pub(in crate::sema) use prerequisites::requirements;
+pub(crate) use representing::Coordinates;
 pub(in crate::sema) use representing::Description;
 use std::rc::Rc;
 
@@ -37,6 +38,21 @@ pub(in crate::sema) enum Readiness {
     Deferred,
     Absent,
     Ready(Description),
+}
+
+/// The checked caller supplies proof; these are the same representing coordinates.
+pub(super) fn coordinates(facts: &Declarations, subject: TypeId) -> Result<Coordinates, String> {
+    let contract = facts
+        .source_bindings
+        .as_deref()
+        .and_then(|catalog| catalog.traits.as_deref())
+        .and_then(|roles| roles.field.as_ref())
+        .ok_or("field_offset requires the actual completed Field protocol")?;
+    contract.current(facts)?;
+    match representing::application(facts, subject)? {
+        representing::Application::Ready(coordinates) => Ok(coordinates),
+        _ => Err("field_offset requires its actual closed representing application".into()),
+    }
 }
 
 pub(in crate::sema) fn is_result(facts: &Declarations, item: ItemId) -> bool {

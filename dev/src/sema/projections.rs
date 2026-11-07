@@ -74,7 +74,7 @@ pub(super) fn normalize_reusing(
         proof,
         ambient,
         ty,
-        availability,
+        (availability, None),
         (completed, &mut |_, _| Ok(false)),
     )
 }
@@ -85,7 +85,7 @@ pub(super) fn normalize_reusing_ready(
     proof: &mut Obligations,
     ambient: ScopeId,
     ty: TypeId,
-    availability: Availability,
+    context: (Availability, Option<crate::resolve::unit::NodeKey>),
     readiness: (
         Option<&mut Completed>,
         &mut impl FnMut(
@@ -95,17 +95,13 @@ pub(super) fn normalize_reusing_ready(
     ),
 ) -> Result<(TypeId, usize), &'static str> {
     let (mut completed, prepare) = readiness;
-    let mut session = Session::new(
-        environment.cloned(),
-        proof,
-        ambient,
-        availability,
-        |_, _| Ok(None),
-    )?;
+    let mut session = Session::new(environment.cloned(), proof, ambient, context.0, |_, _| {
+        Ok(None)
+    })?;
     if let Some(completed) = completed.as_deref_mut() {
         session.cursor.exchange_completed(completed);
     }
-    let result = session.normalize_ready(facts, ty, prepare);
+    let result = session.normalize_ready(facts, ty, context.1, prepare);
     if let Some(completed) = completed {
         session.cursor.exchange_completed(completed);
     }
@@ -144,13 +140,14 @@ where
         facts: &mut Declarations,
         ty: TypeId,
     ) -> Result<(TypeId, usize), &'static str> {
-        self.normalize_ready(facts, ty, &mut |_, _| Ok(false))
+        self.normalize_ready(facts, ty, None, &mut |_, _| Ok(false))
     }
 
     fn normalize_ready(
         &mut self,
         facts: &mut Declarations,
         ty: TypeId,
+        body: Option<crate::resolve::unit::NodeKey>,
         prepare: &mut impl FnMut(
             &mut Declarations,
             super::traits::selection::Dependency,
@@ -170,9 +167,11 @@ where
                             "projection selection requires a prepared implementation header",
                         );
                     }
-                    let first = facts
-                        .body_regions
-                        .probe_frontier()?
+                    let first = body
+                        .map_or_else(
+                            || facts.body_regions.probe_frontier(),
+                            |body| facts.body_regions.frontier(body),
+                        )?
                         .max(self.cursor.allocation_end(self.proof));
                     self.cursor.resume_at(self.proof, first)?;
                     waits += 1;

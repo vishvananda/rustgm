@@ -6358,7 +6358,30 @@ nominal contracts yield the ordinary typed worklist dependency. In validated bod
 checking, seal completed result data only at its actual first demand; earlier
 work still belongs to the declaration coordinator. Authenticate the actual Report
 again at instance/publication boundaries. The [qualified finite consumers](docs/parallel/field-proof-projection-checkpoint.md)
-retain genuine OFFSET/default execution and complete reflection as required work.
+qualify actual OFFSET/default/layout execution in the
+[complete native checkpoint](docs/parallel/field-offset-execution.md); complete
+reflection and authenticated transport remain required.
+
+A source Field constant selects its genuine declaration/default through ordinary
+caller evidence. Field offset intrinsic recognition preserves its distinct typed
+declaration identity and all actual defining conditions. Require the exact proved
+Code/input row, complete current reached call, API/const policy and actual source
+images before reading shared layout coordinates. Physical layout is not Field
+proof or cached caller permission; an alternative authored default retains its
+own type/value. Reuse the representing argument decoder and aggregate layout
+preparation, without an intrinsic result map or dense executable fields.
+
+Projection normalization consumes actual typed readiness from one retained
+search; checking implementation headers cannot predict every source, nominal or
+field dependency. Completed queries borrow caller facts. Move the fixed caller
+snapshot into the continuation only on an actual wait, preserving every scoped
+condition, allocation frontier and prior attempt. Keep existing proof-reuse
+publication rules. Body normalization resumes in its own numbering unit; global
+probe identities belong only to disposable probes. Fresh excluded trial holes
+may publish only after the entire unallocated envelope is reserved through the
+existing streamed proof owner, preserving every exclusion and constraint.
+Already allocated prefixes and changed numbering units remain errors. See the
+[Field execution and dependency checkpoint](docs/parallel/field-offset-execution.md).
 
 Owned unsized function parameters require actual crate permission and direct
 parameter identity. A lazy pass-local, prepaid index is shared across body

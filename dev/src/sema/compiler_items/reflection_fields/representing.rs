@@ -17,18 +17,30 @@ pub(in crate::sema) struct Description {
     pub shape: Shape,
 }
 
-pub(super) fn describe(facts: &mut Declarations, subject: TypeId) -> Result<Readiness, String> {
-    crate::sema::header_attributes::charge_source_contract_query(facts, 6)
-        .map_err(|e| e.to_string())?;
+#[derive(Clone, Copy)]
+pub(crate) struct Coordinates {
+    pub base: TypeId,
+    pub variant: u32,
+    pub field: u32,
+}
+
+pub(super) enum Application {
+    Absent,
+    Deferred,
+    Ready(Coordinates),
+}
+
+/// Coordinate data does not establish the ordinary Field implementation proof.
+pub(super) fn application(facts: &Declarations, subject: TypeId) -> Result<Application, String> {
     let Some(Kind::Adt(item, arguments)) = facts.types.kind(subject) else {
         return Ok(
             if matches!(
                 facts.types.kind(subject),
                 Some(Kind::Parameter(_) | Kind::Projection(_) | Kind::Opaque(..))
             ) {
-                Readiness::Deferred
+                Application::Deferred
             } else {
-                Readiness::Absent
+                Application::Absent
             },
         );
     };
@@ -38,7 +50,7 @@ pub(super) fn describe(facts: &mut Declarations, subject: TypeId) -> Result<Read
         .and_then(|catalog| catalog.language(LangItem::FieldRepresentingType))
         .ok_or("Field requires its actual representing declaration")?;
     if item.0 != actual.definition.0 {
-        return Ok(Readiness::Absent);
+        return Ok(Application::Absent);
     }
     let mut arguments = facts
         .types
@@ -59,10 +71,29 @@ pub(super) fn describe(facts: &mut Declarations, subject: TypeId) -> Result<Read
         return Err("Field representing application requires type/u32/u32 arguments".into());
     };
     let Some(variant) = coordinate(&facts.types, variant)? else {
-        return Ok(Readiness::Deferred);
+        return Ok(Application::Deferred);
     };
     let Some(field) = coordinate(&facts.types, field)? else {
-        return Ok(Readiness::Deferred);
+        return Ok(Application::Deferred);
+    };
+    Ok(Application::Ready(Coordinates {
+        base,
+        variant,
+        field,
+    }))
+}
+
+pub(super) fn describe(facts: &mut Declarations, subject: TypeId) -> Result<Readiness, String> {
+    crate::sema::header_attributes::charge_source_contract_query(facts, 6)
+        .map_err(|e| e.to_string())?;
+    let Coordinates {
+        base,
+        variant,
+        field,
+    } = match application(facts, subject)? {
+        Application::Absent => return Ok(Readiness::Absent),
+        Application::Deferred => return Ok(Readiness::Deferred),
+        Application::Ready(coordinates) => coordinates,
     };
     if variant != 0 {
         return Ok(Readiness::Absent);

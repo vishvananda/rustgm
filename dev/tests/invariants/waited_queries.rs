@@ -225,3 +225,68 @@ fn counted_ready_failure_and_precreation_error_keep_attempted_prefix() -> Result
     assert!(previous >= 17);
     Ok(())
 }
+
+#[test]
+fn borrowed_ready_queries_do_not_retain_or_clone_the_caller() -> Result {
+    let (mut facts, _, predicate, completed) = setup()?;
+    facts.generics.implementations = Some(completed);
+    let mut context = Context::default();
+    let goal = goal(&mut facts, &mut context, predicate)?;
+    let assumptions = Assumptions::default();
+    let retained = std::cell::Cell::new(0);
+    let result = selection::begin_borrowed(
+        &mut facts,
+        &mut context,
+        &goal,
+        selection::Caller {
+            assumptions: &assumptions,
+            environment: None,
+            first_region: 1,
+            retain_sized: false,
+        },
+        (Availability::Validated, true),
+        None,
+    )?
+    .retain(|| {
+        retained.set(retained.get() + 1);
+        caller()
+    });
+    assert!(matches!(result, Progress::Ready(Selection::Proven(_))));
+    assert_eq!(retained.get(), 0);
+    Ok(())
+}
+
+#[test]
+fn borrowed_queries_retain_the_actual_frontier_only_when_the_search_waits() -> Result {
+    let (mut facts, owner, predicate, completed) = setup()?;
+    let mut context = Context::default();
+    let goal = goal(&mut facts, &mut context, predicate)?;
+    let assumptions = Assumptions::default();
+    let retained = std::cell::Cell::new(0);
+    let progress = selection::begin_borrowed(
+        &mut facts,
+        &mut context,
+        &goal,
+        selection::Caller {
+            assumptions: &assumptions,
+            environment: None,
+            first_region: 1,
+            retain_sized: false,
+        },
+        (Availability::Executable, true),
+        None,
+    )?
+    .retain(|| {
+        retained.set(retained.get() + 1);
+        caller()
+    });
+    let query = pending(progress, owner)?;
+    assert_eq!(retained.get(), 1);
+    facts.generics.implementations = Some(completed);
+    assert!(matches!(
+        query.resume(&mut facts, &mut context, &goal, 1)?,
+        Progress::Ready(Selection::Proven(_))
+    ));
+    assert_eq!(retained.get(), 1);
+    Ok(())
+}

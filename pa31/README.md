@@ -2,6 +2,14 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [complete Field offset/native checkpoint](../docs/parallel/field-offset-execution.md)
+executes the genuine provided initializer, actual reached field_offset and shared
+layout with full source/caller/generic/lifetime proof. The complete frozen native
+program passes, including C/Rust/tuple/generic/borrowed projection and one callback.
+Full field_of privacy/stability, reflection, wider profiles and authenticated
+transport remain required; PA31 stays planned. Original core remains at LIB191
+pending the genuine pointer-comparison handoff, with source/profile/limits unchanged.
+
 The [actual provided-default join](../docs/parallel/field-provided-default.md)
 selects and executes the genuine Field trait initializer, preserving full caller
 proof and the actual alternative u8 default7. The original field_offset intrinsic

@@ -25,6 +25,38 @@ impl Engine {
         prepare_layout(facts, element).map_err(|error| Error::at(FileId(0), 0, error))?;
         Ok(true)
     }
+    fn source_field_layout(
+        &self,
+        report: &Report,
+        facts: &mut Declarations,
+        instance: Instance,
+        state: Option<&const_eval::State>,
+    ) -> Result<bool, Error> {
+        if let Some(call) = state
+            .map(|state| {
+                state.source_field_offset_call(
+                    facts,
+                    &self.catalog,
+                    self.const_calls.as_deref(),
+                    instance,
+                )
+            })
+            .transpose()
+            .map_err(|error| Error::at(FileId(0), 0, error))?
+            .flatten()
+        {
+            facts
+                .source_bindings
+                .as_deref()
+                .ok_or_else(|| Error::at(FileId(0), 0, "source field_offset catalog disappeared"))?
+                .require_field_offset_report(report, facts, &call)
+                .map_err(|error| Error::at(FileId(0), 0, error))?;
+            prepare_layout(facts, call.coordinates.base)
+                .map_err(|error| Error::at(FileId(0), 0, error))?;
+            return Ok(true);
+        }
+        Ok(false)
+    }
     pub(super) fn source_layout(
         &mut self,
         report: &Report,
@@ -32,7 +64,9 @@ impl Engine {
         instance: Instance,
         state: Option<&const_eval::State>,
     ) -> Result<bool, Error> {
-        if self.source_wrapping_layout(report, facts, instance, state)? {
+        if self.source_wrapping_layout(report, facts, instance, state)?
+            || self.source_field_layout(report, facts, instance, state)?
+        {
             return Ok(true);
         }
         if let Some(call) = state

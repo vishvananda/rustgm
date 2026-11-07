@@ -134,8 +134,26 @@ impl Obligations {
         body: NodeKey,
         source: NodeKey,
     ) -> Result<(), &'static str> {
-        if self.has_gaps() || facts.body_regions.frontier(body)? != self.regions.start {
+        if facts.body_regions.frontier(body)? != self.regions.start {
+            #[cfg(test)]
+            crate::sema::copy_trace::record(|| {
+                format!(
+                    "body-proof publication rejected body={body:?} source={source:?} regions={:?} frontier={:?} gaps={} quantified={}",
+                    self.regions,
+                    facts.body_regions.frontier(body),
+                    self.has_gaps(),
+                    self.has_quantified()
+                )
+            });
             return Err("trait proof has foreign body region identities");
+        }
+        if self.has_gaps() {
+            // Failed trial identities can leave holes in a fresh, wholly
+            // unallocated envelope. Reserve that envelope through the same
+            // streamed publisher; retain every exclusion and constraint.
+            let mut reservation = Reservation::default();
+            reservation.reserve(facts, body, source, self.regions.clone())?;
+            return reservation.publish(self, facts, body, source);
         }
         let region = BodyRegion {
             body,
@@ -185,3 +203,7 @@ impl Obligations {
             }));
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../tests/invariants/unclaimed_regions.rs"]
+mod tests;
