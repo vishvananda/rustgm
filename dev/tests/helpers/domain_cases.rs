@@ -81,6 +81,7 @@ pub(crate) fn raw_rows(view: s::ValidatedView<'_>) -> s::SourceRows {
         compiler_operations: c.compiler_operations,
         nominals: c.nominals,
         fields: c.fields,
+        enums: c.enums,
         body_owners: view.body_owners().to_vec(),
         policy: c.policy,
         declarations: c.declarations,

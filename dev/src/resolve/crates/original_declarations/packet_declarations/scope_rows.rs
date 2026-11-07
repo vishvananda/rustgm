@@ -64,6 +64,7 @@ fn owners_mode(
                     row.definition.kind,
                     s::DefinitionKind::Trait
                         | s::DefinitionKind::Struct
+                        | s::DefinitionKind::Enum
                         | s::DefinitionKind::SelfType
                         | s::DefinitionKind::Function
                         | s::DefinitionKind::AssociatedType
@@ -74,6 +75,7 @@ fn owners_mode(
                     s::DefinitionKind::Trait
                         | s::DefinitionKind::SelfType
                         | s::DefinitionKind::Struct
+                        | s::DefinitionKind::Enum
                 );
                 scope
             } else {
@@ -210,7 +212,10 @@ fn assign_mode(
         actual.members = if modules && row.definition.kind == s::DefinitionKind::Module
             || matches!(
                 row.definition.kind,
-                s::DefinitionKind::Trait | s::DefinitionKind::SelfType | s::DefinitionKind::Struct
+                s::DefinitionKind::Trait
+                    | s::DefinitionKind::SelfType
+                    | s::DefinitionKind::Struct
+                    | s::DefinitionKind::Enum
             ) {
             Some(owners[index])
         } else {

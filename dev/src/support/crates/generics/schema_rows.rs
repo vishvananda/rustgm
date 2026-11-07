@@ -18,6 +18,11 @@ pub use compiler_rows::*;
 mod inputs;
 #[path = "record_contracts.rs"]
 mod nominal_contracts;
+#[path = "sum_contracts.rs"]
+mod sum_contracts;
+pub use sum_contracts::{
+    EnumColumns, EnumHeader, VariantField, VariantHeader, VariantShape, nominal_kind,
+};
 #[path = "slot_domains.rs"]
 mod scopes;
 #[path = "authored_domains.rs"]
@@ -402,6 +407,8 @@ pub struct Rows {
     pub compiler_operations: Vec<CompilerOperation>,
     pub nominals: Vec<NominalHeader>,
     pub fields: Vec<NominalField>,
+    /// Version thirteen: enum variant tables, present only with an enum.
+    pub enums: EnumColumns,
     pub policy: Policy,
     pub declarations: Vec<Declaration>,
     pub body_owners: Vec<BodyOwner>,

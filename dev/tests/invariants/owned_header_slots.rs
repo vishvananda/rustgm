@@ -12,6 +12,7 @@ fn empty_rows(slots: Vec<ParameterSlot>, scopes: Vec<ParameterScope>) -> SourceR
         compiler_operations: Vec::new(),
         nominals: Vec::new(),
         fields: Vec::new(),
+        enums: EnumColumns::default(),
         policy: Policy {
             edition: crate::support::edition::Edition::Rust2024,
             provider: ArtifactRef(0),

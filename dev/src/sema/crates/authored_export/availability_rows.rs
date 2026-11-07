@@ -369,7 +369,12 @@ impl Stage {
         if let Some(source) = definition.node {
             let actual = matches!(
                 definition.kind,
-                DefKind::Module | DefKind::Trait | DefKind::Struct | DefKind::Function
+                DefKind::Module
+                    | DefKind::Trait
+                    | DefKind::Struct
+                    | DefKind::Enum
+                    | DefKind::Variant
+                    | DefKind::Function
             ) || (definition.kind == DefKind::SelfType
                 && matches!(report.package.unit(source.file).configured.ast.node(source.node).kind,Kind::Item(item) if matches!(report.package.unit(source.file).configured.ast.items[item as usize].kind,crate::syntax::item::ItemKind::Impl {..})));
             if actual {

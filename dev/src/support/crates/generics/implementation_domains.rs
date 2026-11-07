@@ -244,6 +244,7 @@ impl ModuleContractColumns {
                 s::DefinitionKind::Module
                     | s::DefinitionKind::Trait
                     | s::DefinitionKind::Struct
+                    | s::DefinitionKind::Enum
                     | s::DefinitionKind::Function
             ) && row.definition.parent.is_some_and(|p| {
                 rows.declarations[p.0 as usize].definition.kind == s::DefinitionKind::Module
@@ -266,9 +267,10 @@ impl ModuleContractColumns {
             .get(entry.target.declaration.0 as usize)
             .ok_or("module target declaration is absent")?;
         let expected = match target.definition.kind {
-            s::DefinitionKind::Module | s::DefinitionKind::Trait | s::DefinitionKind::Struct => {
-                Namespace::Type
-            }
+            s::DefinitionKind::Module
+            | s::DefinitionKind::Trait
+            | s::DefinitionKind::Struct
+            | s::DefinitionKind::Enum => Namespace::Type,
             s::DefinitionKind::Function => Namespace::Value,
             _ => return Err("module binding target requires a wider declaration profile"),
         };

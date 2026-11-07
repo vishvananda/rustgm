@@ -218,7 +218,7 @@ pub(super) const fn scalar(value: Scalar) -> TypeId {
 pub(crate) fn scalar_cast(from: Scalar, to: Scalar) -> Option<super::model::Cast> {
     super::scalar::cast(scalar_primitive(from)?, scalar_primitive(to)?)
 }
-const fn scalar_primitive(value: Scalar) -> Option<Primitive> {
+pub(crate) const fn scalar_primitive(value: Scalar) -> Option<Primitive> {
     Some(match value {
         Scalar::Unit => return None,
         Scalar::Bool => Primitive::Bool,

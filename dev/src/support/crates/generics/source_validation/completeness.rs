@@ -64,6 +64,8 @@ pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<Ledger, &'s
             DefinitionKind::Function
                 | DefinitionKind::Trait
                 | DefinitionKind::Struct
+                | DefinitionKind::Enum
+                | DefinitionKind::Variant
                 | DefinitionKind::AssociatedType
         ) && headers[index].is_none()
         {
@@ -228,6 +230,7 @@ fn nominal_inputs(
     work: &mut Work,
 ) -> Result<(), &'static str> {
     super::super::nominal_contracts::headers(rows, headers, work)?;
+    super::super::sum_contracts::headers(rows, headers, work)?;
     for header in &rows.nominals {
         inputs(
             rows,

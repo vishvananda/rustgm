@@ -12,6 +12,9 @@ pub(super) fn prepare(
             demand(field.ty)?;
         }
     }
+    for field in &rows.enums.fields {
+        demand(field.ty)?;
+    }
     for header in &rows.functions {
         for signature in [header.original, header.callable] {
             for &root in signature.parameters.slice(&rows.roots).map_err(error)? {

@@ -149,10 +149,17 @@ fn unsupported_malformed_and_relabelled_nodes_reject_in_fresh_consumers() -> Res
             with_id(&bytes, node + 13, 6),
             "changed its primitive result type",
         ),
+        // Amended with the enum-match checkpoint: code 14 is now a
+        // reconstructable constructor test whose operands differ.
         (
             "is-variant",
             set(&bytes, node, 14),
-            "encoded Rvalue::IsVariant is not reconstructable by this consumer",
+            "body IR value node has malformed operands",
+        ),
+        (
+            "validate",
+            set(&bytes, node, 15),
+            "encoded Rvalue::Validate is not reconstructable by this consumer",
         ),
         (
             "unknown-value",

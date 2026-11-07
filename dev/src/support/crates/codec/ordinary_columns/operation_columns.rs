@@ -218,6 +218,11 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
         s::ValueKind::Invoke { .. } => {
             Err("source call operators require the version-thirteen body IR profile")
         }
+        s::ValueKind::VariantAggregate { .. }
+        | s::ValueKind::IsVariant { .. }
+        | s::ValueKind::EnumCast(_) => {
+            Err("source enum operations require the version-thirteen body IR profile")
+        }
         s::ValueKind::Call {
             signature,
             callee,

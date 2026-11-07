@@ -21,6 +21,8 @@ mod operation_exports;
 mod payments;
 mod scoped_parameters;
 mod self_requests;
+#[path = "authored_export/sum_headers.rs"]
+mod sum_headers;
 mod verbatim_exports;
 use crate::{
     resolve::{
@@ -141,6 +143,9 @@ pub(crate) struct Stage {
     nominal_transport: bool,
     compiler_operations: bool,
     body_transport: BodyTransport,
+    /// Version thirteen: each exported enum variant's constructor declaration,
+    /// indexed by its local `VariantId`.
+    variants: Vec<Option<DeclarationRef>>,
 }
 /// The original body vocabulary a module publication may retain.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -461,6 +466,7 @@ impl Stage {
             ),
             compiler_operations: mode == ExportMode::CompilerOperations,
             body_transport,
+            variants: Vec::new(),
             role_installation_steps: facts
                 .source_bindings
                 .as_deref()
@@ -524,6 +530,18 @@ impl Stage {
         }
         Ok(())
     }
+    /// The exported constructor declaration naming a local enum variant.
+    pub(crate) fn variant(
+        &mut self,
+        variant: crate::sema::members::VariantId,
+    ) -> Result<DeclarationRef, &'static str> {
+        self.charge(1)?;
+        self.variants
+            .get(variant.0 as usize)
+            .copied()
+            .flatten()
+            .ok_or("source variant is outside its exported enum header")
+    }
     pub(crate) fn declaration(
         &mut self,
         definition: DefId,
@@ -561,6 +579,24 @@ impl Stage {
             && matches!(mode, ExportMode::Nominals | ExportMode::CompilerOperations)
         {
             return Ok(Some(s::DefinitionKind::Struct));
+        }
+        if self.body_nodes() && mode == ExportMode::Nominals {
+            match definition.kind {
+                DefKind::Enum => return Ok(Some(s::DefinitionKind::Enum)),
+                // One declaration names a variant: its value-namespace
+                // constructor. The type-namespace alias has no row.
+                DefKind::Variant if definition.namespace == Namespace::Value => {
+                    return Ok(Some(s::DefinitionKind::Variant));
+                }
+                DefKind::Variant => {
+                    return if facts.members.constructor(id).is_some() {
+                        Ok(None)
+                    } else {
+                        Err("source record variants require their wider profile")
+                    };
+                }
+                _ => {}
+            }
         }
         kind(definition.kind, definition.namespace)
     }
@@ -608,6 +644,12 @@ impl Stage {
             }
             let parent = if Some(id) == report.resolution.crate_root {
                 None
+            } else if kind == s::DefinitionKind::Variant {
+                let variant = facts
+                    .members
+                    .constructor(id)
+                    .ok_or("source variant lacks its actual constructor")?;
+                Some(DefId(facts.members.variants[variant.0 as usize].owner.0))
             } else {
                 let mut scope = definition.scope;
                 if owners.get(scope.0 as usize).copied().flatten() == Some(id) {
@@ -643,6 +685,9 @@ impl Stage {
                     .map_err(|_| "source declaration table overflow")?,
             );
             self.definitions[index] = Some(row);
+            if kind == s::DefinitionKind::Variant {
+                self.publish_variant(facts, id, row)?;
+            }
             parents.push(parent);
             self.rows.declarations.push(s::Declaration {
                 definition: s::Definition { kind, parent: None },
@@ -860,6 +905,7 @@ fn rows(edition: crate::support::edition::Edition) -> s::SourceRows {
         compiler_operations: Vec::new(),
         nominals: Vec::new(),
         fields: Vec::new(),
+        enums: s::EnumColumns::default(),
         policy: s::Policy {
             edition,
             provider: s::ArtifactRef(0),

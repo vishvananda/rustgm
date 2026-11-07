@@ -152,6 +152,7 @@ fn validate_definitions(
                     | DefKind::Static
                     | DefKind::Struct
                     | DefKind::Enum
+                    | DefKind::Variant
                     | DefKind::Trait
                     | DefKind::TypeAlias
                     | DefKind::SelfType

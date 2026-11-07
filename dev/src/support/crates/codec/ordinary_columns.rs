@@ -4,6 +4,7 @@ mod availability_wire;
 mod cfg_columns;
 mod compiler_wire;
 mod contract_columns;
+mod enums_wire;
 mod exemption_wire;
 #[path = "ordinary_columns/annotation_rows.rs"]
 mod header_facts;
@@ -93,6 +94,7 @@ pub(super) fn encode_module_availability(
     }
     if rows.descriptor().profile().body_nodes() {
         results_wire::encode(out, rows)?;
+        enums_wire::encode(out, rows)?;
     }
     let const_bodies = rows.availability()?.const_bodies.as_deref();
     if rows.descriptor().profile().compiler_operations() {
@@ -200,6 +202,7 @@ fn decode_availability_profile(
     }
     if profile.body_nodes() {
         results_wire::decode(&mut read, &mut rows)?;
+        enums_wire::decode(&mut read, &mut rows)?;
     }
     availability.const_bodies = if profile.compiler_operations() {
         match read.reader.u8()? {
@@ -405,6 +408,7 @@ fn decode_profile_with(
         compiler_operations: Vec::new(),
         nominals: Vec::new(),
         fields: Vec::new(),
+        enums: s::EnumColumns::default(),
         exact_callables: Vec::new(),
         policy: s::Policy {
             edition: Edition::Rust2024,

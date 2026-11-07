@@ -24,6 +24,8 @@ mod imported_regions;
 mod imports;
 #[path = "crate_linking/instantiable.rs"]
 mod instantiable;
+#[path = "crate_linking/match_transport.rs"]
+mod match_transport;
 #[path = "crate_linking/named_values.rs"]
 mod named_values;
 #[path = "crate_linking/namespace_clients.rs"]

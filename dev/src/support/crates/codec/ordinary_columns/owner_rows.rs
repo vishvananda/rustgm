@@ -17,6 +17,8 @@ pub(super) fn declaration_write(
         s::DefinitionKind::Local => 7,
         s::DefinitionKind::Struct => 8,
         s::DefinitionKind::AssociatedType => 9,
+        s::DefinitionKind::Enum => 10,
+        s::DefinitionKind::Variant => 11,
     })?;
     option(out, row.definition.parent.map(|r| r.0))?;
     id(out, row.ordinal)?;
@@ -48,6 +50,8 @@ pub(super) fn declaration_read(read: &mut Input<'_, '_>) -> Result<s::Declaratio
         9 if read.profile.compiler_operations() || read.profile.body_nodes() => {
             s::DefinitionKind::AssociatedType
         }
+        10 if read.profile.body_nodes() => s::DefinitionKind::Enum,
+        11 if read.profile.body_nodes() => s::DefinitionKind::Variant,
         _ => return Err("unknown source declaration kind"),
     };
     Ok(s::Declaration {

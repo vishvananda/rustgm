@@ -66,33 +66,13 @@ pub(super) fn build(
     })?;
     body.projections = regional_records::projections(view, work)?;
     encoded_literals::allocate(record, &mut body, work)?;
-    body.values = record.values.iter().map(|value| Ok(Value {
-        ty: view.ty(value.ty, &mut work.steps)?,
-        kind: match value.kind {
-            s::ValueKind::Unit => Rvalue::Unit,
-            s::ValueKind::Aggregate {fields} => Rvalue::Aggregate {variant:Some(view.nominal_variant(value.ty,&mut work.steps)?),fields:crate::body::ir::ValueList {start:fields.start,end:fields.end}},
-            s::ValueKind::Scalar(_) => encoded_literals::append(view, *value, &mut body)?,
-            s::ValueKind::Read(place) => Rvalue::Read(regional_records::place(view, place)?),
-            s::ValueKind::Borrow(place) => regional_records::borrow(view, place, BorrowKind::Immediate)?,
-            s::ValueKind::TwoPhaseBorrow(place) => regional_records::borrow(view, place, BorrowKind::TwoPhase)?,
-            s::ValueKind::Constrain(value) => Rvalue::Constrain(ValueId(value)),
-            s::ValueKind::Binary { .. } => binary(view, value.kind)?,
-            s::ValueKind::ScalarCast(_) => {
-                let (kind, operand) = scalar_cast(view, *value)?;
-                Rvalue::Cast { kind, operand, direct_variant: false }
-            }
-            s::ValueKind::Function(application) if v4(view) => Rvalue::Function(view.function(application, &mut work.steps)?),
-            s::ValueKind::Call {signature, callee, arguments} if v4(view) => Rvalue::Call {
-                signature:view.ty(signature, &mut work.steps)?, callee:ValueId(callee),
-                arguments:crate::body::ir::ValueList {start:arguments.start, end:arguments.end},
-            },
-            s::ValueKind::Invoke {kind, signature, arguments} if view.rows().descriptor().profile().body_nodes() => Rvalue::Invoke {
-                kind, signature: view.ty(signature, &mut work.steps)?,
-                arguments: crate::body::ir::ValueList {start: arguments.start, end: arguments.end},
-            },
-            _ => return Err("source value operation requires its wider actual reconstruction profile"),
-        },
-    })).collect::<Result<_, &'static str>>()?;
+    let mut values = Vec::with_capacity(record.values.len());
+    for value in &record.values {
+        let ty = view.ty(value.ty, &mut work.steps)?;
+        let kind = value_kind(view, *value, &mut body, work)?;
+        values.push(Value { ty, kind });
+    }
+    body.values = values;
     work.charge(record.arguments.len())?;
     body.arguments = record.arguments.iter().copied().map(ValueId).collect();
     body.statements = record
@@ -120,6 +100,87 @@ pub(super) fn build(
     )?;
     owned(view, &mut body, work)?;
     Ok(body)
+}
+/// One value row's rebuilt operation; the row's types were re-proved by the
+/// consumer's own validation.
+fn value_kind(
+    view: &SourceOriginal<'_>,
+    value: s::Value,
+    body: &mut Body,
+    work: &mut ImportedOriginals,
+) -> Result<Rvalue, &'static str> {
+    Ok(match value.kind {
+        s::ValueKind::Unit => Rvalue::Unit,
+        s::ValueKind::Aggregate { fields } => Rvalue::Aggregate {
+            variant: Some(view.nominal_variant(value.ty, &mut work.steps)?),
+            fields: crate::body::ir::ValueList {
+                start: fields.start,
+                end: fields.end,
+            },
+        },
+        s::ValueKind::Scalar(_) => encoded_literals::append(view, value, body)?,
+        s::ValueKind::Read(place) => Rvalue::Read(regional_records::place(view, place)?),
+        s::ValueKind::Borrow(place) => {
+            regional_records::borrow(view, place, BorrowKind::Immediate)?
+        }
+        s::ValueKind::TwoPhaseBorrow(place) => {
+            regional_records::borrow(view, place, BorrowKind::TwoPhase)?
+        }
+        s::ValueKind::Constrain(value) => Rvalue::Constrain(ValueId(value)),
+        s::ValueKind::Binary { .. } => binary(view, value.kind)?,
+        s::ValueKind::ScalarCast(_) => {
+            let (kind, operand) = scalar_cast(view, value)?;
+            Rvalue::Cast {
+                kind,
+                operand,
+                direct_variant: false,
+            }
+        }
+        s::ValueKind::Function(application) if v4(view) => {
+            Rvalue::Function(view.function(application, &mut work.steps)?)
+        }
+        s::ValueKind::Call {
+            signature,
+            callee,
+            arguments,
+        } if v4(view) => Rvalue::Call {
+            signature: view.ty(signature, &mut work.steps)?,
+            callee: ValueId(callee),
+            arguments: crate::body::ir::ValueList {
+                start: arguments.start,
+                end: arguments.end,
+            },
+        },
+        s::ValueKind::Invoke {
+            kind,
+            signature,
+            arguments,
+        } if view.rows().descriptor().profile().body_nodes() => Rvalue::Invoke {
+            kind,
+            signature: view.ty(signature, &mut work.steps)?,
+            arguments: crate::body::ir::ValueList {
+                start: arguments.start,
+                end: arguments.end,
+            },
+        },
+        s::ValueKind::VariantAggregate { variant, fields } => Rvalue::Aggregate {
+            variant: Some(view.variant(variant, &mut work.steps)?),
+            fields: crate::body::ir::ValueList {
+                start: fields.start,
+                end: fields.end,
+            },
+        },
+        s::ValueKind::IsVariant { place, variant } => Rvalue::IsVariant {
+            place: regional_records::place(view, place)?,
+            variant: view.variant(variant, &mut work.steps)?,
+        },
+        s::ValueKind::EnumCast(operand) => Rvalue::Cast {
+            kind: crate::sema::model::Cast::EnumToInteger,
+            operand: ValueId(operand),
+            direct_variant: false,
+        },
+        _ => return Err("source value operation requires its wider actual reconstruction profile"),
+    })
 }
 fn action(view: &SourceOriginal<'_>, record: s::Action) -> Result<Action, &'static str> {
     Ok(match record {
@@ -442,6 +503,54 @@ fn ports(view: &SourceOriginal<'_>, body: &Body, steps: &mut usize) -> Result<()
     Ok(())
 }
 /// One rebuilt value against its record; scalars advance their shared cursor.
+/// The version-thirteen enum operations; `None` for every other form.
+fn same_variant_value(
+    view: &SourceOriginal<'_>,
+    (actual, record): (Rvalue, s::ValueKind),
+    steps: &mut usize,
+) -> Result<Option<bool>, &'static str> {
+    Ok(Some(match (actual, record) {
+        (
+            Rvalue::Aggregate {
+                variant: Some(actual),
+                fields,
+            },
+            s::ValueKind::VariantAggregate {
+                variant,
+                fields: raw,
+            },
+        ) => {
+            actual == view.variant(variant, steps)?
+                && fields.start == raw.start
+                && fields.end == raw.end
+        }
+        (
+            Rvalue::IsVariant { place, variant },
+            s::ValueKind::IsVariant {
+                place: raw,
+                variant: expected,
+            },
+        ) => {
+            place == regional_records::place(view, raw)?
+                && variant == view.variant(expected, steps)?
+        }
+        (
+            Rvalue::Cast {
+                kind: crate::sema::model::Cast::EnumToInteger,
+                operand,
+                direct_variant: false,
+            },
+            s::ValueKind::EnumCast(raw),
+        ) => operand.0 == raw,
+        (
+            _,
+            s::ValueKind::VariantAggregate { .. }
+            | s::ValueKind::IsVariant { .. }
+            | s::ValueKind::EnumCast(_),
+        ) => false,
+        _ => return Ok(None),
+    }))
+}
 fn same_value(
     view: &SourceOriginal<'_>,
     (actual, record): (&Value, s::Value),
@@ -449,6 +558,9 @@ fn same_value(
     scalar: &mut usize,
     steps: &mut usize,
 ) -> Result<bool, &'static str> {
+    if let Some(same) = same_variant_value(view, (actual.kind, record.kind), steps)? {
+        return Ok(same);
+    }
     Ok(match (actual.kind, record.kind) {
         (Rvalue::Unit, s::ValueKind::Unit) => true,
         (

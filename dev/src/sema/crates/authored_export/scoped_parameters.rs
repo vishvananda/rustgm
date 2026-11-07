@@ -28,6 +28,7 @@ impl Stage {
                         | DefKind::Trait
                         | DefKind::Function
                         | DefKind::Struct
+                        | DefKind::Enum
                         | DefKind::TypeAlias
                 );
         }

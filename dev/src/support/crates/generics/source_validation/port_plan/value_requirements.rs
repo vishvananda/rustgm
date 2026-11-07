@@ -26,8 +26,15 @@ impl Builder<'_, '_, '_> {
         match value.kind {
             s::ValueKind::Unit => self.unit(original, value.ty, work),
             s::ValueKind::Aggregate { fields } => {
-                self.nominal_value(original, value.ty, fields, work)
+                self.nominal_value(original, (value.ty, None), fields, work)
             }
+            s::ValueKind::VariantAggregate { variant, fields } => {
+                self.nominal_value(original, (value.ty, Some(variant)), fields, work)
+            }
+            s::ValueKind::IsVariant { place, variant } => {
+                self.variant_test(original, (value.ty, place), variant, work)
+            }
+            s::ValueKind::EnumCast(operand) => self.enum_cast(original, value.ty, operand, work),
             // Domain validation checked the exact primitive type and canonical bits.
             // Formation above remains an ordinary unpaid request.
             s::ValueKind::Scalar(_) | s::ValueKind::ScalarCast(_) | s::ValueKind::Binary { .. } => {

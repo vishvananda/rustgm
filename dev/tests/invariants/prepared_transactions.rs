@@ -23,7 +23,9 @@ fn external_member_batches_reject_failure_duplicate_owner_stale_and_foreign_dest
     let value = field(&mut members, 7)?;
     assert!(
         members
-            .prepare_external_batch(vec![(ItemId(7), vec![value])], |_, _| Err("unpaid"))
+            .prepare_external_nominals(vec![(ItemId(7), vec![value])], Vec::new(), |_, _| Err(
+                "unpaid"
+            ))
             .is_err()
     );
     assert!(members.variants.is_empty() && members.fields.is_empty());
@@ -32,20 +34,26 @@ fn external_member_batches_reject_failure_duplicate_owner_stale_and_foreign_dest
     let foreign = field(&mut members, 8)?;
     assert!(
         members
-            .prepare_external_batch(vec![(ItemId(7), vec![foreign])], |_, _| Ok(()))
+            .prepare_external_nominals(vec![(ItemId(7), vec![foreign])], Vec::new(), |_, _| Ok(()))
             .is_err()
     );
-    let plan = members.prepare_external_batch(vec![(ItemId(7), vec![value])], |_, _| Ok(()))?;
+    let plan =
+        members
+            .prepare_external_nominals(vec![(ItemId(7), vec![value])], Vec::new(), |_, _| Ok(()))?;
     assert!(plan.ready(&mut Members::default()).is_err());
-    let plan = members.prepare_external_batch(vec![(ItemId(7), vec![value])], |_, _| Ok(()))?;
+    let plan =
+        members
+            .prepare_external_nominals(vec![(ItemId(7), vec![value])], Vec::new(), |_, _| Ok(()))?;
     members.insert_external(ItemId(8), &[foreign])?;
     assert!(plan.ready(&mut members).is_err());
-    let plan = members.prepare_external_batch(vec![(ItemId(7), vec![value])], |_, _| Ok(()))?;
+    let plan =
+        members
+            .prepare_external_nominals(vec![(ItemId(7), vec![value])], Vec::new(), |_, _| Ok(()))?;
     plan.ready(&mut members)?.install();
     assert_eq!(members.fields.len(), 2);
     assert!(
         members
-            .prepare_external_batch(vec![(ItemId(7), vec![value])], |_, _| Ok(()))
+            .prepare_external_nominals(vec![(ItemId(7), vec![value])], Vec::new(), |_, _| Ok(()))
             .is_err()
     );
     Ok(())
@@ -58,18 +66,18 @@ fn external_shape_batches_require_paid_unique_current_destination_frontiers() ->
     let row = (ItemId(7), Repr::default(), fields);
     assert!(
         shapes
-            .prepare_imported_structs(&[row], |_, _| Err("unpaid"))
+            .prepare_imported_nominals(&types, &[row], &[], |_, _| Err("unpaid"))
             .is_err()
     );
     assert!(shapes.get(ItemId(7)).is_none());
     assert!(
         shapes
-            .prepare_imported_structs(&[row, row], |_, _| Ok(()))
+            .prepare_imported_nominals(&types, &[row, row], &[], |_, _| Ok(()))
             .is_err()
     );
-    let plan = shapes.prepare_imported_structs(&[row], |_, _| Ok(()))?;
+    let plan = shapes.prepare_imported_nominals(&types, &[row], &[], |_, _| Ok(()))?;
     assert!(plan.ready(&mut Definitions::default()).is_err());
-    let plan = shapes.prepare_imported_structs(&[row], |_, _| Ok(()))?;
+    let plan = shapes.prepare_imported_nominals(&types, &[row], &[], |_, _| Ok(()))?;
     shapes.insert(
         ItemId(8),
         Kind::Struct,
@@ -80,7 +88,7 @@ fn external_shape_batches_require_paid_unique_current_destination_frontiers() ->
         }],
     )?;
     assert!(plan.ready(&mut shapes).is_err());
-    let plan = shapes.prepare_imported_structs(&[row], |_, _| Ok(()))?;
+    let plan = shapes.prepare_imported_nominals(&types, &[row], &[], |_, _| Ok(()))?;
     plan.ready(&mut shapes)?.install();
     assert_eq!(shapes.iter().count(), 2);
     Ok(())

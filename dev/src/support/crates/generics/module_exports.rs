@@ -267,7 +267,8 @@ impl NamespaceColumns {
             let expected = match target.definition.kind {
                 s::DefinitionKind::Module
                 | s::DefinitionKind::Trait
-                | s::DefinitionKind::Struct => Namespace::Type,
+                | s::DefinitionKind::Struct
+                | s::DefinitionKind::Enum => Namespace::Type,
                 s::DefinitionKind::Function => Namespace::Value,
                 _ => return Err("namespace target requires a wider declaration-kind profile"),
             };

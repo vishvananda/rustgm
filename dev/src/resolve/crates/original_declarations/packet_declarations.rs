@@ -258,6 +258,9 @@ pub(super) fn kind(kind: s::DefinitionKind) -> (DefKind, Namespace) {
     match kind {
         s::DefinitionKind::Module => (DefKind::Module, Namespace::Type),
         s::DefinitionKind::Struct => (DefKind::Struct, Namespace::Type),
+        s::DefinitionKind::Enum => (DefKind::Enum, Namespace::Type),
+        // One declaration names each variant; its constructor is its value.
+        s::DefinitionKind::Variant => (DefKind::Variant, Namespace::Value),
         s::DefinitionKind::AssociatedType => (DefKind::TypeAlias, Namespace::Type),
         s::DefinitionKind::Trait => (DefKind::Trait, Namespace::Type),
         s::DefinitionKind::SelfType => (DefKind::SelfType, Namespace::Type),

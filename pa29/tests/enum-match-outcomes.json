@@ -1,0 +1,144 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+  "providers": [
+    {
+      "file": "spec/enum-match/provider.rs",
+      "sha256": "3a7c411c40230b3ae9a68cef311a7e3f5d47d5ad943493595e330fb7a1d28fd5"
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "cases": [
+    {
+      "file": "spec/enum-match/fieldless.rs",
+      "provider": "spec/enum-match/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "e33b52b9644d276c7c9281864ca2ed0bc0fb86f9525e6a0e869914013107a9d6"
+    },
+    {
+      "file": "spec/enum-match/tagged.rs",
+      "provider": "spec/enum-match/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "73c746aea2af876910a674dd38f7fab3a3589ce6c3853b41b210e92a3ad151e3"
+    },
+    {
+      "file": "spec/enum-match/generic.rs",
+      "provider": "spec/enum-match/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "445bed942f6d14c6b245e4466b82884341e2fb8f6bb083ea7edcaf62e06e8f79"
+    },
+    {
+      "file": "spec/enum-match/mapped.rs",
+      "provider": "spec/enum-match/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "6eb74641a0b80e96a39824b8b803ef7ea5f7ac5b35a81bc3838c12d0e18f83de"
+    },
+    {
+      "file": "spec/enum-match/by-ref.rs",
+      "provider": "spec/enum-match/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "b54a8cb08e95dc22fffbaa89dbe4d598ad9b829d86c303e87bbb4e951bff192b"
+    },
+    {
+      "file": "spec/enum-match/wrong-enum.rs",
+      "provider": "spec/enum-match/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0308",
+      "sha256": "ad8d1a49ad29080a0e0b96dbe39992cb301b7816fa9cc86b6245e8f46244b7fe"
+    },
+    {
+      "file": "spec/enum-match/wrong-payload.rs",
+      "provider": "spec/enum-match/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0308",
+      "sha256": "226750ed6596068ee9ae9b4c4187db146a9ef30e97d73d81793ccc9c80b5b952"
+    }
+  ],
+  "candidate_opponent_diagnostic": "incompatible types",
+  "deviations": [
+    "payload values use the braced tuple-variant constructor `Opt::Some { 0: x }`; a called constructor item stays fenced (generated control `called`)",
+    "the by-reference binding is `Opt::Some(ref x) => *x` over an owned scrutinee; `match &o` and reference parameters are outside the checkpoint",
+    "`map` is a free generic function; inherent impl methods on enums are outside the checkpoint",
+    "no match guard appears in a frozen fixture; guards stay fenced (generated control `guarded`)",
+    "clients compare results with nested literal matches; no imported comparison operator is declared"
+  ],
+  "older_profiles": {
+    "module-branches-v12 and module-nominals-v10 exports of spec/enum-match/provider.rs": "rejected: named, associated or generic alias transport requires its wider profile (the callable-role section is rejected first)",
+    "module-branches-v12 and module-nominals-v10 exports of lines 1-62 of spec/enum-match/provider.rs plus `pub enum Two { A, B }`": "rejected: source declaration kind is outside the initial source profile",
+    "byte_identity": "module-bodies-v13 exports of spec/source-nominals/provider.rs, spec/callable-roles/provider.rs, spec/source-body-ir/{provider,wire}.rs, spec/language-roles/provider.rs and spec/associated-results/provider.rs, module-branches-v12 exports of spec/source-branches/{provider,wait,spin}.rs and the module-nominals-v10 exports of spec/source-branches/spin.rs and spec/source-nominals/provider.rs, with every fresh consumer of each fixture directory (LowIR, status and diagnostics; 395 files), equal the main 9f3c0c64b baseline bytes"
+  },
+  "generated_controls": [
+    {
+      "control": "provider.rs plus `pub fn wrap(x: u8) -> Opt<u8> { Opt::Some(x) }`",
+      "expected": "rustc accepts; the candidate export rejects the called tuple-variant constructor by name",
+      "observed": "source call target has no staged actual function header"
+    },
+    {
+      "control": "provider.rs plus `large` and `pub fn guard(o: Opt<u8>) -> u8 { match o { Opt::Some(x) if large(x) => x, _ => 0 } }`",
+      "expected": "rustc accepts; the candidate export rejects the guard by name",
+      "observed": "source guard facts require a wider transport profile"
+    },
+    {
+      "control": "6, 24 and 96 generated fieldless `Wide` variants with a constant-arm `rank` match and one client",
+      "expected": "packet bytes grow exactly linearly; the client LowIR grows at most linearly"
+    }
+  ],
+  "wire_controls": [
+    {
+      "mutation": "pick's second constructor test Two::B -> Two::A",
+      "observed": "transported match is not exhaustive over its enum"
+    },
+    {
+      "mutation": "or's Some test -> None (None tested twice)",
+      "observed": "transported match is not exhaustive over its enum"
+    },
+    {
+      "mutation": "or's Some and None tests swapped",
+      "observed": "source downcast field use is not dominated by its variant test"
+    },
+    {
+      "mutation": "pick's first constructor test Two::A -> Opt::None",
+      "observed": "source variant belongs to another actual enum"
+    },
+    {
+      "mutation": "Tag::High discriminant 39 -> 3",
+      "observed": "source enum has a duplicate discriminant"
+    },
+    {
+      "mutation": "Tag::High discriminant 39 -> 295 (beyond u8)",
+      "observed": "source enum discriminant exceeds its representation"
+    },
+    {
+      "mutation": "Opt::Some discriminant 1 -> 5 (default representation)",
+      "observed": "source data enum discriminants require an integer representation"
+    },
+    {
+      "mutation": "Opt::Some shape tuple -> unit",
+      "observed": "source unit variant carries payload fields"
+    },
+    {
+      "mutation": "Opt::Some shape byte 2",
+      "observed": "unknown source variant shape"
+    },
+    {
+      "mutation": "version byte relabelled 13 to 12",
+      "observed": "unknown source declaration kind"
+    },
+    {
+      "mutation": "every strict prefix",
+      "observed": "fails to decode"
+    }
+  ],
+  "expectations_recorded": "candidate diagnostics and wire-control observations recorded at first observation; the older-profile enum control was narrowed to an enum-only provider after the full provider was observed to stop at its callable-role aliases"
+}

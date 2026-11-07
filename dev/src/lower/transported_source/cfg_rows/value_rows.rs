@@ -21,7 +21,13 @@ pub(super) fn emit(
             ir::Rvalue::Aggregate {
                 variant: Some(variant),
                 fields,
-            } if stage.nominal_transport() => aggregate(facts, value.ty, variant, fields)?,
+            } if stage.nominal_transport() => aggregate(stage, facts, value.ty, variant, fields)?,
+            ir::Rvalue::IsVariant { .. }
+            | ir::Rvalue::Cast {
+                kind: crate::sema::model::Cast::EnumToInteger,
+                direct_variant: false,
+                ..
+            } if stage.body_nodes() => variant_operation(stage, value.kind)?,
             ir::Rvalue::Scalar(id) if stage.feature_predicates() => {
                 scalar(facts, body, value.ty, id)?
             }
@@ -79,27 +85,13 @@ pub(super) fn emit(
                 signature,
                 arguments,
             )?,
-            ir::Rvalue::Call {
-                signature,
-                callee,
-                arguments,
-            } => s::ValueKind::Call {
-                signature: stage.call_signature(
-                    facts,
-                    signature,
-                    context,
-                    u32::try_from(index).map_err(|_| "source call value overflow")?,
-                )?,
-                callee: callee.0,
-                arguments: g::Range {
-                    start: arguments.start,
-                    end: arguments.end,
-                },
-            },
+            ir::Rvalue::Call { .. } => call(stage, facts, context, index, value.kind)?,
             _ => return Err("source rvalue requires a complete wider transport row"),
         };
         let ty = stage.ty(facts, value.ty, context)?;
-        if stage.feature_predicates() && matches!(kind, s::ValueKind::Function(_)) {
+        if stage.feature_predicates() && matches!(kind, s::ValueKind::Function(_))
+            || requested_formation(stage, facts, value.ty)
+        {
             sites.function_formation(stage, body.source.root_body_site(), value.ty, ty)?;
         }
         stage.reserve(4 * size_of::<s::Value>())?;
@@ -108,6 +100,36 @@ pub(super) fn emit(
     Ok(())
 }
 
+/// A direct call keeps its own actual signature and argument range.
+fn call(
+    stage: &mut Stage,
+    facts: &mut Declarations,
+    context: Context,
+    index: usize,
+    kind: ir::Rvalue,
+) -> Result<s::ValueKind, &'static str> {
+    let ir::Rvalue::Call {
+        signature,
+        callee,
+        arguments,
+    } = kind
+    else {
+        return Err("source call changed its actual form");
+    };
+    Ok(s::ValueKind::Call {
+        signature: stage.call_signature(
+            facts,
+            signature,
+            context,
+            u32::try_from(index).map_err(|_| "source call value overflow")?,
+        )?,
+        callee: callee.0,
+        arguments: g::Range {
+            start: arguments.start,
+            end: arguments.end,
+        },
+    })
+}
 /// A call operator keeps its call trait and caller-side signature; a closure
 /// call entry would need its closure transport.
 fn invoke(
@@ -264,7 +286,31 @@ fn binary(
     })
 }
 
+/// Version thirteen: a closed nominal owns no local formation obligation, so
+/// the encoder requests one each consumer re-proves.
+pub(super) fn requested_formation(
+    stage: &Stage,
+    facts: &Declarations,
+    ty: crate::types::TypeId,
+) -> bool {
+    stage.body_nodes() && facts.types.contains_nominals(ty) == Some(true)
+}
+/// A constructor test or a fieldless enum's integer conversion.
+fn variant_operation(stage: &mut Stage, kind: ir::Rvalue) -> Result<s::ValueKind, &'static str> {
+    Ok(match kind {
+        ir::Rvalue::IsVariant {
+            place: target,
+            variant,
+        } => s::ValueKind::IsVariant {
+            place: place(target)?,
+            variant: stage.variant(variant)?,
+        },
+        ir::Rvalue::Cast { operand, .. } => s::ValueKind::EnumCast(operand.0),
+        _ => return Err("source enum operation changed its actual form"),
+    })
+}
 fn aggregate(
+    stage: &mut Stage,
     facts: &Declarations,
     ty: crate::types::TypeId,
     variant: crate::sema::members::VariantId,
@@ -273,15 +319,24 @@ fn aggregate(
     let Some(crate::types::Kind::Adt(owner, _)) = facts.types.kind(ty) else {
         return Err("source aggregate value lacks its actual nominal type");
     };
-    if facts.members.variants(owner) != [variant] {
+    let fields = g::Range {
+        start: fields.start,
+        end: fields.end,
+    };
+    let enumerated = facts
+        .aggregates
+        .get(owner)
+        .is_some_and(|shape| shape.kind == crate::types::aggregate::Kind::Enum);
+    if enumerated && stage.body_nodes() && facts.members.variants(owner).contains(&variant) {
+        return Ok(s::ValueKind::VariantAggregate {
+            variant: stage.variant(variant)?,
+            fields,
+        });
+    }
+    if enumerated || facts.members.variants(owner) != [variant] {
         return Err("source aggregate changed its actual nominal constructor field group");
     }
-    Ok(s::ValueKind::Aggregate {
-        fields: g::Range {
-            start: fields.start,
-            end: fields.end,
-        },
-    })
+    Ok(s::ValueKind::Aggregate { fields })
 }
 
 fn scalar(

@@ -100,7 +100,9 @@ impl DomainIndex<'_, '_> {
             | s::ValueKind::TwoPhaseBorrow(place) => {
                 Self::place(original, place, None, work)?;
             }
-            s::ValueKind::Constrain(operand) => prefix_value(original, operand, index, work)?,
+            s::ValueKind::Constrain(operand) | s::ValueKind::EnumCast(operand) => {
+                prefix_value(original, operand, index, work)?;
+            }
             s::ValueKind::ScalarCast(operand) => {
                 prefix_value(original, operand, index, work)?;
                 value.scalar_cast_types(original, &self.headers.rows().types)?;
@@ -147,7 +149,31 @@ impl DomainIndex<'_, '_> {
                     prefix_value(original, argument, index, work)?;
                 }
             }
+            s::ValueKind::VariantAggregate { variant, fields } => {
+                self.variant(variant, work)?;
+                for &argument in fields.slice(&original.arguments)? {
+                    prefix_value(original, argument, index, work)?;
+                }
+            }
+            s::ValueKind::IsVariant { place, variant } => {
+                self.variant(variant, work)?;
+                Self::place(original, place, None, work)?;
+            }
             s::ValueKind::Unit => {}
+        }
+        Ok(())
+    }
+    /// A variant operand names a validated variant row of this artifact.
+    fn variant(
+        &self,
+        variant: crate::support::crates::owner_catalog::DeclarationRef,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        if !matches!(
+            self.headers.header(variant, work)?,
+            Some(HeaderRef::Variant(_))
+        ) {
+            return Err("source variant operand does not name a validated enum variant");
         }
         Ok(())
     }

@@ -148,6 +148,9 @@ impl Reader {
                 rows.implementations[index as usize].declared_inputs as usize
             }
             Some(s::HeaderRef::AssociatedDefinition(_)) => 0,
+            Some(s::HeaderRef::Variant(_)) => {
+                return Err(error("source variant declarations own no input scope"));
+            }
             None => {
                 let (range, _) = originals::input_range(rows, *raw)?;
                 if range.start != range.end {

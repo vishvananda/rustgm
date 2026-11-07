@@ -13,6 +13,7 @@ mod rebuilt_operations;
 mod regional_records;
 mod safety_requests;
 mod untupled_calls;
+mod variant_facts;
 mod versioned_calls;
 use crate::{
     body::{regions::Contract, templates::Template},

@@ -84,6 +84,22 @@ pub enum ValueKind {
         signature: TypeRef,
         arguments: Range,
     },
+    /// Version thirteen: an enum variant constructed from its positional
+    /// payload. The variant declaration names its enum; the value type decides
+    /// the instance. No tag, niche or layout decision is serialized.
+    VariantAggregate {
+        variant: DeclarationRef,
+        fields: Range,
+    },
+    /// Version thirteen: the non-moving constructor test of an enum place.
+    /// Every consumer re-proves the facts any downcast field use relies on.
+    IsVariant {
+        place: Place,
+        variant: DeclarationRef,
+    },
+    /// Version thirteen: a fieldless enum's `as` conversion to its integer
+    /// result; the discriminants come from the consumer's validated header.
+    EnumCast(u32),
 }
 /// The reconstructable primitive operators. Add, Sub and Mul are checked: each
 /// consumer instance lowers its own overflow guard and abort exit. Div, Rem and

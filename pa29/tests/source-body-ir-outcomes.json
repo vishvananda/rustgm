@@ -161,7 +161,13 @@
     },
     {
       "mutation": "binary node code 14",
-      "expected": "encoded Rvalue::IsVariant is not reconstructable by this consumer"
+      "expected": "body IR value node has malformed operands",
+      "amended": "enum-match checkpoint: code 14 (Rvalue::IsVariant) became reconstructable under module-bodies-v13 with [Place, Declaration] operands, so a relabelled Binary node is a malformed supported form; the previous expectation was `encoded Rvalue::IsVariant is not reconstructable by this consumer`"
+    },
+    {
+      "mutation": "binary node code 15",
+      "expected": "encoded Rvalue::Validate is not reconstructable by this consumer",
+      "added": "enum-match checkpoint: keeps an allocated, unreconstructable value code under control"
     },
     {
       "mutation": "binary node code 200",

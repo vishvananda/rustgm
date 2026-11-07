@@ -471,6 +471,9 @@ fn originals(
                             | ValueKind::ScalarCast(_)
                             | ValueKind::Binary { .. }
                             | ValueKind::Invoke { .. }
+                            | ValueKind::VariantAggregate { .. }
+                            | ValueKind::IsVariant { .. }
+                            | ValueKind::EnumCast(_)
                     ))
             {
                 return Err("source value operation requires a wider explicit profile");
@@ -791,7 +794,7 @@ fn role_header(
             | Some(super::super::HeaderRef::Function(_) | super::super::HeaderRef::Implementation(_)),
         ) => return Err("source role has a different actual declaration/header kind"),
         (_, Some(super::super::HeaderRef::Trait(_))) => {}
-        (_, Some(super::super::HeaderRef::Nominal(_))) => {
+        (_, Some(super::super::HeaderRef::Nominal(_) | super::super::HeaderRef::Variant(_))) => {
             return Err("ordinary source roles cannot claim a nominal declaration");
         }
     }

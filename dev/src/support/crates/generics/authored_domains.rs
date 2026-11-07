@@ -50,6 +50,8 @@ pub enum HeaderRef {
     AssociatedType(u32),
     /// Version thirteen: an implementation's associated-result definition row.
     AssociatedDefinition(u32),
+    /// Version thirteen: one row of an enum's variant table.
+    Variant(u32),
 }
 
 pub(crate) type HeaderRows = (Vec<Option<HeaderRef>>, usize, super::bodymap::Shared);

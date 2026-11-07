@@ -69,7 +69,7 @@ impl Arena {
         &mut self,
         domains: &DomainIndex<'_, '_>,
         context: Context,
-        base: NodeId,
+        (base, variant): (NodeId, Option<DeclarationRef>),
         ordinal: u32,
         work: &mut Work,
     ) -> Result<NodeId, &'static str> {
@@ -91,17 +91,31 @@ impl Arena {
             return Err("source field base lacks its actual nominal header");
         };
         let row = &rows.nominals[index as usize];
-        let field = row
-            .fields
-            .slice(&rows.fields)?
-            .get(ordinal as usize)
-            .ok_or("source nominal field ordinal is outside its actual owner")?;
-        require_access(rows, context.owner, field.visibility, work)?;
+        let ty = if let Some(variant) = variant {
+            // A downcast field: its variant belongs to exactly this enum and
+            // inherits the enum's visibility. Which variant the place holds is
+            // re-proved over the consumer's own CFG, never taken from here.
+            let header = variant_header(domains, declaration.declaration, variant, work)?;
+            header
+                .fields
+                .slice(&rows.enums.fields)?
+                .get(ordinal as usize)
+                .ok_or("source variant field ordinal is outside its actual variant")?
+                .ty
+        } else {
+            let field = row
+                .fields
+                .slice(&rows.fields)?
+                .get(ordinal as usize)
+                .ok_or("source nominal field ordinal is outside its actual owner")?;
+            require_access(rows, context.owner, field.visibility, work)?;
+            field.ty
+        };
         self.root(
             domains,
             uses::key(
                 domains,
-                field.ty,
+                ty,
                 Rewrite::Nominal {
                     owner: row.scope,
                     arguments,
@@ -117,7 +131,7 @@ impl Builder<'_, '_, '_> {
     pub(super) fn nominal_value(
         &mut self,
         original: &s::Original,
-        ty: g::TypeRef,
+        (ty, variant): (g::TypeRef, Option<DeclarationRef>),
         fields: g::Range,
         work: &mut Work,
     ) -> Result<(), &'static str> {
@@ -132,7 +146,20 @@ impl Builder<'_, '_, '_> {
         else {
             return Err("source aggregate has no actual nominal header");
         };
-        let expected = self.domains.headers.rows().nominals[index as usize].fields;
+        let rows = self.domains.headers.rows();
+        let expected = match variant {
+            Some(variant) => {
+                variant_header(self.domains, declaration.declaration, variant, work)?.fields
+            }
+            None if rows.declarations[declaration.declaration.0 as usize]
+                .definition
+                .kind
+                == s::DefinitionKind::Enum =>
+            {
+                return Err("source enum aggregate omitted its actual variant");
+            }
+            None => rows.nominals[index as usize].fields,
+        };
         let values = fields.slice(&original.arguments)?;
         if values.len() != (expected.end - expected.start) as usize {
             return Err("source aggregate changed its complete actual field count");
@@ -142,7 +169,7 @@ impl Builder<'_, '_, '_> {
             let expected = self.arena.nominal_field(
                 self.domains,
                 context,
-                base,
+                (base, variant),
                 u32::try_from(ordinal).map_err(|_| "source aggregate field ordinal overflow")?,
                 work,
             )?;
@@ -165,17 +192,101 @@ impl Builder<'_, '_, '_> {
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let base = self.node(original, base, work)?;
-        if !matches!(self.arena.nodes.get(base.0 as usize),Some(Node::Nominal {declaration,..}) if declaration.artifact.0 == 0 && declaration.declaration == owner)
+        // A variant owner selects a downcast field of its enum base.
+        let variant = matches!(
+            self.domains.headers.header(owner, work)?,
+            Some(s::HeaderRef::Variant(_))
+        )
+        .then_some(owner);
+        let nominal = match variant {
+            Some(_) => self.domains.headers.rows().declarations[owner.0 as usize]
+                .definition
+                .parent
+                .ok_or("source variant field lost its actual enum")?,
+            None => owner,
+        };
+        if !matches!(self.arena.nodes.get(base.0 as usize),Some(Node::Nominal {declaration,..}) if declaration.artifact.0 == 0 && declaration.declaration == nominal)
         {
             return Err("source field projection changed its actual nominal owner");
         }
         let context = self.nominal_context(original)?;
-        let expected = self
-            .arena
-            .nominal_field(self.domains, context, base, ordinal, work)?;
+        let expected =
+            self.arena
+                .nominal_field(self.domains, context, (base, variant), ordinal, work)?;
         let actual = self.node(original, result, work)?;
         if actual != expected {
             return Err("source projected field type differs after actual nominal substitution");
+        }
+        Ok(())
+    }
+    /// A constructor test reads an enum place of exactly the variant's enum
+    /// and yields `bool`.
+    pub(super) fn variant_test(
+        &mut self,
+        original: &s::Original,
+        (ty, place): (g::TypeRef, s::Place),
+        variant: DeclarationRef,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let result = self.node(original, ty, work)?;
+        let base = self.node(
+            original,
+            super::ports::Ports::place_type(original, place, work)?,
+            work,
+        )?;
+        let Some(Node::Nominal { declaration, .. }) =
+            self.arena.nodes.get(base.0 as usize).copied()
+        else {
+            return Err("source constructor test requires an actual enum place");
+        };
+        if self.arena.nodes.get(result.0 as usize)
+            != Some(&Node::Scalar(crate::support::crates::Scalar::Bool))
+            || declaration.artifact.0 != 0
+        {
+            return Err("source constructor test changed its actual bool result or enum owner");
+        }
+        variant_header(self.domains, declaration.declaration, variant, work)?;
+        Ok(())
+    }
+    /// A fieldless enum converts to an integer result through its header's
+    /// discriminants; data enums have no `as` conversion.
+    pub(super) fn enum_cast(
+        &mut self,
+        original: &s::Original,
+        ty: g::TypeRef,
+        operand: u32,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let result = self.node(original, ty, work)?;
+        let input = original
+            .values
+            .get(operand as usize)
+            .ok_or("source enum cast lost its actual operand")?;
+        let base = self.node(original, input.ty, work)?;
+        let Some(Node::Nominal { declaration, .. }) =
+            self.arena.nodes.get(base.0 as usize).copied()
+        else {
+            return Err("source enum cast requires an actual enum operand");
+        };
+        let rows = self.domains.headers.rows();
+        let header = rows
+            .enums
+            .headers
+            .binary_search_by_key(&declaration.declaration.0, |row| row.declaration.0)
+            .map(|index| rows.enums.headers[index])
+            .map_err(|_| "source enum cast operand has no validated enum header")?;
+        let variants = header.variants.slice(&rows.enums.variants)?;
+        work.charge(variants.len())?;
+        if declaration.artifact.0 != 0
+            || variants
+                .iter()
+                .any(|variant| variant.shape != s::VariantShape::Unit)
+            || !matches!(
+                self.arena.nodes.get(result.0 as usize),
+                Some(Node::Scalar(scalar)) if integer(*scalar)
+            )
+        {
+            return Err("source enum cast requires a fieldless enum and an integer result");
         }
         Ok(())
     }
@@ -193,6 +304,29 @@ impl Builder<'_, '_, '_> {
             body: Some(original.body),
         })
     }
+}
+/// The validated variant row that belongs to exactly `owner`.
+fn variant_header(
+    domains: &DomainIndex<'_, '_>,
+    owner: DeclarationRef,
+    variant: DeclarationRef,
+    work: &mut Work,
+) -> Result<s::VariantHeader, &'static str> {
+    let rows = domains.headers.rows();
+    let Some(s::HeaderRef::Variant(index)) = domains.headers.header(variant, work)? else {
+        return Err("source variant operand does not name a validated enum variant");
+    };
+    if rows.declarations[variant.0 as usize].definition.parent != Some(owner) {
+        return Err("source variant belongs to another actual enum");
+    }
+    Ok(rows.enums.variants[index as usize])
+}
+const fn integer(scalar: crate::support::crates::Scalar) -> bool {
+    use crate::support::crates::Scalar;
+    !matches!(
+        scalar,
+        Scalar::Unit | Scalar::Bool | Scalar::Char | Scalar::F32 | Scalar::F64
+    )
 }
 fn require_access(
     rows: &s::SourceRows,

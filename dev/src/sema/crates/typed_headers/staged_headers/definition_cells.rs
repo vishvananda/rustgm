@@ -8,7 +8,7 @@ use crate::{
 pub(super) fn prepare(
     context: &mapped_source::Context<'_>,
     graph: &mapped_source::Graph,
-    facts: &Declarations,
+    facts: &mut Declarations,
     scopes: &[Scope],
     callables: &[super::template_ports::Callable],
     budget: &mut Headers,
@@ -61,6 +61,7 @@ pub(super) fn prepare(
     for header in &rows.nominals {
         assign(&mut cells, header.declaration, graph.ty(header.self_type)?)?;
     }
+    variant_cells(context, graph, facts, &mut cells, budget)?;
     for callable in callables {
         budget.charge(1)?;
         let id = context
@@ -79,6 +80,8 @@ pub(super) fn prepare(
         let required = matches!(
             raw.definition.kind,
             s::DefinitionKind::Struct
+                | s::DefinitionKind::Enum
+                | s::DefinitionKind::Variant
                 | s::DefinitionKind::AssociatedType
                 | s::DefinitionKind::Function
                 | s::DefinitionKind::SelfType
@@ -110,6 +113,61 @@ pub(super) fn prepare(
     }
     budget.charge(1)?;
     Ok(result)
+}
+/// A unit variant's cell is its enum's own type. A tuple variant's is the
+/// constructor item over `fn(payload) -> Enum`, exactly as local declarations
+/// complete it; the header supplies no signature.
+fn variant_cells(
+    context: &mapped_source::Context<'_>,
+    graph: &mapped_source::Graph,
+    facts: &mut Declarations,
+    cells: &mut [Option<TypeId>],
+    budget: &mut Headers,
+) -> Result<(), Error> {
+    let rows = context.descriptor.rows();
+    for header in &rows.enums.headers {
+        let Some(s::HeaderRef::Nominal(index)) = rows.header(header.declaration).map_err(error)?
+        else {
+            return Err(error("source enum cell lost its actual nominal header"));
+        };
+        let owner = graph.ty(rows.nominals[index as usize].self_type)?;
+        for variant in header.variants.slice(&rows.enums.variants).map_err(error)? {
+            budget.charge(1)?;
+            let ty = match variant.shape {
+                s::VariantShape::Unit => owner,
+                s::VariantShape::Tuple => {
+                    let payload = variant.fields.slice(&rows.enums.fields).map_err(error)?;
+                    budget.charge(payload.len())?;
+                    let fields = payload
+                        .iter()
+                        .map(|field| graph.ty(field.ty))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    let parameters = facts.types.intern_list(&fields).map_err(error)?;
+                    let signature = facts
+                        .types
+                        .intern(crate::types::Kind::Function {
+                            bound_regions: 0,
+                            parameters,
+                            result: owner,
+                            unsafe_: false,
+                            convention: crate::types::callable::Convention::RUST,
+                        })
+                        .map_err(error)?;
+                    let item = context.definition(variant.declaration, budget)?;
+                    facts
+                        .types
+                        .intern(crate::types::Kind::FunctionItem {
+                            item: crate::types::ItemId(item.0),
+                            signature,
+                            arguments: crate::types::GenericArgs::EMPTY,
+                        })
+                        .map_err(error)?
+                }
+            };
+            assign(cells, variant.declaration, ty)?;
+        }
+    }
+    Ok(())
 }
 fn assign(
     cells: &mut [Option<TypeId>],

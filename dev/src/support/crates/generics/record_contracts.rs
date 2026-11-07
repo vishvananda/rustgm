@@ -73,7 +73,7 @@ pub(super) fn headers(
         let cell = headers
             .get_mut(row.declaration.0 as usize)
             .ok_or("unknown source nominal header")?;
-        if declaration.definition.kind != DefinitionKind::Struct
+        if !super::nominal_kind(declaration.definition.kind)
             || row.scope != row.declaration
             || cell.is_some()
             || row.fields.start != cursor

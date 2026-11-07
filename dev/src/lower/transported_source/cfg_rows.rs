@@ -38,48 +38,7 @@ pub(super) fn emit(
         calls: Vec::new(),
     };
     locals(stage, facts, body, context, &mut raw, sites)?;
-    for projection in &body.projections {
-        stage.charge(1)?;
-        stage.prepare_type_arena(facts, projection.ty)?;
-        let kind = match projection.kind {
-            ir::ProjectionKind::FutureField(_) => {
-                return Err(
-                    "generated future frame fields require authenticated authored-state transport",
-                );
-            }
-            ir::ProjectionKind::Dereference { region, mutable } => s::ProjectionKind::Dereference {
-                region: stage.region(region, context)?,
-                mutable,
-            },
-            ir::ProjectionKind::Field(crate::sema::members::Selection::Nominal(field))
-                if stage.nominal_transport() =>
-            {
-                let identity = facts
-                    .members
-                    .identity(field)
-                    .ok_or("source projection lost its actual nominal field identity")?;
-                if identity.variant != 0 {
-                    return Err("source nominal field requires its wider variant profile");
-                }
-                s::ProjectionKind::Field {
-                    owner: stage.declaration(identity.owner)?,
-                    ordinal: identity.field,
-                }
-            }
-            _ => return Err("source projection transport requires its wider explicit contract"),
-        };
-        stage.reserve(4 * size_of::<s::Projection>())?;
-        raw.projections.push(s::Projection {
-            base: match projection.base {
-                ir::Place::Temporary(value) if stage.conversion_roles() => {
-                    s::Place::Temporary(value.0)
-                }
-                base => place(base)?,
-            },
-            ty: stage.ty(facts, projection.ty, context)?,
-            kind,
-        });
-    }
+    projections(stage, facts, body, context, &mut raw)?;
     value_rows::emit(stage, facts, body, context, &mut raw, sites)?;
     for statement in &body.statements {
         stage.reserve(4 * size_of::<s::Statement>())?;
@@ -104,6 +63,73 @@ pub(super) fn emit(
     Ok(raw)
 }
 
+fn projections(
+    stage: &mut Stage,
+    facts: &mut Declarations,
+    body: &Body,
+    context: Context,
+    raw: &mut s::Original,
+) -> Result<(), &'static str> {
+    for projection in &body.projections {
+        stage.charge(1)?;
+        stage.prepare_type_arena(facts, projection.ty)?;
+        let kind = match projection.kind {
+            ir::ProjectionKind::FutureField(_) => {
+                return Err(
+                    "generated future frame fields require authenticated authored-state transport",
+                );
+            }
+            ir::ProjectionKind::Dereference { region, mutable } => s::ProjectionKind::Dereference {
+                region: stage.region(region, context)?,
+                mutable,
+            },
+            ir::ProjectionKind::Field(crate::sema::members::Selection::Nominal(field))
+                if stage.nominal_transport() =>
+            {
+                let identity = facts
+                    .members
+                    .identity(field)
+                    .ok_or("source projection lost its actual nominal field identity")?;
+                let enumerated = facts
+                    .aggregates
+                    .get(crate::types::ItemId(identity.owner.0))
+                    .is_some_and(|shape| shape.kind == crate::types::aggregate::Kind::Enum);
+                if enumerated && stage.body_nodes() {
+                    // A downcast field names its variant; the consumer re-proves
+                    // that every use is dominated by that constructor's test.
+                    let variant = facts
+                        .members
+                        .variant(field)
+                        .ok_or("source downcast field lost its actual variant")?;
+                    s::ProjectionKind::Field {
+                        owner: stage.variant(variant)?,
+                        ordinal: identity.field,
+                    }
+                } else if identity.variant != 0 || enumerated {
+                    return Err("source nominal field requires its wider variant profile");
+                } else {
+                    s::ProjectionKind::Field {
+                        owner: stage.declaration(identity.owner)?,
+                        ordinal: identity.field,
+                    }
+                }
+            }
+            _ => return Err("source projection transport requires its wider explicit contract"),
+        };
+        stage.reserve(4 * size_of::<s::Projection>())?;
+        raw.projections.push(s::Projection {
+            base: match projection.base {
+                ir::Place::Temporary(value) if stage.conversion_roles() => {
+                    s::Place::Temporary(value.0)
+                }
+                base => place(base)?,
+            },
+            ty: stage.ty(facts, projection.ty, context)?,
+            kind,
+        });
+    }
+    Ok(())
+}
 fn terminator(terminator: ir::Terminator, branches: bool) -> Result<g::Terminator, &'static str> {
     Ok(match terminator {
         ir::Terminator::Jump(block) => g::Terminator::Jump(block.0),
@@ -167,11 +193,15 @@ fn locals(
                 return Err("source guard locals require a wider transport profile");
             }
         };
+        let ty = stage.ty(facts, local.ty, context)?;
+        if value_rows::requested_formation(stage, facts, local.ty) {
+            sites.function_formation(stage, body.source.root_body_site(), local.ty, ty)?;
+        }
         stage.reserve(4 * size_of::<g::Local>())?;
         raw.locals.push(g::Local {
             scope: local.scope.0,
             storage_parent: local.storage_parent.map(|parent| parent.0),
-            ty: stage.ty(facts, local.ty, context)?,
+            ty,
             kind,
             definition,
             mutable: local.mutable,

@@ -27,6 +27,7 @@ pub(super) fn validate(
                 actual.definition.kind,
                 DefinitionKind::Module
                     | DefinitionKind::Struct
+                    | DefinitionKind::Enum
                     | DefinitionKind::Trait
                     | DefinitionKind::SelfType
                     | DefinitionKind::Function

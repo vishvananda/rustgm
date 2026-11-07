@@ -7,6 +7,10 @@ use crate::support::crates::{self, generics::Work, owner_catalog::DeclarationRef
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DefinitionKind {
     Struct,
+    /// Version thirteen: an enum with a nominal header and a variant table.
+    Enum,
+    /// Version thirteen: one enum variant, parented by its enum.
+    Variant,
     Module,
     Trait,
     SelfType,
@@ -64,6 +68,7 @@ impl<'a> ScopeIndex<'a> {
                     | DefinitionKind::SelfType
                     | DefinitionKind::Function
                     | DefinitionKind::Struct
+                    | DefinitionKind::Enum
                     | DefinitionKind::AssociatedType
             ) || owners[scope.owner.0 as usize].is_some()
             {
@@ -322,7 +327,9 @@ fn valid_parent(
     definitions: &[Definition],
 ) -> bool {
     match definition.kind {
-        DefinitionKind::SelfType | DefinitionKind::Struct => parent.is_none(),
+        DefinitionKind::SelfType | DefinitionKind::Struct | DefinitionKind::Enum => {
+            parent.is_none()
+        }
         DefinitionKind::Trait => parent
             .and_then(|parent| definitions.get(parent.0 as usize))
             .is_some_and(|parent| {
@@ -348,7 +355,9 @@ fn valid_parent(
                     }),
             }
         }
+        // A variant shares its enum's frame and owns no parameter scope.
         DefinitionKind::Module
+        | DefinitionKind::Variant
         | DefinitionKind::TypeParameter
         | DefinitionKind::RegionParameter
         | DefinitionKind::ValueParameter

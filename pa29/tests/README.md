@@ -100,3 +100,12 @@ keeps punctuation jointness) was declared first and refuted. Round two froze
 rustc's observed spellings: transcribed tokens print alone, paren and brace
 delimiters keep their source spacing, and a bracket group is always followed by
 a space. Local and cross-crate spellings are identical.
+
+`enum-match-outcomes.json` freezes the version-thirteen enum-and-match packet
+under `spec/enum-match/`: a fieldless enum with a constant-arm match, a
+`#[repr(u8)]` enum with explicit discriminants and an `as u8` cast, a generic
+`Opt<T>` with `or`, an `FnOnce` `map` and a by-reference binding, fresh
+consumers of each, two type opponents, fenced called-constructor and guard
+controls and the forged enum-header, constructor-test and downcast controls.
+The `crate_linking::match_transport` integration controls consume it; the
+owning checkpoint records candidate results.

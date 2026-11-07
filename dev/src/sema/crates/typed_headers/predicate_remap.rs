@@ -171,7 +171,13 @@ impl<'a> Context<'a> {
                 rows.associated_types[index as usize].inputs,
             ),
             Some(s::HeaderRef::Nominal(index)) => {
-                (DefKind::Struct, rows.nominals[index as usize].inputs)
+                let header = &rows.nominals[index as usize];
+                let kind = rows
+                    .declarations
+                    .get(header.declaration.0 as usize)
+                    .map(|row| super::mapped_source::slot_bindings::kind(row.definition.kind))
+                    .ok_or_else(|| error("source nominal inputs lost their declaration"))?;
+                (kind, header.inputs)
             }
             Some(s::HeaderRef::Function(index)) => {
                 (DefKind::Function, rows.functions[index as usize].inputs)

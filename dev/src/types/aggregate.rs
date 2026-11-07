@@ -12,7 +12,7 @@ mod packing;
 mod phantom;
 mod preparation;
 mod prepared_shapes;
-pub(crate) use prepared_shapes::Prepared as PreparedShapes;
+pub(crate) use prepared_shapes::{ImportedEnum, Prepared as PreparedShapes};
 mod simd;
 use super::{ItemId, ListId, Primitive, Store, TypeId};
 pub use instances::Shape;

@@ -420,6 +420,7 @@ impl ValidatedRows {
     ) -> Result<Self, &'static str> {
         let start = work.steps;
         super::nominal_contracts::require_profile(&rows, profile, work)?;
+        super::sum_contracts::require_profile(&rows, profile, work)?;
         super::operation_contracts::require_profile(&rows, profile, work)?;
         let features = profile.feature_predicates();
         safety_profile::require_profile(&rows, profile, work)?;
@@ -533,6 +534,7 @@ impl ValidatedRows {
     ) -> Result<Self, &'static str> {
         let start = work.steps;
         super::nominal_contracts::require_profile(&rows, profile, work)?;
+        super::sum_contracts::require_profile(&rows, profile, work)?;
         super::operation_contracts::require_profile(&rows, profile, work)?;
         safety_profile::require_profile(&rows, profile, work)?;
         branch_profile::require_profile(&rows, profile, work)?;

@@ -35,7 +35,9 @@ impl Stage {
         }
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
             self.charge(1)?;
-            if definition.kind != DefKind::Struct {
+            if definition.kind != DefKind::Struct
+                && !(definition.kind == DefKind::Enum && self.body_nodes())
+            {
                 continue;
             }
             let owner = DefId(u32::try_from(index).map_err(|_| "source nominal owner overflow")?);
@@ -55,47 +57,41 @@ impl Stage {
             .aggregates
             .get(item)
             .ok_or("source nominal lacks its completed shape")?;
-        let repr = match shape.repr {
-            aggregate::Repr {
-                representation: aggregate::Representation::Rust,
-                packed: None,
-                align: None,
-                tag: None,
-                arguments: aggregate::ArgumentPassing::Ordinary,
-            } => RecordRepr::Rust,
-            aggregate::Repr {
-                representation: aggregate::Representation::C,
-                packed: None,
-                align: None,
-                tag: None,
-                arguments: aggregate::ArgumentPassing::Ordinary,
-            } => RecordRepr::C,
-            _ => return Err("source nominal representation requires its wider complete contract"),
-        };
+        let enumeration = shape.kind == aggregate::Kind::Enum;
+        let repr = record_repr(shape.repr, enumeration)?;
         if facts.aggregates.shared_mutation(item) != Some(aggregate::SharedMutation::Ordinary)
             || facts.aggregates.permits_dangling_pointers(item) != Some(false)
-            || shape.kind != aggregate::Kind::Struct
+            || !(shape.kind == aggregate::Kind::Struct || enumeration)
             || facts.aggregates.destruction(item) != Some(aggregate::FieldDestruction::Fields)
         {
             return Err("source nominal destruction/shape requires its wider complete contract");
         }
-        let [variant] = facts.members.variants(item) else {
-            return Err("source struct lacks its actual field group");
+        let fields = if enumeration {
+            &[]
+        } else {
+            let [variant] = facts.members.variants(item) else {
+                return Err("source struct lacks its actual field group");
+            };
+            facts
+                .members
+                .fields(*variant)
+                .ok_or("source struct field group is unknown")?
         };
-        let fields = facts
-            .members
-            .fields(*variant)
-            .ok_or("source struct field group is unknown")?;
         let declaration = self.declaration(owner)?;
-        let view = facts
-            .publication_header_contracts(report, owner)
-            .map_err(|_| "source nominal advisory contract is incomplete")?;
-        let contract = self
-            .header_contract(declaration, view)
-            .map_err(|_| "source nominal advisory contract is unsupported")?;
-        if contract.inline.is_some() {
-            return Err("source nominal cannot carry a callable inline policy");
-        }
+        let contract = if enumeration {
+            self.enum_contract(report, facts, owner, declaration)?
+        } else {
+            let view = facts
+                .publication_header_contracts(report, owner)
+                .map_err(|_| "source nominal advisory contract is incomplete")?;
+            let contract = self
+                .header_contract(declaration, view)
+                .map_err(|_| "source nominal advisory contract is unsupported")?;
+            if contract.inline.is_some() {
+                return Err("source nominal cannot carry a callable inline policy");
+            }
+            contract
+        };
         let context = self.frame(declaration, None, s::BinderKind::DeclarationHeader, 0)?;
         let self_ty = facts
             .definitions
@@ -141,6 +137,9 @@ impl Stage {
             declared_inputs,
             repr,
         });
+        if enumeration {
+            self.enum_header(facts, owner, declaration, context)?;
+        }
         Ok(())
     }
     fn nominal_fields(
@@ -203,4 +202,33 @@ impl Stage {
         }
         Ok(())
     }
+}
+/// The record representation a nominal header carries; an enum's integer
+/// tag travels in its variant table.
+fn record_repr(repr: aggregate::Repr, enumeration: bool) -> Result<RecordRepr, &'static str> {
+    Ok(match repr {
+        aggregate::Repr {
+            representation: aggregate::Representation::Rust,
+            packed: None,
+            align: None,
+            tag: None,
+            arguments: aggregate::ArgumentPassing::Ordinary,
+        } => RecordRepr::Rust,
+        aggregate::Repr {
+            representation: aggregate::Representation::C,
+            packed: None,
+            align: None,
+            tag: None,
+            arguments: aggregate::ArgumentPassing::Ordinary,
+        } if !enumeration => RecordRepr::C,
+        // An enum's integer tag travels in its variant table.
+        aggregate::Repr {
+            representation: aggregate::Representation::Rust,
+            packed: None,
+            align: None,
+            tag: Some(_),
+            arguments: aggregate::ArgumentPassing::Ordinary,
+        } if enumeration => RecordRepr::Rust,
+        _ => return Err("source nominal representation requires its wider complete contract"),
+    })
 }

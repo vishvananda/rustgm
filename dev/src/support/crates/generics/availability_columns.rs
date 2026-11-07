@@ -371,6 +371,7 @@ impl AvailabilityRows {
                 DefinitionKind::Module
                     | DefinitionKind::Trait
                     | DefinitionKind::Struct
+                    | DefinitionKind::Enum
                     | DefinitionKind::SelfType
             )
         {
@@ -388,6 +389,8 @@ impl AvailabilityRows {
                 DefinitionKind::Module
                     | DefinitionKind::Trait
                     | DefinitionKind::Struct
+                    | DefinitionKind::Enum
+                    | DefinitionKind::Variant
                     | DefinitionKind::SelfType
                     | DefinitionKind::Function
             )
@@ -503,7 +506,8 @@ impl Validation<'_> {
             | Some(
                 super::HeaderRef::Nominal(_)
                 | super::HeaderRef::AssociatedType(_)
-                | super::HeaderRef::AssociatedDefinition(_),
+                | super::HeaderRef::AssociatedDefinition(_)
+                | super::HeaderRef::Variant(_),
             ) => false,
         }
     }

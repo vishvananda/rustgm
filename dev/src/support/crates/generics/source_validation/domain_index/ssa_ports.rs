@@ -127,15 +127,21 @@ fn dependency(
         s::ValueKind::Read(target)
         | s::ValueKind::Borrow(target)
         | s::ValueKind::TwoPhaseBorrow(target)
+        | s::ValueKind::IsVariant { place: target, .. }
             if ordinal == 0 =>
         {
             return place(original, target);
         }
-        s::ValueKind::Constrain(value) | s::ValueKind::ScalarCast(value) if ordinal == 0 => {
+        s::ValueKind::Constrain(value)
+        | s::ValueKind::ScalarCast(value)
+        | s::ValueKind::EnumCast(value)
+            if ordinal == 0 =>
+        {
             Some(value)
         }
         s::ValueKind::Binary { left, right, .. } => [left, right].get(ordinal).copied(),
         s::ValueKind::Aggregate { fields }
+        | s::ValueKind::VariantAggregate { fields, .. }
         | s::ValueKind::Invoke {
             arguments: fields, ..
         } => fields.slice(&original.arguments)?.get(ordinal).copied(),

@@ -123,7 +123,7 @@ const FORMS: [s::OperandForm; 5] = [
 ];
 
 /// Reconstructable codes in this consumer, by family.
-const VALUE_FORMS: [u8; 11] = [2, 3, 6, 10, 12, 16, 24, 27, 28, 29, 30];
+const VALUE_FORMS: [u8; 12] = [2, 3, 6, 10, 12, 14, 16, 24, 27, 28, 29, 30];
 /// Stable `Rvalue::Invoke` call-trait flags.
 const CALLABLES: [crate::support::call_traits::CallTrait; 3] = [
     crate::support::call_traits::CallTrait::FnOnce,
@@ -237,6 +237,17 @@ pub(super) fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'stat
     match row.kind {
         s::ValueKind::Unit => node_write(out, 2, &[]),
         s::ValueKind::Aggregate { fields } => node_write(out, 3, &[Operand::Range(fields)]),
+        // A record keeps its single-operand node; an enum names its variant.
+        s::ValueKind::VariantAggregate { variant, fields } => node_write(
+            out,
+            3,
+            &[Operand::Range(fields), Operand::Declaration(variant.0)],
+        ),
+        s::ValueKind::IsVariant { place, variant } => node_write(
+            out,
+            14,
+            &[Operand::Place(place), Operand::Declaration(variant.0)],
+        ),
         s::ValueKind::Scalar(bits) => node_write(out, 6, &[Operand::Bits(bits)]),
         s::ValueKind::Read(place) => node_write(out, 10, &[Operand::Place(place)]),
         // Flag zero is the immediate kind; two-phase and unique borrows own 1 and 2.
@@ -253,6 +264,10 @@ pub(super) fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'stat
         // Flag zero is a closed primitive `as` whose operation the types decide.
         s::ValueKind::ScalarCast(value) => {
             node_write(out, 28, &[Operand::Value(value), Operand::Flag(0)])
+        }
+        // Flag one is a fieldless enum's integer conversion.
+        s::ValueKind::EnumCast(value) => {
+            node_write(out, 28, &[Operand::Value(value), Operand::Flag(1)])
         }
         s::ValueKind::Binary {
             operator,
@@ -303,6 +318,16 @@ pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static 
     let kind = match (node.code, node.operands()) {
         (2, []) => s::ValueKind::Unit,
         (3, &[Operand::Range(fields)]) => s::ValueKind::Aggregate { fields },
+        (3, &[Operand::Range(fields), Operand::Declaration(variant)]) => {
+            s::ValueKind::VariantAggregate {
+                variant: DeclarationRef(variant),
+                fields,
+            }
+        }
+        (14, &[Operand::Place(place), Operand::Declaration(variant)]) => s::ValueKind::IsVariant {
+            place,
+            variant: DeclarationRef(variant),
+        },
         (6, &[Operand::Bits(bits)]) => s::ValueKind::Scalar(bits),
         (10, &[Operand::Place(place)]) => s::ValueKind::Read(place),
         (12, &[Operand::Place(place), Operand::Flag(0)]) => s::ValueKind::Borrow(place),
@@ -324,6 +349,7 @@ pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static 
             ],
         ) => binary(left, right, operator, form)?,
         (28, &[Operand::Value(value), Operand::Flag(0)]) => s::ValueKind::ScalarCast(value),
+        (28, &[Operand::Value(value), Operand::Flag(1)]) => s::ValueKind::EnumCast(value),
         (
             29,
             &[

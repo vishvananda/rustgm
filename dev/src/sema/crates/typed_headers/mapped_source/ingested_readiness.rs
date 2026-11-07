@@ -41,7 +41,12 @@ impl Graph {
             s::DefinitionKind::AssociatedType => {
                 self.associated_ready(catalog, facts, definition, row, *cell)?;
             }
-            s::DefinitionKind::Struct => {
+            s::DefinitionKind::Variant => {
+                if cell.is_none() || facts.members.constructor(definition).is_none() {
+                    return Err("source variant readiness lost its installed constructor");
+                }
+            }
+            s::DefinitionKind::Struct | s::DefinitionKind::Enum => {
                 let Some(s::HeaderRef::Nominal(index)) = rows.header(row)? else {
                     return Err("source nominal readiness lost its actual header");
                 };

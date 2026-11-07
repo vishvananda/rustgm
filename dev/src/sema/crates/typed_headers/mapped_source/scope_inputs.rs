@@ -32,6 +32,9 @@ impl Graph {
             Some(s::HeaderRef::Trait(index)) => Some(rows.traits[index as usize].self_definition),
             Some(s::HeaderRef::Implementation(_) | s::HeaderRef::Nominal(_)) => None,
             Some(s::HeaderRef::AssociatedDefinition(_)) => raw.definition.parent,
+            Some(s::HeaderRef::Variant(_)) => {
+                return Err("source variant declarations own no input scope");
+            }
             None if raw.definition.kind == s::DefinitionKind::SelfType => None,
             None => return Ok(()),
         };
@@ -117,6 +120,9 @@ impl Graph {
             }
             // An implementation's result definition declares no inputs of its own.
             Some(s::HeaderRef::AssociatedDefinition(_)) => return Ok(Some(&[])),
+            Some(s::HeaderRef::Variant(_)) => {
+                return Err("source variant declarations own no input scope");
+            }
             None if raw.definition.kind == s::DefinitionKind::SelfType => {
                 let parent = raw
                     .definition

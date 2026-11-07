@@ -60,6 +60,13 @@ pub struct Variant {
     pub start: u32,
     pub end: u32,
 }
+/// One imported enum variant: its positional payload and the declaration that
+/// names its constructor.
+pub(crate) struct ExternalVariant {
+    pub shape: Shape,
+    pub fields: Vec<Field>,
+    pub constructor: DefId,
+}
 /// External members retain their canonical nominal owner, without source syntax.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Origin {
@@ -215,6 +222,47 @@ impl Members {
             return Err("duplicate external record field");
         }
         self.publish(owner, 0, origin, Shape::Record, fields, None)
+    }
+    /// Publish a source-free enum's complete ordered positional variants and the
+    /// imported declarations naming each constructor.
+    /// # Errors
+    /// Rejects foreign field owners, named payloads and duplicate enums.
+    pub(crate) fn insert_external_variants(
+        &mut self,
+        owner: ItemId,
+        variants: &[ExternalVariant],
+    ) -> Result<(), &'static str> {
+        let origin = Origin::External(DefId(owner.0));
+        if !self.variants(owner).is_empty() || variants.is_empty() {
+            return Err("external enum member owner is inconsistent");
+        }
+        for (ordinal, variant) in (0_u32..).zip(variants) {
+            if variant
+                .fields
+                .iter()
+                .zip(0_u32..)
+                .any(|(field, index)| field.origin != origin || field.name != Name::Index(index))
+                || (variant.shape == Shape::Unit && !variant.fields.is_empty())
+                || variant.shape == Shape::Record
+            {
+                return Err("external enum variant changed its owner, shape or positions");
+            }
+            let id = self.publish(owner, ordinal, origin, variant.shape, &variant.fields, None)?;
+            if self
+                .constructors
+                .insert(
+                    variant.constructor,
+                    Constructor {
+                        variant: id,
+                        kind: ConstructorKind::Variant,
+                    },
+                )
+                .is_some()
+            {
+                return Err("external enum variant constructor is duplicated");
+            }
+        }
+        Ok(())
     }
     fn publish(
         &mut self,
