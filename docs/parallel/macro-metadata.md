@@ -1247,3 +1247,57 @@ integrator. This task does not change `Definition`.
 
 Outside resolve, expand and support/crates, this task edits only the private
 invariant `image_accounting` (`Site.crate_id` and the new test).
+
+### Census by blocker after version 4 (task 4)
+
+This census covers the same 337 alloc library sites as the version-3 census
+above (`obj/parallel/builtin-rows-v1/census/uses.json`, pinned 1.98.0
+sources). It is analysis only. The panic family is now split by the expansion
+shape each site takes through core's actual macros
+(`obj/parallel/imported-panic-v1/census/alloc-shapes.json`). For example, a
+default-message `assert!` emits `panicking::panic(&'static str)`, a message
+form goes through the second or third `panic_2021` rule, and `assert_eq!`
+emits `panicking::assert_failed`. Each site is classified by its first
+macro-level blocker before this lane (version 3) and now (version 4).
+
+| Macros (alloc library sites) | Sites | Version 3 | Version 4 |
+| --- | ---: | --- | --- |
+| builtin derives and `derive` | 113 | imported builtin derives do not run | same; the output is anchored at `CrateRoot(id)` (task 3) |
+| `impl_partial_eq` family | 12 | none | none |
+| `debug_assert` without a message | 76 | edition-panic contract at publication | none |
+| `debug_assert` with a message | 16 | edition-panic contract at publication | imported `format_args` |
+| `assert` without a message | 38 | edition-panic contract at publication | none |
+| `assert!(c, "{}", x)` | 2 | edition-panic contract at publication | none (the `"{}"` rule of `panic_2021`) |
+| `assert` with another message | 9 | edition-panic contract at publication | imported `format_args` |
+| `panic` | 17 | edition-panic contract at publication | imported `format_args` |
+| `unreachable!()` | 6 | edition-panic contract at publication | none |
+| `unreachable!(msg, …)` | 3 | edition-panic contract at publication | imported `format_args` |
+| `format_args` 2, `write` 6 | 8 | `allow_internal_unsafe` at publication | imported `format_args` |
+| `debug_assert_eq`/`_ne` without a message | 22 | none | none |
+| `debug_assert_eq` with a message | 7 | none (counted by the outer row only) | imported `format_args` |
+| `assert_unsafe_precondition` | 3 | none | none |
+| `cfg` | 4 | none | none |
+| `const_error` (`pub macro`) | 1 | macros 2.0 | macros 2.0 parameter list |
+
+Correction: the version-3 table counted the 7 `debug_assert_eq!` sites with a
+message as unblocked. Each expands `$crate::format_args!`, whose row version
+3 rejected at publication, so the corrected version-3 count is 41 sites with
+no macro-level blocker, not 48.
+
+Sites with no macro-level blocker rise from 41 to 163. Their next blockers are
+item transport, the Lane C requirements:
+
+- `panicking::panic(&'static str) -> !` (120 sites), plus the provider's
+  bool `Not` for the 114 `assert` and `debug_assert` sites;
+- `panicking::assert_failed`, `AssertKind` and `Option::None` with `Debug`
+  bounds (22);
+- `panic_display` and `fmt::Display` (2);
+- `panic_nounwind` (3);
+- the `bstr` trait impls (12);
+- none for the 4 `cfg!` sites, whose expansion names no item.
+
+60 sites wait on imported `format_args!`, which needs Lane C's transport of
+core's fmt language roles and constructors. The 113 derive sites wait on the
+cross-crate derive requirements above, and one site waits on `const_error!`.
+std was not reclassified. Its largest groups are still the derives (1,023
+sites) and `const_error!` (237).

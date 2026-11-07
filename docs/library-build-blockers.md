@@ -36,6 +36,16 @@ bound (since `d2bcb1f89`). Still open in this lane's area: the expansion
 `Definition` is 168 bytes, not the 136 that eight private invariants assert
 (since `cbef4d469`).
 
+The [alloc census by blocker](parallel/macro-metadata.md#census-by-blocker-after-version-4-task-4)
+now finds 163 of 337 library macro sites with no macro-level blocker. With
+version 3 there were 41: the earlier table's 48 included seven
+`debug_assert_eq!` message sites that expand `format_args!`. The default-message
+`assert!`, `debug_assert!` and `unreachable!()` sites are the bulk of the new
+ones. Of the rest, 60 wait on imported `format_args!`, 113 on cross-crate
+derive and one on `const_error!`. The 163 still need Lane C item transport,
+chiefly `panicking::panic(&'static str) -> !` (120 sites) and
+`panicking::assert_failed` (22).
+
 [Census batch 3](parallel/census-batch3.md) bounds the source lint-policy
 ledger by its input. It keeps the former fixed limits as a floor, and adds
 8 steps and 64 attempted bytes per admitted original source byte. Each grant is
@@ -251,18 +261,17 @@ the same frontier and byte-identical census as under the observer's explicit
 caps. With Cargo's lint policy, core still stops first on the
 `implicit_provenance_casts` producer.
 
-Known regression: the private invariant
-`resolve::stability::transport_tests::legacy_availability_remains_unknown_and_hot_records_do_not_grow`
-still fails. The inherent-methods join moved the version-13 enum and
-associated-definition groups out of line, so `Columns` is 768 bytes again and
-`SourceRows` is 792 (one box pointer). `Imported` grew from 160 to 216 bytes
-with the macro metadata rows (`cbef4d469`); Lane B owns that repair.
-
-Known regression: the private test
-`resolve::stability::fn_allowances::tests::transport::genuine_original_const_bodies_roundtrip_and_execute_without_client_feature_requests`
-fails at least since `abcfea354`. Its `consumer-grant-not-request` opponent is
-still rejected, but by "const defining body lost its actual source declaration
-contract" instead of a feature diagnostic. Lane B owns the bisection and repair.
+Known regression: the expansion `Definition` record is 168 bytes, not the 136
+that eight private layout invariants assert, for example
+`resolve::expansion::derive_lists::tests::marker_shape_ordinary_storage_and_derive_owner_layouts_preserve_boundaries`.
+The macro metadata rows (`cbef4d469`) added `imported: Option<ImportedDefinition>`
+(32 bytes). Lane B owns the repair: an out-of-line table for imported
+definitions, so the hot record keeps 136 bytes. The same test's per-crate
+`Report` assertion (3096) now reads 3104: census batch 3's `granted` word on
+the lint ledger `Work` also sits in the inline import-lineage budget. That word
+is accepted and the assertion is amended with the `Definition` repair. The
+`Imported` (160 bytes) and `consumer-grant-not-request` regressions are
+repaired in `d77e1c445` and `139078dbb`.
 
 Lane C [declared associated-result transport](parallel/associated-result-transport.md)
 is joined on main. Version 13 now carries trait associated results, impl
