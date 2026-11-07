@@ -309,6 +309,18 @@ false acceptance blocks const-consumer integration. Keep2heavy,16GiB caps,
 
 # Parallel library bootstrap implementation
 
+Current source-header allocation checkpoint is integrated on main: the actual
+unchanged722-input probe clears LIB190 and reaches LIB191, ptr_guaranteed_cmp's
+do-not-const-check policy at intrinsics/mod.rs2297,18.1196s/375opens. All six pins,
+profile and limits remain. Exact owner buffers and real-row accounting preserve
+source/attempted/failure evidence; strict metadata/source/native/harness checks
+pass. Private new accounting controls compile; execution remains CI pending.
+Source proceeds with actual pointer comparison declaration/operation requirements;
+Root retains the complete Field offset/native packet and its newly exposed generic
+formation prerequisite; Async owns real captured const execution/continuations.
+No original library artifact or new whole PA is complete. Keep existing btrfs trees,
+two heavy jobs,16GiB caps,150GiB reserve and300-second local gates.
+
 The [PA21 signature successor](parallel/pa21-signature-successor.md) records full
 42146747956: all2727 private checks and every public integration target pass,
 including actual poll/foreign-store invariants. Only two stale PA21 diagnostic

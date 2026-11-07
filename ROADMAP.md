@@ -95,9 +95,10 @@ required. Whole-PA statuses and original core/alloc/std artifact gates are uncha
 
 The [provided-default join](docs/parallel/field-provided-default.md) executes the
 actual alternative Field constant and qualifies cold positions and const closure
-creation/originals. The current unchanged-source probe reports a local source
-header producer budget failure; exact counter/site diagnosis precedes any fix,
-with no limit increase. The [PA20 oracle profile repair](docs/parallel/pa20-oracle-profile-repair.md)
+creation/originals. The [source-header allocation repair](docs/parallel/source-header-allocation.md)
+clears the measured local byte failure with exact owner buffers and real-row
+accounting. The unchanged-source probe now reaches ptr_guaranteed_cmp declaration
+policy in18.1196s, with no limit increase. The [PA20 oracle profile repair](docs/parallel/pa20-oracle-profile-repair.md)
 preserves all oracle bytes and passes complete independent checking. Field-offset
 intrinsic/layout, actual captured const execution and original library artifacts
 remain required; whole-PA statuses are unchanged.

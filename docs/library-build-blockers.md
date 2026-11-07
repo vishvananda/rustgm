@@ -1,14 +1,15 @@
 # Library build blocker tracker
 
-Current joined original-core observation reports **LIB-190**, the generic
-`source header attribute producer exceeds storage budget` message, in18.6433s /
-375opens. The [provided-default join](parallel/field-provided-default.md) includes
-qualified cold positions and genuine const-closure creation/original checks.
-All722 original inputs, six configuration-source pins, profile/options, capAllow
-and source-global limits stay unchanged. The local producer message conflates
-its step and storage limits; Source is measuring the exact counter/site and
-actual authorized cold-cache behavior before choosing a fix. This does not prove
-a new cache regression or successful whole-core semantics. No limit is raised.
+Current joined original-core observation reports **LIB-191**, the actual
+`ptr_guaranteed_cmp` declaration's do-not-const-check policy at
+core/src/intrinsics/mod.rs:2297 (file47, byte88680), in18.1196s /375opens.
+The [source header allocation checkpoint](parallel/source-header-allocation.md)
+clears LIB-190 without changing any of the722 inputs, six configuration pins,
+profile/options or limits. Its diagnostic proved a local byte failure at23,219
+headers: four owner slots per single-owner row plus duplicate header/map charges;
+cold-cache preparations and visits were zero. Initial owner buffers now reserve
+one slot and only genuinely new rows/bindings pay their map envelope. Real source
+records, attempted work and sticky failures remain. No limit was raised.
 No original core/alloc/std artifact or whole PA after24 is complete.
 
 The join passes21 exact public controls, strict all-target metadata,44 explicit
@@ -20,8 +21,8 @@ all existing oracle bytes and missing-feature rejection; successor CI remains du
 
 Root continues genuine field_offset/layout consumers; Async owns actual const
 closure calls/captured CTFE/conditional requirements and adapters. Source owns
-local header-producer diagnosis, preserving its separately qualified no-body cold
-commit. Existing btrfs trees and2heavy/16GiB/150GiB/300s guards remain in force.
+the actual pointer-comparison declaration/operation prerequisite, preserving its
+separately qualified no-body cold commit. Existing btrfs trees and2heavy/16GiB/150GiB/300s guards remain in force.
 
 The [Field operation checkpoint](parallel/field-proof-projection-checkpoint.md)
 qualifies actual builtin evidence, full Base/Type results, ordinary generic/move/
@@ -930,7 +931,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-187 | Finite automatic-source checkpoint qualified; original owner blocker cleared, wider profiles required | Actual UnwindSafe/RefUnwindSafe and generic/custom auto-trait semantics | PA20 actual declaration/coherence/structural/negative/coinductive proof +PA31 original library identities +PA29 authenticated auto-trait transport | Source implements; Async independent contracts; Root integrates | Immutable040e5723 reaches panic/unwind_safe.rs91/file187:4464 in33.1302s/375opens, unchanged722/profile/limits. Preserve actual trait identity, field/premise/region dependencies, applicable explicit-impl suppression of structural fallback and scoped cycle/negative obligations; admission alone supplies no evidence. |
 | LIB-188 | Finite authenticated const-closure attribute target qualified; callable semantics required | `rustc_inherit_overflow_checks` on actual `const` closure in Iterator::count | PA31 source attribute targets +PA24/25 genuine const-closure semantics +PA40 internal feature/context authority | Source implements; Root integrates | [Join](parallel/custom-auto-main-join.md): CLI153a0715 reaches iterator.rs231/file175:8088 in21.1385s/375opens on unchanged722/profile/limits. Preserve actual wrapped closure identity and const/feature/overflow duties; accepting an attribute cannot grant const execution or remove arithmetic checks. |
 | LIB-189 | Actual cold source target/context checkpoint qualified; full body/transport closure required | Actual cold closure in str::pattern | PA31 source attribute targets +PA24 closure bodies +PA40 target/duplicate diagnostic levels | Source implements; Root integrates | [Joined observation](parallel/overflow-auto-ci-main-join.md): unchanged722/profile/limits reaches pattern.rs1858/file239:69695 in19.5022s/375opens. Preserve real closure/capture/body/unsafe/const checks; advisory placement grants no permission. Broader const-closure semantics remains required. |
-| LIB-190 | Observed local source-header producer resource failure; exact counter/site diagnosis pending | Distinguish local step/byte charge and real live/attempted allocation after joined source progress | PA31 source metadata/authority producer +PA32 original core bring-up +ordinary attribute owner budget | Source diagnoses; Root integrates | [Joined evidence](parallel/field-provided-default.md): unchanged722/pins/globalprofile reports generic producer storage-budget message in18.6433s/375opens. Verify actual local counters, owner/site and authorized-path cache counts before algorithm/accounting fix; no limit increases or assertion of a cache regression without evidence. |
+| LIB-190 | Allocation/accounting repair qualified; original frontier advanced | Real single-owner buffers and distinct header/binding map admission | PA31 source metadata/authority producer +PA32 original core bring-up | Source ee9735 integrated; Root publishes | [Measured checkpoint](parallel/source-header-allocation.md): local16,000,370bytes/128,510steps at23,219rows; zero cold-cache work. Exact initial owner capacity1 and vacant-only map charges clear the failure at unchanged limits. Strict metadata, source/native and282harness pass; new private storage controls compile with execution CI pending. |
+| LIB-191 | Observed original-core source fence; real declaration and operation work required | ptr_guaranteed_cmp do-not-const-check scope and actual pointer comparison semantics | PA31 declaration/const policy +PA25 CTFE provenance +PA28 pointer intrinsic +PA32 original core | Source implements; Root integrates | Immutable5bd46ec7 on all722/sixpins/profile/limits unchanged reaches intrinsics/mod.rs2297/file47:88680 in18.1196s/375opens. Current policy only supports actual panic roles with indirect markers. Preserve real source authority, ordinary const/body proof and independent pointer-provenance outcomes; no header bypass or artifact claim. |
 | LIB-180 | Actual source/explicit-call contract integrated; original role frontier cleared | Actual from_yeet generic free-function producer | PA31 source header/identity +PA26 FromResidual/Yeet dispatch +PA19/20 generic proof +PA29 transport | Root integrated | [Main join](parallel/from-yeet-flags-main-join.md): exact original function/all12 independently frozen outcomes and genuine native23/47 pass. Shared ordinary defined-function header staging preserves actual generics/caller tracking/const/unsafe/loan proof. CLIf90679ab clears this role on unchanged original core. Full Try-module const closure, implicit yeet consumers and authenticated transport remain required. |
 | LIB-179 | Ordinary family source contract integrated; original role frontier cleared | Actual panic_bounds_check and27 guard/const panic-hook declarations | PA31 source identities +PA11/12 checked guard lowering +PA25/26 format/const +PA29 transport +PA39 unwind | Root integrated; broader runtime required | Joined CLI12836562 clears all28 actual ordinary headers; frozen22 source outcomes,5 guard-phase opponents and ordinary28-body native marker calls pass. No supplied source hook silently becomes course abort. Actual guard signatures, caller location, nounwind, body routing, formatting/handler graph, future cause separation, const/unwind and metadata remain required. |
 | LIB-178 | Full original module and actual provided forwarders integrated; generated state/transport required | Actual CoroutineState enum and Coroutine/Yield/Return/resume family | PA31 source identities +PA19/20 trait/receiver proof +PA12/18 enums/generics +PA42 suspension/resumption +PA43 ownership +PA29 transport | Root integrated | Complete unchanged original module/all8 derives and2 provided forwarders pass9 frozen outcomes; manual/provided native23/47 match Rust. Wrong-owner/lifetime/Unpin controls retain real failures. Generic nominal factory input context and diagnostic-only comparison hints use ordinary proofs. Separate actual wrapper CoerceUnsized consumer, generated state/capture/cancel/cleanup and authenticated transport remain required. |

@@ -8,7 +8,9 @@ proof and the actual alternative u8 default7. The original field_offset intrinsi
 and layout remain required. Cold contexts and const-closure creation/originals
 are qualified finite prerequisites; actual captured const calls/CTFE, conditional
 premises and transport remain required. The unchanged core probe now reports the
-local source-header producer budget failure; diagnosis preserves all limits.
+ptr_guaranteed_cmp do-not-const-check declaration policy after the measured
+[source-header allocation repair](../docs/parallel/source-header-allocation.md).
+All source pins, profile and limits remain unchanged.
 
 The [Field proof/projection checkpoint](../docs/parallel/field-proof-projection-checkpoint.md)
 qualifies actual compiler-provided Field evidence, full Base/Type normalization,
