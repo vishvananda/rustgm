@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "declared": "2026-11-07, before the frozen rustc oracle; drafts had already been probed with the pinned and candidate compilers",
+ "declaration_sha256": "d5caa6c9cf15e4511feaee54ffd8ae1372e6be823591275f28d7dfa86b4a0d76",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [
+  "2026-11-07 after oracle v1 (v1/rustc-oracle.json): declared-before-length, reference-parameter, argument-position-parameter and receiver stopped at rustc's `requires copy lang_item` borrowck prerequisite, which is not an outcome. v2 inserts the `clone`/`copy` lang item traits after the shared prefix of every case; every v1 declared outcome and case body is unchanged.",
+  "2026-11-07 after oracle v1: private-through-alias was declared 1 but rustc 1.98.0 accepts it (status 0, only the private_interfaces warning). Exploration recorded in tmp/explore shows rustc's type-privacy pass does not visit anonymous constants in item signatures (fn result and struct field lengths and `const _: [(); { leak(); 1 }]` are accepted) while const initializers and fn bodies are checked. The case is retired from the fixture set (RustGM, pinned and candidate, rejects it: a pre-existing stricter rule recorded as a finding). v2 adds private-initializer-through-alias as the module opponent: the same alias in a crate-root const initializer, declared 1 with no code before oracle v2.",
+  "2026-11-07 after oracle v2 (v2/rustc-oracle.json): the v2 `Clone::clone(&self)` method made every case stop at rustc's `requires legacy_receiver lang_item` prerequisite, including the spurious agreement of private-initializer-through-alias; none of these is an outcome. v3 inserts batch 2's frozen prefix lines 47-54 (legacy_receiver with its two reference impls, clone and copy) after the shared prefix instead. Declared outcomes and case bodies are unchanged."
+ ],
+ "cases": {
+  "reference-parameter.rs": {
+   "sha256": "d0196036dfae984bbfafd764d4255698d06d903d81391c32d5c057c2dcf14bb8",
+   "declared": 0,
+   "reason": "flatten/step_by shape: `impl Tr + '_` names the one elided input lifetime of `&mut T`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "argument-position-parameter.rs": {
+   "sha256": "9883c1f28a0ab4564faef10d9533436f190a0f18eb6eecb41a75ce50ac714396",
+   "declared": 0,
+   "reason": "filter_map find shape: `&mut impl Tr` argument-position parameter and `&mut I` with an extra non-reference parameter",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "receiver.rs": {
+   "sha256": "0c138dbb9ccfe3514fa8d42d5059564c9387bb1f2ae2e6a165c3264110dd818e",
+   "declared": 0,
+   "reason": "`&self` with another reference parameter: the elided output lifetime is the receiver's",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "no-input-lifetime.rs": {
+   "sha256": "6066c1426cea162ce81ba7d40ec3f9390ccc1453534385fb120f337817c21b40",
+   "declared": 1,
+   "reason": "opponent: no input lifetime to elide from",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0106"
+   ]
+  },
+  "two-input-lifetimes.rs": {
+   "sha256": "715a7542ef4de8c35ebb0701d0f152a73924d7c1830fa2edc571e0a722634a83",
+   "declared": 1,
+   "reason": "opponent: two input lifetimes and no receiver make the elided output lifetime ambiguous",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0106"
+   ]
+  },
+  "where-clause.rs": {
+   "sha256": "45c9af2bbc287975f2ddf5fd289d70d0a913ede3298b4cf6cb2e11229bd65662",
+   "declared": 1,
+   "reason": "opponent: a where-clause outlives bound `T: '_` is not an elision site",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0637"
+   ]
+  }
+ }
+}

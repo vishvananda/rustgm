@@ -510,3 +510,10 @@ rustc's builtin binary operand rule, including two mismatched-width opponents
 and a non-numeric operand that still selects by trait. Each outcome was declared
 before its rustc 1.98.0 oracle. Private invariants check them; there is no
 graded manifest.
+
+`spec/undeclared-opaque-storage/` and `spec/elided-opaque-outlives/` freeze ten
+declared no_core controls from census batch 4: opaque applications interned
+before their declaration during storage preparation and `'_` in result
+outlives bounds as the elided output lifetime, each with opponents. Each
+outcome was declared before its rustc 1.98.0 oracle. Private invariants check
+them; there is no graded manifest.

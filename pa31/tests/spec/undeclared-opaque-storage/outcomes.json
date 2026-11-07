@@ -1,0 +1,46 @@
+{
+ "schema": 1,
+ "declared": "2026-11-07, before the frozen rustc oracle; drafts had already been probed with the pinned and candidate compilers",
+ "declaration_sha256": "d5caa6c9cf15e4511feaee54ffd8ae1372e6be823591275f28d7dfa86b4a0d76",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [
+  "2026-11-07 after oracle v1 (v1/rustc-oracle.json): declared-before-length, reference-parameter, argument-position-parameter and receiver stopped at rustc's `requires copy lang_item` borrowck prerequisite, which is not an outcome. v2 inserts the `clone`/`copy` lang item traits after the shared prefix of every case; every v1 declared outcome and case body is unchanged.",
+  "2026-11-07 after oracle v1: private-through-alias was declared 1 but rustc 1.98.0 accepts it (status 0, only the private_interfaces warning). Exploration recorded in tmp/explore shows rustc's type-privacy pass does not visit anonymous constants in item signatures (fn result and struct field lengths and `const _: [(); { leak(); 1 }]` are accepted) while const initializers and fn bodies are checked. The case is retired from the fixture set (RustGM, pinned and candidate, rejects it: a pre-existing stricter rule recorded as a finding). v2 adds private-initializer-through-alias as the module opponent: the same alias in a crate-root const initializer, declared 1 with no code before oracle v2.",
+  "2026-11-07 after oracle v2 (v2/rustc-oracle.json): the v2 `Clone::clone(&self)` method made every case stop at rustc's `requires legacy_receiver lang_item` prerequisite, including the spurious agreement of private-initializer-through-alias; none of these is an outcome. v3 inserts batch 2's frozen prefix lines 47-54 (legacy_receiver with its two reference impls, clone and copy) after the shared prefix instead. Declared outcomes and case bodies are unchanged."
+ ],
+ "cases": {
+  "declared-before-length.rs": {
+   "sha256": "f824af25b60164be627bbcd271e5eb3a7d049f61aeb147feccae1e71c7b2c0c0",
+   "declared": 0,
+   "reason": "control: a declared opaque precedes a generic const fn length `size::<Self>()`; storage preparation sees only declared applications",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "failed-before-length.rs": {
+   "sha256": "c811b19c640ce3d6a38d0e334db3c77a70fdf72a753747248b85e5439a37ac6c",
+   "declared": 1,
+   "reason": "an opaque result fails after its application is interned (`impl Tr + '_` with no input lifetime); the later length is still checked and the crate is rejected only for the opaque",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0106"
+   ]
+  },
+  "waiting-gat-argument.rs": {
+   "sha256": "7f5eccf7633358cdfe4928881f7e8e40221197ddb5bd7a89e518455df7c6e825",
+   "declared": 0,
+   "reason": "an opaque result waits for its GAT const argument `{ size::<u8>() }`; the evaluation prepares storage while that application is interned but undeclared",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "waiting-gat-mismatch.rs": {
+   "sha256": "a7f0229c36424ee99c4cd9d621e86c151452a334bbe70e093200056128921aff",
+   "declared": 1,
+   "reason": "opponent: the same waiting opaque with a wrong equality `Out<4> = u16` must still be rejected once its clauses complete",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0271"
+   ]
+  }
+ }
+}

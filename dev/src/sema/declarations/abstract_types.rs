@@ -24,6 +24,10 @@ pub(super) struct Pending {
     application: Option<TypeId>,
     explicit: Option<Box<super::capture_bounds::ExplicitLifetimes>>,
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/elided_opaque_outlives.rs"]
+mod elision_tests;
 #[derive(Clone, Copy)]
 struct Declared {
     source: NodeKey,
@@ -226,7 +230,14 @@ impl Checker<'_> {
         {
             let context = scope.map_or(context, |scope| scope.context(context));
             let ty = self.bound_subject(source, scope, application)?;
-            let (bound, original) = self.bound_values(written, ty, ty, context)?;
+            let (bound, original) = if let Written::Outlives(lifetime) = written {
+                // In a result `impl Trait + '_`, `'_` is the elided output lifetime,
+                // as in rustc; a where-clause `T: '_` stays rejected (E0637).
+                let bound = Bound::Outlives(self.region(lifetime, Some(lifetime.node), context)?);
+                (bound, bound)
+            } else {
+                self.bound_values(written, ty, ty, context)?
+            };
             let predicate = Predicate { ty, bound };
             bounds.push(self.bound_clause(source, scope, predicate)?);
             if let Written::User { path, .. } = written {

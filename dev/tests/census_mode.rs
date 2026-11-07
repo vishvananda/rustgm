@@ -188,6 +188,43 @@ fn failed_impl_headers_stay_item_local_and_block_their_members() -> Result {
 }
 
 #[test]
+fn an_opaque_failing_after_interning_leaves_later_storage_to_its_items() -> Result {
+    let input = input(
+        "interned-opaque",
+        "pub trait Tr {}\n\
+         impl Tr for u8 {}\n\
+         pub fn declared() -> impl Tr { 0u8 }\n\
+         pub fn failed() -> impl Tr + '_ { 0u8 }\n\
+         pub const fn size<T>() -> usize { 4 }\n\
+         pub struct S;\n\
+         impl S { pub const fn bytes(self) -> [u8; size::<Self>()] { loop {} } }\n",
+    )?;
+    let text = census("--emit-types", &input, "types", &[])?;
+    // The `size::<Self>()` length prepares storage after `failed` interned its
+    // application; that application waits instead of failing `bytes`.
+    assert_eq!(
+        records(&text),
+        [
+            [
+                "declarations",
+                "failed",
+                "function `failed`",
+                "-",
+                "cannot infer an output lifetime from these parameters"
+            ],
+            [
+                "declarations",
+                "stopped",
+                "-",
+                "-",
+                "later passes were not run after 1 failed and 0 blocked items in declarations"
+            ],
+        ]
+    );
+    ordinary_matches_first_record(&input, &text)
+}
+
+#[test]
 fn body_failures_in_plain_and_hidden_type_schedules_are_all_reported() -> Result {
     let plain = input(
         "plain-bodies",

@@ -8,6 +8,10 @@ use crate::{
 
 type Applications = (HashMap<TypeId, TypeId>, Vec<TypeId>);
 
+#[cfg(test)]
+#[path = "../../../tests/invariants/undeclared_opaque_storage.rs"]
+mod undeclared_tests;
+
 impl Declarations {
     /// Prepare appended canonical applications once, independently of caller proofs.
     /// Bodies still pass ordinary region and ownership verification before execution.
@@ -104,12 +108,15 @@ impl Declarations {
                 continue;
             };
             let result = (|| {
-                let declaration = self
-                    .opaques
-                    .declarations
-                    .get(&id)
-                    .ok_or("missing storage opaque declaration")?;
-                let Some(hidden) = declaration.hidden else {
+                // An application is interned before its declaration is published, and
+                // that declaration may wait for its clauses or fail. Either way it has
+                // no hidden type yet: it waits for its own identity, like a declared
+                // opaque whose defining body is unchecked, and never blames this caller.
+                let Some((declaration, hidden)) =
+                    self.opaques.declarations.get(&id).and_then(|declaration| {
+                        declaration.hidden.map(|hidden| (declaration, hidden))
+                    })
+                else {
                     preparation.wait(id, ty)?;
                     return Ok(None);
                 };
