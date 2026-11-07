@@ -242,7 +242,19 @@ impl Introductions {
         self.item_scopes.as_deref()?.prelude.as_deref()
     }
 }
+/// A phase whose lookups read the selection re-authenticates it once when it
+/// completes, so no accepted phase result rests on a changed selector.
+pub(super) fn complete_phase(package: &Package, facts: &Resolution) -> Result<(), Error> {
+    facts
+        .source_prelude_scope(package)
+        .map(drop)
+        .map_err(Error::unlocated)
+}
 impl Resolution {
+    /// Re-authenticate the retained selector against its actual owner, effect,
+    /// tree and module. Each phase that reads the selection does this once:
+    /// at selection, when expansion and resolution complete, and when a sema
+    /// method index is built. Its lookups then use [`Self::selected_source_prelude`].
     pub(crate) fn source_prelude_scope(
         &self,
         package: &Package,
@@ -251,6 +263,21 @@ impl Resolution {
             return Ok(None);
         };
         prelude.validate(package, self)?;
+        self.selected_module(prelude)
+    }
+    /// One lookup through a selector its phase authenticates. It pays its own
+    /// constant cost and rechecks the selected module row, never the whole record.
+    pub(crate) fn selected_source_prelude(
+        &self,
+        package: &Package,
+    ) -> Result<Option<ScopeId>, &'static str> {
+        let Some(prelude) = self.introductions.source_prelude() else {
+            return Ok(None);
+        };
+        pay(package, 1, 0)?;
+        self.selected_module(prelude)
+    }
+    fn selected_module(&self, prelude: &Prelude) -> Result<Option<ScopeId>, &'static str> {
         let Some((definition, scope)) = prelude.selected else {
             return Ok(None);
         };
@@ -384,7 +411,7 @@ impl Resolver<'_> {
         {
             return Ok(None);
         }
-        let Some(scope) = self.facts.source_prelude_scope(self.package)? else {
+        let Some(scope) = self.facts.selected_source_prelude(self.package)? else {
             return Ok(None);
         };
         let selected = self

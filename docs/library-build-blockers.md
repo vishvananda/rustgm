@@ -42,6 +42,15 @@ the same frontier and byte-identical census as under the observer's explicit
 caps. With Cargo's lint policy, core still stops first on the
 `implicit_provenance_casts` producer.
 
+[Source-prelude validation once per phase](parallel/macro-budget.md#source-prelude-validation-once-per-phase)
+(Lane B): the retained source-prelude selector is now re-authenticated once per
+phase (selection, end of expansion, end of resolution, each sema method index),
+not on every lookup. Each lookup still pays one work unit and rechecks its
+selected module row. On unchanged core the ledger's work fell from 8,398,273 to
+6,913,407 (prelude lookups: 1,619,907 to 135,041), with byte-identical census
+output and the same `flatten.rs` 8286 frontier. The grant factors are unchanged;
+work headroom grows from 3.5× to 4.2×.
+
 Known regression: since LIB-193's input-graph header bound (`d2bcb1f89`),
 PA20 `assoc-bounds/{wide16,deep16,wide64,deep64}.rs` fail with "source header
 attribute producer exceeds storage budget". The bound has no setup term, and the

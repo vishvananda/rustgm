@@ -26,10 +26,15 @@ pub(super) struct Index {
     steps: usize,
     prelude: HashMap<NameId, DefId>,
     contextual: Option<Box<discovery::Index>>,
+    /// The source prelude module this index authenticated once at construction.
+    source_prelude: Option<ScopeId>,
 }
 impl Index {
     pub(super) fn new(report: &Report, facts: &Declarations) -> Result<Self, &'static str> {
-        let mut index = Self::default();
+        let mut index = Self {
+            source_prelude: report.resolution.source_prelude_scope(&report.package)?,
+            ..Self::default()
+        };
         for (member, _) in facts.associated.declaration_members() {
             index.account(1)?;
             let Some(owner) = facts.associated.trait_owner(member) else {
@@ -57,12 +62,7 @@ impl Index {
                 }
             }
         }
-        if !report.package.uses_source_bindings()
-            && report
-                .resolution
-                .source_prelude_scope(&report.package)?
-                .is_none()
-        {
+        if !report.package.uses_source_bindings() && index.source_prelude.is_none() {
             for kind in crate::support::comparisons::Comparison::ALL {
                 if let Some(declaration) = report.resolution.builtin_traits.comparison(kind) {
                     index.prelude_members(declaration.definition)?;

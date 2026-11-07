@@ -372,6 +372,10 @@ fn finish_analysis<S: Sources>(mut engine: Engine<'_, S>) -> Result<Report, Erro
         .and_then(|()| {
             super::float_features::validate_literals(&report)
                 .map_err(|error| report.diagnostic(error))
+        })
+        .and_then(|()| {
+            super::prelude_scope::complete_phase(&report.package, &report.resolution)
+                .map_err(|error| report.diagnostic(error))
         });
     validation.map_err(|error| report.retain_expansion_warnings(error))?;
     Ok(report)

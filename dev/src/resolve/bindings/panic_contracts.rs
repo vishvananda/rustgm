@@ -403,6 +403,12 @@ impl Contracts {
         let state = self.0.borrow();
         (state.steps, state.bytes, state.witness_bytes)
     }
+    /// The effective attempted-storage limit: the granted allowance under its cap.
+    #[cfg(test)]
+    pub(in crate::resolve) fn attempted_limit(&self) -> usize {
+        let state = self.0.borrow();
+        state.granted.capped(state.limits).attempted
+    }
     pub(in crate::resolve) fn memo_payload(&self, bytes: usize) -> Result<(), &'static str> {
         self.0
             .try_borrow_mut()

@@ -163,6 +163,88 @@ passes.
   same `flatten.rs` gap. The planning gap stays std's dylib (unit 14). After core,
   the next unit that needs new support is cfg_if (task 2).
 
+## Source-prelude validation once per phase
+
+Follow-up (Lane B, task 1). Each resolver lookup that reached the source prelude
+re-authenticated the whole retained selector record: its owner, effect, use tree,
+source image and module (12 work units). That was 19.3% of core's ledger work.
+
+**Rule.** Each phase that reads the selection now re-authenticates it once:
+
+- when it is selected (`select_source_prelude`, during expansion);
+- when expansion completes (`finish_analysis`);
+- when resolution completes (`analyze_expanded`, and the plain `analyze`);
+- once per sema method index (`visible::Index::new`), which keeps the
+  authenticated scope.
+
+Each lookup (`Resolution::selected_source_prelude`) still pays its own constant
+cost: 1 work unit and the `prelude_import` request check. It also rechecks the
+selected module row (a module whose member scope is the selected scope). A sema
+probe also requires the selection to equal its index's scope. Lookups between
+two validations use the selection without re-reading the record. A changed
+record or owner makes that phase's completion fail, so no accepted phase result
+rests on a changed selector. Validation never moved out of a phase; no payer was
+refunded, and the grant factors are unchanged.
+
+**Attribution** (the same analysis-only patch, now tagged by phase, never
+committed: `obj/parallel/prelude-once-v1/attribution-baseline.patch`). Both
+pinned dev-fast CLIs ran unchanged original core (722 files verified against
+`original_core_manifest.json`) with u32::MAX caps, `--cap-lints=allow
+--emit-types`. Baseline `b72400cd…` is head `ed325cbe1`; candidate `40be00df…`
+is this change. Both stop at `flatten.rs` 8286, and their stdout and diagnostics
+are identical. The census files (10,410 declarations checked, 4 failed, 31
+blocked) are byte-identical.
+
+| Payer group | Before | Share | After | Share |
+|---|---|---|---|---|
+| Library inventory (`stability/*`) | 2,836,470 | 33.8% | 2,836,470 | 41.0% |
+| Derive lists and output | 2,581,476 | 30.7% | 2,581,476 | 37.3% |
+| Source-prelude lookups | 1,619,907 | 19.3% | 135,041 | 2.0% |
+| Panic, format, eager and choice expansion | 1,001,506 | 11.9% | 1,001,506 | 14.5% |
+| Macro header contracts | 358,710 | 4.3% | 358,710 | 5.2% |
+| Total work | 8,398,273 | | 6,913,407 | |
+
+The 134,990 lookups split into 9,629 during expansion and 125,361 in the
+post-expansion resolution walk. They now cost 134,990 units. The rest is three
+12-unit validations (selection, expansion end, resolution end) and 15 units of
+one-time selection setup. This core run
+stops before the sema method index is built. Attempted bytes (244,790,717) and
+the retained peak (27,543,295) are unchanged.
+
+| Dimension | Measured now | Factor | Headroom (before) |
+|---|---|---|---|
+| Work | 0.471/B | 2/B | 4.2× (3.5×) |
+| Attempted | 16.69/B | 64/B | 3.8× (3.8×) |
+| Retained | 1.88/B | 8/B | 4.3× (4.3×) |
+
+### Qualification
+
+These controls were declared before the runs.
+
+**Private tests.** `make fastcheck` passed 9 exact tests, plus strict private
+Clippy, format and architecture (`obj/qualification/fast/1794046564195156058`):
+
+- new: `prelude_scope::tests::lookups_pay_a_constant_cost_and_phases_reauthenticate_the_selector_once`.
+  On the `constructor-method` fixture, 1, 64 and 4,096 lookups each cost exactly
+  that many work units and no bytes, and return the authenticated scope. A phase
+  completion costs 12. A changed effect passes a lookup but fails the phase
+  completion and the authenticated read. A changed selected scope fails the
+  lookup itself.
+- `prelude_scope::tests::source_prelude_failure_payment_precedes_selector_publication`
+  (amended: it exhausts the actual admitted allowance through a test-only
+  accessor rather than the literal 64 MiB, which the input-proportional grant of
+  `054b91950` had already made stale on main);
+- five more `prelude_scope::tests` (owners, privacy, `no_implicit_prelude`,
+  shadowing, re-authentication of owner, effect and module incarnations, the
+  builtin macro);
+- `visible::prelude_tests::source_lang_trait_is_not_a_method_prelude_without_actual_import`;
+- `container_scopes::tests::scope_storage_is_linear_and_hot_records_do_not_gain_provenance`.
+
+**Integration tests.** `make fastcheck` passed 8 exact tests, plus CLI Clippy
+(`obj/qualification/fast/1794046842006443262`): both `legacy_editions` tests,
+the four `edition_fragments` tests, the 131,072-function `inventory_ordering`
+input and `census_mode::independent_declaration_failures…`.
+
 ## For the integrator
 
 - Amended frozen controls:
@@ -173,4 +255,6 @@ passes.
 - The census no longer needs explicit `--source-contract-*` limits for this
   ledger. Its explicit caps still cap the allowance and give the same frontier.
 - Optional cleanup: validate the source prelude once per phase instead of once
-  per lookup (19% of core's work in this ledger).
+  per lookup (19% of core's work in this ledger). Done: see
+  [Source-prelude validation once per phase](#source-prelude-validation-once-per-phase),
+  which amends one more private control (the selector-publication payment test).

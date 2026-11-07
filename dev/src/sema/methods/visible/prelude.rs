@@ -13,7 +13,12 @@ impl super::Index {
         if !report.package.modules[module.0 as usize].implicit_prelude {
             return Ok(());
         }
-        let Some(scope) = report.resolution.source_prelude_scope(&report.package)? else {
+        // The index authenticated the selector once; each probe pays its lookup.
+        let selected = report.resolution.selected_source_prelude(&report.package)?;
+        if selected != self.source_prelude {
+            return Err("source prelude changed after its method index was built");
+        }
+        let Some(scope) = selected else {
             return Ok(());
         };
         self.index_scope(scope)?;

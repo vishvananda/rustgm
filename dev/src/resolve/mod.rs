@@ -63,6 +63,7 @@ pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, pack
     try_blocks::validate_plain(package)?;
     gated_closures::validate_plain(package)?;
     compiler_syntax::validate_plain(package)?;
+    prelude_scope::complete_phase(package, &state.facts)?;
     Ok(state.facts)
 }
 pub mod render;
@@ -117,6 +118,8 @@ pub fn analyze_expanded(
         .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
     report
         .complete_hidden_globs(work)
+        .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
+    prelude_scope::complete_phase(&report.package, &report.resolution)
         .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
     report.names_resolved = true;
     Ok(report)

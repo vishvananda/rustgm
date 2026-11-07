@@ -234,6 +234,68 @@ fn source_prelude_owner_effect_and_module_incarnations_are_reauthenticated() -> 
     Ok(())
 }
 #[test]
+fn lookups_pay_a_constant_cost_and_phases_reauthenticate_the_selector_once() -> TestResult {
+    let mut report = crate::test_source::resolve(&fixture("constructor-method")?, true)?;
+    let payer = report.package.macro_context()?.ok_or("actual payer")?;
+    let expected = report.resolution.source_prelude_scope(&report.package)?;
+    assert!(expected.is_some());
+    // Each lookup pays exactly one unit and no storage, at every repetition.
+    for lookups in [1_usize, 64, 4096] {
+        let before = payer.contracts().usage();
+        for _ in 0..lookups {
+            assert_eq!(
+                report.resolution.selected_source_prelude(&report.package)?,
+                expected
+            );
+        }
+        let after = payer.contracts().usage();
+        assert_eq!((after.0 - before.0, after.1 - before.1), (lookups, 0));
+    }
+    // A phase's own re-authentication is the full constant record check.
+    let before = payer.contracts().usage();
+    complete_phase(&report.package, &report.resolution)?;
+    assert_eq!(payer.contracts().usage().0 - before.0, 12);
+    let prelude = report
+        .resolution
+        .introductions
+        .item_scopes
+        .as_deref_mut()
+        .and_then(|sites| sites.prelude.as_deref_mut())
+        .ok_or("actual source selector")?;
+    let effect = prelude.effect;
+    let selected = prelude.selected;
+    // A changed owner effect is not re-read per lookup, but no phase completes over it.
+    prelude.effect = usize::MAX;
+    assert_eq!(
+        report.resolution.selected_source_prelude(&report.package)?,
+        expected
+    );
+    assert!(complete_phase(&report.package, &report.resolution).is_err());
+    assert!(
+        report
+            .resolution
+            .source_prelude_scope(&report.package)
+            .is_err()
+    );
+    let prelude = report
+        .resolution
+        .introductions
+        .item_scopes
+        .as_deref_mut()
+        .and_then(|sites| sites.prelude.as_deref_mut())
+        .ok_or("actual source selector")?;
+    prelude.effect = effect;
+    // Every lookup still checks the selected module row itself.
+    prelude.selected = selected.map(|(definition, _)| (definition, ScopeId(u32::MAX)));
+    assert!(
+        report
+            .resolution
+            .selected_source_prelude(&report.package)
+            .is_err()
+    );
+    Ok(())
+}
+#[test]
 fn source_prelude_failure_payment_precedes_selector_publication() -> TestResult {
     let mut report = crate::test_source::resolve(&fixture("constructor-method")?, true)?;
     let prelude = report
@@ -247,7 +309,10 @@ fn source_prelude_failure_payment_precedes_selector_publication() -> TestResult 
         .package
         .macro_context()?
         .ok_or("actual request payer")?;
-    let remaining = (64 * 1024 * 1024_usize)
+    // Amended: exhaust the actual admitted allowance rather than the old fixed 64 MiB.
+    let remaining = context
+        .contracts()
+        .attempted_limit()
         .checked_sub(context.contracts().usage().1)
         .and_then(|bytes| bytes.checked_sub(1))
         .ok_or("remaining real storage budget")?;
