@@ -165,7 +165,12 @@ pub(super) fn finish(
         .map_err(|error| report.body_error(source, error))?;
     super::variant_facts::check(facts, &body).map_err(|error| report.body_error(source, error))?;
     // A called imported constructor needs its consumer-synthesized template,
-    // exactly as a local generic constructor reference requests one.
+    // exactly as a local generic constructor reference requests one. The scan
+    // is canonical body work: one step per rebuilt value.
+    facts.body_work.canonical_steps = facts
+        .body_work
+        .canonical_steps
+        .saturating_add(body.values.len());
     for value in &body.values {
         if let crate::body::ir::Rvalue::Function(definition) = value.kind
             && facts.members.constructor(definition).is_some()
