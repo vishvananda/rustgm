@@ -94,6 +94,24 @@ The census does not enter bodies while declarations fail (integrator decision,
 Where RustGM is stricter than rustc 1.98.0 on an observed program, it follows
 rustc, for example type privacy in array lengths in signatures.
 
+Decisions after [census batch 5](parallel/census-batch5.md) (census 6: 32
+failed, 52 blocked):
+
+- "Canonical trait selection requires pending declarations": a copy decision
+  in a declaration-time constant waits for derived impls, such as
+  `Copy for Option<T>` and `NonZero`'s `Copy`.
+  - Chosen: widen early validation to ADT subjects whose arguments are exactly
+    the impl's own parameters. A pending copy decision becomes a dependency of
+    the waiting constant, not a failure. This follows the on-demand header
+    facts (batch 2) and the opaque storage wait (batch 4). It costs more
+    dependency edges, which the worklist's existing cycle detection must
+    cover.
+  - Rejected: answering copy decisions from declaration-level availability.
+    That would decide `Copy` from impls not yet validated, breaking the rule
+    that semantic decisions use validated facts.
+- `pat.rs` (core's ordinary first error) is Lane A's: generic `!null` pattern
+  types and pattern-type `DispatchFromDyn` coherence.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

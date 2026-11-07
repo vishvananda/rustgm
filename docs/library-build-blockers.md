@@ -5,6 +5,39 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 5](parallel/census-batch5.md) repairs six of census 5's
+causes and two that those repairs exposed. Census 6 (`1c0cac9f`) checks 42,226
+declarations, with 32 failed and 52 blocked (census 5: 42,194, 62 and 55).
+
+- "Invalid canonical trait selection" (18) and "invalid associated equality
+  selection" (3) had one cause. In a crate with trait objects, equality
+  selection asked a rigid projection for its constructor head and returned the
+  normalization error. That error now means "not an object". This is one match
+  in `sema/traits/results.rs`, the batch's only `sema::traits` change. Five
+  `flatten.rs` methods now reach Lane B's cause.
+- Declaration-time constants:
+  - early scalar impl validation prepares the value shapes it will form, such
+    as `NonZeroU8Inner`, which is declared later;
+  - implicit enum discriminants are published with the enum's shape;
+  - const bodies and constant execution wait for a later struct's field
+    template instead of failing;
+  - source `ctpop`, `ctlz`, `cttz` and their `_nonzero` forms execute.
+- In census mode, a use of a failed impl header's self type is blocked by that
+  header's record. So is a const body that a failed root left active. Before,
+  they failed again as "later semantic assignments" and as a cycle.
+- As in rustc 1.98, item-signature anonymous constants skip semantic type
+  privacy. Body constants and associated item privacy stay checked; `spec.md`
+  records the rule.
+- 27 PA31 no_core controls were declared before the rustc 1.98.0 oracle, and
+  all agree. Every PA1 to PA24 suite passes, with PA20 at 1451/1451.
+- What remains:
+  - Lane B's cause: 28 failed, 26 blocked.
+  - "Canonical trait selection requires pending declarations": 3 failed, 26
+    blocked. It holds the largest roots, two `Buf`s and `prepare`, and needs a
+    decision. Their CTFE `Copy` of `Option<T>` and `NonZero<T>` waits for impls
+    that early validation does not admit.
+  - `pat.rs`'s generic `!null` pattern type (1) is diagnosed only.
+
 Lane C [cold, caller-tracking and `panic` role rows](parallel/panic-attributes-transport.md)
 is joined on main. Version 13 carries two new bits in a
 function header row's inline byte (`#[cold]`, `#[track_caller]`) and a
