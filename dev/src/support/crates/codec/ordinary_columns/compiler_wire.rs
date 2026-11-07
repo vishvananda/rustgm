@@ -21,7 +21,10 @@ pub(super) fn decode(
     rows.compiler_operations = read.list(MAX_COMPONENTS, 21, operation_read)?;
     Ok(())
 }
-fn associated_write(out: &mut Writer, row: &s::AssociatedTypeHeader) -> Result<(), &'static str> {
+pub(super) fn associated_write(
+    out: &mut Writer,
+    row: &s::AssociatedTypeHeader,
+) -> Result<(), &'static str> {
     for value in [
         row.declaration.0,
         row.parent.0,
@@ -39,7 +42,9 @@ fn associated_write(out: &mut Writer, row: &s::AssociatedTypeHeader) -> Result<(
         u8::from(row.clone_),
     ])
 }
-fn associated_read(read: &mut Input<'_, '_>) -> Result<s::AssociatedTypeHeader, &'static str> {
+pub(super) fn associated_read(
+    read: &mut Input<'_, '_>,
+) -> Result<s::AssociatedTypeHeader, &'static str> {
     Ok(s::AssociatedTypeHeader {
         declaration: DeclarationRef(read.id()?),
         parent: DeclarationRef(read.id()?),
@@ -53,13 +58,18 @@ fn associated_read(read: &mut Input<'_, '_>) -> Result<s::AssociatedTypeHeader, 
         clone_: read.boolean()?,
     })
 }
-fn projection_write(out: &mut Writer, row: &s::ProjectionRecipe) -> Result<(), &'static str> {
+pub(super) fn projection_write(
+    out: &mut Writer,
+    row: &s::ProjectionRecipe,
+) -> Result<(), &'static str> {
     address_write(out, row.declaration)?;
     id(out, row.subject.0)?;
     id(out, row.trait_application.0)?;
     range(out, row.arguments)
 }
-fn projection_read(read: &mut Input<'_, '_>) -> Result<s::ProjectionRecipe, &'static str> {
+pub(super) fn projection_read(
+    read: &mut Input<'_, '_>,
+) -> Result<s::ProjectionRecipe, &'static str> {
     Ok(s::ProjectionRecipe {
         declaration: address_read(read)?,
         subject: g::TypeRef(read.id()?),

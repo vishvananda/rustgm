@@ -21,6 +21,7 @@ impl Stage {
         budget.reserve(facts.associated.imported_allocation_bound(
             owners.len(),
             owners.iter().map(|row| row.members.len()).sum(),
+            owners.iter().map(|row| row.results.len()).sum(),
         ))?;
         let (callables, functions) =
             super::template_ports::prepare(context, facts, &self.scopes, budget)?;

@@ -18,19 +18,32 @@ pub(super) fn require_profile(
     work: &mut Work,
 ) -> Result<(), &'static str> {
     work.charge(rows.types.len().saturating_add(rows.functions.len()))?;
-    if !profile.compiler_operations()
+    // Version thirteen carries declared results and their projections; only
+    // version eleven carries opaque futures and symbolic operations.
+    let results = profile.compiler_operations() || profile.body_nodes();
+    if !profile.body_nodes() && !rows.associated_definitions.is_empty() {
+        return Err(
+            "associated result definitions require their explicit version-thirteen profile",
+        );
+    }
+    if !results
         && (!rows.associated_types.is_empty()
             || !rows.projections.is_empty()
-            || !rows.opaque_futures.is_empty()
-            || !rows.compiler_operations.is_empty()
             || rows
                 .types
                 .iter()
-                .any(|ty| matches!(ty, Type::Projection(_) | Type::OpaqueFuture(_)))
-            || rows
-                .functions
-                .iter()
-                .any(|row| matches!(row.body, FunctionBody::CompilerOperation(_))))
+                .any(|ty| matches!(ty, Type::Projection(_))))
+        || !profile.compiler_operations()
+            && (!rows.opaque_futures.is_empty()
+                || !rows.compiler_operations.is_empty()
+                || rows
+                    .types
+                    .iter()
+                    .any(|ty| matches!(ty, Type::OpaqueFuture(_)))
+                || rows
+                    .functions
+                    .iter()
+                    .any(|row| matches!(row.body, FunctionBody::CompilerOperation(_))))
     {
         return Err(
             "compiler operations and declared results require their explicit version-eleven profile",
@@ -190,7 +203,7 @@ fn associated(
     Ok(())
 }
 
-fn projection_contract(
+pub(super) fn projection_contract(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     projection: &super::ProjectionRecipe,
@@ -368,7 +381,7 @@ fn constructor_signature(
     Ok(())
 }
 
-fn sizing(
+pub(super) fn sizing(
     rows: &SourceRows,
     header: &super::AssociatedTypeHeader,
     work: &mut Work,

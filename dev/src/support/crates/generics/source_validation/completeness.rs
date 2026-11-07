@@ -288,6 +288,28 @@ fn associated_headers(
             work,
         )?;
     }
+    for (index, row) in rows.associated_definitions.iter().enumerate() {
+        insert(
+            rows,
+            headers,
+            row.declaration,
+            DefinitionKind::AssociatedType,
+            HeaderRef::AssociatedDefinition(ordinal(index)?),
+            work,
+        )?;
+        let parent = rows.declarations[row.declaration.0 as usize]
+            .definition
+            .parent;
+        if !parent.is_some_and(|parent| {
+            matches!(
+                headers.get(parent.0 as usize),
+                Some(Some(HeaderRef::Implementation(_)))
+            )
+        }) || row.value.0 as usize >= rows.types.len()
+        {
+            return Err("associated result definition lost its actual implementation owner");
+        }
+    }
     Ok(())
 }
 

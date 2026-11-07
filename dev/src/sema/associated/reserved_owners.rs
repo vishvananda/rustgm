@@ -6,6 +6,9 @@ pub(in crate::sema) struct ImportedOwner {
     pub owner: Owner,
     pub schema: Schema,
     pub members: Vec<DefId>,
+    /// An imported impl's (trait declaration, own definition) result links,
+    /// taken from its authenticated member links. Identity only, never proof.
+    pub results: Vec<(DefId, DefId)>,
 }
 #[cfg(test)]
 pub(in crate::sema) fn imported_layouts() -> (usize, usize, usize) {
@@ -20,9 +23,16 @@ impl Inventory {
         &self,
         owners: usize,
         members: usize,
+        results: usize,
     ) -> usize {
         use crate::support::retained::new_map;
         let declarations = owners.saturating_mul(2).saturating_add(members);
+        // Result links exist only in profiles that transport declared results.
+        let links = if results == 0 {
+            0
+        } else {
+            new_map::<(OwnerId, DefId), DefId>(self.type_members.len().saturating_add(results))
+        };
         4_usize
             .saturating_mul(self.owners.len().saturating_add(owners))
             .saturating_mul(size_of::<Owner>() + size_of::<Vec<DefId>>())
@@ -39,6 +49,7 @@ impl Inventory {
             ))
             .saturating_add(size_of::<super::language::Declarations>())
             .saturating_add(new_map::<DefId, ()>(declarations))
+            .saturating_add(links)
     }
     pub(in crate::sema) fn imported_table_allocation(
         &self,
@@ -178,6 +189,17 @@ impl Inventory {
                     );
                 }
             }
+            for (index, &(expected, actual)) in row.results.iter().enumerate() {
+                *steps = steps.saturating_add(row.members.len());
+                if !matches!(row.owner.kind, OwnerKind::ImportedImpl(_))
+                    || !row.members.contains(&actual)
+                    || row.results[..index]
+                        .iter()
+                        .any(|&(other, definition)| other == expected || definition == actual)
+                {
+                    return Err("imported associated result link is foreign or duplicate");
+                }
+            }
         }
         if *steps > crate::support::crates::MAX_COMPONENTS {
             return Err("imported owner installation work budget exceeded");
@@ -190,6 +212,9 @@ impl Inventory {
             self.declarations.insert(row.owner.self_definition, id);
             if let OwnerKind::Trait { definition, .. } = row.owner.kind {
                 self.declarations.insert(definition, id);
+            }
+            for &(expected, actual) in &row.results {
+                self.type_members.insert((id, expected), actual);
             }
             for &definition in &row.members {
                 self.declarations.insert(definition, id);

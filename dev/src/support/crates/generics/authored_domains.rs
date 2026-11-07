@@ -48,6 +48,8 @@ pub enum HeaderRef {
     Implementation(u32),
     Function(u32),
     AssociatedType(u32),
+    /// Version thirteen: an implementation's associated-result definition row.
+    AssociatedDefinition(u32),
 }
 
 pub(crate) type HeaderRows = (Vec<Option<HeaderRef>>, usize, super::bodymap::Shared);

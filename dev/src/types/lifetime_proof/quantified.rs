@@ -39,6 +39,17 @@ impl Quantified {
     pub fn is_empty(&self) -> bool {
         self.blocks.is_empty()
     }
+    pub fn vacuous(&self) -> bool {
+        self.gaps.is_empty()
+            && self.scopes.iter().all(|binder| binder.count == 0)
+            && self.blocks.iter().all(|block| {
+                block.proof.regions.is_empty()
+                    && block.proof.equalities.is_empty()
+                    && block.proof.outlives.is_empty()
+                    && block.proof.types.is_empty()
+                    && !block.proof.has_quantified()
+            })
+    }
     pub fn extend(&mut self, mut other: Self) -> Result<(), &'static str> {
         let offset = u32::try_from(self.scopes.len()).map_err(|_| "too many proof scopes")?;
         if self.scopes.len().saturating_add(other.scopes.len()) > 1_000_000 {

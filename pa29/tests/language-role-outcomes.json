@@ -93,7 +93,8 @@
       "sha256": "3b765325150e0cee58e34e770485e706ee004e73dd294d7510b41729cdc77ff4",
       "candidate": "provider export rejected: source associated result transport is not implemented",
       "reason": "Output results need the version-eleven associated-type fold",
-      "candidate_observed": "provider export rejected: named, associated or generic alias transport requires its wider profile (the declared diagnostic was a guess; the same Output gap rejects one stage earlier)"
+      "candidate_observed": "provider export rejected: named, associated or generic alias transport requires its wider profile (the declared diagnostic was a guess; the same Output gap rejects one stage earlier)",
+      "amended": "associated-results checkpoint (2026-11-07): module-bodies-v13 declared results export output.rs, and the fresh consumer accepts sum-in-range with native exit 42, the frozen rustc outcome"
     }
   ],
   "older_profiles": {

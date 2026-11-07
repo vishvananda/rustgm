@@ -31,6 +31,7 @@ impl Graph {
             }
             Some(s::HeaderRef::Trait(index)) => Some(rows.traits[index as usize].self_definition),
             Some(s::HeaderRef::Implementation(_) | s::HeaderRef::Nominal(_)) => None,
+            Some(s::HeaderRef::AssociatedDefinition(_)) => raw.definition.parent,
             None if raw.definition.kind == s::DefinitionKind::SelfType => None,
             None => return Ok(()),
         };
@@ -114,6 +115,8 @@ impl Graph {
                     "source function omitted its actual canonical input/header installation",
                 );
             }
+            // An implementation's result definition declares no inputs of its own.
+            Some(s::HeaderRef::AssociatedDefinition(_)) => return Ok(Some(&[])),
             None if raw.definition.kind == s::DefinitionKind::SelfType => {
                 let parent = raw
                     .definition

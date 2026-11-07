@@ -147,6 +147,7 @@ impl Reader {
             Some(s::HeaderRef::Implementation(index)) => {
                 rows.implementations[index as usize].declared_inputs as usize
             }
+            Some(s::HeaderRef::AssociatedDefinition(_)) => 0,
             None => {
                 let (range, _) = originals::input_range(rows, *raw)?;
                 if range.start != range.end {

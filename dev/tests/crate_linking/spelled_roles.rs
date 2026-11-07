@@ -1,5 +1,6 @@
 //! Fresh CLI processes consume version-thirteen operator language roles, trait
-//! parameter defaults and checked Add/Sub/Mul rows; forged role rows reject.
+//! parameter defaults, checked Add/Sub/Mul rows and `Add` with its declared
+//! `Output`; forged role rows reject.
 use super::fresh_packets::{Packet, Result, relabel, unique, with_id};
 use rustgm::support::crates;
 use std::{fmt::Write as _, os::unix::process::ExitStatusExt};
@@ -60,12 +61,13 @@ fn operator_roles_defaults_and_checked_rows_survive_wire_and_fresh_consumers() -
         &mut packet.client("own-operator"),
         "source binary operator requires its actual language declaration",
     )?;
-    let output = packet.fixture("output");
-    let rejected = packet.folder.join("output.rgcrate");
-    packet.rejected(
-        "output",
-        &mut packet.export(PROFILE, &output, &rejected),
-        "named, associated or generic alias transport requires its wider profile",
+    // Amended boundary: `Add` with its associated `Output` now exports through
+    // version-thirteen declared results, and its consumer instantiates `sum`.
+    let output = Packet::publish(GROUP, SPEC, "output", "output", PROFILE)?;
+    super::artifacts::checked(
+        "sum-in-range",
+        &output.folder,
+        &mut output.client("sum-in-range"),
     )?;
     let source = packet.fixture("provider");
     for profile in ["module-branches-v12", "module-nominals-v10"] {
@@ -194,5 +196,12 @@ fn operator_role_instances_execute_natively() -> Result {
         }
         assert!(output.stdout.is_empty(), "{name}");
     }
+    let output = Packet::publish(GROUP, SPEC, "output-native", "output", PROFILE)?;
+    super::artifacts::checked(
+        "sum-in-range",
+        &output.folder,
+        &mut output.client("sum-in-range"),
+    )?;
+    assert_eq!(output.native("sum-in-range")?.status.code(), Some(42));
     Ok(())
 }

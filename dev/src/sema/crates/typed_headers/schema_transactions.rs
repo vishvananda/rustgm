@@ -66,7 +66,8 @@ impl OwnerTransaction {
             s::HeaderRef::Implementation(index) => self.implementations.get_mut(index as usize),
             s::HeaderRef::Function(_)
             | s::HeaderRef::Nominal(_)
-            | s::HeaderRef::AssociatedType(_) => None,
+            | s::HeaderRef::AssociatedType(_)
+            | s::HeaderRef::AssociatedDefinition(_) => None,
         };
         cell.ok_or_else(|| error("private schema demand lacks its actual dense owner row"))
     }
@@ -353,7 +354,10 @@ fn shape(
             let raw = &rows.implementations[index as usize];
             (raw.self_type, raw.region_captures, raw.region_bounds)
         }
-        s::HeaderRef::Function(_) | s::HeaderRef::Nominal(_) | s::HeaderRef::AssociatedType(_) => {
+        s::HeaderRef::Function(_)
+        | s::HeaderRef::Nominal(_)
+        | s::HeaderRef::AssociatedType(_)
+        | s::HeaderRef::AssociatedDefinition(_) => {
             return Err(error("private schema changed its actual header kind"));
         }
     })
@@ -429,6 +433,7 @@ fn materialize(
             bounds: regional,
         },
         members,
+        results: Vec::new(),
     };
     let mut steps = 0usize;
     mapped
@@ -472,7 +477,10 @@ fn source_owner(
                 kind: OwnerKind::ImportedImpl(view.declaration(raw.self_definition, work)?),
             }
         }
-        s::HeaderRef::Function(_) | s::HeaderRef::Nominal(_) | s::HeaderRef::AssociatedType(_) => {
+        s::HeaderRef::Function(_)
+        | s::HeaderRef::Nominal(_)
+        | s::HeaderRef::AssociatedType(_)
+        | s::HeaderRef::AssociatedDefinition(_) => {
             return Err(error("private associated owner cannot be a function"));
         }
     })

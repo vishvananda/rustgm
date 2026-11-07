@@ -46,6 +46,15 @@ impl Obligations {
     pub fn has_quantified(&self) -> bool {
         self.quantified.is_some()
     }
+    /// Quantified evidence that binds no region and records no gap or relation
+    /// is exactly its flat root evidence. Zero-slot callable openings leave
+    /// such scopes when a rigid declared result is normalized under its binder.
+    #[must_use]
+    pub fn quantifies_nothing(&self) -> bool {
+        self.quantified
+            .as_ref()
+            .is_none_or(|quantified| quantified.vacuous())
+    }
     /// Retained lexical scopes, excluding the caller's root scope.
     #[must_use]
     pub fn scope_count(&self) -> usize {

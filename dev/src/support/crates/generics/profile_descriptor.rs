@@ -442,6 +442,7 @@ impl ValidatedRows {
                 super::operation_contracts::validate(&rows, &indexed, work)?;
             } else if profile.body_nodes() {
                 functions::validate_module_bodies(&rows, &indexed, work)?;
+                super::results_contract::validate(&rows, &indexed, work)?;
             } else if profile.conversion_roles() {
                 functions::validate_module_conversions(&rows, &indexed, work)?;
             } else if profile.call_safety() {

@@ -63,7 +63,8 @@ pub(in crate::sema::crates::typed_headers) trait Mapping<'rows>:
             }
             s::HeaderRef::Function(_)
             | s::HeaderRef::Nominal(_)
-            | s::HeaderRef::AssociatedType(_) => {
+            | s::HeaderRef::AssociatedType(_)
+            | s::HeaderRef::AssociatedDefinition(_) => {
                 return Err("imported associated inventory lacks its actual owner header");
             }
         };
@@ -208,7 +209,15 @@ impl MemberRows<'_> {
                         }
                         let definition = catalog.definition_at(provider, member.declaration)?;
                         let id = catalog.declaration(definition)?;
-                        catalog.validate_declaration(id, definition, DefKind::Function)?;
+                        let kind = if matches!(
+                            rows.header(member.declaration)?,
+                            Some(s::HeaderRef::AssociatedType(_))
+                        ) {
+                            DefKind::TypeAlias
+                        } else {
+                            DefKind::Function
+                        };
+                        catalog.validate_declaration(id, definition, kind)?;
                     }
                     if let Some(raw) = link.implementation {
                         require_member(
@@ -321,7 +330,8 @@ impl<'a> Mapping<'a> for Ordinary<'a> {
             }
             s::HeaderRef::Function(_)
             | s::HeaderRef::Nominal(_)
-            | s::HeaderRef::AssociatedType(_) => {
+            | s::HeaderRef::AssociatedType(_)
+            | s::HeaderRef::AssociatedDefinition(_) => {
                 Err("imported associated inventory lacks its actual owner header")
             }
         }

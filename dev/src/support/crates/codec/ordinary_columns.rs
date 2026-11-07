@@ -18,6 +18,7 @@ mod owner_rows;
 mod provided_extensions;
 mod recipe_columns;
 mod relation_columns;
+mod results_wire;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/supplied_packets.rs"]
 mod supplied_tests;
@@ -89,6 +90,9 @@ pub(super) fn encode_module_availability(
     }
     if rows.descriptor().profile().nominals() {
         nominal_rows::encode(out, rows)?;
+    }
+    if rows.descriptor().profile().body_nodes() {
+        results_wire::encode(out, rows)?;
     }
     let const_bodies = rows.availability()?.const_bodies.as_deref();
     if rows.descriptor().profile().compiler_operations() {
@@ -193,6 +197,9 @@ fn decode_availability_profile(
     if profile.nominals() {
         rows.nominals = read.list(crates::MAX_COMPONENTS, 43, nominal_rows::nominal_read)?;
         rows.fields = read.list(crates::MAX_COMPONENTS, 21, nominal_rows::field_read)?;
+    }
+    if profile.body_nodes() {
+        results_wire::decode(&mut read, &mut rows)?;
     }
     availability.const_bodies = if profile.compiler_operations() {
         match read.reader.u8()? {
@@ -392,6 +399,7 @@ fn decode_profile_with(
     };
     let rows = s::SourceRows {
         associated_types: Vec::new(),
+        associated_definitions: Vec::new(),
         projections: Vec::new(),
         opaque_futures: Vec::new(),
         compiler_operations: Vec::new(),

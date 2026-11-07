@@ -2,6 +2,29 @@
 use super::{Context, DomainIndex, HeaderRef, Types, Work, g, s};
 
 impl DomainIndex<'_, '_> {
+    /// An impl's result value is a root of its impl's own frame: it can name
+    /// only that impl's formals, never the trait frame it satisfies.
+    fn definition_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
+        let rows = self.headers.rows();
+        for row in &rows.associated_definitions {
+            let parent = rows
+                .declarations
+                .get(row.declaration.0 as usize)
+                .and_then(|raw| raw.definition.parent)
+                .ok_or("source associated definition has no actual impl parent")?;
+            let Some(HeaderRef::Implementation(index)) = self.headers.header(parent, work)? else {
+                return Err("source associated definition has no actual impl header");
+            };
+            let header = &rows.implementations[index as usize];
+            let context = Context {
+                owner: header.scope,
+                frame: Some(self.binders.declaration(header.self_definition, work)?),
+                body: None,
+            };
+            self.types.root(self.headers, context, row.value, work)?;
+        }
+        Ok(())
+    }
     pub(super) fn header_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
         let rows = self.headers.rows();
         for header in &rows.nominals {
@@ -70,6 +93,7 @@ impl DomainIndex<'_, '_> {
             self.requirements(context, header.inputs, work)?;
             self.requirements(context, header.bounds, work)?;
         }
+        self.definition_roots(work)?;
         for projection in &rows.projections {
             self.used_traits[projection.trait_application.0 as usize] = true;
         }

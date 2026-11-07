@@ -53,6 +53,11 @@ pub(super) fn prepare(
     for header in &rows.associated_types {
         assign(&mut cells, header.declaration, graph.ty(header.projection)?)?;
     }
+    // An impl's declared-result definition cell is its value recipe; the
+    // consumer re-derives every normalization and bound through it.
+    for row in &rows.associated_definitions {
+        assign(&mut cells, row.declaration, graph.ty(row.value)?)?;
+    }
     for header in &rows.nominals {
         assign(&mut cells, header.declaration, graph.ty(header.self_type)?)?;
     }

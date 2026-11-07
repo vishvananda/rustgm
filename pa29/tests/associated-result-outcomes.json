@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+  "providers": [
+    {
+      "file": "spec/associated-results/provider.rs",
+      "sha256": "1d71a026727972175b0c1d4109756f21616006bae5e251e7453e3910882f41f4"
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "cases": [
+    {
+      "file": "spec/associated-results/fetch-hit.rs",
+      "provider": "spec/associated-results/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "32fb1592fe95fc45309e0adeca395e1b0544aa9652000460abeafeaaa818acb7"
+    },
+    {
+      "file": "spec/associated-results/sum-in-range.rs",
+      "provider": "spec/associated-results/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "63292920f0567a9164fd29eefaed22abbf40220d2644c0350054a3eb6cfac59a"
+    },
+    {
+      "file": "spec/associated-results/sum-overflow.rs",
+      "provider": "spec/associated-results/provider.rs",
+      "accepted": true,
+      "native_exit": null,
+      "native_signal": "SIGABRT",
+      "observer_status": 134,
+      "sha256": "23f42330891ef8e2a90efe3293834c0ab7d6d2ab1da8a2b9dc45366d3f6e3b75"
+    },
+    {
+      "file": "spec/associated-results/fetch-mismatch.rs",
+      "provider": "spec/associated-results/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0308",
+      "candidate_diagnostic": "incompatible types",
+      "sha256": "361e8ac00ce725a95ef9c013054c5cc73b81c667c0cd2e946de9401476e7e02e"
+    },
+    {
+      "file": "spec/associated-results/fetch-unimplemented.rs",
+      "provider": "spec/associated-results/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0277",
+      "candidate_diagnostic": "associated type requires an unambiguous validated implementation",
+      "sha256": "98650c1dc2400bc694b9afabf9aec512a17e005512ccb21d2308e4aa590545a7"
+    }
+  ],
+  "older_profiles": {
+    "module-branches-v12 and module-nominals-v10 exports of spec/associated-results/provider.rs": "rejected: named, associated or generic alias transport requires its wider profile",
+    "byte_identity": "module-bodies-v13 exports of spec/source-body-ir/{provider,wire}.rs and spec/language-roles/provider.rs, module-branches-v12 exports of spec/source-branches/{provider,wait,spin}.rs and the module-nominals-v10 exports of spec/source-branches/spin.rs and spec/source-nominals/provider.rs equal the bba7e42fb baseline bytes, and their fresh consumers' LowIR is identical"
+  },
+  "wire_controls": [
+    {
+      "mutation": "swap the declarations of the two impl definition rows",
+      "expected": "rejected: rows follow implementation/link order; recorded at first observation",
+      "observed": "source associated definition belongs to another actual Self owner"
+    },
+    {
+      "mutation": "Shape definition row names Shape's trait-declared result",
+      "expected": "rejected; recorded at first observation",
+      "observed": "source declaration has duplicate or conflicting typed headers"
+    },
+    {
+      "mutation": "Shape definition value -> Shape's trait-frame projection",
+      "expected": "rejected; recorded at first observation",
+      "observed": "source consuming type root captures another parameter owner"
+    },
+    {
+      "mutation": "Shape definition value -> every other in-range type recipe",
+      "expected": "every forgery rejects; the impl's own u8 Self type rejects in the consumer's fresh impl method conformance",
+      "observed": "foreign-frame recipes: source consuming type root captures another parameter owner / belongs to another current binder frame; exactly one (u8): incompatible types"
+    },
+    {
+      "mutation": "Shape definition value -> 0xfffffff0",
+      "expected": "rejected; recorded at first observation",
+      "observed": "associated result definition lost its actual implementation owner"
+    },
+    {
+      "mutation": "drop the three result columns",
+      "expected": "truncated metadata artifact"
+    },
+    {
+      "mutation": "version byte relabelled 13 to 12",
+      "expected": "decode fails: the version-twelve decoder has no associated declaration kind",
+      "observed": "unknown source declaration kind"
+    },
+    {
+      "mutation": "every strict prefix",
+      "expected": "decode fails"
+    }
+  ],
+  "scaling": {
+    "description": "Providers with 6, 24 and 96 generated `ShapeNNN` traits, each with one declared result and one u8 impl: exactly width+1 trait results and definitions and width+2 projections, a constant wire delta per trait, and one fresh `fetch` consumer per width."
+  }
+}

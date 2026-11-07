@@ -53,11 +53,14 @@ enum Inputs {
     Trait(predicate_remap::Prepared),
     Function(Arc<[Input]>),
     Implementation(Arc<[Input]>),
+    /// An implementation's associated-result definition: the version-thirteen
+    /// profile admits no own family inputs, so it inherits its impl's frame.
+    Definition,
 }
 impl Inputs {
     fn all(&self) -> &[Input] {
         match self {
-            Self::SelfType => &[],
+            Self::SelfType | Self::Definition => &[],
             Self::Trait(prepared) => prepared.all(),
             Self::Associated { inputs, .. }
             | Self::Function(inputs)
@@ -168,7 +171,9 @@ fn finish_inputs(
             (Some(s::HeaderRef::Implementation(index)), Inputs::Implementation(inputs)) => {
                 (&mut implementations[index as usize], inputs)
             }
-            (None, Inputs::SelfType) | (Some(s::HeaderRef::Function(_)), Inputs::Function(_)) => {
+            (None, Inputs::SelfType)
+            | (Some(s::HeaderRef::Function(_)), Inputs::Function(_))
+            | (Some(s::HeaderRef::AssociatedDefinition(_)), Inputs::Definition) => {
                 continue;
             }
             _ => {
@@ -255,6 +260,19 @@ impl Walk<'_, '_> {
                     &mut facts.types,
                     budget,
                 )?))
+            }
+            Some(s::HeaderRef::AssociatedDefinition(_)) => {
+                let owner = raw.parent.map(|parent| rows.header(parent)).transpose();
+                if !matches!(
+                    owner.map_err(error)?,
+                    Some(Some(s::HeaderRef::Implementation(_)))
+                ) || self.active.len() != 1
+                {
+                    return Err(error(
+                        "source associated definition scope lost its actual impl owner",
+                    ));
+                }
+                Ok(Inputs::Definition)
             }
             None if raw.parent.is_none() => {
                 let declaration = rows

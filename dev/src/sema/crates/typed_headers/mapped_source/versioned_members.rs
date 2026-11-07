@@ -18,6 +18,8 @@ pub(in crate::sema) struct PrimitiveMethods {
     owner: DefId,
     predicate: Predicate,
     links: Vec<(DefId, Option<DefId>)>,
+    /// Version-thirteen (trait declaration, impl definition) result links.
+    types: Vec<(DefId, DefId)>,
 }
 impl PrimitiveMethods {
     pub(in crate::sema) fn require(
@@ -41,6 +43,9 @@ impl PrimitiveMethods {
     }
     pub(in crate::sema) fn links(&self) -> &[(DefId, Option<DefId>)] {
         &self.links
+    }
+    pub(in crate::sema) fn types(&self) -> &[(DefId, DefId)] {
+        &self.types
     }
     pub(in crate::sema) fn into_links(self) -> Vec<(DefId, Option<DefId>)> {
         self.links
@@ -98,12 +103,17 @@ impl Graph {
                 .saturating_add(size_of::<PrimitiveMethods>()),
         )?;
         let mut methods = Vec::with_capacity(links.len());
+        let mut types = Vec::new();
         for link in links {
             budget.charge(3)?;
             let member = link
                 .trait_member
                 .filter(|member| member.artifact == s::ArtifactRef(0))
                 .ok_or_else(|| error("v4 method requires its genuine trait member"))?;
+            let result = matches!(
+                rows.header(member.declaration).map_err(error)?,
+                Some(s::HeaderRef::AssociatedType(_))
+            );
             let actual = link.implementation.ok_or_else(|| {
                 error("v4 default method requires its wider body/conformance profile")
             })?;
@@ -115,13 +125,22 @@ impl Graph {
                 .origins
                 .definition_at(descriptor.identity(), actual)
                 .map_err(error)?;
+            let kind = if result {
+                DefKind::TypeAlias
+            } else {
+                DefKind::Function
+            };
             for definition in [member, actual] {
                 let id = self.origins.declaration(definition).map_err(error)?;
                 self.origins
-                    .validate_declaration(id, definition, DefKind::Function)
+                    .validate_declaration(id, definition, kind)
                     .map_err(error)?;
             }
-            methods.push((member, Some(actual)));
+            if result {
+                types.push((member, actual));
+            } else {
+                methods.push((member, Some(actual)));
+            }
         }
         Ok(Some(PrimitiveMethods {
             arena: self.store.clone(),
@@ -129,6 +148,7 @@ impl Graph {
             owner: owner.self_definition,
             predicate,
             links: methods,
+            types,
         }))
     }
 }

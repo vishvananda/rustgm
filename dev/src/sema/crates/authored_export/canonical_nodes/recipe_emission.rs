@@ -153,7 +153,7 @@ impl Stage {
         context: Context,
     ) -> Result<s::Type, &'static str> {
         Ok(match kind {
-            Kind::Projection(application) if self.compiler_operations => {
+            Kind::Projection(application) if self.compiler_operations || self.body_nodes() => {
                 self.projection_recipe(facts, application, context)?
             }
             Kind::Opaque(id, captures) if self.compiler_operations => {

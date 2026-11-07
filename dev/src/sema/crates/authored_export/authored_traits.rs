@@ -201,7 +201,7 @@ impl Stage {
             .as_deref()
             .and_then(|traits| traits.header(ItemId(header.definition.0)))
             .ok_or("source trait has no complete canonical header")?;
-        if !self.compiler_operations && !canonical.results.is_empty() {
+        if !self.compiler_operations && !self.body_nodes() && !canonical.results.is_empty() {
             return Err("source associated result transport is not implemented");
         }
         let inventory =

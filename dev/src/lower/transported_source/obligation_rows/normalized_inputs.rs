@@ -8,7 +8,7 @@ pub(super) fn emit(
     context: Context,
     sites: &mut Sites,
 ) -> Result<s::NormalizationInput, &'static str> {
-    if proof.proof.has_quantified() {
+    if !proof.proof.quantifies_nothing() {
         return Err("source quantified normalization rows are not implemented");
     }
     let body = context

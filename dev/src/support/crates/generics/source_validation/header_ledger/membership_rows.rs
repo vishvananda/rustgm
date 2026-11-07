@@ -20,6 +20,7 @@ pub(super) fn validate(
         stamps: vec![0_u32; rows.declarations.len()],
         listed: vec![false; rows.members.len()],
         links: vec![false; rows.member_links.len()],
+        definitions: 0,
     };
     ledger.traits(work)?;
     for (index, implementation) in rows.implementations.iter().enumerate() {
@@ -34,6 +35,8 @@ struct Members<'a> {
     stamps: Vec<u32>,
     listed: Vec<bool>,
     links: Vec<bool>,
+    /// Definition rows appear in implementation and link order: one encoding.
+    definitions: u32,
 }
 impl<'a> Members<'a> {
     fn traits(&mut self, work: &mut Work) -> Result<(), &'static str> {
@@ -136,12 +139,23 @@ impl<'a> Members<'a> {
         link: &s::MemberLink,
         work: &mut Work,
     ) -> Result<(), &'static str> {
+        let result = match (trait_, link.trait_member) {
+            (Some(_), Some(member)) if member.artifact == s::ArtifactRef(0) => matches!(
+                self.headers.get(member.declaration.0 as usize),
+                Some(Some(HeaderRef::AssociatedType(_)))
+            ),
+            _ => false,
+        };
         match (trait_, link.trait_member) {
             (Some(trait_), Some(member)) if member.artifact == s::ArtifactRef(0) => {
                 declaration(
                     self.rows,
                     member.declaration,
-                    DefinitionKind::Function,
+                    if result {
+                        DefinitionKind::AssociatedType
+                    } else {
+                        DefinitionKind::Function
+                    },
                     work,
                 )?;
                 if trait_.declaration.artifact != s::ArtifactRef(0)
@@ -155,7 +169,7 @@ impl<'a> Members<'a> {
                 {
                     return Err("source implementation maps a foreign actual trait member");
                 }
-                if link.implementation.is_none() {
+                if link.implementation.is_none() && !result {
                     let Some(HeaderRef::Function(index)) =
                         self.headers[member.declaration.0 as usize]
                     else {
@@ -168,6 +182,9 @@ impl<'a> Members<'a> {
             }
             (None, None) if link.implementation.is_some() => {}
             _ => return Err("source member conformance loses its exact trait/inherent identity"),
+        }
+        if result {
+            return self.definition(implementation, stamp, link.implementation, work);
         }
         if let Some(member) = link.implementation {
             declaration(self.rows, member, DefinitionKind::Function, work)?;
@@ -183,6 +200,31 @@ impl<'a> Members<'a> {
         }
         Ok(())
     }
+    /// A declared result has no default: its implementation names exactly one
+    /// definition row of its own Self owner, the next row in canonical order.
+    fn definition(
+        &mut self,
+        implementation: &s::ImplHeader,
+        stamp: u32,
+        member: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let member =
+            member.ok_or("source associated result has no actual implementation definition")?;
+        declaration(self.rows, member, DefinitionKind::AssociatedType, work)?;
+        let expected = self.definitions;
+        self.definitions = expected
+            .checked_add(1)
+            .ok_or("source associated definition ordinal overflow")?;
+        if self.headers[member.0 as usize] != Some(HeaderRef::AssociatedDefinition(expected))
+            || self.rows.declarations[member.0 as usize].definition.parent
+                != Some(implementation.self_definition)
+            || std::mem::replace(&mut self.stamps[member.0 as usize], stamp) == stamp
+        {
+            return Err("source associated definition belongs to another actual Self owner");
+        }
+        Ok(())
+    }
     fn finish(&self, work: &mut Work) -> Result<(), &'static str> {
         work.charge(self.listed.len().saturating_add(self.links.len()))?;
         if self.listed.iter().chain(&self.links).any(|used| !used) {
@@ -192,6 +234,12 @@ impl<'a> Members<'a> {
             work.charge(1)?;
             if !self.traits[header.declaration.0 as usize] {
                 return Err("source associated type omitted from its actual trait members");
+            }
+        }
+        for row in &self.rows.associated_definitions {
+            work.charge(1)?;
+            if self.stamps[row.declaration.0 as usize] == 0 {
+                return Err("source associated definition has no implementation link");
             }
         }
         for function in &self.rows.functions {

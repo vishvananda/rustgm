@@ -45,7 +45,9 @@ pub(super) fn declaration_read(read: &mut Input<'_, '_>) -> Result<s::Declaratio
         6 => s::DefinitionKind::ValueParameter,
         7 => s::DefinitionKind::Local,
         8 if read.profile.nominals() => s::DefinitionKind::Struct,
-        9 if read.profile.compiler_operations() => s::DefinitionKind::AssociatedType,
+        9 if read.profile.compiler_operations() || read.profile.body_nodes() => {
+            s::DefinitionKind::AssociatedType
+        }
         _ => return Err("unknown source declaration kind"),
     };
     Ok(s::Declaration {

@@ -58,6 +58,16 @@ results.
 under `spec/language-roles/`: AddAssign, SubAssign and MulAssign roles with
 their `Rhs = Self` defaults, checked Add, Sub and Mul in generic providers,
 in-range and aborting fresh consumers, a type opponent, two recorded candidate
-boundaries (a consumer's own operator use and `Add` with `Output`) and the
-forged role-row controls. The `crate_linking::spelled_roles` integration
-controls consume it; the owning checkpoint records candidate results.
+boundaries (a consumer's own operator use and `Add` with `Output`, the latter
+amended once declared results transported) and the forged role-row controls.
+The `crate_linking::spelled_roles` integration controls consume it; the owning
+checkpoint records candidate results.
+
+`associated-result-outcomes.json` freezes the version-thirteen declared-result
+packet under `spec/associated-results/`: `Add` with its associated `Output`, a
+`Shape` trait with an associated `Item`, their i32 and u8 impl definitions,
+generic providers returning `<T as Shape>::Item` and `<T as Add>::Output`,
+in-range and aborting fresh consumers, a type opponent, an unimplemented
+opponent and the forged result-row controls. The
+`crate_linking::normalized_results` integration controls consume it; the owning
+checkpoint records candidate results.

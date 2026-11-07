@@ -123,9 +123,13 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         plan.require(&self.facts, owner, predicate)
             .map_err(Error::unlocated)?;
-        let definitions =
-            crate::sema::traits::conformance::Definitions::new(&self.facts, predicate, &[])
-                .map_err(Error::unlocated)?;
+        self.check_imported_results(owner, plan.types())?;
+        let definitions = crate::sema::traits::conformance::Definitions::new(
+            &self.facts,
+            predicate,
+            plan.types(),
+        )
+        .map_err(Error::unlocated)?;
         for &(expected, actual) in plan.links() {
             let actual = actual.ok_or_else(|| {
                 Error::unlocated("v4 defaults require their wider conformance profile")
@@ -153,6 +157,95 @@ impl Checker<'_> {
                 &definitions,
             )
             .map_err(Error::unlocated)?;
+        }
+        Ok(())
+    }
+    /// Re-prove every imported declared-result definition in the impl's own
+    /// rebuilt environment: well formed, region-free and meeting each direct
+    /// promise of its trait declaration. The provider's conformance is unused.
+    fn check_imported_results(
+        &mut self,
+        owner: DefId,
+        types: &[(DefId, DefId)],
+    ) -> Result<(), Error> {
+        if types.is_empty() {
+            return Ok(());
+        }
+        let environment = self.facts.generics.environments.get(&owner).cloned();
+        let mut proof = self.declaration_proof(owner, environment);
+        for &(expected, actual) in types {
+            let contract = self
+                .facts
+                .associated
+                .type_contract(expected)
+                .ok_or_else(|| Error::unlocated("imported associated result lacks its contract"))?;
+            let ty = self.facts.definitions[actual.0 as usize]
+                .filter(|_| self.facts.associated.type_definition(owner, expected) == Some(actual))
+                .ok_or_else(|| {
+                    Error::unlocated("imported associated definition changed its trait binding")
+                })?;
+            if self.facts.associated.families.contains_key(&expected)
+                || self.facts.associated.families.contains_key(&actual)
+                || self.facts.types.contains_regions(ty) != Some(false)
+            {
+                return Err(Error::unlocated(
+                    "imported regional or family associated definitions require their wider profile",
+                ));
+            }
+            let mut required = Vec::with_capacity(contract.bounds.len());
+            for &clause in &contract.bounds {
+                let Clause::Predicate(Predicate { ty: subject, bound }) = clause else {
+                    return Err(Error::unlocated(
+                        "imported quantified associated bounds require their wider profile",
+                    ));
+                };
+                // A direct bound naming no trait argument needs no impl-frame
+                // substitution; every other form keeps its source-only mapping.
+                let closed = match bound {
+                    Bound::Sized | Bound::Copy | Bound::Clone => true,
+                    Bound::Trait(application) => self
+                        .facts
+                        .types
+                        .trait_application(application)
+                        .is_some_and(|application| {
+                            application.arguments == crate::types::GenericArgs::EMPTY
+                        }),
+                    _ => false,
+                };
+                if subject != contract.projection || !closed {
+                    return Err(Error::unlocated(
+                        "imported indirect associated bounds require their wider profile",
+                    ));
+                }
+                required.push(Clause::Predicate(Predicate { ty, bound }));
+            }
+            if !proof
+                .check(&mut self.facts, ty)
+                .map_err(Error::unlocated)?
+                .well_formed
+            {
+                return Err(Error::unlocated(
+                    "imported associated definition must be well-formed",
+                ));
+            }
+            for requirement in required {
+                if !proof
+                    .prove_clause(&mut self.facts, requirement)
+                    .map_err(Error::unlocated)?
+                {
+                    return Err(Error::unlocated(
+                        "imported associated definition does not satisfy its declared bounds",
+                    ));
+                }
+            }
+        }
+        if proof
+            .take_trait_proof()
+            .is_some_and(|evidence| !evidence.is_empty())
+        {
+            return Err(Error::unlocated(
+                "imported associated definition region evidence requires its wider profile",
+            ));
         }
         Ok(())
     }
@@ -219,17 +312,16 @@ impl Checker<'_> {
             self.check_imported_primitive_methods(definition, predicate, methods)?;
         }
         self.validate_imported_requirements(definition, predicate, environment)?;
+        let types_and_links = methods.map_or_else(
+            || (Vec::new(), Vec::new()),
+            |plan| (plan.types().to_vec(), plan.into_links()),
+        );
         self.facts
             .generics
             .implementations
             .as_mut()
             .ok_or_else(|| Error::unlocated("imported conformance registry disappeared"))?
-            .complete(
-                definition,
-                methods.map_or_else(Vec::new, crate::sema::crates::PrimitiveMethods::into_links),
-                Vec::new(),
-                Vec::new(),
-            )
+            .complete(definition, types_and_links.1, types_and_links.0, Vec::new())
             .map_err(Error::unlocated)
     }
 }

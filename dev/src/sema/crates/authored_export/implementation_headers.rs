@@ -1,6 +1,6 @@
 //! Canonical conformance keeps actual trait/member links and typed impl Self.
 use super::{Declarations, DefId, OwnerKind, Stage, g, s};
-use crate::{support::constness::Constness, types::parameters::predicates::Predicate};
+use crate::support::constness::Constness;
 
 impl Stage {
     pub(super) fn implementations(&mut self, facts: &Declarations) -> Result<(), &'static str> {
@@ -16,12 +16,12 @@ impl Stage {
             if owner.self_definition != actual.owner || Some(owner.source) != actual.source {
                 return Err("source implementation changed its defining Self or source owner");
             }
-            self.implementation(facts, &owner, actual.predicate, &actual.methods)?;
-            if !actual.types.is_empty() || !actual.constants.is_empty() {
+            if !actual.types.is_empty() && !self.body_nodes() || !actual.constants.is_empty() {
                 return Err(
                     "source associated type/value implementation transport is not implemented",
                 );
             }
+            self.implementation(facts, &owner, actual)?;
             count = count
                 .checked_add(1)
                 .ok_or("source implementation count overflow")?;
@@ -44,9 +44,9 @@ impl Stage {
         &mut self,
         facts: &Declarations,
         owner: &crate::sema::associated::SourceOwner,
-        predicate: Predicate,
-        methods: &[(DefId, Option<DefId>)],
+        actual: &crate::sema::traits::implementations::Implementation,
     ) -> Result<(), &'static str> {
+        let predicate = actual.predicate;
         let OwnerKind::Impl {
             unsafe_,
             constant,
@@ -104,7 +104,13 @@ impl Stage {
                 .map_err(|_| "source impl input table overflow")?,
         };
         let region_bounds = self.region_bounds(&schema.bounds, context)?;
-        let members = self.implementation_members(methods, trait_application)?;
+        let members = self.implementation_members(&actual.methods, trait_application)?;
+        self.implementation_results(facts, &actual.types, context, members)?;
+        let members = g::Range {
+            start: members.start,
+            end: u32::try_from(self.rows.member_links.len())
+                .map_err(|_| "source impl member table overflow")?,
+        };
         self.reserve(4 * size_of::<s::ImplHeader>())?;
         self.rows.implementations.push(s::ImplHeader {
             self_definition: declaration,
@@ -126,6 +132,42 @@ impl Stage {
             .map_err(|_| "source impl declared input count overflow")?,
             members,
         });
+        Ok(())
+    }
+    /// Version thirteen: each checked type definition links its trait result and
+    /// retains its value recipe in the implementation's own frame.
+    fn implementation_results(
+        &mut self,
+        facts: &Declarations,
+        types: &[(DefId, DefId)],
+        context: super::canonical_nodes::Context,
+        members: g::Range,
+    ) -> Result<(), &'static str> {
+        if members.end as usize != self.rows.member_links.len() {
+            return Err("source impl result links must follow their method links");
+        }
+        self.reserve(types.len().saturating_mul(
+            4 * (size_of::<s::MemberLink>() + size_of::<s::AssociatedDefinition>()),
+        ))?;
+        for &(member, definition) in types {
+            self.charge(1)?;
+            let value = facts
+                .definitions
+                .get(definition.0 as usize)
+                .copied()
+                .flatten()
+                .ok_or("source impl result has no completed definition type")?;
+            let trait_member = Some(self.address(member)?);
+            let declaration = self.declaration(definition)?;
+            let value = self.ty(facts, value, context)?;
+            self.rows.member_links.push(s::MemberLink {
+                trait_member,
+                implementation: Some(declaration),
+            });
+            self.rows
+                .associated_definitions
+                .push(s::AssociatedDefinition { declaration, value });
+        }
         Ok(())
     }
     fn implementation_members(

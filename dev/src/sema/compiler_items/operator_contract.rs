@@ -300,7 +300,8 @@ pub(super) fn is_operator(role: LangItem) -> bool {
 }
 /// An imported operator role passes the same type-level contract as its
 /// provider's declaration, read from the imported header instead of syntax.
-/// Roles whose method returns `Output` need imported associated results.
+/// A value operator's `Output` is its imported declared result; indexing
+/// roles, which inherit or bound their results, remain outside this profile.
 pub(super) fn imported(
     report: &Report,
     facts: &Declarations,
@@ -312,13 +313,17 @@ pub(super) fn imported(
         .into_iter()
         .find(|operator| operator.role() == role)
         .ok_or("imported operator admission requested another language role")?;
-    if !operator.assignment() {
-        return Err("imported operator Output roles require imported associated results");
+    if operator.indexing() {
+        return Err("imported indexing operator roles require their wider result profile");
     }
     facts.associated.require_imported_role(declaration)?;
     let header = headers::Trait::current(report, facts, declaration, steps)?;
     let mut work = Work(*steps);
-    let result = imported_assignment(report, facts, &header, operator, &mut work);
+    let result = if operator.assignment() {
+        imported_assignment(report, facts, &header, operator, &mut work)
+    } else {
+        imported_value(report, facts, &header, operator, &mut work)
+    };
     *steps = work.0;
     result.map_err(|failure| match failure {
         Failure::Header(_) => "imported operator role lost its completed header",
@@ -378,9 +383,92 @@ fn imported_assignment(
         return Err("imported operator method requires a safe Rust signature".into());
     };
     assignment_signature(facts, header, rhs, parameters, result, bound_regions)?;
+    imported_item(facts, *method, function.signature)
+}
+/// A by-value operator: exactly its declared `Output` result and required
+/// method `(Self[, Rhs]) -> <Self as Op[<Rhs>]>::Output`.
+fn imported_value(
+    report: &Report,
+    facts: &Declarations,
+    header: &headers::Trait<'_>,
+    operator: Operator,
+    work: &mut Work,
+) -> Result<(), Failure> {
+    work.charge(8)?;
+    let arity = usize::from(operator.has_rhs());
+    header.profile(
+        &facts.types,
+        headers::Flags {
+            unsafe_: false,
+            auto_: false,
+            constant: header.flags.constant,
+        },
+        arity,
+    )?;
+    let rhs = rhs_parameter(facts, header, operator)?;
+    if header.written.parameters != arity
+        || header.written.supertraits != 0
+        || header.members.len() != 2
+    {
+        return Err("imported value operator requires exactly its Output and operation".into());
+    }
+    let (mut output, mut method) = (None, None);
+    for &member in header.members {
+        work.charge(3)?;
+        let definition = report
+            .resolution
+            .definitions
+            .get(member.0 as usize)
+            .ok_or("imported operator member has no actual definition")?;
+        if facts.associated.trait_owner(member) != Some(header.definition) {
+            return Err("imported operator member belongs to another actual owner".into());
+        }
+        match (definition.kind, report.package.names.get(definition.name)) {
+            (DefKind::TypeAlias, "Output") if output.is_none() => output = Some(member),
+            (DefKind::Function, name) if name == operator.method() && method.is_none() => {
+                method = Some(member);
+            }
+            _ => return Err("imported value operator changed its actual member profile".into()),
+        }
+    }
+    let (Some(output), Some(method)) = (output, method) else {
+        return Err("imported value operator omitted its Output or operation".into());
+    };
+    let function = facts
+        .declaration_header(method)?
+        .ok_or("imported operator has no completed method header")?;
+    if function.body.is_some()
+        || function.universals != 0
+        || facts.associated.families.contains_key(&output)
+        || facts
+            .generics
+            .parameters
+            .get(&method)
+            .is_some_and(|p| !p.is_empty())
+    {
+        return Err("imported value operator requires its required nongeneric profile".into());
+    }
+    let Some(Kind::Function {
+        bound_regions: 0,
+        parameters,
+        result,
+        unsafe_: false,
+        convention: Convention::RUST,
+    }) = facts.types.kind(function.signature)
+    else {
+        return Err("imported value operator requires a safe early-bound Rust signature".into());
+    };
+    let inputs = [header.self_type, rhs.unwrap_or(header.self_type)];
+    if facts.types.list(parameters) != Some(&inputs[..=arity]) {
+        return Err("imported value operator requires its exact by-value Self receiver".into());
+    }
+    output_projection(facts, header, output, rhs, result)?;
+    imported_item(facts, method, function.signature)
+}
+fn imported_item(facts: &Declarations, method: DefId, signature: TypeId) -> Result<(), Failure> {
     let ty = facts.definitions[method.0 as usize]
         .ok_or("imported operator method lost its callable item")?;
-    if !matches!(facts.types.kind(ty), Some(Kind::FunctionItem {item, signature, ..}) if item.0 == method.0 && signature == function.signature)
+    if !matches!(facts.types.kind(ty), Some(Kind::FunctionItem {item, signature: actual, ..}) if item.0 == method.0 && actual == signature)
     {
         return Err("imported operator callable item differs from its method header".into());
     }

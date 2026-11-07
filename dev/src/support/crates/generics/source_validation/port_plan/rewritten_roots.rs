@@ -17,6 +17,7 @@ enum Recipe {
     },
     Function(g::Signature),
     Nominal(s::DeclarationAddress, g::Range),
+    Projection(s::ProjectionRef),
 }
 #[derive(Clone, Copy)]
 enum Task {
@@ -65,6 +66,13 @@ impl Arena {
                         Recipe::Nominal(_, arguments) => {
                             self.nominal_children(domains, key, arguments, pending, work)?;
                         }
+                        Recipe::Projection(reference) => {
+                            let (_, subject, arguments) = projection(domains, reference)?;
+                            self.nominal_children(domains, key, arguments, pending, work)?;
+                            let subject =
+                                uses::key(domains, subject, key.rewrite, key.caller, work)?;
+                            self.push(pending, Task::Enter(subject), work)?;
+                        }
                         Recipe::Function(signature) => {
                             self.function_children(domains, key, signature, pending, work)?;
                         }
@@ -92,7 +100,17 @@ impl Arena {
                             )?
                         }
                         Recipe::Nominal(declaration, arguments) => {
-                            self.finish_nominal(domains, key, declaration, arguments, work)?
+                            let arguments = self.argument_chain(domains, key, arguments, work)?;
+                            self.intern(
+                                Node::Nominal {
+                                    declaration,
+                                    arguments,
+                                },
+                                work,
+                            )?
+                        }
+                        Recipe::Projection(reference) => {
+                            self.finish_projection(domains, key, reference, work)?
                         }
                         Recipe::Function(signature) => {
                             self.finish_function(domains, key, signature, work)?
@@ -122,11 +140,10 @@ impl Arena {
         }
         Ok(())
     }
-    fn finish_nominal(
+    fn argument_chain(
         &mut self,
         domains: &DomainIndex<'_, '_>,
         key: Key,
-        declaration: s::DeclarationAddress,
         arguments: g::Range,
         work: &mut Work,
     ) -> Result<NodeId, &'static str> {
@@ -140,13 +157,21 @@ impl Arena {
             let ty = self.child(child, work)?;
             tail = self.intern(Node::NominalArgument { ty, next: tail }, work)?;
         }
-        self.intern(
-            Node::Nominal {
-                declaration,
-                arguments: tail,
-            },
-            work,
-        )
+        Ok(tail)
+    }
+    fn finish_projection(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        key: Key,
+        reference: s::ProjectionRef,
+        work: &mut Work,
+    ) -> Result<NodeId, &'static str> {
+        let (member, subject, arguments) = projection(domains, reference)?;
+        let tail = self.argument_chain(domains, key, arguments, work)?;
+        let subject = uses::key(domains, subject, key.rewrite, key.caller, work)?;
+        let ty = self.child(subject, work)?;
+        let arguments = self.intern(Node::NominalArgument { ty, next: tail }, work)?;
+        self.intern(Node::Projection { member, arguments }, work)
     }
     fn recipe(
         &mut self,
@@ -167,7 +192,11 @@ impl Arena {
                     declaration,
                     arguments,
                 } => Recipe::Nominal(declaration, arguments),
-                s::Type::Projection(_) | s::Type::OpaqueFuture(_) => {
+                s::Type::Projection(reference) => {
+                    projection(domains, reference)?;
+                    Recipe::Projection(reference)
+                }
+                s::Type::OpaqueFuture(_) => {
                     return Err(
                         "declared result in ordinary body operations requires its complete application transport",
                     );
@@ -366,6 +395,33 @@ fn function_domain(
         return Err("source Function input lost its exact zero-slot Rust formation domain");
     }
     domains.types.root(domains.headers, context, key.root, work)
+}
+
+/// The projection's Self and complete trait arguments; the member alone names
+/// its trait because every projection row was checked against its header.
+fn projection(
+    domains: &DomainIndex<'_, '_>,
+    reference: s::ProjectionRef,
+) -> Result<(s::DeclarationAddress, g::TypeRef, g::Range), &'static str> {
+    let rows = domains.headers.rows();
+    let projection = rows
+        .projections
+        .get(reference.0 as usize)
+        .ok_or("source input projection is unknown")?;
+    let application = rows
+        .trait_applications
+        .get(projection.trait_application.0 as usize)
+        .ok_or("source input projection lost its trait application")?;
+    if projection.arguments.start != projection.arguments.end
+        || application.subject != projection.subject
+    {
+        return Err("source input projection changed its Self or family arguments");
+    }
+    Ok((
+        projection.declaration,
+        projection.subject,
+        application.arguments,
+    ))
 }
 
 fn nominal_child(

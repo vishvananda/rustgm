@@ -46,7 +46,7 @@ pub(super) fn allocations(
     }
     for (index, proof) in input.proofs.iter().enumerate() {
         stage.charge(1)?;
-        if proof.proof.has_quantified() {
+        if !proof.proof.quantifies_nothing() {
             return Err(
                 "quantified source normalization ownership needs a complete scoped transport profile",
             );

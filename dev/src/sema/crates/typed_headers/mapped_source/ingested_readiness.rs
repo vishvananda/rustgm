@@ -123,9 +123,16 @@ impl Graph {
         let descriptor = self.descriptor(catalog)?;
         let rows = descriptor.rows();
         let owner = descriptor.identity();
-
-        let Some(s::HeaderRef::AssociatedType(index)) = rows.header(row)? else {
-            return Err("associated type readiness lost its actual header");
+        let index = match rows.header(row)? {
+            Some(s::HeaderRef::AssociatedType(index)) => index,
+            Some(s::HeaderRef::AssociatedDefinition(index)) => {
+                let row = rows
+                    .associated_definitions
+                    .get(index as usize)
+                    .ok_or("associated definition readiness lost its actual row")?;
+                return self.definition_ready(facts, definition, *row, cell);
+            }
+            _ => return Err("associated type readiness lost its actual header"),
         };
         let header = &rows.associated_types[index as usize];
         let projection = self
@@ -152,6 +159,30 @@ impl Graph {
         }
         Self::scope_ready(facts, definition)?;
         Ok(())
+    }
+    /// An imported impl's result definition is ready only as the value cell of
+    /// its own installed impl member. Its trait binding is checked at install
+    /// and again by the impl's fresh conformance proof.
+    fn definition_ready(
+        &self,
+        facts: &Declarations,
+        definition: DefId,
+        row: s::AssociatedDefinition,
+        cell: Option<crate::types::TypeId>,
+    ) -> Result<(), &'static str> {
+        let owner = self.installed_owner(facts, definition)?;
+        if !matches!(
+            owner.kind,
+            crate::sema::associated::OwnerKind::ImportedImpl(_)
+        ) || cell
+            != Some(
+                self.ty(row.value)
+                    .map_err(|_| "associated definition readiness lost its value recipe")?,
+            )
+        {
+            return Err("associated definition readiness changed its actual impl/value binding");
+        }
+        Self::scope_ready(facts, definition)
     }
     fn value_binding_ready(
         binding: &s::Declaration,

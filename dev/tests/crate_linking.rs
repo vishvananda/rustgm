@@ -28,6 +28,8 @@ mod namespace_clients;
 mod node_transport;
 #[path = "crate_linking/non_exhaustive.rs"]
 mod non_exhaustive;
+#[path = "crate_linking/normalized_results.rs"]
+mod normalized_results;
 #[path = "crate_linking/packet_libraries.rs"]
 mod packet_libraries;
 #[path = "crate_linking/records.rs"]

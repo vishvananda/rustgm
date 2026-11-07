@@ -88,6 +88,7 @@ fn receiver_owner(
     graph
         .implementation(store, owner, prepared.predicate)
         .map_err(error)?;
+    let (members, results) = implementation_members(context, raw, budget)?;
     Ok(ImportedOwner {
         owner,
         schema: Schema {
@@ -95,26 +96,53 @@ fn receiver_owner(
             captures: prepared.captures,
             bounds: prepared.bounds,
         },
-        members: {
-            let rows = context.descriptor.rows();
-            let links = raw.members.slice(&rows.member_links).map_err(error)?;
-            budget.reserve(
-                links
-                    .len()
-                    .saturating_mul(size_of::<crate::resolve::model::DefId>()),
-            )?;
-            let mut members = Vec::with_capacity(links.len());
-            for link in links {
-                let actual = link
-                    .implementation
-                    .ok_or_else(|| error("v4 method conformance requires its actual override"))?;
-                members.push(context.definition(actual, budget)?);
-            }
-            budget.observed.vector(&members);
-            members
-        },
+        members,
+        results,
     })
 }
+
+/// Every linked member installs once; a declared-result link also records its
+/// trait declaration so projections can find this impl's own definition.
+fn implementation_members(
+    context: &mapped_source::Context<'_>,
+    raw: &s::ImplHeader,
+    budget: &mut Headers,
+) -> Result<MemberLinks, Error> {
+    let rows = context.descriptor.rows();
+    let links = raw.members.slice(&rows.member_links).map_err(error)?;
+    budget.reserve(
+        links
+            .len()
+            .saturating_mul(size_of::<crate::resolve::model::DefId>()),
+    )?;
+    let mut members = Vec::with_capacity(links.len());
+    let mut results = Vec::new();
+    for link in links {
+        let actual = link
+            .implementation
+            .ok_or_else(|| error("v4 method conformance requires its actual override"))?;
+        let actual = context.definition(actual, budget)?;
+        members.push(actual);
+        if let Some(member) = link.trait_member
+            && matches!(
+                rows.header(member.declaration).map_err(error)?,
+                Some(s::HeaderRef::AssociatedType(_))
+            )
+        {
+            budget.reserve(
+                4 * size_of::<(crate::resolve::model::DefId, crate::resolve::model::DefId)>(),
+            )?;
+            results.push((context.definition(member.declaration, budget)?, actual));
+        }
+    }
+    budget.observed.vector(&members);
+    budget.observed.vector(&results);
+    Ok((members, results))
+}
+type MemberLinks = (
+    Vec<crate::resolve::model::DefId>,
+    Vec<(crate::resolve::model::DefId, crate::resolve::model::DefId)>,
+);
 
 fn trait_owner(
     context: &mapped_source::Context<'_>,
@@ -163,5 +191,6 @@ fn trait_owner(
             bounds,
         },
         members,
+        results: Vec::new(),
     })
 }

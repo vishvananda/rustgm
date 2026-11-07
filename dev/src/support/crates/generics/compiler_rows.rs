@@ -23,6 +23,14 @@ pub struct AssociatedTypeHeader {
     pub clone_: bool,
 }
 
+/// A trait implementation's definition of one declared associated result. The
+/// value is a recipe in the implementation's frame; it is never a bound proof.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct AssociatedDefinition {
+    pub declaration: DeclarationRef,
+    pub value: TypeRef,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ProjectionRecipe {
     pub declaration: DeclarationAddress,

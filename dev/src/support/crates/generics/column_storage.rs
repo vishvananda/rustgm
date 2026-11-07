@@ -13,6 +13,7 @@ use crate::support::crates::owner_catalog::{BodyOwner, DeclarationRef};
 pub struct Columns {
     bodies: Option<std::sync::Arc<super::super::bodymap::Lookup>>,
     pub associated_types: Vec<super::super::AssociatedTypeHeader>,
+    pub associated_definitions: Vec<super::super::AssociatedDefinition>,
     pub projections: Vec<super::super::ProjectionRecipe>,
     pub opaque_futures: Vec<super::super::OpaqueFuture>,
     pub compiler_operations: Vec<super::super::CompilerOperation>,
@@ -74,6 +75,7 @@ impl Columns {
     ) -> (Vec<BodyOwner>, Self) {
         let SourceRows {
             associated_types,
+            associated_definitions,
             projections,
             opaque_futures,
             compiler_operations,
@@ -112,6 +114,7 @@ impl Columns {
             Self {
                 bodies,
                 associated_types,
+                associated_definitions,
                 projections,
                 opaque_futures,
                 compiler_operations,

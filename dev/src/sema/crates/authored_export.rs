@@ -492,7 +492,7 @@ impl Stage {
         if stage.nominal_transport {
             stage.nominals(report, facts)?;
         }
-        if stage.compiler_operations {
+        if stage.compiler_operations || stage.body_nodes() {
             stage.associated_headers(report, facts)?;
         }
         stage.functions(report, facts)?;
@@ -544,9 +544,9 @@ impl Stage {
         mode: ExportMode,
     ) -> Result<Option<s::DefinitionKind>, &'static str> {
         let definition = &report.resolution.definitions[id.0 as usize];
-        let associated =
-            mode == ExportMode::CompilerOperations && facts.associated.type_contract(id).is_some();
-        if associated {
+        let associated = (mode == ExportMode::CompilerOperations || self.body_nodes())
+            && facts.associated.type_contract(id).is_some();
+        if associated || self.body_nodes() && implementation_result(report, facts, id) {
             return Ok(Some(s::DefinitionKind::AssociatedType));
         }
         if matches!(
@@ -714,6 +714,25 @@ impl Stage {
     }
 }
 
+/// A trait implementation's type definition; version thirteen exports it as an
+/// associated declaration whose header is its definition row.
+fn implementation_result(report: &Report, facts: &Declarations, id: DefId) -> bool {
+    report.resolution.definitions[id.0 as usize].kind == DefKind::TypeAlias
+        && facts
+            .associated
+            .owner(id)
+            .and_then(|owner| facts.associated.get(owner))
+            .is_some_and(|owner| {
+                matches!(
+                    owner.kind,
+                    OwnerKind::Impl {
+                        trait_type: Some(_),
+                        ..
+                    }
+                )
+            })
+}
+
 fn kind(kind: DefKind, namespace: Namespace) -> Result<Option<s::DefinitionKind>, &'static str> {
     Ok(Some(match kind {
         DefKind::Module => s::DefinitionKind::Module,
@@ -835,6 +854,7 @@ fn find_owner(
 fn rows(edition: crate::support::edition::Edition) -> s::SourceRows {
     s::SourceRows {
         associated_types: Vec::new(),
+        associated_definitions: Vec::new(),
         projections: Vec::new(),
         opaque_futures: Vec::new(),
         compiler_operations: Vec::new(),

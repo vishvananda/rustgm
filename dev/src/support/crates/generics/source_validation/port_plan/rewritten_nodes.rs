@@ -33,6 +33,13 @@ pub(super) enum Node {
         arguments: NodeId,
     },
     NominalEnd,
+    /// A declared result stays structural: its member names one trait, and the
+    /// argument chain is its Self followed by that trait's complete arguments.
+    /// Every consumer normalizes it again; planning never selects a definition.
+    Projection {
+        member: s::DeclarationAddress,
+        arguments: NodeId,
+    },
     NominalArgument {
         ty: NodeId,
         next: NodeId,
@@ -246,7 +253,7 @@ impl Arena {
     fn node_facts(&self, node: Node, work: &mut Work) -> Result<NodeFacts, &'static str> {
         work.charge(1)?;
         Ok(match node {
-            Node::Nominal { arguments, .. } => {
+            Node::Nominal { arguments, .. } | Node::Projection { arguments, .. } => {
                 let mut facts = self.facts_of(arguments, work)?;
                 facts.0 &= !NodeFacts::FORMED;
                 facts

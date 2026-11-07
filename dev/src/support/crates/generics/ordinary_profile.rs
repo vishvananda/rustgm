@@ -671,7 +671,13 @@ pub(super) fn bindings(
             ) => {}
             (LangItem::FutureOutput, Some(super::super::HeaderRef::AssociatedType(_)))
                 if profile == BindingProfile::CompilerOperations => {}
-            (_, Some(super::super::HeaderRef::AssociatedType(_))) => {
+            (
+                _,
+                Some(
+                    super::super::HeaderRef::AssociatedType(_)
+                    | super::super::HeaderRef::AssociatedDefinition(_),
+                ),
+            ) => {
                 return Err("source associated role has a different actual member kind");
             }
             (LangItem::CloneFn, _)

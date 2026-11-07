@@ -12,6 +12,7 @@ mod compiler_rows;
 #[path = "profile_descriptor.rs"]
 mod descriptor;
 mod operation_contracts;
+mod results_contract;
 pub use compiler_rows::*;
 #[path = "relation_inputs.rs"]
 mod inputs;
@@ -385,6 +386,7 @@ pub struct NominalField {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Rows {
     pub associated_types: Vec<AssociatedTypeHeader>,
+    pub associated_definitions: Vec<AssociatedDefinition>,
     pub projections: Vec<ProjectionRecipe>,
     pub opaque_futures: Vec<OpaqueFuture>,
     pub compiler_operations: Vec<CompilerOperation>,

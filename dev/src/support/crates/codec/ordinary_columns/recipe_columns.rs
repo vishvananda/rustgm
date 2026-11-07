@@ -51,7 +51,7 @@ pub(super) fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static
 }
 pub(super) fn type_read(read: &mut Input<'_, '_>) -> Result<s::Type, &'static str> {
     Ok(match read.reader.u8()? {
-        7 if read.profile.compiler_operations() => {
+        7 if read.profile.compiler_operations() || read.profile.body_nodes() => {
             s::Type::Projection(s::ProjectionRef(read.id()?))
         }
         8 if read.profile.compiler_operations() => {
