@@ -517,3 +517,9 @@ before their declaration during storage preparation and `'_` in result
 outlives bounds as the elided output lifetime, each with opponents. Each
 outcome was declared before its rustc 1.98.0 oracle. Private invariants check
 them; there is no graded manifest.
+
+`spec/static-constant-modules/` freezes three declared no_core controls from
+census batch 4 for the lexical module of const and static annotation
+constants: two `pub(super)` array lengths and a crate-root initializer
+opponent. Each outcome was declared before its rustc 1.98.0 oracle. A private
+invariant checks them; there is no graded manifest.

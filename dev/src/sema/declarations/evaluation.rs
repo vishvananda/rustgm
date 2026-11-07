@@ -25,7 +25,23 @@ pub(super) struct Pending {
     ready_initializers: HashSet<DefId>,
 }
 
+#[cfg(test)]
+#[path = "../../../tests/invariants/binderless_constant_modules.rs"]
+mod module_tests;
+
 impl Checker<'_> {
+    /// The declaration whose lexical module types a constant: the binder's owner,
+    /// or the const or static item of its own annotation.
+    fn constant_owner(&self, context: regions::Context) -> DefId {
+        context
+            .binder
+            .and_then(|binder| self.regions.owner(binder))
+            .or(match context.position {
+                regions::Position::Static(item) => Some(item),
+                _ => None,
+            })
+            .unwrap_or(DefId(0))
+    }
     pub(super) fn schedule_typed_constant(
         &mut self,
         key: NodeKey,
@@ -35,10 +51,7 @@ impl Checker<'_> {
         if self.constant_evaluations.completed.contains_key(&(key, ty)) {
             return Ok(());
         }
-        let owner = context
-            .binder
-            .and_then(|binder| self.regions.owner(binder))
-            .unwrap_or(DefId(0));
+        let owner = self.constant_owner(context);
         self.work.push(Work::EvaluateConstant(
             Request {
                 key,
@@ -85,10 +98,7 @@ impl Checker<'_> {
             return Ok(());
         }
         let ty = TypeId::primitive(crate::types::Primitive::Usize);
-        let owner = context
-            .binder
-            .and_then(|binder| self.regions.owner(binder))
-            .unwrap_or(DefId(0));
+        let owner = self.constant_owner(context);
         self.work.push(Work::EvaluateConstant(
             Request {
                 key,

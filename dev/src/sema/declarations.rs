@@ -1163,7 +1163,7 @@ impl Checker<'_> {
                     self.node_work(key.file, ty, context);
                 }
                 ItemKind::Static { ty, .. } => {
-                    self.node_work(key.file, ty, regions::Context::STATIC);
+                    self.node_work(key.file, ty, regions::Context::item_static(id));
                 }
                 _ => return Err(self.error(key, "unsupported type declaration")),
             }

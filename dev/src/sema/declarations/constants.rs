@@ -15,7 +15,7 @@ impl Checker<'_> {
             .and_then(|id| self.facts.associated.get(id))
             .copied()
         else {
-            return Ok(regions::Context::STATIC);
+            return Ok(regions::Context::item_static(id));
         };
         let item = self.item(key)?;
         if item.generics.start != item.generics.end
@@ -59,7 +59,7 @@ impl Checker<'_> {
         }
         Ok(regions::Context {
             binder: Some(binder),
-            position: regions::Position::Static,
+            position: regions::Position::Static(id),
         })
     }
 
