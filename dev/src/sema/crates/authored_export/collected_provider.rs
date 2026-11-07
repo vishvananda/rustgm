@@ -94,7 +94,7 @@ impl Stage {
         match owner.kind {
             OwnerKind::Trait { .. } => return Ok(None),
             OwnerKind::Impl { .. } => {}
-            OwnerKind::ImportedImpl(_) => {
+            OwnerKind::ImportedImpl(_) | OwnerKind::ImportedInherent(_) => {
                 return Err(Error::unlocated(
                     "collected source formal cannot use an imported owner",
                 ));

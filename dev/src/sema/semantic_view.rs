@@ -135,7 +135,8 @@ fn owners(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Re
             OwnerKind::Trait { .. } => "trait",
             OwnerKind::Impl {
                 trait_type: None, ..
-            } => "inherent",
+            }
+            | OwnerKind::ImportedInherent(_) => "inherent",
             OwnerKind::Impl {
                 trait_type: Some(_),
                 ..

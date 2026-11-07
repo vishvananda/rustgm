@@ -66,6 +66,51 @@ impl Graph {
         }
         Ok((raw.constant, raw.negative))
     }
+    /// Version thirteen: an imported inherent impl has no trait application,
+    /// no modifier and extends only a nominal of its own provider. The Self is
+    /// re-read from the consumer's own installed type, never a spelling.
+    pub(in crate::sema) fn inherent(
+        &self,
+        store: &crate::types::Store,
+        owner: Owner,
+        self_type: crate::types::TypeId,
+    ) -> Result<(), &'static str> {
+        self.require_store(store)?;
+        self.owner(owner)?;
+        let OwnerKind::ImportedInherent(id) = owner.kind else {
+            return Err("imported inherent impl requires its actual imported owner");
+        };
+        let descriptor = self.descriptor(&self.origins)?;
+        if !descriptor.profile().body_nodes() {
+            return Err("inherent source impl requires its wider member profile");
+        }
+        let (_, row, _) = self.origins.declaration_coordinate(id)?;
+        let rows = descriptor.rows();
+        let Some(s::HeaderRef::Implementation(index)) = rows.header(row)? else {
+            return Err("imported inherent impl has no actual implementation header");
+        };
+        let raw = &rows.implementations[index as usize];
+        if raw.trait_application.is_some()
+            || raw.constant
+            || raw.unsafe_
+            || raw.negative
+            || self
+                .ty(raw.self_type)
+                .map_err(|_| "imported inherent impl lost its actual Self type")?
+                != self_type
+        {
+            return Err("imported inherent impl changed its actual Self or modifiers");
+        }
+        let Some(crate::types::Kind::Adt(nominal, _)) = store.kind(self_type) else {
+            return Err("imported inherent impl Self is not a nominal of its own provider");
+        };
+        let declaration = self.origins.declaration(DefId(nominal.0))?;
+        let (artifact, _, _) = self.origins.declaration_coordinate(declaration)?;
+        if artifact != descriptor.identity() {
+            return Err("imported inherent impl Self is not a nominal of its own provider");
+        }
+        Ok(())
+    }
     pub(super) fn descriptor(
         &self,
         catalog: &Catalog,

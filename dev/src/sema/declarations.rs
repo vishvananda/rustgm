@@ -475,7 +475,10 @@ impl Checker<'_> {
                         self.states[definition.0 as usize] = State::Complete;
                         continue;
                     }
-                    Some(super::crates::ImportedReadiness::ValueBinding) => continue,
+                    Some(
+                        super::crates::ImportedReadiness::ValueBinding
+                        | super::crates::ImportedReadiness::RegionBinding,
+                    ) => continue,
                     None => {}
                 }
                 if self

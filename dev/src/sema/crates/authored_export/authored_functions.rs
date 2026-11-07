@@ -14,7 +14,7 @@ pub(super) struct Index {
     pub(super) bodies: HashMap<DefId, BodyRef>,
     pub(super) contexts: Vec<Context>,
     pub(super) originals: Vec<Option<(s::Original, s::BodyInputs)>>,
-    headers: HashMap<crate::types::ItemId, u32>,
+    pub(super) headers: HashMap<crate::types::ItemId, u32>,
     pub(super) exact: bool,
     pub(super) callable_effects: bool,
     pub(super) conversions: bool,
@@ -244,7 +244,7 @@ impl Stage {
                 match owner.kind {
                     OwnerKind::Trait { definition, .. } => Ok(definition),
                     OwnerKind::Impl { .. } => Ok(owner.self_definition),
-                    OwnerKind::ImportedImpl(_) => {
+                    OwnerKind::ImportedImpl(_) | OwnerKind::ImportedInherent(_) => {
                         Err("source function cannot acquire imported syntax ownership")
                     }
                 }

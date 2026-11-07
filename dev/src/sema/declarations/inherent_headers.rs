@@ -234,10 +234,67 @@ impl Checker<'_> {
                         "imported inherent/member lookup requires its wider profile",
                     ));
                 }
+                OwnerKind::ImportedInherent(_) => {
+                    self.publish_imported_inherent(*owner, member.definition, definition.name)?;
+                }
             }
         }
         self.inherent_headers = pending;
         self.facts.methods.trait_names = trait_names;
+        Ok(())
+    }
+
+    /// An imported inherent impl arrives with its completed, re-authenticated
+    /// Self schema, so each method joins the ordinary nominal bucket at once.
+    /// Lookup then uses exactly the local candidate and receiver rules.
+    fn publish_imported_inherent(
+        &mut self,
+        owner: crate::sema::associated::Owner,
+        member: DefId,
+        name: NameId,
+    ) -> Result<(), Error> {
+        self.facts.body_work.canonical_steps =
+            self.facts.body_work.canonical_steps.saturating_add(1);
+        self.facts
+            .associated
+            .require_imported(owner)
+            .map_err(Error::unlocated)?;
+        if self.report.resolution.definitions[member.0 as usize].kind != DefKind::Function {
+            return Err(Error::unlocated(
+                "imported inherent associated constants and types require a wider profile",
+            ));
+        }
+        let schema = self
+            .facts
+            .associated
+            .schema(owner.self_definition)
+            .ok_or_else(|| Error::unlocated("imported inherent owner lost its Self schema"))?;
+        let head = self
+            .facts
+            .types
+            .kind(schema.self_type)
+            .map(Head::canonical)
+            .ok_or_else(|| Error::unlocated("imported inherent owner lost its Self type"))?;
+        let Some(bucket @ Bucket::Nominal(..)) = Bucket::declared(&self.facts.types, head, name)
+        else {
+            return Err(Error::unlocated(
+                "imported inherent impl Self is not a nominal of its own provider",
+            ));
+        };
+        // The member's storage was prepaid when its owner was installed; the
+        // bucket growth is canonical work, as for the trait-impl owner above.
+        let growth = self
+            .facts
+            .methods
+            .inherent_growth(bucket, ItemContext::ROOT);
+        self.facts.body_work.canonical_steps = self
+            .facts
+            .body_work
+            .canonical_steps
+            .saturating_add(growth.work);
+        self.facts
+            .methods
+            .publish_inherent(bucket, ItemContext::ROOT, member);
         Ok(())
     }
 

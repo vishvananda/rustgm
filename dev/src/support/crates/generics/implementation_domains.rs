@@ -341,9 +341,11 @@ impl ModuleContractColumns {
         }
         for implementation in &rows.implementations {
             work.charge(1)?;
-            let application = implementation
-                .trait_application
-                .ok_or("inherent source impl requires its wider member profile")?;
+            // The descriptor admits an inherent impl only under version
+            // thirteen, on its own nominal; it has no trait domain.
+            let Some(application) = implementation.trait_application else {
+                continue;
+            };
             let application = &rows.trait_applications[application.0 as usize];
             if application.declaration.artifact != s::ArtifactRef(0) {
                 return Err("foreign implementation domain requires a mixed-provider profile");

@@ -82,6 +82,11 @@ pub(in crate::sema) fn explicit_drop_member(
             facts.associated.require_imported(*owner)?;
             return Err("imported explicit Drop rules require their wider supported role profile");
         }
+        // An imported inherent method is never the Drop override.
+        OwnerKind::ImportedInherent(_) => {
+            facts.associated.require_imported(*owner)?;
+            return Ok(false);
+        }
     };
     catalog.validated_language(LangItem::Drop)?;
     let Some(header) = implementation else {

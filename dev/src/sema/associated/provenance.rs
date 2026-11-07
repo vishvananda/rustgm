@@ -70,7 +70,10 @@ impl Owner {
         let source = self
             .source
             .ok_or("source elaboration requires its actual source owner")?;
-        if matches!(self.kind, OwnerKind::ImportedImpl(_)) {
+        if matches!(
+            self.kind,
+            OwnerKind::ImportedImpl(_) | OwnerKind::ImportedInherent(_)
+        ) {
             return Err("an imported impl cannot acquire a source syntax owner");
         }
         Ok(SourceOwner {

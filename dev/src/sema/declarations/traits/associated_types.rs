@@ -174,7 +174,7 @@ impl Checker<'_> {
                     }
                     owner.self_definition
                 }
-                OwnerKind::ImportedImpl(_) => {
+                OwnerKind::ImportedImpl(_) | OwnerKind::ImportedInherent(_) => {
                     return Err(self.error(
                         key,
                         "source associated type cannot use an imported syntax owner",

@@ -26,6 +26,8 @@ mod imported_records;
 mod imported_regions;
 #[path = "crate_linking/imports.rs"]
 mod imports;
+#[path = "crate_linking/traitless_methods.rs"]
+mod inherent_transport;
 #[path = "crate_linking/instantiable.rs"]
 mod instantiable;
 #[path = "crate_linking/match_transport.rs"]

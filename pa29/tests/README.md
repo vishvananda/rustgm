@@ -167,3 +167,16 @@ beside `line` and `cfg`. All fourteen outcomes were declared before any rustc or
 RustGM run of their files. The provider's re-export stability attribute was
 added after oracle round 1, and the API client was made non-native after
 round 3 (`docs/parallel/macro-metadata.md`).
+
+`inherent-methods-outcomes.json` freezes the version-thirteen inherent-method
+packet under `spec/inherent-methods/`. The packet holds:
+
+- inherent impls on a provider enum and struct, including one on a single
+  concrete instance;
+- clients that use by-value, auto-ref and path-call receivers;
+- the free late-region function `present`;
+- four opponents (E0599, E0308, E0382 and E0599);
+- generated controls: an older-profile gate, late-region re-proof, forged
+  inherent-header and region controls, and a 6/24/96 scaling control.
+
+The `crate_linking::inherent_transport` integration controls consume it.

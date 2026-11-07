@@ -80,14 +80,27 @@ fn receiver_owner(
     let prepared = scope.implementation.take().ok_or_else(|| {
         error("source implementation omitted its already prepared actual owner/schema")
     })?;
-    let owner = Owner {
-        source: None,
-        self_definition: scope.definition,
-        kind: OwnerKind::ImportedImpl(prepared.owner),
+    let owner = if let Some(predicate) = prepared.predicate {
+        let owner = Owner {
+            source: None,
+            self_definition: scope.definition,
+            kind: OwnerKind::ImportedImpl(prepared.owner),
+        };
+        graph
+            .implementation(store, owner, predicate)
+            .map_err(error)?;
+        owner
+    } else {
+        let owner = Owner {
+            source: None,
+            self_definition: scope.definition,
+            kind: OwnerKind::ImportedInherent(prepared.owner),
+        };
+        graph
+            .inherent(store, owner, prepared.self_type)
+            .map_err(error)?;
+        owner
     };
-    graph
-        .implementation(store, owner, prepared.predicate)
-        .map_err(error)?;
     let (members, results) = implementation_members(context, raw, budget)?;
     Ok(ImportedOwner {
         owner,

@@ -9,6 +9,9 @@ use crate::{
 pub(in crate::sema) enum Readiness {
     Declaration,
     ValueBinding,
+    /// Version thirteen: a named region formal of a provided function. It has
+    /// no declaration cell; the consumer re-proves its owner's region scheme.
+    RegionBinding,
 }
 impl Graph {
     pub(in crate::sema::crates::typed_headers) fn readiness(
@@ -111,7 +114,9 @@ impl Graph {
                 return Ok(Readiness::ValueBinding);
             }
             s::DefinitionKind::RegionParameter => {
-                return Err("source named lifetime readiness requires its wider callable profile");
+                let typed = cell.is_some() || rows.header(row)?.is_some();
+                Self::region_binding_ready(raw, rows, descriptor.profile().body_nodes(), typed)?;
+                return Ok(Readiness::RegionBinding);
             }
         }
         Ok(Readiness::Declaration)
@@ -212,6 +217,37 @@ impl Graph {
             )
         {
             return Err("source provided value binding omitted its actual original local");
+        }
+        Ok(())
+    }
+
+    /// The sealed slot ledger bound the formal uniquely to one region slot of
+    /// its owner; only a version-thirteen function with a provided original
+    /// may own one here, and the formal installs no declaration type.
+    fn region_binding_ready(
+        binding: &s::Declaration,
+        rows: s::ValidatedView<'_>,
+        wider: bool,
+        typed: bool,
+    ) -> Result<(), &'static str> {
+        if !wider {
+            return Err("source named lifetime readiness requires its wider callable profile");
+        }
+        if typed {
+            return Err("source named lifetime readiness cannot install declaration types");
+        }
+        let parent = binding
+            .definition
+            .parent
+            .ok_or("source named lifetime lacks its actual function parent")?;
+        let Some(s::HeaderRef::Function(index)) = rows.header(parent)? else {
+            return Err("source named lifetime lacks its actual function header");
+        };
+        if !matches!(
+            rows.functions[index as usize].body,
+            s::FunctionBody::Original(_)
+        ) {
+            return Err("source named lifetime requires its actual provided original");
         }
         Ok(())
     }

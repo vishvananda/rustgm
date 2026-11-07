@@ -76,6 +76,9 @@ pub enum OwnerKind {
         polarity: ImplPolarity,
     },
     ImportedImpl(crate::resolve::body_origin::ImportedDeclarationId),
+    /// Version thirteen: an imported inherent impl on its provider's nominal.
+    /// It has no trait application and is a method-lookup owner only.
+    ImportedInherent(crate::resolve::body_origin::ImportedDeclarationId),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Owner {
@@ -210,7 +213,9 @@ impl Inventory {
         }
         match self.get(self.owner(member)?)?.kind {
             OwnerKind::Trait { definition, .. } => Some(definition),
-            OwnerKind::Impl { .. } | OwnerKind::ImportedImpl(_) => None,
+            OwnerKind::Impl { .. }
+            | OwnerKind::ImportedImpl(_)
+            | OwnerKind::ImportedInherent(_) => None,
         }
     }
     pub(crate) fn constant_trait(&self, definition: DefId) -> Option<bool> {

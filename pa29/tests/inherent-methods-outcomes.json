@@ -1,0 +1,178 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+  "providers": [
+    {
+      "file": "spec/inherent-methods/provider.rs",
+      "sha256": "d84099cb3a70dff5810829ed83822b4ccfc41d2ee1e62d27fd689c2fe2503fd0"
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "cases": [
+    {
+      "file": "spec/inherent-methods/map-call.rs",
+      "provider": "spec/inherent-methods/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "f58bf6309932029c81d24a27bea7ea4e8df301aae51c1af7a41343dab1abf26a"
+    },
+    {
+      "file": "spec/inherent-methods/auto-ref.rs",
+      "provider": "spec/inherent-methods/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "0930779853259fb6f385418575dcd176325e391bcc476d8a07997da47871a333"
+    },
+    {
+      "file": "spec/inherent-methods/unwrap-or.rs",
+      "provider": "spec/inherent-methods/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "a6471fcef6a5696be157570828907cac6a207e7c9250065015081caa6b8f1fd2"
+    },
+    {
+      "file": "spec/inherent-methods/path-call.rs",
+      "provider": "spec/inherent-methods/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "a58d19f32bc074ca0abde5bc7dda9b458f281380d989c3bb62dd26feb63a5d5b"
+    },
+    {
+      "file": "spec/inherent-methods/slot.rs",
+      "provider": "spec/inherent-methods/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "c401eb2112da1ffe4f88337ff48f89d1152433b5f2a8228815598043defca7dd"
+    },
+    {
+      "file": "spec/inherent-methods/present.rs",
+      "provider": "spec/inherent-methods/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "62810bbe87f2748e792124fc947167bdffafe3ec3d078ba137af119b188296c4"
+    },
+    {
+      "file": "spec/inherent-methods/missing-method.rs",
+      "provider": "spec/inherent-methods/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0599",
+      "candidate_diagnostic": "no inherent method with this name",
+      "sha256": "5fdc1115ca611ba903c41ab019b9599b927ce637e8b45ed96fa6eca2bf088812",
+      "candidate_diagnostic_declared": "method for this receiver",
+      "candidate_rework": "the declared substring was written before the first candidate run; the first candidate run rejected the client (exit 1) with `no inherent method with this name`, the local lookup diagnostic for a name with no inherent bucket; the required rustc outcome (E0599) is unchanged"
+    },
+    {
+      "file": "spec/inherent-methods/wrong-default.rs",
+      "provider": "spec/inherent-methods/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0308",
+      "candidate_diagnostic": "incompatible types",
+      "sha256": "ecac5d924051bb0ae1830c07b0e9557c01e3f8b0ad15dd28e90e40e3b69a4427"
+    },
+    {
+      "file": "spec/inherent-methods/moved-receiver.rs",
+      "provider": "spec/inherent-methods/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0382",
+      "candidate_diagnostic": "uninitialized or moved",
+      "sha256": "5768c7a198387673125894f4cb27eda733d7d51127381cda1915e6e0b9244e14"
+    },
+    {
+      "file": "spec/inherent-methods/foreign-instance.rs",
+      "provider": "spec/inherent-methods/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "required_rustc_error": "E0599",
+      "candidate_diagnostic": "method for this receiver",
+      "sha256": "72f442d3dcb7d2f59444e4dc21f956d8d566f3d3a7b94ad2b46e9e2b9213882d"
+    }
+  ],
+  "deviations": [
+    "lines 1-92 of spec/enum-methods/provider.rs are reused unchanged; the authored section adds the rustc-only checked-arithmetic shim of spec/associated-results/provider.rs, an `Add` role with `impl Add for u8` (so a client closure can write `x + 1`), the generic enum `Opt<T>` with an inherent impl, the generic struct `Slot<T>` with a generic and a concrete inherent impl, and the free function `present` over `&Opt<T>`",
+    "the inherent impls are the only provider impls with members on a provider nominal; provider bodies call no inherent method",
+    "provider bodies contain no match guard; provider-body guards are a separate packet",
+    "clients compare results with nested literal and bool matches"
+  ],
+  "older_profiles": {
+    "module-branches-v12 and module-nominals-v10 exports of spec/inherent-methods/provider.rs": "rejected: named, associated or generic alias transport requires its wider profile (the callable-role section is rejected first)",
+    "byte_identity": "module-bodies-v13 exports of spec/source-nominals/provider.rs, spec/callable-roles/provider.rs, spec/source-body-ir/{provider,wire}.rs, spec/language-roles/provider.rs, spec/associated-results/provider.rs, spec/enum-match/provider.rs and spec/enum-methods/provider.rs, module-branches-v12 exports of spec/source-branches/{provider,wait,spin}.rs and the module-nominals-v10 exports of spec/source-branches/spin.rs and spec/source-nominals/provider.rs, with every fresh consumer of each fixture directory (LowIR, status and diagnostics), equal the main abcfea354 baseline bytes"
+  },
+  "generated_controls": [
+    {
+      "control": "spec/source-nominals/provider.rs plus `impl<T> Packet<T> { pub fn get(self) -> T { self.value } }`, exported under module-branches-v12 and module-nominals-v10",
+      "expected": "unchanged: rejected by name with `source impl owner has no completed canonical conformance record`"
+    },
+    {
+      "control": "the same source-nominals provider plus inherent impl, exported under module-bodies-v13, and a fresh client calling `base::make(42i32).get()`",
+      "expected": "rustc accepts; the candidate exports it and the fresh client reaches LowIR"
+    },
+    {
+      "control": "6, 24 and 96 generated by-value inherent methods `mNNN(self) -> u8` on one provider enum, and one client calling one of them",
+      "expected": "packet bytes grow exactly linearly; the client LowIR stays bounded",
+      "candidate_rework": "the first run generated `enum Wide { One(u8) }` with `match self { Wide::One(x) => x }`; the provider exported and the fresh client was rejected (exit 1) with `source downcast field use is not dominated by its variant test`. The main abcfea354 baseline rejects the same single-variant match in a free provider function identically, so it is an existing body-transport gap, not an inherent-method outcome. The control now generates `enum Wide { One(u8), Two(u8) }` with one arm per variant"
+    }
+  ],
+  "wire_controls": [
+    {
+      "mutation": "the Self type of the `Opt<T>` inherent impl header relabelled to the Self type of the preceding `impl Add for u8` header (the scalar `u8`)",
+      "expected": "imported inherent impl Self is not a nominal of its own provider"
+    },
+    {
+      "mutation": "the Self type of the `Opt<T>` inherent impl header relabelled to the Self type of the `Slot<T>` inherent impl header",
+      "expected": "source method receiver differs from its actual implementation Self"
+    },
+    {
+      "mutation": "the member ranges of the `Opt<T>` and `Slot<T>` inherent impl headers swapped",
+      "expected": "source implementation member belongs to another actual Self owner"
+    },
+    {
+      "mutation": "the generated version-thirteen source-nominals inherent packet relabelled version 12",
+      "expected": "unknown source ordinary value operation",
+      "expected_declared": "inherent source impl requires its wider member profile",
+      "candidate_rework": "the first candidate run rejected the relabelled packet (exit 1) in the version-twelve decoder, before any descriptor exists, with `unknown source ordinary value operation`. The descriptor's by-name gate is instead the private control `support::crates::generics::source::inherent_contracts::tests::inherent_rows_require_their_wider_member_profile`, which validates the exported version-thirteen rows under module-branches-v12 and module-nominals-v10"
+    },
+    {
+      "mutation": "every strict prefix",
+      "expected": "fails to decode"
+    }
+  ],
+  "wire_controls_note": "the three header mutations replace the first declared list (member link given `Add::add`, Self relabelled `u8`, receiver base relabelled) before any forged packet was run: the inserted trait-member link changes the row length, so it was replaced by the same-length range swap, and the receiver forgery is expressed through the impl Self it is checked against",
+  "region_controls": [
+    {
+      "control": "spec/source-nominals/provider.rs plus `pub fn first<'a, 'b, T>(a: &'a Packet<T>, b: &'b Packet<T>) -> &'a Packet<T> { a }`, exported under module-branches-v12 and module-nominals-v10",
+      "expected": "unchanged: rejected by name with `source original region formals require their complete wider body profile`"
+    },
+    {
+      "control": "the same late-region source-nominals provider exported under module-bodies-v13, and a fresh client binding `base::first(&p, &q)` and returning 42",
+      "expected": "rustc accepts (exit 42); the candidate exports it and the fresh client exits 42 natively"
+    },
+    {
+      "control": "spec/inherent-methods/provider.rs plus `pub fn first<'a, 'b>(a: &'a u8, b: &'b u8) -> &'a u8 { a }`, exported under module-bodies-v13, and a fresh client matching `*base::first(&x, &y)` with x = 42u8, y = 7u8",
+      "expected": "rustc accepts (exit 42); the candidate exports it and the fresh client exits 42 natively"
+    },
+    {
+      "control": "the module-bodies-v13 packet of that provider with the region of `first`'s result reference relabelled to the region of its second parameter (claiming `-> &'b u8` over the unchanged body returning `a`)",
+      "expected": "rejected (exit 1, no LowIR) by the consumer's re-proof of the imported body, with the same diagnostic the local frontend gives the source `pub fn first<'a, 'b>(a: &'a u8, b: &'b u8) -> &'b u8 { a }`",
+      "expected_diagnostic": "required lifetime does not outlive its target",
+      "expected_diagnostic_source": "the local frontend export of spec/inherent-methods/provider.rs plus the dishonest `first`, run before any forged packet",
+      "candidate_rework": "the first forged run was ACCEPTED (exit 0): the wire admits a header's original result against the body's result by shape only and no consumer proved their regional relation. The consumer now rebuilds that declared-result coercion into each imported original's contract whenever the two types differ, and the forged packet is rejected with the declared diagnostic"
+    },
+    {
+      "control": "the same packet with only the callable (or only the original) signature result relabelled",
+      "expected": "rejected by name with `source signature reference mutability or exact lifetime differs`",
+      "note": "observed while locating the result words, before this entry was written; recorded as observed, not as a frozen expectation"
+    },
+    {
+      "control": "the generated late-region providers need named lifetime declarations in imported body catalogs",
+      "note": "the first v13 client runs were rejected with `imported body declaration is not a source-free declaration` and then `source named lifetime readiness requires its wider callable profile`; version thirteen now admits a named region formal of a provided function, every older profile keeps that rejection"
+    }
+  ],
+  "region_oracle": "rustc 1.98.0: the late-region inherent-methods provider and the late-region source-nominals provider compile; both clients exit 42"
+}

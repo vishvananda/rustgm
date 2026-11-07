@@ -160,7 +160,14 @@ fn validate_with(
     );
     recipes(rows, work, features, profile.conversions())?;
     trait_headers(rows, headers, work, profile, &roles)?;
-    functions(rows, headers, work, profile, &roles)?;
+    functions(
+        rows,
+        headers,
+        work,
+        profile,
+        &roles,
+        binding == BindingProfile::Languages,
+    )?;
     for header in &rows.implementations {
         work.charge(1)?;
         if header.constant || header.negative || header.unsafe_ {
@@ -261,12 +268,15 @@ fn trait_headers(
     }
     Ok(())
 }
+/// `bodies` is version thirteen, whose free originals may also bind late
+/// region formals; every consumer re-proves them in its rebuilt environment.
 fn functions(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     work: &mut Work,
     profile: NamespaceProfile,
     roles: &Bindings,
+    bodies: bool,
 ) -> Result<(), &'static str> {
     for declaration in &rows.declarations {
         work.charge(1)?;
@@ -334,9 +344,13 @@ fn functions(
         {
             return Err("source provided associated bodies require a wider explicit profile");
         }
+        let late_free = bodies
+            && header.parent.is_none()
+            && header.regions.captures == 0
+            && header.regions.early.start == header.regions.early.end;
         if matches!(header.body, FunctionBody::Original(_))
             && header.regions.total != 0
-            && !(profile.conversions() && associated)
+            && !(profile.conversions() && (associated || late_free))
         {
             return Err("source original region formals require their complete wider body profile");
         }

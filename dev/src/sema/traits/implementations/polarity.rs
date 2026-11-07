@@ -270,7 +270,7 @@ impl Implementations {
                         associated.imported_implementation(store, *owner, entry.value.predicate)?;
                     (constant, Polarity::from_negative(negative))
                 }
-                OwnerKind::Trait { .. } => {
+                OwnerKind::Trait { .. } | OwnerKind::ImportedInherent(_) => {
                     return Err("implementation polarity belongs to a non-impl owner");
                 }
             };

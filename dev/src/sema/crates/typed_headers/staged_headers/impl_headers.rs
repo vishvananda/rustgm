@@ -9,7 +9,8 @@ use crate::{
 pub(super) struct Implementation {
     pub(super) owner: ImportedDeclarationId,
     pub(super) self_type: TypeId,
-    pub(super) predicate: Predicate,
+    /// `None` is a version-thirteen inherent impl on a provider nominal.
+    pub(super) predicate: Option<Predicate>,
     pub(super) captures: u32,
     pub(super) bounds: Vec<Pair>,
 }
@@ -45,12 +46,17 @@ pub(super) fn prepare(
         .catalog
         .validate_declaration(owner, definition, crate::resolve::model::DefKind::SelfType)
         .map_err(error)?;
-    let application = raw
-        .trait_application
-        .ok_or_else(|| error("source inherent impl requires its actual wider member consumer"))?;
-    let predicate = remap.application(application, &mut facts.types, budget)?;
     let self_type = graph.ty(raw.self_type)?;
-    if predicate.ty != self_type {
+    let predicate = match raw.trait_application {
+        Some(application) => Some(remap.application(application, &mut facts.types, budget)?),
+        None if context.descriptor.profile().body_nodes() => None,
+        None => {
+            return Err(error(
+                "source inherent impl requires its actual wider member consumer",
+            ));
+        }
+    };
+    if predicate.is_some_and(|predicate| predicate.ty != self_type) {
         return Err(error(
             "source impl changed its actual Self/trait application pair",
         ));

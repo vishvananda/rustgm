@@ -846,7 +846,7 @@ fn scope_owners(
         let definition = match owner.kind {
             OwnerKind::Trait { definition, .. } => definition,
             OwnerKind::Impl { .. } => owner.self_definition,
-            OwnerKind::ImportedImpl(_) => {
+            OwnerKind::ImportedImpl(_) | OwnerKind::ImportedInherent(_) => {
                 return Err("source export cannot acquire an imported syntax owner");
             }
         };

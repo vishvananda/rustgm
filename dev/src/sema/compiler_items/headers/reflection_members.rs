@@ -96,7 +96,7 @@ fn owner(
     let parent = match owner.kind {
         OwnerKind::Trait { definition, .. } => definition,
         OwnerKind::Impl { .. } => owner.self_definition,
-        OwnerKind::ImportedImpl(_) => {
+        OwnerKind::ImportedImpl(_) | OwnerKind::ImportedInherent(_) => {
             return Err("source reflection member cannot use imported ownership");
         }
     };

@@ -53,7 +53,8 @@ pub(in crate::sema) fn validate_member(
     let actual_parent = match owner.kind {
         crate::sema::associated::OwnerKind::Trait { definition, .. } => definition,
         crate::sema::associated::OwnerKind::Impl { .. } => owner.self_definition,
-        crate::sema::associated::OwnerKind::ImportedImpl(_) => {
+        crate::sema::associated::OwnerKind::ImportedImpl(_)
+        | crate::sema::associated::OwnerKind::ImportedInherent(_) => {
             return Err(error(
                 "source layout member cannot use an imported syntax owner",
             ));

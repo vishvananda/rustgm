@@ -237,7 +237,8 @@ impl Checker<'_> {
             }
             OwnerKind::Impl {
                 trait_type: None, ..
-            } => None,
+            }
+            | OwnerKind::ImportedInherent(_) => None,
             OwnerKind::ImportedImpl(_) => {
                 return Err(self.error(
                     key,

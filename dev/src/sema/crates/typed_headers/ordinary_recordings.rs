@@ -179,7 +179,8 @@ fn original_formals(
             "ordinary recording changed its full original formal arity",
         ));
     }
-    for (&slot, &id) in input.parameters.iter().zip(actual) {
+    let actual = scope_order(facts, actual, work)?;
+    for (&slot, &id) in input.parameters.iter().zip(&actual) {
         let slot = rows.slots.get(slot.0 as usize).ok_or_else(|| {
             error("ordinary recording original formal is outside its actual table")
         })?;
@@ -205,6 +206,37 @@ fn original_formals(
         }
     }
     Ok(())
+}
+/// A callable registration lists its outermost scope's formals first; a body
+/// contract lists them as `parameters_in_scope` does, its own scope first and
+/// then each enclosing scope. Regroup by owner, keeping each owner's order.
+fn scope_order(
+    facts: &Declarations,
+    registered: &[crate::types::parameters::ParameterId],
+    work: &mut ReservationWork,
+) -> Result<Vec<crate::types::parameters::ParameterId>, Error> {
+    let owner = |id: crate::types::parameters::ParameterId| {
+        facts
+            .types
+            .parameter(id)
+            .map(|parameter| parameter.owner)
+            .ok_or_else(|| error("ordinary recording lost its actual canonical formal"))
+    };
+    work.charge(registered.len().saturating_add(1))?;
+    let mut ordered = Vec::with_capacity(registered.len());
+    let mut end = registered.len();
+    while let Some(&last) = end.checked_sub(1).and_then(|index| registered.get(index)) {
+        let group = owner(last)?;
+        let mut start = end - 1;
+        while let Some(&previous) = start.checked_sub(1).and_then(|index| registered.get(index))
+            && owner(previous)? == group
+        {
+            start -= 1;
+        }
+        ordered.extend_from_slice(&registered[start..end]);
+        end = start;
+    }
+    Ok(ordered)
 }
 impl OrdinaryDomain {
     pub(in crate::sema::crates::typed_headers) fn raw(

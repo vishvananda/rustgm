@@ -26,6 +26,11 @@ impl Stage {
                 .checked_add(1)
                 .ok_or("source implementation count overflow")?;
         }
+        if self.body_nodes() {
+            count = count
+                .checked_add(self.inherent_implementations(facts)?)
+                .ok_or("source implementation count overflow")?;
+        }
         self.charge(facts.associated.owners().len())?;
         if facts
             .associated
@@ -37,6 +42,130 @@ impl Stage {
         {
             return Err("source impl owner has no completed canonical conformance record");
         }
+        Ok(())
+    }
+
+    /// Version thirteen: an inherent impl on a provider nominal is a header
+    /// without a trait application whose links name only its own methods.
+    /// It follows every trait impl, so declared results keep their order.
+    fn inherent_implementations(&mut self, facts: &Declarations) -> Result<usize, &'static str> {
+        let mut count = 0usize;
+        for (index, owner) in facts.associated.owners().iter().enumerate() {
+            self.charge(1)?;
+            let OwnerKind::Impl {
+                trait_type: None,
+                unsafe_,
+                constant,
+                polarity,
+                ..
+            } = owner.kind
+            else {
+                continue;
+            };
+            let owner = owner.source_owner()?;
+            if unsafe_ || constant || polarity != crate::sema::associated::ImplPolarity::Positive {
+                return Err("source inherent impl modifiers require a wider profile");
+            }
+            let id = crate::sema::associated::OwnerId(
+                u32::try_from(index).map_err(|_| "source owner identity overflow")?,
+            );
+            let methods = facts
+                .associated
+                .owner_members(id)
+                .ok_or("source inherent impl has no actual member inventory")?;
+            self.inherent_implementation(facts, &owner, methods)?;
+            count = count
+                .checked_add(1)
+                .ok_or("source implementation count overflow")?;
+        }
+        Ok(count)
+    }
+
+    fn inherent_implementation(
+        &mut self,
+        facts: &Declarations,
+        owner: &crate::sema::associated::SourceOwner,
+        methods: &[DefId],
+    ) -> Result<(), &'static str> {
+        let declaration = self.declaration(owner.self_definition)?;
+        let schema = facts
+            .associated
+            .schema(owner.self_definition)
+            .ok_or("source implementation has no completed typed Self schema")?;
+        let Some(crate::types::Kind::Adt(nominal, _)) = facts.types.kind(schema.self_type) else {
+            return Err("source inherent impl requires a provider nominal Self");
+        };
+        if self.declaration(DefId(nominal.0)).is_err() {
+            return Err("source inherent impl requires a provider nominal Self");
+        }
+        let context = self.frame(
+            declaration,
+            None,
+            s::BinderKind::DeclarationHeader,
+            schema.captures,
+        )?;
+        let self_type = self.ty(facts, schema.self_type, context)?;
+        let start = u32::try_from(self.rows.clauses.len())
+            .map_err(|_| "source impl input table overflow")?;
+        for input in crate::sema::declaration_inputs::own(
+            &facts.generics,
+            facts.crates.as_deref(),
+            owner.self_definition,
+        )? {
+            self.clause(facts, input, context, None)?;
+        }
+        let inputs = g::Range {
+            start,
+            end: u32::try_from(self.rows.clauses.len())
+                .map_err(|_| "source impl input table overflow")?,
+        };
+        let region_bounds = self.region_bounds(&schema.bounds, context)?;
+        let start = u32::try_from(self.rows.member_links.len())
+            .map_err(|_| "source impl member table overflow")?;
+        self.reserve(methods.len().saturating_mul(4 * size_of::<s::MemberLink>()))?;
+        for &method in methods {
+            self.charge(1)?;
+            if !self
+                .functions
+                .headers
+                .contains_key(&crate::types::ItemId(method.0))
+            {
+                return Err(
+                    "source inherent associated constants and types require a wider profile",
+                );
+            }
+            let implementation = Some(self.declaration(method)?);
+            self.rows.member_links.push(s::MemberLink {
+                trait_member: None,
+                implementation,
+            });
+        }
+        let members = g::Range {
+            start,
+            end: u32::try_from(self.rows.member_links.len())
+                .map_err(|_| "source impl member table overflow")?,
+        };
+        self.reserve(4 * size_of::<s::ImplHeader>())?;
+        self.rows.implementations.push(s::ImplHeader {
+            self_definition: declaration,
+            scope: declaration,
+            self_type,
+            trait_application: None,
+            unsafe_: false,
+            constant: false,
+            negative: false,
+            region_captures: schema.captures,
+            region_bounds,
+            inputs,
+            declared_inputs: u32::try_from(
+                facts
+                    .generics
+                    .declared_predicates(owner.self_definition)
+                    .len(),
+            )
+            .map_err(|_| "source impl declared input count overflow")?,
+            members,
+        });
         Ok(())
     }
 

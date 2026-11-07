@@ -178,7 +178,9 @@ impl Inventory {
             let definitions = std::iter::once(row.owner.self_definition)
                 .chain(match row.owner.kind {
                     OwnerKind::Trait { definition, .. } => Some(definition),
-                    OwnerKind::ImportedImpl(_) | OwnerKind::Impl { .. } => None,
+                    OwnerKind::ImportedImpl(_)
+                    | OwnerKind::ImportedInherent(_)
+                    | OwnerKind::Impl { .. } => None,
                 })
                 .chain(row.members.iter().copied());
             for definition in definitions {

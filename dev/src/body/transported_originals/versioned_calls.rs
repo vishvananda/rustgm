@@ -112,6 +112,11 @@ impl<'a> Index<'a> {
         work.payload = work.payload.saturating_add(growth);
         result.members.reserve(rows.member_links.len());
         for header in &rows.implementations {
+            // A version-thirteen inherent impl links no trait member; a call
+            // to its method is an ordinary application of the method's header.
+            if header.trait_application.is_none() {
+                continue;
+            }
             for link in header.members.slice(&rows.member_links)? {
                 let (Some(actual), Some(expected)) = (link.implementation, link.trait_member)
                 else {

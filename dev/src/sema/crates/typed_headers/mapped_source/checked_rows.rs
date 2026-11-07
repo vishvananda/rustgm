@@ -42,7 +42,7 @@ pub(in crate::sema::crates::typed_headers) trait Mapping<'rows>:
         let rows = descriptor.rows();
         let declaration = match owner.kind {
             OwnerKind::Trait { definition, .. } => definition,
-            OwnerKind::ImportedImpl(_) => owner.self_definition,
+            OwnerKind::ImportedImpl(_) | OwnerKind::ImportedInherent(_) => owner.self_definition,
             OwnerKind::Impl { .. } => {
                 return Err("imported associated inventory cannot carry source syntax");
             }
@@ -150,7 +150,7 @@ pub(in crate::sema::crates::typed_headers) fn require_owner<'a>(
             let id = catalog.declaration(owner.self_definition)?;
             catalog.validate_declaration(id, owner.self_definition, DefKind::SelfType)?;
         }
-        OwnerKind::ImportedImpl(id) => {
+        OwnerKind::ImportedImpl(id) | OwnerKind::ImportedInherent(id) => {
             let definition = catalog.declaration_identity(id, DefKind::SelfType)?;
             let (artifact, row, _) = catalog.declaration_coordinate(id)?;
             if definition != owner.self_definition || artifact != descriptor.identity() {
@@ -162,6 +162,11 @@ pub(in crate::sema::crates::typed_headers) fn require_owner<'a>(
             let header = &rows.implementations[index as usize];
             if header.self_definition != row || header.scope != row {
                 return Err("imported impl changed its actual declaration/header scope");
+            }
+            if header.trait_application.is_none()
+                != matches!(owner.kind, OwnerKind::ImportedInherent(_))
+            {
+                return Err("imported impl owner changed its actual trait/inherent kind");
             }
         }
         OwnerKind::Impl { .. } => {

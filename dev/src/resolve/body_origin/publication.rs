@@ -157,6 +157,7 @@ fn validate_definitions(
                     | DefKind::TypeAlias
                     | DefKind::SelfType
                     | DefKind::Generic
+                    | DefKind::Lifetime
                     | DefKind::Parameter
                     | DefKind::Local
             )

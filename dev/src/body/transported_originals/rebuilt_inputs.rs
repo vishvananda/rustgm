@@ -27,6 +27,8 @@ struct Expected<'a, 'b> {
     declared: Inputs<'a>,
     sized: Bound,
     root: ProofSite,
+    /// The declared-result coercion, present only when the types differ.
+    result: Option<Obligation>,
 }
 impl<'a, 'b> Expected<'a, 'b> {
     fn new(
@@ -34,6 +36,7 @@ impl<'a, 'b> Expected<'a, 'b> {
         facts: &'a Declarations,
         steps: &mut usize,
     ) -> Result<Self, &'static str> {
+        let root = view.source()?.root_site();
         Ok(Self {
             view,
             facts,
@@ -43,7 +46,8 @@ impl<'a, 'b> Expected<'a, 'b> {
                 view.definition(),
             )?,
             sized: view.sizing_requirement(facts, steps)?,
-            root: view.source()?.root_site(),
+            root,
+            result: declared_result(view, root, steps)?,
         })
     }
     fn ports(&self) -> usize {
@@ -78,22 +82,24 @@ impl<'a, 'b> Expected<'a, 'b> {
             .len()
             .saturating_add(record.parameters.len())
             .saturating_add(self.ports());
-        (0..count).map(move |mut index| {
-            *steps = steps.saturating_add(1);
-            if index < record.obligations.len() {
-                return obligation(self.view, record.obligations[index], steps);
-            }
-            index -= record.obligations.len();
-            let ty = if index < record.parameters.len() {
-                self.view.slot_type(record.parameters[index], steps)?
-            } else {
-                self.port(index - record.parameters.len(), steps)?
-            };
-            Ok(Obligation {
-                source: self.root,
-                kind: Kind::WellFormed(ty),
+        (0..count)
+            .map(move |mut index| {
+                *steps = steps.saturating_add(1);
+                if index < record.obligations.len() {
+                    return obligation(self.view, record.obligations[index], steps);
+                }
+                index -= record.obligations.len();
+                let ty = if index < record.parameters.len() {
+                    self.view.slot_type(record.parameters[index], steps)?
+                } else {
+                    self.port(index - record.parameters.len(), steps)?
+                };
+                Ok(Obligation {
+                    source: self.root,
+                    kind: Kind::WellFormed(ty),
+                })
             })
-        })
+            .chain(self.result.map(Ok))
     }
     /// Version thirteen lifts only a vacuous clause binder, which parenthesized
     /// callable sugar opens even when it binds no region. A declared result
@@ -276,6 +282,30 @@ pub(super) fn build(
         required?;
     }
     Ok(contract)
+}
+/// The wire admits the header's original result against the body's result by
+/// shape only; their regional relation is a fresh request. The body's value
+/// flows into the declared result every caller receives, so it must coerce.
+fn declared_result(
+    view: &SourceOriginal<'_>,
+    root: ProofSite,
+    steps: &mut usize,
+) -> Result<Option<Obligation>, &'static str> {
+    let rows = view.rows();
+    let Some(s::HeaderRef::Function(index)) = rows.header(view.raw().declaration)? else {
+        return Err("source original lost its actual function header");
+    };
+    let declared = view.ty(rows.functions[index as usize].original.result, steps)?;
+    let actual = view.ty(view.raw().result, steps)?;
+    Ok((declared != actual).then_some(Obligation {
+        source: root,
+        kind: Kind::Coercion {
+            actual,
+            expected: declared,
+            unsize: false,
+            reference: None,
+        },
+    }))
 }
 fn parameter_order(
     facts: &Declarations,

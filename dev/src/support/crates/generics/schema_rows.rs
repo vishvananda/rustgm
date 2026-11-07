@@ -14,6 +14,8 @@ mod descriptor;
 mod operation_contracts;
 mod results_contract;
 pub use compiler_rows::*;
+#[path = "traitless_impls.rs"]
+mod inherent_contracts;
 #[path = "relation_inputs.rs"]
 mod inputs;
 #[path = "record_contracts.rs"]
