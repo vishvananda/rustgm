@@ -5,6 +5,23 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+[Builtin macro rows and allowance lists](parallel/macro-metadata.md#builtin-rows-and-allowance-lists-version-2)
+(Lane B, PA29): tag-14 version 2 adds builtin rows and per-row
+`allow_internal_unstable` lists. Each builtin row carries a name, syntax,
+expander identity, kind and module placement, and no image. Crates whose exports
+are only plain `macro_rules!` rows still write their exact version-1 bytes.
+Consumers bind each placement through the provider's own module identity and
+bind their own expander of each identity. Unknown or relabelled identities fail
+by name, and only context-free expanders execute. The imported allowance lists
+apply exactly where a local definition's permissions do, charged per feature.
+All 14 declared rustc outcomes held. The candidate passes all 29 macro cases
+natively. Three requirement rows stay rejected by name: an imported `test`
+attribute, macros 2.0 exports and macro re-exports. The PA34 mixed rows now
+record their metadata outcomes as amended. Census of core macros used by alloc
+library code: 125 sites need re-export rows (prelude derives, `derive`,
+`core::bstr`), and 161 need executable non-context-free builtins. Only one site
+needs macros 2.0 hygiene. Re-export rows are the proposed next step.
+
 Lane C [enum-and-match transport](parallel/enum-match-transport.md) is
 joined on main. Version 13 now carries enum and variant
 declarations, enum header columns (representation tag, variant shapes,

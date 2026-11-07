@@ -6183,9 +6183,10 @@ token-tree rows. The image spells the single delimited body. Two pieces
 in the definition source, and one space separates them exactly when whitespace
 or comments did, so lexing the image keeps every token's jointness. Rows are
 sorted by unique name. Only direct root `#[macro_export]` source definitions are
-exported. Macro-generated definitions, doc comments in the body, builtin or
-scoped macros and checked definition-site permissions are rejected by name
-rather than dropped. Decoding checks the closed edition, flag, class and delimiter codes and
+exported. Builtin rows and `allow_internal_unstable` lists need version 2
+(below). Macro-generated definitions, doc comments in the body, scoped macros
+and other checked definition-site permissions are rejected by name rather than
+dropped. Decoding checks the closed edition, flag, class and delimiter codes and
 that the rows lay out the image exactly. A consumer must not trust these rows: it
 lexes the image once, rebuilds the rows and requires them to be equal, and then
 recompiles every rule in the transported edition. It binds `$crate` to the
@@ -6194,6 +6195,25 @@ the provider's imported root, for `use` and path forms. `#[macro_use] extern
 crate` adds them to the macro-use prelude, where a later crate shadows an
 earlier one. Generated spellings are never re-lexed. The [macro metadata checkpoint](docs/parallel/macro-metadata.md)
 records the profile and its consumer requirements.
+
+Version 2 of the macro envelope is written only when a table has a builtin
+row or a non-empty feature list; otherwise the version-1 bytes are unchanged.
+Its rows are sorted strictly by (module placement, name). Each starts with a
+kind byte (0 declarative, 1 builtin), the placement path and the name. A
+declarative row keeps the version-1 fields, is placed at the root, and adds its
+sorted, unique `allow_internal_unstable` features. A builtin row has no image.
+It carries the syntax (`macro_rules!` or `macro`), the expander identity as a
+bounded identifier spelling, the kind (bang, attribute or derive) and sorted
+derive helpers. A `macro_rules!` builtin row is placed at the root, and only a
+derive row has helpers. Unknown codes, disorder and a needless version 2 are
+rejected by name. A consumer binds a builtin row in the provider's own public
+module at its placement, resolved by module identity and never by a name or
+alias. It runs its own expander of that identity and rejects an unknown identity
+or a changed kind by name. An imported expansion frame grants exactly its row's
+re-authenticated features, charged per feature, as a local definition's
+permissions would, and never grants `allow_internal_unsafe`. Macro re-exports,
+macros 2.0 definitions and imported expanders that need their provider's source
+declaration remain rejected by name.
 
 ## Lowering and backend facts
 

@@ -454,3 +454,180 @@ Two later steps would follow. First, typed `allow_internal_unstable` feature
 lists, which the consumer re-checks against its own feature policy; this would
 admit the other 7 ordinary rows. Second, macros-2.0 definition-site hygiene for
 the 29 ordinary `pub macro` rows.
+
+## Builtin rows and allowance lists (version 2)
+
+Follow-up (Lane B, PA29). The integrator approved the row extension as tag-14
+version 2. Version-one envelopes keep their exact bytes and decoding, and a crate
+whose only exports are ordinary `macro_rules!` rows without allowance lists still
+writes version 1.
+
+**Wire layout.** The header and the wrapped inner artifact are those of version
+1. The table is a `u32` count of rows sorted strictly by (placement, name).
+Every row starts with a kind byte, its module placement (`u16` component count,
+then each component as a string) and its name:
+
+- **kind 0, declarative.** The version-1 fields follow (edition, flags, rule
+  count, image, typed rows). After them comes the row's sorted, unique
+  `allow_internal_unstable` list: a `u32` count of feature identifiers. Its
+  placement must be empty ("declarative exported macros belong to the crate
+  root").
+- **kind 1, builtin.** No image. The syntax byte (0 `macro_rules!`, 1 `macro`)
+  comes next, then the builtin identity as a bounded spelling (an identifier of
+  at most 64 bytes), the macro kind (0 bang, 1 attribute, 2 derive) and the
+  sorted, unique derive helper attributes. A `macro_rules!` builtin row belongs
+  to the root, and only a derive row may declare helpers.
+
+Unknown row kinds, syntaxes and kinds are rejected by name. So are unsorted or
+duplicate rows, and a version-2 table that needs neither builtin rows nor a
+feature list ("version-two exported macro table has only version-one rows"). A
+version-1 decoder rejects version 2 as an unknown version. The identity travels
+as a spelling because the support layer cannot depend on the expander catalog.
+Budgets: 64 placement components, 64 features or helpers per row, and one
+macro-table atom per row plus one per placement component.
+
+**Provider.** `sema::crates::export::declarative_rows` now walks every module
+reachable from the root through public, direct module bindings. A public macro
+binding of a local definition becomes a row:
+
+- A `#[rustc_builtin_macro]` definition publishes its module path, syntax,
+  expander identity and kind, and its derive helpers. Its claimed header role
+  must equal its body's role.
+- A `#[macro_export] macro_rules!` row publishes its sorted feature list.
+  `allow_internal_unsafe` and edition-panic contracts stay rejected by name.
+
+Macro re-exports (core's prelude shape), macros 2.0 definitions (no hygiene
+transport) and macro-generated definitions are rejected by name. Macro bindings
+no longer reach the scalar public-name, authored-export or module-contract
+tables. The source-library profile (`--source-core`) now wraps its publication
+in the same macro table, so a no_core provider can export builtin rows.
+
+**Consumer.** `resolve::crates::bound_macro_rows` binds each builtin row
+publicly in the member scope of the provider's own module at its placement.
+
+- A source artifact resolves the path by walking its public module declaration
+  rows and then its origin table. An ordinary artifact resolves it by the
+  module's external identity. Neither route uses a binding name or an alias, so
+  a renamed `extern crate` or a consumer module of the same name changes
+  nothing.
+- `expansion::transported_macros` binds the consumer's own expander of that
+  identity. It rejects an unknown identity ("names unknown expander"), a changed
+  kind ("changed the macro kind of expander") and helpers on a non-derive by
+  name.
+- Only context-free expanders execute: the bootstrap prelude roles except
+  `option_env` and the source-only roles. These are `cfg`, `line`, `column`,
+  `file`, `module_path`, `stringify`, `concat`, `compile_error`, `env`,
+  `include`, `include_str` and `include_bytes`. Any other imported identity
+  (derives, `test`, `panic`, `assert`, `format_args`) binds, so resolution sees
+  it, but its invocation fails with "imported builtin macro requires its
+  provider's source declaration".
+
+**Allowance lists.** A transported row's feature list is re-checked as feature
+identifiers when the row is imported, and the consumer pays one unit per feature
+plus its bytes. An expansion frame of that row has no source owner. The
+allowance query (`permission_session`) answers from the row's list exactly where
+a local definition's header answers, and charges `1 + query work + features` per
+query. The frame never grants `allow_internal_unsafe`. An ordinary crate that
+imports any listed row now owns a local allowance ledger even without local
+macro features. That ledger accepts a crate root without an attribute owner
+only when it exists for imports alone. Source clients and staged consumers
+still have no ledger, so a gated site inside an imported expansion fails there
+by name.
+
+### Qualification (version 2)
+
+All outcomes were declared in `pa29/tests/builtin-macro-rows-outcomes.json`
+(plan sha256 `7048944…`, `obj/parallel/builtin-rows-v1/declared/`) before any
+rustc or RustGM run of these files. The fixtures are in
+`pa29/tests/spec/builtin-macro-rows/`: a no_core source-core provider, seven
+source clients, two rejected providers, an ordinary allowance provider and
+three clients.
+
+- **Oracle.** Pinned rustc 1.98.0 matched all 14 declared statuses and codes
+  (`E0433`, `E0658`) and the native value `7 9 1` (line, column and cfg at the
+  consumer's call site); see `obj/parallel/builtin-rows-v1/oracle/round1/oracle.json`
+  (sha256 `cf819ead…`).
+- **Candidate.** `scripts/check_macro_metadata.py` now runs all 29 cases. It
+  handles source-core providers, source clients, object clients linked with a
+  frozen C driver, declared diagnostics and the published macro-table version.
+  The native run passed 29 of 29 (`candidate/round2/complete.json`, CLI
+  `dfbaed10…`). Three rows are requirements where rustc accepts and RustGM
+  rejects by name: the `test` attribute row, a macros 2.0 provider and a
+  re-exporting provider.
+- **Integration tests.** `crate_linking::expander_rows` has three tests:
+  - publication and round trip of the version-2 table, plus a version-1 control
+    for declarative-only crates;
+  - forged and relabelled rows: row kind, syntax, kind, order, an off-root
+    `macro_rules!` builtin, helpers on a non-derive, an off-root declarative row,
+    a needless version 2, an invalid feature, and an unknown or relabelled
+    identity in a fresh consumer;
+  - linear growth: the macro table of 8, 32 and 128 builtin rows grows by
+    exactly the same bytes per row, and the consumer's LowIR does not change.
+- **Receipts.** The six integration tests above passed
+  (`obj/qualification/fast/1794056625422756880`). The private
+  `macro_context`, `permission_session`, `token_images` and `cfg_gates`
+  selections passed 11 tests under strict private Clippy (`1794056054956364057`).
+  The text suites PA1–PA19 and PA21–PA24 passed (`1794056277519828131`,
+  `1794056348682261921`). PA20 shows only the four known Lane A
+  `assoc-bounds/{wide16,deep16,wide64,deep64}` storage-budget failures. Also
+  passing: `make test-upstream`, `make test-harness`, `make test-target-units`
+  with the same CLI, and the `legacy_editions` and `reexports` controls
+  (`1794056577400502666`).
+- **Amended controls.** `declarative_exports` forged version 2 as its
+  unknown-version control. It now forges version 3, and also checks that v1 rows
+  relabelled as v2 fail by name. The runner-count check in `transported_rows`
+  rises from 15 to 29.
+
+### Census: core macros that alloc and std invoke
+
+Analysis only. `obj/parallel/builtin-rows-v1/census/census-uses.py` scans the
+pinned `library/alloc/src` and `library/std/src` for invocations of the 102 core
+export rows (`uses.json`), with comments and string contents blanked. A bang use
+is `name!`, path-qualified or not. An attribute use is `#[name]`, and a derive
+use is a name in `#[derive(...)]` or `#[derive_const(...)]`. Files named
+`tests.rs`/`benches.rs`, or under `tests/` or `benches/`, count as test code.
+The counts are lexical: std defines its own `panic`, so its 100 `panic!` sites
+do not reach core's row.
+
+| alloc (library code) | Names | Sites | Reaches alloc through | Runs on version 2 today |
+|---|---|---|---|---|
+| Builtin derives | 9 (`Clone`, `Copy`, `Debug`, `Default`, `Eq`, `Hash`, `Ord`, `PartialEq`, `PartialOrd`) | 84 | prelude re-export | no: re-export, and the expander is not context-free |
+| Builtin attribute `derive` | 1 | 29 | prelude re-export | no: re-export |
+| Builtin root `macro_rules!` | `assert` 49, `panic` 17, `unreachable` 9, `format_args` 2, `cfg` 4 | 81 | `#[macro_use]` root rows | only `cfg` (4 sites) |
+| Ordinary root `macro_rules!` | `debug_assert` 92, `debug_assert_eq` 27, `debug_assert_ne` 2, `write` 6, `assert_unsafe_precondition` 3, `impl_partial_eq*` 12 | 142 | root rows; `impl_partial_eq*` through `use core::bstr::{...}` | no: they expand to `assert!`/`panic!`/`format_args!`, and `impl_partial_eq*` needs a re-export |
+| Ordinary `pub macro` | `const_error` | 1 | path | no: macros 2.0 |
+
+Alloc test code adds `assert_eq` (1,406 sites), `assert_ne`, `matches`,
+`assert_matches`, `#[test]` (308) and `#[bench]`.
+
+std library code invokes 46 of the names. The largest groups are the builtin
+derives (1,023 sites), `derive` (391), `cfg_select!` (88, a builtin
+`pub macro`), `asm!` (27), and the ordinary `pub macro` `const_error!` (237).
+After them come `write!` (70) and the `debug_assert*` family (100). Its
+context-free builtin uses (`cfg`, `concat`, `stringify`, `include_str`, `line`,
+`column`, `file`, `env`, `include`, `compile_error`) total 113 sites.
+
+### Proposed next step
+
+Macros 2.0 hygiene is not next for alloc: alloc library code uses only one
+ordinary `pub macro` site (`const_error!`). It does matter for std, where
+`const_error!` has 237 sites. The alloc path is blocked first by two other gaps:
+
+1. **Macro re-export rows.** Core's prelude re-exports the derives, `derive`,
+   `test` and every root builtin (`pub use crate::{assert, cfg, ...}`), and
+   `core::bstr` re-exports the `impl_partial_eq` family. A re-export row would
+   name its target row by provider placement and name, and the consumer would
+   bind it through the same module-identity walk. This unblocks 125 alloc sites
+   at the resolution level. It also removes the by-name publication failure
+   that core's prelude would hit once core reaches publication.
+2. **Executable non-context-free builtins.** `assert`, `panic`, `unreachable`,
+   `format_args` and the derives expand to provider paths under internal
+   permissions. Their rows would need the provider's allowance list too (a
+   builtin-row feature list, which is another version-2 field). The consumer's
+   expander would then run them with the imported frame permissions, as
+   declarative rows now do. That covers 161 alloc sites directly, and the
+   `debug_assert*`/`write` family that expands into them.
+
+A third, smaller gap is the source-client allowance ledger. alloc is a source
+client of core, and source clients have no macro context. So even a listed row
+(`assert_unsafe_precondition` with `cfg_ub_checks`) would fail there by name.
