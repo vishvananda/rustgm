@@ -9,7 +9,7 @@ use crate::{
     },
     sema::model::Declarations,
     support::{bindings::LangItem, hash::HashMap, retained},
-    syntax::{ast::Kind, item::ItemKind},
+    syntax::{ast::Kind, item::ItemKind, token_tree::TreeKind},
 };
 use std::cell::Cell;
 
@@ -79,6 +79,67 @@ pub(super) struct Headers {
     first_policy: Option<DefId>,
     bytes: Cell<usize>,
     pub(super) steps: Cell<usize>,
+    bound: InputBound,
+}
+/// Header producer work units per authenticated input-graph element. Sized
+/// from the LIB-193 attribution in `docs/parallel/lib193-header-budget.md`:
+/// original core uses 0.33 and the densest linear payer (first validation of
+/// an attribute literal) at most 13 per spelled byte. Never raise it to absorb
+/// repeated or superlinear work.
+const WORK_PER_INPUT: usize = 16;
+/// Attempted header storage bytes per input-graph element: original core uses
+/// 6 and dense minimal target-feature functions about 49.
+const BYTES_PER_INPUT: usize = 128;
+/// The local header ledger's linear bound, snapshotted once from the checked
+/// crate's own input graph before any charge. It is not a resource profile
+/// limit and grants no language, API or metadata permission.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(in crate::sema) struct InputBound {
+    work: usize,
+    bytes: usize,
+}
+impl InputBound {
+    /// Definitions plus every unit's owners, attribute effects, AST nodes,
+    /// AST edges, retained attribute token trees and the bytes those tokens spell.
+    pub(in crate::sema) fn of(report: &Report) -> Self {
+        let mut elements = report.resolution.definitions.len();
+        for unit in &report.package.units {
+            let syntax = &unit.configured;
+            let counts = [
+                elements,
+                syntax.owners.len(),
+                syntax.effects.len(),
+                syntax.ast.nodes.len(),
+                syntax.ast.edges.len(),
+            ];
+            let trees = syntax
+                .ast
+                .attributes
+                .iter()
+                .flat_map(|capture| capture.forest.nodes())
+                .map(|tree| {
+                    // A group spells nothing itself; its children are counted.
+                    let spelled = match tree.kind {
+                        TreeKind::Token(_) => tree.span.end.saturating_sub(tree.span.start),
+                        TreeKind::Doc { body, .. } => body.end.saturating_sub(body.start),
+                        TreeKind::Group { .. } => 0,
+                    };
+                    1 + spelled as usize
+                });
+            elements = retained::sum(counts.into_iter().chain(trees));
+        }
+        Self {
+            work: elements.saturating_mul(WORK_PER_INPUT),
+            bytes: elements.saturating_mul(BYTES_PER_INPUT),
+        }
+    }
+    const fn exceeded(self, steps: usize, bytes: usize) -> bool {
+        steps > self.work || bytes > self.bytes
+    }
+}
+#[cfg(test)]
+pub(in crate::sema) const fn source_contract_bound(facts: &Declarations) -> (usize, usize) {
+    (facts.header_bound.work, facts.header_bound.bytes)
 }
 pub(in crate::sema) fn has_comptime_headers(facts: &Declarations) -> bool {
     facts
@@ -88,11 +149,20 @@ pub(in crate::sema) fn has_comptime_headers(facts: &Declarations) -> bool {
         .is_some_and(|headers| !headers.local.declarations.is_empty())
 }
 fn ledger(facts: &mut Declarations, bytes: usize) -> Result<&mut Ledger, Error> {
+    let bound = facts.header_bound;
     let ledger = facts
         .must_use_contracts
         .get_or_insert_default()
         .headers
-        .get_or_insert_default();
+        .get_or_insert_with(|| {
+            Box::new(Ledger {
+                local: Headers {
+                    bound,
+                    ..Headers::default()
+                },
+                imported: None,
+            })
+        });
     ledger
         .local
         .steps
@@ -101,8 +171,10 @@ fn ledger(facts: &mut Declarations, bytes: usize) -> Result<&mut Ledger, Error> 
         .local
         .bytes
         .set(ledger.local.bytes.get().saturating_add(bytes));
-    if ledger.local.bytes.get() > crate::support::crates::MAX_BYTES
-        || ledger.local.steps.get() > crate::support::crates::MAX_COMPONENTS
+    if ledger
+        .local
+        .bound
+        .exceeded(ledger.local.steps.get(), ledger.local.bytes.get())
     {
         return Err(Error::unlocated(
             "source header attribute producer exceeds storage budget",
@@ -346,11 +418,11 @@ pub(super) fn query<'a>(
         .map(|ledger| &ledger.local);
     if let Some(headers) = headers {
         headers.steps.set(headers.steps.get().saturating_add(1));
-        if headers.steps.get() > crate::support::crates::MAX_COMPONENTS {
+        if headers.bound.exceeded(headers.steps.get(), 0) {
             return Err(Error::at(
                 key.file,
                 0,
-                "source header contract query work exceeds profile limit",
+                "source header contract query work exceeds its input-graph bound",
             ));
         }
     }
@@ -559,19 +631,21 @@ impl Payments<'_> {
     pub(crate) fn charge(&self, steps: usize, bytes: usize) -> Result<(), &'static str> {
         self.0.steps.set(self.0.steps.get().saturating_add(steps));
         self.0.bytes.set(self.0.bytes.get().saturating_add(bytes));
-        if self.0.steps.get() > crate::support::crates::MAX_COMPONENTS
-            || self.0.bytes.get() > crate::support::crates::MAX_BYTES
+        if self
+            .0
+            .bound
+            .exceeded(self.0.steps.get(), self.0.bytes.get())
         {
-            return Err("source contract work or retention exceeds profile limit");
+            return Err("source contract work or retention exceeds its input-graph bound");
         }
         Ok(())
     }
 }
 fn charge_query(headers: &Headers, steps: usize) -> Result<(), Error> {
     headers.steps.set(headers.steps.get().saturating_add(steps));
-    if headers.steps.get() > crate::support::crates::MAX_COMPONENTS {
+    if headers.bound.exceeded(headers.steps.get(), 0) {
         return Err(Error::unlocated(
-            "source header contract query work exceeds profile limit",
+            "source header contract query work exceeds its input-graph bound",
         ));
     }
     Ok(())

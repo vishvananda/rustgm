@@ -131,26 +131,18 @@ impl FeatureSet {
         &mut self,
         name: &str,
         mut pay: impl FnMut(Growth) -> Result<(), E>,
-        mut allowed: impl FnMut(Gate) -> Result<bool, E>,
+        allowed: impl FnMut(Gate) -> Result<bool, E>,
         error: impl Fn(&'static str) -> E,
     ) -> Result<(), E> {
-        pay(Growth {
-            work: name
-                .len()
-                .saturating_mul(FEATURES.len().ilog2() as usize + 2),
-            bytes: 0,
-        })?;
-        let feature = named(name)
-            .ok_or_else(|| error("target feature is invalid or forbidden for this target"))?;
-        let spec = &FEATURES[feature.0 as usize];
-        if let Some(gate) = spec.gate {
-            pay(Growth { work: 1, bytes: 0 })?;
-            if !allowed(gate)? {
-                return Err(error(
-                    "target feature requires its actual crate language gate",
-                ));
-            }
-        }
+        let feature = explicit(name, &mut pay, allowed, &error)?;
+        self.close(feature, pay, error)
+    }
+    fn close<E>(
+        &mut self,
+        feature: Feature,
+        mut pay: impl FnMut(Growth) -> Result<(), E>,
+        error: impl Fn(&'static str) -> E,
+    ) -> Result<(), E> {
         let mut pending = 1_u128 << feature.0;
         while pending != 0 {
             let bit = pending.trailing_zeros();
@@ -172,6 +164,80 @@ impl FeatureSet {
         }
         Ok(())
     }
+}
+/// One validated `enable` value: its implication-closed requirements and the
+/// explicitly named gated features whose crate gates each reusing site checks.
+#[derive(Clone, Copy, Default)]
+pub(super) struct Closed {
+    features: FeatureSet,
+    gated: FeatureSet,
+}
+impl Closed {
+    pub(super) fn insert<E>(
+        &mut self,
+        name: &str,
+        mut pay: impl FnMut(Growth) -> Result<(), E>,
+        allowed: impl FnMut(Gate) -> Result<bool, E>,
+        error: impl Fn(&'static str) -> E,
+    ) -> Result<(), E> {
+        let feature = explicit(name, &mut pay, allowed, &error)?;
+        if FEATURES[feature.0 as usize].gate.is_some() {
+            self.gated = self.gated.union(FeatureSet(1_u128 << feature.0));
+        }
+        self.features.close(feature, pay, error)
+    }
+    pub(super) const fn features(self) -> FeatureSet {
+        self.features
+    }
+    /// A reusing site pays for and obtains its own crate gate results.
+    pub(super) fn require<E>(
+        self,
+        mut pay: impl FnMut(Growth) -> Result<(), E>,
+        mut allowed: impl FnMut(Gate) -> Result<bool, E>,
+        error: impl Fn(&'static str) -> E,
+    ) -> Result<FeatureSet, E> {
+        let mut pending = self.gated.0;
+        while pending != 0 {
+            let bit = pending.trailing_zeros();
+            pending &= !(1_u128 << bit);
+            let gate = FEATURES
+                .get(bit as usize)
+                .and_then(|spec| spec.gate)
+                .ok_or_else(|| error("invalid target feature identity"))?;
+            pay(Growth { work: 1, bytes: 0 })?;
+            if !allowed(gate)? {
+                return Err(error(
+                    "target feature requires its actual crate language gate",
+                ));
+            }
+        }
+        Ok(self.features)
+    }
+}
+/// Pay for one explicit name and its own crate gate; implication is separate.
+fn explicit<E>(
+    name: &str,
+    pay: &mut impl FnMut(Growth) -> Result<(), E>,
+    mut allowed: impl FnMut(Gate) -> Result<bool, E>,
+    error: &impl Fn(&'static str) -> E,
+) -> Result<Feature, E> {
+    pay(Growth {
+        work: name
+            .len()
+            .saturating_mul(FEATURES.len().ilog2() as usize + 2),
+        bytes: 0,
+    })?;
+    let feature = named(name)
+        .ok_or_else(|| error("target feature is invalid or forbidden for this target"))?;
+    if let Some(gate) = FEATURES[feature.0 as usize].gate {
+        pay(Growth { work: 1, bytes: 0 })?;
+        if !allowed(gate)? {
+            return Err(error(
+                "target feature requires its actual crate language gate",
+            ));
+        }
+    }
+    Ok(feature)
 }
 fn named(name: &str) -> Option<Feature> {
     FEATURES

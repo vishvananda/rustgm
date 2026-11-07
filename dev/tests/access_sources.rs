@@ -94,8 +94,8 @@ fn field_calls_preserve_mutability_lifetime_move_and_const_requirements() -> Res
                     "source retention lacks",
                     "attribute retention lacks",
                     "caller inputs exceed source work/storage budget",
-                    "source contract work or retention exceeds profile limit",
-                    "source header contract query work exceeds profile limit",
+                    "source contract work or retention exceeds its input-graph bound",
+                    "source header contract query work exceeds its input-graph bound",
                 ]
                 .iter()
                 .any(|fence| error.contains(fence)) => {}

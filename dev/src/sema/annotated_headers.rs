@@ -13,8 +13,6 @@ pub(in crate::sema) use local::has_comptime_headers;
 pub(in crate::sema) use local::optimization::check_inline;
 pub use local::optimization::{Optimization, OptimizationView};
 pub use local::skipped_traits::{DispatchPolicy, DispatchPolicyView};
-#[cfg(test)]
-pub(in crate::sema) use local::source_contract_costs;
 pub(in crate::sema) use local::{
     consume_comptime, consume_const_panic, consume_declaration_policy, consume_incoherent_target,
     consume_inherited_overflow, consume_legacy_indices, consume_no_implicit_autorefs,
@@ -22,6 +20,8 @@ pub(in crate::sema) use local::{
     consume_skipped_dispatch, consume_tracking, forced_dyn_policy, fundamental_policy,
     inherit_tracking, marker_trait,
 };
+#[cfg(test)]
+pub(in crate::sema) use local::{source_contract_bound, source_contract_costs};
 #[cfg(test)]
 #[path = "../../tests/invariants/nodeless_owners.rs"]
 mod owner_compatibility_tests;
@@ -175,13 +175,13 @@ impl Declarations {
 }
 pub(super) use bootstrap::owner as bootstrap_owner;
 pub(super) use imported::prepare as prepare_imported;
+pub(super) use local::{InputBound, bind_definition, finish, observe_owner};
 pub(in crate::sema) use local::{
     bind_cold_prototype, caller_payments, capture_cold_prototype, charge_attribute_retention,
     charge_source_contract_query, charge_source_retention, completed_source_image,
     intrinsic_fallback_is_spec, require_protocol_variant, require_recorded_pointee_image,
     reserve_source_contracts, role_source_image, source_payments,
 };
-pub(super) use local::{bind_definition, finish, observe_owner};
 pub(super) fn has_imported(facts: &Declarations, definition: DefId) -> bool {
     facts
         .must_use_contracts

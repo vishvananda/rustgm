@@ -503,3 +503,213 @@ fn cold_rows_cumulative_failures_and_common_pending_map_cost_are_measured() -> T
     );
     Ok(())
 }
+fn shared_sites(header: &str, literals: &[&str]) -> String {
+    let mut source = String::from(header);
+    for (index, literal) in literals.iter().enumerate() {
+        source.push_str("#[target_feature(enable=\"");
+        source.push_str(literal);
+        source.push_str("\")]fn f");
+        source.push_str(&index.to_string());
+        source.push_str("(){}");
+    }
+    source
+}
+/// Collection-only ledger (work, attempted bytes) and the retained rows.
+fn collected(source: &str) -> TestResult<((usize, usize), Vec<FeatureSet>)> {
+    let report = crate::test_source::resolve(source, true)?;
+    let mut fresh = Declarations::new(&report)?;
+    let rows = collect(&report, &mut fresh)?;
+    let features = rows.values().map(|row| row.features).collect();
+    Ok((header_attributes::source_contract_costs(&fresh), features))
+}
+/// Uncounted ledger rounding aside, this is the name and implication work of one value.
+fn closed(names: &str) -> TestResult<(FeatureSet, usize)> {
+    let mut work = 0;
+    let mut value = feature_sets::Closed::default();
+    for name in names.split(',') {
+        value.insert(
+            name,
+            |growth| {
+                work += growth.work;
+                Ok::<_, &'static str>(())
+            },
+            |_| Ok(true),
+            std::convert::identity,
+        )?;
+    }
+    Ok((value.features(), work))
+}
+const EXPENSIVE: &str = "avx512f,avx512vl,avx512bw,avx512dq,avx512cd,avx512ifma,avx512vbmi,avx512vbmi2,avx512vnni,avx512bitalg,avx512vpopcntdq,avx512bf16,avx512fp16,vaes,vpclmulqdq,gfni,sha,aes,pclmulqdq,bmi1,bmi2,lzcnt,popcnt,xsaves,xsavec,xsaveopt";
+#[test]
+fn shared_enable_spellings_close_once_while_each_site_keeps_its_own_work() -> TestResult {
+    let (expected, validation) = closed(EXPENSIVE)?;
+    let ((cheap_one, cheap_bytes_one), _) = collected(&shared_sites("", &["sse"]))?;
+    let ((one, bytes_one), _) = collected(&shared_sites("", &[EXPENSIVE]))?;
+    let lookup = 2 * (EXPENSIVE.len() - "sse".len());
+    assert!(
+        one - cheap_one > validation,
+        "the first site validates fully"
+    );
+    for count in [8, 32, 128] {
+        let ((cheap, cheap_bytes), _) = collected(&shared_sites("", &vec!["sse"; count]))?;
+        let ((steps, bytes), rows) = collected(&shared_sites("", &vec![EXPENSIVE; count]))?;
+        eprintln!(
+            "target-literal shared={count} expensive={steps} cheap={cheap} validation={validation}"
+        );
+        assert_eq!(
+            steps - cheap,
+            one - cheap_one + (count - 1) * lookup,
+            "only each site's own spelling read scales with sites"
+        );
+        assert_eq!(bytes - cheap_bytes, bytes_one - cheap_bytes_one);
+        assert_eq!(rows.len(), count);
+        assert!(
+            rows.iter().all(|row| *row == expected),
+            "every reusing row is closed"
+        );
+    }
+    let gate = "#![feature(x86_amx_intrinsics)]";
+    let ((gated_one, _), _) = collected(&shared_sites(gate, &["amx-tile"]))?;
+    let ((plain_one, _), _) = collected(&shared_sites(gate, &["xsaveopt"]))?;
+    let ((gated, _), _) = collected(&shared_sites(gate, &["amx-tile"; 16]))?;
+    let ((plain, _), _) = collected(&shared_sites(gate, &["xsaveopt"; 16]))?;
+    assert_eq!(
+        gated - gated_one,
+        plain - plain_one + 15 * 2,
+        "each reusing site pays for its own crate gate result"
+    );
+    let duplicate = "#[target_feature(enable=\"sse2\")]#[target_feature(enable=\"sse2\")]fn f(){}";
+    let report = crate::test_source::resolve(duplicate, true)?;
+    let mut fresh = Declarations::new(&report)?;
+    let rows = collect(&report, &mut fresh)?;
+    let rows = rows.values().collect::<Vec<_>>();
+    let [row] = rows.as_slice() else {
+        return Err("one duplicate row".into());
+    };
+    assert_eq!(
+        row.sites.len(),
+        2,
+        "a reused spelling still retains its site"
+    );
+    assert_eq!(row.features, closed("sse2")?.0);
+    Ok(())
+}
+#[test]
+fn distinct_spellings_failed_sites_and_exhaustion_keep_full_validation() -> TestResult {
+    let names = ["avx512vl", "avx512bw", "avx512dq", "avx512cd", "avx512f"];
+    let mut permutations = Vec::new();
+    for first in 0..names.len() {
+        for second in (0..names.len()).filter(|&index| index != first) {
+            let rest = (0..names.len()).filter(|&index| index != first && index != second);
+            let order = [first, second].into_iter().chain(rest);
+            permutations.push(
+                order
+                    .map(|index| names[index])
+                    .collect::<Vec<_>>()
+                    .join(","),
+            );
+        }
+    }
+    let (expected, validation) = closed(&permutations[0])?;
+    for count in [4, 20] {
+        let spellings = permutations[..count]
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>();
+        let ((distinct, _), rows) = collected(&shared_sites("", &spellings))?;
+        let ((shared, _), _) =
+            collected(&shared_sites("", &vec![permutations[0].as_str(); count]))?;
+        eprintln!(
+            "target-literal distinct={count} distinct={distinct} shared={shared} validation={validation}"
+        );
+        assert!(
+            distinct - shared >= (count - 1) * validation,
+            "every distinct spelling pays its own full validation"
+        );
+        assert!(rows.iter().all(|row| *row == expected));
+    }
+    let failing = "#[target_feature(enable=\"avx\")]fn a(){}#[target_feature(enable=\"avx\",enable=\"rustgm_unknown\")]fn b(){}";
+    let report = crate::test_source::resolve(failing, true)?;
+    let mut fresh = Declarations::new(&report)?;
+    let error = collect(&report, &mut fresh)
+        .err()
+        .ok_or("a later unknown feature must still reject")?;
+    assert_eq!(
+        error.message,
+        "target feature is invalid or forbidden for this target"
+    );
+    assert_eq!(
+        error.span.start as usize,
+        failing.rfind("enable").ok_or("actual failing entry")?,
+        "the failing site's own entry is reported"
+    );
+    let source = shared_sites("", &["avx"; 4]);
+    let ((total, _), _) = collected(&source)?;
+    for (prior, admitted) in [(total + 1, true), (total, false)] {
+        let report = crate::test_source::resolve(&source, true)?;
+        let mut fresh = Declarations::new(&report)?;
+        let (bound, _) = header_attributes::source_contract_bound(&fresh);
+        // The reservation's own ledger step leaves exactly `total` or `total - 1`.
+        header_attributes::reserve_source_contracts(&mut fresh, bound - prior, 0)?;
+        assert_eq!(
+            collect(&report, &mut fresh).is_ok(),
+            admitted,
+            "every reusing site's work reaches the shared limit"
+        );
+        assert_eq!(
+            header_attributes::charge_source_contract_query(&fresh, 0).is_ok(),
+            admitted,
+            "failed attempted work stays consumed"
+        );
+    }
+    Ok(())
+}
+/// `callees` target-feature functions, each with `attributes` sites, called
+/// `calls` times each from one matching caller.
+fn feature_calls(callees: usize, attributes: usize, calls: usize) -> String {
+    let site = "#[target_feature(enable=\"sse2\")]";
+    let mut source = String::new();
+    let mut body = String::new();
+    for index in 0..callees {
+        source.push_str(&site.repeat(attributes));
+        source.push_str("fn f");
+        source.push_str(&index.to_string());
+        source.push_str("(){}");
+        for _ in 0..calls {
+            body.push('f');
+            body.push_str(&index.to_string());
+            body.push_str("();");
+        }
+    }
+    source + site + "pub fn g(){" + &body + "}"
+}
+#[test]
+fn header_work_stays_inside_its_input_graph_bound_only_while_linear() -> TestResult {
+    let mut previous = None;
+    for count in [64, 256] {
+        let source = feature_calls(count, 1, 1);
+        let (_, Analysis { facts, .. }) = analyze(&source)?;
+        let (steps, bytes) = header_attributes::source_contract_costs(&facts);
+        let bound = header_attributes::source_contract_bound(&facts);
+        eprintln!("linear callees={count} steps={steps} bytes={bytes} bound={bound:?}");
+        assert!(
+            steps * 2 <= bound.0 && bytes * 2 <= bound.1,
+            "linear headers keep their headroom: {steps}/{bytes} of {bound:?}"
+        );
+        if let Some(smaller) = previous {
+            assert!(bound.0 >= 3 * smaller, "the bound follows its input graph");
+        }
+        previous = Some(bound.0);
+    }
+    analyze(&feature_calls(1, 32, 32))?;
+    let source = feature_calls(1, 512, 512);
+    let report = crate::test_source::resolve(&source, true)?;
+    let error = pipeline::analyze_source(&report)
+        .err()
+        .ok_or("repeated whole-row validation per call must exhaust its linear bound")?;
+    assert_eq!(
+        error.message,
+        "source header contract query work exceeds its input-graph bound"
+    );
+    Ok(())
+}

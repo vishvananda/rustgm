@@ -13,28 +13,41 @@ fn provider(width: usize) -> Result<Report> {
 }
 #[test]
 fn large_single_owner_sources_pay_only_real_header_and_binding_rows() -> Result {
-    let report = provider(28_000)?;
-    // Exercise the actual declaration-attribute producer before later signature
-    // and body phases; this is not an executable or completed type certificate.
-    let facts = Declarations::new(&report)?;
-    let headers = &facts
-        .must_use_contracts
-        .as_deref()
-        .ok_or("contracts")?
-        .headers
-        .as_deref()
-        .ok_or("local ledger")?
-        .local;
-    assert!(headers.declarations.len() >= 28_000);
-    assert!(headers.bytes.get() < crate::support::crates::MAX_BYTES);
-    for row in headers.declarations.values() {
-        if row.owners.len() == 1 {
-            assert_eq!(row.owners.capacity(), 1);
+    let mut previous = 0;
+    for width in [7_000, 28_000] {
+        let report = provider(width)?;
+        // Exercise the actual declaration-attribute producer before later signature
+        // and body phases; this is not an executable or completed type certificate.
+        let facts = Declarations::new(&report)?;
+        let headers = &facts
+            .must_use_contracts
+            .as_deref()
+            .ok_or("contracts")?
+            .headers
+            .as_deref()
+            .ok_or("local ledger")?
+            .local;
+        assert!(headers.declarations.len() >= width);
+        let (steps, bytes) = (headers.steps.get(), headers.bytes.get());
+        assert!(
+            steps * 2 <= headers.bound.work && bytes * 2 <= headers.bound.bytes,
+            "dense linear headers keep their own input-graph headroom: {steps}/{bytes} of {:?}",
+            headers.bound
+        );
+        assert!(
+            headers.bound.work >= previous * 3,
+            "the bound follows its input graph"
+        );
+        previous = headers.bound.work;
+        for row in headers.declarations.values() {
+            if row.owners.len() == 1 {
+                assert_eq!(row.owners.capacity(), 1);
+            }
         }
     }
     assert_eq!(size_of::<Header>(), 80);
     assert_eq!(size_of::<Owner>(), 56);
-    assert_eq!(size_of::<Headers>(), 120);
+    assert_eq!(size_of::<Headers>(), 136);
     Ok(())
 }
 #[test]

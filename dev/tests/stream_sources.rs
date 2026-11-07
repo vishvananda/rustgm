@@ -39,8 +39,8 @@ fn async_iterator_source_roles_and_consumers_match_actual_outcomes() -> Result {
                     "budget exceeded",
                     "attribute retention lacks its actual producer budget",
                     "caller inputs exceed source work/storage budget",
-                    "source contract work or retention exceeds profile limit",
-                    "source header contract query work exceeds profile limit",
+                    "source contract work or retention exceeds its input-graph bound",
+                    "source header contract query work exceeds its input-graph bound",
                     "invalid complete structural",
                     "invalid structural fingerprint",
                 ]

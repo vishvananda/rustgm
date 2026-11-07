@@ -365,6 +365,8 @@ pub struct UnionWork {
 }
 pub struct Declarations {
     pub(super) must_use_contracts: Option<Box<super::must_use::Contracts>>,
+    /// Snapshotted before any header charge from this crate's input graph.
+    pub(super) header_bound: super::header_attributes::InputBound,
     pub(crate) source_bindings: Option<Box<super::compiler_items::Catalog>>,
     pub(super) local_call_contexts: Option<Box<super::bodies::CallContexts>>,
     pub(super) source_computations: Option<Box<super::constants::Computations>>,
@@ -665,6 +667,7 @@ impl Declarations {
     ) -> Self {
         Self {
             must_use_contracts: None,
+            header_bound: super::header_attributes::InputBound::of(report),
             source_bindings: catalog,
             local_call_contexts: None,
             source_computations: None,

@@ -5,8 +5,9 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 const PACKET: &str = "pa28/tests/spec/intrinsic-declarations";
 
 // Source Reborrow storage belongs to the existing optional source catalog.
-// Check ordinary records during metadata compilation as well as runtime.
-const _: [(); 7120] = [(); size_of::<Declarations>()];
+// Check ordinary records during metadata compilation as well as runtime. The
+// once-per-crate header input bound adds 16 bytes.
+const _: [(); 7136] = [(); size_of::<Declarations>()];
 const _: [(); 456] = [(); size_of::<crate::body::ir::Body>()];
 const _: [(); 24] = [(); size_of::<crate::body::ir::Value>()];
 const _: [(); 36] = [(); size_of::<crate::syntax::ast::Node>()];

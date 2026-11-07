@@ -1,7 +1,7 @@
 //! One retained-attribute walk produces requirements and every contributing owner site.
-use super::{Contract, FeatureSet, Site, Sources, pay};
+use super::{Contract, FeatureSet, Site, Sources, feature_sets::Closed, pay};
 use crate::{
-    lex::token::Punctuation,
+    lex::token::{Kind as TokenKind, Punctuation, Token},
     literal::{self, Value},
     resolve::{
         expansion::Report,
@@ -9,7 +9,7 @@ use crate::{
         unit::{FileId, NodeKey},
     },
     sema::{header_attributes::SourceImage, model::Declarations},
-    support::{decorations::Consumer, retained::Growth},
+    support::{decorations::Consumer, hash::HashMap, retained::Growth},
     syntax::{
         ast::Kind,
         attribute::{Attribute, Input},
@@ -17,11 +17,15 @@ use crate::{
         token_tree::{Delimiter, Forest, TreeKind},
     },
 };
+/// Closed requirements of each distinct plain `enable` spelling in this walk.
+/// Sites keep their own lookup, gate results, rows and witnesses.
+type Literals<'a> = HashMap<&'a str, Closed>;
 pub(in crate::sema) fn collect(
     report: &Report,
     facts: &mut Declarations,
 ) -> Result<Sources, Error> {
     let mut rows = Sources::default();
+    let mut literals = Literals::default();
     for (index, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
             continue;
@@ -76,7 +80,15 @@ pub(in crate::sema) fn collect(
                 let row = rows
                     .get_mut(&source)
                     .ok_or_else(|| error("target-feature source disappeared"))?;
-                parse(report, facts, source, forest, attribute, &mut row.features)?;
+                parse(
+                    report,
+                    facts,
+                    source,
+                    forest,
+                    attribute,
+                    &mut row.features,
+                    &mut literals,
+                )?;
                 let growth = Growth::vector::<Site>(row.sites.len(), row.sites.capacity(), 1);
                 pay(facts, 1 + growth.work, growth.bytes)?;
                 row.sites
@@ -98,13 +110,28 @@ pub(in crate::sema) fn collect(
     }
     Ok(rows)
 }
-fn parse(
-    report: &Report,
+#[derive(Clone, Copy)]
+struct Place {
+    file: FileId,
+    attribute: u32,
+    entry: u32,
+}
+impl Place {
+    fn attribute(self, message: &'static str) -> Error {
+        Error::at(self.file, self.attribute, message)
+    }
+    fn entry(self, message: &'static str) -> Error {
+        Error::at(self.file, self.entry, message)
+    }
+}
+fn parse<'a>(
+    report: &'a Report,
     facts: &mut Declarations,
     key: NodeKey,
     forest: &Forest,
     attribute: Attribute,
     features: &mut FeatureSet,
+    literals: &mut Literals<'a>,
 ) -> Result<(), Error> {
     let error = |message| Error::at(key.file, attribute.span.start, message);
     let Input::Delimited(group) = attribute.input else {
@@ -140,37 +167,17 @@ fn parse(
         let token = forest
             .token(cursor + 2)
             .ok_or_else(|| error("target_feature requires a string literal"))?;
-        let length = (token.end - token.start) as usize;
-        pay(
-            facts,
-            length.saturating_mul(2),
-            Growth::vector::<u8>(0, 0, length).bytes,
-        )?;
-        let Some(Value::String(bytes)) =
-            literal::interpret(source, token).map_err(|e| error(e.message))?
-        else {
-            return Err(error("target_feature requires a string literal"));
+        let place = Place {
+            file: key.file,
+            attribute: attribute.span.start,
+            entry: forest
+                .tree(cursor)
+                .ok_or_else(|| error("target_feature lost its enable entry"))?
+                .span
+                .start,
         };
-        let names = std::str::from_utf8(bytes.as_ref())
-            .map_err(|_| error("target features must be UTF-8"))?;
-        let entry = forest
-            .tree(cursor)
-            .ok_or_else(|| error("target_feature lost its enable entry"))?
-            .span;
-        let feature_error = |message| Error::at(key.file, entry.start, message);
-        for name in names.split(',') {
-            features.insert(
-                name,
-                |growth| pay(facts, growth.work, growth.bytes),
-                |gate| {
-                    report
-                        .package
-                        .requested_cpu_gate(gate)
-                        .map_err(feature_error)
-                },
-                feature_error,
-            )?;
-        }
+        let required = requirement(report, facts, literals, source, token, place)?;
+        *features = features.union(required);
         cursor += 3;
         if cursor < range.end {
             if !forest.punctuation(cursor, Punctuation::Comma) {
@@ -180,6 +187,83 @@ fn parse(
         }
     }
     Ok(())
+}
+/// Reuse a validated plain spelling; every site still pays to read its own
+/// literal and obtains its own crate gate results at its own entry.
+fn requirement<'a>(
+    report: &Report,
+    facts: &mut Declarations,
+    literals: &mut Literals<'a>,
+    source: &'a str,
+    token: Token,
+    place: Place,
+) -> Result<FeatureSet, Error> {
+    let length = (token.end - token.start) as usize;
+    let spelling = (token.kind == TokenKind::String)
+        .then(|| source.get(token.start as usize..token.end as usize))
+        .flatten();
+    if let Some(spelling) = spelling {
+        pay(facts, length.saturating_mul(2), 0)?;
+        if let Some(&closed) = literals.get(spelling) {
+            return closed.require(
+                |growth| pay(facts, growth.work, growth.bytes),
+                |gate| {
+                    report
+                        .package
+                        .requested_cpu_gate(gate)
+                        .map_err(|message| place.entry(message))
+                },
+                |message| place.entry(message),
+            );
+        }
+    }
+    let closed = validate(report, facts, source, token, place)?;
+    if let Some(spelling) = spelling {
+        let growth = Growth::map::<&str, Closed>(literals.len(), literals.capacity(), 1);
+        pay(facts, length.saturating_add(growth.work), growth.bytes)?;
+        literals
+            .try_reserve(1)
+            .map_err(|_| place.attribute("target-feature literal allocation failed"))?;
+        literals.insert(spelling, closed);
+    }
+    Ok(closed.features())
+}
+/// Decode, validate and close one `enable` value at its first actual site.
+fn validate(
+    report: &Report,
+    facts: &mut Declarations,
+    source: &str,
+    token: Token,
+    place: Place,
+) -> Result<Closed, Error> {
+    let length = (token.end - token.start) as usize;
+    pay(
+        facts,
+        length.saturating_mul(2),
+        Growth::vector::<u8>(0, 0, length).bytes,
+    )?;
+    let Some(Value::String(bytes)) =
+        literal::interpret(source, token).map_err(|e| place.attribute(e.message))?
+    else {
+        return Err(place.attribute("target_feature requires a string literal"));
+    };
+    let names = std::str::from_utf8(bytes.as_ref())
+        .map_err(|_| place.attribute("target features must be UTF-8"))?;
+    let mut closed = Closed::default();
+    for name in names.split(',') {
+        closed.insert(
+            name,
+            |growth| pay(facts, growth.work, growth.bytes),
+            |gate| {
+                report
+                    .package
+                    .requested_cpu_gate(gate)
+                    .map_err(|message| place.entry(message))
+            },
+            |message| place.entry(message),
+        )?;
+    }
+    Ok(closed)
 }
 
 fn capture_input(
