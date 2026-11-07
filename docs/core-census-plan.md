@@ -106,6 +106,47 @@ Milestones:
 5. Original alloc and an allocation/collection consumer.
 6. Original std and a default-std consumer.
 
+## Std profile decisions
+
+Made by the integrator on 2026-11-07 at the user's request, so that std work
+does not wait on them. Neither decision blocks core or alloc.
+
+**Std builds as an rlib only.** Upstream std lists `crate-type = ["dylib",
+"rlib"]`. Under the course profile the target-unit executor builds the rlib,
+drops `dylib` and records the dropped type in each unit receipt. A target that
+lists only `dylib`, `cdylib` or `staticlib` remains a typed gap.
+
+- For: rustc links std statically from its rlib unless `-C prefer-dynamic`
+  is given, so default-std consumers behave the same. A Rust dylib needs
+  position-independent code, a shared-object link with an exported-symbol list
+  and dylib metadata. That is backend work, and the backend is frozen.
+- Against: RustGM ships no `libstd-*.so`, and supports neither
+  `-C prefer-dynamic` nor dylib consumers. Its std artifact set therefore
+  differs from upstream bootstrap's. The decision is reversible: if the backend
+  ever gains shared objects, the dylib becomes an added output.
+- Rejected: implementing dylib output (it needs the frozen backend), and
+  keeping the gap (it blocks milestone 6 for an artifact no default consumer
+  links).
+
+**Rust 2015/2018: need-driven, ahead of PA40.** The std closure contains
+cfg-if (2018) and rustc-demangle (2015). RustGM implements exactly the edition
+rules those two crates exercise, each with controls compared against rustc
+1.98.0. Every other 2015/2018 rule stays rejected by name through the
+`support::edition` legacy-rule table until PA40 closes the editions. That
+table already holds the 2015/2018 switch and named per-rule rejections.
+
+- For: this is the smallest work that unblocks the std graph. Each rule is
+  checked independently, and an unimplemented rule fails by name instead of
+  silently getting 2021/2024 semantics.
+- Against: edition support stays partial, so arbitrary 2015/2018 crates still
+  fail; the full closure stays PA40's. A later need (another std dependency or
+  a test client) adds its rules the same way.
+- Timing: both units depend on core, so neither can build until core passes.
+  Lane B first reports the exact rule list, including rustc-demangle's use of
+  `core::char` and `unreachable!` in the bootstrap model. It implements the
+  rules after its current core work, in the same batch as the executor's dylib
+  rule.
+
 ## Process
 
 - Qualify a batch of related repairs with one focused gate and one short

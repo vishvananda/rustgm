@@ -18,7 +18,10 @@ body to bypass an unavailable predecessor.
 Target Rust 1.98.0, first edition 2024, on Linux x86-64. Freeze language release,
 Unicode tables, edition, target, panic mode and overflow-check mode in each
 relevant test manifest. PA34 adds the Rust 2021 crate profile; PA40 closes the
-remaining editions. PA31–PA36 require original upstream core, alloc and std,
+remaining editions. Original std's legacy-edition dependencies (cfg-if 2018,
+rustc-demangle 2015) bring forward exactly the edition rules they exercise,
+each with independent controls; every other 2015/2018 rule stays rejected by
+name until PA40. PA31–PA36 require original upstream core, alloc and std,
 with real-crate acceptance beginning after core and expanding with alloc/std.
 Rustc-private binary/metadata compatibility
 and a drop-in Cargo/rustc interface remain separate objectives.
@@ -2186,8 +2189,13 @@ Isolate package-planner introspection switches from compiler-query environments;
 enabling Cargo's unit graph must not enable additional target cfg capabilities.
 Pair a host script with its exact compilation unit and package snapshot, retaining
 distinct compile and execution profiles. Validate every supported profile setting
-and reject unsupported ones. A script that catches a rejected compiler probe must
-still fail the outer task; probe failure is not evidence of language incapability.
+and reject unsupported ones. Under the course profile, a library target that
+lists `dylib` beside `rlib` or `lib` (original std) builds only its rlib and
+records the omitted crate type in its unit receipt. Consumers link std
+statically, as rustc does without `-C prefer-dynamic`. A target with only
+`dylib`, `cdylib` or `staticlib` stays unsupported. A script that catches a
+rejected compiler probe must still fail the outer task; probe failure is not
+evidence of language incapability.
 Retain actual package lint levels, priority order and check-cfg expectations in
 host compilation. An explicit per-package lint cap is a separate authenticated
 input, included in receipts and artifact keys; do not infer it from source kind

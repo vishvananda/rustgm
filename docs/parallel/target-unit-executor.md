@@ -138,7 +138,11 @@ Evidence is in `obj/parallel/target-unit-replan-v1/`: `course-plan-v3/`,
 - **Source-contract limits:** resolved by the
   [input-proportional budget](macro-budget.md). Default limits now admit core
   past `ip_addr.rs`; its first gap is `flatten.rs` 8286.
-- **Compiler support:** Rust 2015/2018, the std dylib and native linking of
-  binaries.
+- **Compiler support:** Rust 2015/2018 and native linking of binaries. The
+  [std profile decisions](../core-census-plan.md#std-profile-decisions) settle
+  two questions:
+  - std builds as an rlib only, with the dropped `dylib` recorded per unit;
+  - the 2015/2018 edition rules are implemented only as cfg-if and
+    rustc-demangle need them.
 - **Out of scope here:** the full source closure outside package roots (stdarch,
   backtrace) is pinned only by the original source inventory.
