@@ -6118,7 +6118,11 @@ Rhs]) -> <Self as Op[<Rhs>]>::Output` method; indexing roles stay rejected by
 name. Quantified normalization evidence that binds no region and records no
 gap or relation is its flat evidence. Earlier profiles reject associated
 results by name, and packets without kind-9 declarations keep their exact
-bytes.
+bytes. A consumer's own operator expression resolves an imported role only
+through its validated declaration identity, never a spelling or path, and
+re-runs the same imported operator contract; the role's parameter defaults
+arrive complete with its header. Without an imported or own role, the
+expression stays rejected by name.
 
 ## Lowering and backend facts
 

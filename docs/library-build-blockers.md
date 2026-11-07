@@ -13,8 +13,10 @@ re-prove each definition, check impl methods against it and normalize every
 projection themselves. Imported `Add`/`Sub`/`Mul` roles with `Output` are
 admitted. Generic `<T as Shape>::Item` and `<T as Add>::Output` bodies return 42
 natively, and the overflow client aborts, as rustc does. The language-roles
-`Output` boundary is amended. Still open: the `Fn*` roles (tuple recipes,
-rust-call), enums with match, closures and a consumer's own operator use.
+`Output` boundary is amended. A consumer's own `+=` and `+` now resolve through
+the imported role's validated identity (native 42), amending the
+`own-operator` boundary. Still open: the `Fn*` roles (tuple recipes,
+rust-call), enums with match and closures.
 
 [Legacy editions](parallel/legacy-editions.md) (Lane B): the CLI and the target
 unit executor accept Rust 2015 and 2018. Pinned rustc froze 100 outcomes, 82 of
