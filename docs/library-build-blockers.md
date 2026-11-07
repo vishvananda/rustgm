@@ -26,7 +26,7 @@ The [analysis-only census mode](parallel/core-census-mode.md) is on main:
 `--census-output PATH` and observer `--census`. It records every isolated
 declaration and body failure, each blocked dependent once, sticky budget stops
 and per-phase counts. It always exits 1 and is never a qualification. Its first
-original-core census is recorded below.
+original-core census is recorded above.
 
 Source profile `module-branches-v12` is on main: transported originals keep typed
 Branch and checked Panic exits, with fresh per-instance proof and native execution
