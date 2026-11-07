@@ -139,8 +139,13 @@
   },
   "wire_controls": [
     {
-      "mutation": "binary operator flag 9 (Add)",
-      "expected": "encoded checked arithmetic or shift Rvalue::Binary is not reconstructable by this consumer"
+      "mutation": "binary operator flag 12 (Div)",
+      "expected": "encoded checked division or shift Rvalue::Binary is not reconstructable by this consumer",
+      "amended": "language-role checkpoint: Add/Sub/Mul (9-11) became reconstructable; the former flag-9 control moved to flag 12"
+    },
+    {
+      "mutation": "binary operator flag 9 (Add) over u8 operands with a bool result",
+      "expected": "source binary operation changed its primitive result type"
     },
     {
       "mutation": "binary operator flag 200",

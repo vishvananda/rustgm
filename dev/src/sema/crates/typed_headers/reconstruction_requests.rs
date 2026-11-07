@@ -62,6 +62,15 @@ pub(super) fn prepare<'rows, P: ports::OwnedPort<'rows>>(
             }
         }
     }
+    // Formation roots enter the frontier: an erased primitive operator keeps its
+    // selected method's formations, whose function item is that request port.
+    work.charge(inputs.obligations.len())?;
+    for obligation in &inputs.obligations {
+        if let s::InputKind::WellFormed(ty) = obligation.kind {
+            Port::require_context(&port.port, store, work)?;
+            port.ty(store, ty, work)?;
+        }
+    }
     if rows.descriptor().profile().conversion_roles() {
         let original = rows
             .originals

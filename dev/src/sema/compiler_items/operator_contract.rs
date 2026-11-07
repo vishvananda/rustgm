@@ -44,6 +44,32 @@ pub(super) enum Operator {
     IndexMut,
 }
 impl Operator {
+    const ALL: [Self; 24] = [
+        Self::Not,
+        Self::Neg,
+        Self::Shl,
+        Self::BitOr,
+        Self::Add,
+        Self::Sub,
+        Self::Div,
+        Self::Mul,
+        Self::Rem,
+        Self::BitXor,
+        Self::BitAnd,
+        Self::Shr,
+        Self::AddAssign,
+        Self::SubAssign,
+        Self::MulAssign,
+        Self::DivAssign,
+        Self::RemAssign,
+        Self::BitXorAssign,
+        Self::BitAndAssign,
+        Self::BitOrAssign,
+        Self::ShlAssign,
+        Self::ShrAssign,
+        Self::Index,
+        Self::IndexMut,
+    ];
     const fn has_rhs(self) -> bool {
         matches!(
             self,
@@ -236,6 +262,129 @@ impl Work {
         }
         Ok(())
     }
+}
+/// Export authentication of a declared operator role: the provider's trait
+/// passes the same contract its own operator uses. `None` means `role` is not
+/// an operator role; the work count belongs to the caller's ledger.
+pub(in crate::sema) fn exported(
+    report: &Report,
+    facts: &Declarations,
+    role: LangItem,
+) -> Result<Option<(Option<Declaration>, usize)>, &'static str> {
+    let Some(operator) = Operator::ALL
+        .into_iter()
+        .find(|operator| operator.role() == role)
+    else {
+        return Ok(None);
+    };
+    let declaration = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source operator export has no actual source catalog")?
+        .language(role);
+    let mut work = Work(0);
+    if declaration.is_some() {
+        checked(report, facts, operator, &mut work).map_err(|failure| match failure {
+            Failure::Header(_) => {
+                "source operator role requires positive completed source-header authentication"
+            }
+            Failure::Contract(message) => message,
+        })?;
+    }
+    Ok(Some((declaration, work.0)))
+}
+pub(super) fn is_operator(role: LangItem) -> bool {
+    Operator::ALL
+        .into_iter()
+        .any(|operator| operator.role() == role)
+}
+/// An imported operator role passes the same type-level contract as its
+/// provider's declaration, read from the imported header instead of syntax.
+/// Roles whose method returns `Output` need imported associated results.
+pub(super) fn imported(
+    report: &Report,
+    facts: &Declarations,
+    declaration: super::Role,
+    role: LangItem,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    let operator = Operator::ALL
+        .into_iter()
+        .find(|operator| operator.role() == role)
+        .ok_or("imported operator admission requested another language role")?;
+    if !operator.assignment() {
+        return Err("imported operator Output roles require imported associated results");
+    }
+    facts.associated.require_imported_role(declaration)?;
+    let header = headers::Trait::current(report, facts, declaration, steps)?;
+    let mut work = Work(*steps);
+    let result = imported_assignment(report, facts, &header, operator, &mut work);
+    *steps = work.0;
+    result.map_err(|failure| match failure {
+        Failure::Header(_) => "imported operator role lost its completed header",
+        Failure::Contract(message) => message,
+    })
+}
+fn imported_assignment(
+    report: &Report,
+    facts: &Declarations,
+    header: &headers::Trait<'_>,
+    operator: Operator,
+    work: &mut Work,
+) -> Result<(), Failure> {
+    work.charge(8)?;
+    header.profile(
+        &facts.types,
+        headers::Flags {
+            unsafe_: false,
+            auto_: false,
+            constant: header.flags.constant,
+        },
+        1,
+    )?;
+    let rhs = rhs_parameter(facts, header, operator)?;
+    let [method] = header.members else {
+        return Err("imported assignment operator requires exactly its operation member".into());
+    };
+    let definition = report
+        .resolution
+        .definitions
+        .get(method.0 as usize)
+        .ok_or("imported operator member has no actual definition")?;
+    if header.written.parameters != 1
+        || header.written.supertraits != 0
+        || definition.kind != DefKind::Function
+        || report.package.names.get(definition.name) != operator.method()
+        || facts.associated.trait_owner(*method) != Some(header.definition)
+        || facts
+            .generics
+            .parameters
+            .get(method)
+            .is_some_and(|p| !p.is_empty())
+    {
+        return Err("imported assignment operator changed its actual member profile".into());
+    }
+    let function = facts
+        .declaration_header(*method)?
+        .ok_or("imported operator has no completed method header")?;
+    let Some(Kind::Function {
+        bound_regions,
+        parameters,
+        result,
+        unsafe_: false,
+        convention: Convention::RUST,
+    }) = facts.types.kind(function.signature)
+    else {
+        return Err("imported operator method requires a safe Rust signature".into());
+    };
+    assignment_signature(facts, header, rhs, parameters, result, bound_regions)?;
+    let ty = facts.definitions[method.0 as usize]
+        .ok_or("imported operator method lost its callable item")?;
+    if !matches!(facts.types.kind(ty), Some(Kind::FunctionItem {item, signature, ..}) if item.0 == method.0 && signature == function.signature)
+    {
+        return Err("imported operator callable item differs from its method header".into());
+    }
+    Ok(())
 }
 pub(super) fn query(
     report: &Report,

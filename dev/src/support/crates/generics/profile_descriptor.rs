@@ -440,6 +440,8 @@ impl ValidatedRows {
             if profile.compiler_operations() {
                 functions::validate_compiler_operations(&rows, &indexed, work)?;
                 super::operation_contracts::validate(&rows, &indexed, work)?;
+            } else if profile.body_nodes() {
+                functions::validate_module_bodies(&rows, &indexed, work)?;
             } else if profile.conversion_roles() {
                 functions::validate_module_conversions(&rows, &indexed, work)?;
             } else if profile.call_safety() {

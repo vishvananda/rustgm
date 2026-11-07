@@ -47,6 +47,14 @@ impl DomainIndex<'_, '_> {
         for input in &input.obligations {
             self.input_site(original, input.site, work)?;
             self.obligation(context, original, input.kind, work)?;
+            // A direct function-item formation is its callable's request port: an
+            // erased primitive operator retains its selected method's formation.
+            if let s::InputKind::WellFormed(ty) = input.kind
+                && let Some(&s::Type::FunctionItem(application)) =
+                    self.headers.rows().types.get(ty.0 as usize)
+            {
+                self.function_use(context, application, work)?;
+            }
         }
         if let Some(builtins) = &input.builtins {
             if matches!(

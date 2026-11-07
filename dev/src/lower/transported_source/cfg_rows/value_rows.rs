@@ -180,7 +180,10 @@ fn binary(
         P::And => s::BinaryOperator::BitAnd,
         P::Or => s::BinaryOperator::BitOr,
         P::Caret => s::BinaryOperator::BitXor,
-        _ => return Err("source checked arithmetic or shift requires a wider transport row"),
+        P::Plus => s::BinaryOperator::Add,
+        P::Minus => s::BinaryOperator::Sub,
+        P::Star => s::BinaryOperator::Mul,
+        _ => return Err("source checked division or shift requires a wider transport row"),
     };
     let mut operand = None;
     for value in [left, right] {

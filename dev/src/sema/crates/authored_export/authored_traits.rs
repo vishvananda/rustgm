@@ -10,26 +10,33 @@ use crate::{
     types::{ItemId, Kind},
 };
 
-/// Admission precedes any declaration/constant row serialization.
+/// Admission precedes any declaration/constant row serialization. Version
+/// thirteen admits every declaration role here; each role's header form and the
+/// semantic fences below still decide whether it transports.
 pub(super) fn require_role_transport(
     facts: &Declarations,
     conversions: bool,
     compiler_operations: bool,
+    languages: bool,
 ) -> Result<(), &'static str> {
     let catalog = facts
         .source_bindings
         .as_deref()
         .ok_or("source header graph has no role catalog")?;
     if LangItem::DECLARATIONS.into_iter().any(|role| {
-        catalog.language(role).is_some()
-            && !(compiler_operations
-                && matches!(
-                    role,
-                    LangItem::Future
-                        | LangItem::FutureOutput
-                        | LangItem::FuturePoll
-                        | LangItem::AsyncDropInPlace
-                ))
+        let future = matches!(
+            role,
+            LangItem::Future
+                | LangItem::FutureOutput
+                | LangItem::FuturePoll
+                | LangItem::AsyncDropInPlace
+        );
+        let admitted = if future {
+            compiler_operations
+        } else {
+            languages
+        };
+        catalog.language(role).is_some() && !admitted
     }) {
         return Err("source compiler language contract transport is not implemented");
     }
@@ -87,7 +94,7 @@ impl Stage {
         };
         for role in LangItem::ALL {
             self.charge(1)?;
-            let Some(declaration) = catalog.header_role(role)? else {
+            let Some(declaration) = self.exported_role(report, facts, role)? else {
                 continue;
             };
             if matches!(
@@ -158,6 +165,28 @@ impl Stage {
         Ok(())
     }
 
+    /// Version thirteen authenticates operator roles with their own contract;
+    /// every other role must already be a completed header role.
+    fn exported_role(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        role: LangItem,
+    ) -> Result<Option<crate::resolve::bindings::Declaration>, &'static str> {
+        if self.body_nodes()
+            && let Some((declaration, work)) =
+                crate::sema::compiler_items::exported_operator_role(report, facts, role)?
+        {
+            self.charge(work)?;
+            return Ok(declaration);
+        }
+        facts
+            .source_bindings
+            .as_deref()
+            .ok_or("source header graph has no role catalog")?
+            .header_role(role)
+    }
+
     fn trait_header(
         &mut self,
         facts: &Declarations,
@@ -200,6 +229,7 @@ impl Stage {
             .get(&parameter)
             .copied()
             .ok_or("source trait Self slot was not reserved")?;
+        self.trait_defaults(facts, header.definition, header.self_type, self_type)?;
         let (inputs, written_supertraits) =
             self.trait_inputs(facts, header, context, self_slot, inventory)?;
         let region_bounds = self.region_bounds(&canonical.regions, context)?;

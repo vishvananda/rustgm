@@ -125,9 +125,14 @@ fn unsupported_malformed_and_relabelled_nodes_reject_in_fresh_consumers() -> Res
     let client = packet.fixture("exact-hit");
     for (name, wire, diagnostic) in [
         (
-            "checked-add",
+            "checked-division",
+            with_id(&bytes, node + 13, 12),
+            "encoded checked division or shift Rvalue::Binary is not reconstructable",
+        ),
+        (
+            "checked-add-result",
             with_id(&bytes, node + 13, 9),
-            "encoded checked arithmetic or shift Rvalue::Binary is not reconstructable",
+            "changed its primitive result type",
         ),
         (
             "unknown-operator",

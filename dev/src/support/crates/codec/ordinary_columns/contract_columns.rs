@@ -225,21 +225,56 @@ pub(super) fn conversion_role_write(
         role_write(out, row)
     }
 }
+/// Profile-local compact IDs, independent of the compiler's `LangItem` order.
+const fn ordinary_id(role: LangItem) -> Option<u8> {
+    match role {
+        LangItem::Sized => Some(0),
+        LangItem::MetaSized => Some(1),
+        LangItem::PointeeSized => Some(2),
+        LangItem::LegacyReceiver => Some(3),
+        LangItem::Clone => Some(4),
+        LangItem::CloneFn => Some(5),
+        LangItem::Copy => Some(6),
+        LangItem::Destruct => Some(7),
+        LangItem::Freeze => Some(8),
+        _ => None,
+    }
+}
+/// Version thirteen's escape tag: the pinned `lang` spelling follows.
+const SPELLED_ROLE: u8 = 255;
+/// A format bound on one spelling, not a ledger: the longest pinned name is 38 bytes.
+const MAX_ROLE_SPELLING: usize = 64;
 pub(super) fn role_write(out: &mut Writer, row: &s::RoleBinding) -> Result<(), &'static str> {
-    // These profile-local IDs are independent of the compiler's LangItem order.
-    out.u8(match row.role {
-        LangItem::Sized => 0,
-        LangItem::MetaSized => 1,
-        LangItem::PointeeSized => 2,
-        LangItem::LegacyReceiver => 3,
-        LangItem::Clone => 4,
-        LangItem::CloneFn => 5,
-        LangItem::Copy => 6,
-        LangItem::Destruct => 7,
-        LangItem::Freeze => 8,
-        _ => return Err("source role requires a wider source profile"),
-    })?;
+    out.u8(ordinary_id(row.role).ok_or("source role requires a wider source profile")?)?;
     address_write(out, row.declaration)
+}
+/// Version thirteen keeps the version-ten compact IDs byte-for-byte and spells
+/// every other role; a compact role is never spelled.
+pub(super) fn language_role_write(
+    out: &mut Writer,
+    row: &s::RoleBinding,
+) -> Result<(), &'static str> {
+    match ordinary_id(row.role) {
+        Some(id) => out.u8(id)?,
+        None if row.role == LangItem::From => out.u8(9)?,
+        None => {
+            out.u8(SPELLED_ROLE)?;
+            out.string(
+                row.role
+                    .spelling()
+                    .ok_or("source role has no stable language spelling")?,
+            )?;
+        }
+    }
+    address_write(out, row.declaration)
+}
+fn spelled_role(read: &mut Input<'_, '_>) -> Result<LangItem, &'static str> {
+    let role = LangItem::from_name(read.reader.text(MAX_ROLE_SPELLING)?)
+        .ok_or("unknown source language role spelling")?;
+    if ordinary_id(role).is_some() || role == LangItem::From {
+        return Err("source language role spelling replaces its compact role ID");
+    }
+    Ok(role)
 }
 pub(super) fn role_read(read: &mut Input<'_, '_>) -> Result<s::RoleBinding, &'static str> {
     let role = match read.reader.u8()? {
@@ -265,6 +300,7 @@ pub(super) fn role_read(read: &mut Input<'_, '_>) -> Result<s::RoleBinding, &'st
         11 if read.profile.compiler_operations() => LangItem::FutureOutput,
         12 if read.profile.compiler_operations() => LangItem::FuturePoll,
         13 if read.profile.compiler_operations() => LangItem::AsyncDropInPlace,
+        SPELLED_ROLE if read.profile.body_nodes() => spelled_role(read)?,
         _ => return Err("unknown source function role ID"),
     };
     Ok(s::RoleBinding {

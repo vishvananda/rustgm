@@ -251,6 +251,10 @@ fn trait_headers(
                 conversion(report, facts, declaration, steps)?;
                 complete.insert(role);
             }
+            role if super::super::operator_contract::is_operator(role) => {
+                super::super::operator_contract::imported(report, facts, declaration, role, steps)?;
+                complete.insert(role);
+            }
             _ => return Err("imported source role requires its wider explicit header profile"),
         }
     }

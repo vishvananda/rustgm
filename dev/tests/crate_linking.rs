@@ -38,6 +38,8 @@ mod reexports;
 mod representations;
 #[path = "crate_linking/serialized_records.rs"]
 mod source_nominals;
+#[path = "crate_linking/spelled_roles.rs"]
+mod spelled_roles;
 
 #[path = "crate_linking/static_transport.rs"]
 mod static_transport;

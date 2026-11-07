@@ -17,6 +17,7 @@ pub(in crate::sema) mod phantom;
 pub(in crate::sema) mod wrappers;
 pub(in crate::sema) use binding_views::Role;
 pub(in crate::sema) use calls::Effect as CallEffect;
+pub(in crate::sema) use operator_contract::exported as exported_operator_role;
 pub(in crate::sema) mod async_cleanup;
 mod async_glue;
 mod async_registration;

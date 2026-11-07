@@ -1,0 +1,138 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+  "providers": [
+    {
+      "file": "spec/language-roles/provider.rs",
+      "sha256": "2c3121d51a64c3c9171ead2a20a112c957db35a10ff2fdf6395a20c5ca7537c0"
+    },
+    {
+      "file": "spec/language-roles/output.rs",
+      "sha256": "aba617b7e739f4bb41c5e740e88e89bdd321909889c92c939001d6b667145970"
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "cases": [
+    {
+      "file": "spec/language-roles/bump-in-range.rs",
+      "provider": "spec/language-roles/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "2c990dccfe96e48761dd719d7f0f3c3dd90e1773cecca4a95541ef6e655bfe0f"
+    },
+    {
+      "file": "spec/language-roles/bump-overflow.rs",
+      "provider": "spec/language-roles/provider.rs",
+      "accepted": true,
+      "native_exit": null,
+      "sha256": "14d4670b21a33d548d5107e66f64f7d9b6661cd873cca4f26f7f5aa7ad3d75dc",
+      "native_signal": "SIGABRT",
+      "observer_status": 134
+    },
+    {
+      "file": "spec/language-roles/lower-in-range.rs",
+      "provider": "spec/language-roles/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "f87601ecc05bdcae4d255795bcc389618219c5f5f72a6aedbe822c037d268ca6"
+    },
+    {
+      "file": "spec/language-roles/lower-overflow.rs",
+      "provider": "spec/language-roles/provider.rs",
+      "accepted": true,
+      "native_exit": null,
+      "sha256": "61f75b4e93901975cc64199df8d08180f7ca3464bb6f7a5cb59d38aeddd98cc7",
+      "native_signal": "SIGABRT",
+      "observer_status": 134
+    },
+    {
+      "file": "spec/language-roles/scale-in-range.rs",
+      "provider": "spec/language-roles/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "30290a87ded7b200ed9deb5ce079a72431d6bb26e83cfd7a6416c4bc5e2b7b21"
+    },
+    {
+      "file": "spec/language-roles/scale-overflow.rs",
+      "provider": "spec/language-roles/provider.rs",
+      "accepted": true,
+      "native_exit": null,
+      "sha256": "b786a0f92f67b6d21f36144b9b5270e271709124b6c74c62afb813aabdca45d1",
+      "native_signal": "SIGABRT",
+      "observer_status": 134
+    },
+    {
+      "file": "spec/language-roles/mismatch.rs",
+      "provider": "spec/language-roles/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "sha256": "75d3f3769f6ddb569fe4ffa81e30e20ff30791ce8384a241d9df7847eff5e6bf",
+      "required_rustc_error": "E0308",
+      "candidate_diagnostic": "incompatible types"
+    }
+  ],
+  "candidate_boundaries": [
+    {
+      "file": "spec/language-roles/own-operator.rs",
+      "provider": "spec/language-roles/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "d7a1d7bc01a6a1e61f48873168e160b88fd927741bf7926954ce557b96844520",
+      "candidate": "rejected: source binary operator requires its actual language declaration",
+      "reason": "a consumer's own use of an imported operator role is not resolved yet"
+    },
+    {
+      "file": "spec/language-roles/sum-in-range.rs",
+      "provider": "spec/language-roles/output.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "3b765325150e0cee58e34e770485e706ee004e73dd294d7510b41729cdc77ff4",
+      "candidate": "provider export rejected: source associated result transport is not implemented",
+      "reason": "Output results need the version-eleven associated-type fold",
+      "candidate_observed": "provider export rejected: named, associated or generic alias transport requires its wider profile (the declared diagnostic was a guess; the same Output gap rejects one stage earlier)"
+    }
+  ],
+  "older_profiles": {
+    "module-branches-v12 and module-nominals-v10 exports of spec/language-roles/provider.rs": "rejected: source compiler language contract transport is not implemented",
+    "byte_identity": "module-bodies-v13 exports of spec/source-body-ir/{provider,wire}.rs, module-branches-v12 exports of spec/source-branches/{provider,wait,spin}.rs and the module-nominals-v10 export of spec/source-nominals/provider.rs equal the main 97b61c102 baseline bytes"
+  },
+  "wire_controls": [
+    {
+      "mutation": "AddAssign role spelling add_assign -> add_assigx",
+      "expected": "unknown source language role spelling"
+    },
+    {
+      "mutation": "AddAssign role spelling add_assign -> sub_assign (duplicate role)",
+      "expected": "source role binding is duplicated or belongs to a foreign provider"
+    },
+    {
+      "mutation": "AddAssign role spelling add_assign -> panic_impl (a function role naming a trait)",
+      "expected": "rejected by the fresh consumer; exact diagnostic recorded at first observation",
+      "observed": "imported declaration changed its exact identity or kind"
+    },
+    {
+      "mutation": "AddAssign role declaration index -> 0xfffffff0 (missing declaration)",
+      "expected": "rejected; exact diagnostic recorded at first observation",
+      "observed": "source header query has an unknown declaration"
+    },
+    {
+      "mutation": "binary operator flag 9 (Add) -> 12 (Div)",
+      "expected": "encoded checked division or shift Rvalue::Binary is not reconstructable by this consumer"
+    },
+    {
+      "mutation": "version byte relabelled 13 to 12",
+      "expected": "decode fails: the version-twelve decoder has no defaulted slot or spelled role"
+    },
+    {
+      "mutation": "every strict prefix",
+      "expected": "decode fails"
+    }
+  ],
+  "scaling": {
+    "description": "One generic body with 6, 24 and 96 `total += step` statements: a constant wire delta per statement, one Add Binary node per statement and one overflow guard per statement in each fresh consumer."
+  }
+}

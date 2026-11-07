@@ -54,11 +54,16 @@ pub(super) fn parameters(
                 "source named early lifetime requires its wider callable profile",
             ));
         }
+        // Validation admitted only the owning trait's Self as a default.
+        let default = slot
+            .default
+            .map(|ty| graph.ty(ty).map(Argument::Type))
+            .transpose()?;
         parameters.push(Parameter {
             binding,
             anonymous: false,
             argument,
-            default: None,
+            default,
         });
     }
     budget.observed.vector(&parameters);

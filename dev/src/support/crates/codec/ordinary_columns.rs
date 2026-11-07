@@ -276,7 +276,9 @@ fn encode_profile(
     write(out, &rows.formals, contract_columns::formal_write)?;
     write_copy(out, &rows.members, owner_rows::declaration_ref_write)?;
     write(out, &rows.member_links, contract_columns::member_write)?;
-    if rows.descriptor().profile().conversion_roles() {
+    if rows.descriptor().profile().body_nodes() {
+        write(out, &rows.roles, contract_columns::language_role_write)?;
+    } else if rows.descriptor().profile().conversion_roles() {
         write(out, &rows.roles, contract_columns::conversion_role_write)?;
     } else {
         write(out, &rows.roles, contract_columns::role_write)?;

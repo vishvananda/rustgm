@@ -177,6 +177,9 @@ fn binary(view: &SourceOriginal<'_>, kind: s::ValueKind) -> Result<Rvalue, &'sta
         s::BinaryOperator::BitAnd => P::And,
         s::BinaryOperator::BitOr => P::Or,
         s::BinaryOperator::BitXor => P::Caret,
+        s::BinaryOperator::Add => P::Plus,
+        s::BinaryOperator::Sub => P::Minus,
+        s::BinaryOperator::Mul => P::Star,
     };
     let operands = match operands {
         s::OperandForm::NotRequired => Form::NotRequired,

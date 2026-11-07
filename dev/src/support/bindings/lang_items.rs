@@ -19,6 +19,14 @@ macro_rules! language_items {
             pub(crate) const DECLARATIONS: [Self; language_items!(@count $($new)*)] = [$(Self::$new,)*];
             #[must_use]
             pub const fn index(self) -> usize { self as usize }
+            /// The pinned `lang` spelling; diagnostic-owned roles have none.
+            #[must_use]
+            pub const fn spelling(self) -> Option<&'static str> {
+                match self {
+                    $(Self::$old => language_items!(@first $($name),*),)*
+                    $(Self::$new => Some($spelling),)*
+                }
+            }
             #[must_use]
             pub fn from_name(name: &str) -> Option<Self> {
                 match name {
@@ -38,6 +46,8 @@ macro_rules! language_items {
             }
         }
     };
+    (@first) => { None };
+    (@first $first:literal) => { Some($first) };
     (@count $($item:ident)*) => { <[()]>::len(&[$(language_items!(@unit $item)),*]) };
     (@unit $item:ident) => { () };
 }

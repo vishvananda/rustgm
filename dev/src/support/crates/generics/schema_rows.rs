@@ -106,6 +106,9 @@ pub struct ParameterSlot {
     pub index: u32,
     pub definition: Option<DeclarationRef>,
     pub kind: ParameterKind,
+    /// Version thirteen: a type slot's declared default. Validation admits only
+    /// its owning trait's Self; consumers install it into imported generics.
+    pub default: Option<TypeRef>,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ParameterKind {

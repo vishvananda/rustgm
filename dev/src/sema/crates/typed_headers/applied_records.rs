@@ -84,10 +84,15 @@ pub(super) fn map(
         .collect::<Vec<_>>();
     paid(work, |pay| {
         let mut fold = Bound::parameters_captured_charged(store, &bindings, regions, &pay)?;
-        let signature = fold.signature_charged(store, template.signature, 0, &pay)?;
         if matches!(row, s::Type::ApplicationSignature(_)) {
-            return Ok(signature);
+            return fold.signature_charged(store, template.signature, 0, &pay);
         }
+        // An item keeps its late binder; early regions sit outside it at depth one.
+        let Argument::Type(signature) =
+            fold.apply_argument_charged(store, Argument::Type(template.signature), &pay)?
+        else {
+            return Err("ordinary callable item signature changed its kind");
+        };
         let arguments = store.intern_arguments_observed::<true>(&arguments, &pay)?;
         store.intern_observed::<true>(
             Kind::FunctionItem {

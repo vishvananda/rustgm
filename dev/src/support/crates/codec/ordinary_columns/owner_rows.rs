@@ -109,13 +109,18 @@ pub(super) fn slot_write(out: &mut Writer, row: &s::ParameterSlot) -> Result<(),
     option(out, row.definition.map(|r| r.0))?;
     match row.kind {
         s::ParameterKind::Type { sized } => {
-            out.u8(0)?;
+            // Tag 2 is version thirteen's defaulted type slot; tag 0 keeps its bytes.
+            out.u8(if row.default.is_some() { 2 } else { 0 })?;
             out.u8(u8::from(sized.is_some()))?;
             if let Some(address) = sized {
                 address_write(out, address)?;
             }
+            if let Some(default) = row.default {
+                id(out, default.0)?;
+            }
         }
-        s::ParameterKind::Region => out.u8(1)?,
+        s::ParameterKind::Region if row.default.is_none() => out.u8(1)?,
+        s::ParameterKind::Region => return Err("source region slot cannot declare a type default"),
     }
     Ok(())
 }
@@ -124,8 +129,9 @@ pub(super) fn slot_read(read: &mut Input<'_, '_>) -> Result<s::ParameterSlot, &'
     let ordinal = read.id()?;
     let index = read.id()?;
     let definition = read.option()?.map(DeclarationRef);
-    let kind = match read.reader.u8()? {
-        0 => s::ParameterKind::Type {
+    let tag = read.reader.u8()?;
+    let kind = match tag {
+        0 | 2 if tag == 0 || read.profile.body_nodes() => s::ParameterKind::Type {
             sized: if read.boolean()? {
                 Some(address_read(read)?)
             } else {
@@ -135,12 +141,18 @@ pub(super) fn slot_read(read: &mut Input<'_, '_>) -> Result<s::ParameterSlot, &'
         1 => s::ParameterKind::Region,
         _ => return Err("unknown source parameter kind"),
     };
+    let default = if tag == 2 {
+        Some(g::TypeRef(read.id()?))
+    } else {
+        None
+    };
     Ok(s::ParameterSlot {
         owner,
         ordinal,
         index,
         definition,
         kind,
+        default,
     })
 }
 pub(super) fn scope_write(out: &mut Writer, row: &s::ParameterScope) -> Result<(), &'static str> {

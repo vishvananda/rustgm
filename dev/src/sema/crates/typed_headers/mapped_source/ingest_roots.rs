@@ -26,6 +26,11 @@ pub(super) fn prepare(
     for header in &rows.traits {
         demand(header.self_type)?;
     }
+    for slot in &rows.slots {
+        if let Some(default) = slot.default {
+            demand(default)?;
+        }
+    }
     for header in &rows.implementations {
         demand(header.self_type)?;
         if let Some(reference) = header.trait_application {

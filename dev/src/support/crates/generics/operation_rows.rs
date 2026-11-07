@@ -73,8 +73,9 @@ pub enum ValueKind {
         right: u32,
     },
 }
-/// The reconstructable primitive operators. Checked arithmetic and shifts own
-/// stable wire codes but no row form until their consumer proof exists.
+/// The reconstructable primitive operators. Add, Sub and Mul are checked: each
+/// consumer instance lowers its own overflow guard and abort exit. Div, Rem and
+/// the shifts own stable wire codes but no row form until their proof exists.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BinaryOperator {
     Equal,
@@ -86,11 +87,21 @@ pub enum BinaryOperator {
     BitAnd,
     BitOr,
     BitXor,
+    Add,
+    Sub,
+    Mul,
 }
 impl BinaryOperator {
     #[must_use]
     pub const fn comparison(self) -> bool {
-        !matches!(self, Self::BitAnd | Self::BitOr | Self::BitXor)
+        !matches!(
+            self,
+            Self::BitAnd | Self::BitOr | Self::BitXor | Self::Add | Self::Sub | Self::Mul
+        )
+    }
+    #[must_use]
+    pub const fn arithmetic(self) -> bool {
+        matches!(self, Self::Add | Self::Sub | Self::Mul)
     }
 }
 /// Retained lexical operand form; data for promotion, never execution permission.
@@ -177,6 +188,11 @@ impl Value {
         }
         let result = if operator.comparison() {
             Scalar::Bool
+        } else if operator.arithmetic() {
+            if matches!(operand, Scalar::Bool | Scalar::Char) {
+                return Err("source checked arithmetic requires integer or float operands");
+            }
+            operand
         } else if matches!(operand, Scalar::Char | Scalar::F32 | Scalar::F64) {
             return Err("source bitwise operation requires bool or integer operands");
         } else {

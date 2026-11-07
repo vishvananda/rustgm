@@ -66,7 +66,9 @@ impl Stage {
             let declaration = self.declaration(owner)?;
             let start =
                 u32::try_from(self.rows.slots.len()).map_err(|_| "source slot table overflow")?;
-            self.type_slots(facts, owner, declaration)?;
+            let trait_owner =
+                report.resolution.definitions[owner.0 as usize].kind == DefKind::Trait;
+            self.type_slots(facts, owner, declaration, trait_owner)?;
             self.region_slots(facts, owner, declaration, start)?;
             let end =
                 u32::try_from(self.rows.slots.len()).map_err(|_| "source slot table overflow")?;
@@ -99,6 +101,7 @@ impl Stage {
         facts: &Declarations,
         owner: DefId,
         declaration: DeclarationRef,
+        trait_owner: bool,
     ) -> Result<(), &'static str> {
         for (ordinal, parameter) in facts
             .generics
@@ -109,7 +112,9 @@ impl Stage {
             .enumerate()
         {
             self.charge(1)?;
-            if parameter.default.is_some() {
+            // A version-thirteen trait default is recorded once its trait header
+            // has built the Self type (`trait_defaults`).
+            if parameter.default.is_some() && !(trait_owner && self.body_nodes()) {
                 return Err("source parameter defaults are outside the initial profile");
             }
             let Argument::Type(ty) = parameter.argument else {
@@ -160,7 +165,52 @@ impl Stage {
                 index: actual.index,
                 definition,
                 kind: s::ParameterKind::Type { sized },
+                default: None,
             });
+        }
+        Ok(())
+    }
+
+    /// Records each declared default of a trait's own type slots once the trait
+    /// header has its Self type. Only that Self is admitted; wider defaults need
+    /// a wider consumer.
+    pub(super) fn trait_defaults(
+        &mut self,
+        facts: &Declarations,
+        owner: DefId,
+        self_type: crate::types::TypeId,
+        self_ref: g::TypeRef,
+    ) -> Result<(), &'static str> {
+        for parameter in facts.generics.parameters.get(&owner).into_iter().flatten() {
+            self.charge(1)?;
+            let Some(default) = parameter.default else {
+                continue;
+            };
+            if default != Argument::Type(self_type) {
+                return Err(
+                    "source parameter default other than its trait's Self requires a wider consumer",
+                );
+            }
+            let Argument::Type(ty) = parameter.argument else {
+                return Err("source defaulted generic argument is not a type slot");
+            };
+            let Some(Kind::Parameter(id)) = facts.types.kind(ty) else {
+                return Err("source defaulted slot has no actual parameter identity");
+            };
+            let slot = self
+                .graph
+                .parameters
+                .get(&id)
+                .copied()
+                .ok_or("source defaulted parameter has no reserved slot")?;
+            let row = self
+                .rows
+                .slots
+                .get_mut(slot.0 as usize)
+                .ok_or("source defaulted slot is outside its table")?;
+            if row.default.replace(self_ref).is_some() {
+                return Err("source parameter default was recorded twice");
+            }
         }
         Ok(())
     }
@@ -233,6 +283,7 @@ impl Stage {
                 index,
                 definition,
                 kind: s::ParameterKind::Region,
+                default: None,
             });
         }
         Ok(())

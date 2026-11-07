@@ -99,11 +99,45 @@ pub(super) fn validate_compiler_operations(
 ) -> Result<(), &'static str> {
     validate_mode(rows, headers, work, NamespaceProfile::CompilerOperations)
 }
+/// Version thirteen is version ten's namespace plus general language roles.
+pub(super) fn validate_module_bodies(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    validate_with(
+        rows,
+        headers,
+        work,
+        NamespaceProfile::Conversions,
+        BindingProfile::Languages,
+    )
+}
 fn validate_mode(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     work: &mut Work,
     profile: NamespaceProfile,
+) -> Result<(), &'static str> {
+    let roles = if profile.conversions() {
+        if profile == NamespaceProfile::CompilerOperations {
+            BindingProfile::CompilerOperations
+        } else {
+            BindingProfile::Conversions
+        }
+    } else if profile.callables() {
+        BindingProfile::Callables
+    } else {
+        BindingProfile::Ordinary
+    };
+    validate_with(rows, headers, work, profile, roles)
+}
+fn validate_with(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+    profile: NamespaceProfile,
+    binding: BindingProfile,
 ) -> Result<(), &'static str> {
     work.charge(1)?;
     if !profile.conversions() && !rows.body_units.is_empty() {
@@ -112,22 +146,7 @@ fn validate_mode(
     if rows.policy.edition != Edition::Rust2024 || rows.policy.provider.0 != 0 {
         return Err("ordinary source functions require their own Rust2024 provider profile");
     }
-    let roles = bindings(
-        rows,
-        headers,
-        work,
-        if profile.conversions() {
-            if profile == NamespaceProfile::CompilerOperations {
-                BindingProfile::CompilerOperations
-            } else {
-                BindingProfile::Conversions
-            }
-        } else if profile.callables() {
-            BindingProfile::Callables
-        } else {
-            BindingProfile::Ordinary
-        },
-    )?;
+    let roles = bindings(rows, headers, work, binding)?;
     let features = matches!(
         profile,
         NamespaceProfile::FeaturePredicates
@@ -571,6 +590,8 @@ pub(super) enum BindingProfile {
     Callables,
     Conversions,
     CompilerOperations,
+    /// Version thirteen: every spelled trait role; consumers prove their use.
+    Languages,
 }
 pub(super) struct Bindings {
     sizing: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 3],
@@ -579,6 +600,17 @@ pub(super) struct Bindings {
     conversion: Option<crate::support::crates::owner_catalog::DeclarationRef>,
 }
 fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
+    if profile == BindingProfile::Languages {
+        // Future roles need the version-eleven operation tables; Send has no wire.
+        return !matches!(
+            role,
+            LangItem::Future
+                | LangItem::FutureOutput
+                | LangItem::FuturePoll
+                | LangItem::AsyncDropInPlace
+                | LangItem::Send
+        );
+    }
     matches!(
         role,
         LangItem::Sized
@@ -676,28 +708,20 @@ pub(super) fn bindings(
     if sizing.contains(&None) {
         return Err("source functions require the real complete sizing trio");
     }
-    for slot in &rows.slots {
-        work.charge(1)?;
-        if let super::super::ParameterKind::Type {
-            sized: Some(address),
-        } = slot.kind
-            && (address.artifact != super::super::ArtifactRef(0)
-                || Some(address.declaration) != sizing[0])
-        {
-            return Err("source sized formal names a foreign or different actual Sized role");
-        }
-    }
+    slot_bindings(rows, headers, work, profile, sizing[0])?;
     Ok(Bindings {
         conversion: (matches!(
             profile,
-            BindingProfile::Conversions | BindingProfile::CompilerOperations
+            BindingProfile::Conversions
+                | BindingProfile::CompilerOperations
+                | BindingProfile::Languages
         ))
         .then_some(declarations[LangItem::From.index()])
         .flatten(),
         sizing,
         destruct: if matches!(
             profile,
-            BindingProfile::Callables | BindingProfile::Conversions
+            BindingProfile::Callables | BindingProfile::Conversions | BindingProfile::Languages
         ) {
             declarations[LangItem::Destruct.index()]
         } else {
@@ -705,13 +729,49 @@ pub(super) fn bindings(
         },
         freeze: if matches!(
             profile,
-            BindingProfile::Callables | BindingProfile::Conversions
+            BindingProfile::Callables | BindingProfile::Conversions | BindingProfile::Languages
         ) {
             declarations[LangItem::Freeze.index()]
         } else {
             None
         },
     })
+}
+
+/// Sized formals name the actual Sized role; a version-thirteen default is
+/// admitted only as its owning trait's Self.
+fn slot_bindings(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+    profile: BindingProfile,
+    sized_role: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+) -> Result<(), &'static str> {
+    for slot in &rows.slots {
+        work.charge(1)?;
+        if let Some(default) = slot.default {
+            let Some(super::super::HeaderRef::Trait(index)) = headers.header(slot.owner, work)?
+            else {
+                return Err("source parameter default belongs to a non-trait owner");
+            };
+            if profile != BindingProfile::Languages
+                || rows.traits[index as usize].self_type != default
+            {
+                return Err(
+                    "source parameter default other than its trait's Self requires a wider consumer",
+                );
+            }
+        }
+        if let super::super::ParameterKind::Type {
+            sized: Some(address),
+        } = slot.kind
+            && (address.artifact != super::super::ArtifactRef(0)
+                || Some(address.declaration) != sized_role)
+        {
+            return Err("source sized formal names a foreign or different actual Sized role");
+        }
+    }
+    Ok(())
 }
 
 fn admitted_convention(

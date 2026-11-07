@@ -391,9 +391,13 @@ impl Stage {
         facts: &mut Declarations,
         identity: &CrateIdentity,
     ) -> Result<Self, &'static str> {
-        let mut stage = Self::begin_mode(report, facts, identity, ExportMode::Nominals)?;
-        stage.body_transport = BodyTransport::Branches;
-        Ok(stage)
+        Self::begin_with(
+            report,
+            facts,
+            identity,
+            ExportMode::Nominals,
+            BodyTransport::Branches,
+        )
     }
     /// The version-twelve collection; originals also keep primitive Binary values.
     pub(crate) fn begin_module_bodies(
@@ -401,9 +405,13 @@ impl Stage {
         facts: &mut Declarations,
         identity: &CrateIdentity,
     ) -> Result<Self, &'static str> {
-        let mut stage = Self::begin_mode(report, facts, identity, ExportMode::Nominals)?;
-        stage.body_transport = BodyTransport::Nodes;
-        Ok(stage)
+        Self::begin_with(
+            report,
+            facts,
+            identity,
+            ExportMode::Nominals,
+            BodyTransport::Nodes,
+        )
     }
     fn begin_mode(
         report: &Report,
@@ -411,7 +419,24 @@ impl Stage {
         identity: &CrateIdentity,
         mode: ExportMode,
     ) -> Result<Self, &'static str> {
-        require_export_mode(report, facts, identity, mode)?;
+        Self::begin_with(report, facts, identity, mode, BodyTransport::Ordinary)
+    }
+    /// The body vocabulary is fixed before any header row: version thirteen
+    /// also widens language-role admission.
+    fn begin_with(
+        report: &Report,
+        facts: &mut Declarations,
+        identity: &CrateIdentity,
+        mode: ExportMode,
+        body_transport: BodyTransport,
+    ) -> Result<Self, &'static str> {
+        require_export_mode(
+            report,
+            facts,
+            identity,
+            mode,
+            body_transport == BodyTransport::Nodes,
+        )?;
         let unit = report
             .package
             .units
@@ -435,7 +460,7 @@ impl Stage {
                 ExportMode::Nominals | ExportMode::CompilerOperations
             ),
             compiler_operations: mode == ExportMode::CompilerOperations,
-            body_transport: BodyTransport::Ordinary,
+            body_transport,
             role_installation_steps: facts
                 .source_bindings
                 .as_deref()
@@ -854,6 +879,7 @@ fn require_export_mode(
     facts: &Declarations,
     identity: &CrateIdentity,
     mode: ExportMode,
+    languages: bool,
 ) -> Result<(), &'static str> {
     facts.require_declaration_policy_transport(report)?;
     facts.require_incoherent_target_transport(report)?;
@@ -915,6 +941,7 @@ fn require_export_mode(
             ExportMode::Conversions | ExportMode::Nominals | ExportMode::CompilerOperations
         ),
         mode == ExportMode::CompilerOperations,
+        languages,
     )?;
     Ok(())
 }

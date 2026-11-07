@@ -53,3 +53,11 @@ Copy opponents, the re-encoding equivalence of the source-branches packet and
 the named-rejection wire controls. The `crate_linking::node_transport`
 integration controls consume it; the owning checkpoint records candidate
 results.
+
+`language-role-outcomes.json` freezes the version-thirteen operator-role packet
+under `spec/language-roles/`: AddAssign, SubAssign and MulAssign roles with
+their `Rhs = Self` defaults, checked Add, Sub and Mul in generic providers,
+in-range and aborting fresh consumers, a type opponent, two recorded candidate
+boundaries (a consumer's own operator use and `Add` with `Output`) and the
+forged role-row controls. The `crate_linking::spelled_roles` integration
+controls consume it; the owning checkpoint records candidate results.

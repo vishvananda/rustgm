@@ -97,8 +97,8 @@ const PROJECTIONS: [&str; 13] = [
     "encoded ProjectionKind::FutureField is not reconstructable by this consumer",
 ];
 
-/// Stable `Rvalue::Binary` operator flags; this consumer rebuilds 0 through 8.
-const OPERATORS: [s::BinaryOperator; 9] = [
+/// Stable `Rvalue::Binary` operator flags; this consumer rebuilds 0 through 11.
+const OPERATORS: [s::BinaryOperator; 12] = [
     s::BinaryOperator::Equal,
     s::BinaryOperator::NotEqual,
     s::BinaryOperator::Less,
@@ -108,8 +108,11 @@ const OPERATORS: [s::BinaryOperator; 9] = [
     s::BinaryOperator::BitAnd,
     s::BinaryOperator::BitOr,
     s::BinaryOperator::BitXor,
+    s::BinaryOperator::Add,
+    s::BinaryOperator::Sub,
+    s::BinaryOperator::Mul,
 ];
-/// Allocated checked arithmetic and shift operators: Add, Sub, Mul, Div, Rem, Shl, Shr.
+/// Allocated checked operators 12-15 without a row form: Div, Rem, Shl, Shr.
 const CHECKED_OPERATORS: u32 = 16;
 const FORMS: [s::OperandForm; 5] = [
     s::OperandForm::NotRequired,
@@ -341,7 +344,7 @@ fn binary(left: u32, right: u32, operator: u32, form: u32) -> Result<s::ValueKin
             right,
         }),
         None if operator < CHECKED_OPERATORS => Err(
-            "encoded checked arithmetic or shift Rvalue::Binary is not reconstructable by this consumer",
+            "encoded checked division or shift Rvalue::Binary is not reconstructable by this consumer",
         ),
         None => Err("body IR binary node has an unknown operator"),
     }

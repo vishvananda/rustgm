@@ -62,6 +62,7 @@ fn slot(owner: u32, ordinal: u32, definition: Option<u32>, sized: bool) -> Param
                 declaration: DeclarationRef(0),
             }),
         },
+        default: None,
     }
 }
 fn scope(owner: u32, parent: Option<u32>, start: u32, end: u32, captures: u32) -> ParameterScope {
@@ -161,6 +162,7 @@ fn complete_type_formals_exclude_region_slots_without_losing_unused_parameters()
                 index: 0,
                 definition: Some(DeclarationRef(2)),
                 kind: ParameterKind::Region,
+                default: None,
             },
         ],
         vec![scope(0, None, 0, 2, 0)],
