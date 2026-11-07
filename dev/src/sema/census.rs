@@ -248,8 +248,9 @@ impl Census {
 }
 
 /// Budget and representation-capacity failures are sticky crate state. This uses
-/// the shared diagnostic vocabulary, so a misclassified local limit can only stop
-/// the census early; it never lets a census continue past a real exhaustion.
+/// the shared diagnostic vocabulary, including ledgers bounded by their input
+/// graph, so a misclassified local limit can only stop the census early; it never
+/// lets a census continue past a real exhaustion.
 #[must_use]
 pub fn exhausts_budget(message: &str) -> bool {
     let message = message.to_ascii_lowercase();
@@ -262,7 +263,8 @@ pub fn exhausts_budget(message: &str) -> bool {
     ]
     .iter()
     .any(|word| message.contains(word))
-        || (message.contains("exceed") && message.contains("limit"))
+        || (message.contains("exceed")
+            && (message.contains("limit") || message.contains("input-graph bound")))
 }
 
 /// The declaration kind and name of an item, for census records only.

@@ -49,16 +49,19 @@ pub(in crate::sema) fn begin(
     retain_sized: bool,
     availability: Availability,
 ) -> Result<Progress, &'static str> {
-    begin_with_scope(
+    begin_reusing(
         facts,
         environment,
         (request, 0),
         first,
         retain_sized,
         availability,
+        None,
     )
 }
 
+/// Declaration callers keep a known premise's own failure: a language error
+/// reports its cause and exhaustion keeps its sticky budget wording.
 pub(in crate::sema) fn begin_with_scope(
     facts: &mut Declarations,
     environment: Option<Arc<Environment>>,
@@ -66,8 +69,11 @@ pub(in crate::sema) fn begin_with_scope(
     first: u32,
     retain_sized: bool,
     availability: Availability,
-) -> Result<Progress, &'static str> {
-    begin_reusing(
+) -> Result<Progress, String> {
+    if let Some(projected) = known(facts, environment.as_deref(), request.0, first)? {
+        return Ok(Progress::Ready(projected));
+    }
+    select(
         facts,
         environment,
         request,
@@ -76,8 +82,11 @@ pub(in crate::sema) fn begin_with_scope(
         availability,
         None,
     )
+    .map_err(String::from)
 }
 
+/// Fixed-message callers fold a known premise's failure into two wordings:
+/// exhaustion stays a sticky budget and every other cause is an invalid premise.
 pub(in crate::sema) fn begin_reusing(
     facts: &mut Declarations,
     environment: Option<Arc<Environment>>,
@@ -87,25 +96,66 @@ pub(in crate::sema) fn begin_reusing(
     availability: Availability,
     reuse: Option<&mut selection::Reuse>,
 ) -> Result<Progress, &'static str> {
-    let (request, callable_depth) = request;
-    if request.alias.associated().is_some_and(|application| {
+    let known = known(facts, environment.as_deref(), request.0, first).map_err(|error| {
+        if crate::sema::census::exhausts_budget(&error) {
+            "canonical projection premise work exhausted"
+        } else {
+            "invalid canonical projection premise"
+        }
+    })?;
+    if let Some(projected) = known {
+        return Ok(Progress::Ready(projected));
+    }
+    select(
+        facts,
+        environment,
+        request,
+        first,
+        retain_sized,
+        availability,
+        reuse,
+    )
+}
+
+/// An exact environment or result premise needs no fresh selection.
+fn known(
+    facts: &mut Declarations,
+    environment: Option<&Environment>,
+    request: Request,
+    first: u32,
+) -> Result<Option<Projected>, String> {
+    if !request.alias.associated().is_some_and(|application| {
         !facts
             .associated
             .families
             .contains_key(&DefId(application.item.0))
-    }) && let Some((source, resolution)) =
-        selection::known_normalized(facts, environment.as_deref(), request)
-            .map_err(|_| "invalid or exhausted canonical projection premise")?
-    {
-        return Ok(Progress::Ready(Projected {
-            provisional_size: false,
-            source: Some(source),
-            resolution: Some(resolution),
-            proof: Obligations::new(first),
-            sized: Vec::new(),
-            family: request.alias.arguments(),
-        }));
+    }) {
+        return Ok(None);
     }
+    Ok(
+        selection::known_normalized(facts, environment, request)?.map(|(source, resolution)| {
+            Projected {
+                provisional_size: false,
+                source: Some(source),
+                resolution: Some(resolution),
+                proof: Obligations::new(first),
+                sized: Vec::new(),
+                family: request.alias.arguments(),
+            }
+        }),
+    )
+}
+
+fn select(
+    facts: &mut Declarations,
+    environment: Option<Arc<Environment>>,
+    request: (Request, u16),
+    first: u32,
+    retain_sized: bool,
+    availability: Availability,
+    reuse: Option<&mut selection::Reuse>,
+) -> Result<Progress, &'static str> {
+    let (request, callable_depth) = request;
     let requirement = crate::sema::opaque::overrides::requirement(facts, request.alias)?;
     let reuse = if environment
         .as_ref()

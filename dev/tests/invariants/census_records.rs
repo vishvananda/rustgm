@@ -54,6 +54,9 @@ fn budget_vocabulary_is_sticky_and_language_errors_are_not() {
         "alias proof scope budget exhausted",
         "too many definitions",
         "body identity space exhausted",
+        "source header contract query work exceeds its input-graph bound",
+        "source contract work or retention exceeds its input-graph bound",
+        "canonical projection premise work exhausted",
     ] {
         assert!(exhausts_budget(message), "{message}");
         let mut census = Census::default();
@@ -68,6 +71,8 @@ fn budget_vocabulary_is_sticky_and_language_errors_are_not() {
         "recursive type alias",
         "const parameter cannot be used as a type",
         "unresolved value name",
+        "invalid canonical projection premise",
+        "missing associated result contract",
     ] {
         assert!(!exhausts_budget(message), "{message}");
         let mut census = Census::default();
