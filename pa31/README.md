@@ -2,6 +2,14 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [actual provided-default join](../docs/parallel/field-provided-default.md)
+selects and executes the genuine Field trait initializer, preserving full caller
+proof and the actual alternative u8 default7. The original field_offset intrinsic
+and layout remain required. Cold contexts and const-closure creation/originals
+are qualified finite prerequisites; actual captured const calls/CTFE, conditional
+premises and transport remain required. The unchanged core probe now reports the
+local source-header producer budget failure; diagnosis preserves all limits.
+
 The [Field proof/projection checkpoint](../docs/parallel/field-proof-projection-checkpoint.md)
 qualifies actual compiler-provided Field evidence, full Base/Type normalization,
 generic/lifetime/ordinary ownership constraints, source reauthentication and a

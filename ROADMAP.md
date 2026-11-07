@@ -92,3 +92,12 @@ qualifies builtin proof, Base/Type, generic/move/lifetime constraints and actual
 native projection/callback values with11 focused controls and strict metadata.
 Provided OFFSET/intrinsic/layout execution, full reflection and transport stay
 required. Whole-PA statuses and original core/alloc/std artifact gates are unchanged.
+
+The [provided-default join](docs/parallel/field-provided-default.md) executes the
+actual alternative Field constant and qualifies cold positions and const closure
+creation/originals. The current unchanged-source probe reports a local source
+header producer budget failure; exact counter/site diagnosis precedes any fix,
+with no limit increase. The [PA20 oracle profile repair](docs/parallel/pa20-oracle-profile-repair.md)
+preserves all oracle bytes and passes complete independent checking. Field-offset
+intrinsic/layout, actual captured const execution and original library artifacts
+remain required; whole-PA statuses are unchanged.

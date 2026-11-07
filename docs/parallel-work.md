@@ -1,3 +1,15 @@
+The [cold/creation/provided-default join](parallel/field-provided-default.md)
+passes21 public controls, strict all-target metadata, actual u8 default7,44 pinned
+Rust profile outcomes, unchanged22 course triples/full PA20 independent and282
+harness checks. Current frozen core observation is LIB190, local source-header
+producer budget message18.6433s/375opens, unchanged722/pins/globalprofile. Source
+measures exactlocal counters/site and coldcache hits beforefix, preserving44's
+separate no-body qualification. Root owns field_offset/layout, Async owns real
+captured const calls/CTFE/conditional/adapters. Fullac104 passesrelease/native/debug,
+then exposes missing explicitPA20oracleprofile; repaired withoutoraclebytechanges,
+successor CI due. Same btrfs/2heavy/16GiB/150GiB/300s and cleanupguards; no artifact
+or whole assignment after24 complete.
+
 The [actual Field operation checkpoint](parallel/field-proof-projection-checkpoint.md)
 passes11 public controls, full strict metadata, native projection/callback and282
 harness checks; no dense Catalog/Declarations/Frame/body fields are added. Root
