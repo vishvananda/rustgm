@@ -24,6 +24,7 @@ use super::nested::{InputRefresh, Payload};
 pub(super) struct Metadata {
     root: crate::resolve::unit::NodeKey,
     identity: ClosureId,
+    constant: Option<NodeId>,
     parameters: List,
     signature: TermId,
     self_ty: TermId,
@@ -37,6 +38,7 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
         expected: Option<TermId>,
+        constant: Option<NodeId>,
     ) -> Result<(), Error> {
         self.require_source_closure_bindings(node)?;
         let Kind::Closure {
@@ -117,6 +119,7 @@ impl Checker<'_> {
             payload: Payload::Closure(Metadata {
                 root: self.key(body),
                 identity,
+                constant,
                 parameters,
                 signature,
                 self_ty: imported.self_ty,
@@ -234,7 +237,11 @@ impl Checker<'_> {
                 .trait_environment
                 .clone_from(&self.state.trait_environment);
         }
-        child.completion = super::readiness::Completion::Ordinary;
+        child.completion = if metadata.constant.is_some() {
+            super::readiness::Completion::ConstClosure
+        } else {
+            super::readiness::Completion::Ordinary
+        };
         self.park_nested(child, entry)
     }
 
@@ -268,10 +275,14 @@ impl Checker<'_> {
             .payload
             .closure_mut()
             .map_err(|e| self.error(entry.source, e))?;
-        self.facts
-            .types
-            .complete_closure(metadata.identity, kind)
-            .map_err(|e| self.error(body, e))?;
+        let completed = if metadata.constant.is_some() {
+            self.facts
+                .types
+                .complete_const_closure(metadata.identity, kind)
+        } else {
+            self.facts.types.complete_closure(metadata.identity, kind)
+        };
+        completed.map_err(|e| self.error(body, e))?;
         self.prepare_nested_output(&mut metadata.lifetimes, parent.body)?;
         self.closure_result_boundary(&metadata.lifetimes)?;
         std::mem::swap(&mut entry.inputs.context, &mut self.state.infer);

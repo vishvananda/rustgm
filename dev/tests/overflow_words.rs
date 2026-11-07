@@ -15,15 +15,27 @@ fn original_const_closure_word_consumes_its_actual_wrapper_and_child() -> Result
     for name in ["const-closure-v3", "ordinary-closure-v3"] {
         rustgm::sema::declarations::analyze(&report(name)?)?;
     }
-    let error = pipeline::analyze_source(&report("const-closure-v3")?)
-        .err()
-        .ok_or("const closure execution was implicitly enabled")?;
+    let report = report("const-closure-v3")?;
+    let pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = pipeline::analyze_source(&report)?;
     assert!(
-        error
-            .to_string()
-            .contains("const closure callable semantics are not implemented"),
-        "{error}"
+        facts
+            .closures
+            .all()
+            .iter()
+            .any(|body| body.constant.is_some())
     );
+    rustgm::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        rustgm::lower::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+    )?;
     Ok(())
 }
 #[test]

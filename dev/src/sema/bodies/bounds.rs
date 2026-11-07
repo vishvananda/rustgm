@@ -520,6 +520,12 @@ impl Checker<'_> {
 
     pub(super) fn callee_use_effect(&self) -> Result<crate::support::constness::Constness, Error> {
         use crate::support::constness::Constness;
+        if matches!(
+            self.state.completion,
+            super::readiness::Completion::ConstClosure
+        ) {
+            return Ok(Constness::Conditional);
+        }
         if self.actual_const_value_context()? {
             return Ok(Constness::Const);
         }

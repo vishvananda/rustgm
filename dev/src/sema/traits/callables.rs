@@ -8,7 +8,7 @@ use crate::{
     support::call_traits::CallTrait,
     types::{
         RegionId,
-        closure::{CallKind, ClosureId, Declaration},
+        closure::{CallKind, ClosureId},
         infer::{self, Constructor, Context, TermId, arguments::Argument, predicates::Predicate},
     },
 };
@@ -36,11 +36,10 @@ impl Matched {
         let Permission::Pending(id, required) = self.permission else {
             return Ok(Some(true));
         };
-        Ok(match types.closure_declaration(id) {
-            Some(Declaration::Pending) => None,
-            Some(Declaration::Complete(actual)) => Some(actual.implements(required)),
-            None => return Err(infer::Error::InvalidIdentity),
-        })
+        let declaration = types
+            .closure_declaration(id)
+            .ok_or(infer::Error::InvalidIdentity)?;
+        Ok(declaration.kind().map(|actual| actual.implements(required)))
     }
     pub fn permitted(
         &self,
@@ -153,13 +152,14 @@ fn signature(
                 CallTrait::FnMut => CallKind::Mutable,
                 CallTrait::FnOnce => CallKind::Once,
             };
-            let permission = match facts.types.closure_declaration(id) {
-                Some(Declaration::Pending) => Permission::Pending(id, required),
-                Some(Declaration::Complete(actual)) if actual.implements(required) => {
-                    Permission::Complete
-                }
-                Some(Declaration::Complete(_)) => return Err(infer::Error::Mismatch),
-                None => return Err(infer::Error::InvalidIdentity),
+            let declaration = facts
+                .types
+                .closure_declaration(id)
+                .ok_or(infer::Error::InvalidIdentity)?;
+            let permission = match declaration.kind() {
+                None => Permission::Pending(id, required),
+                Some(actual) if actual.implements(required) => Permission::Complete,
+                Some(_) => return Err(infer::Error::Mismatch),
             };
             Ok((context.child(&facts.types, subject, 0)?, permission))
         }

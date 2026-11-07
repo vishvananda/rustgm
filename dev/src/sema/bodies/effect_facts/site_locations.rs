@@ -87,6 +87,7 @@ impl Checker<'_> {
         if !matches!(
             self.state.completion,
             super::super::readiness::Completion::Ordinary
+                | super::super::readiness::Completion::ConstClosure
         ) || !matches!(
             self.availability,
             crate::sema::traits::implementations::Availability::Validated

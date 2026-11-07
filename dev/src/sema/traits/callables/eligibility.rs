@@ -29,9 +29,52 @@ pub(super) fn for_goal(
         Some(infer::Constructor::FunctionItem(..) | infer::Constructor::FunctionItemArgs(..)) => {
             function_item(facts, context, goal)
         }
-        Some(infer::Constructor::Closure(..)) => Ok(Eligibility::Unsupported(
-            "source const closure eligibility is not implemented",
-        )),
+        Some(infer::Constructor::Closure(identity, _)) => {
+            let declaration = facts
+                .types
+                .closure_declaration(identity)
+                .ok_or("const callable has a foreign closure identity")?;
+            match declaration.constant() {
+                Some(false) => return Ok(Eligibility::Rejected),
+                None => return Ok(Eligibility::Pending),
+                Some(true) => {}
+            }
+            context.account_work(2).map_err(error)?;
+            let Some(body) = facts.closures.identity(identity) else {
+                return Ok(Eligibility::Pending);
+            };
+            if declaration.constant() != Some(body.constant.is_some()) {
+                return Err("const closure qualification changed its actual source owner".into());
+            }
+            if declaration.constant() == Some(true)
+                && body
+                    .owner
+                    .is_some_and(|owner| facts.generics.has_parameters(owner))
+            {
+                return Ok(Eligibility::Unsupported(
+                    "const closure defining obligations require a scoped continuation",
+                ));
+            }
+            if let Some(owner) = body.owner
+                && facts.function_indices.contains_key(&owner)
+            {
+                match facts
+                    .source_bindings
+                    .as_deref()
+                    .ok_or("const closure source catalog disappeared")?
+                    .prepared_call_effect(owner)?
+                {
+                    Some(CallEffect::Conditional) => {
+                        return Ok(Eligibility::Unsupported(
+                            "const closure defining obligations require a scoped continuation",
+                        ));
+                    }
+                    None => return Ok(Eligibility::Pending),
+                    Some(CallEffect::Ordinary) => {}
+                }
+            }
+            Ok(Eligibility::Allowed)
+        }
         None => Ok(Eligibility::Pending),
         _ => Err("const callable proof has no direct callable subject".into()),
     }

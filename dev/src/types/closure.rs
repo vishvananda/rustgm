@@ -108,8 +108,45 @@ pub enum CallKind {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Declaration {
     Pending,
-    Complete(CallKind),
+    Shared,
+    Mutable,
+    Once,
+    ConstShared,
+    ConstMutable,
+    ConstOnce,
 }
+impl Declaration {
+    #[must_use]
+    pub const fn kind(self) -> Option<CallKind> {
+        match self {
+            Self::Pending => None,
+            Self::Shared | Self::ConstShared => Some(CallKind::Shared),
+            Self::Mutable | Self::ConstMutable => Some(CallKind::Mutable),
+            Self::Once | Self::ConstOnce => Some(CallKind::Once),
+        }
+    }
+
+    #[must_use]
+    pub const fn constant(self) -> Option<bool> {
+        match self {
+            Self::Pending => None,
+            Self::Shared | Self::Mutable | Self::Once => Some(false),
+            Self::ConstShared | Self::ConstMutable | Self::ConstOnce => Some(true),
+        }
+    }
+
+    const fn completed(kind: CallKind, constant: bool) -> Self {
+        match (kind, constant) {
+            (CallKind::Shared, false) => Self::Shared,
+            (CallKind::Mutable, false) => Self::Mutable,
+            (CallKind::Once, false) => Self::Once,
+            (CallKind::Shared, true) => Self::ConstShared,
+            (CallKind::Mutable, true) => Self::ConstMutable,
+            (CallKind::Once, true) => Self::ConstOnce,
+        }
+    }
+}
+const _: () = assert!(size_of::<Declaration>() == 1);
 impl CallKind {
     pub(crate) const fn from_trait(kind: crate::support::call_traits::CallTrait) -> Self {
         match kind {
@@ -150,6 +187,23 @@ impl Store {
     /// # Errors
     /// Rejects foreign identities and any attempt to revise a completed declaration.
     pub fn complete_closure(&mut self, id: ClosureId, kind: CallKind) -> Result<(), &'static str> {
+        self.complete_callable(id, kind, false)
+    }
+
+    pub(crate) fn complete_const_closure(
+        &mut self,
+        id: ClosureId,
+        kind: CallKind,
+    ) -> Result<(), &'static str> {
+        self.complete_callable(id, kind, true)
+    }
+
+    fn complete_callable(
+        &mut self,
+        id: ClosureId,
+        kind: CallKind,
+        constant: bool,
+    ) -> Result<(), &'static str> {
         let declaration = self
             .closures
             .as_mut()
@@ -158,7 +212,7 @@ impl Store {
         if *declaration != Declaration::Pending {
             return Err("closure call permission is already complete");
         }
-        *declaration = Declaration::Complete(kind);
+        *declaration = Declaration::completed(kind, constant);
         Ok(())
     }
 
@@ -169,10 +223,7 @@ impl Store {
 
     #[must_use]
     pub fn closure_kind(&self, id: ClosureId) -> Option<CallKind> {
-        match self.closure_declaration(id)? {
-            Declaration::Pending => None,
-            Declaration::Complete(kind) => Some(kind),
-        }
+        self.closure_declaration(id)?.kind()
     }
 
     pub(super) fn closure_properties(

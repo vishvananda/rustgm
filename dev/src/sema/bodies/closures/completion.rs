@@ -146,6 +146,7 @@ impl Checker<'_> {
             .map_err(|e| self.error(entry.source, e))?;
         let source = entry.source;
         let identity = metadata.identity;
+        let constant = metadata.constant;
         let root = metadata.root;
         let parameters = metadata.parameters;
         let inherited = metadata
@@ -169,6 +170,7 @@ impl Checker<'_> {
         let body = Body {
             identity,
             source: self.key(source),
+            constant,
             body: root,
             parameters,
             signature,
@@ -178,9 +180,39 @@ impl Checker<'_> {
             inherited,
             execution,
         };
+        let growth = self.facts.closures.publication_growth();
+        self.pay_closure_qualification(source, growth.work.saturating_add(1), growth.bytes)?;
+        body.check_const_source(self.report)
+            .map_err(|e| self.error(source, e))?;
         self.facts
             .closures
             .insert(body)
             .map_err(|e| self.error(source, e))
+    }
+
+    pub(in crate::sema::bodies) fn pay_closure_qualification(
+        &mut self,
+        node: super::NodeId,
+        work: usize,
+        bytes: usize,
+    ) -> Result<(), Error> {
+        if self.facts.source_bindings.is_some()
+            || self
+                .facts
+                .must_use_contracts
+                .as_deref()
+                .is_some_and(|c| c.headers.is_some())
+        {
+            self.facts
+                .charge_caller_inputs(work, bytes)
+                .map_err(|e| self.error(node, e))
+        } else {
+            // Source-free inference has a work budget, not a retained-byte
+            // ledger. Its existing payer admits marginal slot bytes as work.
+            self.state
+                .infer
+                .account_work(work.saturating_add(bytes))
+                .map_err(|e| self.error(node, e))
+        }
     }
 }

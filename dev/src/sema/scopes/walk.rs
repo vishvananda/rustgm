@@ -140,6 +140,7 @@ impl Walker<'_> {
                 self.format_binding(node, value, context)?;
             }
             Syntax::TryBlock { body: value, .. }
+            | Syntax::ConstClosure { closure: value, .. }
             | Syntax::Group(value)
             | Syntax::Attributed { value, .. }
             | Syntax::Statement(value)

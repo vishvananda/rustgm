@@ -1,0 +1,98 @@
+{
+  "scope": "const closure source creation and original-body eligibility; execution remains required",
+  "base": "a29a3b9ec",
+  "qualified": {
+    "receipt": "obj/qualification/fast/1794011774899523120/receipt.json",
+    "sha256": "0d55b6cd28764192d2dc6f83274cce2d76e0e5853195a05a26f062e231260700",
+    "seconds": 90.31,
+    "tests": 20,
+    "targets": 2
+  },
+  "source_sha256": {
+    "dev/src/body/build.rs": "7364f862518f1a776b62931aac0ac8f3f4faf87d8b65e846438e6c6dba102ad7",
+    "dev/src/body/build/aggregates.rs": "59dcada228e83749fd54afa5433eaba19252a248a92a6d5432686b4533bca04a",
+    "dev/src/body/build/closures.rs": "9ec6d0acb75b3007921dee9417469770fbe8218afa55916fcd4a03b52beaf4cb",
+    "dev/src/sema/bodies.rs": "91a8d8bb41d819d530b22813833fa14d3ba83b1e2fd46d09f10dbd0638a5377d",
+    "dev/src/sema/bodies/bounds.rs": "fab3fabebaac3a5a8cf9f48709c2fa3895dc1a4c8adad78a06e329f625f957db",
+    "dev/src/sema/bodies/closures.rs": "2156d17df205b9974d1951264cc5db2c46e45e00018df9a4a2441d17a8a3c0ea",
+    "dev/src/sema/bodies/closures/completion.rs": "676003e33fed8a435fb408c4f9de4d1cd16f3b0a56039d279f67da37add9a355",
+    "dev/src/sema/bodies/closures/uses.rs": "95b3829ecb735ed6f44400a54825b1e1f5a2bd502501b6edcbc9583aae39751d",
+    "dev/src/sema/bodies/effect_facts/site_locations.rs": "d26401edd0d8d55195677e213e79181486509f6717e333b9dce9ca4de199677f",
+    "dev/src/sema/bodies/readiness.rs": "9f384d092f13c8ac542778bcf9ae08c2afb0748cde46e5fbb615edc9cdd6ca70",
+    "dev/src/sema/closures.rs": "0633a7b8d61dd521fb9dc51ace666705ce4735c0c1b51a7682bae76ac5b354b9",
+    "dev/src/sema/closures/qualification.rs": "5850d9be03f55db5777ccb1ffeefbae0e18eb9c5720e66d02cf71d84b07ce820",
+    "dev/src/sema/scopes/extend.rs": "2e7b28c1ad98a92f8d64a7d4988f02a21646041534f210f8d9cf4f3737dfec9f",
+    "dev/src/sema/scopes/walk.rs": "25094663b1910930f9e701400b420c989ad11bd919e20d1af6d4d935f06cfc2f",
+    "dev/src/sema/traits/callables.rs": "56bc6b17115317489aa789c5a549271f3540cc72fef9ef21352ce3c11f771ffb",
+    "dev/src/sema/traits/callables/eligibility.rs": "03f693d3709ecae42ce0007a25a55681a1dd0588bf06371552a8a137c426616d",
+    "dev/src/types/closure.rs": "d9199e2c6a1cf02aef0ef85a7dbd2696194a56df4d8d46edb930bc9af48ac79c",
+    "dev/tests/closureconst.rs": "162a5bbf81289760dfdaf78d7c0b0086293a2687fc0e4e5beaa9d0b9962d973c",
+    "dev/tests/overflow_words.rs": "d3fa37ded28341a71550fdbdde997b9c4b30354d48e869916dbb220cbeac4e5c",
+    "dev/tests/suites/frontend/mod.rs": "d9c88ea26123f23f73815913f7abe3a534b8c12ba0555ce205a11d847aa79596"
+  },
+  "actual_layouts": {
+    "baseline": {
+      "receipt": "obj/parallel/const-closure-layout/baseline/receipt.json",
+      "sha256": "253a649b28bca1f68ca24843992363440da384d06c5d2ccc56fbdeada68e96ff",
+      "library": {
+        "path": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/rust/dev-fast/deps/librustgm-47cd2068569bec25.rlib",
+        "sha256": "45cfc33468d810c1b96c30e1d6de33cb1b1a0c62ae3bfad8a6b79041676b2f01"
+      },
+      "observed": "semantic_body=72 declaration=1 kind=24 body=456 owner=20 value=24 node=36",
+      "source_sha256_caveat": "receipt source_sha256 is the worktree file observed at probe time, not an asserted source binding for the previously retained library"
+    },
+    "candidate": {
+      "receipt": "obj/parallel/const-closure-layout/candidate/receipt.json",
+      "sha256": "7adab38ddab662a39e6e38a66a11e2d78a3efa821e4d594003099afbc8f51d78",
+      "library": {
+        "path": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/rust/dev-fast/deps/librustgm-47cd2068569bec25.rlib",
+        "sha256": "37dc957560a287f5884db1e23e9a5ec0adeb60ef43c8ac3ea7ef99685bff38bd"
+      },
+      "observed": "semantic_body=76 declaration=1 kind=24 body=456 owner=20 value=24 node=36",
+      "source_sha256_caveat": "receipt source_sha256 is the worktree file observed at probe time, not an asserted source binding for the previously retained library"
+    }
+  },
+  "retained_failures": [
+    {
+      "receipt": "obj/qualification/fast/1794010348309447718/receipt.json",
+      "sha256": "c6cb768bffbdc60370a46015b0222b963aee7514ca27ddb0a80aa2f410bb4d2e",
+      "cause": "filename stem audit"
+    },
+    {
+      "receipt": "obj/qualification/fast/1794010394702854619/receipt.json",
+      "sha256": "51af7b731c4e9f7ad7e36474b971624c3944848fe3bb923a5a9e520ad75b74ab",
+      "cause": "module ordering format"
+    },
+    {
+      "receipt": "obj/qualification/fast/1794010420590580935/receipt.json",
+      "sha256": "c4ec51d735b9fb671836d05a254055de34eac3c4702bbb48fdb984deb3bdba5c",
+      "cause": "two strict lints"
+    },
+    {
+      "receipt": "obj/qualification/fast/1794010517303116955/receipt.json",
+      "sha256": "27f0c58599b1e19cb4276020479e1c4a2bf20f045b19e7322fe9c24865c4fb9f",
+      "cause": "format after effect guard"
+    },
+    {
+      "receipt": "obj/qualification/fast/1794010544620941803/receipt.json",
+      "sha256": "9577764a23d2f65e5cfccf8f967449d256f82f0d7c0eabdbb370651546a55ebb",
+      "cause": "gate validator returns child"
+    },
+    {
+      "receipt": "obj/qualification/fast/1794010820356085135/receipt.json",
+      "sha256": "cb52a6bbb1efcb3cd4d2ea1fef417d626e72b8ada64aa698c1c8229ee5a075f4",
+      "cause": "type-only analysis did not check unused CFG"
+    },
+    {
+      "receipt": "obj/qualification/fast/1794011101828413996/receipt.json",
+      "sha256": "f0c73413bceb95348b0ffa419bb1d34ee79fcb1b0c7302d541274aaebad5fe33",
+      "cause": "const wrapper absent from temporary scopes"
+    }
+  ],
+  "remaining": [
+    "actual const closure calls and scoped conditional defining obligations",
+    "CTFE environment and capture ownership execution",
+    "checked receiver adapter Code and cleanup",
+    "qualified native consumers and authenticated transport"
+  ]
+}

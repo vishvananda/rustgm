@@ -2,6 +2,7 @@
 pub mod captures;
 mod execution_requirements;
 pub mod imports;
+pub(crate) mod qualification;
 mod source_roots;
 pub use source_roots::FormationInput;
 
@@ -20,6 +21,8 @@ use crate::{
 pub struct Body {
     pub identity: ClosureId,
     pub source: NodeKey,
+    /// Same-unit authenticated const wrapper; the ordinary child remains the body owner.
+    pub constant: Option<crate::syntax::ast::NodeId>,
     pub body: NodeKey,
     pub parameters: List,
     pub signature: TypeId,
@@ -91,6 +94,19 @@ pub struct Bodies {
     pub(crate) environments: HashMap<ClosureId, Environment>,
 }
 impl Bodies {
+    pub(crate) fn publication_growth(&self) -> crate::support::retained::Growth {
+        // The retained pre-qualification library measured 72 bytes per row.
+        // Charge the new witness slots for ordinary rows as well as const rows;
+        // the pre-existing row/index allocation policy is otherwise unchanged.
+        let mut growth = crate::support::retained::Growth::vector::<Body>(
+            self.values.len(),
+            self.values.capacity(),
+            1,
+        );
+        growth.bytes =
+            (growth.bytes / size_of::<Body>()).saturating_mul(size_of::<Body>().saturating_sub(72));
+        growth
+    }
     pub(crate) fn lexical_bindings(
         &mut self,
         resolution: &crate::resolve::model::Resolution,

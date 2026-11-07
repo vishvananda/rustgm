@@ -74,7 +74,8 @@ impl Walker<'_> {
             | Syntax::Field { value, .. }
             | Syntax::Index { value, .. }
             | Syntax::Group(value)
-            | Syntax::Attributed { value, .. } => {
+            | Syntax::Attributed { value, .. }
+            | Syntax::ConstClosure { closure: value, .. } => {
                 self.push(Work::ExtendPlace(value, lifetime))?;
             }
             _ => {}
@@ -136,6 +137,7 @@ impl Walker<'_> {
             }
             | Syntax::Group(value)
             | Syntax::Attributed { value, .. }
+            | Syntax::ConstClosure { closure: value, .. }
             | Syntax::Cast { value, .. }
             | Syntax::FieldInit { value, .. }
             | Syntax::Arm { value, .. } => {

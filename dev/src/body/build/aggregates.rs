@@ -154,7 +154,9 @@ impl Builder<'_> {
             super::environments::Access::Ordinary => {}
         }
         match self.kind(node) {
-            Kind::Group(value) | Kind::Attributed { value, .. } => {
+            Kind::Group(value)
+            | Kind::Attributed { value, .. }
+            | Kind::ConstClosure { closure: value, .. } => {
                 self.scratch.work.push(Work::Place(value));
             }
             Kind::Expansion {

@@ -1381,6 +1381,9 @@ impl<'a> Builder<'a> {
                     | Kind::Group(operand)
                     | Kind::Statement(operand)
                     | Kind::Attributed { value: operand, .. }
+                    | Kind::ConstClosure {
+                        closure: operand, ..
+                    }
                     | Kind::Label { value: operand, .. }
                     | Kind::Cast { value: operand, .. } => {
                         self.scratch.work.push(Work::Enter(operand));
@@ -1693,10 +1696,11 @@ impl<'a> Builder<'a> {
             Kind::Repeat { value, .. } => self.repeat(node, value)?,
             Kind::Range { start, end, .. } => self.range_value(node, start, end)?,
             Kind::Struct { fields, base, .. } => self.construct(node, fields, base)?,
-            Kind::FieldInit { value, .. } => self.value(value)?,
-            Kind::Group(value) | Kind::Attributed { value, .. } | Kind::Label { value, .. } => {
-                self.value(value)?
-            }
+            Kind::FieldInit { value, .. }
+            | Kind::Group(value)
+            | Kind::Attributed { value, .. }
+            | Kind::Label { value, .. }
+            | Kind::ConstClosure { closure: value, .. } => self.value(value)?,
             Kind::Literal(_) => self.literal_value(node, ty)?,
             Kind::Path { .. }
             | Kind::Name(..)

@@ -1332,8 +1332,18 @@ impl Checker<'_> {
         {
             return self.enter_inline(node, expected);
         }
+        if matches!(self.kind(node), Kind::ConstClosure { .. }) {
+            self.pay_closure_qualification(node, 1, 0)?;
+            if self.callee_use_effect()? == crate::support::constness::Constness::Ordinary {
+                return Err(self.error(node, "cannot use const closures outside of const contexts"));
+            }
+            let child = super::closures::qualification::child(self.report, self.key(node))
+                .map_err(|e| self.error(node, e))?;
+            self.state.work.push(Work::Exit(node));
+            return self.enter_closure(child.node, expected, Some(node));
+        }
         if matches!(self.kind(node), Kind::Closure { .. }) {
-            return self.enter_closure(node, expected);
+            return self.enter_closure(node, expected, None);
         }
         self.enter_safety(node)?;
         self.enter_control(node, expected)?;
@@ -1652,7 +1662,9 @@ impl Checker<'_> {
                 operand,
             } => self.question_mark(node, operand),
             Kind::ConstClosure { .. } => {
-                Err(self.error(node, "const closure callable semantics are not implemented"))
+                let child = super::closures::qualification::child(self.report, self.key(node))
+                    .map_err(|e| self.error(node, e))?;
+                self.term(child.node)
             }
             Kind::Block {
                 flavor: BlockFlavor::Plain | BlockFlavor::Unsafe | BlockFlavor::Const,

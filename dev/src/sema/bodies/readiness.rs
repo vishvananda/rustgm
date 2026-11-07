@@ -42,6 +42,7 @@ impl From<crate::sema::traits::selection::Dependency> for Requirement {
 pub(super) enum Completion {
     Inactive,
     Ordinary,
+    ConstClosure,
     Anonymous { before: usize },
     Initializer(usize),
 }
@@ -203,7 +204,7 @@ impl Checker<'_> {
         let source_calls = self.completed_source_calls()?;
         self.facts.body_work.steps += self.state.steps;
         match self.state.completion {
-            Completion::Ordinary | Completion::Inactive => {}
+            Completion::Ordinary | Completion::ConstClosure | Completion::Inactive => {}
             Completion::Anonymous { before } => {
                 let annotations = self
                     .facts

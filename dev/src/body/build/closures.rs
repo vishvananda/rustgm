@@ -42,7 +42,7 @@ pub(super) fn body(
     };
     let scope_plan =
         scopes::closure_with_scratch(report, facts, closure, std::mem::take(&mut scratch.scopes))?;
-    let body = Body::new(
+    let mut body = Body::new(
         Owner::Closure {
             identity: closure.identity,
             signature: closure.signature,
@@ -51,9 +51,24 @@ pub(super) fn body(
         closure.semantic_source(),
         closure.internal_result.unwrap_or(result),
     );
+    body.const_context = closure
+        .check_const_source(report)
+        .map_err(|error| report.body_error(closure.source, error))?;
+    if facts
+        .types
+        .closure_declaration(closure.identity)
+        .and_then(crate::types::closure::Declaration::constant)
+        != Some(body.const_context)
+    {
+        return Err(report.body_error(
+            closure.source,
+            "closure body qualification differs from its actual type declaration",
+        ));
+    }
     let mut body = Builder::new(report, facts, scratch, body, scope_plan, query)?
         .run_root(closure.body.node, Some(closure.parameters))
         .map_err(|e| report.diagnostic(e))?;
+    crate::body::constants::eligibility(report, facts, &body)?;
     crate::body::instantiate::close_inline_operands(facts, &mut body)
         .map_err(|e| report.body_error(closure.source, e))?;
     Ok(body)
