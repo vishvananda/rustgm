@@ -252,8 +252,13 @@ fn trait_requirements(
                 },
                 caller.availability,
             )
-            .map_err(|_| "invalid or exhausted method trait selection")?
-            {
+            .map_err(|error| {
+                crate::sema::census::fold_cause(
+                    &error,
+                    "method trait selection work exhausted",
+                    "invalid method trait selection",
+                )
+            })? {
                 Selection::Refuted(refutation) => {
                     refutation.reject()?;
                     return Ok(false);

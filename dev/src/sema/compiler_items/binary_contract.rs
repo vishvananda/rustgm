@@ -53,6 +53,16 @@ pub(in crate::sema) fn pending_default(
     let operator = requested_operator(report, site, hook)?;
     operator_contract::pending_default(report, facts, site, operator)
 }
+/// An operation member whose declaration must be prepared before use.
+pub(in crate::sema) fn pending_member(
+    report: &Report,
+    facts: &Declarations,
+    site: NodeKey,
+    hook: Hook,
+) -> Result<Option<DefId>, Error> {
+    let operator = requested_operator(report, site, hook)?;
+    operator_contract::pending_member(report, facts, site, operator)
+}
 fn requested_operator(report: &Report, site: NodeKey, hook: Hook) -> Result<Operator, Error> {
     let operator = match hook {
         Hook::Shl => Operator::Shl,

@@ -38,8 +38,11 @@ impl Origins {
         Ok(())
     }
     pub(super) fn extend(&mut self, start: usize, other: Self) -> Result<(), &'static str> {
-        if start < self.labels.len() || start.saturating_add(other.labels.len()) > 1_000_000 {
-            return Err("invalid or exhausted proof source extension");
+        if start < self.labels.len() {
+            return Err("invalid proof source extension");
+        }
+        if start.saturating_add(other.labels.len()) > 1_000_000 {
+            return Err("proof source extension capacity exhausted");
         }
         self.labels.resize(start, 0);
         self.labels.extend(other.labels);

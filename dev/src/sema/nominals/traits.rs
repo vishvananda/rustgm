@@ -71,7 +71,13 @@ impl State {
     ) -> Result<bool, &'static str> {
         self.assumptions
             .mapped_exact_member(&mut facts.types, &mut self.context, predicate)
-            .map_err(|_| "invalid or exhausted mapped caller membership")
+            .map_err(|error| {
+                crate::sema::census::fold_cause(
+                    &error,
+                    "mapped caller membership work exhausted",
+                    "invalid mapped caller membership",
+                )
+            })
     }
 
     pub(super) fn append_proof(&mut self, proof: Obligations) -> Result<(), &'static str> {
@@ -375,7 +381,13 @@ impl State {
                 .assumptions
                 .prove_canonical(&mut facts.types, &mut self.context, requirement)
                 .map(|evidence| evidence.is_some())
-                .map_err(|_| "invalid or exhausted nominal trait proof");
+                .map_err(|error| {
+                    crate::sema::census::fold_cause(
+                        &error,
+                        "nominal trait proof work exhausted",
+                        "invalid nominal trait proof",
+                    )
+                });
         };
         let before = fold.steps;
         let requirement = fold.predicate(&mut facts.types, requirement)?;
@@ -432,7 +444,11 @@ impl State {
             Err(
                 crate::types::infer::Error::Mismatch | crate::types::infer::Error::Normalization,
             ) => Ok(false),
-            Err(_) => Err("invalid or exhausted associated equality proof"),
+            Err(error) => Err(crate::sema::census::fold_cause(
+                &error,
+                "associated equality proof work exhausted",
+                "invalid associated equality proof",
+            )),
         }
     }
 
@@ -569,9 +585,11 @@ fn select_requirement(
                     selection::Failure::Pending(_) => {
                         "canonical trait selection requires pending declarations"
                     }
-                    selection::Failure::Invalid(_) => {
-                        "invalid or exhausted canonical trait selection"
-                    }
+                    failure @ selection::Failure::Invalid(_) => crate::sema::census::fold_cause(
+                        &failure,
+                        "canonical trait selection work exhausted",
+                        "invalid canonical trait selection",
+                    ),
                 });
             }
         }
@@ -579,7 +597,10 @@ fn select_requirement(
     selected.map_err(|error| {
         #[cfg(test)]
         selection::copy_trace::record(|| format!("declaration selection: {error}"));
-        drop(error);
-        "invalid or exhausted canonical trait selection"
+        crate::sema::census::fold_cause(
+            &error,
+            "canonical trait selection work exhausted",
+            "invalid canonical trait selection",
+        )
     })
 }

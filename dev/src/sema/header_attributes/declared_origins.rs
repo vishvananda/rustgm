@@ -489,11 +489,19 @@ fn validate_header(
     validate_source(facts, report, key, header)?;
     match report.resolution.definitions[definition.0 as usize].kind {
         DefKind::Function => {
-            if facts
+            // An absent declaration header is an unprepared prerequisite: demand
+            // it before querying. Only a header of another declaration changed.
+            let Some(header) = facts
                 .declaration_header(definition)
                 .map_err(Error::unlocated)?
-                .is_none_or(|header| header.declaration.source() != Some(key))
-            {
+            else {
+                return Err(Error::at(
+                    key.file,
+                    0,
+                    "source attribute query requires its prepared function declaration header",
+                ));
+            };
+            if header.declaration.source() != Some(key) {
                 return Err(Error::at(
                     key.file,
                     0,

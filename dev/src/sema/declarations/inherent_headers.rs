@@ -355,7 +355,19 @@ impl Checker<'_> {
     }
 
     pub(super) fn index_inherent_methods(&mut self) -> Result<(), Error> {
-        if !self.inherent_headers.owners.is_empty() || !self.inherent_headers.buckets.is_empty() {
+        // An analysis-only census keeps the owners of its isolated failed
+        // headers pending, so a later lookup of their names waits on them and
+        // is recorded as blocked. Ordinary checking isolates nothing.
+        let census = self.census.as_deref();
+        let isolated = |owner: &DefId| census.is_some_and(|ledger| ledger.isolates_header(*owner));
+        if !self.inherent_headers.owners.keys().all(isolated)
+            || !self
+                .inherent_headers
+                .buckets
+                .values()
+                .flatten()
+                .all(isolated)
+        {
             return Err(Error::at(
                 crate::resolve::unit::FileId(0),
                 0,
@@ -365,7 +377,9 @@ impl Checker<'_> {
         // Demand order may differ from source order. Freeze ordering only after
         // every owner has published, independently of hash iteration order.
         self.facts.methods.freeze_inherent_names();
-        self.inherent_headers = Pending::default();
+        if self.inherent_headers.owners.is_empty() {
+            self.inherent_headers = Pending::default();
+        }
         Ok(())
     }
 }

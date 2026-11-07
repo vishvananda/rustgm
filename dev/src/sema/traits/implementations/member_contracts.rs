@@ -8,11 +8,17 @@ pub(in crate::sema) struct ConstantRequest {
 }
 
 impl Implementations {
-    pub(in crate::sema) fn finish_constant_headers(&mut self) -> Result<(), &'static str> {
+    /// Ordinary checking isolates nothing. An analysis-only census keeps the
+    /// headers of its isolated failed impls pending, so selections that could
+    /// use them keep waiting on them. Every other pending header still refuses.
+    pub(in crate::sema) fn finish_constant_headers(
+        &mut self,
+        isolated: impl Fn(DefId) -> bool,
+    ) -> Result<(), &'static str> {
         if self
             .pending
             .as_ref()
-            .is_some_and(|pending| !pending.only_collections())
+            .is_some_and(|pending| !pending.only_collections_or(&isolated))
         {
             return Err("implementation candidate inventory still has pending headers");
         }

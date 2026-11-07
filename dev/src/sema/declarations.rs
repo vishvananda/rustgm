@@ -149,6 +149,7 @@ enum Work {
     Default(generics::DefaultId, bool),
     PathArguments(NodeKey, DefId, regions::Context),
     Definition(DefId, bool),
+    AssociatedBounds(DefId),
     Node(NodeKey, bool, regions::Context),
     ScalarPattern(NodeKey, regions::Context),
     Reference(NodeKey, RegionId),
@@ -220,6 +221,8 @@ struct Checker<'a> {
     constant_members: traits::ConstantReadiness,
     early_implementations: Option<Box<traits::EarlyImplementations>>,
     associated_type_bounds: crate::support::hash::HashMap<DefId, traits::AssociatedBounds>,
+    /// Trait associated types prepared on demand; true once their bounds are lowered.
+    demanded_contracts: crate::support::hash::HashMap<DefId, bool>,
     opaque_syntax: crate::support::hash::HashMap<NodeKey, abstract_types::Pending>,
     object_syntax: objects::Syntax,
     associated_bindings: generics::bindings::Pending,
@@ -425,6 +428,7 @@ impl<'a> Checker<'a> {
             constant_members: traits::ConstantReadiness::default(),
             early_implementations: None,
             associated_type_bounds: crate::support::hash::HashMap::default(),
+            demanded_contracts: crate::support::hash::HashMap::default(),
             opaque_syntax: crate::support::hash::HashMap::default(),
             object_syntax: objects::Syntax::default(),
             associated_bindings: generics::bindings::Pending::default(),
@@ -796,6 +800,7 @@ impl Checker<'_> {
                 self.complete_associated_prefix(key, owner, context)?;
             }
             Work::Definition(id, finish) => self.definition(id, finish)?,
+            Work::AssociatedBounds(id) => self.finish_demanded_bounds(id)?,
             Work::Node(key, finish, context) => self.annotation(key, finish, context)?,
             Work::Reference(key, region) => self.reference_type(key, region)?,
             Work::Parameter(id, finish) => {
@@ -1095,7 +1100,7 @@ impl Checker<'_> {
         if self.activate_iteration_definition(id)? {
             return Ok(());
         }
-        if self.states[id.0 as usize] == State::Complete {
+        if self.states[id.0 as usize] == State::Complete || self.demand_associated_contract(id)? {
             return Ok(());
         }
         if self.activate_operator_owner(id)? {

@@ -263,6 +263,51 @@ pub(super) fn pending_default(
         .default
         .map(|_| parameter.binding))
 }
+/// Query only readiness of the operation members. A method declaration header
+/// or Output contract that does not exist yet is demanded; the ordinary
+/// validator still checks both values.
+pub(super) fn pending_member(
+    report: &Report,
+    facts: &Declarations,
+    site: NodeKey,
+    operator: Operator,
+) -> Result<Option<DefId>, Error> {
+    crate::sema::header_attributes::charge_source_contract_query(facts, 8)?;
+    let error = |message| Declarations::error(report, site, message);
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or_else(|| error("source operator member lost its actual catalog"))?;
+    catalog.require_provider_report(report).map_err(error)?;
+    // An absent trait is reported by the ordinary operator validator.
+    let Some(declaration) = catalog.language(operator.role()) else {
+        return Ok(None);
+    };
+    let header = headers::Trait::source(report, facts, declaration).map_err(error)?;
+    crate::sema::header_attributes::charge_source_contract_query(facts, header.members.len())?;
+    let member = |kind: DefKind, name: &str| {
+        header.members.iter().copied().find(|member| {
+            report
+                .resolution
+                .definitions
+                .get(member.0 as usize)
+                .is_some_and(|definition| {
+                    definition.kind == kind && report.package.names.get(definition.name) == name
+                })
+        })
+    };
+    let method = member(DefKind::Function, operator.method()).filter(|method| {
+        facts
+            .definitions
+            .get(method.0 as usize)
+            .is_some_and(Option::is_none)
+    });
+    let output = || {
+        member(DefKind::TypeAlias, "Output")
+            .filter(|output| operator.own_output() && !facts.associated.types.contains_key(output))
+    };
+    Ok(method.or_else(output))
+}
 impl Work {
     fn charge(&mut self, count: usize) -> Result<(), &'static str> {
         self.0 = self.0.saturating_add(count);

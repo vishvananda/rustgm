@@ -30,6 +30,8 @@ struct Selected {
 enum Selection {
     Deferred,
     Dependency(crate::sema::traits::selection::Dependency),
+    /// A fresh query consumes this trait associated type's result contract.
+    Contract(DefId),
     Definition(Selected),
     Resolved(Resolution),
 }
@@ -326,6 +328,11 @@ impl Checker<'_> {
             Selection::Dependency(dependency) => {
                 self.work.push(Work::ProjectionSelection(key, request));
                 self.work.push(Work::selection_dependency(dependency));
+                return Ok(());
+            }
+            Selection::Contract(member) => {
+                self.work.push(Work::ProjectionSelection(key, request));
+                self.work.push(Work::Definition(member, false));
                 return Ok(());
             }
             Selection::Definition(selected) => selected,

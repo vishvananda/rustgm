@@ -25,6 +25,16 @@ pub(in crate::sema) fn source_neg(
 ) -> Result<SourceUnary, Error> {
     unary(report, facts, site, Operator::Neg)
 }
+/// A Neg or Not member whose declaration must be prepared before use.
+pub(in crate::sema) fn pending_member(
+    report: &Report,
+    facts: &Declarations,
+    site: NodeKey,
+    negate: bool,
+) -> Result<Option<DefId>, Error> {
+    let operator = if negate { Operator::Neg } else { Operator::Not };
+    operator_contract::pending_member(report, facts, site, operator)
+}
 fn unary(
     report: &Report,
     facts: &mut Declarations,

@@ -496,3 +496,9 @@ roundtrip and immutable/end-of-allocation controls, with all failed hypotheses
 and no_core setup predecessors preserved. See its README and `local-reference.json`.
 Grouped `cstr_sources` owns candidate coverage; neither this preparation nor finite
 source qualification activates PA31 or claims an original library artifact.
+
+`spec/demanded-header-facts/` freezes five declared no_core impl-header
+controls: array-length self types whose `Sub` impl follows them, a chain, an
+overlap opponent, a missing `Sub` impl and a genuine constant cycle. Each
+outcome was declared before its rustc 1.98.0 oracle. A private invariant checks
+them; there is no graded manifest.

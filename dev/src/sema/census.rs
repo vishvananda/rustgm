@@ -267,6 +267,45 @@ pub fn exhausts_budget(message: &str) -> bool {
             && (message.contains("limit") || message.contains("input-graph bound")))
 }
 
+/// A cause that a fixed-message caller folds into one of two wordings.
+pub(crate) trait Exhaustion {
+    /// Whether the cause is genuine budget or capacity exhaustion.
+    fn exhausts(&self) -> bool;
+}
+impl Exhaustion for String {
+    fn exhausts(&self) -> bool {
+        exhausts_budget(self)
+    }
+}
+impl Exhaustion for &str {
+    fn exhausts(&self) -> bool {
+        exhausts_budget(self)
+    }
+}
+impl Exhaustion for crate::types::infer::Error {
+    fn exhausts(&self) -> bool {
+        matches!(self, Self::Budget | Self::Overflow)
+    }
+}
+impl Exhaustion for crate::sema::traits::selection::Failure {
+    fn exhausts(&self) -> bool {
+        match self {
+            Self::Pending(_) => false,
+            Self::Invalid(message) => exhausts_budget(message),
+        }
+    }
+}
+
+/// Genuine exhaustion keeps its sticky budget wording; every other cause is an
+/// ordinary failure with its own wording.
+pub(crate) fn fold_cause(
+    cause: &impl Exhaustion,
+    exhausted: &'static str,
+    invalid: &'static str,
+) -> &'static str {
+    if cause.exhausts() { exhausted } else { invalid }
+}
+
 /// The declaration kind and name of an item, for census records only.
 pub(crate) fn describe(report: &Report, id: DefId) -> String {
     report

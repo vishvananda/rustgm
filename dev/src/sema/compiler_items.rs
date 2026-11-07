@@ -127,6 +127,7 @@ pub(in crate::sema) mod role_values;
 mod sizing;
 pub(in crate::sema) mod try_protocol;
 pub(in crate::sema) use binary_contract::pending_default as binary_pending_default;
+pub(in crate::sema) use binary_contract::pending_member as binary_pending_member;
 pub(in crate::sema) use binary_contract::{
     index_available, source_assignment, source_binary, source_index,
 };
@@ -143,7 +144,9 @@ pub(super) use layout::validate_member as validate_layout_member;
 pub(crate) use needs_drop::NeedsDropSelection;
 pub(super) use roles::validate as validate_traits;
 pub(super) use sizing::validate as validate_sizing;
-pub(in crate::sema) use unary_contract::{source_neg, source_not};
+pub(in crate::sema) use unary_contract::{
+    pending_member as unary_pending_member, source_neg, source_not,
+};
 #[cfg(test)]
 #[path = "../../tests/invariants/panic_declarations.rs"]
 mod panic_declarations;

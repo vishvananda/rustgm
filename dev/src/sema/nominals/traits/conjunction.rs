@@ -69,8 +69,13 @@ impl State {
             self.availability,
             None,
         )
-        .map_err(|_| "invalid or exhausted canonical trait selection")?
-        {
+        .map_err(|error| {
+            crate::sema::census::fold_cause(
+                &error,
+                "canonical trait selection work exhausted",
+                "invalid canonical trait selection",
+            )
+        })? {
             selection::Conjunction::Proven {
                 proof,
                 sized,

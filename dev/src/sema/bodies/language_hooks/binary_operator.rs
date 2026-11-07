@@ -12,7 +12,7 @@ use crate::{
 };
 
 impl Checker<'_> {
-    pub(in crate::sema::bodies) fn binary_default_readiness(
+    pub(in crate::sema::bodies) fn binary_readiness(
         &self,
         node: NodeId,
     ) -> Result<Option<super::super::Requirement>, Error> {
@@ -43,8 +43,15 @@ impl Checker<'_> {
         };
         let hook = super::binary_hook(op)
             .ok_or_else(|| self.error(node, "source binary default lost its actual operator"))?;
-        compiler_items::binary_pending_default(self.report, self.facts, self.key(node), hook)
-            .map(|binding| binding.map(super::super::Requirement::GenericDefault))
+        if let Some(binding) =
+            compiler_items::binary_pending_default(self.report, self.facts, self.key(node), hook)?
+        {
+            return Ok(Some(super::super::Requirement::GenericDefault(binding)));
+        }
+        // A declaration header, such as an impl self-type length, can need the
+        // operation members before the fixed passes prepare them.
+        compiler_items::binary_pending_member(self.report, self.facts, self.key(node), hook)
+            .map(|member| member.map(super::super::Requirement::Definition))
     }
     pub(in crate::sema::bodies) fn source_binary_operator(
         &mut self,

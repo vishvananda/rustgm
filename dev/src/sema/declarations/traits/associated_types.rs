@@ -1,5 +1,6 @@
 //! Required type declarations and their implementation contracts share resolved identities.
 mod conformance;
+mod demand;
 mod early_metadata;
 pub(in crate::sema::declarations) use early_metadata::Phase as MetadataPhase;
 mod families;
@@ -139,29 +140,14 @@ impl Checker<'_> {
                 return Err(self.error(key, "associated types require inherited visibility"));
             }
             let parent = match owner.kind {
+                // A header that consumed this contract already prepared it.
+                OwnerKind::Trait { .. }
+                    if self.demanded_contracts.contains_key(&member.definition) =>
+                {
+                    continue;
+                }
                 OwnerKind::Trait { definition, .. } => {
-                    if ty.is_some() {
-                        return Err(self.error(
-                            key,
-                            "associated type defaults are not supported by the stable profile",
-                        ));
-                    }
-                    if !crate::sema::compiler_items::pointee::prepared_member(
-                        self.report,
-                        &self.facts,
-                        member.definition,
-                    )? && !crate::sema::compiler_items::discriminant::prepared_member(
-                        self.report,
-                        &self.facts,
-                        member.definition,
-                    )? && !crate::sema::compiler_items::field_protocol::prepared_member(
-                        self.report,
-                        &self.facts,
-                        member.definition,
-                    )? {
-                        self.declare_associated_type(member.definition, key, owner, definition)?;
-                    }
-                    if self.bound_syntax.contains_key(&member.definition) {
+                    if self.declare_trait_member(member.definition, key, owner, definition, ty)? {
                         pending.push((member.definition, key));
                     }
                     definition
@@ -204,6 +190,39 @@ impl Checker<'_> {
             self.complete_associated_result_bounds(id, key, steps, limit)?;
         }
         Ok(())
+    }
+
+    /// Declare one trait associated type; true when its written result bounds
+    /// remain to be lowered by the bound worklist.
+    fn declare_trait_member(
+        &mut self,
+        id: DefId,
+        key: NodeKey,
+        owner: Owner,
+        trait_item: DefId,
+        default: Option<crate::syntax::ast::NodeId>,
+    ) -> Result<bool, Error> {
+        if default.is_some() {
+            return Err(self.error(
+                key,
+                "associated type defaults are not supported by the stable profile",
+            ));
+        }
+        if !crate::sema::compiler_items::pointee::prepared_member(self.report, &self.facts, id)?
+            && !crate::sema::compiler_items::discriminant::prepared_member(
+                self.report,
+                &self.facts,
+                id,
+            )?
+            && !crate::sema::compiler_items::field_protocol::prepared_member(
+                self.report,
+                &self.facts,
+                id,
+            )?
+        {
+            self.declare_associated_type(id, key, owner, trait_item)?;
+        }
+        Ok(self.bound_syntax.contains_key(&id))
     }
 
     fn complete_associated_result_bounds(

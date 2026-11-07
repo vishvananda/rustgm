@@ -144,9 +144,12 @@ impl Match<'_> {
                     .map_err(|_| "call opening allocation failed")?;
             }
             self.seen.insert((actual, expected, depth));
-            if !self.compare(actual, expected, depth).map_err(|_| {
-                self.failure
-                    .unwrap_or("invalid or exhausted call result candidate")
+            if !self.compare(actual, expected, depth).map_err(|error| {
+                self.failure.unwrap_or(if matches!(error, Error::Budget) {
+                    "call result candidate work exhausted"
+                } else {
+                    "invalid call result candidate"
+                })
             })? {
                 return Ok(false);
             }

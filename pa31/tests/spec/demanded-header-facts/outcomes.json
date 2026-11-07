@@ -1,0 +1,50 @@
+{
+ "schema": 1,
+ "declared": "2026-11-07, before the frozen oracle and before any implementation change",
+ "declaration_sha256": "ef901bd758a8824d0a1502db40877f4598267730c9db4e54759171618cf6cb5b",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "cases": {
+  "impl-length-sub.rs": {
+   "sha256": "089a7294fa738009374c09bcd55440c840c027051ec9278f4a21200d48b3bb4c",
+   "declared": 0,
+   "reason": "trait impl self type [T; 3 - 1]; the length uses the source const Sub impl for usize",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "impl-length-chain.rs": {
+   "sha256": "60a9b3626c9f2a0874b1c3c017dcd16125802caa4137dbbe96e4101988bf415c",
+   "declared": 0,
+   "reason": "array_impl_default-shaped chain [T; 3], [T; (3 - 1)], ... down to 0",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "impl-length-overlap.rs": {
+   "sha256": "9be58b1db12fbee7b4d2011326c37ba0ef29f8c03e61be168ea8462cbb8b758f",
+   "declared": 1,
+   "reason": "[T; 2] and [T; 3 - 1] are the same type: conflicting implementations (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "impl-length-missing-sub.rs": {
+   "sha256": "b29b7e8051462b1b6cc976413c0c94855b8c83320f618434ead3c2d7926e3efb",
+   "declared": 1,
+   "reason": "no Sub impl for usize: the length cannot be subtracted",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0369"
+   ]
+  },
+  "impl-length-cycle.rs": {
+   "sha256": "f78bce1ccc67e0ea013b01bde248cee6d3930fd7cff81802ae1bedc11f0ad888",
+   "declared": 1,
+   "reason": "const N = N - 1 used as an impl self-type length is a genuine cycle (E0391)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0391"
+   ]
+  }
+ }
+}

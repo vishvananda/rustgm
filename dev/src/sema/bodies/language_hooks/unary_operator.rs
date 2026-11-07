@@ -7,6 +7,35 @@ use crate::{
 };
 
 impl Checker<'_> {
+    /// A declaration header, such as an array length, can need the Neg or Not
+    /// members before the fixed passes prepare them.
+    pub(in crate::sema::bodies) fn unary_readiness(
+        &self,
+        node: NodeId,
+    ) -> Result<Option<super::super::Requirement>, Error> {
+        if self.facts.source_bindings.is_none()
+            || !matches!(
+                self.availability,
+                crate::sema::traits::implementations::Availability::Declarations
+            )
+        {
+            return Ok(None);
+        }
+        let Kind::Unary {
+            op: op @ (Unary::Negate | Unary::Not),
+            ..
+        } = self.kind(node)
+        else {
+            return Ok(None);
+        };
+        compiler_items::unary_pending_member(
+            self.report,
+            self.facts,
+            self.key(node),
+            op == Unary::Negate,
+        )
+        .map(|member| member.map(super::super::Requirement::Definition))
+    }
     pub(in crate::sema::bodies) fn source_unary_operator(
         &mut self,
         node: NodeId,

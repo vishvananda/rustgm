@@ -583,8 +583,12 @@ impl Search<'_> {
         .map_err(inference)
     }
 }
-fn inference(_: crate::types::infer::Error) -> &'static str {
-    "invalid or exhausted receiver inference graph"
+fn inference(error: crate::types::infer::Error) -> &'static str {
+    crate::sema::census::fold_cause(
+        &error,
+        "receiver inference graph work exhausted",
+        "invalid receiver inference graph",
+    )
 }
 
 /// Before 2021 a by-value array receiver skips `IntoIterator::into_iter`; the

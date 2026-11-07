@@ -39,10 +39,10 @@ impl Pending {
                     })
             })
     }
-    pub(in super::super) fn only_collections(&self) -> bool {
+    pub(in super::super) fn only_collections_or(&self, isolated: impl Fn(DefId) -> bool) -> bool {
         self.owners
             .keys()
-            .all(|owner| self.collection_owner(*owner))
+            .all(|owner| isolated(*owner) || self.collection_owner(*owner))
     }
 
     pub(in super::super) fn install_collections(

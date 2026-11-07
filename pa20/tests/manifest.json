@@ -23354,6 +23354,128 @@
       "environment": {
         "RUSTC_BOOTSTRAP": "1"
       }
+    },
+    {
+      "path": "tests/spec/projections/header-demand/where-nested-premise.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/demand_header_facts.rs:CONTROLS",
+      "source_sha256": "120ea3721e74ff58b81a1e95b4959b2799822a66600d1fda6d5e2b9533da43d7"
+    },
+    {
+      "path": "tests/spec/projections/header-demand/where-bounded-premise.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.projections",
+        "pa20.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/demand_header_facts.rs:CONTROLS",
+      "source_sha256": "676b23fbe61a17080d517a8e4de129b5635e6eb07215d1fc395a930aa0b580c1"
+    },
+    {
+      "path": "tests/spec/projections/header-demand/where-missing-premise.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/demand_header_facts.rs:CONTROLS",
+      "source_sha256": "66eb774f09ba8708e777e43fb9afb1519c32fc75c0f9befdd1cab681bf8fe24e"
+    },
+    {
+      "path": "tests/spec/projections/header-demand/where-result-equality.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.projections",
+        "pa20.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/demand_header_facts.rs:CONTROLS",
+      "source_sha256": "5d21dce39293521819a2f5a49a72e9523bef9a82c4bd2dc56d9678cd5b936fb1"
+    },
+    {
+      "path": "tests/spec/projections/header-demand/self-target.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/demand_header_facts.rs:CONTROLS",
+      "source_sha256": "81ec315a0d023ca230248fbf548418ce2301f344d0d9e417784bc7b55886b2c2"
+    },
+    {
+      "path": "tests/spec/projections/header-demand/self-target-binding.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/demand_header_facts.rs:CONTROLS",
+      "source_sha256": "ef3e606d51072829b4e080380d7b8b947d227db7d9bc2de62cb9d535a8ce2354"
+    },
+    {
+      "path": "tests/spec/projections/header-demand/self-argument-cycle.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/demand_header_facts.rs:CONTROLS",
+      "source_sha256": "8ac695e06c07c1b213fe04aed42510db8db3171df9a45f78ca7b907013cd898e"
+    },
+    {
+      "path": "tests/spec/projections/header-demand/self-target-unbound.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/demand_header_facts.rs:CONTROLS",
+      "source_sha256": "ba33c4b7a5ec9135b4d86b5e25b711af71b8880704b278b2ed9649c645fb0a85"
     }
   ]
 }

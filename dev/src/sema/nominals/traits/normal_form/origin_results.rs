@@ -105,10 +105,13 @@ impl Query {
             .as_mut()
             .ok_or("missing inherited result proof")?
             .inherited_mut()?;
-        if let Some(dependency) = requirements
-            .advance(facts, &mut inputs)
-            .map_err(|_| "invalid or exhausted inherited result defining-header proof")?
-        {
+        if let Some(dependency) = requirements.advance(facts, &mut inputs).map_err(|error| {
+            crate::sema::census::fold_cause(
+                &error,
+                "inherited result defining-header proof work exhausted",
+                "invalid inherited result defining-header proof",
+            )
+        })? {
             requirements.charge(1, size_of::<Self>())?;
             return Ok(Progress::Pending(dependency, Box::new(self)));
         }

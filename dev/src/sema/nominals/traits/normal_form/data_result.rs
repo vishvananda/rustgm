@@ -66,11 +66,13 @@ impl Query {
         let Some(Continuation::Metadata(pending)) = self.inherited.as_deref_mut() else {
             return Err("missing source Metadata continuation");
         };
-        match pending
-            .plan
-            .advance(facts)
-            .map_err(|_| "invalid or exhausted source Metadata plan")?
-        {
+        match pending.plan.advance(facts).map_err(|error| {
+            crate::sema::census::fold_cause(
+                &error,
+                "source Metadata plan work exhausted",
+                "invalid source Metadata plan",
+            )
+        })? {
             MetadataStep::Ready(ty) => self.finish(facts, Some(Resolution::Type(ty))),
             MetadataStep::Fields(item) => {
                 self.wait_metadata(facts, selection::Dependency::Fields(item))
@@ -120,7 +122,13 @@ impl Query {
                 None,
             )
         }
-        .map_err(|_| "invalid or exhausted source Metadata Sized proof")?;
+        .map_err(|error| {
+            crate::sema::census::fold_cause(
+                &error,
+                "source Metadata Sized proof work exhausted",
+                "invalid source Metadata Sized proof",
+            )
+        })?;
         match progress {
             selection::Progress::Pending(dependency, query) => {
                 pending.selection = Some(query);

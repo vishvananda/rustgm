@@ -1,5 +1,5 @@
 //! Declaration projection selections resume with their original immutable environment.
-use super::{Checker, Error, NodeKey, Request, Selected, Selection, regions};
+use super::{Checker, DefId, Error, NodeKey, Request, Selected, Selection, regions};
 use crate::{
     sema::{
         nominals::traits::{Projected, normal_form},
@@ -44,6 +44,9 @@ impl Checker<'_> {
             .get(&key)
             .ok_or_else(|| self.error(key, "missing projection scope"))?
             .context;
+        if let Some(member) = self.subject_contract(key, request)? {
+            return Ok(Selection::Contract(member));
+        }
         let Some(Attempt {
             progress,
             mut delivery,
@@ -79,6 +82,26 @@ impl Checker<'_> {
             }
         };
         self.finish_projection_selection(key, request, context, projected, delivery)
+    }
+
+    /// A fresh query over a projected subject reads the subject's result
+    /// contract. A trait associated type not yet prepared is demanded first.
+    fn subject_contract(&self, key: NodeKey, request: Request) -> Result<Option<DefId>, Error> {
+        let pending = self
+            .projections
+            .roots
+            .get(&key)
+            .is_some_and(|root| root.pending.is_some());
+        let parent = request.alias.associated().and_then(|application| {
+            match self.facts.types.kind(application.subject) {
+                Some(crate::types::Kind::Projection(parent)) => Some(parent.item),
+                _ => None,
+            }
+        });
+        match parent {
+            Some(parent) if !pending => self.unprepared_contract(parent),
+            _ => Ok(None),
+        }
     }
 
     fn projection_attempt(

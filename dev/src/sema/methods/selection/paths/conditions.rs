@@ -125,7 +125,13 @@ impl Pending {
                 caller.availability,
             )
         };
-        selected.map_err(|_| "invalid or exhausted method trait selection")
+        selected.map_err(|error| {
+            crate::sema::census::fold_cause(
+                &error,
+                "method trait selection work exhausted",
+                "invalid method trait selection",
+            )
+        })
     }
 }
 fn frontier(facts: &Declarations) -> Result<u32, &'static str> {

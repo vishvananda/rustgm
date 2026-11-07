@@ -88,8 +88,11 @@ impl Checker<'_> {
         if let Some(selected) = self.selected.as_deref_mut() {
             selected.require_imported_pending(self.report, &self.facts)?;
         } else if let Some(registry) = &mut self.facts.generics.implementations {
+            let census = self.census.as_deref();
             registry
-                .finish_constant_headers()
+                .finish_constant_headers(|owner| {
+                    census.is_some_and(|ledger| ledger.isolates_header(owner))
+                })
                 .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
         }
         Ok(())
@@ -179,16 +182,17 @@ impl Checker<'_> {
         Ok(())
     }
 
-    pub(in crate::sema::declarations) fn publish_trait_header(
+    /// The impl's trait reference: its Self type and lowered trait application.
+    /// It needs the trait path arguments, never the impl's where-clauses.
+    pub(in crate::sema::declarations) fn impl_trait_reference(
         &mut self,
         owner: crate::sema::associated::SourceOwner,
         path: NodeKey,
         ty: crate::types::TypeId,
         context: super::super::regions::Context,
-    ) -> Result<(), Error> {
+    ) -> Result<Predicate, Error> {
         let (path, definition) = self.resolved_impl_trait_path(path)?;
-        let identity = self.impl_trait_identity(definition);
-        let bound = match identity {
+        let bound = match self.impl_trait_identity(definition) {
             Identity::User(_) => Bound::trait_application(
                 self.trait_path(path, definition, ty, context)?,
                 if matches!(owner.kind, OwnerKind::Impl { constant: true, .. }) {
@@ -207,8 +211,19 @@ impl Checker<'_> {
                 Bound::Auto(marker)
             }
         };
+        Ok(Predicate { ty, bound })
+    }
+
+    pub(in crate::sema::declarations) fn publish_trait_header(
+        &mut self,
+        owner: crate::sema::associated::SourceOwner,
+        path: NodeKey,
+        predicate: Predicate,
+        context: super::super::regions::Context,
+    ) -> Result<(), Error> {
+        let (_, definition) = self.resolved_impl_trait_path(path)?;
+        let identity = self.impl_trait_identity(definition);
         self.finish_impl_regions(owner, context)?;
-        let predicate = Predicate { ty, bound };
         self.validate_language_orphan(owner.source, definition, predicate)?;
         self.impl_parameters(owner.self_definition, owner.source, predicate)?;
         self.facts

@@ -72,7 +72,7 @@ fn selection_waits_for_all_compatible_headers_without_unrelated_owners()
         registry.candidates(&mut store, &mut context, &goal, Availability::Declarations)?,
         Candidates::Pending(vec![DefId(11), DefId(13)])
     );
-    assert!(registry.finish_constant_headers().is_err());
+    assert!(registry.finish_constant_headers(|_| false).is_err());
     assert!(!registry.constant_headers_ready());
     let projected = implementation(&mut store, 13, 1, TypeId::primitive(Primitive::U16))?;
     registry.prepare(&mut store, ItemId(1), projected)?;
@@ -92,12 +92,18 @@ fn selection_waits_for_all_compatible_headers_without_unrelated_owners()
     );
     assert!(registry.may_have_subject(ItemId(2), Subject::Rigid(Head::Primitive(Primitive::U8))));
     assert!(!registry.may_have_subject(ItemId(2), Subject::Rigid(Head::Primitive(Primitive::U16))));
-    assert!(registry.finish_constant_headers().is_err());
+    assert!(registry.finish_constant_headers(|_| false).is_err());
+    // Isolating one census-failed owner never hides another pending header.
+    assert!(
+        registry
+            .finish_constant_headers(|owner| owner == DefId(12))
+            .is_err()
+    );
     for (owner, item, primitive) in [(12, 1, Primitive::U16), (14, 2, Primitive::U8)] {
         let value = implementation(&mut store, owner, item, TypeId::primitive(primitive))?;
         registry.prepare(&mut store, ItemId(item), value)?;
     }
-    registry.finish_constant_headers()?;
+    registry.finish_constant_headers(|_| false)?;
     assert!(registry.constant_headers_ready());
     assert!(registry.pending.is_none());
     assert_eq!(registry.validated().count(), 0);
@@ -257,11 +263,11 @@ fn header_publication_checks_reserved_identity_before_removing_dependencies()
         let value = implementation(&mut store, owner, item, TypeId::primitive(ty))?;
         assert!(registry.prepare(&mut store, ItemId(item), value).is_err());
         assert_eq!(registry.headers().count(), 0);
-        assert!(registry.finish_constant_headers().is_err());
+        assert!(registry.finish_constant_headers(|_| false).is_err());
     }
     let value = implementation(&mut store, 10, 1, TypeId::primitive(Primitive::U8))?;
     registry.prepare(&mut store, ItemId(1), value)?;
-    registry.finish_constant_headers()?;
+    registry.finish_constant_headers(|_| false)?;
     assert!(registry.reserve(Vec::new()).is_err());
     let extra = implementation(&mut store, 11, 1, TypeId::primitive(Primitive::U8))?;
     assert!(registry.prepare(&mut store, ItemId(1), extra).is_err());
@@ -411,7 +417,7 @@ fn collection_registry(
     let mut registry = Implementations::default();
     registry.reserve(headers)?;
     registry.register_collection_heads(report)?;
-    registry.finish_constant_headers()?;
+    registry.finish_constant_headers(|_| false)?;
     registry.finish_validation()?;
     Ok(registry)
 }
@@ -437,7 +443,7 @@ fn canonical_range_heads_are_exact_cold_and_do_not_widen_pending_records()
     });
     let mut pending = Pending::new(rows.to_vec())?;
     pending.install_ranges(&report)?;
-    assert!(pending.only_collections());
+    assert!(pending.only_collections_or(|_| false));
     let heads = pending.collections.as_deref().ok_or("heads")?;
     assert!(heads.iterator.is_none() && heads.entries.is_empty());
     assert_eq!(

@@ -452,8 +452,11 @@ impl Query {
         selected.map_err(|error| {
             #[cfg(test)]
             selection::copy_trace::record(|| format!("normal-form selection: {error}"));
-            drop(error);
-            "invalid or exhausted canonical trait selection"
+            crate::sema::census::fold_cause(
+                &error,
+                "canonical trait selection work exhausted",
+                "invalid canonical trait selection",
+            )
         })
     }
 
@@ -482,7 +485,13 @@ impl Query {
             self.state.environment.as_deref(),
             self.state.obligations.regions.end,
         )
-        .map_err(|_| "invalid or exhausted associated equality selection")
+        .map_err(|error| {
+            crate::sema::census::fold_cause(
+                &error,
+                "associated equality selection work exhausted",
+                "invalid associated equality selection",
+            )
+        })
     }
 
     fn finish(

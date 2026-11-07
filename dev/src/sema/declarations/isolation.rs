@@ -2,7 +2,10 @@
 //! left in flight unusable. Ordinary checking has no ledger and keeps its first error.
 use super::{Checker, DefId, Error, SignaturePhase, State, Work, impl_headers, traits};
 use crate::{
-    sema::census::{self, Census, Phase},
+    sema::{
+        associated::OwnerKind,
+        census::{self, Census, Phase},
+    },
     support::hash::{HashMap, HashSet},
     types::ItemId,
 };
@@ -23,7 +26,9 @@ impl Unit {
     /// The guarded owner a work item enters, whether or not it already began.
     const fn entered(work: Work) -> Option<Self> {
         Some(match work {
-            Work::Definition(id, _) | Work::Signature(_, Some(id), _) => Self::Definition(id),
+            Work::Definition(id, _)
+            | Work::AssociatedBounds(id)
+            | Work::Signature(_, Some(id), _) => Self::Definition(id),
             Work::ImplHeader(id, _) => Self::ImplHeader(id),
             Work::ValidateImpl(id, _) => Self::ValidateImpl(id),
             Work::Fields(item, _) => Self::Fields(item),
@@ -43,6 +48,7 @@ impl Unit {
             | Work::NominalContract(_, finish)
             | Work::ProjectionEnvironment(_, _, finish)
             | Work::CallerLocation(_, finish) => finish,
+            Work::AssociatedBounds(_) => true,
             Work::Signature(_, Some(_), phase) => !matches!(phase, SignaturePhase::Begin(_)),
             Work::ImplHeader(_, phase) => !matches!(phase, impl_headers::Phase::Begin),
             Work::ValidateImpl(_, phase) => !matches!(
@@ -89,6 +95,10 @@ impl Ledger {
     }
     pub(super) fn into_census(self) -> Census {
         self.census
+    }
+    /// A header whose impl failed, or was blocked, in this census.
+    pub(super) fn isolates_header(&self, owner: DefId) -> bool {
+        self.poison.contains_key(&Unit::ImplHeader(owner)) || self.settled.contains(&owner)
     }
 }
 
@@ -158,7 +168,32 @@ impl Checker<'_> {
         }
     }
 
+    /// The impl that owns the member definition a failing unit entered.
+    fn failing_member_owner(&self) -> Result<Option<DefId>, Error> {
+        let Some(Unit::Definition(id)) = self
+            .census
+            .as_deref()
+            .and_then(|ledger| ledger.failing)
+            .and_then(Unit::entered)
+        else {
+            return Ok(None);
+        };
+        let Some(index) = self.facts.associated.owner(id) else {
+            return Ok(None);
+        };
+        let owner = self
+            .facts
+            .associated
+            .source_at(index.0 as usize)
+            .map_err(Error::unlocated)?;
+        Ok(owner.and_then(|owner| {
+            matches!(owner.kind, OwnerKind::Impl { .. }).then_some(owner.self_definition)
+        }))
+    }
+
     fn isolate(&mut self, root: DefId, error: Error, exhausted: bool) -> Result<(), Error> {
+        // A member of an impl whose header failed is blocked by that header.
+        let owner = self.failing_member_owner()?;
         let Some(mut ledger) = self.census.take() else {
             return Err(error);
         };
@@ -171,6 +206,9 @@ impl Checker<'_> {
         let entered = ledger.failing.take().and_then(Unit::entered);
         let blocker = entered
             .and_then(|unit| ledger.poison.get(&unit).copied())
+            .or_else(|| {
+                owner.and_then(|owner| ledger.poison.get(&Unit::ImplHeader(owner)).copied())
+            })
             .or_else(|| ledger.census.repeated(&error));
         let cause = if let Some(cause) = blocker {
             self.settle_blocked(&mut ledger, root, cause);
@@ -207,6 +245,7 @@ impl Checker<'_> {
         ledger.trail.clear();
         self.work.clear();
         self.children.clear();
+        self.withdraw_unfinished_contracts();
         self.census = Some(ledger);
         Ok(())
     }

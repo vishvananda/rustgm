@@ -153,6 +153,41 @@ fn independent_declaration_failures_and_their_dependents_are_each_reported_once(
 }
 
 #[test]
+fn failed_impl_headers_stay_item_local_and_block_their_members() -> Result {
+    let input = input(
+        "headers",
+        "pub trait Tr { const C: u8; }\n\
+         pub struct S;\n\
+         impl<const N: usize> Tr for N { const C: u8 = 0; }\n\
+         impl<const N: usize> N { const D: u8 = 1; }\n\
+         impl Tr for S { const C: u8 = 2; }\n\
+         pub const USE: u8 = <S as Tr>::C;\n\
+         fn fine() {}\n",
+    )?;
+    let text = census("--emit-types", &input, "types", &[])?;
+    let failed = "const parameter cannot be used as a type";
+    // Neither the trait-impl inventory nor the inherent index turns the two
+    // failed headers into a crate-level stop; their members are blocked.
+    assert_eq!(
+        records(&text),
+        [
+            ["declarations", "failed", "self-type `Self`", "-", failed],
+            ["declarations", "failed", "self-type `Self`", "-", failed],
+            ["declarations", "blocked", "const `C`", "1", BLOCKED],
+            ["declarations", "blocked", "const `D`", "2", BLOCKED],
+            [
+                "declarations",
+                "stopped",
+                "-",
+                "-",
+                "later passes were not run after 2 failed and 2 blocked items in declarations"
+            ],
+        ]
+    );
+    ordinary_matches_first_record(&input, &text)
+}
+
+#[test]
 fn body_failures_in_plain_and_hidden_type_schedules_are_all_reported() -> Result {
     let plain = input(
         "plain-bodies",

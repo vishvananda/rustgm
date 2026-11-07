@@ -122,7 +122,11 @@ impl Checker<'_> {
             Vec::new()
         };
         if self.report.resolution.definitions[path.owner.0 as usize].kind == DefKind::SelfType {
-            predicates.push(self.self_projection_candidate(key, path.owner, context)?);
+            let Some(candidate) = self.self_projection_candidate(key, path.owner, context)? else {
+                // The impl's trait reference was demanded; this resumes after it.
+                return Ok(());
+            };
+            predicates.push(candidate);
         }
         if self.header_names_active() {
             return self.schedule_header_projection(key, context, path.name, predicates);
@@ -196,7 +200,7 @@ impl Checker<'_> {
         key: NodeKey,
         owner: DefId,
         context: regions::Context,
-    ) -> Result<Predicate, Error> {
+    ) -> Result<Option<Predicate>, Error> {
         let kind = self
             .facts
             .associated
@@ -214,13 +218,23 @@ impl Checker<'_> {
             OwnerKind::Impl {
                 trait_type: Some(_),
                 ..
-            } => self
-                .facts
-                .generics
-                .implementations
-                .as_ref()
-                .and_then(|registry| registry.header(owner))
-                .map(|header| header.predicate),
+            } => {
+                if let Some(header) = self
+                    .facts
+                    .generics
+                    .implementations
+                    .as_ref()
+                    .and_then(|registry| registry.header(owner))
+                {
+                    Some(header.predicate)
+                } else {
+                    let resume = Work::ImplicitProjection(key, context);
+                    let Some(reference) = self.demanded_trait_reference(owner, key, resume)? else {
+                        return Ok(None);
+                    };
+                    Some(reference)
+                }
+            }
             OwnerKind::Impl {
                 trait_type: None, ..
             } => None,
@@ -243,6 +257,7 @@ impl Checker<'_> {
             self.owner_binders.get(&owner).copied(),
             context,
         )
+        .map(Some)
     }
 
     fn lookup_projection_member(

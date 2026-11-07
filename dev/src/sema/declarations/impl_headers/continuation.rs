@@ -12,6 +12,8 @@ pub(in crate::sema::declarations) enum Phase {
     Target,
     Publish,
     Arguments,
+    /// Record the trait reference once its path arguments are lowered.
+    Reference,
     Finish,
 }
 
@@ -20,6 +22,8 @@ pub(in crate::sema::declarations) struct Pending {
     active: HashSet<DefId>,
     complete: HashSet<DefId>,
     partial: HashMap<DefId, Partial>,
+    /// Trait references, active (`None`) or complete, demanded before Finish.
+    references: HashMap<DefId, Option<Predicate>>,
     pub(in crate::sema::declarations) unsupported: Option<HashSet<OwnerId>>,
 }
 
@@ -83,17 +87,9 @@ impl Checker<'_> {
             }
             Phase::Arguments => {
                 if let Some(path) = trait_type {
-                    let (path, definition) = self.resolved_impl_trait_path(path)?;
                     self.work.push(Work::ImplHeader(id, Phase::Finish));
-                    if matches!(
-                        self.impl_trait_identity(definition),
-                        crate::sema::traits::implementations::Identity::User(_)
-                    ) {
-                        self.work.push(Work::PathArguments(
-                            path,
-                            definition,
-                            self.impl_context(owner)?,
-                        ));
+                    if !self.impl_headers.references.contains_key(&id) {
+                        self.begin_trait_reference(owner, path)?;
                     }
                 } else {
                     self.impl_parameters(
@@ -108,19 +104,103 @@ impl Checker<'_> {
                     self.finish_header_state(id);
                 }
             }
-            Phase::Finish => {
+            Phase::Reference => {
                 let path = trait_type
                     .ok_or_else(|| self.error(owner.source, "missing impl trait path"))?;
-                self.publish_trait_header(
+                let reference = self.impl_trait_reference(
                     owner,
                     path,
                     self.ty(target)?,
                     self.impl_context(owner)?,
                 )?;
+                self.impl_headers.references.insert(id, Some(reference));
+            }
+            Phase::Finish => {
+                let path = trait_type
+                    .ok_or_else(|| self.error(owner.source, "missing impl trait path"))?;
+                let reference = self
+                    .impl_headers
+                    .references
+                    .remove(&id)
+                    .flatten()
+                    .ok_or_else(|| self.error(owner.source, "missing impl trait reference"))?;
+                self.publish_trait_header(owner, path, reference, self.impl_context(owner)?)?;
                 self.finish_header_state(id);
             }
         }
         Ok(())
+    }
+
+    /// Lower the trait path arguments once; `Self::` shorthand in the impl's
+    /// where-clauses may demand this before the `Arguments` phase.
+    fn begin_trait_reference(
+        &mut self,
+        owner: Owner,
+        path: crate::resolve::unit::NodeKey,
+    ) -> Result<(), Error> {
+        let id = owner.self_definition;
+        if self.impl_headers.references.insert(id, None).is_some() {
+            return Err(self.error(owner.source, "impl trait reference began twice"));
+        }
+        let (path, definition) = self.resolved_impl_trait_path(path)?;
+        self.work.push(Work::ImplHeader(id, Phase::Reference));
+        if matches!(
+            self.impl_trait_identity(definition),
+            crate::sema::traits::implementations::Identity::User(_)
+        ) {
+            self.work.push(Work::PathArguments(
+                path,
+                definition,
+                self.impl_context(owner)?,
+            ));
+        }
+        Ok(())
+    }
+
+    /// The trait reference that `Self::` shorthand reads in an impl whose
+    /// header is not yet published. `Ok(None)` means it was demanded now and the
+    /// shorthand resumes after it; an active reference is a genuine cycle.
+    pub(in crate::sema::declarations) fn demanded_trait_reference(
+        &mut self,
+        id: DefId,
+        source: crate::resolve::unit::NodeKey,
+        resume: Work,
+    ) -> Result<Option<Predicate>, Error> {
+        match self.impl_headers.references.get(&id) {
+            Some(Some(reference)) => return Ok(Some(*reference)),
+            Some(None) => {
+                return Err(self.error(source, "cycle in implementation header dependencies"));
+            }
+            None => {}
+        }
+        let owner = self
+            .facts
+            .associated
+            .owner(id)
+            .and_then(|owner| self.facts.associated.get(owner))
+            .copied()
+            .ok_or_else(|| self.error(source, "missing impl header owner"))?
+            .source_owner()
+            .map_err(Error::unlocated)?;
+        let OwnerKind::Impl {
+            trait_type: Some(path),
+            ..
+        } = owner.kind
+        else {
+            return Err(self.error(
+                source,
+                "impl trait reference requires a trait implementation",
+            ));
+        };
+        if !self.impl_headers.active.contains(&id) || self.impl_headers.partial.contains_key(&id) {
+            return Err(self.error(
+                source,
+                "shorthand Self associated type requires a prepared trait owner",
+            ));
+        }
+        self.work.push(resume);
+        self.begin_trait_reference(owner, path)?;
+        Ok(None)
     }
 
     fn activate_library_impl_header(&mut self, id: DefId) -> Result<bool, Error> {

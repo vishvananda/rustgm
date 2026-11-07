@@ -71,7 +71,7 @@ fn setup() -> Result<(Declarations, DefId, Predicate, Box<Implementations>)> {
         actual,
         input,
     )?;
-    waiting.finish_constant_headers()?;
+    waiting.finish_constant_headers(|_| false)?;
     assert!(!waiting.is_validated(owner));
     let completed = facts
         .generics

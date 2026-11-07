@@ -83,3 +83,44 @@ fn budget_vocabulary_is_sticky_and_language_errors_are_not() {
         );
     }
 }
+
+/// The split fixed messages: exhaustion stays a sticky budget stop by its
+/// wording, and an invalid cause is an ordinary item failure.
+const SPLIT: [&str; 12] = [
+    "receiver inference graph",
+    "method trait selection",
+    "mapped caller membership",
+    "nominal trait proof",
+    "associated equality proof",
+    "canonical trait selection",
+    "associated equality selection",
+    "inherited result defining-header proof",
+    "source Metadata plan",
+    "source Metadata Sized proof",
+    "call result candidate",
+    "proof source extension",
+];
+
+#[test]
+fn split_fixed_messages_keep_exhaustion_apart_from_invalid_causes() {
+    for subject in SPLIT {
+        let invalid = format!("invalid {subject}");
+        assert!(!exhausts_budget(&invalid), "{invalid}");
+        let exhausted = if subject == "proof source extension" {
+            format!("{subject} capacity exhausted")
+        } else {
+            format!("{subject} work exhausted")
+        };
+        assert!(exhausts_budget(&exhausted), "{exhausted}");
+    }
+    let budget = crate::types::infer::Error::Budget;
+    assert_eq!(fold_cause(&budget, "exhausted", "invalid"), "exhausted");
+    let overflow = crate::types::infer::Error::Overflow;
+    assert_eq!(fold_cause(&overflow, "exhausted", "invalid"), "exhausted");
+    let mismatch = crate::types::infer::Error::Mismatch;
+    assert_eq!(fold_cause(&mismatch, "exhausted", "invalid"), "invalid");
+    let selection = crate::sema::traits::selection::Failure::Invalid("incompatible types".into());
+    assert_eq!(fold_cause(&selection, "exhausted", "invalid"), "invalid");
+    let message = "projection work budget exceeded";
+    assert_eq!(fold_cause(&message, "exhausted", "invalid"), "exhausted");
+}
