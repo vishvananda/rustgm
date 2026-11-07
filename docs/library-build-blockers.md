@@ -5,6 +5,30 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+[Census batch 1](parallel/census-batch1.md) does two things:
+
+- Projection-premise failures now report their real cause. Genuine exhaustion
+  is worded separately and stays sticky.
+- An impl parameter can be determined through the output of a quantified
+  `Fn(..) -> T` clause, exactly when its inputs are determined. Twelve PA24/PA21
+  controls agree with rustc.
+
+The second analysis-only census (CLI `e6f4a7ec`, 22.0 s/375 opens, inputs
+unchanged) checked 10,408 declarations: 6 failed, 31 blocked, bodies not
+reached. The largest cause is `ops/arith.rs` `Sub::sub`. A `[T; (32 - 1)]` impl
+header queries that method's attribute header before function headers exist, and
+the check misreports the absence as "changed its semantic function". That cause
+blocks 31 `array_impl_default!` impls. The other failures:
+
+- `any.rs:162`/`:169` (Lane B);
+- `flatten.rs:316`, a missing associated result contract;
+- `pin.rs:1745`, `Self::Target` in a trait impl's where-clause;
+- `pat.rs:85`, a non-pointer `!null` pattern type.
+
+The census stops at the first-error check `finish_constant_headers` in
+`prepare_trait_implementations` ("implementation candidate inventory still has
+pending headers"). Evidence: `rustgm-pa29-work/obj/parallel/core-census-2/`.
+
 The first original-core census (analysis-only, joined CLI `87c8e187`, 20.6 s/375
 opens, unchanged inputs and limits) checked 1,197 declarations: 7 failed, none
 blocked, and bodies were not reached. Five failures are impl parameters
