@@ -90,12 +90,7 @@ pub(super) fn emit(
     }
     for block in &body.blocks {
         stage.reserve(4 * size_of::<g::Block>())?;
-        let terminator = match block.terminator {
-            ir::Terminator::Jump(block) => g::Terminator::Jump(block.0),
-            ir::Terminator::Return(value) => g::Terminator::Return(value.0),
-            ir::Terminator::Unreachable => g::Terminator::Unreachable,
-            _ => return Err("source CFG terminator requires a wider transport profile"),
-        };
+        let terminator = terminator(block.terminator, stage.branch_transport())?;
         raw.blocks.push(g::Block {
             statements: g::Range {
                 start: block.start,
@@ -109,6 +104,27 @@ pub(super) fn emit(
     Ok(raw)
 }
 
+fn terminator(terminator: ir::Terminator, branches: bool) -> Result<g::Terminator, &'static str> {
+    Ok(match terminator {
+        ir::Terminator::Jump(block) => g::Terminator::Jump(block.0),
+        ir::Terminator::Return(value) => g::Terminator::Return(value.0),
+        ir::Terminator::Unreachable => g::Terminator::Unreachable,
+        ir::Terminator::Branch { condition, yes, no } if branches => g::Terminator::Branch {
+            condition: condition.0,
+            yes: yes.0,
+            no: no.0,
+        },
+        ir::Terminator::Panic if branches => g::Terminator::Panic,
+        ir::Terminator::Branch { .. } | ir::Terminator::Panic => {
+            return Err("source Branch/Panic CFG exits require the version-twelve profile");
+        }
+        // Imaginary ownership edges belong to pattern decisions; no profile yet
+        // retains their guard/decision tables, so they cannot be dropped here.
+        ir::Terminator::FalseEdge { .. } => {
+            return Err("source imaginary CFG edges require a wider transport profile");
+        }
+    })
+}
 fn locals(
     stage: &mut Stage,
     facts: &mut Declarations,

@@ -56,6 +56,13 @@ pub(super) fn parameter_read(
     })
 }
 pub(super) fn block_write(out: &mut Writer, row: &g::Block) -> Result<(), &'static str> {
+    if row.terminator.requires_branch_profile() {
+        return Err("source Branch/Panic CFG exits require the version-twelve encoder");
+    }
+    branch_block_write(out, row)
+}
+/// Version twelve appends tags 3 and 4; tags 0-2 keep their earlier bytes.
+pub(super) fn branch_block_write(out: &mut Writer, row: &g::Block) -> Result<(), &'static str> {
     range(out, row.statements)?;
     id(out, row.site)?;
     match row.terminator {
@@ -68,6 +75,14 @@ pub(super) fn block_write(out: &mut Writer, row: &g::Block) -> Result<(), &'stat
             id(out, block)
         }
         g::Terminator::Unreachable => out.u8(2),
+        g::Terminator::Branch { condition, yes, no } => {
+            out.u8(3)?;
+            for value in [condition, yes, no] {
+                id(out, value)?;
+            }
+            Ok(())
+        }
+        g::Terminator::Panic => out.u8(4),
     }
 }
 pub(super) fn block_read(read: &mut Input<'_, '_>) -> Result<g::Block, &'static str> {
@@ -77,6 +92,12 @@ pub(super) fn block_read(read: &mut Input<'_, '_>) -> Result<g::Block, &'static 
         0 => g::Terminator::Return(read.id()?),
         1 => g::Terminator::Jump(read.id()?),
         2 => g::Terminator::Unreachable,
+        3 if read.profile.branches() => g::Terminator::Branch {
+            condition: read.id()?,
+            yes: read.id()?,
+            no: read.id()?,
+        },
+        4 if read.profile.branches() => g::Terminator::Panic,
         _ => return Err("unknown source original terminator"),
     };
     Ok(g::Block {

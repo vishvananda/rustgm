@@ -147,6 +147,12 @@ pub(super) fn decode_module_nominals(
 ) -> Result<AvailabilityPacket, &'static str> {
     decode_availability_profile(reader, base, s::Profile::Source2024ModuleNominals)
 }
+pub(super) fn decode_module_branches(
+    reader: &mut Reader<'_>,
+    base: usize,
+) -> Result<AvailabilityPacket, &'static str> {
+    decode_availability_profile(reader, base, s::Profile::Source2024ModuleBranches)
+}
 pub(super) fn decode_module_conversions(
     reader: &mut Reader<'_>,
     base: usize,
@@ -268,7 +274,9 @@ fn encode_profile(
     } else {
         write(out, &rows.roles, contract_columns::role_write)?;
     }
-    if rows.descriptor().profile().nominals() {
+    if rows.descriptor().profile().branches() {
+        write(out, &rows.originals, operation_columns::branch_write)?;
+    } else if rows.descriptor().profile().nominals() {
         write(out, &rows.originals, operation_columns::nominal_write)?;
     } else if rows.descriptor().profile().call_safety() {
         write(out, &rows.originals, operation_columns::safety_write)?;

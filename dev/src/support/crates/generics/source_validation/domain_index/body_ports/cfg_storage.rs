@@ -139,10 +139,21 @@ impl DomainIndex<'_, '_> {
                 g::Terminator::Return(value) if value as usize >= original.values.len() => {
                     return Err("source return value is unknown");
                 }
-                g::Terminator::Jump(target) if target as usize >= original.blocks.len() => {
-                    return Err("source CFG successor is foreign");
+                g::Terminator::Branch { condition, .. }
+                    if condition as usize >= original.values.len() =>
+                {
+                    return Err("source branch condition is unknown");
                 }
                 _ => {}
+            }
+            if block
+                .terminator
+                .successors()
+                .into_iter()
+                .flatten()
+                .any(|target| target as usize >= original.blocks.len())
+            {
+                return Err("source CFG successor is foreign");
             }
         }
         work.charge(covered.len())?;
@@ -166,7 +177,7 @@ impl DomainIndex<'_, '_> {
             g::Location::Edge { block, target } => original
                 .blocks
                 .get(block as usize)
-                .is_some_and(|block| block.terminator == g::Terminator::Jump(target)),
+                .is_some_and(|block| block.terminator.successors().contains(&Some(target))),
         };
         if !valid {
             return Err("source storage location is foreign to its actual CFG");

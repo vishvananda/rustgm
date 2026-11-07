@@ -99,7 +99,8 @@ impl Graph {
                 | s::Profile::Source2024ModuleSafety
                 | s::Profile::Source2024ModuleConversions
                 | s::Profile::Source2024ModuleNominals
-                | s::Profile::Source2024ModuleCompilerOperations => {
+                | s::Profile::Source2024ModuleCompilerOperations
+                | s::Profile::Source2024ModuleBranches => {
                     descriptor.module_contracts()?;
                 }
                 _ => return Err("source header profile is unsupported"),

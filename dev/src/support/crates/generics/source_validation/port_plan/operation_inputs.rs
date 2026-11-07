@@ -65,6 +65,13 @@ impl Builder<'_, '_, '_> {
         }
         for (index, block) in original.blocks.iter().enumerate() {
             work.charge(1)?;
+            if let g::Terminator::Branch { condition, .. } = block.terminator {
+                let value = original
+                    .values
+                    .get(condition as usize)
+                    .ok_or("source branch condition is unknown")?;
+                self.boolean(original, value.ty, work)?;
+            }
             if let g::Terminator::Return(value) = block.terminator {
                 self.exact_relation(
                     original,
@@ -183,6 +190,22 @@ impl Builder<'_, '_, '_> {
             RequiredKind::Relation { actual, expected },
             work,
         )
+    }
+    /// A branch selects on exactly the closed primitive `bool`; no coercion,
+    /// projection or same-layout scalar can stand in for the actual type.
+    fn boolean(
+        &mut self,
+        original: &s::Original,
+        ty: g::TypeRef,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let node = self.node(original, ty, work)?;
+        if self.arena.nodes.get(node.0 as usize)
+            != Some(&Node::Scalar(crate::support::crates::Scalar::Bool))
+        {
+            return Err("source branch condition requires its actual bool value");
+        }
+        Ok(())
     }
     pub(super) fn unit(
         &mut self,

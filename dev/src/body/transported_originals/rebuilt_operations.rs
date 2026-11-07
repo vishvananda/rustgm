@@ -99,7 +99,8 @@ pub(super) fn build(
             })
         })
         .collect::<Result<_, &'static str>>()?;
-    body.blocks = operations::blocks(&record.blocks, &mut |index| {
+    let branches = view.rows().descriptor().profile().branches();
+    body.blocks = operations::blocks(&record.blocks, branches, &mut |index| {
         view.site(index, &mut work.steps)
     })?;
     lexical::fill_records(
@@ -293,6 +294,7 @@ pub(super) fn validate(
             return Err("source original changed an actual statement/site");
         }
     }
+    let branches = view.rows().descriptor().profile().branches();
     for (actual, record) in body.blocks.iter().zip(&record.blocks) {
         use crate::{body::ir::Terminator as T, support::crates::generics::Terminator as R};
         *steps = steps.saturating_add(1);
@@ -300,6 +302,15 @@ pub(super) fn validate(
             (T::Return(a), R::Return(b)) => a.0 == b,
             (T::Jump(a), R::Jump(b)) => a.0 == b,
             (T::Unreachable, R::Unreachable) => true,
+            (
+                T::Branch { condition, yes, no },
+                R::Branch {
+                    condition: c,
+                    yes: y,
+                    no: n,
+                },
+            ) => branches && condition.0 == c && yes.0 == y && no.0 == n,
+            (T::Panic, R::Panic) => branches,
             _ => false,
         };
         if !same

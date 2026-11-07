@@ -283,6 +283,8 @@ pub enum SourcePublication {
     ModuleConversions,
     ModuleNominals,
     CompilerOperations,
+    /// Version twelve: version-ten rows plus explicit Branch/Panic CFG exits.
+    ModuleBranches,
 }
 
 /// Publish only an explicitly selected ordinary source row profile.

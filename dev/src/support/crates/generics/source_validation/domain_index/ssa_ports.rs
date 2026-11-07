@@ -161,11 +161,20 @@ fn require(state: &[u8], node: Option<usize>) -> Result<(), &'static str> {
     Ok(())
 }
 
-// The current wire CFG has only one successor per block. Walk the actual entry
+// Snapshot bodies admit only one successor per block. Walk the actual entry
 // chain once, including the first traversal of a loop; unavailable first-use
 // values cannot be justified by a later iteration. Unreachable recipes still
-// passed the complete graph and ownership checks above.
+// passed the complete graph and ownership checks above. A two-way exit would
+// need dominance, not this chain, so it is refused before the walk (the block
+// scan is prepaid by `validate`).
 fn execute(original: &s::Original, state: &mut [u8], work: &mut Work) -> Result<(), &'static str> {
+    if original
+        .blocks
+        .iter()
+        .any(|block| matches!(block.terminator, g::Terminator::Branch { .. }))
+    {
+        return Err("source SSA snapshots across two-way exits require a wider dominance proof");
+    }
     let mut seen = vec![false; original.blocks.len()];
     let mut block = 0;
     loop {
@@ -209,7 +218,10 @@ fn execute(original: &s::Original, state: &mut [u8], work: &mut Work) -> Result<
         match current.terminator {
             g::Terminator::Jump(next) => block = next as usize,
             g::Terminator::Return(value) => return require(state, Some(value as usize)),
-            g::Terminator::Unreachable => return Ok(()),
+            g::Terminator::Unreachable | g::Terminator::Panic => return Ok(()),
+            g::Terminator::Branch { .. } => {
+                return Err("source SSA snapshot walk reached an actual two-way exit");
+            }
         }
     }
 }

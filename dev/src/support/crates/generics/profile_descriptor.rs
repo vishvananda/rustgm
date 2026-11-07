@@ -1,5 +1,6 @@
 //! A descriptor borrows completed source data; it is never callable permission.
 mod binding_order;
+mod branch_profile;
 mod compatibility_profile;
 mod safety_profile;
 pub(crate) use binding_order::sort as canonical_order;
@@ -77,6 +78,9 @@ pub enum Profile {
     Source2024ModuleNominals,
     /// Version eleven symbolic compiler operations, with no executable future grant.
     Source2024ModuleCompilerOperations,
+    /// Version twelve: complete version-ten rows plus explicit two-way Branch and
+    /// checked Panic CFG exits. It adds no operation, nominal or compiler grant.
+    Source2024ModuleBranches,
 }
 impl Profile {
     #[must_use]
@@ -91,6 +95,7 @@ impl Profile {
                 | Self::Source2024ModuleConversions
                 | Self::Source2024ModuleNominals
                 | Self::Source2024ModuleCompilerOperations
+                | Self::Source2024ModuleBranches
         )
     }
     #[must_use]
@@ -107,6 +112,7 @@ impl Profile {
                 | Self::Source2024ModuleConversions
                 | Self::Source2024ModuleNominals
                 | Self::Source2024ModuleCompilerOperations
+                | Self::Source2024ModuleBranches
         )
     }
     #[must_use]
@@ -129,6 +135,7 @@ impl Profile {
                 | Self::Source2024ModuleConversions
                 | Self::Source2024ModuleNominals
                 | Self::Source2024ModuleCompilerOperations
+                | Self::Source2024ModuleBranches
         )
     }
 }
@@ -410,6 +417,7 @@ impl ValidatedRows {
         super::operation_contracts::require_profile(&rows, profile, work)?;
         let features = profile.feature_predicates();
         safety_profile::require_profile(&rows, profile, work)?;
+        branch_profile::require_profile(&rows, profile, work)?;
         if !profile.definitions() {
             exact_exports::legacy(&rows, work)?;
         }
@@ -518,6 +526,7 @@ impl ValidatedRows {
         super::nominal_contracts::require_profile(&rows, profile, work)?;
         super::operation_contracts::require_profile(&rows, profile, work)?;
         safety_profile::require_profile(&rows, profile, work)?;
+        branch_profile::require_profile(&rows, profile, work)?;
         exact_exports::legacy(&rows, work)?;
         predicate_contracts::legacy(&rows, work)?;
         if extension.is_some() != (profile == Profile::Source2024ProvidedContracts) {
@@ -555,7 +564,8 @@ impl ValidatedRows {
             | Profile::Source2024ModuleSafety
             | Profile::Source2024ModuleConversions
             | Profile::Source2024ModuleNominals
-            | Profile::Source2024ModuleCompilerOperations => {
+            | Profile::Source2024ModuleCompilerOperations
+            | Profile::Source2024ModuleBranches => {
                 return Err(
                     "module contracts require their complete namespace/domain/attribute columns",
                 );

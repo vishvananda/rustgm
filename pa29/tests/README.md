@@ -39,3 +39,9 @@ visibility, generic identity and escaping-borrow opponents. The selected
 `crate_linking::source_nominals` integration controls consume its serialized v10
 profile. The owning checkpoint distinguishes independent, frontend, native and
 remaining transport requirements.
+
+`source-branch-outcomes.json` freezes the version-twelve source branch packet
+under `spec/source-branches/`: generic two-way, else-if, loop-exit and non-Copy
+move providers, fresh consumers at several types, move/type/Copy opponents and
+the wire-mutation anchors. The `crate_linking::branch_transport` integration
+controls consume it; the owning checkpoint records candidate results.

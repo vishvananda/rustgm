@@ -181,6 +181,33 @@ pub enum Terminator {
     Return(u32),
     Jump(u32),
     Unreachable,
+    /// Version-twelve source rows only. The condition is a value of this body
+    /// whose actual type must be `bool`; both successors are body-local blocks.
+    /// It carries no proof that either edge is taken or that the value is ready.
+    Branch {
+        condition: u32,
+        yes: u32,
+        no: u32,
+    },
+    /// Version-twelve source rows only. A checked diverging failure under the
+    /// abort runtime contract: no successor, no unwinding and no cleanup edge.
+    Panic,
+}
+impl Terminator {
+    /// Actual body-local successors in wire order; absent slots are `None`.
+    #[must_use]
+    pub const fn successors(self) -> [Option<u32>; 2] {
+        match self {
+            Self::Jump(target) => [Some(target), None],
+            Self::Branch { yes, no, .. } => [Some(yes), Some(no)],
+            Self::Return(_) | Self::Unreachable | Self::Panic => [None, None],
+        }
+    }
+    /// Two-way and checked-failure exits require the explicit branch profile.
+    #[must_use]
+    pub const fn requires_branch_profile(self) -> bool {
+        matches!(self, Self::Branch { .. } | Self::Panic)
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Block {

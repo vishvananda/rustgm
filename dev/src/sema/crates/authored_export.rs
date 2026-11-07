@@ -140,10 +140,15 @@ pub(crate) struct Stage {
     role_installation_steps: usize,
     nominal_transport: bool,
     compiler_operations: bool,
+    /// Version twelve only: original CFGs may retain Branch and Panic exits.
+    branch_transport: bool,
 }
 impl Stage {
     pub(crate) const fn nominal_transport(&self) -> bool {
         self.nominal_transport
+    }
+    pub(crate) const fn branch_transport(&self) -> bool {
+        self.branch_transport
     }
     pub(crate) fn callable_effects(&self) -> bool {
         self.functions.callable_effects
@@ -369,6 +374,16 @@ impl Stage {
     ) -> Result<Self, &'static str> {
         Self::begin_mode(report, facts, identity, ExportMode::Nominals)
     }
+    /// The complete version-ten collection; only original CFG exits widen.
+    pub(crate) fn begin_module_branches(
+        report: &Report,
+        facts: &mut Declarations,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        let mut stage = Self::begin_mode(report, facts, identity, ExportMode::Nominals)?;
+        stage.branch_transport = true;
+        Ok(stage)
+    }
     fn begin_mode(
         report: &Report,
         facts: &mut Declarations,
@@ -399,6 +414,7 @@ impl Stage {
                 ExportMode::Nominals | ExportMode::CompilerOperations
             ),
             compiler_operations: mode == ExportMode::CompilerOperations,
+            branch_transport: false,
             role_installation_steps: facts
                 .source_bindings
                 .as_deref()

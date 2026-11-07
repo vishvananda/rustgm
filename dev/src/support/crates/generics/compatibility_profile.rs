@@ -11,8 +11,15 @@ impl Profile {
     pub const fn nominals(self) -> bool {
         matches!(
             self,
-            Self::Source2024ModuleNominals | Self::Source2024ModuleCompilerOperations
+            Self::Source2024ModuleNominals
+                | Self::Source2024ModuleCompilerOperations
+                | Self::Source2024ModuleBranches
         )
+    }
+    /// Only version twelve admits two-way Branch and checked Panic CFG exits.
+    #[must_use]
+    pub const fn branches(self) -> bool {
+        matches!(self, Self::Source2024ModuleBranches)
     }
     /// The complete ordinary conversion role/header protocol is explicit v9 data.
     #[must_use]
@@ -22,6 +29,7 @@ impl Profile {
             Self::Source2024ModuleConversions
                 | Self::Source2024ModuleNominals
                 | Self::Source2024ModuleCompilerOperations
+                | Self::Source2024ModuleBranches
         )
     }
     #[must_use]
@@ -33,6 +41,7 @@ impl Profile {
                 | Self::Source2024ModuleConversions
                 | Self::Source2024ModuleNominals
                 | Self::Source2024ModuleCompilerOperations
+                | Self::Source2024ModuleBranches
         )
     }
     #[must_use]
@@ -43,6 +52,7 @@ impl Profile {
                 | Self::Source2024ModuleConversions
                 | Self::Source2024ModuleNominals
                 | Self::Source2024ModuleCompilerOperations
+                | Self::Source2024ModuleBranches
         )
     }
     #[must_use]
@@ -56,6 +66,7 @@ impl Profile {
                 | Self::Source2024ModuleConversions
                 | Self::Source2024ModuleNominals
                 | Self::Source2024ModuleCompilerOperations
+                | Self::Source2024ModuleBranches
         )
     }
     #[must_use]
@@ -68,6 +79,7 @@ impl Profile {
                 | Self::Source2024ModuleConversions
                 | Self::Source2024ModuleNominals
                 | Self::Source2024ModuleCompilerOperations
+                | Self::Source2024ModuleBranches
         )
     }
 }
@@ -146,6 +158,25 @@ impl ValidatedRows {
             attributes,
             modules,
             (availability, Profile::Source2024ModuleNominals),
+            base,
+            work,
+        )
+    }
+    pub(crate) fn stage_module_branches(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        attributes: s::HeaderAttributeColumns,
+        modules: s::ModuleContractRows,
+        availability: s::AvailabilityRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        Self::stage_module_availability_with(
+            owner,
+            rows,
+            attributes,
+            modules,
+            (availability, Profile::Source2024ModuleBranches),
             base,
             work,
         )

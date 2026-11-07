@@ -215,11 +215,12 @@ fn control(
             })
         })
         .collect::<Result<_, &'static str>>()?;
-    body.blocks = blocks(&record.blocks, &mut |index| site(index))?;
+    body.blocks = blocks(&record.blocks, false, &mut |index| site(index))?;
     Ok(())
 }
 pub(super) fn blocks(
     record: &[g::Block],
+    branches: bool,
     site: &mut impl FnMut(u32) -> Result<BodySite, &'static str>,
 ) -> Result<Vec<Block>, &'static str> {
     record
@@ -233,6 +234,19 @@ pub(super) fn blocks(
                     g::Terminator::Return(value) => Terminator::Return(ValueId(value)),
                     g::Terminator::Jump(block) => Terminator::Jump(BlockId(block)),
                     g::Terminator::Unreachable => Terminator::Unreachable,
+                    g::Terminator::Branch { condition, yes, no } if branches => {
+                        Terminator::Branch {
+                            condition: ValueId(condition),
+                            yes: BlockId(yes),
+                            no: BlockId(no),
+                        }
+                    }
+                    g::Terminator::Panic if branches => Terminator::Panic,
+                    g::Terminator::Branch { .. } | g::Terminator::Panic => {
+                        return Err(
+                            "imported Branch/Panic exits require the version-twelve profile",
+                        );
+                    }
                 },
             })
         })

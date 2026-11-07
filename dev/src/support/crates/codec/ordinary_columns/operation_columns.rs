@@ -4,21 +4,33 @@ use super::{
     cfg_columns as storage, crates, g, id, index_write, invoked_rows, s, write, write_copy,
 };
 
+/// Encoder generations, each a superset of the previous one's row vocabulary.
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum Generation {
+    Ordinary,
+    Safety,
+    Nominals,
+    Branches,
+}
 pub(super) fn original_write(out: &mut Writer, row: &s::Original) -> Result<(), &'static str> {
-    original_profile(out, row, false, false)
+    original_profile(out, row, Generation::Ordinary)
 }
 pub(super) fn safety_write(out: &mut Writer, row: &s::Original) -> Result<(), &'static str> {
-    original_profile(out, row, true, false)
+    original_profile(out, row, Generation::Safety)
 }
 pub(super) fn nominal_write(out: &mut Writer, row: &s::Original) -> Result<(), &'static str> {
-    original_profile(out, row, true, true)
+    original_profile(out, row, Generation::Nominals)
+}
+pub(super) fn branch_write(out: &mut Writer, row: &s::Original) -> Result<(), &'static str> {
+    original_profile(out, row, Generation::Branches)
 }
 fn original_profile(
     out: &mut Writer,
     row: &s::Original,
-    safety: bool,
-    nominals: bool,
+    generation: Generation,
 ) -> Result<(), &'static str> {
+    let safety = generation >= Generation::Safety;
+    let nominals = generation >= Generation::Nominals;
     for value in [row.body.0, row.declaration.0, row.result.0, row.sites] {
         id(out, value)?;
     }
@@ -37,7 +49,11 @@ fn original_profile(
     }
     write(out, &row.values, value_write)?;
     write(out, &row.statements, statement_write)?;
-    write(out, &row.blocks, storage::block_write)?;
+    if generation == Generation::Branches {
+        write(out, &row.blocks, storage::branch_block_write)?;
+    } else {
+        write(out, &row.blocks, storage::block_write)?;
+    }
     write(out, &row.scopes, storage::scope_write)?;
     write(out, &row.exits, storage::exit_write)?;
     write(out, &row.temporaries, storage::temporary_write)?;

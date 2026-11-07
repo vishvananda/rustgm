@@ -1,0 +1,180 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-branches-v12",
+  "providers": [
+    {
+      "file": "spec/source-branches/provider.rs",
+      "sha256": "d16b8ebc5ba22cfd1128194f0a5da240089944152446c1ba3218c36e72a784b8"
+    },
+    {
+      "file": "spec/source-branches/wait.rs",
+      "sha256": "32f2616cb4d73190388109e614b15050a63dd47457b5f8caa6943521b0bc0ae4"
+    },
+    {
+      "file": "spec/source-branches/spin.rs",
+      "sha256": "4405f4aa4d0e3f8a24a75f183c2c402b8b53c3ff166887ffeb97a559e2be9294"
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "cases": [
+    {
+      "file": "spec/source-branches/pick-i32.rs",
+      "provider": "spec/source-branches/provider.rs",
+      "accepted": true,
+      "native_exit": 7,
+      "sha256": "6eed9d4c3909200424223c72e1a3460c2d0f609bc9418c35fd57e7be33280af5"
+    },
+    {
+      "file": "spec/source-branches/pick-bool.rs",
+      "provider": "spec/source-branches/provider.rs",
+      "accepted": true,
+      "native_exit": 12,
+      "sha256": "0f8020b20de798b33e97e8a3b57c26026b95a4545c0248469234de2175573a0a"
+    },
+    {
+      "file": "spec/source-branches/swap-packet.rs",
+      "provider": "spec/source-branches/provider.rs",
+      "accepted": true,
+      "native_exit": 22,
+      "sha256": "8b0c4fa0eddf6c72c3a11dbdb72f90a4a5d1d78839f926449cb49ff7a0d0d044"
+    },
+    {
+      "file": "spec/source-branches/choose-i32.rs",
+      "provider": "spec/source-branches/provider.rs",
+      "accepted": true,
+      "native_exit": 2,
+      "sha256": "4b098fd164976977f3a2675bf5320b22c527a0d091b4703393f24089d6c66b2e"
+    },
+    {
+      "file": "spec/source-branches/choose-u8.rs",
+      "provider": "spec/source-branches/provider.rs",
+      "accepted": true,
+      "native_exit": 13,
+      "sha256": "48df5170f9ca84d45e07881649ef7605a4df9e26f217be6e1cb23cc99ecd474b"
+    },
+    {
+      "file": "spec/source-branches/settle-i32.rs",
+      "provider": "spec/source-branches/provider.rs",
+      "accepted": true,
+      "native_exit": 9,
+      "sha256": "914a5206c0a116c71c6d0fa9fe26fa920645ea96b61124499d2e267ba838b744"
+    },
+    {
+      "file": "spec/source-branches/settle-bool.rs",
+      "provider": "spec/source-branches/provider.rs",
+      "accepted": true,
+      "native_exit": 31,
+      "sha256": "0356cda4da666283394047d204d2884dccaae9d827426ed87117139b5e0b7450"
+    },
+    {
+      "file": "spec/source-branches/moved.rs",
+      "provider": "spec/source-branches/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "sha256": "fd5891d8990d6f95c3a1106134f748f016a43870ba9f4c8d24b35d71be41152d",
+      "required_rustc_error": "E0382"
+    },
+    {
+      "file": "spec/source-branches/nonbool.rs",
+      "provider": "spec/source-branches/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "sha256": "4413fc6467a59358df9c35a383b81d0bf52755e39259cfbd2e475d87ba1a301f",
+      "required_rustc_error": "E0308"
+    },
+    {
+      "file": "spec/source-branches/copyless.rs",
+      "provider": "spec/source-branches/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "sha256": "4b64f8b494176ad3a33e472b15a03f0e107ca53f18c7a4fabb53d580a234dae2",
+      "required_rustc_error": "E0277"
+    },
+    {
+      "file": "spec/source-branches/wait-ready.rs",
+      "provider": "spec/source-branches/wait.rs",
+      "accepted": true,
+      "native_exit": 5,
+      "sha256": "53b736fb76afa3058c67395be7e96619ab9fab9cc82cfb550e26923307862040"
+    },
+    {
+      "file": "spec/source-branches/wait-failed.rs",
+      "provider": "spec/source-branches/wait.rs",
+      "accepted": true,
+      "native_exit": null,
+      "sha256": "ddeffc055dc5c01bae74ea476dd07ca4178c3635ffb77946f61a4fc5f76f948b",
+      "native": "diverges in its genuine loop; not executed"
+    }
+  ],
+  "wire_controls": [
+    {
+      "provider": "spec/source-branches/wait.rs",
+      "mutation": "version 12 relabelled 10",
+      "accepted": false
+    },
+    {
+      "provider": "spec/source-branches/wait.rs",
+      "mutation": "Branch yes successor out of range",
+      "accepted": false
+    },
+    {
+      "provider": "spec/source-branches/wait.rs",
+      "mutation": "Branch condition names a non-bool value",
+      "accepted": false
+    },
+    {
+      "provider": "spec/source-branches/wait.rs",
+      "mutation": "Branch row loses its no successor",
+      "accepted": false
+    },
+    {
+      "provider": "spec/source-branches/wait.rs",
+      "mutation": "every strict prefix",
+      "accepted": false
+    },
+    {
+      "provider": "spec/source-branches/wait.rs",
+      "mutation": "Branch yes edge skips the merge store",
+      "accepted": false
+    },
+    {
+      "provider": "spec/source-branches/wait.rs",
+      "client": "spec/source-branches/wait-failed.rs",
+      "mutation": "no edge redirected to the dead block, whose Unreachable becomes Panic",
+      "accepted": true,
+      "native": "abnormal termination through the existing abort path"
+    },
+    {
+      "provider": "spec/source-branches/spin.rs",
+      "mutation": "version 12 relabelled 10 without new rows",
+      "accepted": true,
+      "bytes": "identical to the version-ten export except the version"
+    },
+    {
+      "provider": "spec/source-branches/spin.rs",
+      "mutation": "dead Unreachable becomes Panic",
+      "accepted": "version 12 only"
+    },
+    {
+      "provider": "spec/source-branches/provider.rs",
+      "mutation": "exported with module-nominals-v10",
+      "accepted": false
+    }
+  ],
+  "remaining": [
+    "source Panic producer (checked arithmetic, bounds, assert and panic construction)",
+    "imported Abort intrinsic identity",
+    "enum discriminant reads and match decisions (FalseEdge, guards)",
+    "trait-method calls through transported impls",
+    "drop elaboration and destructor contracts",
+    "closures",
+    "reference-typed formals, region formals and temporary projections",
+    "SSA snapshots across two-way exits",
+    "constants and promoted roots",
+    "original core artifact"
+  ],
+  "refrozen": "The first independent attempt rejected unbounded pick: the no_core foundation has no drop_glue. pick is Copy-bounded and the non-Copy control is swap; refrozen before the candidate's first source outcome."
+}

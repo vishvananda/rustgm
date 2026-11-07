@@ -227,8 +227,13 @@ impl Source {
         facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
+        branches: bool,
     ) -> Result<(Self, s::ModuleContractRows), &'static str> {
-        let mut stage = Stage::begin_module_nominals(report, facts, identity)?;
+        let mut stage = if branches {
+            Stage::begin_module_branches(report, facts, identity)?
+        } else {
+            Stage::begin_module_nominals(report, facts, identity)?
+        };
         let modules = stage.module_contract_rows(report, facts)?;
         Ok((
             Self::begin_stage(facts, checked, stage, true, None)?,
@@ -295,9 +300,11 @@ impl Source {
                         .map_err(crate::resolve::package::Error::unlocated)?;
                 Ok((source, Some(modules)))
             }
-            super::instances::SourcePublication::ModuleNominals => {
+            super::instances::SourcePublication::ModuleNominals
+            | super::instances::SourcePublication::ModuleBranches => {
+                let branches = profile == super::instances::SourcePublication::ModuleBranches;
                 let (source, modules) =
-                    Self::begin_module_nominals(report, facts, checked, identity)
+                    Self::begin_module_nominals(report, facts, checked, identity, branches)
                         .map_err(legacy_error)?;
                 Ok((source, Some(modules)))
             }
@@ -587,6 +594,7 @@ impl Source {
             | SourcePublication::ModuleSafety
             | SourcePublication::ModuleConversions
             | SourcePublication::ModuleNominals
+            | SourcePublication::ModuleBranches
             | SourcePublication::CompilerOperations => self.complete_module_policy_payload(
                 modules.ok_or_else(|| {
                     crate::resolve::package::Error::unlocated(
@@ -618,12 +626,14 @@ impl Source {
                     | super::instances::SourcePublication::ModuleSafety
                     | super::instances::SourcePublication::ModuleConversions
                     | super::instances::SourcePublication::ModuleNominals
+                    | super::instances::SourcePublication::ModuleBranches
                     | super::instances::SourcePublication::CompilerOperations
             ) {
                 let available = if matches!(
                     profile,
                     super::instances::SourcePublication::ModuleConversions
                         | super::instances::SourcePublication::ModuleNominals
+                        | super::instances::SourcePublication::ModuleBranches
                         | super::instances::SourcePublication::CompilerOperations
                 ) {
                     self.stage
@@ -663,6 +673,7 @@ impl Source {
                 profile,
                 super::instances::SourcePublication::ModuleConversions
                     | super::instances::SourcePublication::ModuleNominals
+                    | super::instances::SourcePublication::ModuleBranches
                     | super::instances::SourcePublication::CompilerOperations
             )
         {
@@ -690,6 +701,8 @@ impl Source {
         let payload = if let Some(availability) = availability {
             let publish = if profile == super::instances::SourcePublication::CompilerOperations {
                 g::Payload::from_source_compiler_operations
+            } else if profile == super::instances::SourcePublication::ModuleBranches {
+                g::Payload::from_source_module_branches
             } else if profile == super::instances::SourcePublication::ModuleNominals {
                 g::Payload::from_source_module_nominals
             } else if profile == super::instances::SourcePublication::ModuleConversions {

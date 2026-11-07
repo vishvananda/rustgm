@@ -226,6 +226,9 @@ fn operations(
             Terminator::Jump(target) if target as usize >= original.blocks.len() => {
                 return Err("generic successor belongs to another body");
             }
+            Terminator::Branch { .. } | Terminator::Panic => {
+                return Err("legacy generic rows cannot contain Branch/Panic CFG exits");
+            }
             _ => {}
         }
     }

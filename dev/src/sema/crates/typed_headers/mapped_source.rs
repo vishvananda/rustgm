@@ -130,7 +130,8 @@ impl Context<'_> {
                 | s::Profile::Source2024ModuleSafety
                 | s::Profile::Source2024ModuleConversions
                 | s::Profile::Source2024ModuleNominals
-                | s::Profile::Source2024ModuleCompilerOperations => {
+                | s::Profile::Source2024ModuleCompilerOperations
+                | s::Profile::Source2024ModuleBranches => {
                     actual.module_contracts().map_err(error)?;
                 }
                 _ => {

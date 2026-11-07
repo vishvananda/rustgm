@@ -37,6 +37,9 @@ pub(super) fn encode(
                 id(out, target)?;
             }
             g::Terminator::Unreachable => out.u8(2)?,
+            g::Terminator::Branch { .. } | g::Terminator::Panic => {
+                return Err("legacy generic rows cannot encode Branch/Panic CFG exits");
+            }
         }
     }
     out.u32(body.scopes.len())?;
