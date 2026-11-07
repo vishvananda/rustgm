@@ -546,3 +546,10 @@ overlap, a final method override, a non-always-applicable child, a final type
 override, an inherited type mismatch and `default type`. Each outcome was
 declared before its rustc 1.98.0 oracle. A private invariant checks them;
 there is no graded manifest.
+
+`spec/user-callable-output/` freezes four declared no_core controls for a user
+impl of a callable trait on a struct or on `&mut Adapter` (core `SyncView`,
+`array::Drain` shapes) that normalizes its own `Self::Output`, with a
+mismatched-output and a missing-impl opponent. Each outcome was declared
+before its rustc 1.98.0 oracle. A private invariant checks them; there is no
+graded manifest.

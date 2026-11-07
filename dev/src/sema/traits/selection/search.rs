@@ -545,6 +545,14 @@ impl Search<'_> {
         if let Some(action) = self.start_async_callable(facts, frame)? {
             return Ok(action);
         }
+        self.implementation_candidates(facts, frame)
+    }
+    /// Source and user impls, after any language evidence declined the goal.
+    fn implementation_candidates(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+    ) -> Result<Action, String> {
         let Some(registry) = &mut facts.generics.implementations else {
             return self.language_result(facts, frame);
         };

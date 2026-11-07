@@ -1,4 +1,7 @@
 //! Reference call implementations retain the referent's complete child proof.
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/user_callable_output.rs"]
+mod output_tests;
 use super::mechanical::Pending as Callable;
 use super::{Action, Decision, Declarations, Frame, Goal, Node, Search, Source, inference};
 use crate::{
@@ -220,6 +223,12 @@ impl Search<'_> {
         frame: &mut Frame,
     ) -> Result<Action, String> {
         let pending = frame.forwarding()?;
+        if pending.stopped == Some(Decision::Absent) && pending.operation.is_none() {
+            // Like rustc, a reference whose referent is not callable keeps its
+            // own impl candidates, such as a user impl for `&mut Adapter`.
+            frame.language = None;
+            return self.implementation_candidates(facts, frame);
+        }
         if let Some(decision) = pending.stopped {
             return Ok(Action::Complete(
                 if pending.operation.is_some() && decision == Decision::Absent {

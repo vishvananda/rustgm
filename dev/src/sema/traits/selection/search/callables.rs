@@ -146,9 +146,10 @@ impl Search<'_> {
             Err(infer::Error::Unresolved | infer::Error::Normalization) => {
                 Ok(Some(Action::Complete(Decision::Deferred)))
             }
-            Err(infer::Error::Mismatch | infer::Error::Occurs) => {
-                Ok(Some(Action::Complete(Decision::Absent)))
-            }
+            // Like rustc, a subject without a language signature, such as a
+            // user type implementing a callable trait, keeps its impl candidates.
+            Err(infer::Error::Mismatch) => Ok(None),
+            Err(infer::Error::Occurs) => Ok(Some(Action::Complete(Decision::Absent))),
             Err(error) => Err(inference(error)),
         }
     }

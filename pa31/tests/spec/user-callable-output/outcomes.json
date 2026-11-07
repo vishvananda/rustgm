@@ -1,0 +1,41 @@
+{
+ "schema": 1,
+ "declared": "2026-11-07, before any rustc oracle run on these sources; the implementation change was probed on spec/fn-sugar-impl-parameters/const-call-adapter.rs first",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "cases": {
+  "struct-output.rs": {
+   "sha256": "c7d63a2b3cae0d41f216e31f5306e0667606cd2f1ea57ce7deb3869e49ab3bfa",
+   "declared": 0,
+   "reason": "core SyncView shape: a user FnOnce impl for a struct names its own Self::Output, F::Output, in its call_once signature; a use normalizes it through the user impl",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "reference-output.rs": {
+   "sha256": "298417988e11c3463c85bcb86b1c991e3374f4f1420b7c284c9bf488823554f7",
+   "declared": 0,
+   "reason": "core array Drain shape: a user FnOnce impl for &mut Drain; the referent is not callable, so the reference keeps its own impl candidate and Self::Output is U",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "output-mismatch.rs": {
+   "sha256": "f9c3ec47311d8e0bc6cf1957978a1108c641705d1811572d1e5cce13a791618f",
+   "declared": 1,
+   "reason": "opponent: the user impl's Output normalizes to u16 and is returned as u8 (E0308)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  },
+  "reference-without-impl.rs": {
+   "sha256": "9d25cbe455a454edd5e800a4c3b0436449967895933a0e8159af770e00ec0390",
+   "declared": 1,
+   "reason": "opponent: &mut Plain has neither a callable referent nor an impl, so its Output does not exist (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  }
+ },
+ "declaration_sha256": "0b29ff54c00f252c75af3f9c0ce48cfeb3f8ab929bb1618a97697aa4fcf68740"
+}

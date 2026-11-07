@@ -16,8 +16,9 @@ const CONTROLS: &str = "pa31/tests/spec/fn-sugar-impl-parameters";
 
 /// Independently checked rustc outcomes: `None` accepts, otherwise the first
 /// error this compiler reports for the control rustc also rejects.
-const CASES: [(&str, Option<&str>); 7] = [
+const CASES: [(&str, Option<&str>); 8] = [
     ("from-fn-item", None),
+    ("const-call-adapter", None),
     ("inline-bound", None),
     ("caller-premise", None),
     ("explicit-binding", None),
@@ -36,11 +37,9 @@ const CASES: [(&str, Option<&str>); 7] = [
 /// - `map-adapter`: the projection now selects; the override that repeats the
 ///   trait's `Self::Item` clause then fails conformance, as it does without
 ///   sugar.
-/// - `const-call-adapter`: a user impl of a callable trait cannot normalize its
-///   own `Self::Output`, with or without sugar.
 /// - `impl-lifetime-mismatch`: rustc's region error belongs to body region
 ///   checking, which this analysis does not run for a generic body.
-const GAPS: [(&str, Option<&str>); 4] = [
+const GAPS: [(&str, Option<&str>); 3] = [
     (
         "elided-lifetime",
         Some("associated type requires an unambiguous implementation"),
@@ -48,10 +47,6 @@ const GAPS: [(&str, Option<&str>); 4] = [
     (
         "map-adapter",
         Some("implementation method imposes a stronger generic requirement"),
-    ),
-    (
-        "const-call-adapter",
-        Some("associated type requires an unambiguous implementation"),
     ),
     ("impl-lifetime-mismatch", None),
 ];
