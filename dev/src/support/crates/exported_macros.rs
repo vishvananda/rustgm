@@ -16,6 +16,11 @@
 //! Version three adds `allow_internal_unstable` lists to builtin rows and the
 //! `#[unstable]` feature of any definition row; a consumer must enable that
 //! feature, or call the row from an expansion allowed to use it.
+//!
+//! Version four adds semiopaque `pub macro` rows, which travel as placed
+//! declarative images with `macro_rules!` hygiene, and the typed
+//! `allow_internal_unsafe` flag of every definition row. An edition-panic
+//! contract needs no field: it is the `edition_panic` member of a row's list.
 use crate::support::edition::Edition;
 
 /// Exported macros in one artifact.
@@ -252,6 +257,7 @@ pub struct Macro {
     rows: Vec<Row>,
     internal_unstable: Vec<String>,
     unstable: Option<String>,
+    internal_unsafe: bool,
 }
 impl Macro {
     /// # Errors
@@ -283,6 +289,7 @@ impl Macro {
             rows,
             internal_unstable: Vec::new(),
             unstable: None,
+            internal_unsafe: false,
         })
     }
     /// Attach the definition's typed `allow_internal_unstable` features.
@@ -303,6 +310,19 @@ impl Macro {
         validate_unstable(feature.as_ref())?;
         self.unstable = feature;
         Ok(self)
+    }
+    /// Attach the definition's `allow_internal_unsafe`, which suppresses only
+    /// the unsafe-code lint inside this row's own expansions.
+    #[must_use]
+    pub const fn with_internal_unsafe(mut self, internal_unsafe: bool) -> Self {
+        self.internal_unsafe = internal_unsafe;
+        self
+    }
+    /// Whether this row's own expansions may contain `unsafe` under an
+    /// `unsafe_code` lint.
+    #[must_use]
+    pub const fn internal_unsafe(&self) -> bool {
+        self.internal_unsafe
     }
     #[must_use]
     pub fn name(&self) -> &str {
@@ -360,6 +380,7 @@ pub struct BuiltinMacro {
     helpers: Vec<String>,
     internal_unstable: Vec<String>,
     unstable: Option<String>,
+    internal_unsafe: bool,
 }
 impl BuiltinMacro {
     /// # Errors
@@ -396,7 +417,20 @@ impl BuiltinMacro {
             helpers,
             internal_unstable: Vec::new(),
             unstable: None,
+            internal_unsafe: false,
         })
+    }
+    /// Attach the definition's `allow_internal_unsafe`.
+    #[must_use]
+    pub const fn with_internal_unsafe(mut self, internal_unsafe: bool) -> Self {
+        self.internal_unsafe = internal_unsafe;
+        self
+    }
+    /// Whether this row's own expansions may contain `unsafe` under an
+    /// `unsafe_code` lint.
+    #[must_use]
+    pub const fn internal_unsafe(&self) -> bool {
+        self.internal_unsafe
     }
     /// Attach the definition's `allow_internal_unstable` features.
     /// # Errors
@@ -464,6 +498,50 @@ impl BuiltinMacro {
             .saturating_add(names_bytes(&self.helpers))
             .saturating_add(names_bytes(&self.internal_unstable))
             .saturating_add(self.unstable.as_ref().map_or(0, String::len))
+    }
+}
+
+/// One semiopaque `pub macro` definition: a placed declarative image whose
+/// rules are comma-separated and whose hygiene is that of `macro_rules!`.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ScopedMacro {
+    placement: Vec<String>,
+    definition: Macro,
+}
+impl ScopedMacro {
+    /// # Errors
+    /// Rejects an invalid placement and a `local_inner_macros` definition.
+    pub fn new(placement: Vec<String>, definition: Macro) -> Result<Self, &'static str> {
+        validate_placement(&placement)?;
+        if definition.local_inner_macros {
+            return Err("semiopaque macro rows have no local_inner_macros");
+        }
+        Ok(Self {
+            placement,
+            definition,
+        })
+    }
+    /// The module path of the scope that binds this row.
+    #[must_use]
+    pub fn placement(&self) -> &[String] {
+        &self.placement
+    }
+    /// The image, rules, lists and stability, spelled as a declarative row.
+    #[must_use]
+    pub const fn definition(&self) -> &Macro {
+        &self.definition
+    }
+    #[must_use]
+    pub fn name(&self) -> &str {
+        &self.definition.name
+    }
+    fn key(&self) -> (&[String], &str) {
+        (&self.placement, &self.definition.name)
+    }
+    fn bytes(&self) -> usize {
+        self.definition
+            .bytes()
+            .saturating_add(names_bytes(&self.placement))
     }
 }
 
@@ -554,6 +632,7 @@ impl ReexportMacro {
 pub enum DefinitionRow {
     Declarative(usize),
     Builtin(usize),
+    Scoped(usize),
 }
 
 /// The body is one root group laid out as [`ImageBuilder`] spells it: pieces
@@ -629,6 +708,7 @@ pub struct Macros {
     rows: Vec<Macro>,
     builtins: Vec<BuiltinMacro>,
     reexports: Vec<ReexportMacro>,
+    scoped: Vec<ScopedMacro>,
 }
 impl Macros {
     /// # Errors
@@ -654,10 +734,22 @@ impl Macros {
         builtins: Vec<BuiltinMacro>,
         reexports: Vec<ReexportMacro>,
     ) -> Result<Self, &'static str> {
+        Self::with_scoped(rows, builtins, reexports, Vec::new())
+    }
+    /// # Errors
+    /// As [`Self::with_reexports`], with semiopaque rows sorted strictly by
+    /// placement and name and sharing every scope's names.
+    pub fn with_scoped(
+        rows: Vec<Macro>,
+        builtins: Vec<BuiltinMacro>,
+        reexports: Vec<ReexportMacro>,
+        scoped: Vec<ScopedMacro>,
+    ) -> Result<Self, &'static str> {
         let count = rows
             .len()
             .saturating_add(builtins.len())
-            .saturating_add(reexports.len());
+            .saturating_add(reexports.len())
+            .saturating_add(scoped.len());
         if count == 0 || count > MAX_MACROS {
             return Err("invalid exported macro count");
         }
@@ -668,6 +760,7 @@ impl Macros {
             || reexports
                 .windows(2)
                 .any(|pair| pair[0].key() >= pair[1].key())
+            || scoped.windows(2).any(|pair| pair[0].key() >= pair[1].key())
         {
             return Err("exported macros must be unique and sorted by name");
         }
@@ -676,6 +769,7 @@ impl Macros {
             .map(|row| (&[][..], row.name()))
             .chain(builtins.iter().map(BuiltinMacro::key))
             .chain(reexports.iter().map(ReexportMacro::key))
+            .chain(scoped.iter().map(ScopedMacro::key))
             .collect();
         keys.sort_unstable();
         if keys.windows(2).any(|pair| pair[0] == pair[1]) {
@@ -685,6 +779,7 @@ impl Macros {
             rows,
             builtins,
             reexports,
+            scoped,
         };
         if table.reexports.iter().any(|row| {
             row.owner == 0
@@ -709,6 +804,11 @@ impl Macros {
     pub fn reexports(&self) -> &[ReexportMacro] {
         &self.reexports
     }
+    /// The semiopaque `pub macro` rows.
+    #[must_use]
+    pub fn scoped(&self) -> &[ScopedMacro] {
+        &self.scoped
+    }
     #[must_use]
     pub fn get(&self, name: &str) -> Option<&Macro> {
         self.rows
@@ -727,20 +827,45 @@ impl Macros {
         {
             return Some(DefinitionRow::Declarative(index));
         }
-        self.builtins
+        if let Ok(index) = self
+            .builtins
+            .binary_search_by(|row| row.key().cmp(&(placement, name)))
+        {
+            return Some(DefinitionRow::Builtin(index));
+        }
+        self.scoped
             .binary_search_by(|row| row.key().cmp(&(placement, name)))
             .ok()
-            .map(DefinitionRow::Builtin)
+            .map(DefinitionRow::Scoped)
+    }
+    /// The image-bearing declarative fields of one declarative or semiopaque row.
+    #[must_use]
+    pub fn image_row(&self, row: DefinitionRow) -> Option<&Macro> {
+        match row {
+            DefinitionRow::Declarative(index) => self.rows.get(index),
+            DefinitionRow::Scoped(index) => self.scoped.get(index).map(ScopedMacro::definition),
+            DefinitionRow::Builtin(_) => None,
+        }
     }
     /// The `allow_internal_unstable` features of one definition row.
     #[must_use]
     pub fn internal_unstable(&self, row: DefinitionRow) -> Option<&[String]> {
         match row {
-            DefinitionRow::Declarative(index) => self.rows.get(index).map(Macro::internal_unstable),
             DefinitionRow::Builtin(index) => self
                 .builtins
                 .get(index)
                 .map(BuiltinMacro::internal_unstable),
+            _ => self.image_row(row).map(Macro::internal_unstable),
+        }
+    }
+    /// The `allow_internal_unsafe` flag of one definition row.
+    #[must_use]
+    pub fn internal_unsafe(&self, row: DefinitionRow) -> Option<bool> {
+        match row {
+            DefinitionRow::Builtin(index) => {
+                self.builtins.get(index).map(BuiltinMacro::internal_unsafe)
+            }
+            _ => self.image_row(row).map(Macro::internal_unsafe),
         }
     }
     /// The `#[unstable]` feature of one definition row; the outer `None` is
@@ -748,8 +873,8 @@ impl Macros {
     #[must_use]
     pub fn unstable(&self, row: DefinitionRow) -> Option<Option<&str>> {
         match row {
-            DefinitionRow::Declarative(index) => self.rows.get(index).map(Macro::unstable),
             DefinitionRow::Builtin(index) => self.builtins.get(index).map(BuiltinMacro::unstable),
+            _ => self.image_row(row).map(Macro::unstable),
         }
     }
     /// The largest dependency ordinal a re-export row names.
@@ -761,13 +886,19 @@ impl Macros {
             .max()
             .unwrap_or(0)
     }
-    /// The least envelope version that holds every row: 3 for a builtin
-    /// allowance list or any `#[unstable]` row, 2 for a builtin row, a
-    /// re-export row or a declarative allowance list, and otherwise 1, whose
-    /// bytes stay exactly as before.
+    /// The least envelope version that holds every row: 4 for a semiopaque
+    /// row or any `allow_internal_unsafe` row, 3 for a builtin allowance list
+    /// or any `#[unstable]` row, 2 for a builtin row, a re-export row or a
+    /// declarative allowance list, and otherwise 1, whose bytes stay exactly
+    /// as before.
     #[must_use]
     pub fn version(&self) -> u8 {
-        if self.rows.iter().any(|row| row.unstable.is_some())
+        if !self.scoped.is_empty()
+            || self.rows.iter().any(|row| row.internal_unsafe)
+            || self.builtins.iter().any(|row| row.internal_unsafe)
+        {
+            4
+        } else if self.rows.iter().any(|row| row.unstable.is_some())
             || self
                 .builtins
                 .iter()
@@ -788,7 +919,10 @@ impl Macros {
     }
     /// Rows plus placement components, for the shared component budget.
     pub(super) fn atoms(&self) -> usize {
-        let builtins = self.builtins.iter().fold(self.rows.len(), |total, row| {
+        let scoped = self.scoped.iter().fold(self.rows.len(), |total, row| {
+            total.saturating_add(1 + row.placement.len())
+        });
+        let builtins = self.builtins.iter().fold(scoped, |total, row| {
             total.saturating_add(1 + row.placement.len())
         });
         self.reexports.iter().fold(builtins, |total, row| {
@@ -800,10 +934,14 @@ impl Macros {
             .rows
             .iter()
             .fold(0usize, |total, row| total.saturating_add(row.bytes()));
+        let scoped = self
+            .scoped
+            .iter()
+            .fold(declarative, |total, row| total.saturating_add(row.bytes()));
         let builtins = self
             .builtins
             .iter()
-            .fold(declarative, |total, row| total.saturating_add(row.bytes()));
+            .fold(scoped, |total, row| total.saturating_add(row.bytes()));
         self.reexports
             .iter()
             .fold(builtins, |total, row| total.saturating_add(row.bytes()))

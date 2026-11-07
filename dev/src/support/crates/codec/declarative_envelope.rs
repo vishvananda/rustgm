@@ -11,11 +11,17 @@
 //! row its `#[unstable]` feature (a tag byte, then the feature when the tag is
 //! 1), and to each builtin row, before that, its allowance list. Only a table
 //! with such a feature or a builtin allowance list writes version three.
+//!
+//! Version four appends to every definition row one flags byte (bit 0 is
+//! `allow_internal_unsafe`) and adds kind 3, a semiopaque `pub macro` row: its
+//! placement and the declarative fields, list and stability. Only a table with
+//! such a row or flag writes version four.
 use super::{Interface, MAGIC, Reader, SCHEMA, Writer};
 use crate::support::{
     crates::exported_macros::{
         BuiltinMacro, Delimiter, MAX_FEATURES, MAX_IDENTITY_BYTES, MAX_IMAGE_BYTES, MAX_MACROS,
-        MAX_NAME_BYTES, MAX_ROWS, Macro, MacroKind, Macros, ReexportMacro, Row, Syntax, TokenClass,
+        MAX_NAME_BYTES, MAX_ROWS, Macro, MacroKind, Macros, ReexportMacro, Row, ScopedMacro,
+        Syntax, TokenClass,
     },
     edition::Edition,
 };
@@ -23,10 +29,13 @@ pub(super) const TAG: u8 = 14;
 const VERSION_ONE: u8 = 1;
 const VERSION_TWO: u8 = 2;
 const VERSION_THREE: u8 = 3;
+const VERSION_FOUR: u8 = 4;
 const GROUP: u8 = 0x80;
 const DECLARATIVE: u8 = 0;
 const BUILTIN: u8 = 1;
 const REEXPORT: u8 = 2;
+const SCOPED: u8 = 3;
+const INTERNAL_UNSAFE: u8 = 1;
 const EDITIONS: [Edition; 4] = [
     Edition::Rust2015,
     Edition::Rust2018,
@@ -39,6 +48,7 @@ enum Entry<'a> {
     Declarative(&'a Macro),
     Builtin(&'a BuiltinMacro),
     Reexport(&'a ReexportMacro),
+    Scoped(&'a ScopedMacro),
 }
 impl Entry<'_> {
     fn key(&self) -> (&[String], &str) {
@@ -46,6 +56,7 @@ impl Entry<'_> {
             Self::Declarative(row) => (&[], row.name()),
             Self::Builtin(row) => (row.placement(), row.name()),
             Self::Reexport(row) => (row.placement(), row.name()),
+            Self::Scoped(row) => (row.placement(), row.name()),
         }
     }
 }
@@ -58,6 +69,7 @@ fn merged(macros: &Macros) -> Vec<Entry<'_>> {
         .map(Entry::Declarative)
         .chain(macros.builtins().iter().map(Entry::Builtin))
         .chain(macros.reexports().iter().map(Entry::Reexport))
+        .chain(macros.scoped().iter().map(Entry::Scoped))
         .collect();
     entries.sort_unstable_by(|left, right| left.key().cmp(&right.key()));
     entries
@@ -71,7 +83,8 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     output.u16(SCHEMA)?;
     let version = macros.version();
     if version > VERSION_ONE {
-        let three = version == VERSION_THREE;
+        let three = version >= VERSION_THREE;
+        let four = version == VERSION_FOUR;
         output.bytes(&[0, 0, TAG, version])?;
         let entries = merged(macros);
         output.u32(entries.len())?;
@@ -80,17 +93,25 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
                 Entry::Declarative(row) => {
                     output.u8(DECLARATIVE)?;
                     output.path(&[])?;
-                    encode_macro(&mut output, row)?;
-                    names(&mut output, row.internal_unstable())?;
-                    if three {
-                        unstable(&mut output, row.unstable())?;
-                    }
+                    encode_lists(&mut output, row, three, four)?;
+                }
+                Entry::Scoped(row) => {
+                    output.u8(SCOPED)?;
+                    output.path(row.placement())?;
+                    encode_lists(&mut output, row.definition(), three, four)?;
                 }
                 Entry::Builtin(row) => {
                     encode_builtin(&mut output, row)?;
                     if three {
                         names(&mut output, row.internal_unstable())?;
                         unstable(&mut output, row.unstable())?;
+                    }
+                    if four {
+                        output.u8(if row.internal_unsafe() {
+                            INTERNAL_UNSAFE
+                        } else {
+                            0
+                        })?;
                     }
                 }
                 Entry::Reexport(row) => {
@@ -113,6 +134,28 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     output.u32(inner.len())?;
     output.bytes(&inner)?;
     Ok(output.finish())
+}
+/// The declarative fields of a kind-0 or kind-3 row, then its list, its
+/// stability from version three and its flags from version four.
+fn encode_lists(
+    output: &mut Writer,
+    row: &Macro,
+    three: bool,
+    four: bool,
+) -> Result<(), &'static str> {
+    encode_macro(output, row)?;
+    names(output, row.internal_unstable())?;
+    if three {
+        unstable(output, row.unstable())?;
+    }
+    if four {
+        output.u8(if row.internal_unsafe() {
+            INTERNAL_UNSAFE
+        } else {
+            0
+        })?;
+    }
+    Ok(())
 }
 fn encode_macro(output: &mut Writer, row: &Macro) -> Result<(), &'static str> {
     output.string(row.name())?;
@@ -167,7 +210,7 @@ pub(super) fn decode(input: &mut Reader<'_>) -> Result<Interface, &'static str> 
             }
             Macros::new(rows)?
         }
-        version @ (VERSION_TWO | VERSION_THREE) => decode_placed(input, version)?,
+        version @ (VERSION_TWO | VERSION_THREE | VERSION_FOUR) => decode_placed(input, version)?,
         _ => return Err("unknown exported macro metadata version"),
     };
     let length = input.u32()?;
@@ -178,10 +221,12 @@ pub(super) fn decode(input: &mut Reader<'_>) -> Result<Interface, &'static str> 
     super::decode(inner)?.with_macros(macros)
 }
 fn decode_placed(input: &mut Reader<'_>, version: u8) -> Result<Macros, &'static str> {
-    let three = version == VERSION_THREE;
+    let three = version >= VERSION_THREE;
+    let four = version == VERSION_FOUR;
     // Kind, placement count and name length.
     let count = input.count(MAX_MACROS, 7)?;
     let (mut rows, mut builtins, mut reexports) = (Vec::new(), Vec::new(), Vec::new());
+    let mut scoped = Vec::new();
     let mut previous: Option<(Vec<String>, String)> = None;
     for _ in 0..count {
         let kind = input.u8()?;
@@ -191,14 +236,16 @@ fn decode_placed(input: &mut Reader<'_>, version: u8) -> Result<Macros, &'static
                 if !placement.is_empty() {
                     return Err("declarative exported macros belong to the crate root");
                 }
-                let mut row = decode_macro(input)?;
-                row = row.with_internal_unstable(decode_names(input)?)?;
-                if three {
-                    row = row.with_unstable(decode_unstable(input)?)?;
-                }
+                let row = decode_lists(input, three, four)?;
                 let name = row.name().to_owned();
                 rows.push(row);
                 (placement, name)
+            }
+            SCOPED if four => {
+                let row = ScopedMacro::new(placement, decode_lists(input, three, four)?)?;
+                let key = (row.placement().to_vec(), row.name().to_owned());
+                scoped.push(row);
+                key
             }
             BUILTIN => {
                 let mut row = decode_builtin(input, placement)?;
@@ -206,6 +253,9 @@ fn decode_placed(input: &mut Reader<'_>, version: u8) -> Result<Macros, &'static
                     row = row
                         .with_internal_unstable(decode_names(input)?)?
                         .with_unstable(decode_unstable(input)?)?;
+                }
+                if four {
+                    row = row.with_internal_unsafe(decode_flags(input)?);
                 }
                 let key = (row.placement().to_vec(), row.name().to_owned());
                 builtins.push(row);
@@ -230,15 +280,33 @@ fn decode_placed(input: &mut Reader<'_>, version: u8) -> Result<Macros, &'static
         }
         previous = Some(key);
     }
-    let macros = Macros::with_reexports(rows, builtins, reexports)?;
+    let macros = Macros::with_scoped(rows, builtins, reexports, scoped)?;
     if macros.version() != version {
-        return Err(if three {
-            "version-three exported macro table has only version-two rows"
-        } else {
-            "version-two exported macro table has only version-one rows"
+        return Err(match version {
+            VERSION_FOUR => "version-four exported macro table has only version-three rows",
+            VERSION_THREE => "version-three exported macro table has only version-two rows",
+            _ => "version-two exported macro table has only version-one rows",
         });
     }
     Ok(macros)
+}
+/// The declarative fields of a kind-0 or kind-3 row and their trailing lists.
+fn decode_lists(input: &mut Reader<'_>, three: bool, four: bool) -> Result<Macro, &'static str> {
+    let mut row = decode_macro(input)?.with_internal_unstable(decode_names(input)?)?;
+    if three {
+        row = row.with_unstable(decode_unstable(input)?)?;
+    }
+    if four {
+        row = row.with_internal_unsafe(decode_flags(input)?);
+    }
+    Ok(row)
+}
+fn decode_flags(input: &mut Reader<'_>) -> Result<bool, &'static str> {
+    match input.u8()? {
+        0 => Ok(false),
+        INTERNAL_UNSAFE => Ok(true),
+        _ => Err("unknown exported macro row flags"),
+    }
 }
 fn decode_unstable(input: &mut Reader<'_>) -> Result<Option<String>, &'static str> {
     match input.u8()? {

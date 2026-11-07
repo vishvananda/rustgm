@@ -282,6 +282,15 @@ impl Builtin {
                     | Self::Test
             )
     }
+    /// Panic roles an imported builtin row may run: they delegate to their
+    /// provider's own rows and items through `$crate` by crate id.
+    #[must_use]
+    pub const fn imported_delegation(self) -> bool {
+        matches!(
+            self,
+            Self::Assert | Self::CorePanic | Self::StdPanic | Self::Unreachable
+        )
+    }
     /// Roles whose expansion needs no defining source declaration: the
     /// bootstrap prelude binds these, and an imported builtin row may run them.
     #[must_use]

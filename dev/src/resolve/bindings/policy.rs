@@ -354,22 +354,22 @@ pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prep
     )
 }
 
-/// Imported macro rows that carry `allow_internal_unstable` lists, declarative
-/// or builtin, charge their frames to the consumer's own allowance ledger, as
-/// local definitions do. Ordinary crates, source clients and staged consumers
-/// each own one.
+/// Imported macro rows that carry `allow_internal_unstable` lists or the
+/// `allow_internal_unsafe` flag, declarative, semiopaque or builtin, charge
+/// their frames to the consumer's own allowance ledger, as local definitions
+/// do. Ordinary crates, source clients and staged consumers each own one.
 pub(super) fn imports_allowances(context: &Context) -> bool {
+    use crate::support::crates::exported_macros::Macro;
+    let listed = |row: &Macro| !row.internal_unstable().is_empty() || row.internal_unsafe();
     context.dependencies.as_deref().is_some_and(|dependencies| {
         dependencies.artifacts().iter().any(|artifact| {
             artifact.macros().is_some_and(|macros| {
-                macros
-                    .rows()
-                    .iter()
-                    .any(|row| !row.internal_unstable().is_empty())
+                macros.rows().iter().any(listed)
+                    || macros.scoped().iter().any(|row| listed(row.definition()))
                     || macros
                         .builtins()
                         .iter()
-                        .any(|row| !row.internal_unstable().is_empty())
+                        .any(|row| !row.internal_unstable().is_empty() || row.internal_unsafe())
             })
         })
     })

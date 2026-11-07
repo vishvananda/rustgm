@@ -178,11 +178,21 @@ impl Resolver<'_> {
             .enumerate()
             .map(|(row, entry)| (scope, entry.name(), ImportedRow::Declarative(row)));
         let mut modules = None;
-        let mut placed = Vec::with_capacity(macros.builtins().len());
+        let mut placed = Vec::with_capacity(
+            macros
+                .builtins()
+                .len()
+                .saturating_add(macros.scoped().len()),
+        );
         for (row, entry) in macros.builtins().iter().enumerate() {
             let scope =
                 self.placement_scope(scope, artifact, imported, &mut modules, entry.placement())?;
             placed.push((scope, entry.name(), ImportedRow::Builtin(row)));
+        }
+        for (row, entry) in macros.scoped().iter().enumerate() {
+            let scope =
+                self.placement_scope(scope, artifact, imported, &mut modules, entry.placement())?;
+            placed.push((scope, entry.name(), ImportedRow::Scoped(row)));
         }
         for (scope, name, row) in declarative.chain(placed) {
             let spelling = self.package.names.intern(name).map_err(error)?;

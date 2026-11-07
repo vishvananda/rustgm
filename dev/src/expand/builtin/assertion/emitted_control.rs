@@ -209,7 +209,7 @@ impl Output<'_> {
     }
     fn path(&mut self, middle: &str, last: &str) -> Result<NodeId, LexError> {
         let root = self.text("$crate")?;
-        let root = self.node(root, Kind::CrateRoot(0))?;
+        let root = self.node(root, Kind::CrateRoot(self.site.crate_id))?;
         let span = self.text(middle)?;
         let middle = self.node(span, Kind::Name(span, None))?;
         let span = self.text(last)?;

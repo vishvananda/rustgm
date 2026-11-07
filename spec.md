@@ -6258,9 +6258,10 @@ module at its placement, resolved by module identity and never by a name or
 alias. It runs its own expander of that identity and rejects an unknown identity
 or a changed kind by name. An imported expansion frame grants exactly its row's
 re-authenticated features, charged per feature, as a local definition's
-permissions would, and never grants `allow_internal_unsafe`. Macros 2.0
-definitions and imported expanders that need their provider's source
-declaration remain rejected by name.
+permissions would; `allow_internal_unsafe` comes only from a version-4 flag.
+Macros 2.0 definitions other than version-4 semiopaque rows, and imported
+expanders that need their provider's source declaration, other than the
+version-4 panic delegations, remain rejected by name.
 
 Every public macro binding of a crate's public modules is published, or the
 export fails by name; none is dropped. A local definition has one definition
@@ -6286,8 +6287,8 @@ otherwise the version-1 or version-2 bytes are unchanged. It keeps the
 version-2 layout. A declarative row appends a stability tag (0 for none, 1
 followed by the feature). A builtin row appends its sorted, unique feature
 list and then the tag. A builtin's list passes the same checks as a
-declarative one, so `allow_internal_unsafe` and edition-panic contracts are
-rejected by name. Every call of an imported unstable row, through any path,
+declarative one; `allow_internal_unsafe` and edition-panic contracts need
+version 4. Every call of an imported unstable row, through any path,
 import or re-export, requires either the crate's request for that feature or
 a call span inside an expansion whose definition may use it; otherwise it fails
 by name, as rustc's E0658 does. A row's feature is a library feature of its
@@ -6295,6 +6296,28 @@ dependency. A denied use of an unstable imported API whose site lies inside a
 macro expansion is admitted only by that frame's allowance list, after
 resolution completes; a use outside any expansion fails immediately. Source clients and staged consumers own the same imported-only
 allowance ledger as ordinary crates whenever a dependency row carries a list.
+
+Version 4 of the macro envelope is written only when a table has a
+semiopaque row or a row with `allow_internal_unsafe`; otherwise the version-1
+to version-3 bytes are unchanged. Every definition row (declarative, builtin
+and semiopaque) appends one flags byte after its version-3 fields; bit 0 is
+`allow_internal_unsafe`, and any other bit is rejected by name. Re-export rows
+are unchanged. Kind 3 is a semiopaque `pub macro`
+(`#[rustc_macro_transparency = "semiopaque"]`, multi-rule form): its placement,
+then the declarative fields with `local_inner_macros` clear, its list, its
+stability and its flags. A consumer binds it at its placement and compiles its
+image once with `macro_rules!` hygiene in the row's edition. Transparent and
+opaque `pub macro` definitions and the single-rule parameter form are rejected
+by name. The edition-panic contract is the `edition_panic` member of a row's
+list: a frame whose list contains it is skipped when choosing the panic
+edition, exactly as for a local definition, and a list that disagrees with the
+definition's parsed contract is rejected at publication. An imported `panic`,
+`unreachable` or `assert` builtin row delegates to its provider's rows through
+`$crate`, bound to the provider's crate identity. An imported row's
+`allow_internal_unsafe` covers only sites in its own expansion frame, never a
+nested expansion of another definition. A single `use` import binding an
+unstable imported row needs the same feature or allowance as a call of it,
+whether or not the row is called; a glob import is checked only at its module.
 
 ## Lowering and backend facts
 

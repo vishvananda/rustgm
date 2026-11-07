@@ -156,9 +156,10 @@ impl<S: Sources> Engine<'_, S> {
             ));
         }
         // An imported builtin row runs only an expander that needs no defining
-        // source declaration, exactly the set the bootstrap prelude binds.
+        // source declaration, exactly the set the bootstrap prelude binds, or
+        // a panic role, which delegates to its provider's rows by crate id.
         if actual.imported.is_some()
-            && matches!(actual.body, Body::Builtin(role) if !role.context_free())
+            && matches!(actual.body, Body::Builtin(role) if !role.context_free() && !role.imported_delegation())
         {
             return Err(self.unavailable_error(
                 definition,

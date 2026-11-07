@@ -23,8 +23,11 @@ enum Grant<'view> {
     None,
     Header(Rc<HeaderData>),
     /// An imported definition row's sorted, re-authenticated
-    /// `allow_internal_unstable` list, declarative or builtin.
-    Imported(&'view [String]),
+    /// `allow_internal_unstable` list and its `allow_internal_unsafe` flag.
+    Imported {
+        features: &'view [String],
+        internal_unsafe: bool,
+    },
 }
 
 #[derive(Default)]
@@ -231,7 +234,7 @@ impl<'view> Query<'view, '_> {
     pub fn allows(&mut self, site: Location, feature: &FeatureName<'_>) -> Result<bool, Error> {
         Ok(match self.header(site, feature.spelling().len())? {
             Grant::Header(data) => data.contains(feature),
-            Grant::Imported(features) => features
+            Grant::Imported { features, .. } => features
                 .binary_search_by(|allowed| allowed.as_str().cmp(feature.spelling()))
                 .is_ok(),
             Grant::None => false,
@@ -242,10 +245,14 @@ impl<'view> Query<'view, '_> {
     /// # Errors
     /// Rejects changed owners/frames/witnesses and exhausted global budgets.
     pub fn allows_unsafe_code_lint(&mut self, site: Location) -> Result<bool, Error> {
-        // Imported rows never transport `allow_internal_unsafe`.
+        // Only the outer frame answers: an imported row's flag covers its
+        // own expansion, never a nested expansion of another definition.
         Ok(match self.header(site, 0)? {
             Grant::Header(data) => data.declaration().unsafe_lint,
-            Grant::Imported(_) | Grant::None => false,
+            Grant::Imported {
+                internal_unsafe, ..
+            } => internal_unsafe,
+            Grant::None => false,
         })
     }
     /// An imported definition row's frame carries exactly its transported,
@@ -260,7 +267,7 @@ impl<'view> Query<'view, '_> {
         else {
             return Ok(Grant::None);
         };
-        let features = view
+        let (features, internal_unsafe) = view
             .facts
             .crates
             .as_deref()
@@ -269,7 +276,11 @@ impl<'view> Query<'view, '_> {
                     .dependencies()
                     .artifacts()
                     .get(usize::try_from(imported.crate_id.checked_sub(1)?).ok()?)?;
-                artifact.macros()?.internal_unstable(imported.row)
+                let macros = artifact.macros()?;
+                Some((
+                    macros.internal_unstable(imported.row)?,
+                    macros.internal_unsafe(imported.row)?,
+                ))
             })
             .ok_or_else(|| error("imported macro allowance row disappeared"))?;
         view.package
@@ -279,7 +290,10 @@ impl<'view> Query<'view, '_> {
             .contracts()
             .charge(1 + extra_work + features.len(), 0)
             .map_err(error)?;
-        Ok(Grant::Imported(features))
+        Ok(Grant::Imported {
+            features,
+            internal_unsafe,
+        })
     }
     fn header(&mut self, site: Location, extra_work: usize) -> Result<Grant<'view>, Error> {
         let (context, origin_links, origin_lookups) = self.context(site)?;

@@ -1,4 +1,6 @@
-//! Local source panic roles delegate to a real handler with unchanged arguments.
+//! Source panic roles delegate to a real handler with unchanged arguments. A
+//! local role names its own crate; an imported row names its provider through
+//! `$crate` by crate id. Both charge the crate's macro contract ledger.
 use super::{
     Body, Builtin, Definition, Engine, Error, ExpansionId, FileId, Input, Invocation, Location,
     MacroContext, NodeKey, Origin, Sources, Span, SyntaxContextId, Transparency, Visit, editions,
@@ -27,6 +29,8 @@ struct Call {
     definition_context: SyntaxContextId,
     grammar: MacroContext,
     edition: Edition,
+    /// 0 for a local role, otherwise the imported provider's `$crate` id.
+    crate_id: u32,
 }
 
 impl<S: Sources> Engine<'_, S> {
@@ -73,6 +77,17 @@ impl<S: Sources> Engine<'_, S> {
         self.frame_view().frame(context)
     }
 
+    /// The ledger that pays for panic delegation: the source provider's own
+    /// contracts, or a consumer's imported-allowance ledger.
+    fn panic_payer(&self, file: FileId, offset: u32) -> Result<&panic_contracts::Contracts, Error> {
+        let error = |message| Error::at(file, offset, message);
+        self.loader
+            .package
+            .source_contract_payer()
+            .map_err(error)?
+            .ok_or_else(|| error("panic delegation requires its actual source provider"))
+    }
+
     fn panic_edition(&self, call: NodeKey, original: Span) -> Result<Edition, Error> {
         let package = &self.loader.package;
         let error = |message| Error::at(call.file, original.start, message);
@@ -92,16 +107,14 @@ impl<S: Sources> Engine<'_, S> {
         {
             return Err(error("panic edition query changed its actual call site"));
         }
-        let source = package
-            .source_core()
-            .ok_or_else(|| error("panic delegation requires its actual source provider"))?;
+        let source = self.panic_payer(call.file, original.start)?;
         let mut location = Location {
             file: call.file,
             span: original,
         };
         let mut pending = Vec::new();
         let edition = loop {
-            source.macros.charge(1, 0).map_err(error)?;
+            source.charge(1, 0).map_err(error)?;
             let raw = package.syntax_context(location.file, location.span.start)?;
             let Some(context) = package.marks.outer(raw).map_err(error)? else {
                 break editions::introducer(location.file, location.span, |id| {
@@ -110,13 +123,10 @@ impl<S: Sources> Engine<'_, S> {
                 .map_err(|failure| Error::at(location.file, failure.offset, failure.message))?;
             };
             let frame = self.panic_frame(context)?;
-            if let Some(edition) = source.macros.edition(frame).map_err(error)? {
+            if let Some(edition) = source.edition(frame).map_err(error)? {
                 break edition;
             }
-            source
-                .macros
-                .charge(1, 4 * size_of::<Frame>())
-                .map_err(error)?;
+            source.charge(1, 4 * size_of::<Frame>()).map_err(error)?;
             pending.push(frame);
             if !frame.skip {
                 break frame.edition;
@@ -137,10 +147,7 @@ impl<S: Sources> Engine<'_, S> {
                 ));
             }
         };
-        source
-            .macros
-            .retain_editions(&pending, edition)
-            .map_err(error)?;
+        source.retain_editions(&pending, edition).map_err(error)?;
         Ok(edition)
     }
 
@@ -153,15 +160,12 @@ impl<S: Sources> Engine<'_, S> {
         builtin: Builtin,
     ) -> Result<Call, Error> {
         let entry = self.panic_definition(definition)?;
-        let node = entry
-            .node
-            .ok_or_else(|| Error::at(FileId(0), 0, "source panic declaration is missing"))?;
         let module = self
             .loader
             .package
             .modules
             .get(visit.module.0 as usize)
-            .ok_or_else(|| Error::at(node.file, 0, "unknown panic caller module"))?;
+            .ok_or_else(|| Error::at(FileId(0), 0, "unknown panic caller module"))?;
         let file = module.file;
         let original = self
             .loader
@@ -176,23 +180,23 @@ impl<S: Sources> Engine<'_, S> {
         {
             return Err(error("panic delegation changed its selected source role"));
         }
-        let root = self
-            .paths
-            .state
-            .facts
-            .crate_root
-            .and_then(|root| self.paths.state.facts.definitions.get(root.0 as usize));
-        let source = self
-            .loader
-            .package
-            .source_core()
-            .ok_or_else(|| error("missing source panic provider"))?;
-        if source.current != source.provider
-            || source.current.name() != self.loader.package.crate_name
-            || root.is_none_or(|root| root.kind != DefKind::Module || root.node.is_some())
-        {
-            return Err(error("panic defining crate identity changed"));
-        }
+        let crate_id = match entry.imported {
+            // The provider's root is registered by crate identity; its rows
+            // and items are never found through a consumer name or alias.
+            Some(imported) if builtin.imported_delegation() => imported.crate_id,
+            Some(_) => return Err(error("imported panic delegation changed its selected role")),
+            None => {
+                if entry.node.is_none() {
+                    return Err(Error::at(
+                        FileId(0),
+                        0,
+                        "source panic declaration is missing",
+                    ));
+                }
+                self.local_panic_provider(&error)?;
+                0
+            }
+        };
         let edition = self.panic_edition(
             NodeKey {
                 file,
@@ -233,19 +237,38 @@ impl<S: Sources> Engine<'_, S> {
             definition_context: entry.context,
             edition: entry.edition,
             grammar,
+            crate_id,
         })
+    }
+
+    /// A local panic role runs only in its own source provider.
+    fn local_panic_provider(&self, error: &impl Fn(&'static str) -> Error) -> Result<(), Error> {
+        let root = self
+            .paths
+            .state
+            .facts
+            .crate_root
+            .and_then(|root| self.paths.state.facts.definitions.get(root.0 as usize));
+        let source = self
+            .loader
+            .package
+            .source_core()
+            .ok_or_else(|| error("missing source panic provider"))?;
+        if source.current != source.provider
+            || source.current.name() != self.loader.package.crate_name
+            || root.is_none_or(|root| root.kind != DefKind::Module || root.node.is_some())
+        {
+            return Err(error("panic defining crate identity changed"));
+        }
+        Ok(())
     }
 
     fn panic_storage(&self, call: &Call, input: &Input) -> Result<usize, Error> {
         let file = call.original.file;
         let original = call.original.span;
         let error = |message| Error::at(file, original.start, message);
-        let source = self
-            .loader
-            .package
-            .source_core()
-            .ok_or_else(|| error("missing source panic provider"))?;
-        source.macros.charge(input.tokens.len(), 0).map_err(error)?;
+        let source = self.panic_payer(file, original.start)?;
+        source.charge(input.tokens.len(), 0).map_err(error)?;
         let bytes = input.tokens.iter().try_fold(0_usize, |total, token| {
             total
                 .checked_add(
@@ -264,7 +287,7 @@ impl<S: Sources> Engine<'_, S> {
                 + 64,
         ));
         let reserved = storage.saturating_mul(4);
-        source.macros.charge(0, reserved).map_err(error)?;
+        source.charge(0, reserved).map_err(error)?;
         Ok(reserved)
     }
     fn panic_output(
@@ -310,6 +333,7 @@ impl<S: Sources> Engine<'_, S> {
             call_context,
             path_context,
             grammar: call.grammar,
+            crate_id: call.crate_id,
         };
         let mut provenance = |token: crate::lex::token::Token| {
             let raw = self
@@ -339,11 +363,7 @@ impl<S: Sources> Engine<'_, S> {
         };
         let actual = generated.payload_bytes();
         if actual > reserved {
-            self.loader
-                .package
-                .source_core()
-                .ok_or_else(|| error("missing source panic provider"))?
-                .macros
+            self.panic_payer(file, original.start)?
                 .charge(0, actual - reserved)
                 .map_err(error)?;
         }
@@ -361,7 +381,6 @@ impl<S: Sources> Engine<'_, S> {
     ) -> Result<(delegation::Delegated, usize), Error> {
         let file = call.original.file;
         let original = call.original.span;
-        let error = |message| Error::at(file, original.start, message);
         let units = &self.loader.package.units;
         let view = self
             .captures
@@ -369,14 +388,9 @@ impl<S: Sources> Engine<'_, S> {
         let inputs = crate::syntax::edition_context::WithEditions::new(&view, |token| {
             editions::token(file, token, |id| units.get(id.0 as usize))
         });
-        let source = self
-            .loader
-            .package
-            .source_core()
-            .ok_or_else(|| error("missing actual Assert source provider"))?;
+        let source = self.panic_payer(file, original.start)?;
         let charge = |steps, bytes| {
             source
-                .macros
                 .charge(steps, bytes)
                 .map_err(|message| crate::syntax::token_tree::error(original.start, message))
         };

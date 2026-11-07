@@ -368,7 +368,11 @@ impl Imports {
     ) -> Result<(), Error> {
         let rows = macros.rows().iter().filter_map(|row| row.unstable());
         let builtins = macros.builtins().iter().filter_map(|row| row.unstable());
-        for feature in rows.chain(builtins) {
+        let scoped = macros
+            .scoped()
+            .iter()
+            .filter_map(|row| row.definition().unstable());
+        for feature in rows.chain(builtins).chain(scoped) {
             self.feature(feature)?;
         }
         Ok(())

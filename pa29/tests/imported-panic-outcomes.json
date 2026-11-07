@@ -1,0 +1,314 @@
+{
+ "profile": "Rust 1.98.0 x86_64-unknown-linux-gnu, -Cpanic=abort --cap-lints=allow, RUSTC_BOOTSTRAP=1 where declared, per-case editions; declared 2026-11-07 before any rustc or RustGM run of these files (exploratory probes of similar shapes ran first under obj/parallel/imported-panic-v1/probe)",
+ "plan_sha256": "ba1d031bd5e6edf8937e54a8ad0d6f3e90d3a514ab9b5d7e94aa84590a4489d8",
+ "plan2_sha256": "c42c05e42ae936b1a96a0d772fbcd4e1cb6e53028c293befcf125947066b3afc",
+ "plan3_sha256": "5a631f1fd295255dcf2319946abe994b83ecd078d38c1d6bb82aef50093e4e6d",
+ "oracle_sha256": "060e1469827e9e364938a1cbba6286ccf2ff644e341475589f254f25aa377a47",
+ "oracle_runs_sha256": "2ebea7e4c94bdbc7f319cb59264900117d9852a5f5eb72689c4e12a57835e437",
+ "oracle_result": "all fourteen declared rustc outcomes held, including the native 41 43 44 41 and 41, two E0600 negations and two E0658 gates; round 1 ran the eleven plan-1 cases, candidate rounds 1 and 2 amended three frontend expectations only (see amended_controls), round 2 added plan 2 (integrator decision 4: an uncalled use import of an unstable row is E0658 at its use path; the feature admits it) and round 3 added plan 3 (a glob import binding the same row is accepted), rerunning all 72 macro cases natively",
+ "rustc_version": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+ "amended_controls": [
+  "panic-legacy-native-client: declared frontend 0; every 2018 source client is rejected first with \"source client requires the Rust 2024 source profile\", so it became a requirement row with that diagnostic and an unchanged rustc outcome",
+  "panic-legacy-client: declared diagnostic \"the pre-2021 panic macro form is not implemented for edition 2018\"; the same 2024-profile rejection precedes it, so only the substring changed",
+  "panic-operators-provider: declared diagnostic \"source rvalue requires a complete wider transport row\" from a probe without LegacyReceiver; the fixture fails first at \"source role requires its exact pinned supertrait\", so only the substring changed"
+ ],
+ "cases": [
+  {
+   "name": "panic-provider",
+   "path": "tests/spec/imported-panic-rows/provider.rs",
+   "source_sha256": "810a86ffee08e3b627d66a0cb2d1a64c13fb42bba4b902bb5297fb01478cc291",
+   "kind": "rlib",
+   "crate": "panics",
+   "edition": "2024",
+   "deps": {},
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_core": true,
+   "metadata_version": 4,
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 0,
+   "note": "a staged no_core provider publishes builtin panic/assert/unreachable rows and declarative wrappers whose allowance lists carry edition_panic, and four semiopaque pub macro rows in the panic module, in tag-14 version 4"
+  },
+  {
+   "name": "panic-native-client",
+   "path": "tests/spec/imported-panic-rows/native-client.rs",
+   "source_sha256": "d08c05ef6de832985f0d7f815704456ed44273c278d4d7fe1cee00326fe14d21",
+   "kind": "object",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "renamed": "panic-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "native": true,
+   "native_driver": "tests/spec/imported-panic-rows/native-driver.c",
+   "native_driver_sha256": "7a0374c5316696fcbd9a7e430357eb9abac8cd427c228630e78913dd0c97f655",
+   "native_stdout": "41 43 44 41\n",
+   "source_client": "panic-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "frontend_expected_after_implementation": 0,
+   "note": "a fresh 2024 consumer runs the imported panic and unreachable builtins: each delegates to the provider panic_2021/unreachable_2021 row through $crate by crate identity, and the skipped fail_with wrapper reads the consumer edition"
+  },
+  {
+   "name": "panic-legacy-native-client",
+   "path": "tests/spec/imported-panic-rows/legacy-native-client.rs",
+   "source_sha256": "8f2d398358e150661baebecb28c8bd923f2f988c2aae610784d982b2170a4afc",
+   "kind": "object",
+   "crate": "client",
+   "edition": "2018",
+   "deps": {
+    "panics": "panic-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "native": true,
+   "native_driver": "tests/spec/imported-panic-rows/legacy-driver.c",
+   "native_driver_sha256": "b6e54c2bb675011cb69fe97a185a9b215057e7c9a819959d3d593473acf24227",
+   "native_stdout": "41\n",
+   "source_client": "panic-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "frontend_expected_after_implementation": 1,
+   "note": "requirement: a 2018 consumer of plain_fail, which lacks edition_panic, selects panic_2021 from the provider row edition in rustc; RustGM source clients require Rust 2024, so this edition walk is not yet observable (amended after candidate round 1)",
+   "frontend_diagnostic": "source client requires the Rust 2024 source profile"
+  },
+  {
+   "name": "panic-legacy-client",
+   "path": "tests/spec/imported-panic-rows/legacy-client.rs",
+   "source_sha256": "43c9014a68ce093284f3b1788213aa93dea5c5039dc09b1735440893d0cdd899",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2018",
+   "deps": {
+    "panics": "panic-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "frontend_diagnostic": "source client requires the Rust 2024 source profile",
+   "source_client": "panic-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "requirement: the skipped wrapper reaches the 2018 call site, which needs panic_2015 delegation; RustGM source clients require Rust 2024 before that delegation is reached (amended after candidate round 1)"
+  },
+  {
+   "name": "panic-format-client",
+   "path": "tests/spec/imported-panic-rows/format-client.rs",
+   "source_sha256": "3deb23d6e6399e4854658bdac016c5045419c4e8920fba108fa945d2311a3210",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "panics": "panic-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_client": "panic-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 0,
+   "note": "the second panic_2021 rule names the unstable panicking::formatted, admitted by the semiopaque row allowance list inside the imported builtin expansion"
+  },
+  {
+   "name": "panic-assert-client",
+   "path": "tests/spec/imported-panic-rows/assert-client.rs",
+   "source_sha256": "d96360c0b7fae4839ce8ca4e2ffc4774d1350d6219194851caeae524d90605df",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "panics": "panic-provider"
+   },
+   "rustc": 1,
+   "rustc_codes": [
+    "E0600"
+   ],
+   "frontend_diagnostic": "source ! requires its actual Not language declaration",
+   "source_client": "panic-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "the imported assert expands into if !flag with a panic_2021 message call; both compilers then reject the negation because the provider declares no Not language item"
+  },
+  {
+   "name": "panic-debug-assert-client",
+   "path": "tests/spec/imported-panic-rows/debug-assert-client.rs",
+   "source_sha256": "d81b4b7bfbc0d6af7da9b3917801ebe53e6b38ce38f2f728b060f1b3c874e077",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "panics": "panic-provider"
+   },
+   "rustc": 1,
+   "rustc_codes": [
+    "E0600"
+   ],
+   "frontend_diagnostic": "source ! requires its actual Not language declaration",
+   "source_client": "panic-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "debug_assert expands through cfg and the imported assert to the same negation, rejected for the same missing Not language item"
+  },
+  {
+   "name": "panic-unstable-client",
+   "path": "tests/spec/imported-panic-rows/unstable-client.rs",
+   "source_sha256": "2f83ec6c4f9171f3c2e8571d9714d8da4989cf8a3ca0ebe1c11c977ad9dbb402",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "panics": "panic-provider"
+   },
+   "rustc": 1,
+   "rustc_codes": [
+    "E0658"
+   ],
+   "frontend_diagnostic": "use of unstable library macro requires feature `edition_panic`",
+   "source_client": "panic-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "a direct call of the unstable semiopaque panic_2021 row needs edition_panic"
+  },
+  {
+   "name": "panic-parameters-provider",
+   "path": "tests/spec/imported-panic-rows/parameters-provider.rs",
+   "source_sha256": "73087be238847353003af916fef76c0f8b8c7bdb239b029ff5f07b53dfe24dae",
+   "kind": "rlib",
+   "crate": "prov",
+   "edition": "2024",
+   "deps": {},
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_core": true,
+   "frontend_diagnostic": "macros 2.0 parameter lists are outside the macro metadata profile",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "requirement: the single-rule semiopaque form (core const_error) is rejected by name"
+  },
+  {
+   "name": "panic-transparent-provider",
+   "path": "tests/spec/imported-panic-rows/transparent-provider.rs",
+   "source_sha256": "b21bbc34145dd93a4084bcfda1665c47721fe58a602a49fbce9212730797441d",
+   "kind": "rlib",
+   "crate": "prov",
+   "edition": "2024",
+   "deps": {},
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_core": true,
+   "frontend_diagnostic": "transparent macros 2.0 definitions are outside the macro metadata profile",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "requirement: a transparent pub macro is rejected by name"
+  },
+  {
+   "name": "panic-operators-provider",
+   "path": "tests/spec/imported-panic-rows/operators-provider.rs",
+   "source_sha256": "f9ad579ef130e62800db82098786ce5a628a42915b6082079566c6bdd42284ba",
+   "kind": "rlib",
+   "crate": "operators",
+   "edition": "2024",
+   "deps": {},
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_core": true,
+   "frontend_diagnostic": "source role requires its exact pinned supertrait",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "requirement (source language-role and trait-impl transport): the LegacyReceiver, Clone, Copy and Not items an executable assert needs in a fresh consumer cannot be published yet (diagnostic amended after candidate round 2)"
+  },
+  {
+   "name": "panic-unstable-use-client",
+   "path": "tests/spec/imported-panic-rows/unstable-use-client.rs",
+   "source_sha256": "0dbeb7ca7a3e986e722b55633fb724ffe3239bc7de28995f0383e3a0c0f476b4",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "panics": "panic-provider"
+   },
+   "rustc": 1,
+   "rustc_codes": [
+    "E0658"
+   ],
+   "source_client": "panic-provider",
+   "frontend_diagnostic": "use of unstable library macro requires feature `edition_panic`",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 1,
+   "note": "integrator decision 4: a use import of the unstable semiopaque panic_2021 row, never called, is checked for stability as rustc checks every use path"
+  },
+  {
+   "name": "panic-unstable-use-feature-client",
+   "path": "tests/spec/imported-panic-rows/unstable-use-feature-client.rs",
+   "source_sha256": "84621de7dee76d57ca6fc439f76de2cca9eb38c2eade6ce82d659c66defa3c99",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "panics": "panic-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_client": "panic-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 0,
+   "note": "requesting edition_panic admits the same uncalled use import"
+  },
+  {
+   "name": "panic-unstable-glob-client",
+   "path": "tests/spec/imported-panic-rows/unstable-glob-client.rs",
+   "source_sha256": "b39b87ddc3c9ad2591b06996cc59689131d94d0098f08497839ec1906157139f",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "panics": "panic-provider"
+   },
+   "rustc": 0,
+   "rustc_codes": [],
+   "source_client": "panic-provider",
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": false,
+   "frontend_expected_after_implementation": 0,
+   "note": "a glob import checks only the stability of its module path, so the unstable rows it binds stay ungated until called"
+  }
+ ]
+}

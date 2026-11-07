@@ -5,6 +5,31 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane B [imported panic family and semiopaque rows](parallel/macro-metadata.md#imported-panic-family-and-semiopaque-rows-version-4)
+adds tag-14 version 4. A fresh 2024 consumer now runs an imported `panic!`,
+`unreachable!`, `assert!` and the wrappers around them. Each delegates to its
+provider's semiopaque `panic_2021`/`unreachable_2021` row through
+`$crate`, bound by crate identity; the native client prints rustc's
+`41 43 44 41`.
+
+- The edition-panic contract is the `edition_panic` member of a row's
+  allowance list, so it adds no bytes; `allow_internal_unsafe` is one flags
+  byte per definition row, granted only to that row's own frame.
+- Semiopaque `pub macro` rows are kind 3. The single-rule `macro m(...)` form
+  (core's `const_error`) and transparent rows are rejected by name.
+- An uncalled single `use` of an unstable row now needs its feature, as pinned
+  rustc requires (E0658); a glob import does not.
+- Two private invariants on main are repaired first: the hot `Imported` record
+  is back to 160 bytes (macro rows share one cold box with original
+  reservation work), and the const-allowance transport opponent
+  `consumer-grant-not-request` again fails at its feature gate (below).
+
+Imported `format_args!` still stops by name: its expander and the typed
+constructors it emits need Lane C's transport of core's fmt language roles and
+constructors first. The fix for `consumer-grant-not-request` corrects a header
+ledger that the imported-contract ingest created with an empty input-graph
+bound (since `d2bcb1f89`).
+
 [Census batch 3](parallel/census-batch3.md) bounds the source lint-policy
 ledger by its input. It keeps the former fixed limits as a floor, and adds
 8 steps and 64 attempted bytes per admitted original source byte. Each grant is

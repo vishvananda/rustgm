@@ -49,6 +49,7 @@ fn generated(
                 call_context: context,
                 path_context: context,
                 grammar: crate::syntax::ast::MacroContext::Expression,
+                crate_id: 0,
             },
             edition: Edition::Rust2024,
             input: &input,

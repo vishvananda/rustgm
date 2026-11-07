@@ -25,6 +25,7 @@ fn delegation_preserves_classified_input_spacing_and_never_parses_a_source_image
         call_context: SyntaxContextId::ROOT,
         path_context: SyntaxContextId::ROOT,
         grammar: MacroContext::Expression,
+        crate_id: 0,
     };
     let generated = build(
         &site,

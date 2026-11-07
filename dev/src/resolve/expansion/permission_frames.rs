@@ -78,9 +78,12 @@ impl<'a> FrameView<'a> {
             return Err(error("macro allowance defining crate root changed"));
         }
         let Some(node) = definition.node else {
+            // An imported row carries its edition-panic contract and panic
+            // role as re-authenticated row data, never a source header.
             if definition.header.is_some()
-                || definition.edition_panic
-                || matches!(definition.body, Body::Builtin(role) if role.source_only())
+                || (definition.imported.is_none()
+                    && (definition.edition_panic
+                        || matches!(definition.body, Body::Builtin(role) if role.source_only())))
             {
                 return Err(error("source panic macro has no defining declaration"));
             }

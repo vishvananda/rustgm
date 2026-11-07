@@ -3,7 +3,9 @@
 //! `#[rustc_builtin_macro]` definitions publish their expander identity. Every
 //! further public binding of a definition, local or imported, is a re-export
 //! row naming that definition row's identity. Definition rows also carry their
-//! `allow_internal_unstable` list and `#[unstable]` feature.
+//! `allow_internal_unstable` list, `#[unstable]` feature and
+//! `allow_internal_unsafe` flag. Semiopaque `pub macro` definitions publish
+//! their canonical body trees at their own placement.
 use super::{DefKind, Error, Report, error};
 use crate::{
     resolve::{
@@ -15,7 +17,9 @@ use crate::{
     support::{
         crates::{
             CrateIdentity,
-            exported_macros::{BuiltinMacro, DefinitionRow, Macro, Macros, ReexportMacro, Syntax},
+            exported_macros::{
+                BuiltinMacro, DefinitionRow, Macro, Macros, ReexportMacro, ScopedMacro, Syntax,
+            },
         },
         hash::{HashMap, HashSet},
     },
@@ -156,6 +160,10 @@ fn imported_rows(report: &Report) -> HashMap<DefId, (&CrateIdentity, &[String], 
                     let row = macros.builtins().get(row)?;
                     (row.placement(), row.name())
                 }
+                DefinitionRow::Scoped(row) => {
+                    let row = macros.scoped().get(row)?;
+                    (row.placement(), row.name())
+                }
             };
             Some((entry.definition, (artifact.identity(), placement, name)))
         })
@@ -216,6 +224,7 @@ struct Table {
     rows: Vec<Macro>,
     builtins: Vec<BuiltinMacro>,
     reexports: Vec<ReexportMacro>,
+    scoped: Vec<ScopedMacro>,
 }
 impl Table {
     /// Publish one local definition and its other public bindings. Its row
@@ -261,8 +270,16 @@ impl Table {
                 )
                 .and_then(|row| row.with_internal_unstable(internal_unstable))
                 .and_then(|row| row.with_unstable(feature))
-                .map_err(error)?,
+                .map_err(error)?
+                .with_internal_unsafe(definition.exported_internal_unsafe()),
             );
+        } else if matches!(definition.body, Body::Scoped { .. }) {
+            let body = scoped_body(report, definition, node)?;
+            let image = image_row(report, canonical.name, definition, node, body)?
+                .with_unstable(feature)
+                .map_err(error)?;
+            self.scoped
+                .push(ScopedMacro::new(canonical.placement.to_vec(), image).map_err(error)?);
         } else {
             let root = canonical.direct && canonical.scope == report.resolution.module_scopes[0];
             self.rows.push(
@@ -297,7 +314,10 @@ impl Table {
         self.reexports.sort_unstable_by(|left, right| {
             (left.placement(), left.name()).cmp(&(right.placement(), right.name()))
         });
-        Macros::with_reexports(self.rows, self.builtins, self.reexports).map_err(error)
+        self.scoped.sort_unstable_by(|left, right| {
+            (left.placement(), left.name()).cmp(&(right.placement(), right.name()))
+        });
+        Macros::with_scoped(self.rows, self.builtins, self.reexports, self.scoped).map_err(error)
     }
 }
 
@@ -358,6 +378,29 @@ fn syntax(report: &Report, node: NodeKey) -> Result<Syntax, Error> {
     }
 }
 
+/// The body capture of a semiopaque `pub macro` in its comma-separated rule
+/// form. Opaque and transparent definitions, and the single-rule form with a
+/// parameter list, are rejected by name.
+fn scoped_body(report: &Report, definition: &Definition, node: NodeKey) -> Result<u32, Error> {
+    definition.exported_semiopaque().map_err(error)?;
+    let unit = report.package.unit(node.file);
+    let AstKind::Item(index) = unit.configured.ast.node(node.node).kind else {
+        return Err(error("exported macro definition is not an item"));
+    };
+    match unit.configured.ast.items[index as usize].kind {
+        ItemKind::DeclarativeMacro {
+            parameters: None,
+            capture,
+        } => Ok(capture),
+        ItemKind::DeclarativeMacro { .. } => Err(error(
+            "macros 2.0 parameter lists are outside the macro metadata profile",
+        )),
+        _ => Err(error(
+            "exported macro definition is not a macro declaration",
+        )),
+    }
+}
+
 fn row(
     report: &Report,
     root: bool,
@@ -365,19 +408,18 @@ fn row(
     definition: &Definition,
     node: NodeKey,
 ) -> Result<Macro, Error> {
-    let compiled = match &definition.body {
-        Body::Declarative(compiled) => compiled,
+    match &definition.body {
+        Body::Declarative(_) => {}
         Body::Scoped { .. } => {
             return Err(error(
                 "macros 2.0 definitions are outside the macro metadata profile",
             ));
         }
         Body::Builtin(_) => return Err(error("exported builtin macro lost its identity")),
-    };
+    }
     if !root {
         return Err(error("exported macro_rules rows belong to the crate root"));
     }
-    let internal_unstable = definition.exported_internal_unstable().map_err(error)?;
     let unit = report.package.unit(node.file);
     let AstKind::Item(index) = unit.configured.ast.node(node.node).kind else {
         return Err(error("exported macro definition is not an item"));
@@ -385,6 +427,25 @@ fn row(
     let ItemKind::MacroRules { capture } = unit.configured.ast.items[index as usize].kind else {
         return Err(error("exported macro definition is not macro_rules"));
     };
+    image_row(report, name, definition, node, capture)
+}
+
+/// The canonical image, rule count, list and unsafe flag of one declarative
+/// or semiopaque body capture.
+fn image_row(
+    report: &Report,
+    name: &str,
+    definition: &Definition,
+    node: NodeKey,
+    capture: u32,
+) -> Result<Macro, Error> {
+    let compiled = match &definition.body {
+        Body::Declarative(compiled) => compiled,
+        Body::Scoped { compiled, .. } => compiled.as_ref(),
+        Body::Builtin(_) => return Err(error("exported builtin macro lost its identity")),
+    };
+    let internal_unstable = definition.exported_internal_unstable().map_err(error)?;
+    let unit = report.package.unit(node.file);
     let forest = &unit.configured.ast.captures[capture as usize];
     let (image, trees) =
         crate::resolve::crates::macro_image(unit.source.text(), forest).map_err(error)?;
@@ -399,5 +460,6 @@ fn row(
         trees,
     )
     .and_then(|row| row.with_internal_unstable(internal_unstable))
+    .map(|row| row.with_internal_unsafe(definition.exported_internal_unsafe()))
     .map_err(error)
 }

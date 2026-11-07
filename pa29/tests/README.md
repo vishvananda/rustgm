@@ -180,3 +180,21 @@ packet under `spec/inherent-methods/`. The packet holds:
   inherent-header and region controls, and a 6/24/96 scaling control.
 
 The `crate_linking::inherent_transport` integration controls consume it.
+
+`imported-panic-outcomes.json` freezes tag-14 version 4 under
+`spec/imported-panic-rows/`. A staged no_core provider (`provider.rs`) has
+core's builtin `panic`, `assert` and `unreachable` shapes and declarative
+wrappers whose allowance lists carry `edition_panic`, one wrapper without it,
+and four semiopaque `pub macro` rows in its `panic` module. `native-client.rs`
+runs the imported roles in a fresh 2024 consumer and links with
+`native-driver.c`; `legacy-native-client.rs` with `legacy-driver.c` and
+`legacy-client.rs` are 2018 requirement rows. Further clients cover the
+second `panic_2021` rule (`format-client.rs`), `assert` and `debug_assert`
+reaching the provider's missing `Not` item, a direct call of the unstable
+row, an uncalled `use` of it with and without its feature and a glob import
+of its module. Three requirement providers cover the single-rule `pub macro`
+form, a transparent `pub macro` and the operator items an executable `assert`
+needs. Eleven outcomes were declared in plan 1, two in plan 2 (the uncalled
+`use`) and one in plan 3 (the glob), each before any rustc or RustGM run of its
+files; three frontend expectations were amended after candidate rounds 1 and
+2 (`docs/parallel/macro-metadata.md`).

@@ -2,7 +2,10 @@
 //! and expander identity; declarative rows there carry allowance lists, and
 //! re-export rows name a definition row by its owner and key. Version three
 //! adds builtin allowance lists and every definition row's `#[unstable]`
-//! feature, which gates each call in the consumer.
+//! feature, which gates each call in the consumer. Version four adds
+//! semiopaque `pub macro` rows and every definition row's
+//! `allow_internal_unsafe` flag; edition-panic contracts travel as the
+//! `edition_panic` member of a list.
 use super::{
     exports::compile,
     fresh_packets::{Packet, Result, unique},
@@ -717,6 +720,275 @@ fn stability_row_metadata_grows_linearly_with_row_count() -> Result {
     }
     // Fixed-width names and features: every row adds the same table bytes,
     // and the consumer's output does not depend on the row count.
+    let [small, middle, large] = <[usize; 3]>::try_from(sizes.as_slice())?;
+    assert_eq!((middle - small) * 4, large - middle, "{sizes:?}");
+    assert!(outputs.windows(2).all(|pair| pair[0] == pair[1]));
+    Ok(())
+}
+
+const PANICS: &str = "pa29/tests/spec/imported-panic-rows";
+
+/// The panic provider's crate features, lang items and nothing else.
+fn panic_foundation(packet: &Packet) -> Result<String> {
+    let fixture = std::fs::read_to_string(packet.fixture("provider"))?;
+    Ok(fixture
+        .split("#[rustc_builtin_macro]")
+        .next()
+        .ok_or("missing provider foundation")?
+        .to_owned())
+}
+
+#[test]
+fn panic_rows_publish_edition_lists_and_semiopaque_rows_in_version_four() -> Result {
+    let packet = Packet::publish(GROUP, PANICS, "panic-rows", "provider", PROFILE)?;
+    let bytes = std::fs::read(&packet.metadata)?;
+    assert_eq!(bytes[12..14], [14, 4]);
+    let interface = crates::decode(&bytes)?;
+    assert_eq!(crates::encode(&interface)?, bytes);
+    let macros = interface.macros().ok_or("missing macro table")?;
+    let owned = |features: &[String]| features.join(",");
+    let builtins: Vec<_> = macros
+        .builtins()
+        .iter()
+        .map(|row| (row.name(), row.identity(), owned(row.internal_unstable())))
+        .collect();
+    assert_eq!(
+        builtins,
+        [
+            ("assert", "assert", "edition_panic,panic_internals".into()),
+            ("cfg", "cfg", String::new()),
+            ("panic", "core_panic", "edition_panic".into()),
+            ("unreachable", "unreachable", "edition_panic".into()),
+        ]
+    );
+    let rows: Vec<_> = macros
+        .rows()
+        .iter()
+        .map(|row| (row.name(), owned(row.internal_unstable())))
+        .collect();
+    assert_eq!(
+        rows,
+        [
+            ("debug_assert", "edition_panic".into()),
+            ("fail_with", "edition_panic".into()),
+            ("plain_fail", String::new()),
+        ]
+    );
+    let scoped: Vec<_> = macros
+        .scoped()
+        .iter()
+        .map(|row| {
+            let definition = row.definition();
+            (
+                row.placement().join("::"),
+                row.name(),
+                definition.unstable(),
+                owned(definition.internal_unstable()),
+                definition.rules(),
+            )
+        })
+        .collect();
+    let gated = Some("edition_panic");
+    let listed = || "panic_internals".to_owned();
+    assert_eq!(
+        scoped,
+        [
+            ("panic".into(), "panic_2015", gated, listed(), 2),
+            ("panic".into(), "panic_2021", gated, listed(), 2),
+            ("panic".into(), "unreachable_2015", gated, listed(), 2),
+            ("panic".into(), "unreachable_2021", gated, listed(), 2),
+        ]
+    );
+    assert_eq!(
+        macros.scoped()[1].definition().image(),
+        "{ () => (41), ($($t:tt)+) => ($crate::panicking::formatted()), }"
+    );
+    let unsafe_rows = macros
+        .rows()
+        .iter()
+        .map(crates::exported_macros::Macro::internal_unsafe);
+    assert!(
+        !unsafe_rows
+            .chain(
+                macros
+                    .builtins()
+                    .iter()
+                    .map(crates::exported_macros::BuiltinMacro::internal_unsafe)
+            )
+            .any(|flag| flag)
+    );
+    // A fresh consumer runs each imported panic role, a skipped wrapper and
+    // the semiopaque rule that names the provider's unstable function.
+    let body = "pub fn a() -> u32 { base::panic!() }\npub fn b() -> u32 { base::unreachable!(\"x {}\", 1) }\npub fn c() -> u32 { base::fail_with!() }\npub fn d() -> u32 { base::panic!(\"x\") }";
+    let source = client(&packet, "panics", body)?;
+    let mut consumer = packet.consumer(&source, "panics", &packet.metadata, &packet.owner());
+    super::artifacts::checked("panics", &packet.folder, &mut consumer)?;
+    // rustc checks every single `use` path: an uncalled import of an unstable
+    // row needs its feature, and a glob import gates only its module.
+    let gate = "use of unstable library macro requires feature `edition_panic`";
+    let source = client(&packet, "uncalled", "use base::panic::panic_2021;")?;
+    let mut uncalled = packet.consumer(&source, "uncalled", &packet.metadata, &packet.owner());
+    packet.rejected("uncalled", &mut uncalled, gate)?;
+    let source = client(&packet, "globbed", "use base::panic::*;")?;
+    let mut globbed = packet.consumer(&source, "globbed", &packet.metadata, &packet.owner());
+    super::artifacts::checked("globbed", &packet.folder, &mut globbed)?;
+    Ok(())
+}
+
+/// Core's `format_args` shape: a builtin row with `allow_internal_unsafe`
+/// and a list.
+const FORMAT_ARGS: &str = "#[rustc_builtin_macro]\n#[macro_export]\n#[allow_internal_unsafe]\n#[allow_internal_unstable(fmt_internals)]\n#[stable(feature = \"panics\", since = \"1.0.0\")]\nmacro_rules! format_args { ($fmt:expr) => {{}}; ($fmt:expr, $($args:tt)*) => {{}}; }\n";
+
+#[test]
+fn unsafe_rows_keep_their_flag_and_imported_format_args_stops_by_name() -> Result {
+    let packet = Packet::publish(GROUP, PANICS, "unsafe-rows", "provider", PROFILE)?;
+    // An `allow_internal_unsafe` row alone needs version four, and keeps its
+    // flag, on a declarative and on a builtin row.
+    let foundation =
+        panic_foundation(&packet)?.replace("decl_macro", "decl_macro, allow_internal_unsafe");
+    let unsafe_source = packet.folder.join("unsafe-provider.rs");
+    std::fs::write(
+        &unsafe_source,
+        format!(
+            "{foundation}#[macro_export]\n#[allow_internal_unsafe]\n#[stable(feature = \"panics\", since = \"1.0.0\")]\nmacro_rules! raw {{ () => {{ 1 }} }}\n{FORMAT_ARGS}"
+        ),
+    )?;
+    let metadata = packet.folder.join("unsafe-provider.rgcrate");
+    let mut export = packet.export(PROFILE, &unsafe_source, &metadata);
+    super::artifacts::checked("unsafe-provider", &packet.folder, &mut export)?;
+    let flagged = std::fs::read(&metadata)?;
+    assert_eq!(flagged[12..14], [14, 4]);
+    let flagged = crates::decode(&flagged)?;
+    let table = flagged.macros().ok_or("missing macro table")?;
+    assert!(table.rows()[0].internal_unsafe());
+    let format = table
+        .builtins()
+        .iter()
+        .find(|row| row.name() == "format_args")
+        .ok_or("missing format_args row")?;
+    assert!(format.internal_unsafe());
+    assert_eq!(format.internal_unstable(), ["fmt_internals"]);
+    // The imported row binds, but its expander builds typed fmt constructors
+    // that need the provider's fmt items in this crate, so a call stops by name.
+    let source = client(
+        &packet,
+        "format",
+        "pub fn f() { base::format_args!(\"x\"); }",
+    )?;
+    let mut format = packet.consumer(&source, "format", &metadata, &packet.owner());
+    packet.rejected(
+        "format",
+        &mut format,
+        "imported builtin macro requires its provider's source declaration",
+    )
+}
+
+#[test]
+fn forged_and_relabelled_version_four_rows_are_rejected_by_name() -> Result {
+    let packet = Packet::publish(GROUP, PANICS, "forged-panic-rows", "provider", PROFILE)?;
+    let bytes = std::fs::read(&packet.metadata)?;
+    // The semiopaque `panic_2021` row: kind 3, placement `panic`, its name,
+    // edition 2024 and no `local_inner_macros`.
+    let head = b"\x03\x01\x00\x05\x00\x00\x00panic\x0a\x00\x00\x00panic_2021\x03\x00";
+    let inner = b"\x03\x01\x00\x05\x00\x00\x00panic\x0a\x00\x00\x00panic_2021\x03\x01";
+    rejected(
+        &respelled(&bytes, head, inner)?,
+        "semiopaque macro rows have no local_inner_macros",
+    )?;
+    // Its trailing flags byte follows its list and stability tag, just
+    // before the next row, `unreachable_2015`.
+    let next = b"\x03\x01\x00\x05\x00\x00\x00panic\x10\x00\x00\x00unreachable_2015";
+    let tail = [&b"edition_panic\x00"[..], next].concat();
+    let flags = [&b"edition_panic\x02"[..], next].concat();
+    rejected(
+        &respelled(&bytes, &tail, &flags)?,
+        "unknown exported macro row flags",
+    )?;
+    // A version-three reader has no kind 3 and no flags; a relabelled table
+    // fails rather than dropping rows.
+    assert!(crates::decode(&super::fresh_packets::relabel(&bytes, 3)).is_err());
+    // A placement respelled to another module is resolved by module identity
+    // in a fresh consumer, never by a name, and fails by name.
+    let moved = respelled(
+        &bytes,
+        b"\x05\x00\x00\x00panic\x10\x00\x00\x00unreachable_2021",
+        b"\x05\x00\x00\x00panix\x10\x00\x00\x00unreachable_2021",
+    )?;
+    crates::decode(&moved)?;
+    let forged = packet.folder.join("moved.rgcrate");
+    std::fs::write(&forged, &moved)?;
+    let source = client(&packet, "moved", "pub fn f() -> u32 { base::panic!() }")?;
+    let mut consumer = packet.consumer(&source, "moved", &forged, &packet.owner());
+    packet.rejected(
+        "moved",
+        &mut consumer,
+        "exported macro placement has no public imported module",
+    )?;
+    // Without a version-four field the table must not claim version four.
+    let foundation =
+        panic_foundation(&packet)?.replace("decl_macro", "decl_macro, allow_internal_unsafe");
+    let unsafe_source = packet.folder.join("unsafe-provider.rs");
+    std::fs::write(
+        &unsafe_source,
+        format!(
+            "{foundation}#[macro_export]\n#[allow_internal_unsafe]\n#[stable(feature = \"panics\", since = \"1.0.0\")]\nmacro_rules! raw {{ () => {{ 1 }} }}\n"
+        ),
+    )?;
+    let metadata = packet.folder.join("unsafe-provider.rgcrate");
+    let mut export = packet.export(PROFILE, &unsafe_source, &metadata);
+    super::artifacts::checked("unsafe-provider", &packet.folder, &mut export)?;
+    let flagged = std::fs::read(&metadata)?;
+    // The sole row's flags byte is the last byte before the inner length.
+    let mut cleared = flagged.clone();
+    let at = table_bytes(&flagged)? + 18 - 1;
+    assert_eq!(cleared[at], 1);
+    cleared[at] = 0;
+    rejected(
+        &cleared,
+        "version-four exported macro table has only version-three rows",
+    )?;
+    Ok(())
+}
+
+#[test]
+fn semiopaque_row_metadata_grows_linearly_with_row_count() -> Result {
+    let packet = Packet::new(GROUP, PANICS, "semiopaque-scaling", "rows")?;
+    let foundation = panic_foundation(&packet)?;
+    let (mut sizes, mut outputs) = (Vec::new(), Vec::new());
+    for count in [8, 32, 128] {
+        let rows = (0..count).try_fold(String::new(), |mut text, index| {
+            writeln!(
+                text,
+                "#[stable(feature = \"panics\", since = \"1.0.0\")]\n#[rustc_macro_transparency = \"semiopaque\"]\npub macro s{index:03} {{ () => (1), }}"
+            )
+            .map(|()| text)
+        })?;
+        let source = packet.folder.join(format!("rows{count}.rs"));
+        std::fs::write(
+            &source,
+            format!(
+                "{foundation}#[stable(feature = \"panics\", since = \"1.0.0\")]\npub mod m {{\n{rows}}}\n"
+            ),
+        )?;
+        let metadata = packet.folder.join(format!("rows{count}.rgcrate"));
+        let mut export = packet.export(PROFILE, &source, &metadata);
+        super::artifacts::checked("provider", &packet.folder, &mut export)?;
+        let bytes = std::fs::read(&metadata)?;
+        assert_eq!(bytes[12..14], [14, 4]);
+        let interface = crates::decode(&bytes)?;
+        let table = interface.macros().ok_or("missing macro table")?;
+        assert_eq!(table.scoped().len(), count);
+        sizes.push(table_bytes(&bytes)?);
+        let label = format!("client{count}");
+        let last = count - 1;
+        let body = format!("pub fn f() -> u32 {{ base::m::s{last:03}!() }}");
+        let source = client(&packet, &label, &body)?;
+        let mut consumer = packet.consumer(&source, &label, &metadata, &packet.owner());
+        super::artifacts::checked(&label, &packet.folder, &mut consumer)?;
+        outputs.push(std::fs::read(packet.folder.join(format!("{label}.lowir")))?);
+    }
+    // Fixed-width names: every row adds the same table bytes, and the
+    // consumer's output does not depend on the row count.
     let [small, middle, large] = <[usize; 3]>::try_from(sizes.as_slice())?;
     assert_eq!((middle - small) * 4, large - middle, "{sizes:?}");
     assert!(outputs.windows(2).all(|pair| pair[0] == pair[1]));

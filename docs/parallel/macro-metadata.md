@@ -823,8 +823,8 @@ published without their contract.
   list: `cfg(ub_checks)` inside a listed imported expansion failed. A side
   effect is that such a client has a macro context, which `#[prelude_import]`
   also requires.
-- Not checked: a `use` of an unstable row that is never called. rustc's
-  import-path check was not probed.
+- Not checked here: a `use` of an unstable row that is never called. Version
+  4 probes and checks it ([import-path stability](#imported-panic-family-and-semiopaque-rows-version-4)).
 
 ### Imported context-dependent builtins
 
@@ -954,3 +954,211 @@ behind the panic family (167), and `format_args` (8). The panic family then
 also needs `&'static str`/`!` signatures and semiopaque `pub macro` rows. std
 was not reclassified, because its largest groups are the same derives (1,023
 sites) and `const_error!` (237).
+
+## Imported panic family and semiopaque rows (version 4)
+
+Follow-up (Lane B). A fresh consumer now runs an imported `panic!`,
+`unreachable!` and `assert!` row, and the declarative wrappers that call them.
+Each delegates to its provider's `panic_2021` or `unreachable_2021` row through
+`$crate`, bound by crate identity. This follows the integrator's decisions on
+the edition-panic contract, semiopaque rows, `allow_internal_unsafe` and
+import-path stability.
+
+**Edition-panic contract (decision 1).** rustc's `use_panic_2021` skips each
+frame whose `allow_internal_unstable` list contains `edition_panic`, so the
+contract is already row data: the `edition_panic` member of a row's list.
+Version 4 adds no bytes for it. `exported_internal_unstable` no longer rejects
+it. Instead it rejects, by name, a definition whose list membership differs
+from its parsed contract ("exported macro edition-panic contract differs from
+its allowance list"). An imported definition sets `edition_panic` from its
+row's list (`transported_macros`), so `Frame.skip` walks imported frames
+exactly as local ones. Version-1 to version-3 tables keep their exact bytes.
+
+**Wire layout.** Version 4 is the version-3 layout plus two changes:
+
+- every definition row (declarative, builtin and the new semiopaque kind) ends
+  with one flags byte. Bit 0 is `allow_internal_unsafe`; any other bit fails
+  with "unknown exported macro row flags". Re-export rows have no flags byte;
+- kind 3 is a semiopaque `pub macro` row: its placement, then the declarative
+  row's fields (name, edition, `local_inner_macros`, image), its list, its
+  stability and its flags. Its `local_inner_macros` byte must be 0 ("semiopaque
+  macro rows have no local_inner_macros").
+
+Rows stay sorted by (placement, name) across all kinds. `Macros::version`
+writes version 4 exactly when some row is semiopaque or carries the unsafe
+flag. Kind 3 in a version-2 or version-3 table fails as an unknown row kind,
+and a version-4 table with neither feature fails with "version-four exported
+macro table has only version-three rows".
+
+**Semiopaque rows (decision 2).** A `pub macro` with
+`#[rustc_macro_transparency = "semiopaque"]` has `macro_rules!` hygiene, so
+it travels as a declarative image. Core's `panic_2015`, `panic_2021`,
+`unreachable_2015` and `unreachable_2021` use the multi-rule comma form.
+`Definition::exported_semiopaque` accepts only that transparency. A
+transparent `pub macro` fails with "transparent macros 2.0 definitions are
+outside the macro metadata profile". Any other `pub macro` fails with "macros
+2.0 definitions are outside the macro metadata profile". The single-rule form
+`macro m(params) { … }`, which core's `const_error` uses, fails with "macros
+2.0 parameter lists are outside the macro metadata profile". The consumer
+binds a semiopaque row at its placement, as it binds builtin rows. It compiles
+the image once in the row's edition (`declarative_in_edition`), charges the
+compiled forest to the client's ledger (`macro_context().contracts()`), and
+installs it as `Body::Scoped` with `Transparency::SemiOpaque`. Its label is
+`<macro name@dis::panic::panic_2021>`.
+
+**Imported panic delegation.** The builtin roles `CorePanic`, `StdPanic`,
+`Unreachable` and `Assert` are source-only. The new
+`Builtin::imported_delegation` admits exactly these four as imported rows
+(`unavailable.rs`); every other non-context-free imported builtin still fails
+with "imported builtin macro requires its provider's source declaration".
+`panic_dispatch` takes the delegating crate id from the imported definition,
+or rejects a changed role. A local call still needs its actual source panic
+declaration. `delegation::Site` and the assertion emitter now anchor `$crate`
+at `Kind::CrateRoot(crate_id)` instead of 0. So `$crate::panic::panic_2021!`
+and `$crate::panicking::panic` resolve through `Imported::macro_root` to the
+provider's module tree, never by a binding name or alias: the alias client has
+its own `pub mod panic {}`. Every panic charge is paid by
+`Package::source_contract_payer()`. That is `source.macros` for the source
+core, and the client's own ledger for a consumer.
+
+**`allow_internal_unsafe` (decision 3).** The flag is typed row data
+(`Macro::internal_unsafe`, `BuiltinMacro::internal_unsafe`), published from
+the definition's parsed header (`exported_internal_unsafe`). An imported grant
+is `Grant::Imported { features, internal_unsafe }`. `allows_unsafe_code_lint`
+returns the flag only for a site in that row's own frame: an expansion of
+another definition nested inside it gets its own grant, never this one. The
+flag is read in the same charged grant lookup as the row's list. No production
+lint reads it yet.
+
+**Import-path stability (decision 4).** The outcomes were declared before the
+probe (plan 2). Pinned rustc rejects an uncalled `use panics::panic::panic_2021;`
+with E0658 at the use path, and accepts it with `#![feature(edition_panic)]`.
+Plan 3, declared after that round, has rustc accepting a glob import of the
+same module: a glob checks only its module path. `unstable_calls::validate`
+now checks, after the calls, every single-import macro binding
+(`Origin::Import`) whose target is an unstable imported row. It uses the same
+request and expansion-allowance gate and the same diagnostic. Glob bindings
+(`Origin::Glob`) are not gated. The unstable-row map is built only when some
+imported row is unstable, so other crates pay nothing. Not modeled: rustc's
+`is_unstable_reexport` exemption, which lets an `#[unstable]` `use` item in a
+staged crate name an unstable item. std requests `edition_panic`, so its
+`pub use core::panic::panic_2021` is unaffected.
+
+**`prelude_import` (decision 5).** The version-3 client ledger has a side
+effect. A source client or staged consumer whose dependency rows carry an
+allowance list now owns a `LocalMacros` context. `prelude_scope::pay` requires
+that context for `#[prelude_import]`, so such a client's `#[prelude_import]`
+(with its `prelude_import` request) is accepted and charged to that ledger.
+Before version 3 it failed with "prelude_import requires its supported
+local/source request owner". This is the intended owner, not a widened grant:
+the client still needs its own `prelude_import` request.
+
+**`&'static str` and `!` signatures (decision 6).** Not attempted here; they
+are Lane C requirements. An executable `assert!` in a fresh consumer still
+needs the provider's `Not`, `Clone` and `Copy` items
+(`panic-operators-provider` fails with "source role requires its exact pinned
+supertrait"), and the default message's `panicking::panic(&'static str) -> !`.
+
+**`format_args!` (task 2).** Core's builtin `format_args` row now publishes in
+version 4 with its unsafe flag and list. A consumer binds it, but a call still
+fails by name ("imported builtin macro requires its provider's source
+declaration"). Its expander is source-core bound: `format_inputs`,
+`format_values`, `format_sites`, `identifier_ancestry` and `eager` charge
+`source.macros` and require the local source definition header
+(`source_eager_definition`). The typed `FormatConstructor` nodes it emits need
+`source_bindings.language(format_arguments)` and the `Arguments`/`Argument`
+constructors in the consumer (`sema::bodies::formatting_values`). Running it
+needs Lane C transport of those language roles and inherent constructors with
+`&'static [&'static str]` signatures first. Moving the expander's payer to the
+client ledger alone would only move the failure into sema. `write!` stops at
+the same row.
+
+### Qualification (version 4)
+
+All fourteen outcomes in `pa29/tests/imported-panic-outcomes.json` were
+declared before any rustc or RustGM run of their files, in three plans under
+`obj/parallel/imported-panic-v1/declared/`:
+
+- plan 1 (sha256 `ba1d031b…`, eleven cases): a staged no_core provider with
+  core's builtin `panic`, `assert` and `unreachable` shapes, wrappers with and
+  without `edition_panic`, and four semiopaque rows; seven clients; three
+  requirement providers;
+- plan 2 (`c42c05e4…`): the uncalled `use` with and without its feature;
+- plan 3 (`5a631f1f…`, declared after oracle round 2): the glob import.
+
+Exploratory probes of similar shapes (`probe/`) ran first. Results:
+
+- **Oracle.** Pinned rustc 1.98.0 matched every declared outcome in each of
+  three rounds. Round 3 ran all 72 macro cases natively (`oracle.json` sha256
+  `060e1469…`). That includes `41 43 44 41` and `41` from the two native
+  clients, E0600 for `assert` and `debug_assert` on a provider without `Not`,
+  and E0658 for the direct call and for the uncalled `use`.
+- **Candidate.** `scripts/check_macro_metadata.py` runs all 72 cases. With
+  CLI `9da53d9f…`, all 72 passed non-native (`obj/qualification/fast/1794068819629603477`,
+  `complete.json` sha256 `f37fed67…`), and all 72 passed natively
+  (`obj/qualification/fast/1794069355705785334`, `complete.json` sha256
+  `1ed65974…`, runs `c64328f7…`). The native client prints `41 43 44 41`, as
+  rustc does. Before the rebase onto the inherent-methods join, CLI
+  `d26b27df…` had passed the first 69 cases natively.
+  RustGM's rejections name the blocker. Two examples: "source ! requires its
+  actual Not language declaration" for `assert`, and "use of unstable library
+  macro requires feature `edition_panic`" for the uncalled `use`.
+- **Integration tests.** `crate_linking::expander_rows` gains four tests:
+  - publication and round trip of the version-4 rows: the builtin lists, the
+    wrappers' lists, the four semiopaque rows at `panic` with their gate,
+    list and two rules, and no unsafe flags. A fresh consumer runs each
+    imported panic role, the skipped wrapper and the rule that names the
+    provider's unstable function. An uncalled single `use` of the unstable
+    row is rejected, and a glob import of its module is accepted;
+  - forged rows: `local_inner_macros` on a semiopaque row, flags byte 2, a
+    version-3 relabel, a placement respelled to a module the provider does not
+    have (the consumer rejects it with "exported macro placement has no public
+    imported module"), and a cleared last flag in a version-4 table all fail
+    by name;
+  - linear growth: 8, 32 and 128 semiopaque rows grow the table by equal bytes
+    per row, and the consumer's LowIR does not change;
+  - `allow_internal_unsafe` on a declarative row and on a `format_args`
+    builtin row publishes version 4 with the flag. An imported
+    `format_args!` call stops by name.
+  All thirteen `expander_rows` tests, three `declarative_exports` tests and
+  two `transported_rows` tests, including the 72-case runner, passed
+  (`1794068819629603477`).
+- **Private tests.** Strict private Clippy and 17 private tests passed
+  (`1794069088308402818`). They cover the assertion emitter and delegation
+  inputs, assert dispatch, the three `permission_session` and five
+  `panic_contracts` allowance and frame tests, and the three local
+  `macro_context` tests. The selection also includes the two invariants that
+  this branch repairs first:
+  - `resolve::stability::transport_tests::legacy_availability_remains_unknown_and_hot_records_do_not_grow`.
+    `Imported` is back to 160 bytes: macro rows and original reservation work
+    share one cold box, and version 4 adds no inline field;
+  - `resolve::stability::fn_allowances::tests::transport::genuine_original_const_bodies_roundtrip_and_execute_without_client_feature_requests`.
+    The header ledger now gets its input-graph bound even when the
+    imported-contract ingest creates it first.
+
+**Amended controls.**
+
+- `declarative_exports` used version 4 as its unknown-version forgery. It now
+  uses 5, and also checks that version-one rows relabelled as version 4 fail
+  with "unknown exported macro row kind".
+- `transported_rows`'s runner count rises from 58 to 72.
+- Three frontend expectations were amended after candidate rounds 1 and 2,
+  with unchanged rustc outcomes (`amended_controls` in the manifest):
+  - `panic-legacy-native-client` was declared accepted. Every 2018 source
+    client is first rejected with "source client requires the Rust 2024 source
+    profile", so it became a requirement row;
+  - `panic-legacy-client`: only the diagnostic substring changed, to that same
+    2024-profile rejection;
+  - `panic-operators-provider`: only the diagnostic changed, to "source role
+    requires its exact pinned supertrait". The declared one came from a probe
+    without `LegacyReceiver`.
+- Behavior:
+  - builtins with an edition-panic contract or `allow_internal_unsafe` are
+    published, where version 3 rejected them by name;
+  - an uncalled single `use` of an unstable imported row is now rejected.
+
+**Edits outside resolve, expand and support/crates.** These are
+`sema::crates::export::declarative_rows` (semiopaque and flagged rows),
+`scripts/check_macro_metadata.py` (the new manifest), the two private
+invariants (`delegation_inputs`, `assert_emission`: `Site.crate_id`) and the
+integration tests above.

@@ -35,6 +35,9 @@ pub(crate) struct Site<'a> {
     pub call_context: SyntaxContextId,
     pub path_context: SyntaxContextId,
     pub grammar: MacroContext,
+    /// The `$crate` id of the defining crate: 0 locally, otherwise the
+    /// imported provider's dependency-indexed id.
+    pub crate_id: u32,
 }
 pub(crate) struct Delegated {
     pub stream: Stream,
@@ -92,8 +95,8 @@ impl Delegated {
             )
     }
 }
-/// Only the resolver's validated local defining-source contract calls this.
-/// Foreign defining roots remain unsupported rather than fabricated wire IDs.
+/// Only the resolver's validated defining contract calls this: a local
+/// source role, or an imported row whose `$crate` id names its provider.
 pub(crate) fn build(
     site: &Site<'_>,
     handler: Handler,
@@ -127,7 +130,7 @@ pub(crate) fn build(
             site.introduction,
         )?;
         let kind = if index == 0 {
-            Kind::CrateRoot(0)
+            Kind::CrateRoot(site.crate_id)
         } else {
             Kind::Name(span, None)
         };

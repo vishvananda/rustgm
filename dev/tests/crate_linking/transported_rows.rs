@@ -61,8 +61,9 @@ fn frozen_macro_metadata_outcomes_hold_for_every_case() -> Result {
     let folder = qualify(false)?;
     let receipt = std::fs::read_to_string(folder.join("complete.json"))?;
     // Fifteen declarative cases, fourteen builtin-row and allowance cases,
-    // fifteen re-export cases and fourteen stability cases.
-    assert!(receipt.contains("\"cases\": 58"), "{receipt}");
+    // fifteen re-export cases, fourteen stability cases and fourteen imported
+    // panic-family and import-stability cases.
+    assert!(receipt.contains("\"cases\": 72"), "{receipt}");
     Ok(())
 }
 

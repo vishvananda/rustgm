@@ -1,16 +1,19 @@
 //! Imported `macro_rules!` rows are authenticated once and become ordinary
-//! declarative definitions spelled in their own image unit. Imported builtin
-//! rows bind this consumer's own expander of their identity.
+//! declarative definitions spelled in their own image unit; semiopaque
+//! `pub macro` rows become scoped definitions with `macro_rules!` hygiene.
+//! Imported builtin rows bind this consumer's own expander of their identity.
+//! Every imported row's edition-panic contract is the `edition_panic` member
+//! of its re-authenticated allowance list, as a local header derives it.
 use super::{
     Body, Compiled, Definition, Engine, Error, ExpansionId, FileId, ModuleId, Scope, Sources,
-    SyntaxContextId, compile,
+    SyntaxContextId, Transparency, compile,
 };
 use crate::{
     expand::builtin::{Builtin, BuiltinKind},
     resolve::{crates::ImportedRow, model::ScopeId},
     support::crates::{
         Interface,
-        exported_macros::{BuiltinMacro, MacroKind},
+        exported_macros::{BuiltinMacro, Macro, MacroKind},
     },
     syntax::token_tree::Forest,
 };
@@ -84,6 +87,15 @@ fn builtin_role(row: &BuiltinMacro) -> Result<Builtin, String> {
     Ok(role)
 }
 
+/// Whether a sorted, re-authenticated allowance list carries the
+/// edition-panic contract.
+fn edition_panic(features: &[String]) -> bool {
+    let contract = crate::resolve::bindings::KnownFeature::EditionPanic.name();
+    features
+        .binary_search_by(|feature| feature.as_str().cmp(contract.spelling()))
+        .is_ok()
+}
+
 /// A row's `#[unstable]` feature must be a canonical feature identifier.
 fn authenticate_unstable(feature: Option<&str>) -> Result<(), Error> {
     if let Some(feature) = feature {
@@ -94,7 +106,7 @@ fn authenticate_unstable(feature: Option<&str>) -> Result<(), Error> {
 }
 
 /// Lex one transported image, rebuild its rows and require them to be equal.
-fn authenticate(row: &crate::support::crates::exported_macros::Macro) -> Result<Forest, String> {
+fn authenticate(row: &Macro) -> Result<Forest, String> {
     let forest = Forest::parse(row.image()).map_err(|error| error.message.to_owned())?;
     let (image, rows) = crate::resolve::crates::macro_image(row.image(), &forest)?;
     if image != row.image() || rows != row.rows() {
@@ -162,8 +174,8 @@ impl<S: Sources> Engine<'_, S> {
                 row: entry.row,
             };
             let (definition, kind) = match entry.row {
-                ImportedRow::Declarative(row) => (
-                    self.import_declarative(artifact, row, imported)?,
+                ImportedRow::Declarative(_) | ImportedRow::Scoped(_) => (
+                    self.import_declarative(artifact, entry.row, imported)?,
                     BuiltinKind::Bang,
                 ),
                 ImportedRow::Builtin(row) => {
@@ -192,7 +204,7 @@ impl<S: Sources> Engine<'_, S> {
                             preceding_scope: Scope::ROOT,
                             local_inner_macros: false,
                             edition,
-                            edition_panic: false,
+                            edition_panic: edition_panic(row.internal_unstable()),
                             header: None,
                             imported: Some(imported),
                         },
@@ -230,17 +242,28 @@ impl<S: Sources> Engine<'_, S> {
     fn import_declarative(
         &mut self,
         artifact: &Interface,
-        index: usize,
+        index: ImportedRow,
         imported: ImportedDefinition,
     ) -> Result<Definition, Error> {
-        let row = artifact
+        let macros = artifact
             .macros()
-            .and_then(|macros| macros.rows().get(index))
             .ok_or_else(|| Error::at(FileId(0), 0, "missing imported macro row"))?;
+        let row = macros
+            .image_row(index)
+            .ok_or_else(|| Error::at(FileId(0), 0, "missing imported macro row"))?;
+        let placement = match index {
+            ImportedRow::Scoped(scoped) => macros
+                .scoped()
+                .get(scoped)
+                .map(|row| row.placement().join("::") + "::")
+                .unwrap_or_default(),
+            _ => String::new(),
+        };
+        let scoped = matches!(index, ImportedRow::Scoped(_));
         let forest = authenticate(row).map_err(|message| Error::at(FileId(0), 0, message))?;
         let identity = artifact.identity();
         let label = format!(
-            "<macro {}@{}::{}>",
+            "<macro {}@{}::{placement}{}>",
             identity.name(),
             identity.disambiguator(),
             row.name()
@@ -248,12 +271,12 @@ impl<S: Sources> Engine<'_, S> {
         let file = self
             .loader
             .macro_image(label.into(), row.image(), row.edition())?;
-        let compiled = compile::in_edition(
-            row.image(),
-            &forest,
-            &mut self.loader.package.names,
-            row.edition(),
-        )
+        let names = &mut self.loader.package.names;
+        let compiled = if scoped {
+            compile::declarative_in_edition(row.image(), None, &forest, names, row.edition())
+        } else {
+            compile::in_edition(row.image(), &forest, names, row.edition())
+        }
         .map_err(|e| Error::at(file, e.offset, e.message))?;
         if u32::try_from(compiled.rules.len()).ok() != Some(row.rules()) {
             return Err(Error::at(file, 0, "imported macro rule count changed"));
@@ -266,17 +289,38 @@ impl<S: Sources> Engine<'_, S> {
             .names
             .intern(row.name())
             .map_err(|e| Error::at(file, 0, e))?;
+        let body = if scoped {
+            // An imported scoped body pays for its cold allocation, as a
+            // local scoped declaration does.
+            if let Some(context) = self
+                .loader
+                .package
+                .macro_context()
+                .map_err(|message| Error::at(file, 0, message))?
+            {
+                context
+                    .contracts()
+                    .charge(1, size_of::<Compiled>())
+                    .map_err(|message| Error::at(file, 0, message))?;
+            }
+            Body::Scoped {
+                compiled: Box::new(Compiled::new(compiled)),
+                mode: Transparency::SemiOpaque,
+            }
+        } else {
+            Body::Declarative(Compiled::new(compiled))
+        };
         Ok(Definition {
             node: None,
             module: ModuleId(0),
             name,
-            body: Body::Declarative(Compiled::new(compiled)),
+            body,
             context: SyntaxContextId::ROOT,
             introduction: ExpansionId(0),
             preceding_scope: Scope::ROOT,
             local_inner_macros: row.local_inner_macros(),
             edition: row.edition(),
-            edition_panic: false,
+            edition_panic: edition_panic(row.internal_unstable()),
             header: None,
             imported: Some(ImportedDefinition {
                 file: Some(file),
