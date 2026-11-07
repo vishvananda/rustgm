@@ -145,6 +145,19 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
   Declared nominal lifetime bounds and region function-pointer fields stay
   fenced by name until a demanded item needs them; core's panic types declare
   none.
+- **After [census batch 6](parallel/census-batch6.md)** (census 7: 5 failed,
+  25 blocked):
+  - `intrinsics::assume`, reached by `hint::assert_unchecked` from
+    `fmt/num_buffer.rs`, gets its own validated constant-execution handler,
+    owned by Lane A. A true condition returns unit. A false one fails as a
+    constant-evaluation error, as rustc's E0080 does. This follows the
+    bit-count intrinsics; intrinsic fallback bodies stay unexecuted.
+  - The rule to follow rustc where RustGM is stricter covers stable language
+    and the features the pinned libraries use. Unstable internal forms that
+    nothing pinned uses may stay rejected by name until something demands
+    them. `!null` pattern types over integer or reference bases are one such
+    form: rustc accepts them and core does not use them. This is a recorded
+    deviation.
 - **Forged shared region rows** may be rejected by the earlier Self-identity
   or field-substitution check. A forgery must be rejected by name, but it
   needs no check of its own.

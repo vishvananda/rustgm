@@ -5,6 +5,36 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 6](parallel/census-batch6.md) clears both declaration
+causes outside Lane B's that census 6 left. Census 7 (`a650f86d`, from
+`38edd1bf3` on main `0311a54ea`) checks 42,280 declarations, with 5 failed and
+25 blocked (census 6: 42,226, 32 and 52).
+
+- "Canonical trait selection requires pending declarations" (3 failed, 26
+  blocked) is repaired by the chosen option (a). Early scalar validation now
+  admits impls whose subject is a nominal applying exactly the impl's own type
+  parameters, such as derived `Copy for Option<T>` and `NonZero`'s `Copy`. A
+  declaration-time constant whose Copy decision selects a queued impl, field
+  template or contract waits for that fact. The wait goes through the
+  worklist's existing header dependency edge and cycle detection, and is never
+  answered from declaration availability. The only `sema::traits` change is a
+  `Hash` derive on `selection::Dependency`.
+- `pattern_type!(T is !null)` over a type parameter is accepted, as in core's
+  `pat.rs` `DispatchFromDyn` impl, and instances must be raw pointers. Integer
+  and reference bases are rejected by name, although rustc 1.98 accepts them.
+- 17 PA31 no_core controls were declared before the rustc 1.98.0 oracle, and
+  all agree. They include one recorded gap and three intentionally stricter
+  bases. Every PA1 to PA24 suite passes, with PA20 at 1451/1451.
+- What remains:
+  - Lane B's cause: 4 failed, 2 blocked.
+  - "Source intrinsic constant execution is not implemented": 1 failed, 23
+    blocked. The `ilog10` lengths of `fmt/num_buffer.rs` now reach
+    `hint::assert_unchecked`, whose `intrinsics::assume` has no CTFE handler.
+    This needs a decision.
+  - Recorded gaps: a later-declared projected nominal destructured in a const
+    fn, `size_of::<Wrap<u8>>()` over a projected field, and
+    `residual-try-type-mismatch`'s cause text.
+
 Lane C [lifetime-parameterized structs and enums](parallel/lifetime-nominals-transport.md)
 is joined on main. Version 13 carries a struct's or
 enum's lifetimes as leading region slots, which its fields name in its own

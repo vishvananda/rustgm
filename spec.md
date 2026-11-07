@@ -1711,6 +1711,14 @@ source helpers and complete const/API/desugaring authority. Generic endpoints,
 integer enum niches and refinement metadata stay explicit requirements. See the
 [closed-range checkpoint](docs/pa31-closed-scalar-patterns-checkpoint.md).
 
+A non-null pattern type's base is a raw pointer or a type parameter, and
+substitution must instantiate a parameter base with a raw pointer. Every other
+base or instance is rejected by name. rustc 1.98 also accepts integer and
+reference bases, but they have no defined non-null representation here.
+DispatchFromDyn relates two pattern types only under the same constraint; a
+changed pattern field proves its relation through such an impl, as core's
+`pat.rs` does.
+
 RangeMin, RangeMax and RangeSub identify genuine associated declarations of one
 const-trait owner; the trait's spelling grants no authority. Prepare their actual
 declaration types and method signature before completing the shared contract,
@@ -1742,6 +1750,19 @@ as its declared type. Resume the existing initializer-body request for the
 selected provided definition; declaration readiness alone cannot satisfy an
 execution request. Preserve its real substitution, defining context and API,
 const, unsafe and storage proofs.
+
+A declaration-time constant whose reached Copy decision selects a source
+implementation, field template or contract still queued in the declaration
+worklist waits for that one fact. It then repeats the same caller-scoped
+decision. Only that decision's own pending failure becomes the wait. Other
+failures keep their cause, and consumers that cannot wait report the pending
+failure unchanged. The wait is an ordinary header dependency edge, so existing
+cycle detection covers it. A published fact that does not resume its constant
+is an error. Pending selection is never answered from declaration-level
+availability. Early scalar validation admits an impl whose subject is one of its
+own type parameters or a nominal that applies exactly its own type parameters
+in order. For a nominal subject it queues the field template and demands only
+the subject's reached lifetime contracts, which complete inference republishes.
 
 Exact canonical Self receiver proof can publish after the real function's
 signature, captured lifetimes and environment complete. Receivers with different
