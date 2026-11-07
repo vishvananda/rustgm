@@ -1,4 +1,5 @@
 //! An override must implement the trait contract without strengthening its caller requirements.
+mod clauses;
 mod implied;
 mod mapping;
 mod outputs;
@@ -34,7 +35,10 @@ struct Contract {
     environment: Arc<Environment>,
     parameters: Vec<ParameterId>,
     assumptions: Vec<Clause>,
+    /// The trait method's own bounds begin here; earlier assumptions are the impl's.
+    method_bounds: usize,
     obligations: Vec<Clause>,
+    scope: Vec<crate::sema::generics::Parameter>,
     assumed_regions: Vec<crate::types::outlives::Pair>,
     required_regions: Vec<crate::types::outlives::Pair>,
     universals: u32,
@@ -73,6 +77,7 @@ pub(in crate::sema) fn check_methods(
         .checked_add(1)
         .ok_or("method conformance region identity space exhausted")?;
     let mut evidence = crate::types::lifetime_proof::Obligations::new(first);
+    definitions.clauses(facts, &mut contract, &mut evidence)?;
     let mut implied = implied::Formation::default();
     contract.expected = definitions.signature(
         facts,

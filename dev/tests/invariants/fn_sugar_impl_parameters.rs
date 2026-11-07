@@ -16,9 +16,11 @@ const CONTROLS: &str = "pa31/tests/spec/fn-sugar-impl-parameters";
 
 /// Independently checked rustc outcomes: `None` accepts, otherwise the first
 /// error this compiler reports for the control rustc also rejects.
-const CASES: [(&str, Option<&str>); 8] = [
+const CASES: [(&str, Option<&str>); 10] = [
     ("from-fn-item", None),
     ("const-call-adapter", None),
+    ("elided-lifetime", None),
+    ("map-adapter", None),
     ("inline-bound", None),
     ("caller-premise", None),
     ("explicit-binding", None),
@@ -32,24 +34,13 @@ const CASES: [(&str, Option<&str>); 8] = [
 
 /// Declared controls whose rustc outcome this analysis does not reach yet,
 /// each with the outcome it has instead. The assertion fails when one changes.
-/// - `elided-lifetime`: the sugar binder quantifies the elided input lifetime,
-///   so its condition still waits for a resolved parent (the remaining gap).
-/// - `map-adapter`: the projection now selects; the override that repeats the
-///   trait's `Self::Item` clause then fails conformance, as it does without
-///   sugar.
-/// - `impl-lifetime-mismatch`: rustc's region error belongs to body region
-///   checking, which this analysis does not run for a generic body.
-const GAPS: [(&str, Option<&str>); 3] = [
-    (
-        "elided-lifetime",
-        Some("associated type requires an unambiguous implementation"),
-    ),
-    (
-        "map-adapter",
-        Some("implementation method imposes a stronger generic requirement"),
-    ),
-    ("impl-lifetime-mismatch", None),
-];
+/// `impl-lifetime-mismatch`: rustc's region error belongs to body region
+/// checking, which this analysis does not run for a generic body.
+/// `elided-lifetime` and `map-adapter` left this list when a region-binding
+/// condition determined its parameter (`spec/region-sugar-impl-parameters/`)
+/// and override bounds were compared in normal form
+/// (`spec/override-projection-bounds/`).
+const GAPS: [(&str, Option<&str>); 1] = [("impl-lifetime-mismatch", None)];
 
 fn analyze(name: &str) -> TestResult<Result<(), String>> {
     let path = format!("{CONTROLS}/{name}.rs");

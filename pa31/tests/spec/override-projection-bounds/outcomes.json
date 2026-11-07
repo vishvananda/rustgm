@@ -1,0 +1,85 @@
+{
+ "schema": 1,
+ "declared": "2026-11-07, after the implementation change and RustGM probes of these sources, and before any rustc run on own-item-wrong.rs; the other seven reduced shapes had exploratory rustc runs in scratch, and the frozen oracle runs on these committed bytes after this declaration",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "cases": {
+  "own-item.rs": {
+   "sha256": "76af2d4baf6ce791fa57a9e7ee0f500e03ea4e0b1060a1d4c6a909cddb00b706",
+   "declared": 0,
+   "reason": "core Scan fold shape (impl_fold_via_try_fold, the iter/mod.rs:376 census site): the override repeats the trait's own Self::Item inside a callable bound; rustc normalizes the trait bound for the impl, so both sides state I::Item",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "own-item-wrong.rs": {
+   "sha256": "a535b050c8dd3a93e21b2bad3d60612ee6ab3f47ef1c954812f2786e86223103",
+   "declared": 1,
+   "reason": "opponent: the override names u8 where the trait's Self::Item is I::Item, a stronger requirement (E0276)",
+   "declared_error_codes": [
+    "E0276"
+   ],
+   "rustc_status": 1,
+   "error_codes": [
+    "E0276"
+   ]
+  },
+  "supertrait.rs": {
+   "sha256": "4a86d667e70c92837450a82518356410f1ad4ed9dfc76fd8706d511e4dae39cc",
+   "declared": 0,
+   "reason": "core Flatten shape: a subtrait method bound names the supertrait's Self::Item, which the impl defines as T",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "supertrait-spelled.rs": {
+   "sha256": "87614ab18f638f771d7cf7f224d8fe0c5518c46f3abe0d2a47603c22a41dd82b",
+   "declared": 0,
+   "reason": "the override writes the normal form T instead of repeating Self::Item",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "supertrait-nested.rs": {
+   "sha256": "ae76689cab1fcc41a46982f142e53b301dbc53789af06a7f7c1f556ad6386ca9",
+   "declared": 0,
+   "reason": "Self::Item is I::Item, itself a projection of an impl parameter",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "supertrait-sugar.rs": {
+   "sha256": "32ab1a02cb22630c5a89bb887d046671c836e3f7b089a6056c744c8b14dffbd3",
+   "declared": 0,
+   "reason": "the repeated bound is callable sugar G: FnMut(Acc, Self::Item) -> Acc",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "supertrait-stronger.rs": {
+   "sha256": "491a988906b9cabed4288a746c02d000d94d38cca2bdbecf10d01fc06984fb1a",
+   "declared": 1,
+   "reason": "opponent: the override adds Copy to the repeated bound (E0276)",
+   "declared_error_codes": [
+    "E0276"
+   ],
+   "rustc_status": 1,
+   "error_codes": [
+    "E0276"
+   ]
+  },
+  "supertrait-wrong.rs": {
+   "sha256": "776481b19553d9c111ae5e1a02f69161b60f25eeaa9c7b1f43523c28e767c32c",
+   "declared": 1,
+   "reason": "opponent: the override names Tr<u8> where the trait requires Tr<T> (E0276)",
+   "declared_error_codes": [
+    "E0276"
+   ],
+   "rustc_status": 1,
+   "error_codes": [
+    "E0276"
+   ]
+  }
+ },
+ "declaration_sha256": "6f597115ca84206befd48c28e179b5e2f594867fb4b29d348991eb547ca7062f"
+}

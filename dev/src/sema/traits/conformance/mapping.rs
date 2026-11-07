@@ -217,21 +217,8 @@ pub(super) fn contract(
     let actual_signature = folders
         .actual
         .signature(&mut facts.types, actual_template, 0)?;
-    let mut assumptions: Vec<_> =
-        crate::sema::declaration_inputs::all(&facts.generics, facts.crates.as_deref(), owner)?
-            .map(|p| p.value)
-            .collect();
-    // The impl header already proves the trait's parent requirements. Retain
-    // the method's own caller bounds here; synthetic inherited Self assumptions
-    // would hide the impl's concrete associated definitions during normalization.
-    let method_bounds = crate::sema::declaration_inputs::own_view(
-        &facts.generics,
-        facts.crates.as_deref(),
-        expected.definition,
-    )?;
-    for predicate in method_bounds.iter() {
-        assumptions.push(folders.expected.clause(&mut facts.types, predicate.value)?);
-    }
+    let (assumptions, method_bounds) =
+        assumptions(facts, owner, expected.definition, &mut folders.expected)?;
     let obligations = method_requirements(
         facts,
         actual.definition,
@@ -294,13 +281,39 @@ pub(super) fn contract(
         environment: environment.into(),
         parameters,
         assumptions,
+        method_bounds,
         obligations,
+        scope,
         assumed_regions,
         required_regions,
         universals: folders.universals,
         variables: folders.variables,
         inputs,
     })
+}
+/// The impl's own inputs, then the trait method's bounds mapped to the impl,
+/// with the index where the method's bounds begin. The impl header already
+/// proves the trait's parent requirements. Synthetic inherited Self
+/// assumptions would hide the impl's concrete associated definitions during
+/// normalization, so only the method's own caller bounds are retained.
+fn assumptions(
+    facts: &mut Declarations,
+    owner: DefId,
+    method: DefId,
+    folder: &mut substitute::Bound,
+) -> Result<(Vec<Clause>, usize), &'static str> {
+    let mut assumptions: Vec<_> =
+        crate::sema::declaration_inputs::all(&facts.generics, facts.crates.as_deref(), owner)?
+            .map(|p| p.value)
+            .collect();
+    let method_bounds = assumptions.len();
+    for predicate in
+        crate::sema::declaration_inputs::own_view(&facts.generics, facts.crates.as_deref(), method)?
+            .iter()
+    {
+        assumptions.push(folder.clause(&mut facts.types, predicate.value)?);
+    }
+    Ok((assumptions, method_bounds))
 }
 fn method_requirements(
     facts: &mut Declarations,
@@ -332,7 +345,7 @@ fn method_requirements(
     Ok(obligations)
 }
 
-fn environment(
+pub(super) fn environment(
     store: &Store,
     parameters: &[Parameter],
     predicates: &[Clause],

@@ -159,8 +159,7 @@ impl Candidate {
             proof.regions.end,
             application.predicate.constness(),
         )?;
-        proof.regions.end +=
-            u32::try_from(instance.regions.len()).map_err(|_| "impl region count overflow")?;
+        proof.regions.end += instance.allocated()?;
         let compatible =
             probe
                 .context()

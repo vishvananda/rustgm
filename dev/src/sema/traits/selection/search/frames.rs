@@ -162,8 +162,7 @@ impl Trial {
         let first = frame.available_region().max(floor);
         let instance =
             instantiation::instantiate(facts, &mut inputs.context, owner, first, goal.constness())?;
-        let end = first
-            + u32::try_from(instance.regions.len()).map_err(|_| "impl region count overflow")?;
+        let end = first + instance.allocated()?;
         let pending = instance
             .goals
             .iter()
@@ -340,9 +339,7 @@ impl Search<'_> {
         if self.deferred_reservation(facts, trial)? {
             return Ok(Some(Decision::Deferred));
         }
-        let owned_end = trial.first
-            + u32::try_from(trial.instance.regions.len())
-                .map_err(|_| "impl region count overflow")?;
+        let owned_end = trial.first + trial.instance.allocated()?;
         let node = self.query.push(
             Node {
                 debt_free: false,

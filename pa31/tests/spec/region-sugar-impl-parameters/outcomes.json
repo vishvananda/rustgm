@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "declared": "2026-11-07, after the implementation change and RustGM probes of these sources; the reduced shapes had exploratory rustc runs in scratch, and the frozen oracle runs on these committed bytes after this declaration",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "cases": {
+  "scan.rs": {
+   "sha256": "209ede011fd1b6dcd6338e4a97d065b13a459a6cae2914a4699c233f08076d24",
+   "declared": 0,
+   "reason": "core Scan shape (iter/adapters/scan.rs:60 census site): B is determined only by F: FnMut(&mut St, I::Item) -> Option<B>, whose elided input lifetime the sugar binder quantifies; Self::Item in next and in the fold override is B",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "map-windows.rs": {
+   "sha256": "d3456e96ef5287aab2b06317db9216af831b1ee959e5b6dbd48164fcbae71e3b",
+   "declared": 0,
+   "reason": "core MapWindows shape (iter/adapters/map_windows.rs:245 census site): R is determined only by F: FnMut(&[I::Item; N]) -> R under a region binder, beside a const parameter",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "caller-signature.rs": {
+   "sha256": "eb5b84db7e1bb3bc990296855005c69838c2d7ca028a58523dfde6b392e488f9",
+   "declared": 0,
+   "reason": "a caller premise F: FnMut(&mut u8) -> Option<u16> normalizes <Scan<u8, F> as Iterator>::Item to u16 in a signature",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "caller-mismatch.rs": {
+   "sha256": "b31e4ea031863e419cebf56de5d0be95b36452d16c0744c088dc9b5e7fb6ed81",
+   "declared": 1,
+   "reason": "opponent: the normalized u16 is returned as u8 (E0308)",
+   "declared_error_codes": [
+    "E0308"
+   ],
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  },
+  "escaping-region.rs": {
+   "sha256": "c8c119fbc4acb6874108bf055a30abfed5e58bf2af90586149a484aee7bf1337",
+   "declared": 1,
+   "reason": "opponent: the premise output names its own bound region, for<'r> FnMut(&'r mut u8) -> Option<&'r u8>, which B cannot name, so the condition does not hold for one B (rustc: one type is more general than the other)",
+   "declared_error_codes": [
+    "E0308"
+   ],
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  },
+  "caller-region.rs": {
+   "sha256": "d81ed72de770461e4b4ae351316864eb71213bd915469940ecec00a4d6981597",
+   "declared": 0,
+   "reason": "the premise output names the caller's lifetime 'x from outside the binder, so B is &'x u8",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "body-caller.rs": {
+   "sha256": "ebdb4c8d2db40ecb8c07bbc7a439e168420d4efb23b195baaf5a2026430c02e7",
+   "declared": 0,
+   "reason": "the caller-signature premise, selected from a generic body by s.next()",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "body-fixed-output.rs": {
+   "sha256": "a2506791963c9373dfe69813d961959ebbf46252f49e0f4e91d1cd69dbc75649",
+   "declared": 0,
+   "reason": "control: a generic body selecting an impl whose region-binding condition determines no parameter (Item = u16)",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  }
+ },
+ "declaration_sha256": "466fe22963f10a3a28dcb2e91302b29c4c2c039e0861c1ad0364654be8f91cb5"
+}

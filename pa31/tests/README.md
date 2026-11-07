@@ -535,7 +535,7 @@ nominals, each with opponents. Each outcome was declared before its rustc
 `spec/fn-sugar-impl-parameters/` freezes eleven declared no_core controls for
 impl parameters that only a parenthesized callable bound determines (core
 `FromFn`, `Map`, `RepeatWith` shapes), with mismatch, non-`Option` and region
-opponents and four recorded gaps. Each outcome was declared before its rustc
+opponents and one recorded gap. Each outcome was declared before its rustc
 1.98.0 oracle. A private invariant checks them; there is no graded manifest.
 
 `spec/specialization-selection/` freezes nine declared no_core controls for
@@ -563,3 +563,24 @@ parameters (core's pattern-type `DispatchFromDyn`), with missing-impl and
 shape opponents and three bases rustc accepts that this analysis rejects by
 name. Each outcome was declared before its rustc 1.98.0 oracle. Private
 invariants check them; there is no graded manifest.
+
+`spec/override-projection-bounds/` freezes eight declared no_core controls for
+override conformance of a trait method bound that names `Self::Item` (core
+`Scan` fold and `Flatten` shapes): the override repeats it, writes the impl's
+definition or uses callable sugar, with a wrong-type and two stronger-bound
+opponents. Each outcome was declared before its rustc 1.98.0 oracle. A private
+invariant checks them; there is no graded manifest.
+
+`spec/region-sugar-impl-parameters/` freezes eight declared no_core controls
+for impl parameters that only a region-binding callable bound determines (core
+`Scan` and `MapWindows` shapes), with caller premises, a mismatch opponent, an
+opponent whose output names the bound region and two recorded generic-body
+gaps. Each outcome was declared before its rustc 1.98.0 oracle. A private
+invariant checks them; there is no graded manifest.
+
+`spec/impl-header-projections/` freezes ten declared no_core controls for an
+impl header that names a projection of its own parameter (core `ControlFlow`
+`from_try` shape), inline, qualified, where-clause, trait-impl and `Self`
+where-clause forms, with an unbounded and an unconstrained (E0207) opponent
+and one recorded gap. Each outcome was declared before its rustc 1.98.0 oracle. A private invariant
+checks them; there is no graded manifest.

@@ -10,13 +10,14 @@ determined with the selected impl and `Self::Item` normalizes.
 The controls cover the where-clause and inline forms, a caller premise, a
 captured impl lifetime inside the sugar output, the explicit `FnOnce<(),
 Output = ...>` form, and three opponents: a mismatched result (E0308), an
-output that is not an `Option` (E0271), and a region mismatch. Three controls
-stay recorded gaps. `elided-lifetime` binds a region, so its condition still
-waits for a resolved parent. `map-adapter` selects now and then stops on a
-cause that occurs without sugar as well: override conformance of a repeated
-`Self::Item` clause. `const-call-adapter` passes since a user callable-trait
-impl keeps its own impl candidates (`spec/user-callable-output/`). Region
-errors in generic bodies are outside this analysis.
+output that is not an `Option` (E0271), and a region mismatch. The region
+mismatch stays a recorded gap: region errors in generic bodies are outside
+this analysis. `const-call-adapter` passes since a user callable-trait impl
+keeps its own impl candidates (`spec/user-callable-output/`).
+`elided-lifetime`, whose sugar binds a region, passes since such a condition
+determines its parameter (`spec/region-sugar-impl-parameters/`), and
+`map-adapter` since override bounds are compared in the impl's normal forms
+(`spec/override-projection-bounds/`).
 
 Outcomes were declared before the frozen rustc 1.98.0 oracle. The first nine
 were declared before the implementation changed and the two lifetime controls

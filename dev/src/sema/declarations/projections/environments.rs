@@ -1,4 +1,7 @@
 //! Projection selection depends on a completed immutable caller environment.
+#[cfg(test)]
+#[path = "../../../../tests/invariants/normalized_impl_headers.rs"]
+mod tests;
 use super::{Checker, DefId, DefKind, Error, NodeKey, Work, regions};
 use crate::sema::declarations::State;
 use crate::types::{
@@ -58,6 +61,19 @@ impl Checker<'_> {
                         DefKind::Struct | DefKind::Enum => self
                             .work
                             .push(Work::NominalContract(crate::types::ItemId(owner.0), false)),
+                        // An impl header naming a projection of its own
+                        // parameter, `impl<R: Try> W<R::Output>`, normalizes
+                        // it under the impl's bounds as a signature does.
+                        DefKind::SelfType if self.implementation(owner) => {
+                            self.work.push(Work::ProjectionEnvironment(
+                                owner,
+                                regions::Context {
+                                    binder: Some(current),
+                                    position: regions::Position::Impl,
+                                },
+                                false,
+                            ));
+                        }
                         _ => {}
                     }
                 }
@@ -66,6 +82,14 @@ impl Checker<'_> {
             binder = self.regions.parent(current);
         }
         Ok(())
+    }
+
+    /// A lexical `Self` owns an impl's binder; a trait's owns its own.
+    fn implementation(&self, owner: DefId) -> bool {
+        self.report.resolution.definitions[owner.0 as usize]
+            .node
+            .and_then(|node| self.item(node).ok())
+            .is_some_and(|item| matches!(item.kind, crate::syntax::item::ItemKind::Impl { .. }))
     }
 
     fn demand_projection_subject(

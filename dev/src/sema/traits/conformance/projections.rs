@@ -70,7 +70,7 @@ impl Definitions {
         Ok(Self { parent, results })
     }
 
-    fn resolve(
+    pub(super) fn resolve(
         &self,
         facts: &mut Declarations,
         request: Request,
