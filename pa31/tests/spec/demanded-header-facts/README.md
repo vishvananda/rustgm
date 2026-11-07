@@ -9,6 +9,11 @@ are exact pinned Rust core fragments with their attributes and comments. They
 keep Rust's MIT/Apache-2.0 attribution; see root NOTICE and
 `third_party/sources.json`.
 
+Two later `static` controls read a negated `const` through another `const`
+into an array length, with the `Neg`, `Sub` and `Add` impls after the static;
+the opponent lacks `Neg` for `i32` (E0600). They were declared and checked
+against the same oracle in census batch 2 and accepted after census batch 3.
+
 `dev/tests/invariants/demand_header_facts.rs` checks every case, with the
 pa20 `projections/header-demand` controls. See
 `docs/parallel/census-batch2.md`.

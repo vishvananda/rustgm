@@ -463,15 +463,15 @@ fn nested_fallback_respects_predeclared_order_and_shared_frontiers() -> TestResu
                 .any(|s| s.name == "ordered" && s.body.is_some())
         );
     }
-    let error = analyze(&input("readiness/shared")?)
-        .err()
-        .ok_or("unimplemented shared numeric frontier accepted")?
-        .to_string();
+    // rustc accepts `shared` (observations.json): the builtin shift result is
+    // the left operand and the builtin `|` then unifies the literal with it.
+    let (report, analysis) = analyze(&input("readiness/shared")?)?;
+    let program = lower(&report, analysis, &["shared"])?;
     assert!(
-        error.contains(
-            "trait obligation requires an unambiguous matching assumption or implementation"
-        ),
-        "shared: {error}"
+        program
+            .symbols
+            .iter()
+            .any(|s| s.name == "shared" && s.body.is_some())
     );
     let source = input("readiness/ordinary-closure")?;
     let report = crate::test_source::resolve(&source, true)?;

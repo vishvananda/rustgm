@@ -60,7 +60,8 @@ belongs to the earlier isolated operator compiler.
 
 A valid-Rust numeric variable shared directly with a blocked consumer remains an
 explicit unresolved frontier. Completing that general inference case remains
-required. Assignment operators have separate roles. Imported role/body and
+required. Census batch 3's builtin operand rule completes it for `readiness/shared.rs`
+([census batch 3](parallel/census-batch3.md), section 2). Assignment operators have separate roles. Imported role/body and
 public wire permissions remain closed. These reducers do not replace the full
 Arguments/FormattingOptions source graph.
 

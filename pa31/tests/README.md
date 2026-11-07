@@ -502,3 +502,11 @@ controls: array-length self types whose `Sub` impl follows them, a chain, an
 overlap opponent, a missing `Sub` impl and a genuine constant cycle. Each
 outcome was declared before its rustc 1.98.0 oracle. A private invariant checks
 them; there is no graded manifest.
+
+`spec/demanded-header-facts/` also holds two declared `static` controls that
+read a negated `const` through another `const` into an array length.
+`spec/builtin-binop-types/` freezes twelve declared no_core controls for
+rustc's builtin binary operand rule, including two mismatched-width opponents
+and a non-numeric operand that still selects by trait. Each outcome was declared
+before its rustc 1.98.0 oracle. Private invariants check them; there is no
+graded manifest.

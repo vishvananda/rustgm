@@ -324,31 +324,7 @@ impl Checker<'_> {
             match self.poll_projections(body)? {
                 Advance::Ready(progress) => return Ok(progress),
                 Advance::Definition(dependency) => {
-                    if let super::Requirement::SourceResultContracts(member) =
-                        dependency.requirement
-                        && crate::sema::compiler_items::field_protocol::prepare_result_dependency(
-                            self.report,
-                            self.facts,
-                            member,
-                            self.availability,
-                        )?
-                    {
-                        self.state
-                            .infer
-                            .account_work(1)
-                            .map_err(|e| self.error(body, e))?;
-                        continue;
-                    }
-                    if let super::Requirement::ImplHeader(owner) = dependency.requirement
-                        && crate::sema::declarations::iteration::range_contracts::prepare_dependency(
-                            self.report,
-                            self.facts,
-                            crate::sema::traits::selection::Dependency::Header(owner),
-                            self.availability,
-                        )
-                        .map_err(|e| self.error(dependency.source.node, e))?
-                    {
-                        self.state.infer.account_work(1).map_err(|e| self.error(body, e))?;
+                    if self.prepare_projection_dependency(body, &dependency)? {
                         continue;
                     }
                     self.require_complete_body(Some(dependency))?;
@@ -356,6 +332,67 @@ impl Checker<'_> {
                 }
             }
         }
+    }
+    /// The term's head after pending projections advance as far as they can
+    /// now. In declaration availability a projection that waits for an absent
+    /// definition stays queued: the body loop polls it before its next work and
+    /// suspends, so the definition is prepared before the body resumes. Here it
+    /// only leaves a head unknown, and an unknown head selects no builtin rule.
+    pub(super) fn settled_head(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+    ) -> Result<Option<super::Constructor>, Error> {
+        if matches!(
+            self.availability,
+            crate::sema::traits::implementations::Availability::Declarations
+        ) {
+            while let Advance::Definition(dependency) = self.poll_projections(node)? {
+                if !self.prepare_projection_dependency(node, &dependency)? {
+                    break;
+                }
+            }
+        } else {
+            self.advance_projections(node)?;
+        }
+        match self.state.infer.head(&self.facts.types, term) {
+            Err(crate::types::infer::Error::Normalization) => Ok(None),
+            result => result.map_err(|e| self.error(node, e)),
+        }
+    }
+    /// Prepare a dependency that has an on-demand producer; `false` leaves it.
+    fn prepare_projection_dependency(
+        &mut self,
+        body: NodeId,
+        dependency: &super::Dependency,
+    ) -> Result<bool, Error> {
+        let prepared = match dependency.requirement {
+            super::Requirement::SourceResultContracts(member) => {
+                crate::sema::compiler_items::field_protocol::prepare_result_dependency(
+                    self.report,
+                    self.facts,
+                    member,
+                    self.availability,
+                )?
+            }
+            super::Requirement::ImplHeader(owner) => {
+                crate::sema::declarations::iteration::range_contracts::prepare_dependency(
+                    self.report,
+                    self.facts,
+                    crate::sema::traits::selection::Dependency::Header(owner),
+                    self.availability,
+                )
+                .map_err(|e| self.error(dependency.source.node, e))?
+            }
+            _ => false,
+        };
+        if prepared {
+            self.state
+                .infer
+                .account_work(1)
+                .map_err(|e| self.error(body, e))?;
+        }
+        Ok(prepared)
     }
 
     /// Empty polls avoid allocating the continuation and notification frame.

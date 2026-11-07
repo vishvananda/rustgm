@@ -1,0 +1,102 @@
+{
+ "schema": 1,
+ "declared": "2026-11-07, before the frozen oracle and before any implementation change",
+ "declaration_sha256": "468389b5453f9693732d454925968482e4cbc44206c64ecdd2de4a78d7bd8d34",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [
+  "2026-11-07 after oracle v1 (rustc-oracle-v1.json): shift-result-lhs.rs v1 hit a rustc ICE ('fully_perform' delayed bug at the no_core const impl bodies `self<<r`), which is not an outcome. v2 replaces both impl bodies with `self`; the typed const S: u8 = 1 << 3 and the declared outcome 0 are unchanged. Declared before oracle v2."
+ ],
+ "cases": {
+  "sub-literals.rs": {
+   "sha256": "b7f5d8b140ae6db9f56e5c6d45c64916e2803d52dfd4ce5eb25313df20b013ee",
+   "declared": 0,
+   "reason": "batch-2 literal-sub-two-impls: 3 - 1 with Sub for usize and u8; builtin integral rule unifies literal operands with the usize result",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "mul-const-argument.rs": {
+   "sha256": "0234f04583aee5b63d0b9fdb1a2acdd3ce32c6a7a4c107257eef09c9b388c4fb",
+   "declared": 0,
+   "reason": "portable-simd to_bytes shape: { 2 * 4 } usize const argument with Mul for usize and u8",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "sub-impl-lengths.rs": {
+   "sha256": "dc2412ce11788d33bc36dae4246670c3bf9d9edf912a69629b574e893b105ea6",
+   "declared": 0,
+   "reason": "array_impl_default shape: [T; 2], [T; (2 - 1)], [T; ((2 - 1) - 1)] with Sub for usize and u8 are distinct impls",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "shift-result-lhs.rs": {
+   "sha256": "e252a2812772516947ddf2250705dca54c6d830b3ea015b3c11ff68ea8d8e4eb",
+   "declared": 0,
+   "reason": "const u8 = 1 << 3: shift result is the lhs type; the only u8 impl Shl<u32> fixes the rhs",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "shift-rhs-not-unified.rs": {
+   "sha256": "999b204ec64128dd2f6cbd65c15b8a1b47f462ec87473f032eec5f44144d4a8e",
+   "declared": 1,
+   "reason": "const u32 = 1 << 3 with Shl<u32> and Shl<u8> for u32: shift never unifies rhs with lhs, rhs stays ambiguous, falls back to i32 and u32: Shl<i32> is missing (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "float-literals.rs": {
+   "sha256": "28efab1d9768d7a22815f79c8d5c492fd7ba3f73874abeecdef40f1cfe059277",
+   "declared": 0,
+   "reason": "f32 return 1.0 + 2.0 with Add for f32 and f64: builtin float rule unifies operands with the result",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "reference-rhs.rs": {
+   "sha256": "41d7ed43d7f8eedea967a0c8797aeac26baa439c76d097b725d206326c318685",
+   "declared": 0,
+   "reason": "1 + x with x: &u8; builtin rule peels one reference and unifies the literal with u8; Add<&u8> for u8 is selected over Add<&u8> for u16",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "user-impl-by-trait.rs": {
+   "sha256": "472cfcbb0ccd1777e385e938da024d2524653f4582a668b8a27f0281a5021a0b",
+   "declared": 0,
+   "reason": "3 * m with m: M is not builtin; trait selection picks the only Mul<M> impl (u8) with Output M",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "mixed-width.rs": {
+   "sha256": "2919b2c0883bc64dfc9879f503f88331f11294715f505a79a4e8cfd8fdfa63ac",
+   "declared": 1,
+   "reason": "u8 - usize: both integral so the builtin rule demands equal operand types even though Sub<usize> for u8 exists (E0308)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  },
+  "assign-literal.rs": {
+   "sha256": "beed75a8eb1676182d97b639a035539e2893299c7f02970caef02698249851d4",
+   "declared": 0,
+   "reason": "x += 2 with x: u8 and AddAssign for u8 and AddAssign<u16> for u8: builtin rule unifies the literal with u8",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "compare-literal.rs": {
+   "sha256": "e29aa32ae5a4b535b8ee615ff9c9f6779859e6bd0fca1162a0a613de63c0068a",
+   "declared": 0,
+   "reason": "n == 3 with n: u8, PartialEq for u8 and PartialEq<u16> for u8: builtin comparison unifies the literal with u8",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "compare-mixed-width.rs": {
+   "sha256": "ac38c1088e81efc1274fc59046c99bb15ccd4707edc8eb2910bf3502658e3ebd",
+   "declared": 1,
+   "reason": "u8 == u16: both scalar so the builtin comparison demands equal operand types (E0308) despite PartialEq<u16> for u8",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  }
+ }
+}

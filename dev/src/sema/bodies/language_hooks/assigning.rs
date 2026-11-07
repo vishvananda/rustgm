@@ -42,6 +42,10 @@ impl Checker<'_> {
             compiler_items::source_assignment(self.report, self.facts, self.key(node), hook)?;
         let subject = self.term(left)?;
         let rhs = self.term(right)?;
+        if let Kind::Binary { op, .. } = self.kind(node) {
+            // The builtin rule unifies the operands; the result stays unit.
+            self.builtin_binary(node, op, subject, rhs)?;
+        }
         let effect = self.callee_use_effect()?;
         self.state.call_types.obligations.push((
             node,

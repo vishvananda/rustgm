@@ -230,6 +230,9 @@ impl Checker<'_> {
         )?;
         let subject = self.term(left)?;
         let right_type = self.term(right)?;
+        if let crate::syntax::ast::Kind::Binary { op, .. } = self.kind(node) {
+            self.builtin_binary(node, op, subject, right_type)?;
+        }
         self.state.call_types.obligations.push((
             node,
             Predicate::trait_application(

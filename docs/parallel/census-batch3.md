@@ -121,3 +121,157 @@ literal floor; the asserted behavior is unchanged):
 Tests that build `Producer::new` directly keep the bare floor and are unchanged.
 `Package` stays 256 bytes: its admitted-byte count is a saturating `u32` in
 existing padding.
+
+## 2. Builtin binary operand types
+
+Census 3 blocked 478 items behind `{ $size * $elems }` in portable-simd
+`to_bytes.rs` and `($n - 1)` in `array_impl_default`. With two candidate
+impls (`Mul` or `Sub` for `usize` and for `u8`), trait selection alone cannot
+choose. rustc first applies its builtin rule (`is_builtin_binop` and
+`enforce_builtin_binop_types` in `op.rs`):
+
+- It applies only when neither operand is a general type variable. Integer and
+  float inference variables count as known.
+- One shared reference layer is peeled from each operand.
+- Arithmetic (`+ - * / %`): both integral or both floating. The operands are
+  unified and the result is the left operand's type.
+- Bitwise (`& | ^`): as arithmetic, or both `bool`.
+- Shifts: both integral. Only the result is related, to the left operand; the
+  right operand is never unified.
+- Comparisons: both scalar. The operands are unified; the result stays `bool`.
+- Compound assignment uses the same categories; its result stays `()`.
+- The selected method's `Output` must still equal the builtin result.
+
+The body checker now does the same in the existing source operator paths
+(`source_binary_operator`, `source_comparison_operator` and
+`source_assignment_operator`), after the ordinary trait obligation and method
+instantiation. No operator contract changed, so the trait proof, method
+clauses and const effect are still checked. One deviation is deliberate:
+comparisons apply the rule only to primitive scalars (integers, floats, `bool`,
+`char` and their inference variables). Raw and function pointer comparisons
+keep ordinary trait selection. In core those impls only compare a type with
+itself, so this changes only the wording of an error, not an outcome.
+
+Operand classification never forces a pending projection that waits for a
+definition (see section 3).
+
+### Controls
+
+Twelve no_core controls, declared before the rustc 1.98.0 oracle and before the
+implementation, are in `pa31/tests/spec/builtin-binop-types/` with
+`outcomes.json`. They cover: literal `Sub` and `Mul` (batch 2's control, a
+`{ 2 * 4 }` const argument and impl self-type lengths), shift result and an
+unresolved shift right operand (E0277), floats, a `&u8` right operand,
+compound assignment, a literal comparison, `u8 - usize` and `u8 == u16`
+(E0308), and `3 * m` with a non-numeric `M`, which still selects the only
+`Mul<M>` impl by trait.
+
+The first oracle run hit a rustc internal compiler error in
+`shift-result-lhs.rs`: a `fully_perform` delayed bug at the no_core
+`const impl` bodies `self<<r`. That is not an outcome. Before the re-run, the
+two impl bodies were replaced with `self`. The typed constant and the declared
+outcome did not change; the amendment is recorded in `outcomes.json`. Both
+oracle runs and the ICE reports are in `obj/parallel/census-batch3/controls/`.
+
+| Control | Declared | rustc | Pin before | After |
+|---|---|---|---|---|
+| sub-literals | accept | accept | reject | accept |
+| mul-const-argument | accept | accept | reject | accept |
+| sub-impl-lengths | accept | accept | reject | accept |
+| shift-result-lhs | accept | accept | reject | accept |
+| shift-rhs-not-unified | reject | E0277 | reject | reject |
+| float-literals | accept | accept | reject | accept |
+| reference-rhs | accept | accept | reject | accept |
+| user-impl-by-trait | accept | accept | accept | accept |
+| mixed-width | reject | E0308 | reject | reject |
+| assign-literal | accept | accept | reject | accept |
+| compare-literal | accept | accept | reject | accept |
+| compare-mixed-width | reject | E0308 | reject | reject |
+
+The opponents' messages are "associated type requires an unambiguous
+validated implementation" (shift) and "incompatible types" (both
+mismatched widths). `dev/tests/invariants/binop_operand_types.rs` checks all
+twelve.
+
+One existing control is amended. `binary_contract::tests::nested_fallback_respects_predeclared_order_and_shared_frontiers`
+asserted that `pa31/tests/spec/source-shift-or/readiness/shared.rs` stays
+rejected. That case, `let rhs=1;(n<<rhs)|rhs` with `n: usize`, was recorded as
+an "explicit unresolved frontier"
+([source shift checkpoint](../source-shift-or-checkpoint.md)). Its frozen
+independent observation is acceptance in both editions
+(`readiness/observations.json`). The builtin rule now settles it: the shift
+result is `usize`, and `|` unifies the literal with it. The control now
+requires acceptance and a lowered `shared` body. The fixture and its
+observations are unchanged.
+
+## 3. Unary operands behind a definition wait
+
+Batch 2's `static-length-neg-sync.rs` (rustc accepts) failed with "missing
+completed associated type definition" at the `-1` of `SMALLEST`. That `const`
+is read through `COUNT` into a static array length, and the `Neg` impl follows
+the static.
+
+The cause was not readiness of the `Neg` members. After instantiating
+`neg`, the unary path classified its operand with `contextual_head`. That call
+advances every pending projection inline, including the operator's own
+`Output`. Normalizing `<i32 as Neg>::Output` needs the impl's associated type
+definition, which is not declared yet. The inline advance cannot suspend, so it
+reported the wait as an error. The binary path made no such call, which is why
+the binary shape already passed.
+
+The new `settled_head` advances pending projections as far as they can go. It
+still prepares the on-demand dependencies the inline advance prepares (impl
+headers for range contracts and source result contracts). In declaration
+availability, a projection that waits for an absent definition stays queued.
+The body loop polls it before its next work item and suspends, so the
+definition is prepared before the body resumes. Classification only sees an
+unknown head, which selects no builtin rule. Elsewhere `settled_head` is the old
+inline advance. Both operator paths classify with it.
+
+The two batch-2 controls (declared and oracle-checked in batch 2's third
+declaration) are now in `pa31/tests/spec/demanded-header-facts/`, and
+`demand_header_facts.rs` checks them with the other 13. `static-length-neg-sync.rs`
+is accepted. `static-length-missing-neg-sync.rs` (E0600) is still rejected,
+with "associated type requires an unambiguous validated implementation".
+All 16 batch-2 controls keep their outcomes and messages
+(`probe-binop1-regress.json`).
+
+## 4. The 256-bound "type constraint work budget exceeded"
+
+Batch 2 left a generated case at this budget once the header ledger admitted
+it. The family is one function with `n` associated-type bounds on one
+parameter:
+
+```rust
+fn f<T: A<Out: B<0> + B<1> + /* ... */ + B<{n-1}>>>() {}
+```
+
+The budget is the fixed per-`Context` cap of one million inference steps in
+`types/infer.rs`. The work under it is superlinear, so it is not a linear
+workload that needs a larger cap. An analysis-only attribution with the cap
+raised (`budget256/attr-wide*.infer.tsv`) shows two regimes:
+
+| Bounds | Inference steps | `alternatives::choose` probes |
+|---|---|---|
+| 16, 64, 128, 160 | 4 per bound (64 to 640) | none |
+| 192 | above 1,000,000 | 31,144 sampled |
+| 255, 256 | above 2,000,000 | 62,346 sampled |
+
+The payer is declaration bound validation: `validate_trait_bound`, then
+`check_trait_assumption`, then `Assumptions::unambiguous_declaration`, then
+`select`, then `alternatives::choose`. To prove each own bound unambiguous,
+`choose` trial-unifies against every assumption with the same trait and head.
+All `n` bounds share trait `B` and head `u8`, so the scan is `O(n^2)` trial
+unifications. Each one imports, resolves and equates a constant argument
+(`import.rs`, `resolve.rs`, `equations.rs` and `constants.rs` in the table's
+source). With the binop build, 192 bounds pass in 1.1 s and 256 fail. Why the
+scan starts between 160 and 192 bounds was not explained; below that,
+`choose` is not reached.
+
+This batch does not fix it. A cap increase would hide the slope. The intended
+repair is a discriminator in `premise_index` (or a pre-filter before `choose`),
+so that assumptions whose closed constant or type arguments differ from the
+goal are excluded without a trial unification. That makes the own-bound check
+linear in the matching candidates. Its controls would be this family at 64,
+256 and 1,024 bounds with flat work per bound, plus a genuinely ambiguous
+opponent (two bounds that unify with the goal), which must still be rejected.

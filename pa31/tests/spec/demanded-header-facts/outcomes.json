@@ -45,6 +45,25 @@
    "error_codes": [
     "E0391"
    ]
+  },
+  "static-length-neg-sync.rs": {
+   "sha256": "0c4fe4f2128835a7801c74d52c919dd3d875eeed8ffb37d39c11b2b91eb5104d",
+   "declared": 0,
+   "reason": "static array length (L - S + 1) as usize with const S: i32 = -1; Neg/Sub/Add impls for i32 follow the static",
+   "declaration_sha256": "e2df6908511cb1d8e5f329082367f443bf9ddf93df91831bad1e22b6a51c4910",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "static-length-missing-neg-sync.rs": {
+   "sha256": "ba3d47c5c5c5ab92d517631d2f34a82bc637badcfa2801218f071dfddcfd6fa6",
+   "declared": 1,
+   "reason": "same shape without a Neg impl for i32 (E0600)",
+   "declaration_sha256": "e2df6908511cb1d8e5f329082367f443bf9ddf93df91831bad1e22b6a51c4910",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0600"
+   ]
   }
- }
+ },
+ "later_declarations": "static-length-*-sync.rs: census batch 2's third declaration (its declaration_sha256), declared and oracle-checked before census batch 3 changed the unary operand path."
 }

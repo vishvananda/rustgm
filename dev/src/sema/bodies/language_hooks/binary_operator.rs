@@ -1,17 +1,115 @@
 //! Source binary inference retains the actual trait call before primitive erasure.
-use super::{Checker, Error, NodeId, TermId, Type};
+use super::{Checker, Constructor, Error, NodeId, TermId, Type};
 use crate::{
     lex::token::Punctuation,
     sema::compiler_items,
     support::language_hooks::Hook,
     syntax::ast::Kind,
     types::{
-        ItemId, TypeId,
-        infer::{Solved, arguments::Argument, predicates::Predicate},
+        ItemId, Primitive, TypeId,
+        infer::{Domain, Solved, arguments::Argument, predicates::Predicate},
     },
 };
 
+#[cfg(test)]
+#[path = "../../../../tests/invariants/binop_operand_types.rs"]
+mod builtin_tests;
+
+/// An operand type as rustc's builtin binary rule classifies it.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Operand {
+    Integral,
+    Float,
+    Bool,
+    Char,
+    Other,
+}
+
 impl Checker<'_> {
+    /// rustc's builtin binary rule (`is_builtin_binop` and
+    /// `enforce_builtin_binop_types`). When neither operand is an unknown type
+    /// and, under one shared reference, both are integral or both floating
+    /// (bitwise operators also accept two bools, comparisons any two primitive
+    /// scalars), the operand types are unified before any implementation is
+    /// selected. Shifts relate only their result to the left operand. Returns
+    /// the builtin result type for arithmetic, bitwise and shift operators.
+    /// Raw and function pointer comparisons keep ordinary trait selection.
+    pub(in crate::sema::bodies) fn builtin_binary(
+        &mut self,
+        node: NodeId,
+        op: Punctuation,
+        left: TermId,
+        right: TermId,
+    ) -> Result<Option<TermId>, Error> {
+        let op = super::super::scalar::compound_operator(op).unwrap_or(op);
+        let (Some((left, a)), Some((right, b))) = (
+            self.builtin_operand(node, left)?,
+            self.builtin_operand(node, right)?,
+        ) else {
+            return Ok(None);
+        };
+        let numeric = a == b && matches!(a, Operand::Integral | Operand::Float);
+        let (unify, result) = match op {
+            Punctuation::ShiftLeft | Punctuation::ShiftRight => {
+                (false, a == Operand::Integral && b == Operand::Integral)
+            }
+            Punctuation::Plus
+            | Punctuation::Minus
+            | Punctuation::Star
+            | Punctuation::Slash
+            | Punctuation::Percent => (numeric, numeric),
+            Punctuation::And | Punctuation::Or | Punctuation::Caret => {
+                let bitwise = numeric || (a == Operand::Bool && b == Operand::Bool);
+                (bitwise, bitwise)
+            }
+            Punctuation::EqualEqual
+            | Punctuation::BangEqual
+            | Punctuation::Less
+            | Punctuation::LessEqual
+            | Punctuation::Greater
+            | Punctuation::GreaterEqual => (a != Operand::Other && b != Operand::Other, false),
+            _ => (false, false),
+        };
+        if unify {
+            self.equate(node, left, right)?;
+        }
+        Ok(result.then_some(left))
+    }
+    /// One shared reference layer is peeled; general unknowns are not builtin.
+    fn builtin_operand(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+    ) -> Result<Option<(TermId, Operand)>, Error> {
+        let (term, head) = match self.settled_head(node, term)? {
+            Some(Constructor::Reference { mutable: false, .. }) => {
+                let referent = self.child(node, term, 0)?;
+                (referent, self.settled_head(node, referent)?)
+            }
+            head => (term, head),
+        };
+        let operand = match head {
+            Some(Constructor::Primitive(primitive)) => match primitive {
+                Primitive::Bool => Operand::Bool,
+                Primitive::Char => Operand::Char,
+                primitive if primitive.integer().is_some() => Operand::Integral,
+                primitive if primitive.is_float() => Operand::Float,
+                _ => Operand::Other,
+            },
+            Some(_) => Operand::Other,
+            None => match self
+                .state
+                .infer
+                .unresolved_domain(term)
+                .map_err(|error| self.error(node, error))?
+            {
+                Some(Domain::Integer) => Operand::Integral,
+                Some(Domain::Float) => Operand::Float,
+                Some(Domain::Any) | None => return Ok(None),
+            },
+        };
+        Ok(Some((term, operand)))
+    }
     pub(in crate::sema::bodies) fn binary_readiness(
         &self,
         node: NodeId,
@@ -100,6 +198,14 @@ impl Checker<'_> {
         let result = self.child(node, signature, 2)?;
         self.retain_language_method(node, selected.method, callable, subject);
         self.state.calls.push((node, signature));
+        let Kind::Binary { op, .. } = self.kind(node) else {
+            return Err(self.error(node, "source binary lost its actual operator"));
+        };
+        if let Some(builtin) = self.builtin_binary(node, op, subject, rhs)? {
+            // The selected Output must still agree with the builtin result.
+            self.equate(node, builtin, result)?;
+            return Ok(builtin);
+        }
         Ok(result)
     }
 

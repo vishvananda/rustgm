@@ -76,7 +76,9 @@ impl Checker<'_> {
         let result = self.child(node, signature, 1)?;
         self.retain_language_method(node, selected.method, callable, subject);
         self.state.calls.push((node, signature));
-        let scalar = match self.contextual_head(node, subject)? {
+        // An Output that waits for its impl's definition leaves the body loop
+        // to suspend on it; classifying the operand never demands it here.
+        let scalar = match self.settled_head(node, subject)? {
             Some(Constructor::Primitive(primitive)) => {
                 super::super::scalar::unary(operator, primitive)
             }

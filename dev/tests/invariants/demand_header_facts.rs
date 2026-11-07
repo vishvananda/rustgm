@@ -7,7 +7,7 @@ const PROJECTIONS: &str = "pa20/tests/spec/projections/header-demand";
 
 /// Independently checked rustc outcomes: `None` accepts, otherwise the first
 /// error this compiler reports for the rejected control.
-const CONTROLS: [(&str, &str, Option<&str>); 13] = [
+const CONTROLS: [(&str, &str, Option<&str>); 15] = [
     (LENGTHS, "impl-length-sub", None),
     (LENGTHS, "impl-length-chain", None),
     (
@@ -24,6 +24,12 @@ const CONTROLS: [(&str, &str, Option<&str>); 13] = [
         LENGTHS,
         "impl-length-cycle",
         Some("cycle in enum discriminant or constant dependencies"),
+    ),
+    (LENGTHS, "static-length-neg-sync", None),
+    (
+        LENGTHS,
+        "static-length-missing-neg-sync",
+        Some("associated type requires an unambiguous validated implementation"),
     ),
     (PROJECTIONS, "where-nested-premise", None),
     (PROJECTIONS, "where-bounded-premise", None),
