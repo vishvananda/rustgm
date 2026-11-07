@@ -5,6 +5,16 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [language-role transport](parallel/language-role-transport.md) is joined
+on main. Version 13 now carries spelled
+language roles, trait `Self` defaults and checked Add/Sub/Mul rows. Imported
+`AddAssign`, `SubAssign` and `MulAssign` re-authenticate in fresh consumers.
+Genuine source `+=`, `-=` and `*=` transport as checked Binary rows, and each
+consumer lowers its own overflow guard. In-range clients exit 42 natively and
+overflow clients abort, as rustc does. Older exports are
+byte-identical. Still open: a consumer's own operator use, `Output` with the
+version-11 fold, the `Fn*` roles, enums with match, and closures.
+
 [Census batch 1](parallel/census-batch1.md) does two things:
 
 - Projection-premise failures now report their real cause. Genuine exhaustion

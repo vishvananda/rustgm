@@ -6070,6 +6070,23 @@ version. Supported rows keep version twelve's validation, owner/remap authority
 and per-instance proof. Their work and storage are linear in the decoded rows.
 Earlier profiles reject Binary values and keep their exact bytes.
 
+Version thirteen also carries imported language roles and trait parameter
+defaults. A role without a compact ID is written as escape 255 plus its
+language-item spelling. Unknown spellings, and spellings that replace a compact
+ID, are rejected. The spelling selects the role only; consumers bind it to the
+row's declaration address, never to a name or path. The Future family and
+`Send` keep version eleven. A provider re-runs the source operator contract
+before exporting an operator role. A fresh consumer admits an imported operator
+role only after re-authenticating its header, member and signature, and rejects
+every other imported role by name. A defaulted type slot (tag 2) is admitted
+only on a trait-owned slot whose default is that trait's `Self`. Binary flags
+9-11 are checked Add, Sub and Mul: the consumer re-proves typing and lowers its
+own overflow guard to the shared abort exit. No overflow decision is
+transported, and flags 12-15 stay rejected by name. A direct function-item
+formation is the owning request port of its application, and every
+well-formedness root is demanded. Profiles without these rows keep their exact
+bytes.
+
 ## Lowering and backend facts
 
 Lower only checked, typed facts. Give every emitted instance, drop shim, vtable,
