@@ -130,9 +130,13 @@ impl Resolver<'_> {
         if artifact.generic_payload().is_none() {
             return Ok(());
         }
-        let mut work = imported.generic_work.take().unwrap_or_default();
+        let mut work = imported
+            .cold
+            .as_deref_mut()
+            .map(|cold| std::mem::take(&mut cold.work))
+            .unwrap_or_default();
         let result = self.reserve_original_declarations(scope, artifact, imported, &mut work);
-        imported.generic_work = Some(work);
+        imported.cold.get_or_insert_with(Box::default).work = work;
         result
     }
     fn reserve_original_declarations(

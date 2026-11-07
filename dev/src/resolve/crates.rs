@@ -3,9 +3,7 @@ mod bound_macro_rows;
 mod original_declarations;
 mod public_names;
 mod token_images;
-pub(crate) use bound_macro_rows::{
-    ImportedMacro, ImportedRow, root_spelling as macro_root_spelling,
-};
+pub(crate) use bound_macro_rows::{ImportedRow, root_spelling as macro_root_spelling};
 #[cfg_attr(
     not(test),
     expect(
@@ -39,39 +37,43 @@ pub struct Imported {
     pub(in crate::resolve) availability:
         Option<Box<super::stability::availability_imports::Imports>>,
     origins: super::body_origin::CatalogSlot,
-    generic_work: Option<Box<original_declarations::Work>>,
+    /// Original-declaration reservation work and imported macro rows. Only
+    /// artifacts with a generic payload or macro rows allocate it, so the hot
+    /// record keeps one pointer for both.
+    cold: Option<Box<ColdImports>>,
     dependencies: Arc<Dependencies>,
     definitions: HashMap<ExternalDef, DefId>,
     functions: Vec<(DefId, usize, usize)>,
     constants: Vec<(DefId, usize, usize)>,
     records: Vec<(DefId, usize, usize)>,
     statics: Vec<(DefId, usize, usize)>,
-    macros: Vec<ImportedMacro>,
-    /// `$crate` roots of macro providers, keyed by their unspellable root name.
-    macro_roots: HashMap<crate::support::names::NameId, DefId>,
+}
+/// Imported state that only some artifacts need, out of line.
+#[derive(Default)]
+struct ColdImports {
+    work: original_declarations::Work,
+    macros: bound_macro_rows::MacroImports,
 }
 impl Imported {
     pub(crate) fn has_availability(&self) -> bool {
         self.availability.is_some()
     }
     pub(crate) fn original_reservation_budget(&self) -> (usize, usize) {
-        self.generic_work
+        self.cold
             .as_deref()
-            .map_or((0, 0), |work| (work.steps, work.retained))
+            .map_or((0, 0), |cold| (cold.work.steps, cold.work.retained))
     }
     fn new(dependencies: Arc<Dependencies>) -> Self {
         Self {
             availability: None,
             origins: super::body_origin::CatalogSlot::default(),
-            generic_work: None,
+            cold: None,
             dependencies,
             definitions: HashMap::default(),
             functions: Vec::new(),
             constants: Vec::new(),
             records: Vec::new(),
             statics: Vec::new(),
-            macros: Vec::new(),
-            macro_roots: HashMap::default(),
         }
     }
     pub(crate) fn origin_catalog(

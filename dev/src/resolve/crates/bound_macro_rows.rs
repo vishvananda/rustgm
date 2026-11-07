@@ -36,13 +36,25 @@ pub(crate) fn root_spelling(crate_id: u32) -> String {
     format!("$crate:{crate_id}")
 }
 
+/// Every bound row and each provider's `$crate` root, keyed by its
+/// unspellable root name. It lives in the imported record's cold box, so
+/// artifacts without macro rows allocate nothing for it.
+#[derive(Default)]
+pub(super) struct MacroImports {
+    rows: Vec<ImportedMacro>,
+    roots: HashMap<NameId, DefId>,
+}
+
 impl Imported {
     pub(crate) fn macros(&self) -> &[ImportedMacro] {
-        &self.macros
+        self.cold.as_deref().map_or(&[], |cold| &cold.macros.rows)
     }
     /// The imported root that a provider's `$crate` names.
     pub(crate) fn macro_root(&self, name: NameId) -> Option<DefId> {
-        self.macro_roots.get(&name).copied()
+        self.cold.as_deref()?.macros.roots.get(&name).copied()
+    }
+    fn macro_imports(&mut self) -> &mut MacroImports {
+        &mut self.cold.get_or_insert_with(Box::default).macros
     }
 }
 
@@ -159,7 +171,7 @@ impl Resolver<'_> {
             .names
             .intern(&root_spelling(crate_id))
             .map_err(error)?;
-        imported.macro_roots.insert(root_name, root);
+        imported.macro_imports().roots.insert(root_name, root);
         let declarative = macros
             .rows()
             .iter()
@@ -189,7 +201,7 @@ impl Resolver<'_> {
             });
             self.bind_imported_macro(scope, spelling, definition)?;
             definitions.insert((artifact_index, row), definition);
-            imported.macros.push(ImportedMacro {
+            imported.macro_imports().rows.push(ImportedMacro {
                 definition,
                 artifact: artifact_index,
                 row,
