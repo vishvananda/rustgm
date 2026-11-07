@@ -158,6 +158,39 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     them. `!null` pattern types over integer or reference bases are one such
     form: rustc accepts them and core does not use them. This is a recorded
     deviation.
+- **After Lane B's [core sites and re-exports batch](parallel/core-sites-reexports.md)**,
+  which cleared the last four sites of its cause:
+  - **Shim glob re-exports use one version-13 glob row naming the foreign
+    module**, and the consumer re-resolves it against that crate's own exports
+    with rustc's shadowing and ambiguity rules. The shim is
+    `rustc_std_workspace_core`'s `pub use core::*`.
+    - Why: a row per shim keeps metadata proportional to what the shim
+      declares.
+    - Cost: the consumer needs cross-crate glob resolution, charged per name it
+      resolves.
+    - Rejected: one foreign binding per core public name. It would copy core's
+      export table into every shim and add a consistency proof between the
+      two.
+  - **Variant re-exports reuse `ModuleBindingRow`**, targeting a `Variant`
+    declaration in the value namespace under a version-13 gate. There is no
+    new tag. Older profiles reject it by name. Consumers re-derive it, with a
+    forged-namespace opponent.
+    - The variant's type-namespace alias is not emitted, matching local enum
+      member scopes. It is added only if a demanded use appears.
+  - **`compiler_builtins` follows rustc 1.98's crate-loader rule**, which Lane
+    B observed with an empty sysroot. rustc injects it after expansion and
+    skips `#![no_core]` and `#![compiler_builtins]` crates, and graphs that
+    already contain a `#![compiler_builtins]` crate. A missing crate is E0463.
+    - RustGM therefore transports a `#![compiler_builtins]` descriptor flag
+      under version 13. The PA29 no_std controls compile their existing
+      stand-in with RustGM as well as rustc.
+    - Rejected: skipping injection. That would accept graphs rustc rejects and
+      leave the builtins link implicit.
+  - Lane B also owns "invalid scoped proof evidence": a generic body that
+    selects a region-binding impl fails this way, on main too. Core's adapter
+    bodies are likely to meet it.
+  - Lane B reports any new version-13 shape to the integrator before using it,
+    because Lane C is adding shapes at the same time.
 - **Forged shared region rows** may be rejected by the earlier Self-identity
   or field-substitution check. A forgery must be rejected by name, but it
   needs no check of its own.

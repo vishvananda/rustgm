@@ -5,6 +5,34 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane B [override bounds, region-binding sugar and impl header
+projections](parallel/core-sites-reexports.md) clears the last four "associated
+type requires an unambiguous implementation" sites (`iter/mod.rs:376`,
+`scan.rs:60`, `map_windows.rs:245`, `control_flow.rs:427`). Lane B's census on
+base `16c57acb8` (pin `330ee2f8`) checks 42,280 declarations: 4 failed and 26
+blocked. On base `0311a54ea` (pin `e9cc215f`) it checked 42,274, with 8 and 28.
+
+- An override's bounds are compared with the trait method's in the impl's
+  normal forms, so a repeated `Self::Item` bound is the same requirement.
+- An impl parameter that only a region-binding callable bound's `Output`
+  determines is inferred from one instance at fresh regions, as rustc's
+  placeholder instantiation does.
+- An impl header that names a projection of its own parameter is normalized
+  under the impl's bounds.
+- 26 PA31 no_core controls were declared before the rustc 1.98.0 oracle, and
+  all agree. One fixture amendment came before oracle v2. Three gaps are
+  recorded: two generic bodies that select a region-binding impl, and an impl
+  with `where Self:` beside a header projection.
+- Diagnosed, then decided by the integrator
+  ([plan](core-census-plan.md)) and assigned to Lane B:
+  - `--extern core=` through the `rustc_std_workspace_core` shim, as one
+    version-13 glob row naming the foreign module, which the consumer
+    re-resolves;
+  - variant re-exports (`prelude::v1`) as a value-namespace
+    `ModuleBindingRow` to a `Variant` declaration under a version-13 gate;
+  - `compiler_builtins` injection with a transported `#![compiler_builtins]`
+    flag and a RustGM-built stand-in for the PA29 no_std clients.
+
 Lane A [census batch 6](parallel/census-batch6.md) clears both declaration
 causes outside Lane B's that census 6 left. Census 7 (`a650f86d`, from
 `38edd1bf3` on main `0311a54ea`) checks 42,280 declarations, with 5 failed and

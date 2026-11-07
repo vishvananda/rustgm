@@ -323,6 +323,29 @@ arguments translated through each relation, as rustc's `assoc_def` does. Under
 `min_specialization` only a root may define one, so a child that overrides its
 parent's associated type is rejected.
 
+An override's bounds are compared with its trait method's bounds in the impl's
+normal forms, as rustc normalizes the impl's param-env first. The trait
+method's own bounds, substituted for the impl, and the override's bounds are
+normalized through the impl's checked associated definitions and then ordinary
+selection, each quantified clause inside its own binder. An associated equality
+keeps its projected side as written and normalizes only that side's inputs and
+its result. An override that repeats a `Self::Item` bound, or names the impl's
+definition of it, states the same requirement; a different or added bound is
+still stronger.
+
+A quantified associated equality among an impl's conditions whose result names
+a type or const parameter the impl header leaves undetermined also gives the
+trial one instance at fresh regions, one per bound region. That instance is
+implied by the universal condition, which is still proven in its own scope after
+the parent resolves; it only lets the trial infer the parameter, as rustc's
+placeholder instantiation does for core's `Scan` and `MapWindows`. A parameter
+inferred to name one of those regions cannot leave the trial, so that selection
+fails. An impl header that names a projection of its own parameter, as core's
+`impl<R: Try> ControlFlow<R, R::Output>` does, is normalized under the impl's
+bounds, formed on demand before the header is published, as a signature is under
+its own. An impl bound naming `Self` cannot be formed before that header and is
+still rejected.
+
 Fundamental policy belongs to the actual struct or trait and uses its distinct
 `fundamental` feature or genuine attribute-name macro allowance; `rustc_attrs`
 and sizing-language identity are not substitutes. Reuse the configured header
