@@ -129,30 +129,34 @@ fn constructors(
 ) -> Result<(), Error> {
     let (row, enumeration, parameters) = owner;
     let rows = context.descriptor.rows();
-    if rows.enums.headers.is_empty() {
+    if rows.enums().headers.is_empty() {
         return Ok(());
     }
-    budget.charge(2 + rows.enums.headers.len().checked_ilog2().unwrap_or(0) as usize)?;
+    budget.charge(2 + rows.enums().headers.len().checked_ilog2().unwrap_or(0) as usize)?;
     let Ok(position) = rows
-        .enums
+        .enums()
         .headers
         .binary_search_by_key(&row.0, |header| header.declaration.0)
     else {
         return Ok(());
     };
-    let header = &rows.enums.headers[position];
+    let header = &rows.enums().headers[position];
     let Some(s::HeaderRef::Nominal(index)) = rows.header(row).map_err(error)? else {
         return Err(error(
             "source enum constructor lost its actual nominal header",
         ));
     };
     let result = graph.ty(rows.nominals[index as usize].self_type)?;
-    for variant in header.variants.slice(&rows.enums.variants).map_err(error)? {
+    for variant in header
+        .variants
+        .slice(&rows.enums().variants)
+        .map_err(error)?
+    {
         budget.charge(1)?;
         if variant.shape != s::VariantShape::Tuple {
             continue;
         }
-        let payload = variant.fields.slice(&rows.enums.fields).map_err(error)?;
+        let payload = variant.fields.slice(&rows.enums().fields).map_err(error)?;
         budget.reserve(
             parameters
                 .len()

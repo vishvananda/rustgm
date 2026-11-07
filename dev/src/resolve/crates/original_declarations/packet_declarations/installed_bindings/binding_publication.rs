@@ -20,7 +20,7 @@ pub(super) fn prepare(
         .len()
         .saturating_add(if conversions { rows.functions.len() } else { 0 })
         .saturating_add(rows.associated_types.len())
-        .saturating_add(rows.enums.variants.len());
+        .saturating_add(rows.enums().variants.len());
     work.charge(names.bindings.len().saturating_add(rows.declarations.len()))?;
     work.reserve(
         retained::new_map::<(ScopeId, NameId, Namespace), ()>(count)
@@ -112,11 +112,15 @@ fn variant_bindings(
     bindings: &mut Vec<PendingBinding>,
     work: &mut Work,
 ) -> Result<(), Error> {
-    for header in &rows.enums.headers {
+    for header in &rows.enums().headers {
         work.charge(1)?;
         let owner =
             &resolver.facts.definitions[definitions[header.declaration.0 as usize].0 as usize];
-        for variant in header.variants.slice(&rows.enums.variants).map_err(error)? {
+        for variant in header
+            .variants
+            .slice(&rows.enums().variants)
+            .map_err(error)?
+        {
             work.charge(1)?;
             let target = definitions[variant.declaration.0 as usize];
             let actual = &resolver.facts.definitions[target.0 as usize];

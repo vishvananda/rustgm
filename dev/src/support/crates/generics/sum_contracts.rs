@@ -129,7 +129,7 @@ pub(super) fn require_profile(
         return Ok(());
     }
     work.charge(rows.declarations.len().saturating_add(1))?;
-    if !rows.enums.is_empty()
+    if !rows.enums().is_empty()
         || rows.declarations.iter().any(|row| {
             matches!(
                 row.definition.kind,
@@ -148,7 +148,7 @@ pub(super) fn headers(
     headers: &mut [Option<HeaderRef>],
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    let columns = &rows.enums;
+    let columns = rows.enums();
     work.charge(
         columns
             .headers
@@ -274,7 +274,7 @@ fn payload(
     sites: u32,
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    let fields = variant.fields.slice(&rows.enums.fields)?;
+    let fields = variant.fields.slice(&rows.enums().fields)?;
     if variant.shape == VariantShape::Unit && !fields.is_empty() {
         return Err("source unit variant carries payload fields");
     }

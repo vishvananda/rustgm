@@ -98,7 +98,7 @@ impl Arena {
             let header = variant_header(domains, declaration.declaration, variant, work)?;
             header
                 .fields
-                .slice(&rows.enums.fields)?
+                .slice(&rows.enums().fields)?
                 .get(ordinal as usize)
                 .ok_or("source variant field ordinal is outside its actual variant")?
                 .ty
@@ -270,12 +270,12 @@ impl Builder<'_, '_, '_> {
         };
         let rows = self.domains.headers.rows();
         let header = rows
-            .enums
+            .enums()
             .headers
             .binary_search_by_key(&declaration.declaration.0, |row| row.declaration.0)
-            .map(|index| rows.enums.headers[index])
+            .map(|index| rows.enums().headers[index])
             .map_err(|_| "source enum cast operand has no validated enum header")?;
-        let variants = header.variants.slice(&rows.enums.variants)?;
+        let variants = header.variants.slice(&rows.enums().variants)?;
         work.charge(variants.len())?;
         if declaration.artifact.0 != 0
             || variants
@@ -319,7 +319,7 @@ fn variant_header(
     if rows.declarations[variant.0 as usize].definition.parent != Some(owner) {
         return Err("source variant belongs to another actual enum");
     }
-    Ok(rows.enums.variants[index as usize])
+    Ok(rows.enums().variants[index as usize])
 }
 const fn integer(scalar: crate::support::crates::Scalar) -> bool {
     use crate::support::crates::Scalar;

@@ -6,7 +6,7 @@ impl DomainIndex<'_, '_> {
     /// only that impl's formals, never the trait frame it satisfies.
     fn definition_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
         let rows = self.headers.rows();
-        for row in &rows.associated_definitions {
+        for row in rows.associated_definitions() {
             let parent = rows
                 .declarations
                 .get(row.declaration.0 as usize)

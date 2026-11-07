@@ -264,7 +264,7 @@ impl Builder<'_, '_> {
         }
         let target = application.declaration.declaration;
         let scope = if let Some(constructor) =
-            s::Constructor::of((&rows.enums, &rows.declarations), target, |row| {
+            s::Constructor::of((rows.enums(), &rows.declarations), target, |row| {
                 self.headers.header(row, work)
             })? {
             // A called constructor's formals are exactly its enum's.

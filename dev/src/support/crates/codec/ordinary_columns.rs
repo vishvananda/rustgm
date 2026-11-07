@@ -402,13 +402,12 @@ fn decode_profile_with(
     };
     let rows = s::SourceRows {
         associated_types: Vec::new(),
-        associated_definitions: Vec::new(),
+        cold: None,
         projections: Vec::new(),
         opaque_futures: Vec::new(),
         compiler_operations: Vec::new(),
         nominals: Vec::new(),
         fields: Vec::new(),
-        enums: s::EnumColumns::default(),
         exact_callables: Vec::new(),
         policy: s::Policy {
             edition: Edition::Rust2024,
@@ -531,6 +530,16 @@ impl Input<'_, '_> {
             return Err("source decoded columns exceed aggregate retained storage budget");
         }
         Ok(())
+    }
+    /// The cold groups of `rows`, allocated and paid on first write.
+    fn cold<'r>(
+        &mut self,
+        rows: &'r mut s::SourceRows,
+    ) -> Result<&'r mut s::ColdColumns, &'static str> {
+        if rows.cold.is_none() {
+            self.reserve(size_of::<s::ColdColumns>())?;
+        }
+        Ok(rows.cold_mut())
     }
     fn list<T>(
         &mut self,

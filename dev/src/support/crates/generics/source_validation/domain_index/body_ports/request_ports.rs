@@ -106,13 +106,17 @@ impl DomainIndex<'_, '_> {
             _ => return Err("source Call signature belongs to another actual original context"),
         }
         if let Some(constructor) = s::Constructor::of(
-            (&rows.enums, &rows.declarations),
+            (rows.enums(), &rows.declarations),
             application.declaration.declaration,
             |row| self.headers.header(row, work),
         )? {
             // A called constructor is safe, binds no late region and selects no
             // method; its payload count is its variant's own.
-            let payload = constructor.variant.fields.slice(&rows.enums.fields)?.len();
+            let payload = constructor
+                .variant
+                .fields
+                .slice(&rows.enums().fields)?
+                .len();
             if signature.unsafe_
                 || request.safety != s::CallSafety::Safe
                 || request.opening.is_some()

@@ -771,6 +771,12 @@ fn freeze_budget(
         .len()
         .saturating_mul(size_of::<crate::support::crates::owner_catalog::BodyOwner>());
     let raw_header = size_of::<SourceRows>().saturating_add(retained::vector(&rows.body_owners));
+    // A sparse original index without raw cold groups allocates their box.
+    let cold = if rows.cold.is_none() && !rows.compiler_operations.is_empty() {
+        size_of::<super::ColdColumns>()
+    } else {
+        0
+    };
     let payload = raw_bytes
         .checked_sub(base)
         .and_then(|bytes| bytes.checked_sub(raw_header))
@@ -778,6 +784,7 @@ fn freeze_budget(
     let bytes = payload
         .saturating_add(size_of::<ValidatedRows>())
         .saturating_add(size_of::<Columns>())
+        .saturating_add(cold)
         .saturating_add(owner_bytes)
         .saturating_add(2 * size_of::<usize>())
         .saturating_add(
@@ -795,6 +802,7 @@ fn freeze_budget(
                 .saturating_mul(4 * size_of::<DeclarationBody>()),
         )
         .saturating_add(size_of::<ValidatedRows>() + size_of::<Columns>())
+        .saturating_add(cold)
         .saturating_add(owner_bytes)
         .saturating_add(2 * size_of::<usize>())
         .saturating_add(

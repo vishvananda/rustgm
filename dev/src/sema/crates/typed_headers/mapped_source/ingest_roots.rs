@@ -12,7 +12,7 @@ pub(super) fn prepare(
             demand(field.ty)?;
         }
     }
-    for field in &rows.enums.fields {
+    for field in &rows.enums().fields {
         demand(field.ty)?;
     }
     for header in &rows.functions {

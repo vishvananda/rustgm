@@ -163,7 +163,18 @@ fn columns(rows: &SourceRows, count: &mut Count, work: &mut Work) -> Result<(), 
     count.vector(&rows.roles, work)?;
     count.vector(&rows.originals, work)?;
     count.vector(&rows.body_inputs, work)?;
-    count.vector(&rows.body_units, work)
+    count.vector(&rows.body_units, work)?;
+    if let Some(cold) = &rows.cold {
+        // The out-of-line cold groups are retained exactly like inline columns.
+        count.bytes = count
+            .bytes
+            .saturating_add(size_of::<super::super::ColdColumns>());
+        count.vector(&cold.associated_definitions, work)?;
+        count.vector(&cold.enums.headers, work)?;
+        count.vector(&cold.enums.variants, work)?;
+        count.vector(&cold.enums.fields, work)?;
+    }
+    Ok(())
 }
 fn original(
     body: &super::super::Original,

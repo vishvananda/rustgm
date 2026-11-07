@@ -164,7 +164,7 @@ impl Stage {
                 trait_member,
                 implementation: Some(declaration),
             });
-            self.rows
+            self.cold()?
                 .associated_definitions
                 .push(s::AssociatedDefinition { declaration, value });
         }

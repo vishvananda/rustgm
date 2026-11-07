@@ -407,7 +407,7 @@ impl Original<'_> {
         }
         let kind = if body_nodes
             && s::Constructor::of(
-                (&self.rows.enums, &self.rows.declarations),
+                (self.rows.enums(), &self.rows.declarations),
                 row.declaration.declaration,
                 |row| self.rows.header(row),
             )?

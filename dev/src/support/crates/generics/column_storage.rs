@@ -11,15 +11,14 @@ use crate::support::crates::owner_catalog::{BodyOwner, DeclarationRef};
 /// `SourceRows` remains the separate mutable staging/decode representation.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Columns {
-    bodies: Option<std::sync::Arc<super::super::bodymap::Lookup>>,
+    /// Cold groups and the sparse original index; `None` when all are absent.
+    cold: Option<Box<super::super::ColdColumns>>,
     pub associated_types: Vec<super::super::AssociatedTypeHeader>,
-    pub associated_definitions: Vec<super::super::AssociatedDefinition>,
     pub projections: Vec<super::super::ProjectionRecipe>,
     pub opaque_futures: Vec<super::super::OpaqueFuture>,
     pub compiler_operations: Vec<super::super::CompilerOperation>,
     pub nominals: Vec<super::super::NominalHeader>,
     pub fields: Vec<super::super::NominalField>,
-    pub enums: super::super::EnumColumns,
     pub policy: Policy,
     pub declarations: Vec<Declaration>,
     pub slots: Vec<ParameterSlot>,
@@ -52,7 +51,32 @@ impl Columns {
         &self,
         body: super::super::BodyRef,
     ) -> Result<usize, &'static str> {
-        super::super::bodymap::original(self.bodies.as_deref(), body)
+        super::super::bodymap::original(self.cold().bodies.as_deref(), body)
+    }
+    #[must_use]
+    pub fn cold(&self) -> &super::super::ColdColumns {
+        super::super::ColdColumns::of(self.cold.as_deref())
+    }
+    /// The raw-row form of the cold groups: without the validated sparse index.
+    #[cfg(test)]
+    #[must_use]
+    pub(crate) fn raw_cold(&self) -> Option<Box<super::super::ColdColumns>> {
+        let cold = self.cold();
+        (!cold.associated_definitions.is_empty() || !cold.enums.is_empty()).then(|| {
+            Box::new(super::super::ColdColumns {
+                associated_definitions: cold.associated_definitions.clone(),
+                enums: cold.enums.clone(),
+                bodies: None,
+            })
+        })
+    }
+    #[must_use]
+    pub fn enums(&self) -> &super::super::EnumColumns {
+        &self.cold().enums
+    }
+    #[must_use]
+    pub fn associated_definitions(&self) -> &[super::super::AssociatedDefinition] {
+        &self.cold().associated_definitions
     }
     pub(crate) fn original(&self, body: super::super::BodyRef) -> Result<&Original, &'static str> {
         self.originals
@@ -76,13 +100,12 @@ impl Columns {
     ) -> (Vec<BodyOwner>, Self) {
         let SourceRows {
             associated_types,
-            associated_definitions,
+            cold,
             projections,
             opaque_futures,
             compiler_operations,
             nominals,
             fields,
-            enums,
             body_owners,
             policy,
             declarations,
@@ -114,15 +137,13 @@ impl Columns {
         (
             body_owners,
             Self {
-                bodies,
+                cold: frozen_cold(cold, bodies),
                 associated_types,
-                associated_definitions,
                 projections,
                 opaque_futures,
                 compiler_operations,
                 nominals,
                 fields,
-                enums,
                 policy,
                 declarations,
                 slots,
@@ -154,6 +175,19 @@ impl Columns {
     }
 }
 
+/// The sparse index joins the raw cold groups; only a packet with compiler
+/// operations and no cold group allocates here, which staging prepays.
+fn frozen_cold(
+    cold: Option<Box<super::super::ColdColumns>>,
+    bodies: Option<std::sync::Arc<super::super::bodymap::Lookup>>,
+) -> Option<Box<super::super::ColdColumns>> {
+    if cold.is_none() && bodies.is_none() {
+        return None;
+    }
+    let mut cold = cold.unwrap_or_default();
+    cold.bodies = bodies;
+    Some(cold)
+}
 /// This view grants no body/caller/const proof and cannot mutate frozen data.
 #[derive(Clone, Copy)]
 pub struct ValidatedView<'a> {

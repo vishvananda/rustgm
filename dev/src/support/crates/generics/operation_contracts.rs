@@ -21,7 +21,7 @@ pub(super) fn require_profile(
     // Version thirteen carries declared results and their projections; only
     // version eleven carries opaque futures and symbolic operations.
     let results = profile.compiler_operations() || profile.body_nodes();
-    if !profile.body_nodes() && !rows.associated_definitions.is_empty() {
+    if !profile.body_nodes() && !rows.associated_definitions().is_empty() {
         return Err(
             "associated result definitions require their explicit version-thirteen profile",
         );

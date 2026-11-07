@@ -14,7 +14,7 @@ pub(super) fn validate(
     for projection in &rows.projections {
         super::operation_contracts::projection_contract(rows, headers, projection, work)?;
     }
-    for definition in &rows.associated_definitions {
+    for definition in rows.associated_definitions() {
         work.charge(1)?;
         let scopes = headers.scopes();
         let own = scopes.declared_slots(definition.declaration, work)?;

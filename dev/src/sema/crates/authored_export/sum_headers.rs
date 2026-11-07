@@ -86,7 +86,7 @@ impl Stage {
         {
             return Err("source enum lifetime parameters require their wider profile");
         }
-        let start = count(self.rows.enums.variants.len())?;
+        let start = count(self.rows.enums().variants.len())?;
         for (ordinal, (&id, completed)) in (0_u32..).zip(variants.iter().zip(completed)) {
             self.charge(1)?;
             let variant = facts.members.variants[id.0 as usize];
@@ -102,7 +102,7 @@ impl Stage {
                 .members
                 .fields(id)
                 .ok_or("source variant field group is unknown")?;
-            let field_start = count(self.rows.enums.fields.len())?;
+            let field_start = count(self.rows.enums().fields.len())?;
             for (index, field) in (0_u32..).zip(fields) {
                 self.charge(1)?;
                 if field.name != Name::Index(index) {
@@ -115,7 +115,7 @@ impl Stage {
                 let ty = self.ty(facts, field.ty, context)?;
                 let site = self.site(row, source)?;
                 self.reserve(4 * size_of::<s::VariantField>())?;
-                self.rows.enums.fields.push(s::VariantField {
+                self.cold()?.enums.fields.push(s::VariantField {
                     owner: row,
                     ordinal: index,
                     ty,
@@ -124,10 +124,10 @@ impl Stage {
             }
             let fields = g::Range {
                 start: field_start,
-                end: count(self.rows.enums.fields.len())?,
+                end: count(self.rows.enums().fields.len())?,
             };
             self.reserve(4 * size_of::<s::VariantHeader>())?;
-            self.rows.enums.variants.push(s::VariantHeader {
+            self.cold()?.enums.variants.push(s::VariantHeader {
                 declaration: row,
                 ordinal,
                 shape,
@@ -136,13 +136,11 @@ impl Stage {
             });
         }
         self.reserve(4 * size_of::<s::EnumHeader>())?;
-        self.rows.enums.headers.push(s::EnumHeader {
+        let end = count(self.rows.enums().variants.len())?;
+        self.cold()?.enums.headers.push(s::EnumHeader {
             declaration,
             tag,
-            variants: g::Range {
-                start,
-                end: count(self.rows.enums.variants.len())?,
-            },
+            variants: g::Range { start, end },
         });
         Ok(())
     }

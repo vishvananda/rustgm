@@ -32,8 +32,8 @@ pub(super) fn prepare(
         rows.nominals
             .len()
             .saturating_add(rows.fields.len())
-            .saturating_add(rows.enums.variants.len())
-            .saturating_add(rows.enums.fields.len()),
+            .saturating_add(rows.enums().variants.len())
+            .saturating_add(rows.enums().fields.len()),
     )?;
     budget.reserve(
         rows.nominals
@@ -47,7 +47,7 @@ pub(super) fn prepare(
     for row in &rows.nominals {
         let owner = context.definition(row.declaration, budget)?;
         if let Ok(index) = rows
-            .enums
+            .enums()
             .headers
             .binary_search_by_key(&row.declaration.0, |header| header.declaration.0)
         {
@@ -57,7 +57,7 @@ pub(super) fn prepare(
                 facts,
                 budget,
                 owner,
-                &rows.enums.headers[index],
+                &rows.enums().headers[index],
             )?;
             enum_members.push(members);
             enum_shapes.push(shape);
@@ -165,7 +165,10 @@ fn enum_rows(
     header: &s::EnumHeader,
 ) -> Result<((ItemId, Vec<ExternalVariant>), ImportedEnum), Error> {
     let rows = context.descriptor.rows();
-    let source = header.variants.slice(&rows.enums.variants).map_err(error)?;
+    let source = header
+        .variants
+        .slice(&rows.enums().variants)
+        .map_err(error)?;
     budget.reserve(
         source
             .len()
@@ -174,7 +177,7 @@ fn enum_rows(
     let mut members = Vec::with_capacity(source.len());
     let mut variants = Vec::with_capacity(source.len());
     for variant in source {
-        let payload = variant.fields.slice(&rows.enums.fields).map_err(error)?;
+        let payload = variant.fields.slice(&rows.enums().fields).map_err(error)?;
         budget.charge(payload.len().saturating_add(1))?;
         budget.reserve(
             payload

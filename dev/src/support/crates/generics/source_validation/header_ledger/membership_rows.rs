@@ -236,7 +236,7 @@ impl<'a> Members<'a> {
                 return Err("source associated type omitted from its actual trait members");
             }
         }
-        for row in &self.rows.associated_definitions {
+        for row in self.rows.associated_definitions() {
             work.charge(1)?;
             if self.stamps[row.declaration.0 as usize] == 0 {
                 return Err("source associated definition has no implementation link");

@@ -80,7 +80,7 @@ impl Original<'_> {
         let Some(s::HeaderRef::Variant(index)) = rows.header(declaration)? else {
             return Err("source variant operand lacks its actual variant header");
         };
-        let raw = rows.enums.variants[index as usize];
+        let raw = rows.enums().variants[index as usize];
         let enumeration = rows.declarations[declaration.0 as usize]
             .definition
             .parent
@@ -118,9 +118,9 @@ impl Original<'_> {
         let Some(s::HeaderRef::Variant(index)) = rows.header(declaration)? else {
             return Err("source variant field header disappeared");
         };
-        let field = rows.enums.variants[index as usize]
+        let field = rows.enums().variants[index as usize]
             .fields
-            .slice(&rows.enums.fields)?
+            .slice(&rows.enums().fields)?
             .get(ordinal as usize)
             .ok_or("source variant field ordinal belongs to another variant")?;
         let id = actual

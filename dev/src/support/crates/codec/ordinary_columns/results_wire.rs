@@ -14,7 +14,7 @@ pub(super) fn present(declarations: &[s::Declaration]) -> bool {
 pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(), &'static str> {
     if !present(&rows.declarations) {
         return if rows.associated_types.is_empty()
-            && rows.associated_definitions.is_empty()
+            && rows.associated_definitions().is_empty()
             && rows.projections.is_empty()
         {
             Ok(())
@@ -23,7 +23,7 @@ pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(),
         };
     }
     super::write(out, &rows.associated_types, compiler_wire::associated_write)?;
-    super::write_copy(out, &rows.associated_definitions, definition_write)?;
+    super::write_copy(out, rows.associated_definitions(), definition_write)?;
     super::write(out, &rows.projections, compiler_wire::projection_write)
 }
 pub(super) fn decode(
@@ -35,7 +35,10 @@ pub(super) fn decode(
         return Ok(());
     }
     rows.associated_types = read.list(MAX_COMPONENTS, 39, compiler_wire::associated_read)?;
-    rows.associated_definitions = read.list(MAX_COMPONENTS, 8, definition_read)?;
+    let definitions = read.list(MAX_COMPONENTS, 8, definition_read)?;
+    if !definitions.is_empty() {
+        read.cold(rows)?.associated_definitions = definitions;
+    }
     rows.projections = read.list(MAX_COMPONENTS, 24, compiler_wire::projection_read)?;
     Ok(())
 }

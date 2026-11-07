@@ -401,14 +401,14 @@ pub struct NominalField {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Rows {
     pub associated_types: Vec<AssociatedTypeHeader>,
-    pub associated_definitions: Vec<AssociatedDefinition>,
+    /// Version thirteen's associated definitions and enum variant tables,
+    /// allocated only when a packet has one; see [`ColdColumns`].
+    pub cold: Option<Box<ColdColumns>>,
     pub projections: Vec<ProjectionRecipe>,
     pub opaque_futures: Vec<OpaqueFuture>,
     pub compiler_operations: Vec<CompilerOperation>,
     pub nominals: Vec<NominalHeader>,
     pub fields: Vec<NominalField>,
-    /// Version thirteen: enum variant tables, present only with an enum.
-    pub enums: EnumColumns,
     pub policy: Policy,
     pub declarations: Vec<Declaration>,
     pub body_owners: Vec<BodyOwner>,
@@ -438,3 +438,50 @@ pub struct Rows {
     pub exact_callables: Vec<ExactCallableExport>,
 }
 pub type SourceRows = Rows;
+/// Cold column groups held out of line so packets without them, and every
+/// hot record, pay no inline storage: version thirteen's associated-result
+/// definitions and enum variant tables, plus the validated sparse original
+/// index of a packet with compiler operations (absent from raw rows).
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct ColdColumns {
+    pub associated_definitions: Vec<AssociatedDefinition>,
+    pub enums: EnumColumns,
+    pub(crate) bodies: Option<std::sync::Arc<bodymap::Lookup>>,
+}
+static EMPTY_COLD: ColdColumns = ColdColumns {
+    associated_definitions: Vec::new(),
+    enums: EnumColumns {
+        headers: Vec::new(),
+        variants: Vec::new(),
+        fields: Vec::new(),
+    },
+    bodies: None,
+};
+impl ColdColumns {
+    pub(crate) fn of(cold: Option<&Self>) -> &Self {
+        cold.unwrap_or(&EMPTY_COLD)
+    }
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.associated_definitions.is_empty() && self.enums.is_empty() && self.bodies.is_none()
+    }
+}
+impl Rows {
+    #[must_use]
+    pub fn cold(&self) -> &ColdColumns {
+        ColdColumns::of(self.cold.as_deref())
+    }
+    #[must_use]
+    pub fn enums(&self) -> &EnumColumns {
+        &self.cold().enums
+    }
+    #[must_use]
+    pub fn associated_definitions(&self) -> &[AssociatedDefinition] {
+        &self.cold().associated_definitions
+    }
+    /// The cold groups, allocated on first write. A writer accounts for
+    /// `size_of::<ColdColumns>()` before the first call.
+    pub fn cold_mut(&mut self) -> &mut ColdColumns {
+        self.cold.get_or_insert_with(Box::default)
+    }
+}

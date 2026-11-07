@@ -55,7 +55,7 @@ pub(super) fn prepare(
     }
     // An impl's declared-result definition cell is its value recipe; the
     // consumer re-derives every normalization and bound through it.
-    for row in &rows.associated_definitions {
+    for row in rows.associated_definitions() {
         assign(&mut cells, row.declaration, graph.ty(row.value)?)?;
     }
     for header in &rows.nominals {
@@ -125,18 +125,22 @@ fn variant_cells(
     budget: &mut Headers,
 ) -> Result<(), Error> {
     let rows = context.descriptor.rows();
-    for header in &rows.enums.headers {
+    for header in &rows.enums().headers {
         let Some(s::HeaderRef::Nominal(index)) = rows.header(header.declaration).map_err(error)?
         else {
             return Err(error("source enum cell lost its actual nominal header"));
         };
         let owner = graph.ty(rows.nominals[index as usize].self_type)?;
-        for variant in header.variants.slice(&rows.enums.variants).map_err(error)? {
+        for variant in header
+            .variants
+            .slice(&rows.enums().variants)
+            .map_err(error)?
+        {
             budget.charge(1)?;
             let ty = match variant.shape {
                 s::VariantShape::Unit => owner,
                 s::VariantShape::Tuple => {
-                    let payload = variant.fields.slice(&rows.enums.fields).map_err(error)?;
+                    let payload = variant.fields.slice(&rows.enums().fields).map_err(error)?;
                     let signature =
                         constructor_signature(graph, &mut facts.types, payload, owner, budget)?;
                     let item = context.definition(variant.declaration, budget)?;

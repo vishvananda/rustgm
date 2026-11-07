@@ -12,15 +12,16 @@ fn present(declarations: &[s::Declaration]) -> bool {
 }
 pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(), &'static str> {
     if !present(&rows.declarations) {
-        return if rows.enums.is_empty() {
+        return if rows.enums().is_empty() {
             Ok(())
         } else {
             Err("source enum variant rows lack their enum declaration")
         };
     }
-    super::write_copy(out, &rows.enums.headers, header_write)?;
-    super::write_copy(out, &rows.enums.variants, variant_write)?;
-    super::write_copy(out, &rows.enums.fields, field_write)
+    let enums = rows.enums();
+    super::write_copy(out, &enums.headers, header_write)?;
+    super::write_copy(out, &enums.variants, variant_write)?;
+    super::write_copy(out, &enums.fields, field_write)
 }
 pub(super) fn decode(
     read: &mut Input<'_, '_>,
@@ -30,9 +31,16 @@ pub(super) fn decode(
     if !present(&rows.declarations) {
         return Ok(());
     }
-    rows.enums.headers = read.list(MAX_COMPONENTS, 13, header_read)?;
-    rows.enums.variants = read.list(MAX_COMPONENTS, 33, variant_read)?;
-    rows.enums.fields = read.list(MAX_COMPONENTS, 16, field_read)?;
+    let headers = read.list(MAX_COMPONENTS, 13, header_read)?;
+    let variants = read.list(MAX_COMPONENTS, 33, variant_read)?;
+    let fields = read.list(MAX_COMPONENTS, 16, field_read)?;
+    if !(headers.is_empty() && variants.is_empty() && fields.is_empty()) {
+        read.cold(rows)?.enums = s::EnumColumns {
+            headers,
+            variants,
+            fields,
+        };
+    }
     Ok(())
 }
 fn header_write(out: &mut Writer, row: s::EnumHeader) -> Result<(), &'static str> {

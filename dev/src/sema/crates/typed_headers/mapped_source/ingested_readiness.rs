@@ -132,7 +132,7 @@ impl Graph {
             Some(s::HeaderRef::AssociatedType(index)) => index,
             Some(s::HeaderRef::AssociatedDefinition(index)) => {
                 let row = rows
-                    .associated_definitions
+                    .associated_definitions()
                     .get(index as usize)
                     .ok_or("associated definition readiness lost its actual row")?;
                 return self.definition_ready(facts, definition, *row, cell);

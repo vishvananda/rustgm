@@ -291,7 +291,7 @@ fn associated_headers(
             work,
         )?;
     }
-    for (index, row) in rows.associated_definitions.iter().enumerate() {
+    for (index, row) in rows.associated_definitions().iter().enumerate() {
         insert(
             rows,
             headers,

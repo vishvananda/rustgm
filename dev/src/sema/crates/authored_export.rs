@@ -522,6 +522,13 @@ impl Stage {
         }
         Ok(())
     }
+    /// The cold column groups, allocated on first write with their box paid.
+    pub(crate) fn cold(&mut self) -> Result<&mut s::ColdColumns, &'static str> {
+        if self.rows.cold.is_none() {
+            self.reserve(size_of::<s::ColdColumns>())?;
+        }
+        Ok(self.rows.cold_mut())
+    }
     pub(crate) fn scratch(&mut self, bytes: usize) -> Result<(), &'static str> {
         self.charge(1)?;
         self.scratch = self.scratch.max(bytes);
@@ -903,13 +910,12 @@ fn find_owner(
 fn rows(edition: crate::support::edition::Edition) -> s::SourceRows {
     s::SourceRows {
         associated_types: Vec::new(),
-        associated_definitions: Vec::new(),
+        cold: None,
         projections: Vec::new(),
         opaque_futures: Vec::new(),
         compiler_operations: Vec::new(),
         nominals: Vec::new(),
         fields: Vec::new(),
-        enums: s::EnumColumns::default(),
         policy: s::Policy {
             edition,
             provider: s::ArtifactRef(0),

@@ -185,7 +185,7 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
     ) -> Result<Target<'rows>, &'static str> {
         let rows = self.headers.rows();
         if let Some(constructor) =
-            s::Constructor::of((&rows.enums, &rows.declarations), declaration, |row| {
+            s::Constructor::of((rows.enums(), &rows.declarations), declaration, |row| {
                 self.headers.header(row, work)
             })?
         {
@@ -195,7 +195,7 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
                 .ok_or("source constructor enum header is absent")?;
             return Ok(Target::Constructor {
                 enumeration,
-                payload: constructor.variant.fields.slice(&rows.enums.fields)?,
+                payload: constructor.variant.fields.slice(&rows.enums().fields)?,
             });
         }
         self.function(declaration, work).map(Target::Function)
