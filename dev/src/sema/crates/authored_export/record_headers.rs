@@ -92,7 +92,7 @@ impl Stage {
             }
             contract
         };
-        let context = self.frame(declaration, None, s::BinderKind::DeclarationHeader, 0)?;
+        let context = self.nominal_frame(declaration)?;
         let self_ty = facts
             .definitions
             .get(owner.0 as usize)

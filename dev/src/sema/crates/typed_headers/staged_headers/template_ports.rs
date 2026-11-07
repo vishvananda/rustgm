@@ -50,6 +50,14 @@ pub(super) fn prepare(
         owners.push(ItemId(scope.definition.0));
         for parameter in &scope.parameters {
             budget.charge(1)?;
+            // A nominal's leading lifetimes own no callable parameter identity,
+            // exactly as `Generics::parameter_ids` omits them.
+            if matches!(
+                parameter.argument,
+                crate::types::arguments::Argument::Lifetime(_)
+            ) {
+                continue;
+            }
             parameters.push(
                 crate::sema::generics::parameter_id(&facts.types, parameter.argument)
                     .map_err(error)?,
@@ -147,6 +155,11 @@ fn constructors(
         ));
     };
     let result = graph.ty(rows.nominals[index as usize].self_type)?;
+    let regions = super::definition_cells::nominal_regions(
+        rows,
+        rows.nominals[index as usize].self_type,
+        budget,
+    )?;
     for variant in header
         .variants
         .slice(&rows.enums().variants)
@@ -167,20 +180,34 @@ fn constructors(
         let signature = super::definition_cells::constructor_signature(
             graph,
             &mut facts.types,
-            payload,
+            (payload, regions),
             result,
             budget,
         )?;
         let item = ItemId(context.definition(variant.declaration, budget)?.0);
-        if parameters.is_empty() {
+        if parameters.is_empty() && regions == 0 {
             callables.insert_monomorphic(&facts.types, item, signature)
         } else {
+            // As a local constructor template does, each late enum lifetime
+            // is relocated to the template's own frame before registration.
+            budget.charge(regions as usize)?;
+            let mapping = (0..regions)
+                .map(|index| {
+                    u16::try_from(index)
+                        .map_err(|_| "too many constructor parameters")
+                        .and_then(|index| crate::types::RegionId::bound(1, index))
+                })
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(error)?;
+            let template = crate::types::substitute::Bound::new(mapping)
+                .signature(&mut facts.types, signature, 0)
+                .map_err(error)?;
             callables.insert_constructor(
                 &facts.types,
                 item,
                 ItemId(enumeration.0),
-                signature,
-                0,
+                template,
+                regions,
                 parameters,
             )
         }

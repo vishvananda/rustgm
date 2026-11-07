@@ -64,12 +64,14 @@ impl Arena {
                         Recipe::Alias(child) | Recipe::Reference { child, .. } => {
                             self.push(pending, Task::Enter(child), work)?;
                         }
-                        Recipe::Nominal(_, arguments) => {
-                            self.nominal_children(domains, key, arguments, pending, work)?;
+                        Recipe::Nominal(declaration, arguments) => {
+                            let regions = Regions::of(declaration);
+                            self.nominal_children(domains, key, arguments, regions, pending, work)?;
                         }
                         Recipe::Projection(reference) => {
                             let (_, subject, arguments) = projection(domains, reference)?;
-                            self.nominal_children(domains, key, arguments, pending, work)?;
+                            let regions = Regions::Rejected;
+                            self.nominal_children(domains, key, arguments, regions, pending, work)?;
                             let subject =
                                 uses::key(domains, subject, key.rewrite, key.caller, work)?;
                             self.push(pending, Task::Enter(subject), work)?;
@@ -110,7 +112,9 @@ impl Arena {
                             )?
                         }
                         Recipe::Nominal(declaration, arguments) => {
-                            let arguments = self.argument_chain(domains, key, arguments, work)?;
+                            let regions = Regions::of(declaration);
+                            let arguments =
+                                self.argument_chain(domains, key, arguments, regions, work)?;
                             self.intern(
                                 Node::Nominal {
                                     declaration,
@@ -140,6 +144,7 @@ impl Arena {
         domains: &DomainIndex<'_, '_>,
         key: Key,
         arguments: g::Range,
+        regions: Regions,
         pending: &mut Vec<Task>,
         work: &mut Work,
     ) -> Result<(), &'static str> {
@@ -148,8 +153,9 @@ impl Arena {
             .iter()
             .rev()
         {
-            let child = nominal_child(domains, key, *argument, work)?;
-            self.push(pending, Task::Enter(child), work)?;
+            if let Some(child) = nominal_child(domains, key, *argument, regions, work)? {
+                self.push(pending, Task::Enter(child), work)?;
+            }
         }
         Ok(())
     }
@@ -158,6 +164,7 @@ impl Arena {
         domains: &DomainIndex<'_, '_>,
         key: Key,
         arguments: g::Range,
+        regions: Regions,
         work: &mut Work,
     ) -> Result<NodeId, &'static str> {
         let mut tail = self.intern(Node::NominalEnd, work)?;
@@ -166,9 +173,21 @@ impl Arena {
             .iter()
             .rev()
         {
-            let child = nominal_child(domains, key, *argument, work)?;
-            let ty = self.child(child, work)?;
-            tail = self.intern(Node::NominalArgument { ty, next: tail }, work)?;
+            let node = match *argument {
+                s::Argument::Region(region) if regions == Regions::Local => Node::NominalRegion {
+                    region: self.rewritten_region(domains, region, key.rewrite, work)?,
+                    next: tail,
+                },
+                _ => {
+                    let child = nominal_child(domains, key, *argument, regions, work)?
+                        .ok_or("source nominal type argument lost its child")?;
+                    Node::NominalArgument {
+                        ty: self.child(child, work)?,
+                        next: tail,
+                    }
+                }
+            };
+            tail = self.intern(node, work)?;
         }
         Ok(tail)
     }
@@ -195,7 +214,7 @@ impl Arena {
         work: &mut Work,
     ) -> Result<NodeId, &'static str> {
         let (member, subject, arguments) = projection(domains, reference)?;
-        let tail = self.argument_chain(domains, key, arguments, work)?;
+        let tail = self.argument_chain(domains, key, arguments, Regions::Rejected, work)?;
         let subject = uses::key(domains, subject, key.rewrite, key.caller, work)?;
         let ty = self.child(subject, work)?;
         let arguments = self.intern(Node::NominalArgument { ty, next: tail }, work)?;
@@ -253,7 +272,7 @@ impl Arena {
                     referent,
                 } => Recipe::Reference {
                     mutable,
-                    region: uses::region(domains, self, region, key.rewrite, work)?,
+                    region: self.rewritten_region(domains, region, key.rewrite, work)?,
                     child: uses::key(domains, referent, key.rewrite, key.caller, work)?,
                 },
                 s::Type::FunctionItem(application) if key.rewrite == Rewrite::Original => {
@@ -455,14 +474,34 @@ fn projection(
     ))
 }
 
+/// Version thirteen: only a local nominal's leading region arguments enter a
+/// spine. Imported nominal and projection region arguments stay rejected.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Regions {
+    Local,
+    Rejected,
+}
+impl Regions {
+    const fn of(declaration: s::DeclarationAddress) -> Self {
+        if declaration.artifact.0 == 0 {
+            Self::Local
+        } else {
+            Self::Rejected
+        }
+    }
+}
 fn nominal_child(
     domains: &DomainIndex<'_, '_>,
     key: Key,
     argument: s::Argument,
+    regions: Regions,
     work: &mut Work,
-) -> Result<Key, &'static str> {
-    let s::Argument::Type(ty) = argument else {
-        return Err("source nominal input planning requires its wider regional profile");
-    };
-    uses::key(domains, ty, key.rewrite, key.caller, work)
+) -> Result<Option<Key>, &'static str> {
+    match argument {
+        s::Argument::Type(ty) => uses::key(domains, ty, key.rewrite, key.caller, work).map(Some),
+        s::Argument::Region(_) if regions == Regions::Local => Ok(None),
+        s::Argument::Region(_) => {
+            Err("source nominal input planning requires its wider regional profile")
+        }
+    }
 }

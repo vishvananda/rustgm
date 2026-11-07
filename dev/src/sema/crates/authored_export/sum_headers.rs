@@ -80,14 +80,8 @@ impl Stage {
         if variants.is_empty() || completed.len() != variants.len() {
             return Err("source enum without variants is outside the initial profile");
         }
-        if facts
-            .lifetimes
-            .parameters
-            .get(&owner)
-            .is_some_and(|parameters| !parameters.is_empty())
-        {
-            return Err("source enum lifetime parameters require their wider profile");
-        }
+        // Version thirteen: an enum's lifetimes are its leading region slots
+        // (`scoped_parameters`), named by its variant fields in its own frame.
         let start = count(self.rows.enums().variants.len())?;
         for (ordinal, (&id, completed)) in (0_u32..).zip(variants.iter().zip(completed)) {
             self.charge(1)?;

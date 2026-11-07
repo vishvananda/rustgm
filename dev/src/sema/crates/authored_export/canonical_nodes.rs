@@ -45,6 +45,9 @@ struct Frame {
     binder: g::BinderRef,
     parent: Option<FrameRef>,
     count: u32,
+    /// Version thirteen: this nominal header frame binds its owner's region
+    /// slots, so its regions are written as slot parameters.
+    slots: bool,
 }
 #[derive(Default)]
 pub(super) struct Graph {
@@ -146,12 +149,25 @@ impl Stage {
             binder,
             parent,
             count,
+            slots: false,
         });
         Ok(Context {
             owner,
             frame: Some(frame),
             body: None,
         })
+    }
+
+    /// A nominal's header frame: its fields and Self type name the nominal's
+    /// own region slots. The binder row is the ordinary empty header binder.
+    pub(super) fn nominal_frame(&mut self, owner: DeclarationRef) -> Result<Context, &'static str> {
+        let context = self.frame(owner, None, s::BinderKind::DeclarationHeader, 0)?;
+        if self.body_nodes()
+            && let Some(frame) = context.frame
+        {
+            self.graph.frames[frame.0 as usize].slots = true;
+        }
+        Ok(context)
     }
 
     fn type_key(

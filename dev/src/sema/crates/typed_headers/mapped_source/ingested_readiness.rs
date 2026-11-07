@@ -222,8 +222,9 @@ impl Graph {
     }
 
     /// The sealed slot ledger bound the formal uniquely to one region slot of
-    /// its owner; only a version-thirteen function with a provided original
-    /// may own one here, and the formal installs no declaration type.
+    /// its owner; only a version-thirteen function with a provided original,
+    /// or a version-thirteen struct or enum, may own one here, and the formal
+    /// installs no declaration type.
     fn region_binding_ready(
         binding: &s::Declaration,
         rows: s::ValidatedView<'_>,
@@ -240,8 +241,12 @@ impl Graph {
             .definition
             .parent
             .ok_or("source named lifetime lacks its actual function parent")?;
-        let Some(s::HeaderRef::Function(index)) = rows.header(parent)? else {
-            return Err("source named lifetime lacks its actual function header");
+        let index = match rows.header(parent)? {
+            Some(s::HeaderRef::Function(index)) => index,
+            // A struct or enum's own lifetime is its template argument; the
+            // nominal header binds it and nothing else is installed for it.
+            Some(s::HeaderRef::Nominal(_)) => return Ok(()),
+            _ => return Err("source named lifetime lacks its actual function header"),
         };
         if !matches!(
             rows.functions[index as usize].body,

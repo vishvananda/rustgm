@@ -20,19 +20,7 @@ pub(super) fn prepare(
             .saturating_mul(size_of::<Option<TypeId>>() + size_of::<(DefId, TypeId)>()),
     )?;
     let mut cells = vec![None; rows.declarations.len()];
-    for (index, slot) in rows.slots.iter().enumerate() {
-        budget.charge(1)?;
-        if let Some(binding) = slot.definition {
-            let index =
-                u32::try_from(index).map_err(|_| error("source formal slot reference overflow"))?;
-            let Argument::Type(ty) = graph.slot(s::SlotRef(index))? else {
-                return Err(error(
-                    "named source region cells require their wider declaration profile",
-                ));
-            };
-            assign(&mut cells, binding, ty)?;
-        }
-    }
+    formal_cells(rows, graph, &mut cells, budget)?;
     for (raw, scope) in rows.scopes.iter().zip(scopes) {
         budget.charge(1)?;
         if matches!(scope.inputs, super::Inputs::Implementation(_)) {
@@ -131,6 +119,7 @@ fn variant_cells(
             return Err(error("source enum cell lost its actual nominal header"));
         };
         let owner = graph.ty(rows.nominals[index as usize].self_type)?;
+        let regions = nominal_regions(rows, rows.nominals[index as usize].self_type, budget)?;
         for variant in header
             .variants
             .slice(&rows.enums().variants)
@@ -141,8 +130,13 @@ fn variant_cells(
                 s::VariantShape::Unit => owner,
                 s::VariantShape::Tuple => {
                     let payload = variant.fields.slice(&rows.enums().fields).map_err(error)?;
-                    let signature =
-                        constructor_signature(graph, &mut facts.types, payload, owner, budget)?;
+                    let signature = constructor_signature(
+                        graph,
+                        &mut facts.types,
+                        (payload, regions),
+                        owner,
+                        budget,
+                    )?;
                     let item = context.definition(variant.declaration, budget)?;
                     facts
                         .types
@@ -159,12 +153,76 @@ fn variant_cells(
     }
     Ok(())
 }
+/// Each named type formal's cell is its canonical parameter type.
+fn formal_cells(
+    rows: s::ValidatedView<'_>,
+    graph: &mapped_source::Graph,
+    cells: &mut [Option<TypeId>],
+    budget: &mut Headers,
+) -> Result<(), Error> {
+    for (index, slot) in rows.slots.iter().enumerate() {
+        budget.charge(1)?;
+        if let Some(binding) = slot.definition {
+            let index =
+                u32::try_from(index).map_err(|_| error("source formal slot reference overflow"))?;
+            let ty = match graph.slot(s::SlotRef(index))? {
+                Argument::Type(ty) => ty,
+                // A version-thirteen nominal lifetime has no type cell.
+                Argument::Lifetime(_)
+                    if mapped_source::slot_bindings::nominal_lifetime(&rows.declarations, slot) =>
+                {
+                    continue;
+                }
+                _ => {
+                    return Err(error(
+                        "named source region cells require their wider declaration profile",
+                    ));
+                }
+            };
+            assign(cells, binding, ty)?;
+        }
+    }
+    Ok(())
+}
+/// Version thirteen: a lifetime-generic nominal requires every body's storage
+/// preparation, exactly as a local generic nominal does.
+pub(super) fn regional_nominals(
+    rows: s::ValidatedView<'_>,
+    budget: &mut Headers,
+) -> Result<bool, Error> {
+    let mut regional = false;
+    for header in &rows.nominals {
+        regional |= nominal_regions(rows, header.self_type, budget)? != 0;
+    }
+    Ok(regional)
+}
+/// A version-thirteen nominal's lifetimes are the leading region arguments of
+/// its own Self recipe, which validation fixed in slot order.
+pub(super) fn nominal_regions(
+    rows: s::ValidatedView<'_>,
+    self_type: crate::support::crates::generics::TypeRef,
+    budget: &mut Headers,
+) -> Result<u32, Error> {
+    let Some(s::Type::Nominal { arguments, .. }) = rows.types.get(self_type.0 as usize) else {
+        return Err(error(
+            "source enum cell lost its actual nominal Self recipe",
+        ));
+    };
+    let arguments = arguments.slice(&rows.arguments).map_err(error)?;
+    budget.charge(arguments.len())?;
+    let regions = arguments
+        .iter()
+        .take_while(|argument| matches!(argument, s::Argument::Region(_)))
+        .count();
+    u32::try_from(regions).map_err(|_| error("source enum lifetime count overflow"))
+}
 /// A tuple variant's constructor signature `fn(payload..) -> Enum`, read from
-/// its own payload rows; the cell and the callable template share it.
+/// its own payload rows; the cell and the callable template share it. As a
+/// local constructor does, it binds its enum's lifetimes late.
 pub(super) fn constructor_signature(
     graph: &mapped_source::Graph,
     types: &mut crate::types::Store,
-    payload: &[s::VariantField],
+    (payload, regions): (&[s::VariantField], u32),
     owner: TypeId,
     budget: &mut Headers,
 ) -> Result<TypeId, Error> {
@@ -176,7 +234,7 @@ pub(super) fn constructor_signature(
     let parameters = types.intern_list(&fields).map_err(error)?;
     types
         .intern(crate::types::Kind::Function {
-            bound_regions: 0,
+            bound_regions: regions,
             parameters,
             result: owner,
             unsafe_: false,

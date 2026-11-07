@@ -159,6 +159,16 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
             .get(reference.0 as usize)
             .ok_or_else(|| error("reserved formal slot is outside its immutable schema"))?;
         let s::ParameterKind::Type { sized } = slot.kind else {
+            if let Some(region) = slot_bindings::nominal_region(
+                (&self.rows.slots, &self.rows.declarations),
+                reference,
+                0,
+            )? {
+                self.view.definition(slot.owner, budget)?;
+                let argument = Argument::Lifetime(region);
+                publish(memo, argument)?;
+                return Ok(argument);
+            }
             return Err(error(
                 "reserved type recipe requires its actual type formal",
             ));
@@ -183,7 +193,8 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
             }
             self.view.definition(address.declaration, budget)?;
         }
-        let argument = slot_bindings::intern_type(store, owner, slot.index, sized.is_some())?;
+        let index = slot_bindings::type_index(&self.rows.declarations, slot);
+        let argument = slot_bindings::intern_type(store, owner, index, sized.is_some())?;
         publish(memo, argument)?;
         Ok(argument)
     }
@@ -226,6 +237,17 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
                     .view
                     .body(body, budget)
                     .map(|body| Demand::Blocked(Dependency::OwnedBodyDomain(body)));
+            }
+            s::Region::Parameter { slot, depth }
+                if let Some(region) = slot_bindings::nominal_region(
+                    (&self.rows.slots, &self.rows.declarations),
+                    slot,
+                    depth,
+                )? =>
+            {
+                self.view
+                    .definition(self.rows.slots[slot.0 as usize].owner, budget)?;
+                region
             }
             s::Region::Parameter { slot, .. } => {
                 let row = self

@@ -20,8 +20,20 @@ impl Arena {
         // scope. Visiting every argument retains unused formal formation debts.
         for argument in applied.arguments.slice(&rows.arguments)? {
             work.charge(1)?;
-            let s::Argument::Type(root) = *argument else {
-                return Err("source regional application debts require a complete wider profile");
+            let root = match *argument {
+                s::Argument::Type(root) => root,
+                // A lifetime-generic enum constructor's leading region has
+                // no formation root; its domain was checked with the caller.
+                s::Argument::Region(_)
+                    if matches!(target, super::super::Target::Constructor { .. }) =>
+                {
+                    continue;
+                }
+                s::Argument::Region(_) => {
+                    return Err(
+                        "source regional application debts require a complete wider profile",
+                    );
+                }
             };
             self.root(
                 domains,

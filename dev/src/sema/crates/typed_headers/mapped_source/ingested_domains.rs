@@ -203,7 +203,11 @@ impl Lazy {
                 .saturating_add(rows.arguments.len()),
         )?;
         for (index, slot) in rows.slots.iter().enumerate() {
-            if matches!(slot.kind, s::ParameterKind::Type { .. }) {
+            // A version-thirteen nominal's region slot maps to its template
+            // lifetime; every other region slot stays unmapped here.
+            if matches!(slot.kind, s::ParameterKind::Type { .. })
+                || super::slot_bindings::nominal_lifetime(&rows.declarations, slot)
+            {
                 port.slot(
                     &mut facts.types,
                     s::SlotRef(

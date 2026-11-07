@@ -94,6 +94,7 @@ pub(super) fn emit(
         let ty = stage.ty(facts, value.ty, context)?;
         if stage.feature_predicates() && matches!(kind, s::ValueKind::Function(_))
             || requested_formation(stage, facts, value.ty)
+            || parameter_reborrow(stage, facts, value.ty, kind)
         {
             sites.function_formation(stage, body.source.root_body_site(), value.ty, ty)?;
         }
@@ -297,6 +298,26 @@ pub(super) fn requested_formation(
     ty: crate::types::TypeId,
 ) -> bool {
     stage.body_nodes() && facts.types.contains_nominals(ty) == Some(true)
+}
+/// Version thirteen: reborrowing a reference to a type parameter has no
+/// checked formation fact of its own, so the original requests one. The
+/// consumer proves it again; the request carries no outlives claim.
+fn parameter_reborrow(
+    stage: &Stage,
+    facts: &Declarations,
+    ty: crate::types::TypeId,
+    kind: s::ValueKind,
+) -> bool {
+    stage.body_nodes()
+        && matches!(
+            kind,
+            s::ValueKind::Borrow(_) | s::ValueKind::TwoPhaseBorrow(_)
+        )
+        && matches!(
+            facts.types.kind(ty),
+            Some(crate::types::Kind::Reference { referent, .. })
+                if matches!(facts.types.kind(referent), Some(crate::types::Kind::Parameter(_)))
+        )
 }
 /// Version thirteen: a literal joins its original's text column in value
 /// order. Only a shared `'static` reference to `str` is a text value.

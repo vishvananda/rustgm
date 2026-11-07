@@ -85,49 +85,104 @@ impl Arena {
                         .get(pair.actual.0 as usize)
                         .ok_or("source actual type node is absent")?;
                     self.push_pair(pending, Task::Finish(pair), work)?;
-                    match (expected, actual) {
-                        (
-                            Node::Reference {
-                                mutable: a,
-                                region: ar,
-                                referent: ac,
-                            },
-                            Node::Reference {
-                                mutable: b,
-                                region: br,
-                                referent: bc,
-                            },
-                        ) => {
-                            if a != b
-                                || (!matches!(pair.opening, Opening::Relation { .. })
-                                    && opened_region(domains, self, ar, pair.opening, work)?
-                                        != opened_region(domains, self, br, pair.opening, work)?)
-                            {
-                                return Err(
-                                    "source signature reference mutability or exact lifetime differs",
-                                );
-                            }
-                            self.push_pair(
-                                pending,
-                                Task::Enter(Pair {
-                                    expected: ac,
-                                    actual: bc,
-                                    ..pair
-                                }),
-                                work,
-                            )?;
-                        }
-                        (a, b) if a == b => {}
-                        _ => {
-                            return Err(
-                                "source signature differs after complete application and late opening",
-                            );
-                        }
-                    }
+                    self.children(domains, pair, (expected, actual), pending, work)?;
                 }
             }
         }
         Ok(())
+    }
+    /// Version thirteen: a local nominal whose spine leads with region
+    /// arguments compares each argument; other nominals stay exact nodes.
+    fn children(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        pair: Pair,
+        nodes: (Node, Node),
+        pending: &mut Vec<Task>,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let (first, second) = match nodes {
+            (
+                Node::Reference {
+                    mutable: a,
+                    region: ar,
+                    referent: ac,
+                },
+                Node::Reference {
+                    mutable: b,
+                    region: br,
+                    referent: bc,
+                },
+            ) => {
+                if a != b || !self.same_region(domains, (ar, br), pair.opening, work)? {
+                    return Err("source signature reference mutability or exact lifetime differs");
+                }
+                ((ac, bc), None)
+            }
+            (
+                Node::Nominal {
+                    declaration: a,
+                    arguments: ac,
+                },
+                Node::Nominal {
+                    declaration: b,
+                    arguments: bc,
+                },
+            ) if a == b
+                && matches!(
+                    self.nodes.get(ac.0 as usize),
+                    Some(Node::NominalRegion { .. })
+                ) =>
+            {
+                ((ac, bc), None)
+            }
+            (
+                Node::NominalRegion {
+                    region: ar,
+                    next: an,
+                },
+                Node::NominalRegion {
+                    region: br,
+                    next: bn,
+                },
+            ) => {
+                if !self.same_region(domains, (ar, br), pair.opening, work)? {
+                    return Err("source signature nominal region argument differs");
+                }
+                ((an, bn), None)
+            }
+            (
+                Node::NominalArgument { ty: at, next: an },
+                Node::NominalArgument { ty: bt, next: bn },
+            ) => ((at, bt), Some((an, bn))),
+            (a, b) if a == b => return Ok(()),
+            _ => {
+                return Err("source signature differs after complete application and late opening");
+            }
+        };
+        for (expected, actual) in second.into_iter().chain([first]) {
+            self.push_pair(
+                pending,
+                Task::Enter(Pair {
+                    expected,
+                    actual,
+                    ..pair
+                }),
+                work,
+            )?;
+        }
+        Ok(())
+    }
+    fn same_region(
+        &self,
+        domains: &DomainIndex<'_, '_>,
+        (expected, actual): (Region, Region),
+        opening: Opening,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        Ok(matches!(opening, Opening::Relation { .. })
+            || opened_region(domains, self, expected, opening, work)?
+                == opened_region(domains, self, actual, opening, work)?)
     }
     fn push_pair(
         &mut self,

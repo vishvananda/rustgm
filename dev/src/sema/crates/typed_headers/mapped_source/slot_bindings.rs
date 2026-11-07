@@ -51,7 +51,12 @@ pub(super) fn prepare(
                         .validate_declaration(id, actual, DefKind::Trait)
                         .map_err(error)?;
                 }
-                intern_type(&mut facts.types, owner, slot.index, sized.is_some())?
+                intern_type(
+                    &mut facts.types,
+                    owner,
+                    type_index(&rows.declarations, slot),
+                    sized.is_some(),
+                )?
             }
             s::ParameterKind::Region => {
                 let index = u16::try_from(slot.index).map_err(|_| {
@@ -85,7 +90,18 @@ pub(super) fn regions(context: &Context<'_>, budget: &mut Headers) -> Result<Vec
                 }
                 bound(depth, slot, frame.count)?
             }
-            s::Region::Parameter { .. } | s::Region::Variable { .. } => {
+            s::Region::Parameter { slot, depth } => {
+                if let Some(region) =
+                    nominal_region((&rows.slots, &rows.declarations), slot, depth)?
+                {
+                    region
+                } else {
+                    return Err(error(
+                        "source owned/free regions require their wider explicit remap profile",
+                    ));
+                }
+            }
+            s::Region::Variable { .. } => {
                 return Err(error(
                     "source owned/free regions require their wider explicit remap profile",
                 ));
@@ -93,6 +109,58 @@ pub(super) fn regions(context: &Context<'_>, budget: &mut Headers) -> Result<Vec
         });
     }
     Ok(result)
+}
+/// Version thirteen: a struct or enum's own region slot, named in its own
+/// declaration frame, is that nominal's template lifetime `bound(0, index)`,
+/// exactly as a local nominal's field types name it. Other declared lifetimes
+/// keep their wider profile.
+pub(in crate::sema::crates::typed_headers) fn nominal_region(
+    (slots, declarations): (&[s::ParameterSlot], &[s::Declaration]),
+    slot: s::SlotRef,
+    depth: u16,
+) -> Result<Option<RegionId>, Error> {
+    let row = slots
+        .get(slot.0 as usize)
+        .ok_or_else(|| error("source declared lifetime lost its actual slot"))?;
+    if depth != 0 || !nominal_lifetime(declarations, row) {
+        return Ok(None);
+    }
+    let index = u16::try_from(row.index)
+        .map_err(|_| error("source nominal lifetime exceeds canonical identity space"))?;
+    RegionId::bound(0, index).map(Some).map_err(error)
+}
+/// A version-thirteen nominal's type slots follow its leading region slots.
+/// The consumer's parameter index counts both, as a local nominal's does;
+/// validation fixed that ordinal as the regions plus the wire type index.
+pub(in crate::sema::crates::typed_headers) fn type_index(
+    declarations: &[s::Declaration],
+    slot: &s::ParameterSlot,
+) -> u32 {
+    if nominal_owner(declarations, slot.owner) {
+        slot.ordinal
+    } else {
+        slot.index
+    }
+}
+/// Whether a slot's owner is a struct or enum, whose version-thirteen slots
+/// lead with its lifetimes.
+pub(in crate::sema::crates::typed_headers) fn nominal_owner(
+    declarations: &[s::Declaration],
+    owner: crate::support::crates::owner_catalog::DeclarationRef,
+) -> bool {
+    declarations.get(owner.0 as usize).is_some_and(|row| {
+        matches!(
+            row.definition.kind,
+            s::DefinitionKind::Struct | s::DefinitionKind::Enum
+        )
+    })
+}
+/// A version-thirteen nominal's own lifetime slot.
+pub(in crate::sema::crates::typed_headers) fn nominal_lifetime(
+    declarations: &[s::Declaration],
+    slot: &s::ParameterSlot,
+) -> bool {
+    slot.kind == s::ParameterKind::Region && nominal_owner(declarations, slot.owner)
 }
 pub(in crate::sema::crates::typed_headers) fn intern_type(
     store: &mut crate::types::Store,

@@ -103,7 +103,13 @@ pub(super) fn argument(
     let arguments = application
         .arguments
         .slice(&domains.headers.rows().arguments)?;
-    let Some(&s::Argument::Type(root)) = arguments.get(position as usize) else {
+    // A lifetime-generic enum constructor's region arguments lead its types.
+    let regions = arguments
+        .iter()
+        .take_while(|argument| matches!(argument, s::Argument::Region(_)))
+        .count();
+    let Some(&s::Argument::Type(root)) = arguments.get(regions.saturating_add(position as usize))
+    else {
         return Err("source signature application omitted its complete actual type argument");
     };
     key(domains, root, Rewrite::Original, input.caller, work).map(Some)

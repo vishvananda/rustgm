@@ -254,3 +254,18 @@ packet under `spec/panic-attributes/`. The packet holds:
   scaling control.
 
 The `crate_linking::cold_transport` integration controls consume it.
+
+`lifetime-nominal-outcomes.json` freezes the version-thirteen lifetime-nominal
+packet under `spec/lifetime-nominals/`. The packet holds:
+
+- covariant and invariant lifetime structs, a struct whose field implies
+  `T: 'a`, and a lifetime enum with a tuple variant;
+- free functions over them, a method of a `'static` instance and a provider
+  constructor call;
+- nine accepted clients and five opponents (three variance errors, E0515 and
+  E0309);
+- generated controls: older-profile lifetime gates, fenced lifetime bounds and
+  captured impl lifetimes, forged slot, region, argument and field rows and a
+  6/24/96 scaling control.
+
+The `crate_linking::lifetime_transport` integration controls consume it.

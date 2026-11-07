@@ -51,6 +51,7 @@ impl Stage {
             .as_ref()
             .map_or(0, |nominals| nominals.owners.len());
         super::nominal_ports::reserve_owners(facts, nominal_count, budget)?;
+        let regional = super::definition_cells::regional_nominals(rows, budget)?;
         let before = table_allocation(facts, budget);
         budget.charge(before.visits.saturating_mul(2).saturating_add(1))?;
         // This shared work count is checked inside the owner installer BEFORE
@@ -100,6 +101,7 @@ impl Stage {
             .imported_records
             .extend(nominal_owners.iter().copied());
         facts.generics.nominal_contracts.extend(nominal_owners);
+        facts.generics.has_nominal_requirements |= regional;
         // Every remaining key, index and allocation bound was checked above.
         // No fallible remap, quota check or proof follows this first publication.
         for (definition, ty) in cells {

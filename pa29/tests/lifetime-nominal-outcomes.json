@@ -1,0 +1,229 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+ "providers": [
+  {
+   "file": "spec/lifetime-nominals/provider.rs",
+   "sha256": "96fd7049a211d401ce01a16049c4be25ac65d28046e1e8e0fffff1b6b90120f9"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "development_note": "the provider shapes were probed with rustc and the candidate during development (generated files under obj/, not these fixtures); the fixtures, their outcomes and every wire control below were written down before any rustc or RustGM run of these files",
+ "cases": [
+  {
+   "file": "spec/lifetime-nominals/args.rs",
+   "provider": "spec/lifetime-nominals/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "8617533dc385221945d8b08b92ee171f67e75475672719d6092d547c25c93be4",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/lifetime-nominals/shrink.rs",
+   "provider": "spec/lifetime-nominals/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "968370880a6ce7cb118ae223377217ef3f05a6deb37c2178cd848a43e0ac3b86",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/lifetime-nominals/first.rs",
+   "provider": "spec/lifetime-nominals/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "1b15a2c878229fdba7158f5c7d8cebc115db625593e4bfef648f7a068c22d6ae",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/lifetime-nominals/field.rs",
+   "provider": "spec/lifetime-nominals/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "87037fc7904697839d75ffd304efd269f34dca7bd4e47b1a7f076481068ee799",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/lifetime-nominals/fixed.rs",
+   "provider": "spec/lifetime-nominals/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "8f8a9941432e1b9a08d18b9f49a3da2d717837b6dbac6138d5cdba019179da06",
+   "amended": "oracle round 1 rejected the client (`struct literals are not allowed here`): a struct literal cannot be a bare match scrutinee. It was parenthesized before any candidate run; no outcome changed",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/lifetime-nominals/invariant.rs",
+   "provider": "spec/lifetime-nominals/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "218e9240e5cd1810c7dfc602941a4707edaadf46b0ad6b345232cafbe465c83e",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/lifetime-nominals/reference.rs",
+   "provider": "spec/lifetime-nominals/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "5975cf6ff80610ef4a6fc2c5a8359cbb6e03810f9fd9e9bd76234509b1b8e8a9",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/lifetime-nominals/text.rs",
+   "provider": "spec/lifetime-nominals/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "0e5220da9b0d8020e9180bdb7a3159ab655f8554827f40693c4304be58fd9526",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/lifetime-nominals/word.rs",
+   "provider": "spec/lifetime-nominals/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "e8e476958fbd292d90318c8d223487816626e93160dfedc796b9c641d000492d",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/lifetime-nominals/inv-shrink.rs",
+   "provider": "spec/lifetime-nominals/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_message": "lifetime may not live long enough",
+   "candidate_diagnostic": "required lifetime does not outlive its target",
+   "sha256": "c8328f753f42c6ddf944e6a6ac35d9ff73f4b91824e4e45fbdeb2c1741638ec0",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/lifetime-nominals/args-grow.rs",
+   "provider": "spec/lifetime-nominals/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_message": "lifetime may not live long enough",
+   "candidate_diagnostic": "required lifetime does not outlive its target",
+   "sha256": "27996ef60f52dcc0059dc278457e5b43bce3f5220a00523b9ae2ae4d690e82a3",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/lifetime-nominals/text-grow.rs",
+   "provider": "spec/lifetime-nominals/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_message": "lifetime may not live long enough",
+   "candidate_diagnostic": "required lifetime does not outlive its target",
+   "sha256": "2b30a041a5b662bced200bf9d9defa6fe60cd0bab0256a4beea2f0ce5ff0f5db",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/lifetime-nominals/escape.rs",
+   "provider": "spec/lifetime-nominals/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_error": "E0515",
+   "candidate_diagnostic": "required lifetime does not outlive its target",
+   "sha256": "760520921e93478fcb21f39aeab34e686368d7a43709513839b95d6d3eae2876",
+   "observed": "as declared"
+  },
+  {
+   "file": "spec/lifetime-nominals/outlives.rs",
+   "provider": "spec/lifetime-nominals/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_error": "E0309",
+   "candidate_diagnostic": "required lifetime does not outlive its target",
+   "sha256": "a04c1e8ab3f48e4017e112fc2207dc9746640e0d8cf8a9df22c14b032a7cbc79",
+   "observed": "as declared"
+  }
+ ],
+ "generated_controls": [
+  {
+   "control": "spec/source-nominals/provider.rs plus `pub struct Gate<'a> { pub text: &'a str }`, exported under module-branches-v12, module-nominals-v10 and module-bodies-v13",
+   "expected": "rejected by name with `source const/lifetime generic argument is not a type slot` under both older profiles; exported under version 13",
+   "observed": "rejected under both older profiles with `source lifetime binding has no actual original slot`; exported under version 13",
+   "amended": "the declaration named the type-slot diagnostic, but the older stages stop earlier, at main's unchanged `source lifetime binding has no actual original slot` (the panic-attributes checkpoint records the same diagnostic for `Arguments<'a>`). That is the baseline's own rejection, so older profiles keep it byte for byte"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `pub struct Bounded<'a, 'b: 'a> { pub a: &'a u8, pub b: &'b u8 }`, under version 13",
+   "expected": "rejected by name with `source nominal lifetime bounds require their wider profile`: no row carries a declared lifetime bound, so a consumer would lose it",
+   "observed": "as declared"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `pub struct Held<'a> { pub text: &'a str }` and `impl<'a> Held<'a> { pub fn get(self) -> &'a str { self.text } }`, under version 13",
+   "expected": "rejected by name with `source function early/captured callable frame transport is not implemented`: a method capturing its impl's lifetime stays fenced",
+   "observed": "as declared"
+  },
+  {
+   "control": "the full provider exported under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected by name with `named, associated or generic alias transport requires its wider profile`, as the shared inherent-methods lines already require version 13",
+   "observed": "as declared"
+  },
+  {
+   "control": "6, 24 and 96 generated `pub struct LNNN<'a> { pub t: &'a u8 }` with `pub fn lNNN(x: LNNN<'_>) -> u8 { *x.t }` after provider lines 1-126, and one client calling `l005`",
+   "expected": "packet bytes grow exactly linearly; the client LowIR stays bounded",
+   "observed": "as declared: 33,662, 54,056 and 135,632 bytes for 6, 24 and 96 nominals, 1,133 bytes per nominal and function, exactly linear; the client LowIR is 856 bytes at every width"
+  }
+ ],
+ "wire_controls": [
+  {
+   "mutation": "none: a generated minimal provider (provider lines 1-126, `Zinv<'a> { slot: &'a mut &'a u8 }` with `store`, which writes through the slot, and `Zarg<'a> { text: &'a str }` with `take`) and clients calling `store` and `take`",
+   "expected": "accepted",
+   "observed": "accepted",
+   "amended": "`store` was first written `store<'a>(z: Zinv<'a>, ..)`. The candidate's provider export rejected it with `source Store writes through an immutable dereference`: the transport port plan requires the by-value binding to be mutable to write through its `&mut` field, which rustc does not (a known gap, recorded in the checkpoint). The control binds `mut z`; no other outcome changed"
+  },
+  {
+   "mutation": "`Zinv`'s field region row `Parameter { depth: 0 }` given depth 1",
+   "expected": "source early region parameters require complete wider transport",
+   "observed": "source nominal Self changed its exact formal identity or argument order",
+   "amended": "region rows are interned, and `Zinv`'s Self recipe names the same row as its field, so the Self identity check rejects the forged depth first. Still rejected by name"
+  },
+  {
+   "mutation": "`Zinv`'s region slot index 0 set to 1",
+   "expected": "source nominal region slot changed its leading declared index",
+   "observed": "source nominal region slot changed its leading declared index"
+  },
+  {
+   "mutation": "`Zarg`'s field region row renamed to `Zinv`'s region slot",
+   "expected": "source consuming type root captures another parameter owner",
+   "observed": "source nominal Self changed its exact formal identity or argument order",
+   "amended": "the row is also `Zarg`'s Self recipe argument, so the Self identity check rejects it first. The next control retargets the field alone"
+  },
+  {
+   "mutation": "`Zarg`'s field type `&'a str` made to name `Zinv`'s region row, leaving both Self recipes intact",
+   "expected": "source consuming type root captures another parameter owner",
+   "declared": "added after the first candidate run of the wire controls, before this control ran: the row-level foreign-slot forgery is caught by the Self recipe first (see its amendment), so this control reaches the field's own frame check",
+   "observed": "source consuming type root captures another parameter owner"
+  },
+  {
+   "mutation": "`take`'s nominal argument `Region` relabelled as a `Type` argument of the same index",
+   "expected": "source nominal argument changed its formal kind",
+   "observed": "source nominal argument changed its formal kind"
+  },
+  {
+   "mutation": "`Zinv`'s outer field reference made shared, with the `store` client",
+   "expected": "source Store writes through an immutable dereference: the provider body is re-proved over the forged field",
+   "observed": "source projected field type differs after actual nominal substitution",
+   "amended": "the provider body is re-proved over the forged field as declared, but its own projection of `z.slot` keeps the mutable type, so the field substitution check rejects it before the Store check"
+  },
+  {
+   "mutation": "relabelled version 12",
+   "expected": "unknown source declaration kind",
+   "observed": "unknown source declaration kind"
+  },
+  {
+   "mutation": "every strict prefix",
+   "expected": "fails to decode",
+   "observed": "fails to decode"
+  }
+ ],
+ "native": {
+  "expected": "all nine accepted clients exit 42 natively, as rustc's do",
+  "observed": "as declared"
+ },
+ "oracle": {
+  "round_1": "the provider compiles; fixed was rejected (`struct literals are not allowed here`); see its amendment. Every other outcome matched",
+  "round_2": "the provider compiles; args, shrink, first, field, fixed, invariant, reference, text and word exit 42; inv-shrink, args-grow and text-grow fail with `lifetime may not live long enough`, escape with E0515 and outlives with E0309, as declared"
+ }
+}

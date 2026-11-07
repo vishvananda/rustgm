@@ -18,6 +18,7 @@ impl Stage {
                 + 8 * size_of::<DefId>()
                 + size_of::<Option<u32>>(),
         ))?;
+        self.nominal_lifetime_bounds(facts)?;
         let mut active = vec![false; count];
         for (index, enabled) in active.iter_mut().enumerate() {
             self.charge(1)?;
@@ -67,10 +68,17 @@ impl Stage {
             let declaration = self.declaration(owner)?;
             let start =
                 u32::try_from(self.rows.slots.len()).map_err(|_| "source slot table overflow")?;
-            let trait_owner =
-                report.resolution.definitions[owner.0 as usize].kind == DefKind::Trait;
-            self.type_slots(facts, owner, declaration, trait_owner)?;
-            self.region_slots(facts, owner, declaration, start)?;
+            let kind = report.resolution.definitions[owner.0 as usize].kind;
+            // Version thirteen: a nominal's region slots precede its type slots,
+            // in the order of its own template arguments.
+            let nominal = self.body_nodes() && matches!(kind, DefKind::Struct | DefKind::Enum);
+            if nominal {
+                self.nominal_region_slots(facts, owner, declaration, start)?;
+            }
+            self.type_slots(facts, owner, declaration, kind == DefKind::Trait, nominal)?;
+            if !nominal {
+                self.region_slots(facts, owner, declaration, start)?;
+            }
             let end =
                 u32::try_from(self.rows.slots.len()).map_err(|_| "source slot table overflow")?;
             self.reserve(4 * size_of::<s::ParameterScope>())?;
@@ -97,13 +105,37 @@ impl Stage {
         Ok(())
     }
 
+    /// Version thirteen transports a nominal's lifetimes but not its declared
+    /// lifetime bounds; each consumer would otherwise lose that requirement.
+    fn nominal_lifetime_bounds(&mut self, facts: &Declarations) -> Result<(), &'static str> {
+        if !self.body_nodes() {
+            return Ok(());
+        }
+        for &(item, _) in &facts.lifetimes.nominal_bounds {
+            self.charge(1)?;
+            if self
+                .definitions
+                .get(item.0 as usize)
+                .is_some_and(Option::is_some)
+            {
+                return Err("source nominal lifetime bounds require their wider profile");
+            }
+        }
+        Ok(())
+    }
+
     fn type_slots(
         &mut self,
         facts: &Declarations,
         owner: DefId,
         declaration: DeclarationRef,
         trait_owner: bool,
+        nominal: bool,
     ) -> Result<(), &'static str> {
+        // A nominal's lifetimes are its leading template arguments. They own
+        // the region slots already recorded, so a type slot's canonical index
+        // counts type slots only.
+        let mut regions = 0_u32;
         for (ordinal, parameter) in facts
             .generics
             .parameters
@@ -117,6 +149,13 @@ impl Stage {
             // has built the Self type (`trait_defaults`).
             if parameter.default.is_some() && !(trait_owner && self.body_nodes()) {
                 return Err("source parameter defaults are outside the initial profile");
+            }
+            if nominal && matches!(parameter.argument, Argument::Lifetime(_)) {
+                if u32::try_from(ordinal).ok() != Some(regions) {
+                    return Err("source nominal lifetime follows a type slot");
+                }
+                regions += 1;
+                continue;
             }
             let Argument::Type(ty) = parameter.argument else {
                 return Err("source const/lifetime generic argument is not a type slot");
@@ -163,7 +202,10 @@ impl Stage {
             self.rows.slots.push(s::ParameterSlot {
                 owner: declaration,
                 ordinal: u32::try_from(ordinal).map_err(|_| "source parameter ordinal overflow")?,
-                index: actual.index,
+                index: actual
+                    .index
+                    .checked_sub(regions)
+                    .ok_or("source nominal type slot precedes its lifetimes")?,
                 definition,
                 kind: s::ParameterKind::Type { sized },
                 default: None,
@@ -212,6 +254,69 @@ impl Stage {
             if row.default.replace(self_ref).is_some() {
                 return Err("source parameter default was recorded twice");
             }
+        }
+        Ok(())
+    }
+
+    /// Version thirteen: each declared lifetime of a struct or enum is one
+    /// region slot whose index is its position in the nominal's template
+    /// arguments, `RegionId::bound(0, index)`. The slot carries no variance or
+    /// outlives claim; every consumer re-derives both from the fields.
+    fn nominal_region_slots(
+        &mut self,
+        facts: &Declarations,
+        owner: DefId,
+        declaration: DeclarationRef,
+        start: u32,
+    ) -> Result<(), &'static str> {
+        let declared = facts
+            .lifetimes
+            .parameters
+            .get(&owner)
+            .map_or(&[][..], Vec::as_slice);
+        let arguments = facts.generics.parameters.get(&owner);
+        for (index, &definition) in (0_u32..).zip(declared) {
+            self.charge(1)?;
+            let region = crate::types::RegionId::bound(
+                0,
+                u16::try_from(index).map_err(|_| "source nominal lifetime slot overflow")?,
+            )?;
+            if arguments.is_some_and(|arguments| {
+                arguments
+                    .get(index as usize)
+                    .map(|p| (p.binding, p.argument))
+                    != Some((definition, Argument::Lifetime(region)))
+            }) {
+                return Err("source nominal lifetime changed its template argument");
+            }
+            let ordinal = u32::try_from(self.rows.slots.len())
+                .map_err(|_| "source region slot overflow")?
+                .checked_sub(start)
+                .ok_or("source region slot changed owner range")?;
+            let slot = s::SlotRef(
+                u32::try_from(self.rows.slots.len()).map_err(|_| "source region slot overflow")?,
+            );
+            self.reserve(
+                4 * size_of::<s::ParameterSlot>()
+                    + crate::support::retained::new_map::<(DeclarationRef, u32), s::SlotRef>(1),
+            )?;
+            if self
+                .inputs
+                .regions
+                .insert((declaration, index), slot)
+                .is_some()
+            {
+                return Err("source lifetime has duplicate actual slot identities");
+            }
+            let definition = Some(self.declaration(definition)?);
+            self.rows.slots.push(s::ParameterSlot {
+                owner: declaration,
+                ordinal,
+                index,
+                definition,
+                kind: s::ParameterKind::Region,
+                default: None,
+            });
         }
         Ok(())
     }

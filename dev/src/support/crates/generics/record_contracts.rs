@@ -45,6 +45,18 @@ pub(super) fn require_profile(
     {
         return Err("source nominal contracts require their explicit version-ten profile");
     }
+    if !profile.body_nodes() {
+        work.charge(rows.slots.len())?;
+        if rows.slots.iter().any(|slot| {
+            slot.kind == super::ParameterKind::Region
+                && rows
+                    .declarations
+                    .get(slot.owner.0 as usize)
+                    .is_some_and(|row| super::nominal_kind(row.definition.kind))
+        }) {
+            return Err("source nominal region parameters require the version-thirteen profile");
+        }
+    }
     Ok(())
 }
 pub(super) fn headers(

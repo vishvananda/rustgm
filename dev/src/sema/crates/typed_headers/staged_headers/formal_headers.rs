@@ -49,7 +49,11 @@ pub(super) fn parameters(
             )
             .ok_or_else(|| error("source generic slot reference overflow"))?;
         let argument = graph.slot(s::SlotRef(ordinal))?;
-        if !matches!(argument, Argument::Type(_)) {
+        // Version thirteen: a nominal's own lifetime is its leading template
+        // argument; callable early lifetimes keep their wider profile.
+        if !matches!(argument, Argument::Type(_))
+            && !mapped_source::slot_bindings::nominal_lifetime(&rows.declarations, slot)
+        {
             return Err(error(
                 "source named early lifetime requires its wider callable profile",
             ));

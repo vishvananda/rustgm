@@ -48,13 +48,24 @@ impl Stage {
                 .frame
                 .ok_or("source bound region has no actual header frame")?;
             let target = self.ancestor(frame, depth)?;
-            if u32::from(slot) >= self.graph.frames[target.0 as usize].count {
+            if self.graph.frames[target.0 as usize].slots {
+                let owner =
+                    self.rows.binders[self.graph.frames[target.0 as usize].binder.0 as usize].owner;
+                let slot = self
+                    .inputs
+                    .regions
+                    .get(&(owner, u32::from(slot)))
+                    .copied()
+                    .ok_or("source nominal region has no declared region slot")?;
+                s::Region::Parameter { slot, depth }
+            } else if u32::from(slot) >= self.graph.frames[target.0 as usize].count {
                 return Err("source bound region exceeds its exact binder frame");
-            }
-            s::Region::Bound {
-                binder: self.graph.frames[frame.0 as usize].binder,
-                depth,
-                slot: u32::from(slot),
+            } else {
+                s::Region::Bound {
+                    binder: self.graph.frames[frame.0 as usize].binder,
+                    depth,
+                    slot: u32::from(slot),
+                }
             }
         } else {
             let body = context

@@ -39,6 +39,46 @@ struct Counts {
     all: u32,
     types: u32,
 }
+/// A type slot's canonical index is its ordinal, except that a version-thirteen
+/// nominal's region slots lead in declaration order and its type slots count
+/// only the owner's earlier type slots.
+#[derive(Default)]
+struct OwnSlots {
+    nominal: bool,
+    types: u32,
+    regions: u32,
+}
+impl OwnSlots {
+    fn check(&mut self, slot: &ParameterSlot) -> Result<(), &'static str> {
+        match slot.kind {
+            ParameterKind::Type { .. } => {
+                let index = if self.nominal {
+                    self.types
+                } else {
+                    slot.ordinal
+                };
+                if slot.index != index {
+                    return Err("source type parameter changed its exact declared index");
+                }
+                self.types = self
+                    .types
+                    .checked_add(1)
+                    .ok_or("source type parameter count overflow")?;
+            }
+            ParameterKind::Region if self.nominal => {
+                if self.types != 0 || slot.index != self.regions {
+                    return Err("source nominal region slot changed its leading declared index");
+                }
+                self.regions = self
+                    .regions
+                    .checked_add(1)
+                    .ok_or("source region parameter count overflow")?;
+            }
+            ParameterKind::Region => {}
+        }
+        Ok(())
+    }
+}
 impl<'a> ScopeIndex<'a> {
     /// Canonical preorder lets each scope open/close once, without ancestry walks.
     /// # Errors
@@ -104,7 +144,13 @@ impl<'a> ScopeIndex<'a> {
             {
                 return Err("source parameter scope changed its exact prefix or declared range");
             }
-            let mut types = captured.types;
+            let mut own = OwnSlots {
+                nominal: matches!(
+                    definition.kind,
+                    DefinitionKind::Struct | DefinitionKind::Enum
+                ),
+                ..OwnSlots::default()
+            };
             for (ordinal, slot) in rows.slots[cursor as usize..scope.declared.end as usize]
                 .iter()
                 .enumerate()
@@ -113,20 +159,17 @@ impl<'a> ScopeIndex<'a> {
                 if slot.owner != scope.owner || slot.ordinal as usize != ordinal {
                     return Err("source parameter slot has a foreign owner, duplicate or gap");
                 }
-                if matches!(slot.kind, ParameterKind::Type { .. }) && slot.index != slot.ordinal {
-                    return Err("source type parameter changed its exact declared index");
-                }
-                if matches!(slot.kind, ParameterKind::Type { .. }) {
-                    types = types
-                        .checked_add(1)
-                        .ok_or("source type parameter count overflow")?;
-                }
+                own.check(slot)?;
                 validate_binding(slot, definitions, &mut bindings, work)?;
             }
             let total = captured
                 .all
                 .checked_add(scope.declared.end - cursor)
                 .ok_or("source parameter scope count overflow")?;
+            let types = captured
+                .types
+                .checked_add(own.types)
+                .ok_or("source type parameter count overflow")?;
             totals.push(Counts { all: total, types });
             owners[scope.owner.0 as usize] = Some(index);
             stack.push(index);

@@ -1,7 +1,7 @@
 //! Source nominal field types are substituted through the same structural node arena.
 use super::{
     Context, DomainIndex, Work, g,
-    nodes::{Arena, Node, NodeId, Rewrite},
+    nodes::{Arena, Node, NodeId, Region, Rewrite},
     requests::Builder,
     s, uses,
 };
@@ -23,20 +23,65 @@ impl Arena {
             .copied()
             .ok_or("source nominal omitted its complete actual argument")
     }
+    /// A version-thirteen nominal field's own region parameter selects the
+    /// use's region argument; every other region keeps its ordinary rewrite.
+    pub(super) fn rewritten_region(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        reference: s::RegionRef,
+        rewrite: Rewrite,
+        work: &mut Work,
+    ) -> Result<Region, &'static str> {
+        work.charge(1)?;
+        let rows = domains.headers.rows();
+        if let Rewrite::Nominal { owner, arguments } = rewrite
+            && let Some(&s::Region::Parameter { slot, depth: 0 }) =
+                rows.regions.get(reference.0 as usize)
+        {
+            let formal = rows
+                .slots
+                .get(slot.0 as usize)
+                .ok_or("source nominal region formal is unknown")?;
+            if formal.owner != owner || formal.kind != s::ParameterKind::Region {
+                return Err("source nominal region argument names a foreign formal");
+            }
+            if !self.nominal_arguments.contains_key(&arguments) {
+                self.index_nominal_arguments(arguments, work)?;
+            }
+            return self
+                .nominal_regions
+                .get(&arguments)
+                .and_then(|regions| regions.get(formal.index as usize))
+                .copied()
+                .ok_or("source nominal omitted its complete actual region argument");
+        }
+        if let Rewrite::Application(application) = rewrite
+            && let Some(&s::Region::Parameter { slot, depth: 0 }) =
+                rows.regions.get(reference.0 as usize)
+        {
+            return applied_region(domains, self, application, slot, work);
+        }
+        uses::region(domains, self, reference, rewrite, work)
+    }
     // Each canonical argument spine is indexed once. Repeated field-template
-    // parameters then select their actual argument in constant work.
+    // parameters then select their actual argument in constant work. Leading
+    // region arguments are indexed apart from the type arguments they precede.
     fn index_nominal_arguments(
         &mut self,
         arguments: NodeId,
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let mut cursor = arguments;
-        let mut count = 0_usize;
+        let (mut count, mut regions) = (0_usize, 0_usize);
         loop {
             work.charge(1)?;
             match self.nodes.get(cursor.0 as usize) {
                 Some(Node::NominalArgument { next, .. }) => {
                     count = count.saturating_add(1);
+                    cursor = *next;
+                }
+                Some(Node::NominalRegion { next, .. }) if count == 0 => {
+                    regions = regions.saturating_add(1);
                     cursor = *next;
                 }
                 Some(Node::NominalEnd) => break,
@@ -45,24 +90,35 @@ impl Arena {
         }
         self.reserve(
             retained::new_map::<NodeId, Vec<NodeId>>(1)
-                .saturating_add(count.saturating_mul(size_of::<NodeId>())),
+                .saturating_add(retained::new_map::<NodeId, Vec<Region>>(1))
+                .saturating_add(count.saturating_mul(size_of::<NodeId>()))
+                .saturating_add(regions.saturating_mul(size_of::<Region>())),
             0,
             work,
         )?;
         let mut indexed = Vec::with_capacity(count);
+        let mut leading = Vec::with_capacity(regions);
         cursor = arguments;
-        for _ in 0..count {
+        for _ in 0..count.saturating_add(regions) {
             work.charge(1)?;
-            let Some(Node::NominalArgument { ty, next }) = self.nodes.get(cursor.0 as usize) else {
-                return Err("source nominal actual argument spine changed during indexing");
-            };
-            indexed.push(*ty);
-            cursor = *next;
+            match self.nodes.get(cursor.0 as usize) {
+                Some(Node::NominalArgument { ty, next }) => {
+                    indexed.push(*ty);
+                    cursor = *next;
+                }
+                Some(Node::NominalRegion { region, next }) => {
+                    leading.push(*region);
+                    cursor = *next;
+                }
+                _ => return Err("source nominal actual argument spine changed during indexing"),
+            }
         }
         self.nominal_argument_bytes = self
             .nominal_argument_bytes
-            .saturating_add(retained::vector(&indexed));
+            .saturating_add(retained::vector(&indexed))
+            .saturating_add(retained::vector(&leading));
         self.nominal_arguments.insert(arguments, indexed);
+        self.nominal_regions.insert(arguments, leading);
         Ok(())
     }
     fn nominal_field(
@@ -126,6 +182,38 @@ impl Arena {
             work,
         )
     }
+}
+/// A called lifetime-generic enum constructor's payload and result name the
+/// enum's region slots; its application supplies them as leading arguments.
+fn applied_region(
+    domains: &DomainIndex<'_, '_>,
+    arena: &Arena,
+    application: s::FunctionApplicationRef,
+    slot: s::SlotRef,
+    work: &mut Work,
+) -> Result<Region, &'static str> {
+    work.charge(2)?;
+    let rows = domains.headers.rows();
+    let application = rows
+        .function_applications
+        .get(application.0 as usize)
+        .ok_or("source applied region has no actual application")?;
+    let target = domains.target(application.declaration.declaration, work)?;
+    let formal = rows
+        .slots
+        .get(slot.0 as usize)
+        .ok_or("source applied region formal is unknown")?;
+    if formal.owner != target.scope() || formal.kind != s::ParameterKind::Region {
+        return Err("source signature early-region transport is unsupported");
+    }
+    let Some(&s::Argument::Region(region)) = application
+        .arguments
+        .slice(&rows.arguments)?
+        .get(formal.index as usize)
+    else {
+        return Err("source constructor application omitted its actual region argument");
+    };
+    uses::region(domains, arena, region, Rewrite::Original, work)
 }
 impl Builder<'_, '_, '_> {
     pub(super) fn nominal_value(

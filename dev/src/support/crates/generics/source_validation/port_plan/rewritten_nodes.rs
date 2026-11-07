@@ -44,6 +44,11 @@ pub(super) enum Node {
         ty: NodeId,
         next: NodeId,
     },
+    /// Version thirteen: one leading region argument of a nominal spine.
+    NominalRegion {
+        region: Region,
+        next: NodeId,
+    },
     Scalar(Scalar),
     /// Version thirteen: the unsized `str` and the never type.
     Str,
@@ -109,6 +114,7 @@ pub(super) struct Arena {
     facts: Vec<NodeFacts>,
     pub relocations: Vec<u32>,
     pub nominal_arguments: HashMap<NodeId, Vec<NodeId>>,
+    pub nominal_regions: HashMap<NodeId, Vec<Region>>,
     pub nominal_argument_bytes: usize,
     interned: HashMap<Node, NodeId>,
     pub completed: HashMap<Key, NodeId>,
@@ -141,6 +147,7 @@ impl Arena {
             facts: Vec::new(),
             relocations: Vec::new(),
             nominal_arguments: HashMap::default(),
+            nominal_regions: HashMap::default(),
             nominal_argument_bytes: 0,
             interned: HashMap::default(),
             completed: HashMap::default(),
@@ -271,6 +278,13 @@ impl Arena {
             Node::NominalArgument { ty, next } => {
                 self.facts_of(ty, work)?.combine(self.facts_of(next, work)?)
             }
+            Node::NominalRegion { region, next } => {
+                let mut facts = self.facts_of(next, work)?;
+                if region != Region::Static {
+                    facts.0 |= NodeFacts::REGIONAL;
+                }
+                facts
+            }
             Node::Tuple { elements } => self.facts_of(elements, work)?,
             // Preserve the old parameter formation rule outside Functions.
             // A Function explicitly retains opaque parameter conditionality.
@@ -346,6 +360,7 @@ impl Arena {
             retained::vector(&self.facts),
             retained::vector(&self.relocations),
             retained::map(&self.nominal_arguments),
+            retained::map(&self.nominal_regions),
             self.nominal_argument_bytes,
             retained::map(&self.interned),
             retained::map(&self.completed),

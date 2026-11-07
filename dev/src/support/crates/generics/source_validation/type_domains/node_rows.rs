@@ -92,14 +92,13 @@ impl Builder<'_, '_> {
                 self.push_type(application.subject, work)?;
                 application.arguments
             };
+            // Region arguments have no recipe child; `application` admits
+            // only a lifetime-generic enum constructor's leading regions.
             for argument in arguments.slice(&rows.arguments)?.iter().rev() {
                 work.charge(1)?;
-                let s::Argument::Type(ty) = argument else {
-                    return Err(
-                        "source early regional applications require a wider complete profile",
-                    );
-                };
-                self.push_type(*ty, work)?;
+                if let s::Argument::Type(ty) = argument {
+                    self.push_type(*ty, work)?;
+                }
             }
         }
         Ok(())
@@ -139,13 +138,18 @@ impl Builder<'_, '_> {
                 {
                     return Err("source nominal changed its complete generic arity");
                 }
+                let formals = self.headers.scopes().declared_slots(header.scope, work)?;
+                let formals = formals.slice(&rows.slots)?;
                 let mut result = Summary::default();
-                for argument in arguments {
-                    let child = match argument {
-                        s::Argument::Type(ty) => self.child(*ty, work)?,
-                        s::Argument::Region(region) => {
+                for (argument, formal) in arguments.iter().zip(formals) {
+                    let child = match (argument, formal.kind) {
+                        (s::Argument::Type(ty), s::ParameterKind::Type { .. }) => {
+                            self.child(*ty, work)?
+                        }
+                        (s::Argument::Region(region), s::ParameterKind::Region) => {
                             region_summary(self.headers, self.binders, *region, work)?
                         }
+                        _ => return Err("source nominal argument changed its formal kind"),
                     };
                     result = self.merge(result, child, work)?;
                 }
@@ -263,12 +267,20 @@ impl Builder<'_, '_> {
             );
         }
         let target = application.declaration.declaration;
+        let mut regions = 0_usize;
         let scope = if let Some(constructor) =
             s::Constructor::of((rows.enums(), &rows.declarations), target, |row| {
                 self.headers.header(row, work)
             })? {
-            // A called constructor's formals are exactly its enum's.
-            rows.nominals[constructor.nominal as usize].scope
+            // A called constructor's formals are exactly its enum's,
+            // version-thirteen leading region slots included.
+            let scope = rows.nominals[constructor.nominal as usize].scope;
+            let scopes = self.headers.scopes();
+            regions = scopes
+                .complete_slots(scope, work)?
+                .saturating_sub(scopes.complete_type_slots(scope, work)?)
+                as usize;
+            scope
         } else {
             let Some(HeaderRef::Function(index)) = self.headers.header(target, work)? else {
                 return Err("source application target has no actual function header");
@@ -284,16 +296,30 @@ impl Builder<'_, '_> {
             header.scope
         };
         let arguments = application.arguments.slice(&rows.arguments)?;
-        if arguments.len() != self.headers.scopes().complete_type_slots(scope, work)? as usize {
+        if regions == 0
+            && arguments
+                .iter()
+                .any(|argument| matches!(argument, s::Argument::Region(_)))
+        {
+            return Err("source early regional applications require a wider complete profile");
+        }
+        if arguments.len()
+            != (self.headers.scopes().complete_type_slots(scope, work)? as usize)
+                .saturating_add(regions)
+        {
             return Err("source application omitted or added actual unused type formals");
         }
         let mut summary = Summary::default();
-        for argument in arguments {
+        for (index, argument) in arguments.iter().enumerate() {
             work.charge(1)?;
-            let s::Argument::Type(ty) = argument else {
-                return Err("source application changed its actual formal kind");
+            let child = match argument {
+                s::Argument::Type(ty) if index >= regions => self.child(*ty, work)?,
+                s::Argument::Region(region) if index < regions => {
+                    region_summary(self.headers, self.binders, *region, work)?
+                }
+                _ => return Err("source application changed its actual formal kind"),
             };
-            summary = self.merge(summary, self.child(*ty, work)?, work)?;
+            summary = self.merge(summary, child, work)?;
         }
         Ok(summary)
     }
@@ -407,9 +433,28 @@ pub(super) fn region_summary(
                     ..Summary::default()
                 }
             }
+            // Version thirteen: a struct's or enum's own region slot, named
+            // directly in its header frame. Older profiles reject the slot
+            // itself (`record_contracts::require_profile`).
+            s::Region::Parameter { slot, depth: 0 } if nominal_region(headers, *slot) => Summary {
+                parameter: Some(*slot),
+                ..Summary::default()
+            },
             s::Region::Parameter { .. } => {
                 return Err("source early region parameters require complete wider transport");
             }
         },
     )
+}
+
+/// A region slot whose owner is a struct or enum declaration.
+fn nominal_region(headers: &super::HeaderIndex<'_>, slot: s::SlotRef) -> bool {
+    let rows = headers.rows();
+    rows.slots.get(slot.0 as usize).is_some_and(|row| {
+        row.kind == s::ParameterKind::Region
+            && rows
+                .declarations
+                .get(row.owner.0 as usize)
+                .is_some_and(|owner| s::nominal_kind(owner.definition.kind))
+    })
 }
