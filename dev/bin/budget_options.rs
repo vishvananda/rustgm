@@ -39,20 +39,12 @@ impl Options {
         let value = value
             .parse::<u32>()
             .map_err(|_| format!("{flag} exceeds the finite u32 limit"))?;
-        let old = config.source_contract_limits();
-        config.set_source_contract_limits(SourceContractLimits::new(
-            if bit == 1 { value } else { old.work_limit() },
-            if bit == 2 {
-                value
-            } else {
-                old.attempted_bytes()
-            },
-            if bit == 4 {
-                value
-            } else {
-                old.retained_bytes()
-            },
-        ));
+        let old: SourceContractLimits = config.source_contract_limits();
+        config.set_source_contract_limits(match bit {
+            1 => old.with_work_limit(value),
+            2 => old.with_attempted_bytes(value),
+            _ => old.with_retained_bytes(value),
+        });
         self.seen |= bit;
         Ok(true)
     }

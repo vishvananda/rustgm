@@ -1831,18 +1831,25 @@ repeated capacity payment or speculative token estimates. The
 [image-storage checkpoint](docs/pa31-derive-image-storage-checkpoint.md) records
 the original-core diagnosis and fixed-setup-separated scaling controls.
 
-Whole-crate source-contract allowances are explicit immutable configuration
-for runaway protection, not efficiency targets. They govern the macro-contract
-and library-inventory ledgers that read them. Keep the ordinary defaults at one
-million work units and 64 MiB each for attempted storage and retained payload.
-Zero is a real limit; every accepted numeric value is finite. Snapshot the three
-limits once when either source-core or local macro contracts are created,
-preserving attempted charges and the first sticky exhaustion cause.
-Configuration changes cannot reset an existing state. Limits grant no language,
-API, unsafe, const or metadata permission. Record any changed resource profile
-separately from target configuration and lint caps; the original-core observer
-requires matching manifest and producer limits and records the actual compiler
-arguments and effective values. Never suppress real operations.
+The macro-contract and library-inventory ledger is bounded by its admitted
+source, for runaway protection rather than as an efficiency target. Its allowance
+starts at a fixed setup floor of one million work units and 64 MiB each of
+attempted storage and retained payload. The first parse of each authenticated
+source identity (the crate root, file modules and `include!` sources) then grants
+2 work units, 64 attempted bytes and 8 retained bytes per original byte, before
+any charge reads that file. Expansion output, copied module or include instances,
+aliases and repeated requests grant nothing, so superlinear expansion still
+exhausts it. Explicit `--source-contract-*` values are optional upper caps: each
+effective limit is the smaller of its cap and the granted allowance. Zero is a
+real cap; every accepted value is finite. Snapshot the caps once when either
+source-core or local macro contracts are created. A later grant never refunds
+attempted charges or clears the first sticky exhaustion cause, and configuration
+changes cannot reset an existing state. Limits grant no language, API, unsafe,
+const or metadata permission. Record any changed resource profile separately
+from target configuration and lint caps; the original-core observer requires
+matching manifest and producer caps, passes them as compiler arguments and
+records null for an absent cap. Never suppress real operations. The
+[budget checkpoint](docs/parallel/macro-budget.md) records the sizing attribution.
 
 Efficiency comes from removing repeated work and from the complexity and scaling
 rules under "Ownership, allocation and complexity", not from a fixed whole-crate
@@ -1851,7 +1858,8 @@ its ledger by a documented constant factor of that phase's authenticated input
 graph, such as its definitions, owners, effects, AST nodes, edges and retained
 attribute tokens, as declaration checking does.
 Never reuse a constant from another domain, such as a metadata decoding bound.
-Compute the bound once before the first charge and keep failure sticky. A
+Compute the bound before the first charge that reads its input; a ledger whose
+input is admitted incrementally grants at each admission. Keep failure sticky. A
 proportional bound never justifies repeated or superlinear work: never raise its
 factor to absorb either, and qualify it with paired linear-scaling inputs and an
 adversarial superlinear control.

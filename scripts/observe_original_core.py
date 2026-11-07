@@ -18,7 +18,8 @@ import urllib.request
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = Path(__file__).with_name("original_core_manifest.json")
 LIMIT = 64 * 1024 * 1024
-SOURCE_CONTRACT_DEFAULTS = {"work": 1_000_000, "attempted_bytes": LIMIT, "retained_bytes": LIMIT}
+# No explicit cap: the compiler's admitted-input allowance governs alone (spec.md).
+SOURCE_CONTRACT_DEFAULTS = {"work": None, "attempted_bytes": None, "retained_bytes": None}
 SOURCE_CONTRACT_OPTIONS = {
     "work": "--source-contract-work-limit",
     "attempted_bytes": "--source-contract-attempted-bytes",
@@ -59,7 +60,7 @@ def lint_profile_arguments(manifest, binding, cap):
 
 
 def source_contract_profile_arguments(manifest, binding):
-    """Bind explicit finite limits to both owners; legacy observations keep defaults."""
+    """Bind explicit finite caps to both owners; without them none is passed or recorded."""
     profile = manifest["profile"]
     if not isinstance(profile, dict) or not isinstance(binding, dict):
         raise ValueError("source contract profile and producer must be objects")

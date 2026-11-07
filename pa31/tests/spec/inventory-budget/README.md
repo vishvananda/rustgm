@@ -7,7 +7,8 @@ API feature, language item, macro allowance or const permission.
 
 The [ordering contract](ordering.json) generates actual function declarations
 from the unchanged provider seed. Its largest source inventory exceeds the
-metadata-only work ceiling but fits the original configured source limits.
+metadata-only work ceiling but fits the original configured source limits. It
+also completes without explicit caps, under the admitted-input allowance.
 Request sorting must borrow that same finite payer, including failed work and
 attempted scratch storage, before publishing the label permutation. Source work
 history is never reset. Ordinary metadata ordering and request lookup retain

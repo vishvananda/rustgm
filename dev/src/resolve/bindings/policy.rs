@@ -432,7 +432,7 @@ pub(in crate::resolve) fn prepare_with_admission(
             current: current.clone(),
             provider: provider.clone(),
             features,
-            macros: super::panic_contracts::Contracts::new(limits),
+            macros: super::panic_contracts::Contracts::admitted(limits, &unit.source),
         }))),
         library,
         macros,

@@ -190,7 +190,12 @@ fn exhausted_macro_contract_work_denies_both_warm_permissions_and_frames() -> Te
     let contracts = &report.package.source_core().ok_or("provider")?.macros;
     assert!(existing(&report.package, key)?.is_some());
     assert!(contracts.edition(actual)?.is_some());
-    contracts.0.borrow_mut().steps = 1_000_000;
+    // Amended: exhaust the actual admitted allowance rather than the old fixed default.
+    let limit = {
+        let state = contracts.0.borrow();
+        state.granted.capped(state.limits).work
+    };
+    contracts.0.borrow_mut().steps = limit;
     assert!(contracts.charge(1, 0).is_err());
     assert!(existing(&report.package, key).is_err());
     assert!(contracts.edition(actual).is_err());

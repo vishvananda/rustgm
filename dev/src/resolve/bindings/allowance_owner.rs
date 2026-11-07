@@ -25,7 +25,7 @@ impl LocalMacros {
         features: policy::Features,
         limits: crate::expand::config::SourceContractLimits,
     ) -> Result<Self, Error> {
-        let contracts = panic_contracts::Contracts::new(limits);
+        let contracts = panic_contracts::Contracts::admitted(limits, &unit.source);
         contracts
             .charge(1, 4 * size_of::<Source>())
             .map_err(|message| Error::at(FileId(0), 0, message))?;

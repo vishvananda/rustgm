@@ -20,3 +20,8 @@ the actual SourceCore or LocalMacros owner. Semantic views enter the same
 contract path. Standalone `--emit-expanded` renders without those owner states;
 its first test prediction mismatch is retained in the evidence. The successor
 contract records this phase boundary before the corrected candidate run.
+
+Amended 2026-11-07: the defaults above are now the ledger's fixed setup floor.
+Each admitted source identity adds an input-proportional grant, and explicit
+values cap the result rather than replacing it. See the
+[budget checkpoint](../../../../docs/parallel/macro-budget.md).

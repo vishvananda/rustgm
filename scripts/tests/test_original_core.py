@@ -18,12 +18,13 @@ from observe_original_core import (
 
 
 class OriginalCoreInputs(unittest.TestCase):
-    def test_explicit_resources_keep_legacy_defaults_and_real_zero(self):
+    def test_explicit_resources_keep_uncapped_defaults_and_real_zero(self):
         args, limits = source_contract_profile_arguments({"profile": {}}, {})
         self.assertEqual(args, [])
         self.assertEqual(limits, SOURCE_CONTRACT_DEFAULTS)
+        self.assertEqual(set(SOURCE_CONTRACT_DEFAULTS.values()), {None})
         limits["work"] = 7
-        self.assertEqual(SOURCE_CONTRACT_DEFAULTS["work"], 1_000_000)
+        self.assertIsNone(SOURCE_CONTRACT_DEFAULTS["work"])
         requested = {"work": 14_500_624, "attempted_bytes": 0, "retained_bytes": 0xffff_ffff}
         args, effective = source_contract_profile_arguments(
             {"profile": {"source_contract_limits": requested}},
@@ -36,16 +37,17 @@ class OriginalCoreInputs(unittest.TestCase):
         self.assertEqual(requested["work"], 14_500_624)
 
     def test_resources_require_complete_matching_finite_owners(self):
-        explicit = {"source_contract_limits": dict(SOURCE_CONTRACT_DEFAULTS)}
+        legacy = {"work": 1_000_000, "attempted_bytes": 67_108_864, "retained_bytes": 67_108_864}
+        explicit = {"source_contract_limits": dict(legacy)}
         for profile, producer in (({}, explicit), (explicit, {})):
             with self.subTest(profile=profile), self.assertRaisesRegex(ValueError, "explicit"):
                 source_contract_profile_arguments({"profile": profile}, producer)
-        changed = {"source_contract_limits": {**SOURCE_CONTRACT_DEFAULTS, "work": 2_000_000}}
+        changed = {"source_contract_limits": {**legacy, "work": 2_000_000}}
         with self.assertRaisesRegex(ValueError, "differ"):
             source_contract_profile_arguments({"profile": explicit}, changed)
-        invalid = [None, [], {}, {**SOURCE_CONTRACT_DEFAULTS, "extra": 1}]
-        invalid.extend({**SOURCE_CONTRACT_DEFAULTS, "work": value}
-                       for value in (True, False, -1, 0x1_0000_0000, 1.0, "1000000"))
+        invalid = [None, [], {}, {**legacy, "extra": 1}, dict(SOURCE_CONTRACT_DEFAULTS)]
+        invalid.extend({**legacy, "work": value}
+                       for value in (True, False, -1, 0x1_0000_0000, 1.0, "1000000", None))
         for value in invalid:
             owner = {"source_contract_limits": value}
             with self.subTest(value=value), self.assertRaisesRegex(ValueError, "finite"):

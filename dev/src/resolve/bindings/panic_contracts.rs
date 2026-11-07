@@ -1,5 +1,6 @@
 //! Source-owned macro claims and the one implemented internal edition permission.
 use super::KnownFeature;
+mod allowance;
 mod grants;
 mod helpers;
 #[cfg(test)]
@@ -65,6 +66,7 @@ struct State {
     bytes: usize,
     failed: Option<Exhaustion>,
     limits: SourceContractLimits,
+    granted: allowance::Allowance,
     witness_bytes: usize,
     inventory_bytes: usize,
 }
@@ -90,9 +92,10 @@ impl State {
         self.steps = self.steps.saturating_add(steps);
         self.bytes = self.bytes.saturating_add(bytes);
         if self.failed.is_none() {
-            self.failed = if work_overflow || self.steps > self.limits.work_limit() as usize {
+            let limit = self.granted.capped(self.limits);
+            self.failed = if work_overflow || self.steps > limit.work {
                 Some(Exhaustion::Work)
-            } else if storage_overflow || self.bytes > self.limits.attempted_bytes() as usize {
+            } else if storage_overflow || self.bytes > limit.attempted {
                 Some(Exhaustion::Attempted)
             } else {
                 None
@@ -119,7 +122,7 @@ impl State {
             .and_then(|bytes| bytes.checked_add(self.inventory_bytes))
             .and_then(|bytes| bytes.checked_add(extra));
         if self.failed.is_none()
-            && bytes.is_none_or(|bytes| bytes > self.limits.retained_bytes() as usize)
+            && bytes.is_none_or(|bytes| bytes > self.granted.capped(self.limits).retained)
         {
             self.failed = Some(Exhaustion::Retained);
         }
@@ -362,11 +365,38 @@ fn is_macro(unit: &Unit, key: NodeKey) -> bool {
     )
 }
 impl Contracts {
+    /// Snapshot explicit caps and admit the crate root before any charge.
+    pub(in crate::resolve) fn admitted(
+        limits: SourceContractLimits,
+        root: &crate::support::source::SourceFile,
+    ) -> Self {
+        Self(RefCell::new(State {
+            limits,
+            granted: allowance::Allowance::SETUP.admit(root.original().len()),
+            ..State::default()
+        }))
+    }
+    /// Explicit caps alone, for tests of cap and sticky-failure mechanics.
+    #[cfg(test)]
     pub(in crate::resolve) fn new(limits: SourceContractLimits) -> Self {
         Self(RefCell::new(State {
             limits,
+            granted: allowance::Allowance::UNBOUNDED,
             ..State::default()
         }))
+    }
+    /// A newly parsed authenticated source file grants before any charge reads it.
+    /// Granting never clears a sticky exhaustion or refunds earlier attempts.
+    pub(in crate::resolve) fn admit(
+        &self,
+        source: &crate::support::source::SourceFile,
+    ) -> Result<(), &'static str> {
+        let mut state = self
+            .0
+            .try_borrow_mut()
+            .map_err(|_| "reentrant source admission accounting")?;
+        state.granted = state.granted.admit(source.original().len());
+        Ok(())
     }
     #[cfg(test)]
     pub(in crate::resolve) fn usage(&self) -> (usize, usize, usize) {

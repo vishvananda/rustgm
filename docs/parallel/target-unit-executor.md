@@ -135,8 +135,9 @@ Evidence is in `obj/parallel/target-unit-replan-v1/`: `course-plan-v3/`,
 - **Lints:** the strict-provenance lint producer, or a reviewed decision to cap
   original core, stands in front of core under Cargo's policy. Lint enforcement
   remains the recorded interim gap.
-- **Source-contract limits:** the executor should bind the census's reviewed
-  per-crate limits explicitly; it does not yet.
+- **Source-contract limits:** resolved by the
+  [input-proportional budget](macro-budget.md). Default limits now admit core
+  past `ip_addr.rs`; its first gap is `flatten.rs` 8286.
 - **Compiler support:** Rust 2015/2018, the std dylib and native linking of
   binaries.
 - **Out of scope here:** the full source closure outside package roots (stdarch,

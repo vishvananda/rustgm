@@ -4,7 +4,7 @@ use super::{
     package::{Error, Module, ModuleId, Package},
     unit::{FileId, NodeKey, Unit},
 };
-use crate::support::hash::HashMap;
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     expand::{config::Config, configured::Effect},
     literal::Value,
@@ -63,6 +63,8 @@ pub(crate) struct Loader<'a, S> {
     directories: Vec<Directory>,
     identities: Vec<PathBuf>,
     cache: HashMap<PathBuf, FileId>,
+    /// Identities whose parsed bytes already granted source-contract allowance.
+    admitted: HashSet<PathBuf>,
     separate_instances: bool,
     includes: HashMap<(PathBuf, MacroContext), FileId>,
     include_requests: HashMap<(PathBuf, MacroContext), FileId>,
@@ -220,6 +222,7 @@ impl<'a, S: Sources> Loader<'a, S> {
                 relative: None,
             }],
             identities: vec![root.identity.clone()],
+            admitted: HashSet::from_iter([root.identity.clone()]),
             cache: HashMap::from_iter([(root.identity, FileId(0))]),
             separate_instances: false,
             includes: HashMap::default(),
@@ -400,11 +403,12 @@ impl<'a, S: Sources> Loader<'a, S> {
                 let unit = Unit::parse(selected.source, self.config, &mut self.package.names)
                     .map_err(|e| Error::at(id, e.offset, e.message))?;
                 self.cache.insert(selected.identity.clone(), id);
-                self.identities.push(selected.identity);
                 self.package.units.push(unit);
                 self.package
                     .file_paths
                     .push(selected.path.components().collect());
+                self.admit(&selected.identity, id)?;
+                self.identities.push(selected.identity);
                 id
             };
             (
@@ -445,6 +449,22 @@ impl<'a, S: Sources> Loader<'a, S> {
             .insert((visit.module, declaration), id);
         self.directories.push(directory);
         Ok(id)
+    }
+    /// The first parse of an authenticated source identity grants the source
+    /// contract ledger before expansion reads it. Copied instances, aliases and
+    /// expansion output are not admissions and grant nothing.
+    fn admit(&mut self, identity: &Path, file: FileId) -> Result<(), Error> {
+        if self.admitted.contains(identity) {
+            return Ok(());
+        }
+        self.admitted.insert(identity.to_path_buf());
+        let error = |message| Error::at(file, 0, message);
+        if let Some(payer) = self.package.source_contract_payer().map_err(error)? {
+            payer
+                .admit(&self.package.unit(file).source)
+                .map_err(error)?;
+        }
+        Ok(())
     }
     fn path(&self, file: FileId, owner: Option<NodeId>) -> Result<Option<String>, Error> {
         let unit = self.package.unit(file);
@@ -554,6 +574,9 @@ impl<S: Sources> Loader<'_, S> {
         self.package
             .file_paths
             .push(input.path.components().collect());
+        if parsed {
+            self.admit(&input.identity, id)?;
+        }
         self.identities.push(input.identity);
         self.includes.entry(key).or_insert(id);
         self.include_requests.insert(requested, id);

@@ -38,7 +38,18 @@ fn actual_source_inventory_crosses_the_metadata_ceiling_without_losing_its_owner
             .count(),
         131_073
     );
-    // The same input cannot acquire a new payer after configured exhaustion.
+    // Without explicit caps the admitted-input allowance scales with the source.
+    let mut uncapped = Config::default();
+    uncapped.set_lint_cap(LintCap::Allow);
+    let report = test_source::source_provider_config(&source, "request_order", &uncapped)?;
+    let steps = report
+        .package
+        .library_policy()
+        .and_then(|library| library.inventory())
+        .ok_or("unpublished uncapped source inventory")?
+        .steps();
+    assert!(steps > 1_000_000 && steps < 2 * source.len(), "{steps}");
+    // An explicit cap still bounds that allowance, and failed debt stays sticky.
     config.set_source_contract_limits(SourceContractLimits::new(
         1_000_000,
         1_073_741_824,

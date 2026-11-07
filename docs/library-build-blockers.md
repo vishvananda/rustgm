@@ -5,6 +5,25 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+[Input-proportional macro budget](parallel/macro-budget.md) (Lane B): the
+resolve-phase macro-contract and inventory ledger is no longer capped by a fixed
+whole-crate 1M/64 MiB default. It starts from that setup floor. Then the first
+parse of each authenticated source identity grants 2 work units, 64 attempted
+bytes and 8 retained bytes per original byte. Expansion output and copies grant
+nothing. Explicit `--source-contract-*` values cap the allowance, and failure
+stays sticky. Attribution on unchanged core measured 0.573 work, 16.7 attempted
+bytes and a 1.88-byte retained peak per admitted byte (14.67 MB), all from
+linear payers. Under default limits the core target unit now passes `ip_addr.rs`.
+Its new first gap is `flatten.rs` 8286, "missing associated result contract",
+the same frontier and byte-identical census as under the observer's explicit
+caps. With Cargo's lint policy, core still stops first on the
+`implicit_provenance_casts` producer.
+
+Known regression: since LIB-193's input-graph header bound (`d2bcb1f89`),
+PA20 `assoc-bounds/{wide16,deep16,wide64,deep64}.rs` fail with "source header
+attribute producer exceeds storage budget". The bound has no setup term, and the
+LIB-193 join did not run the PA20 text suite. Lane A owns the repair.
+
 Lane C [declared associated-result transport](parallel/associated-result-transport.md)
 is joined on main. Version 13 now carries trait associated results, impl
 definitions and projections as header columns. These are present only when a

@@ -1,6 +1,7 @@
 {
   "state": "successor frozen after retained standalone-view test prediction mismatch, before Resolver-view candidate observation",
   "scope": "LIB079 explicit source-contract resource policy, no default increases or semantic permissions",
+  "amended": "2026-11-07 input-proportional ledger (docs/parallel/macro-budget.md): these defaults are now the fixed setup floor; each admitted source identity adds 2 work, 64 attempted and 8 retained bytes per original byte, and explicit values are optional upper caps. All predictions are unchanged.",
   "defaults": {
     "work_limit": 1000000,
     "attempted_bytes": 67108864,
