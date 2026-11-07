@@ -1,9 +1,13 @@
 # RustGM handoff — 2026-11-07
 
-The user requested finishing the current checkpoint, saving this handoff, and
-**pausing the active goal afterward**. Both workers are idle with clean trees.
-Resume implementation only when the user requests it. Preserve the full goal:
-**complete all assignment requirements to build the original std crates**.
+The goal is active again: **complete all assignment requirements to build the
+original std crates**. Execution follows the
+[core census and transport plan](docs/core-census-plan.md), adopted 2026-11-07.
+The backend stays frozen. Lanes: A (Source tree) LIB-193 attribution and repair;
+B (Root tree) analysis-only census mode; C (Async tree) branching body
+transport; D (next free lane) target-unit executor, Rust 2015/2018 and runtime
+shims. The const-callable WIP stays isolated on its branch. Commits use the
+repository's single-line subjects without trailers.
 
 ## Published checkpoint and assignment status
 
@@ -76,9 +80,9 @@ charge_query -> reserve_source_contracts -> target_features::pay
 
 This crosses the existing local1M work limit; storage is below16,000,000 bytes.
 It does not establish how prior aggregate work was distributed, prove quadratic
-behavior or identify the current combined compiler's exact caller. **Next task:
-attribute actual shared-budget contributions and collector work before choosing
-a permanent algorithm/accounting repair.** Preserve sticky failures and genuine
+behavior or identify the current combined compiler's exact caller. **Lane A:
+attribute actual shared-budget contributions and collector work, then repair per
+the plan's LIB-193 section.** Preserve sticky failures and genuine
 source/target permissions. Do not tune charges, raise limits, skip checks or assume
 repeated image validation is responsible merely from the error wording.
 

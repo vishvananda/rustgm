@@ -167,6 +167,9 @@ and fixture validation, never semantic feature or execution permission.
 
 ## Next concrete work and publication queue
 
+The [core census and transport plan](core-census-plan.md) supersedes the
+numbered execution items below as of 2026-11-07. They remain historical context.
+
 1. Integrator: close source-declarations' LIB-046 storage growth, then rerun
    unchanged original core once on the qualified compiler. Actual immutable
    debugger attribution shows cumulative storage67109064 bytes and combined

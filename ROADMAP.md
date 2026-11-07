@@ -24,6 +24,12 @@ every valid unsupported requirement remain named work. The
 source pins and the full acceptance ladder; the
 [live tracker](docs/library-build-blockers.md) owns concrete failures.
 
+The [core census and transport plan](docs/core-census-plan.md), adopted
+2026-11-07, is the current execution path: repair LIB-193, add an analysis-only
+keep-going census of original core, and develop branching body transport and
+the alloc/std build lanes in parallel. The backend stays frozen. Assignment
+requirements and status are unchanged.
+
 | PA | Assignment | Status |
 | --- | --- | --- |
 | [1](pa1/README.md) | Source and tokens | implemented-draft |

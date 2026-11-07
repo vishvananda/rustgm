@@ -1,5 +1,10 @@
 # Library build blocker tracker
 
+Execution follows the [core census and transport plan](core-census-plan.md)
+from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
+original core replaces one-at-a-time discovery, and each batch of repairs gets one
+entry here.
+
 Current joined original-core observation reports **LIB-193**, the unlocated
 source-header query-work guard, in19.6071s/375opens. The
 [cold/deprecation integration](parallel/cold-deprecation-main-join.md) clears
