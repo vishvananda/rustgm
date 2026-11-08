@@ -82,6 +82,7 @@ impl Inputs {
             }
             Err(error) => return Err(error.to_string()),
         }
+        header_regions(&facts.types, &mut context, &child_goal, &parent_goal)?;
         let goals = parent_goals(
             facts,
             parent,
@@ -215,6 +216,32 @@ impl Regions {
         })
     }
 }
+/// rustc 1.98's `specializes` equates the child's trait reference with the
+/// parent's fresh instantiation, lifetimes included. These equations only name
+/// each parent header lifetime by the child's corresponding one, which restores
+/// the parent's arguments; as in rustc, they resolve no region constraint.
+fn header_regions(
+    store: &crate::types::Store,
+    context: &mut Context,
+    child: &Goal,
+    parent: &Goal,
+) -> Result<(), String> {
+    for pair in child.arguments().zip(parent.arguments()) {
+        match pair {
+            (Argument::Type(a), Argument::Type(b)) => match context.equate(store, a, b) {
+                // The shape equation already accepted these inputs; a projection
+                // or opaque pair names no further header lifetime here.
+                Ok(()) | Err(infer::Error::Mismatch | infer::Error::Normalization) => {}
+                Err(error) => return Err(error.to_string()),
+            },
+            (Argument::Lifetime(a), Argument::Lifetime(b)) if a != b => {
+                context.region_equalities.push((a, b));
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
 fn parent_goals(
     facts: &mut Declarations,
     parent: EntryKey,
@@ -270,3 +297,7 @@ fn parent_goals(
     }
     Ok(goals)
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/specialized_header_lifetimes.rs"]
+mod header_lifetime_tests;

@@ -1,0 +1,75 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The shapes reduce the crate record that follows census 10's once `FnPtr` coherence is repaired (an analysis-only diagnostic census, obj/parallel/census-batch10/diagnostics/d1): \"specialization parent capture has no unique child anchor\" at core's `impl<I: DoubleEndedIterator> DoubleEndedIteratorRefSpec for &mut I` (iter/traits/double_ended.rs:498), which specializes `impl<I: DoubleEndedIterator + ?Sized> DoubleEndedIteratorRefSpec for &mut I`. Drafts of the double-ended, iterator, shared-reference, named-lifetime, concrete-referent, nominal-lifetime and static-reference shapes (obj/parallel/census-batch10/repro/spec-*.rs, different bytes) were run through the analysis-only candidate before this declaration, and only the static draft passed; none was run through rustc. Each outcome follows the rule read in the pinned rustc 1.98.0 sources (compiler/rustc_trait_selection/src/traits/specialize/mod.rs `specializes`, which equates the specializing impl's trait reference with the parent's fresh instantiation, lifetimes included, and compiler/rustc_hir_analysis/src/impl_wf_check/min_specialization.rs): a parent's lifetime parameter is the child's corresponding header lifetime, so a lifetime that only appears in both headers does not prevent specialization, and adding `Sized` (a specialization trait) to a `?Sized` parent is permitted; min_specialization still rejects a parent argument that is `'static` where the parent is generic and a child that repeats a lifetime in the parent's arguments",
+ "declaration_sha256": "dfff212b30e4b3ab427939bfaece134a1b93f4a8de2ae3c9cd9fa8fa83bccd5b",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "double-ended-ref.rs": {
+   "sha256": "87ddf37fa6423ee4b11132d9816b308f3166a4f4baad38e15b77ffc435512f39",
+   "declared": 0,
+   "reason": "core's shape (iter/traits/double_ended.rs:473 and 498): `impl<I: Back + ?Sized> BackSpec for &mut I` with a `default fn`, specialized by `impl<I: Back> BackSpec for &mut I`, where `BackSpec: Back: Iter` and `&mut I` implements both",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "iterator-ref.rs": {
+   "sha256": "657a4a3390f8b8a9e061e9a4bb79c9dd6eb89c28665e92de13d5bf09e49e2306",
+   "declared": 0,
+   "reason": "core's `IteratorRefSpec` shape (iter/traits/iterator.rs:4279 and 4304) over `Iter` alone",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "shared-reference.rs": {
+   "sha256": "27d8e230b0ccf30fe63acd836854594fe6b180d7a3784937c8858fe5cb48ea92",
+   "declared": 0,
+   "reason": "the same pair over `&I` with a plain trait bound and no supertrait",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "named-lifetimes.rs": {
+   "sha256": "52f0377c04e973f55de1fd8e8939e22642eb2eabd65ecb8188bd80cfd523f3a8",
+   "declared": 0,
+   "reason": "the pair over `&'a mut I` and `&'b mut I` with differently named header lifetimes",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "concrete-referent.rs": {
+   "sha256": "1fca6779fc34055d7f9a5941ac9d36b56f294b5dbe67294a97660b42e3784273",
+   "declared": 0,
+   "reason": "`impl<'a> Spec for &'a u8` specializing `impl<'a, I: ?Sized> Spec for &'a I`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "nominal-lifetime.rs": {
+   "sha256": "0970544e5ea785b473456c1cc4fc1c7df74478f0fc695d439d382ec1daf976a9",
+   "declared": 0,
+   "reason": "the pair over a nominal with a lifetime parameter, `Wrap<'a, I>`, the child adding `I: Sized`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "static-reference.rs": {
+   "sha256": "6c3d7a8475c8086911249c040992cd81281b9046e2b1d5edf9260655aaaea49f",
+   "declared": 0,
+   "reason": "guard: both headers use `&'static I`, so no lifetime is specialized",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "static-specialization.rs": {
+   "sha256": "9bddfa6a2adbcbdbf65a92ac3ef4a7763463e438aa31c99b92a29e564d847e27",
+   "declared": 1,
+   "reason": "opponent: `impl<I: ?Sized> Spec for &'static I` specializing `impl<'a, I: ?Sized> Spec for &'a I` specializes on `'static` (rejected by min_specialization)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "repeated-lifetime.rs": {
+   "sha256": "ca5c3c787d1f23c0090cbd65715016b8b8d15548e55f3f2b1621cb71d8ae3b0b",
+   "declared": 1,
+   "reason": "opponent: `impl<'b> Spec for &'b &'b u8` specializing `impl<'a, I: ?Sized> Spec for &'a I` repeats `'b` in the parent's arguments (rejected by min_specialization)",
+   "rustc_status": 1,
+   "error_codes": []
+  }
+ }
+}
