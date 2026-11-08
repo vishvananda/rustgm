@@ -278,33 +278,25 @@ impl Inputs {
             }
         }
         if count != 0 {
-            let growth = crate::support::retained::Growth::vector::<infer::predicates::Predicate>(
-                self.traits.len(),
-                self.traits.capacity(),
-                count,
-            );
+            // Each reserved condition is one step of this pair's work. On regrowth
+            // only the newly reserved conditions' bytes are paid, once, in the
+            // source-header byte ledger; the conditions already reserved were paid.
+            context.account_work(count).map_err(|e| e.to_string())?;
             // Ordinary PA20 crates have no source-header ledger. Do not create
             // one after declaration completion merely to account temporary work.
-            context
-                .account_work(
-                    growth
-                        .work
-                        .saturating_add(count)
-                        .saturating_add(growth.bytes),
-                )
-                .map_err(|e| e.to_string())?;
             if facts
                 .must_use_contracts
                 .as_deref()
                 .and_then(|owner| owner.headers.as_ref())
                 .is_some()
             {
-                crate::sema::header_attributes::charge_attribute_retention(
-                    facts,
-                    growth.work.saturating_add(count),
-                    growth.bytes,
-                )
-                .map_err(|e| e.to_string())?;
+                let bytes = if self.traits.capacity() - self.traits.len() < count {
+                    count.saturating_mul(size_of::<infer::predicates::Predicate>())
+                } else {
+                    0
+                };
+                crate::sema::header_attributes::charge_attribute_retention(facts, count, bytes)
+                    .map_err(|e| e.to_string())?;
             }
             self.traits
                 .try_reserve(count)

@@ -4206,6 +4206,20 @@ existing coherence kernels. Keep reference and iteration queries on their full
 condition path. Scaling controls must exercise both disjoint heads and compatible
 heads with growing conditions, alongside real/open overlap and failed payment.
 
+Before instantiating either header, ask whether the two trait references could
+unify at all, as rustc's `overlapping_impls` asks `args_may_unify`: Self, then
+each argument, eight constructor levels deep. Parameters of both impls,
+projections, opaque types and lifetimes may unify with anything. Rigid
+constructors compare kind, mutability, array length, tuple and function arity,
+function safety and ABI, principal trait and nominal identity. A rejected pair
+pays one step per compared pair of nodes and no instantiation; a difference
+below the depth, behind an alias or under a parameter's projection reaches the
+complete equation. A reserved condition costs one step in the pair's overlap
+ledger and, for a source crate, one in the source-header ledger, whose byte
+ledger alone pays the bytes of newly reserved conditions on regrowth. The
+[deep reject controls](pa31/tests/spec/deep-reject/README.md) record independent
+outcomes and audit every coherence and specialization control.
+
 Trait application index and cycle keys share one lazy structural fold owned by
 the canonical type store. Its result is an opaque comparable key, never a usable
 predicate or lifetime proof. Erasure has no lexical context: shared callable

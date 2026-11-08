@@ -1,0 +1,159 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The shapes isolate the rule census 11's overlap budget record needs (an analysis-only diagnostic census, obj/parallel/census-batch11/diagnostics/d1-pairs: 20,986 of core's 22,895 coherence pairs cannot unify at a rigid constructor, yet each instantiated both headers). Each outcome follows the rule read in the pinned rustc 1.98.0 sources (compiler/rustc_trait_selection/src/traits/coherence.rs `overlapping_impls`, which asks `DeepRejectCtxt::relate_infer_infer(..).args_may_unify` of both impls' trait references before instantiating either header and then runs `overlap`, which equates the normalized headers; compiler/rustc_type_ir/src/fast_reject.rs `types_may_unify_inner` with `STARTING_DEPTH` 8, where parameters on both sides, aliases, inference variables, bound and placeholder types may unify with anything, lifetimes always may, and rigid constructors compare their kind, mutability, length, arity, safety and ABI, principal trait and nominal identity): two headers that differ at a rigid constructor within eight levels are disjoint, a difference below that depth is decided by the complete overlap check, and a type alias or a projection that normalizes to the other header's type hides no difference, so those impls overlap (E0119)",
+ "declaration_sha256": "181d8850a5dfedf1ff415307511ec87a4a34b62fd4cceae2f70a88ff6671111f",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "nested-nominals.rs": {
+   "sha256": "2c522d4862bdb824f18e01d4de6f9829b3f1562f3df3db7c811911356ca5463e",
+   "declared": 0,
+   "reason": "four `impl<T> Mark<T> for W<Si>` over distinct unit structs share `W`'s simplified self type; every pair differs one level down",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "trait-arguments.rs": {
+   "sha256": "a577162e3acb9889fdc286fd0bff2fc3ae1ff5e9175d45d97ab095c62a22fa9b",
+   "declared": 0,
+   "reason": "`impl<T> Mark<u8> for W<T>` beside `impl<T> Mark<u16> for W<T>`: the subjects unify and the trait arguments do not",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "array-lengths.rs": {
+   "sha256": "a895235945370efb29638039822f9d8c8daa32cabbfea3656ffc32c216e6bc34",
+   "declared": 0,
+   "reason": "`W<[u8; 1]>` beside `W<[u8; 2]>`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "reference-mutability.rs": {
+   "sha256": "2ad12b02ee7b8ba646d5241d8f3d66878539e8179609ae8e67f2822efbf2c6cf",
+   "declared": 0,
+   "reason": "`W<&'static u8>` beside `W<&'static mut u8>`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "pointer-mutability.rs": {
+   "sha256": "301803f98e4081e049c59b0ffbf5eb5dbf58cd5294d9a13cf8a54107bdab2ecb",
+   "declared": 0,
+   "reason": "`W<*const u8>` beside `W<*mut u8>`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "tuple-arity.rs": {
+   "sha256": "2352ffb736715132f838cc7998bef8729adec8a06585c56bb1f5668f09925d7d",
+   "declared": 0,
+   "reason": "`W<(u8,)>` beside `W<(u8, u8)>`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "function-arity.rs": {
+   "sha256": "4bd7c02ea615ec0ce0de69b4009365181728370ed822f1f6d8de07d93461b994",
+   "declared": 0,
+   "reason": "`W<fn(u8)>` beside `W<fn(u8, u8)>`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "function-safety.rs": {
+   "sha256": "fc9c0103d70f36d002c5bf9fe48abcf84e04f53d37a430e82092bec1e3a15107",
+   "declared": 0,
+   "reason": "`W<fn(u8)>` beside `W<unsafe fn(u8)>`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "object-principals.rs": {
+   "sha256": "9a5a58da46ca5e92c17349a768a1a630b566e4ba214f43ece8b04be16e8c62a3",
+   "declared": 0,
+   "reason": "`W<&'static dyn X>` beside `W<&'static dyn Y>`: different principal traits",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "past-depth.rs": {
+   "sha256": "0c28292e10c5222584442987c50c44632d0c117119453af983313f90a8c47a1b",
+   "declared": 0,
+   "reason": "guard: the headers differ (`u8` against `u16`) under ten nested `V`, beyond the reject's depth, so the complete overlap check proves them disjoint",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "parameter.rs": {
+   "sha256": "d16afbfb3ce68f405f117e10e5b03c98dc8d18babf12a625bddc50dd7176b875",
+   "declared": 1,
+   "reason": "opponent: `W<T>` beside `W<u8>`; the parameter unifies with `u8` (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "crossed-arguments.rs": {
+   "sha256": "04e834e08e2e2199636bee15c1f44beb7ecbf5c8b7860dee7755a162f41dd604",
+   "declared": 1,
+   "reason": "opponent: `impl<T> Mark<T> for W<u8>` beside `impl<T> Mark<u8> for W<T>`; both apply to `W<u8>: Mark<u8>` (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "lifetime.rs": {
+   "sha256": "315fa6e600a25facbd18c3556ffeefde8a846d55b03c44ea5eb4e313024f4a1f",
+   "declared": 1,
+   "reason": "opponent: `W<&'a u8>` beside `W<&'static u8>`; lifetimes never make impls disjoint (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "const-parameter.rs": {
+   "sha256": "d471cfc3556a93bfa21e910e39947962ff915b9b0ae4af1c44f7d59acef4e045",
+   "declared": 1,
+   "reason": "opponent: `W<[u8; N]>` beside `W<[u8; 2]>`; a const parameter unifies with a length (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "past-depth-overlap.rs": {
+   "sha256": "a7201db11a8d4e0bc5734f0b9e2a33e714447af0f7ac782cf519de5158b23f7a",
+   "declared": 1,
+   "reason": "opponent: ten nested `V` over `u8` beside the same nesting over `T` (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "alias-overlap.rs": {
+   "sha256": "82694a477bc76d9618043301042d51dcec6a3e777ff708fe80ac989c4dedb371",
+   "declared": 1,
+   "reason": "opponent: `W<Short>` with `type Short = u16` beside `W<u16>`; the only difference is the alias (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "projection-overlap.rs": {
+   "sha256": "ead4d98a879e28cb6647477c218f1d4fadeb633e9c6cc63d494cd22924f70d06",
+   "declared": 1,
+   "reason": "opponent: `W<<u8 as Tr>::Out>`, which normalizes to `u16`, beside `W<u16>`; the only difference is the projection (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "parameter-projection.rs": {
+   "sha256": "2507b8acfdabf694324adff31eeb67a9054e1c54ad24178ee277dcaa134234e2",
+   "declared": 1,
+   "reason": "opponent: `impl<T: Tr> Mark<T> for W<(T, <T as Tr>::Out)>` beside `W<(u8, u16)>`; with `T = u8` the projection is `u16` (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "projection-disjoint.rs": {
+   "sha256": "5209b8814cbc16a59a81330328e772ca8cc41ca67cf95e08dda7dc33a921cbca",
+   "declared": 0,
+   "reason": "guard: `W<<u8 as Tr>::Out>`, which normalizes to `u16`, beside `W<u32>`; the projection reaches the complete check, which proves the impls disjoint",
+   "rustc_status": 0,
+   "error_codes": []
+  }
+ }
+}

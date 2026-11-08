@@ -1,4 +1,5 @@
 //! Structural impl disjointness uses simultaneous existential type/const equations.
+mod deep_reject;
 mod disjointness;
 pub(in crate::sema) use disjointness::absence_closed;
 #[cfg(test)]
@@ -6,6 +7,9 @@ pub(in crate::sema) use disjointness::absence_closed;
 mod head_tests;
 mod inputs;
 mod iteration;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/rejected_overlap_pairs.rs"]
+mod rejection_tests;
 use crate::{
     resolve::model::DefId,
     sema::model::Declarations,
@@ -16,27 +20,88 @@ use crate::{
 };
 pub(in crate::sema) use iteration::possible as iteration;
 
+/// Whether two impl headers may overlap, and the steps spent deciding it. Like
+/// rustc's `overlapping_impls`, a pair whose trait references differ at a rigid
+/// constructor is answered by that comparison, before either header is instantiated.
 pub(in crate::sema) fn possible(
     facts: &mut Declarations,
     left: (Predicate, DefId),
     right: (Predicate, DefId),
 ) -> Result<(bool, usize), String> {
+    let (unifiable, compared) = deep_reject::may_unify(&facts.types, left.0, right.0)?;
+    #[cfg(test)]
+    audit(facts, left, right, unifiable)?;
+    if !unifiable {
+        return Ok((false, compared));
+    }
+    let (overlap, steps) = instantiated(facts, left, right)?;
+    Ok((overlap == Overlap::Possible, steps.saturating_add(compared)))
+}
+
+/// The complete answer for two instantiated impl headers.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Overlap {
+    /// Their simultaneous shape equation fails.
+    Disjoint,
+    /// Their shapes unify, but sizing or a condition excludes every intersection.
+    Excluded,
+    Possible,
+}
+
+fn instantiated(
+    facts: &mut Declarations,
+    left: (Predicate, DefId),
+    right: (Predicate, DefId),
+) -> Result<(Overlap, usize), String> {
     let mut context = Context::default();
     let mut inputs = inputs::Inputs::default();
     let (a, mut left_inputs) = inputs.head(facts, &mut context, left)?;
     let (b, mut right_inputs) = inputs.head(facts, &mut context, right)?;
     let mode = crate::sema::coherence_policy::predicate(facts, left.0);
-    let possible = match context.equate_predicate_shapes(&facts.types, &a, &b) {
+    let overlap = match context.equate_predicate_shapes(&facts.types, &a, &b) {
         Ok(()) => {
             inputs.conditions(facts, &mut context, left.1, &mut left_inputs)?;
             inputs.conditions(facts, &mut context, right.1, &mut right_inputs)?;
-            !disjointness::has_unsized(facts, &mut context, &inputs)?
-                && !inputs.excluded(facts, &mut context, &[&left_inputs, &right_inputs], mode)?
+            if disjointness::has_unsized(facts, &mut context, &inputs)?
+                || inputs.excluded(facts, &mut context, &[&left_inputs, &right_inputs], mode)?
+            {
+                Overlap::Excluded
+            } else {
+                Overlap::Possible
+            }
         }
-        Err(infer::Error::Mismatch | infer::Error::Occurs) => false,
+        Err(infer::Error::Mismatch | infer::Error::Occurs) => Overlap::Disjoint,
         Err(error) => return Err(error.to_string()),
     };
-    Ok((possible, context.steps))
+    Ok((overlap, context.steps))
+}
+
+#[cfg(test)]
+thread_local! {
+    /// Test-only: when set, every pair the reject answers is instantiated too.
+    /// Counts the pairs compared, the pairs rejected and the rejected pairs
+    /// whose complete shape equation still succeeds, which must stay zero.
+    static AUDIT: std::cell::Cell<Option<[usize; 3]>> = const { std::cell::Cell::new(None) };
+}
+#[cfg(test)]
+fn audit(
+    facts: &mut Declarations,
+    left: (Predicate, DefId),
+    right: (Predicate, DefId),
+    unifiable: bool,
+) -> Result<(), String> {
+    let Some([pairs, rejected, unifying]) = AUDIT.with(std::cell::Cell::get) else {
+        return Ok(());
+    };
+    let unifies = !unifiable && instantiated(facts, left, right)?.0 != Overlap::Disjoint;
+    AUDIT.with(|cell| {
+        cell.set(Some([
+            pairs + 1,
+            rejected + usize::from(!unifiable),
+            unifying + usize::from(unifies),
+        ]));
+    });
+    Ok(())
 }
 
 /// The same complete owner conditions also govern inherent method ambiguity.

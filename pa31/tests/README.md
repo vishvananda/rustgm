@@ -676,3 +676,12 @@ with core's const callable reference impls are a recorded `[const]`
 requirement gap. Each outcome was declared before its rustc 1.98.0 oracle; its
 one fixture amendment was declared before the amended oracle and before any
 candidate run. A private invariant checks them; there is no graded manifest.
+
+`spec/deep-reject/` freezes nineteen declared no_core controls from census
+batch 11: pairs of impls of one trait whose trait references differ at a rigid
+constructor, which rustc's `overlapping_impls` rejects before instantiating
+either header, beside guards past the eight-level depth and opponents whose
+difference is a parameter, a lifetime, a const parameter, an alias or a
+projection (each E0119). Each outcome was declared before its rustc 1.98.0
+oracle. A private invariant checks them and audits every coherence and
+specialization control; there is no graded manifest.
