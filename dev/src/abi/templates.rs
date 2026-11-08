@@ -5,6 +5,9 @@ use crate::types::{
     Kind, Primitive, Store, TypeId,
     aggregate::{self, Definitions, Representation},
 };
+#[cfg(test)]
+#[path = "../../tests/invariants/trailing_objects.rs"]
+mod tests;
 
 #[derive(Clone, Copy)]
 struct Properties {
@@ -209,11 +212,14 @@ impl Templates {
             Ok(())
         })?;
         match kind {
+            // A trait object, like a slice or str, has no fixed layout. A
+            // declaration ending in one has no static layout to demand.
             Kind::Foreign(_)
             | Kind::Parameter(_)
             | Kind::Projection(_)
             | Kind::ArrayTerm { .. }
             | Kind::Slice(_)
+            | Kind::Dynamic { .. }
             | Kind::Primitive(Primitive::Str) => {
                 properties.known = false;
             }

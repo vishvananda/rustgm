@@ -634,3 +634,13 @@ no bound on its subject. Each outcome was declared before its rustc 1.98.0
 oracle; the one amendment, adding the `Freeze` lang item that rustc's const
 checking requires, was declared before the amended oracle and before any
 candidate run. A private invariant checks them; there is no graded manifest.
+
+`spec/dynamic-tail-layouts/` freezes eight declared no_core controls from census
+batch 9: declarations whose last field is or ends in a trait object, which has
+no fixed layout. They cover core's `Request` over `Tagged<dyn Erased<'a> + 'a>`
+with and without `repr(transparent)`, tuple, record and transparent trait
+object tails, and a slice tail guard. Two opponents are E0277: a trait object
+before another field and as an enum variant field. Each outcome was declared
+before its rustc 1.98.0 oracle; its two prefix amendments were each declared
+before the next oracle and before any candidate run. A private invariant checks
+them; there is no graded manifest.

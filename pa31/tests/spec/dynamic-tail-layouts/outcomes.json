@@ -1,0 +1,85 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The shapes reduce census 10's lookahead record at core's error.rs:588 (`#[repr(transparent)] pub struct Request<'a>(Tagged<dyn Erased<'a> + 'a>);`, \"trait object has no fixed layout\" in the crate-wide layout pass). Analysis-only drafts of the request, plain request and tuple tail shapes (obj/parallel/census-batch9/repro/layout-*.rs) were run through the census 10 pin and, for the request shapes, rustc 1.98.0 before this declaration, so those three are a regression record of that exploration; the others were not run by anyone. Each outcome follows the stated rule (a trait object, like a slice or str, has no fixed layout, so a declaration whose last field is or ends in one has no static layout to demand and is accepted; a trait object that is not the last field of a struct, or is an enum variant field, is still not sized and is rejected)",
+ "declaration_sha256": "80808de0c6a768a372912e3f5be2b7a7372fe37af1a137435dbc06337ef124dd",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [
+  {
+   "amended": "2026-11-08, after the first frozen rustc 1.98.0 oracle and before any candidate run of either the original or the amended bytes",
+   "supersedes_declaration_sha256": "3aed75fae320e3b34b0810909117e07a5caf9f9c7abaad6500f30be27efa4d1e",
+   "observation": "obj/parallel/census-batch9/oracle/dynamic-tail-layouts.rustc-oracle.json",
+   "observation_sha256": "6cc75e88bbc91bab7b5ff4871a2ef76769ce78492050373972ef2a0e9594e35b",
+   "reason": "rustc 1.98.0 rejected three controls declared to be accepted (tuple-tail, transparent-tail and slice-tail) with `requires copy lang_item` before checking their layouts, because the no_core prefix lacked it. Every file gains the minimal `Clone` and `Copy` lang items of the const-bound-projections prefix after `Sized`. No declaration body or declared outcome changes."
+  },
+  {
+   "amended": "2026-11-08, after the second frozen rustc 1.98.0 oracle and before any candidate run of any of these bytes",
+   "supersedes_declaration_sha256": "abec5cdc733c4736087961feba67d490339db13a45799e6bf050eb590e0b6cb3",
+   "observation": "obj/parallel/census-batch9/oracle/dynamic-tail-layouts.amended-1.rustc-oracle.json",
+   "observation_sha256": "e26844f86af965d95b8c1709fdd3f8c51cec6392f719019712faa8a4bddfbc0e",
+   "reason": "the first amendment added `Clone` without the `legacy_receiver` lang item its `&self` receiver needs, so rustc 1.98.0 rejected all six controls declared to be accepted with `requires legacy_receiver lang_item`. Every file gains the minimal `LegacyReceiver` declaration and its two reference impls before `Clone`, so lines 3 to 54 are exactly those of the const-bound-projections prefix. No declaration body or declared outcome changes."
+  }
+ ],
+ "cases": {
+  "request.rs": {
+   "sha256": "3effe6a86d1f1a4274b7d3e4f8e28fe2d312915d7e3422f039bbd2569ad057e3",
+   "declared": 0,
+   "reason": "core's exact `Request` shape (error.rs:588): a `#[repr(transparent)]` struct over `Tagged<dyn Erased<'a> + 'a>`, whose last field is the trait object",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "plain-request.rs": {
+   "sha256": "9e2617588acd9f8488ee4b1fe4e0c9b1a41c94310d0de3cf62042b752a5e5fd4",
+   "declared": 0,
+   "reason": "the same `Request` without `#[repr(transparent)]`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "tuple-tail.rs": {
+   "sha256": "1bf97a65d1d633df15dd4646bf79639231107f9acd4ce026d68de9d4a75955a8",
+   "declared": 0,
+   "reason": "a tuple struct whose last field is `dyn Erased`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "lifetime-tail.rs": {
+   "sha256": "96de3deb2db89a882b79f8be0e169ae87b0a91b23f0c7f7aed6c84042af9bb2f",
+   "declared": 0,
+   "reason": "a record struct whose last field is `dyn Erased<'a> + 'a`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "transparent-tail.rs": {
+   "sha256": "c87f9929d31b4c8e74558707dae3f708205420005d20e2296b2b1a76721bbd53",
+   "declared": 0,
+   "reason": "a `#[repr(transparent)]` struct whose only field is `dyn Erased`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "slice-tail.rs": {
+   "sha256": "a3ce6522f40110c22f33d2fc8c371f1344602ba509fd1d8871a47634abc10326",
+   "declared": 0,
+   "reason": "guard: a struct whose last field is a slice",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "leading-object.rs": {
+   "sha256": "aee523e75c5ef932bc1cf2c7828e9404e789cdb37c79c2e1de3983b7f4d1ed73",
+   "declared": 1,
+   "reason": "opponent: `dyn Erased` before another field is an unsized field that is not last (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "enum-object.rs": {
+   "sha256": "ba30b9a919a096e44149c8c49b537ffc8525e912b1114420aa3988b6a994d5fc",
+   "declared": 1,
+   "reason": "opponent: an enum variant field of type `dyn Erased` is unsized (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  }
+ }
+}

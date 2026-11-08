@@ -1999,6 +1999,13 @@ bound projections](pa31/tests/spec/const-bound-projections/README.md) controls
 retain core's `as_deref`, `as_deref_mut`, `Pin::as_ref` and `<[T]>::get`
 shapes, their guards and their opponents.
 
+A trait object, like a slice or str, has no fixed layout. The crate-wide layout
+pass demands no static layout for a declaration whose last field is, or ends
+in, a trait object, as rustc 1.98 accepts such declarations; any other unsized
+field is still rejected. The [dynamic tail
+layouts](pa31/tests/spec/dynamic-tail-layouts/README.md) controls retain core's
+`Request`, tuple, record and transparent tails and their opponents.
+
 An analysis-only declaration census that fails a crate-wide declaration pass
 for any reason other than sticky budget exhaustion still runs every later pass
 exactly as ordinary checking would, with census isolation suspended. Each later
