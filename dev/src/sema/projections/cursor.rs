@@ -1,4 +1,7 @@
 //! An owned semantic cursor retains the exact fold and selection across definition waits.
+#[cfg(test)]
+#[path = "../../../tests/invariants/nested_condition_universes.rs"]
+mod scoped_body_tests;
 use super::{Declarations, DefId, Definition, Obligations, ScopeId, TypeId};
 use crate::support::hash::HashMap;
 use crate::{

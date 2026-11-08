@@ -573,10 +573,18 @@ invariant checks them; there is no graded manifest.
 
 `spec/region-sugar-impl-parameters/` freezes eight declared no_core controls
 for impl parameters that only a region-binding callable bound determines (core
-`Scan` and `MapWindows` shapes), with caller premises, a mismatch opponent, an
-opponent whose output names the bound region and two recorded generic-body
-gaps. Each outcome was declared before its rustc 1.98.0 oracle. A private
-invariant checks them; there is no graded manifest.
+`Scan` and `MapWindows` shapes), with caller premises, two generic bodies, a
+mismatch opponent and an opponent whose output names the bound region. Each
+outcome was declared before its rustc 1.98.0 oracle. A private invariant
+checks them; there is no graded manifest.
+
+`spec/scoped-body-selections/` freezes seventeen declared no_core controls for
+generic bodies that select an impl with a region-binding condition (core
+`Scan` adapter and `MapWindows` shapes) by method, path and qualified calls,
+with two mismatch opponents, two E0599 opponents and two recorded gaps of a
+separate cause (an impl parameter determined to name a caller lifetime). Each
+outcome was declared before its rustc 1.98.0 oracle. A private invariant
+checks them; there is no graded manifest.
 
 `spec/impl-header-projections/` freezes ten declared no_core controls for an
 impl header that names a projection of its own parameter (core `ControlFlow`

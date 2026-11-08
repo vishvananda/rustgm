@@ -2,22 +2,29 @@
 use super::{Obligations, Range};
 
 impl Obligations {
-    /// Attach a flat streamed child in one existing universe. Each owned interval
+    /// Attach a streamed child in one existing universe. Each owned interval
     /// contributes variables once; constraints remain together after all intervals.
+    /// A child with its own binders (a selected impl's quantified condition)
+    /// keeps them below this universe, as its selection opened them there.
     pub(crate) fn append_streamed_at(
         &mut self,
         mut proof: Self,
         scope: super::ScopeId,
     ) -> Result<(), &'static str> {
-        if scope == super::ScopeId::ROOT || !proof.has_gaps() {
+        if scope == super::ScopeId::ROOT {
             return self.append_at(proof, scope);
         }
-        if proof.regions.start != self.regions.end
-            || proof
-                .quantified
-                .as_ref()
-                .is_some_and(|q| !q.scopes.is_empty() || !q.blocks.is_empty())
+        if proof
+            .quantified
+            .as_ref()
+            .is_some_and(|q| !q.scopes.is_empty() || !q.blocks.is_empty())
         {
+            return self.graft_owned(proof, scope).map(|_| ());
+        }
+        if !proof.has_gaps() {
+            return self.append_at(proof, scope);
+        }
+        if proof.regions.start != self.regions.end {
             return Err("invalid scoped streamed projection evidence");
         }
         self.scope_depth(scope)?;

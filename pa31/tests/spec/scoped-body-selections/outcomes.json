@@ -1,0 +1,161 @@
+{
+ "schema": 1,
+ "declared": "2026-11-07, after the scoped-proof change and RustGM probes of similar exploratory shapes in obj/lane-b2/probes*, before any rustc run of any shape here and before any rustc or RustGM run of these committed bytes; the frozen oracle runs on these bytes after this declaration",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "cases": {
+  "path-call.rs": {
+   "sha256": "b7846c2aa27567ea6650b1198a18a50a62cccd6fd66b527bcd597abe35372583",
+   "declared": 0,
+   "reason": "Iterator::next(s) selects Scan<u8, F>: Iterator from a generic body; the impl condition F: FnMut(&mut St) -> Option<B> quantifies its elided region and the caller premise determines B = u16",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "qualified-call.rs": {
+   "sha256": "01f2d6defecdc6e992ceac7fbb93675ab53ebca459129193c290f3bf3b75d1ae",
+   "declared": 0,
+   "reason": "the same selection through <Scan<u8, F> as Iterator>::next(s)",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "matched.rs": {
+   "sha256": "9fe9df5acb19817d24a9dfb27d2bb0d80887e5ae3389eaa4581f1fcafbaea60e",
+   "declared": 0,
+   "reason": "s.next() on an owned mutable binding, matched on the normalized u16 item",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "constructed.rs": {
+   "sha256": "c6b4f57161f436fe1a21dfbf4464e57d077d7a2bbf4881f612b4f01ffb38458b",
+   "declared": 0,
+   "reason": "a Scan built from a struct literal inside the body, then s.next()",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "annotated.rs": {
+   "sha256": "3391f67fe4effcfde260c4cdccdebca82cf2f952264e00ee33a6b5e5fa96819f",
+   "declared": 0,
+   "reason": "a let annotation names <Scan<u8, F> as Iterator>::Item inside the body",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "generic-state.rs": {
+   "sha256": "5cad39b95973506954f77743d70d642e8ed19edfba076ad45252cff92ae23f69",
+   "declared": 0,
+   "reason": "the state is the caller type parameter T, F: FnMut(&mut T) -> Option<u16>",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "generic-output.rs": {
+   "sha256": "37fc47893c44c9d28ef475b981ea64f9c45bb9a256ffa3bb766736017a17d16e",
+   "declared": 0,
+   "reason": "the caller premise output names its type parameter T, so B = T",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "static-output.rs": {
+   "sha256": "57c48479948a14241b1eae93b41008fc8fde0588b161e2d99bb1632095a02407",
+   "declared": 0,
+   "reason": "the caller premise output names 'static, so B = &'static u8",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "fixed-output-path.rs": {
+   "sha256": "318ff32ab7497653b3941e0b1e208ec2ef7d46b69afef896f0bf8487be2c23b6",
+   "declared": 0,
+   "reason": "Iterator::next(s) on the impl whose region-binding condition determines nothing (Item = u16)",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "adapter-caller.rs": {
+   "sha256": "402c9327a6b37fc83fb2c43758f15aa8e3e5d17394670aca2a8ecf495995a506",
+   "declared": 0,
+   "reason": "core's Scan adapter body (match on self.iter.next(), then (self.f)(&mut self.state, a)) and a generic caller selecting it with I: Iterator<Item = u8>",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "windows-caller.rs": {
+   "sha256": "d11d12c6fdcbbbbf9cd6663a2d2e26c18c92a2d063d2503b3f4153f090df5dd1",
+   "declared": 0,
+   "reason": "core's MapWindows shape selected from a generic body: F: FnMut(&[u8; 2]) -> u16 determines R = u16 beside the const parameter",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "caller-region.rs": {
+   "sha256": "892411daa36db135014b4bffd1fb08ab9ff6bb58e505a8bb6ba25842bbec333f",
+   "declared": 0,
+   "reason": "the caller premise output names the caller's lifetime 'x, so B = &'x u8 in a body",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "ordinary-region.rs": {
+   "sha256": "b80824709c77738b6e227ca1dc416953fd710a4dd46bb8bcec58e32199490c95",
+   "declared": 0,
+   "reason": "control without a region binder: F: Out<O = Option<&'x u8>> determines B = &'x u8 in a body",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "mismatch.rs": {
+   "sha256": "14a762c81557754555d71212ca5107e4b8b00ffcee896c76acf9f94bbb69271b",
+   "declared": 1,
+   "reason": "opponent: the normalized u16 item is returned as Option<u8>",
+   "declared_error_codes": [
+    "E0308"
+   ],
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  },
+  "unsatisfied.rs": {
+   "sha256": "62412bbd9a9c4c739051bcc2637ca1a58784e0e462cdda7bc3020ba9cf1f8ee0",
+   "declared": 1,
+   "reason": "opponent: the caller premise gives Option<u8> where the impl condition requires Option<u16>, so no method next applies",
+   "declared_error_codes": [
+    "E0599"
+   ],
+   "rustc_status": 1,
+   "error_codes": [
+    "E0599"
+   ]
+  },
+  "escaping.rs": {
+   "sha256": "4113f2d6f35da0fc114731be58026cdab00bccfac7f2d1d895c8ef138902c352",
+   "declared": 1,
+   "reason": "opponent: the premise output names its own bound region, for<'r> FnMut(&'r mut u8) -> Option<&'r u8>, which no single B can name, so the impl does not apply to s.next()",
+   "declared_error_codes": [
+    "E0599"
+   ],
+   "rustc_status": 1,
+   "error_codes": [
+    "E0599"
+   ]
+  },
+  "adapter-mismatch.rs": {
+   "sha256": "833cd5a77507f659110131ed604f368ff1a9f71ab442cc06f4f5d47ae994b159",
+   "declared": 1,
+   "reason": "opponent: the adapter caller returns the u32 item as Option<u16>",
+   "declared_error_codes": [
+    "E0308"
+   ],
+   "rustc_status": 1,
+   "error_codes": [
+    "E0308"
+   ]
+  }
+ },
+ "declaration_sha256": "13ce8e0feacbaeb92a2b1bd15b5477040afc627e0b58f422e29ee5f7afd64f57"
+}

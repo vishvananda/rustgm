@@ -195,3 +195,72 @@ fn streamed_projection_children_attach_once_without_claiming_foreign_intervals()
     assert!(check(&[invalid]).is_err());
     Ok(())
 }
+
+#[test]
+fn streamed_children_with_binders_graft_below_their_universe_and_keep_gaps() -> ResultTest {
+    let next = 1 << 20;
+    // The child's root is the caller's one-slot universe. Its own binder is a
+    // selected impl condition; a foreign query allocated the interval between.
+    let mut child = equal(1, RegionId::bound(0, 0)?);
+    let inner = child.scope(ScopeId::ROOT, 1)?;
+    child.append_at(equal(2, RegionId::bound(0, 0)?), inner)?;
+    child.resume_at(next)?;
+    child.extend(equal(next, RegionId::bound(0, 0)?))?;
+    let mut parent = Obligations::new(1);
+    let scope = parent.callable_scope(ScopeId::ROOT, 1)?;
+    parent.append_streamed_at(child.clone(), scope)?;
+    let plan = parent.scope_plan();
+    assert_eq!(plan.len(), 2);
+    assert_eq!(plan.binder(ScopeId(2))?, (scope, 1));
+    assert_eq!(plan.callable_depth(ScopeId(2))?, 0);
+    assert_eq!(plan.depth(ScopeId(2))?, 2);
+    assert_eq!(
+        parent.owned_regions().collect::<Vec<_>>(),
+        vec![1..3, next..next + 1]
+    );
+    assert!(!parent.owns_region(RegionId(3)));
+    assert_eq!(check(&[parent])?.variables().len(), 3);
+
+    // The condition's own region cannot be equated from the caller's universe.
+    let mut escaping = child.clone();
+    escaping.equalities.push((RegionId(1), RegionId(2)));
+    let mut parent = Obligations::new(1);
+    let scope = parent.callable_scope(ScopeId::ROOT, 1)?;
+    parent.append_streamed_at(escaping, scope)?;
+    assert!(check(&[parent]).is_err());
+
+    // A foreign interval may not cross an owned binder block.
+    let mut crossing = child;
+    crossing
+        .quantified
+        .as_mut()
+        .ok_or("missing streamed child scopes")?
+        .gaps
+        .insert(0, 2..3);
+    let mut parent = Obligations::new(1);
+    let scope = parent.callable_scope(ScopeId::ROOT, 1)?;
+    assert!(parent.append_streamed_at(crossing, scope).is_err());
+    Ok(())
+}
+
+#[test]
+fn root_and_flat_streamed_children_keep_their_existing_attachment() -> ResultTest {
+    let mut child = equal(1, RegionId::STATIC);
+    let inner = child.scope(ScopeId::ROOT, 1)?;
+    child.append_at(equal(2, RegionId::bound(0, 0)?), inner)?;
+    let mut extended = Obligations::new(1);
+    extended.extend(child.clone())?;
+    let mut streamed = Obligations::new(1);
+    streamed.append_streamed_at(child, ScopeId::ROOT)?;
+    assert_eq!(streamed.scope_plan().len(), extended.scope_plan().len());
+    assert_eq!(
+        streamed.owned_regions().collect::<Vec<_>>(),
+        extended.owned_regions().collect::<Vec<_>>()
+    );
+    let mut flat = Obligations::new(1);
+    let scope = flat.scope(ScopeId::ROOT, 1)?;
+    flat.append_streamed_at(equal(1, RegionId::bound(0, 0)?), scope)?;
+    assert_eq!(flat.scope_plan().len(), 1);
+    assert_eq!(check(&[flat])?.variables().len(), 1);
+    Ok(())
+}

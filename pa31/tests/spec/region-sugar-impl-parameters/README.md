@@ -15,9 +15,11 @@ the normalized item at the wrong type (E0308) and give a premise whose output
 names its own bound region, which no single `B` can name (rustc: one type is
 more general than the other).
 
-Two controls stay recorded gaps. A generic body that selects such an impl
-stops when it attaches the selection's scoped proof. `body-fixed-output`,
-whose condition determines nothing, stops the same way without this change.
+Two controls select such an impl from a generic body (`body-caller`) or an
+impl whose condition determines nothing (`body-fixed-output`). They were
+recorded gaps until the selection's own binders were attached below the
+call's universe; both now pass, and `spec/scoped-body-selections/` adds the
+body controls and opponents.
 
 Outcomes were declared before the frozen rustc 1.98.0 oracle; see
 `outcomes.json`. The reduced shapes had exploratory rustc runs in scratch
