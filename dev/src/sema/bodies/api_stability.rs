@@ -9,6 +9,10 @@ use crate::{
     types::{Kind as TypeKind, TypeId, infer::Solved},
 };
 
+#[cfg(test)]
+#[path = "../../../tests/invariants/fallback_exposure.rs"]
+mod tests;
+
 impl Checker<'_> {
     pub(super) fn check_const_library_call(
         &mut self,
@@ -94,11 +98,7 @@ impl Checker<'_> {
         let Some(owner) = self.state.environment_owner else {
             return Ok(None);
         };
-        if !(inventory.checks_const_body(owner)
-            || (inventory.const_declaration(owner).is_some()
-                && self.report.package.source_core().is_some()
-                && self.facts.const_panic_markers(report, owner)?.1))
-        {
+        if !self.safe_on_stable(inventory, owner)? {
             return Ok(None);
         }
         let function = self
@@ -205,6 +205,7 @@ impl Checker<'_> {
                 && !exempt
                 && !marker
                 && policy.is_none_or(|policy| !matches!(policy.level, Level::Stable(_)))
+                && !self.exposed_fallback(inventory, target)?
             {
                 return Err(self.error(
                     node,
@@ -227,12 +228,7 @@ impl Checker<'_> {
             inventory.const_declaration(target),
             Some(inventory),
         )?;
-        if exempt
-            || inventory.checks_const_body(target)
-            || (inventory.const_declaration(target).is_some()
-                && self.report.package.source_core().is_some()
-                && self.facts.const_panic_markers(self.report, target)?.1)
-        {
+        if exempt || self.safe_on_stable(inventory, target)? {
             Ok(())
         } else {
             Err(self.error(
@@ -240,6 +236,36 @@ impl Checker<'_> {
                 "const-stable body calls a function without const-stable API policy",
             ))
         }
+    }
+    /// Const-stable, explicitly or implicitly const-stable-indirect bodies are
+    /// recursively checked, so they are safe to expose to stable const code.
+    fn safe_on_stable(
+        &self,
+        inventory: &crate::resolve::stability::Inventory,
+        definition: DefId,
+    ) -> Result<bool, Error> {
+        Ok(inventory.checks_const_body(definition)
+            || (inventory.const_declaration(definition).is_some()
+                && self.report.package.source_core().is_some()
+                && self.facts.const_panic_markers(self.report, definition)?.1))
+    }
+    /// An intrinsic without its own indirect marker is still exposable when its
+    /// source fallback body is itself recursively checked; a bodiless one is not.
+    fn exposed_fallback(
+        &self,
+        inventory: Option<&crate::resolve::stability::Inventory>,
+        target: DefId,
+    ) -> Result<bool, Error> {
+        let Some(inventory) = inventory else {
+            return Ok(false);
+        };
+        let fallback = self
+            .facts
+            .function_indices
+            .get(&target)
+            .and_then(|&index| self.facts.functions.get(index))
+            .is_some_and(|function| function.definition == target && function.body.is_some());
+        Ok(fallback && self.safe_on_stable(inventory, target)?)
     }
     fn const_body_exemption(
         &mut self,

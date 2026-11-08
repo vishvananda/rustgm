@@ -1,0 +1,45 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes. The shapes copy core's `cold_path`, `likely` and `unlikely` declarations, whose `cold_path()` call ended census 8's second diagnostic. Each outcome follows the stated rule (an intrinsic call in a recursively const-checked body is exposed when the intrinsic is marked const-stable-indirect, or when it has a fallback body that is itself safe to expose; a bodiless or explicitly const-unstable one is not), not this compiler's probe",
+ "declaration_sha256": "f3ca333eeb00930054ac081d8d428442580854ef9a3c66f606cd1a5bf8d2fe59",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "cold-hint-length.rs": {
+   "sha256": "3a9cebb3a74f344c22b5120dce560134af37571ae35f555b35a7b4aebc0c1456",
+   "declared": 0,
+   "reason": "core's unmarked `cold_path` fallback intrinsic is implicitly const-stable-indirect, so core's recursively checked `unlikely` may call it; a length reaches it",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "cold-hint-body.rs": {
+   "sha256": "6f426c8b3612ef2abc911cd5124793f48e6c8edf3f236330dcc40f7f9cc73139",
+   "declared": 0,
+   "reason": "the same `likely` and `unlikely` bodies with only a runtime caller",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "marked-bodiless-hint.rs": {
+   "sha256": "8ea1e703aab7b9b198c611cedd285306031066beafe1d6ebce66119ea39c7f2c",
+   "declared": 0,
+   "reason": "a bodiless `assume` marked `rustc_intrinsic_const_stable_indirect` is exposed from an unmarked const fn",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "bodiless-assume-exposed.rs": {
+   "sha256": "71af3a519e4c16515aab446bd9c1fe09378b34c0e98ed384540060a248d02723",
+   "declared": 1,
+   "reason": "opponent: an unmarked bodiless `assume` has no fallback to expose, so a recursively checked const fn cannot call it",
+   "rustc_status": 1,
+   "error_codes": []
+  },
+  "const-unstable-cold-hint.rs": {
+   "sha256": "6d20d94f59358be810f59ca16fe67f293fc78c41f2d4d1f33b3f0807166b930a",
+   "declared": 1,
+   "reason": "opponent: an explicit `rustc_const_unstable` `cold_path` is not const-stable-indirect, so its fallback is not exposed to the recursively checked `unlikely`",
+   "rustc_status": 1,
+   "error_codes": []
+  }
+ }
+}
