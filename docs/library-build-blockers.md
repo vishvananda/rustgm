@@ -5,6 +5,18 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 15](parallel/census-batch15.md), section 8, keeps the
+census fold's cause kinds on main `347373f7f`. Census 18 (`b5bcfc0f`) has
+census 17's 8 records byte for byte.
+
+- `fold_cause` keeps ambiguity ("type annotations needed") and the
+  unmapped-lifetime invariant apart from its caller's invalid text. Each text
+  is a shared constant, read by its single producer.
+- The two private expectations that show the folded text keep it. An
+  analysis-only probe found an ordinary invalid cause behind each.
+- Still discarded: 14 fixed-message folds in the `fold_cause` files, listed
+  in section 8, and the rest of the 1,214 across `dev/src`.
+
 Lane C [auto traits](parallel/auto-traits.md), third commit (C3), transports
 unsafe traits and every trait impl's own safety and polarity in version 13,
 with no new tag, bit or row:

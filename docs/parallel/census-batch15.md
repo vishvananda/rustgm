@@ -19,12 +19,17 @@ Then, on main `078d3f238`, it:
   trait's own (section 5);
 - runs census 17 (section 6).
 
+Then, on main `347373f7f`, it keeps each folded cause's kind, and runs census
+18 (section 8).
+
 Census 16 (`ed88ef69`, from `90ba44c16`) checks 42,310 declarations, with
 none failed or blocked. Its crate record is "source CoerceUnsized
 implementation does not retain a permitted pointer coercion" at core's
 `CoerceUnsized` impl for pattern types over raw pointers (`pat.rs:80`). The
 Flatten record is gone. Census 17 (`c020dad2`, from `d97f986eb`) has census
 16's records byte for byte, because neither effect of section 5 reaches core.
+Census 18 (`b5bcfc0f`) has census 17's records byte for byte, because none of
+them is a fold text.
 
 Out of scope:
 
@@ -35,7 +40,8 @@ Out of scope:
   `constrained_scalars.rs` did not change.
 - LIB-061 (`implicit_provenance_casts`) stays deferred.
 - The CPPGM backend is frozen.
-- The census fold's label is not changed here (open items).
+- The census fold's label is unchanged in sections 1 to 7. Section 8 changes
+  it.
 - The trait-header phase's skip of a default's contract is recorded, not
   changed (section 5).
 
@@ -600,19 +606,201 @@ Every qualifying check below ran on the tree committed as `d97f986eb` on main
 Pending for scheduled CI: full release regular and native tests, uncached
 audits, all-target strict Clippy, harness, course text, and PA25 to PA31.
 
+## 8. The fold keeps its cause's kind
+
+`census::fold_cause` gave every cause that was not exhaustion its caller's
+"invalid …" text. Two causes were hidden behind "invalid canonical trait
+selection" this way:
+
+- census 15 hid "type annotations needed";
+- Lane B's task 2 hid "selected type retains an unmapped lifetime".
+
+Decided: besides exhaustion, the fold keeps three kinds apart. They are
+ambiguity, the internal unmapped-lifetime invariant, and every other cause,
+which is genuinely invalid.
+
+### The 14 fold sites
+
+Each cause arrives either as an `infer::Error` or as a selection message.
+
+| Site | Producer | Cause type | Kinds it can carry |
+|---|---|---|---|
+| `methods/receiver.rs:587` | `may_have_subject` | `infer::Error` | exhausted, ambiguous, invalid |
+| `nominals/traits.rs:97` | `mapped_exact_member` | `infer::Error` | exhausted, ambiguous, invalid |
+| `nominals/traits.rs:429` | `prove_canonical` | `infer::Error` | exhausted, ambiguous, invalid |
+| `nominals/traits.rs:491` | `equate_normal_forms` (`Mismatch` and `Normalization` already mean "not equal") | `infer::Error` | exhausted, ambiguous, invalid |
+| `methods/selection/applicability.rs:256` | `select_available` | message | all four |
+| `methods/selection/paths/conditions.rs:129` | `select_available` or `begin` | message | all four |
+| `nominals/traits.rs:653` | `select_available_checked` | `Failure::Invalid` | all four |
+| `nominals/traits.rs:666` | `select_declaration`, `select`, `select_normalized`, `select_reusing` (census 15's Unresolved) | message | all four |
+| `nominals/traits/conjunction.rs:73` | `prove_conjunction` (Lane B's unmapped lifetime) | `Failure` | all four |
+| `nominals/traits/normal_form.rs:458` | `begin_borrowed` | message | all four |
+| `nominals/traits/normal_form.rs:492` | `equalities::for_projection` | message | all four |
+| `nominals/traits/normal_form/origin_results.rs:109` | `ProjectionRequirements::advance` | message | all four |
+| `nominals/traits/normal_form/data_result.rs:70` | `MetadataPlan::advance` | message | all four |
+| `nominals/traits/normal_form/data_result.rs:126` | `begin_canonical` | message | all four |
+
+`selection`'s `inference` is `error.to_string()`, so an unresolved variable
+arrives as exactly "type annotations needed". The region invariant arrives as
+exactly "selected type retains an unmapped lifetime". Each text has a single
+producer: `infer::Error::Unresolved`'s `Display` (`types/infer.rs:115`) and
+`types/substitute/region_mapping.rs:147`. The region invariant is not an
+`infer::Error`, so it cannot reach the first four sites.
+
+### Declared before the change
+
+Two existing private expectations show the folded text:
+
+- `candidate_winnowing`'s `no-relation`;
+- `normalized_sizing_lifetimes`' `destruct-unsized-pair`.
+
+An analysis-only probe printed each fold's raw cause for both, on main
+`347373f7f`. Its uncommitted patch added a test-only trace in `fold_cause`
+and a capture test. The patch, its receipt and its output are in
+`obj/parallel/census-batch15/fold-probe/`.
+
+| Control | Fold | Raw cause | Kind | Expected text after the change |
+|---|---|---|---|---|
+| `no-relation` | `normal_form.rs:458` | "overlapping implementation headers have no specialization ordering" | invalid | "invalid canonical trait selection", unchanged |
+| `destruct-unsized-pair` | `conjunction.rs:73` or `traits.rs:653` | "source nominal formation prerequisite is unsatisfied" | invalid | "invalid canonical trait selection", unchanged |
+
+The probe names a fold's site only through the selection trace that
+`traits.rs:666` and `normal_form.rs:458` record. `destruct-unsized-pair`'s
+fold recorded none, so it is one of the two other "invalid canonical trait
+selection" sites.
+
+Also declared before the change:
+
+- **Course references.** None change: no `.ref` or `.ref.stderr` under
+  `pa*/tests` contains any `fold_cause` "invalid …" text.
+- **Census 18.** It equals census 17 byte for byte, because none of census
+  17's 8 records is a fold text.
+- **Surface programs.** None reaches the two new kinds today. Both causes
+  behind census 15's and Lane B's labels are repaired, so private tests guard
+  the kinds.
+
+### The change
+
+- **`CauseKind`.** `census.rs`'s `Exhaustion` trait becomes `Cause`, whose
+  `kind` returns `CauseKind`: `Exhausted`, `Ambiguous`, `UnmappedLifetime` or
+  `Invalid`. The name avoids the census record's `Category`.
+  - `infer::Error` maps by variant: `Budget` and `Overflow` are exhausted,
+    `Unresolved` is ambiguous, and the rest are invalid.
+  - A message maps by text:
+    - `exhausts_budget` means exhausted;
+    - equality with `infer::UNRESOLVED` means ambiguous;
+    - equality with `substitute::UNMAPPED_LIFETIME` means the unmapped
+      lifetime;
+    - anything else is invalid.
+  - `String`, `&str` and `Failure::Invalid` are messages. `Failure::Pending`
+    stays invalid.
+- **`fold_cause` keeps its signature**, so none of the 14 callers changes.
+  - Exhaustion keeps the caller's exhausted text.
+  - Ambiguity and the unmapped lifetime keep their causes' own texts.
+  - Everything else keeps the caller's invalid text.
+
+  The census record still names the pass and the site, so no site needs its
+  own ambiguity wording. That wording would be 28 new strings for causes that
+  no surface program reaches today.
+- **One producer, one constant.** `types::infer::UNRESOLVED` is
+  `infer::Error::Unresolved`'s `Display` text, and
+  `types::substitute::UNMAPPED_LIFETIME` is `region_mapping.rs`'s error. Both
+  producers read the constants, so the classifier and its producers cannot
+  drift apart.
+- **Tradeoff, decided with the coordinator.** Classifying a message by
+  equality is weaker than a typed cause. A typed `Failure` kind would touch
+  every selection producer, for two kinds no surface program reaches today.
+  With a single producer for each text, equality is safe enough.
+
+`census_records.rs`'s new test checks three things:
+
+- both producers emit their constants;
+- each kind folds to its text from `&str`, `String` and `Failure::Invalid`, and
+  from `infer::Error::Unresolved`;
+- a message that only contains the text, and every other `infer::Error` and
+  `Failure::Pending`, folds to the caller's invalid text.
+
+Both declared expectations held. `no-relation` and `destruct-unsized-pair`
+still report "invalid canonical trait selection", and no other private
+expectation changed.
+
+### Out of scope, recorded
+
+Fixed-message folds that are not `fold_cause` sites still discard their
+cause. The eight files that hold `fold_cause` sites have 14 that can discard
+more than exhaustion:
+
+| Site | Text | Producer and its error |
+|---|---|---|
+| `methods/receiver.rs:492` | "canonical slice iteration preparation failed" | `iteration::collections::prepare`, a located `Error` |
+| `methods/selection/paths/conditions.rs:96` | "invalid pending method header readiness" | `selection_goal_ready`, `infer::Error` |
+| `nominals/traits/normal_form/data_result.rs:38` | "source Metadata lacks complete selected input" | `resolved_predicate`, `infer::Error` |
+| `nominals/traits/normal_form/data_result.rs:52` | "source Metadata has an invalid current declaration" | `MetadataPlan::new`, a message |
+| `nominals/traits/normal_form.rs:362` | "Field result lost its resolved selected parent" | `resolved_predicate`, `infer::Error` |
+| `nominals/traits/normal_form.rs:379` | "Field result lost its checked selected field" | the selected field's `output` |
+| `nominals/traits/normal_form.rs:482` | "invalid canonical family arguments" | `known_arguments`, `infer::Error` |
+| `nominals/traits/normal_form.rs:561`, `nominals/traits.rs:234` and `:606` | "invalid declaration trait instantiation" | `Instantiation::new`, `infer::Error` |
+| `nominals/traits/normal_form.rs:564`, `nominals/traits.rs:238` and `:609` | "invalid declaration trait goal" | `instantiate_predicate`, `infer::Error` |
+| `nominals/traits.rs:597` | "completed declaration proof has invalid source provenance" | `Reuse::selection`, a message |
+
+The other fixed folds in those files map only a budget, allocation or
+identity-capacity failure, and their texts already say so. Across `dev/src`,
+1,214 fixed folds of the form `.map_err(|_| "…")` remain. A later item can
+survey the ones whose producer returns `infer::Error`, `selection::Failure`
+or a selection message.
+
+### Census 18
+
+The pin `b5bcfc0f` was built from this section's tree on main `347373f7f`.
+Its ordinary observation stops where census 17's did, with 375 sources
+opened. The census (`obj/parallel/census-batch15/qualified-3/census/`) checks
+42,310 declarations, with none failed or blocked, in 60.7 seconds. Its
+`census.tsv` is byte-identical to census 17's (sha `09b48304`), as declared.
+
+### Checks for section 8
+
+Every check below ran on the tree committed as `85e0bb010`, docs
+aside.
+
+| Check | Result | Receipt |
+|---|---|---|
+| Private: 658 lib cases, strict private Clippy, format, architecture | pass | `obj/qualification/fast/1794169938804968999` |
+| Trait suites: `suite_traits` (168) and `suite_frontend` (72) | pass | `obj/qualification/fast/1794170133054294820` |
+| PA1 to PA12 | pass | `obj/qualification/fast/1794170378896435425` |
+| Projection suites (38), PA13 to PA18 and PA21 to PA24 | pass | `obj/qualification/fast/1794170429209994195` |
+| PA19: 1,199 of 1,199; PA20: 1,482 of 1,482 | pass | `obj/qualification/fast/1794170517606431224` |
+| Pin build and ordinary observation | passed observation, `b5bcfc0f` | `obj/parallel/census-batch15/qualified-3/receipt-build.json` |
+| Census 18 | completed: 42,310 checked, 0 failed, 0 blocked, 8 records | `obj/parallel/census-batch15/qualified-3/receipt-census.json` |
+
+- **The 658 lib cases** are in `obj/parallel/census-batch15/fold-cases.txt`.
+  They are section 7's 621 cases plus every test under:
+  - `sema::census`, the new test among them;
+  - `sema::specialization::selection_tests` (`candidate_winnowing`);
+  - `types::infer`, `types::substitute` and `sema::nominals`.
+- **Course references.** Every course stage ran against the committed
+  references, and none was regenerated.
+- **Two run failures before these checks.**
+  - Strict Clippy rejected the new test's needless `Result` return
+    (`unnecessary_wraps`).
+  - One rerun spent its five-minute budget on a cold Clippy build after
+    `make tidy`.
+- **Probe deviation.** The probe's lib binary was run once directly, without
+  the storage wrapper, to print its capture.
+- **Not needed.** `make test-upstream`, `make test-harness` and
+  `make test-backend` were not needed: no fixture, integration root or
+  backend contract changed.
+
 ## Open items
 
-- **The census fold keeps one text for distinct causes.** A cause that is not
-  exhaustion still folds to "invalid canonical trait selection". Census 15
-  hid "type annotations needed" (`infer::Error::Unresolved`) behind it. Lane
-  B's task 2 found a second distinct cause behind the same text: "selected
-  type retains an unmapped lifetime", raised from `State::normalize` through
-  `Search::complete_builtin` and `Proof::prove`. Decided: this is Lane A's
-  small follow-up commit, and it is next, now that (a) is repaired. The fold
-  will keep each cause's category: ambiguity (`Unresolved`), an internal region
-  invariant, and a genuinely invalid canonical selection. It is not part of
-  the Flatten commit. The tradeoff: one fewer moving part in that commit, at
-  the cost of a known diagnostic-quality debt meanwhile.
+- **The census fold keeps its cause's kind** (section 8). Ambiguity and the
+  unmapped-lifetime invariant keep their own texts, so neither can hide
+  behind "invalid canonical trait selection" again.
+- **Fixed-message folds outside `fold_cause` still discard their causes.**
+  Section 8 lists the 14 in the `fold_cause` files that can discard more
+  than exhaustion. A later item can survey the 1,214 across `dev/src`.
+- **That survey is recorded as a later open item, not scheduled.** Decided
+  with the coordinator: some diagnostics stay lumped meanwhile, but no lane
+  is spent on non-blocking work while core records remain.
 - **The no_core foundation lacks `DispatchFromDyn` for references**, so rustc
   rejects its trait objects (E0038) where RustGM accepts them. This is a
   foundation-profile gap, not a core blocker.
@@ -625,10 +813,8 @@ audits, all-target strict Clippy, harness, course text, and PA25 to PA31.
 
 ## Storage
 
-- Kept: the census 17 pin `obj/parallel/census-batch15/qualified-2/pin/`
-  (`c020dad2`, with `.keep-artifacts`).
-- Kept until section 5's commit is integrated: the analysis-only pin
-  `defaults-2` (`2df93ed7`) under `obj/parallel/census-batch15/diagnostics/`.
+- Kept: the census 18 pin `obj/parallel/census-batch15/qualified-3/pin/`
+  (`b5bcfc0f`, with `.keep-artifacts`), the census baseline.
 - Retired by removing `.keep-artifacts` and pruning the directory. Each
   hash is in `obj/parallel/census-batch15/retired-pins.sha256`, and each
   directory keeps its receipt, census and `working-tree.patch`.
@@ -641,6 +827,12 @@ audits, all-target strict Clippy, harness, course text, and PA25 to PA31.
     rebase onto `078d3f238` superseded.
   - Census 16's pin (`qualified-1`, `ed88ef69`), after census 17's pin was
     built.
+  - The analysis-only `defaults-2` (`2df93ed7`), after section 5 was
+    integrated.
+  - Census 17's pin (`qualified-2`, `c020dad2`), after census 18 was accepted.
+- The section 8 probe built no pin. Its patch, receipt and output are in
+  `fold-probe/`. obj exceeded its 16 GiB cap after that probe's fastcheck,
+  and `make tidy` brought it back to 12 GB.
 - `defaults-1` was removed differently. That analysis-only pin is
   `34e651b1`, as recorded in `diag-defaults-1.log`. Its diagnostic directory
   was removed with `rm -r` before inspection, which is not the retirement
@@ -685,9 +877,19 @@ Section 5:
 - `spec.md`: the recorded-gap sentence is replaced by a paragraph on trait
   path subjects. The defaulted-argument packet's README is updated.
 
+Section 8:
+
+- `sema/census.rs`: `CauseKind`, the `Cause` trait and `fold_cause`.
+- `types/infer.rs` (`UNRESOLVED`) and `types/substitute.rs`
+  (`UNMAPPED_LIFETIME`), each read by its one producer;
+  `types/substitute/region_mapping.rs` reads its constant.
+- Tests: `dev/tests/invariants/census_records.rs` (one new test).
+- No fixture, reference, manifest or spec text changed.
+
 ## Decisions needed
 
-- None blocking. Next, in the coordinator's order: the fold follow-up.
+- None blocking. Batch 15's queued items are done. Whether the 1,214 fixed
+  folds get their own survey item is the coordinator's call.
 
 ## Commits
 
@@ -695,4 +897,7 @@ Section 5:
   and the batch's tracker and plan entries (`f49a62675`), on main
   `c9fb67cc3`.
 - Section 5 is `d97f986eb`, one commit on main `078d3f238`. It is followed
-  by this document's sections 5 to 7 and the tracker and plan entries.
+  by this document's sections 5 to 7 and the tracker and plan entries
+  (`347373f7f`).
+- Section 8 is `85e0bb010`, one commit on main `347373f7f`. It is followed
+  by this document's section 8 and the tracker and plan entries.

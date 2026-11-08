@@ -1016,6 +1016,17 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
       uses, `Try: FromResidual` among them, never showed the gap.
   - **Census 17** (pin `c020dad2`) is byte-identical to census 16. Next: the
     fold follow-up.
+  - **The fold keeps its cause's kind** (on main `347373f7f`).
+    - Ambiguity and the unmapped-lifetime invariant keep their own texts.
+      Exhaustion keeps its sticky wording, and every other cause keeps the
+      caller's invalid text.
+    - Decided with the coordinator: messages are classified by equality with
+      a shared constant that their single producer reads. A typed `Failure`
+      kind would touch every selection producer, for two kinds no surface
+      program reaches today.
+    - The fixed-message folds that are not `fold_cause` sites are recorded,
+      not changed.
+  - **Census 18** (pin `b5bcfc0f`) is byte-identical to census 17.
 
 - **During Lane C's [auto traits](parallel/auto-traits.md) slice (item 5,
   C3)**, 2026-11-08.
