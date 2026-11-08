@@ -5,6 +5,29 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [const inherent methods](parallel/const-inherent-methods.md) is a local
+checkpoint, not yet joined. Version 13 carries const methods of inherent impls,
+including impls that capture lifetimes as core's `impl<'a> Arguments<'a>` does,
+with no new tag or shape. Each method uses the existing const constness and
+const-definition context. Validation re-proves the body as it re-proves a free
+const original, and every consumer re-checks and evaluates it with the
+captured regions as leading early parameters. No const evidence travels: a
+forged const header over a body that calls an ordinary function is rejected by
+name. Version 13 also reads a field of a call's temporary (`make().n`), which
+main rejected even in ordinary functions. Writing through such a field stays
+fenced, a recorded deviation, since rustc 1.98.0 admits it. Ten clients run
+natively and exit 42. `const unsafe`, early-lifetime and trait-impl const
+methods stay fenced by name. A static context stays blocked: core's `Sync` is
+an unsafe auto trait that does not export. Separately, main accepts a
+source-client static without a `sync` lang item, which rustc rejects. Lane C's
+next task, another provider's region nominals in a signature, is blocked on
+multi-packet source export: no exported row names another artifact, and a
+source core cannot import another packet. The caller-location ABI is blocked on
+core's real `Location` fields: raw-pointer type rows, `repr(transparent)`,
+PhantomData's Pointee role and NonNull's diagnostic role. The `panic_impl`
+extern and unsizing fence are blocked on the same chain plus slice rows,
+`PanicInfo` and `CoerceUnsized`.
+
 Lane C [tuple and unit struct constructors](parallel/struct-constructors-transport.md)
 is joined on main. Version 13 carries a tuple or unit
 struct's constructor with no new tag or shape. It is the struct's only kind-11

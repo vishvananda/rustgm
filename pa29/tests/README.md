@@ -329,3 +329,19 @@ struct constructor packet under `spec/struct-constructors/`. The packet holds:
   field rows and a 6/24/96 scaling control.
 
 The `crate_linking::struct_constructors` integration controls consume it.
+
+`const-method-outcomes.json` freezes the version-thirteen const inherent-method
+packet under `spec/const-methods/`. The packet holds:
+
+- const methods of a lifetime-capturing inherent impl and of an impl that
+  captures none, and a const free function that calls a const method;
+- runtime calls, `const` items and a client const function that evaluate
+  them, including a field read of a call's temporary;
+- ten accepted clients and four opponents (E0015, E0435, E0308 and a lifetime
+  error), with one declared static client withdrawn;
+- generated controls: older-profile gates, fenced `const unsafe` and early
+  lifetime methods, temporary-field reads and writes, forged constness and
+  context rows and a 6/24/96 scaling control;
+- rustc controls for a temporary-field read and write.
+
+The `crate_linking::evaluated_methods` integration controls consume it.

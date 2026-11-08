@@ -37,7 +37,10 @@ const HELD: &str = "// Generated captured-lifetime gate.\npub struct Held<'a> { 
 /// `spec/source-nominals/provider.rs` has no `Copy` for `u8`, so the client
 /// keeps the captured `'static` result without reading through it.
 const HELD_CLIENT: &str = "let _text: &'static str = base::Held { text: \"hi\" }.get(); 42";
-const FENCED: [(&str, &str, &str); 3] = [
+/// Const captured methods travel since the const inherent-method checkpoint.
+const CONSTANT: &str = "// Generated const captured-method gate.\npub struct Held<'a> { pub text: &'a str }\nimpl<'a> Held<'a> { pub const fn count(&self) -> u8 { 42 } }\n";
+const CONSTANT_CLIENT: &str = "#![feature(no_core)]\n#![no_core]\nextern crate base;\nconst N: u8 = base::Held { text: \"hi\" }.count();\n#[unsafe(no_mangle)]\npub extern \"C\" fn entry() -> i32 { match N { 42 => 42, _ => 7 } }\n";
+const FENCED: [(&str, &str, &str); 2] = [
     (
         "trait-impl",
         "// Generated captured trait-impl gate.\npub struct Held<'a> { pub text: &'a str }\npub trait Get { fn get(self) -> u8; }\nimpl<'a> Get for Held<'a> { fn get(self) -> u8 { 42 } }\n",
@@ -47,11 +50,6 @@ const FENCED: [(&str, &str, &str); 3] = [
         "early",
         "// Generated early captured-method gate.\npub struct Held<'a> { pub text: &'a str }\nimpl<'a> Held<'a> { pub fn shorter<'b>(&self, x: &'b u8) -> &'b u8 where 'a: 'b { x } }\n",
         "source function early/captured callable frame transport is not implemented",
-    ),
-    (
-        "const",
-        "// Generated const captured-method gate.\npub struct Held<'a> { pub text: &'a str }\nimpl<'a> Held<'a> { pub const fn count(&self) -> u8 { 42 } }\n",
-        "source nonordinary callable effect/safety/convention requires a wider profile",
     ),
 ];
 const WIRE: &str = "// Generated captured-method wire control.\npub struct Hold<'a> { pub t: &'a u8 }\nimpl<'a> Hold<'a> { pub fn choose<'b>(&self, a: &'a u8, b: &'b u8) -> &'b u8 { b } }\n";
@@ -128,6 +126,12 @@ fn older_profiles_and_unsupported_captured_shapes_reject_by_name() -> Result {
     let consumer = client(&packet, "held-client", HELD_CLIENT)?;
     let mut fresh = packet.consumer(&consumer, "held-client", &held, &packet.owner());
     super::artifacts::checked("held-client", &packet.folder, &mut fresh)?;
+    let source = generated(&packet, "const.rs", &format!("{nominals}{CONSTANT}"))?;
+    let constant = packet.folder.join("const.rgcrate");
+    exported(&packet, &source, &constant)?;
+    let consumer = generated(&packet, "const-client.rs", CONSTANT_CLIENT)?;
+    let mut fresh = packet.consumer(&consumer, "const-client", &constant, &packet.owner());
+    super::artifacts::checked("const-client", &packet.folder, &mut fresh)?;
     for (label, control, diagnostic) in FENCED {
         let source = generated(
             &packet,

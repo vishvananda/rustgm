@@ -82,7 +82,7 @@ pub(super) fn method(
             .region_bounds
             .slice(&rows.region_bounds)?
             .is_empty()
-        || function.constness != Constness::Ordinary
+        || function.constness == Constness::Conditional
         || function.regions.captures != 0
         || function.regions.early.start != function.regions.early.end
     {

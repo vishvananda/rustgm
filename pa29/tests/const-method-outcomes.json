@@ -1,0 +1,271 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+ "providers": [
+  {
+   "file": "spec/const-methods/provider.rs",
+   "sha256": "c44fc31376d4bf6845779a028e5cf525c56540160994a50bd81d25158fca558d"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "development_note": "the provider and client shapes were probed with rustc during development (generated files under obj/parallel/const-methods, not these fixtures), and RustGM's local wording for the two const-context opponents was taken from generated local providers; the fixtures, their outcomes and every generated and wire control below were written down before any rustc or RustGM run of these files",
+ "cases": [
+  {
+   "file": "spec/const-methods/new.rs",
+   "provider": "spec/const-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "ef441bd6e3f45044ff8fc7aff11aa20e530393953960269ef0c3156e7b114a3a"
+  },
+  {
+   "file": "spec/const-methods/from-str.rs",
+   "provider": "spec/const-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "af21cc7b0a6a3b98f9c341b68b940bcfe9a896c1b0564299fb4d353b0735eb9c"
+  },
+  {
+   "file": "spec/const-methods/relay.rs",
+   "provider": "spec/const-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "09c85e79d27c58038e40c563d63f42a754496c60cd93686d7d0d55297867c06a"
+  },
+  {
+   "file": "spec/const-methods/make.rs",
+   "provider": "spec/const-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "1cc1a7828264c9acbf9f962c85c20e38df5f3d94c07d7a127a5225c0a42e00ab"
+  },
+  {
+   "file": "spec/const-methods/plain.rs",
+   "provider": "spec/const-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "86eb53d8d3b6cb99ddf564d2607714d9ef4f4354c61cd3cde0c49dd99600e423"
+  },
+  {
+   "file": "spec/const-methods/const-count.rs",
+   "provider": "spec/const-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "d491a861bf1dc849093a61cbe97c7d647dbf7f5ad6d508f22be4468aa1e63065"
+  },
+  {
+   "file": "spec/const-methods/const-relay.rs",
+   "provider": "spec/const-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "3d882505fbc530b7934b28f09c35b47f1d58a489c894ba3b7a95bc5c07c857b8"
+  },
+  {
+   "file": "spec/const-methods/const-plain.rs",
+   "provider": "spec/const-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "fa468da792b507d5cda5d7379246cbed1f5218632af0dad5e337b0a78d95b856"
+  },
+  {
+   "file": "spec/const-methods/const-held.rs",
+   "provider": "spec/const-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "636a38f4a813f04b5ba0615933947defddcce56a029969cd37840b76eca185cd"
+  },
+  {
+   "file": "spec/const-methods/const-fn.rs",
+   "provider": "spec/const-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "11cc2fe22591c0cdfbf51c3d2109e3a75de70f8c0405f07b68387708864667bc"
+  },
+  {
+   "file": "spec/const-methods/runtime-in-const.rs",
+   "provider": "spec/const-methods/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_error": "E0015",
+   "candidate_diagnostic": "non-const calls are not allowed in constant initializers",
+   "sha256": "b1807155b2a4f56c05729576868d3983a0c50c5824bc67362fe838a90c809013"
+  },
+  {
+   "file": "spec/const-methods/runtime-argument.rs",
+   "provider": "spec/const-methods/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_error": "E0435",
+   "candidate_diagnostic": "unresolved value name",
+   "sha256": "e6126476b41e3e24e96053942d42002341f8281ab4e40286dcc1770b4a18de2c"
+  },
+  {
+   "file": "spec/const-methods/wrong-payload.rs",
+   "provider": "spec/const-methods/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_error": "E0308",
+   "candidate_diagnostic": "incompatible types",
+   "sha256": "74cef2be162f47ea73fc4d7546654db955bda82359f4f311129d15c8abf3e2cf"
+  },
+  {
+   "file": "spec/const-methods/text-leak.rs",
+   "provider": "spec/const-methods/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "lifetime may not live long enough",
+   "candidate_diagnostic": "required lifetime does not outlive its target",
+   "sha256": "e8ece9cec6933ef9869c2b102895fff9fca1786023008c6f2ed6fe6445af7db4",
+   "amended": {
+    "declared_sha256": "48610ddbbcc99559e9c7513e40424a28cd8744dc447d6f2dfac8803b9133d75b",
+    "observed_first": "rustc as declared; the candidate rejected the client with `str is outside the scalar metadata profile`, because the declared `pub fn leak` exposes `&str` in the client's own public interface",
+    "change": "`pub fn leak` becomes the private `fn leak`, as impl-region-methods' text-escape declares it",
+    "expected": "unchanged: rustc `lifetime may not live long enough`, RustGM `required lifetime does not outlive its target`",
+    "reason": "a client-authoring error that reached an unrelated pre-existing client export limit"
+   }
+  }
+ ],
+ "deviations": [
+  "lines 1-147 of spec/lifetime-nominals/provider.rs are reused unchanged; the const-method section after them is authored",
+  "`text` reborrows `&*self.text` because the shared lines declare no `Copy` for `&T`",
+  "runtime-argument: RustGM rejects the local as an unresolved value name, as a const item cannot name a local; rustc reports E0435",
+  "clients compare results with nested literal matches"
+ ],
+ "generated_controls": [
+  {
+   "control": "the full provider exported under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected by name with `named, associated or generic alias transport requires its wider profile`, as the shared lines already require version 13"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `pub struct Plain { pub n: u8 }` and `impl Plain { pub const fn get(&self) -> u8 { 42 } }` under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected by name with main's `source nonordinary callable effect/safety/convention requires a wider profile` under both older profiles; exported under version 13, with a client reading `base::Plain { n: 1 }.get()` in a const accepted",
+   "amended": {
+    "observed_first": "under both older profiles the candidate rejects the provider with `source impl owner has no completed canonical conformance record`; main (pin f120c641) rejects it the same way, and also rejects the same provider with an ordinary `get` that way under both, so older profiles never reach the constness check for an inherent impl. Under version 13 main rejects the const `get` with `source nonordinary callable effect/safety/convention requires a wider profile` and exports the ordinary one",
+    "expected": "rejected by name with `source impl owner has no completed canonical conformance record` under both older profiles; under version 13, exported, with the const client accepted, as declared",
+    "reason": "the declared older-profile message was wrong; the rejection is by name and byte-identical to main's"
+   }
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `Plain` and `impl Plain { pub const unsafe fn get(&self) -> u8 { 42 } }`, under version 13",
+   "expected": "rejected by name with `source nonordinary callable effect/safety/convention requires a wider profile`: unsafe inherent methods stay fenced"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `Held<'a> { pub text: &'a str }` and `impl<'a> Held<'a> { pub const fn shorter<'b>(&self, x: &'b u8) -> &'b u8 where 'a: 'b { x } }`, under version 13",
+   "expected": "rejected by name with `source function early/captured callable frame transport is not implemented`: early method lifetimes stay fenced"
+  },
+  {
+   "control": "6, 24 and 96 generated const methods `pub const fn mNNN(&self) -> u8 { self.n }` in one `impl<'a> Wide<'a>` over `pub struct Wide<'a> { pub t: &'a u8, pub n: u8 }`, after the shared lines, and one client evaluating `m005` in a const",
+   "expected": "packet bytes grow exactly linearly; the client LowIR stays bounded"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `pub struct P { pub n: u8 }`, `pub fn mp() -> P { P { n: 42 } }` and `pub fn f() -> u8 { mp().n }`, which reads a field of a call's temporary as `relay` does, under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected by name with main's `source direct temporary writes require wider proof` under both older profiles; exported under version 13, with a client reading `base::f()` accepted",
+   "declared": "2026-11-08T02:02Z, after the candidate first rejected the fixture provider with that message (main rejects `mp().n` the same way) and before any run of these controls",
+   "amended": {
+    "observed_first": "under both older profiles the candidate rejects the provider with `source operation omitted a required nontrivial formation input`, byte-identical to main (pin f120c641), which reaches the temporary-write message only under version 13",
+    "expected": "rejected by name with `source operation omitted a required nontrivial formation input` under both older profiles; exported under version 13 with the client accepted, as declared",
+    "reason": "the declared older-profile message was main's version-13 one"
+   }
+  },
+  {
+   "control": "the same provider with `pub fn w() -> u8 { mp().n = 5; 42 }` under version 13",
+   "expected": "rejected by name with `source Store writes through an immutable dereference`: a temporary's field is read, never written",
+   "declared": "2026-11-08T02:02Z"
+  }
+ ],
+ "wire_controls": [
+  {
+   "mutation": "none: a generated minimal provider (the shared lines, `Gate<'a> { pub t: &'a u8, pub n: u8 }` with `impl<'a> Gate<'a> { pub const fn get(&self) -> u8 { self.n } pub fn slow(&self) -> u8 { self.n } }`) and a client evaluating `get` in a const",
+   "expected": "accepted"
+  },
+  {
+   "mutation": "`get`'s constness flag set to ordinary",
+   "expected": "non-const calls are not allowed in constant initializers",
+   "amended": {
+    "observed_first": "`source contextual/borrow/call original requires a wider explicit profile`: `get`'s original still carries its const-definition context, which no longer matches its ordinary header, and validation rejects it before any client check",
+    "expected": "source contextual/borrow/call original requires a wider explicit profile",
+    "added": "a second row also sets the original's context to runtime, a coherent ordinary `get`, and expects the declared `non-const calls are not allowed in constant initializers`; observed as expected",
+    "reason": "integrator decision 3: a forged row may be rejected by name by an earlier identity check"
+   }
+  },
+  {
+   "mutation": "`slow`'s constness flag set to const, over its runtime original",
+   "expected": "source original requires its complete supported ordinary signature/context",
+   "amended": {
+    "observed_first": "`source contextual/borrow/call original requires a wider explicit profile`: `slow`'s original keeps its runtime context, which no longer matches a const header",
+    "expected": "source contextual/borrow/call original requires a wider explicit profile",
+    "added": "a second row also sets the original's context to const-definition; `slow`'s body `self.n` is const-evaluable, so the consumer re-checks it and accepts it as it accepts an honest const method (observed). A third row, declared at 2026-11-08T02:11Z before it ran, forges the same two flags in a generated variant whose `slow` calls the ordinary `pub fn helper(n: u8) -> u8 { n }`, and expects `source const-definition call requires its actual const target`",
+    "reason": "integrator decision 3; the third row shows that declared constness is never evidence"
+   }
+  },
+  {
+   "mutation": "relabelled version 12",
+   "expected": "unknown source declaration kind"
+  },
+  {
+   "mutation": "every strict prefix",
+   "expected": "fails to decode"
+  }
+ ],
+ "native": {
+  "expected": "all eleven accepted clients exit 42 natively, as rustc's do",
+  "amended": "ten, after static-held was withdrawn"
+ },
+ "withdrawn_cases": [
+  {
+   "file": "spec/const-methods/static-held.rs",
+   "provider": "spec/const-methods/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "bc62676cb5840582adbdbcaad320b473e9670933e93ecd58784993642f54d055",
+   "withdrawn": {
+    "observed_first": "rustc rejected the declared bytes with \"requires `sync` lang_item\": every static needs `Sync`, and the provider declares none; the candidate accepted them (exit status 0), as main does for any source-client static without a `sync` lang item",
+    "first_amendment": "a client-local `#[lang = \"sync\"] pub unsafe auto trait Sync {}` (client sha256 99a70dba): rustc compiled it and it exited 42; the candidate rejected it with `compiler bindings require an explicit source-core provider`, as a RustGM source client takes every lang item from its source-core provider",
+    "second_amendment": "the provider declared that `Sync` instead (provider sha256 bcbeda00), as core does: rustc accepted every case as declared, but the candidate rejected the provider export with `source const/auto/unsafe traits require a wider explicit profile`, as `Sync` is an unsafe auto trait",
+    "decision": "the case is withdrawn and the provider keeps its declared bytes; the declared client is kept under obj/parallel/const-methods/withdrawn. A static context needs `Sync` transport, recorded as a gap, and main's acceptance of a source-client static with no `sync` lang item is recorded as a divergence from rustc. The const-context clients still cover the shared const evaluation"
+   }
+  }
+ ],
+ "rustc_controls": [
+  {
+   "control": "spec/source-nominals/provider.rs plus `pub struct P { pub n: u8 }`, `pub fn mp() -> P { P { n: 42 } }`, `pub fn f() -> u8 { mp().n }` and `pub fn w() -> u8 { mp().n = 5; 42 }`, compiled by rustc 1.98.0 as the provider; a client `match base::f() { 42 => 42, _ => 7 }`",
+   "case": "temporary-read",
+   "expected": "compiles; exits 42",
+   "candidate": "the version-13 export of the provider without `w` is accepted, with this client accepted; see generated_controls",
+   "amended": {
+    "observed_first": "rustc compiled the source-nominals provider, but both clients failed with `internal compiler error: error performing operation: fully_perform` (a delayed bug at `type_op/custom.rs:126`, on `match base::f()`), a stand-in gap of that provider rather than an outcome",
+    "change": "the same four items follow the const-methods provider's shared lines 1-147 instead",
+    "expected": "as declared; declared at 2026-11-08T02:20Z before the rerun"
+   },
+   "observed": "rustc 1.98.0 compiles the provider and the client, which exits 42, as declared. The candidate exports the same provider without `w` under version 13 and accepts this client (obj/parallel/const-methods/cand-temporary): it matches rustc"
+  },
+  {
+   "control": "the same rustc provider; a client `match base::w() { 42 => 42, _ => 7 }`",
+   "case": "temporary-write",
+   "expected": "compiles (a write to a field of a call temporary is a place assignment rustc admits, at most with a lint); exits 42",
+   "candidate": "the version-13 export of the provider with `w` is rejected by name with `source Store writes through an immutable dereference`: if rustc accepts, that rejection is a fenced deviation from rustc, not a match",
+   "declared": "2026-11-08T02:18Z, before the rustc run",
+   "amended": {
+    "observed_first": "rustc compiled the source-nominals provider, but both clients failed with `internal compiler error: error performing operation: fully_perform` (a delayed bug at `type_op/custom.rs:126`, on `match base::f()`), a stand-in gap of that provider rather than an outcome",
+    "change": "the same four items follow the const-methods provider's shared lines 1-147 instead",
+    "expected": "as declared; declared at 2026-11-08T02:20Z before the rerun"
+   },
+   "observed": "rustc 1.98.0 compiles the provider with no diagnostic, and the client exits 42, as declared. The candidate rejects the provider export under version 13 with `source Store writes through an immutable dereference`. That is a fenced deviation from rustc, not a match: a write to a field of a call temporary stays rejected by name until a write proof for temporaries is specified"
+  }
+ ],
+ "oracle": {
+  "round_1": "rustc 1.98.0 (88d9e12ae 2026-08-18) on the declared files (obj/parallel/const-methods/oracle1.log): the provider compiles; new, from-str, relay, make, plain, const-count, const-relay, const-plain, const-held and const-fn exit 42; runtime-in-const fails with E0015, runtime-argument with E0435, wrong-payload with E0308 and text-leak with `lifetime may not live long enough`, as declared; static-held fails with \"requires `sync` lang_item\" (see withdrawn_cases)",
+  "amended_rounds": "oracle2.log (client-local Sync static-held: exits 42), oracle3.log (provider with Sync: all fifteen as declared), oracle-temporary2 (temporary read and write: both exit 42)",
+  "final": "obj/parallel/const-methods/oracle-final.log on the committed bytes: all fourteen as declared"
+ },
+ "observed": {
+  "candidate": "cand4 and the integration controls on the committed bytes: all fourteen outcomes as declared; the four opponents fail with `non-const calls are not allowed in constant initializers`, `unresolved value name`, `incompatible types` and `required lifetime does not outlive its target`",
+  "first_candidate": "cand1: the provider export first failed with `source direct temporary writes require wider proof` at `relay`'s `Self::new(text, 42).n`, a version-13 gap main shares for any field read of a call's temporary; version 13 now reads such a field and never writes it",
+  "native": "the ten accepted clients exit 42 through the CPPGM object backend",
+  "scaling": "43,801, 61,153 and 130,561 bytes for 6, 24 and 96 methods: 964 bytes per method, exactly linear; the client LowIR is 351 bytes at every width",
+  "identity": "against the task-1 checkpoint pin (sha 22fe9718): 3,621 files compared, 36 differ, all in this packet's version-13 run (obj/parallel/const-methods/identity/receipt.txt)"
+ }
+}

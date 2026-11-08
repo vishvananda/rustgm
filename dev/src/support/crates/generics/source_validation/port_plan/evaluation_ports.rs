@@ -88,8 +88,15 @@ impl Ports {
                         ordinal,
                         work,
                     )?;
+                    // Version thirteen reads a field of a temporary, such as
+                    // `make().n`; the field is never writable, so a write
+                    // through it still requires wider proof.
+                    let writable = match projection.base {
+                        s::Place::Temporary(_) if builder.domains.bodies => false,
+                        base => self.writable(original, base, work)?,
+                    };
                     self.access[index] = Access {
-                        writable: self.writable(original, projection.base, work)?,
+                        writable,
                         unique: self.unique(projection.base),
                     };
                     continue;

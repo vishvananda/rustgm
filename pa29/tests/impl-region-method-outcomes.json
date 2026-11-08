@@ -162,7 +162,11 @@
   },
   {
    "control": "spec/source-nominals/provider.rs plus `Held<'a>` and `impl<'a> Held<'a> { pub const fn count(&self) -> u8 { 42 } }`, under version 13",
-   "expected": "rejected by name with `source nonordinary callable effect/safety/convention requires a wider profile`: const inherent methods stay fenced"
+   "expected": "rejected by name with `source nonordinary callable effect/safety/convention requires a wider profile`: const inherent methods stay fenced",
+   "superseded": {
+    "by": "const-method-outcomes.json (the const inherent-method checkpoint, 2026-11-08)",
+    "expected": "the same provider exports under version 13, and a client evaluating `base::Held { text: \"hi\" }.count()` in a const item is accepted; declared at 2026-11-08T02:27Z, before it ran"
+   }
   },
   {
    "control": "6, 24 and 96 generated methods `pub fn mNNN(&self) -> &'a u8 { &*self.t }` in one `impl<'a> Wide<'a>` over `pub struct Wide<'a> { pub t: &'a u8 }`, after the lifetime-nominal provider, and one client calling `m005`",

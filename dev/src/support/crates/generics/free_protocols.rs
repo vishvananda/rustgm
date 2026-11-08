@@ -126,7 +126,7 @@ pub(super) fn original_context(
         return Err("source original has no actual callable header");
     };
     let header = rows.functions[index as usize];
-    if header.parent.is_none() && header.constness == Constness::Const {
+    if header.constness == Constness::Const {
         constant_calls(rows, headers, body, work)?;
         Ok(s::CallContext::ConstDefinition)
     } else {

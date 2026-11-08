@@ -6440,8 +6440,8 @@ or result proof is transported. A fresh consumer rebuilds each method's
 template with its captures as leading early parameters, as a local method
 template binds them, and re-proves its body against the declared captured and
 late results. Older profiles still reject such an impl's lifetime by name, as
-they reject every nominal lifetime. Methods with early lifetimes or lifetime bounds, const inherent
-methods and methods of trait impls that capture lifetimes stay rejected by
+they reject every nominal lifetime. Methods with early lifetimes or lifetime
+bounds and methods of trait impls that capture lifetimes stay rejected by
 name. Packets without such methods keep their exact bytes.
 
 A version-thirteen original may also write, or borrow mutably, through a
@@ -6454,6 +6454,26 @@ unique path. Older profiles keep requiring a writable parent projection under
 every dereference and reject such a write by name. No write proof is
 transported: each consumer recomputes write access over the rebuilt places,
 and its own borrow checker proves every write and loan.
+
+A version-thirteen original may also read a field of a temporary, as in
+`make().n` or `Self::new(text, 42).n`. Such a field is unique but never
+writable, so a write or mutable borrow through it is still rejected by name
+("source Store writes through an immutable dereference"). rustc 1.98.0 admits
+that write; the rejection is a recorded deviation. Older profiles keep
+rejecting the read.
+
+A version-thirteen inherent impl method may also be `const`, whether or not
+its impl captures lifetimes. Its header carries the existing const constness
+and its original the existing const-definition context. Nothing else about
+its constness travels. Validation re-proves the body as it re-proves a free
+const original: every call names a const target of the same artifact. A fresh
+consumer imports the method as a const declaration whose captured regions are
+the leading early parameters of its template, and evaluates it in const
+contexts through its own const checker. A header whose constness and
+original context disagree is rejected by name. `const unsafe` methods, const
+methods with early lifetimes and const methods of trait impls stay rejected by
+name, and older profiles keep rejecting every const method. Packets without
+const methods or temporary field reads keep their exact bytes.
 
 A version-thirteen struct may also have a tuple or unit form. Its constructor
 is a kind-11 declaration parented by the struct and carrying the struct's

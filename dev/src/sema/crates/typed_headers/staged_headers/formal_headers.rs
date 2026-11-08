@@ -102,7 +102,8 @@ pub(super) fn header(
             && !conditional
             && !(constant
                 && context.descriptor.profile().unconditional_callables()
-                && raw.parent.is_none()))
+                && (raw.parent.is_none()
+                    || super::scheme_ports::inherent_captures(context.descriptor, raw))))
     {
         return Err(error(
             "source callable captures/effects require their wider header profile",

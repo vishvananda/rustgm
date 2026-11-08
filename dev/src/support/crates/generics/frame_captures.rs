@@ -45,7 +45,7 @@ pub(super) fn method(
             .region_bounds
             .slice(&rows.region_bounds)?
             .is_empty()
-        || function.constness != Constness::Ordinary
+        || function.constness == Constness::Conditional
         || function.regions.captures != implementation.region_captures
         || !function.regions.early.slice(&rows.region_slots)?.is_empty()
         || !function

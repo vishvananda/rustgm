@@ -14,6 +14,8 @@ mod convention_transport;
 mod declarative_exports;
 #[path = "crate_linking/direct_calls.rs"]
 mod direct_calls;
+#[path = "crate_linking/evaluated_methods.rs"]
+mod evaluated_methods;
 #[path = "crate_linking/expander_rows.rs"]
 mod expander_rows;
 #[path = "crate_linking/exports.rs"]

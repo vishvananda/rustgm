@@ -295,6 +295,28 @@ fn associated_method(
             && (conversions::method(rows, headers, header, work)?
                 || bodies && captured::method(rows, headers, header, work)?))
 }
+/// Version thirteen: an inherent method may be `const`. Its original is then
+/// a const definition re-checked by every consumer, as a free one is.
+fn inherent_const(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    header: &super::super::FunctionHeader,
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    let Some(parent) = header
+        .parent
+        .filter(|_| header.constness == Constness::Const)
+    else {
+        return Ok(false);
+    };
+    let Some(super::super::HeaderRef::Implementation(index)) = headers.header(parent, work)? else {
+        return Ok(false);
+    };
+    Ok(rows
+        .implementations
+        .get(index as usize)
+        .is_some_and(|implementation| implementation.trait_application.is_none()))
+}
 /// `bodies` is version thirteen, whose free originals may also bind late
 /// region formals; every consumer re-proves them in its rebuilt environment.
 fn functions(
@@ -321,7 +343,11 @@ fn functions(
         let required = callable
             || profile.conversions()
                 && conversions::required_member(rows, headers, header, roles.conversion, work)?;
-        if (!free_effects && !required && header.constness != Constness::Ordinary)
+        let inherent_const = bodies && inherent_const(rows, headers, header, work)?;
+        if (!free_effects
+            && !required
+            && !inherent_const
+            && header.constness != Constness::Ordinary)
             || !required && header.constness == Constness::Conditional
             || (!free_effects && header.original.unsafe_)
             || header.original.variadic
