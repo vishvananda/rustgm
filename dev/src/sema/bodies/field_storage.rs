@@ -10,7 +10,7 @@ use crate::sema::{
 use crate::types::lifetime_proof::Obligations;
 
 #[cfg(test)]
-#[path = "../../../tests/invariants/lifetime_contract_constants.rs"]
+#[path = "../../../tests/invariants/variance_contract_constants.rs"]
 mod tests;
 
 impl Checker<'_> {

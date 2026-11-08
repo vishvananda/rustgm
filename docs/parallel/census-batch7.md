@@ -308,7 +308,7 @@ Every new positive control fails on base `519f8eda3` (analysis-only build
 Private invariants check every case:
 
 - `dev/tests/invariants/assume_constants.rs`;
-- `dev/tests/invariants/lifetime_contract_constants.rs`;
+- `dev/tests/invariants/variance_contract_constants.rs`;
 - `dev/tests/invariants/fallback_exposure.rs`;
 - `dev/tests/invariants/binder_drop_bounds.rs`;
 - `dev/tests/invariants/destruct_patterns.rs`.
