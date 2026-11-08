@@ -565,6 +565,12 @@ impl Search<'_> {
                 self.query.purpose,
             )
             .map_err(inference)?;
+        #[cfg(test)]
+        self.query.candidate_lists.push(match &candidates {
+            crate::sema::traits::implementations::Candidates::Ready(owners)
+            | crate::sema::traits::implementations::Candidates::Pending(owners)
+            | crate::sema::traits::implementations::Candidates::Unvalidated(owners) => owners.len(),
+        });
         match candidates {
             crate::sema::traits::implementations::Candidates::Ready(owners) => {
                 frame.candidates = owners;

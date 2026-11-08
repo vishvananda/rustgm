@@ -17,11 +17,23 @@ use crate::{
 
 pub(super) struct Pending {
     goal: Goal,
-    operation: Option<crate::sema::primitive_methods::Descriptor>,
+    origin: Origin,
     selected: Option<usize>,
     stopped: Option<Decision>,
     suspended: Option<usize>,
     publish: bool,
+}
+
+/// The language evidence that forwarded its goal to a child.
+#[derive(Clone, Copy)]
+enum Origin {
+    /// A reference's call trait on its referent: rustc's core impls for `&F`
+    /// and `&mut F`, assembled before the subject's other impl candidates.
+    Referent,
+    /// A primitive operation's prerequisite, tried after every impl candidate.
+    Operation(crate::sema::primitive_methods::Descriptor),
+    /// A pattern type's marker on its base, tried after every impl candidate.
+    Refinement,
 }
 
 impl Frame {
@@ -102,7 +114,7 @@ impl Search<'_> {
         let goal = Goal::trait_application(referent, ItemId(item.0), arguments.to_vec());
         frame.language = Some(Box::new(Callable::Forward(Pending {
             goal,
-            operation: None,
+            origin: Origin::Referent,
             selected: None,
             stopped: None,
             suspended: None,
@@ -112,7 +124,7 @@ impl Search<'_> {
     }
 
     pub(super) fn start_refinement(frame: &mut Frame, prerequisite: Goal) -> Action {
-        Self::start_requirement(frame, prerequisite, None)
+        Self::start_requirement(frame, prerequisite, Origin::Refinement)
     }
 
     pub(super) fn start_comparison(
@@ -120,16 +132,12 @@ impl Search<'_> {
         descriptor: crate::sema::primitive_methods::Descriptor,
         prerequisite: Goal,
     ) -> Action {
-        Self::start_requirement(frame, prerequisite, Some(descriptor))
+        Self::start_requirement(frame, prerequisite, Origin::Operation(descriptor))
     }
-    fn start_requirement(
-        frame: &mut Frame,
-        goal: Goal,
-        operation: Option<crate::sema::primitive_methods::Descriptor>,
-    ) -> Action {
+    fn start_requirement(frame: &mut Frame, goal: Goal, origin: Origin) -> Action {
         frame.language = Some(Box::new(Callable::Forward(Pending {
             goal,
-            operation,
+            origin,
             selected: None,
             stopped: None,
             suspended: None,
@@ -223,26 +231,27 @@ impl Search<'_> {
         frame: &mut Frame,
     ) -> Result<Action, String> {
         let pending = frame.forwarding()?;
-        if pending.stopped == Some(Decision::Absent) && pending.operation.is_none() {
-            // Like rustc, a reference whose referent is not callable keeps its
-            // own impl candidates, such as a user impl for `&mut Adapter`.
-            frame.language = None;
-            return self.implementation_candidates(facts, frame);
-        }
+        let origin = pending.origin;
         if let Some(decision) = pending.stopped {
-            return Ok(Action::Complete(
-                if pending.operation.is_some() && decision == Decision::Absent {
+            return match (origin, decision) {
+                // Like rustc, a reference whose referent is not callable keeps
+                // its own impl candidates, such as a user impl for `&mut Adapter`.
+                // Other forwarding follows those candidates, so it never relists them.
+                (Origin::Referent, Decision::Absent) => {
+                    frame.language = None;
+                    self.implementation_candidates(facts, frame)
+                }
+                (Origin::Operation(_), Decision::Absent) => Ok(Action::Complete(
                     if frame.deferred || frame.partial.is_some() {
                         Decision::Deferred
                     } else {
                         frame
                             .selected
                             .map_or(Decision::Absent, super::frames::Chosen::decision)
-                    }
-                } else {
-                    decision
-                },
-            ));
+                    },
+                )),
+                _ => Ok(Action::Complete(decision)),
+            };
         }
         if std::mem::take(&mut pending.publish) {
             return Ok(Action::Yield);
@@ -250,9 +259,7 @@ impl Search<'_> {
         let Some(child) = pending.selected else {
             return Ok(Action::Descend);
         };
-        let operation = pending.operation;
-        let refinement = Self::source_refinement_marker_goal(facts, frame)?;
-        if (operation.is_some() || refinement)
+        if !matches!(origin, Origin::Referent)
             && (frame.selected.is_some() || frame.deferred || frame.partial.is_some())
         {
             return Ok(Action::Complete(Decision::Deferred));
@@ -271,15 +278,13 @@ impl Search<'_> {
             Err(infer::Error::Unresolved) => return Ok(Action::Complete(Decision::Deferred)),
             Err(error) => return Err(inference(error)),
         };
-        let source = if let Some(descriptor) = operation {
-            Source::LanguageOperation { descriptor }
-        } else if refinement {
+        let source = match origin {
+            Origin::Operation(descriptor) => Source::LanguageOperation { descriptor },
             // Marker proof has no callable output or invented implementation/method target.
-            Source::Builtin
-        } else {
-            Source::Callable {
+            Origin::Refinement => Source::Builtin,
+            Origin::Referent => Source::Callable {
                 output: self.forwarded_output(facts, child)?,
-            }
+            },
         };
         let node = self.query.push(
             Node {

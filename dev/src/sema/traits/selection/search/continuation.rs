@@ -76,6 +76,9 @@ pub(super) struct Query {
     pub steps: usize,
     #[cfg(test)]
     pub storage_steps: usize,
+    /// The owner count of each impl candidate list this query assembled.
+    #[cfg(test)]
+    pub candidate_lists: Vec<usize>,
     pub builtins: crate::sema::nominals::Proof,
     pub stack: Vec<Frame>,
     waiting: Option<Dependency>,
@@ -136,6 +139,8 @@ impl<'a> Search<'a> {
                 steps: 0,
                 #[cfg(test)]
                 storage_steps: 0,
+                #[cfg(test)]
+                candidate_lists: Vec::new(),
                 stack: Vec::new(),
                 waiting: None,
                 decision: None,
