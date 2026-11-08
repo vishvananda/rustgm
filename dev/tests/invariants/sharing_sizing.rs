@@ -341,7 +341,10 @@ fn unrelated_builtin_does_not_acquire_sizing_sharing_and_hot_layouts_stay_fixed(
             .completed
             .contains_key(&freeze)
     );
-    assert_eq!(size_of::<Query>(), 656);
+    // Amended at batch 11's integration: the test build's `Query` also holds
+    // the test-only `candidate_lists` log of `user_callable_output`; the
+    // production layout is unchanged.
+    assert_eq!(size_of::<Query>(), 656 + size_of::<Vec<usize>>());
     assert_eq!(size_of::<Node>(), 160);
     assert_eq!(size_of::<super::super::Frame>(), 1312);
     Ok(())

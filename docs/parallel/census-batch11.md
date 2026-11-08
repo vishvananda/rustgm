@@ -142,6 +142,14 @@ each subject without a signature or referent lists its candidates exactly once
 (lists of 1, 2, 1 and 2 for `S0`, `&mut S0`, `Plain` and `&mut Plain`), and a
 pattern marker without base evidence never relists.
 
+Amended control, at integration on 2026-11-08: those invariants read a
+`#[cfg(test)]` `candidate_lists: Vec<usize>` log on the selection `Query`. The
+joined check found that this grows the test build's `Query` from 656 to 680
+bytes, which fails `sharing_sizing`'s hot-layout assert. The production layout
+is unchanged, because the field exists only under `cfg(test)`. The assert now
+reads `656 + size_of::<Vec<usize>>()`, naming the test-only field. `Node` and
+`Frame` are unchanged.
+
 ## 3. Specialization over where-clause-only parent parameters (d4's record)
 
 With the overlap budget raised, d4 stopped at "specialization implication
