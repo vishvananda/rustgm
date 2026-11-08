@@ -1,9 +1,12 @@
 //! Actual source Copy impls must prove their physical fields under declared premises.
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/allowed_copy_targets.rs"]
+mod target_tests;
 use super::{Checker, Error, NodeKey};
 use crate::{
     sema::nominals::Proof,
     types::{
-        Kind, TypeId,
+        Kind, Primitive, TypeId,
         parameters::predicates::{Bound, Predicate},
     },
 };
@@ -89,11 +92,19 @@ impl Checker<'_> {
             Kind::Reference { mutable: true, .. } => {
                 Err(error("unique references cannot implement source Copy"))
             }
+            Kind::Primitive(Primitive::Str) => Err(error("str cannot implement source Copy")),
+            // As rustc 1.98's `type_allowed_to_implement_copy`, scalars, `!`, raw
+            // pointers, shared references and arrays are targets without fields:
+            // an array's element is not checked. rustc rejects a written Copy impl
+            // for a fn pointer or a tuple (E0206), which have builtin Copy;
+            // accepting them here is a recorded gap.
             Kind::Primitive(_)
+            | Kind::Never
             | Kind::Pointer { .. }
             | Kind::Reference { mutable: false, .. }
+            | Kind::Array { .. }
+            | Kind::ArrayTerm { .. }
             | Kind::Function { .. } => Ok(Vec::new()),
-            Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } => Ok(vec![element]),
             Kind::Tuple(list) => self
                 .facts
                 .types

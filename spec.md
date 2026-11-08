@@ -1740,6 +1740,15 @@ neither an executable Clone body nor const-call permission, and it cannot enter
 the sizing-only reuse cache. Ownership consumes the resulting exact body-local
 Copy decision through its existing checked interface, without a physical fallback.
 
+A source Copy impl's target follows rustc 1.98's `type_allowed_to_implement_copy`.
+Scalars other than `str`, `!`, raw pointers, shared references and arrays are
+targets without fields; an array's element is not checked. An ADT target proves
+its fields. A unique reference, `str`, a slice and every other kind are no
+target. rustc also rejects a written Copy impl for a tuple or a fn pointer
+(E0206), which have builtin Copy; this compiler still accepts one whose elements
+are Copy, a recorded gap. The [Copy target controls](pa31/tests/spec/copy-impl-targets/README.md)
+record independent outcomes.
+
 Union field eligibility consumes the actual source Copy trait application when
 source language items are selected, preserving generic premises under that same
 identity. Keep the canonical builtin bound for the bootstrap profile. The

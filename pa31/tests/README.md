@@ -740,3 +740,12 @@ premises, directly or by elaboration, a plain supertrait and ordinary impls,
 beside an ordinary supertrait impl, an ordinary premise and a `const` premise
 that do not satisfy it (E0277). Each outcome was declared before its rustc
 1.98.0 oracle. A private invariant checks them; there is no graded manifest.
+
+`spec/copy-impl-targets/` freezes thirteen declared no_core Copy impl targets
+from census batch 13: core's `impl Copy for !`, scalars, raw pointers and
+arrays, including an array whose element is only Clone, are accepted without
+fields; `&mut T`, `str` and `[T]` targets (E0206), `!` without Clone (E0277)
+and written tuple and fn pointer impls (E0206) are rejected. The tuple and fn
+pointer cases are recorded gaps. Each outcome was declared before its rustc
+1.98.0 oracle, one by recorded amendment. A private invariant checks them;
+there is no graded manifest.

@@ -1,0 +1,125 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The shapes reduce census 13's crate record \"source Copy target is outside the supported implementation profile\" at core's `impl Copy for ! {}` (library/core/src/marker.rs:484) and check the whole set of Copy targets that rustc accepts. Exploration drafts with other bytes were run first: obj/parallel/census-batch12/repro/never-copy/ (rustc 1.98.0 accepted `impl Clone for !` with `impl Copy for !` and the census 13 pin rejected it with the census message; both accepted the Clone impl alone) and obj/parallel/census-batch13/rustc-check/drafts/ (rustc rejected `(u8, u8)` and `fn(u8) -> u8` Copy impls with E0206 and E0283 and a `&'a mut u8` Copy impl with E0206), with three unchanged PA31 fixtures that write tuple and fn-pointer Copy impls (E0206). Each outcome follows the rule read in the pinned rustc 1.98.0 sources (compiler/rustc_trait_selection/src/traits/misc.rs `type_allowed_to_implement_copy`, which accepts integer, float, bool, char, raw pointer, never, shared reference and array targets without fields and an ADT whose fields are Copy, and returns NotAnAdt for every other target; compiler/rustc_hir_analysis/src/coherence/builtin.rs `visit_implementation_of_copy`, which reports NotAnAdt as E0206; compiler/rustc_trait_selection/src/traits/select/mod.rs `copy_clone_conditions`, which gives tuples and fn pointers builtin Copy and Clone, so a written Clone impl for them is ambiguous, E0283; and the `Copy: Clone` and `Clone: Sized` supertraits, E0277)",
+ "declaration_sha256": "4f1304e37c91586ef44e8352d6322a51448c283eddedbbb68424508db6097212",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [
+  {
+   "cases": [
+    "tuple-copy-elements.rs"
+   ],
+   "declared": "2026-11-08, after the copy-impl-targets oracle of the first twelve cases and the census 13 pin's run of them, and before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The census 13 pin rejected `tuple-target.rs` with \"source Copy implementation requires every field to implement actual Copy\", because its `bool` element has no Copy impl, so that case does not record the tuple gap. This case has all-Copy elements. The exploration draft obj/parallel/census-batch13/rustc-check/drafts/tuple-pair.rs, with other bytes, was rejected by rustc with E0206 and E0283",
+   "declaration_sha256": "a4e10997bc3e82b1707a0278743cac36151c483367394ef54376d51ac4141dbe"
+  }
+ ],
+ "cases": {
+  "core-never.rs": {
+   "sha256": "cf18b55598ace37361de89841630203f1f2102923df6de8302fd3521a5a80d0a",
+   "declared": 0,
+   "reason": "core's shape: `impl Clone for !` (clone.rs:737, here not const) and `impl Copy for ! {}` (marker.rs:484); `!` is an accepted target without fields",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "scalars.rs": {
+   "sha256": "5854ec0da620f8325c14dcd75be9c80b36f81e4b6dccbbeaf77876531f5d1bc8",
+   "declared": 0,
+   "reason": "control: Clone and Copy impls for bool, char, i32 and f64; scalar targets without fields",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "raw-pointers.rs": {
+   "sha256": "01d2373f9fffca00a99e0ba93ba9d44abf923c0e01c55250519e11384f6a8f99",
+   "declared": 0,
+   "reason": "control: `impl<T: PointeeSized> Copy for *const T` and `*mut T` with their Clone impls; raw pointer targets without fields",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "core-array.rs": {
+   "sha256": "118b475be0fe9ada0f0b6203c65e0a69ef4b87ff4cef7917d5a980a24e8c4e27",
+   "declared": 0,
+   "reason": "core's array shape: `impl<T: Clone, const N: usize> Clone for [T; N]` and `impl<T: Copy, const N: usize> Copy for [T; N]`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "array-clone-element.rs": {
+   "sha256": "8e1b9a7f4ad001cc51d3b451b3b0aa05bc4fcd23a8872762c5f68b72fbb3ef5f",
+   "declared": 0,
+   "reason": "the same Clone impl with `impl<T: Clone, const N: usize> Copy for [T; N]`; the target check accepts an array without checking its element, and the only supertrait obligation `[T; N]: Clone` holds",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "array-fixed-length.rs": {
+   "sha256": "7564792dc6e603d1972d50b4d61c2ee8539f6c9c7bba6dbc1ef6d100d73450e9",
+   "declared": 0,
+   "reason": "a non-Copy unit struct `Token` with `impl Clone for [Token; 2]` and `impl Copy for [Token; 2]`; a fixed-length array target, also without an element check",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "unique-reference.rs": {
+   "sha256": "92133e2ac174eada737c81135fc61f1f484dfd0a7f4294d7d68432ca332bda3d",
+   "declared": 1,
+   "reason": "opponent: `impl<'a, T> Copy for &'a mut T` with a Clone impl; a unique reference is not an accepted target (E0206)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0206"
+   ]
+  },
+  "str-target.rs": {
+   "sha256": "d7f8ea0c65c254d0c62932bba2155a4f88dd1fe62ec04537a3f51ca7fb9e86d9",
+   "declared": 1,
+   "reason": "opponent: `impl Copy for str {}`; str is not an accepted target (E0206), and `str: Clone` cannot hold",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0206"
+   ]
+  },
+  "slice-target.rs": {
+   "sha256": "fd68c2b40ddfda0e9bd00afd49dc9b3154f824e5b9aa353c6f23a24ac10d8608",
+   "declared": 1,
+   "reason": "opponent: `impl<T: Clone> Copy for [T] {}`; a slice is not an accepted target (E0206), and `[T]: Clone` cannot hold",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0206"
+   ]
+  },
+  "never-without-clone.rs": {
+   "sha256": "77ee282e44ee558655b60a562135a20358b71bd9fca983bf297320c5f8ea876c",
+   "declared": 1,
+   "reason": "opponent: `impl Copy for ! {}` without a Clone impl; the target is accepted but the supertrait `!: Clone` does not hold (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "tuple-target.rs": {
+   "sha256": "ed39a7e5155692221f1b0725172cfd5a53da0ae36340a96faa0449d5aa57166b",
+   "declared": 1,
+   "reason": "opponent: Clone and Copy impls for `(u8, bool)`; a tuple is not an accepted target (E0206), and the written Clone impl is ambiguous with the builtin one (E0283)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0206"
+   ]
+  },
+  "fn-pointer-target.rs": {
+   "sha256": "c554ba2c8fc0ccc84895d83b8f8379ad87b50fbec36358bfb81003c411ed8408",
+   "declared": 1,
+   "reason": "opponent: Clone and Copy impls for `fn(bool) -> bool`; a fn pointer is not an accepted target (E0206), and the written Clone impl is ambiguous with the builtin one (E0283)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0206",
+    "E0283"
+   ]
+  },
+  "tuple-copy-elements.rs": {
+   "sha256": "72074839f67c57c057f9d36df50aa56614c5df9a3739b9a6253ece3eda18ef5b",
+   "declared": 1,
+   "reason": "opponent: Clone and Copy impls for `(u8, &'static u8)`, whose elements are both Copy here; a tuple is not an accepted target (E0206). The first tuple case, `(u8, bool)`, is also rejected by RustGM, but only because the foundation has no `bool: Copy`, so it does not show the tuple gap",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0206",
+    "E0283"
+   ]
+  }
+ }
+}
