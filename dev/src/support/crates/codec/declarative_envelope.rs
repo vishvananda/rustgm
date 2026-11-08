@@ -240,7 +240,7 @@ pub(super) fn decode(input: &mut Reader<'_>) -> Result<Interface, &'static str> 
     if !input.done() || matches!(inner.get(12), Some(&(TAG | super::link_envelope::TAG))) {
         return Err("trailing or nested exported macro metadata");
     }
-    super::decode(inner)?.with_macros(macros)
+    super::decode_nested(inner)?.with_macros(macros)
 }
 /// The canonical order of one decoded row: placement and name, then a glob
 /// row's owner and target.

@@ -7,7 +7,8 @@ entry here.
 
 Lane B [shim glob rows and `compiler_builtins`](parallel/shim-globs-builtins.md)
 lets crates whose `core` is the `rustc_std_workspace_core` shim resolve
-through its `pub use core::*` as rustc does.
+through its `pub use core::*` as rustc does, and follows rustc 1.98's
+`compiler_builtins` injection.
 
 - Macro envelope version 5 adds one glob row per `pub use dependency::path::*`
   (kind 4: placement, `u32` owner, target path). The consumer re-binds the
@@ -18,6 +19,17 @@ through its `pub use core::*` as rustc does.
   in all. A used cross-crate ambiguity is a declared divergence: rustc's
   deny-by-default lint `ambiguous_glob_imports` is capped in the oracle, and
   RustGM rejects the use by name.
+- Profile tag 15 `[15][flags]` leads only the outermost artifact, and bit 0
+  is `#![compiler_builtins]`. It is written only when a flag is set, so other
+  artifacts keep their bytes, and older readers reject it by name. After
+  name resolution, a `no_std` source client that is neither `#![no_core]` nor
+  `#![compiler_builtins]` needs a flagged artifact in its inventory.
+  Otherwise it fails with rustc's E0463 text, or by name when `--extern
+  compiler_builtins=` names an unflagged crate.
+- The four PA29 manifests compile their `compiler_builtins` stand-ins with
+  RustGM, as amended before any run. Six cases are added, including the
+  exact upstream `rustc-std-workspace-core/lib.rs`, and 118 match the rustc
+  1.98.0 oracle natively.
 - Every PA1 to PA24 suite passes, with PA20 at 1451/1451.
 
 Lane A [census batch 10](parallel/census-batch10.md) repairs census 10's

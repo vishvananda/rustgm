@@ -27,6 +27,34 @@
       "note": "no_core source-core provider named core, with core's prelude shape: v1 re-exports Option and a macro_export row, rust_2015 through rust_2021 glob v1, and only rust_2024 adds IntoFuture"
     },
     {
+      "kind": "rlib",
+      "deps": {},
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "native": false,
+      "name": "nostd-missing-builtins-client",
+      "path": "tests/spec/no-std-clients/client.rs",
+      "source_sha256": "00cf37bd11ed0987f148ce863a1661250c23dd1d52fac5b697ec26ab80734f20",
+      "crate": "client",
+      "edition": "2024",
+      "rustc_deps": {
+        "core": "nostd-core"
+      },
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0463"
+      ],
+      "frontend_expected_after_implementation": 1,
+      "frontend_diagnostic": "can't find crate for `compiler_builtins`",
+      "note": "opponent (amended): the 2024 client before any compiler_builtins crate exists, so the injection after name resolution finds none (E0463)"
+    },
+    {
       "name": "nostd-builtins",
       "path": "tests/spec/no-std-clients/builtins.rs",
       "source_sha256": "d99ad3683a2997aebf6142c624aa25dce56e6103e4f026d3cfb0c2141fde60c2",
@@ -34,7 +62,6 @@
       "crate": "compiler_builtins",
       "edition": "2021",
       "deps": {},
-      "rustc_only": true,
       "rustc_deps": {
         "core": "nostd-core"
       },
@@ -45,7 +72,12 @@
       },
       "rustc_sysroot": "empty",
       "native": false,
-      "note": "rustc-only support crate: without a sysroot, rustc's no_std injection also needs an `extern crate compiler_builtins`; RustGM injects no such crate and never compiles this file"
+      "note": "the empty `#![compiler_builtins]` stand-in that rustc 1.98 injects into a no_std crate without one in its graph; RustGM compiles it as a source client and publishes crate loader flag bit 0 (amended)",
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "frontend_expected_after_implementation": 0
     },
     {
       "name": "nostd-2015-client",
@@ -59,7 +91,8 @@
         "core": "nostd-core"
       },
       "inventory": [
-        "nostd-core"
+        "nostd-core",
+        "nostd-builtins"
       ],
       "source_client": "nostd-core",
       "native": true,
@@ -87,7 +120,8 @@
         "core": "nostd-core"
       },
       "inventory": [
-        "nostd-core"
+        "nostd-core",
+        "nostd-builtins"
       ],
       "source_client": "nostd-core",
       "native": true,
@@ -115,7 +149,8 @@
         "core": "nostd-core"
       },
       "inventory": [
-        "nostd-core"
+        "nostd-core",
+        "nostd-builtins"
       ],
       "source_client": "nostd-core",
       "native": true,
@@ -143,7 +178,8 @@
         "core": "nostd-core"
       },
       "inventory": [
-        "nostd-core"
+        "nostd-core",
+        "nostd-builtins"
       ],
       "source_client": "nostd-core",
       "native": true,
@@ -171,7 +207,8 @@
         "core": "nostd-core"
       },
       "inventory": [
-        "nostd-core"
+        "nostd-core",
+        "nostd-builtins"
       ],
       "source_client": "nostd-core",
       "rustc": 0,
@@ -196,7 +233,8 @@
         "core": "nostd-core"
       },
       "inventory": [
-        "nostd-core"
+        "nostd-core",
+        "nostd-builtins"
       ],
       "source_client": "nostd-core",
       "rustc": 1,
@@ -224,7 +262,8 @@
         "core": "nostd-core"
       },
       "inventory": [
-        "nostd-core"
+        "nostd-core",
+        "nostd-builtins"
       ],
       "source_client": "nostd-core",
       "rustc": 0,
@@ -249,7 +288,8 @@
         "core": "nostd-core"
       },
       "inventory": [
-        "nostd-core"
+        "nostd-core",
+        "nostd-builtins"
       ],
       "source_client": "nostd-core",
       "rustc": 1,
@@ -277,7 +317,8 @@
         "core": "nostd-core"
       },
       "inventory": [
-        "nostd-core"
+        "nostd-core",
+        "nostd-builtins"
       ],
       "source_client": "nostd-core",
       "rustc": 1,
@@ -324,7 +365,8 @@
         "core": "nostd-bare-core"
       },
       "inventory": [
-        "nostd-bare-core"
+        "nostd-bare-core",
+        "nostd-builtins"
       ],
       "source_client": "nostd-bare-core",
       "rustc": 1,
@@ -339,6 +381,87 @@
       "frontend_diagnostic": "no_std source client's core provider lacks its edition prelude",
       "native": false,
       "note": "opponent: the injected prelude glob needs prelude::rust_2024 in the provider; rustc also reports E0152 because the shared compiler_builtins support crate loads nostd-core beside it"
+    },
+    {
+      "kind": "rlib",
+      "deps": {},
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "native": false,
+      "name": "nostd-plain-builtins",
+      "path": "tests/spec/no-std-clients/plain-builtins.rs",
+      "source_sha256": "74e603017012207c72e0196c7887a9b55a5189b84e08c3fa5173a08caa78e3e4",
+      "crate": "compiler_builtins",
+      "edition": "2021",
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend_expected_after_implementation": 0,
+      "note": "a no_core crate named compiler_builtins without the attribute; it needs no injection and publishes no loader flag (amended)"
+    },
+    {
+      "kind": "rlib",
+      "deps": {
+        "compiler_builtins": "nostd-plain-builtins"
+      },
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "native": false,
+      "name": "nostd-plain-builtins-client",
+      "path": "tests/spec/no-std-clients/client.rs",
+      "source_sha256": "00cf37bd11ed0987f148ce863a1661250c23dd1d52fac5b697ec26ab80734f20",
+      "crate": "client",
+      "edition": "2024",
+      "rustc_deps": {
+        "core": "nostd-core"
+      },
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "rustc": 1,
+      "rustc_codes": [
+        "resolved as `compiler_builtins` but is not `#![compiler_builtins]`"
+      ],
+      "frontend_expected_after_implementation": 1,
+      "frontend_diagnostic": "the crate resolved as `compiler_builtins` is not `#![compiler_builtins]`",
+      "note": "opponent (amended): --extern compiler_builtins= names the plain crate, which the injection resolves and rejects by name"
+    },
+    {
+      "kind": "rlib",
+      "deps": {},
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "native": false,
+      "name": "nostd-ungated-builtins",
+      "path": "tests/spec/no-std-clients/ungated-builtins.rs",
+      "source_sha256": "846292bdf3753cae19e95f505dc185f3539ff22c528c53fdc5c591b8e07a5e4f",
+      "crate": "compiler_builtins",
+      "edition": "2021",
+      "rustc_deps": {
+        "core": "nostd-core"
+      },
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0658"
+      ],
+      "frontend_expected_after_implementation": 1,
+      "frontend_diagnostic": "the `compiler_builtins` attribute requires its internal feature",
+      "note": "opponent (amended): #![compiler_builtins] without its internal feature"
     }
-  ]
+  ],
+  "amended": "compiler_builtins injection: declared 2026-11-08 before any rustc or RustGM run of the amended cases (exploratory rustc probes ran first under obj/lane-b3/probes). nostd-builtins is compiled by RustGM, every no_std client has it in its inventory, and four cases are added"
 }

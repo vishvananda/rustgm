@@ -3,11 +3,12 @@
 //! authenticated provider, nameable at the crate root in Rust 2015, and its
 //! glob prelude is that crate's `prelude::rust_20xx` module for the client's
 //! own edition. Injected `core` carries no `macro_use`: provider macros come
-//! through that prelude or a path.
+//! through that prelude or a path. After name resolution, such a client also
+//! needs rustc's injected `compiler_builtins`.
 use super::{
     index::Resolver,
-    model::{Access, Binding, DefId, DefKind, Namespace, Origin, ScopeId},
-    package::Error,
+    model::{Access, Binding, DefId, DefKind, Namespace, Origin, Resolution, ScopeId},
+    package::{Error, Package},
     unit::FileId,
 };
 use crate::support::{
@@ -25,6 +26,57 @@ pub(super) struct Injected {
     pub(super) core: DefId,
     pub(super) prelude: DefId,
     pub(super) scope: ScopeId,
+}
+
+/// Rustc 1.98's crate loader injects `compiler_builtins` after expansion and
+/// name resolution into every crate except a `#![no_core]` or
+/// `#![compiler_builtins]` crate, unless a loaded crate already is
+/// `#![compiler_builtins]`. Only a `no_std` source client loads an actual
+/// core; `RustGM`'s built-in core and std stand for a graph that contains the
+/// crate. The injected crate binds no name, so it is only checked.
+pub(super) fn inject_compiler_builtins(
+    package: &Package,
+    resolution: &Resolution,
+) -> Result<(), Error> {
+    if package.source_client().is_none() || !package.no_std {
+        return Ok(());
+    }
+    let unit = package
+        .units
+        .first()
+        .ok_or_else(|| error("source client lost its crate root"))?;
+    let root = Some(unit.configured.ast.root);
+    let attribute = |name| {
+        unit.word_attribute(root, name)
+            .map_err(|e| Error::at(FileId(0), e.offset, e.message))
+    };
+    if attribute("no_core")? || attribute("compiler_builtins")? {
+        return Ok(());
+    }
+    let dependencies = resolution
+        .crates
+        .as_deref()
+        .map(super::crates::Imported::dependencies);
+    if dependencies.is_some_and(|dependencies| {
+        dependencies
+            .artifacts()
+            .iter()
+            .any(|artifact| artifact.loader_flags().compiler_builtins())
+    }) {
+        return Ok(());
+    }
+    // The loader resolves the name `compiler_builtins`, an `--extern` first.
+    if dependencies.is_some_and(|dependencies| {
+        dependencies
+            .aliases()
+            .iter()
+            .any(|alias| alias.alias() == "compiler_builtins")
+    }) {
+        return Err(error(
+            "the crate resolved as `compiler_builtins` is not `#![compiler_builtins]`",
+        ));
+    }
+    Err(error("can't find crate for `compiler_builtins`"))
 }
 
 impl Resolver<'_> {
@@ -160,3 +212,7 @@ impl Resolver<'_> {
             .ok_or_else(|| error("no_std source client's core prelude is not a module"))
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/loader_flags.rs"]
+mod loader_tests;

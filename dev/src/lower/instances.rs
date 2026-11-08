@@ -265,7 +265,19 @@ pub fn build_library_prepared(
     .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
     let interface = interface
         .ok_or_else(|| diagnostic(report, None, "missing checked library exports".into()))?;
-    Ok((program, interface))
+    Ok((program, with_loader_flags(report, interface)?))
+}
+
+/// Publish the crate's own loader attributes on its outermost artifact.
+fn with_loader_flags(
+    report: &Report,
+    interface: crate::support::crates::Interface,
+) -> Result<crate::support::crates::Interface, Error> {
+    report
+        .package
+        .loader_flags()
+        .and_then(|flags| interface.with_loader_flags(flags))
+        .map_err(|message| diagnostic(report, None, message.into()))
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -392,7 +404,7 @@ pub fn build_source_library_profile(
             } else {
                 interface
             };
-            Ok((program, interface))
+            Ok((program, with_loader_flags(report, interface)?))
         },
         if matches!(profile, SourcePublication::CompilerOperations) {
             Construction::CompilerOperations

@@ -21,7 +21,9 @@ These cases reuse the `../no-std-clients/` provider and clients, each with
   rejects it by name.
 
 The rustc oracle passes `compiler_builtins` explicitly. That keeps rustc from
-seeing two candidates once later manifests add their own stand-ins.
+seeing two candidates once later manifests add their own stand-ins. RustGM's
+`no_std` clients have the same stand-in in their dependency inventory; the
+`no_core` client needs none.
 
 The outcomes in `../../extern-core-outcomes.json` were declared before the
 frozen rustc oracle and before any RustGM run of these cases.

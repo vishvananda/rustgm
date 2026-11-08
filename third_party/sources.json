@@ -1191,6 +1191,15 @@
       "adaptation": "none; complete original module retained, independently checked no_core companions embed exact declaration intervals",
       "oracle": "source-fragment",
       "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/rustc-std-workspace-core/lib.rs",
+      "destination": "pa29/tests/spec/shim-globs/upstream-shim.rs",
+      "sha256": "6e011f4fb187509bfc0728a12685dcca772954ba3f50c013d1c630d77773b7bc",
+      "adaptation": "none; complete original crate root, whose rustc 1.98.0 outcome with its core and compiler_builtins dependencies is frozen in pa29/tests/shim-glob-outcomes.json",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa29"
     }
   ]
 }

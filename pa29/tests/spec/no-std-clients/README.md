@@ -26,13 +26,25 @@ The opponents are:
 - `bare-client.rs`, whose provider `bare-core.rs` is named `core` but has no
   prelude modules. Rustc reports "cannot resolve a prelude import".
 
-`builtins.rs` is used only by the rustc oracle. Without a sysroot, rustc's
-injection also needs an `extern crate compiler_builtins`, and this empty
-crate stands in for it. RustGM injects no such crate.
+`builtins.rs` is the empty `#![compiler_builtins]` crate. Without a
+sysroot, rustc 1.98's crate loader injects `compiler_builtins` after name
+resolution into a `no_std` crate whose graph has no such crate, and this
+stand-in is that crate. RustGM compiles it too, publishing crate loader flag
+bit 0, and each `no_std` client has it in its dependency inventory. The
+amended opponents are:
+
+- the 2024 client before any `compiler_builtins` crate exists (E0463);
+- `plain-builtins.rs`, a `no_core` crate named `compiler_builtins` without
+  the attribute, which a client then names with `--extern
+  compiler_builtins=` ("resolved as `compiler_builtins` but is not
+  `#![compiler_builtins]`");
+- `ungated-builtins.rs`, the attribute without its internal feature (E0658).
 
 The outcomes in `../../no-std-client-outcomes.json` were declared before the
 frozen rustc oracle and before any RustGM run of these files. Exploratory
-probes of similar shapes ran first.
+probes of similar shapes ran first. The `compiler_builtins` amendment was
+declared on 2026-11-08 before any rustc or RustGM run of the amended cases,
+after exploratory rustc probes.
 
 The lang-item prefix of `provider.rs` is the exact pinned core fragment from
 `pa31/tests/spec/fn-sugar-impl-parameters/`, taken from the original core

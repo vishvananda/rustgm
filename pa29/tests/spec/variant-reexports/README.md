@@ -21,10 +21,10 @@ variant in the type namespace and reports E0573. RustGM finds no
 type-namespace binding, because none travels, and reports an unresolved type
 name.
 
-The rustc oracle builds the `compiler_builtins` stand-in
-`../no-std-clients/builtins.rs` against this provider. The clients name both
-crates with `--extern`, so rustc never loads the `nostd-core` stand-in
-beside this one.
+The `compiler_builtins` stand-in `../no-std-clients/builtins.rs` is built
+against this provider by rustc and RustGM. Rustc's clients name both crates
+with `--extern`, so rustc never loads the `nostd-core` stand-in beside this
+one; RustGM's clients have both in their dependency inventory.
 
 The outcomes in `../../variant-reexport-outcomes.json` were declared before
 the frozen rustc oracle and before any RustGM run of these files. An

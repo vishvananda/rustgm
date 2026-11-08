@@ -28,7 +28,6 @@
       "crate": "compiler_builtins",
       "edition": "2021",
       "deps": {},
-      "rustc_only": true,
       "rustc_deps": {
         "core": "variant-core"
       },
@@ -39,7 +38,12 @@
       },
       "rustc_sysroot": "empty",
       "native": false,
-      "note": "rustc-only compiler_builtins stand-in built against variant-core, which the clients name by --extern so rustc never loads the nostd-core stand-in beside it"
+      "note": "the empty `#![compiler_builtins]` stand-in that rustc 1.98 injects into a no_std crate without one in its graph; RustGM compiles it as a source client and publishes crate loader flag bit 0 (amended)",
+      "inventory": [
+        "variant-core"
+      ],
+      "source_client": "variant-core",
+      "frontend_expected_after_implementation": 0
     },
     {
       "name": "variant-2021-client",
@@ -54,7 +58,8 @@
         "compiler_builtins": "variant-builtins"
       },
       "inventory": [
-        "variant-core"
+        "variant-core",
+        "variant-builtins"
       ],
       "source_client": "variant-core",
       "native": true,
@@ -83,7 +88,8 @@
         "compiler_builtins": "variant-builtins"
       },
       "inventory": [
-        "variant-core"
+        "variant-core",
+        "variant-builtins"
       ],
       "source_client": "variant-core",
       "native": true,
@@ -112,7 +118,8 @@
         "compiler_builtins": "variant-builtins"
       },
       "inventory": [
-        "variant-core"
+        "variant-core",
+        "variant-builtins"
       ],
       "source_client": "variant-core",
       "rustc": 1,
@@ -128,5 +135,6 @@
       "native": false,
       "note": "opponent: a re-exported variant is not a type; rustc reports E0573 and RustGM finds no type-namespace binding, as no type-namespace variant alias travels"
     }
-  ]
+  ],
+  "amended": "compiler_builtins injection: declared 2026-11-08 before any rustc or RustGM run of the amended cases (exploratory rustc probes ran first under obj/lane-b3/probes). variant-builtins is compiled by RustGM and every no_std client has it in its inventory"
 }

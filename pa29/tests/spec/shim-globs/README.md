@@ -42,9 +42,13 @@ The oracle runs under `--cap-lints=allow`, so rustc accepts the call and
 selects one glob's target. RustGM rejects it by name, as it rejects a used
 glob ambiguity within one crate (E0659).
 
-The rustc oracle passes `compiler_builtins` explicitly: the
-`../no-std-clients/builtins.rs` stand-in built over `core.rs`. RustGM injects
-no such crate.
+Each client names the `../no-std-clients/builtins.rs` stand-in, built over
+`core.rs`, as its `compiler_builtins`: rustc with `--extern` and RustGM in
+its dependency inventory. `upstream-shim.rs` is the exact rustc 1.98.0
+`library/rustc-std-workspace-core/lib.rs`, which also brings
+`compiler_builtins` into the graph with `use compiler_builtins as _;`.
+Through it, the 2024 client passes no `compiler_builtins` of its own to
+rustc and runs natively.
 
 The outcomes in `../../shim-glob-outcomes.json` were declared before the
 frozen rustc oracle and before any RustGM candidate run of these cases.
@@ -58,5 +62,6 @@ its cases before the next candidate run, with unchanged outcomes.
 
 The lang-item prefix of `core.rs` is the exact pinned core fragment of
 `../no-std-clients/provider.rs`, taken from the original core `marker.rs`
-and `clone.rs`. It keeps Rust's MIT/Apache-2.0 attribution; see the root
-NOTICE and `third_party/sources.json`.
+and `clone.rs`. `upstream-shim.rs` keeps the original bytes of
+`library/rustc-std-workspace-core/lib.rs`. Both keep Rust's MIT/Apache-2.0
+attribution; see the root NOTICE and `third_party/sources.json`.

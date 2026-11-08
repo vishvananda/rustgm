@@ -31,7 +31,6 @@
    "rustc_deps": {
     "core": "shim-glob-core"
    },
-   "rustc_only": true,
    "rustc": 0,
    "rustc_codes": [],
    "rustc_environment": {
@@ -39,7 +38,12 @@
    },
    "rustc_sysroot": "empty",
    "native": false,
-   "note": "rustc only: the empty compiler_builtins stand-in that rustc's no_std injection needs without a sysroot, built over shim-glob-core"
+   "note": "the empty `#![compiler_builtins]` stand-in that rustc 1.98 injects into a no_std crate without one in its graph; RustGM compiles it as a source client and publishes crate loader flag bit 0 (amended)",
+   "inventory": [
+    "shim-glob-core"
+   ],
+   "source_client": "shim-glob-core",
+   "frontend_expected_after_implementation": 0
   },
   {
    "name": "shim-glob-shim",
@@ -108,6 +112,57 @@
    "note": "three globs at one root: core::*, core::left::* and core::right::*; shared has two targets, which is no error while unused"
   },
   {
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "name": "shim-glob-upstream-shim",
+   "path": "tests/spec/shim-globs/upstream-shim.rs",
+   "source_sha256": "6e011f4fb187509bfc0728a12685dcca772954ba3f50c013d1c630d77773b7bc",
+   "kind": "rlib",
+   "crate": "rustc_std_workspace_core",
+   "edition": "2024",
+   "deps": {
+    "core": "shim-glob-core",
+    "compiler_builtins": "shim-glob-builtins"
+   },
+   "source_client": "shim-glob-core",
+   "metadata_version": 5,
+   "rustc": 0,
+   "rustc_codes": [],
+   "frontend_expected_after_implementation": 0,
+   "native": false,
+   "note": "the exact rustc 1.98.0 library/rustc-std-workspace-core/lib.rs, which also brings compiler_builtins into the graph with `use compiler_builtins as _;` (amended)"
+  },
+  {
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "name": "shim-glob-upstream-client",
+   "path": "tests/spec/no-std-clients/client.rs",
+   "source_sha256": "00cf37bd11ed0987f148ce863a1661250c23dd1d52fac5b697ec26ab80734f20",
+   "kind": "object",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "core": "shim-glob-upstream-shim"
+   },
+   "inventory": [
+    "shim-glob-core",
+    "shim-glob-builtins"
+   ],
+   "source_client": "shim-glob-core",
+   "native": true,
+   "native_driver": "tests/spec/no-std-clients/native-driver.c",
+   "native_driver_sha256": "f826a9b3aa306043f0cec7848e130647bc58c11f68f216ba8f537ac5be8dac24",
+   "native_stdout": "42 40\n",
+   "rustc": 0,
+   "rustc_codes": [],
+   "frontend_expected_after_implementation": 0,
+   "note": "the 2024 client through the upstream shim, with no explicit compiler_builtins: the shim already brings one into the graph (amended)"
+  },
+  {
    "name": "shim-glob-2018-client",
    "path": "tests/spec/no-std-clients/client.rs",
    "source_sha256": "00cf37bd11ed0987f148ce863a1661250c23dd1d52fac5b697ec26ab80734f20",
@@ -121,7 +176,8 @@
     "compiler_builtins": "shim-glob-builtins"
    },
    "inventory": [
-    "shim-glob-core"
+    "shim-glob-core",
+    "shim-glob-builtins"
    ],
    "source_client": "shim-glob-core",
    "native": true,
@@ -151,7 +207,8 @@
     "compiler_builtins": "shim-glob-builtins"
    },
    "inventory": [
-    "shim-glob-core"
+    "shim-glob-core",
+    "shim-glob-builtins"
    ],
    "source_client": "shim-glob-core",
    "native": true,
@@ -181,7 +238,8 @@
     "compiler_builtins": "shim-glob-builtins"
    },
    "inventory": [
-    "shim-glob-core"
+    "shim-glob-core",
+    "shim-glob-builtins"
    ],
    "source_client": "shim-glob-core",
    "native": true,
@@ -211,7 +269,8 @@
     "compiler_builtins": "shim-glob-builtins"
    },
    "inventory": [
-    "shim-glob-core"
+    "shim-glob-core",
+    "shim-glob-builtins"
    ],
    "source_client": "shim-glob-core",
    "rustc": 0,
@@ -238,7 +297,8 @@
     "compiler_builtins": "shim-glob-builtins"
    },
    "inventory": [
-    "shim-glob-core"
+    "shim-glob-core",
+    "shim-glob-builtins"
    ],
    "source_client": "shim-glob-core",
    "rustc": 1,
@@ -268,7 +328,8 @@
     "compiler_builtins": "shim-glob-builtins"
    },
    "inventory": [
-    "shim-glob-core"
+    "shim-glob-core",
+    "shim-glob-builtins"
    ],
    "source_client": "shim-glob-core",
    "rustc": 1,
@@ -298,7 +359,8 @@
     "compiler_builtins": "shim-glob-builtins"
    },
    "inventory": [
-    "shim-glob-core"
+    "shim-glob-core",
+    "shim-glob-builtins"
    ],
    "source_client": "shim-glob-core",
    "rustc": 1,
@@ -329,7 +391,8 @@
     "compiler_builtins": "shim-glob-builtins"
    },
    "inventory": [
-    "shim-glob-core"
+    "shim-glob-core",
+    "shim-glob-builtins"
    ],
    "source_client": "shim-glob-core",
    "rustc": 0,
@@ -356,7 +419,8 @@
     "compiler_builtins": "shim-glob-builtins"
    },
    "inventory": [
-    "shim-glob-core"
+    "shim-glob-core",
+    "shim-glob-builtins"
    ],
    "source_client": "shim-glob-core",
    "rustc": 0,
@@ -383,7 +447,8 @@
     "compiler_builtins": "shim-glob-builtins"
    },
    "inventory": [
-    "shim-glob-core"
+    "shim-glob-core",
+    "shim-glob-builtins"
    ],
    "source_client": "shim-glob-core",
    "rustc": 0,
@@ -397,5 +462,6 @@
    "native": false,
    "note": "requirement: rustc 1.98 reports this use through the deny-by-default future-incompatible lint ambiguous_glob_imports (\"`shared` is ambiguous\"), which the oracle's --cap-lints=allow silences, and then selects one glob's target; RustGM keeps a used glob ambiguity an error by name, as within one crate (E0659), and does not choose between the globs"
   }
- ]
+ ],
+ "amended": "compiler_builtins injection: declared 2026-11-08 before any rustc or RustGM run of the amended cases (exploratory rustc probes ran first under obj/lane-b3/probes). shim-glob-builtins is compiled by RustGM and every no_std client has it in its inventory"
 }

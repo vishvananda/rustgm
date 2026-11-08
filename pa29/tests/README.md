@@ -211,9 +211,15 @@ clients, under `spec/no-std-clients/`. The provider is a no_core source-core
 2015, 2018, 2021 and 2024 reach it through the injected `core` and their own
 edition's prelude glob. The opponents are a 2024-only prelude item named in
 2021, `crate::core` after 2015, a path through `std`, and a `core` without
-prelude modules. A rustc-only `compiler_builtins` stand-in serves rustc's
-injection in an empty sysroot. All thirteen outcomes were declared before any
-rustc or RustGM run of these files.
+prelude modules. All thirteen outcomes were declared before any rustc or
+RustGM run of these files. A `compiler_builtins` stand-in serves rustc's
+injection in an empty sysroot. The amendment of 2026-11-08 compiles it with
+RustGM too, adds it to each `no_std` client's inventory, and adds four cases:
+a client with no such crate (E0463), a crate named `compiler_builtins`
+without the attribute and its client, and the attribute without its feature
+(E0658). It was declared before any rustc or RustGM run of the amended cases.
+The variant re-export, `--extern core=` and shim glob clients are amended
+the same way.
 
 `variant-reexport-outcomes.json` freezes variant re-exports from a source
 core under `spec/variant-reexports/`. The provider's `prelude::v1` re-exports
@@ -239,7 +245,9 @@ shim module that shadows the glob, and one name with two glob targets, used
 and unused. All fifteen outcomes were declared before the rustc oracle and
 before any RustGM candidate run of these cases; exploratory probes of
 similar shapes ran first. Under the oracle's `--cap-lints=allow`, rustc
-accepts the used ambiguity, which RustGM rejects by name.
+accepts the used ambiguity, which RustGM rejects by name. The
+`compiler_builtins` amendment adds the exact upstream
+`rustc_std_workspace_core` and a native 2024 client through it.
 
 `provider-guard-outcomes.json` freezes the version-thirteen provider-guard
 packet under `spec/provider-guards/`. The packet holds:

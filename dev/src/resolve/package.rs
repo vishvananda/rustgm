@@ -222,6 +222,23 @@ impl Package {
     pub(crate) fn requested_cfg_ub_checks(&self) -> bool {
         self.macro_features.cfg_ub()
     }
+    /// The crate-level loader attributes this crate publishes, read from its
+    /// root, which loading already validated.
+    /// # Errors
+    /// Propagates a malformed root attribute.
+    pub fn loader_flags(&self) -> Result<crate::support::crates::LoaderFlags, &'static str> {
+        let Some(unit) = self.units.first() else {
+            return Ok(crate::support::crates::LoaderFlags::default());
+        };
+        let builtins = unit
+            .word_attribute(Some(unit.configured.ast.root), "compiler_builtins")
+            .map_err(|error| error.message)?;
+        Ok(if builtins {
+            crate::support::crates::LoaderFlags::COMPILER_BUILTINS
+        } else {
+            crate::support::crates::LoaderFlags::default()
+        })
+    }
 
     /// The source loader copies this immutable compilation input once.
     #[must_use]

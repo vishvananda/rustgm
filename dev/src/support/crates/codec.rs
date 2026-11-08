@@ -13,7 +13,7 @@ mod signatures;
 mod stored_globals;
 mod writer;
 use super::{
-    Abi, CrateIdentity, ExternalDef, ExternalKind, Function, Interface, MAX_BYTES,
+    Abi, CrateIdentity, ExternalDef, ExternalKind, Function, Interface, LoaderFlags, MAX_BYTES,
     MAX_DEPENDENCIES, MAX_FUNCTIONS, Scalar, Signature, Symbol, TypeGraph,
 };
 use profiles::{Payload, Profile};
@@ -26,15 +26,29 @@ const MAGIC: &[u8; 8] = b"RGMETA\r\n";
 const TARGET_LINUX_X86_64: u8 = 0;
 const LANGUAGE_RUST_1_98_EDITION_2024: u8 = 0;
 const PROFILE: [u8; 3] = [TARGET_LINUX_X86_64, LANGUAGE_RUST_1_98_EDITION_2024, 0];
+/// `[15][flags]` leads the outermost artifact's profile chain when a crate
+/// has a loader attribute; the bytes after it are the unflagged artifact's.
+const LOADER_FLAGS: u8 = 15;
+/// Every artifact's profile chain starts after its magic, schema and profile.
+const HEADER: usize = MAGIC.len() + 2 + 2;
 
 /// Encode the scalar Rust 1.98/2024 Linux x86-64 interface in canonical order.
 /// # Errors
 /// Rejects metadata that exceeds the bounded artifact size.
 pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
-    if interface.native_links().is_some() {
-        return link_envelope::encode(interface);
+    let mut bytes = if interface.native_links().is_some() {
+        link_envelope::encode(interface)?
+    } else {
+        encode_inner(interface)?
+    };
+    let flags = interface.loader_flags();
+    if !flags.is_empty() {
+        if bytes.len().saturating_add(2) > MAX_BYTES {
+            return Err("metadata artifact exceeds 16 MB budget");
+        }
+        bytes.splice(HEADER..HEADER, [LOADER_FLAGS, flags.bits()]);
     }
-    encode_inner(interface)
+    Ok(bytes)
 }
 /// Macro rows sit inside native links; crates exporting no macros keep old bytes.
 fn encode_inner(interface: &Interface) -> Result<Vec<u8>, &'static str> {
@@ -123,23 +137,45 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
     let mut input = Reader::new(bytes);
     decode_header(&mut input)?;
     let tag = input.u8()?;
+    if tag != LOADER_FLAGS {
+        return decode_tagged(&mut input, tag);
+    }
+    let flags = LoaderFlags::from_bits(input.u8()?)?;
+    if flags.is_empty() {
+        return Err("crate loader flags envelope requires a flag");
+    }
+    let tag = input.u8()?;
+    decode_tagged(&mut input, tag)?.with_loader_flags(flags)
+}
+/// An artifact wrapped by an envelope belongs to the same crate, so only the
+/// outermost artifact carries its loader flags.
+fn decode_nested(bytes: &[u8]) -> Result<Interface, &'static str> {
+    if bytes.get(HEADER) == Some(&LOADER_FLAGS) {
+        return Err("crate loader flags belong to the outermost artifact");
+    }
+    decode(bytes)
+}
+fn decode_tagged(input: &mut Reader<'_>, tag: u8) -> Result<Interface, &'static str> {
+    if tag == LOADER_FLAGS {
+        return Err("repeated crate loader flags");
+    }
     if tag == link_envelope::TAG {
-        return link_envelope::decode(&mut input);
+        return link_envelope::decode(input);
     }
     if tag == declarative_envelope::TAG {
-        return declarative_envelope::decode(&mut input);
+        return declarative_envelope::decode(input);
     }
     if tag == packet_envelope::TAG {
-        return packet_envelope::decode(&mut input);
+        return packet_envelope::decode(input);
     }
     if tag == packet_envelope::OPERATIONS_TAG {
-        return packet_envelope::decode_operations(&mut input);
+        return packet_envelope::decode_operations(input);
     }
     if tag == packet_envelope::PROVIDED_TAG {
-        return packet_envelope::decode_provided(&mut input);
+        return packet_envelope::decode_provided(input);
     }
-    let profile = Profile::read(&mut input, tag)?;
-    decode_legacy(&mut input, profile)
+    let profile = Profile::read(input, tag)?;
+    decode_legacy(input, profile)
 }
 fn decode_legacy(input: &mut Reader<'_>, profile: Profile) -> Result<Interface, &'static str> {
     let stored = profile.payload == Payload::Storage;

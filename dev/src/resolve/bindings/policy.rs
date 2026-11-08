@@ -90,6 +90,8 @@ pub(in crate::resolve) enum Feature {
     NewRange = 73,
     Reborrow = 74,
     InherentAssociatedTypes = 75,
+    /// The internal language feature that admits `#![compiler_builtins]`.
+    CompilerBuiltins = 76,
 }
 
 #[cfg(test)]
@@ -140,6 +142,7 @@ impl Request {
             "inherent_associated_types" => Self::Capability(Feature::InherentAssociatedTypes),
             "must_not_suspend" => Self::Capability(Feature::MustNotSuspend),
             "no_core" => Self::Capability(Feature::NoCore),
+            "compiler_builtins" => Self::Capability(Feature::CompilerBuiltins),
             "abi_unadjusted" => Self::Capability(Feature::AbiUnadjusted),
             "lang_items" => Self::Capability(Feature::LangItems),
             "intrinsics" => Self::Capability(Feature::Intrinsics),
@@ -387,6 +390,7 @@ pub(in crate::resolve) fn prepare_with_admission(
         .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
     let (features, library) = features(unit)?;
     let options = super::root_options::prepare(unit, features.has(Feature::RustcAttributes))?;
+    super::root_options::validate_compiler_builtins(unit, features.has(Feature::CompilerBuiltins))?;
     if let Some(request) = admission {
         let mut prepared = super::consumer_policy::prepare(
             unit, context, no_core, features, library, request, limits,

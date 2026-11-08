@@ -67,7 +67,9 @@ impl Consumer {
     pub(crate) fn named(name: &str) -> Option<Self> {
         Some(match name {
             "cfg" | "cfg_attr" => Self::Configuration,
-            "no_core" | "no_std" | "no_implicit_prelude" | "path" => Self::Loading,
+            "no_core" | "no_std" | "no_implicit_prelude" | "path" | "compiler_builtins" => {
+                Self::Loading
+            }
             "feature" => Self::Requests,
             "macro_use"
             | "macro_export"

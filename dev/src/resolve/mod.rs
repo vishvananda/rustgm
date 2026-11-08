@@ -127,6 +127,8 @@ pub fn analyze_expanded(
         .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
     prelude_scope::complete_phase(&report.package, &report.resolution)
         .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
+    standard_imports::inject_compiler_builtins(&report.package, &report.resolution)
+        .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
     report.names_resolved = true;
     Ok(report)
 }

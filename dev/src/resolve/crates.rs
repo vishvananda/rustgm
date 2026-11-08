@@ -155,13 +155,24 @@ impl Imported {
     pub fn definition(&self, external: &ExternalDef) -> Option<DefId> {
         self.definitions.get(external).copied()
     }
-    /// Borrow only an actual configured alias and its authenticated catalog root.
-    /// This namespace lookup allocates nothing and grants no semantic readiness.
+    /// Borrow only an actual configured alias and its authenticated catalog root,
+    /// or the imported root of a legacy artifact, which has no catalog, as
+    /// `--extern compiler_builtins=` names one. This namespace lookup grants no
+    /// semantic readiness.
     pub(super) fn alias_root(&self, spelling: &str, definition: DefId) -> bool {
         let aliases = self.dependencies.aliases();
         let Ok(index) = aliases.binary_search_by(|alias| alias.alias().cmp(spelling)) else {
             return false;
         };
+        let identity = aliases[index].identity();
+        let artifacts = self.dependencies.artifacts();
+        if artifacts
+            .binary_search_by(|artifact| artifact.identity().cmp(identity))
+            .is_ok_and(|artifact| artifacts[artifact].source_descriptor().is_none())
+        {
+            return ExternalDef::new(identity.clone(), Vec::new(), ExternalKind::Module)
+                .is_ok_and(|root| self.definitions.get(&root) == Some(&definition));
+        }
         let Some(catalog) = self.origins.get() else {
             return false;
         };

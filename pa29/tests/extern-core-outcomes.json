@@ -15,7 +15,8 @@
         "compiler_builtins": "nostd-builtins"
       },
       "inventory": [
-        "nostd-core"
+        "nostd-core",
+        "nostd-builtins"
       ],
       "source_client": "nostd-core",
       "native": true,
@@ -45,7 +46,8 @@
         "compiler_builtins": "nostd-builtins"
       },
       "inventory": [
-        "nostd-core"
+        "nostd-core",
+        "nostd-builtins"
       ],
       "source_client": "nostd-core",
       "native": true,
@@ -102,7 +104,8 @@
         "compiler_builtins": "nostd-builtins"
       },
       "inventory": [
-        "nostd-core"
+        "nostd-core",
+        "nostd-builtins"
       ],
       "source_client": "nostd-core",
       "rustc": 1,
@@ -118,5 +121,6 @@
       "native": false,
       "note": "opponent: --extern core= names the no_core client above, whose root has no prelude module, while the source provider is nostd-core; the injection reads the prelude from the alias's crate. Redesigned before any run: the first draft aliased nostd-bare-core, a second source provider, which the one-provider preflight would reject before the injection"
     }
-  ]
+  ],
+  "amended": "compiler_builtins injection: declared 2026-11-08 before any rustc or RustGM run of the amended cases (exploratory rustc probes ran first under obj/lane-b3/probes). Every no_std client has nostd-builtins in its inventory"
 }

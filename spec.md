@@ -6739,6 +6739,28 @@ allowed, selects one glob's target; RustGM keeps the use an error. Each row is
 charged one unit and one per binding of its target module that it visits,
 within a fixed budget. Older readers reject version 5 by name.
 
+A crate's loader attributes travel in one flags byte that leads only the
+outermost artifact: `[15][flags]` follows the 12-byte header, and the rest
+of the artifact keeps its unflagged bytes. Bit 0 is `#![compiler_builtins]`.
+It is written only when a flag is set. Unknown bits, an empty flags byte, a
+repeated tag and a flags byte on an artifact nested in an envelope are
+rejected by name, and older readers reject tag 15 as an invalid base profile.
+`#![compiler_builtins]` is one inner word attribute of the crate root and
+needs its internal feature, as in rustc 1.98; a second one, an argument and a
+use below the crate root are rejected by name. After name resolution, rustc's
+crate loader injects `compiler_builtins` into every crate except a
+`#![no_core]` or `#![compiler_builtins]` crate, unless a loaded crate is
+already `#![compiler_builtins]`. A consumer reads the flag from every artifact
+of its dependency inventory. A `no_std` source client is the only crate that
+loads a real core, so it is the only one that can need the injection: with no
+flagged artifact it fails as rustc's E0463 does, and an `--extern
+compiler_builtins=` entry without the flag fails by name. RustGM's built-in
+core and std stand for a graph that already contains the crate. The injected
+crate binds no name and adds no dependency row.
+In a source client, an `--extern` name of a legacy artifact, which has no
+source catalog, resolves to that artifact's imported crate root, so the
+upstream shim's `use compiler_builtins as _;` resolves as in rustc.
+
 ## Lowering and backend facts
 
 Lower only checked, typed facts. Give every emitted instance, drop shim, vtable,

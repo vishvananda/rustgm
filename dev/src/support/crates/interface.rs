@@ -7,6 +7,37 @@ use super::{
 use crate::support::linkage::Linkage;
 use std::sync::Arc;
 
+/// Crate-level attributes that a crate loader reads from every loaded crate.
+/// Bit 0 is `#![compiler_builtins]`; the other bits stay unassigned until a
+/// loader attribute such as `panic_runtime` needs one.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct LoaderFlags(u8);
+impl LoaderFlags {
+    /// `#![compiler_builtins]`.
+    pub const COMPILER_BUILTINS: Self = Self(1);
+    const KNOWN: u8 = Self::COMPILER_BUILTINS.0;
+    /// # Errors
+    /// Rejects every bit this profile does not assign.
+    pub const fn from_bits(bits: u8) -> Result<Self, &'static str> {
+        if bits & !Self::KNOWN != 0 {
+            return Err("unknown crate loader flag");
+        }
+        Ok(Self(bits))
+    }
+    #[must_use]
+    pub const fn bits(self) -> u8 {
+        self.0
+    }
+    #[must_use]
+    pub const fn is_empty(self) -> bool {
+        self.0 == 0
+    }
+    #[must_use]
+    pub const fn compiler_builtins(self) -> bool {
+        self.0 & Self::COMPILER_BUILTINS.0 != 0
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[repr(u8)]
 pub enum Scalar {
@@ -97,6 +128,7 @@ pub struct Interface {
     generic_payload: Option<Box<super::generics::Payload>>,
     native_links: Option<Box<crate::support::linker_libraries::Plan>>,
     macros: Option<Box<super::exported_macros::Macros>>,
+    loader: LoaderFlags,
     atoms: usize,
     names: usize,
 }
@@ -114,6 +146,7 @@ impl PartialEq for Interface {
             && self.generic_payload == other.generic_payload
             && self.native_links == other.native_links
             && self.macros == other.macros
+            && self.loader == other.loader
     }
 }
 impl Eq for Interface {}
@@ -158,6 +191,21 @@ impl Interface {
     #[must_use]
     pub fn macros(&self) -> Option<&super::exported_macros::Macros> {
         self.macros.as_deref()
+    }
+    /// The crate-level loader attributes a crate loader reads from this crate.
+    #[must_use]
+    pub const fn loader_flags(&self) -> LoaderFlags {
+        self.loader
+    }
+    /// Record this crate's own loader attributes once.
+    /// # Errors
+    /// Rejects a second attachment.
+    pub fn with_loader_flags(mut self, flags: LoaderFlags) -> Result<Self, &'static str> {
+        if !self.loader.is_empty() {
+            return Err("duplicate crate loader flags");
+        }
+        self.loader = flags;
+        Ok(self)
     }
     /// Attach this crate's own macro rows and its macro re-exports.
     /// # Errors
@@ -372,6 +420,7 @@ impl Interface {
             generic_payload: None,
             native_links: None,
             macros: None,
+            loader: LoaderFlags::default(),
             atoms: components,
             names: bytes,
         })
