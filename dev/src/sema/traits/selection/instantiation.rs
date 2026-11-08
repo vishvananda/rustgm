@@ -246,7 +246,7 @@ impl Determined {
 /// impl condition: it shares the trial's inference, so an impl parameter that
 /// only its `Output` equality determines resolves with the trial instead of
 /// waiting for a resolved parent. One lowering serves every such clause.
-fn vacuous(
+pub(in crate::sema) fn vacuous(
     types: &mut crate::types::Store,
     lowering: &mut Option<substitute::Bound>,
     clause: Clause,

@@ -1,0 +1,79 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The shapes reduce the crate record that follows census 10's once its `FnPtr` coherence and specialization header lifetime records are repaired (an analysis-only diagnostic census, obj/parallel/census-batch10/diagnostics/d3): \"higher-ranked specialization implication is not implemented\" at core's `impl<const N: usize> MultiCharEq for [char; N]` (str/pattern.rs:645) beside `impl<F> MultiCharEq for F where F: FnMut(char) -> bool`. Drafts of the array, array-reference, slice-reference and primitive shapes without `#[fundamental]` callable traits (obj/parallel/census-batch10/repro/hr-*.rs, different bytes) were run through the analysis-only candidate before this declaration and all were rejected; none was run through rustc. Each outcome follows the rule read in the pinned rustc 1.98.0 sources (compiler/rustc_trait_selection/src/traits/coherence.rs `overlap` and `impl_intersection_has_impossible_obligation`, compiler/rustc_next_trait_solver/src/coherence.rs `trait_ref_is_knowable`, and compiler/rustc_hir_analysis/src/collect/predicates_of.rs with rustc_middle's `Binder::dummy`): parenthesized callable sugar writes an ordinary trait predicate under a binder that binds no variable, so the overlap check evaluates `T: FnMut<(char,)>` for the intersected Self type like any where clause; for an array, a slice reference, an array reference, a primitive or a local nominal no impl or builtin callable candidate applies and the goal is knowable (the trait is local, and a reference to a non-local type cannot become local downstream), so the impls are disjoint; a second blanket over another argument tuple, or a reference to a parameter, which a downstream type could make callable, overlaps (E0119)",
+ "declaration_sha256": "2cab7dba0cb73759d0acd718faaa0b129eb0725d92abb57971af6ab1f065060b",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [
+  "2026-11-08 after oracle v1 (callable-sugar-coherence.rustc-oracle.json): core-pattern.rs, array-reference.rs, slice-reference.rs and generic-reference.rs v1 were rejected by rustc for the fixture itself (E0405, `cannot find trait Sized in this scope`: the `?Sized` bounds of core's callable reference impls inside `mod impls`, whose `use` named no `Sized` because core reaches it through its prelude), which is not an outcome; generic-reference.rs agreed with its declared rejection only by that accident. v2 adds `Sized` to that `use`; every case body and declared outcome is unchanged. Declared before oracle v2 and before any candidate run of either version."
+ ],
+ "cases": {
+  "core-pattern.rs": {
+   "sha256": "d16c2881aa23e4461945abac3942c8a6155d0f3b019f00126744c4f383d14218",
+   "declared": 0,
+   "reason": "core's exact shapes under core's features (str/pattern.rs:633-664): the private `MultiCharEq` with the blanket `impl<F> MultiCharEq for F where F: FnMut(char) -> bool` beside `[char; N]`, `&[char; N]` and `&[char]`, with core's `#[fundamental]` callable traits and their const `&F` and `&mut F` impls (ops/function.rs:253-311)",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "array.rs": {
+   "sha256": "1c8e83187a6b0b4f88c268ff27e47cb49a15a950db8523bf60f9a53f7a3c5aab",
+   "declared": 0,
+   "reason": "the blanket beside `impl<const N: usize> MultiCharEq for [char; N]` alone, without core's coherence features; `[char; N]: FnMut<(char,)>` has no candidate",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "array-reference.rs": {
+   "sha256": "c0a066e5aa0ab8f7beb65591bae8af5ab12db9e745c2232af09a7f36659b5be8",
+   "declared": 0,
+   "reason": "the blanket beside `&[char; N]` with core's callable reference impls; `&[char; N]: FnMut<(char,)>` needs `[char; N]: Fn<(char,)>`, which has no candidate",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "slice-reference.rs": {
+   "sha256": "5cc826963ef23b340488f4315cc3febff6ab6119cd8e9a52bcb354ae70448e4a",
+   "declared": 0,
+   "reason": "the blanket beside `&[char]` with core's callable reference impls; `[char]: Fn<(char,)>` has no candidate",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "primitive.rs": {
+   "sha256": "a34722cf790d980fc301c6c2d1d083bd958d3b1875bd7b7a0649d873b5ce6841",
+   "declared": 0,
+   "reason": "the blanket beside `impl MultiCharEq for u8`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "nominal.rs": {
+   "sha256": "9f4b2c1ebb662dfbc22fcd1aba6bdc9e6e2cc3ddf5cf7a6b36b61f7d62ad5eda",
+   "declared": 0,
+   "reason": "the blanket beside a local unit struct",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "explicit.rs": {
+   "sha256": "6df269f18b724c8d86137f828041b9561cd51499717c4c9f04601d2e12a5948d",
+   "declared": 0,
+   "reason": "guard: the explicit `F: FnMut<(char,), Output = bool>` form, which has no binder, beside `[char; N]`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "other-arguments.rs": {
+   "sha256": "61a59137ba3904fd0a3e85896c2bd2db840749ab390a2c2d67ed6618f9327669",
+   "declared": 1,
+   "reason": "opponent: a second blanket `impl<F> MultiCharEq for F where F: FnMut(u8) -> bool`; one type can be callable with both argument tuples (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "generic-reference.rs": {
+   "sha256": "81fd26a25fe090271aa5810a6d65eb2d0c8d9854c2540039b47121fd83c56006",
+   "declared": 1,
+   "reason": "opponent: `impl<T: ?Sized> MultiCharEq for &T` with core's callable reference impls; `&T: FnMut<(char,)>` holds when `T: Fn<(char,)>`, and a downstream crate may own `T` (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  }
+ }
+}

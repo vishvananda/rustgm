@@ -191,6 +191,7 @@ impl Inputs {
     ) -> Result<(), String> {
         self.reserve_traits(facts, context, owner)?;
         let before = header.lifetimes.steps;
+        let mut lowering = None;
         for requirement in facts.generics.predicates_in_scope(owner) {
             if let Clause::UnstableFeature(id) = requirement.value {
                 context.account_work(1).map_err(|e| e.to_string())?;
@@ -201,7 +202,15 @@ impl Inputs {
                 // An unavailable feature never proves two implementations disjoint.
                 continue;
             }
-            let Clause::Predicate(predicate) = requirement.value else {
+            // rustc 1.98 evaluates a callable sugar clause, whose binder binds
+            // nothing, like any other where clause. A clause whose binder binds
+            // a region still proves no disjointness here.
+            let Clause::Predicate(predicate) = crate::sema::traits::selection::vacuous(
+                &mut facts.types,
+                &mut lowering,
+                requirement.value,
+            )?
+            else {
                 continue;
             };
             if predicate.bound.trait_parts().is_some() {
@@ -233,8 +242,15 @@ impl Inputs {
                 self.sized.push(term);
             }
         }
+        let lowered = lowering.map_or(0, |lowering: substitute::Bound| lowering.steps);
         context
-            .account_work(header.lifetimes.steps.saturating_sub(before))
+            .account_work(
+                header
+                    .lifetimes
+                    .steps
+                    .saturating_sub(before)
+                    .saturating_add(lowered),
+            )
             .map_err(|error| error.to_string())?;
         Ok(())
     }
@@ -248,8 +264,16 @@ impl Inputs {
         let mut count = 0_usize;
         for requirement in facts.generics.predicates_in_scope(owner) {
             context.account_work(1).map_err(|e| e.to_string())?;
-            if matches!(requirement.value, Clause::Predicate(value) if value.bound.trait_parts().is_some())
-            {
+            let value = match requirement.value {
+                Clause::Predicate(value) => value,
+                Clause::ForAll(id) => match facts.types.quantified(id) {
+                    Some(scoped) if scoped.bound_regions == 0 => scoped.predicate,
+                    Some(_) => continue,
+                    None => return Err("invalid overlap quantified condition".into()),
+                },
+                Clause::UnstableFeature(_) => continue,
+            };
+            if value.bound.trait_parts().is_some() {
                 count = count.saturating_add(1);
             }
         }
@@ -449,3 +473,7 @@ fn resolved(
         Err(error) => Err(error.to_string()),
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/vacuous_callable_coherence.rs"]
+mod vacuous_tests;

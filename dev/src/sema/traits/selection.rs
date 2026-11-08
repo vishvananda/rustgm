@@ -28,6 +28,7 @@ use crate::{
         },
     },
 };
+pub(in crate::sema) use instantiation::vacuous;
 pub(in crate::sema) use known_premises::normalized as known_normalized;
 #[cfg(test)]
 pub(in crate::sema) use known_premises::opaque_normalized;
