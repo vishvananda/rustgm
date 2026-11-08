@@ -1,0 +1,47 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The shapes reduce the crate record after census 8's (core's `impl<I, U> Iterator for Flatten<I> where I: Iterator<Item: IntoIterator<IntoIter = U, Item = U::Item>>, U: Iterator` and its `fn next(&mut self) -> Option<U::Item>` at iter/adapters/flatten.rs). Analysis-only drafts of the first three shapes in obj/parallel/census-batch8/repro (flatten.rs, r-ret-noself.rs, r-fn-ret.rs) were run through rustc 1.98.0 and this compiler before this declaration, so those three are a regression record of that exploration; the two relaxed shapes were not. Each outcome follows the stated rule (a rigid projection proves a sizing goal from its associated type's own item bounds, whether declared `Sized` or implicitly `MetaSized` for `?Sized`, even when the environment holds sizing assumptions over other projections)",
+ "declaration_sha256": "619fe17eff7452bf788d116bc10b7c9e3f2ab624ed09e1c96a8f7f29ce14775b",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "flatten-next.rs": {
+   "sha256": "4fc1c33ca5c246334a1dab911e95e3a5e6f18d2eafed5842b2b808afce1dc798",
+   "declared": 0,
+   "reason": "core's Flatten Iterator impl shape: `Option<U::Item>` needs the default `Sized` of `Iterator::Item` while the environment assumes `<I as Iterator>::Item: MetaSized`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "inherent-item.rs": {
+   "sha256": "7cf6e1cb6238261666e8ef6fc940603aef03416b19753f2bdbfcd9c41ad261c7",
+   "declared": 0,
+   "reason": "the same `Option<U::Item>` in an inherent associated function of that impl",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "free-item.rs": {
+   "sha256": "80648f27094a6cb9a36f456ace58e8d6e9f7e49b8e79d02550cb585f0ac18c30",
+   "declared": 0,
+   "reason": "the same `Option<U::Item>` in a free function with the same where-clause",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "relaxed-meta.rs": {
+   "sha256": "ec78153ba32036f5ccc134c499b902e8f8cb6ec668da1ad032e8f12c02eec368",
+   "declared": 0,
+   "reason": "with `?Sized` items, `U::Item` is a `MetaSized` argument from its implicit `MetaSized` item bound",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "relaxed-option.rs": {
+   "sha256": "4b9450e9f6f52131cc6f91a6df1634b6ffb8b7f1ed68c73d5fd3e11baa1494ab",
+   "declared": 1,
+   "reason": "opponent: with `?Sized` items, `Option<U::Item>` requires `U::Item: Sized` (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  }
+ }
+}

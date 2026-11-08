@@ -172,7 +172,11 @@ impl Search<'_> {
         match self.assume(facts, frame) {
             Ok(Some(action)) => return Ok(action),
             Ok(None) => {}
-            Err(infer::Error::Normalization) => return Ok(Action::Complete(Decision::Deferred)),
+            Err(infer::Error::Normalization) => {
+                return Ok(self
+                    .rigid_sizing(facts, frame)?
+                    .unwrap_or(Action::Complete(Decision::Deferred)));
+            }
             Err(error) => return Err(inference(error)),
         }
         if let Some(action) = self.derive_result(facts, frame)? {

@@ -50,3 +50,7 @@ impl Proof {
         Ok(formation)
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/sizedness_hierarchy.rs"]
+mod tests;

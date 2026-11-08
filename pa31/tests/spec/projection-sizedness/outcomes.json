@@ -1,0 +1,70 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run. The shapes reduce census 8's crate record (core's `impl<Ptr: Deref, Q: Deref> PartialEq<Pin<Q>> for Pin<Ptr> where Ptr::Target: PartialEq<Q::Target>` at pin.rs:1105). The predecessor's drafts in obj/parallel/census-batch7/repro/p were explored with rustc 1.98.0 (MetaSized and PointeeSized accept, Sized rejects); the four `Holder` shapes were not. Each outcome follows the stated rule (rustc 1.98's sizedness hierarchy: a `?Sized` associated type's implicit bound is `MetaSized`, provable for its rigid projection from the associated type's own item bounds, a `Sized` item bound implies `MetaSized`, and `PointeeSized` holds for every type)",
+ "declaration_sha256": "5ce5c0f4f04e6b5336bc9dcd19093156acda01c294577214f502d813dc36c968",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "pointee-rhs.rs": {
+   "sha256": "6889fcde8cbcd4d60a66e48383fd98ef7c10295dc100cf30fb170c0ed7584307",
+   "declared": 0,
+   "reason": "core's `PartialEq<Rhs: PointeeSized = Self>` in a where-clause over two `?Sized` Deref targets; `PointeeSized` holds for every type",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "meta-rhs.rs": {
+   "sha256": "2fec0174be5c9f5ed30515c94c6a76fddcb30d05782b4b80cb71a74771204534",
+   "declared": 0,
+   "reason": "a `Takes<Rhs: MetaSized>` argument `Q::Target` is `MetaSized` from `Deref::Target`'s implicit `?Sized` item bound",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "pin-partial-eq.rs": {
+   "sha256": "4862d4b13815baf20761f6e9833c2e0e702cde47b62fcfdc84ab735f0f644654",
+   "declared": 0,
+   "reason": "core's exact Pin PartialEq impl header shape (pin.rs:1105)",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "struct-where.rs": {
+   "sha256": "00a091ea696b11dbd5740e3a0d615174d2cf342370705fcce631584c8f4440a7",
+   "declared": 0,
+   "reason": "the `MetaSized` argument in a tuple struct's where-clause",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "pointee-item.rs": {
+   "sha256": "24de14bf49a0e2c9365f8c027bab3799005be0c2101e381d8b592891b8714132",
+   "declared": 0,
+   "reason": "an associated type bounded only by `PointeeSized` is a `PointeeSized` argument, as every type is",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "sized-item-meta.rs": {
+   "sha256": "ae960a956bae1ce74dcf40c253397cf93d4a4fe2d36a295d40a7d24235d0b4a3",
+   "declared": 0,
+   "reason": "an associated type with the default `Sized` item bound is `MetaSized`, its supertrait",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "sized-rhs.rs": {
+   "sha256": "d4a34971223a3788d77d779eeb833ec0f38c21d5948ca48b557380e3ac3d4ff6",
+   "declared": 1,
+   "reason": "opponent: `Takes<Rhs>` requires `Sized`, which a `?Sized` Deref target does not have (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "pointee-item-meta.rs": {
+   "sha256": "c314ae05ea1d3672c1e684b48616dc973f4d490883c937e0c7d0e74cab000acd",
+   "declared": 1,
+   "reason": "opponent: an associated type bounded only by `PointeeSized` is not `MetaSized` (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  }
+ }
+}

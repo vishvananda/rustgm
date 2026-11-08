@@ -91,8 +91,24 @@ impl Search<'_> {
                 | Kind::Future { .. }
                 | Kind::Slice(_)
                 | Kind::Dynamic { .. } => true,
-                Kind::Foreign(_) => kind == LangItem::PointeeSized,
-                Kind::Array { .. } | Kind::ArrayTerm { .. } | Kind::Parameter(_) => false,
+                // `PointeeSized` holds for every type, as in rustc 1.98.
+                Kind::Foreign(_)
+                | Kind::Array { .. }
+                | Kind::ArrayTerm { .. }
+                | Kind::Parameter(_)
+                | Kind::Projection(_)
+                | Kind::Opaque(..)
+                    if kind == LangItem::PointeeSized =>
+                {
+                    true
+                }
+                Kind::Foreign(_)
+                | Kind::Array { .. }
+                | Kind::ArrayTerm { .. }
+                | Kind::Parameter(_) => false,
+                // A normalized projection is rigid. Its own item bounds were
+                // consulted before this fallback and did not prove the goal.
+                Kind::Projection(_) if Self::normalized_inputs(frame) => false,
                 Kind::Projection(_) | Kind::Opaque(..) => {
                     return Err(
                         "source sizing requires a proved normalized or declared subject".into(),
@@ -131,6 +147,45 @@ impl Search<'_> {
             }
             _ => Err("invalid source sizing fallback kind".into()),
         }
+    }
+    /// After input normalization, an assumption over another projection may be
+    /// incomparable with this one. A sizing marker has no items or arguments, so
+    /// a rigid projection's own item bounds prove it as well: its written
+    /// bounds, the implicit `MetaSized` of a `?Sized` result or a declared
+    /// `Sized`. `PointeeSized` holds for every type. Anything else stays deferred.
+    pub(super) fn rigid_sizing(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+    ) -> Result<Option<Action>, String> {
+        if Self::source_sizing_kind(facts, &frame.goal)?.is_none() {
+            return Ok(None);
+        }
+        let rigid = match frame
+            .inputs
+            .context
+            .resolved(&mut facts.types, frame.goal.subject())
+        {
+            Ok(ty) => matches!(facts.types.kind(ty), Some(Kind::Projection(_))),
+            Err(crate::types::infer::Error::Unresolved) => false,
+            Err(error) => return Err(inference(error)),
+        };
+        if !rigid {
+            return Ok(None);
+        }
+        if let Some(action) = self.derive_result(facts, frame)? {
+            return Ok(Some(action));
+        }
+        Ok(self
+            .source_sizing_result(facts, frame)?
+            .filter(|action| !matches!(action, Action::Complete(Decision::Absent))))
+    }
+    fn normalized_inputs(frame: &Frame) -> bool {
+        frame.normalized_inputs.is_some()
+            || frame
+                .normalization
+                .as_ref()
+                .is_some_and(|normalization| normalization.original_inputs().is_some())
     }
     /// Reuse the same actual terminal as metadata normalization. In particular,
     /// an opaque external terminal has unit metadata without becoming `MetaSized`.
