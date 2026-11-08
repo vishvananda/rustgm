@@ -3,7 +3,10 @@ use super::{
     Argument, Definitions, GenericArgs, Graph, ItemId, Kind, ListId, Store, TypeId, Variance,
     Variances, solver::Term,
 };
-use crate::support::retained::{Growth, Payment};
+use crate::support::{
+    hash::HashSet,
+    retained::{Growth, Payment},
+};
 #[cfg(test)]
 #[path = "../../../tests/invariants/reachable_variance.rs"]
 mod tests;
@@ -20,12 +23,78 @@ impl Variances {
         mut fields: impl FnMut(ItemId, u32, ListId) -> ListId,
         pay: Payment<'_>,
     ) -> Result<(), &'static str> {
+        match self.append_reached_or_pending(
+            types,
+            definitions,
+            declarations,
+            item,
+            &mut fields,
+            pay,
+        )? {
+            None => Ok(()),
+            Some(_) => Err("reached variance requires completed nominal fields"),
+        }
+    }
+    /// Generic nominals without a completed row inside `roots`, in discovery
+    /// order, as a body's region proof relates them before the crate-wide
+    /// inference. A relation skips identical types, so only an instance that
+    /// carries a lifetime can be related. Each distinct root structure is
+    /// walked once; nominal fields are not expanded here.
+    /// # Errors
+    /// Rejects malformed canonical types and exhausted payment.
+    pub(crate) fn unreached_nominals(
+        &self,
+        types: &Store,
+        roots: impl IntoIterator<Item = TypeId>,
+        pay: Payment<'_>,
+    ) -> Result<Vec<ItemId>, &'static str> {
+        let mut seen = HashSet::default();
+        let mut work = Vec::new();
+        let mut reached = HashSet::default();
+        let mut nominals = Vec::new();
+        for root in roots {
+            pay(1, 0)?;
+            work.push(root);
+            while let Some(ty) = work.pop() {
+                if types.contains_nominals(ty) == Some(false) || !seen.insert(ty) {
+                    continue;
+                }
+                pay(1, 0)?;
+                if let Some(Kind::Adt(item, arguments)) = types.kind(ty)
+                    && arguments != GenericArgs::EMPTY
+                    && types.has_free_regions(ty, 0) == Some(true)
+                    && self.get(item).is_none()
+                    && reached.insert(item)
+                {
+                    nominals.push(item);
+                }
+                children(types, ty, &mut work)?;
+            }
+        }
+        Ok(nominals)
+    }
+    /// As [`Self::append_reached`], except that a closure nominal whose field
+    /// template is not published yet is returned instead, and nothing of that
+    /// closure is retained.
+    /// # Errors
+    /// Rejects exhausted payment and ordinary inference errors.
+    pub(crate) fn append_reached_or_pending(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        declarations: &[Option<TypeId>],
+        item: ItemId,
+        fields: &mut impl FnMut(ItemId, u32, ListId) -> ListId,
+        pay: Payment<'_>,
+    ) -> Result<Option<ItemId>, &'static str> {
         pay(1, 0)?;
         if self.get(item).is_some() {
-            return Ok(());
+            return Ok(None);
         }
         let mut graph = Graph::paid(self, declarations, pay)?;
-        graph.reached_fields(types, definitions, item, &mut fields)?;
+        if let Some(pending) = graph.reached_fields(types, definitions, item, fields)? {
+            return Ok(Some(pending));
+        }
         graph.solver.pay(graph.variables.len(), 0)?;
         graph
             .solver
@@ -63,8 +132,81 @@ impl Variances {
             self.ranges.insert(owner, (base + start, base + end));
         }
         self.steps = steps;
-        Ok(())
+        Ok(None)
     }
+}
+
+/// Every child type of one structural node, binders included; nominal fields
+/// are never expanded here.
+fn children(types: &Store, ty: TypeId, work: &mut Vec<TypeId>) -> Result<(), &'static str> {
+    let arguments = |work: &mut Vec<TypeId>, arguments: GenericArgs| {
+        let arguments = types
+            .arguments(arguments)
+            .ok_or("invalid reached variance root arguments")?;
+        work.extend(arguments.filter_map(|argument| match argument {
+            Argument::Type(ty) => Some(ty),
+            Argument::Lifetime(_) | Argument::Const(_) => None,
+        }));
+        Ok::<(), &'static str>(())
+    };
+    match types.kind(ty).ok_or("invalid reached variance root type")? {
+        Kind::Adt(_, list)
+        | Kind::Opaque(_, list)
+        | Kind::Future {
+            arguments: list, ..
+        }
+        | Kind::Dynamic {
+            arguments: list, ..
+        } => arguments(work, list)?,
+        Kind::Projection(application) => {
+            work.push(application.subject);
+            arguments(work, application.arguments)?;
+        }
+        Kind::Tuple(list) => work.extend_from_slice(
+            types
+                .list(list)
+                .ok_or("missing reached variance tuple types")?,
+        ),
+        Kind::Array { element, .. }
+        | Kind::ArrayTerm { element, .. }
+        | Kind::Slice(element)
+        | Kind::Reference {
+            referent: element, ..
+        }
+        | Kind::Pointer {
+            pointee: element, ..
+        }
+        | Kind::Pattern { base: element, .. } => work.push(element),
+        Kind::Function {
+            parameters, result, ..
+        } => {
+            work.extend_from_slice(
+                types
+                    .list(parameters)
+                    .ok_or("missing reached variance function inputs")?,
+            );
+            work.push(result);
+        }
+        Kind::FunctionItem {
+            arguments: list,
+            signature,
+            ..
+        } => {
+            work.push(signature);
+            arguments(work, list)?;
+        }
+        Kind::Closure {
+            arguments: list,
+            signature,
+            environment,
+            ..
+        } => {
+            work.extend([signature, environment]);
+            arguments(work, list)?;
+        }
+        Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) | Kind::Foreign(_) => {}
+    }
+    Ok(())
 }
 
 impl Graph<'_> {
@@ -74,12 +216,12 @@ impl Graph<'_> {
         definitions: &Definitions,
         item: ItemId,
         fields: &mut impl FnMut(ItemId, u32, ListId) -> ListId,
-    ) -> Result<(), &'static str> {
+    ) -> Result<Option<ItemId>, &'static str> {
         self.reserve_reached(types, item)?;
         while let Some(owner) = self.pending.pop() {
-            let definition = definitions
-                .get(owner)
-                .ok_or("reached variance requires completed nominal fields")?;
+            let Some(definition) = definitions.get(owner) else {
+                return Ok(Some(owner));
+            };
             if definition.kind == crate::types::aggregate::Kind::PhantomData {
                 let arguments = declaration(
                     types,
@@ -108,7 +250,8 @@ impl Graph<'_> {
                 }
             }
         }
-        self.solver.solve()
+        self.solver.solve()?;
+        Ok(None)
     }
     pub(super) fn reserve_reached(
         &mut self,

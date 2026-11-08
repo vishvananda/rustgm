@@ -1,0 +1,68 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes. The three length shapes reduce census 8's crate record (core's `U32NotAllOnes` range pattern relates `fmt::Arguments<'a>` before the crate-wide variance pass); the analysis-only drafts in obj/parallel/census-batch7/repro/v were run only through this compiler. Each outcome follows the stated rule (a declaration-time body relates lifetime nominals by their declared variance and outlives contracts, exactly as a later body does), not that exploration",
+ "declaration_sha256": "1afe9dd0fc37accc24928bef83b301aa6f0571d2f1b347e26020cc6e2fa93190",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [
+  "2026-11-08: the first declaration (sha256 c9398b027913db76148d2e6eeb80b97a53e57d1851b8b8cd0f06ae0ce2bcf214, retained with its oracle as obj/parallel/census-batch7/oracle/declaration-lifetime-contracts.v1.*) returned `Note<'a>` and `Slot<'a>` by value from const fns. rustc 1.98.0 rejected all three such shapes for the missing `freeze` lang item of these no_core prefixes, not for the stated rule, and this compiler does not demand that item. The three shapes now bind the related nominal to an annotated local and return its measured length; the stated outcomes and reasons are unchanged and are redeclared before a fresh oracle of the new bytes"
+ ],
+ "cases": {
+  "field-length.rs": {
+   "sha256": "a3bf33b6d78d4a8fdb237aeb4bdcc0fdd00969512d055ec16a85fd4b385132b8",
+   "declared": 0,
+   "reason": "a struct field length calls a const fn whose argument relates `Note<'static>` to `Note<'_>`, which needs Note's covariance before the crate-wide variance pass",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "signature-length.rs": {
+   "sha256": "7687302521530c9e0327ed79101656ec888e31f99404a10fad90b688c25972a9",
+   "declared": 0,
+   "reason": "the same length in a function signature",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "later-nominal-length.rs": {
+   "sha256": "41e48420f587ffeb0e47f2c44e65eed466a031bdabcd4115420060e0e524def6",
+   "declared": 0,
+   "reason": "the length's callee relates a lifetime nominal declared after the length's owner",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "covariant-shrink-length.rs": {
+   "sha256": "235e2331d0d17245cc399c40416865c292f0d1ff6aec1db1a2ddcf200217c3b2",
+   "declared": 0,
+   "reason": "a reached const fn shortens a covariant `Note<'b>` to `Note<'a>` under `'b: 'a`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "implied-outlives-length.rs": {
+   "sha256": "88322e27db6e218f09b2d9f0a9c093359ef539670d136a64bb5053ef069be1db",
+   "declared": 0,
+   "reason": "a reached const fn returns `*pair.r: &'b u8` as `&'a u8`, which only `Pair<'a, &'b u8>`'s inferred `T: 'a` contract implies",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "covariant-widen-length.rs": {
+   "sha256": "8a1f19a390b1b85fe6a7e34d26f5e671dd2aeb726300a73f4b6241fb4233f88f",
+   "declared": 1,
+   "reason": "opponent: a reached const fn widens `Note<'a>` to `Note<'static>`; a lifetime does not live long enough",
+   "rustc_status": 1,
+   "error_codes": []
+  },
+  "invariant-shrink-length.rs": {
+   "sha256": "f731b1e3fe43857e29266185fee4ee2d058ac5344dd85dc84dfdcf69f33ad30a",
+   "declared": 1,
+   "reason": "opponent: `Slot<'a>` holds `&'a mut &'a str`, so it is invariant and `Slot<'b>` is not `Slot<'a>` under only `'b: 'a`",
+   "rustc_status": 1,
+   "error_codes": []
+  },
+  "outlives-escape-length.rs": {
+   "sha256": "688691809bda35c6d0c8f3635a236f3f9db3ec567e522ca66ed44edaa027a233",
+   "declared": 1,
+   "reason": "opponent: the implied `'b: 'a` does not give `'b: 'static`",
+   "rustc_status": 1,
+   "error_codes": []
+  }
+ }
+}

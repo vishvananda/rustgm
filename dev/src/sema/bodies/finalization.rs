@@ -129,9 +129,14 @@ impl Checker<'_> {
             self.state.finalization = Some(Box::new(Finalization::Caller(Box::new(publication))));
             return Ok(Some(dependency));
         }
-        if let Some(requirement) =
-            self.field_template_dependency(&publication.solved, &mut publication.field_wait)?
+        if let Some(requirement) = match self
+            .field_template_dependency(&publication.solved, &mut publication.field_wait)?
         {
+            Some(requirement) => Some(requirement),
+            None => {
+                self.lifetime_contract_dependency(&publication.solved, &mut publication.field_wait)?
+            }
+        } {
             let source = self.key(self.state.body.node);
             self.state.finalization = Some(Box::new(Finalization::Caller(Box::new(publication))));
             return Ok(Some(Dependency {

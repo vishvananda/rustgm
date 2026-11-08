@@ -9,6 +9,10 @@ use crate::sema::{
 };
 use crate::types::lifetime_proof::Obligations;
 
+#[cfg(test)]
+#[path = "../../../tests/invariants/lifetime_contract_constants.rs"]
+mod tests;
+
 impl Checker<'_> {
     /// Inference retains provisional templates that are not body value types.
     /// Demand only published roots; expanding every term creates symbolic field
@@ -96,6 +100,84 @@ impl Checker<'_> {
                 }
                 return Ok(Some(Requirement::Nominal(item)));
             }
+        }
+        Ok(None)
+    }
+
+    /// A region proof relates generic nominals by their variance and lifetime
+    /// requirements. Before the crate-wide inference, a declaration-time body
+    /// completes both reached contracts of the nominals in its types, and
+    /// waits once per nominal for a field template its declaration has not
+    /// published yet. The later crate-wide inference republishes them.
+    pub(super) fn lifetime_contract_dependency(
+        &mut self,
+        solved: &crate::types::infer::Solved,
+        waited: &mut Option<crate::types::ItemId>,
+    ) -> Result<Option<Requirement>, Error> {
+        if !matches!(
+            self.availability,
+            crate::sema::traits::implementations::Availability::Declarations
+        ) {
+            return Ok(None);
+        }
+        // Only a source library demands these early. An ordinary crate keeps
+        // its existing order, so its declared type tables do not change.
+        if self.report.package.source_core().is_none() {
+            return Ok(None);
+        }
+        let node = self.state.body.node;
+        let payments = crate::sema::header_attributes::source_payments(
+            self.facts.must_use_contracts.as_deref(),
+        )?;
+        let pay = |work, bytes| payments.charge(work, bytes);
+        let nominals = self
+            .facts
+            .lifetimes
+            .variances
+            .unreached_nominals(&self.facts.types, solved.types.iter().copied(), &pay)
+            .map_err(|error| self.error(node, error))?;
+        for &item in &nominals {
+            let unreduced = &self.facts.unreduced;
+            let missing = self
+                .facts
+                .lifetimes
+                .variances
+                .append_reached_or_pending(
+                    &self.facts.types,
+                    &self.facts.aggregates,
+                    &self.facts.definitions,
+                    item,
+                    &mut |owner, ordinal, storage| {
+                        unreduced.fields(owner, ordinal).unwrap_or(storage)
+                    },
+                    &pay,
+                )
+                .map_err(|error| self.error(node, error))?;
+            if let Some(item) = missing {
+                if waited.replace(item) == Some(item) {
+                    return Err(self.error(node, "missing aggregate field template"));
+                }
+                return Ok(Some(Requirement::Nominal(item)));
+            }
+        }
+        let predicates = &self.facts.generics.predicates;
+        for item in nominals {
+            self.facts
+                .lifetimes
+                .demand_reached_outlives(
+                    &mut self.facts.types,
+                    &self.facts.aggregates,
+                    item,
+                    |owner| {
+                        predicates
+                            .get(&crate::resolve::model::DefId(owner.0))
+                            .into_iter()
+                            .flatten()
+                            .map(|predicate| predicate.value)
+                    },
+                    &pay,
+                )
+                .map_err(|error| self.error(node, error))?;
         }
         Ok(None)
     }

@@ -103,6 +103,38 @@ impl Lifetimes {
         };
         substitution.apply(types, ty)
     }
+
+    /// An early consumer demands only one nominal's reached outlives contract;
+    /// the later complete inference republishes the same declared result.
+    ///
+    /// # Errors
+    /// Propagates exhausted payment and reached-inference refusals.
+    pub(crate) fn demand_reached_outlives<C>(
+        &mut self,
+        types: &mut Store,
+        definitions: &crate::types::aggregate::Definitions,
+        item: crate::types::ItemId,
+        clauses: impl Fn(crate::types::ItemId) -> C,
+        pay: crate::support::retained::Payment<'_>,
+    ) -> Result<(), &'static str>
+    where
+        C: IntoIterator<Item = crate::types::parameters::clauses::Clause>,
+    {
+        if self.nominal_requirements.get(item).is_some() {
+            return Ok(());
+        }
+        let bounds = &self.nominal_bounds;
+        pay(
+            bounds.len().saturating_add(1),
+            size_of_val(bounds.as_slice()),
+        )?;
+        let mut explicit = HashMap::<_, Vec<_>>::default();
+        for &(owner, pair) in bounds {
+            explicit.entry(owner).or_default().push(pair);
+        }
+        self.nominal_requirements
+            .append_reached(types, definitions, item, &explicit, clauses, pay)
+    }
 }
 
 /// Resolution selects whether the penultimate segment owns an enum variant.

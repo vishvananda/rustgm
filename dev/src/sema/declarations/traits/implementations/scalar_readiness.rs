@@ -485,23 +485,11 @@ impl Checker<'_> {
         let payments = crate::sema::header_attributes::source_payments(
             self.facts.must_use_contracts.as_deref(),
         )?;
-        let bounds = &self.facts.lifetimes.nominal_bounds;
-        payments
-            .charge(
-                bounds.len().saturating_add(1),
-                size_of_val(bounds.as_slice()),
-            )
-            .map_err(|e| self.error(source, e))?;
-        let mut explicit = HashMap::<_, Vec<_>>::default();
-        for &(owner, pair) in bounds {
-            explicit.entry(owner).or_default().push(pair);
-        }
         let predicates = &self.facts.generics.predicates;
-        let result = self.facts.lifetimes.nominal_requirements.append_reached(
+        let result = self.facts.lifetimes.demand_reached_outlives(
             &mut self.facts.types,
             &self.facts.aggregates,
             item,
-            &explicit,
             |owner| {
                 predicates
                     .get(&DefId(owner.0))
