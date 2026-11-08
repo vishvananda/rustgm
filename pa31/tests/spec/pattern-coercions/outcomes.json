@@ -1,0 +1,134 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes. Type formability prerequisites (closed and open u32 ranges, *mut, reference and nested non-null bases, slice pointers, the DispatchFromDyn prefix) were settled against rustc 1.98.0 on type-only files without any impl in obj/parallel/census-batch16/repro and obj/parallel/census-batch16/repro2. Each outcome follows the stated rule: a CoerceUnsized impl between two pattern types requires one identical pattern and then registers base_a: CoerceUnsized<base_b> as an ordinary obligation in the impl's environment; a struct pair requires its one changed field to satisfy CoerceUnsized; a DispatchFromDyn impl between two pattern types requires only one identical pattern; a coercion site selects Source: CoerceUnsized<Target>",
+ "declaration_sha256": "b81ee0cb1af3dbbecf28f161ca548e432e110d3096b6d9c6abebb72fc38c58ea",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "core-pattern-coercion.rs": {
+   "sha256": "abaa00e9c2f5dc8ae33518fe940f9c4341717a9024f9fea9f7cfcd0e9471f582",
+   "declared": 0,
+   "reason": "core's exact pat.rs impl over the raw-pointer impls: the base obligation *const T: CoerceUnsized<*const U> holds by core's *const impl and the where-clause T: Unsize<U>",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "different-patterns.rs": {
+   "sha256": "22d21d490a30a17365cecf7718dcfa198717f442363d40d598ec2d34ee5610e8",
+   "declared": 1,
+   "reason": "opponent: u32 is 1..=4 to u32 is 1..=8 has two different patterns, rejected before any base obligation",
+   "rustc_status": 1,
+   "error_codes": []
+  },
+  "integer-base.rs": {
+   "sha256": "21c055dcaa36810c407a705f7bb4f47f6ea2f48960145e993fb20b2dc808e96e",
+   "declared": 1,
+   "reason": "opponent: the same pattern u32 is 1..=4 on both sides, but u32: CoerceUnsized<u32> has no impl (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "pattern-to-pointer.rs": {
+   "sha256": "ed07ac56c49d86b04c4d6e2ddf7b9aae6f9820a0b5086dc942b0122ae7e92598",
+   "declared": 1,
+   "reason": "opponent: a non-null pattern type to a plain raw pointer is neither a pattern pair nor a permitted pointer pair (E0376)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0377"
+   ]
+  },
+  "mutability-mismatch.rs": {
+   "sha256": "6b19a49c70c2371711b3e5346b551ac26191c6f449a52268df5ac29cc835d2c7",
+   "declared": 1,
+   "reason": "opponent: *const T is !null to *mut U is !null; the base obligation *const T: CoerceUnsized<*mut U> has no impl (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "mutable-to-const.rs": {
+   "sha256": "180c6e4ab547ec81bd329f0eff4036e6061c8ab6f483c0516065881f0d3fa260",
+   "declared": 0,
+   "reason": "*mut T is !null to *const U is !null; the base obligation holds by core's *mut T -> *const U impl",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "missing-unsize.rs": {
+   "sha256": "01886404e6742dcd7375d324d2c003fb704c718cbca66788764402cef3aa1968",
+   "declared": 1,
+   "reason": "opponent: core's impl without where T: Unsize<U>, so the base obligation's *const impl cannot prove T: Unsize<U> (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "missing-pointer-impl.rs": {
+   "sha256": "3dfd9da2e82ac4119c7ac25323de0478c41bb5bea63e5b28f26de132519b2757",
+   "declared": 1,
+   "reason": "opponent: core's exact impl with no raw-pointer CoerceUnsized impl in the crate, so the base obligation *const T: CoerceUnsized<*const U> has no impl (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "generic-base.rs": {
+   "sha256": "cef27fc409801c9d44a312c181256c710069b1ae765bbd1d6f7f2b6fc7de3e86",
+   "declared": 0,
+   "reason": "impl<T: CoerceUnsized<U>, U> over T is !null; the base obligation T: CoerceUnsized<U> is the impl's own premise",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "reference-base.rs": {
+   "sha256": "4ef5f59e17eef56fd9f23ddf0e29ab1b14c2975d6f367185192a5a48d6ed1b2a",
+   "declared": 0,
+   "reason": "&'b T is !null to &'a U is !null with 'b: 'a; the base obligation holds by core's &'b T -> &'a U impl",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "nested-pattern.rs": {
+   "sha256": "38d56ae66f00e981e6e7cddfde2edde2f41aeb67e1bcc445b1b6f5d41ef17b03",
+   "declared": 0,
+   "reason": "a non-null pattern over core's non-null raw pointer pattern; the base obligation is core's pat.rs impl itself",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "nominal-pattern-field.rs": {
+   "sha256": "4f5df1d6433e786ff8fd752f5599ac3464b4ca3e40c5a06db5c498b786ce11cf",
+   "declared": 0,
+   "reason": "core NonNull shape: a repr(transparent) struct whose one changed field is *const T is !null implements CoerceUnsized through core's pat.rs impl",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "nominal-without-pattern-impl.rs": {
+   "sha256": "fa80f5628f94e2ec8fa0fb3556b0f3dc07491fd4e23d331996f77d768cef440a",
+   "declared": 1,
+   "reason": "opponent: the NonNull shape without core's pat.rs impl, so the changed field's CoerceUnsized obligation has no impl (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "executed-coercion.rs": {
+   "sha256": "c9ee2dbfe61fb9a3c1633b19960ee43b7114c070477d7778d582c3324a4816b3",
+   "declared": 0,
+   "reason": "a function body returns *const [u8; 4] is !null as *const [u8] is !null; the coercion site selects core's pat.rs impl and the builtin [u8; 4]: Unsize<[u8]>",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "dispatch-same-range.rs": {
+   "sha256": "535186f51a42bda030ec9f5f548d621ff88556f63db2d493ad97c90699b145d9",
+   "declared": 0,
+   "reason": "DispatchFromDyn between two u32 is 1..=4 pattern types: the same pattern, with no base obligation",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "dispatch-different-ranges.rs": {
+   "sha256": "4bc40a8406db43942f0da1fe92674bac561899315e4458fb0612c8fe88052919",
+   "declared": 1,
+   "reason": "opponent: DispatchFromDyn from u32 is 1..=4 to u32 is 1..=8 has two different patterns",
+   "rustc_status": 1,
+   "error_codes": []
+  }
+ }
+}

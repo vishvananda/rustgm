@@ -564,6 +564,15 @@ shape opponents and three bases rustc accepts that this analysis rejects by
 name. Each outcome was declared before its rustc 1.98.0 oracle. Private
 invariants check them; there is no graded manifest.
 
+`spec/pattern-coercions/` freezes sixteen declared no_core controls from census
+batch 16 for `CoerceUnsized` between pattern types (core's non-null raw pointer
+impl and `NonNull` shape): one identical pattern, then an ordinary
+`CoerceUnsized` obligation on the bases, with pattern, base, mutability,
+`Unsize`, missing-impl and `DispatchFromDyn` opponents and three controls rustc
+accepts that this analysis rejects by name. Each outcome was declared before
+its rustc 1.98.0 oracle. A private invariant checks them; there is no graded
+manifest.
+
 `spec/override-projection-bounds/` freezes eight declared no_core controls for
 override conformance of a trait method bound that names `Self::Item` (core
 `Scan` fold and `Flatten` shapes): the override repeats it, writes the impl's
