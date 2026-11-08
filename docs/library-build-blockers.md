@@ -5,6 +5,28 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 14](parallel/census-batch14.md) repairs census 14's
+record on main `4a1ac00c4`. Census 15 (`6df12612`, from `d1756b87f`) checks
+42,310 declarations, with none failed or blocked. Its crate record, "invalid
+canonical trait selection", is core's `unsafe impl<I> TrustedLen for
+Flatten<I>` (`iter/adapters/flatten.rs:313`). The same 7 lookahead records
+follow.
+
+- An impl trait reference argument left to its default, as core's `impl<T>
+  FromResidual for NeverShortCircuit<T>` leaves `<Self as Try>::Residual`, is
+  normalized by the routine a written argument uses, keyed by impl and
+  argument index, before the header is published. This repairs census 14's
+  record.
+- 8 PA31 controls were declared before the rustc 1.98.0 oracle; all agree.
+  One is a recorded gap: a default naming another trait's associated type is
+  rejected by name, because the default's alias requirement is instantiated
+  without the trait's `Self`. Core's `Try: FromResidual` supertrait hides it.
+- The Flatten record was hidden, not caused: census 14's pin over core with
+  `FromResidual`'s argument written out gives the same 8 records as census 15.
+- Every PA1 to PA24 suite passes, with PA20 at 1451/1451.
+- What remains: census 15's record 1 (batch 15's first item), then the
+  default's `Self` (approved as (a), with a locate report before code).
+
 Lane C [auto traits](parallel/auto-traits.md), first commit (C1), transports
 core's auto-trait declarations in version 13 with no new tag or bit:
 

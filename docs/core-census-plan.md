@@ -905,6 +905,37 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     - C3's `&T` negative-coherence local limit (selection);
     - `pub const` export, which returns with item 5b.
 
+- **During Lane A's [census batch 14](parallel/census-batch14.md)**,
+  2026-11-08.
+  - **A defaulted impl trait argument is normalized like a written one.**
+    - Its normal form is kept on the pending impl trait reference, keyed by
+      impl and argument index, beside the default, as written arguments keep
+      `facts.unreduced`. One normalization point before
+      `publish_trait_header` uses the routine written arguments use, with no
+      defaulted-only branch. The keep-as-written rule for headers that name
+      their own `Self` applies unchanged.
+    - Rejected: a synthetic source node for the default.
+    - Every cache keyed by source node was checked against the new key: an
+      argument root never reaches a node-keyed table.
+  - **A default naming another trait's member is a recorded gap.** rustc
+    accepts it; RustGM rejects it by name, "associated type requires an
+    unambiguous implementation". The default's alias requirement is
+    instantiated from the path's arguments without the trait's `Self`.
+    - Taken now as (b): the repair is committed with the gap declared.
+    - Approved for batch 15 item 2 as (a): trait-path defaults are
+      instantiated with `Self` set to the path's subject through one shared
+      substitution, for impl trait references, bound trait paths and
+      qualified projection prefixes, with controls for each caller and a
+      locate report first. The report explains why core's `Try:
+      FromResidual` supertrait hid the divergence.
+  - **Census 15's Flatten record was proved uncovered before qualifying.**
+    Census 14's pin over core with `FromResidual`'s argument written out gives
+    exactly census 15's records.
+  - **Census 15** (pin `6df12612`): 42,310 declarations, none failed or
+    blocked. Its crate record is core's `unsafe impl<I> TrustedLen for
+    Flatten<I>` (`iter/adapters/flatten.rs:313`), "invalid canonical trait
+    selection". It is batch 15's first item, before (a).
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |
