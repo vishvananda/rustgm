@@ -215,6 +215,14 @@ prelude modules. A rustc-only `compiler_builtins` stand-in serves rustc's
 injection in an empty sysroot. All thirteen outcomes were declared before any
 rustc or RustGM run of these files.
 
+`variant-reexport-outcomes.json` freezes variant re-exports from a source
+core under `spec/variant-reexports/`. The provider's `prelude::v1` re-exports
+`Option` with `None` and `Some`, as core's does, and a second module renames
+them. Native 2021 and 2024 object clients construct and match the variants
+through the prelude and the renamed paths. The opponent names a variant as a
+type. All five outcomes were declared before any rustc or RustGM run of these
+files.
+
 `provider-guard-outcomes.json` freezes the version-thirteen provider-guard
 packet under `spec/provider-guards/`. The packet holds:
 

@@ -463,7 +463,7 @@ impl ValidatedRows {
             &rows,
             &indexed,
             modules,
-            indexed.retained_bytes(),
+            (indexed.retained_bytes(), profile.body_nodes()),
             work,
         )?;
         let domains = if profile.body_nodes() {

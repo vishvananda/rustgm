@@ -156,7 +156,7 @@ impl ModuleContractColumns {
         rows: &SourceRows,
         headers: &HeaderIndex<'_>,
         raw: ModuleContractRows,
-        base: usize,
+        (base, variants): (usize, bool),
         work: &mut Work,
     ) -> Result<(Self, usize, usize), &'static str> {
         let bytes = raw.storage_bytes(rows.declarations.len(), work)?;
@@ -168,7 +168,7 @@ impl ModuleContractColumns {
         }
         let index = ModuleIndex::new(rows, headers, work)?;
         let result = Self { rows: raw, index };
-        result.namespace(rows, work)?;
+        result.namespace(rows, variants, work)?;
         result.domains(rows, headers, work)?;
         for field in &rows.fields {
             work.charge(1)?;
@@ -185,7 +185,12 @@ impl ModuleContractColumns {
     pub(super) const fn view(&self) -> ModuleContractView<'_> {
         ModuleContractView { columns: self }
     }
-    fn namespace(&self, rows: &SourceRows, work: &mut Work) -> Result<(), &'static str> {
+    fn namespace(
+        &self,
+        rows: &SourceRows,
+        variants: bool,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
         let names = &self.rows.namespace;
         work.charge(rows.declarations.len().saturating_add(names.modules.len()))?;
         if rows
@@ -222,7 +227,7 @@ impl ModuleContractColumns {
             if name_bytes > crates::MAX_NAME_BYTES {
                 return Err("module binding names exceed their combined byte budget");
             }
-            self.binding(rows, entry)?;
+            self.binding(rows, entry, variants)?;
         }
         for pair in names.bindings.windows(2) {
             if compare(&pair[0], &pair[1], work)? != Ordering::Less {
@@ -255,7 +260,14 @@ impl ModuleContractColumns {
         }
         Ok(())
     }
-    fn binding(&self, rows: &SourceRows, entry: &ModuleBindingRow) -> Result<(), &'static str> {
+    /// Version thirteen admits a re-exported variant: one value-namespace row
+    /// naming its constructor declaration, never its type-namespace alias.
+    fn binding(
+        &self,
+        rows: &SourceRows,
+        entry: &ModuleBindingRow,
+        variants: bool,
+    ) -> Result<(), &'static str> {
         self.view().require_module(entry.module)?;
         site(rows, entry.module, entry.source_site)?;
         crates::identity::validate_component(&entry.name)?;
@@ -272,6 +284,10 @@ impl ModuleContractColumns {
             | s::DefinitionKind::Struct
             | s::DefinitionKind::Enum => Namespace::Type,
             s::DefinitionKind::Function => Namespace::Value,
+            s::DefinitionKind::Variant if variants => constructor_namespace(rows, target)?,
+            s::DefinitionKind::Variant => {
+                return Err("variant module bindings require the version-13 module-bodies profile");
+            }
             _ => return Err("module binding target requires a wider declaration profile"),
         };
         if expected != entry.namespace {
@@ -367,6 +383,25 @@ impl ModuleContractColumns {
             }
         }
         Ok(())
+    }
+}
+/// A constructor binding is re-derived from its installed parent: an enum's
+/// variant binds its value constructor. Struct constructors need a wider profile.
+fn constructor_namespace(
+    rows: &SourceRows,
+    target: &s::Declaration,
+) -> Result<Namespace, &'static str> {
+    let parent = target
+        .definition
+        .parent
+        .and_then(|parent| rows.declarations.get(parent.0 as usize))
+        .ok_or("variant module binding has no installed parent")?;
+    match parent.definition.kind {
+        s::DefinitionKind::Enum => Ok(Namespace::Value),
+        s::DefinitionKind::Struct => {
+            Err("source struct constructor bindings require their wider constructor profile")
+        }
+        _ => Err("variant module binding parent is not an enum"),
     }
 }
 fn site(rows: &SourceRows, owner: DeclarationRef, site: u32) -> Result<(), &'static str> {

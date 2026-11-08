@@ -1,4 +1,7 @@
 //! Actual resolved bindings and clauses produce complete version-two coordinates once.
+#[cfg(test)]
+#[path = "../../../../tests/invariants/reexported_variants.rs"]
+mod variant_tests;
 use super::{Declarations, DefId, DefKind, Namespace, Report, Stage, g, s};
 use crate::{
     resolve::{
@@ -136,7 +139,9 @@ impl Stage {
                 if binding.ambiguous {
                     return Err("module contract binding is ambiguous");
                 }
-                if self.erased_alias_binding(report, facts, scope, namespace, binding)? {
+                if self.erased_alias_binding(report, facts, scope, namespace, binding)?
+                    || self.variant_alias_binding(report, scope, name, namespace, binding)?
+                {
                     continue;
                 }
                 let namespace = match namespace {
@@ -204,6 +209,48 @@ impl Stage {
         // The absent row is not proof. Reauthenticate the same source node,
         // complete closed type and nongeneric/nonassociated private owner.
         self.private_alias(report, facts, binding.target)?;
+        Ok(true)
+    }
+    /// Version thirteen names a variant once, by its value-namespace
+    /// constructor declaration. A re-exported tuple or unit variant keeps that
+    /// binding; its type-namespace alias is not emitted, as the enum's member
+    /// scope omits it, and only beside the same variant's value binding.
+    fn variant_alias_binding(
+        &mut self,
+        report: &Report,
+        scope: crate::resolve::model::ScopeId,
+        name: crate::resolve::names::NameId,
+        namespace: Namespace,
+        binding: &Binding,
+    ) -> Result<bool, &'static str> {
+        let definitions = &report.resolution.definitions;
+        let target = definitions
+            .get(binding.target.0 as usize)
+            .ok_or("module binding lost its actual source declaration")?;
+        if target.kind != DefKind::Variant {
+            return Ok(false);
+        }
+        self.charge(2)?;
+        if !self.body_nodes() {
+            return Err("variant re-exports require the version-13 module-bodies profile");
+        }
+        if namespace != Namespace::Type {
+            return Ok(false);
+        }
+        let constructor = report
+            .resolution
+            .bindings
+            .get(scope, name, Namespace::Value)
+            .filter(|value| value.access == binding.access && !value.ambiguous)
+            .and_then(|value| definitions.get(value.target.0 as usize));
+        if constructor.is_none_or(|value| {
+            value.kind != DefKind::Variant
+                || value.namespace != Namespace::Value
+                || value.node.is_none()
+                || value.node != target.node
+        }) {
+            return Err("type-namespace variant re-export requires its value constructor binding");
+        }
         Ok(true)
     }
     fn trait_domains(

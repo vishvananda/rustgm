@@ -1,0 +1,132 @@
+{
+  "profile": "Rust 1.98.0 x86_64-unknown-linux-gnu, -Cpanic=abort --cap-lints=allow, RUSTC_BOOTSTRAP=1, an empty sysroot with -L crate= and explicit --extern core and compiler_builtins, per-case editions; declared 2026-11-08 before any rustc run of these files and before any RustGM run of these committed files (an exploratory RustGM probe of a similar provider and client ran first under obj/lane-b2/variants)",
+  "cases": [
+    {
+      "name": "variant-core",
+      "path": "tests/spec/variant-reexports/provider.rs",
+      "source_sha256": "3bfe6607953c2a7624095010a8b8e5d91d5d29b35516a7449fc339b5dde1d0bf",
+      "kind": "rlib",
+      "crate": "core",
+      "edition": "2024",
+      "deps": {},
+      "source_core": true,
+      "rustc": 0,
+      "rustc_codes": [],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 0,
+      "native": false,
+      "note": "no_core source-core provider named core whose prelude::v1 re-exports Option's variants as core's does (pub use crate::option::Option::{self, None, Some}), with renamed variant re-exports in a second module"
+    },
+    {
+      "name": "variant-builtins",
+      "path": "tests/spec/no-std-clients/builtins.rs",
+      "source_sha256": "d99ad3683a2997aebf6142c624aa25dce56e6103e4f026d3cfb0c2141fde60c2",
+      "kind": "rlib",
+      "crate": "compiler_builtins",
+      "edition": "2021",
+      "deps": {},
+      "rustc_only": true,
+      "rustc_deps": {
+        "core": "variant-core"
+      },
+      "rustc": 0,
+      "rustc_codes": [],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "native": false,
+      "note": "rustc-only compiler_builtins stand-in built against variant-core, which the clients name by --extern so rustc never loads the nostd-core stand-in beside it"
+    },
+    {
+      "name": "variant-2021-client",
+      "path": "tests/spec/variant-reexports/client.rs",
+      "source_sha256": "b340e1ec6f62c4655eb8ae559e5e56610a215f24898e33d3fa7040ecd57a95a1",
+      "kind": "object",
+      "crate": "client",
+      "edition": "2021",
+      "deps": {},
+      "rustc_deps": {
+        "core": "variant-core",
+        "compiler_builtins": "variant-builtins"
+      },
+      "inventory": [
+        "variant-core"
+      ],
+      "source_client": "variant-core",
+      "native": true,
+      "native_driver": "tests/spec/no-std-clients/native-driver.c",
+      "native_driver_sha256": "f826a9b3aa306043f0cec7848e130647bc58c11f68f216ba8f537ac5be8dac24",
+      "native_stdout": "42 40\n",
+      "rustc": 0,
+      "rustc_codes": [],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 0,
+      "note": "a 2021 no_std client constructs and matches Some and None from the rust_2021 prelude glob of v1's variant re-exports, and the renamed Present and Absent through a module path"
+    },
+    {
+      "name": "variant-2024-client",
+      "path": "tests/spec/variant-reexports/client.rs",
+      "source_sha256": "b340e1ec6f62c4655eb8ae559e5e56610a215f24898e33d3fa7040ecd57a95a1",
+      "kind": "object",
+      "crate": "client",
+      "edition": "2024",
+      "deps": {},
+      "rustc_deps": {
+        "core": "variant-core",
+        "compiler_builtins": "variant-builtins"
+      },
+      "inventory": [
+        "variant-core"
+      ],
+      "source_client": "variant-core",
+      "native": true,
+      "native_driver": "tests/spec/no-std-clients/native-driver.c",
+      "native_driver_sha256": "f826a9b3aa306043f0cec7848e130647bc58c11f68f216ba8f537ac5be8dac24",
+      "native_stdout": "42 40\n",
+      "rustc": 0,
+      "rustc_codes": [],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 0,
+      "note": "the same client in 2024 reads the rust_2024 prelude"
+    },
+    {
+      "name": "variant-type-client",
+      "path": "tests/spec/variant-reexports/variant-type.rs",
+      "source_sha256": "8bfc9d7708b677b1fd4715bb748b1e42fd1d373beeb51ec0d5f6bdf222ee8e68",
+      "kind": "rlib",
+      "crate": "client",
+      "edition": "2024",
+      "deps": {},
+      "rustc_deps": {
+        "core": "variant-core",
+        "compiler_builtins": "variant-builtins"
+      },
+      "inventory": [
+        "variant-core"
+      ],
+      "source_client": "variant-core",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0573"
+      ],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 1,
+      "frontend_diagnostic": "unresolved type name",
+      "native": false,
+      "note": "opponent: a re-exported variant is not a type; rustc reports E0573 and RustGM finds no type-namespace binding, as no type-namespace variant alias travels"
+    }
+  ]
+}
