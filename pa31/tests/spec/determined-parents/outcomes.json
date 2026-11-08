@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The shapes isolate the rule core's `SpecExtend` pair needs once its parent's where-clause-only `T` is inferred (pa31/tests/spec/specialization-fixpoint/core-extend.rs, whose parent equality `I: Iter<Item = T>` this compiler refused as an unimplemented projection-constrained parent argument). Each outcome follows the rule read in the pinned rustc 1.98.0 sources (compiler/rustc_hir_analysis/src/impl_wf_check/min_specialization.rs `check_always_applicable`, which applies `check_static_lifetimes` and `check_duplicate_params` only to `unconstrained_parent_impl_args`, the parent arguments left after removing every parameter that a constraining position of one of the parent's own associated equalities determines; compiler/rustc_hir_analysis/src/constrained_generic_params.rs `parameters_for`): a repeated or `'static` parent argument that the parent's equality determines is accepted, the same argument without that equality is rejected",
+ "declaration_sha256": "f31451195f33ca1f0826c1dc60576b2ee1a06a6ee76fe8d37b694a82b5673442",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "repeated-determined.rs": {
+   "sha256": "02f49eefb8153612ebdfa0c68c770d66303b45e0cca7295ce7666a892d585918",
+   "declared": 0,
+   "reason": "rustc's own `check_duplicate_params` example: `impl<S, I: IntoIter<Item = S>> Tr<S> for I` with child `impl<T> Tr<T> for V<T>`; the parent arguments `[T, V<T>]` repeat `T`, but the parent's equality determines `S`, leaving `[V<T>]`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "repeated-undetermined.rs": {
+   "sha256": "2e530e24cb50f58600e8bf238d93e357a10437382c4b59799611154368a1d992",
+   "declared": 1,
+   "reason": "guard: the same pair over `impl<S, I> Tr<S> for I`, with no equality; `[T, V<T>]` repeats `T`",
+   "rustc_status": 1,
+   "error_codes": []
+  },
+  "static-determined.rs": {
+   "sha256": "23d0b9a120c24d37746f1233fa9fdbeddc91f41e4e5220a167e2a58a68cb91d1",
+   "declared": 0,
+   "reason": "`impl<'a, I: Iter<Item = &'a u8>> Tr for I` with child `impl<I: Iter<Item = &'static u8>> Tr for I`; the parent's equality determines `'a`, so its `'static` argument is not checked",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "static-undetermined.rs": {
+   "sha256": "f12663ba2de423123096b514f04f741a6a8df9852eb38cebf0e6867b9dbd5825",
+   "declared": 1,
+   "reason": "guard: the same pair over a trait argument, `I: Holds<&'a u8>` and `I: Holds<&'static u8>`; the parent's `'a` is `'static` and is checked",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "static-marked-determined.rs": {
+   "sha256": "09536e6f83411c2fefd5fed4074569db03a9a0d785b53818cbc257b918a9b7b2",
+   "declared": 0,
+   "reason": "`impl<'a, I: Iter<Item = &'a u8>> Tr for I` with child `impl<I: Iter<Item = &'static u8> + Marked> Tr for I`, `Marked` an unsafe specialization marker that orders the pair; the parent's equality determines `'a`, so its `'static` argument is not checked",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "static-marked-undetermined.rs": {
+   "sha256": "837afde4abe91e2958011f62498faaada57365d817cb5bf2c3a8ec26d255d84a",
+   "declared": 1,
+   "reason": "guard: the same marked pair over a trait argument, `I: Holds<&'a u8>` and `I: Holds<&'static u8> + Marked`; the parent's `'a` is `'static` and is checked",
+   "rustc_status": 1,
+   "error_codes": []
+  }
+ },
+ "second_declaration": {
+  "declared": "2026-11-08, after the first oracle of this packet (both lifetime pairs E0119: rustc's `specializes` ignores region constraints, so a pair that differs only in a lifetime specializes in both directions and the specialization graph reports the overlap) and before this oracle and any RustGM run of these bytes",
+  "declaration_sha256": "0dfc69b8737c34708a088e8f9eaadf100c1288ebc0347cd7a56a66e9e4631425"
+ }
+}

@@ -18,15 +18,17 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const COUNTS: [usize; 3] = [6, 24, 96];
 const WIDTHS: [usize; 2] = [1, 8];
 /// Every PA31 packet whose impls coherence or specialization compares.
-const CONTROLS: [&str; 10] = [
+const CONTROLS: [&str; 12] = [
     "callable-sugar-coherence",
     "deep-reject",
+    "determined-parents",
     "fn-pointer-coherence",
     "fundamental-policy",
     "impl-header-projections",
     "lifetime-specialization",
     "negative-coherence",
     "source-reservation-impl",
+    "specialization-fixpoint",
     "specialization-graph",
     "specialization-selection",
 ];

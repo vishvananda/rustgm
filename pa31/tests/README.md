@@ -685,3 +685,20 @@ difference is a parameter, a lifetime, a const parameter, an alias or a
 projection (each E0119). Each outcome was declared before its rustc 1.98.0
 oracle. A private invariant checks them and audits every coherence and
 specialization control; there is no graded manifest.
+
+`spec/specialization-fixpoint/` freezes four declared no_core
+`min_specialization` controls from census batch 11: core's `SpecExtend` pair,
+whose parent names `T` only in a where clause, and the same child over `u8`,
+both specializing once every parent obligation is solved to a fixpoint, beside
+an opponent that infers a different `T` and one that leaves it ambiguous (each
+E0119). Each outcome was declared before its rustc 1.98.0 oracle. A private
+invariant checks them; there is no graded manifest.
+
+`spec/determined-parents/` freezes six declared no_core `min_specialization`
+controls from census batch 11: a repeated parameter and a `'static` lifetime
+among a parent's arguments that the parent's own associated equality
+determines, which rustc's `unconstrained_parent_impl_args` omits from its
+checks, beside guards without the equality and two unmarked lifetime pairs
+(E0119). Each outcome was declared before its rustc 1.98.0 oracle; one
+prediction was wrong and is recorded. A private invariant checks them; there
+is no graded manifest.

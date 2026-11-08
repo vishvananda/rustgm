@@ -170,15 +170,6 @@ fn advance(facts: &mut Declarations, key: PairKey) -> Result<(), String> {
                 },
             );
         }
-        Ok(Progress::Ambiguous) => {
-            builder.attempts.insert(
-                key,
-                Comparison::Pending {
-                    attempt,
-                    dependency: None,
-                },
-            );
-        }
         Ok(Progress::Complete(Some(relation))) => {
             // A selection may order its pair before coherence authenticates
             // the sources; closure authenticates every child before admission.

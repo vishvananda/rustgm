@@ -343,6 +343,18 @@ a `'static` or repeated lifetime among the parent's arguments. The
 [lifetime specialization controls](pa31/tests/spec/lifetime-specialization/README.md)
 record independent outcomes.
 
+Every parent obligation is then registered under the child's environment and
+solved to a fixpoint. A goal that is still ambiguous waits until another goal
+is proven, so a parent parameter that only a where clause names is inferred
+first, as in core's `SpecExtend` pair. Ambiguity that no proof resolves means
+the child does not specialize. It is never an error of its own, and it never
+rejects the impl. Before the repeated-parameter and `'static` checks,
+`min_specialization` omits each parent argument that the parent's own
+associated equalities determine, as rustc's `unconstrained_parent_impl_args`
+does. Both rules have recorded independent outcomes:
+[fixpoint](pa31/tests/spec/specialization-fixpoint/README.md) and
+[determined-argument](pa31/tests/spec/determined-parents/README.md) controls.
+
 An override's bounds are compared with its trait method's bounds in the impl's
 normal forms, as rustc normalizes the impl's param-env first. The trait
 method's own bounds, substituted for the impl, and the override's bounds are

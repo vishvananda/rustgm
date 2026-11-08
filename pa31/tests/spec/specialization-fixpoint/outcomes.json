@@ -1,0 +1,42 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The shapes reduce census 11's record after its overlap budget (an analysis-only diagnostic census, obj/parallel/census-batch11/diagnostics/d4-deferred): \"specialization implication still awaits a declaration dependency: Some(None)\" at core's `SpecExtend` pair (iter/traits/collect.rs:574 and 589), whose parent obligation `T: Sized` names a parameter that appears only in where clauses. Each outcome follows the rule read in the pinned rustc 1.98.0 sources (compiler/rustc_trait_selection/src/traits/specialize/mod.rs `specializes` and `fulfill_implication`, which equate the child's trait reference with the parent's fresh instantiation, register every parent obligation under the child's environment and solve them together, so a where-clause-only parameter is inferred from the child's where clauses, and any error or leftover ambiguity means the impl does not specialize; compiler/rustc_hir_analysis/src/impl_wf_check/min_specialization.rs, which permits a child predicate on a `rustc_unsafe_specialization_marker` trait; compiler/rustc_trait_selection/src/traits/coherence.rs, where impls that overlap without that ordering conflict, E0119)",
+ "declaration_sha256": "69ccc1279d7bab2d3fc390e482f1b3a83825d7dd0b7e43068cb3288fdd35060c",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "core-extend.rs": {
+   "sha256": "c91d4b778d05cfa015e10331c37b2baf5e6ef07b04b28aeabd45789a20b7bafa",
+   "declared": 0,
+   "reason": "core's shape (iter/traits/collect.rs:574 and 589): `impl<ExtendT, I, T> SpecExtend<I> for ExtendT where ExtendT: Extend<T>, I: TrustedLen<Item = T>` specializes the same impl over `I: Iter<Item = T>`; the parent's `T` is inferred from the child's `Extend<T>`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "concrete-item.rs": {
+   "sha256": "78a89e55c2fa92252ee213389ca8f21147efa707e6fff3155b595408903605ea",
+   "declared": 0,
+   "reason": "the child names `u8` for the parent's where-clause-only `T`: `ExtendT: Extend<u8>, I: TrustedLen<Item = u8>`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "other-item.rs": {
+   "sha256": "38f15ac617866c926da368d4f3b4d43e4da96b6e45f5a456bfb0aaf8a59667cc",
+   "declared": 1,
+   "reason": "opponent: `ExtendT: Extend<u16>, I: TrustedLen<Item = u8>`; the parent's `T` is `u16` by `Extend`, so `Item = u16` fails and the overlapping impls are unordered (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "ambiguous-item.rs": {
+   "sha256": "39861cd1490582521b9616b5769a70d52095878da14db555f2c76c37e714da14",
+   "declared": 1,
+   "reason": "opponent: `ExtendT: Extend<u8> + Extend<u16>, I: TrustedLen<Item = u8> + Iter<Item = u16>`; every goal that could infer the parent's `T` stays ambiguous, so the child does not specialize and the overlapping impls are unordered (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  }
+ }
+}

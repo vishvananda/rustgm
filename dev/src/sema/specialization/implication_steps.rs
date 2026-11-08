@@ -1,4 +1,7 @@
 //! Each directional query owns its typed goals and every suspended proof payment.
+#[cfg(test)]
+#[path = "../../../tests/invariants/inferred_parent_obligations.rs"]
+mod fixpoint_tests;
 use super::{
     proof_inputs::Inputs,
     registry_graph::{PairKey, Relation},
@@ -21,7 +24,12 @@ pub(super) struct Attempt {
 }
 struct Direction {
     inputs: Inputs,
+    /// The goal indexes this pass selects, in order.
+    pass: Vec<usize>,
     cursor: usize,
+    /// Goals this pass found ambiguous, retried after any goal is proven.
+    deferred: Vec<usize>,
+    progressed: bool,
     pending: Option<Box<selection::Pending>>,
     proof: Obligations,
     query_work: usize,
@@ -29,13 +37,11 @@ struct Direction {
 }
 pub(super) enum Progress {
     Pending(selection::Dependency),
-    Ambiguous,
     Complete(Option<Relation>),
 }
 #[derive(Clone, Copy)]
 enum Next {
     Pending(selection::Dependency),
-    Ambiguous,
     Proven,
     Absent,
 }
@@ -68,7 +74,6 @@ impl Attempt {
             };
             match next {
                 Next::Pending(dependency) => return Ok(Progress::Pending(dependency)),
-                Next::Ambiguous => return Ok(Progress::Ambiguous),
                 Next::Absent | Next::Proven if !self.forward_done => {
                     if matches!(next, Next::Proven) {
                         self.first = self.direction.take();
@@ -104,16 +109,23 @@ impl Direction {
         parent: EntryKey,
         budget: &Budget,
     ) -> Result<Option<Self>, String> {
-        Ok(Inputs::new(facts, child, parent, budget)?.map(|inputs| {
-            let proof = Obligations::new(inputs.next_region);
-            Self {
-                inputs,
-                cursor: 0,
-                pending: None,
-                proof,
-                query_work: 0,
-                paid_query_work: 0,
-            }
+        let Some(inputs) = Inputs::new(facts, child, parent, budget)? else {
+            return Ok(None);
+        };
+        // Each pass and its deferred goals hold a slot for every goal.
+        let count = inputs.goals.len();
+        budget.charge(count, count.saturating_mul(2 * size_of::<usize>()))?;
+        let proof = Obligations::new(inputs.next_region);
+        Ok(Some(Self {
+            inputs,
+            pass: (0..count).collect(),
+            cursor: 0,
+            deferred: Vec::with_capacity(count),
+            progressed: false,
+            pending: None,
+            proof,
+            query_work: 0,
+            paid_query_work: 0,
         }))
     }
     fn pay(&mut self, budget: &Budget) -> Result<(), &'static str> {
@@ -122,8 +134,29 @@ impl Direction {
         self.paid_query_work = self.query_work;
         budget.charge(delta, 0)
     }
+    /// Like rustc's `specializes`, every parent obligation is registered and
+    /// solved to a fixpoint: an ambiguous goal waits until another is proven,
+    /// and ambiguity that no proof resolves means the child does not specialize.
     fn advance(&mut self, facts: &mut Declarations, budget: &Budget) -> Result<Next, String> {
-        while let Some(goal) = self.inputs.goals.get(self.cursor) {
+        loop {
+            let Some(&index) = self.pass.get(self.cursor) else {
+                if self.deferred.is_empty() {
+                    return Ok(Next::Proven);
+                }
+                if !std::mem::take(&mut self.progressed) {
+                    return Ok(Next::Absent);
+                }
+                budget.charge(self.deferred.len(), 0)?;
+                std::mem::swap(&mut self.pass, &mut self.deferred);
+                self.deferred.clear();
+                self.cursor = 0;
+                continue;
+            };
+            let goal = self
+                .inputs
+                .goals
+                .get(index)
+                .ok_or("specialization implication goal is missing")?;
             // Rustc's coherence implication registers region constraints but does
             // not resolve them before returning specializes. Keep this actual
             // typed goal for the separate executable header/body reproof.
@@ -170,6 +203,7 @@ impl Direction {
                     budget.charge(allocation.visits, allocation.bytes)?;
                     self.proof.extend(evidence.proof)?;
                     self.cursor += 1;
+                    self.progressed = true;
                     self.query_work = 0;
                     self.paid_query_work = 0;
                 }
@@ -177,7 +211,10 @@ impl Direction {
                     selection::Selection::Absent | selection::Selection::Refuted(_),
                 ) => return Ok(Next::Absent),
                 selection::Progress::Ready(selection::Selection::Deferred) => {
-                    return Ok(Next::Ambiguous);
+                    self.deferred.push(index);
+                    self.cursor += 1;
+                    self.query_work = 0;
+                    self.paid_query_work = 0;
                 }
                 selection::Progress::Inferred { .. } => {
                     return Err(
@@ -186,7 +223,6 @@ impl Direction {
                 }
             }
         }
-        Ok(Next::Proven)
     }
     fn relation(&mut self, facts: &mut Declarations, budget: &Budget) -> Result<Relation, String> {
         let count = self

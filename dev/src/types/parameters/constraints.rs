@@ -182,6 +182,63 @@ impl Constraints {
         self.known.contains(&Parameter::Value(parameter))
     }
 
+    /// rustc 1.98 `min_specialization`'s `unconstrained_parent_impl_args` reads
+    /// a parent's associated equalities once, in declaration order, with no
+    /// header seed or fixpoint. A parameter in a constraining position of an
+    /// equality's result is determined unless that equality's projection, or an
+    /// earlier equality's projection or result, names it. An equality that
+    /// projects the header itself determines nothing.
+    /// # Errors
+    /// Rejects unknown clauses, malformed types and exhausted traversal resources.
+    pub fn projection_determined(
+        store: &Store,
+        header: Predicate,
+        clauses: impl IntoIterator<Item = Clause>,
+    ) -> Result<Determined, &'static str> {
+        let mut pass = Self {
+            header,
+            known: HashSet::default(),
+            waiting: HashMap::default(),
+            dependencies: Vec::new(),
+            ready: Vec::new(),
+            steps: 0,
+        };
+        let mut named = HashSet::default();
+        for clause in clauses {
+            pass.account(1)?;
+            let (predicate, depth) = match clause {
+                Clause::Predicate(predicate) => (predicate, 0),
+                Clause::ForAll(id) => (
+                    store
+                        .quantified(id)
+                        .ok_or("invalid impl constraint clause")?
+                        .predicate,
+                    1,
+                ),
+                Clause::UnstableFeature(_) => continue,
+            };
+            let Bound::ProjectionEqual(result) = predicate.bound else {
+                continue;
+            };
+            if let Some(Kind::Projection(application)) = store.kind(predicate.ty)
+                && pass.projects_header(store, application, depth)?
+            {
+                continue;
+            }
+            named.extend(pass.occurrences(store, predicate.ty, false, depth)?);
+            for parameter in pass.occurrences(store, result, true, depth)? {
+                if !named.contains(&parameter) {
+                    pass.known.insert(parameter);
+                }
+            }
+            named.extend(pass.occurrences(store, result, false, depth)?);
+        }
+        Ok(Determined {
+            parameters: pass.known,
+            steps: pass.steps,
+        })
+    }
+
     fn occurrences(
         &mut self,
         store: &Store,
@@ -206,6 +263,22 @@ impl Constraints {
             return Err("impl parameter constraint work budget exceeded");
         }
         Ok(())
+    }
+}
+
+/// The parent parameters `Constraints::projection_determined` found, and its work.
+pub struct Determined {
+    parameters: HashSet<Parameter>,
+    pub steps: usize,
+}
+impl Determined {
+    #[must_use]
+    pub fn lifetime(&self, slot: u16) -> bool {
+        self.parameters.contains(&Parameter::Lifetime(slot))
+    }
+    #[must_use]
+    pub fn value(&self, parameter: ParameterId) -> bool {
+        self.parameters.contains(&Parameter::Value(parameter))
     }
 }
 

@@ -12,7 +12,7 @@ use crate::{
     types::{
         GenericArgs, RegionId, TypeId,
         arguments::Argument,
-        parameters::{clauses::Clause, uses::Multiplicities},
+        parameters::{clauses::Clause, constraints::Constraints, uses::Multiplicities},
     },
 };
 pub(super) fn validate(
@@ -29,18 +29,6 @@ pub(super) fn validate(
             relation.parent_arguments,
             budget,
         )?;
-        budget.charge(parent.clauses.len(), 0)?;
-        if parent.clauses.iter().any(|clause| {
-            matches!(
-                clause,
-                Clause::Predicate(crate::types::parameters::predicates::Predicate {
-                    bound: crate::types::parameters::predicates::Bound::ProjectionEqual(_),
-                    ..
-                })
-            )
-        }) {
-            return Err("minimal specialization projection-constrained parent arguments are not implemented".into());
-        }
         structural(facts, relation, budget)?;
         let child = identity_arguments(facts, relation.child.owner(), budget)?;
         let mut actual = Basis::default();
@@ -81,12 +69,66 @@ fn nonempty(facts: &Declarations, child: DefId) -> Result<(), &'static str> {
     }
     Ok(())
 }
+/// As rustc's `unconstrained_parent_impl_args`, a parent parameter that its own
+/// associated equalities determine is omitted before the repeated-parameter and
+/// `'static` checks: knowing the other arguments already fixes it.
 fn structural(
-    facts: &Declarations,
+    facts: &mut Declarations,
     relation: &Relation,
     budget: &Budget,
 ) -> Result<(), &'static str> {
-    structural_arguments(facts, relation.parent_arguments, budget)
+    let parent = relation.parent.owner();
+    let header = facts
+        .generics
+        .implementations
+        .as_deref()
+        .ok_or("specialization registry disappeared")?
+        .checked_entry(relation.parent)?
+        .predicate;
+    let clauses: Vec<_> = crate::sema::declaration_inputs::declared(
+        &facts.generics,
+        facts.crates.as_deref(),
+        parent,
+    )?
+    .map(|input| input.value)
+    .collect();
+    budget.charge(
+        clauses.len(),
+        clauses.len().saturating_mul(size_of::<Clause>()),
+    )?;
+    let determined = Constraints::projection_determined(&facts.types, header, clauses)?;
+    budget.charge(determined.steps, 0)?;
+    let ids = facts.generics.parameter_ids(&facts.types, parent)?;
+    let values: Vec<_> = facts
+        .types
+        .arguments(relation.parent_arguments)
+        .ok_or("specialization mapping disappeared")?
+        .collect();
+    let captures = values
+        .len()
+        .checked_sub(ids.len())
+        .ok_or("specialization mapping arity changed")?;
+    budget.charge(
+        values.len(),
+        values.len().saturating_mul(2 * size_of::<Argument>()),
+    )?;
+    let mut kept = Vec::with_capacity(values.len());
+    for (index, argument) in values.into_iter().enumerate() {
+        let omitted = match index.checked_sub(captures) {
+            None => determined.lifetime(
+                u16::try_from(index).map_err(|_| "specialization parent capture overflow")?,
+            ),
+            Some(position) => determined.value(
+                *ids.get(position)
+                    .ok_or("specialization mapping arity changed")?,
+            ),
+        };
+        if !omitted {
+            kept.push(argument);
+        }
+    }
+    let arguments = facts.types.intern_arguments(&kept)?;
+    structural_arguments(facts, arguments, budget)
 }
 pub(super) fn structural_arguments(
     facts: &Declarations,
