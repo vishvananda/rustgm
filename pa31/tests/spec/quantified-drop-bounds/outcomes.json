@@ -1,0 +1,68 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes. These shapes reduce census 8's third diagnostic record (core's `const impl Drop for DropGuard<T, F> where F: [const] FnOnce(T)`); their drafts in obj/parallel/census-batch7/repro/g were run through rustc 1.98.0 and this compiler before this declaration, so this is a regression record of that exploration. Each outcome follows the stated rule (every Drop impl bound, binder-scoped or not, must be implied by its nominal type's bounds; a const Drop impl's `[const]` bound is checked as the ordinary bound, and its fields must be const-destructible)",
+ "declaration_sha256": "65d4f2ba95c3347f24ceb7fcdcd8c1d064f5b34c93d0fb4026e8440ddf902565",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "plain-guard.rs": {
+   "sha256": "fbf02048c6a404b57d409fcefe987dba63e39bf0cf9bd9f9273d7b40b0477b4c",
+   "declared": 0,
+   "reason": "an ordinary Drop impl repeats its struct's paren-sugar bound `F: FnOnce(T)`, which this compiler keeps in a binder scope",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "core-const-guard.rs": {
+   "sha256": "59fc8be8b07ceab139d8b4efcfb00b4c3eed47c203d04c3eae1ed3cf40ab2967",
+   "declared": 0,
+   "reason": "core's DropGuard shape: a const Drop impl's `F: [const] FnOnce(T)` over ManuallyDrop fields is the struct's ordinary bound",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "higher-ranked-guard.rs": {
+   "sha256": "cb6d9c7112f8b68b1b4e8948ee737555da824c7ed1dd0f35a021eb3da34c3726",
+   "declared": 0,
+   "reason": "the repeated bound `F: FnOnce(&T)` is higher-ranked over the elided lifetime",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "added-bound.rs": {
+   "sha256": "88767779e1924aca134e7cd8e97015b34b65d9b46c254905aaf49d7d140a6560",
+   "declared": 1,
+   "reason": "opponent: the struct has no `F: FnOnce(T)` bound, so the Drop impl adds it (E0367)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0367"
+   ]
+  },
+  "stronger-output.rs": {
+   "sha256": "c255c90801b4ce914bee5c683c060a0d2eb89fbc558e906d2616ece3e0c964f4",
+   "declared": 1,
+   "reason": "opponent: the Drop impl requires `FnOnce(T) -> u8` where the struct requires `FnOnce(T)`, whose output is `()` (E0367)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0271",
+    "E0367"
+   ]
+  },
+  "added-higher-ranked.rs": {
+   "sha256": "68c89efeb1d9eca4e67a6da98e335c890167224af12d3d9f96c9058a1e2e865e",
+   "declared": 1,
+   "reason": "opponent: the Drop impl adds the higher-ranked `F: FnOnce(&T)` (E0367)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0367"
+   ]
+  },
+  "const-field-destruct.rs": {
+   "sha256": "92e12d5cb6c6791643d34eb929e67afb88969292231060457cee22f1ee44d425",
+   "declared": 1,
+   "reason": "opponent: a const Drop impl over plain `T` and `F` fields needs `T: [const] Destruct` (E0367)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0367"
+   ]
+  }
+ }
+}

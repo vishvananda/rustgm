@@ -81,6 +81,7 @@ pub(crate) fn destruct_predicate(
                         | Kind::Array { .. }
                         | Kind::ArrayTerm { .. }
                         | Kind::Slice(_)
+                        | Kind::Pattern { .. }
                         | Kind::Closure { .. }
                 )
             )))

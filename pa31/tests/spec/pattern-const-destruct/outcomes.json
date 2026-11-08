@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes. These shapes reduce census 8's fourth diagnostic record (core's `const impl<T: [const] Destruct, F> Drop for array::Drain`, whose `NonNull<T>` field holds `pattern_type!(*const T is !null)`); their drafts in obj/parallel/census-batch7/repro/g were run through rustc 1.98.0 and this compiler before this declaration, so this is a regression record of that exploration. Each outcome follows the stated rule (a pattern type is `[const] Destruct` exactly when its base type is)",
+ "declaration_sha256": "fe2c7d5c824553e1cbe1fc7ad2e4ddeb9a26abf3cdba1dd186bc4fd22f22befc",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "pattern-field.rs": {
+   "sha256": "3ce7d328fcc8785e410824e20d84f3b0e82dfbfc988a1c1ced01af3757076ae7",
+   "declared": 0,
+   "reason": "a const Drop impl's field is `pattern_type!(*const T is !null)`, whose raw pointer base is trivially const-destructible",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "nonnull-field.rs": {
+   "sha256": "449d47e081d606fe5582400b0afade09d8417ee9dd0a50123916ffd57fb6d14c",
+   "declared": 0,
+   "reason": "core's NonNull shape wraps that pattern field in a transparent struct",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "drain-fields.rs": {
+   "sha256": "d680246c844caf18d5e09fdf784b824821231ba0952d44b7a6592025b2428177",
+   "declared": 0,
+   "reason": "core's array Drain field shapes: NonNull, a raw pointer, a mutable reference and PhantomData",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "pointer-base-unbounded.rs": {
+   "sha256": "7ef8ef39530f6c78d10c4a5c92b5f959162319c02f2ecf5bd5148e76059126ea",
+   "declared": 0,
+   "reason": "the raw pointer base needs no `T: [const] Destruct`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "parameter-base-bounded.rs": {
+   "sha256": "efd269db7ebf5feeb03c0a794fa75b390fe9ea981475a534b2126cc6d0d0da29",
+   "declared": 0,
+   "reason": "a pattern over a type parameter base is const-destructible under `T: [const] Destruct`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "parameter-base-unbounded.rs": {
+   "sha256": "56737c5c796ffb7b2c9a50b1c5bf111139bc7bb76b3a36ca098b82ea8edfb5f3",
+   "declared": 1,
+   "reason": "opponent: without that bound the pattern over a type parameter base is not `[const] Destruct` (E0367)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0367"
+   ]
+  }
+ }
+}

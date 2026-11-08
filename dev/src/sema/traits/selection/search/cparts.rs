@@ -25,10 +25,12 @@ impl Search<'_> {
                 Components::List(fields),
                 goal.bound,
             ),
+            // A pattern type destroys exactly its base value.
             Some(
                 Kind::Array { element, .. }
                 | Kind::ArrayTerm { element, .. }
-                | Kind::Slice(element),
+                | Kind::Slice(element)
+                | Kind::Pattern { base: element, .. },
             ) => self.start_component_markers(
                 facts,
                 frame,

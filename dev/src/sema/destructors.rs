@@ -200,6 +200,20 @@ pub(super) fn check_bounds(
     }
     let mut components = crate::types::outlives::TypeComponents::default();
     for predicate in predicates {
+        // A binder-scoped trait bound adds no lifetime requirement here; only a
+        // quantified outlives body would need its own scoped region proof.
+        if let crate::types::parameters::clauses::Clause::ForAll(id) = predicate {
+            let body = types
+                .quantified(id)
+                .ok_or("invalid quantified Drop requirement")?;
+            if matches!(
+                body.predicate.bound,
+                crate::types::parameters::predicates::Bound::Outlives(_)
+            ) {
+                return Err("quantified clause requires a scoped consumer".into());
+            }
+            continue;
+        }
         let predicate = predicate.ordinary()?;
         let crate::types::parameters::predicates::Bound::Outlives(shorter) = predicate.bound else {
             continue;

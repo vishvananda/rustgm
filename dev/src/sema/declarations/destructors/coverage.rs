@@ -8,6 +8,10 @@ use crate::types::{
 
 use crate::sema::destructors::Coverage;
 
+#[cfg(test)]
+#[path = "../../../../tests/invariants/binder_drop_bounds.rs"]
+mod tests;
+
 #[derive(Clone, Copy)]
 pub(super) struct NominalContract {
     pub owner: DefId,
@@ -178,6 +182,7 @@ impl Checker<'_> {
     ) -> Result<Option<crate::sema::traits::obligations::Obligations>, super::Error> {
         use crate::types::parameters::{
             ParameterKind,
+            clauses::Clause,
             predicates::{Bound, Predicate},
         };
         let NominalContract {
@@ -199,14 +204,19 @@ impl Checker<'_> {
             coverage.regions.clone(),
         )
         .map_err(|e| self.error(key, e))?;
-        let mut requirements = self
-            .facts
-            .generics
-            .predicates_in_scope(scope)
-            .map(|p| p.value.ordinary())
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| self.error(key, e))?;
-        requirements.retain(|p| !matches!(p.bound, Bound::Outlives(_)));
+        // A binder-scoped bound, such as `F: FnOnce(T)`, stays quantified;
+        // only its region-free body is read here, never proved flat.
+        let mut requirements = Vec::new();
+        for predicate in self.facts.generics.predicates_in_scope(scope) {
+            let body = match predicate.value {
+                Clause::ForAll(id) => self.facts.types.quantified(id).map(|value| value.predicate),
+                clause => Some(clause.ordinary().map_err(|e| self.error(key, e))?),
+            }
+            .ok_or_else(|| self.error(key, "invalid quantified Drop requirement"))?;
+            if !matches!(body.bound, Bound::Outlives(_)) {
+                requirements.push(predicate.value);
+            }
+        }
         for parameter in self.facts.generics.parameters_in_scope(owner) {
             if let Argument::Type(ty) = parameter.argument
                 && let Some(Kind::Parameter(id)) = self.facts.types.kind(ty)
@@ -215,10 +225,10 @@ impl Checker<'_> {
                     Some(ParameterKind::Type { sized: true })
                 )
             {
-                requirements.push(Predicate {
+                requirements.push(Clause::Predicate(Predicate {
                     ty,
                     bound: Bound::Sized,
-                });
+                }));
             }
         }
         let environment = self
@@ -229,15 +239,18 @@ impl Checker<'_> {
             .cloned();
         let mut proof = crate::sema::nominals::Proof::for_declaration(environment, count, 1);
         let constant = self.const_drop_coverage_owner(owner, item, scope);
-        for mut requirement in requirements {
-            if constant && let Bound::MaybeConstTrait(application) = requirement.bound {
-                requirement.bound = Bound::Trait(application);
-            }
+        for requirement in requirements {
+            let requirement = if constant {
+                ordinary_trait(&mut self.facts.types, requirement)
+                    .map_err(|e| self.error(key, e))?
+            } else {
+                requirement
+            };
             let requirement = substitution
-                .predicate(&mut self.facts.types, requirement)
+                .clause(&mut self.facts.types, requirement)
                 .map_err(|e| self.error(key, e))?;
             if !proof
-                .prove(&mut self.facts, requirement)
+                .prove_clause(&mut self.facts, requirement)
                 .map_err(|e| self.error(key, e))?
             {
                 return Err(self.error(key, "Drop impl adds type requirements to its nominal type"));
@@ -336,4 +349,32 @@ impl Checker<'_> {
         }
         Ok(())
     }
+}
+
+/// A const Drop impl's `[const]` bound is checked against its nominal type as
+/// the ordinary trait bound, inside the same binder when it is quantified.
+fn ordinary_trait(
+    types: &mut crate::types::Store,
+    requirement: crate::types::parameters::clauses::Clause,
+) -> Result<crate::types::parameters::clauses::Clause, &'static str> {
+    use crate::types::parameters::{clauses::Clause, predicates::Bound};
+    Ok(match requirement {
+        Clause::Predicate(mut predicate) => {
+            if let Bound::MaybeConstTrait(application) = predicate.bound {
+                predicate.bound = Bound::Trait(application);
+            }
+            Clause::Predicate(predicate)
+        }
+        Clause::ForAll(id) => {
+            let mut value = types
+                .quantified(id)
+                .ok_or("invalid quantified Drop requirement")?;
+            let Bound::MaybeConstTrait(application) = value.predicate.bound else {
+                return Ok(requirement);
+            };
+            value.predicate.bound = Bound::Trait(application);
+            Clause::ForAll(types.intern_quantified(value)?)
+        }
+        Clause::UnstableFeature(_) => requirement,
+    })
 }

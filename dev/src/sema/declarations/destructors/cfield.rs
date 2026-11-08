@@ -9,6 +9,9 @@ use crate::{
         traits::Application,
     },
 };
+#[cfg(test)]
+#[path = "../../../../tests/invariants/destruct_patterns.rs"]
+mod tests;
 impl Checker<'_> {
     pub(super) fn validate_const_drop_fields(
         &mut self,
