@@ -36,6 +36,7 @@ pub(super) fn prepare(
     let mut parameters = Vec::with_capacity(rows.slots.len());
     let mut callables = Templates::default();
     let mut result = Vec::with_capacity(rows.functions.len());
+    let structs = super::definition_cells::struct_constructors(rows, budget)?;
     for (raw, scope) in rows.scopes.iter().zip(scopes) {
         budget.charge(1)?;
         while active.last().map(|a| a.owner) != scope.parent {
@@ -107,6 +108,7 @@ pub(super) fn prepare(
             facts,
             &mut callables,
             (raw.owner, scope.definition, &parameters[start..]),
+            &structs,
             budget,
         )?;
         active.push(Active {
@@ -121,8 +123,9 @@ pub(super) fn prepare(
     Ok((callables, result))
 }
 
-/// Version thirteen: each tuple variant of an enum scope is a callable
-/// constructor over its enum's own formals, as local declarations register it.
+/// Version thirteen: each tuple variant of an enum scope, and a tuple
+/// struct's constructor, is a callable constructor over its nominal's own
+/// formals, as local declarations register it.
 fn constructors(
     context: &mapped_source::Context<'_>,
     graph: &mapped_source::Graph,
@@ -133,33 +136,46 @@ fn constructors(
         DefId,
         &[ParameterId],
     ),
+    structs: &[Option<crate::support::crates::owner_catalog::DeclarationRef>],
     budget: &mut Headers,
 ) -> Result<(), Error> {
-    let (row, enumeration, parameters) = owner;
+    let (row, nominal, parameters) = owner;
     let rows = context.descriptor.rows();
-    if rows.enums().headers.is_empty() {
+    if rows.enums().headers.is_empty() && structs.iter().all(Option::is_none) {
         return Ok(());
     }
     budget.charge(2 + rows.enums().headers.len().checked_ilog2().unwrap_or(0) as usize)?;
-    let Ok(position) = rows
+    let Some(s::HeaderRef::Nominal(index)) = rows.header(row).map_err(error)? else {
+        return Ok(());
+    };
+    let header = &rows.nominals[index as usize];
+    let fields = header.fields.slice(&rows.fields).map_err(error)?;
+    let enumeration = rows
         .enums()
         .headers
         .binary_search_by_key(&row.0, |header| header.declaration.0)
-    else {
+        .ok();
+    // A unit struct is a value, never a called constructor.
+    let structure = match (enumeration, structs.get(index as usize)) {
+        (Some(_), _) => None,
+        (None, Some(Some(declaration))) if !fields.is_empty() => Some(*declaration),
+        (None, _) => return Ok(()),
+    };
+    let constructor = Constructor {
+        owner: nominal,
+        parameters,
+        result: graph.ty(header.self_type)?,
+        regions: super::definition_cells::nominal_regions(rows, header.self_type, budget)?,
+    };
+    if let Some(declaration) = structure {
+        let item = ItemId(context.definition(declaration, budget)?.0);
+        let payload = s::ConstructorPayload::Struct(fields);
+        return constructor.register(graph, facts, callables, (item, payload), budget);
+    }
+    let Some(position) = enumeration else {
         return Ok(());
     };
     let header = &rows.enums().headers[position];
-    let Some(s::HeaderRef::Nominal(index)) = rows.header(row).map_err(error)? else {
-        return Err(error(
-            "source enum constructor lost its actual nominal header",
-        ));
-    };
-    let result = graph.ty(rows.nominals[index as usize].self_type)?;
-    let regions = super::definition_cells::nominal_regions(
-        rows,
-        rows.nominals[index as usize].self_type,
-        budget,
-    )?;
     for variant in header
         .variants
         .slice(&rows.enums().variants)
@@ -170,6 +186,29 @@ fn constructors(
             continue;
         }
         let payload = variant.fields.slice(&rows.enums().fields).map_err(error)?;
+        let item = ItemId(context.definition(variant.declaration, budget)?.0);
+        let payload = s::ConstructorPayload::Variant(payload);
+        constructor.register(graph, facts, callables, (item, payload), budget)?;
+    }
+    Ok(())
+}
+/// One nominal's constructor frame: its formals, Self and late lifetimes.
+struct Constructor<'a> {
+    owner: DefId,
+    parameters: &'a [ParameterId],
+    result: TypeId,
+    regions: u32,
+}
+impl Constructor<'_> {
+    fn register(
+        &self,
+        graph: &mapped_source::Graph,
+        facts: &mut Declarations,
+        callables: &mut Templates,
+        (item, payload): (ItemId, s::ConstructorPayload<'_>),
+        budget: &mut Headers,
+    ) -> Result<(), Error> {
+        let (parameters, regions) = (self.parameters, self.regions);
         budget.reserve(
             parameters
                 .len()
@@ -181,15 +220,15 @@ fn constructors(
             graph,
             &mut facts.types,
             (payload, regions),
-            result,
+            self.result,
             budget,
         )?;
-        let item = ItemId(context.definition(variant.declaration, budget)?.0);
         if parameters.is_empty() && regions == 0 {
             callables.insert_monomorphic(&facts.types, item, signature)
         } else {
-            // As a local constructor template does, each late enum lifetime
-            // is relocated to the template's own frame before registration.
+            // As a local constructor template does, each late nominal
+            // lifetime is relocated to the template's own frame before
+            // registration.
             budget.charge(regions as usize)?;
             let mapping = (0..regions)
                 .map(|index| {
@@ -205,15 +244,14 @@ fn constructors(
             callables.insert_constructor(
                 &facts.types,
                 item,
-                ItemId(enumeration.0),
+                ItemId(self.owner.0),
                 template,
                 regions,
                 parameters,
             )
         }
-        .map_err(error)?;
+        .map_err(error)
     }
-    Ok(())
 }
 
 /// A callable without captured slots registers its public signature. Version

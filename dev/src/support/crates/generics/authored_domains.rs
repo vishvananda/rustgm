@@ -52,6 +52,9 @@ pub enum HeaderRef {
     AssociatedDefinition(u32),
     /// Version thirteen: one row of an enum's variant table.
     Variant(u32),
+    /// Version thirteen: a tuple or unit struct's constructor, by its
+    /// struct's nominal header row. It owns no row of its own.
+    Constructor(u32),
 }
 
 pub(crate) type HeaderRows = (Vec<Option<HeaderRef>>, usize, super::bodymap::Shared);

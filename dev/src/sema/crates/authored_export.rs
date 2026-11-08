@@ -602,6 +602,12 @@ impl Stage {
                         Err("source record variants require their wider profile")
                     };
                 }
+                // A tuple or unit struct's constructor is the variant
+                // declaration of its struct's single field group.
+                DefKind::Constructor if definition.namespace == Namespace::Value => {
+                    self.struct_constructor(report, facts, id)?;
+                    return Ok(Some(s::DefinitionKind::Variant));
+                }
                 _ => {}
             }
         }

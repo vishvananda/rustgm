@@ -176,7 +176,7 @@ impl Arena {
             .get(application.0 as usize)
             .ok_or("source applied signature has no actual application")?;
         // A called constructor's inputs are its payload and its result is its
-        // enum, both in the enum's own frame.
+        // enum or struct, both in that nominal's own frame.
         let (parameters, result, flags) = match domains.target(raw.declaration.declaration, work)? {
             Target::Function(header) => (
                 Parameters::Roots(header.callable.parameters.slice(&rows.roots)?),
@@ -234,11 +234,12 @@ impl Arena {
         Ok(template)
     }
 }
-/// A target's input recipes: a function's signature roots or a variant's payload.
+/// A target's input recipes: a function's signature roots or a constructor's
+/// payload.
 #[derive(Clone, Copy)]
 enum Parameters<'rows> {
     Roots(&'rows [g::TypeRef]),
-    Payload(&'rows [s::VariantField]),
+    Payload(s::ConstructorPayload<'rows>),
 }
 impl Parameters<'_> {
     const fn len(self) -> usize {
@@ -250,7 +251,7 @@ impl Parameters<'_> {
     fn get(self, index: usize) -> Result<g::TypeRef, &'static str> {
         match self {
             Self::Roots(roots) => roots.get(index).copied(),
-            Self::Payload(fields) => fields.get(index).map(|field| field.ty),
+            Self::Payload(fields) => fields.ty(index),
         }
         .ok_or("source applied signature input is outside its target")
     }

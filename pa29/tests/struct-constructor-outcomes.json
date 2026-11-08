@@ -1,0 +1,276 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+ "providers": [
+  {
+   "file": "spec/struct-constructors/provider.rs",
+   "sha256": "f9ac0852d76fcd8f05c94d6790c51544d8ed2c7e771dded553485ae01fd86c73"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "development_note": "the provider shapes and most client shapes were probed with the candidate during development (generated files under obj/parallel/struct-ctors, not these fixtures); the fixtures, their outcomes and every generated and wire control below were written down before any rustc or RustGM run of these files",
+ "cases": [
+  {
+   "file": "spec/struct-constructors/called.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "df420befb493cbd9afde1421287e6dfcd1d836864ab17825f8007859837d0b8f"
+  },
+  {
+   "file": "spec/struct-constructors/direct.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "763ba4d949ad069e2dbf7a0bfcf8ff8c0b1771865cbabad4e87b7d04a9e58d2c"
+  },
+  {
+   "file": "spec/struct-constructors/pattern.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "2fb2584560518b17a74ba9ed7f1d51753101854b8df9fd1991d2e89cb01b1035"
+  },
+  {
+   "file": "spec/struct-constructors/method.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "c09b1082efa2988e61600569f7c1508d9c4e52b2c6618212e7ecd60fd73c3f2b"
+  },
+  {
+   "file": "spec/struct-constructors/generic.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "e07bf1faf5c91c5b3d1b3ca262aa286476136601380eba8c6e6d901557fdbb92"
+  },
+  {
+   "file": "spec/struct-constructors/unit.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "86ac0aeea980961707c8eebbce61e26b2330181fc8567fd8292bd45cf3a75330"
+  },
+  {
+   "file": "spec/struct-constructors/imported.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "5d344f6cc5bb43b98c7f4fd35fae9623dc14487086c3dd53d65adef11a485d5c"
+  },
+  {
+   "file": "spec/struct-constructors/braced.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "e18bddbc4f0bebe2a071bf12494debda4e97775cf9b25097aac15619d7b34dda"
+  },
+  {
+   "file": "spec/struct-constructors/constant.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "f07343bd2c64bfd6e4ff7e7984efa5e3def3ac9aba96411038b53d5bd101b436"
+  },
+  {
+   "file": "spec/struct-constructors/held.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "d806ee99ac73f7155f0e2fe485524a1fa487be0a66be974bfa3aaacd7c2ee8b5"
+  },
+  {
+   "file": "spec/struct-constructors/secret.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "cc1feb1f21b6d8eb453718631700e779a2bb6b73249d81152a302f1daad4351c"
+  },
+  {
+   "file": "spec/struct-constructors/private-constructor.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_error": "E0603",
+   "candidate_diagnostic": "private value name `Secret`",
+   "sha256": "50ed2c872dee115c583ca6fcd5d77892e42202d1f79514c3966bfbfaee5c649a"
+  },
+  {
+   "file": "spec/struct-constructors/private-field.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_error": "E0616",
+   "candidate_diagnostic": "aggregate field is private",
+   "sha256": "df9430d7c77ca7cebadab4d621aa2bf2578c4ec1fc58a95357a4677d2c9f9275"
+  },
+  {
+   "file": "spec/struct-constructors/private-pattern.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_error": "E0603",
+   "candidate_diagnostic": "private value name `Secret`",
+   "sha256": "2bbabbf29c87acbdd64d0f326f91290e7edcb6f1749b4da5e846da7869aee6f0"
+  },
+  {
+   "file": "spec/struct-constructors/private-braced.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_error": "E0451",
+   "candidate_diagnostic": "aggregate field is private",
+   "sha256": "4f18d504b0d6595fbbc329fe3847e86240244a9e77f86bcb84b0048198dfebba"
+  },
+  {
+   "file": "spec/struct-constructors/crate-field.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_error": "E0603",
+   "candidate_diagnostic": "private value name `Narrow`",
+   "sha256": "ccdc7225a0efeee284f068eda83ff421b2aa84a17dd58b0b74f42db16a072fea"
+  },
+  {
+   "file": "spec/struct-constructors/wrong-arity.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_error": "E0061",
+   "candidate_diagnostic": "call argument count mismatch",
+   "sha256": "6ba96978df6367563725c7c29ef79d1af52721a4698e6b2f411f2ad87365757f"
+  },
+  {
+   "file": "spec/struct-constructors/wrong-payload.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_error": "E0308",
+   "candidate_diagnostic": "incompatible types",
+   "sha256": "95e649c5e438d86c8f033bffc4db48cb50444b35e853baeef169053e9ea3b288"
+  },
+  {
+   "file": "spec/struct-constructors/unit-call.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_error": "E0618",
+   "candidate_diagnostic": "call requires a known function type",
+   "sha256": "4bb5ff1b5e20c6572b884bf543a6cebf58b4422c5f7e99c7497dcc140152f52a"
+  },
+  {
+   "file": "spec/struct-constructors/held-escape.rs",
+   "provider": "spec/struct-constructors/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "required_rustc_error": "E0597",
+   "candidate_diagnostic": "access conflicts with a live reference loan",
+   "sha256": "445462dcfed8be67fbf9ccaae7c0f75887109bfc0fdcd9f971ff2dcc2f2e3fdc"
+  }
+ ],
+ "deviations": [
+  "lines 1-147 of spec/lifetime-nominals/provider.rs are reused unchanged; the struct-constructor section after them is authored",
+  "`Held::get` takes `self` by value because the shared lines declare no `Copy` for `&T`, so `self.0` through `&self` would be E0507 in rustc as well",
+  "clients compare results with nested literal matches",
+  "the `use base::*` glob form is not a client: a glob of an extern crate root is rejected before this checkpoint (`glob target is not a module or enum`, also on main) and belongs to the shim-glob work"
+ ],
+ "generated_controls": [
+  {
+   "control": "the full provider exported under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected by name with `named, associated or generic alias transport requires its wider profile`, as the shared lines already require version 13"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `pub struct Wrap(pub u8); pub fn wrap(x: u8) -> Wrap { Wrap(x) }` under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected by name with main's `source declaration kind is outside the initial source profile` under both older profiles; exported under version 13, with a client reading `base::wrap(42).0` and one reading `base::Wrap(42).0` accepted"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `pub struct Unit; pub fn unit() -> Unit { Unit }` under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected by name with main's `source declaration kind is outside the initial source profile` under both older profiles"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `pub struct Empty(); pub fn empty() -> Empty { Empty() }`, under version 13",
+   "expected": "rejected by name with `source empty tuple struct constructors require their wider profile`: the empty tuple form keeps the unit form's empty field rows"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `#[non_exhaustive] pub struct Open(pub u8); pub fn open(x: u8) -> Open { Open(x) }`, under version 13",
+   "expected": "rejected by name with `source non_exhaustive struct constructors require their wider profile`: no row carries the crate-wide narrowing"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `#[lang = \"phantom_data\"] pub struct PhantomData<T: PointeeSized>;` and `pub fn phantom() -> PhantomData<u8> { PhantomData }`, under version 13",
+   "expected": "rejected by name with main's `source Pointee contract transport is not implemented`: the PhantomData role does not transport"
+  },
+  {
+   "control": "6, 24 and 96 generated tuple structs `pub struct WNNN(pub u8);` with `pub fn wNNN(x: u8) -> WNNN { WNNN(x) }`, after the shared lines, and one client calling `base::W005(42)` and `base::w005(42)`",
+   "expected": "packet bytes grow exactly linearly; the client LowIR stays bounded"
+  }
+ ],
+ "wire_controls": [
+  {
+   "mutation": "none: a generated minimal provider (spec/source-nominals/provider.rs plus `Tup(pub u8)`, `Two(pub u8)`, `Rec { pub x: u8 }`, `enum Sum { One(u8) }` and `m::n::Sec(pub(super) u8)` with `m::n::sec`) and a client destructuring `base::Tup(42)`",
+   "expected": "accepted"
+  },
+  {
+   "mutation": "`Tup`'s constructor declaration re-parented to the record struct `Rec`",
+   "expected": "source record struct has no constructor"
+  },
+  {
+   "mutation": "`Two`'s constructor declaration re-parented to `Tup`",
+   "expected": "source struct has a second constructor",
+   "amended": {
+    "observed_first": "`source lexical child has a foreign kind, gap or duplicate ordinal`: the moved declaration keeps its lexical ordinal 0, which duplicates `Tup`'s own constructor, and the declaration graph rejects it before the constructor check",
+    "expected": "source lexical child has a foreign kind, gap or duplicate ordinal",
+    "added": "a second row re-parents it with the next lexical ordinal 1 and expects the declared `source struct has a second constructor`; observed as expected",
+    "reason": "integrator decision 3: a forged row may be rejected by name by an earlier identity check"
+   }
+  },
+  {
+   "mutation": "the enum variant `Sum::One` re-parented to the struct `Tup`",
+   "expected": "source variant changed its actual enum owner, ordinal or fields",
+   "amended": {
+    "observed_first": "`source lexical child has a foreign kind, gap or duplicate ordinal`, for the same duplicate ordinal 0",
+    "expected": "source lexical child has a foreign kind, gap or duplicate ordinal",
+    "added": "a second row re-parents it with the next lexical ordinal 1 and expects the declared `source variant changed its actual enum owner, ordinal or fields`; observed as expected",
+    "reason": "integrator decision 3"
+   }
+  },
+  {
+   "mutation": "`Tup`'s constructor declaration renamed `Tuq`",
+   "expected": "source struct constructor changed its struct's name"
+  },
+  {
+   "mutation": "`Sec`'s constructor binding visibility widened from `m` to the crate root",
+   "expected": "source struct constructor visibility differs from its struct and fields"
+  },
+  {
+   "mutation": "`Sec`'s constructor declaration made public and its binding visibility widened from `m` to public (the binding row loses its four-byte module)",
+   "expected": "source struct constructor visibility differs from its struct and fields",
+   "declared": "added after the first candidate run of the fixtures and before any run of this mutation"
+  },
+  {
+   "mutation": "`Rec`'s field `x` renamed `0`",
+   "expected": "source tuple struct fields require its constructor"
+  },
+  {
+   "mutation": "relabelled version 12",
+   "expected": "unknown source declaration kind"
+  },
+  {
+   "mutation": "every strict prefix",
+   "expected": "fails to decode"
+  }
+ ],
+ "native": {
+  "expected": "all eleven accepted clients exit 42 natively, as rustc's do"
+ },
+ "observed": {
+  "oracle": "rustc 1.98.0 (88d9e12ae 2026-08-18), one round: the provider compiles; the eleven accepted clients exit 42; private-constructor, private-pattern and crate-field fail with E0603, private-field with E0616, private-braced with E0451, wrong-arity with E0061, wrong-payload with E0308, unit-call with E0618 and held-escape with E0597, as declared",
+  "candidate": "all twenty outcomes as declared, with the declared RustGM diagnostics",
+  "native": "all eleven accepted clients exit 42 natively with empty stdout",
+  "wire_controls": "as declared, with the two lexical-ordinal amendments"
+ }
+}

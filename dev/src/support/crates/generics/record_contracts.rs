@@ -46,7 +46,18 @@ pub(super) fn require_profile(
         return Err("source nominal contracts require their explicit version-ten profile");
     }
     if !profile.body_nodes() {
-        work.charge(rows.slots.len())?;
+        work.charge(rows.slots.len().saturating_add(rows.fields.len()))?;
+        // Positional field names are version thirteen's tuple structs.
+        if rows.nominals.iter().any(|header| {
+            header.fields.slice(&rows.fields).is_ok_and(|fields| {
+                fields
+                    .iter()
+                    .enumerate()
+                    .any(|(ordinal, field)| super::positional(&field.name, ordinal))
+            })
+        }) {
+            return Err("invalid canonical metadata path component");
+        }
         if rows.slots.iter().any(|slot| {
             slot.kind == super::ParameterKind::Region
                 && rows
@@ -113,7 +124,11 @@ pub(super) fn headers(
             {
                 return Err("source nominal field visibility has a foreign actual module");
             }
-            crate::support::crates::identity::validate_component(&field.name)?;
+            // Version thirteen: a tuple struct names its fields by their
+            // ordinals; its constructor binding re-checks the whole group.
+            if !super::positional(&field.name, ordinal) {
+                crate::support::crates::identity::validate_component(&field.name)?;
+            }
         }
         let Some(Type::Nominal {
             declaration: address,

@@ -165,7 +165,8 @@ impl<'rows> Mapping<'rows> for Borrowed<'rows, '_, '_> {
             | s::HeaderRef::Nominal(_)
             | s::HeaderRef::AssociatedType(_)
             | s::HeaderRef::AssociatedDefinition(_)
-            | s::HeaderRef::Variant(_) => {
+            | s::HeaderRef::Variant(_)
+            | s::HeaderRef::Constructor(_) => {
                 Err("private schema requires its actual trait or implementation")
             }
         }

@@ -31,11 +31,13 @@ impl Graph {
             }
             Some(s::HeaderRef::Trait(index)) => Some(rows.traits[index as usize].self_definition),
             // A called constructor, like a local one, owns no generic scope:
-            // its enum's premises arrive through the enum type's own inputs.
+            // its enum's or struct's premises arrive through that type's own
+            // inputs.
             Some(
                 s::HeaderRef::Implementation(_)
                 | s::HeaderRef::Nominal(_)
-                | s::HeaderRef::Variant(_),
+                | s::HeaderRef::Variant(_)
+                | s::HeaderRef::Constructor(_),
             ) => None,
             Some(s::HeaderRef::AssociatedDefinition(_)) => raw.definition.parent,
             None if raw.definition.kind == s::DefinitionKind::SelfType => None,
@@ -121,9 +123,13 @@ impl Graph {
                     "source function omitted its actual canonical input/header installation",
                 );
             }
-            // An implementation's result definition and a variant constructor
-            // declare no inputs of their own.
-            Some(s::HeaderRef::AssociatedDefinition(_) | s::HeaderRef::Variant(_)) => {
+            // An implementation's result definition and a variant or struct
+            // constructor declare no inputs of their own.
+            Some(
+                s::HeaderRef::AssociatedDefinition(_)
+                | s::HeaderRef::Variant(_)
+                | s::HeaderRef::Constructor(_),
+            ) => {
                 return Ok(Some(&[]));
             }
             None if raw.definition.kind == s::DefinitionKind::SelfType => {

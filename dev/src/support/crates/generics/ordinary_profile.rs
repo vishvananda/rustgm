@@ -828,7 +828,14 @@ fn role_header(
             | Some(super::super::HeaderRef::Function(_) | super::super::HeaderRef::Implementation(_)),
         ) => return Err("source role has a different actual declaration/header kind"),
         (_, Some(super::super::HeaderRef::Trait(_))) => {}
-        (_, Some(super::super::HeaderRef::Nominal(_) | super::super::HeaderRef::Variant(_))) => {
+        (
+            _,
+            Some(
+                super::super::HeaderRef::Nominal(_)
+                | super::super::HeaderRef::Variant(_)
+                | super::super::HeaderRef::Constructor(_),
+            ),
+        ) => {
             return Err("ordinary source roles cannot claim a nominal declaration");
         }
     }

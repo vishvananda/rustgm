@@ -5,6 +5,21 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [tuple and unit struct constructors](parallel/struct-constructors-transport.md)
+is joined on main. Version 13 carries a tuple or unit
+struct's constructor with no new tag or shape. It is the struct's only kind-11
+variant declaration, bound in the struct's module value namespace, and tuple
+fields are named by their ordinals. It extends Lane B's variant-binding
+dispatch, whose struct-parent branch now binds the constructor. A fresh
+consumer re-derives the constructor's shape, payload, name and visibility from the struct. The
+visibility is the narrowest of the struct's and its fields', as rustc computes
+it. Consumers call, read, destructure and match imported constructors and
+reject narrowed ones as rustc does (E0603, E0616, E0451). Eleven clients run
+natively and exit 42. Older profiles keep main's gate by name. `struct T();`,
+`#[non_exhaustive]` tuple and unit structs and the `phantom_data` role stay
+fenced by name, so core's `PhantomData` is still blocked on the Pointee
+contract.
+
 Lane A [census batch 8](parallel/census-batch8.md) repairs census 8's crate
 record and the one after it. Census 9 (`10c45c62`, from `97110f230` on main
 `4a9a3441f`) checks 42,310 declarations, with none failed or blocked. Its one

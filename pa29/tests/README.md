@@ -312,3 +312,20 @@ packet under `spec/unique-writes/`. The packet holds:
   dereference rows and a 6/24/96 scaling control.
 
 The `crate_linking::unique_writes` integration controls consume it.
+
+`struct-constructor-outcomes.json` freezes the version-thirteen tuple and unit
+struct constructor packet under `spec/struct-constructors/`. The packet holds:
+
+- a monomorphic and a generic tuple struct, a unit struct, a lifetime tuple
+  struct whose impl captures its lifetime, and two structs whose private or
+  crate-visible field narrows their constructors;
+- provider calls, field reads, destructuring and `Self(..)`, and client
+  calls, paths, renamed imports, function values, braced literals and
+  patterns, constants and unit values;
+- eleven accepted clients and nine opponents (three E0603, E0616, E0451,
+  E0061, E0308, E0618 and E0597);
+- generated controls: older-profile constructor gates, fenced empty tuple,
+  non_exhaustive and PhantomData forms, forged parent, name, visibility and
+  field rows and a 6/24/96 scaling control.
+
+The `crate_linking::struct_constructors` integration controls consume it.

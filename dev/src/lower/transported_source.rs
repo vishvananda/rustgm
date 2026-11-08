@@ -403,6 +403,7 @@ impl Source {
         definition: crate::resolve::model::DefId,
     ) -> Result<bool, &'static str> {
         self.stage.charge(1)?;
+        // A tuple struct's constructor is its single variant's, as locally.
         Ok(facts
             .members
             .constructor(definition)
@@ -410,7 +411,13 @@ impl Source {
                 facts
                     .aggregates
                     .get(facts.members.variants[variant.0 as usize].owner)
-                    .is_some_and(|nominal| nominal.kind == crate::types::aggregate::Kind::Enum)
+                    .is_some_and(|nominal| {
+                        matches!(
+                            nominal.kind,
+                            crate::types::aggregate::Kind::Enum
+                                | crate::types::aggregate::Kind::Struct
+                        )
+                    })
             }))
     }
     fn collect_body(
@@ -435,7 +442,7 @@ impl Source {
         };
         // Version thirteen: a variant constructor is compiler-synthesized, not
         // an authored original; every consumer synthesizes its own from the
-        // re-authenticated enum header.
+        // re-authenticated enum or struct header.
         if self.stage.body_nodes() && self.synthesized_variant(facts, definition)? {
             return Ok(());
         }

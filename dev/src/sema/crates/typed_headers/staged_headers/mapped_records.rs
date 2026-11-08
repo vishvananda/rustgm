@@ -44,7 +44,8 @@ pub(super) fn prepare(
     let mut shapes = Vec::with_capacity(rows.nominals.len());
     let mut owners = Vec::with_capacity(rows.nominals.len());
     let (mut enum_members, mut enum_shapes) = (Vec::new(), Vec::new());
-    for row in &rows.nominals {
+    let constructors = super::definition_cells::struct_constructors(rows, budget)?;
+    for (row, constructor) in rows.nominals.iter().zip(constructors) {
         let owner = context.definition(row.declaration, budget)?;
         if let Ok(index) = rows
             .enums()
@@ -64,13 +65,12 @@ pub(super) fn prepare(
             owners.push(owner);
             continue;
         }
-        let (fields, types) = record_fields(
-            graph,
-            facts,
-            budget,
-            owner,
-            row.fields.slice(&rows.fields).map_err(error)?,
-        )?;
+        let raw_fields = row.fields.slice(&rows.fields).map_err(error)?;
+        let (fields, types) = if constructor.is_some() {
+            positional_fields(graph, budget, owner, raw_fields)?
+        } else {
+            record_fields(graph, facts, budget, owner, raw_fields)?
+        };
         let fields_type = facts.types.intern_list(&types).map_err(error)?;
         let repr = aggregate::Repr {
             representation: match row.repr {
@@ -79,7 +79,26 @@ pub(super) fn prepare(
             },
             ..aggregate::Repr::default()
         };
-        members.push((ItemId(owner.0), fields));
+        // Version thirteen: a tuple or unit struct publishes its single field
+        // group with its constructor, as an enum publishes each variant's.
+        if let Some(constructor) = constructor {
+            let shape = if fields.is_empty() {
+                Shape::Unit
+            } else {
+                Shape::Tuple
+            };
+            let constructor = context.definition(constructor, budget)?;
+            enum_members.push((
+                ItemId(owner.0),
+                vec![ExternalVariant {
+                    shape,
+                    fields,
+                    constructor,
+                }],
+            ));
+        } else {
+            members.push((ItemId(owner.0), fields));
+        }
         shapes.push((ItemId(owner.0), repr, fields_type));
         owners.push(owner);
     }
@@ -145,6 +164,38 @@ fn record_fields(
             access: if field.visibility
                 == crate::support::crates::generics::source::ModuleVisibility::Public
             {
+                Access::Public
+            } else {
+                Access::ExternalPrivate
+            },
+        });
+        types.push(ty);
+    }
+    Ok((fields, types))
+}
+/// A tuple struct's fields, named by their ordinals, with their canonical
+/// types and access.
+fn positional_fields(
+    graph: &mapped_source::Graph,
+    budget: &mut Headers,
+    owner: DefId,
+    raw_fields: &[s::NominalField],
+) -> Result<(Vec<Field>, Vec<crate::types::TypeId>), Error> {
+    budget.charge(raw_fields.len())?;
+    budget.reserve(
+        raw_fields
+            .len()
+            .saturating_mul(4 * (size_of::<Field>() + size_of::<crate::types::TypeId>())),
+    )?;
+    let mut fields = Vec::with_capacity(raw_fields.len());
+    let mut types = Vec::with_capacity(raw_fields.len());
+    for (index, field) in (0_u32..).zip(raw_fields) {
+        let ty = graph.ty(field.ty)?;
+        fields.push(Field {
+            origin: Origin::External(owner),
+            name: Name::Index(index),
+            ty,
+            access: if field.visibility == s::ModuleVisibility::Public {
                 Access::Public
             } else {
                 Access::ExternalPrivate

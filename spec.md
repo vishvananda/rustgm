@@ -6455,6 +6455,32 @@ every dereference and reject such a write by name. No write proof is
 transported: each consumer recomputes write access over the rebuilt places,
 and its own borrow checker proves every write and loan.
 
+A version-thirteen struct may also have a tuple or unit form. Its constructor
+is a kind-11 declaration parented by the struct and carrying the struct's
+name. It is published in the struct's module value namespace, next to the
+struct's own type binding, and no enum column describes it. A tuple struct's
+fields are named by their ordinals in canonical decimal (`0`, `1`, ...), which
+no record field can spell, and a unit struct has no fields. Nothing else about
+the constructor travels. A consumer re-derives its shape, payload, name and
+visibility from its struct:
+
+- a struct-parented variant is its struct's only one;
+- every field of its struct is named by its ordinal;
+- its name is its struct's;
+- its binding visibility is exactly the narrowest of the struct's binding and
+  its fields' visibilities, as rustc computes a constructor's.
+
+A struct whose fields are named by ordinals has a constructor, and a record
+struct has none. A tuple constructor's callable signature is
+`fn(fields..) -> Struct` over the struct's formals and regions, as a tuple
+variant's is, and a unit constructor is a value of the struct's type. Its
+calls, paths and patterns use the existing function application, aggregate and
+constructor-test rows, and constructor bodies are synthesized from the
+re-authenticated struct header. Older profiles reject a constructor
+declaration by name. `struct T();`, tuple and unit structs marked
+`#[non_exhaustive]` and the `phantom_data` role stay rejected by name. Packets
+without tuple or unit structs keep their exact bytes.
+
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core
 profile. A crate that exports no macros writes no envelope and keeps its exact

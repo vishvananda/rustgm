@@ -180,6 +180,7 @@ impl ModuleContractColumns {
                 return Err("source field visibility is not an actual ancestor of its owner");
             }
         }
+        result.constructor_visibilities(rows, headers, work)?;
         Ok((result, bytes, bytes.saturating_add(scratch)))
     }
     pub(super) const fn view(&self) -> ModuleContractView<'_> {
@@ -251,7 +252,8 @@ impl ModuleContractColumns {
                     | s::DefinitionKind::Struct
                     | s::DefinitionKind::Enum
                     | s::DefinitionKind::Function
-            ) && row.definition.parent.is_some_and(|p| {
+                    | s::DefinitionKind::Variant
+            ) && binding_owner(rows, row).is_some_and(|p| {
                 rows.declarations[p.0 as usize].definition.kind == s::DefinitionKind::Module
             }) && !direct[index]
             {
@@ -260,8 +262,81 @@ impl ModuleContractColumns {
         }
         Ok(())
     }
+    /// Version thirteen: a struct constructor's visibility is re-derived as
+    /// rustc derives it, never read from its row: the narrowest of its
+    /// struct's and its fields' visibilities. Its direct binding follows its
+    /// struct's own in canonical order.
+    fn constructor_visibilities(
+        &self,
+        rows: &SourceRows,
+        headers: &HeaderIndex<'_>,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let bindings = &self.rows.namespace.bindings;
+        for (index, entry) in bindings.iter().enumerate() {
+            work.charge(1)?;
+            let target = rows
+                .declarations
+                .get(entry.target.declaration.0 as usize)
+                .ok_or("module target declaration is absent")?;
+            if entry.source != BindingSource::Declaration
+                || target.definition.kind != s::DefinitionKind::Variant
+            {
+                continue;
+            }
+            let owner = target
+                .definition
+                .parent
+                .ok_or("source struct constructor lost its struct")?;
+            let declared = index
+                .checked_sub(1)
+                .and_then(|previous| bindings.get(previous))
+                .filter(|binding| {
+                    binding.module == entry.module
+                        && binding.name == entry.name
+                        && binding.namespace == Namespace::Type
+                        && binding.target.declaration == owner
+                        && binding.source == BindingSource::Declaration
+                })
+                .ok_or("source struct constructor lacks its struct's direct binding")?;
+            let Some(s::HeaderRef::Nominal(nominal)) = headers.header(owner, work)? else {
+                return Err("source struct constructor lacks its struct's nominal header");
+            };
+            let mut expected = declared.visibility;
+            for field in rows.nominals[nominal as usize].fields.slice(&rows.fields)? {
+                work.charge(1)?;
+                expected = self.narrower(expected, field.visibility)?;
+            }
+            if entry.visibility != expected {
+                return Err(
+                    "source struct constructor visibility differs from its struct and fields",
+                );
+            }
+        }
+        Ok(())
+    }
+    fn narrower(
+        &self,
+        left: ModuleVisibility,
+        right: ModuleVisibility,
+    ) -> Result<ModuleVisibility, &'static str> {
+        Ok(match (left, right) {
+            (ModuleVisibility::Public, other) | (other, ModuleVisibility::Public) => other,
+            (ModuleVisibility::Within(first), ModuleVisibility::Within(second)) => {
+                if self.index.within(first, second)? {
+                    left
+                } else if self.index.within(second, first)? {
+                    right
+                } else {
+                    return Err("source constructor visibilities are not nested");
+                }
+            }
+        })
+    }
     /// Version thirteen admits a re-exported variant: one value-namespace row
-    /// naming its constructor declaration, never its type-namespace alias.
+    /// naming its constructor declaration, never its type-namespace alias. A
+    /// tuple or unit struct's constructor binds directly in its struct's
+    /// module value namespace.
     fn binding(
         &self,
         rows: &SourceRows,
@@ -306,7 +381,7 @@ impl ModuleContractColumns {
             ModuleVisibility::Public => {}
         }
         if entry.source == BindingSource::Declaration
-            && (target.definition.parent != Some(entry.module)
+            && (binding_owner(rows, target) != Some(entry.module)
                 || target.name.as_deref() != Some(entry.name.as_str())
                 || target.public != matches!(entry.visibility, ModuleVisibility::Public))
         {
@@ -386,7 +461,8 @@ impl ModuleContractColumns {
     }
 }
 /// A constructor binding is re-derived from its installed parent: an enum's
-/// variant binds its value constructor. Struct constructors need a wider profile.
+/// variant binds its value constructor, and a tuple or unit struct's
+/// constructor binds in its struct's module value namespace.
 fn constructor_namespace(
     rows: &SourceRows,
     target: &s::Declaration,
@@ -397,12 +473,21 @@ fn constructor_namespace(
         .and_then(|parent| rows.declarations.get(parent.0 as usize))
         .ok_or("variant module binding has no installed parent")?;
     match parent.definition.kind {
-        s::DefinitionKind::Enum => Ok(Namespace::Value),
-        s::DefinitionKind::Struct => {
-            Err("source struct constructor bindings require their wider constructor profile")
-        }
-        _ => Err("variant module binding parent is not an enum"),
+        s::DefinitionKind::Enum | s::DefinitionKind::Struct => Ok(Namespace::Value),
+        _ => Err("variant module binding parent is not an enum or struct"),
     }
+}
+/// The module a declaration is directly bound in: its parent, or for a struct
+/// constructor its struct's parent.
+fn binding_owner(rows: &SourceRows, row: &s::Declaration) -> Option<DeclarationRef> {
+    let parent = row.definition.parent?;
+    if row.definition.kind != s::DefinitionKind::Variant {
+        return Some(parent);
+    }
+    let owner = rows.declarations.get(parent.0 as usize)?;
+    (owner.definition.kind == s::DefinitionKind::Struct)
+        .then_some(owner.definition.parent)
+        .flatten()
 }
 fn site(rows: &SourceRows, owner: DeclarationRef, site: u32) -> Result<(), &'static str> {
     if rows

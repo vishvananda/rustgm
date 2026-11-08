@@ -2,7 +2,9 @@
 //! The enum's `NominalHeader` keeps its contract, frame, Self and premises with
 //! an empty field range; these columns own its variants, discriminants and
 //! payload fields. Every consumer re-proves them before any storage exists.
-use super::{Declaration, DefinitionKind, HeaderRef, Profile, SourceRows};
+use super::{
+    Declaration, DefinitionKind, HeaderRef, NominalField, NominalHeader, Profile, SourceRows,
+};
 use crate::support::{
     crates::{
         RecordRepr, Scalar, ScalarValue,
@@ -74,31 +76,72 @@ impl EnumHeader {
         self.tag.unwrap_or(Scalar::Isize)
     }
 }
-/// Version thirteen: a called tuple-variant constructor. Its function
-/// application names the variant declaration; its type formals are its enum's
-/// and its signature is `fn(payload..) -> Enum`, read from these rows only.
+/// Version thirteen: a called tuple-variant or tuple-struct constructor. Its
+/// function application names the variant declaration; its type formals are
+/// its enum's or struct's and its signature is `fn(payload..) -> Self`, read
+/// from these rows only.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Constructor {
-    pub variant: VariantHeader,
-    /// The enum's nominal header row.
+    /// The enum's variant row, or `None` for a tuple struct, whose payload is
+    /// its struct's own ordinal-named fields.
+    pub variant: Option<VariantHeader>,
+    /// The enum's or struct's nominal header row.
     pub nominal: u32,
+}
+/// A called constructor's positional payload rows.
+#[derive(Clone, Copy)]
+pub enum ConstructorPayload<'rows> {
+    Variant(&'rows [VariantField]),
+    Struct(&'rows [NominalField]),
+}
+impl ConstructorPayload<'_> {
+    #[must_use]
+    pub const fn len(self) -> usize {
+        match self {
+            Self::Variant(fields) => fields.len(),
+            Self::Struct(fields) => fields.len(),
+        }
+    }
+    #[must_use]
+    pub const fn is_empty(self) -> bool {
+        self.len() == 0
+    }
+    /// The payload field at `index`, in its owner's own frame.
+    #[must_use]
+    pub fn ty(self, index: usize) -> Option<TypeRef> {
+        match self {
+            Self::Variant(fields) => fields.get(index).map(|field| field.ty),
+            Self::Struct(fields) => fields.get(index).map(|field| field.ty),
+        }
+    }
 }
 impl Constructor {
     /// The constructor a call target names, or `None` for any non-variant
-    /// target. A unit variant is a value, never a called constructor.
+    /// target. A unit variant or unit struct is a value, never a called
+    /// constructor.
     /// # Errors
-    /// Rejects unit variants, unknown rows and a variant without its enum.
+    /// Rejects unit constructors, unknown rows and a variant without its owner.
     pub fn of(
         (enums, declarations): (&EnumColumns, &[Declaration]),
         declaration: DeclarationRef,
         mut header: impl FnMut(DeclarationRef) -> Result<Option<HeaderRef>, &'static str>,
     ) -> Result<Option<Self>, &'static str> {
-        // Packets without enums name no variant and pay nothing here.
-        if enums.variants.is_empty() {
+        // Packets without variant declarations pay nothing here.
+        if declarations
+            .get(declaration.0 as usize)
+            .is_none_or(|row| row.definition.kind != DefinitionKind::Variant)
+        {
             return Ok(None);
         }
-        let Some(HeaderRef::Variant(index)) = header(declaration)? else {
-            return Ok(None);
+        let index = match header(declaration)? {
+            Some(HeaderRef::Variant(index)) => index,
+            Some(HeaderRef::Constructor(nominal)) => {
+                return Ok(Some(Self {
+                    variant: None,
+                    nominal,
+                }));
+            }
+            _ => return Ok(None),
         };
         let variant = *enums
             .variants
@@ -114,7 +157,32 @@ impl Constructor {
         let Some(HeaderRef::Nominal(nominal)) = header(owner)? else {
             return Err("source constructor enum has no nominal header");
         };
-        Ok(Some(Self { variant, nominal }))
+        Ok(Some(Self {
+            variant: Some(variant),
+            nominal,
+        }))
+    }
+    /// The constructor's payload: its variant's fields, or a tuple struct's
+    /// own fields. A unit struct is a value, never a called constructor.
+    /// # Errors
+    /// Rejects foreign ranges and a called unit struct.
+    pub fn payload<'rows>(
+        &self,
+        (enums, nominals, fields): (&'rows EnumColumns, &[NominalHeader], &'rows [NominalField]),
+    ) -> Result<ConstructorPayload<'rows>, &'static str> {
+        if let Some(variant) = self.variant {
+            return Ok(ConstructorPayload::Variant(
+                variant.fields.slice(&enums.fields)?,
+            ));
+        }
+        let owner = nominals
+            .get(self.nominal as usize)
+            .ok_or("source struct constructor has no nominal header")?;
+        let fields = owner.fields.slice(fields)?;
+        if fields.is_empty() {
+            return Err("source unit struct has no called constructor");
+        }
+        Ok(ConstructorPayload::Struct(fields))
     }
 }
 
@@ -229,9 +297,15 @@ pub(super) fn headers(
     if variants as usize != columns.variants.len() || fields as usize != columns.fields.len() {
         return Err("source enum variants or fields have incomplete owner coverage");
     }
+    let mut constructed = Vec::new();
     for (index, row) in rows.declarations.iter().enumerate() {
         work.charge(1)?;
         let named = match row.definition.kind {
+            DefinitionKind::Variant if headers[index].is_none() => {
+                let constructor = struct_constructor(rows, headers, row, &mut constructed, work)?;
+                headers[index] = Some(constructor);
+                true
+            }
             DefinitionKind::Variant => matches!(headers[index], Some(HeaderRef::Variant(_))),
             // Headers are in ascending declaration order.
             DefinitionKind::Enum => columns
@@ -244,7 +318,94 @@ pub(super) fn headers(
             return Err("source enum or variant declaration has no complete variant table");
         }
     }
+    positional_structs(rows, &constructed, work)
+}
+/// Version thirteen: a variant declaration parented by a struct is that tuple
+/// or unit struct's constructor. Nothing about it travels but the row: its
+/// shape and payload are its struct's own fields, named by their ordinals, and
+/// its name is its struct's.
+fn struct_constructor(
+    rows: &SourceRows,
+    headers: &[Option<HeaderRef>],
+    row: &Declaration,
+    constructed: &mut Vec<bool>,
+    work: &mut Work,
+) -> Result<HeaderRef, &'static str> {
+    let parent = row
+        .definition
+        .parent
+        .ok_or("source variant lost its actual parent")?;
+    let owner = rows
+        .declarations
+        .get(parent.0 as usize)
+        .ok_or("unknown source variant parent")?;
+    if owner.definition.kind != DefinitionKind::Struct {
+        return Err("source enum or variant declaration has no complete variant table");
+    }
+    let Some(Some(HeaderRef::Nominal(nominal))) = headers.get(parent.0 as usize).copied() else {
+        return Err("source struct constructor lacks its struct's nominal header");
+    };
+    let fields = rows.nominals[nominal as usize].fields.slice(&rows.fields)?;
+    work.charge(fields.len().saturating_add(1))?;
+    if !fields
+        .iter()
+        .enumerate()
+        .all(|(ordinal, field)| positional(&field.name, ordinal))
+    {
+        return Err("source record struct has no constructor");
+    }
+    if constructed.is_empty() {
+        work.charge(rows.nominals.len())?;
+        constructed.resize(rows.nominals.len(), false);
+    }
+    if std::mem::replace(&mut constructed[nominal as usize], true) {
+        return Err("source struct has a second constructor");
+    }
+    if row.name.is_none() || row.name != owner.name {
+        return Err("source struct constructor changed its struct's name");
+    }
+    Ok(HeaderRef::Constructor(nominal))
+}
+/// Only a constructed struct names its fields by their ordinals, and it
+/// names every field that way.
+fn positional_structs(
+    rows: &SourceRows,
+    constructed: &[bool],
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    work.charge(rows.nominals.len().saturating_add(rows.fields.len()))?;
+    for (index, header) in rows.nominals.iter().enumerate() {
+        if constructed.get(index).copied().unwrap_or(false) {
+            continue;
+        }
+        if header
+            .fields
+            .slice(&rows.fields)?
+            .iter()
+            .enumerate()
+            .any(|(ordinal, field)| positional(&field.name, ordinal))
+        {
+            return Err("source tuple struct fields require its constructor");
+        }
+    }
     Ok(())
+}
+/// The canonical decimal spelling of a field's ordinal, which no record field
+/// name can take.
+#[must_use]
+pub fn positional(name: &str, ordinal: usize) -> bool {
+    let mut digits = [0_u8; 20];
+    let mut cursor = digits.len();
+    let mut value = ordinal;
+    loop {
+        cursor -= 1;
+        digits[cursor] = b'0' + u8::try_from(value % 10).unwrap_or(0);
+        value /= 10;
+        if value == 0 {
+            break;
+        }
+    }
+    name.as_bytes() == &digits[cursor..]
 }
 /// The shared nominal row: an empty field range and the default record repr.
 fn nominal(

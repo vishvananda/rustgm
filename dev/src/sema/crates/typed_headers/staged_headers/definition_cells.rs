@@ -133,7 +133,7 @@ fn variant_cells(
                     let signature = constructor_signature(
                         graph,
                         &mut facts.types,
-                        (payload, regions),
+                        (s::ConstructorPayload::Variant(payload), regions),
                         owner,
                         budget,
                     )?;
@@ -151,7 +151,79 @@ fn variant_cells(
             assign(cells, variant.declaration, ty)?;
         }
     }
+    struct_cells(context, graph, facts, cells, budget)
+}
+/// Version thirteen: a unit struct constructor's cell is its struct's own
+/// type, and a tuple struct's is the constructor item over `fn(fields) ->
+/// Struct`, as local declarations complete them.
+fn struct_cells(
+    context: &mapped_source::Context<'_>,
+    graph: &mapped_source::Graph,
+    facts: &mut Declarations,
+    cells: &mut [Option<TypeId>],
+    budget: &mut Headers,
+) -> Result<(), Error> {
+    let rows = context.descriptor.rows();
+    for (nominal, constructor) in struct_constructors(rows, budget)?.into_iter().enumerate() {
+        let Some(constructor) = constructor else {
+            continue;
+        };
+        let header = &rows.nominals[nominal];
+        let owner = graph.ty(header.self_type)?;
+        let fields = header.fields.slice(&rows.fields).map_err(error)?;
+        let ty = if fields.is_empty() {
+            owner
+        } else {
+            let regions = nominal_regions(rows, header.self_type, budget)?;
+            let signature = constructor_signature(
+                graph,
+                &mut facts.types,
+                (s::ConstructorPayload::Struct(fields), regions),
+                owner,
+                budget,
+            )?;
+            let item = context.definition(constructor, budget)?;
+            facts
+                .types
+                .intern(crate::types::Kind::FunctionItem {
+                    item: crate::types::ItemId(item.0),
+                    signature,
+                    arguments: crate::types::GenericArgs::EMPTY,
+                })
+                .map_err(error)?
+        };
+        assign(cells, constructor, ty)?;
+    }
     Ok(())
+}
+/// Each validated struct constructor declaration, indexed by its struct's
+/// nominal header row.
+pub(super) fn struct_constructors(
+    rows: s::ValidatedView<'_>,
+    budget: &mut Headers,
+) -> Result<Vec<Option<crate::support::crates::owner_catalog::DeclarationRef>>, Error> {
+    budget.charge(rows.declarations.len().saturating_add(rows.nominals.len()))?;
+    budget.reserve(rows.nominals.len().saturating_mul(size_of::<
+        Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    >()))?;
+    let mut constructors = vec![None; rows.nominals.len()];
+    for (index, row) in rows.declarations.iter().enumerate() {
+        if row.definition.kind != s::DefinitionKind::Variant {
+            continue;
+        }
+        let declaration = crate::support::crates::owner_catalog::DeclarationRef(
+            u32::try_from(index).map_err(|_| error("source constructor ordinal overflow"))?,
+        );
+        if let Some(s::HeaderRef::Constructor(nominal)) = rows.header(declaration).map_err(error)? {
+            let cell = constructors
+                .get_mut(nominal as usize)
+                .ok_or_else(|| error("source struct constructor names an unknown struct"))?;
+            if cell.replace(declaration).is_some() {
+                return Err(error("source struct has a second constructor"));
+            }
+        }
+    }
+    Ok(constructors)
 }
 /// Each named type formal's cell is its canonical parameter type.
 fn formal_cells(
@@ -216,20 +288,25 @@ pub(super) fn nominal_regions(
         .count();
     u32::try_from(regions).map_err(|_| error("source enum lifetime count overflow"))
 }
-/// A tuple variant's constructor signature `fn(payload..) -> Enum`, read from
-/// its own payload rows; the cell and the callable template share it. As a
-/// local constructor does, it binds its enum's lifetimes late.
+/// A tuple variant's or tuple struct's constructor signature `fn(payload..)
+/// -> Self`, read from its own payload rows; the cell and the callable
+/// template share it. As a local constructor does, it binds its nominal's
+/// lifetimes late.
 pub(super) fn constructor_signature(
     graph: &mapped_source::Graph,
     types: &mut crate::types::Store,
-    (payload, regions): (&[s::VariantField], u32),
+    (payload, regions): (s::ConstructorPayload<'_>, u32),
     owner: TypeId,
     budget: &mut Headers,
 ) -> Result<TypeId, Error> {
     budget.charge(payload.len())?;
-    let fields = payload
-        .iter()
-        .map(|field| graph.ty(field.ty))
+    let fields = (0..payload.len())
+        .map(|index| {
+            payload
+                .ty(index)
+                .ok_or_else(|| error("source constructor payload field is absent"))
+                .and_then(|ty| graph.ty(ty))
+        })
         .collect::<Result<Vec<_>, _>>()?;
     let parameters = types.intern_list(&fields).map_err(error)?;
     types

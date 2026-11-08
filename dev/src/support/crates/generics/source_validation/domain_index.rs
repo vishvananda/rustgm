@@ -30,14 +30,14 @@ pub struct DomainWork {
 pub use input_plan::{InputWork, OperationPort, OriginalInputPlan, RequiredInput, RequiredKind};
 
 /// What a function application calls. A constructor's formals, premises and
-/// Self are its enum header's; its inputs are the payload fields and its
-/// result is the enum. It has no late binder and is safe Rust.
+/// Self are its enum's or struct's header's; its inputs are the payload fields
+/// and its result is that nominal. It has no late binder and is safe Rust.
 #[derive(Clone, Copy)]
 enum Target<'rows> {
     Function(&'rows s::FunctionHeader),
     Constructor {
         enumeration: &'rows s::NominalHeader,
-        payload: &'rows [s::VariantField],
+        payload: s::ConstructorPayload<'rows>,
     },
 }
 impl Target<'_> {
@@ -183,7 +183,7 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
             .ok_or("source function header is absent")
     }
     /// A function application's target: its function header, or under
-    /// version thirteen a called tuple-variant constructor.
+    /// version thirteen a called tuple-variant or tuple-struct constructor.
     fn target(
         &self,
         declaration: crate::support::crates::owner_catalog::DeclarationRef,
@@ -201,7 +201,7 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
                 .ok_or("source constructor enum header is absent")?;
             return Ok(Target::Constructor {
                 enumeration,
-                payload: constructor.variant.fields.slice(&rows.enums().fields)?,
+                payload: constructor.payload((rows.enums(), &rows.nominals, &rows.fields))?,
             });
         }
         self.function(declaration, work).map(Target::Function)

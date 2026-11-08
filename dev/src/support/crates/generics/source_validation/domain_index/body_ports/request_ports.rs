@@ -111,11 +111,9 @@ impl DomainIndex<'_, '_> {
             |row| self.headers.header(row, work),
         )? {
             // A called constructor is safe, binds no late region and selects no
-            // method; its payload count is its variant's own.
+            // method; its payload count is its variant's or struct's own.
             let payload = constructor
-                .variant
-                .fields
-                .slice(&rows.enums().fields)?
+                .payload((rows.enums(), &rows.nominals, &rows.fields))?
                 .len();
             if signature.unsafe_
                 || request.safety != s::CallSafety::Safe

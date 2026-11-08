@@ -4,9 +4,51 @@ use crate::{
     resolve::model::Access,
     sema::members::Name,
     support::crates::RecordRepr,
+    syntax::item::Shape,
     types::{ItemId, aggregate},
 };
 impl Stage {
+    /// Version thirteen: a tuple or unit struct's constructor travels as its
+    /// struct's single variant declaration. Every consumer re-derives its
+    /// shape, payload and visibility from the struct, so the forms whose
+    /// shape or visibility the struct's rows cannot carry stay rejected.
+    pub(super) fn struct_constructor(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        constructor: DefId,
+    ) -> Result<(), &'static str> {
+        self.charge(2)?;
+        let variant = facts
+            .members
+            .constructor(constructor)
+            .ok_or("source struct constructor lacks its actual field group")?;
+        let declaration = facts.members.variants[variant.0 as usize];
+        let owner = report
+            .resolution
+            .definitions
+            .get(declaration.owner.0 as usize)
+            .ok_or("source struct constructor lost its actual struct")?;
+        if owner.kind != DefKind::Struct || facts.members.variants(declaration.owner) != [variant] {
+            return Err("source struct constructor changed its actual struct owner");
+        }
+        // `struct T();` has the unit form's empty field rows.
+        if declaration.shape == Shape::Tuple && declaration.start == declaration.end {
+            return Err("source empty tuple struct constructors require their wider profile");
+        }
+        let node = owner
+            .node
+            .ok_or("source struct constructor lost its actual declaration")?;
+        // No row carries the crate-wide narrowing `#[non_exhaustive]` applies.
+        if facts
+            .non_exhaustive_contract(report, node)
+            .map_err(|_| "source struct non_exhaustive contract is incomplete")?
+            .is_some()
+        {
+            return Err("source non_exhaustive struct constructors require their wider profile");
+        }
+        Ok(())
+    }
     pub(super) fn nominals(
         &mut self,
         report: &Report,
@@ -153,10 +195,19 @@ impl Stage {
     ) -> Result<(), &'static str> {
         for (ordinal, field) in fields.iter().enumerate() {
             self.charge(1)?;
-            let Name::Named(name) = field.name else {
-                return Err("source nominal tuple fields require their wider profile");
+            // Version thirteen: a tuple struct's fields are named by their
+            // ordinals, which no record field can spell.
+            let positional;
+            let name = match field.name {
+                Name::Named(name) => facts.members.names.get(name),
+                Name::Index(index) if self.body_nodes() && index as usize == ordinal => {
+                    positional = index.to_string();
+                    &positional
+                }
+                Name::Index(_) => {
+                    return Err("source nominal tuple fields require their wider profile");
+                }
             };
-            let name = facts.members.names.get(name);
             let source = field
                 .origin
                 .source()

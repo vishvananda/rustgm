@@ -184,8 +184,11 @@ impl Original<'_> {
             .fields
             .get(id as usize)
             .ok_or("source nominal field disappeared from its actual canonical owner")?;
-        let Name::Named(name) = found.name else {
-            return Err("source nominal field changed its actual named shape");
+        // Version thirteen: a tuple struct's fields are named by their
+        // ordinals, which validation fixed against its constructor.
+        let named = match found.name {
+            Name::Named(name) => self.members.names.get(name) == field.name,
+            Name::Index(index) => index == ordinal && s::positional(&field.name, ordinal as usize),
         };
         let expected = match &self.mapping {
             super::selected::Mapping::Ordinary { graph, .. } => graph
@@ -200,10 +203,7 @@ impl Original<'_> {
         } else {
             crate::resolve::model::Access::ExternalPrivate
         };
-        if found.origin != actual.origin
-            || found.ty != expected
-            || self.members.names.get(name) != field.name
-            || found.access != access
+        if found.origin != actual.origin || found.ty != expected || !named || found.access != access
         {
             return Err(
                 "source nominal field changed its current canonical type, name or access policy",

@@ -65,7 +65,8 @@ pub(in crate::sema::crates::typed_headers) trait Mapping<'rows>:
             | s::HeaderRef::Nominal(_)
             | s::HeaderRef::AssociatedType(_)
             | s::HeaderRef::AssociatedDefinition(_)
-            | s::HeaderRef::Variant(_) => {
+            | s::HeaderRef::Variant(_)
+            | s::HeaderRef::Constructor(_) => {
                 return Err("imported associated inventory lacks its actual owner header");
             }
         };
@@ -338,7 +339,8 @@ impl<'a> Mapping<'a> for Ordinary<'a> {
             | s::HeaderRef::Nominal(_)
             | s::HeaderRef::AssociatedType(_)
             | s::HeaderRef::AssociatedDefinition(_)
-            | s::HeaderRef::Variant(_) => {
+            | s::HeaderRef::Variant(_)
+            | s::HeaderRef::Constructor(_) => {
                 Err("imported associated inventory lacks its actual owner header")
             }
         }
