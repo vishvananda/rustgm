@@ -55,6 +55,20 @@ impl Graph {
             _ => Err("implementation domain has no complete admitted source profile"),
         }
     }
+    /// Version thirteen: an imported auto trait is its packet's exact empty
+    /// `AUTO` declaration, which only that profile admits. Selection checks
+    /// this by name rather than relying on admission alone. The owner's own
+    /// authentication compares its `AUTO` flag with the trait header's.
+    pub(in crate::sema) fn automatic_trait(&self, owner: Owner) -> Result<(), &'static str> {
+        self.owner(owner)?;
+        if !self.descriptor(&self.origins)?.profile().body_nodes() {
+            return Err("imported automatic trait requires its version-thirteen profile");
+        }
+        if !matches!(owner.kind, OwnerKind::Trait { auto_: true, .. }) {
+            return Err("imported automatic trait requires its actual auto trait owner");
+        }
+        Ok(())
+    }
     pub(in crate::sema) fn empty_module_trait(&self, owner: Owner) -> Result<bool, &'static str> {
         self.owner(owner)?;
         let descriptor = self.descriptor(&self.origins)?;

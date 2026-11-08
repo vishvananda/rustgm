@@ -27,9 +27,6 @@ pub(in crate::sema) fn predicate(
     else {
         return Ok(false);
     };
-    if owner.source.is_none() {
-        return Ok(false);
-    }
     let OwnerKind::Trait {
         definition,
         auto_: true,
@@ -39,6 +36,10 @@ pub(in crate::sema) fn predicate(
     else {
         return Ok(false);
     };
+    // Version thirteen: an imported auto trait's own packet admitted it.
+    if owner.source.is_none() {
+        facts.associated.imported_automatic_trait(definition)?;
+    }
     if definition != DefId(application.item.0)
         || facts
             .types
@@ -99,7 +100,7 @@ impl Search<'_> {
         facts: &Declarations,
         goal: &Goal,
     ) -> Result<bool, String> {
-        Ok(Self::automatic_identity(facts, goal)?.is_some_and(|(_, local)| local))
+        Ok(Self::automatic_identity(facts, goal)?.is_some())
     }
 
     pub(super) fn automatic_result(
@@ -110,7 +111,7 @@ impl Search<'_> {
         if let Some(action) = self.source_auto_result(facts, frame)? {
             return Ok(Some(action));
         }
-        let Some((item, local)) = Self::automatic_identity(facts, &frame.goal)? else {
+        let Some((item, _)) = Self::automatic_identity(facts, &frame.goal)? else {
             return Ok(None);
         };
         if Self::source_auto_kind(facts, &frame.goal)?.is_some()
@@ -120,11 +121,6 @@ impl Search<'_> {
             || frame.explicit_auto
         {
             return Ok(None);
-        }
-        if !local {
-            return Err(
-                "imported custom automatic trait structural profile is not implemented".into(),
-            );
         }
         Self::require_automatic_header(facts, item)?;
         let goal = match frame
@@ -185,7 +181,17 @@ impl Search<'_> {
             .as_deref()
             .and_then(|t| t.header(item))
             .ok_or("automatic trait canonical header is incomplete")?;
-        header.source_inputs()?;
+        // An imported auto trait keeps its packet's admitted inputs; it is
+        // re-checked by name under its version-thirteen profile.
+        if facts
+            .associated
+            .get(owner_id)
+            .is_some_and(|o| o.source.is_none())
+        {
+            facts.associated.imported_automatic_trait(id)?;
+        } else {
+            header.source_inputs()?;
+        }
         if schema.self_type != header.self_type
             || schema.captures != 0
             || !schema.bounds.is_empty()

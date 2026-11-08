@@ -118,6 +118,32 @@ impl Inventory {
         }
         Ok(eligible)
     }
+    /// Version thirteen: `definition` is an imported auto trait admitted
+    /// under its own packet's profile.
+    pub(in crate::sema) fn imported_automatic_trait(
+        &self,
+        definition: DefId,
+    ) -> Result<(), &'static str> {
+        let owner = self.imported_trait_owner(definition)?;
+        self.language
+            .as_ref()
+            .and_then(|l| l.imported.as_ref())
+            .ok_or("imported automatic trait lacks its canonical source graph")?
+            .automatic_trait(owner)
+    }
+    /// Version thirteen: an imported auto impl's safety, members and polarity.
+    pub(in crate::sema) fn imported_automatic_implementation(
+        &self,
+        store: &crate::types::Store,
+        owner: Owner,
+        predicate: crate::types::parameters::predicates::Predicate,
+    ) -> Result<bool, &'static str> {
+        self.language
+            .as_ref()
+            .and_then(|l| l.imported.as_ref())
+            .ok_or("imported automatic implementation lacks its canonical source graph")?
+            .automatic_implementation(store, owner, predicate)
+    }
     pub(in crate::sema) fn imported_denies_implementation(
         &self,
         definition: DefId,

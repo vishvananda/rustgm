@@ -464,3 +464,27 @@ declaration packet under `spec/auto-declarations/`. The packet holds:
 Amendments are recorded beside the declarations they amend, each before the
 run it governs. The `crate_linking::marker_transport` integration controls and
 the `freezing::payment_tests` private controls consume it.
+
+`auto-impl-outcomes.json` freezes the version-thirteen auto-trait impl packet
+under `spec/auto-impls/`. The packet holds:
+
+- the auto-declarations provider, followed by positive and negative auto
+  impls shaped as core's and alloc's: raw pointers, references, `Arguments`,
+  `Cell`, `Unique`, `Location`, `PhantomPinned` and `Rc`, plus a specialized
+  `Foo<u8>` and a self-referential `List`;
+- seven clients that rustc accepts, through explicit impls, statics, a
+  coinductive cycle and a client's own impls, and nineteen opponents: thirteen
+  E0277 cases, an orphan impl (E0117), a foreign auto impl on a reference
+  (E0321), the three safety errors (E0200, E0198, E0199) and an explicit
+  Freeze impl (E0658);
+- generated controls: a strengthened, a specialized and a `?Sized` blanket
+  provider impl (E0367, E0366, E0321), a Sized blanket impl that a client
+  proves, an older-profile negative impl gate, a client library that would
+  export an auto impl, and a linear-scaling chain;
+- wire controls: flipped safety and polarity bytes, a generic Self, an `Rc`
+  bound retargeted, a widened member range, a version relabel and a foreign
+  trait application.
+
+Amendments are recorded beside the declarations they amend, each before the
+run it governs. The `crate_linking::polarity_transport` integration controls
+and the `portable_impls::scaling_tests` private control consume it.

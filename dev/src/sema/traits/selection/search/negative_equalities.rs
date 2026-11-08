@@ -33,7 +33,7 @@ fn custom(facts: &Declarations, goal: Predicate) -> Result<bool, String> {
         ] {
             let role = super::freezing::role(marker).ok_or("missing source automatic role")?;
             if catalog
-                .language(role)
+                .auto_marker(role, false)?
                 .is_some_and(|d| d.definition == DefId(item.0))
             {
                 return Ok(false);

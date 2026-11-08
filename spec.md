@@ -6737,9 +6737,35 @@ custom auto traits. A source client proves imported Freeze, Send, Sync, Unpin
 and UnsafeUnpin structurally through the same role rule a source core uses.
 Each marker bound is paid from the installed header budget, because a client
 has no completed local header producer. Versions 10 and 12 keep their
-by-name rejections of each declaration. Auto impls, and structural proofs of
-imported custom auto traits, are not yet transported ("imported custom
-automatic trait structural profile is not implemented").
+by-name rejections of each declaration.
+
+Version 13 also transports impls of a packet's own auto traits, with no new
+tag, bit or row. An impl header's existing `unsafe` and `negative` bytes are
+admitted only when its trait application names an exact empty `AUTO` trait of
+the same packet. `constant` stays rejected, and so does an unsafe or negative
+impl of any other trait. An impl of another artifact's auto trait is fenced by
+name ("imported foreign auto-trait impl requires its multi-packet profile").
+Admission is not conformance. Each consumer re-reads the row and requires:
+
+- the impl is unsafe exactly when its trait is unsafe and the impl is
+  positive;
+- it links no member;
+- its Self obeys the declaring crate's auto Self rule, so a generic Self must
+  be Sized;
+- a negative impl on a nominal is always applicable: each declared input is
+  one of the nominal's own inputs at Self, and Self's arguments are the impl's
+  distinct parameters;
+- a positive impl's requirements hold in its installed environment.
+
+The registry then completes the impl as validated in its own polarity. A
+negative impl whose Self is not a nominal is trusted to its provider: rustc
+checks it only in a crate without `auto_traits`, and declaring the packet's own
+auto trait requires that feature. Imported custom auto traits prove
+structurally as role-bound markers do, each re-checked by name as its
+packet's version-13 declaration. A client's impl of an imported Freeze needs
+`freeze_impls`. Until C2b, an imported nominal's transported where-clauses are
+not formation requirements in a client, so negative coverage reads them from
+the nominal's transported inputs directly.
 
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core

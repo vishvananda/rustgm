@@ -1,0 +1,356 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+ "providers": [
+  {
+   "file": "spec/auto-impls/provider.rs",
+   "sha256": "2db2261c3752dd95c5998adbd98796e58ff902e2b42b23b6cd2cd02e2563499a"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "declared": "2026-11-08T14:56:06Z",
+ "development_note": "declared before any rustc or candidate run of these files. Scratch probes with main's CLI (89cb62ee5, sha256 d97cd78e; obj/parallel/auto-traits/explore/c2, c2gen and c2client) found: the provider export stops at `source const/negative/unsafe implementation requires a wider explicit profile`; each client's body compiled with the provider as one source core is accepted by the frontend for the seven accepted clients (and for foreign-reference, whose Send is then local), and every rejected client except foreign-pointer and foreign-reference gives the candidate text declared here; against C1's auto-declarations packet, which has no impls, foreign-pointer, foreign-reference, safe-impl, unsafe-negative, unsafe-unpin-impl, local-negative and local-specialized-other give the declared texts and freeze-impl is accepted",
+ "wire_rule": "approved shapes. Version 13 only; no new tag, bit or row. An impl header's existing unsafe and negative booleans are admitted when its trait application names an exact empty AUTO trait of the same packet (role-bound Freeze, Send, Sync, Unpin and UnsafeUnpin, and custom UnwindSafe and RefUnwindSafe); constant stays rejected, and non-auto unsafe or negative impls stay rejected until C3, with `source const/negative/unsafe implementation requires a wider explicit profile` and `source impl requires its wider conformance/effect profile`. Each consumer re-proves unsafe == trait UNSAFE && !negative, an empty member range, the auto Self rule (automatic_domains.rs's local branch) and, for a negative impl on a nominal, that it is always applicable (negative.rs's rule); an imported negative auto impl is completed as NegativeValidated",
+ "cases": [
+  {
+   "file": "spec/auto-impls/explicit-send.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "44dfedd82cfa392c6c2c1ba9ed2d72d128e3718c4f4d7d47ed8982cc9626faaf"
+  },
+  {
+   "file": "spec/auto-impls/loc-static.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "343371eb319e4acf7904fd69b50117f2880d3c88d81b4ca3f9d0ddc4e51d1388"
+  },
+  {
+   "file": "spec/auto-impls/unwind-structural.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "bf165cdeee3310235dab14ae340139a9963680df3938dc6fd07655f60f2e7da9"
+  },
+  {
+   "file": "spec/auto-impls/cycle.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "5203589910af8bcbd65dfb8e28a350b286703e7ef1d892201c860f5c1978c078"
+  },
+  {
+   "file": "spec/auto-impls/local-cell.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "fa6b3999f406b3247b5632f1753c128b634dd24b29915ac020337591b655d5a2"
+  },
+  {
+   "file": "spec/auto-impls/local-impl.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "c0adca3600832d02cde27a6036451159a6eedf93ebcc09ce960757b0f2db8746"
+  },
+  {
+   "file": "spec/auto-impls/local-specialized.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "c51e90131eaec7022740b766e93dfe6d6e37919b7685bff05f91f0b3f8ca343b"
+  },
+  {
+   "file": "spec/auto-impls/cell-sync.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0277 (`Cell<u8>: Sync` unsatisfied)",
+   "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+   "sha256": "0762bc5170820f9cda9c937205daa9a543e78dca296e677a6ac74544e5550a96"
+  },
+  {
+   "file": "spec/auto-impls/raw-send.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0277 (`*const u8: Send` unsatisfied)",
+   "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+   "sha256": "97a6f2e21db5c351997226288518ecc3fee29b36e33e2b1eb111810c85b89935"
+  },
+  {
+   "file": "spec/auto-impls/foo-other.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0277 (`Foo<u16>: Send` unsatisfied)",
+   "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+   "note": "Q6 root-type rule: the explicit impl for Foo<u8> removes Foo's structural auto candidate, though every field is Send",
+   "sha256": "853d495c336fa0da7e5a22238594be2653774699153a29cbf28c05bf0311b250"
+  },
+  {
+   "file": "spec/auto-impls/rc-send.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0277 (`Rc<u8, Global>: Send` unsatisfied)",
+   "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+   "note": "every field is Send, so only the negative impl rejects",
+   "sha256": "516e24564958740614e47dae682151720e89662d8c77d6195cc639d00fc609aa"
+  },
+  {
+   "file": "spec/auto-impls/pinned.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0277 (`PhantomPinned: Unpin` unsatisfied)",
+   "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+   "sha256": "5caea33dbe143c7fb10093f71b720ceae338813bcc8474a72c1335f01c0b7647"
+  },
+  {
+   "file": "spec/auto-impls/unique-mut.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0277 (`&mut u8: UnwindSafe` unsatisfied)",
+   "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+   "sha256": "7da91310ecbc967924c09da3b098b280ef9a44f467faef23db67dceb3ddbd78b"
+  },
+  {
+   "file": "spec/auto-impls/cell-ref-unwind.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0277 (`Cell<u8>: RefUnwindSafe` unsatisfied, required by `&Cell<u8>: UnwindSafe`)",
+   "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+   "sha256": "c3d1532693bacfec64de403b8c1d675724e1e06565a8d37965f7f78dd1684733"
+  },
+  {
+   "file": "spec/auto-impls/cell-static.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0277 (`Cell<u8>: Sync` unsatisfied for a shared static)",
+   "candidate_diagnostic": "shared static type must implement Sync",
+   "sha256": "17d6a0221df0ce63060dba340c48cbf95c52e196d8a260030c04e8f63fa7cf63"
+  },
+  {
+   "file": "spec/auto-impls/arguments-send.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0277 (`Arguments<'static>: Send` unsatisfied)",
+   "candidate_diagnostic": "conditional negative implementation requires scoped debt payment",
+   "note": "integrator decision 1: rustc's status matches and its reason differs. Recorded open selection gap: a negative impl whose parameters include regions or references leaves its refutation conditional (refutation.rs:106); Q6's root rule already removes the structural candidate, so this is a diagnostic and negative-reasoning gap, not a false acceptance. Main's single-crate run gives the same text",
+   "sha256": "da06a2ecb4fc73b951fcc8d0d5cf93594c523f89e9bbe72c47e29c9f46fa90ac"
+  },
+  {
+   "file": "spec/auto-impls/raw-holder.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0277 (`*const u8: Send` unsatisfied, required by `Holder: Send`)",
+   "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+   "sha256": "835567d226efc33539f846c382349a0e8f72d7bbe10559431a6bd47db274d3a4"
+  },
+  {
+   "file": "spec/auto-impls/pair-cell.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0277 (`Cell<u8>: RefUnwindSafe` unsatisfied, required by `Pair<Cell<u8>>: RefUnwindSafe`)",
+   "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+   "note": "replaces the drafted pair-unwind (Pair<&'static mut u8>: UnwindSafe), whose structural child into `!UnwindSafe for &mut T` is a second witness of arguments-send's recorded gap",
+   "sha256": "1ab4d2d36848f5629407a9ac381b38388393d2cf0c36fad95994524446436574"
+  },
+  {
+   "file": "spec/auto-impls/local-specialized-other.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0277 (`W<u16>: Send` unsatisfied)",
+   "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+   "note": "Q6 root-type rule on the client's own impl of the imported trait",
+   "sha256": "61cc18c44e39864e5f8f4afac080d92240c21bbcc518d0b403084f13744226b8"
+  },
+  {
+   "file": "spec/auto-impls/local-negative.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0277 (`Mine: Send` unsatisfied)",
+   "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+   "sha256": "0f65951652958948889597f045b7571c168ca4c36a3237586d461fa9ff5048e8"
+  },
+  {
+   "file": "spec/auto-impls/foreign-pointer.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0117: only traits defined in the current crate can be implemented for types defined outside of the crate; E0751 (positive and negative impls of `Send` for `*const Mine`) may follow",
+   "candidate_diagnostic": "library trait implementation requires a local type",
+   "note": "raw pointers are not fundamental, so rustc's orphan check fails and returns before its auto-trait rule",
+   "rustc_observed": "E0751 (`found both positive and negative implementation of trait `Send` for type `*const Mine``) printed first, then E0117 worded `only traits defined in the current crate can be implemented for arbitrary types`: rustc's coherent_trait builds the specialization graph before its per-impl orphan check, and reports both. Same status and codes as declared, in the other order (obj/parallel/auto-traits/oracle/c2.log)",
+   "sha256": "e00eddf0abb4cac7d4153e513fb6a5602c60db2d41453dea14479766e6a16df2"
+  },
+  {
+   "file": "spec/auto-impls/foreign-reference.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0321: cross-crate traits with a default impl, like `Send`, can only be implemented for a struct/enum type, not `&'static mut Mine`",
+   "candidate_diagnostic": "foreign automatic trait requires an actual local nominal implementation target",
+   "note": "&mut is fundamental, so the orphan check passes; main's automatic_domains.rs already applies rustc's nonlocal auto rule",
+   "sha256": "1f1f97e9bcc4766f67cfa9e6ffea550433e3f0652441126d27755e44ee35d026"
+  },
+  {
+   "file": "spec/auto-impls/safe-impl.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0200: the trait `Send` requires an `unsafe impl` declaration",
+   "candidate_diagnostic": "trait and implementation safety declarations disagree",
+   "sha256": "07b46eac68636f1f0f91c98e277dcbf0849c5d56f3984b16220f092e79685467"
+  },
+  {
+   "file": "spec/auto-impls/unsafe-negative.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0198: negative impls cannot be unsafe",
+   "candidate_diagnostic": "trait and implementation safety declarations disagree",
+   "sha256": "b29b6c64da0ed7a7b191fdd9657776261bbc550dc6af13f5102963291b6f9955"
+  },
+  {
+   "file": "spec/auto-impls/unsafe-unpin-impl.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0199: implementing the trait `Unpin` is not unsafe",
+   "candidate_diagnostic": "trait and implementation safety declarations disagree",
+   "sha256": "390eeeb846072bed06727eb9747e26796a95f6c628c500d283b4486aa75a34c1"
+  },
+  {
+   "file": "spec/auto-impls/freeze-impl.rs",
+   "provider": "spec/auto-impls/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0658: explicit impls for the `Freeze` trait are not permitted",
+   "candidate_diagnostic": "explicit source Freeze implementations require freeze_impls",
+   "note": "main accepts this client: its freeze_impls gate asks language(Freeze), which answers None for an imported Freeze. C2 moves the gate to auto_marker",
+   "sha256": "ea899569671142aae08366db01bc599cac672fc399051a58cdecae7a1c042371"
+  }
+ ],
+ "outcome_counts": {
+  "provider": "1 export, accepted under module-bodies-v13",
+  "clients": 26,
+  "accepted_clients": 7,
+  "rejected_clients": 19,
+  "note": "27 declared outcomes: the provider export and 26 clients. The 19 rejected clients are 13 E0277 cases, foreign-pointer (E0117), foreign-reference (E0321), safe-impl (E0200), unsafe-negative (E0198), unsafe-unpin-impl (E0199) and freeze-impl (E0658)"
+ },
+ "native": {
+  "expected": "the seven accepted clients exit 42 natively, as rustc's do"
+ },
+ "generated_controls": [
+  {
+   "control": "the provider with Rc's `!Send` impl strengthened to `impl<T: ?Sized + Sync, A: Allocator> !Send for Rc<T, A>`, compiled as one source core",
+   "rustc": "E0367: `!Send` impl requires `T: Sync` but the struct it is implemented for does not",
+   "expected": "rejected with `negative implementation header-strength proof is not implemented`, verbatim as on main"
+  },
+  {
+   "control": "the provider plus `pub struct Bar<T> { pub value: T }` and `impl !Send for Bar<u8> {}`, compiled as one source core",
+   "rustc": "E0366: `!Send` impls cannot be specialized",
+   "expected": "rejected with `specialized negative header legality is not implemented`, verbatim as on main"
+  },
+  {
+   "control": "the provider plus `pub auto trait Mark {}` and `impl<T: ?Sized> Mark for T {}`, compiled as one source core",
+   "rustc": "E0321: traits with a default impl, like `Mark`, cannot be implemented for generic type `T`",
+   "expected": "rejected with `automatic implementation generic subject must be Sized`, verbatim as on main"
+  },
+  {
+   "control": "the provider plus `pub auto trait Mark {}` and `impl<T> Mark for T {}`, exported under module-bodies-v13, and a client requiring `u8: base::Mark` and `base::Cell<u8>: base::Mark` that returns 42",
+   "rustc": "the provider compiles (a Sized parameter Self is allowed for a local auto trait) and the client exits 42",
+   "expected": "the export and the client are accepted: a consumer proves the parameter Self Sized through the imported Sized role, and that proof retains no evidence",
+   "amendment": "declared on 2026-11-08, after the integrator's C2 review and before this control's rustc and candidate runs, as the honest counterpart of the generic-Self wire forgery",
+   "observed": "rustc 1.98.0 compiles the provider and the client exits 42; the C2 candidate exports the provider and accepts the client"
+  },
+  {
+   "control": "`#![feature(negative_impls, freeze_impls)]`, lines 2-58 of the provider (the auto-declarations provider's first 57 lines: its feature lines, the sized family, LegacyReceiver, Clone, Copy and Freeze), `pub struct X { pub v: u8 }` and `impl !Freeze for X {}`, exported under module-bodies-v13, module-branches-v12 and module-nominals-v10",
+   "expected": "under v12 and v10 rejected with `source const/negative/unsafe implementation requires a wider explicit profile`, verbatim as on main; under v13 the export and the answer client are accepted"
+  },
+  {
+   "control": "Q5 reachability: a source client of this packet compiled as a library with --metadata-output, declaring `pub struct Holder { pub p: *const u8 }` and `unsafe impl base::Send for Holder {}`",
+   "expected": "rejected with `nominal trait, member or non-exhaustive contract is outside the metadata profile`, verbatim as on main; the same library with a private Holder exports only its functions, so no consumer can observe the impl"
+  },
+  {
+   "control": "scaling: N in {8, 16, 32} providers, each the provider followed by `pub struct S000 { pub next: Unique<S000> }` and, for 0 < i < N, `pub struct S{i:03} { pub inner: S{i-1:03}, pub next: Unique<S{i:03}> }`, and a client requiring `S{N-1:03}: Send`; names are zero-padded so each row has the same width",
+   "expected": "packet bytes grow exactly linearly (the 16 to 32 increment is twice the 8 to 16 increment); the client's header-budget work and its inference steps, where its body's solved trait goals report their search steps, each have a 16 to 32 increment of at most twice the 8 to 16 increment plus 64",
+   "amendment": "the drafted `each Unique self-cycle closes by one coinductive hit` has no counter to observe; the linear inference-step bound is its evidence. The first draft measured canonical steps, which stay 16096 at every length because a body's solved goals are not counted there",
+   "observed": "packet bytes 50840, 52624 and 56192; header-budget work 34745, 35777 and 37841; inference steps 1315, 2523 and 4939: each 16 to 32 increment is exactly twice its 8 to 16 increment"
+  }
+ ],
+ "wire_controls": [
+  {
+   "control": "honest packet",
+   "expected": "each auto impl keeps its unsafe and negative flags; the answer client is accepted",
+   "note": "no answer client is among these 26 fixtures: every forged packet is consumed by explicit-send, which the honest packet accepts. Each forgery's validation is eager, so the client body does not select it"
+  },
+  {
+   "control": "unsafe set on `!Send for *const T`",
+   "expected": "rejected with `selected impl safety/member kinds disagree with its actual trait`"
+  },
+  {
+   "control": "unsafe cleared on `Send for Loc`",
+   "expected": "rejected with `selected impl safety/member kinds disagree with its actual trait`"
+  },
+  {
+   "control": "negative cleared on `!Sync for Cell`",
+   "expected": "rejected with `selected impl safety/member kinds disagree with its actual trait`"
+  },
+  {
+   "control": "Foo<u8>'s Send impl made negative and safe",
+   "expected": "rejected with `specialized negative header legality is not implemented`"
+  },
+  {
+   "control": "the Self of `Send for &T` changed to T in both the impl header and its trait application",
+   "expected": "rejected with `automatic implementation generic subject must be Sized`",
+   "observed": "rejected first by the consumer's coherence walk with `overlapping trait implementation headers require coherence proof`: a blanket Send for T overlaps the packet's other Send impls. Replaced by the RefUnwindSafe control below, which keeps this expectation"
+  },
+  {
+   "control": "the Self of `!RefUnwindSafe for Cell<T>`, RefUnwindSafe's only impl, changed to T in both the impl header and its trait application",
+   "expected": "rejected with `automatic implementation generic subject must be Sized`",
+   "amendment": "declared after the Send for &T forgery was observed to reach coherence first; the expectation is that control's"
+  },
+  {
+   "control": "`A: Allocator` removed from Rc's own nominal inputs",
+   "expected": "rejected with `negative implementation header-strength proof is not implemented`",
+   "observed": "rejected by admission with `source clauses have incomplete owning header coverage`: a shortened range orphans the clause row. Replaced by the retargeted-bound control below, which keeps this expectation"
+  },
+  {
+   "control": "the Allocator application of Rc's own `A: Allocator` input retargeted to Send, so the nominal requires `A: Send` and no longer `A: Allocator`",
+   "expected": "rejected with `negative implementation header-strength proof is not implemented`",
+   "amendment": "declared after the shortened range was observed to fail admission; the expectation is that control's"
+  },
+  {
+   "control": "the member range of `!Send for Rc` widened over one existing member link",
+   "expected": "rejected with `auto or negative trait implementations cannot declare members`",
+   "observed": "rejected by admission with `source implementation omits an actual trait member mapping`: the widened range takes another impl's link, and no admitted packet carries a link that no trait member owns. The consumer's member check remains as defense in depth"
+  },
+  {
+   "control": "version relabelled from 13 to 12",
+   "expected": "rejected with `source const/auto/unsafe traits require a wider explicit profile` (C1's trait fence, which runs before the impl fence)",
+   "observed": "rejected by the version-twelve decoder with `unknown source declaration kind`, before any trait or impl fence"
+  },
+  {
+   "control": "Q5: Rc's `!Send` trait application retargeted to another artifact",
+   "expected": "rejected with `imported foreign auto-trait impl requires its multi-packet profile` if the decoder admits the reference; otherwise its earlier decode rejection is recorded",
+   "observed": "rejected by admission with `source implementation requires its exact supported trait header`, its earlier rejection; the named fence is not reachable through an admitted packet"
+  }
+ ],
+ "candidate_observation": "the C2 candidate gives all 27 declared outcomes: the provider exports under module-bodies-v13, the seven accepted clients are accepted and every rejected client gives its declared candidate text. Four extra scratch clients (`Rc<u8, Global>: Unpin`, `PhantomPinned: Send`, `Cell<u8>: UnwindSafe` and `Rc<u8, Global>: UnwindSafe`) are accepted, so each negative-impl rejection rests on its negative impl"
+}

@@ -66,6 +66,53 @@ impl Graph {
         }
         Ok((raw.constant, raw.negative))
     }
+    /// Version thirteen: an imported impl of its own packet's auto trait is
+    /// unsafe exactly when that trait is unsafe and the impl is positive, and
+    /// it links no member. Answers whether it is negative.
+    pub(in crate::sema) fn automatic_implementation(
+        &self,
+        store: &crate::types::Store,
+        owner: Owner,
+        predicate: crate::types::parameters::predicates::Predicate,
+    ) -> Result<bool, &'static str> {
+        let (constant, negative) = self.implementation(store, owner, predicate)?;
+        let OwnerKind::ImportedImpl(id) = owner.kind else {
+            return Err("imported conformance requires its actual imported impl owner");
+        };
+        let descriptor = self.descriptor(&self.origins)?;
+        if !descriptor.profile().body_nodes() {
+            return Err("imported automatic implementation requires its version-thirteen profile");
+        }
+        let (_, row, _) = self.origins.declaration_coordinate(id)?;
+        let rows = descriptor.rows();
+        let Some(s::HeaderRef::Implementation(index)) = rows.header(row)? else {
+            return Err("imported conformance has no actual implementation header");
+        };
+        let raw = &rows.implementations[index as usize];
+        let application = raw
+            .trait_application
+            .and_then(|id| rows.trait_applications.get(id.0 as usize))
+            .ok_or("imported automatic implementation lost its actual trait application")?;
+        if application.declaration.artifact != rows.policy.provider {
+            return Err("imported foreign auto-trait impl requires its multi-packet profile");
+        }
+        let Some(s::HeaderRef::Trait(trait_index)) =
+            rows.header(application.declaration.declaration)?
+        else {
+            return Err("imported automatic implementation lost its actual trait row");
+        };
+        let flags = rows.traits[trait_index as usize].flags.bits();
+        if constant || flags & s::TraitFlags::AUTO == 0 {
+            return Err("imported automatic implementation requires its exact auto trait");
+        }
+        if raw.unsafe_ != (flags & s::TraitFlags::UNSAFE != 0 && !negative) {
+            return Err("selected impl safety/member kinds disagree with its actual trait");
+        }
+        if raw.members.start != raw.members.end {
+            return Err("auto or negative trait implementations cannot declare members");
+        }
+        Ok(negative)
+    }
     /// Version thirteen: an imported inherent impl has no trait application,
     /// no modifier and extends only a nominal of its own provider. The Self is
     /// re-read from the consumer's own installed type, never a spelling.

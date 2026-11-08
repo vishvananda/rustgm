@@ -936,6 +936,45 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     Flatten<I>` (`iter/adapters/flatten.rs:313`), "invalid canonical trait
     selection". It is batch 15's first item, before (a).
 
+- **During Lane C's [auto traits](parallel/auto-traits.md) slice (item 5,
+  C2)**, 2026-11-08.
+  - **Wire shape.** There is no new tag, bit or row. An impl header's
+    `unsafe` and `negative` bytes are admitted only when its trait
+    application names an exact empty `AUTO` trait of the same packet.
+    `constant` stays rejected, and so do unsafe or negative impls of any
+    other trait, until C3.
+    - Why same-packet only: the multi-packet profile (item 9) owns impls of
+      another artifact's traits. A foreign auto-trait impl is fenced by name,
+      "imported foreign auto-trait impl requires its multi-packet profile".
+    - Admission is not conformance. Each consumer re-proves safety
+      (`unsafe == trait UNSAFE && !negative`), empty members, the auto Self
+      rule, and a negative nominal impl's coverage, then completes the impl as
+      `Validated` or `NegativeValidated` by its polarity.
+  - **Consumer checks that admission keeps unreachable** stay as defense in
+    depth. Each one is either tested by a direct call on an honest graph or
+    listed in the slice document as unreachable and untested. Two checks were
+    subsumed by earlier authentication and removed: a polarity comparison
+    (the registry re-reads the same row) and an auto-flag comparison (owner
+    authentication compares it).
+  - **Non-ADT negative coverage is trusted to the provider.** A same-packet
+    `AUTO` trait means the provider compiled with `auto_traits`, under which
+    rustc skips it, and primitive impls are provider-only.
+  - **New gap, item C2b, owned by Lane C.** It follows C3 and precedes 5b.
+    `nominals::requirements` reads only installed predicates, so a client
+    accepts `fn hold(_r: base::Rc<u8, NotAlloc>)`, where rustc gives E0277.
+    C2b adds an imported nominal's transported where-clauses to its
+    formation requirements, paid from the installed header budget as C1's
+    marker bounds are. It removes C2's temporary
+    `negative.rs::imported_nominal_inputs`. Its controls are rustc's E0277
+    opponent, a positive with a satisfying argument, and an unchanged
+    source-local nominal.
+  - **Silent fallback removed.** `freezing.rs::object_marker` and
+    `has_source` propagate an `auto_marker` integrity error. They never
+    degrade it to "not a marker".
+  - **A latent shared-folder race was checked for.** No two concurrent tests
+    on main share a packet or helper output folder. The one race found was
+    C2's own new labels, and it was fixed before commit.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

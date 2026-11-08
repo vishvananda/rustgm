@@ -1,7 +1,10 @@
 //! Reprove supported imported receiver contracts; metadata is never conformance.
 use super::{Checker, DefId, Error};
 use crate::{
-    sema::{associated::OwnerKind, traits::implementations::Polarity},
+    sema::{
+        associated::{Owner, OwnerKind},
+        traits::implementations::Polarity,
+    },
     support::bindings::LangItem,
     types::{
         outlives::Queries,
@@ -11,6 +14,13 @@ use crate::{
         },
     },
 };
+
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/polarity_fences.rs"]
+mod fence_tests;
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/polarity_scaling.rs"]
+mod scaling_tests;
 
 impl Checker<'_> {
     fn imported_receiver_environment(
@@ -304,6 +314,9 @@ impl Checker<'_> {
         definition: DefId,
         predicate: Predicate,
     ) -> Result<(), Error> {
+        if let Some(owner) = self.imported_automatic_owner(definition, predicate)? {
+            return self.validate_imported_auto_implementation(definition, predicate, owner);
+        }
         let methods =
             crate::sema::crates::primitive_method_plan(&mut self.facts, definition, predicate)?;
         let environment =
@@ -322,6 +335,96 @@ impl Checker<'_> {
             .as_mut()
             .ok_or_else(|| Error::unlocated("imported conformance registry disappeared"))?
             .complete(definition, types_and_links.1, types_and_links.0, Vec::new())
+            .map_err(Error::unlocated)
+    }
+
+    /// The actual imported owner of an impl whose trait is an imported auto
+    /// trait, or `None` for every other imported impl. That trait is
+    /// re-checked, by name, as its own packet's version-thirteen declaration.
+    fn imported_automatic_owner(
+        &self,
+        definition: DefId,
+        predicate: Predicate,
+    ) -> Result<Option<Owner>, Error> {
+        let Bound::Trait(application) = predicate.bound else {
+            return Ok(None);
+        };
+        let trait_definition = self
+            .facts
+            .types
+            .trait_application(application)
+            .map(|application| DefId(application.item.0))
+            .ok_or_else(|| Error::unlocated("imported impl lacks its actual trait application"))?;
+        if !self
+            .facts
+            .associated
+            .owner(trait_definition)
+            .and_then(|id| self.facts.associated.get(id))
+            .is_some_and(|owner| {
+                owner.source.is_none() && matches!(owner.kind, OwnerKind::Trait { auto_: true, .. })
+            })
+        {
+            return Ok(None);
+        }
+        self.facts
+            .associated
+            .imported_automatic_trait(trait_definition)
+            .map_err(Error::unlocated)?;
+        let owner = self
+            .facts
+            .associated
+            .owner(definition)
+            .and_then(|id| self.facts.associated.get(id))
+            .copied()
+            .filter(|owner| {
+                matches!(owner.kind, OwnerKind::ImportedImpl(_)) && owner.source.is_none()
+            })
+            .ok_or_else(|| {
+                Error::unlocated(
+                    "imported automatic implementation requires an actual imported impl",
+                )
+            })?;
+        Ok(Some(owner))
+    }
+
+    /// Version thirteen: admission is not conformance. The row's safety,
+    /// empty members and exact auto trait, the local auto Self rule and a
+    /// negative nominal header's coverage are each re-proved before the
+    /// registry completes the impl as validated in its own polarity. That
+    /// polarity is this row's: registration read it (`imported_status`), and
+    /// the registry re-reads it whenever it answers one.
+    fn validate_imported_auto_implementation(
+        &mut self,
+        definition: DefId,
+        predicate: Predicate,
+        owner: Owner,
+    ) -> Result<(), Error> {
+        let negative = self
+            .facts
+            .associated
+            .imported_automatic_implementation(&self.facts.types, owner, predicate)
+            .map_err(Error::unlocated)?;
+        self.validate_imported_automatic_domain(definition, predicate.ty)?;
+        if negative {
+            self.validate_imported_negative_header(definition, predicate)?;
+        } else {
+            let environment = self
+                .facts
+                .generics
+                .environments
+                .get(&definition)
+                .cloned()
+                .ok_or_else(|| {
+                    Error::unlocated("imported impl lacks its complete actual input environment")
+                })?;
+            self.validate_imported_requirements(definition, predicate, environment)?;
+        }
+        self.facts
+            .generics
+            .implementations
+            .as_mut()
+            .ok_or_else(|| Error::unlocated("imported conformance registry disappeared"))?
+            .complete(definition, Vec::new(), Vec::new(), Vec::new())
             .map_err(Error::unlocated)
     }
 }

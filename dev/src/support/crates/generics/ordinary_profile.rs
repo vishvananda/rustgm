@@ -172,7 +172,13 @@ fn validate_with(
     )?;
     for header in &rows.implementations {
         work.charge(1)?;
-        if header.constant || header.negative || header.unsafe_ {
+        // Version thirteen admits an auto impl's own safety and polarity; each
+        // consumer re-proves them against the trait.
+        if header.constant
+            || (header.negative || header.unsafe_)
+                && !(roles.automatic
+                    && callable_traits::automatic_implementation(rows, headers, header, work)?)
+        {
             return Err(
                 "source const/negative/unsafe implementation requires a wider explicit profile",
             );

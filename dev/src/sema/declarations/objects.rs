@@ -275,6 +275,7 @@ impl Checker<'_> {
     ) -> Result<Option<crate::types::auto_traits::AutoTrait>, Error> {
         let Some(marker) =
             crate::sema::traits::selection::source_object_marker(&self.facts, definition)
+                .map_err(|e| self.error(path, e))?
         else {
             return Ok(None);
         };

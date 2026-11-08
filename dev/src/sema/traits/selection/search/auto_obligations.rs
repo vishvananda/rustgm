@@ -1,5 +1,6 @@
 //! Structural auto-trait leaves retain projected proofs in the requesting scope.
 use super::{Action, Decision, Declarations, Dependency, Frame, Predicate, Search, inference};
+use crate::sema::traits::implementations::Candidates;
 use crate::types::{
     Kind,
     auto_traits::{Obligation, Query, Rule, Step},
@@ -54,15 +55,16 @@ impl Search<'_> {
         if let Some(decision) = pending.stopped {
             return Ok(ControlFlow::Break(Action::Complete(decision)));
         }
+        let source = super::freezing::has_source(facts, root.marker)?;
         loop {
-            let (step, work) = pending.advance(facts, self.caller.environment)?;
+            let (step, work) = pending.advance(facts, self.caller.environment, source)?;
             frame.inputs.context.account_work(work).map_err(inference)?;
             match step {
                 Step::Ready(value) => return Ok(ControlFlow::Continue(value)),
                 Step::Fields(item) => {
                     return Ok(ControlFlow::Break(Action::Wait(Dependency::Fields(item))));
                 }
-                Step::Proof(obligation) if super::freezing::has_source(facts, root.marker) => {
+                Step::Proof(obligation) if source => {
                     if obligation == root {
                         // An abstract source application requires its actual
                         // caller premise; physical shape supplies no permission.
@@ -108,12 +110,11 @@ impl Search<'_> {
                         )
                         .map_err(inference)?;
                     match candidates {
-                        crate::sema::traits::implementations::Candidates::Pending(owners)
-                        | crate::sema::traits::implementations::Candidates::Unvalidated(owners) => {
+                        Candidates::Pending(owners) | Candidates::Unvalidated(owners) => {
                             frame.pending_headers = Some(owners.into_iter());
                             return Ok(ControlFlow::Break(self.await_header(facts, frame)?));
                         }
-                        crate::sema::traits::implementations::Candidates::Ready(owners) => {
+                        Candidates::Ready(owners) => {
                             if !registry.auto_override(&facts.types, obligation) {
                                 pending.query.reconsider(obligation)?;
                                 continue;
@@ -158,7 +159,7 @@ impl Search<'_> {
         let first = pending.end.max(self.query.allocations.floor());
         let mut substitution =
             Instantiation::new(&mut frame.inputs.context, &facts.types, &[]).map_err(inference)?;
-        let bound = if super::freezing::has_source(facts, pending.root.marker) {
+        let bound = if super::freezing::has_source(facts, pending.root.marker)? {
             super::freezing::bound(facts, needed.proof.marker)?
         } else {
             Bound::Auto(needed.proof.marker)
@@ -248,14 +249,16 @@ impl Pending {
         Ok((None, steps))
     }
 
+    /// `source` is whether the root's marker has a source declaration, read
+    /// once per proof by its caller.
     fn advance(
         &mut self,
         facts: &mut Declarations,
         environment: Option<&std::sync::Arc<crate::types::parameters::environment::Environment>>,
+        source: bool,
     ) -> Result<(Step, usize), String> {
         let before = self.query.steps;
         let permissions_before = self.permissions.as_ref().map_or(0, |q| q.steps());
-        let source = super::freezing::has_source(facts, self.root.marker);
         let step = self.query.advance(
             &mut facts.types,
             &mut facts.aggregates,

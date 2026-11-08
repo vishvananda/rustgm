@@ -264,12 +264,14 @@ impl Checker<'_> {
         definition: DefId,
     ) -> Result<(), Error> {
         self.require_pointee_validation_origin(source, definition)?;
-        if self
-            .facts
-            .source_bindings
-            .as_deref()
-            .and_then(|catalog| catalog.language(crate::support::bindings::LangItem::Freeze))
-            .is_some_and(|role| role.definition == definition)
+        // A client's imported Freeze is gated as a provider's own one is.
+        let freeze = match self.facts.source_bindings.as_deref() {
+            Some(catalog) => catalog
+                .auto_marker(crate::support::bindings::LangItem::Freeze, false)
+                .map_err(|e| self.error(source, e))?,
+            None => None,
+        };
+        if freeze.is_some_and(|role| role.definition == definition)
             && !self.report.package.permits_source_freeze_impls()
         {
             return Err(self.error(

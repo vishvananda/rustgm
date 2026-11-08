@@ -64,6 +64,8 @@ mod normalized_results;
 mod packet_libraries;
 #[path = "crate_linking/phantom_roles.rs"]
 mod phantom_roles;
+#[path = "crate_linking/polarity_transport.rs"]
+mod polarity_transport;
 #[path = "crate_linking/records.rs"]
 mod records;
 #[path = "crate_linking/reexports.rs"]

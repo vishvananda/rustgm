@@ -159,6 +159,23 @@ impl ImportedOwners {
             Self::Provided(mapping) => mapping.implementation_request(store, owner),
         }
     }
+    pub(in crate::sema) fn automatic_trait(&self, owner: Owner) -> Result<(), &'static str> {
+        match self {
+            Self::Ordinary(graph) => graph.automatic_trait(owner),
+            Self::Provided(_) => Err("Provided profiles do not own imported automatic traits"),
+        }
+    }
+    pub(in crate::sema) fn automatic_implementation(
+        &self,
+        store: &Store,
+        owner: Owner,
+        predicate: Predicate,
+    ) -> Result<bool, &'static str> {
+        match self {
+            Self::Ordinary(graph) => graph.automatic_implementation(store, owner, predicate),
+            Self::Provided(_) => Err("Provided profiles do not own imported automatic traits"),
+        }
+    }
     pub(in crate::sema) fn implementation(
         &self,
         store: &Store,

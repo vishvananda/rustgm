@@ -80,18 +80,24 @@ const GATES: [(&str, &str, &str); 6] = [
         "source role requires a wider explicit source profile",
     ),
 ];
-fn source(packet: &Packet, name: &str, text: &str) -> Result<std::path::PathBuf> {
+pub(super) fn source(packet: &Packet, name: &str, text: &str) -> Result<std::path::PathBuf> {
     let path = packet.folder.join(name);
     std::fs::write(&path, text)?;
     Ok(path)
 }
-fn export(packet: &Packet, source: &Path, metadata: &Path) -> Result {
+pub(super) fn export(packet: &Packet, source: &Path, metadata: &Path) -> Result {
     let mut command = packet.export(PROFILE, source, metadata);
     super::artifacts::checked("provider", &packet.folder, &mut command).map(drop)
 }
 /// The provider exported with one textual change, and the single byte that
 /// change moves.
-fn variant(packet: &Packet, bytes: &[u8], name: &str, from: &str, to: &str) -> Result<usize> {
+pub(super) fn variant(
+    packet: &Packet,
+    bytes: &[u8],
+    name: &str,
+    from: &str,
+    to: &str,
+) -> Result<usize> {
     let fixture = std::fs::read_to_string(packet.fixture("provider"))?;
     let changed = source(
         packet,

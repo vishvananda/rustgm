@@ -2,7 +2,11 @@
 use super::{Checker, DefId, Error, NodeKey, Predicate};
 use crate::{
     support::hash::HashSet,
-    types::{Kind, arguments::Argument, parameters::ParameterKind},
+    types::{
+        Kind,
+        arguments::Argument,
+        parameters::{ParameterKind, clauses::Clause, predicates::Bound},
+    },
 };
 impl Checker<'_> {
     pub(super) fn validate_impl_polarity_profile(
@@ -60,46 +64,107 @@ impl Checker<'_> {
         {
             return Ok(());
         }
-        let error = |message| {
-            Error::at(
-                source.file,
-                self.report
-                    .package
-                    .unit(source.file)
-                    .configured
-                    .ast
-                    .node(source.node)
-                    .span
-                    .start,
-                message,
-            )
+        self.negative_coverage(owner, predicate, false)
+            .map_err(|message| {
+                Error::at(
+                    source.file,
+                    self.report
+                        .package
+                        .unit(source.file)
+                        .configured
+                        .ast
+                        .node(source.node)
+                        .span
+                        .start,
+                    message,
+                )
+            })
+    }
+
+    /// Version thirteen: an imported negative impl of its own packet's auto
+    /// trait. Declaring that trait required the provider's `auto_traits`
+    /// feature, which is exactly what lets a non-ADT negative header skip the
+    /// coverage proof; a nominal Self still re-proves it here.
+    pub(super) fn validate_imported_negative_header(
+        &mut self,
+        owner: DefId,
+        predicate: Predicate,
+    ) -> Result<(), Error> {
+        if !matches!(self.facts.types.kind(predicate.ty), Some(Kind::Adt(..))) {
+            return Ok(());
+        }
+        self.negative_coverage(owner, predicate, true)
+            .map_err(Error::unlocated)
+    }
+
+    /// The impl's declared inputs, source or imported, are each a formation
+    /// requirement of its nominal Self, whose arguments are its distinct own
+    /// parameters.
+    fn negative_coverage(
+        &mut self,
+        owner: DefId,
+        predicate: Predicate,
+        imported: bool,
+    ) -> Result<(), &'static str> {
+        let clauses = if imported {
+            imported_nominal_inputs(&mut self.facts, predicate.ty)?
+        } else {
+            let mut formation = crate::sema::nominals::Requirements::default();
+            crate::sema::nominals::requirements(&mut self.facts, predicate.ty, &mut formation)?
         };
-        let mut formation = crate::sema::nominals::Requirements::default();
-        let clauses =
-            crate::sema::nominals::requirements(&mut self.facts, predicate.ty, &mut formation)
-                .map_err(error)?;
         let required: HashSet<_> = clauses.into_iter().collect();
-        let declared = self
-            .facts
-            .generics
-            .declared_predicates_in_scope(owner)
-            .collect::<Vec<_>>();
+        let declared = crate::sema::declaration_inputs::declared(
+            &self.facts.generics,
+            self.facts.crates.as_deref(),
+            owner,
+        )?
+        .map(|input| input.value)
+        .collect::<Vec<_>>();
         self.facts.body_work.canonical_steps = self
             .facts
             .body_work
             .canonical_steps
             .checked_add(required.len() + declared.len())
-            .ok_or_else(|| error("negative header legality work overflow"))?;
-        if declared
-            .iter()
-            .any(|clause| !required.contains(&clause.value))
-        {
-            return Err(error(
-                "negative implementation header-strength proof is not implemented",
-            ));
+            .ok_or("negative header legality work overflow")?;
+        if declared.iter().any(|clause| !required.contains(clause)) {
+            return Err("negative implementation header-strength proof is not implemented");
         }
-        negative_parameters(&self.facts, owner, predicate).map_err(error)
+        negative_parameters(&self.facts, owner, predicate)
     }
+}
+
+/// A source client installs no imported nominal's predicates. Its declared
+/// and implied inputs are borrowed from the installed header and instantiated
+/// at Self's arguments; outlives inputs are omitted as formation omits them.
+fn imported_nominal_inputs(
+    facts: &mut crate::sema::model::Declarations,
+    ty: crate::types::TypeId,
+) -> Result<Vec<Clause>, &'static str> {
+    let Some(Kind::Adt(item, arguments)) = facts.types.kind(ty) else {
+        return Err("imported negative coverage requires its nominal Self");
+    };
+    let nominal = DefId(item.0);
+    let inputs =
+        crate::sema::declaration_inputs::all(&facts.generics, facts.crates.as_deref(), nominal)?
+            .map(|input| input.value)
+            .filter(|clause| {
+                !matches!(
+                    clause,
+                    Clause::Predicate(Predicate {
+                        bound: Bound::Outlives(_),
+                        ..
+                    })
+                )
+            })
+            .collect::<Vec<_>>();
+    inputs
+        .into_iter()
+        .map(|clause| {
+            facts
+                .generics
+                .substitute_clause(&mut facts.types, nominal, arguments, clause)
+        })
+        .collect()
 }
 
 fn negative_parameters(

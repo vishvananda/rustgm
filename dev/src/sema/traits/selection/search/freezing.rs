@@ -67,16 +67,25 @@ fn imported_application(
 mod payment_tests;
 /// The actual catalog role of a source trait declaration, never its spelling.
 /// Only markers with an existing object meaning are represented; callers
-/// separately require that declaration's own `auto` header.
-pub(in crate::sema) fn object_marker(facts: &Declarations, definition: DefId) -> Option<AutoTrait> {
-    let catalog = facts.source_bindings.as_deref()?;
-    [AutoTrait::Send, AutoTrait::Sync, AutoTrait::Unpin]
-        .into_iter()
-        .find(|&marker| {
-            role(marker)
-                .and_then(|role| catalog.auto_marker(role, false).ok().flatten())
-                .is_some_and(|declaration| declaration.definition == definition)
-        })
+/// separately require that declaration's own `auto` header. An imported role
+/// lookup's integrity failure is an error, never "not a marker".
+pub(in crate::sema) fn object_marker(
+    facts: &Declarations,
+    definition: DefId,
+) -> Result<Option<AutoTrait>, &'static str> {
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(None);
+    };
+    for marker in [AutoTrait::Send, AutoTrait::Sync, AutoTrait::Unpin] {
+        let role = role(marker).ok_or("source auto trait marker is not represented")?;
+        if catalog
+            .auto_marker(role, false)?
+            .is_some_and(|declaration| declaration.definition == definition)
+        {
+            return Ok(Some(marker));
+        }
+    }
+    Ok(None)
 }
 impl Search<'_> {
     pub(super) fn source_auto_kind(
@@ -228,12 +237,11 @@ pub(super) const fn role(marker: AutoTrait) -> Option<LangItem> {
         _ => None,
     }
 }
-pub(super) fn has_source(facts: &Declarations, marker: AutoTrait) -> bool {
-    role(marker).is_some_and(|role| {
-        facts
-            .source_bindings
-            .as_deref()
-            .and_then(|c| c.auto_marker(role, false).ok().flatten())
-            .is_some()
-    })
+/// Whether `marker` has a source declaration in the actual role catalog. A
+/// role lookup's integrity failure is an error, never "no source marker".
+pub(super) fn has_source(facts: &Declarations, marker: AutoTrait) -> Result<bool, &'static str> {
+    let (Some(role), Some(catalog)) = (role(marker), facts.source_bindings.as_deref()) else {
+        return Ok(false);
+    };
+    Ok(catalog.auto_marker(role, false)?.is_some())
 }

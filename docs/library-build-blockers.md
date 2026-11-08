@@ -5,6 +5,43 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [auto traits](parallel/auto-traits.md), second commit (C2), transports
+impls of a packet's own auto traits in version 13 with no new tag, bit or row:
+
+- An impl header's `unsafe` and `negative` bytes are admitted only when its
+  trait is an exact empty `AUTO` trait of the same packet. `constant`, and
+  unsafe or negative impls of every other trait, stay rejected until C3.
+- Each consumer re-proves the impl against its trait: its safety, its empty
+  members, the auto Self rule and, for a negative impl on a nominal, that it
+  is always applicable. The registry then completes the impl in its own
+  polarity.
+- Imported custom auto traits (UnwindSafe and RefUnwindSafe) now prove
+  structurally. "imported custom automatic trait structural profile is not
+  implemented" is gone. Each such trait is re-checked by name as its packet's
+  version-13 declaration.
+- A client's explicit impl of an imported Freeze now meets the
+  `freeze_impls` gate.
+
+The flip survey changes only the new packet's outcomes. Seven clients exit 42
+natively. Nineteen opponents are rejected, as rustc rejects them.
+`arguments-send` is rejected for a different reason than rustc's.
+
+- Open in this item:
+  - **C2b, an accepts-invalid gap found in C2.** A client's formation check
+    of an imported nominal reads only installed predicates
+    (`nominals::requirements`), and an imported nominal installs none. So
+    `fn hold(_r: base::Rc<u8, NotAlloc>)` is accepted, where rustc gives
+    E0277. C2b makes an imported nominal's formation requirements include its
+    transported where-clauses, paid from the installed header budget as C1's
+    marker bounds are. Until then, C2's imported negative coverage reads the
+    nominal's transported inputs directly
+    (`negative.rs::imported_nominal_inputs`). That workaround is temporary,
+    and C2b removes it. C2b follows C3 and precedes 5b.
+  - C3: non-auto negative impls, and plain unsafe traits and impls.
+  - `!Send for Arguments<'_>` stays a conditional refutation, because its
+    header names a region.
+- `dyn Trait + Send` still waits on Lane B's object tag 15.
+
 Lane A [census batch 14](parallel/census-batch14.md) repairs census 14's
 record on main `4a1ac00c4`. Census 15 (`6df12612`, from `d1756b87f`) checks
 42,310 declarations, with none failed or blocked. Its crate record, "invalid
