@@ -5,6 +5,42 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 7](parallel/census-batch7.md) gives `intrinsics::assume` a
+constant-evaluation handler and repairs the first four crate-wide declaration
+records. Census 8 (`f99b369d`, from `9f04f8694` on main `519f8eda3`) checks
+42,310 declarations, with none failed or blocked (census 7: 42,280, 5 and 25).
+Its one crate record is "trait argument does not satisfy its declaration
+requirements" at `pin.rs:1105`. Bodies are not entered, so Milestone 2 is not
+reached.
+
+- A validated source `assume` returns unit for a true condition and fails
+  constant evaluation for a false one, as rustc's E0080 does. Its fallback
+  body is never entered.
+- With Lane B's last sites, the per-definition loop has no failure, and four
+  crate records followed in turn, each repaired:
+  - a source-library declaration-time body that relates instances of generic
+    lifetime nominals (`fmt::Arguments<'a>` from `pat.rs`'s `panic!`) demands
+    their reached variances and outlives contracts, waiting once on a queued
+    field template;
+  - a recursively const-checked body may call an intrinsic whose source
+    fallback body is itself safe to expose (`cold_path` from
+    `intrinsics::unlikely`), as in rustc 1.98;
+  - Drop coverage proves binder-scoped bounds such as `F: [const] FnOnce(T)`
+    inside their scope (`mem/drop_guard.rs`);
+  - a pattern type is `[const] Destruct` as its base type is (`array::Drain`'s
+    `NonNull<T>` field).
+- 33 PA31 no_core controls were declared before the rustc 1.98.0 oracle, and
+  all agree, after one recorded fixture amendment. Every PA1 to PA24 suite
+  passes, with PA20 at 1451/1451.
+- What remains:
+  - `pin.rs:1105`: rigid projections lack the implicit `MetaSized` of a
+    `?Sized` associated type, and `PointeeSized`, in trait selection. This is
+    shared trait selection work, and Lane A owns it next.
+  - Ordinary crates keep the old order for early lifetime contracts. Extending
+    the demand renumbers 11 PA20 references.
+  - `later-projected-copy-wait`, `proj-c` and `residual-try-type-mismatch` are
+    unchanged.
+
 Lane C [methods of inherent impls that capture lifetimes](parallel/impl-region-methods-transport.md)
 is joined on main. Version 13 carries methods of
 `impl<'a> X<'a>` with no new tag or shape. The impl's lifetimes lead each

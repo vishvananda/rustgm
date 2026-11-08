@@ -239,6 +239,46 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
       makes `u8` `Copy`;
     - the lifetime-nominal gate moved to the trait-impl form;
     - the unique-write provider gained its leading field before its first run.
+- **After Lane A's [census batch 7](parallel/census-batch7.md)** (census 8: no
+  per-definition failure, one crate record at `pin.rs:1105`), 2026-11-08:
+  - **Lane A owns `pin.rs:1105` next**, because it is the census frontier.
+    RustGM follows rustc's sizedness hierarchy:
+    - a `?Sized` associated type's implicit bound is `MetaSized`, provable
+      for its rigid projection from the associated type's own item bounds;
+    - `PointeeSized` holds for every type.
+
+    Lane A keeps its `sema::traits` edits minimal and lists them.
+    - Cost: Lane A edits shared selection code. Lane B's next batch (the glob
+      row, builtins injection and `self-where`) is crate loading, so the
+      overlap is small.
+  - **`reached_intrinsics_cannot_execute_their_authored_fallback` is stale
+    since batch 5.** Batch 5 gave `ctpop` a validated constant handler, and the
+    property under test, that an authored fallback never runs, still holds.
+    Lane A updates it:
+    - its `const` case expects the handler's result: `[u8; 3]` is accepted
+      and `[u8; 7]` rejected for `ctpop(7)`;
+    - an intrinsic with no handler keeps the original rejection.
+
+    Joined checks missed the stale case because they select each lane's own
+    tests. From now on they also select the tests that the latest nightly
+    qualification failed, until they pass.
+  - **Ordinary crates keep the recorded early-lifetime-contract gap.** The
+    demand stays scoped to source libraries.
+    - Why: extending it renumbers 11 accepted PA20 references, and that is a
+      contract change needing an independent review.
+    - Cost: one rule has two orders until it is extended.
+
+    Lane A extends it after Milestone 2, as a reviewed reference update whose
+    diff must show only renumbering.
+  - **The census may keep going across crate-wide declaration passes**, as
+    analysis only.
+    - An independent pass still runs after a failed one.
+    - A pass that consumes a failed pass's output is recorded as blocked.
+    - Bodies are still not entered while any declaration record fails.
+
+    Lane A adds this only if it fits in one checkpoint. Census 8 surfaced four
+    crate records one at a time.
+  - Tracker head entries stay newest first.
 
 ## Lanes
 

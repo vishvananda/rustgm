@@ -584,3 +584,18 @@ impl header that names a projection of its own parameter (core `ControlFlow`
 where-clause forms, with an unbounded and an unconstrained (E0207) opponent
 and one recorded gap. Each outcome was declared before its rustc 1.98.0 oracle. A private invariant
 checks them; there is no graded manifest.
+
+`spec/assume-constant-execution/`, `spec/declaration-lifetime-contracts/`,
+`spec/intrinsic-fallback-exposure/`, `spec/quantified-drop-bounds/` and
+`spec/pattern-const-destruct/` freeze thirty-three declared no_core controls
+from census batch 7: declaration-phase constants that execute core's
+`assume` without its fallback body (true, false and empty-fallback
+conditions), that relate lifetime nominals by their declared variance and
+outlives contracts before the crate-wide inference (covariant, invariant,
+implied-bound and escape opponents), core's `cold_path` fallback exposed from
+a recursively const-checked body (bodiless and const-unstable opponents),
+Drop impls that repeat paren-sugar `FnOnce` bounds (core's `DropGuard`, with
+added and stronger opponents) and const Drop fields of pattern types (core's
+`NonNull` and array `Drain`, with an unbounded parameter-base opponent). Each
+outcome was declared before its rustc 1.98.0 oracle. Private invariants check
+them; there is no graded manifest.

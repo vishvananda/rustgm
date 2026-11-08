@@ -261,6 +261,12 @@ Keep the full original/instance proofs before executable Code publication.
 The [const allowance checkpoint](docs/pa31-const-fn-allowances-checkpoint.md)
 records source, intrinsic, imported const and independent native controls.
 
+A recursively const-checked body (const-stable, or implicitly or explicitly
+const-stable-indirect) may call an intrinsic that is marked
+`rustc_intrinsic_const_stable_indirect`, or one whose source fallback body is
+itself safe to expose by the same rule. A bodiless or explicitly const-unstable
+intrinsic is not exposed, as in rustc 1.98.
+
 Local legacy const-generic indices belong to the actual free function. Complete
 their contract only when its owned const formals and typed signature are
 published; preserve list order, repeated indices and nested function-pointer
@@ -1787,6 +1793,17 @@ own type parameters or a nominal that applies exactly its own type parameters
 in order. For a nominal subject it queues the field template and demands only
 the subject's reached lifetime contracts, which complete inference republishes.
 
+Constant evaluation executes a validated source `assume` itself and never its
+fallback body: a true condition returns unit and a false one is a
+constant-evaluation error, as rustc's E0080 is. A declaration-time body that
+relates instances of generic lifetime nominals before the crate-wide variance
+and outlives inference demands only those nominals' reached variances and
+outlives contracts. A nominal whose field template is still queued becomes one
+ordinary field wait; a second wait on the same nominal is an error. Complete
+inference later republishes the same declared results. Only a source library
+demands these contracts early; an ordinary crate keeps its existing order, and
+its declaration-time relations of such instances remain a recorded gap.
+
 Exact canonical Self receiver proof can publish after the real function's
 signature, captured lifetimes and environment complete. Receivers with different
 nominal arguments still require the full directed proof and completed nominal
@@ -2074,6 +2091,12 @@ still needs its whole-type eligibility proof. Bind transient completion to the
 current arenas, immutable body, verifier, Copy evidence and environment. Recheck
 only contracts with newly selected lifetime debts before normal loan completion.
 Publish a checked future arena witness only after every staged loan proof passes.
+
+Drop coverage proves a binder-scoped bound, such as paren-sugar `FnOnce(T)`,
+inside its own scope; a const Drop impl's `[const]` bound is checked as the
+ordinary bound inside the same binder. Region coverage ignores quantified trait
+bounds and rejects a quantified outlives body by name. A pattern type is
+`[const] Destruct` exactly when its base type is.
 
 Native instance demand may mark an authenticated Function materialization as
 runtime after the real checked-caller join. Its original and separate CTFE
