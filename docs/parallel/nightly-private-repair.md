@@ -214,3 +214,72 @@ completion flag). `c5d056327` added `deferred: RefCell<Vec<Deferred>>`, the
 denied uses inside expansions that await their frames' allowance lists. That is
 exactly 32 bytes: 216 against 184. The control now adds
 `size_of::<RefCell<Vec<Deferred>>>()` with that reason.
+
+### Warm feature lookups charged retained bytes (`c5d056327`)
+
+`resolve::stability::availability_imports::path_compatibility::tests::real_path_width_and_duplicate_feature_imports_keep_touched_cost_bounded`
+fails at compatibility_routes.rs:212. After 128 warm `features` calls with the
+same policy, the retained bytes are 40,456 instead of 37,768.
+
+`c5d056327` split a `spelling` helper out of `feature`. The helper returned an
+owned `String` even for an ASCII name and charged that name's length in
+retained bytes on every call, including warm lookups of a feature already
+recorded. The policy's feature is `availability_provider`, 21 bytes:
+128 × 21 = 2,688 = 40,456 − 37,768. Before `c5d056327`, `feature` charged work
+only and borrowed an ASCII spelling.
+
+`spelling` now returns a borrowed or normalized `Cow<str>` and charges work
+only. Normalization still pays its own growth. `feature` charges bytes only
+when it inserts a new name, as before. The deferred use is the one caller that
+retains the spelling, so it now charges the owned spelling's bytes beside its
+vector growth. That is what the earlier code charged it, so the deferred path
+is not under-charged.
+
+The warm-lookup control is unchanged. The same test now also requires a
+deferred use to grow the deferred list by one and the retained bytes by exactly
+its vector growth plus its spelling's length. No wire byte, diagnostic or
+accepted program changes.
+
+`028bd3e16` passes both path-compatibility tests and `c5d056327` fails both,
+at :148 and :212.
+
+### Routed to their owning lanes
+
+Two further new failures were bisected and left to their owners:
+
+| Test | Passes at | First fails at | Owner |
+| --- | --- | --- | --- |
+| `sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_keep_failed_attempt_and_peak_costs` | `18232e371` | `2b0b5cf07` (late-region free originals in version thirteen) | Lane C |
+| `abi::storage_relation::tests::actual_feature_origins_null_values_and_documentary_markers_grant_no_permission` | `902923015` | `f9a2c96d4` (impl candidates for a callable-trait subject) | Lane A |
+
+- `template_demands` expects `fn declared<'a>(x:&'a u8)->&'a u8{x}` to stop at
+  its earlier catalog boundary. Since `2b0b5cf07`, version thirteen transports
+  late-region free originals, so the function passes that boundary.
+- In the storage-relation control, the opponent without
+  `impl<T:PointeeSized> Copy for *const T {}` now fails with "canonical trait
+  selection work exhausted" instead of a Copy error (nonnull_types.rs:234).
+  It also fails at `fa75f65b8`, `0311a54ea`, `c6b5642dc` and `a06677563`, and
+  passes at `65a9eae6c` and `933e401c1`.
+
+### Checks on main `71f4bc1e9`
+
+With these checkpoints rebased onto `71f4bc1e9`, 33 of the 35 failing tests
+pass. The remaining two are the routed `template_demands` and storage-relation
+controls.
+
+- The 28 private CI failures pass in fastcheck `1794123702416754649`.
+- The five integration failures (`shape_constructors` ×2, `nominal_instances`,
+  `ctfix`, `selected_references`) and the new linear control pass in
+  `1794124021336383601`.
+- The resumable-walk invariant, batch 5's invariants, the metadata, prototype,
+  stability-transport and derive-list controls, and this branch's shim, loader
+  flag and impl-header invariants pass in `1794123969582307044`.
+- The nine `census_mode` tests and three `transported_rows` tests pass in
+  `1794124262606592422`.
+- PA1 to PA12 pass in `1794124335756971467`, and PA13 to PA19 with PA21 to
+  PA24 in `1794124397628595354`. PA20 passes alone, 1451/1451, in
+  `1794124477320290836`.
+
+The only record whose size changes is the boxed per-body `Publication`. Its
+one-word wait becomes `FieldWaits`: the last wait, the roots, the next index
+and the resumable walk. No hot record changes, and no wire byte changes.

@@ -217,6 +217,20 @@ fn real_path_width_and_duplicate_feature_imports_keep_touched_cost_bounded() -> 
     }
     assert_eq!(actual.features.capacity(), capacity);
     assert_eq!(actual.budget.get().bytes, before.bytes);
+    // A deferred use retains its spelling, so only it pays for those bytes.
+    let site = actual.paths.first().ok_or("actual path")?.site;
+    let (length, capacity) = (
+        actual.deferred.borrow().len(),
+        actual.deferred.borrow().capacity(),
+    );
+    let growth = retained::Growth::vector::<super::super::Deferred>(length, capacity, 1);
+    let before = actual.budget.get();
+    actual.defer(site, &policy.feature)?;
+    assert_eq!(actual.deferred.borrow().len(), length + 1);
+    assert_eq!(
+        actual.budget.get().bytes,
+        before.bytes + growth.bytes + policy.feature.len()
+    );
     let plain = crate::test_source::resolve("fn plain(){}", true)?;
     let ordinary = crate::pipeline::analyze_source(&plain)?;
     assert!(ordinary.facts.warnings().next().is_none());

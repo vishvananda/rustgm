@@ -239,21 +239,29 @@ impl Imports {
             .map_err(Error::unlocated)?
             .is_some()
         {
-            let feature = self.spelling(feature)?;
-            let growth = retained::Growth::vector::<Deferred>(
-                self.deferred.borrow().len(),
-                self.deferred.borrow().capacity(),
-                1,
-            );
-            self.charge(growth.work.saturating_add(1), growth.bytes)?;
-            self.deferred.borrow_mut().push(Deferred { site, feature });
-            return Ok(());
+            return self.defer(site, feature);
         }
         Err(Error::at(
             site.file,
             start,
             format!("use of unstable library API requires feature `{feature}`"),
         ))
+    }
+    /// Retain one denied use inside an expansion until its frames' allowance
+    /// lists are known. It owns its spelling, so it pays for those bytes.
+    fn defer(&self, site: NodeKey, written: &str) -> Result<(), Error> {
+        let feature = self.spelling(written)?.into_owned();
+        let growth = retained::Growth::vector::<Deferred>(
+            self.deferred.borrow().len(),
+            self.deferred.borrow().capacity(),
+            1,
+        );
+        self.charge(
+            growth.work.saturating_add(1),
+            growth.bytes.saturating_add(feature.len()),
+        )?;
+        self.deferred.borrow_mut().push(Deferred { site, feature });
+        Ok(())
     }
     /// Admit each deferred use from `start` on only through its own expansion
     /// frame's allowance list, then drop it.
@@ -378,16 +386,20 @@ impl Imports {
         Ok(())
     }
     /// The canonical spelling of one written feature name.
-    fn spelling(&self, written: &str) -> Result<String, Error> {
-        self.charge(written.len().saturating_add(1), written.len())?;
+    fn spelling<'a>(&self, written: &'a str) -> Result<std::borrow::Cow<'a, str>, Error> {
+        // Only normalization allocates, and it pays its own growth. A caller
+        // that retains the spelling pays for its bytes.
+        self.charge(written.len().saturating_add(1), 0)?;
         let spelling = if written.is_ascii() {
-            written.to_owned()
+            std::borrow::Cow::Borrowed(written)
         } else {
-            Names::normalize_paid(written, &mut |growth| {
-                self.charge(growth.work, growth.bytes)
-                    .map_err(|_| "availability normalization budget exhausted")
-            })
-            .map_err(Error::unlocated)?
+            std::borrow::Cow::Owned(
+                Names::normalize_paid(written, &mut |growth| {
+                    self.charge(growth.work, growth.bytes)
+                        .map_err(|_| "availability normalization budget exhausted")
+                })
+                .map_err(Error::unlocated)?,
+            )
         };
         crate::resolve::bindings::FeatureName::new(&spelling).map_err(Error::unlocated)?;
         Ok(spelling)

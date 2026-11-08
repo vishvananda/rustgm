@@ -575,6 +575,52 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     - Why Lane A: it continues the batch 9 `[const]` premise work.
     - Its three control cases stay listed as gaps in the invariant.
 
+- **During Lane B's [nightly repair](parallel/nightly-private-repair.md)**,
+  2026-11-08. CI on `71f4bc1e9` still had the same 35 failures, so the two
+  earlier joins added none. Lane B bisected every one. 33 pass after its two
+  checkpoints, and the other 2 are routed.
+  - **The crate-wide `prepare` failure cache is restored** for `prepare` and
+    `prepare_equality`. Census batch 5's `missing.is_none()` had stopped it
+    caching misses caused by an unpublished template. That re-walked roots
+    and let a later `prepare` succeed.
+    - The non-caching storage path never cached, so batch 5's rule ("such a
+      miss is never cached") holds without the condition.
+    - Batch 5's invariant and its 27 PA31 controls pass with the cache
+      restored. Lane A's census 12 on a main that contains the repair is the
+      whole-core check, so no separate release-pin census is run.
+  - **The storage walk resumes at the nominal it waited for** and charges each
+    visited type once. That fixes `shape_constructors`, where batch 5 was
+    quadratic: 1.6M steps for 512 constants, now 27n. The tests' bounds are
+    unchanged.
+  - **Amended controls, each with its cause commit:**
+    - `ctfix` mirrors Lane A's reviewed `e2c0ead9e`, because `ctpop` gained
+      a constant handler. Lane B took it rather than routing it back, since
+      it is a one-test mirror.
+    - Seven `Declarations` asserts take `c6b5642dc`'s 8-byte
+      `pending_copy_selection`, found by grepping every spelling of the
+      enclosing size.
+    - The `Imports` assert takes `c5d056327`'s 32-byte `deferred` field.
+  - **`path_compatibility` was an accounting regression, not growth.** Since
+    `c5d056327`, every warm feature lookup charged its spelling's retained
+    bytes (128 × 21 = 2,688). Now only the deferred use that keeps a spelling
+    pays for it, and a new assertion checks that it still does.
+  - **Routed to their owners:**
+    - `template_demands` goes to Lane C. It fails since `2b0b5cf07`: late
+      region free originals now transport, so the control's opponent no
+      longer reaches its boundary. Lane C amends the opponent and keeps the
+      cost assertions.
+    - `abi::storage_relation` goes to Lane A's batch 11. Since
+      `f9a2c96d4`, a missing-`Copy` opponent exhausts selection work instead
+      of reporting the `Copy` error. It may share a cause with census 11's
+      overlap budget.
+  - **Lane B's next work:** the two quadratic hazards it found but did not
+    fix, then the nested projection case, then the caller-region task. The
+    hazards are `prepare_success_rows`' exact reservation and
+    `lifetime_contract_dependency` re-scanning the unreached nominals after
+    each wait.
+    - Why first: the core census runs field storage at whole-crate width, so
+      a quadratic walk there becomes a budget record later.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |
