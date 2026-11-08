@@ -1,0 +1,122 @@
+{
+  "profile": "Rust 1.98.0 x86_64-unknown-linux-gnu, -Cpanic=abort --cap-lints=allow, RUSTC_BOOTSTRAP=1, an empty sysroot with -L crate=, --extern core= for each case and an explicit compiler_builtins, per-case editions; declared 2026-11-08 before any rustc or RustGM run of these cases",
+  "cases": [
+    {
+      "name": "extern-core-2024-client",
+      "path": "tests/spec/no-std-clients/client.rs",
+      "source_sha256": "00cf37bd11ed0987f148ce863a1661250c23dd1d52fac5b697ec26ab80734f20",
+      "kind": "object",
+      "crate": "client",
+      "edition": "2024",
+      "deps": {
+        "core": "nostd-core"
+      },
+      "rustc_deps": {
+        "compiler_builtins": "nostd-builtins"
+      },
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "native": true,
+      "native_driver": "tests/spec/no-std-clients/native-driver.c",
+      "native_driver_sha256": "f826a9b3aa306043f0cec7848e130647bc58c11f68f216ba8f537ac5be8dac24",
+      "native_stdout": "42 40\n",
+      "rustc": 0,
+      "rustc_codes": [],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 0,
+      "note": "a 2024 no_std client whose core is also named by --extern core=; the injected core and the extern prelude reach the same provider"
+    },
+    {
+      "name": "extern-core-2015-client",
+      "path": "tests/spec/no-std-clients/client-2015.rs",
+      "source_sha256": "2eb80fe9d5df8715dd2dbd5ae2163fecc50d89071720d5e3b93439df06a80cde",
+      "kind": "object",
+      "crate": "client",
+      "edition": "2015",
+      "deps": {
+        "core": "nostd-core"
+      },
+      "rustc_deps": {
+        "compiler_builtins": "nostd-builtins"
+      },
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "native": true,
+      "native_driver": "tests/spec/no-std-clients/native-driver.c",
+      "native_driver_sha256": "f826a9b3aa306043f0cec7848e130647bc58c11f68f216ba8f537ac5be8dac24",
+      "native_stdout": "42 40\n",
+      "rustc": 0,
+      "rustc_codes": [],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 0,
+      "note": "the 2015 client with --extern core=; the injected crate-root item names the alias's crate"
+    },
+    {
+      "name": "extern-core-no-core-client",
+      "path": "tests/spec/extern-core/no-core.rs",
+      "source_sha256": "8e82bb966261f5a75eb49406c31a505970abc2e408235dfae9bfafc2bed608a9",
+      "kind": "rlib",
+      "crate": "client",
+      "edition": "2024",
+      "deps": {
+        "core": "nostd-core"
+      },
+      "rustc_deps": {
+        "compiler_builtins": "nostd-builtins"
+      },
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "rustc": 0,
+      "rustc_codes": [],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 0,
+      "native": false,
+      "note": "a no_core client reaches core::base through the --extern core= extern-prelude entry, as the rustc_std_workspace_core shim does"
+    },
+    {
+      "name": "extern-core-alias-client",
+      "path": "tests/spec/no-std-clients/bare-client.rs",
+      "source_sha256": "b498af68c0c731b16ce1a6c486ca0bd36ca87a95ecea7b1662ec406b1746a2a4",
+      "kind": "rlib",
+      "crate": "client",
+      "edition": "2024",
+      "deps": {
+        "core": "extern-core-no-core-client"
+      },
+      "rustc_deps": {
+        "compiler_builtins": "nostd-builtins"
+      },
+      "inventory": [
+        "nostd-core"
+      ],
+      "source_client": "nostd-core",
+      "rustc": 1,
+      "rustc_codes": [
+        "cannot resolve a prelude import"
+      ],
+      "rustc_environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc_sysroot": "empty",
+      "frontend_expected_after_implementation": 1,
+      "frontend_diagnostic": "no_std source client's core provider lacks its edition prelude",
+      "native": false,
+      "note": "opponent: --extern core= names the no_core client above, whose root has no prelude module, while the source provider is nostd-core; the injection reads the prelude from the alias's crate. Redesigned before any run: the first draft aliased nostd-bare-core, a second source provider, which the one-provider preflight would reject before the injection"
+    }
+  ]
+}

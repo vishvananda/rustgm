@@ -15,7 +15,8 @@ MANIFESTS = [ROOT / 'pa29/tests/macro-metadata-outcomes.json',
              ROOT / 'pa29/tests/macro-stability-outcomes.json',
              ROOT / 'pa29/tests/imported-panic-outcomes.json',
              ROOT / 'pa29/tests/no-std-client-outcomes.json',
-             ROOT / 'pa29/tests/variant-reexport-outcomes.json']
+             ROOT / 'pa29/tests/variant-reexport-outcomes.json',
+             ROOT / 'pa29/tests/extern-core-outcomes.json']
 SOURCE_PROFILE = 'module-bodies-v13'
 
 

@@ -223,6 +223,13 @@ through the prelude and the renamed paths. The opponent names a variant as a
 type. All five outcomes were declared before any rustc or RustGM run of these
 files.
 
+`extern-core-outcomes.json` freezes `--extern core=` naming a crate's direct
+`core` dependency, under `spec/extern-core/`. The `no-std-clients` 2024 and
+2015 clients run natively with the alias, a `no_core` client reaches
+`core::base` through it, and the opponent aliases a crate without prelude
+modules. All four outcomes were declared before any rustc or RustGM run of
+these cases; the opponent was redesigned once before any run.
+
 `provider-guard-outcomes.json` freezes the version-thirteen provider-guard
 packet under `spec/provider-guards/`. The packet holds:
 

@@ -4,6 +4,9 @@ use super::{
 };
 use crate::support::hash::HashMap;
 use std::collections::VecDeque;
+#[cfg(test)]
+#[path = "../../../tests/invariants/extern_core_aliases.rs"]
+mod alias_tests;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Dependency {
@@ -13,13 +16,11 @@ pub struct Dependency {
 impl Dependency {
     /// Bind a validated semantic crate alias to an exact artifact identity.
     /// # Errors
-    /// Rejects malformed aliases and reserved crate-root names.
+    /// Rejects malformed aliases and reserved crate-root names. As for rustc,
+    /// `core` may name a direct dependency; `std` stays reserved.
     pub fn new(alias: String, identity: CrateIdentity) -> Result<Self, &'static str> {
         super::identity::validate_component(&alias)?;
-        if matches!(
-            alias.as_str(),
-            "self" | "Self" | "super" | "crate" | "core" | "std"
-        ) {
+        if matches!(alias.as_str(), "self" | "Self" | "super" | "crate" | "std") {
             return Err("unsupported external crate alias");
         }
         Ok(Self { alias, identity })

@@ -1,8 +1,9 @@
 //! A `no_std` source client receives rustc's standard library imports. Its
-//! injected `core` extern crate is the authenticated provider, nameable at the
-//! crate root in Rust 2015, and its glob prelude is that provider's
-//! `prelude::rust_20xx` module for the client's own edition. Injected `core`
-//! carries no `macro_use`: provider macros come through that prelude or a path.
+//! injected `core` extern crate is its `--extern core=` dependency or else the
+//! authenticated provider, nameable at the crate root in Rust 2015, and its
+//! glob prelude is that crate's `prelude::rust_20xx` module for the client's
+//! own edition. Injected `core` carries no `macro_use`: provider macros come
+//! through that prelude or a path.
 use super::{
     index::Resolver,
     model::{Access, Binding, DefId, DefKind, Namespace, Origin, ScopeId},
@@ -86,9 +87,10 @@ impl Resolver<'_> {
             .ok_or_else(|| error("no_std source client's core provider lacks its edition prelude"))
     }
 
-    /// Bind the extern-prelude entry `core` to the authenticated provider's
-    /// imported root. No dependency alias may spell `core`, so this injected
-    /// entry is the only one, as rustc's `extern crate core` is.
+    /// Resolve the injected `extern crate core` as rustc does. An
+    /// `--extern core=` alias names the direct dependency, which may be the
+    /// provider or a crate re-exporting it; otherwise the entry is bound to the
+    /// authenticated provider's imported root.
     fn provider_root(
         &mut self,
         provider: &crate::support::crates::CrateIdentity,
@@ -108,13 +110,8 @@ impl Resolver<'_> {
             )
             .ok_or_else(|| error("no_std source client lost its core provider root"))?;
         let core = self.package.names.intern("core").map_err(error)?;
-        if self
-            .facts
-            .bindings
-            .get(external, core, Namespace::Type)
-            .is_some()
-        {
-            return Err(error("no_std source client's `core` is already bound"));
+        if let Some(alias) = self.facts.bindings.get(external, core, Namespace::Type) {
+            return self.injected_alias(*alias);
         }
         self.facts
             .bindings
@@ -131,6 +128,27 @@ impl Resolver<'_> {
             )
             .map_err(error)?;
         Ok(root)
+    }
+
+    /// Only a dependency's imported crate root may stand for `core`.
+    fn injected_alias(&self, alias: Binding) -> Result<DefId, Error> {
+        let root = self
+            .facts
+            .definitions
+            .get(alias.target.0 as usize)
+            .filter(|row| {
+                row.kind == DefKind::Module && row.node.is_none() && row.members.is_some()
+            });
+        if root.is_none()
+            || alias.access != Access::Public
+            || alias.origin != Origin::Direct
+            || alias.ambiguous
+        {
+            return Err(error(
+                "no_std source client's `core` alias is not a dependency root",
+            ));
+        }
+        Ok(alias.target)
     }
 
     fn module_scope(&self, module: DefId) -> Result<ScopeId, Error> {
