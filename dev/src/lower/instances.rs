@@ -587,6 +587,9 @@ fn inspect_staged<S, R>(
     ) -> R,
     construction: Construction<'_>,
 ) -> Result<R, Error> {
+    facts
+        .open_lowering_account(report)
+        .map_err(|e| diagnostic(report, None, e.into()))?;
     let selection = construction.selection();
     let (templates, contexts, inputs) =
         prepare_template_inputs(report, facts, &mut prepared, selection)?;

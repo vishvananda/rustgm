@@ -123,7 +123,7 @@ fn control(mode: &str) -> TestResult {
         &report,
         &mut fixture.facts,
         &checked,
-        &mut builder,
+        (&mut builder, &mut 0),
         &mut cleanup,
         Specialization {
             template: checked

@@ -103,6 +103,10 @@ No bound, budget, wire byte or layout changes.
   - the old-charge control: the halving charges this repair removes total
     836,832 bytes, at least half of the consumed body and row storage.
 
+Lowering's own account later moved the first three controls to
+`lowering_ledger.rs` and measures the fourth on that account. See
+[lowering's own account](lib193-header-budget.md#lowerings-own-account-2026-11-08).
+
 ## 5. Margins after the repair
 
 | Input | Bytes after lowering | Bound | Share |
@@ -132,6 +136,10 @@ added input element, measured from 256 to 1,024 items:
 | `type AK=[u8;0];` | 0 | 0 | 0% |
 
 ## 6. Open: lowering needs its own measured bound
+
+Resolved by
+[lowering's own account](lib193-header-budget.md#lowerings-own-account-2026-11-08).
+The record below is kept as it was reported.
 
 These figures were reported to the coordinator rather than fixed here. The
 input-graph bound stays in place: the fix would be separately measured

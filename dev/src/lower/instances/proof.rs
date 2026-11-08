@@ -28,6 +28,8 @@ use crate::{
 pub(super) struct Builder {
     program: Program,
     bodies: Vec<incremental::Proved>,
+    /// The originals' exact proof reservation; later proofs are demanded.
+    originals: usize,
     queries: QueryCache,
     verifier: incremental::Verifier,
     recipes: Option<glue::Cache>,
@@ -37,7 +39,7 @@ pub(super) struct Builder {
     original_regions: Option<crate::support::hash::HashMap<crate::body::ir::BodyKey, RegionProof>>,
     future_store: Option<crate::types::arena::Identity>,
 }
-const _: [(); 1776] = [(); size_of::<Builder>()];
+const _: [(); 1784] = [(); size_of::<Builder>()];
 
 enum RegionProof {
     Ordinary(borrow::regions::Body),
@@ -98,6 +100,43 @@ pub(super) struct FutureCleanup {
 pub(super) struct CleanupCalls {
     pub ordinary: Vec<Instance>,
     pub futures: Option<Box<FutureCleanup>>,
+}
+/// Make room for one more element. A full container that a demanded body
+/// grows adds slots for as many bodies as were demanded so far, so the first
+/// demanded body never doubles the originals' exact reservation and demanded
+/// growth stays proportional to demanded bodies; other growth doubles as usual.
+fn reserve<T>(values: &mut Vec<T>, demanded: Option<usize>) -> Result<(), &'static str> {
+    match demanded {
+        Some(count) if values.len() == values.capacity() => values.try_reserve_exact(count.max(4)),
+        _ => values.try_reserve(1),
+    }
+    .map_err(|_| "proof assembly allocation failed")
+}
+/// A container that grew from `before` to `after` slots pays the added
+/// slots' actual bytes and one unit per element it moved. Growth driven by a
+/// demanded instance, adapter or factory pays the demand budget, whose fixed
+/// cap bounds instantiation by output as rustc's limits do. Any other growth
+/// is originals-proportional and pays lowering's input-graph account.
+fn pay_growth<T>(
+    facts: &mut Declarations,
+    demand: Option<&mut usize>,
+    length: usize,
+    (before, after): (usize, usize),
+) -> Result<(), &'static str> {
+    let added = after.saturating_sub(before);
+    if added == 0 {
+        return Ok(());
+    }
+    let bytes = added.saturating_mul(size_of::<T>());
+    let Some(budget) = demand else {
+        return facts.pay_lowering_growth(length, bytes);
+    };
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(length);
+    *budget = budget.saturating_add(bytes);
+    if *budget > 64_000_000 {
+        return Err("generic instance bodies exceed 64 MB budget");
+    }
+    Ok(())
 }
 impl Builder {
     pub(super) fn append_selected_template(
@@ -219,10 +258,18 @@ impl Builder {
         let methods = program.drops.as_ref().map(|d| d.methods.as_slice());
         let recipes = methods.map(glue::Cache::new).transpose()?;
         let verifier = incremental::Verifier::new(methods)?;
+        // One proof slot per original is originals-proportional lowering
+        // storage, reserved exactly and paid at its actual slots.
+        let mut proofs = Vec::new();
+        proofs
+            .try_reserve_exact(ordinary.bodies().len())
+            .map_err(|_| "proof assembly allocation failed")?;
+        facts.pay_lowering_growth(0, crate::support::retained::vector(&proofs))?;
         Ok((
             Self {
                 program,
-                bodies: Vec::with_capacity(ordinary.bodies().len()),
+                originals: proofs.capacity(),
+                bodies: proofs,
                 queries: QueryCache::default(),
                 verifier,
                 recipes,
@@ -487,9 +534,11 @@ impl Builder {
                     .into(),
             });
         }
-        if let (Some(pending), Some(requirements)) = (&mut self.program.drops, requirements) {
-            pending.bodies.push(requirements);
-        }
+        self.retain_row(facts, requirements, None)
+            .map_err(|message| borrow::Error {
+                node: Some(source.into()),
+                message: message.into(),
+            })?;
         Ok(proved)
     }
     pub(super) fn append_proved(
@@ -508,14 +557,17 @@ impl Builder {
                 node: Some(proof.body().source.into()),
                 message: message.into(),
             })?;
-        let index = self.bodies.len();
         self.adapters |= proof
             .body()
             .closure_calls
             .as_deref()
             .is_some_and(crate::body::invocation_entries::Entries::has_adapters);
-        self.bodies.push(proof);
-        Ok(index)
+        let source = proof.body().source;
+        self.retain_proof(facts, proof, None)
+            .map_err(|message| borrow::Error {
+                node: Some(source.into()),
+                message: message.into(),
+            })
     }
     pub(super) fn push(
         &mut self,
@@ -532,7 +584,26 @@ impl Builder {
             body,
             input,
             requirements,
-            Original::Ordinary(report),
+            (Original::Ordinary(report), None),
+        )
+    }
+    /// Push a demanded instance; its proof and row growth pay `demand`.
+    pub(super) fn push_instance(
+        &mut self,
+        report: &crate::resolve::expansion::Report,
+        facts: &mut Declarations,
+        templates: &templates::Checked<'_>,
+        (body, input): (Body, &Contract),
+        requirements: Option<drops::Requirements>,
+        demand: &mut usize,
+    ) -> Result<usize, borrow::Error> {
+        self.push_inner(
+            facts,
+            templates,
+            body,
+            input,
+            requirements,
+            (Original::Ordinary(report), Some(demand)),
         )
     }
     pub(super) fn push_future_factory(
@@ -697,7 +768,7 @@ impl Builder {
             body,
             input,
             Some(requirements),
-            Original::Factory(&permit),
+            (Original::Factory(&permit), Some(budget)),
         )?;
         self.forwarding
             .insert(index, forwarding::Bridge::Factory(permit));
@@ -753,7 +824,7 @@ impl Builder {
             prepared.body,
             &prepared.input,
             Some(requirements),
-            Original::Adapter(source, &prepared.template),
+            (Original::Adapter(source, &prepared.template), Some(budget)),
         )?;
         self.forwarding
             .insert(index, forwarding::Bridge::Adapter(source));
@@ -766,7 +837,7 @@ impl Builder {
         body: Body,
         input: &Contract,
         requirements: Option<drops::Requirements>,
-        original: Original<'_>,
+        (original, demand): (Original<'_>, Option<&mut usize>),
     ) -> Result<usize, borrow::Error> {
         self.require_current_store(&facts.types)
             .map_err(|message| borrow::Error {
@@ -790,12 +861,7 @@ impl Builder {
                     node: Some(input.source.into()),
                     message: message.into(),
                 })?;
-            let index = self.bodies.len();
-            self.bodies.push(proof);
-            if let (Some(pending), Some(requirements)) = (&mut self.program.drops, requirements) {
-                pending.bodies.push(requirements);
-            }
-            return Ok(index);
+            return self.retain(facts, (proof, requirements), input, demand);
         }
         let owned_cleanup = self.program.drops.is_some();
         let mut catalog = owned_cleanup
@@ -850,17 +916,75 @@ impl Builder {
                 node: Some(input.source.into()),
                 message: message.into(),
             })?;
-        let index = self.bodies.len();
         self.adapters |= proof
             .body()
             .closure_calls
             .as_deref()
             .is_some_and(crate::body::invocation_entries::Entries::has_adapters);
-        self.bodies.push(proof);
-        if let (Some(pending), Some(requirements)) = (&mut self.program.drops, requirements) {
-            pending.bodies.push(requirements);
-        }
+        self.retain(facts, (proof, requirements), input, demand)
+    }
+    /// Append a proof and its pending row, paying both containers' growth.
+    fn retain(
+        &mut self,
+        facts: &mut Declarations,
+        (proof, requirements): (incremental::Proved, Option<drops::Requirements>),
+        input: &Contract,
+        mut demand: Option<&mut usize>,
+    ) -> Result<usize, borrow::Error> {
+        let error = |message: &str| borrow::Error {
+            node: Some(input.source.into()),
+            message: message.into(),
+        };
+        let index = self
+            .retain_proof(facts, proof, demand.as_deref_mut())
+            .map_err(error)?;
+        self.retain_row(facts, requirements, demand)
+            .map_err(error)?;
         Ok(index)
+    }
+    /// Proofs of demanded instances, adapters and factories grow past the
+    /// originals' reservation with instantiation, not input, and pay
+    /// `demand`. Each capacity change pays its actual added slots before the
+    /// proof moves in.
+    fn retain_proof(
+        &mut self,
+        facts: &mut Declarations,
+        proof: incremental::Proved,
+        demand: Option<&mut usize>,
+    ) -> Result<usize, &'static str> {
+        let index = self.bodies.len();
+        let before = self.bodies.capacity();
+        let demanded = demand.is_some().then(|| self.demanded().saturating_add(1));
+        reserve(&mut self.bodies, demanded)?;
+        let after = self.bodies.capacity();
+        pay_growth::<incremental::Proved>(facts, demand, index, (before, after))?;
+        self.bodies.push(proof);
+        Ok(index)
+    }
+    /// Proofs retained after the originals' exact reservation.
+    fn demanded(&self) -> usize {
+        self.bodies.len().saturating_sub(self.originals)
+    }
+    /// Pending cleanup rows pushed back beyond `Originals::take`'s exact
+    /// reservation pay their actual added slots the same way.
+    fn retain_row(
+        &mut self,
+        facts: &mut Declarations,
+        requirements: Option<drops::Requirements>,
+        demand: Option<&mut usize>,
+    ) -> Result<(), &'static str> {
+        // The proof this row belongs to is already counted.
+        let demanded = demand.is_some().then(|| self.demanded());
+        let (Some(pending), Some(requirements)) = (&mut self.program.drops, requirements) else {
+            return Ok(());
+        };
+        let length = pending.bodies.len();
+        let before = pending.bodies.capacity();
+        reserve(&mut pending.bodies, demanded)?;
+        let after = pending.bodies.capacity();
+        pay_growth::<drops::Requirements>(facts, demand, length, (before, after))?;
+        pending.bodies.push(requirements);
+        Ok(())
     }
     fn regions(
         &mut self,

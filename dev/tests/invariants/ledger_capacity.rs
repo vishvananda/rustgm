@@ -47,7 +47,8 @@ fn large_single_owner_sources_pay_only_real_header_and_binding_rows() -> Result 
     }
     assert_eq!(size_of::<Header>(), 80);
     assert_eq!(size_of::<Owner>(), 56);
-    assert_eq!(size_of::<Headers>(), 136);
+    // 40 bytes of the 176 are lowering's account, opened during lowering.
+    assert_eq!(size_of::<Headers>(), 176);
     Ok(())
 }
 #[test]

@@ -486,6 +486,10 @@ fn materialize(
     mut preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
 ) -> Result<proof::Builder, Error> {
     let mut budget = Budget::default();
+    #[cfg(test)]
+    {
+        budget.bytes = DEMAND.get()[0];
+    }
     let (work, dependencies) =
         initial_work(report, facts, roots, &mut program, ordinary, &mut budget)?;
     let mut traversal = Traversal {
@@ -508,7 +512,27 @@ fn materialize(
             traversal.step(report, facts, templates, action)
         })?;
     }
+    #[cfg(test)]
+    DEMAND.set([DEMAND.get()[0], traversal.budget.bytes]);
     Ok(traversal.program)
+}
+
+#[cfg(test)]
+thread_local! {
+    /// Test-only: the bytes a demand budget starts from, so a control can
+    /// reach the fixed cap without 64 MB of input, and the bytes the last
+    /// finished traversal on this thread held.
+    static DEMAND: std::cell::Cell<[usize; 2]> = const { std::cell::Cell::new([0, 0]) };
+}
+/// Test-only: start every later demand budget on this thread at `bytes`.
+#[cfg(test)]
+pub(in crate::lower::instances) fn preload_demand(bytes: usize) {
+    DEMAND.set([bytes, 0]);
+}
+/// Test-only: the bytes the last finished demand traversal held.
+#[cfg(test)]
+pub(in crate::lower::instances) fn demand_bytes() -> usize {
+    DEMAND.get()[1]
 }
 
 /// One ordinary DFS owns the same program, work stack and instance accounting.
@@ -770,7 +794,7 @@ impl Traversal<'_> {
             report,
             facts,
             templates,
-            &mut self.program,
+            (&mut self.program, &mut self.budget.bytes),
             &mut self.cleanup,
             request,
         )?;
@@ -813,7 +837,7 @@ pub(super) fn specialize(
     report: &Report,
     facts: &mut Declarations,
     templates: &Checked<'_>,
-    program: &mut proof::Builder,
+    (program, demand): (&mut proof::Builder, &mut usize),
     cleanup: &mut body::instantiate::Cleanup,
     request: Specialization<'_>,
 ) -> Result<usize, Error> {
@@ -849,13 +873,13 @@ pub(super) fn specialize(
     )?;
     body::constants::instance(report, facts, &materialized.body)?;
     program
-        .push(
+        .push_instance(
             report,
             facts,
             templates,
-            materialized.body,
-            &materialized.contract,
+            (materialized.body, &materialized.contract),
             Some(materialized.destruction),
+            demand,
         )
         .map_err(|e| diagnostic(report, e.node, e.message))
 }

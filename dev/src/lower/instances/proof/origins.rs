@@ -7,7 +7,7 @@ use crate::{
     },
     resolve::expansion::Report,
     sema::model::Declarations,
-    support::retained::{self, Growth},
+    support::retained,
 };
 pub(in crate::lower::instances) struct Originals<'report> {
     bodies: Vec<Body>,
@@ -44,18 +44,16 @@ impl<'report> Originals<'report> {
             }
             // Both row containers can remain live during assembly. Their inner
             // payloads move once; no copy of a Requirements collection is made.
-            let growth = Growth::vector::<Requirements>(0, 0, count);
-            payer.charge(
-                facts,
-                growth.work,
-                growth
-                    .bytes
-                    .saturating_add(retained::vector(&pending.bodies)),
-            )?;
+            // The replacement is reserved exactly, so it pays its actual slots.
             let mut replacement = Vec::new();
             replacement
                 .try_reserve_exact(count)
                 .map_err(|_| "original cleanup row assembly allocation failed")?;
+            payer.charge(
+                facts,
+                0,
+                retained::vector(&replacement).saturating_add(retained::vector(&pending.bodies)),
+            )?;
             Some(Box::new(Rows {
                 values: std::mem::replace(&mut pending.bodies, replacement),
                 payer,
@@ -164,6 +162,9 @@ pub(super) fn parent_history_gap(
     Ok(!crate::borrow::loans::templates::no_cleanup(row))
 }
 
+#[cfg(test)]
+#[path = "../../../../tests/invariants/lowering_ledger.rs"]
+mod ledger_tests;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/shrunk_originals.rs"]
 mod shrink_tests;

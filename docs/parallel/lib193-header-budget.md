@@ -135,4 +135,272 @@ work-only. Its margins are:
   rows fails to lower at 256 of them.
 
 Lowering needs its own measured per-phase constants. The 128-byte header
-factor must not be raised to absorb lowering.
+factor must not be raised to absorb lowering. The next section gives lowering
+its own account.
+
+## Lowering's own account (2026-11-08)
+
+Lowering no longer pays the header account. Its storage is split by what it
+grows with:
+
+- Storage sized by the original bodies pays a lowering account. It opens
+  once, on the crate's existing ledger, at the start of `inspect_staged`, and
+  only for the report whose input graph the declarations snapshotted. Its
+  bound is linear in the input.
+- Storage that demanded instances, factories and adapters add pays the
+  existing demand `Budget` (100,000 bodies, 64 MB). Each pays its own actual
+  retained bytes once.
+
+Monomorphization is legitimately superlinear in its input. In a chain of `n`
+generic functions, where each forwards to the one before and each is
+instantiated by its own root, `n` items demand n(n+1)/2 instances. No
+input-proportional bound accepts that chain and still rejects a superlinear
+defect. rustc bounds instantiation with fixed limits, and this split does the
+same:
+
+- the demand budget's fixed cap bounds output;
+- the lowering account stays proportional to the input, and keeps rejecting
+  superlinear retention sized by the originals.
+
+The accepted cost is that a large valid program can reach the fixed cap (open
+item 1).
+
+### What pays where
+
+| Payer | Charge | Account |
+| --- | --- | --- |
+| `Builder::new` | the proof vector, reserved exactly for the originals: 480 bytes each | lowering |
+| `Originals::take` | the row owner, the exact replacement row vector (96 bytes per row) and the moved row vector (at most 192 per row after doubling) | lowering |
+| `Originals::shrink` | one work unit per moved body and row | lowering |
+| Original proofs and rows pushed back | nothing new: they fill the exact reservations | lowering, if they ever grow |
+| Demanded proofs and rows (`push_instance`, factories, adapters) | the actual added slots, plus one work unit per moved element | demand |
+| `Budget::enter` | the instance body's retained bytes and its contract slices (unchanged) | demand |
+| Header queries and caller inputs while the account is open | their existing work and bytes | lowering |
+| Header-row storage (`ledger()`) | unchanged | header |
+
+A full proof or row vector that a demanded body grows adds slots for as many
+bodies as have been demanded so far, at least four. The first demanded body
+therefore never doubles the originals' exact reservation, and demanded growth
+stays proportional to the demanded bodies. With `Vec`'s own doubling, one
+instance after 1,024 trivial functions would have paid about half a megabyte
+of proof slots sized by the originals. This figure is derived from the growth
+policy, not measured. Builder grows from 1,776 to 1,784 bytes, for the
+`originals` count.
+
+### Bound
+
+Lowering's bound is 4·E + 64·O work and 32·E + 1,536·O bytes, where:
+
+- E is the header bound's input-graph element count;
+- O is the number of body owners: function, constructor, constant and static
+  definitions, and every closure, inline constant, async block, array length,
+  repeat count and explicit discriminant.
+
+| Constant | Value | Basis |
+| --- | ---: | --- |
+| `BYTES_PER_BODY_OWNER` | 1,536 | twice the worst measured 768: one 480-byte proof slot plus `take`'s ceiling of 288 (three 96-byte row slots) |
+| `BYTES_PER_INPUT` | 32 | a floor for payers that scale with body size; with owners paid separately the measured residual is zero |
+| `WORK_PER_BODY_OWNER` | 64 | more than twice the worst measured 27, a trivial `const fn` whose lowering also asks 17 header queries |
+| `WORK_PER_INPUT` | 4 | the measured residual is at most 0.09 per element |
+
+The 128-byte header factor is unchanged.
+
+### Measurements
+
+These are per item, measured from 256 to 1,024 items inserted into the
+`needs_drop` scaling base:
+
+| Shape | E | O | Lowering bytes | Byte share | Lowering work | Work share | Demand bytes |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `fn fK(){}` | 4 | 1 | 768 of 1,664 | 46% | 9 of 80 | 11% | 0 |
+| `const CK:u8=0;` | 5 | 1 | 768 of 1,696 | 45% | 8 of 84 | 10% | 0 |
+| `const _:u8=0;` | 5 | 1 | 768 of 1,696 | 45% | 8 of 84 | 10% | 0 |
+| `static SK:u8=0;` | 5 | 1 | 768 of 1,696 | 45% | 8 of 84 | 10% | 0 |
+| `const fn kK()->u8{0}` | 6 | 1 | 768 of 1,728 | 44% | 26 of 88 | 30% | 0 |
+| `fn dK(){let _l=Leaf;}` | 9 | 1 | 768 of 1,824 | 42% | 9 of 100 | 9% | 0 |
+| `fn pK(_r:Root){}` | 9 | 1 | 768 of 1,824 | 42% | 9 of 100 | 9% | 0 |
+| `fn gK(x:u8)->u8{x}` | 11 | 1 | 768 of 1,888 | 41% | 9 of 108 | 8% | 0 |
+| closure call in a fn | 14 | 2 | 1,536 of 3,520 | 44% | 14 of 184 | 8% | 0 |
+| closure call in an exported fn | 39 | 2 | 1,536 of 4,320 | 36% | 16 of 284 | 6% | 0 |
+| exported `fn rK()->u8{0}` | 31 | 1 | 768 of 2,528 | 30% | 10 of 188 | 5% | 0 |
+| constructor and drop glue | 44 | 2 | 1,536 of 4,480 | 34% | 16 of 304 | 5% | 320 |
+| `struct NoiseK([u8;K]);` | 11 | 2 | 768 of 3,424 | 22% | 8 of 172 | 5% | 0 |
+| nested array lengths | 23 | 5 | 768 of 8,416 | 9% | 5 of 412 | 1% | 0 |
+| discriminant, alias | 8 | 1 | 0 | 0% | 0 | 0% | 0 |
+| shared generic, one instance each | 37 | 2 | 768 of 4,256 | 18% | 13 of 276 | 5% | 1,824 |
+| own generic, one instance each | 49 | 3 | 768 of 6,176 | 12% | 13 of 388 | 3% | 1,824 |
+| generic Drop instance | 58 | 3 | 768 of 6,464 | 12% | 13 of 424 | 3% | 3,944 |
+
+No shape sorted by the originals exceeds 50% of its grant after the
+preallocation charge. The worst is the trivial function at 46%.
+
+Header-account margins are unchanged by this split, as slope shares of the
+header bound:
+
+- trivial functions: 100 of 128 bytes per element (78%);
+- `const fn`: 66 of 128 bytes (52%), and 12.8 of 16 work units per element
+  (80%), or 72% of the bound at 1,024 items. That work was 98% before header
+  queries asked during lowering moved to lowering's account.
+
+The 13 declared `needs_drop` scaling inputs use at most 22% of lowering's
+byte bound (`noise1024`) and at most 27% of the header byte bound. Lowering
+leaves the header account exactly as analysis left it.
+
+PA31 source-provider corpora, measured whole:
+
+| Input | Lowering bytes | Share | Header bytes share |
+| --- | ---: | ---: | ---: |
+| source-const-drop work128 | 100,680 of 683,104 | 15% | 3% |
+| source-index-places bound-128 | 94,204 of 676,704 | 14% | 60% |
+| source-assign-ten bound-128 | 83,520 of 699,136 | 12% | 6% |
+| source-va-runtime work128 | 126,056 of 1,125,984 | 11% | 55% |
+| 14 further inputs | | at most 7% | at most 49% |
+
+Five inputs remain unmeasured, because the probe cannot build them with a
+generic tag:
+
+- source-panic-handler provider: resolve fails with `unresolved value name`;
+- source-integer-niches some-zero and source-nonzero-methods some-zero: `value
+  is outside its scalar pattern range`;
+- source-binary-five bound-128: it needs a nonempty aligned `repr(C)` struct;
+- source-promotable parent-policy: its stability belongs to another
+  declaration.
+
+Each needs its own report tag and sources. The static shape is measured
+through a `sync` lang item and the `auto_traits` feature.
+
+### The superlinear chain
+
+| n | Instances | Lowering bytes | Byte share | Lowering work | Work share | Demand bytes |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 8 | 36 | 14,088 | 13% | 247 | 3% | |
+| 16 | 136 | 18,696 | 11% | 548 | 5% | |
+| 32 | 528 | 30,984 | 12% | 1,537 | 9% | 806,688 |
+| 64 | 2,080 | 55,560 | 12% | 5,054 | 17% | 3,190,912 |
+| 128 | 8,256 | 104,712 | 12% | 18,235 | 32% | |
+
+The rows for 8, 16 and 128 come from the uncommitted probe, whose base
+enables two more features; the rows for 32 and 64 are the committed control.
+Each instance pays about 1,530 demand bytes, so the 64 MB cap is reached near
+41,800 instances (n ≈ 288). Lowering's byte share stays flat.
+
+Its work share does not. Instance lowering still asks header queries and pays
+caller inputs on lowering's account, about two work units per instance here.
+Extrapolated to n ≈ 288, that is about 72% of the work bound, so the demand
+cap rejects this chain first. In a chain like this one, three or more such
+units per instance would let the lowering account reject first (open item 3).
+
+### Rejected options
+
+- A, keeping demanded growth on lowering's account: `generic Drop instance`
+  took 56% of its grant, failing the 2× rule, and the account rejected valid
+  chains from n = 16.
+- B, a fitted per-element constant large enough for the measured instance
+  shapes: any fitted constant still rejects a valid chain at some n, a false
+  rejection that grows with the input.
+- D, B with more slack: the same false rejections, later, and a looser bound
+  for genuine superlinear defects.
+
+### Open items
+
+1. The demand budget's fixed 64 MB and 100,000-body cap has not been measured
+   against large std clients. Its adequacy is open.
+2. The originals' `Vec<Body>` (456 bytes per body) is not charged on any
+   ledger. `body::build::concrete_selected` reserves it with
+   `Vec::with_capacity(facts.functions.len())` and pushes uncharged. It belongs
+   to the body phase's ledger, charged at build where it is allocated, not to
+   lowering's account.
+3. Header queries and caller inputs that instance lowering pays still reach
+   lowering's account (section above). Routing them to the demand budget needs
+   a scope around instance work, on which no decision has been made.
+4. A crate without a ledger opens no lowering account. Its demand growth pays
+   only the demand budget.
+
+### Size pins
+
+- `Declarations` stays 7,152 bytes, pinned at compile time in
+  `dev/tests/invariants/prototype_headers.rs` and asserted at run time by
+  `registry_retains_distinct_identities_and_shared_finite_profiles`.
+- `Headers` gains `lowering: Option<Account>` inside the boxed `Ledger`, one
+  per crate, and grows from 136 to 176 bytes. A grep for every spelling,
+  summed or single, found one assertion: `ledger_capacity.rs` pins `Headers`.
+  That pin is updated, and its test is selected. The other spellings are
+  diagnostic prints:
+  - `attribute_storage` in `declared_origins.rs`, read by
+    `compose_operands.rs` and `cpu_policy.rs`;
+  - `pointee_consumers.rs`, `origin_integrity.rs` and `always_const.rs`.
+
+  The `Headers` spellings in `typed_headers` and `metadata_contracts` name
+  other structs. Creating the ledger charges no size of its own, so no header
+  byte total moves.
+- The proof `Builder` pin moves from 1,776 to 1,784 bytes. No other spelling
+  of that size is tested; the historical checkpoint documents keep their
+  observed 1,776.
+
+### Controls
+
+`dev/tests/invariants/lowering_ledger.rs`, mounted in
+`lower::instances::proof::origins` as `ledger_tests`:
+
+- `declared_scaling_inputs_lower_inside_both_accounts`:
+  - the generated 64- and 1,024-nominal inputs equal the declared fixtures;
+  - all 13 declared inputs stay inside half of lowering's bound;
+  - lowering leaves the header account as analysis left it.
+- `ordinary_shapes_pay_at_most_half_of_what_their_inputs_grant`: trivial
+  function, literal and unnamed constant, static, noise, Drop local,
+  constructor and `const fn`, from 256 to 1,024 items. For each:
+  - lowering's bytes and work grow by at most half of what its bound grows by;
+  - the header account grows by less than its bound does;
+  - both sizes stay inside half of lowering's bound.
+- `trivial_functions_with_drop_rows_lower_beyond_the_shared_header_bound`: 256
+  and 1,024 functions lower. At 1,024, analysis and lowering together need
+  more than the header bound, so the old shared account would fail.
+- `demanded_instances_pay_the_demand_budget_once_by_their_own_size`:
+  - three instance shapes each pay constant demand bytes per instance;
+  - lowering's account follows only the originals;
+  - one instance pays 3,248 demand bytes after either 256 or 1,024 trivial
+    originals;
+  - demanding each instance twice yields the same symbols and the same demand
+    bytes.
+- `superlinear_instantiation_lowers_until_the_fixed_demand_cap`:
+  - at n = 32 and n = 64 the chain emits exactly n + n(n+1)/2 symbols beyond
+    the base, a private LowIR equality;
+  - demand grows quadratically and lowering bytes linearly, with both bytes
+    and work inside half of lowering's bound;
+  - with the cap preloaded to twice the 32-item demand, 32 still lowers and 64
+    fails with the demand budget's own message.
+- `superlinear_lowering_charges_are_rejected_once_inputs_grow`: a forged
+  quadratic charge on the opened account, through both
+  `charge_caller_inputs` and `pay_lowering_growth`, fits at 256 functions and
+  fails at 1,024 for work and for bytes. The header account is untouched.
+
+`dev/tests/invariants/lowering_account.rs`, mounted in
+`sema::header_attributes::local::lowering_account` as `tests`:
+
+- `charges_move_to_lowering_only_once_its_account_opens`:
+  - the same header query and payment land on the header account before
+    opening and on lowering's account after;
+  - a different crate's report cannot open the account;
+  - reopening keeps its totals;
+  - charges beyond its bound fail with lowering's message, leaving the header
+    account untouched.
+- `crates_without_a_ledger_open_no_account`.
+
+`consumed_originals_pay_their_rows_once_and_shrinking_pays_only_work` now
+measures lowering's account. Its other controls moved to `ledger_tests`.
+
+### Checks
+
+Receipts are under `obj/qualification/fast/`.
+
+| Selection | Receipt | Result |
+| --- | --- | --- |
+| Measurement: the uncommitted probe and the first controls | `1794147536548509120` | tables above; two controls amended (constructor demand, forged charge rounding) |
+| Private: the 6 ledger controls, the shrink control, 6 `Originals` row tests, the `needs_drop` kernel test, `d2bcb1f89`'s 8 header tests and the 2 account controls | `1794148181168937695` | 23 passed; the `Headers` pin failed at 176 against 136 and was updated |
+| Private: the `Headers` pin test, the chain control, 8 proof tests, 10 adapter tests and 3 sealed-permission tests | `1794148522221647511` | 23 passed; the 64-item chain fails with `generic instance bodies exceed 64 MB budget` |
+| Integration: `access_sources`, `stream_sources`, `needs_drop_provider`, `cstr_sources`, `vactx` | `1794148716381584114` | 21 passed |
+| Integration, demand-budget consumers: `demanded_cleanup`, `instance_values` and `source_closures` growth limits | `1794149063522219243` | 3 passed |
+| Exact `--ignored` native scaling test | `1794149233013321854` | 1 passed, all 13 inputs |
+
+The last two receipts cover the final tree. The earlier ones precede only a
+comment edit to the `Headers` field documentation.

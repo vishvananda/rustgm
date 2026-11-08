@@ -39,6 +39,9 @@ pub(in crate::sema) use incoherent_targets::consume as consume_incoherent_target
 pub(in crate::sema) use skipped_traits::consume as consume_skipped_dispatch;
 pub(super) mod optimization;
 pub(in crate::sema) use optimization::consume as consume_optimization;
+mod lowering_account;
+#[cfg(test)]
+pub(crate) use lowering_account::lowering_costs;
 mod promotability;
 pub(in crate::sema) use comptime::consume as consume_comptime;
 pub(in crate::sema) use promotability::consume as consume_promotable;
@@ -80,6 +83,10 @@ pub(super) struct Headers {
     bytes: Cell<usize>,
     pub(super) steps: Cell<usize>,
     bound: InputBound,
+    /// Lowering's own account, opened once when lowering begins. Payments and
+    /// header queries made after that point charge it; header rows still pay
+    /// this header account.
+    lowering: Option<lowering_account::Account>,
 }
 /// Header producer work units per authenticated input-graph element. Sized
 /// from the LIB-193 attribution in `docs/parallel/lib193-header-budget.md`:
@@ -105,50 +112,10 @@ pub(in crate::sema) struct InputBound {
     bytes: usize,
 }
 impl InputBound {
-    /// Definitions plus every unit's owners, attribute effects, AST nodes,
-    /// AST edges, retained attribute token trees and the bytes those tokens spell.
-    /// Ordinary crates also count the written bounds their staging charges here.
+    /// Header work and storage per input-graph element, plus the written
+    /// bounds an ordinary crate's staging charges here.
     pub(in crate::sema) fn of(report: &Report) -> Self {
-        let staging =
-            report.package.source_core().is_none() && report.package.source_client().is_none();
-        let mut elements = report.resolution.definitions.len();
-        let mut staged = 0;
-        for unit in &report.package.units {
-            let syntax = &unit.configured;
-            let counts = [
-                elements,
-                syntax.owners.len(),
-                syntax.effects.len(),
-                syntax.ast.nodes.len(),
-                syntax.ast.edges.len(),
-            ];
-            let trees = syntax
-                .ast
-                .attributes
-                .iter()
-                .flat_map(|capture| capture.forest.nodes())
-                .map(|tree| {
-                    // A group spells nothing itself; its children are counted.
-                    let spelled = match tree.kind {
-                        TreeKind::Token(_) => tree.span.end.saturating_sub(tree.span.start),
-                        TreeKind::Doc { body, .. } => body.end.saturating_sub(body.start),
-                        TreeKind::Group { .. } => 0,
-                    };
-                    1 + spelled as usize
-                });
-            elements = retained::sum(counts.into_iter().chain(trees));
-            if staging {
-                let bounds = syntax
-                    .ast
-                    .nodes
-                    .iter()
-                    .filter(|node| {
-                        matches!(node.kind, Kind::Bound { .. } | Kind::Constraint { .. })
-                    })
-                    .count();
-                staged = retained::sum([staged, bounds]);
-            }
-        }
+        let (elements, staged) = input_graph(report);
         Self {
             work: elements.saturating_mul(WORK_PER_INPUT),
             bytes: retained::sum([
@@ -160,6 +127,51 @@ impl InputBound {
     const fn exceeded(self, steps: usize, bytes: usize) -> bool {
         steps > self.work || bytes > self.bytes
     }
+}
+/// The checked crate's input-graph elements: definitions plus every unit's
+/// owners, attribute effects, AST nodes, AST edges, retained attribute token
+/// trees and the bytes those tokens spell. Outside a source core or client it
+/// also counts the written bounds projected-bound staging charges.
+fn input_graph(report: &Report) -> (usize, usize) {
+    let staging =
+        report.package.source_core().is_none() && report.package.source_client().is_none();
+    let mut elements = report.resolution.definitions.len();
+    let mut staged = 0;
+    for unit in &report.package.units {
+        let syntax = &unit.configured;
+        let counts = [
+            elements,
+            syntax.owners.len(),
+            syntax.effects.len(),
+            syntax.ast.nodes.len(),
+            syntax.ast.edges.len(),
+        ];
+        let trees = syntax
+            .ast
+            .attributes
+            .iter()
+            .flat_map(|capture| capture.forest.nodes())
+            .map(|tree| {
+                // A group spells nothing itself; its children are counted.
+                let spelled = match tree.kind {
+                    TreeKind::Token(_) => tree.span.end.saturating_sub(tree.span.start),
+                    TreeKind::Doc { body, .. } => body.end.saturating_sub(body.start),
+                    TreeKind::Group { .. } => 0,
+                };
+                1 + spelled as usize
+            });
+        elements = retained::sum(counts.into_iter().chain(trees));
+        if staging {
+            let bounds = syntax
+                .ast
+                .nodes
+                .iter()
+                .filter(|node| matches!(node.kind, Kind::Bound { .. } | Kind::Constraint { .. }))
+                .count();
+            staged = retained::sum([staged, bounds]);
+        }
+    }
+    (elements, staged)
 }
 #[cfg(test)]
 pub(crate) const fn source_contract_bound(facts: &Declarations) -> (usize, usize) {
@@ -669,7 +681,11 @@ pub(in crate::sema) fn source_payments(
     Ok(payments)
 }
 impl Payments<'_> {
+    /// Charge the header account, or lowering's own account once it is open.
     pub(crate) fn charge(&self, steps: usize, bytes: usize) -> Result<(), &'static str> {
+        if let Some(lowering) = &self.0.lowering {
+            return lowering.charge(steps, bytes);
+        }
         self.0.steps.set(self.0.steps.get().saturating_add(steps));
         self.0.bytes.set(self.0.bytes.get().saturating_add(bytes));
         if self
@@ -682,7 +698,12 @@ impl Payments<'_> {
         Ok(())
     }
 }
+/// Header queries charge the header account, or lowering's once it is open:
+/// a query lowering asks is lowering's work.
 fn charge_query(headers: &Headers, steps: usize) -> Result<(), Error> {
+    if let Some(lowering) = &headers.lowering {
+        return lowering.charge(steps, 0).map_err(Error::unlocated);
+    }
     headers.steps.set(headers.steps.get().saturating_add(steps));
     if headers.bound.exceeded(headers.steps.get(), 0) {
         return Err(Error::unlocated(

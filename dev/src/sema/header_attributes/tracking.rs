@@ -108,6 +108,28 @@ impl Declarations {
         .map_err(|_| "caller inputs exceed source work/storage budget")
     }
 
+    /// Begin lowering's own account on this crate's ledger. Caller inputs paid
+    /// after this point charge lowering's input-proportional bound.
+    /// # Errors
+    /// Rejects a report whose input graph differs from the declarations' own.
+    pub(crate) fn open_lowering_account(&mut self, report: &Report) -> Result<(), &'static str> {
+        super::lowering_account::open(report, self)
+    }
+
+    /// Pay retained lowering storage sized by the original bodies, such as
+    /// the proofs' exact reservation. It charges lowering's account once open.
+    /// A crate without a ledger has no input-graph bound and pays nothing here;
+    /// demanded instances pay the demand budget instead.
+    /// # Errors
+    /// Reports work or retention beyond the paying account's bound.
+    pub(crate) fn pay_lowering_growth(
+        &self,
+        work: usize,
+        bytes: usize,
+    ) -> Result<(), &'static str> {
+        super::lowering_account::pay_growth(self, work, bytes)
+    }
+
     /// Disjoint typed traversal/accounting borrows, never header or body permission.
     pub(crate) fn caller_input_store(
         &mut self,
