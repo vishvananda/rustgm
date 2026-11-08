@@ -359,3 +359,78 @@ fn bundle_variances(
     )?;
     Ok((values, order))
 }
+
+/// Paid work of the reached variance of `L0<'a> { next: &'a L1<'a> }` through
+/// `L{count - 1}<'a> { r: &'a u8 }`, where each field template is published
+/// only after the append waits for it. A `restart` append forgets its graph
+/// at every wait, so it walks the published prefix again.
+fn waited_chain_work(count: usize, restart: bool) -> TestResult<usize> {
+    let mut source = String::new();
+    for index in 0..count {
+        if index + 1 == count {
+            write!(source, "struct L{index}<'a>{{r:&'a u8}}")?;
+        } else {
+            write!(source, "struct L{index}<'a>{{next:&'a L{}<'a>}}", index + 1)?;
+        }
+    }
+    let report = crate::test_source::resolve(&source, true)?;
+    let facts = crate::sema::declarations::analyze(&report)?;
+    let root = item(&report, "L0")?;
+    let mut published = crate::types::aggregate::Definitions::default();
+    let mut values = Variances::default();
+    let mut waiting = PendingReach::new(root);
+    let paid = Cell::new(0_usize);
+    let pay = |work, _| {
+        paid.set(paid.get().saturating_add(work));
+        Ok(())
+    };
+    let mut waits = 0;
+    while let Some(owner) = values.append_reached_or_pending(
+        &facts.types,
+        &published,
+        &facts.definitions,
+        &mut |owner, ordinal, storage| facts.unreduced.fields(owner, ordinal).unwrap_or(storage),
+        &pay,
+        &mut waiting,
+    )? {
+        waits += 1;
+        let definition = facts.aggregates.get(owner).ok_or("chain field template")?;
+        published.insert(
+            owner,
+            definition.kind,
+            definition.repr,
+            facts.aggregates.variants(definition),
+        )?;
+        if restart {
+            waiting = PendingReach::new(root);
+        }
+    }
+    assert_eq!(waits, count, "each nominal is waited for once");
+    for index in 0..count {
+        let owner = item(&report, &format!("L{index}"))?;
+        assert_eq!(values.get(owner), facts.lifetimes.variances.get(owner));
+    }
+    Ok(paid.get())
+}
+
+#[test]
+fn waited_reached_closures_resume_at_the_owner_they_waited_for() -> TestResult {
+    let [small, middle, large] = [64, 256, 512].map(|count| waited_chain_work(count, false));
+    let (small, middle, large) = (small?, middle?, large?);
+    println!("variance waited chain work {small} {middle} {large}");
+    // Near-linear increments: 192 nominals from 64 to 256 and 256 from 256 to
+    // 512. Geometric scratch growth pays each relocation once.
+    assert!(
+        (large - middle) * 192 < (middle - small) * 256 * 3 / 2,
+        "resumed chain work {small} {middle} {large} is not linear"
+    );
+    // The control: restarting at the root after each wait walks the published
+    // prefix again, which is quadratic in the chain.
+    let restarted = waited_chain_work(512, true)?;
+    println!("variance restarted chain work {restarted}");
+    assert!(
+        restarted > large * 32,
+        "restarted chain {restarted} against resumed {large}"
+    );
+    Ok(())
+}

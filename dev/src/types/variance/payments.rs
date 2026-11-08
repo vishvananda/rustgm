@@ -72,4 +72,43 @@ impl<'a> Graph<'a> {
             seen: HashSet::default(),
         })
     }
+    /// Keep a paid reached-closure graph across a wait, without its borrowed
+    /// rows, declarations or payment.
+    pub(super) fn park(self) -> Graph<'static> {
+        Graph {
+            skip_external_nominals: self.skip_external_nominals,
+            independent: self.independent,
+            known: None,
+            declarations: None,
+            pending: self.pending,
+            result: self.result,
+            slots: self.slots,
+            variables: self.variables,
+            solver: self.solver.park(),
+            work: self.work,
+            seen: self.seen,
+        }
+    }
+    /// Resume a parked graph against the current rows and declarations. Rows
+    /// completed during the wait are constants for nominals it has not reached.
+    pub(super) fn resume(
+        parked: Graph<'static>,
+        known: &'a Variances,
+        declarations: &'a [Option<super::TypeId>],
+        pay: Payment<'a>,
+    ) -> Self {
+        Self {
+            skip_external_nominals: parked.skip_external_nominals,
+            independent: parked.independent,
+            known: Some(known),
+            declarations: Some(declarations),
+            pending: parked.pending,
+            result: parked.result,
+            slots: parked.slots,
+            variables: parked.variables,
+            solver: Solver::resume(parked.solver, pay),
+            work: parked.work,
+            seen: parked.seen,
+        }
+    }
 }

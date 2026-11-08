@@ -14,14 +14,18 @@ use crate::types::lifetime_proof::Obligations;
 mod tests;
 
 /// A declaration-time body's waits for unpublished field templates. Its
-/// solved storage roots are fixed while it waits, so they are collected once.
+/// solved types are fixed while it waits, so its storage roots and its
+/// unreached lifetime nominals are each collected once.
 #[derive(Default)]
 pub(super) struct FieldWaits {
     /// The nominal whose field template publication last waited for.
-    pub(super) last: Option<crate::types::ItemId>,
+    last: Option<crate::types::ItemId>,
     roots: Option<Vec<TypeId>>,
     next: usize,
     walk: crate::types::aggregate::PendingFields,
+    nominals: Option<Vec<crate::types::ItemId>>,
+    reached: usize,
+    reach: Option<crate::types::variance::PendingReach>,
 }
 
 impl Checker<'_> {
@@ -129,11 +133,14 @@ impl Checker<'_> {
     /// requirements. Before the crate-wide inference, a declaration-time body
     /// completes both reached contracts of the nominals in its types, and
     /// waits once per nominal for a field template its declaration has not
-    /// published yet. The later crate-wide inference republishes them.
+    /// published yet. Its nominals and a waiting closure's walk survive each
+    /// wait, so the demand resumes at the waited nominal and every nominal
+    /// collected keeps its outlives contract. The later crate-wide inference
+    /// republishes them.
     pub(super) fn lifetime_contract_dependency(
         &mut self,
         solved: &crate::types::infer::Solved,
-        waited: &mut Option<crate::types::ItemId>,
+        waits: &mut FieldWaits,
     ) -> Result<Option<Requirement>, Error> {
         if !matches!(
             self.availability,
@@ -151,13 +158,19 @@ impl Checker<'_> {
             self.facts.must_use_contracts.as_deref(),
         )?;
         let pay = |work, bytes| payments.charge(work, bytes);
-        let nominals = self
-            .facts
-            .lifetimes
-            .variances
-            .unreached_nominals(&self.facts.types, solved.types.iter().copied(), &pay)
-            .map_err(|error| self.error(node, error))?;
-        for &item in &nominals {
+        let nominals = match waits.nominals.take() {
+            Some(nominals) => nominals,
+            None => self
+                .facts
+                .lifetimes
+                .variances
+                .unreached_nominals(&self.facts.types, solved.types.iter().copied(), &pay)
+                .map_err(|error| self.error(node, error))?,
+        };
+        while let Some(&item) = nominals.get(waits.reached) {
+            let reach = waits
+                .reach
+                .get_or_insert_with(|| crate::types::variance::PendingReach::new(item));
             let unreduced = &self.facts.unreduced;
             let missing = self
                 .facts
@@ -167,22 +180,25 @@ impl Checker<'_> {
                     &self.facts.types,
                     &self.facts.aggregates,
                     &self.facts.definitions,
-                    item,
                     &mut |owner, ordinal, storage| {
                         unreduced.fields(owner, ordinal).unwrap_or(storage)
                     },
                     &pay,
+                    reach,
                 )
                 .map_err(|error| self.error(node, error))?;
             if let Some(item) = missing {
-                if waited.replace(item) == Some(item) {
+                waits.nominals = Some(nominals);
+                if waits.last.replace(item) == Some(item) {
                     return Err(self.error(node, "missing aggregate field template"));
                 }
                 return Ok(Some(Requirement::Nominal(item)));
             }
+            waits.reached += 1;
+            waits.reach = None;
         }
         let predicates = &self.facts.generics.predicates;
-        for item in nominals {
+        for &item in &nominals {
             self.facts
                 .lifetimes
                 .demand_reached_outlives(
@@ -200,6 +216,7 @@ impl Checker<'_> {
                 )
                 .map_err(|error| self.error(node, error))?;
         }
+        waits.nominals = Some(nominals);
         Ok(None)
     }
 

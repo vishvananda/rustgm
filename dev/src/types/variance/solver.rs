@@ -80,6 +80,29 @@ impl<'a> Solver<'a> {
         solver.nodes.extend(LITERALS.map(Node::new));
         Ok(solver)
     }
+    /// The same paid graph without its payment, kept while a reached closure
+    /// waits for a field template.
+    pub(super) fn park(self) -> Solver<'static> {
+        Solver {
+            payment: None,
+            nodes: self.nodes,
+            products: self.products,
+            edges: self.edges,
+            queue: self.queue,
+            steps: self.steps,
+        }
+    }
+    /// Resume a parked graph under the waiting body's current payment.
+    pub(super) fn resume(parked: Solver<'static>, payment: Payment<'a>) -> Self {
+        Self {
+            payment: Some(payment),
+            nodes: parked.nodes,
+            products: parked.products,
+            edges: parked.edges,
+            queue: parked.queue,
+            steps: parked.steps,
+        }
+    }
     pub(super) fn pay(&self, work: usize, bytes: usize) -> Result<(), &'static str> {
         self.payment.map_or(Ok(()), |pay| pay(work, bytes))
     }

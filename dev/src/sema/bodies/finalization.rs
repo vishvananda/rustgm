@@ -129,13 +129,12 @@ impl Checker<'_> {
             self.state.finalization = Some(Box::new(Finalization::Caller(Box::new(publication))));
             return Ok(Some(dependency));
         }
-        if let Some(requirement) = match self
-            .field_template_dependency(&publication.solved, &mut publication.fields)?
-        {
+        let fields = &mut publication.fields;
+        let requirement = match self.field_template_dependency(&publication.solved, fields)? {
             Some(requirement) => Some(requirement),
-            None => self
-                .lifetime_contract_dependency(&publication.solved, &mut publication.fields.last)?,
-        } {
+            None => self.lifetime_contract_dependency(&publication.solved, fields)?,
+        };
+        if let Some(requirement) = requirement {
             let source = self.key(self.state.body.node);
             self.state.finalization = Some(Box::new(Finalization::Caller(Box::new(publication))));
             return Ok(Some(Dependency {

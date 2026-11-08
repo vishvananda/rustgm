@@ -11,6 +11,20 @@ use crate::support::{
 #[path = "../../../tests/invariants/reachable_variance.rs"]
 mod tests;
 
+/// One nominal's reached closure, which may wait for a field template its
+/// declaration has not published. Its paid graph survives the wait, so the
+/// resumed append continues at the owner that waited instead of walking the
+/// closure again.
+pub(crate) struct PendingReach {
+    item: ItemId,
+    graph: Option<Box<Graph<'static>>>,
+}
+impl PendingReach {
+    pub(crate) const fn new(item: ItemId) -> Self {
+        Self { item, graph: None }
+    }
+}
+
 impl Variances {
     /// Complete only the new nominal dependency closure. Previously solved rows
     /// are immutable constants, so shared dependencies are not solved again.
@@ -27,9 +41,9 @@ impl Variances {
             types,
             definitions,
             declarations,
-            item,
             &mut fields,
             pay,
+            &mut PendingReach::new(item),
         )? {
             None => Ok(()),
             Some(_) => Err("reached variance requires completed nominal fields"),
@@ -73,9 +87,10 @@ impl Variances {
         }
         Ok(nominals)
     }
-    /// As [`Self::append_reached`], except that a closure nominal whose field
-    /// template is not published yet is returned instead, and nothing of that
-    /// closure is retained.
+    /// As [`Self::append_reached`] for `reach`'s nominal, except that a closure
+    /// nominal whose field template is not published yet is returned instead.
+    /// Nothing of that closure is published; `reach` keeps its graph, and the
+    /// next append of the same `reach` resumes it at that nominal.
     /// # Errors
     /// Rejects exhausted payment and ordinary inference errors.
     pub(crate) fn append_reached_or_pending(
@@ -83,16 +98,22 @@ impl Variances {
         types: &Store,
         definitions: &Definitions,
         declarations: &[Option<TypeId>],
-        item: ItemId,
         fields: &mut impl FnMut(ItemId, u32, ListId) -> ListId,
         pay: Payment<'_>,
+        reach: &mut PendingReach,
     ) -> Result<Option<ItemId>, &'static str> {
         pay(1, 0)?;
+        let item = reach.item;
+        let parked = reach.graph.take();
         if self.get(item).is_some() {
             return Ok(None);
         }
-        let mut graph = Graph::paid(self, declarations, pay)?;
+        let mut graph = match parked {
+            Some(parked) => Graph::resume(*parked, self, declarations, pay),
+            None => Graph::paid(self, declarations, pay)?,
+        };
         if let Some(pending) = graph.reached_fields(types, definitions, item, fields)? {
+            reach.graph = Some(Box::new(graph.park()));
             return Ok(Some(pending));
         }
         graph.solver.pay(graph.variables.len(), 0)?;
@@ -129,7 +150,11 @@ impl Variances {
         let base = self.values.len();
         self.values.extend(inferred.values);
         for (owner, (start, end)) in inferred.ranges {
-            self.ranges.insert(owner, (base + start, base + end));
+            // A row another body completed while this closure waited is
+            // already published, with the same values; it stays unchanged.
+            self.ranges
+                .entry(owner)
+                .or_insert((base + start, base + end));
         }
         self.steps = steps;
         Ok(None)
@@ -218,10 +243,13 @@ impl Graph<'_> {
         fields: &mut impl FnMut(ItemId, u32, ListId) -> ListId,
     ) -> Result<Option<ItemId>, &'static str> {
         self.reserve_reached(types, item)?;
-        while let Some(owner) = self.pending.pop() {
+        // An owner without a published template stays on top of `pending`,
+        // where a resumed walk continues.
+        while let Some(&owner) = self.pending.last() {
             let Some(definition) = definitions.get(owner) else {
                 return Ok(Some(owner));
             };
+            self.pending.pop();
             if definition.kind == crate::types::aggregate::Kind::PhantomData {
                 let arguments = declaration(
                     types,

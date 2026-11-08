@@ -5,7 +5,8 @@
  "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
  "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
  "amendments": [
-  "2026-11-08: the first declaration (sha256 c9398b027913db76148d2e6eeb80b97a53e57d1851b8b8cd0f06ae0ce2bcf214, retained with its oracle as obj/parallel/census-batch7/oracle/declaration-lifetime-contracts.v1.*) returned `Note<'a>` and `Slot<'a>` by value from const fns. rustc 1.98.0 rejected all three such shapes for the missing `freeze` lang item of these no_core prefixes, not for the stated rule, and this compiler does not demand that item. The three shapes now bind the related nominal to an annotated local and return its measured length; the stated outcomes and reasons are unchanged and are redeclared before a fresh oracle of the new bytes"
+  "2026-11-08: the first declaration (sha256 c9398b027913db76148d2e6eeb80b97a53e57d1851b8b8cd0f06ae0ce2bcf214, retained with its oracle as obj/parallel/census-batch7/oracle/declaration-lifetime-contracts.v1.*) returned `Note<'a>` and `Slot<'a>` by value from const fns. rustc 1.98.0 rejected all three such shapes for the missing `freeze` lang item of these no_core prefixes, not for the stated rule, and this compiler does not demand that item. The three shapes now bind the related nominal to an annotated local and return its measured length; the stated outcomes and reasons are unchanged and are redeclared before a fresh oracle of the new bytes",
+  "2026-11-08 (Lane B, linear contract waits): three controls were added and declared before a frozen rustc 1.98.0 oracle of their exact bytes (declaration sha256 8b5021878cad80c27fca501cabdb0120f4637264feb572ed74b9db10af6fe374, retained as obj/lane-b3/declarations/lifetime-contract-waits.declared.json; oracle receipt obj/lane-b3/oracle-contract-waits/receipt.json). `earlier-nominal-length.rs` reduces a body whose first nominal completes before a later one waits; before the repair this compiler rejected it with \"missing nominal outlives facts\". The two chain shapes wait inside one nominal's closure. The original eight cases are unchanged"
  ],
  "cases": {
   "field-length.rs": {
@@ -61,6 +62,27 @@
    "sha256": "688691809bda35c6d0c8f3635a236f3f9db3ec567e522ca66ed44edaa027a233",
    "declared": 1,
    "reason": "opponent: the implied `'b: 'a` does not give `'b: 'static`",
+   "rustc_status": 1,
+   "error_codes": []
+  },
+  "earlier-nominal-length.rs": {
+   "sha256": "028f49a8d3df5609964368d985597ee8377b7bb3cb8143cf423be452a5ab2e89",
+   "declared": 0,
+   "reason": "the length's callee relates `Maybe`, whose field template is published, and `Late`, declared after the length's owner; the body demands both nominals' outlives contracts though only `Late` waits",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "covariant-chain-length.rs": {
+   "sha256": "8b83e886a235c71b76c583d11ad42df5ceafa29ae77eb1ae6e81beb3c3f317e5",
+   "declared": 0,
+   "reason": "a reached const fn shortens `Link0<'b>` to `Link0<'a>` under `'b: 'a`; `Link0` reaches `Link2` through two referenced nominals declared after the length's owner, all covariant",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "invariant-chain-length.rs": {
+   "sha256": "c4c5b1388dc75ff76c0f1a3efd2ed1296690c4ecc2ffd7e8edceaec7c69cf1cb",
+   "declared": 1,
+   "reason": "opponent: the same chain ends in `&'a mut &'a str`, so `Link0` is invariant through both references and `Link0<'b>` is not `Link0<'a>` under only `'b: 'a`",
    "rustc_status": 1,
    "error_codes": []
   }

@@ -10,6 +10,7 @@ use super::{
     parameters::{ParameterId, ParameterKind},
 };
 use crate::support::hash::{HashMap, HashSet};
+pub(crate) use reachable::PendingReach;
 pub(crate) use rigidity::RigidInputs;
 use solver::{Solver, Term};
 

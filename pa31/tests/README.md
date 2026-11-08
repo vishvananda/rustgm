@@ -609,7 +609,10 @@ Drop impls that repeat paren-sugar `FnOnce` bounds (core's `DropGuard`, with
 added and stronger opponents) and const Drop fields of pattern types (core's
 `NonNull` and array `Drain`, with an unbounded parameter-base opponent). Each
 outcome was declared before its rustc 1.98.0 oracle. Private invariants check
-them; there is no graded manifest.
+them; there is no graded manifest. Lane B's linear-waits batch adds three
+declared controls to `spec/declaration-lifetime-contracts/`: a nominal that
+completes before another waits, and a covariant chain of referenced nominals
+with its invariant opponent.
 
 `spec/projection-sizedness/` and `spec/normalized-projection-sizing/` freeze
 thirteen declared no_core controls from census batch 8: rigid projections as
