@@ -126,6 +126,13 @@ run.
   the metadata profile", a limit unrelated to globs. The file now uses
   `Option` only privately. The oracle was rerun before the next candidate
   run, with unchanged outcomes.
+- Amended control, at integration on 2026-11-08: the joined check found that
+  `declarative_exports::forged_relabelled_and_nested_macro_rows_are_rejected_by_name`
+  still used version 5 as its unknown macro metadata version. Version 5 is now
+  the glob-row table, so that forgery decodes and fails with "unknown exported
+  macro row kind". The unknown-version opponent now uses 6, as
+  `shim_expansion` already does. v1 rows relabelled as version 5 join the
+  relabelled-row cases, which fail by name. No decoder changes.
 
 ### Evidence
 

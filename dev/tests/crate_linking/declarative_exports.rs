@@ -116,13 +116,15 @@ fn forged_relabelled_and_nested_macro_rows_are_rejected_by_name() -> Result {
         copy[offset] = value;
         copy
     };
-    // Amended for the version-two row table, then for versions three and
-    // four: versions 2 to 4 are now known, so the unknown-version control uses
-    // 5, and v1 rows relabelled as any placed version fail by name.
-    rejected(&forge(13, 5), "unknown exported macro metadata version")?;
+    // Amended for the version-two row table, then for versions three, four
+    // and five (glob rows): versions 2 to 5 are now known, so the
+    // unknown-version control uses 6, and v1 rows relabelled as any placed
+    // version fail by name.
+    rejected(&forge(13, 6), "unknown exported macro metadata version")?;
     rejected(&forge(13, 2), "unknown exported macro row kind")?;
     rejected(&forge(13, 3), "unknown exported macro row kind")?;
     rejected(&forge(13, 4), "unknown exported macro row kind")?;
+    rejected(&forge(13, 5), "unknown exported macro row kind")?;
     rejected(&forge(at.edition, 4), "unknown exported macro edition")?;
     rejected(&forge(at.flags, 2), "unknown exported macro flags")?;
     rejected(
