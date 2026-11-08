@@ -125,6 +125,51 @@ fn split_fixed_messages_keep_exhaustion_apart_from_invalid_causes() {
     assert_eq!(fold_cause(&message, "exhausted", "invalid"), "exhausted");
 }
 
+/// Ambiguity and the unmapped-lifetime invariant keep their causes' own texts
+/// in whatever shape the cause arrives, and those texts are their single
+/// producers' own, so a reworded producer fails here instead of folding to
+/// "invalid".
+#[test]
+fn folds_keep_ambiguity_and_the_unmapped_lifetime_invariant_apart() {
+    use crate::sema::traits::selection::{Dependency, Failure};
+    use crate::types::{
+        RegionId,
+        infer::{self, UNRESOLVED},
+        substitute::{Bound, UNMAPPED_LIFETIME},
+    };
+    assert_eq!(infer::Error::Unresolved.to_string(), UNRESOLVED);
+    let mut restore = Bound::restore_regions(crate::support::hash::HashMap::default());
+    assert_eq!(restore.region(RegionId(7), 0), Err(UNMAPPED_LIFETIME));
+    for (text, kind) in [
+        (UNRESOLVED, CauseKind::Ambiguous),
+        (UNMAPPED_LIFETIME, CauseKind::UnmappedLifetime),
+    ] {
+        assert_eq!(text.kind(), kind);
+        assert_eq!(fold_cause(&text, "exhausted", "invalid"), text);
+        assert_eq!(fold_cause(&text.to_string(), "exhausted", "invalid"), text);
+        let selection = Failure::Invalid(text.into());
+        assert_eq!(fold_cause(&selection, "exhausted", "invalid"), text);
+        // A message that only mentions the text is an ordinary failure.
+        let wrapped = format!("{text} in a receiver");
+        assert_eq!(fold_cause(&wrapped, "exhausted", "invalid"), "invalid");
+    }
+    assert_eq!(infer::Error::Unresolved.kind(), CauseKind::Ambiguous);
+    assert_eq!(
+        fold_cause(&infer::Error::Unresolved, "exhausted", "invalid"),
+        UNRESOLVED
+    );
+    for error in [
+        infer::Error::InvalidIdentity,
+        infer::Error::Mismatch,
+        infer::Error::Occurs,
+        infer::Error::Normalization,
+    ] {
+        assert_eq!(fold_cause(&error, "exhausted", "invalid"), "invalid");
+    }
+    let pending = Failure::Pending(Dependency::Header(crate::resolve::model::DefId(0)));
+    assert_eq!(fold_cause(&pending, "exhausted", "invalid"), "invalid");
+}
+
 #[test]
 fn lookahead_records_follow_the_failed_pass_and_change_no_count() {
     let mut census = Census::default();

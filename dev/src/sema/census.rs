@@ -294,43 +294,83 @@ pub fn exhausts_budget(message: &str) -> bool {
             && (message.contains("limit") || message.contains("input-graph bound")))
 }
 
-/// A cause that a fixed-message caller folds into one of two wordings.
-pub(crate) trait Exhaustion {
-    /// Whether the cause is genuine budget or capacity exhaustion.
-    fn exhausts(&self) -> bool;
+/// The kind of cause a fixed-message caller received, so its fold keeps
+/// exhaustion, ambiguity and the unmapped-lifetime invariant apart from every
+/// genuinely invalid cause.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum CauseKind {
+    /// Genuine budget or representation-capacity exhaustion.
+    Exhausted,
+    /// An inference variable stayed unresolved.
+    Ambiguous,
+    /// A selected type kept a lifetime its query cannot map back.
+    UnmappedLifetime,
+    /// Every other cause.
+    Invalid,
 }
-impl Exhaustion for String {
-    fn exhausts(&self) -> bool {
-        exhausts_budget(self)
-    }
-}
-impl Exhaustion for &str {
-    fn exhausts(&self) -> bool {
-        exhausts_budget(self)
-    }
-}
-impl Exhaustion for crate::types::infer::Error {
-    fn exhausts(&self) -> bool {
-        matches!(self, Self::Budget | Self::Overflow)
-    }
-}
-impl Exhaustion for crate::sema::traits::selection::Failure {
-    fn exhausts(&self) -> bool {
-        match self {
-            Self::Pending(_) => false,
-            Self::Invalid(message) => exhausts_budget(message),
+impl CauseKind {
+    /// A message names its kind by its single producer's shared text.
+    fn of_message(message: &str) -> Self {
+        if exhausts_budget(message) {
+            Self::Exhausted
+        } else if message == crate::types::infer::UNRESOLVED {
+            Self::Ambiguous
+        } else if message == crate::types::substitute::UNMAPPED_LIFETIME {
+            Self::UnmappedLifetime
+        } else {
+            Self::Invalid
         }
     }
 }
 
-/// Genuine exhaustion keeps its sticky budget wording; every other cause is an
-/// ordinary failure with its own wording.
+/// A cause that a fixed-message caller folds by its kind.
+pub(crate) trait Cause {
+    fn kind(&self) -> CauseKind;
+}
+impl Cause for String {
+    fn kind(&self) -> CauseKind {
+        CauseKind::of_message(self)
+    }
+}
+impl Cause for &str {
+    fn kind(&self) -> CauseKind {
+        CauseKind::of_message(self)
+    }
+}
+impl Cause for crate::types::infer::Error {
+    fn kind(&self) -> CauseKind {
+        match self {
+            Self::Budget | Self::Overflow => CauseKind::Exhausted,
+            Self::Unresolved => CauseKind::Ambiguous,
+            Self::InvalidIdentity | Self::Mismatch | Self::Occurs | Self::Normalization => {
+                CauseKind::Invalid
+            }
+        }
+    }
+}
+impl Cause for crate::sema::traits::selection::Failure {
+    fn kind(&self) -> CauseKind {
+        match self {
+            Self::Pending(_) => CauseKind::Invalid,
+            Self::Invalid(message) => CauseKind::of_message(message),
+        }
+    }
+}
+
+/// Genuine exhaustion keeps its sticky budget wording, ambiguity and the
+/// unmapped-lifetime invariant keep their causes' own texts, and every other
+/// cause is an ordinary failure with the caller's wording.
 pub(crate) fn fold_cause(
-    cause: &impl Exhaustion,
+    cause: &impl Cause,
     exhausted: &'static str,
     invalid: &'static str,
 ) -> &'static str {
-    if cause.exhausts() { exhausted } else { invalid }
+    match cause.kind() {
+        CauseKind::Exhausted => exhausted,
+        CauseKind::Ambiguous => crate::types::infer::UNRESOLVED,
+        CauseKind::UnmappedLifetime => crate::types::substitute::UNMAPPED_LIFETIME,
+        CauseKind::Invalid => invalid,
+    }
 }
 
 /// The declaration kind and name of an item, for census records only.

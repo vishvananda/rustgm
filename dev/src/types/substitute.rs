@@ -26,6 +26,9 @@ use crate::support::hash::HashMap;
 
 type Key = (TypeId, u16);
 const WORK_LIMIT: usize = 1_000_000;
+/// A selected type kept a lifetime its query cannot map back: an internal
+/// invariant, which the census fold keeps as its own kind.
+pub(crate) const UNMAPPED_LIFETIME: &str = "selected type retains an unmapped lifetime";
 
 enum Action {
     Remove,

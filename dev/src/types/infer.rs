@@ -95,6 +95,9 @@ struct Term {
     start: u32,
     end: u32,
 }
+/// An unresolved inference variable's text, which the census fold keeps as its
+/// own kind.
+pub const UNRESOLVED: &str = "type annotations needed";
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Error {
     InvalidIdentity,
@@ -112,7 +115,7 @@ impl std::fmt::Display for Error {
             Self::Overflow => "inference arena exceeds 32 bits",
             Self::Mismatch => "incompatible types",
             Self::Occurs => "type variable occurs in its own type",
-            Self::Unresolved => "type annotations needed",
+            Self::Unresolved => UNRESOLVED,
             Self::Budget => "type constraint work budget exceeded",
             Self::Normalization => "associated type projection requires normalization",
         })

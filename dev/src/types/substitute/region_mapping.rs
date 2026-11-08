@@ -144,7 +144,7 @@ impl Mapping {
             self.insert_observed::<CHARGED>(key, replacement, charge)?;
             replacement
         } else {
-            return Err("selected type retains an unmapped lifetime");
+            return Err(super::UNMAPPED_LIFETIME);
         };
         match replacement.bound_parts() {
             Some((binder, slot)) => RegionId::bound(
