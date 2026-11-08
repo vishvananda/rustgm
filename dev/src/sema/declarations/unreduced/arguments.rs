@@ -1,5 +1,9 @@
 //! Reuse one append-only substitution for unreduced defaults at a type application.
-use crate::types::{GenericArgs, ItemId, Store, arguments::Argument, substitute::Bound};
+use crate::types::{
+    GenericArgs, ItemId, Store,
+    arguments::Argument,
+    substitute::{Bound, Subject},
+};
 
 #[derive(Default)]
 pub(in crate::sema::declarations) struct Arguments {
@@ -10,10 +14,13 @@ struct State {
     defaults: Option<Bound>,
 }
 impl Arguments {
+    /// The unreduced default is folded by the same mapping as the normal one,
+    /// with a trait path's written subject for its trait's `Self`.
     pub fn apply_default(
         &mut self,
         store: &mut Store,
         owner: ItemId,
+        subject: Option<Subject>,
         preceding: &[Argument],
         template: Argument,
         normal: Argument,
@@ -30,7 +37,7 @@ impl Arguments {
             })
         });
         if state.defaults.is_none() {
-            let mut fold = Bound::prefix(owner);
+            let mut fold = Bound::prefix(owner).with_subject(store, subject)?;
             for &argument in &state.values {
                 fold.push_argument(store, argument)?;
             }

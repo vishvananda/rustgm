@@ -28,6 +28,13 @@ Its 16 accepted programs execute with both compilers; five negatives preserve
 method conformance, caller escape and coherence requirements. The associated
 output-only lifetime rejection belongs to PA20.
 
+`trait-bounds/written-self/` keeps a `Self` written among a trait path's
+arguments as the enclosing trait's `Self`, not the bound's subject: a method
+bound `T: Fill<Self>` in its declaration, conformance and a call, with an
+unsatisfied-call opponent. Three controls show the identity cases that remain:
+a `Sub: Super<Self>` supertrait used through `Sub`, `where Self: Fill<Self>`
+inside the trait, and `impl<T> Fill<T> for Wrap<T>`.
+
 `migrated/` preserves the original PA17/PA18 inherent-method boundaries, and
 `receiver-lookup/receiver-former-pa18-boundary.rs` preserves PA18's trait-method
 boundary. Their accepted source bytes are unchanged.

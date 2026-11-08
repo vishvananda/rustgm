@@ -17,6 +17,7 @@ mod rewrite;
 pub(crate) use normalize::Failure as NormalizationFailure;
 pub use normalize::{Alias, Normalizer, Request, Resolution, Step};
 mod parameters;
+pub use parameters::Subject;
 mod predicates;
 mod region_mapping;
 mod universals;

@@ -17578,6 +17578,102 @@
         "status": 1,
         "default_lints": true
       }
+    },
+    {
+      "path": "tests/spec/trait-bounds/written-self/method-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.trait-bounds",
+        "pa19.conformance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/subject_defaults.rs:WRITTEN_SELF",
+      "source_sha256": "787146318fe0e0445abc54b2c3cd64582a1b9610afa36d6d7510a1fbda520727"
+    },
+    {
+      "path": "tests/spec/trait-bounds/written-self/method-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.trait-bounds",
+        "pa19.qualified-methods"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/subject_defaults.rs:WRITTEN_SELF",
+      "source_sha256": "6327ea4b625e0b69dd8c16ac32b78a544581181dacf7dd387b7a0fc108cd6701"
+    },
+    {
+      "path": "tests/spec/trait-bounds/written-self/method-call-opp.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.trait-bounds",
+        "pa19.qualified-methods"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/subject_defaults.rs:WRITTEN_SELF",
+      "source_sha256": "eb422a198443b3ab33ec2b094aeb29c309c7425ed97db35b2ec3c377df16d8e5"
+    },
+    {
+      "path": "tests/spec/trait-bounds/written-self/supertrait-self.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.trait-bounds",
+        "pa19.trait-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/subject_defaults.rs:WRITTEN_SELF",
+      "source_sha256": "d786f6756205316030949389a1ecf0f405412b536ba5795803de867262cd85f5"
+    },
+    {
+      "path": "tests/spec/trait-bounds/written-self/where-self.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.trait-bounds",
+        "pa19.qualified-methods"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/subject_defaults.rs:WRITTEN_SELF",
+      "source_sha256": "e3ad529eb32abfe80e7c9708a0d3fdeab2a49c2d75503855ed60cbb2a72231c2"
+    },
+    {
+      "path": "tests/spec/trait-bounds/written-self/impl-parameter.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.trait-bounds",
+        "pa19.impl-selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/subject_defaults.rs:WRITTEN_SELF",
+      "source_sha256": "98d40b6b3e3059e129bfa9248df06107ebb0077707664e3faf6f84e82908c9d0"
     }
   ]
 }

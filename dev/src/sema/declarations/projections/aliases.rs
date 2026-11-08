@@ -3,7 +3,7 @@ use super::{Checker, DefId, Error, NodeKey, regions};
 use crate::{
     resolve::model::DefKind,
     sema::alias_requirements::Use,
-    types::{GenericArgs, lifetime_proof::ScopeId},
+    types::{GenericArgs, lifetime_proof::ScopeId, substitute::Subject},
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -136,21 +136,28 @@ impl Checker<'_> {
         if self.facts.alias_requirements.contains(owner)
             && self.report.resolution.definitions[owner.0 as usize].kind == DefKind::TypeAlias
         {
-            self.alias_use(key, owner, arguments, context)?;
+            self.alias_use(key, owner, arguments, None, context)?;
         }
         Ok(())
     }
+    /// A trait parameter's default is used with its path's subject; a type
+    /// alias has no subject.
     pub(in super::super) fn alias_use(
         &mut self,
         key: NodeKey,
         owner: DefId,
         arguments: GenericArgs,
+        subject: Option<Subject>,
         context: regions::Context,
     ) -> Result<(), Error> {
         if !self.facts.alias_requirements.contains(owner) {
             return Ok(());
         }
-        let use_ = Use { owner, arguments };
+        let use_ = Use {
+            owner,
+            arguments,
+            subject,
+        };
         if let Some(template) = self.projection_alias_owner(context) {
             let scope = self.projection_alias_scope(key, context, template)?;
             return self

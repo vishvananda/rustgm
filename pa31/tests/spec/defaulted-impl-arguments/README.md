@@ -30,10 +30,10 @@ records them. The prefix is `#![feature(const_precise_live_drops)]`, which core
 enables, followed by `spec/function-pointers/foundation.rs`. It keeps Rust's
 MIT/Apache-2.0 attribution; see root NOTICE and `third_party/sources.json`.
 
-`default-bound-satisfied` is a recorded gap: this compiler still rejects it,
-by name, with "associated type requires an unambiguous implementation". The
-default's retained alias requirement is instantiated from the path's arguments
-without the trait's `Self`.
+`default-bound-satisfied` was a recorded gap until census batch 15: the
+default's retained alias requirement was instantiated without the trait's
+`Self`. It is now instantiated with `Self` as the path's subject, and the
+control is accepted as rustc accepts it.
 
 `dev/tests/invariants/defaulted_impl_arguments.rs` checks every case and builds
 `default-scaling.rs`'s shape at larger sizes: each omitted default is normalized

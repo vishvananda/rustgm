@@ -8,6 +8,7 @@ mod constants;
 mod default_validation;
 mod defaults;
 mod parameter_kinds;
+pub(super) use arguments::TraitSubject;
 pub(super) use defaults::{DefaultId, Defaults};
 mod functions;
 pub(in crate::sema) use functions::prepare_callable_template;

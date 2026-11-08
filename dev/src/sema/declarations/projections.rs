@@ -185,9 +185,14 @@ impl Checker<'_> {
             return Ok(());
         }
         let subject = self.ty(subject_key)?;
-        let arguments = self.application_arguments(prefix, owner, context)?;
+        let original_subject = self.facts.unreduced.node(subject_key).unwrap_or(subject);
+        let trait_subject = super::generics::TraitSubject {
+            ty: subject,
+            original: original_subject,
+        };
+        let arguments = self.application_arguments(prefix, owner, Some(trait_subject), context)?;
         let family = self.projection_arguments(suffix, declaration, context)?;
-        let trait_application = self.applied_trait(prefix, owner, subject, arguments)?;
+        let trait_application = self.applied_trait(prefix, owner, arguments)?;
         let ty = self.intern(
             key,
             Type::Projection(projection::Application {
@@ -197,15 +202,13 @@ impl Checker<'_> {
                 arguments: family,
             }),
         )?;
-        let original_subject = self.facts.unreduced.node(subject_key).unwrap_or(subject);
         let original_arguments = self.facts.unreduced.arguments(prefix).unwrap_or(arguments);
         let original_family = self.facts.unreduced.arguments(suffix).unwrap_or(family);
         if original_subject != subject
             || original_arguments != arguments
             || original_family != family
         {
-            let trait_application =
-                self.applied_trait(prefix, owner, original_subject, original_arguments)?;
+            let trait_application = self.applied_trait(prefix, owner, original_arguments)?;
             let original = self.intern(
                 key,
                 Type::Projection(projection::Application {

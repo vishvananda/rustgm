@@ -14,6 +14,11 @@ Fixture families:
   Include method-local trait Self bounds versus trait-impl Self lookup, reordered
   projected where-subjects, duplicate versus distinct trait applications, captured
   callable lifetimes, alias proof isolation and generic-default rejection.
+  `self-defaults` leaves a trait argument to a default naming `Self`'s other
+  trait member at impl references, bounds, where clauses, qualified prefixes,
+  shorthand and a nested default, with missing-implementation and object
+  opponents and two header-phase (`Source: Fill`) controls. `written-self`
+  keeps a written `Self` in an associated type's bound as the trait's own.
 - `contracts`: result bounds, equalities, inherited promises, valid/invalid impl
   conformance, unused declarations and obligations retained after normalization.
   `proved-results` fixes an impl parameter named only by an equality's result

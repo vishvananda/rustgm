@@ -655,13 +655,18 @@ impl Checker<'_> {
                 if constness != crate::support::constness::Constness::Ordinary {
                     self.require_const_trait(path, definition)?;
                 }
-                let arguments = self.application_arguments(path, definition, context)?;
+                let trait_subject = super::TraitSubject {
+                    ty: subject,
+                    original,
+                };
+                let arguments =
+                    self.application_arguments(path, definition, Some(trait_subject), context)?;
                 let original_arguments = self.facts.unreduced.arguments(path).unwrap_or(arguments);
-                let value = self.applied_trait(path, definition, subject, arguments)?;
-                let original = if original != subject || original_arguments != arguments {
-                    self.applied_trait(path, definition, original, original_arguments)?
-                } else {
+                let value = self.applied_trait(path, definition, arguments)?;
+                let original = if original_arguments == arguments {
                     value
+                } else {
+                    self.applied_trait(path, definition, original_arguments)?
                 };
                 return Ok((
                     Bound::trait_application(value, constness),

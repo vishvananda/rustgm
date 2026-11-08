@@ -398,11 +398,21 @@ impl's self type. It is normalized by the routine a written argument uses, under
 the same rules, before the trait header is published, and the reference stays
 active until it is. Its normal form is kept beside the default by impl and
 argument index, never under a source node. A default whose normal form does not
-satisfy the parameter's bound is rejected (E0277). The default's retained alias
-requirement is still instantiated without the trait's `Self`, so a default that
-names another trait's member is rejected by name, a recorded gap. The
+satisfy the parameter's bound is rejected (E0277). The
 [defaulted impl argument controls](pa31/tests/spec/defaulted-impl-arguments/README.md)
 record independent outcomes.
+
+Every trait path, whether an impl trait reference, a bound, a where clause, a
+qualified projection prefix or a shorthand bound, instantiates an omitted
+default with the preceding arguments and the trait's `Self` as the path's
+subject in one simultaneous substitution. The default's retained alias
+requirements are expanded with the same mapping, and a nested default's
+requirements map their own subject as they map their arguments, so a default
+naming another trait's member (`R = <Self as Source>::Item`) requires
+`Subject: Source` where it is used. A `Self` written among a trait path's
+arguments is not the path's subject: inside a trait's items it is that
+trait's `Self`, so `fn take<T: Fill<Self>>` requires `T: Fill<Self>`, not
+`T: Fill<T>`. Supertrait elaboration maps `Self` separately and is unaffected.
 
 Fundamental policy belongs to the actual struct or trait and uses its distinct
 `fundamental` feature or genuine attribute-name macro allowance; `rustc_attrs`

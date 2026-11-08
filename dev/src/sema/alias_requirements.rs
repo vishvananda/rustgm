@@ -8,13 +8,20 @@ use super::traits::obligations::Obligations;
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::model::DefId,
-    types::{GenericArgs, ItemId, Store, lifetime_proof::ScopeId, substitute::Bound},
+    types::{
+        GenericArgs, ItemId, Store,
+        lifetime_proof::ScopeId,
+        substitute::{Bound, Subject},
+    },
 };
 
+/// One instantiation of an alias contract. A trait parameter's default also
+/// carries its path's subject, which its trait's `Self` stands for.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct Use {
     pub owner: DefId,
     pub arguments: GenericArgs,
+    pub subject: Option<Subject>,
 }
 struct Contract {
     parameters: DefId,
@@ -170,7 +177,8 @@ impl Requirements {
                 .filter(|contract| contract.sealed)
                 .ok_or("missing completed alias obligation contract")?;
             let mut parameters =
-                Bound::joint(store, ItemId(contract.parameters.0), use_.arguments)?;
+                Bound::joint(store, ItemId(contract.parameters.0), use_.arguments)?
+                    .with_subject(store, use_.subject)?;
             scope.charge(contract.scopes.as_ref().map_or(0, |s| s.len()))?;
             let mapping =
                 scopes::Scopes::instantiate(contract.scopes.as_deref(), &mut result.proof, caller)?;
@@ -199,17 +207,32 @@ impl Requirements {
                 let arguments = store
                     .arguments(dependency.arguments)
                     .ok_or("missing alias dependency arguments")?;
-                scope.charge(arguments.len())?;
+                // A subject is mapped at the rate of one more argument.
+                scope.charge(
+                    arguments
+                        .len()
+                        .saturating_add(usize::from(dependency.subject.is_some())),
+                )?;
                 let arguments = arguments.collect::<Vec<_>>();
                 let arguments = arguments
                     .into_iter()
                     .map(|argument| parameters.apply_argument_inside(store, argument, depth))
                     .collect::<Result<Vec<_>, _>>()?;
+                // A nested default's subject is mapped exactly as its arguments.
+                let subject = dependency
+                    .subject
+                    .map(|subject| {
+                        parameters
+                            .apply_inside(store, subject.ty, depth)
+                            .map(|ty| Subject { ty, ..subject })
+                    })
+                    .transpose()?;
                 pending.push((
                     target,
                     Use {
                         owner: dependency.owner,
                         arguments: store.intern_arguments(&arguments)?,
+                        subject,
                     },
                 ));
             }

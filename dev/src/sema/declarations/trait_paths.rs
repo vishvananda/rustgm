@@ -1,9 +1,8 @@
-//! Trait paths use ordinary argument elaboration, with Self supplied by the bound subject.
+//! Trait paths use ordinary argument elaboration; the bound subject is the
+//! trait's Self only in the path's omitted defaults.
 use super::{Checker, DefId, Error, NodeKey, Type, TypeId, regions};
 use crate::types::{
     ItemId,
-    arguments::Argument,
-    substitute::Bound,
     traits::{Application, ApplicationId},
 };
 use crate::{
@@ -353,17 +352,18 @@ impl Checker<'_> {
         subject: TypeId,
         context: regions::Context,
     ) -> Result<ApplicationId, Error> {
-        let arguments = self.application_arguments(path, owner, context)?;
-        self.applied_trait(path, owner, subject, arguments)
+        let subject = super::generics::TraitSubject::unchanged(subject);
+        let arguments = self.application_arguments(path, owner, Some(subject), context)?;
+        self.applied_trait(path, owner, arguments)
     }
 
-    pub(super) fn applied_trait(
-        &mut self,
+    /// The trait's own `Self`, which only a path's omitted defaults map to its
+    /// subject. A written `Self` among the arguments means the enclosing item's.
+    pub(super) fn trait_self_parameter(
+        &self,
         path: NodeKey,
         owner: DefId,
-        subject: TypeId,
-        arguments: crate::types::GenericArgs,
-    ) -> Result<ApplicationId, Error> {
+    ) -> Result<crate::types::parameters::ParameterId, Error> {
         let self_type = self
             .facts
             .associated
@@ -372,28 +372,20 @@ impl Checker<'_> {
                 self.error(path, "trait bound requires an elaborated trait declaration")
             })?
             .self_type;
-        let Some(Type::Parameter(self_parameter)) = self.facts.types.kind(self_type) else {
+        let Some(Type::Parameter(parameter)) = self.facts.types.kind(self_type) else {
             return Err(self.error(path, "trait Self must be a rigid type parameter"));
         };
-        let mut replace =
-            Bound::parameter_only(&self.facts.types, self_parameter, Argument::Type(subject))
-                .map_err(|e| self.error(path, e))?;
-        let mut arguments = self
-            .facts
-            .types
-            .arguments(arguments)
-            .ok_or_else(|| self.error(path, "missing elaborated trait arguments"))?
-            .collect::<Vec<_>>();
-        for argument in &mut arguments {
-            *argument = replace
-                .apply_argument(&mut self.facts.types, *argument)
-                .map_err(|e| self.error(path, e))?;
-        }
-        let arguments = self
-            .facts
-            .types
-            .intern_arguments(&arguments)
-            .map_err(|e| self.error(path, e))?;
+        Ok(parameter)
+    }
+
+    /// Intern a trait application whose arguments already name its subject
+    /// wherever the trait's defaults did.
+    pub(super) fn applied_trait(
+        &mut self,
+        path: NodeKey,
+        owner: DefId,
+        arguments: crate::types::GenericArgs,
+    ) -> Result<ApplicationId, Error> {
         self.facts
             .types
             .intern_trait_application(Application {

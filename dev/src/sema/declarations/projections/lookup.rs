@@ -179,8 +179,13 @@ impl Checker<'_> {
             )?;
             return self.expand_alias_naming_edge(edge).map(Inputs::Alias);
         }
-        let arguments = self.application_arguments(seed.path, seed.definition, seed.context)?;
-        let application = self.applied_trait(seed.path, seed.definition, subject, arguments)?;
+        let arguments = self.application_arguments(
+            seed.path,
+            seed.definition,
+            Some(super::super::generics::TraitSubject::unchanged(subject)),
+            seed.context,
+        )?;
+        let application = self.applied_trait(seed.path, seed.definition, arguments)?;
         let clause = self.bound_clause(
             seed.path,
             seed.scope,

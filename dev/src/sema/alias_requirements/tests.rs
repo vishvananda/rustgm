@@ -33,6 +33,7 @@ fn diamond_dependencies_are_linear_and_argument_sensitive() -> TestResult {
                 Use {
                     owner: DefId(id - 1),
                     arguments,
+                    subject: None,
                 },
                 ScopeId::ROOT,
             )?;
@@ -42,6 +43,7 @@ fn diamond_dependencies_are_linear_and_argument_sensitive() -> TestResult {
     let use_ = Use {
         owner: DefId(512),
         arguments,
+        subject: None,
     };
     let mut scope = Scope::default();
     let proof = requirements
@@ -82,6 +84,7 @@ fn caller_identities_are_not_rebased_as_template_variables() -> TestResult {
             Use {
                 owner: DefId(0),
                 arguments,
+                subject: None,
             },
             101,
             &mut Scope::default(),
@@ -102,6 +105,7 @@ fn invalid_graphs_and_failed_scopes_cannot_publish_partial_evidence() -> TestRes
     let use_ = Use {
         owner: DefId(0),
         arguments: GenericArgs::EMPTY,
+        subject: None,
     };
     assert!(
         requirements
@@ -163,6 +167,7 @@ fn identical_dependencies_in_sibling_quantifiers_keep_independent_witnesses() ->
             Use {
                 owner: DefId(0),
                 arguments,
+                subject: None,
             },
             scope,
         )?;
@@ -172,6 +177,7 @@ fn identical_dependencies_in_sibling_quantifiers_keep_independent_witnesses() ->
     let use_ = Use {
         owner,
         arguments: GenericArgs::EMPTY,
+        subject: None,
     };
     let mut cache = Scope::default();
     let proof = requirements
@@ -229,6 +235,7 @@ fn deferred_type_debts_share_diamonds_without_disappearing_with_empty_lifetime_p
                 Use {
                     owner: DefId(id - 1),
                     arguments,
+                    subject: None,
                 },
                 ScopeId::ROOT,
             )?;
@@ -242,6 +249,7 @@ fn deferred_type_debts_share_diamonds_without_disappearing_with_empty_lifetime_p
     let use_ = Use {
         owner: DefId(128),
         arguments,
+        subject: None,
     };
     let expansion = requirements.instantiate(&mut store, use_, 1, &mut scope)?;
     assert!(expansion.proof.is_empty());
@@ -311,6 +319,7 @@ fn deferred_types_in_sibling_binders_retain_distinct_quantifier_scopes() -> Test
         Use {
             owner,
             arguments: GenericArgs::EMPTY,
+            subject: None,
         },
         1,
         &mut Scope::default(),
@@ -352,6 +361,7 @@ fn sized_dependencies_keep_total_depth_across_nested_alias_contracts() -> TestRe
         Use {
             owner: inner,
             arguments,
+            subject: None,
         },
         second,
     )?;
@@ -362,6 +372,7 @@ fn sized_dependencies_keep_total_depth_across_nested_alias_contracts() -> TestRe
     let use_ = Use {
         owner: outer,
         arguments,
+        subject: None,
     };
     let mut cache = Scope::default();
     let expansion = requirements.instantiate(&mut store, use_, 1, &mut cache)?;

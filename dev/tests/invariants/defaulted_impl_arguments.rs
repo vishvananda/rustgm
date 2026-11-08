@@ -6,27 +6,22 @@ type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
 const CONTROLS: &str = "pa31/tests/spec/defaulted-impl-arguments";
 const UNSATISFIED: &str = "trait implementation does not satisfy the trait's requirements";
-const UNAMBIGUOUS: &str = "associated type requires an unambiguous implementation";
 
 /// Independently checked rustc 1.98.0 outcomes: `None` accepts, otherwise the
 /// first error this compiler reports for the control rustc also rejects.
-const CASES: [(&str, Option<&str>); 7] = [
+/// `default-bound-satisfied`'s omitted `<Self as Source>::Item` default keeps
+/// its retained alias requirement, which is instantiated with `Self` as the
+/// impl type, so it is accepted as rustc accepts it.
+const CASES: [(&str, Option<&str>); 8] = [
     ("default-omitted", None),
     ("default-written", None),
     ("default-other-member", None),
     ("default-self-bounds", None),
     ("core-never-short-circuit", None),
+    ("default-bound-satisfied", None),
     ("default-bound-unsatisfied", Some(UNSATISFIED)),
     ("default-scaling", None),
 ];
-
-/// A declared control whose rustc outcome this analysis does not reach yet,
-/// with the outcome it has instead. The assertion fails when it changes.
-/// `default-bound-satisfied`: rustc accepts `impl Fill for Short` whose
-/// omitted `<Self as Source>::Item` default satisfies `R: Marker`. The default's
-/// retained alias requirement is instantiated from the path's arguments
-/// without the trait's `Self`, so it is rejected by name.
-const GAPS: [(&str, &str); 1] = [("default-bound-satisfied", UNAMBIGUOUS)];
 
 /// Accepted analysis reports its trait selections and canonical steps.
 fn analyze(source: &str) -> TestResult<Result<[usize; 2], String>> {
@@ -52,10 +47,6 @@ fn defaulted_impl_arguments_normalize_like_written_ones() -> TestResult {
                 return Err(format!("{path}: accepted, not {message}").into());
             }
         }
-    }
-    for (name, message) in GAPS {
-        let source = crate::test_source::fixture(&format!("{CONTROLS}/{name}.rs"))?;
-        assert_eq!(analyze(&source)?, Err(message.to_owned()), "{name}");
     }
     Ok(())
 }

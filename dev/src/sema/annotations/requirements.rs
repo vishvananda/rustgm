@@ -50,7 +50,16 @@ pub(super) fn retain(
         let (facts, _) = host.inference();
         let expansion = facts
             .alias_requirements
-            .instantiate(&mut facts.types, Use { owner, arguments }, 1, &mut scope)
+            .instantiate(
+                &mut facts.types,
+                Use {
+                    owner,
+                    arguments,
+                    subject: None,
+                },
+                1,
+                &mut scope,
+            )
             .map_err(|e| error(host, key, e))?;
         if !expansion.proof.is_empty() || !expansion.normalizations.is_empty() {
             host.deferred(key, scope_id, expansion, supplied, fields)?;

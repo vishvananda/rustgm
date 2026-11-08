@@ -260,7 +260,7 @@ impl Checker<'_> {
         context: regions::Context,
         quantified: Option<u32>,
     ) -> Result<Edge, Error> {
-        let arguments = self.application_arguments(path, target, context)?;
+        let arguments = self.application_arguments(path, target, None, context)?;
         Ok(Edge {
             source: path,
             target,

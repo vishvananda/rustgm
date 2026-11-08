@@ -72,7 +72,7 @@ impl Checker<'_> {
         context: regions::Context,
     ) -> Result<GenericArgs, Error> {
         if self.facts.generics.parameters.contains_key(&member) {
-            return self.application_arguments(key, member, context);
+            return self.application_arguments(key, member, None, context);
         }
         if let Some(arguments) = crate::sema::lifetimes::arguments(self.report, key, false)?
             && arguments.start != arguments.end

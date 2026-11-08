@@ -37,7 +37,7 @@ impl Checker<'_> {
     ) -> Result<TypeId, Error> {
         let member = DefId(application.item.0);
         if self.facts.generics.parameters.contains_key(&member) {
-            application.arguments = self.application_arguments(source, member, context)?;
+            application.arguments = self.application_arguments(source, member, None, context)?;
             if original {
                 application.arguments = self
                     .facts

@@ -1,9 +1,39 @@
 //! Instantiate alias paths from resolved argument syntax and completed parameter facts.
 use super::{Argument, Checker, DefId, Error, Kind, NodeKey, TypeId, regions};
 use crate::{
+    sema::generics::Parameter,
     syntax::ast::{List, NodeId},
-    types::{GenericArgs, ItemId, substitute::Bound},
+    types::{
+        GenericArgs, ItemId,
+        substitute::{Bound, Subject},
+    },
 };
+
+#[cfg(test)]
+#[path = "../../../../tests/invariants/subject_defaults.rs"]
+mod subject_defaults;
+
+/// A trait path's subject, normalized and as written; its trait's `Self`
+/// stands for it in the path's omitted defaults.
+#[derive(Clone, Copy)]
+pub(in super::super) struct TraitSubject {
+    pub ty: TypeId,
+    pub original: TypeId,
+}
+impl TraitSubject {
+    pub(in super::super) fn unchanged(ty: TypeId) -> Self {
+        Self { ty, original: ty }
+    }
+}
+
+/// One application's omitted defaults: a single append-only fold over the
+/// preceding arguments and the subject, and its unreduced counterpart.
+#[derive(Default)]
+struct DefaultFold {
+    normal: Option<Bound>,
+    originals: super::super::unreduced::Arguments,
+    subject: Option<(Subject, Subject)>,
+}
 impl Checker<'_> {
     pub(in super::super) fn supplied_arguments(
         &self,
@@ -135,12 +165,30 @@ impl Checker<'_> {
         }
         Ok(())
     }
+    /// A trait path passes its subject: an omitted default is instantiated with
+    /// the preceding arguments and the trait's `Self` as that subject, and its
+    /// retained alias requirements are expanded with the same mapping.
     pub(in super::super) fn application_arguments(
         &mut self,
         key: NodeKey,
         owner: DefId,
+        subject: Option<TraitSubject>,
         context: regions::Context,
     ) -> Result<GenericArgs, Error> {
+        let mut fold = DefaultFold::default();
+        if let Some(subject) = subject {
+            let parameter = self.trait_self_parameter(key, owner)?;
+            fold.subject = Some((
+                Subject {
+                    parameter,
+                    ty: subject.ty,
+                },
+                Subject {
+                    parameter,
+                    ty: subject.original,
+                },
+            ));
+        }
         if crate::sema::lifetimes::call_arguments(self.report, key)?.is_some() {
             self.require_parenthesized_trait(key, owner)?;
             self.validate_parenthesis_inputs(key, owner)?;
@@ -149,8 +197,6 @@ impl Checker<'_> {
         let (supplied, omitted) = self.supplied_arguments(key, owner)?;
         let count = self.facts.generics.parameters[&owner].len();
         let mut arguments = Vec::with_capacity(count);
-        let mut defaults = None;
-        let mut originals = super::super::unreduced::Arguments::default();
         let mut required_defaults = Vec::new();
         for index in 0..count {
             let parameter = self.facts.generics.parameters[&owner][index];
@@ -178,44 +224,13 @@ impl Checker<'_> {
                     self.regions.record(context, region);
                     (Argument::Lifetime(region), Argument::Lifetime(region))
                 } else {
-                    let default = parameter
-                        .default
-                        .ok_or_else(|| self.error(key, "missing generic default"))?;
                     required_defaults.push(parameter.binding);
-                    if defaults.is_none() {
-                        let mut prefix = Bound::prefix(ItemId(owner.0));
-                        for &argument in &arguments {
-                            prefix
-                                .push_argument(&self.facts.types, argument)
-                                .map_err(|e| self.error(key, e))?;
-                        }
-                        defaults = Some(prefix);
-                    }
-                    let argument = defaults
-                        .as_mut()
-                        .ok_or_else(|| self.error(key, "missing default substitution"))?
-                        .apply_argument(&mut self.facts.types, default)
-                        .map_err(|e| self.error(key, e))?;
-                    let template = self
-                        .facts
-                        .unreduced
-                        .default_type(parameter.binding)
-                        .map_or(default, Argument::Type);
-                    let original = originals
-                        .apply_default(
-                            &mut self.facts.types,
-                            ItemId(owner.0),
-                            &arguments,
-                            template,
-                            argument,
-                        )
-                        .map_err(|e| self.error(key, e))?;
-                    (argument, original)
+                    self.omitted_default(key, owner, parameter, &arguments, &mut fold)?
                 };
-            originals
+            fold.originals
                 .push(&self.facts.types, &arguments, argument, original)
                 .map_err(|e| self.error(key, e))?;
-            if let Some(prefix) = &mut defaults {
+            if let Some(prefix) = &mut fold.normal {
                 prefix
                     .push_argument(&self.facts.types, argument)
                     .map_err(|e| self.error(key, e))?;
@@ -227,19 +242,76 @@ impl Checker<'_> {
             .types
             .intern_arguments(&arguments)
             .map_err(|e| self.error(key, e))?;
-        if let Some(prefix) = defaults {
-            self.facts.generics.retain_arguments(owner, args, prefix);
+        if let Some(prefix) = fold.normal {
+            if fold.subject.is_some() {
+                // The cache is keyed by owner and arguments alone, so a fold
+                // that maps a subject is paid for, not retained.
+                self.facts
+                    .generics
+                    .charge_unretained(&prefix)
+                    .map_err(|e| self.error(key, e))?;
+            } else {
+                self.facts.generics.retain_arguments(owner, args, prefix);
+            }
         }
-        if let Some(originals) = originals
+        if let Some(originals) = fold
+            .originals
             .finish(&mut self.facts.types)
             .map_err(|e| self.error(key, e))?
         {
             self.facts.unreduced.retain_arguments(key, originals);
         }
+        let subject = fold.subject.map(|(normal, _)| normal);
         for binding in required_defaults {
-            self.alias_use(key, binding, args, context)?;
+            self.alias_use(key, binding, args, subject, context)?;
         }
         Ok(args)
+    }
+    fn omitted_default(
+        &mut self,
+        key: NodeKey,
+        owner: DefId,
+        parameter: Parameter,
+        preceding: &[Argument],
+        fold: &mut DefaultFold,
+    ) -> Result<(Argument, Argument), Error> {
+        let default = parameter
+            .default
+            .ok_or_else(|| self.error(key, "missing generic default"))?;
+        if fold.normal.is_none() {
+            let mut prefix = Bound::prefix(ItemId(owner.0))
+                .with_subject(&self.facts.types, fold.subject.map(|(normal, _)| normal))
+                .map_err(|e| self.error(key, e))?;
+            for &argument in preceding {
+                prefix
+                    .push_argument(&self.facts.types, argument)
+                    .map_err(|e| self.error(key, e))?;
+            }
+            fold.normal = Some(prefix);
+        }
+        let argument = fold
+            .normal
+            .as_mut()
+            .ok_or_else(|| self.error(key, "missing default substitution"))?
+            .apply_argument(&mut self.facts.types, default)
+            .map_err(|e| self.error(key, e))?;
+        let template = self
+            .facts
+            .unreduced
+            .default_type(parameter.binding)
+            .map_or(default, Argument::Type);
+        let original = fold
+            .originals
+            .apply_default(
+                &mut self.facts.types,
+                ItemId(owner.0),
+                fold.subject.map(|(_, original)| original),
+                preceding,
+                template,
+                argument,
+            )
+            .map_err(|e| self.error(key, e))?;
+        Ok((argument, original))
     }
     pub(in super::super) fn generic_path(
         &mut self,
@@ -247,7 +319,7 @@ impl Checker<'_> {
         owner: DefId,
         context: regions::Context,
     ) -> Result<TypeId, Error> {
-        let args = self.application_arguments(key, owner, context)?;
+        let args = self.application_arguments(key, owner, None, context)?;
         let template = self.facts.definitions[owner.0 as usize]
             .ok_or_else(|| self.error(key, "missing alias template"))?;
         let result = self

@@ -20,6 +20,10 @@ use crate::{
 };
 use std::{collections::hash_map::Entry, sync::Arc};
 
+/// Shared by every subject-bearing default fold; a cached fold is bounded by
+/// its own substitution work limit instead.
+const UNRETAINED_LIMIT: u32 = 10_000_000;
+
 pub(super) use crate::types::parameters::argument_id as parameter_id;
 
 impl super::model::Declarations {
@@ -161,6 +165,10 @@ pub struct Generics {
     pub annotation_uses: HashMap<crate::resolve::unit::NodeKey, AnnotationUse>,
     pub(super) annotation_projections: HashMap<crate::resolve::unit::NodeKey, AnnotationProjection>,
     substitutions: HashMap<(DefId, GenericArgs), Bound>,
+    /// Work of substitutions that map a trait path's subject and so cannot be
+    /// cached under their owner and arguments; each use pays it here. Its
+    /// limit fits a `u32`, which the struct's existing padding holds.
+    unretained_steps: u32,
     family_substitutions: Option<Box<families::Substitutions>>,
 }
 pub struct ImplementationSelection {
@@ -169,8 +177,16 @@ pub struct ImplementationSelection {
 }
 impl Generics {
     #[cfg(test)]
+    pub(in crate::sema) fn unretained_steps(&self) -> usize {
+        self.unretained_steps as usize
+    }
+    #[cfg(test)]
     pub(in crate::sema) fn substitution_steps(&self) -> usize {
-        self.substitutions.values().map(|fold| fold.steps).sum()
+        self.substitutions
+            .values()
+            .map(|fold| fold.steps)
+            .sum::<usize>()
+            .saturating_add(self.unretained_steps as usize)
     }
 
     /// Only completed conformance records may authorize trait selection or dispatch.
@@ -614,6 +630,18 @@ impl Generics {
         let result = fold.clause_charged(store, clause, charge);
         charge(fold.steps.saturating_sub(before), 0)?;
         result
+    }
+    /// Pay a completed subject-bearing fold's work, which grows with the
+    /// arguments it pushed and substituted, to the substitution account.
+    /// # Errors
+    /// Rejects exhausting the account shared by every such use.
+    pub(super) fn charge_unretained(&mut self, fold: &Bound) -> Result<(), &'static str> {
+        let steps = u32::try_from(fold.steps).unwrap_or(u32::MAX);
+        self.unretained_steps = self.unretained_steps.saturating_add(steps);
+        if self.unretained_steps > UNRETAINED_LIMIT {
+            return Err("trait default substitution work budget exceeded");
+        }
+        Ok(())
     }
     /// Retain the completed append-only environment built from these exact
     /// arguments. Subsequent body expansion reuses it just like an explicit use.

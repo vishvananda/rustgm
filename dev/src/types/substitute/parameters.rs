@@ -11,12 +11,21 @@ enum Arguments {
     All {
         owner: ItemId,
         values: Vec<Argument>,
+        subject: Option<Subject>,
     },
     Mapped(HashMap<ParameterId, Argument>),
     Single(ParameterId, Argument),
 }
 pub(super) struct Bindings {
     arguments: Arguments,
+}
+/// The subject of a trait path: the type its trait's own `Self` parameter
+/// stands for. An omitted argument is the trait's default instantiated by the
+/// preceding arguments and this subject in one simultaneous fold.
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Subject {
+    pub parameter: ParameterId,
+    pub ty: TypeId,
 }
 /// Canonical capture coordinates, shared by storage folding and checked body opening.
 /// These arguments are substitution data, never formation or execution evidence.
@@ -150,9 +159,53 @@ impl Bound {
             arguments: Arguments::All {
                 owner,
                 values: Vec::new(),
+                subject: None,
             },
         }));
         substitution
+    }
+    /// Map the owner's trait `Self` to a path subject in the same simultaneous
+    /// fold as its arguments; `None` leaves `Self` rigid. A trait path's
+    /// omitted defaults and their retained alias requirements are built only
+    /// through this mapping, so they agree on what `Self` stands for.
+    /// # Errors
+    /// Rejects a subject set twice or after a substitution was computed, a
+    /// non-type or owner parameter, an invalid type and exhausted work.
+    pub fn with_subject(
+        mut self,
+        store: &Store,
+        subject: Option<Subject>,
+    ) -> Result<Self, &'static str> {
+        let Some(subject) = subject else {
+            return Ok(self);
+        };
+        let parameter = store
+            .parameter(subject.parameter)
+            .ok_or("invalid substitution subject")?;
+        if !matches!(parameter.kind, ParameterKind::Type { .. }) || store.kind(subject.ty).is_none()
+        {
+            return Err("trait subject must replace a type parameter by a type");
+        }
+        if !self.completed.is_empty() {
+            return Err("trait subject must precede every substitution");
+        }
+        self.account_arguments(1)?;
+        let Some(Arguments::All {
+            owner,
+            subject: slot @ None,
+            ..
+        }) = self
+            .parameters
+            .as_mut()
+            .map(|bindings| &mut bindings.arguments)
+        else {
+            return Err("trait subject requires one unset argument environment");
+        };
+        if parameter.owner == *owner {
+            return Err("trait subject cannot replace one of the owner's parameters");
+        }
+        *slot = Some(subject);
+        Ok(self)
     }
     /// Extend the fixed prefix without changing any previous argument or cache key.
     /// The caller validates declaration arity, defaults and bounds.
@@ -288,6 +341,7 @@ impl Bound {
             arguments: Arguments::All {
                 owner,
                 values: arguments,
+                subject: None,
             },
         }));
         Ok(substitution)
@@ -385,7 +439,11 @@ impl Bound {
                 return Ok((*parameter == id).then_some(*argument));
             }
             Arguments::Mapped(arguments) => return Ok(arguments.get(&id).copied()),
-            Arguments::All { owner, values } => (*owner, values),
+            Arguments::All {
+                subject: Some(subject),
+                ..
+            } if subject.parameter == id => return Ok(Some(Argument::Type(subject.ty))),
+            Arguments::All { owner, values, .. } => (*owner, values),
         };
         let parameter = store
             .parameter(id)
