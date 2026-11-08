@@ -5,6 +5,31 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 12](parallel/census-batch12.md) repairs census 12's
+record and batch 10's `[const]` supertrait gap, on main `ad05f4d61`. Both
+repairs follow rustc's split: constness lives in const conditions, not in
+ordinary clauses. Census 13 (`1c0219e9`, from `9fb0e2a7d`) checks 42,310
+declarations, with none failed or blocked. Its crate record, "source Copy
+target is outside the supported implementation profile", is core's `impl
+Copy for ! {}` (`marker.rs:484`): the Copy target match in `copying.rs` has
+no never type arm, and rustc's `type_allowed_to_implement_copy` accepts the
+never type. Seven lookahead records follow.
+
+- `min_specialization` compares clauses as rustc's `predicates_of` holds
+  them: a `[const] Tr` bound is the ordinary `Tr`, and a `const Tr` bound is
+  `Tr` plus a host-effect clause that is never a marker. This repairs core's
+  `SpecNextChunk` pair. Constness is still checked by the ordering: a
+  non-const child and a const child with only ordinary bounds stay rejected.
+- A const impl proves its trait's `[const]` supertraits and where clauses as
+  `[const]` goals under its own `[const]` premises, as rustc's wfcheck does.
+  Core's const callable reference impls now pass, and the three callable
+  sugar gaps of batch 10 are accepted controls. A non-const supertrait impl,
+  an ordinary premise and a `const` premise stay rejected.
+- 14 PA31 controls were declared before the rustc 1.98.0 oracle; all agree.
+- Every PA1 to PA24 suite passes, with PA20 at 1451/1451.
+- What remains: census 13's record 1 (proposed repair: the never type as a
+  Copy target without fields), then its lookahead records.
+
 Lane A [census batch 11](parallel/census-batch11.md) repairs census 11's
 budget record, the record it uncovered, and lookahead record 2, on main
 `016b1f54d`. Census 12 (`a108ae93`, from `13fcdf82d`) checks 42,310

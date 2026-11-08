@@ -737,6 +737,31 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     - The fix: charge the parked graph's actual retained bytes.
     - It moves ahead if a census or control hits it.
 
+- **During Lane A's [census batch 12](parallel/census-batch12.md)**,
+  2026-11-08.
+  - **Census 12's record and the `[const]` supertrait gap share one cause:
+    rustc's split between `predicates_of` and `const_conditions`.**
+    - rustc stores a `[const] Tr` bound in `predicates_of` as the ordinary
+      `Tr` clause, and its constness only in `const_conditions`.
+    - min_specialization's predicate basis now compares clauses that way.
+      A `const Tr` is kept as `Tr` plus the host-effect clause it stands for.
+      Only an ordinary trait clause gets the marker allowance.
+    - A const impl's supertraits and where clauses are proved as `[const]`
+      goals, as rustc's wfcheck does. Before, they were `const` goals, which
+      the impl's `[const]` premises cannot prove.
+    - Constness is still checked where rustc checks it. Children that are
+      not const, or only weakly const, are still rejected. A non-const
+      supertrait impl under a const impl stays rejected.
+    - 14 PA31 controls, declared before the oracle, agree with rustc. Batch
+      10's three callable-sugar gaps now pass.
+  - **Census 13** has no per-definition failure. Its crate record is core's
+    `impl Copy for ! {}` (`marker.rs:484`): the Copy-target check has no arm
+    for the never type, which rustc's `type_allowed_to_implement_copy`
+    accepts.
+    - Lane A repairs it next, checking rustc's whole accepted set rather than
+      adding only `!`. Then it re-checks lookahead record 2 (`SpecFill for
+      [MaybeUninit<T>]`) for derivation.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |
