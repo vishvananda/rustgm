@@ -5,6 +5,22 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 15](parallel/census-batch15.md) repairs census 15's
+record on main `6cd9f9e82`. Census 16 (`ed88ef69`, from `90ba44c16`) checks
+42,310 declarations, with none failed or blocked. Its crate record, "source
+CoerceUnsized implementation does not retain a permitted pointer coercion", is
+core's `CoerceUnsized` impl for pattern types over raw pointers (`pat.rs:80`).
+The same 7 lookahead records follow, with record 2 now at `zip.rs:248`.
+
+- Census 15's "invalid canonical trait selection" folded "type annotations
+  needed": a proved equality whose normal form is a rigid projection, as in
+  `impl<I, U> Iterator for Flatten<I>`, left `U` unbound. That normal form is
+  now installed as a normalization installs one, so `U` binds to it.
+- 13 PA20 controls were declared before the rustc 1.98.0 oracle; all agree.
+  Every PA1 to PA24 suite passes, with PA20 at 1464/1464.
+- What remains: (a), the default's `Self`, with a locate report first; then
+  the fold keeping each cause's category.
+
 Lane C [auto traits](parallel/auto-traits.md), second commit (C2), transports
 impls of a packet's own auto traits in version 13 with no new tag, bit or row:
 

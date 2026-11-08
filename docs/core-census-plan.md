@@ -975,6 +975,31 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     on main share a packet or helper output folder. The one race found was
     C2's own new labels, and it was fixed before commit.
 
+- **During Lane A's [census batch 15](parallel/census-batch15.md)**,
+  2026-11-08.
+  - **Census 15's label was a fold.** Its cause is "type annotations
+    needed": a proved equality whose normal form is a rigid projection left
+    the impl's result-only parameter unbound.
+  - **A proved equality's result is installed as a normalization installs
+    one.** `equate_proved_predicate`'s projection branch marks the normal
+    form's rigid roots through `apply_normalization`'s own
+    `retain_opaque_results`, whose visibility widens. A second opaque-marking
+    path was rejected, so that both installs stay identical.
+    - Only proved roots are marked. A result projection with an unresolved
+      input still blocks; no surface program reaches it, so a private
+      equations regression guards it.
+    - A later result for the same hole proves equality and never rebinds it.
+    - The marking pays the counters `apply_normalization` pays. The
+      trait-input and builtin-subject callers are unchanged.
+  - **The fold keeps one text for distinct causes.** Decided: Lane A's
+    follow-up after (a). The fold will keep ambiguity, internal region
+    invariants and invalid canonical selections apart. Lane B found the second
+    cause, "selected type retains an unmapped lifetime".
+  - **Census 16** (pin `ed88ef69`): 42,310 declarations, none failed or
+    blocked. Its crate record is core's `CoerceUnsized` impl for pattern types
+    over raw pointers (`pat.rs:80`), "source CoerceUnsized implementation does
+    not retain a permitted pointer coercion". Next: (a)'s locate report.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |
