@@ -124,7 +124,11 @@ impl Context {
         Ok(())
     }
 
-    fn retain_opaque_results(&mut self, store: &mut Store, root: TermId) -> Result<(), Error> {
+    pub(in crate::types::infer) fn retain_opaque_results(
+        &mut self,
+        store: &mut Store,
+        root: TermId,
+    ) -> Result<(), Error> {
         if let Value::Known(ty) = self.terms[root.0 as usize].value
             && store.contains_projections(ty) == Some(false)
         {

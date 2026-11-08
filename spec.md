@@ -4651,6 +4651,15 @@ and commit its complete input equations separately from the normalized result.
 Result equations can determine output holes, never unrelated projection inputs.
 Undetermined inputs defer until other premises provide enough information.
 
+A proved equality's result is installed as a normalization installs one. When
+its normal form is a rigid projection, as for core's
+`impl<I, U> Iterator for Flatten<I>`, whose `U` is fixed only by `IntoIter = U`,
+the normal form's projection roots need no further normalization, so an
+unresolved result hole binds to it. A later result for the same hole must prove
+equality and never rebinds it. A result that is itself a projection with an
+unresolved input still waits and never infers that input. The controls in
+`pa20/tests/spec/contracts/proved-results/` record independent outcomes.
+
 The same stack normalizes projected subjects and type arguments of trait premises,
 and projected builtin conditions after other equations settle. Retain the original
 input graph beside the selected normal-form view. Replace only independently

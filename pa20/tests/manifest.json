@@ -23476,6 +23476,219 @@
       },
       "maintainer_origin": "dev/tests/invariants/demand_header_facts.rs:CONTROLS",
       "source_sha256": "ba33c4b7a5ec9135b4d86b5e25b711af71b8880704b278b2ed9649c645fb0a85"
+    },
+    {
+      "path": "tests/spec/contracts/proved-results/rigid-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.contracts",
+        "pa20.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/proved_rigid_results.rs:CONTROLS",
+      "source_sha256": "49adc35e07155e7025d85082a29284915c537d35a8f0ac5e77e80fcbe67f56f2"
+    },
+    {
+      "path": "tests/spec/contracts/proved-results/flatten-shape.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.contracts",
+        "pa20.projections",
+        "pa20.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/proved_rigid_results.rs:CONTROLS",
+      "source_sha256": "a6d58041b2891c8c6805d9f2cb0606405ffae9c6f37ab29e57f567c4335eb8e8"
+    },
+    {
+      "path": "tests/spec/contracts/proved-results/result-bound-holds.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.contracts",
+        "pa20.projections",
+        "pa20.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/proved_rigid_results.rs:CONTROLS",
+      "source_sha256": "d777f79482c799a30221db47556ba4c1fbee856148247ceede96b219484b4e79"
+    },
+    {
+      "path": "tests/spec/contracts/proved-results/body-selection.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection",
+        "pa20.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/proved_rigid_results.rs:CONTROLS",
+      "source_sha256": "22c55a21262b723e114f5b8b31832f74291467da3ac63e7562947ae4c68d5114"
+    },
+    {
+      "path": "tests/spec/contracts/proved-results/nested-rigid-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.contracts",
+        "pa20.projections",
+        "pa20.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/proved_rigid_results.rs:CONTROLS",
+      "source_sha256": "61af8d7b223099d42203f776939379eb0fbda26745d80b0499465587ee28c43e"
+    },
+    {
+      "path": "tests/spec/contracts/proved-results/two-results-same.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.contracts",
+        "pa20.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/proved_rigid_results.rs:CONTROLS",
+      "source_sha256": "136d5fb2db0c81f80d60ddac6ab69f11ac7681fc8b92fd6cfe2a036553f6f219"
+    },
+    {
+      "path": "tests/spec/contracts/proved-results/two-results-assumed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.contracts",
+        "pa20.projections",
+        "pa20.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/proved_rigid_results.rs:CONTROLS",
+      "source_sha256": "ed3b374789109d48b95874d21783cef1bfd7197942af80e9c0becdb5ba9b255f"
+    },
+    {
+      "path": "tests/spec/contracts/proved-results/named-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.contracts",
+        "pa20.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/proved_rigid_results.rs:CONTROLS",
+      "source_sha256": "7b62a8efc170e378fa651b7a8a0c47db395829b1714f3b4f9e0c643087fcb069"
+    },
+    {
+      "path": "tests/spec/contracts/proved-results/result-bound-fails.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.contracts",
+        "pa20.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/proved_rigid_results.rs:CONTROLS",
+      "source_sha256": "48db4a44c61d86f36fbef9b5ccb53d75685347d12fb6d4f8dcae69125713a9ef"
+    },
+    {
+      "path": "tests/spec/contracts/proved-results/concrete-mismatch.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.contracts",
+        "pa20.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/proved_rigid_results.rs:CONTROLS",
+      "source_sha256": "1cdf301ff08acd28cca677b8a757b121cf772c0e82b44cf22411ed2986f100b6"
+    },
+    {
+      "path": "tests/spec/contracts/proved-results/two-results-differ.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.contracts",
+        "pa20.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/proved_rigid_results.rs:CONTROLS",
+      "source_sha256": "dc589efc6708a1ad652c84e0269b7953c0f95d55dd573ec46181a8fb1458e0e7"
+    },
+    {
+      "path": "tests/spec/contracts/proved-results/body-input.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.selection",
+        "pa20.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/proved_rigid_results.rs:CONTROLS",
+      "source_sha256": "adda8a9e5f7d61de29b807311dd90c176cce0c6079e66a10b4c7302e94460108"
+    },
+    {
+      "path": "tests/spec/contracts/proved-results/result-input-unresolved.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.selection",
+        "pa20.projections",
+        "pa20.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/proved_rigid_results.rs:CONTROLS",
+      "source_sha256": "028106f2e1a0bec28da323d5e5d528fc2ac898e4d139066e9f41225021ab9842"
     }
   ]
 }

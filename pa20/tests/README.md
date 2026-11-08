@@ -16,6 +16,9 @@ Fixture families:
   callable lifetimes, alias proof isolation and generic-default rejection.
 - `contracts`: result bounds, equalities, inherited promises, valid/invalid impl
   conformance, unused declarations and obligations retained after normalization.
+  `proved-results` fixes an impl parameter named only by an equality's result
+  when the proved normal form is a rigid projection, in headers and bodies, with
+  bound, mismatch, second-result and never-infer-the-input opponents.
 - `constants`: required/default/overridden values, inherent values, generic
   instantiation, selected identity, type errors, invalid values and dependency cycles;
   selected patterns/ranges, structural equality, coverage, unused owner parameters,

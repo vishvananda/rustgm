@@ -476,6 +476,123 @@ fn proved_inputs_refine_independent_holes_without_inverting_projections() -> Tes
     Ok(())
 }
 
+/// Instantiate `<P as Tr>::Out == template` with the template's parameter as a
+/// fresh hole, then commit a proof whose result is the normal form `normal`.
+fn proved_result(
+    store: &mut Store,
+    context: &mut Context,
+    goal: (TypeId, TypeId),
+    hole: (ParameterId, infer::TermId),
+    normal: TypeId,
+) -> Result<(), infer::Error> {
+    let (subject, template) = goal;
+    let mut substitution = Instantiation::new(
+        context,
+        store,
+        &[(hole.0, infer::arguments::Argument::Type(hole.1))],
+    )?;
+    let goal = context.instantiate_predicate(
+        store,
+        Predicate {
+            ty: subject,
+            bound: Bound::ProjectionEqual(template),
+        },
+        &mut substitution,
+    )?;
+    let proof = Predicate {
+        ty: subject,
+        bound: Bound::ProjectionEqual(normal),
+    };
+    context.equate_proved_predicate(store, &goal, proof)
+}
+
+fn rigid(store: &mut Store, index: u32) -> Result<(ParameterId, TypeId), &'static str> {
+    let id = parameter(store, index, ParameterKind::Type { sized: true })?;
+    Ok((id, store.intern(Kind::Parameter(id))?))
+}
+
+#[test]
+fn a_proved_rigid_result_binds_an_unresolved_result_like_a_normalization() -> TestResult {
+    let mut store = Store::default();
+    let (u, result) = rigid(&mut store, 0)?;
+    let (_, source) = rigid(&mut store, 1)?;
+    let (_, other) = rigid(&mut store, 2)?;
+    let subject = projection(&mut store, source, &[])?;
+    let normal = projection(&mut store, other, &[])?;
+    let elements = store.intern_list(&[result, BYTE])?;
+    let nested = store.intern(Kind::Tuple(elements))?;
+    let elements = store.intern_list(&[normal, BYTE])?;
+    let nested_normal = store.intern(Kind::Tuple(elements))?;
+    for (template, proved) in [(result, normal), (nested, nested_normal)] {
+        let mut context = Context::default();
+        let hole = context.variable(Domain::Any)?;
+        proved_result(
+            &mut store,
+            &mut context,
+            (subject, template),
+            (u, hole),
+            proved,
+        )?;
+        assert_eq!(context.resolved(&mut store, hole)?, normal);
+    }
+    // Later results fixed to the same hole must prove equality, never rebind.
+    let (_, same) = rigid(&mut store, 3)?;
+    let same = projection(&mut store, same, &[])?;
+    let (_, differ) = rigid(&mut store, 4)?;
+    let differ = projection(&mut store, differ, &[])?;
+    let mut context = Context::default();
+    let hole = context.variable(Domain::Any)?;
+    proved_result(
+        &mut store,
+        &mut context,
+        (subject, result),
+        (u, hole),
+        normal,
+    )?;
+    proved_result(&mut store, &mut context, (same, result), (u, hole), normal)?;
+    assert_eq!(
+        proved_result(
+            &mut store,
+            &mut context,
+            (differ, result),
+            (u, hole),
+            differ
+        ),
+        Err(infer::Error::Mismatch)
+    );
+    assert_eq!(context.resolved(&mut store, hole)?, normal);
+    Ok(())
+}
+
+#[test]
+fn a_result_projection_with_an_unresolved_input_still_blocks_without_inferring_it() -> TestResult {
+    let mut store = Store::default();
+    let (v, input) = rigid(&mut store, 0)?;
+    let (_, source) = rigid(&mut store, 1)?;
+    let (_, other) = rigid(&mut store, 2)?;
+    let subject = projection(&mut store, source, &[])?;
+    let template = projection(&mut store, input, &[])?;
+    let normal = projection(&mut store, other, &[])?;
+    let mut context = Context::default();
+    let hole = context.variable(Domain::Any)?;
+    assert_eq!(
+        proved_result(
+            &mut store,
+            &mut context,
+            (subject, template),
+            (v, hole),
+            normal,
+        ),
+        Err(infer::Error::Unresolved)
+    );
+    assert_eq!(
+        context.resolved(&mut store, hole),
+        Err(infer::Error::Unresolved)
+    );
+    assert_eq!(context.unresolved_domain(hole)?, Some(Domain::Any));
+    Ok(())
+}
+
 #[test]
 fn repeated_projected_predicate_inputs_share_one_transformed_graph() -> TestResult {
     let mut store = Store::default();

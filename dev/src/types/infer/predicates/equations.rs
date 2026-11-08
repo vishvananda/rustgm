@@ -41,6 +41,11 @@ impl Context {
         };
         let original = self.projection_application(store, goal.subject())?;
         self.equate_projection_inputs(store, &original, application)?;
+        // The proved normal form is installed as `apply_normalization` installs
+        // one: its rigid projection roots need no further normalization, so an
+        // unresolved result binds to it. Projections in the result still block.
+        let normal = self.known(store, expected)?;
+        self.retain_opaque_results(store, normal)?;
         self.equate_canonical_input(store, result, expected, &[])
     }
 

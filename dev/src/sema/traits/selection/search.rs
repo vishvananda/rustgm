@@ -29,6 +29,9 @@ mod fn_copying_tests;
 #[path = "../../../../tests/invariants/relaxed_pinning.rs"]
 mod pinning_tests;
 mod pointee;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/proved_rigid_results.rs"]
+mod proved_rigid_results;
 mod refined_markers;
 mod reflected_fields;
 #[cfg(test)]
