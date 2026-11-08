@@ -1,10 +1,7 @@
 //! Reprove supported imported receiver contracts; metadata is never conformance.
 use super::{Checker, DefId, Error};
 use crate::{
-    sema::{
-        associated::{Owner, OwnerKind},
-        traits::implementations::Polarity,
-    },
+    sema::associated::{Owner, OwnerKind},
     support::bindings::LangItem,
     types::{
         outlives::Queries,
@@ -67,21 +64,6 @@ impl Checker<'_> {
             .map_err(Error::unlocated)?
         {
             self.require_imported_receiver_trait(trait_definition)?;
-        }
-        let registry = self
-            .facts
-            .generics
-            .implementations
-            .as_deref()
-            .ok_or_else(|| Error::unlocated("imported conformance has no unpaid registry entry"))?;
-        if registry
-            .polarity(&self.facts.types, &self.facts.associated, definition)
-            .map_err(Error::unlocated)?
-            != Polarity::Positive
-        {
-            return Err(Error::unlocated(
-                "negative imported conformance requires its wider profile",
-            ));
         }
         self.facts
             .generics
@@ -317,6 +299,19 @@ impl Checker<'_> {
         if let Some(owner) = self.imported_automatic_owner(definition, predicate)? {
             return self.validate_imported_auto_implementation(definition, predicate, owner);
         }
+        if self.imported_negative(definition, predicate)? {
+            // As rustc does, a negative impl of a trait that is not auto only
+            // denies its application: it has no requirement, member or
+            // coverage proof, and it is never positive evidence.
+            return self
+                .facts
+                .generics
+                .implementations
+                .as_mut()
+                .ok_or_else(|| Error::unlocated("imported conformance registry disappeared"))?
+                .complete(definition, Vec::new(), Vec::new(), Vec::new())
+                .map_err(Error::unlocated);
+        }
         let methods =
             crate::sema::crates::primitive_method_plan(&mut self.facts, definition, predicate)?;
         let environment =
@@ -335,6 +330,28 @@ impl Checker<'_> {
             .as_mut()
             .ok_or_else(|| Error::unlocated("imported conformance registry disappeared"))?
             .complete(definition, types_and_links.1, types_and_links.0, Vec::new())
+            .map_err(Error::unlocated)
+    }
+
+    /// Whether an imported impl is negative, read from its own row after
+    /// `implementation` re-proved its safety against its trait.
+    fn imported_negative(&self, definition: DefId, predicate: Predicate) -> Result<bool, Error> {
+        let owner = self
+            .facts
+            .associated
+            .owner(definition)
+            .and_then(|id| self.facts.associated.get(id))
+            .copied()
+            .filter(|owner| {
+                matches!(owner.kind, OwnerKind::ImportedImpl(_)) && owner.source.is_none()
+            })
+            .ok_or_else(|| {
+                Error::unlocated("source-free conformance requires an actual imported impl")
+            })?;
+        self.facts
+            .associated
+            .imported_implementation(&self.facts.types, owner, predicate)
+            .map(|(_, negative)| negative)
             .map_err(Error::unlocated)
     }
 

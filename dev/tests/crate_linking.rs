@@ -46,6 +46,8 @@ mod lifetime_transport;
 mod marker_transport;
 #[path = "crate_linking/match_transport.rs"]
 mod match_transport;
+#[path = "crate_linking/modifier_transport.rs"]
+mod modifier_transport;
 #[path = "crate_linking/named_values.rs"]
 mod named_values;
 #[path = "crate_linking/namespace_clients.rs"]

@@ -339,7 +339,8 @@
   {
    "control": "the member range of `!Send for Rc` widened over one existing member link",
    "expected": "rejected with `auto or negative trait implementations cannot declare members`",
-   "observed": "rejected by admission with `source implementation omits an actual trait member mapping`: the widened range takes another impl's link, and no admitted packet carries a link that no trait member owns. The consumer's member check remains as defense in depth"
+   "observed": "rejected by admission with `source implementation omits an actual trait member mapping`: the widened range takes another impl's link, and no admitted packet carries a link that no trait member owns. The consumer's member check remains as defense in depth",
+   "c3_amendment": "declared on 2026-11-08, before the C3 candidate run: C3's ledger rejects a negative impl that maps any member, before the member-count rule, so this control now gives its declared `auto or negative trait implementations cannot declare members`. That ledger rule covers every version, so C3 removes the consumer's member check as subsumed"
   },
   {
    "control": "version relabelled from 13 to 12",

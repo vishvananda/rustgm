@@ -5,6 +5,70 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [auto traits](parallel/auto-traits.md), third commit (C3), transports
+unsafe traits and every trait impl's own safety and polarity in version 13,
+with no new tag, bit or row:
+
+- A non-auto trait header may carry `UNSAFE`, and any trait impl may carry
+  its `unsafe` and `negative` bytes. `constant`, and modifiers on inherent
+  impls, stay rejected. Versions 12 and 10 keep their fences.
+- In every version a negative impl maps no trait member. A negative impl of a
+  trait with members, as core's `!Clone for &mut T`, `!DerefMut for &T` and
+  `!Iterator for [T]` are, was rejected by the member-count rule before.
+- An unsafe impl's methods, with or without a receiver, are admitted as
+  conversion methods on the same version-13 fact that admits its `unsafe`
+  byte.
+- Each consumer re-proves every imported impl's safety against its trait
+  (rustc's E0199, E0200 and E0198 rules). A negative impl of a non-auto trait
+  completes as `NegativeValidated` with no further proof, as rustc's does,
+  and is never positive evidence.
+
+Five clients exit 42 natively. Ten opponents are rejected, as rustc rejects
+them; `deref-shared` and `clone-mut` for a different reason than rustc's.
+`negative-coherence`, which rustc accepts, is a recorded gap (below).
+
+- Open in this item:
+  - **C3b, next** (Lane C, before C2b): knowable absence relative to the crate
+    whose coherence is proved. A consumer re-proving an imported packet's
+    same-head pair (core's `impl<T: Error + ?Sized> Error for &T` beside
+    `impl !Error for &str`) cannot close `str: Error` for an imported trait,
+    so that pair is rejected with "overlapping trait implementation headers
+    require coherence proof" (a generated C3 control).
+  - **Core transport blocker, unowned.** A trait-impl method under an impl
+    that captures a lifetime (`&T`, `&mut T`) fails in the exporter with
+    "source function early/captured callable frame transport is not
+    implemented". Core's `DerefMut for &mut T` and `Error for &E` need it.
+    Scheduled after C3b; a candidate to fold into the multi-packet item.
+  - **Negative coherence over a `?Sized` negative impl** (Lane B, after
+    chain-bytes; not a core blocker today). `pay_negative`
+    (`overlap/inputs.rs`) pays only Sized premises, so a `?Sized` (MetaSized)
+    negative impl's premise is never paid from the intersection's own
+    MetaSized assumption. It is independent of transport: with every item
+    local, the C3 provider's foundation (its lines 2-58) plus this line is
+    rejected with "overlapping trait implementation headers require coherence
+    proof", where rustc 1.98.0 accepts it:
+
+    ```rust
+    pub trait A {} impl<T: ?Sized> !A for &T {} pub trait B {} impl<T: A> B for T {} impl<T: ?Sized> B for &T {}
+    ```
+
+    | Negative impl's `T` | `B for &T`'s `T` | rustc 1.98.0 | RustGM |
+    | --- | --- | --- | --- |
+    | `?Sized` | `?Sized` | accepted | overlap text |
+    | `MetaSized` | `MetaSized` | accepted | overlap text |
+    | `PointeeSized` | `?Sized` | accepted | accepted |
+    | `PointeeSized` | `PointeeSized` | accepted | accepted |
+    | `Sized` | `Sized` | accepted | accepted |
+
+    C3's `negative-coherence` client is declared rejected with the overlap
+    text; the fix flips it.
+  - **`may_dangle`**, under the existing open item (frontend dropck; it
+    blocks alloc, not core). It has three parts: resolving the attribute
+    (`#[may_dangle]` is "unresolved attribute macro is not in path scope"
+    before export), the unsafe-Drop safety rule, and the dropck opt-out. No
+    fence is added.
+  - C2b and C2c follow C3b, as before.
+
 Lane A [census batch 15](parallel/census-batch15.md), section 5, repairs
 batch 14's recorded `default-bound-satisfied` gap on main `078d3f238`
 (`d97f986eb`). Census 17 (`c020dad2`) has census 16's 8 records byte for

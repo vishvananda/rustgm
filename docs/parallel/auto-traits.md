@@ -2,20 +2,26 @@
 
 This is a Lane C checkpoint in `rustgm-async-work` on
 `implement/auto-traits-20261108`. C1 started on pushed main `b47b51e79` and
-landed as `89cb62ee5`; C2 is on pushed main `6cd9f9e82`. It is item 5 of the
+landed as `89cb62ee5`. C2 landed as `c9fb67cc3`, and C3 is on main
+`078d3f238`. It is item 5 of the
 [core census plan](../core-census-plan.md). It is a transport slice, not a
 library milestone, and makes no claim about an original-core artifact or a
 whole assignment.
 
 The integrator approved one item in three commits, which may be joined, and
-then added C2b:
+then added C3b, C2b and C2c:
 
 - **C1** (`89cb62ee5`): exact empty auto declarations, the auto-marker roles,
   and `Send`'s diagnostic identity.
-- **C2**, this commit: auto impls, positive and negative, and the structural
-  selection lift for imported custom auto traits ([C2](#c2-auto-impls)).
-- **C3**: non-auto negative impls and plain unsafe traits and impls.
-- **C2b**, after C3: an imported nominal's transported where-clauses as its
+- **C2** (`c9fb67cc3`): auto impls, positive and negative, and the
+  structural selection lift for imported custom auto traits
+  ([C2](#c2-auto-impls)).
+- **C3**, this commit: unsafe traits that are not auto, and every trait
+  impl's own safety and polarity
+  ([C3](#c3-unsafe-traits-and-non-auto-negative-impls)).
+- **C3b**, after C3 and before C2b: knowable absence relative to the crate
+  whose coherence is proved.
+- **C2b**, after C3b: an imported nominal's transported where-clauses as its
   formation requirements ([C2b](#c2b-imported-nominal-formation)).
 - **C2c**, after C2b and before 5b: census 16's lead record, core's
   `CoerceUnsized` impl for `pattern_type!(*const T is !null)`
@@ -819,10 +825,326 @@ At the join, owners review:
 - `declarations/traits/implementations.rs::validate_source_impl_policy` and
   `negative_equalities.rs::custom`.
 
+## C3: unsafe traits and non-auto negative impls
+
+C3 is the third commit of this item, developed on main `078d3f238`. It
+transports unsafe traits that are not auto and every trait impl's own safety
+and polarity, so core's negative impls of traits with members and its unsafe
+marker and method traits export.
+
+### Wire rule (C3)
+
+The integrator approved these shapes before code:
+
+- **Version 13 only; no new tag, bit or row.**
+  - `trait_headers` admits `UNSAFE` on a trait that is not auto. `CONST`
+    stays rejected.
+  - The impl loop admits an impl's `unsafe` and `negative` bytes for every
+    trait impl (`trait_application.is_some()`). `constant`, and modifiers on
+    inherent impls, stay rejected.
+  - Both read one fact, `Bindings::languages` (renamed from `automatic`,
+    `profile == BindingProfile::Languages`).
+  - Versions 12 and 10 keep "source const/auto/unsafe traits require a wider
+    explicit profile" and "source const/negative/unsafe implementation
+    requires a wider explicit profile".
+- **The ledger's zero-member rule, every version**
+  (`membership_rows.rs::application`). A negative impl maps no member; one
+  that maps any is "auto or negative trait implementations cannot declare
+  members". A positive impl keeps the member-count rule, "source
+  implementation omits an actual trait member mapping".
+  - Declared older-version text change: a negative-only provider whose
+    negative impl's trait has members, exported under v12 or v10, now stops
+    at the impl fence instead of the ledger.
+- **Unsafe-impl methods** (the item-4 amendment, as corrected). Under version
+  13 `conversion_profile::method` admits a method of an unsafe impl, through
+  an `unsafe_impls` argument that `associated_method` passes from the same
+  `Bindings::languages` the impl loop reads. `primitive_method` keeps
+  refusing unsafe impls: it refuses every method with a receiver, so
+  `haystack` was always a conversion method. Under version 13 every primitive
+  method is also a conversion method, so its `Ok(false)` falls through. The
+  receiver-less `make` of both unsafe Searcher impls proves it. Negative and
+  constant stay rejected in both families.
+- **Each consumer re-proves safety for every imported impl**
+  (`Graph::implementation`, `origin_ports.rs`), literally
+  `required_unsafe = trait.UNSAFE && !negative; unsafe == required_unsafe`,
+  whose doc comment names E0199, E0200 and E0198. It runs at staging,
+  reservation and conformance, and its text is "selected impl safety/member
+  kinds disagree with its actual trait".
+- **Non-auto negatives complete as `NegativeValidated`**
+  (`portable_impls.rs::validate_imported_trait_implementation`), after the
+  auto branch and before method planning, with no requirement, member or
+  coverage proof, as rustc does. They are never positive evidence
+  (`refutation.rs`, unchanged).
+- `Graph::empty_module_trait` admits `UNSAFE` under version 13.
+
+### Removed as subsumed
+
+Each was approved under C2's rule: an earlier check rejects the same rows on
+every path.
+
+- `staged_headers/impl_headers.rs::prepare`'s modifier clause and its
+  `automatic` helper: admission's impl loop decides the same bytes first.
+- `free_protocols.rs::automatic_implementation` and both Q5 texts ("imported
+  foreign auto-trait impl requires its multi-packet profile"): the ledger
+  rejects a foreign trait application first ("source implementation requires
+  its exact supported trait header").
+- `Graph::automatic_implementation`'s Q5, safety, members and constant
+  checks: safety moved to `Graph::implementation`, which it calls first; the
+  ledger owns members; admission owns constant. Its version-13 and exact-auto
+  checks remain, so `polarity_fences`' four direct-call texts pass unchanged.
+- `portable_impls.rs`'s "negative imported conformance requires its wider
+  profile": every negative now completes before that point.
+
+### Corrections recorded before code
+
+- **Correction A.** The recorded "same-packet same-head coherence pair limit"
+  named the wrong path: `contract_completion.rs:90` is the Provided-contracts
+  consumer only. In the ordinary consumer, the coherence walk re-proves an
+  imported packet's same-head pair, and `disjointness.rs::absence_closed`
+  closes absence only for a trait local to the consumer. Core's
+  `impl<T: Error + ?Sized> Error for &T` beside `impl !Error for &str` is
+  therefore a generated control, declared rejected; C3b closes it.
+- **Correction B.** A trait-impl method on a nominal Self already exports
+  under version 13 (`conversion_profile::method`). The real limit is a
+  trait-impl method under an impl that captures a lifetime (`&T`, `&mut T`),
+  which fails in the exporter with "source function early/captured callable
+  frame transport is not implemented". Core's `DerefMut for &mut T` and
+  `Error for &E` need it lifted. The provider's negative impls on references
+  map no member, and its method impls are on `u8` and `Counter`, so clients
+  stay unrestricted.
+- **`may_dangle`.** `#[may_dangle]` is rejected before export ("unresolved
+  attribute macro is not in path scope"), so no export fence is reachable. It
+  is recorded under the open item "may_dangle frontend dropck (blocks alloc)"
+  with its three parts: resolving the attribute, the unsafe-Drop safety rule,
+  and the dropck opt-out. No fence is added.
+
+### Fixtures and outcomes (C3)
+
+`pa29/tests/unsafe-negative-impl-outcomes.json` was declared at 19:16:33Z,
+after the rustc oracle and baseline probes and before any candidate run. It
+holds 17 outcomes: the provider export and 16 clients. The provider is
+`#![feature(negative_impls)]`, the lifetime-nominals provider, and a tail of
+authored impls shaped as core's (see the packet README).
+
+The receiver-less `fn make() -> u8` of `Searcher`, and its two unsafe impls,
+are integrator condition 2, declared before the oracle as fixture version 4.
+Every earlier outcome was unchanged.
+
+| Client | rustc 1.98.0 | RustGM |
+| --- | --- | --- |
+| trusted, local-trusted, exclusive, error-fault, local-negative | exit 42 | exit 42 |
+| error-str, iterator-slice, fuse-plain, searcher-fault | E0277 | "trait obligation requires an unambiguous matching assumption or implementation" |
+| deref-shared, clone-mut | E0277 | "conditional negative implementation requires scoped debt payment" |
+| safe-searcher, unsafe-plain, unsafe-negative | E0200, E0199, E0198 | "trait and implementation safety declarations disagree" |
+| deref-positive | E0751 | "overlapping trait implementation headers require coherence proof" |
+| negative-coherence | exit 42 | "overlapping trait implementation headers require coherence proof" (recorded gap) |
+
+- Every candidate text was first observed by compiling the client's body with
+  the provider as one source core on the baseline CLI. On main the provider
+  export itself stops at the ledger.
+- `deref-shared` and `clone-mut` share `arguments-send`'s reason: the
+  refutation of a negative impl whose header names a region stays
+  conditional.
+- **`negative-coherence` is a frontend gap, independent of transport.** It
+  fails with every item local, too. `pay_negative` (`overlap/inputs.rs`)
+  pays only Sized premises, so a `?Sized` (MetaSized) negative impl's premise
+  is never paid from the intersection's own MetaSized assumption. The
+  narrowest repro is the provider's lines 2-58 plus one line:
+
+  ```rust
+  pub trait A {} impl<T: ?Sized> !A for &T {} pub trait B {} impl<T: A> B for T {} impl<T: ?Sized> B for &T {}
+  ```
+
+  | Negative impl's `T` | `B for &T`'s `T` | rustc 1.98.0 | RustGM |
+  | --- | --- | --- | --- |
+  | `?Sized` | `?Sized` | accepted | overlap text |
+  | `MetaSized` | `MetaSized` | accepted | overlap text |
+  | `PointeeSized` | `?Sized` | accepted | passes coherence |
+  | `PointeeSized` | `PointeeSized` | accepted | passes coherence |
+  | `Sized` | `Sized` | accepted | passes coherence |
+
+  - The baseline gave this table. On the C3 candidate the `?Sized` and
+    `MetaSized` rows keep the overlap text, and the other three export.
+    The `Sized` row is a single-crate composite over the full provider.
+  - PA31's `ordinary-negative-mode.rs` spells the same shape against real
+    core and passes.
+  - The integrator assigned the repair to Lane B, after chain-bytes. It is
+    not a core blocker today, and it flips this client.
+
+Generated controls (`crate_linking::modifier_transport`):
+
+| Control | rustc | RustGM |
+| --- | --- | --- |
+| the provider plus `impl !Error for &str {}`, and an answer client | compiles; exit 42 | the export is accepted; the client is rejected with "overlapping trait implementation headers require coherence proof" (C3b) |
+| the foundation plus `pub unsafe trait TrustedFused {}` | compiles | versions 12 and 10: "source const/auto/unsafe traits require a wider explicit profile", verbatim as on main; version 13 exports |
+| the foundation plus `impl<T: PointeeSized> !Clone for &mut T {}` | compiles | versions 12 and 10: "source const/negative/unsafe implementation requires a wider explicit profile"; version 13 exports |
+
+- The last row is the declared older-version text change. On main the ledger
+  rejected that provider first under all three versions ("source
+  implementation omits an actual trait member mapping").
+- The full provider is not an older-version trait-fence control. Under
+  versions 12 and 10 it stops first at "named, associated or generic alias
+  transport requires its wider profile", as observed on main for the provider
+  without its negative impls.
+
+Wire controls (`forged_impl_modifiers_reject_in_fresh_consumers`):
+
+- Making `Plain for Counter` negative moves one byte. That calibrates the
+  52-byte impl header table, and every tail row's flags are checked.
+- Making `Iterator` unsafe moves one byte, which calibrates the trait header
+  table. That variant is generated in the test's output folder and is not a
+  fixture. The honest packet's TrustedFused and Searcher carry `UNSAFE`, and
+  Plain and Error do not.
+- Each forged packet is consumed by `trusted`, and the honest packet is
+  accepted.
+
+| Forgery | Fresh consumer |
+| --- | --- |
+| `unsafe` set on `Plain for Counter` | "selected impl safety/member kinds disagree with its actual trait" |
+| `unsafe` cleared on `TrustedFused for Counter` | the same |
+| `unsafe` set on `!Searcher for Fault` | the same |
+| `UNSAFE` cleared on the TrustedFused and Searcher trait headers | the same |
+| `negative` set on `Searcher for u8`, which maps its members | "auto or negative trait implementations cannot declare members" (admission) |
+| `negative` cleared on `!DerefMutLike for &T`, which maps none | "source implementation omits an actual trait member mapping" (admission) |
+| version relabelled 13 to 12 | "unknown source declaration kind" |
+
+Every declared outcome held on the first candidate run.
+
+### A C2 control's text (declared before the candidate)
+
+C2's `rc-member` forgery widens `!Send for Rc`'s member range over one
+existing link. C2 observed the ledger's count text, before its own declared
+"auto or negative trait implementations cannot declare members". C3's
+zero-member rule runs first for a negative impl, so the control now gives the
+declared text. That change was declared before the candidate run and is
+recorded beside the control in `auto-impl-outcomes.json`. The consumer's
+member check it backed is removed as subsumed (above).
+
+### Flip survey (C3)
+
+The survey (`obj/parallel/auto-traits/flip3/`) ran two CLIs:
+
+- the baseline, `89cb62ee5` (`baseline/rustgm`, sha256 `d97cd78e`);
+- C3 on `078d3f238` (`candidate/rustgm`, sha256 `f35ec380`), the final
+  source tree.
+
+Each CLI exported every pa29 spec provider under versions 10, 12 and 13, then
+ran every fixture client against each export: 33 providers, 99 exports and
+1,167 runs.
+
+- Against C2's candidate outputs (`flip2/b`), every run of the 32 earlier
+  packets is byte-identical in status, stderr and LowIR. So C3, and the
+  Lane A and B commits it was rebased over, change no earlier packet's
+  outcome. Against the baseline, `auto-impls` differs exactly as C2's survey
+  recorded.
+- In the new packet under version 13, the provider and the five accepted
+  clients are rejected→accepted, each matching rustc's exit 42. The eleven
+  opponents stay rejected, now under their declared messages instead of the
+  baseline's missing artifact.
+- Under versions 12 and 10 the new provider stops in both CLIs at "named,
+  associated or generic alias transport requires its wider profile", byte for
+  byte.
+- There is no accepted→rejected flip. Versions 10 and 12 accept 6 and 14
+  runs before and after; version 13 accepts 186 before and 200 after (C2's
+  194 plus six).
+
+### Evidence (C3)
+
+Every run below used the final source tree, on `078d3f238`. Receipts are under
+`obj/qualification/fast/`, and each one passed.
+
+The focused run came first: receipt `1794165958734543023`, 6 tests. Those were
+the three non-native `modifier_transport` tests, `polarity_transport`'s forged
+and frontend tests, and `polarity_fences`.
+
+Non-native results:
+
+| Selection | Tests | Receipt |
+| --- | --- | --- |
+| lib cases of the touched modules | 217 | `1794166593368191022` |
+| auto-trait source and object regressions (C2's) | 13 | `1794166638010305683` |
+| linking suite, part 1 | 49 | `1794166697505251444` |
+| linking suite, part 2 | 49 | `1794166800647009458` |
+| linking suite, part 3 | 49 | `1794166945528830683` |
+| linking suite, part 4 | 49 | `1794167120752580611` |
+| linking suite, part 5 | 48 | `1794167202143352611` |
+| private source-client cases, part 1 | 85 | `1794167271729332335` |
+| private source-client cases, part 2 | 84 | `1794167402636457147` |
+| course text pa1-pa12 | passed | `1794167615954520541` |
+| course text pa13-pa19, pa21-pa24 | passed | `1794167663321503171` |
+| course text pa20 | passed | `1794167742423160844` |
+
+- The 217 lib cases are every test under the modules C3 touches or reads:
+  `declarations::traits`, `traits::implementations`, `crates::typed_headers`,
+  `associated`, `declaration_inputs`, `nominals` and
+  `support::crates::generics`, plus C2's `selection::search` extras.
+- The five linking parts are the suite inventory's 244 non-ignored tests:
+  C2's 241 plus the three non-native `modifier_transport` tests.
+- The private source-client cases are C1's two parts, unchanged.
+
+`make test-upstream` verified 128 pinned fixtures and 126 Reference files.
+`make test-harness` found 464 roots in 13 binaries and no orphan fixtures.
+
+Native results (`--ignored`, reported separately):
+
+| Selection | Tests | Receipt |
+| --- | --- | --- |
+| linking suite native, part 1 | 26 | `1794167442918997482` |
+| linking suite native, part 2 | 25 | `1794167538574612700` |
+
+The two parts are the inventory's 51 ignored tests: C2's 50 plus
+`modifier_clients_execute_natively`, in which the five accepted clients exit
+42 with empty stdout. With the non-native parts, that is all 295.
+
+Oracles:
+
+- rustc 1.98.0 first ran over the scratch fixture, before the outcomes were
+  declared and before any candidate run. It gave every declared outcome: the
+  provider compiles, six clients exit 42 natively (the five accepted and
+  `negative-coherence`), six give E0277, and the others give E0751, E0200,
+  E0199 and E0198.
+- For this record it ran again over the committed bytes, which are identical
+  to the scratch fixture, with the same results:
+  `obj/parallel/auto-traits/oracle/c3` (`c3.log`, provider sha256
+  `96075b0ed139d472`).
+- `obj/parallel/auto-traits/oracle/c3gen`: the generated controls are built
+  as the test builds them. The pair provider compiles and its answer client
+  exits 42, and the unsafe-only and negative-only controls compile.
+- The negative-coherence variants and the narrowest repro were run on the
+  baseline before C3. That record is in the C3 entry of
+  `docs/library-build-blockers.md`.
+
+### Owner review (C3)
+
+At the join, owners review:
+
+- `support/crates/generics/source_validation/header_ledger/membership_rows.rs::application`:
+  the zero-member rule for negative impls, in every version;
+- `support/crates/generics/ordinary_profile.rs`: `Bindings::languages`, the
+  impl loop, `trait_headers`' `UNSAFE` admission and `associated_method`'s
+  gate;
+- `support/crates/generics/conversion_profile.rs::method`: its
+  `unsafe_impls` argument;
+- `sema/crates/typed_headers/mapped_source/origin_ports.rs`:
+  `Graph::implementation`'s safety rule, `applied_trait_flags`, and the
+  reduced `Graph::automatic_implementation`;
+- `sema/crates/typed_headers/mapped_source/owner_members.rs::Graph::empty_module_trait`;
+- `declarations/traits/implementations/portable_impls.rs`:
+  `validate_imported_trait_implementation`'s negative completion,
+  `imported_negative`, and `imported_receiver_environment` without its
+  polarity fence;
+- the removals in `staged_headers/impl_headers.rs::prepare` and
+  `free_protocols.rs`.
+
 ## Remaining gaps
 
-- **C3**: non-auto negative impls, and plain unsafe traits and impls.
-- **C2b** (Lane C, after C3, before 5b): an imported nominal's transported
+- **C3b** (Lane C, next, before C2b): knowable absence relative to the crate
+  whose coherence is proved. `absence_closed` holds when the trait is local
+  to the perspective crate, or the self type is, through rustc 1.98's
+  fundamental wrappers (`&`, `&mut`, `Box`, `Pin`). A consumer re-proves an
+  imported packet's same-head pair from that packet's perspective. C3's pair
+  control flips to accepted.
+- **C2b** (Lane C, after C3b, before 5b): an imported nominal's transported
   where-clauses are not formation requirements in a client, so
   `fn hold(_r: base::Rc<u8, NotAlloc>)` is accepted against rustc's E0277.
   C2's `negative.rs::imported_nominal_inputs` is its temporary workaround.
@@ -832,16 +1154,25 @@ At the join, owners review:
   also admit a raw-pointer-based pattern type with the same pattern on both
   sides, proved by the base pointer's Unsize. Pattern changes across the
   coercion and the general arrays/CoerceUnsized item stay out of scope.
-- **`arguments-send`'s reason.** `!Send for Arguments<'_>` stays a
-  conditional refutation, because its header names a region. That is a
+- **Lifetime-capturing trait-impl methods** (a core transport blocker,
+  unowned, after C3b; a candidate for the multi-packet item): "source
+  function early/captured callable frame transport is not implemented" for
+  core's `DerefMut for &mut T` and `Error for &E`.
+- **Negative coherence over a `?Sized` negative impl** (Lane B, after
+  chain-bytes; not a core blocker): `pay_negative` pays only Sized premises.
+  It flips C3's `negative-coherence`.
+- **Conditional refutations' reasons.** `!Send for Arguments<'_>`,
+  `!DerefMutLike for &T` and `!Clone for &mut T` stay conditional
+  refutations, because their headers name a region. That is a
   negative-reasoning gap for owner selection (Lanes A and B), not a false
   acceptance.
-- **Untested defense in depth.** The Q5 fence (admission and consumer), the
-  consumer's member check and the imported Sized evidence check are
-  unreachable via admitted packets (see C2).
-- **Item 9** owns impls of another artifact's auto traits, behind the Q5
-  fence.
+- **Untested defense in depth.** The imported Sized evidence check (see C2),
+  and `Graph::implementation`'s "imported conformance requires its own
+  packet's actual trait", which the ledger's same-packet trait rule keeps
+  unreachable.
+- **Item 9** owns impls of another artifact's traits, behind the ledger's
+  same-packet trait rule.
 - dyn + Send waits on Lane B's tag 15.
-- Recorded open items: the same-packet same-head coherence pair limit
-  (`contract_completion.rs`, owned by Lane C), `may_dangle` (a frontend dropck
-  item), and C3's `&T` negative-coherence local limit (a selection gap).
+- Recorded open items: `may_dangle` (frontend dropck; it blocks alloc):
+  resolving the attribute, the unsafe-Drop safety rule and the dropck
+  opt-out.

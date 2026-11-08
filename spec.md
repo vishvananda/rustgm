@@ -6743,9 +6743,10 @@ requires version 13") instead of dropping it. `rustc_nonnull_optimization_guaran
 has no byte: the guarantee follows from the `!null` field.
 
 Version 13 also transports auto-trait declarations, with no new tag or bit. A
-trait header's existing `AUTO` and `UNSAFE` flags are admitted only for an
-exact empty auto declaration: no written parameters, supertraits, members,
-region captures or bounds, and a single unsized, unqualified `Self` slot.
+trait header's existing `AUTO` flag, alone or with `UNSAFE`, is admitted only
+for an exact empty auto declaration: no written parameters, supertraits,
+members, region captures or bounds, and a single unsized, unqualified `Self`
+slot.
 `CONST` stays rejected. A role-bound marker must also carry its local role's
 exact flags: Freeze, Send, Sync and UnsafeUnpin are unsafe auto, and Unpin is
 safe auto. `Send`'s `rustc_diagnostic_item` is the closed identity table's
@@ -6758,17 +6759,23 @@ Each marker bound is paid from the installed header budget, because a client
 has no completed local header producer. Versions 10 and 12 keep their
 by-name rejections of each declaration.
 
-Version 13 also transports impls of a packet's own auto traits, with no new
+Version 13 also transports trait impls' own safety and polarity, with no new
 tag, bit or row. An impl header's existing `unsafe` and `negative` bytes are
-admitted only when its trait application names an exact empty `AUTO` trait of
-the same packet. `constant` stays rejected, and so does an unsafe or negative
-impl of any other trait. An impl of another artifact's auto trait is fenced by
-name ("imported foreign auto-trait impl requires its multi-packet profile").
-Admission is not conformance. Each consumer re-reads the row and requires:
+admitted for every trait impl. `constant`, and either modifier on an inherent
+impl, stay rejected. Every trait impl's application already names a trait of
+the same packet: the ledger rejects any other ("source implementation requires
+its exact supported trait header"). In every version a negative impl maps no
+trait member ("auto or negative trait implementations cannot declare
+members"), and a positive impl maps every member of its trait. A trait header
+that is not auto may carry `UNSAFE`. An unsafe impl's methods, with or without
+a receiver, are admitted as conversion methods, on the same version-13 fact
+that admits the impl's `unsafe` byte. Versions 10 and 12 keep their by-name
+rejections of unsafe traits and of unsafe or negative impls. Admission is not
+conformance. Each consumer re-reads every imported impl's row and requires
+`unsafe == trait.UNSAFE && !negative` ("selected impl safety/member kinds
+disagree with its actual trait"), rustc's E0199, E0200 and E0198 rules. An
+impl of the packet's own auto trait then also requires:
 
-- the impl is unsafe exactly when its trait is unsafe and the impl is
-  positive;
-- it links no member;
 - its Self obeys the declaring crate's auto Self rule, so a generic Self must
   be Sized;
 - a negative impl on a nominal is always applicable: each declared input is
@@ -6776,11 +6783,13 @@ Admission is not conformance. Each consumer re-reads the row and requires:
   distinct parameters;
 - a positive impl's requirements hold in its installed environment.
 
-The registry then completes the impl as validated in its own polarity. A
-negative impl whose Self is not a nominal is trusted to its provider: rustc
-checks it only in a crate without `auto_traits`, and declaring the packet's own
-auto trait requires that feature. Imported custom auto traits prove
-structurally as role-bound markers do, each re-checked by name as its
+A negative impl of any other trait has no requirement, member or coverage
+proof, as in rustc: it only denies its application, and it is never positive
+evidence. The registry then completes each impl as validated in its own
+polarity. A negative auto impl whose Self is not a nominal is trusted to its
+provider: rustc checks it only in a crate without `auto_traits`, and declaring
+the packet's own auto trait requires that feature. Imported custom auto traits
+prove structurally as role-bound markers do, each re-checked by name as its
 packet's version-13 declaration. A client's impl of an imported Freeze needs
 `freeze_impls`. Until C2b, an imported nominal's transported where-clauses are
 not formation requirements in a client, so negative coverage reads them from

@@ -120,11 +120,18 @@ impl<'a> Members<'a> {
             let Some(HeaderRef::Trait(index)) = target else {
                 return Err("source implementation requires its exact supported trait header");
             };
-            if self.rows.traits[index as usize]
+            // A negative impl denies its application and maps no member; a
+            // positive impl maps every member of its trait.
+            let mapped = implementation.members.slice(&self.rows.member_links)?.len();
+            if implementation.negative {
+                if mapped != 0 {
+                    return Err("auto or negative trait implementations cannot declare members");
+                }
+            } else if self.rows.traits[index as usize]
                 .members
                 .slice(&self.rows.members)?
                 .len()
-                != implementation.members.slice(&self.rows.member_links)?.len()
+                != mapped
             {
                 return Err("source implementation omits an actual trait member mapping");
             }

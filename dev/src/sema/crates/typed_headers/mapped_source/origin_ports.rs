@@ -64,18 +64,46 @@ impl Graph {
         {
             return Err("imported conformance changed its complete actual trait/Self predicate");
         }
+        let flags = self.applied_trait_flags(application)?;
+        // rustc's impl safety rule, re-proved for every imported impl: an
+        // impl of an unsafe trait is `unsafe impl` (E0200), an impl of a safe
+        // trait is not (E0199), and a negative impl never is (E0198).
+        let required_unsafe = flags & s::TraitFlags::UNSAFE != 0 && !raw.negative;
+        if raw.unsafe_ != required_unsafe {
+            return Err("selected impl safety/member kinds disagree with its actual trait");
+        }
         Ok((raw.constant, raw.negative))
     }
-    /// Version thirteen: an imported impl of its own packet's auto trait is
-    /// unsafe exactly when that trait is unsafe and the impl is positive, and
-    /// it links no member. Answers whether it is negative.
+    /// The flags of the trait row an imported impl's application names. The
+    /// ledger admitted only this packet's own (artifact 0) trait headers.
+    fn applied_trait_flags(
+        &self,
+        application: s::TraitApplicationRef,
+    ) -> Result<u16, &'static str> {
+        let rows = self.descriptor(&self.origins)?.rows();
+        let application = rows
+            .trait_applications
+            .get(application.0 as usize)
+            .ok_or("imported conformance lost its actual trait application")?;
+        if application.declaration.artifact != s::ArtifactRef(0) {
+            return Err("imported conformance requires its own packet's actual trait");
+        }
+        let Some(s::HeaderRef::Trait(index)) = rows.header(application.declaration.declaration)?
+        else {
+            return Err("imported conformance lost its actual trait row");
+        };
+        Ok(rows.traits[index as usize].flags.bits())
+    }
+    /// Version thirteen: an imported impl of its own packet's auto trait.
+    /// `implementation` re-proved its safety, and the ledger its empty member
+    /// range. Answers whether it is negative.
     pub(in crate::sema) fn automatic_implementation(
         &self,
         store: &crate::types::Store,
         owner: Owner,
         predicate: crate::types::parameters::predicates::Predicate,
     ) -> Result<bool, &'static str> {
-        let (constant, negative) = self.implementation(store, owner, predicate)?;
+        let (_, negative) = self.implementation(store, owner, predicate)?;
         let OwnerKind::ImportedImpl(id) = owner.kind else {
             return Err("imported conformance requires its actual imported impl owner");
         };
@@ -88,28 +116,11 @@ impl Graph {
         let Some(s::HeaderRef::Implementation(index)) = rows.header(row)? else {
             return Err("imported conformance has no actual implementation header");
         };
-        let raw = &rows.implementations[index as usize];
-        let application = raw
+        let application = rows.implementations[index as usize]
             .trait_application
-            .and_then(|id| rows.trait_applications.get(id.0 as usize))
             .ok_or("imported automatic implementation lost its actual trait application")?;
-        if application.declaration.artifact != rows.policy.provider {
-            return Err("imported foreign auto-trait impl requires its multi-packet profile");
-        }
-        let Some(s::HeaderRef::Trait(trait_index)) =
-            rows.header(application.declaration.declaration)?
-        else {
-            return Err("imported automatic implementation lost its actual trait row");
-        };
-        let flags = rows.traits[trait_index as usize].flags.bits();
-        if constant || flags & s::TraitFlags::AUTO == 0 {
+        if self.applied_trait_flags(application)? & s::TraitFlags::AUTO == 0 {
             return Err("imported automatic implementation requires its exact auto trait");
-        }
-        if raw.unsafe_ != (flags & s::TraitFlags::UNSAFE != 0 && !negative) {
-            return Err("selected impl safety/member kinds disagree with its actual trait");
-        }
-        if raw.members.start != raw.members.end {
-            return Err("auto or negative trait implementations cannot declare members");
         }
         Ok(negative)
     }

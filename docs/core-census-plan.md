@@ -1017,6 +1017,40 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
   - **Census 17** (pin `c020dad2`) is byte-identical to census 16. Next: the
     fold follow-up.
 
+- **During Lane C's [auto traits](parallel/auto-traits.md) slice (item 5,
+  C3)**, 2026-11-08.
+  - **Wire shape.** There is no new tag, bit or row. Version 13 admits
+    `UNSAFE` on a trait that is not auto, and an impl's `unsafe` and
+    `negative` bytes for every trait impl, on one fact,
+    `Bindings::languages`. `constant` stays rejected. The ledger's
+    zero-member rule for negative impls applies in every version.
+    - Why: core's negative impls of traits with members (`!Clone for &mut T`,
+      `!DerefMut for &T`, `!Iterator for [T]`) and its unsafe traits
+      (`TrustedLen`, `TrustedFused`, `Searcher`, `SliceIndex`) need it.
+    - Admission is not conformance. Each consumer re-proves every imported
+      impl's safety (`required_unsafe = trait.UNSAFE && !negative`), and
+      completes a non-auto negative as `NegativeValidated` with no further
+      proof, as rustc does.
+  - **Four subsumed checks were removed**, among them the Q5 foreign
+    auto-impl fence in admission and consumer: the ledger rejects a foreign
+    trait application first.
+  - **C3b follows** (Lane C, before C2b): absence and disjointness relative
+    to the crate whose coherence is proved, so a consumer re-proves an
+    imported same-head pair from its packet's perspective. This replaces the
+    recorded "same-packet same-head coherence pair limit", which named the
+    wrong path (`contract_completion.rs` is the Provided-contracts consumer
+    only).
+  - **Recorded open items:**
+    - a trait-impl method under an impl that captures a lifetime fails in the
+      exporter (core's `DerefMut for &mut T`, `Error for &E`): a core
+      transport blocker, unowned, after C3b;
+    - `may_dangle` (frontend dropck; it blocks alloc, not core): attribute
+      resolution, the unsafe-Drop safety rule and the dropck opt-out;
+    - C3's `&T` negative-coherence local limit is narrowed: `pay_negative`
+      pays only Sized premises, so a `?Sized` negative impl's MetaSized
+      premise is never paid (Lane B, after chain-bytes; not a core blocker);
+    - `pub const` export, which returns with item 5b.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

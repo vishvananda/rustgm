@@ -31,7 +31,6 @@ pub(super) fn prepare(
     if raw.self_definition != declaration
         || raw.scope != declaration
         || raw.constant
-        || (raw.unsafe_ || raw.negative) && !automatic(context, raw)?
         || (raw.members.start != raw.members.end
             && !context.descriptor.profile().feature_predicates())
     {
@@ -81,26 +80,4 @@ pub(super) fn prepare(
         captures: raw.region_captures,
         bounds,
     })
-}
-/// Version thirteen: an impl of its own packet's auto trait keeps its safety
-/// and polarity, which its conformance re-proves against that trait.
-fn automatic(context: &mapped_source::Context<'_>, raw: &s::ImplHeader) -> Result<bool, Error> {
-    if !context.descriptor.profile().body_nodes() {
-        return Ok(false);
-    }
-    let rows = context.descriptor.rows();
-    let Some(application) = raw
-        .trait_application
-        .and_then(|id| rows.trait_applications.get(id.0 as usize))
-    else {
-        return Ok(false);
-    };
-    if application.declaration.artifact != rows.policy.provider {
-        return Ok(false);
-    }
-    Ok(matches!(
-        rows.header(application.declaration.declaration).map_err(error)?,
-        Some(s::HeaderRef::Trait(index))
-            if rows.traits[index as usize].flags.bits() & s::TraitFlags::AUTO != 0
-    ))
 }

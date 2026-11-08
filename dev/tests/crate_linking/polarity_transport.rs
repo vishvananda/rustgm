@@ -113,7 +113,7 @@ const FOO_SEND: usize = 21;
 /// The auto-declarations provider's first 57 lines, which versions 12 and 10
 /// export, follow this provider's own feature line.
 const FOUNDATION: usize = 57;
-fn id(bytes: &[u8], offset: usize) -> Result<u32> {
+pub(super) fn id(bytes: &[u8], offset: usize) -> Result<u32> {
     Ok(u32::from_le_bytes(<[u8; 4]>::try_from(
         bytes.get(offset..offset + 4).ok_or("id")?,
     )?))
@@ -144,7 +144,7 @@ fn impl_rows(packet: &Packet, bytes: &[u8]) -> Result<[usize; 22]> {
 }
 /// The trait application table: the one offset at which every tail impl's
 /// application names that impl's own Self type.
-fn applications(bytes: &[u8], rows: &[usize; 22]) -> Result<usize> {
+pub(super) fn applications(bytes: &[u8], rows: &[usize]) -> Result<usize> {
     let pairs = rows
         .iter()
         .map(|&row| Ok((id(bytes, row + APPLICATION)?, id(bytes, row + SELF_TYPE)?)))
@@ -164,7 +164,7 @@ fn applications(bytes: &[u8], rows: &[usize; 22]) -> Result<usize> {
 }
 /// The application row of the impl at `row`, and the next row: the impl's
 /// first input, whose subject is its own type parameter.
-fn application(bytes: &[u8], table: usize, row: usize) -> Result<(usize, usize)> {
+pub(super) fn application(bytes: &[u8], table: usize, row: usize) -> Result<(usize, usize)> {
     let at = table + id(bytes, row + APPLICATION)? as usize * APPLICATION_ROW;
     Ok((at, at + APPLICATION_ROW))
 }
@@ -279,11 +279,11 @@ fn forged_auto_impls_reject_in_fresh_consumers() -> Result {
             SIZED,
         ),
         ("rc-bound", with_id(bytes, allocator + 4, send), STRENGTH),
-        // Admission rejects a range that orphans or takes a row.
+        // Admission rejects a negative impl's range that takes a row.
         (
             "rc-member",
             with_id(bytes, members, id(bytes, members)? + 1),
-            "source implementation omits an actual trait member mapping",
+            "auto or negative trait implementations cannot declare members",
         ),
         (
             "foreign-rc",

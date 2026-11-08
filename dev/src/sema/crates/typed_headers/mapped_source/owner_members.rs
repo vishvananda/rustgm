@@ -103,8 +103,14 @@ impl Graph {
             .module_contracts()?
             .trait_domain(index as usize, row)?;
         let header = &rows.traits[index as usize];
-        if header.flags.bits() & !s::TraitFlags::RESTRICTED_IMPL != 0
-            || !header.members.slice(&rows.members)?.is_empty()
+        // Version thirteen admits an unsafe trait: `implementation` re-proves
+        // each impl's safety against it.
+        let admitted = if descriptor.profile().body_nodes() {
+            s::TraitFlags::RESTRICTED_IMPL | s::TraitFlags::UNSAFE
+        } else {
+            s::TraitFlags::RESTRICTED_IMPL
+        };
+        if header.flags.bits() & !admitted != 0 || !header.members.slice(&rows.members)?.is_empty()
         {
             return Err("imported impl family requires its wider complete conformance consumer");
         }

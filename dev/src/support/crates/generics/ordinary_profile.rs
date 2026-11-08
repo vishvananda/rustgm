@@ -172,12 +172,12 @@ fn validate_with(
     )?;
     for header in &rows.implementations {
         work.charge(1)?;
-        // Version thirteen admits an auto impl's own safety and polarity; each
-        // consumer re-proves them against the trait.
+        // Version thirteen admits every trait impl's own safety and polarity;
+        // the ledger already proved its trait is this packet's own, and each
+        // consumer re-proves both against the trait.
         if header.constant
             || (header.negative || header.unsafe_)
-                && !(roles.automatic
-                    && callable_traits::automatic_implementation(rows, headers, header, work)?)
+                && !(roles.languages && header.trait_application.is_some())
         {
             return Err(
                 "source const/negative/unsafe implementation requires a wider explicit profile",
@@ -230,7 +230,7 @@ fn trait_headers(
         }
         // Version thirteen: an auto trait is admitted only as its exact empty
         // declaration; a role-bound marker also keeps its local role's flags.
-        if roles.automatic && flags & TraitFlags::AUTO != 0 {
+        if roles.languages && flags & TraitFlags::AUTO != 0 {
             callable_traits::automatic(
                 rows,
                 headers,
@@ -263,7 +263,9 @@ fn trait_headers(
         if conversion {
             conversions::trait_header(rows, headers, header, work)?;
         }
-        if flags & (TraitFlags::AUTO | TraitFlags::UNSAFE) != 0
+        // Version thirteen also admits an unsafe trait that is not auto.
+        if flags & TraitFlags::AUTO != 0
+            || flags & TraitFlags::UNSAFE != 0 && !roles.languages
             || flags & TraitFlags::CONST != 0 && !conversion
         {
             return Err("source const/auto/unsafe traits require a wider explicit profile");
@@ -291,12 +293,19 @@ fn trait_headers(
 /// An associated original is admitted only by the method family its profile
 /// owns: primitive methods, conversion methods and, under version thirteen
 /// (`bodies`), inherent methods whose impl captures lifetimes.
+///
+/// A conversion method may belong to an unsafe impl exactly when
+/// `roles.languages` holds, the one fact by which the impl loop admits an
+/// impl's unsafe byte; `bodies` is not that gate. Primitive methods keep
+/// refusing unsafe impls; under version thirteen every primitive method is
+/// also a conversion method, so that refusal is not final.
 fn associated_method(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     header: &super::super::FunctionHeader,
     work: &mut Work,
     profile: NamespaceProfile,
+    roles: &Bindings,
     bodies: bool,
 ) -> Result<bool, &'static str> {
     let primitive = matches!(
@@ -310,7 +319,7 @@ fn associated_method(
     ) && primitive_method(rows, headers, header, work)?;
     Ok(primitive
         || profile.conversions()
-            && (conversions::method(rows, headers, header, work)?
+            && (conversions::method(rows, headers, header, roles.languages, work)?
                 || bodies && captured::method(rows, headers, header, work)?))
 }
 /// Version thirteen: an inherent method may be `const`. Its original is then
@@ -398,7 +407,7 @@ fn functions(
                 "source free callable changed its actual original/public safety or convention",
             );
         }
-        let associated = associated_method(rows, headers, header, work, profile, bodies)?;
+        let associated = associated_method(rows, headers, header, work, profile, roles, bodies)?;
         if matches!(header.body, FunctionBody::Original(_))
             && header.parent.is_some()
             && !associated
@@ -713,8 +722,9 @@ pub(super) struct Bindings {
     freeze: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     conversion: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     callables: callable_roles::Roles,
-    /// Version thirteen admits every exact empty auto declaration.
-    automatic: bool,
+    /// Version thirteen: exact empty auto declarations, unsafe traits and
+    /// every trait impl's own safety and polarity.
+    languages: bool,
     /// The role-bound auto markers, in `callable_traits::MARKERS` order.
     markers: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 4],
 }
@@ -825,11 +835,11 @@ pub(super) fn bindings(
     } else {
         callable_roles::Roles::default()
     };
-    let automatic = profile == BindingProfile::Languages;
+    let languages = profile == BindingProfile::Languages;
     Ok(Bindings {
         callables,
-        automatic,
-        markers: if automatic {
+        languages,
+        markers: if languages {
             [
                 send,
                 declarations[LangItem::Sync.index()],

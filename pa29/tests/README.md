@@ -488,3 +488,27 @@ under `spec/auto-impls/`. The packet holds:
 Amendments are recorded beside the declarations they amend, each before the
 run it governs. The `crate_linking::polarity_transport` integration controls
 and the `portable_impls::scaling_tests` private control consume it.
+
+`unsafe-negative-impl-outcomes.json` freezes the version-thirteen unsafe trait
+and non-auto negative impl packet under `spec/unsafe-negative-impls/`. The
+packet holds:
+
+- the lifetime-nominals provider, followed by authored impls shaped as
+  core's: negative impls of traits with members (`!Clone for &mut T`,
+  `!DerefMutLike for &T`, `!Iterator for [T]`), an `Error` family, the unsafe
+  `TrustedFused` and `Searcher` with conditional, scalar and nominal unsafe
+  impls whose methods have and lack receivers, and a safe negative impl of an
+  unsafe trait;
+- five clients that rustc accepts, and eleven opponents: six E0277 cases, the
+  three safety errors (E0200, E0199, E0198), a positive impl beside a
+  provider negative (E0751), and `negative-coherence`, which rustc accepts
+  and which is a recorded negative-coherence gap;
+- generated controls: core's same-head `Error` pair (C3b's gap), and
+  older-profile gates for an unsafe trait and for a negative impl of a trait
+  with members;
+- wire controls: flipped impl safety and polarity bytes, `UNSAFE` cleared on
+  both unsafe traits, and a version relabel.
+
+Amendments are recorded beside the declarations they amend, each before the
+run it governs. The `crate_linking::modifier_transport` integration controls
+consume it.

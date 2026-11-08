@@ -134,41 +134,6 @@ pub(super) fn automatic(
     }
 }
 
-/// Version thirteen: an impl may be unsafe or negative only when its trait is
-/// an auto declaration of this same packet, whose own header admission
-/// already proved it exact and empty. Another artifact's auto trait needs the
-/// multi-packet profile.
-pub(super) fn automatic_implementation(
-    rows: &SourceRows,
-    headers: &HeaderIndex<'_>,
-    implementation: &s::ImplHeader,
-    work: &mut Work,
-) -> Result<bool, &'static str> {
-    work.charge(2)?;
-    let Some(application) = implementation.trait_application else {
-        return Ok(false);
-    };
-    let actual = rows
-        .trait_applications
-        .get(application.0 as usize)
-        .ok_or("source implementation trait application is absent")?;
-    if actual.declaration.artifact != s::ArtifactRef(0) {
-        return Err("imported foreign auto-trait impl requires its multi-packet profile");
-    }
-    let Some(s::HeaderRef::Trait(index)) = headers.header(actual.declaration.declaration, work)?
-    else {
-        return Ok(false);
-    };
-    Ok(rows
-        .traits
-        .get(index as usize)
-        .ok_or("source implementation trait header is absent")?
-        .flags
-        .bits()
-        & s::TraitFlags::AUTO
-        != 0)
-}
-
 /// The diagnostics of one empty-auto-declaration check.
 struct EmptyAuto {
     shape: &'static str,

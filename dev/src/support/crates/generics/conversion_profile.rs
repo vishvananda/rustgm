@@ -59,10 +59,13 @@ pub(super) fn required_member(
     )
 }
 
+/// `unsafe_impls` admits a method of an unsafe impl: version thirteen's
+/// `Bindings::languages`, which also admits that impl's unsafe byte.
 pub(super) fn method(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     function: &s::FunctionHeader,
+    unsafe_impls: bool,
     work: &mut Work,
 ) -> Result<bool, &'static str> {
     let Some(parent) = function.parent else {
@@ -76,7 +79,7 @@ pub(super) fn method(
     if implementation.self_definition != parent
         || implementation.constant
         || implementation.negative
-        || implementation.unsafe_
+        || implementation.unsafe_ && !unsafe_impls
         || implementation.region_captures != 0
         || !implementation
             .region_bounds

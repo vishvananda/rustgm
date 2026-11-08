@@ -1,0 +1,225 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+  "providers": [
+    {
+      "file": "spec/unsafe-negative-impls/provider.rs",
+      "sha256": "96075b0ed139d4723d4903de9ee64579fbddb47a7fbdbcf9431d46f39cbc04f3"
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "declared": "2026-11-08T19:16:33Z",
+  "development_note": "declared before any candidate run of these files, after rustc and baseline probes. rustc 1.98.0 gave every declared rustc outcome. Scratch probes with main's CLI (89cb62ee5, sha256 d97cd78e) compiled each client's body with the provider as one source core: safe-searcher, unsafe-plain and unsafe-negative give the safety text, deref-positive and negative-coherence the overlap text, deref-shared and clone-mut the conditional-negative text, and error-str, iterator-slice, fuse-plain and searcher-fault the obligation text, each as declared here; the five accepted bodies pass semantics (trusted and local-trusted then stop at that composite's promoted-root transport fence, which a consumer does not reach). On main the provider export itself stops at the ledger with `source implementation omits an actual trait member mapping`, because each negative impl maps none of its trait's members",
+  "wire_rule": "approved shapes. Version 13 only; no new tag, bit or row. A non-auto trait header may carry UNSAFE (CONST stays rejected). An impl header's existing unsafe and negative booleans are admitted for any trait impl; inherent impls and constant stay rejected, and versions 12 and 10 keep their fences. Under version 13 an unsafe impl's methods, with or without a receiver, are admitted through the conversion method family, gated on the same version-13 fact that admits the impl's unsafe byte; primitive methods keep refusing unsafe impls (under version 13 every primitive method is also a conversion method, so that refusal is not final), and negative and constant stay rejected in both families. In every version a negative impl maps no trait member: one that maps them is rejected with `auto or negative trait implementations cannot declare members`, and a positive impl keeps `source implementation omits an actual trait member mapping`. Each consumer re-proves, for every imported impl, required_unsafe = trait.UNSAFE && !negative; unsafe == required_unsafe (E0199, E0200, E0198), and completes a non-auto negative impl as NegativeValidated with no requirement, member or coverage proof; it is never positive evidence",
+  "cases": [
+    {
+      "file": "spec/unsafe-negative-impls/trusted.rs",
+      "provider": "spec/unsafe-negative-impls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "ae9d1e2e9238ab438e9c7fb9970be3a01f22f134ba94dfc2145f72f06ee2a838"
+    },
+    {
+      "file": "spec/unsafe-negative-impls/local-trusted.rs",
+      "provider": "spec/unsafe-negative-impls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "15cc02ee6bbb157857091e6d2e70a1af0c0f2bb923fc6fb3545926ba61a2c3f5"
+    },
+    {
+      "file": "spec/unsafe-negative-impls/exclusive.rs",
+      "provider": "spec/unsafe-negative-impls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "045b7e30a967568e0415f3430501a0d51e391fe5c88709a98be7b0d2dcdaf32d"
+    },
+    {
+      "file": "spec/unsafe-negative-impls/error-fault.rs",
+      "provider": "spec/unsafe-negative-impls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "29b28af80e30fe28fda9c5b70f89b2945c7025141d94475b81e0284e9dd9ce6c"
+    },
+    {
+      "file": "spec/unsafe-negative-impls/local-negative.rs",
+      "provider": "spec/unsafe-negative-impls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "bd158441a57cf03716fea4c5e35f8c451d4e976b66403b9472ad1fa4b2f50e1c"
+    },
+    {
+      "file": "spec/unsafe-negative-impls/safe-searcher.rs",
+      "provider": "spec/unsafe-negative-impls/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0200 (`Searcher` requires an `unsafe impl` declaration)",
+      "candidate_diagnostic": "trait and implementation safety declarations disagree",
+      "sha256": "c65ba3aa63f6497776a6f31ce5df38e062e77adcb9ea0bc242392e62076c98ef"
+    },
+    {
+      "file": "spec/unsafe-negative-impls/unsafe-plain.rs",
+      "provider": "spec/unsafe-negative-impls/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0199 (implementing `Plain` is not unsafe)",
+      "candidate_diagnostic": "trait and implementation safety declarations disagree",
+      "sha256": "238b7e23cbf276982f2e00b3b3f85a32c1604327dda8112a8a51a8880956f8f5"
+    },
+    {
+      "file": "spec/unsafe-negative-impls/unsafe-negative.rs",
+      "provider": "spec/unsafe-negative-impls/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0198 (negative impls cannot be unsafe)",
+      "candidate_diagnostic": "trait and implementation safety declarations disagree",
+      "sha256": "571e42e854f41d968dee6a0558199f74871c24ba056b7a1ac5180e501fef9d41"
+    },
+    {
+      "file": "spec/unsafe-negative-impls/deref-positive.rs",
+      "provider": "spec/unsafe-negative-impls/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0751 (positive `DerefMutLike for &Local` and the provider's `!DerefMutLike for &T`)",
+      "candidate_diagnostic": "overlapping trait implementation headers require coherence proof",
+      "sha256": "e2091726a72c9dba0c1caed9f0e564c3a4de17602d93089853e2721a5eb991ec"
+    },
+    {
+      "file": "spec/unsafe-negative-impls/error-str.rs",
+      "provider": "spec/unsafe-negative-impls/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277 (`str: Error` unsatisfied)",
+      "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+      "sha256": "99b3a102eb23309772b03704593d56d7b941bdaecdfa6757a21f681d9467db36"
+    },
+    {
+      "file": "spec/unsafe-negative-impls/iterator-slice.rs",
+      "provider": "spec/unsafe-negative-impls/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277 (`[u8]: Iterator` unsatisfied)",
+      "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+      "sha256": "d5902283fc670f7b06e94002fc0ba4c2ed5aee785c9b553b3228643c7516e205"
+    },
+    {
+      "file": "spec/unsafe-negative-impls/deref-shared.rs",
+      "provider": "spec/unsafe-negative-impls/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277 (`&u8: DerefMutLike` unsatisfied)",
+      "candidate_diagnostic": "conditional negative implementation requires scoped debt payment",
+      "sha256": "7faa37d7819d09b9a211a344031b15d788d6483571b9b94d9a73566ad1e0e541"
+    },
+    {
+      "file": "spec/unsafe-negative-impls/clone-mut.rs",
+      "provider": "spec/unsafe-negative-impls/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277 (`&mut u8: Clone` unsatisfied)",
+      "candidate_diagnostic": "conditional negative implementation requires scoped debt payment",
+      "sha256": "93d2ed58338824043b0e3239b0605f51e9b7b7930591fa3b6f32f9c373e11e57"
+    },
+    {
+      "file": "spec/unsafe-negative-impls/fuse-plain.rs",
+      "provider": "spec/unsafe-negative-impls/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277 (`u8: TrustedFused` unsatisfied)",
+      "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+      "sha256": "f34dc10d8fb63c0d7d57576ce4df43ad84554fd83a235f50e310b78d43aec7e9"
+    },
+    {
+      "file": "spec/unsafe-negative-impls/searcher-fault.rs",
+      "provider": "spec/unsafe-negative-impls/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277 (`Fault: Searcher` unsatisfied)",
+      "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+      "sha256": "019b4219bdc40aa1a9fde9d8dc0d8d233a08403d4169c28059bf239c8c10beb1"
+    },
+    {
+      "file": "spec/unsafe-negative-impls/negative-coherence.rs",
+      "provider": "spec/unsafe-negative-impls/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "accepted, exit 42",
+      "candidate_diagnostic": "overlapping trait implementation headers require coherence proof",
+      "gap": "a frontend negative-coherence gap independent of transport: the provider and this body compiled as one source core are rejected the same way. Negative coherence does not pay the `?Sized` negative impl's MetaSized premise from the intersection's own MetaSized assumption; with PointeeSized or Sized parameters the same shape passes. Recorded in docs/library-build-blockers.md as its own item, outside C3b",
+      "sha256": "dc74a9f1e3ac72544db9965f790d409b6c6a5b35f1ff59efb821f2a02d053e68"
+    }
+  ],
+  "outcome_counts": {
+    "provider": "1 export, accepted under module-bodies-v13",
+    "clients": 16,
+    "accepted_clients": 5,
+    "rejected_clients": 11,
+    "note": "17 declared outcomes: the provider export and 16 clients. rustc accepts six clients and rejects ten: six E0277 cases, safe-searcher (E0200), unsafe-plain (E0199), unsafe-negative (E0198) and deref-positive (E0751). The candidate accepts five; negative-coherence, which rustc accepts, is declared rejected as a recorded gap"
+  },
+  "native": {
+    "expected": "the five accepted clients exit 42 natively, as rustc's do"
+  },
+  "generated_controls": [
+    {
+      "control": "the provider plus `impl !Error for &str {}` (core's same-head pair in error.rs and str/mod.rs), exported under module-bodies-v13, and the answer client",
+      "rustc": "the provider compiles and the client exits 42",
+      "expected": "the export is accepted; the answer client is rejected with `overlapping trait implementation headers require coherence proof`: the consumer re-proves the packet's same-head pair, and absence_closed admits only a trait local to the consumer. Recorded as the gap C3b closes"
+    },
+    {
+      "control": "`#![feature(negative_impls)]`, lines 2-58 of the provider (the foundation: C1's sized family, LegacyReceiver, Clone, Copy and Freeze) and `pub unsafe trait TrustedFused {}`, exported under module-bodies-v13, module-branches-v12 and module-nominals-v10",
+      "rustc": "compiles",
+      "expected": "under v12 and v10 rejected with `source const/auto/unsafe traits require a wider explicit profile`, verbatim as on main; under v13 the export is accepted",
+      "baseline": "main rejects it with `source const/auto/unsafe traits require a wider explicit profile` under all three versions"
+    },
+    {
+      "control": "`#![feature(negative_impls)]`, lines 2-58 of the provider and `impl<T: PointeeSized> !Clone for &mut T {}`, exported under module-bodies-v13, module-branches-v12 and module-nominals-v10",
+      "rustc": "compiles",
+      "expected": "under v12 and v10 rejected with `source const/negative/unsafe implementation requires a wider explicit profile` (main's ledger rejected it first with `source implementation omits an actual trait member mapping` under all three versions: the declared older-version text change); under v13 the export is accepted"
+    }
+  ],
+  "wire_controls": [
+    {
+      "control": "honest packet",
+      "expected": "each tail impl keeps its unsafe and negative bytes, TrustedFused and Searcher keep UNSAFE, Plain and Error do not; the trusted client is accepted"
+    },
+    {
+      "control": "unsafe set on `Plain for Counter`",
+      "expected": "rejected with `selected impl safety/member kinds disagree with its actual trait`"
+    },
+    {
+      "control": "unsafe cleared on `TrustedFused for Counter`",
+      "expected": "rejected with `selected impl safety/member kinds disagree with its actual trait`"
+    },
+    {
+      "control": "unsafe set on `!Searcher for Fault`",
+      "expected": "rejected with `selected impl safety/member kinds disagree with its actual trait`"
+    },
+    {
+      "control": "UNSAFE cleared on the trait headers of TrustedFused and Searcher (the trait table is found through a generated unsafe-Iterator variant that is not a fixture)",
+      "expected": "rejected with `selected impl safety/member kinds disagree with its actual trait`"
+    },
+    {
+      "control": "negative set on `Searcher for u8`, which maps its member",
+      "expected": "rejected by admission with `auto or negative trait implementations cannot declare members`"
+    },
+    {
+      "control": "negative cleared on `!DerefMutLike for &T`, which maps none of its trait's members",
+      "expected": "rejected by admission with `source implementation omits an actual trait member mapping`"
+    },
+    {
+      "control": "version relabelled from 13 to 12",
+      "expected": "rejected by the version-twelve decoder with `unknown source declaration kind`"
+    }
+  ],
+  "observations": [
+    "the provider without its four negative impls, exported by main under module-branches-v12 and module-nominals-v10, is rejected first with `named, associated or generic alias transport requires its wider profile`; under module-bodies-v13 it meets `source const/auto/unsafe traits require a wider explicit profile`. The full provider is therefore not an older-version trait-fence control; the unsafe-only control shows that fence",
+    "the receiver-less `make` of the unsafe Searcher impls for u8 and Counter is refused by the primitive method family and admitted by the conversion family; the trusted client calls both"
+  ],
+  "limits": [
+    "a trait-impl method under an impl that captures a lifetime (`&T`, `&mut T`) fails in the exporter with `source function early/captured callable frame transport is not implemented`; core's `DerefMut for &mut T` and `Error for &E` need it lifted. The provider's negative impls on references map no member, and its method impls are on u8 and Counter",
+    "`#[may_dangle]` is rejected before export with `unresolved attribute macro is not in path scope`; it is recorded under the open item `may_dangle frontend dropck (blocks alloc)` with the unsafe-Drop safety rule and the dropck opt-out, and no fence is added"
+  ]
+}

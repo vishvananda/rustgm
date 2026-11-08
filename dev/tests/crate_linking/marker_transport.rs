@@ -133,7 +133,7 @@ fn calibrated(packet: &Packet, bytes: &[u8]) -> Result<usize> {
 }
 /// The flags of the one row of the trait header table at `table` that
 /// `declaration` heads as its own scope.
-fn trait_flags(bytes: &[u8], table: usize, declaration: [u8; 4]) -> Result<usize> {
+pub(super) fn trait_flags(bytes: &[u8], table: usize, declaration: [u8; 4]) -> Result<usize> {
     let pattern = [declaration, declaration].concat();
     let mut rows = (0..bytes.len()).filter(|&offset| {
         offset.abs_diff(table) % TRAIT_ROW == 0 && bytes[offset..].starts_with(&pattern)
@@ -144,7 +144,7 @@ fn trait_flags(bytes: &[u8], table: usize, declaration: [u8; 4]) -> Result<usize
     }
     Ok(row + FLAGS)
 }
-fn with_flags(bytes: &[u8], offset: usize, change: impl Fn(u16) -> u16) -> Vec<u8> {
+pub(super) fn with_flags(bytes: &[u8], offset: usize, change: impl Fn(u16) -> u16) -> Vec<u8> {
     let flags = u16::from_le_bytes([bytes[offset], bytes[offset + 1]]);
     spliced(bytes, offset, &change(flags).to_le_bytes())
 }
