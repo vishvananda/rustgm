@@ -460,6 +460,16 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     Records that follow record 1 wait for it.
     - Why: reduced records can be handed to idle lanes before the frontier
       reaches them.
+- **During Lane C's shared-static Sync fix**, 2026-11-08:
+  - **The `T: Sync` proof must not reject anything rustc accepts.** If a
+    fixture that rustc accepted, or that an accepted PA1-PA24 suite expects
+    to pass, flips to a rejection, the check does not land. The fixture is
+    reported with its failing auto-trait goal, because the flip would be an
+    incompleteness in RustGM's auto-trait proof.
+  - **pa31's `pointer-bits.rs` keeps its bytes**, and its expected diagnostic
+    becomes rustc's only error on it, "requires `sync` lang_item". A successor
+    adds the `sync` item and witnesses the provenance rejection (rustc
+    E0080). Lane A's pattern-type invariant changes only that case.
 
 ## Lanes
 

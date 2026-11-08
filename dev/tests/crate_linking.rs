@@ -73,6 +73,8 @@ mod static_transport;
 mod str_never_transport;
 #[path = "crate_linking/struct_constructors.rs"]
 mod struct_constructors;
+#[path = "crate_linking/synced_statics.rs"]
+mod synced_statics;
 #[path = "crate_linking/transitive.rs"]
 mod transitive;
 #[path = "crate_linking/transported_rows.rs"]

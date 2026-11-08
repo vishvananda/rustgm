@@ -5,6 +5,17 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [shared statics require Sync](parallel/shared-static-sync.md) is a
+local checkpoint, not yet joined. It fixes a false acceptance: main accepted a
+source-client `static` with no `sync` lang item, and rustc rejects it. A
+static that is not `mut`, foreign or thread-local now requires the `sync` lang
+item (rustc's "requires `sync` lang_item") and a proof that its type
+implements it. A `static mut` needs neither. pa31's `pointer-bits.rs` stays
+rejected, now with rustc's only error on it. Its new successor declares
+`sync` and is the first rustc witness of the provenance rejection the fixture
+intended. Sync itself does not transport yet, so no source client can hold a
+shared static against a packet core.
+
 Lane A [census batch 9](parallel/census-batch9.md) repairs census 9's crate
 record and adds the declaration lookahead. Census 10 (`1375fd2b`, from
 `b8e58f062` on main `85dbaaff0`) checks 42,310 declarations, with none failed

@@ -1,0 +1,108 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj); the generated single-crate controls compile with --crate-type=lib",
+ "providers": [
+  {
+   "file": "spec/static-sync/provider.rs",
+   "sha256": "cac3f65cd9883003e6d871885db4a366a75d0ca553aed1fdb10a23b4894d2afc"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "declared": "2026-11-08T03:57:43Z",
+ "development_note": "declared before any rustc or RustGM run of these files; main (b55c0dc49) accepts plain-static and local-static, which rustc rejects (the withdrawn static-held case in const-method-outcomes.json); integrator decision: a shared static requires the `sync` lang item and `T: Sync`, as rustc's well-formedness check requires",
+ "rule": "rustc 1.98.0 wfcheck: every static that is not `mut`, not foreign and not thread-local requires the `sync` lang item (\"requires `sync` lang_item\" when it is absent) and a proof that its type implements it; `static mut`, foreign statics and consts need neither",
+ "cases": [
+  {
+   "file": "spec/static-sync/plain-static.rs",
+   "provider": "spec/static-sync/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "requires `sync` lang_item",
+   "candidate_diagnostic": "requires `sync` lang_item",
+   "sha256": "316a03b64cce209be9586bff7e2de65e54d9df88794f772f72b1f3550e2ca272"
+  },
+  {
+   "file": "spec/static-sync/local-static.rs",
+   "provider": "spec/static-sync/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "requires `sync` lang_item",
+   "candidate_diagnostic": "requires `sync` lang_item",
+   "sha256": "9c2e088c7c7383b044e4315f86906a51e47cf65065e0c07e013f339b91035468"
+  },
+  {
+   "file": "spec/static-sync/mut-static.rs",
+   "provider": "spec/static-sync/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "395c18ca2c5be3cc51c82f5507949000af3f126d1352cd9ba8cd9912039294a1"
+  },
+  {
+   "file": "spec/static-sync/answer.rs",
+   "provider": "spec/static-sync/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "4b1d6475dd0f985003ff0208e7991937608ca83bbb52b132ec958f4d27309f0c"
+  }
+ ],
+ "deviations": [
+  "lines 1-147 of spec/lifetime-nominals/provider.rs are reused unchanged; they declare no `sync` lang item, and a source client takes every lang item from its source core",
+  "the provider cannot declare `Sync` and still export, because unsafe auto traits do not transport yet, so the positive `T: Sync` controls are single-crate source cores"
+ ],
+ "generated_controls": [
+  {
+   "control": "the shared lines plus `static N: u8 = 42;` and `pub fn get() -> u8 { N }`, compiled alone as a source core",
+   "expected": "rejected with `requires `sync` lang_item`, as rustc rejects it"
+  },
+  {
+   "control": "the same plus `#[lang = \"sync\"]\\npub unsafe auto trait Sync {}\\n`",
+   "expected": "accepted, as rustc accepts it: `u8: Sync` is proved through the source auto trait"
+  },
+  {
+   "control": "the shared lines, `#[lang = \"sync\"]\\npub unsafe auto trait Sync {}\\n`, `static N: u8 = 42;`, `pub struct Raw { pub p: *const u8 }`, `static R: Raw = Raw { p: &N as *const u8 };` and `pub fn get() -> u8 { N }`",
+   "expected": "rejected with `shared static type must implement Sync`; rustc rejects it with E0277 (`*const u8` cannot be shared between threads safely)",
+   "amended": {
+    "observed_first": "rustc 1.98.0 accepts the `Raw` control: the shared lines declare no `impl<T: ?Sized> !Sync for *const T {}`, as core does, so a raw pointer is structurally `Sync` there",
+    "expected": "accepted, as rustc accepts it; the rejected `T: Sync` control moves to the negative-impl control below",
+    "declared": "2026-11-08T04:02:16Z, before any RustGM run"
+   }
+  },
+  {
+   "control": "the same plus `unsafe impl Sync for Raw {}`",
+   "expected": "accepted, as rustc accepts it"
+  },
+  {
+   "control": "the `Raw` control with `static mut R` instead of `static R`",
+   "expected": "accepted, as rustc accepts it: a mutable static needs no Sync"
+  },
+  {
+   "control": "the shared lines with `negative_impls` added to their crate feature list, `#[lang = \"sync\"] pub unsafe auto trait Sync {}`, `static N: u8 = 42;`, `pub fn read_n() -> u8 { N }`, `pub struct Raw { pub p: *const u8 }`, `impl !Sync for Raw {}` and `static R: Raw = Raw { p: &N as *const u8 };`",
+   "expected": "rejected with `shared static type must implement Sync`; rustc rejects it with E0277",
+   "declared": "2026-11-08T04:02:16Z, after the first rustc observation of the `Raw` control and before any RustGM run"
+  },
+  {
+   "control": "the negative-impl control with `static mut R` instead of `static R`",
+   "expected": "accepted, as rustc accepts it",
+   "declared": "2026-11-08T04:02:16Z, with the negative-impl control"
+  }
+ ],
+ "fixture_survey": "no_core fixtures with a non-mut static and no `sync` lang item: pa31/tests/spec/source-scalar-patterns/pointer-bits.rs (declared status 1; it stays rejected; its rustc observation is recorded with this checkpoint) and an inline resolve-only string in dev/tests/invariants/local_runtime_roots.rs (built-in prelude, unaffected). Every other static fixture must still pass: per integrator decision, any fixture rustc accepts that the new `T: Sync` proof would reject stops this check and is reported, not amended",
+ "native": {
+  "expected": "mut-static and answer exit 42 natively, as rustc's do"
+ },
+ "pointer_bits_successor": {
+  "fixture": "pa31/tests/spec/source-scalar-patterns/pointer-bits-sync.rs",
+  "expected": "status 1 in rustc (E0080 `unable to turn pointer into integer`) and in RustGM with a diagnostic naming the pointer bytes; pointer-bits.rs stays status 1 with rustc's only error, `requires `sync` lang_item`",
+  "explored_before_declaration": "a scratch rustc run on the successor's exact bytes was observed before this declaration",
+  "declared": "2026-11-08T04:17:13Z, by integrator decision"
+ },
+ "generated_controls_amended": {
+  "observed_first": "the first rustc run of all five generated controls failed with E0428 (`the name `get` is defined multiple times`): the shared lines already declare `pub fn get<'a, T>(x: Ref<'a, T>) -> &'a T`",
+  "change": "`pub fn get() -> u8 { N }` becomes `pub fn read_n() -> u8 { N }` in every generated control; nothing else changes",
+  "declared": "2026-11-08T04:01:01Z, before any RustGM run of these controls"
+ }
+}

@@ -77,7 +77,8 @@ fn reached_constants_reject_range_base_initialization_and_provenance_violations(
         ("outside-low", "scalar pattern"),
         ("char-base", "char"),
         ("uninitialized", "initial"),
-        ("pointer-bits", "pointer"),
+        ("pointer-bits", "`sync` lang_item"),
+        ("pointer-bits-sync", "pointer"),
         ("reversed", "reversed"),
         ("missing-gate", "pattern_types"),
     ] {

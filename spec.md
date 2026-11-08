@@ -2674,6 +2674,17 @@ preserve the resolved Self identity. Keep the original complete predicates for
 formation and implementation validation; these early bits are no substitute for
 those proofs and must never be patched beneath cached type properties.
 
+A static that is not `mut`, not foreign and not thread-local requires a
+`Sync` type, as rustc's well-formedness check does. With source bindings, the
+`sync` lang item must exist; when it is absent, the static is rejected with
+rustc's own text, "requires `sync` lang_item". Otherwise the static's type
+proves the source trait's application with the static's declaration proof.
+Explicit positive and negative impls replace the structural default, and a
+source raw pointer otherwise follows its pointee. The built-in library proves
+its structural `Sync`. A `static mut` needs neither the item nor the proof,
+and an unprovable type is rejected with "shared static type must implement
+Sync". See the [shared-static checkpoint](docs/parallel/shared-static-sync.md).
+
 Auto-trait permissions are separate from Sized, Copy and Clone. Structural
 auto-trait queries use `(type, marker)` nodes: reference rules can change the
 required marker, and callable signatures are not stored values. Inspect actual

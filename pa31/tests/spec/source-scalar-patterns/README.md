@@ -23,3 +23,13 @@ Only closed inclusive scalar constraints belong to this checkpoint. Open,
 exclusive and alternative patterns require the genuine RangeMin/RangeMax/RangeSub
 source protocol. Generic endpoints, integer enum niches, refinement metadata
 transport and complete original niche-type methods/runtime remain required.
+
+`pointer-bits.rs` declares a shared `static WORD` and no `sync` lang item.
+rustc 1.98.0's only error on it is "requires `sync` lang_item", so its status
+1 never witnessed the pointer-to-integer rejection. It keeps its bytes and its
+status. The successor `pointer-bits-sync.rs` is the same bytes followed by the
+`sync` lang item. rustc rejects it with E0080, "unable to turn pointer into
+integer", at the `BAD` transmute, so it is the provenance witness. A scratch
+rustc run on its exact bytes was observed before its outcome was declared, as
+`contract.json` records. See the
+[shared-static Sync checkpoint](../../../../docs/parallel/shared-static-sync.md).

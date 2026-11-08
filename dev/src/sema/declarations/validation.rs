@@ -121,9 +121,63 @@ impl Checker<'_> {
                     "constant and static types must be well-formed and sized",
                 ));
             }
+            if matches!(
+                initializer.kind,
+                crate::sema::model::InitializerKind::Static { mutable: false }
+            ) {
+                self.require_shared_static_sync(&initializer, &mut proof)?;
+            }
             self.retain_trait_proof(initializer.definition, initializer.node, &mut proof);
         }
         self.validate_constant_declarations()?;
+        Ok(())
+    }
+    /// rustc's well-formedness check for a shared static: the `sync` lang
+    /// item must exist and the static's type must implement it. Foreign
+    /// statics have no initializer, and a `static mut` needs neither.
+    fn require_shared_static_sync(
+        &mut self,
+        initializer: &crate::sema::model::Initializer,
+        proof: &mut crate::sema::nominals::Proof,
+    ) -> Result<(), Error> {
+        use crate::types::{
+            GenericArgs, ItemId,
+            auto_traits::AutoTrait,
+            parameters::predicates::{Bound, Predicate},
+            traits::Application,
+        };
+        let node = initializer.node;
+        let bound = match self.facts.source_bindings.as_deref() {
+            // The built-in library always provides its own structural Sync.
+            None => Bound::Auto(AutoTrait::Sync),
+            Some(catalog) => {
+                let declaration =
+                    match catalog.validated_language(crate::support::bindings::LangItem::Sync) {
+                        Ok(Some(declaration)) => declaration,
+                        Ok(None) => return Err(self.error(node, "requires `sync` lang_item")),
+                        Err(message) => return Err(self.error(node, message)),
+                    };
+                let application = self
+                    .facts
+                    .types
+                    .intern_trait_application(Application {
+                        item: ItemId(declaration.definition.0),
+                        arguments: GenericArgs::EMPTY,
+                    })
+                    .map_err(|message| self.error(node, message))?;
+                Bound::Trait(application)
+            }
+        };
+        let predicate = Predicate {
+            ty: initializer.ty,
+            bound,
+        };
+        if !proof
+            .prove(&mut self.facts, predicate)
+            .map_err(|message| self.error(node, message))?
+        {
+            return Err(self.error(node, "shared static type must implement Sync"));
+        }
         Ok(())
     }
 }

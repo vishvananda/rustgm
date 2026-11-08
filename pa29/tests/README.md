@@ -359,3 +359,16 @@ slice packet under `spec/pointer-slices/`. The packet holds:
   the consumer's own facts reject, and a 6/24/96 scaling control.
 
 The `crate_linking::addressed_views` integration controls consume it.
+
+`static-sync-outcomes.json` freezes the shared-static Sync packet under
+`spec/static-sync/`. The packet holds:
+
+- a provider of the shared lines, which declare no `sync` lang item;
+- two accepted clients (a `static mut` read and a provider call) and two
+  opponents, a crate-level and a function-local shared static, both rejected
+  with rustc's "requires `sync` lang_item";
+- generated single-crate source cores: no `sync` item, `u8`, a raw-pointer
+  record with no impl, with `unsafe impl Sync` and as `static mut`, and an
+  explicit `impl !Sync` (E0277) with its `static mut` form.
+
+The `crate_linking::synced_statics` integration controls consume it.

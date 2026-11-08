@@ -25,6 +25,10 @@
       "sha256": "bcef3b90a990b3f490a388702ff444ca267a70b2c51fe98ec54be51db8a9413d",
       "status": 1
     },
+    "pointer-bits-sync.rs": {
+      "sha256": "0b9ac2b07e20cd9a62fbfabca8fe7b3c64319010bd9a42fd1922f1f8efa0a4ed",
+      "status": 1
+    },
     "missing-gate.rs": {
       "sha256": "e94fccce6161c7bd4a9342de7140e6cb38c2417fd95a888fbf46d8dfc063e2cc",
       "status": 1
@@ -70,6 +74,15 @@
     "complete original niche_types methods/runtime"
   ],
   "predecessor": "v3 all11operations passed, retained; v4 adds genuine module-local named endpoint with unchanged native exports/expected stream",
+  "successors": {
+    "pointer-bits-sync.rs": {
+      "predecessor": "pointer-bits.rs",
+      "change": "the predecessor's exact bytes followed by `\\n#[lang = \"sync\"]\\npub unsafe auto trait Sync {}\\n`",
+      "reason": "rustc 1.98.0's only error on pointer-bits.rs is `requires `sync` lang_item`: the shared static `WORD` stops it before constant evaluation, so the predecessor never had a rustc witness for its pointer-to-integer rejection",
+      "explored_before_declaration": "a scratch rustc run on these exact bytes was observed before this declaration: status 1, E0080 `unable to turn pointer into integer` at the `BAD` transmute",
+      "declared": "2026-11-08T04:17:13Z, by integrator decision with the static Sync check"
+    }
+  },
   "neg_source": {
     "path": "library/core/src/ops/arith.rs",
     "role": "actual Neg trait and selected i8 neg_impl body",
