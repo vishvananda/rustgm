@@ -1,22 +1,23 @@
 {
   "schema": 1,
   "repository": "https://github.com/vishvananda/cppgm-extended",
-  "commit": "b7c6b8e72595a524e1b3f147212d69c02b257dd8",
+  "commit": "17b024f692a5b537a4db6c4d3b6dc33bc930c680",
   "target": "x86_64-linux",
   "sha256": {
-    "lowir": "32b1e67c44d242351bb20787e3bbd287a603a677fffbe0859a38002be776f11d",
-    "lowir2native": "27b3138e442d53706a059cea0ea98ede2756f56076f00f26ffc28da078974815"
+    "lowir": "65a8ebde18ead6ee6498024de93f246aae21c8292fecd8e1e34c25b34271b9ba",
+    "lowir2native": "aa740c24e8eb5749176ad32f36669bdcef17ccb925947d5c8bbe110f049beb4c"
   },
   "optional": {
     "object": {
-      "commit": "b7c6b8e72595a524e1b3f147212d69c02b257dd8",
+      "commit": "17b024f692a5b537a4db6c4d3b6dc33bc930c680",
       "target": "x86_64-linux",
       "object_format": "elf64-x86-64",
       "capabilities": [
-        "lowir-to-object"
+        "lowir-to-object",
+        "assembly"
       ],
       "sha256": {
-        "cppgm++": "0d216449452b5a911d364ef7f4eb807d7b429a8cb96fb0afed8f99b60b5cfa5b"
+        "cppgm++": "614689ec481576a83227076181eb165c038347cc4473a160d483f3654c8192c3"
       }
     }
   }

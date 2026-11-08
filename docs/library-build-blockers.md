@@ -5,6 +5,22 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane D [refreshes the backend pin](backend-current-checkpoint.md) for inline
+assembly, on main `347373f7f`. All three CPPGM tools now pin cppgm-extended
+`17b024f69` through the `backend-pins-v3` distribution. The reviewed object
+profile records the optional `assembly` capability.
+
+- The rebuild procedure reproduces v2's bytes exactly from `b7c6b8e72`. Two
+  clones of `17b024f69` build byte-identical tools.
+- Old and new pins give equal native results on all 5028 independent cases
+  and all 2834 native runs. Every validated LowIR and object is byte-identical.
+  The 7 PA13 and PA18 harness gaps already on main repeat unchanged.
+- The PA28 atomic and PA31 source-attribute contracts now bind the v3 lock.
+  None of their declared outcomes changed.
+- What remains: LIB-045's `_mm_stream_ps` still stops at the fence. RustGM does
+  not lower `asm!` yet; that is the next PA41 slice. Only the backend can emit
+  `movntps` so far.
+
 Lane A [census batch 15](parallel/census-batch15.md), section 8, keeps the
 census fold's cause kinds on main `347373f7f`. Census 18 (`b5bcfc0f`) has
 census 17's 8 records byte for byte.

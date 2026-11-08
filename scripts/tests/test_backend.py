@@ -74,6 +74,75 @@ class ObjectBridge(unittest.TestCase):
                 backend.load_tools()
 
 
+class AssemblyCapability(unittest.TestCase):
+    def lock(self, capabilities, object_commit="reviewed"):
+        return {"commit": "reviewed", "sha256": {}, "optional": {"object": {
+            "commit": object_commit, "target": "x86_64-linux", "object_format": "elf64-x86-64",
+            "capabilities": capabilities, "sha256": {}}}}
+
+    def test_only_a_same_commit_reviewed_object_profile_advertises_assembly(self):
+        profile = backend.assembly_profile(self.lock(["lowir-to-object", "assembly"]))
+        self.assertIn("assembly", profile["capabilities"])
+        for lock in (self.lock(["lowir-to-object"]),
+                     self.lock(["lowir-to-object", "assembly"], object_commit="other"),
+                     self.lock(["assembly"])):
+            with self.assertRaises(ValueError):
+                backend.assembly_profile(lock)
+
+    def test_each_named_function_needs_the_requested_mnemonic_and_opcode(self):
+        listing = ("\n0000000000000000 <rg_stream_ps>:\n"
+                   "   0:\t41 0f 2b 03          \tmovntps XMMWORD PTR [r11],xmm0\n"
+                   "   4:\tc3                   \tret\n"
+                   "\n0000000000000010 <rg_other>:\n"
+                   "  10:\t0f 11 07             \tmovups XMMWORD PTR [rdi],xmm0\n")
+        for text, functions, accepted in (
+                (listing, ("rg_stream_ps",), True),
+                (listing, ("rg_stream_ps", "rg_other"), False),
+                (listing.replace("movntps", "movaps"), ("rg_stream_ps",), False),
+                (listing.replace("0f 2b", "0f 29"), ("rg_stream_ps",), False)):
+            completed = mock.Mock(returncode=0, stdout=text.encode(), stderr=b"")
+            with mock.patch.object(backend.subprocess, "run", return_value=completed):
+                if accepted:
+                    backend.require_instruction(Path("stream.o"), "movntps", "0f 2b", functions)
+                else:
+                    with self.assertRaisesRegex(ValueError, "lacks the requested movntps"):
+                        backend.require_instruction(Path("stream.o"), "movntps", "0f 2b", functions)
+
+
+    def test_section_free_executables_are_inspected_through_executable_segments(self):
+        code = b"\x45\x0f\x2b\x32"
+        header = bytearray(64)
+        header[:7] = b"\x7fELF\x02\x01\x01"
+        header[32:40] = (64).to_bytes(8, "little")
+        header[54:56] = (56).to_bytes(2, "little")
+        header[56:58] = (2).to_bytes(2, "little")
+        def segment(flags, offset, size):
+            row = bytearray(56)
+            row[0:4] = (1).to_bytes(4, "little")
+            row[4:8] = flags.to_bytes(4, "little")
+            row[8:16] = offset.to_bytes(8, "little")
+            row[32:40] = size.to_bytes(8, "little")
+            return bytes(row)
+        image = bytes(header) + segment(4, 0, 64) + segment(5, 176, len(code)) + code
+        listing = ("\n0000000000000000 <.data>:\n"
+                   "   0:\t45 0f 2b 32          \tmovntps XMMWORD PTR [r10],xmm14\n")
+        with tempfile.TemporaryDirectory() as temporary:
+            binary = Path(temporary) / "program"
+            for text, data, accepted in ((listing, image, True),
+                                         (listing.replace("movntps", "movups"), image, False),
+                                         (listing, image[:120] + bytes(56) + code, False)):
+                binary.write_bytes(data)
+                completed = mock.Mock(returncode=0, stdout=text.encode(), stderr=b"")
+                with mock.patch.object(backend.subprocess, "run", return_value=completed) as run:
+                    if accepted:
+                        backend.require_executable_instruction(binary, "movntps", "0f 2b")
+                        self.assertEqual(Path(temporary, "program.code").read_bytes(), code)
+                        self.assertIn("binary", run.call_args.args[0])
+                    else:
+                        with self.assertRaises(ValueError):
+                            backend.require_executable_instruction(binary, "movntps", "0f 2b")
+
+
 class ExecutablePins(unittest.TestCase):
     def test_live_rebuild_does_not_change_configured_execution(self):
         with tempfile.TemporaryDirectory() as temporary:

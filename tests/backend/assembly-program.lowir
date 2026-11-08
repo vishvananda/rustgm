@@ -1,0 +1,93 @@
+assembly @rg_stream_template intel readwrite 1 0 0 2 {
+  operand ptr 0 -1 1 0 0 {
+    alternative 1 0 -1 {
+      group (rax:0)
+      group (rcx:0)
+      group (rdx:0)
+      group (rsi:0)
+      group (rdi:0)
+      group (r8:0)
+      group (r9:0)
+      group (r10:0)
+      group (r11:0)
+      group (r12:0)
+      group (r13:0)
+      group (r14:0)
+      group (r15:0)
+    }
+  }
+  operand v128 1 -1 1 0 0 {
+    alternative 1 0 -1 {
+      group (xmm0:0)
+      group (xmm1:0)
+      group (xmm2:0)
+      group (xmm3:0)
+      group (xmm4:0)
+      group (xmm5:0)
+      group (xmm6:0)
+      group (xmm7:0)
+      group (xmm8:0)
+      group (xmm9:0)
+      group (xmm10:0)
+      group (xmm11:0)
+      group (xmm12:0)
+      group (xmm13:0)
+      group (xmm14:0)
+      group (xmm15:0)
+    }
+  }
+  text "movntps ["
+  use 0 0 0 0
+  text "],"
+  use 1 0 0 0
+}
+function @rg_stream_ps(%p0 : ptr, %p1 : v128) -> void [binding=internal] {
+  block ^b0:
+    asm @rg_stream_template(%p0, %p1)
+    return void
+}
+function @main() -> i64 [role=entry] {
+  slot $buffer : obj<48x16>
+  slot $source : obj<16x16>
+  block ^entry:
+    %before0 = addr $buffer
+    store i64 81985529216486895, %before0
+    %before1 = index i64 %before0, 1
+    store i64 -81985529216486896, %before1
+    %bits0 = index i64 %before0, 2
+    store i64 0, %bits0
+    %bits1 = index i64 %before0, 3
+    store i64 0, %bits1
+    %after0 = index i64 %before0, 4
+    store i64 6172840429334713770, %after0
+    %after1 = index i64 %before0, 5
+    store i64 -6172840429334713771, %after1
+    %source0 = addr $source
+    store i64 9205677894729203712, %source0
+    %source1 = index i64 %source0, 1
+    store i64 -36028797018963967, %source1
+    %value = load v128 %source0
+    call void @rg_stream_ps(%bits0, %value)
+    %low = load i64 %bits0
+    %high = load i64 %bits1
+    %guard0 = load i64 %before0
+    %guard1 = load i64 %before1
+    %guard2 = load i64 %after0
+    %guard3 = load i64 %after1
+    %low_ok = cmp eq i64 %low, 9205677894729203712
+    %high_ok = cmp eq i64 %high, -36028797018963967
+    %guard0_ok = cmp eq i64 %guard0, 81985529216486895
+    %guard1_ok = cmp eq i64 %guard1, -81985529216486896
+    %guard2_ok = cmp eq i64 %guard2, 6172840429334713770
+    %guard3_ok = cmp eq i64 %guard3, -6172840429334713771
+    %bits_ok = binary and i64 %low_ok, %high_ok
+    %before_ok = binary and i64 %guard0_ok, %guard1_ok
+    %after_ok = binary and i64 %guard2_ok, %guard3_ok
+    %guards_ok = binary and i64 %before_ok, %after_ok
+    %ok = binary and i64 %bits_ok, %guards_ok
+    branch %ok, ^pass, ^fail
+  block ^pass:
+    return i64 42
+  block ^fail:
+    return i64 1
+}

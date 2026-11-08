@@ -121,7 +121,9 @@ source image -> Rust lexer -> token-tree/parser/expansion/resolution worklist
 
 The external LowIR serialization is an authorized temporary backend boundary.
 The [current backend checkpoint](docs/backend-current-checkpoint.md) pins all
-three CPPGM tools to b7c6b8e72. Host-object units use the locked object driver's
+three CPPGM tools to 17b024f69. Its object profile also records the optional
+`assembly` capability. Rust `asm!` remains fenced until PA41 lowers checked
+assembly bodies to it. Host-object units use the locked object driver's
 parser/validator directly; the standalone executable-profile reader cannot
 validate every host ABI class. Every object input retains the `.lowir` suffix
 gate. Emit `convert trunc exact` only with a real representability proof, as in

@@ -40,7 +40,9 @@ Structural gaps that a first-error loop would reach only after many more runs:
 
 The backend stays frozen (user decision, 2026-11-07). Inline assembly, f16/f128
 and non-temporal stores remain explicit locked-backend capabilities; demanded
-paths that need them stay fenced and are recorded, never worked around.
+paths that need them stay fenced and are recorded, never worked around. On
+2026-11-08 the user lifted the freeze for inline assembly only; see the
+assembly pin decision below.
 
 ## LIB-193
 
@@ -1061,6 +1063,29 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
       pays only Sized premises, so a `?Sized` negative impl's MetaSized
       premise is never paid (Lane B, after chain-bytes; not a core blocker);
     - `pub const` export, which returns with item 5b.
+
+- **The user directed a backend pin refresh for assembly**, 2026-11-08: "cppgm
+  extended now supports assembly so if you update the pin it should unblock
+  assembly".
+  - **Scope.** This lifts the 2026-11-07 freeze for inline assembly only.
+    f16/f128 and every other backend extension stay frozen until the user
+    raises them.
+  - **Owner.** Lane D (`rustgm-backend-work`) refreshes the pin, then lands the
+    first Rust slice: stage B of cppgm-extended's inline-assembly plan, the
+    original `_mm_stream_ps`. Each is its own commit, and the slice's shape is
+    approved by the integrator before its code is written.
+  - **Pin.** cppgm-extended `17b024f69` is the newest main commit whose Tests
+    run is green. The new pin gets a new lock and a new `backend-pins-v3`
+    distribution. The v1 and v2 releases and their pins are unchanged.
+  - **Order.** The refresh is qualified before any frontend change. Its
+    regression criterion is native output equality with the old pin on the
+    existing native suites. Any changed native outcome stops the lane.
+  - **Rejected: pinning the active checkout's tools.** The `dev/` binaries
+    in `~/cppgm-extended` predate the assembly commits, and that checkout
+    must not be built in. The tools are built in separate clones instead.
+  - **Rejected: a frontend-only change.** Accepting assembly without real
+    native emission would advertise a capability the pin does not provide.
+    An ordinary vector store is not a substitute for `movntps`.
 
 ## Lanes
 

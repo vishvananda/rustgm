@@ -77,6 +77,8 @@ test-host-builds:
 	$(PYTHON) scripts/storage.py run --prune-under obj/qualification/host-graph -- $(PYTHON) scripts/check_host_graph.py --local
 test-backend:
 	$(PYTHON) scripts/backend.py --test
+	$(PYTHON) scripts/backend.py --test-object
+	$(PYTHON) scripts/backend.py --test-assembly
 test-maintainer-native: test-backend
 	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --release --locked --no-fail-fast -- --ignored
 	$(GUARDED) $(PYTHON) scripts/check_native.py --released-units --app "$(RUSTGM_TEST_APP)"

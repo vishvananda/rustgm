@@ -57,6 +57,17 @@ def object_profile(lock):
     return profile
 
 
+def assembly_profile(lock):
+    """Assembly is an optional capability of the reviewed object profile.
+
+    The standalone reader and executable linker share that compiler's assembly
+    boundary, so a lock mixing tool commits cannot advertise it."""
+    profile = object_profile(lock)
+    if "assembly" not in profile["capabilities"] or profile.get("commit") != lock.get("commit"):
+        raise ValueError("reviewed x86-64 assembly capability is unavailable")
+    return profile
+
+
 def load_tools(required=("lowir", "lowir2native")):
     local = ROOT / "backend.local.json"
     if not local.is_file():
@@ -192,12 +203,91 @@ def test_object():
     print("PASS: LowIR object interoperates with independent C calls, callbacks and globals")
 
 
+def listed_functions(listing, mnemonic, opcode):
+    """Name each disassembled function (None for raw code) containing the instruction."""
+    found = set()
+    current = None
+    for line in listing.splitlines():
+        if line.endswith(">:") and "<" in line:
+            current = line[line.index("<") + 1:-2]
+            continue
+        fields = line.split("\t")
+        if len(fields) >= 3 and fields[2].split()[:1] == [mnemonic] and opcode in fields[1]:
+            found.add(current)
+    return found
+
+
+def objdump(arguments):
+    result = subprocess.run(["objdump", "-M", "intel", *arguments], capture_output=True, timeout=30)
+    if result.returncode or result.stderr:
+        raise ValueError(f"objdump failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
+    return result.stdout.decode(errors="replace")
+
+
+def require_instruction(binary, mnemonic, opcode, functions):
+    """Each named object function must contain the requested instruction itself.
+
+    The source names this instruction; an equivalent ordinary store is not accepted."""
+    found = listed_functions(objdump(["-d", str(binary)]), mnemonic, opcode)
+    missing = [name for name in functions if name not in found]
+    if missing:
+        raise ValueError(f"{binary.name}: {', '.join(missing)} lacks the requested {mnemonic} instruction")
+
+
+def require_executable_instruction(binary, mnemonic, opcode):
+    """The standalone linker writes no section headers; inspect its executable segments."""
+    data = binary.read_bytes()
+    if data[:7] != b"\x7fELF\x02\x01\x01":
+        raise ValueError(f"{binary.name}: not an x86-64 ELF64 executable")
+    offset = int.from_bytes(data[32:40], "little")
+    size = int.from_bytes(data[54:56], "little")
+    count = int.from_bytes(data[56:58], "little")
+    code = bytearray()
+    for index in range(count):
+        header = data[offset + index * size:offset + (index + 1) * size]
+        # PT_LOAD with PF_X: p_type, p_flags, p_offset and p_filesz.
+        if len(header) < 56:
+            raise ValueError(f"{binary.name}: truncated ELF program header")
+        if int.from_bytes(header[0:4], "little") == 1 and int.from_bytes(header[4:8], "little") & 1:
+            start = int.from_bytes(header[8:16], "little")
+            code += data[start:start + int.from_bytes(header[32:40], "little")]
+    if not code:
+        raise ValueError(f"{binary.name}: no executable segment")
+    segment = binary.with_name(binary.name + ".code")
+    segment.write_bytes(code)
+    listing = objdump(["-D", "-b", "binary", "-m", "i386:x86-64", str(segment)])
+    if not listed_functions(listing, mnemonic, opcode):
+        raise ValueError(f"{binary.name}: executable code lacks the requested {mnemonic} instruction")
+
+
+def test_assembly():
+    assembly_profile(json.loads((ROOT / "backend.lock.json").read_text()))
+    folder = ROOT / "obj" / "backend" / "assembly-handshake"
+    object_file = folder / "stream.o"
+    binary = folder / "stream"
+    build_object(ROOT / "tests" / "backend" / "assembly.lowir", object_file)
+    require_instruction(object_file, "movntps", "0f 2b", ("rg_stream_ps", "rg_stream_ps_stored"))
+    invoke(["cc", "-std=c11", "-Wall", "-Wextra", "-Werror",
+            str(ROOT / "tests" / "backend" / "assembly.c"), str(object_file), "-o", str(binary)])
+    result = subprocess.run([str(binary)], capture_output=True, timeout=5)
+    if result.returncode or result.stdout or result.stderr:
+        raise ValueError("LowIR assembly object did not stream every bit with intact guards")
+    program = folder / "program"
+    build(ROOT / "tests" / "backend" / "assembly-program.lowir", program)
+    require_executable_instruction(program, "movntps", "0f 2b")
+    result = subprocess.run([str(program)], capture_output=True, timeout=5)
+    if result.returncode != 42 or result.stdout or result.stderr:
+        raise ValueError("standalone LowIR assembly program did not stream every bit with intact guards")
+    print("PASS: LowIR assembly emits movntps in objects and executables with full bits and guards")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--configure", type=Path)
     parser.add_argument("--configure-object", type=Path)
     parser.add_argument("--test", action="store_true")
     parser.add_argument("--test-object", action="store_true")
+    parser.add_argument("--test-assembly", action="store_true")
     parser.add_argument("--emit-object", action="store_true")
     parser.add_argument("--native-links", type=Path)
     parser.add_argument("--native-search", type=Path, action="append", default=[])
@@ -214,6 +304,8 @@ def main():
             test()
         elif args.test_object:
             test_object()
+        elif args.test_assembly:
+            test_assembly()
         elif args.source and args.o:
             if args.emit_object:
                 if args.native_links or args.native_search or args.native_object:
@@ -226,7 +318,8 @@ def main():
                            native_plan=args.native_links, native_search=args.native_search,
                            native_objects=[path.resolve() for path in args.native_object])
         else:
-            parser.error("use --configure, --configure-object, --test, --test-object, or SOURCE -o OUTPUT")
+            parser.error("use --configure, --configure-object, --test, --test-object, --test-assembly, "
+                         "or SOURCE -o OUTPUT")
         return 0
     except (ValueError, OSError, subprocess.SubprocessError) as error:
         print(f"backend error: {error}", file=sys.stderr)

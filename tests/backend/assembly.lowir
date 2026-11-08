@@ -1,0 +1,96 @@
+assembly @rg_stream_template intel readwrite 1 0 0 2 {
+  operand ptr 0 -1 1 0 0 {
+    alternative 1 0 -1 {
+      group (rax:0)
+      group (rcx:0)
+      group (rdx:0)
+      group (rsi:0)
+      group (rdi:0)
+      group (r8:0)
+      group (r9:0)
+      group (r10:0)
+      group (r11:0)
+      group (r12:0)
+      group (r13:0)
+      group (r14:0)
+      group (r15:0)
+    }
+  }
+  operand v128 1 -1 1 0 0 {
+    alternative 1 0 -1 {
+      group (xmm0:0)
+      group (xmm1:0)
+      group (xmm2:0)
+      group (xmm3:0)
+      group (xmm4:0)
+      group (xmm5:0)
+      group (xmm6:0)
+      group (xmm7:0)
+      group (xmm8:0)
+      group (xmm9:0)
+      group (xmm10:0)
+      group (xmm11:0)
+      group (xmm12:0)
+      group (xmm13:0)
+      group (xmm14:0)
+      group (xmm15:0)
+    }
+  }
+  text "movntps ["
+  use 0 0 0 0
+  text "],"
+  use 1 0 0 0
+}
+assembly @rg_stream_stored_template intel readwrite 1 0 0 2 {
+  operand ptr 0 -1 1 0 0 {
+    alternative 1 0 -1 {
+      group (rax:0)
+      group (rcx:0)
+      group (rdx:0)
+      group (rsi:0)
+      group (rdi:0)
+      group (r8:0)
+      group (r9:0)
+      group (r10:0)
+      group (r11:0)
+      group (r12:0)
+      group (r13:0)
+      group (r14:0)
+      group (r15:0)
+    }
+  }
+  operand v128 1 -1 1 1 0 {
+    alternative 1 0 -1 {
+      group (xmm0:0)
+      group (xmm1:0)
+      group (xmm2:0)
+      group (xmm3:0)
+      group (xmm4:0)
+      group (xmm5:0)
+      group (xmm6:0)
+      group (xmm7:0)
+      group (xmm8:0)
+      group (xmm9:0)
+      group (xmm10:0)
+      group (xmm11:0)
+      group (xmm12:0)
+      group (xmm13:0)
+      group (xmm14:0)
+      group (xmm15:0)
+    }
+  }
+  text "movntps ["
+  use 0 0 0 0
+  text "],"
+  use 1 0 0 0
+}
+function @rg_stream_ps(%p0 : ptr, %p1 : v128) -> void [binding=strong] {
+  block ^b0:
+    asm @rg_stream_template(%p0, %p1)
+    return void
+}
+function @rg_stream_ps_stored(%p0 : ptr, %p1 : ptr) -> void [binding=strong] {
+  block ^b0:
+    asm @rg_stream_stored_template(%p0, %p1)
+    return void
+}

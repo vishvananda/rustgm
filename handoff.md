@@ -206,8 +206,9 @@ trees or caches are needed.
   obligations. Measure algorithm checkpoints with immutable A/B, A/A+ABBA,
   frozen inputs and retained observations; Python timeout polling quantizes short
   wall samples, so use blocking waitpid inside an outer guarded deadline.
-- Backend pin staysb7c6b8e72595a524e1b3f147212d69c02b257dd8. No backend/codegen
-  changes were made. Do not edit cppgm-extended or v5rust during RustGM work.
+- Backend pin is 17b024f692a5b537a4db6c4d3b6dc33bc930c680 (backend-pins-v3, with
+  the optional assembly capability; see `docs/backend-current-checkpoint.md`).
+  Do not edit cppgm-extended or v5rust during RustGM work.
 
 Root retired7 superseded compiler pins (~0.63GiB unshared blocks) and retains
 only current48a0b12a and predecessor987578c2 for this series. Retirement receipt:
