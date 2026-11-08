@@ -81,7 +81,6 @@ impl Checker<'_> {
                 .parameters
                 .get(&owner)
                 .map_or(0, Vec::len);
-            let mut proof = None;
             for slot in 0..count {
                 let parameter = self.facts.generics.parameters[&owner][slot];
                 let Argument::Const(id) = parameter.argument else {
@@ -102,12 +101,12 @@ impl Checker<'_> {
                     .types
                     .const_type(id)
                     .ok_or_else(|| self.error(key, "const parameter lost its actual type"))?;
-                let proof = proof.get_or_insert_with(|| {
-                    let environment = self.facts.generics.environments.get(&owner).cloned();
-                    self.declaration_proof(owner, environment)
-                });
-                self.prove_const_parameter_type(key, ty, proof)?;
-                self.retain_trait_proof(owner, key, proof);
+                // Each environment proof retains its own lifetime witnesses, so
+                // the next parameter's proof is numbered after the retained one.
+                let environment = self.facts.generics.environments.get(&owner).cloned();
+                let mut proof = self.declaration_proof(owner, environment);
+                self.prove_const_parameter_type(key, ty, &mut proof)?;
+                self.retain_trait_proof(owner, key, &mut proof);
             }
         }
         Ok(())

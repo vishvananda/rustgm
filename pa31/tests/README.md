@@ -712,3 +712,11 @@ feature and a global where clause that cannot stand in for the bound. Each
 outcome was declared before its rustc 1.98.0 oracle, and the one fixture
 amendment is recorded. A private invariant checks them; there is no graded
 manifest.
+
+`spec/const-parameter-environments/` freezes five declared staged-API
+`min_adt_const_params` controls from census batch 11: core's
+`Arguments::new<const N, const M>` in `impl<'a> Arguments<'a>`, three const
+parameters under two lifetimes, a function and a trait method with two, and an
+opponent whose second const parameter type does not implement `ConstParamTy_`.
+Each outcome was declared before its rustc 1.98.0 oracle. A private invariant
+checks them; there is no graded manifest.

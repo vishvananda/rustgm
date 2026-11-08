@@ -1,0 +1,47 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The shapes reduce census 12's lookahead record \"invalid lifetime constraint identity\" at core's `Arguments::new<const N: usize, const M: usize>` (fmt/mod.rs:729, the second const parameter), which section 4's repair introduced. Exploration drafts with other bytes (obj/parallel/census-batch11/repro/two-const/) were run first: rustc 1.98.0 accepted all four, and the census 12 pin rejected the two whose owner has a lifetime and two const parameters. Each outcome follows the rule read in the pinned rustc 1.98.0 sources (compiler/rustc_hir_analysis/src/check/wfcheck.rs `check_param_wf`, which registers each const parameter's `Ty: ConstParamTy_` under the param-env of its owner, independently of the owner's other parameters, and reports E0741 for a type that does not implement it): every const parameter of an owner with lifetimes is accepted when its type implements `ConstParamTy_`, and a later parameter's type that does not is rejected",
+ "declaration_sha256": "237ac840dd4387b3b385e4b3c4caa195983d702c272a91ca9cfaf84914e91b28",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "inherent-pair.rs": {
+   "sha256": "b38d73f7dad55fe496c80d02516fd225b4e11304eadfd715a9d4b0aaf0b2f696",
+   "declared": 0,
+   "reason": "core's shape (fmt/mod.rs:727-737): `impl<'a> Arguments<'a>` with `pub fn new<const N: SimdAlign, const M: SimdAlign>(template: &'a u8)`; each const parameter type is proven under the method's param-env, which names the impl's `'a`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "inherent-three.rs": {
+   "sha256": "56927053ada0394169380ba6bcd241ec519b1c9663ca6de0b5eaa5477ea12424",
+   "declared": 0,
+   "reason": "three const parameters on a method of `impl<'a, 'b> Pair<'a, 'b>`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "function-pair.rs": {
+   "sha256": "423cfb62d97b12b8dd977ce9ba77ef33e0d04be88a01586ae36836677661cd25",
+   "declared": 0,
+   "reason": "a free function `pair<'a, const N: SimdAlign, const M: SimdAlign>(value: &'a u8) -> &'a u8`, whose own lifetime is in its param-env",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "trait-pair.rs": {
+   "sha256": "657aedd8a90b4bed39978770d3437a33ce8f553c872e23dbc28780ae53444d24",
+   "declared": 0,
+   "reason": "a trait method `fn new<const N: SimdAlign, const M: SimdAlign>(template: &'a u8) -> Self` of `trait Template<'a>`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "second-unproven.rs": {
+   "sha256": "401ffa35c044b266fbde18a43b15c80f6d18908a5899bb5fa78488238fd84254",
+   "declared": 1,
+   "reason": "opponent: core's shape with `const M: Plain`, a unit struct that does not implement `ConstParamTy_`; the second parameter's type is still proven, and fails (E0741)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0741"
+   ]
+  }
+ }
+}

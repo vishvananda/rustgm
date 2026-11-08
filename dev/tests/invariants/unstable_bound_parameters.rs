@@ -3,7 +3,9 @@
 //! const ASSUME: Assume>` carries `#[unstable_feature_bound(transmutability)]`,
 //! which proves the matching bound on `impl ConstParamTy_ for Assume`; a missing
 //! or different bound does not, and in a staged-API crate neither does its own
-//! `#![feature]`.
+//! `#![feature]`. Each parameter's proof is independent: an owner with
+//! lifetimes and several const parameters, as core's `Arguments::new<const N,
+//! const M>`, proves every one of them.
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 const CONTROLS: &str = "pa31/tests/spec/feature-bound-const-parameters";
@@ -23,10 +25,31 @@ const CASES: [(&str, Option<&str>); 5] = [
     ),
 ];
 
+const ENVIRONMENT_CONTROLS: &str = "pa31/tests/spec/const-parameter-environments";
+
+/// Independently checked rustc outcomes for owners with lifetimes and several
+/// const parameters.
+const ENVIRONMENTS: [(&str, Option<&str>); 5] = [
+    ("inherent-pair", None),
+    ("inherent-three", None),
+    ("function-pair", None),
+    ("trait-pair", None),
+    ("second-unproven", Some(UNPROVEN)),
+];
+
 #[test]
 fn const_parameter_types_are_proven_under_their_owner_feature_bounds() -> TestResult {
-    for (name, expected) in CASES {
-        let path = format!("{CONTROLS}/{name}.rs");
+    check(CONTROLS, &CASES)
+}
+
+#[test]
+fn every_const_parameter_of_an_owner_with_lifetimes_is_proven_on_its_own() -> TestResult {
+    check(ENVIRONMENT_CONTROLS, &ENVIRONMENTS)
+}
+
+fn check(controls: &str, cases: &[(&str, Option<&str>)]) -> TestResult {
+    for &(name, expected) in cases {
+        let path = format!("{controls}/{name}.rs");
         let source = crate::test_source::fixture(&path)?;
         let report = crate::test_source::source_provider(&source, "feature_bound_parameters")?;
         match (expected, crate::pipeline::analyze_source(&report)) {
