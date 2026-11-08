@@ -42,6 +42,8 @@ mod instantiable;
 mod lifetime_methods;
 #[path = "crate_linking/lifetime_transport.rs"]
 mod lifetime_transport;
+#[path = "crate_linking/marker_transport.rs"]
+mod marker_transport;
 #[path = "crate_linking/match_transport.rs"]
 mod match_transport;
 #[path = "crate_linking/named_values.rs"]

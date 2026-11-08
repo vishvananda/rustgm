@@ -242,13 +242,17 @@ pub struct PatternRange {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DiagnosticRole {
     NonNull,
+    /// Core's `Send` is a diagnostic item, not a lang item; consumers install
+    /// it into their own `LangItem::Send` slot.
+    Send,
 }
 impl DiagnosticRole {
-    pub const ALL: [Self; 1] = [Self::NonNull];
+    pub const ALL: [Self; 2] = [Self::NonNull, Self::Send];
     #[must_use]
     pub const fn spelling(self) -> &'static str {
         match self {
             Self::NonNull => "NonNull",
+            Self::Send => "Send",
         }
     }
     #[must_use]

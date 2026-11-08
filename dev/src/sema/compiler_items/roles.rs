@@ -80,6 +80,40 @@ impl Catalog {
         }
         Ok(Some(declaration))
     }
+
+    /// The declaration of one auto-marker role: Freeze, Send, Sync, Unpin or
+    /// `UnsafeUnpin`, never another role. A provider answers exactly as
+    /// `language` does, or `validated_language` when `validated`. A source
+    /// client answers from the roles its admitted descriptor re-proved (each
+    /// an exact empty auto declaration, and Send's diagnostic identity), and
+    /// when `validated` only after their completed header admission. The
+    /// role's origin names the ledger that pays for work it causes.
+    pub(in crate::sema) fn auto_marker(
+        &self,
+        role: LangItem,
+        validated: bool,
+    ) -> Result<Option<super::Role>, &'static str> {
+        if !matches!(
+            role,
+            LangItem::Freeze
+                | LangItem::Send
+                | LangItem::Sync
+                | LangItem::Unpin
+                | LangItem::UnsafeUnpin
+        ) {
+            return Err("auto-marker lookup requires an auto-marker role");
+        }
+        Ok(match (&self.bindings, validated) {
+            (super::binding_views::Bindings::Provider(_), false) => {
+                self.language(role).map(super::Role::from)
+            }
+            (super::binding_views::Bindings::Provider(_), true) => {
+                self.validated_language(role)?.map(super::Role::from)
+            }
+            (super::binding_views::Bindings::Imported(_), false) => self.role(role)?,
+            (super::binding_views::Bindings::Imported(_), true) => self.validated_role(role)?,
+        })
+    }
 }
 
 const TRAIT_ROLES: [LangItem; 40] = [

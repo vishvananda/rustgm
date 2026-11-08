@@ -222,6 +222,18 @@ fn trait_headers(
             callable_traits::freeze(rows, headers, header, work)?;
             continue;
         }
+        // Version thirteen: an auto trait is admitted only as its exact empty
+        // declaration; a role-bound marker also keeps its local role's flags.
+        if roles.automatic && flags & TraitFlags::AUTO != 0 {
+            callable_traits::automatic(
+                rows,
+                headers,
+                header,
+                roles.marker(header.declaration),
+                work,
+            )?;
+            continue;
+        }
         if callable_roles::trait_header(rows, headers, header, roles.callables, work)?.is_some() {
             continue;
         }
@@ -695,6 +707,21 @@ pub(super) struct Bindings {
     freeze: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     conversion: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     callables: callable_roles::Roles,
+    /// Version thirteen admits every exact empty auto declaration.
+    automatic: bool,
+    /// The role-bound auto markers, in `callable_traits::MARKERS` order.
+    markers: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 4],
+}
+impl Bindings {
+    fn marker(
+        &self,
+        declaration: crate::support::crates::owner_catalog::DeclarationRef,
+    ) -> Option<callable_traits::Marker> {
+        self.markers
+            .iter()
+            .zip(callable_traits::MARKERS)
+            .find_map(|(bound, marker)| (*bound == Some(declaration)).then_some(marker))
+    }
 }
 fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
     if profile == BindingProfile::Languages {
@@ -768,7 +795,7 @@ pub(super) fn bindings(
         )?;
         declarations[role.role.index()] = Some(address.declaration);
     }
-    diagnostic_bindings(rows, headers, work, profile)?;
+    let send = diagnostic_bindings(rows, headers, work, profile)?;
     owned_role_members(rows, headers, work, &declarations)?;
     let sizing = [
         declarations[LangItem::Sized.index()],
@@ -792,8 +819,20 @@ pub(super) fn bindings(
     } else {
         callable_roles::Roles::default()
     };
+    let automatic = profile == BindingProfile::Languages;
     Ok(Bindings {
         callables,
+        automatic,
+        markers: if automatic {
+            [
+                send,
+                declarations[LangItem::Sync.index()],
+                declarations[LangItem::Unpin.index()],
+                declarations[LangItem::UnsafeUnpin.index()],
+            ]
+        } else {
+            [None; 4]
+        },
         conversion: (matches!(
             profile,
             BindingProfile::Conversions
@@ -823,21 +862,24 @@ pub(super) fn bindings(
 }
 
 /// Version thirteen's diagnostic identities: each names, once, one of this
-/// provider's own struct nominals, as the local `NonNull` rule requires.
+/// provider's own declarations. `NonNull` names a struct nominal, as the local
+/// rule requires; `Send` names an unsafe auto trait, whose exact empty
+/// declaration `trait_headers` re-proves. Returns `Send`'s declaration.
 fn diagnostic_bindings(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     work: &mut Work,
     profile: BindingProfile,
-) -> Result<(), &'static str> {
+) -> Result<Option<crate::support::crates::owner_catalog::DeclarationRef>, &'static str> {
     let diagnostics = rows.diagnostics();
     if diagnostics.is_empty() {
-        return Ok(());
+        return Ok(None);
     }
     if profile != BindingProfile::Languages {
         return Err("source diagnostic identity requires a language role table");
     }
     let mut seen = [false; super::super::DiagnosticRole::ALL.len()];
+    let mut send = None;
     for row in diagnostics {
         work.charge(1)?;
         if row.declaration.artifact != super::super::ArtifactRef(0) {
@@ -848,27 +890,38 @@ fn diagnostic_bindings(
             return Err("duplicate source diagnostic identity");
         }
         *slot = true;
-        let struct_kind = rows
+        let kind = rows
             .declarations
             .get(row.declaration.declaration.0 as usize)
-            .is_some_and(|declaration| {
-                declaration.definition.kind == super::super::DefinitionKind::Struct
-            });
-        if !struct_kind
-            || !matches!(
-                headers.header(row.declaration.declaration, work)?,
-                Some(super::super::HeaderRef::Nominal(_))
-            )
-        {
-            return Err(match row.role {
-                super::super::DiagnosticRole::NonNull => {
-                    "imported NonNull diagnostic item requires its nominal declaration profile"
+            .map(|declaration| declaration.definition.kind);
+        let header = headers.header(row.declaration.declaration, work)?;
+        match row.role {
+            super::super::DiagnosticRole::NonNull => {
+                if kind != Some(super::super::DefinitionKind::Struct)
+                    || !matches!(header, Some(super::super::HeaderRef::Nominal(_)))
+                {
+                    return Err(
+                        "imported NonNull diagnostic item requires its nominal declaration profile",
+                    );
                 }
-            });
+            }
+            super::super::DiagnosticRole::Send => {
+                let Some(super::super::HeaderRef::Trait(index)) = header else {
+                    return Err(SEND);
+                };
+                if kind != Some(super::super::DefinitionKind::Trait)
+                    || rows.traits.get(index as usize).map(|t| t.flags.bits())
+                        != Some(TraitFlags::UNSAFE | TraitFlags::AUTO)
+                {
+                    return Err(SEND);
+                }
+                send = Some(row.declaration.declaration);
+            }
         }
     }
-    Ok(())
+    Ok(send)
 }
+const SEND: &str = "imported Send diagnostic item requires its unsafe auto trait declaration";
 /// The declaration/header kind each bound role may claim under `profile`.
 fn role_header(
     profile: BindingProfile,

@@ -2,7 +2,10 @@
 //! diagnostic identity. A pattern row carries only its base and its
 //! constraint, `!null` or a closed interval of raw bits; every consumer
 //! re-proves it through its own interning and derives its own layout.
-use super::fresh_packets::{Packet, Result, difference, unique, with_id};
+use super::fresh_packets::{
+    Packet, Result, declaration, difference, inner, rewrapped, role_column, role_copies, spliced,
+    unique, with_id,
+};
 use rustgm::support::crates;
 use std::{fmt::Write as _, path::Path};
 const SPEC: &str = "pa29/tests/spec/nonnull-patterns";
@@ -58,8 +61,6 @@ const FIELD: &str =
 /// then the declaration address.
 const DIAGNOSTIC: &[u8] = b"\xfe\x07\x00\x00\x00NonNull";
 const DIAGNOSTIC_ROW: usize = DIAGNOSTIC.len() + 8;
-/// A plain nominal header row, ending in its representation byte.
-const HEADER_ROW: usize = 43;
 /// Each kind-1 row's provider type and its canonical interval.
 const RANGES: [(&str, u128, u128); 5] = [
     ("Nanoseconds", 0, 999_999_999),
@@ -134,27 +135,6 @@ fn held(lowir: &str, entry: &str, size: u32, align: u32) -> Result<String> {
 }
 /// The wrapped artifact's offset: the provider exports its `pattern_type`
 /// macro, so its packet is a declarative macro envelope.
-fn inner(bytes: &[u8]) -> Result<usize> {
-    let at = bytes
-        .windows(8)
-        .skip(8)
-        .position(|window| window == b"RGMETA\r\n")
-        .ok_or("wrapped artifact")?;
-    Ok(at + 8)
-}
-/// The envelope's inner length rewritten after a forgery resized the wrapped
-/// artifact, which runs to the end of the packet.
-fn rewrapped(mut bytes: Vec<u8>) -> Result<Vec<u8>> {
-    let at = inner(&bytes)?;
-    let length = u32::try_from(bytes.len() - at)?;
-    bytes[at - 4..at].copy_from_slice(&length.to_le_bytes());
-    Ok(bytes)
-}
-fn spliced(bytes: &[u8], offset: usize, value: &[u8]) -> Vec<u8> {
-    let mut changed = bytes.to_vec();
-    changed[offset..offset + value.len()].copy_from_slice(value);
-    changed
-}
 fn id_at(bytes: &[u8], offset: usize) -> Result<usize> {
     let value = bytes.get(offset..offset + 4).ok_or("recipe id")?;
     Ok(usize::try_from(u32::from_le_bytes(value.try_into()?))?)
@@ -254,51 +234,6 @@ fn types(bytes: &[u8]) -> Result<Types> {
 }
 /// The offsets of a role column's count and rows, if one is at `offset`.
 /// Compact rows are a tag and an address; spelled rows add the spelling.
-fn role_rows(bytes: &[u8], offset: usize) -> Option<Vec<usize>> {
-    let count = u32::from_le_bytes(bytes.get(offset..offset + 4)?.try_into().ok()?);
-    if !(1..=64).contains(&count) {
-        return None;
-    }
-    let mut rows = Vec::new();
-    let mut cursor = offset + 4;
-    for _ in 0..count {
-        rows.push(cursor);
-        cursor += match *bytes.get(cursor)? {
-            0..=13 => 9,
-            254 | 255 => {
-                let length =
-                    u32::from_le_bytes(bytes.get(cursor + 1..cursor + 5)?.try_into().ok()?);
-                if !(1..=64).contains(&length) {
-                    return None;
-                }
-                13 + usize::try_from(length).ok()?
-            }
-            _ => return None,
-        };
-    }
-    (cursor <= bytes.len()).then_some(rows)
-}
-fn role_column(bytes: &[u8], role: usize) -> Result<(usize, Vec<usize>)> {
-    (role.saturating_sub(4096)..role)
-        .find_map(|offset| {
-            role_rows(bytes, offset)
-                .filter(|rows| rows.contains(&role))
-                .map(|rows| (offset, rows))
-        })
-        .ok_or_else(|| "role column".into())
-}
-/// The declaration that a plain nominal header row, ending at `offset`, names
-/// in its contract and repeats in its header.
-fn declaration(bytes: &[u8], offset: usize) -> Result<[u8; 4]> {
-    let contract = bytes
-        .get(offset + 1 - HEADER_ROW..offset + 5 - HEADER_ROW)
-        .ok_or("header row")?;
-    let header = bytes.get(offset - 32..offset - 28).ok_or("header row")?;
-    if contract != header {
-        return Err("not a plain nominal header row".into());
-    }
-    Ok(<[u8; 4]>::try_from(contract)?)
-}
 /// The provider's lines and `entries` compiled in one source-core crate,
 /// `base::` as `crate::`.
 fn single_crate(packet: &Packet, label: &str, entries: &str) -> Result<std::process::Command> {
@@ -434,15 +369,7 @@ fn older_profiles_diagnostic_identity_and_parameter_bases_fence_by_name() -> Res
 /// role column's count changed to match. The policy's role range covers only
 /// the language rows, so it is unchanged.
 fn diagnostic_rows(bytes: &[u8], row: usize, copies: usize) -> Result<Vec<u8>> {
-    let (count, rows) = role_column(bytes, row)?;
-    let total = u32::try_from(rows.len() - 1 + copies)?;
-    let mut changed = spliced(bytes, count, &total.to_le_bytes());
-    let original = bytes[row..row + DIAGNOSTIC_ROW].to_vec();
-    changed.splice(
-        row..row + DIAGNOSTIC_ROW,
-        std::iter::repeat_n(original, copies).flatten(),
-    );
-    rewrapped(changed)
+    rewrapped(role_copies(bytes, row, DIAGNOSTIC_ROW, copies)?)
 }
 /// Packet's declaration: the representation byte that a `repr(C)` variant of
 /// the provider changes ends its header row.
@@ -461,17 +388,6 @@ fn packet_declaration(packet: &Packet, bytes: &[u8]) -> Result<[u8; 4]> {
     export(packet, &variant, &metadata)?;
     let offset = difference(bytes, &std::fs::read(&metadata)?)?;
     declaration(bytes, offset)
-}
-/// A fresh consumer of `client` against `forged` bytes.
-fn forged(
-    packet: &Packet,
-    name: &str,
-    forged: Vec<u8>,
-    client: &str,
-) -> Result<std::process::Command> {
-    let metadata = packet.folder.join(format!("{name}.rgcrate"));
-    std::fs::write(&metadata, forged)?;
-    Ok(packet.consumer(&packet.fixture(client), name, &metadata, &packet.owner()))
 }
 #[test]
 fn forged_pattern_rows_reject_in_fresh_consumers() -> Result {
@@ -536,7 +452,7 @@ fn forged_pattern_rows_reject_in_fresh_consumers() -> Result {
             INVALID,
         ),
     ] {
-        let mut consumer = forged(&packet, name, changed, "nonnull")?;
+        let mut consumer = packet.forged(name, changed, "nonnull")?;
         packet.rejected(name, &mut consumer, diagnostic)?;
     }
     // A well-formed rewritten row, not an honest export: Percent as the bits
@@ -586,7 +502,7 @@ fn forged_diagnostic_rows_reject_in_fresh_consumers() -> Result {
             "duplicate source diagnostic identity",
         ),
     ] {
-        let mut consumer = forged(&packet, name, changed, "nonnull")?;
+        let mut consumer = packet.forged(name, changed, "nonnull")?;
         packet.rejected(name, &mut consumer, diagnostic)?;
     }
     // Moving or deleting the identity is accepted until Location consumes it.
@@ -595,7 +511,7 @@ fn forged_diagnostic_rows_reject_in_fresh_consumers() -> Result {
         ("moved", spliced(bytes, address, &packet_struct)),
         ("deleted", diagnostic_rows(bytes, diagnostic, 0)?),
     ] {
-        let mut consumer = forged(&packet, name, changed, "nonnull")?;
+        let mut consumer = packet.forged(name, changed, "nonnull")?;
         super::artifacts::checked(name, &packet.folder, &mut consumer)?;
     }
     Ok(())

@@ -294,7 +294,17 @@ fn reserve_roles(
     let mut result = [None; LangItem::ALL.len()];
     let mut attributes = [crate::resolve::bindings::HeaderAttributes::EMPTY; LangItem::ALL.len()];
     diagnostic_roles(descriptor, origins, work)?;
-    for role in roles {
+    // Version thirteen: `Send`'s diagnostic identity fills this consumer's own
+    // `LangItem::Send` slot, as a provider's reservations do.
+    let send = rows
+        .diagnostics()
+        .iter()
+        .filter(|row| row.role == s::DiagnosticRole::Send)
+        .map(|row| s::RoleBinding {
+            role: LangItem::Send,
+            declaration: row.declaration,
+        });
+    for role in roles.iter().copied().chain(send) {
         charge(work, 1)?;
         if role.declaration.artifact != s::ArtifactRef(0) {
             return Err("source provider role names a foreign defining artifact");
@@ -345,8 +355,9 @@ fn reserve_roles(
 }
 
 /// Each transported diagnostic identity re-proves the local rule over this
-/// consumer's own declaration remap: the provider's own struct. Its packet
-/// row is the record a later consumer reads.
+/// consumer's own declaration remap: the provider's own struct for `NonNull`,
+/// its own trait for `Send`. Its packet row is the record a later consumer
+/// reads.
 fn diagnostic_roles(
     descriptor: SourceDescriptor<'_>,
     origins: &Origins,
@@ -360,13 +371,19 @@ fn diagnostic_roles(
         let definition =
             origins.definition_at(descriptor.provider(), row.declaration.declaration)?;
         let declaration = origins.declaration(definition)?;
+        let (kind, message) = match row.role {
+            s::DiagnosticRole::NonNull => (
+                DefKind::Struct,
+                "imported NonNull diagnostic item requires its nominal declaration profile",
+            ),
+            s::DiagnosticRole::Send => (
+                DefKind::Trait,
+                "imported Send diagnostic item requires its unsafe auto trait declaration",
+            ),
+        };
         origins
-            .validate_declaration(declaration, definition, DefKind::Struct)
-            .map_err(|_| match row.role {
-                s::DiagnosticRole::NonNull => {
-                    "imported NonNull diagnostic item requires its nominal declaration profile"
-                }
-            })?;
+            .validate_declaration(declaration, definition, kind)
+            .map_err(|_| message)?;
     }
     Ok(())
 }

@@ -202,6 +202,17 @@ pub(in crate::sema::compiler_items) fn traits(
     Ok(())
 }
 
+/// `Destruct` and the auto markers, each admitted as an empty free trait;
+/// version thirteen admits Send, Sync, Unpin and `UnsafeUnpin` as Freeze is.
+const FREE_MARKERS: [LangItem; 6] = [
+    LangItem::Destruct,
+    LangItem::Freeze,
+    LangItem::Send,
+    LangItem::Sync,
+    LangItem::Unpin,
+    LangItem::UnsafeUnpin,
+];
+
 fn trait_headers(
     report: &Report,
     facts: &Declarations,
@@ -246,7 +257,7 @@ fn trait_headers(
                 complete.insert(role);
             }
             LangItem::CloneFn => {}
-            LangItem::Destruct | LangItem::Freeze => {
+            role if FREE_MARKERS.contains(&role) => {
                 free_marker(report, facts, catalog, role, declaration, steps)?;
                 complete.insert(role);
             }
@@ -375,9 +386,12 @@ fn free_marker(
     header.profile(
         &facts.types,
         Flags {
-            unsafe_: role == LangItem::Freeze,
+            unsafe_: matches!(
+                role,
+                LangItem::Freeze | LangItem::Send | LangItem::Sync | LangItem::UnsafeUnpin
+            ),
             constant: role == LangItem::Destruct,
-            auto_: role == LangItem::Freeze,
+            auto_: role != LangItem::Destruct,
         },
         0,
     )?;
@@ -403,7 +417,11 @@ fn free_marker(
             Constness::Ordinary,
         )?;
     } else if header.written.supertraits != 0 {
-        return Err("source Freeze changed its actual empty supertrait list");
+        return Err(if role == LangItem::Freeze {
+            "source Freeze changed its actual empty supertrait list"
+        } else {
+            "source auto marker changed its actual empty supertrait list"
+        });
     }
     Ok(())
 }

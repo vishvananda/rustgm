@@ -152,7 +152,7 @@ impl Checker<'_> {
             None => Bound::Auto(AutoTrait::Sync),
             Some(catalog) => {
                 let declaration =
-                    match catalog.validated_language(crate::support::bindings::LangItem::Sync) {
+                    match catalog.auto_marker(crate::support::bindings::LangItem::Sync, true) {
                         Ok(Some(declaration)) => declaration,
                         Ok(None) => return Err(self.error(node, "requires `sync` lang_item")),
                         Err(message) => return Err(self.error(node, message)),

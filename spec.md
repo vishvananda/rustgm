@@ -6710,6 +6710,24 @@ reject the identity by name ("source NonNull diagnostic identity transport
 requires version 13") instead of dropping it. `rustc_nonnull_optimization_guaranteed`
 has no byte: the guarantee follows from the `!null` field.
 
+Version 13 also transports auto-trait declarations, with no new tag or bit. A
+trait header's existing `AUTO` and `UNSAFE` flags are admitted only for an
+exact empty auto declaration: no written parameters, supertraits, members,
+region captures or bounds, and a single unsized, unqualified `Self` slot.
+`CONST` stays rejected. A role-bound marker must also carry its local role's
+exact flags: Freeze, Send, Sync and UnsafeUnpin are unsafe auto, and Unpin is
+safe auto. `Send`'s `rustc_diagnostic_item` is the closed identity table's
+second spelling. Its 254 row follows `NonNull`'s and names the provider's own
+trait with exactly `UNSAFE | AUTO`. A consumer installs it in its own `Send`
+role slot. `UnwindSafe` and `RefUnwindSafe` carry no identity and travel as
+custom auto traits. A source client proves imported Freeze, Send, Sync, Unpin
+and UnsafeUnpin structurally through the same role rule a source core uses.
+Each marker bound is paid from the installed header budget, because a client
+has no completed local header producer. Versions 10 and 12 keep their
+by-name rejections of each declaration. Auto impls, and structural proofs of
+imported custom auto traits, are not yet transported ("imported custom
+automatic trait structural profile is not implemented").
+
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core
 profile. A crate that exports no macros writes no envelope and keeps its exact

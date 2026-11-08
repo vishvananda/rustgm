@@ -73,7 +73,8 @@ impl Stage {
             .as_deref()
             .ok_or("source header graph has no role catalog")?;
         self.charge(1)?;
-        if catalog.language(LangItem::UnsafeUnpin).is_some() {
+        // Version thirteen re-proves UnsafeUnpin as an exact empty auto role.
+        if !self.body_nodes() && catalog.language(LangItem::UnsafeUnpin).is_some() {
             return Err("source UnsafeUnpin contract transport is not implemented");
         }
         if catalog.language(LangItem::ConstParamTy).is_some() {
@@ -105,8 +106,13 @@ impl Stage {
             {
                 return Err("source Pointee contract transport is not implemented");
             }
+            // Version thirteen transports Send's diagnostic identity as a 254
+            // row (`diagnostic_roles`); its header is an ordinary trait's.
             if role == LangItem::Send {
-                return Err("source Send diagnostic contract transport is not implemented");
+                if !self.body_nodes() {
+                    return Err("source Send diagnostic contract transport is not implemented");
+                }
+                continue;
             }
             let address = self.address(declaration.definition)?;
             self.reserve(4 * size_of::<s::RoleBinding>())?;
@@ -184,29 +190,46 @@ impl Stage {
         Ok(())
     }
 
-    /// Version thirteen transports `NonNull`'s diagnostic identity as a role
-    /// table row after the language rows; older profiles reject it by name.
-    /// It runs after every other export stage, so an export that fails earlier
-    /// keeps its own diagnostic.
+    /// Version thirteen transports `NonNull`'s and `Send`'s diagnostic
+    /// identities as role table rows after the language rows, in the closed
+    /// table's order; older profiles reject `NonNull`'s by name here and
+    /// `Send`'s in the role stage. This runs after every other export stage,
+    /// so an export that fails earlier keeps its own diagnostic.
     pub(super) fn diagnostic_roles(&mut self, report: &Report) -> Result<(), &'static str> {
         self.charge(1)?;
-        let Some(declaration) = report
-            .resolution
-            .source_bindings
-            .as_deref()
-            .and_then(Reservations::nonnull_declaration)
-        else {
+        let Some(reservations) = report.resolution.source_bindings.as_deref() else {
             return Ok(());
         };
-        if !self.body_nodes() {
-            return Err("source NonNull diagnostic identity transport requires version 13");
+        for (role, declaration) in [
+            (
+                s::DiagnosticRole::NonNull,
+                Reservations::nonnull_declaration(reservations),
+            ),
+            (
+                s::DiagnosticRole::Send,
+                reservations.language(LangItem::Send),
+            ),
+        ] {
+            let Some(declaration) = declaration else {
+                continue;
+            };
+            if !self.body_nodes() {
+                return Err(match role {
+                    s::DiagnosticRole::NonNull => {
+                        "source NonNull diagnostic identity transport requires version 13"
+                    }
+                    s::DiagnosticRole::Send => {
+                        "source Send diagnostic contract transport is not implemented"
+                    }
+                });
+            }
+            let address = self.address(declaration.definition)?;
+            self.reserve(4 * size_of::<s::DiagnosticBinding>())?;
+            self.cold()?.diagnostics.push(s::DiagnosticBinding {
+                role,
+                declaration: address,
+            });
         }
-        let address = self.address(declaration.definition)?;
-        self.reserve(4 * size_of::<s::DiagnosticBinding>())?;
-        self.cold()?.diagnostics.push(s::DiagnosticBinding {
-            role: s::DiagnosticRole::NonNull,
-            declaration: address,
-        });
         Ok(())
     }
 

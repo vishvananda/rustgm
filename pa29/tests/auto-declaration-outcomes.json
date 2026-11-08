@@ -1,0 +1,189 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+ "providers": [
+  {
+   "file": "spec/auto-declarations/provider.rs",
+   "sha256": "5d89008f4f5c689d1561329343f4b5a311a21e6abb59c42fb9f5f6e999ab2aa3"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "declared": "2026-11-08T12:45:17Z",
+ "development_note": "declared before any rustc or candidate run of these files. Scratch probes with main's CLI (b47b51e79, sha 557d664a; obj/parallel/auto-traits/explore) found: the provider stops export with `source UnsafeUnpin contract transport is not implemented`, without UnsafeUnpin with `source Send diagnostic contract transport is not implemented`, and without both with `source const/auto/unsafe traits require a wider explicit profile`; each client's body compiled with the provider as one source core is accepted by the frontend except unbounded-param (the E0277 text above); under versions 12 and 10 the shared lines stop at `named, associated or generic alias transport requires its wider profile`, so the older-profile controls use lines 1-57",
+ "wire_rule": "approved shapes. Version 13 only. The closed diagnostic identity table gains its second spelling: [254][u32 4]['Send'][declaration address], after the language rows (after NonNull's row when both exist), installed into the consumer's own LangItem::Send slot. No new tag or bit: the trait header's existing AUTO (4) and UNSAFE (1) flags are admitted for an exact empty auto declaration (no written parameters, supertraits, members, region captures or bounds, and a single unsized unqualified Self slot); a role-bound marker also carries its local role's exact flags (Freeze, Send, Sync and UnsafeUnpin unsafe auto, Unpin safe auto); CONST stays rejected with `source const/auto/unsafe traits require a wider explicit profile`. The exporter's UnsafeUnpin and Send fences lift under version 13 and stay verbatim below it",
+ "cases": [
+  {
+   "file": "spec/auto-declarations/send-structural.rs",
+   "provider": "spec/auto-declarations/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "f5d86d1ea5185877474aa132dd6513a0300eef3fc74c88ed5e05dea841f98d27"
+  },
+  {
+   "file": "spec/auto-declarations/sync-static.rs",
+   "provider": "spec/auto-declarations/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "99b91ee45bb4012adb15fc0dadc2d053d1ac5cb603175e2082ecfc6a9ee4f031"
+  },
+  {
+   "file": "spec/auto-declarations/local-static.rs",
+   "provider": "spec/auto-declarations/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "9c2e088c7c7383b044e4315f86906a51e47cf65065e0c07e013f339b91035468"
+  },
+  {
+   "file": "spec/auto-declarations/pin-markers.rs",
+   "provider": "spec/auto-declarations/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "82fcfc60942b64a47bb5647fe5e1b1fe9fac1e95065f83a62b6abb75636ce181"
+  },
+  {
+   "file": "spec/auto-declarations/bounded-param.rs",
+   "provider": "spec/auto-declarations/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "8ece4460295a8d8e283fee59d1693dae16a0a9c90e62c703fb2c5a1437aa5835"
+  },
+  {
+   "file": "spec/auto-declarations/unbounded-param.rs",
+   "provider": "spec/auto-declarations/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0277: `T` cannot be sent between threads safely",
+   "rustc_observed": "E0277: the trait bound `T: Send` is not satisfied in `Pair<T>`; the declared wording is std's `rustc_on_unimplemented` message, which this provider's Send does not carry. Same code and span (obj/parallel/auto-traits/oracle/c1.log)",
+   "candidate_diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+   "sha256": "50fb04a0fa0254345fd0f07cc4afb326456db33994b3c2d2487736fa65dd7a95"
+  },
+  {
+   "file": "spec/auto-declarations/local-holder.rs",
+   "provider": "spec/auto-declarations/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "d4b636473717e941226de19f597e018cc57388182074e8967decec8eb7538de1"
+  },
+  {
+   "file": "spec/auto-declarations/answer.rs",
+   "provider": "spec/auto-declarations/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "4b1d6475dd0f985003ff0208e7991937608ca83bbb52b132ec958f4d27309f0c"
+  },
+  {
+   "file": "spec/auto-declarations/duplicate-lang.rs",
+   "provider": "spec/auto-declarations/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0152: found duplicate lang item `sync` (rustc_passes/src/lang_items.rs)",
+   "candidate_diagnostic": "compiler bindings require an explicit source-core provider",
+   "declared": "2026-11-08T12:49:06Z",
+   "note": "integrator condition 2: a client's own identity beside the provider's. A RustGM source client takes every lang item from its source core and rejects any local one by name, whatever the provider carries, so no catalog is consulted",
+   "sha256": "c5f5218d9b7e6ea717bba4cb8be66279b26036dfadbf6ea85a2c1940b6fa3795"
+  },
+  {
+   "file": "spec/auto-declarations/duplicate-send.rs",
+   "provider": "spec/auto-declarations/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "duplicate diagnostic item in crate `client`: `Send` (no code): rustc_interface/src/passes.rs:1245 computes all_diagnostic_items unconditionally, and rustc_passes/src/diagnostic_items.rs reports a name bound in two crates",
+   "candidate_diagnostic": "diagnostic identity requires its rustc_attrs source provider",
+   "declared": "2026-11-08T12:49:06Z",
+   "note": "integrator condition 2; main's frontend rejects a source client's own diagnostic item by name before any catalog lookup",
+   "sha256": "a8cd33447ed191006577e537810a4b50f55157f08aaa3d1a5f1e815ac9dbc0da"
+  }
+ ],
+ "outcome_counts": {
+  "provider": "1 export, accepted under module-bodies-v13",
+  "clients": 10,
+  "accepted_clients": 7,
+  "rejected_clients": 3,
+  "note": "11 declared outcomes: the provider export and 10 clients. The 3 rejected clients are unbounded-param (E0277), duplicate-lang (E0152) and duplicate-send (duplicate diagnostic item); the two duplicate-identity clients are the 2026-11-08T12:49:06Z amendment, oracle-run in obj/parallel/auto-traits/oracle/c1b"
+ },
+ "native": {
+  "expected": "the seven accepted clients exit 42 natively, as rustc's do"
+ },
+ "generated_controls": [
+  {
+   "control": "lines 1-57 of the provider (the sized family, LegacyReceiver, Clone, Copy and Freeze) plus `pub auto trait Custom {}`, exported under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected with `source const/auto/unsafe traits require a wider explicit profile`, verbatim as on main; under module-bodies-v13 the export is accepted"
+  },
+  {
+   "control": "lines 1-57 of the provider (the sized family, LegacyReceiver, Clone, Copy and Freeze) plus `pub unsafe auto trait Custom {}`, exported under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected with `source const/auto/unsafe traits require a wider explicit profile`, verbatim as on main; under module-bodies-v13 the export is accepted"
+  },
+  {
+   "control": "lines 1-57 of the provider (the sized family, LegacyReceiver, Clone, Copy and Freeze) plus `#[rustc_diagnostic_item = \"Send\"] pub unsafe auto trait Send {}`, exported under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected with `source Send diagnostic contract transport is not implemented`, verbatim as on main; under module-bodies-v13 the export is accepted"
+  },
+  {
+   "control": "lines 1-57 of the provider (the sized family, LegacyReceiver, Clone, Copy and Freeze) plus `#[lang = \"unsafe_unpin\"] pub unsafe auto trait UnsafeUnpin {}`, exported under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected with `source UnsafeUnpin contract transport is not implemented`, verbatim as on main; under module-bodies-v13 the export is accepted"
+  },
+  {
+   "control": "lines 1-57 of the provider (the sized family, LegacyReceiver, Clone, Copy and Freeze) plus `#[lang = \"sync\"] pub unsafe auto trait Sync {}`, exported under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected with `source role requires a wider explicit source profile`, verbatim as on main; under module-bodies-v13 the export is accepted"
+  },
+  {
+   "control": "lines 1-57 of the provider (the sized family, LegacyReceiver, Clone, Copy and Freeze) plus `#[lang = \"unpin\"] pub auto trait Unpin {}`, exported under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected with `source role requires a wider explicit source profile`, verbatim as on main; under module-bodies-v13 the export is accepted"
+  },
+  {
+   "control": "spec/static-sync's plain-static client against its own provider, which declares no `sync` item",
+   "expected": "still rejected with `requires `sync` lang_item`, as rustc rejects it"
+  }
+ ],
+ "wire_controls": [
+  {
+   "control": "honest packet",
+   "expected": "one 254 row spelled Send, after the language rows; spelled role rows for sync, unsafe_unpin and unpin and Freeze's compact role; Send, Sync, UnsafeUnpin and Freeze carry UNSAFE and AUTO, Unpin, UnwindSafe and RefUnwindSafe carry AUTO alone; every strict prefix fails to decode"
+  },
+  {
+   "control": "AUTO set on Add's trait header (a defaulted parameter and two members)",
+   "expected": "rejected with `source auto trait requires its exact empty auto declaration`"
+  },
+  {
+   "control": "UNSAFE cleared on Sync's trait header",
+   "expected": "rejected with `source Sync role requires its exact auto declaration flags`"
+  },
+  {
+   "control": "UNSAFE set on Unpin's trait header",
+   "expected": "rejected with `source Unpin role requires its exact auto declaration flags`"
+  },
+  {
+   "control": "AUTO cleared on Send's trait header",
+   "expected": "rejected with `imported Send diagnostic item requires its unsafe auto trait declaration`"
+  },
+  {
+   "control": "the 254 Send row's address moved to the Raw struct",
+   "expected": "rejected with `imported Send diagnostic item requires its unsafe auto trait declaration`"
+  },
+  {
+   "control": "the 254 Send row duplicated, with the role column's count changed to match",
+   "expected": "rejected with `duplicate source diagnostic identity`"
+  },
+  {
+   "control": "the spelling Send changed to Senx",
+   "expected": "rejected with `unknown source diagnostic identity spelling`"
+  },
+  {
+   "control": "the 254 Send row deleted, with the role column's count changed to match",
+   "expected": "accepted: Send is then an ordinary custom auto trait; the answer client is accepted"
+  }
+ ],
+ "amendments": [
+  {
+   "declared": "2026-11-08T12:49:06Z",
+   "change": "two duplicate-identity clients added (integrator condition 2), declared after main-CLI probes of their bodies against spec/static-sync's packet (obj/parallel/auto-traits/explore/dup) and before any rustc or candidate run of these files",
+   "sha256": {
+    "duplicate-lang.rs": "c5f5218d9b7e6ea717bba4cb8be66279b26036dfadbf6ea85a2c1940b6fa3795",
+    "duplicate-send.rs": "a8cd33447ed191006577e537810a4b50f55157f08aaa3d1a5f1e815ac9dbc0da"
+   }
+  }
+ ]
+}

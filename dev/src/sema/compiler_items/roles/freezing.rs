@@ -82,7 +82,7 @@ pub(crate) fn predicate(
         crate::support::bindings::LangItem::UnsafeUnpin,
     ] {
         if catalog
-            .language(role)
+            .auto_marker(role, false)?
             .is_some_and(|d| d.definition.0 == application_item.0)
         {
             selected = Some(role);
@@ -92,7 +92,7 @@ pub(crate) fn predicate(
         return Ok(false);
     };
     let declaration = catalog
-        .language(role)
+        .auto_marker(role, false)?
         .ok_or("source auto trait disappeared")?;
     let application = facts
         .types
@@ -101,7 +101,7 @@ pub(crate) fn predicate(
     if application.item.0 != declaration.definition.0 {
         return Ok(false);
     }
-    catalog.validated_language(role)?;
+    catalog.auto_marker(role, true)?;
     Ok(facts
         .types
         .arguments(application.arguments)

@@ -81,8 +81,88 @@ pub(super) fn freeze(
     header: &s::TraitHeader,
     work: &mut Work,
 ) -> Result<(), &'static str> {
+    let exact = header.flags.bits() == (s::TraitFlags::UNSAFE | s::TraitFlags::AUTO);
+    empty_auto(rows, headers, header, exact, &FREEZE, work)
+}
+
+/// A role-bound auto marker keeps its local role's exact unsafety
+/// (`compiler_items::roles`), and is rejected by name when it changes it.
+#[derive(Clone, Copy)]
+pub(super) struct Marker {
+    unsafe_: bool,
+    message: &'static str,
+}
+/// Send, Sync, Unpin and `UnsafeUnpin`, in `Bindings::markers` order.
+pub(super) const MARKERS: [Marker; 4] = [
+    Marker {
+        unsafe_: true,
+        message: "source Send role requires its exact auto declaration flags",
+    },
+    Marker {
+        unsafe_: true,
+        message: "source Sync role requires its exact auto declaration flags",
+    },
+    Marker {
+        unsafe_: false,
+        message: "source Unpin role requires its exact auto declaration flags",
+    },
+    Marker {
+        unsafe_: true,
+        message: "source UnsafeUnpin role requires its exact auto declaration flags",
+    },
+];
+
+/// Version thirteen: any auto trait, re-proved as rustc's empty auto
+/// declaration (E0567, E0568, E0380): no written parameters, supertraits,
+/// members, region captures or bounds, and its own unsized Self.
+pub(super) fn automatic(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    header: &s::TraitHeader,
+    marker: Option<Marker>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let flags = header.flags.bits();
+    let exact = flags & s::TraitFlags::AUTO != 0
+        && flags & !(s::TraitFlags::UNSAFE | s::TraitFlags::AUTO) == 0;
+    empty_auto(rows, headers, header, exact, &AUTOMATIC, work)?;
+    match marker {
+        Some(marker) if (flags & s::TraitFlags::UNSAFE != 0) != marker.unsafe_ => {
+            Err(marker.message)
+        }
+        _ => Ok(()),
+    }
+}
+
+/// The diagnostics of one empty-auto-declaration check.
+struct EmptyAuto {
+    shape: &'static str,
+    self_type: &'static str,
+    slot: &'static str,
+    parameter: &'static str,
+}
+const FREEZE: EmptyAuto = EmptyAuto {
+    shape: "source Freeze requires its exact empty unsafe auto declaration",
+    self_type: "source Freeze requires its actual Self slot",
+    slot: "source Freeze Self slot is absent",
+    parameter: "source Freeze changed its unsized, unqualified Self parameter",
+};
+const AUTOMATIC: EmptyAuto = EmptyAuto {
+    shape: "source auto trait requires its exact empty auto declaration",
+    self_type: "source auto trait requires its actual Self slot",
+    slot: "source auto trait Self slot is absent",
+    parameter: "source auto trait changed its unsized, unqualified Self parameter",
+};
+fn empty_auto(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    header: &s::TraitHeader,
+    flags: bool,
+    texts: &EmptyAuto,
+    work: &mut Work,
+) -> Result<(), &'static str> {
     work.charge(8)?;
-    if header.flags.bits() != (s::TraitFlags::UNSAFE | s::TraitFlags::AUTO)
+    if !flags
         || header.region_captures != 0
         || !header.region_bounds.slice(&rows.region_bounds)?.is_empty()
         || header.written_parameters != 0
@@ -95,22 +175,19 @@ pub(super) fn freeze(
             .is_empty()
         || headers.scopes().complete_slots(header.scope, work)? != 1
     {
-        return Err("source Freeze requires its exact empty unsafe auto declaration");
+        return Err(texts.shape);
     }
     let Some(s::Type::Parameter(slot)) = rows.types.get(header.self_type.0 as usize) else {
-        return Err("source Freeze requires its actual Self slot");
+        return Err(texts.self_type);
     };
-    let slot = rows
-        .slots
-        .get(slot.0 as usize)
-        .ok_or("source Freeze Self slot is absent")?;
+    let slot = rows.slots.get(slot.0 as usize).ok_or(texts.slot)?;
     if slot.owner != header.self_definition
         || slot.definition != Some(header.self_definition)
         || slot.ordinal != 0
         || slot.index != 0
         || !matches!(slot.kind, s::ParameterKind::Type { sized: None })
     {
-        return Err("source Freeze changed its unsized, unqualified Self parameter");
+        return Err(texts.parameter);
     }
     Ok(())
 }

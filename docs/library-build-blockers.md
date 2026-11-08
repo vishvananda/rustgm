@@ -5,6 +5,28 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [auto traits](parallel/auto-traits.md), first commit (C1), transports
+core's auto-trait declarations in version 13 with no new tag or bit:
+
+- An exact empty auto declaration keeps its `AUTO` and `UNSAFE` flags.
+- Each role-bound marker re-proves its local role's flags.
+- `Send`'s diagnostic identity is the second spelling of role row 254.
+
+A source client now proves imported Freeze, Send, Sync, Unpin and
+UnsafeUnpin structurally through the source core's role rule. Its marker
+bounds are paid from the installed header budget. The flip survey changes
+only the new packet's outcomes, all rejected→accepted as rustc accepts them.
+
+- Seven clients exit 42 natively. An unbounded parameter (E0277), a client's
+  own `sync` lang item (E0152) and its own `Send` diagnostic item are
+  rejected.
+- Open in this item:
+  - C2: auto impls, the `freeze_impls` gate for a client impl of an imported
+    Freeze, and imported custom auto traits ("imported custom automatic
+    trait structural profile is not implemented").
+  - C3: non-auto negative impls, and plain unsafe traits and impls.
+- `dyn Trait + Send` waits on Lane B's object tag 15.
+
 Lane A [census batch 13](parallel/census-batch13.md) repairs census 13's
 record and records rustc witnesses for six superseded PA31 fixtures, on main
 `825f443a8`. Census 14 (`188a5350`, from `7ca25fb64`) checks 42,310

@@ -856,6 +856,55 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     - Lane A repairs it next: a defaulted impl trait argument is checked as
       if it were written. It first locates the divergence.
 
+- **During Lane C's [auto traits](parallel/auto-traits.md) slice (item 5,
+  C1)**, 2026-11-08.
+  - **Wire shape.** There is no new tag or bit.
+    - The trait header's `AUTO` and `UNSAFE` flags are admitted only for an
+      exact empty auto declaration. A role-bound marker keeps its local
+      role's exact flags. `CONST` stays rejected.
+    - `Send`'s diagnostic identity is role row 254's second closed spelling,
+      installed in the consumer's own `Send` slot.
+    - UnwindSafe and RefUnwindSafe get no identity (Q2).
+    - Why a second 254 spelling rather than treating imported `Send` as a
+      custom auto trait: one role path (object markers, the census
+      classification, `source_auto_kind`) for a local and an imported core.
+      Each new spelling of the closed table needs its own approval; this is
+      `Send`'s.
+    - A client's own `#[lang = "sync"]` or `Send` diagnostic beside an
+      imported one is rejected by name before any catalog lookup (rustc's
+      E0152), never by whichever catalog answers first.
+  - **Item 5's scope**, decided before C1: three commits. C1 covers
+    declarations and roles, C2 auto impls and the structural selection lift,
+    and C3 non-auto negative impls and plain unsafe traits and impls.
+    - Non-auto negatives stay in item 5, since whole-packet validation means
+      core cannot export without them.
+    - Auto impls of a trait from another artifact are fenced by name until
+      item 9.
+    - Specialized positive auto impls follow rustc's root-type rule: an impl
+      for `Foo<u8>` leaves `Foo<u16>` without an auto candidate.
+  - **Auto-marker accessor.** `Catalog::auto_marker` answers only the five
+    markers, in providers and clients. `language()` is not widened.
+    - It is used at four functions in `selection/search/freezing.rs`, at
+      `validation.rs::require_shared_static_sync`, and at the body evidence
+      consumer `roles/freezing.rs::predicate`. The last was found while the
+      declared clients were being made to pass, and was approved.
+    - Every remaining `language(...)` caller for a marker is either
+      provider-only by design or deferred to C2 (`freeze_impls` in
+      `validate_source_impl_policy`), as listed in the slice document.
+  - **Payer.** A client's marker bound is paid by the installed header budget
+    (`charge_source_headers`), as `classify_waiting_materialization` already
+    splits `Source` and `Imported` origins. A source client never has the
+    completed local header producer that `source_payments` requires.
+  - **Flip survey.** Across 31 pa29 providers, 93 exports and 1,035 runs,
+    only the new packet changes, all rejected→accepted as rustc accepts. The
+    30 existing packets, each of which exports Freeze, are byte-identical.
+  - **Recorded open items, unchanged:**
+    - the same-packet same-head coherence pair limit (`contract_completion.rs`,
+      Lane C);
+    - `may_dangle` (frontend dropck; it blocks alloc, not core);
+    - C3's `&T` negative-coherence local limit (selection);
+    - `pub const` export, which returns with item 5b.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

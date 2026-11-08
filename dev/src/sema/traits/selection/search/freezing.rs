@@ -1,7 +1,7 @@
 //! Actual source Freeze keeps canonical identity through every structural child.
 use super::{Action, Decision, Declarations, Frame, Goal, Node, Search, Source, inference};
 use crate::{
-    resolve::model::DefId,
+    resolve::{body_origin::DeclarationOrigin, model::DefId},
     support::{bindings::LangItem, constness::Constness},
     types::{
         GenericArgs, ItemId,
@@ -16,21 +16,55 @@ pub(super) fn bound(facts: &mut Declarations, marker: AutoTrait) -> Result<Bound
         .source_bindings
         .as_deref()
         .ok_or("source Freeze requires actual source bindings")?
-        .validated_language(role(marker).ok_or("source auto trait marker is not represented")?)?
+        .auto_marker(
+            role(marker).ok_or("source auto trait marker is not represented")?,
+            true,
+        )?
         .ok_or("source Freeze declaration is absent")?;
-    let payments =
-        crate::sema::header_attributes::source_payments(facts.must_use_contracts.as_deref())
+    let application = Application {
+        item: ItemId(declaration.definition.0),
+        arguments: GenericArgs::EMPTY,
+    };
+    Ok(Bound::Trait(match declaration.origin {
+        DeclarationOrigin::Source(_) => {
+            let payments = crate::sema::header_attributes::source_payments(
+                facts.must_use_contracts.as_deref(),
+            )
             .map_err(|e| e.to_string())?;
-    Ok(Bound::Trait(
-        facts.types.intern_trait_application_observed::<true>(
-            Application {
-                item: ItemId(declaration.definition.0),
-                arguments: GenericArgs::EMPTY,
-            },
-            &|steps, bytes| payments.charge(steps, bytes),
-        )?,
-    ))
+            facts
+                .types
+                .intern_trait_application_observed::<true>(application, &|steps, bytes| {
+                    payments.charge(steps, bytes)
+                })?
+        }
+        DeclarationOrigin::Imported(_) => imported_application(facts, application)?,
+    }))
 }
+/// A source client has no completed local header producer. Its imported
+/// marker's application is paid by the installed header budget, as other
+/// imported source roles' selection payloads are: exactly the work and bytes
+/// its observed interning attempted, so a repeated application pays only its
+/// lookup and the five markers retain at most five rows.
+fn imported_application(
+    facts: &mut Declarations,
+    application: Application,
+) -> Result<crate::types::traits::ApplicationId, String> {
+    let attempted = std::cell::Cell::new((0_usize, 0_usize));
+    let application =
+        facts
+            .types
+            .intern_trait_application_observed::<true>(application, &|steps, bytes| {
+                let (work, retained) = attempted.get();
+                attempted.set((work.saturating_add(steps), retained.saturating_add(bytes)));
+                Ok(())
+            })?;
+    let (steps, bytes) = attempted.get();
+    crate::sema::crates::charge_source_headers(facts, steps, bytes).map_err(|e| e.to_string())?;
+    Ok(application)
+}
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/client_marker_payments.rs"]
+mod payment_tests;
 /// The actual catalog role of a source trait declaration, never its spelling.
 /// Only markers with an existing object meaning are represented; callers
 /// separately require that declaration's own `auto` header.
@@ -40,7 +74,7 @@ pub(in crate::sema) fn object_marker(facts: &Declarations, definition: DefId) ->
         .into_iter()
         .find(|&marker| {
             role(marker)
-                .and_then(|role| catalog.language(role))
+                .and_then(|role| catalog.auto_marker(role, false).ok().flatten())
                 .is_some_and(|declaration| declaration.definition == definition)
         })
 }
@@ -64,12 +98,12 @@ impl Search<'_> {
         ] {
             let role = role(marker).ok_or("source auto trait marker is not represented")?;
             if catalog
-                .language(role)
-                .is_none_or(|d| d.definition != DefId(item.0))
+                .auto_marker(role, false)?
+                .is_none_or(|declaration| declaration.definition != DefId(item.0))
             {
                 continue;
             }
-            catalog.validated_language(role)?;
+            catalog.auto_marker(role, true)?;
             if !arguments.is_empty() || goal.constness() != Some(Constness::Ordinary) {
                 return Err("source auto trait requires an ordinary complete application".into());
             }
@@ -199,7 +233,7 @@ pub(super) fn has_source(facts: &Declarations, marker: AutoTrait) -> bool {
         facts
             .source_bindings
             .as_deref()
-            .and_then(|c| c.language(role))
+            .and_then(|c| c.auto_marker(role, false).ok().flatten())
             .is_some()
     })
 }

@@ -444,3 +444,23 @@ pattern-type packet under `spec/nonnull-patterns/`. The packet holds:
 Amendments are recorded beside the declarations they amend, each before the
 run it governs. The `crate_linking::nonnull_patterns` integration controls
 consume it.
+
+`auto-declaration-outcomes.json` freezes the version-thirteen auto-trait
+declaration packet under `spec/auto-declarations/`. The packet holds:
+
+- core's `Send`, `Sync`, `UnsafeUnpin`, `Unpin`, `UnwindSafe` and
+  `RefUnwindSafe` declarations, and three nominals whose auto traits follow
+  their fields;
+- seven clients that rustc accepts, proving imported markers structurally,
+  from a caller bound and for statics, and three opponents: an unbounded
+  parameter (E0277) and a client's own `sync` lang item or `Send` diagnostic
+  item (E0152 and the duplicate diagnostic item error);
+- generated controls: six older-profile declaration gates, and the
+  static-sync client without a `sync` item;
+- wire controls: `AUTO` set on a trait with members, each role-bound marker's
+  unsafety flipped, `AUTO` cleared on `Send`, and the 254 `Send` row moved to a
+  struct, duplicated, respelled and deleted.
+
+Amendments are recorded beside the declarations they amend, each before the
+run it governs. The `crate_linking::marker_transport` integration controls and
+the `freezing::payment_tests` private controls consume it.
