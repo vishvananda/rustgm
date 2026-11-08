@@ -1,0 +1,144 @@
+{
+ "schema": 1,
+ "kind": "additive reference corrections; every superseded declaration and fixture named here is unchanged",
+ "recorded": "2026-11-08, census batch 13 item 1b",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+ "witness_provenance": "obj/parallel/census-batch13/witness/witness.json (disposable; this record copies its summary)",
+ "rule": "rustc 1.98.0's type_allowed_to_implement_copy (compiler/rustc_trait_selection/src/traits/misc.rs) returns NotAnAdt for a tuple or fn pointer target, which visit_implementation_of_copy reports as E0206; copy_clone_conditions (traits/select/mod.rs) gives both builtin Copy and Clone, so a written Clone impl for one is ambiguous, E0283. See pa31/tests/spec/copy-impl-targets/.",
+ "packet": "pa31/tests/spec/pointer-composition",
+ "corrections": [
+  {
+   "declaration": {
+    "path": "pa31/tests/spec/pointer-composition/source-profile-predictions.json",
+    "sha256": "01682f00e2199bc07c4fc9587dc900c3d540258afd650b9b058da0a1583586fd"
+   },
+   "declaration_state": "actual minimal source profile predictions before first candidate execution (d2cb334b5)",
+   "fixture": {
+    "path": "pa31/tests/spec/pointer-composition/source-profile-positive.rs",
+    "sha256": "80f856d89a97d65e0b16b9148464acfcc122681f779d2879429144346c869d0c"
+   },
+   "predicted_status": 0,
+   "witnessed": [
+    {
+     "edition": 2024,
+     "env": {
+      "RUSTC_BOOTSTRAP": "1"
+     },
+     "argv": [
+      "rustc",
+      "--edition=2024",
+      "--target=x86_64-unknown-linux-gnu",
+      "--crate-type=lib",
+      "--emit=metadata",
+      "-Cpanic=abort",
+      "-Copt-level=0",
+      "-Coverflow-checks=on",
+      "-Cdebug-assertions=off",
+      "pa31/tests/spec/pointer-composition/source-profile-positive.rs"
+     ],
+     "status": 1,
+     "errors": [
+      {
+       "code": "E0206",
+       "message": "the trait `Copy` cannot be implemented for this type",
+       "span": "pa31/tests/spec/pointer-composition/source-profile-positive.rs:187:57"
+      },
+      {
+       "code": "E0283",
+       "message": "type annotations needed: cannot satisfy `(): Clone`",
+       "span": "pa31/tests/spec/pointer-composition/source-profile-positive.rs:187:16"
+      }
+     ]
+    }
+   ],
+   "finding": "the written `impl Clone for ()` and `impl Copy for ()` at line 187 are rejected (E0206, E0283); the prediction was wrong",
+   "successor": {
+    "declaration": {
+     "path": "pa31/tests/spec/pointer-composition/source-profile-v2-predictions.json",
+     "sha256": "fa04e570a1447eec86718670219aaaa85fbf2e31a2f3c8ca9197f2901a910df8"
+    },
+    "fixture": {
+     "path": "pa31/tests/spec/pointer-composition/source-profile-valid.rs",
+     "sha256": "ba29678048800c667fa55768f329a5e92b26ccf8af27318e645dade0b54174d2"
+    },
+    "predicted_status": 0,
+    "witness": "docs/pa28-raw-pointer-composition.md, \"Independent observations and scope\": the corrected profile matches its independent predictions (6832f2a69 removed the tuple Copy setup)"
+   }
+  },
+  {
+   "declaration": {
+    "path": "pa31/tests/spec/pointer-composition/source-profile-predictions.json",
+    "sha256": "01682f00e2199bc07c4fc9587dc900c3d540258afd650b9b058da0a1583586fd"
+   },
+   "fixture": {
+    "path": "pa31/tests/spec/pointer-composition/source-profile-wrong-signature.rs",
+    "sha256": "04a3e730c6218ac4539d130a58065d944854ec21efef6e9ebe7c916ff9f6c68f"
+   },
+   "predicted_status": 1,
+   "witnessed": [
+    {
+     "edition": 2024,
+     "env": {
+      "RUSTC_BOOTSTRAP": "1"
+     },
+     "argv": [
+      "rustc",
+      "--edition=2024",
+      "--target=x86_64-unknown-linux-gnu",
+      "--crate-type=lib",
+      "--emit=metadata",
+      "-Cpanic=abort",
+      "-Copt-level=0",
+      "-Coverflow-checks=on",
+      "-Cdebug-assertions=off",
+      "pa31/tests/spec/pointer-composition/source-profile-wrong-signature.rs"
+     ],
+     "status": 1,
+     "errors": [
+      {
+       "code": "E0206",
+       "message": "the trait `Copy` cannot be implemented for this type",
+       "span": "pa31/tests/spec/pointer-composition/source-profile-wrong-signature.rs:187:57"
+      },
+      {
+       "code": "E0308",
+       "message": "intrinsic has wrong type",
+       "span": "pa31/tests/spec/pointer-composition/source-profile-wrong-signature.rs:59:69"
+      },
+      {
+       "code": "E0283",
+       "message": "type annotations needed: cannot satisfy `(): Clone`",
+       "span": "pa31/tests/spec/pointer-composition/source-profile-wrong-signature.rs:187:16"
+      },
+      {
+       "code": "E0271",
+       "message": "type mismatch resolving `<T as Pointee>::Metadata == *const impl Thin`",
+       "span": "pa31/tests/spec/pointer-composition/source-profile-wrong-signature.rs:83:5"
+      },
+      {
+       "code": "E0271",
+       "message": "type mismatch resolving `<T as Pointee>::Metadata == *mut impl Thin`",
+       "span": "pa31/tests/spec/pointer-composition/source-profile-wrong-signature.rs:96:5"
+      }
+     ]
+    }
+   ],
+   "finding": "the predicted status holds, and its intended `intrinsic has wrong type` (E0308) is witnessed, but the rejection also includes the invalid tuple setup at line 187 (E0206, E0283)",
+   "successor": {
+    "declaration": {
+     "path": "pa31/tests/spec/pointer-composition/source-profile-v2-predictions.json",
+     "sha256": "fa04e570a1447eec86718670219aaaa85fbf2e31a2f3c8ca9197f2901a910df8"
+    },
+    "fixture": {
+     "path": "pa31/tests/spec/pointer-composition/source-profile-invalid-signature.rs",
+     "sha256": "07c7c8d9c13267af0338ba981bd404ab1b98548b5a5b969b45c68968568b42ce"
+    },
+    "predicted_status": 1
+   }
+  }
+ ],
+ "cross_references": [
+  "docs/pa28-raw-pointer-composition.md:74 records this disagreement; the original raw rustc output is no longer retained, so this witness replaces it"
+ ]
+}

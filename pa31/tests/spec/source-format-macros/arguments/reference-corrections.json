@@ -1,0 +1,484 @@
+{
+ "schema": 1,
+ "kind": "additive reference corrections; every superseded declaration and fixture named here is unchanged",
+ "recorded": "2026-11-08, census batch 13 item 1b",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+ "witness_provenance": "obj/parallel/census-batch13/witness/witness.json (disposable; this record copies its summary)",
+ "rule": "rustc 1.98.0's type_allowed_to_implement_copy (compiler/rustc_trait_selection/src/traits/misc.rs) returns NotAnAdt for a tuple or fn pointer target, which visit_implementation_of_copy reports as E0206; copy_clone_conditions (traits/select/mod.rs) gives both builtin Copy and Clone, so a written Clone impl for one is ambiguous, E0283. See pa31/tests/spec/copy-impl-targets/.",
+ "packet": "pa31/tests/spec/source-format-macros/arguments",
+ "corrections": [
+  {
+   "declaration": {
+    "path": "pa31/tests/spec/source-format-macros/arguments/constructor-contract.json",
+    "sha256": "196314a490a42391a20abc66722a645678331f2086eba0814b8f31bd72a5705b"
+   },
+   "declaration_state": "frozen pre-observation constructor protocol",
+   "recorded_metadata": {
+    "2021": 0,
+    "2024": 0
+   },
+   "fixture": {
+    "path": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs",
+    "sha256": "61a2fe38b05cd8cfa5953c942d75989e170f332b607ef470b01294c22a7ce8f7"
+   },
+   "witnessed_recorded_environment": [
+    {
+     "edition": 2021,
+     "env": {},
+     "argv": [
+      "rustc",
+      "--edition=2021",
+      "--crate-type=lib",
+      "--target=x86_64-unknown-linux-gnu",
+      "-Cpanic=abort",
+      "-Coverflow-checks=yes",
+      "--cap-lints=allow",
+      "--crate-name",
+      "source_argument_constructor",
+      "--emit=metadata",
+      "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs"
+     ],
+     "status": 1,
+     "errors": [
+      {
+       "code": null,
+       "message": "cannot find derive macro `Copy` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:305:10"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Clone` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:305:16"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Copy` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:329:10"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Clone` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:329:16"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Copy` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:352:10"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Clone` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:352:16"
+      },
+      {
+       "code": "E0554",
+       "message": "`#![feature]` may not be used on the stable release channel",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:1:1"
+      },
+      {
+       "code": null,
+       "message": "trait has missing const stability attribute",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:432:16"
+      },
+      {
+       "code": "E0206",
+       "message": "the trait `Copy` cannot be implemented for this type",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:302:19"
+      },
+      {
+       "code": "E0283",
+       "message": "type annotations needed: cannot satisfy `unsafe fn(NonNull<()>, &mut Formatter<'b>) -> Result<(), Error>: Clone`",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:301:20"
+      },
+      {
+       "code": "E0034",
+       "message": "multiple applicable items in scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:205:34"
+      },
+      {
+       "code": "E0508",
+       "message": "cannot move out of type `[Argument<'_>; 2]`, a non-copy array",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:411:37"
+      }
+     ]
+    },
+    {
+     "edition": 2024,
+     "env": {},
+     "argv": [
+      "rustc",
+      "--edition=2024",
+      "--crate-type=lib",
+      "--target=x86_64-unknown-linux-gnu",
+      "-Cpanic=abort",
+      "-Coverflow-checks=yes",
+      "--cap-lints=allow",
+      "--crate-name",
+      "source_argument_constructor",
+      "--emit=metadata",
+      "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs"
+     ],
+     "status": 1,
+     "errors": [
+      {
+       "code": null,
+       "message": "cannot find derive macro `Copy` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:305:10"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Clone` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:305:16"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Copy` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:329:10"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Clone` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:329:16"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Copy` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:352:10"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Clone` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:352:16"
+      },
+      {
+       "code": "E0554",
+       "message": "`#![feature]` may not be used on the stable release channel",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:1:1"
+      },
+      {
+       "code": null,
+       "message": "trait has missing const stability attribute",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:432:16"
+      },
+      {
+       "code": "E0206",
+       "message": "the trait `Copy` cannot be implemented for this type",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:302:19"
+      },
+      {
+       "code": "E0283",
+       "message": "type annotations needed: cannot satisfy `unsafe fn(NonNull<()>, &mut Formatter<'b>) -> Result<(), Error>: Clone`",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:301:20"
+      },
+      {
+       "code": "E0034",
+       "message": "multiple applicable items in scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:205:34"
+      },
+      {
+       "code": "E0508",
+       "message": "cannot move out of type `[Argument<'_>; 2]`, a non-copy array",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:411:37"
+      }
+     ]
+    }
+   ],
+   "witnessed": [
+    {
+     "edition": 2021,
+     "env": {
+      "RUSTC_BOOTSTRAP": "1"
+     },
+     "argv": [
+      "rustc",
+      "--edition=2021",
+      "--crate-type=lib",
+      "--target=x86_64-unknown-linux-gnu",
+      "-Cpanic=abort",
+      "-Coverflow-checks=yes",
+      "--cap-lints=allow",
+      "--crate-name",
+      "source_argument_constructor",
+      "--emit=metadata",
+      "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs"
+     ],
+     "status": 1,
+     "errors": [
+      {
+       "code": null,
+       "message": "cannot find derive macro `Copy` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:305:10"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Clone` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:305:16"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Copy` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:329:10"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Clone` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:329:16"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Copy` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:352:10"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Clone` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:352:16"
+      },
+      {
+       "code": null,
+       "message": "trait has missing const stability attribute",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:432:16"
+      },
+      {
+       "code": "E0206",
+       "message": "the trait `Copy` cannot be implemented for this type",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:302:19"
+      },
+      {
+       "code": "E0283",
+       "message": "type annotations needed: cannot satisfy `unsafe fn(NonNull<()>, &mut Formatter<'b>) -> Result<(), Error>: Clone`",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:301:20"
+      },
+      {
+       "code": "E0034",
+       "message": "multiple applicable items in scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:205:34"
+      },
+      {
+       "code": "E0508",
+       "message": "cannot move out of type `[Argument<'_>; 2]`, a non-copy array",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:411:37"
+      }
+     ]
+    },
+    {
+     "edition": 2024,
+     "env": {
+      "RUSTC_BOOTSTRAP": "1"
+     },
+     "argv": [
+      "rustc",
+      "--edition=2024",
+      "--crate-type=lib",
+      "--target=x86_64-unknown-linux-gnu",
+      "-Cpanic=abort",
+      "-Coverflow-checks=yes",
+      "--cap-lints=allow",
+      "--crate-name",
+      "source_argument_constructor",
+      "--emit=metadata",
+      "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs"
+     ],
+     "status": 1,
+     "errors": [
+      {
+       "code": null,
+       "message": "cannot find derive macro `Copy` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:305:10"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Clone` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:305:16"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Copy` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:329:10"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Clone` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:329:16"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Copy` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:352:10"
+      },
+      {
+       "code": null,
+       "message": "cannot find derive macro `Clone` in this scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:352:16"
+      },
+      {
+       "code": null,
+       "message": "trait has missing const stability attribute",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:432:16"
+      },
+      {
+       "code": "E0206",
+       "message": "the trait `Copy` cannot be implemented for this type",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:302:19"
+      },
+      {
+       "code": "E0283",
+       "message": "type annotations needed: cannot satisfy `unsafe fn(NonNull<()>, &mut Formatter<'b>) -> Result<(), Error>: Clone`",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:301:20"
+      },
+      {
+       "code": "E0034",
+       "message": "multiple applicable items in scope",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:205:34"
+      },
+      {
+       "code": "E0508",
+       "message": "cannot move out of type `[Argument<'_>; 2]`, a non-copy array",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs:411:37"
+      }
+     ]
+    }
+   ],
+   "finding": "rejected in both editions. Without RUSTC_BOOTSTRAP, as the contract records no environment, rustc reports 12 errors; with it, the same 11 without E0554. Besides the missing derive macros and const stability, the written fn-pointer `impl Copy` at line 302 (E0206), its Clone impl at line 301 (E0283), E0034 at line 205 and E0508 at line 411 are rejected",
+   "successor": {
+    "declaration": {
+     "path": "pa31/tests/spec/source-format-macros/arguments/constructor-complete-contract.json",
+     "sha256": "e9e8cbef4b211c97f18b746770acb7ea83a6ada049e0da9fc4f3c0a2e43ddb00"
+    }
+   }
+  },
+  {
+   "declaration": {
+    "path": "pa31/tests/spec/source-format-macros/arguments/constructor-complete-contract.json",
+    "sha256": "e9e8cbef4b211c97f18b746770acb7ea83a6ada049e0da9fc4f3c0a2e43ddb00"
+   },
+   "declaration_state": "corrected setup frozen before observation",
+   "recorded_metadata": {
+    "2021": 0,
+    "2024": 0
+   },
+   "fixture": {
+    "path": "pa31/tests/spec/source-format-macros/arguments/constructor-complete.rs",
+    "sha256": "1676e89d2dbb30646fa4fac6ea7e827bac9aa5e01151a532fff155d524dc9e79"
+   },
+   "witnessed": [
+    {
+     "edition": 2021,
+     "env": {
+      "RUSTC_BOOTSTRAP": "1"
+     },
+     "argv": [
+      "rustc",
+      "--edition=2021",
+      "--crate-type=lib",
+      "--target=x86_64-unknown-linux-gnu",
+      "-Cpanic=abort",
+      "-Coverflow-checks=yes",
+      "--cap-lints=allow",
+      "--crate-name",
+      "source_argument_constructor",
+      "--emit=metadata",
+      "pa31/tests/spec/source-format-macros/arguments/constructor-complete.rs"
+     ],
+     "status": 1,
+     "errors": [
+      {
+       "code": "E0206",
+       "message": "the trait `Copy` cannot be implemented for this type",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-complete.rs:304:19"
+      },
+      {
+       "code": "E0204",
+       "message": "the trait `Copy` cannot be implemented for this type",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-complete.rs:332:6"
+      },
+      {
+       "code": "E0283",
+       "message": "type annotations needed: cannot satisfy `unsafe fn(NonNull<()>, &mut Formatter<'b>) -> Result<(), Error>: Clone`",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-complete.rs:303:20"
+      },
+      {
+       "code": "E0283",
+       "message": "type annotations needed: cannot satisfy `unsafe fn(NonNull<()>, &mut Formatter<'b>) -> Result<(), Error>: Clone`",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-complete.rs:337:9"
+      },
+      {
+       "code": "E0508",
+       "message": "cannot move out of type `[Argument<'_>; 2]`, a non-copy array",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-complete.rs:413:37"
+      }
+     ]
+    },
+    {
+     "edition": 2024,
+     "env": {
+      "RUSTC_BOOTSTRAP": "1"
+     },
+     "argv": [
+      "rustc",
+      "--edition=2024",
+      "--crate-type=lib",
+      "--target=x86_64-unknown-linux-gnu",
+      "-Cpanic=abort",
+      "-Coverflow-checks=yes",
+      "--cap-lints=allow",
+      "--crate-name",
+      "source_argument_constructor",
+      "--emit=metadata",
+      "pa31/tests/spec/source-format-macros/arguments/constructor-complete.rs"
+     ],
+     "status": 1,
+     "errors": [
+      {
+       "code": "E0206",
+       "message": "the trait `Copy` cannot be implemented for this type",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-complete.rs:304:19"
+      },
+      {
+       "code": "E0204",
+       "message": "the trait `Copy` cannot be implemented for this type",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-complete.rs:332:6"
+      },
+      {
+       "code": "E0283",
+       "message": "type annotations needed: cannot satisfy `unsafe fn(NonNull<()>, &mut Formatter<'b>) -> Result<(), Error>: Clone`",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-complete.rs:303:20"
+      },
+      {
+       "code": "E0283",
+       "message": "type annotations needed: cannot satisfy `unsafe fn(NonNull<()>, &mut Formatter<'b>) -> Result<(), Error>: Clone`",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-complete.rs:337:9"
+      },
+      {
+       "code": "E0508",
+       "message": "cannot move out of type `[Argument<'_>; 2]`, a non-copy array",
+       "span": "pa31/tests/spec/source-format-macros/arguments/constructor-complete.rs:413:37"
+      }
+     ]
+    }
+   ],
+   "finding": "rejected in both editions: the written fn-pointer `impl Copy` at line 304 (E0206) and its Clone impl at line 303 (E0283), and an unrelated array Copy in the observer (E0204 at line 332, E0283 at line 337, E0508 at line 413)",
+   "successor": {
+    "declaration": {
+     "path": "pa31/tests/spec/source-format-macros/arguments/constructor-builtin-contract.json",
+     "sha256": "30cd2cb0fcb36080e1ae5c8663ed058841284b784c2fec2dd83055caf15e2f9e"
+    },
+    "note": "removes the written impls; its own predecessor record classifies this observation. The active successors constructor-real-contract.json and constructor-statement-contract.json, which dev/tests/invariants/construction_loans.rs reads, were observed matched by rustc 1.98.0 in metadata, object, link and native modes in both editions",
+    "active": [
+     {
+      "path": "pa31/tests/spec/source-format-macros/arguments/constructor-real-contract.json",
+      "sha256": "c2c39dd6da346848b483dcd48ccf65e19d919f9750de10e55afc6d632bfd870f"
+     },
+     {
+      "path": "pa31/tests/spec/source-format-macros/arguments/constructor-statement-contract.json",
+      "sha256": "5fa0ddce6ac4a9e08f5058c6768342f5cfedb6273aa437e3ff3b5ecff9c9f3cb"
+     }
+    ]
+   }
+  }
+ ],
+ "cross_references": [
+  "constructor-complete-contract.json records the observation of constructor-contract.json as \"No qualified language outcomes. E0554 is wrong runner environment; actual source also missed derive-macro imports and Drop const stability.\" That names three causes covering 8 of the 12 observed errors (E0554, six derive-macro errors and the const stability error) and omits the other four: E0206, E0283, E0034 and E0508."
+ ]
+}

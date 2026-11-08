@@ -1,0 +1,208 @@
+{
+ "schema": 1,
+ "kind": "additive reference corrections; every superseded declaration and fixture named here is unchanged",
+ "recorded": "2026-11-08, census batch 13 item 1b",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+ "witness_provenance": "obj/parallel/census-batch13/witness/witness.json (disposable; this record copies its summary)",
+ "rule": "rustc 1.98.0's type_allowed_to_implement_copy (compiler/rustc_trait_selection/src/traits/misc.rs) returns NotAnAdt for a tuple or fn pointer target, which visit_implementation_of_copy reports as E0206; copy_clone_conditions (traits/select/mod.rs) gives both builtin Copy and Clone, so a written Clone impl for one is ambiguous, E0283. See pa31/tests/spec/copy-impl-targets/.",
+ "packet": "pa31/tests/spec/unadjusted-request",
+ "corrections": [
+  {
+   "declaration": {
+    "path": "pa31/tests/spec/unadjusted-request/contract-v2.json",
+    "sha256": "90935789a1edc7dd05f0797d884b921be7d9d55474d943560a25db2839381a71"
+   },
+   "cases": {
+    "path": "pa31/tests/spec/unadjusted-request/cases-v2.tsv",
+    "sha256": "506ed1c4e4e93f15e72d5c0a5e4bd7ae92fbd5f6d8830d19fe8adb20df6722bb"
+   },
+   "declaration_state": "superseded by contract-v3, which exports the native entry as source_entry and adds its C caller; no rustc run of contract-v2 is retained",
+   "fixture": {
+    "path": "pa31/tests/spec/unadjusted-request/native-unadjusted.rs",
+    "sha256": "bc179c494a2725bd6792ade857b113c7f416773189823224598b999e834efade"
+   },
+   "recorded_rustc_status": 0,
+   "witnessed": [
+    {
+     "edition": 2021,
+     "env": {
+      "RUSTC_BOOTSTRAP": "1"
+     },
+     "argv": [
+      "rustc",
+      "--edition=2021",
+      "--crate-type=lib",
+      "--crate-name",
+      "unadjusted_abi",
+      "--emit=metadata",
+      "-Cpanic=abort",
+      "--cap-lints=allow",
+      "pa31/tests/spec/unadjusted-request/native-unadjusted.rs"
+     ],
+     "status": 1,
+     "errors": [
+      {
+       "code": "E0206",
+       "message": "the trait `Copy` cannot be implemented for this type",
+       "span": "pa31/tests/spec/unadjusted-request/native-unadjusted.rs:19:15"
+      },
+      {
+       "code": "E0283",
+       "message": "type annotations needed: cannot satisfy `extern \"unadjusted\" fn(u64) -> u64: Clone`",
+       "span": "pa31/tests/spec/unadjusted-request/native-unadjusted.rs:18:16"
+      },
+      {
+       "code": "E0600",
+       "message": "cannot apply unary operator `-` to type `f64`",
+       "span": "pa31/tests/spec/unadjusted-request/native-unadjusted.rs:28:238"
+      }
+     ]
+    },
+    {
+     "edition": 2024,
+     "env": {
+      "RUSTC_BOOTSTRAP": "1"
+     },
+     "argv": [
+      "rustc",
+      "--edition=2024",
+      "--crate-type=lib",
+      "--crate-name",
+      "unadjusted_abi",
+      "--emit=metadata",
+      "-Cpanic=abort",
+      "--cap-lints=allow",
+      "pa31/tests/spec/unadjusted-request/native-unadjusted.rs"
+     ],
+     "status": 1,
+     "errors": [
+      {
+       "code": "E0206",
+       "message": "the trait `Copy` cannot be implemented for this type",
+       "span": "pa31/tests/spec/unadjusted-request/native-unadjusted.rs:19:15"
+      },
+      {
+       "code": "E0283",
+       "message": "type annotations needed: cannot satisfy `extern \"unadjusted\" fn(u64) -> u64: Clone`",
+       "span": "pa31/tests/spec/unadjusted-request/native-unadjusted.rs:18:16"
+      },
+      {
+       "code": "E0600",
+       "message": "cannot apply unary operator `-` to type `f64`",
+       "span": "pa31/tests/spec/unadjusted-request/native-unadjusted.rs:28:238"
+      }
+     ]
+    }
+   ],
+   "finding": "rejected in both editions: the written fn-pointer `impl Copy` at line 19 (E0206), its Clone impl at line 18 (E0283) and unary minus on f64 without a Neg role at line 28 (E0600)"
+  },
+  {
+   "declaration": {
+    "path": "pa31/tests/spec/unadjusted-request/contract-v3.json",
+    "sha256": "2e7b6a4eed6ce06a07f8ee4977cbf02ead3fe4503447d6467d201c765a0de71f"
+   },
+   "cases": {
+    "path": "pa31/tests/spec/unadjusted-request/cases-v3.tsv",
+    "sha256": "9e367591aa1997690c1350ebe3d9fd5e85fb190460c14e5d512ff7144872c4e5"
+   },
+   "fixture": {
+    "path": "pa31/tests/spec/unadjusted-request/native-unadjusted-v3.rs",
+    "sha256": "ddc36b3f4e420a07e04c92b653fe83a5edfdc98fddb1d3c1d7b62c213839668b"
+   },
+   "recorded_rustc_status": 0,
+   "witnessed": [
+    {
+     "edition": 2021,
+     "env": {
+      "RUSTC_BOOTSTRAP": "1"
+     },
+     "argv": [
+      "rustc",
+      "--edition=2021",
+      "--crate-type=lib",
+      "--crate-name",
+      "unadjusted_abi",
+      "--emit=metadata",
+      "-Cpanic=abort",
+      "--cap-lints=allow",
+      "pa31/tests/spec/unadjusted-request/native-unadjusted-v3.rs"
+     ],
+     "status": 1,
+     "errors": [
+      {
+       "code": "E0206",
+       "message": "the trait `Copy` cannot be implemented for this type",
+       "span": "pa31/tests/spec/unadjusted-request/native-unadjusted-v3.rs:19:15"
+      },
+      {
+       "code": "E0283",
+       "message": "type annotations needed: cannot satisfy `extern \"unadjusted\" fn(u64) -> u64: Clone`",
+       "span": "pa31/tests/spec/unadjusted-request/native-unadjusted-v3.rs:18:16"
+      },
+      {
+       "code": "E0600",
+       "message": "cannot apply unary operator `-` to type `f64`",
+       "span": "pa31/tests/spec/unadjusted-request/native-unadjusted-v3.rs:28:279"
+      }
+     ]
+    },
+    {
+     "edition": 2024,
+     "env": {
+      "RUSTC_BOOTSTRAP": "1"
+     },
+     "argv": [
+      "rustc",
+      "--edition=2024",
+      "--crate-type=lib",
+      "--crate-name",
+      "unadjusted_abi",
+      "--emit=metadata",
+      "-Cpanic=abort",
+      "--cap-lints=allow",
+      "pa31/tests/spec/unadjusted-request/native-unadjusted-v3.rs"
+     ],
+     "status": 1,
+     "errors": [
+      {
+       "code": "E0206",
+       "message": "the trait `Copy` cannot be implemented for this type",
+       "span": "pa31/tests/spec/unadjusted-request/native-unadjusted-v3.rs:19:15"
+      },
+      {
+       "code": "E0283",
+       "message": "type annotations needed: cannot satisfy `extern \"unadjusted\" fn(u64) -> u64: Clone`",
+       "span": "pa31/tests/spec/unadjusted-request/native-unadjusted-v3.rs:18:16"
+      },
+      {
+       "code": "E0600",
+       "message": "cannot apply unary operator `-` to type `f64`",
+       "span": "pa31/tests/spec/unadjusted-request/native-unadjusted-v3.rs:28:279"
+      }
+     ]
+    }
+   ],
+   "finding": "rejected in both editions with the same three errors (E0600 at line 28). The packet's own reference run of contract-v3 observed the same disagreement before contract-v4 was frozen"
+  }
+ ],
+ "successor": {
+  "declaration": {
+   "path": "pa31/tests/spec/unadjusted-request/contract-v4.json",
+   "sha256": "5d48dbb62372dce1c110f4c531f1bb299c72dbf12dac226e4dff25d182476a62"
+  },
+  "cases": {
+   "path": "pa31/tests/spec/unadjusted-request/cases-v4.tsv",
+   "sha256": "62eef161bb4bd2fce7049f9c36eb00957a1856b0ac400fb5994cf075ecfa2603"
+  },
+  "fixture": {
+   "path": "pa31/tests/spec/unadjusted-request/native-unadjusted-v4.rs",
+   "sha256": "66f8dd7877ba5a5982a7dca95552f3446ee33a77ecc5b6ec30866d29f11c9e7e"
+  },
+  "note": "contract-v4 removes the written impls and uses positive source f64, and its reference_corrections record both causes; its reference run passed in both editions with native execution (receipt SHA-256 bc457633210feddaddc70fab53b658737b2b3f4de15d6f0f523d57909ab48795, docs/pa28-unadjusted-abi-checkpoint.md). dev/tests/invariants/unadjusted_abi.rs reads only cases-v4.tsv"
+ },
+ "cross_references": [
+  "contract-v2.json and contract-v3.json carry scalar_native.rustc_stdout \"255 18446744073709551615 80000000000000000000000000000001 1.50 -2.25 1\". Neither fixture compiles, so that output cannot come from their bytes: it is contract-v4's witnessed output (native-unadjusted-v4.rs with the C scalar observer, which passes the negative f64), copied into the superseded contracts when all four were committed together in 410394bfd.",
+  "contract-v3 also predicted macro-caller status 1; its reference run observed 0, and contract-v4 corrects it. That case has no written Copy impl and was not re-witnessed here."
+ ]
+}

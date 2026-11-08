@@ -45,3 +45,11 @@ A separate consumer-only continuation links the same two object files and
 successfully compares the actual three bytes `61 0a 62`. It repeats no language
 checks. `observations.json` records the independently observed milestone inputs
 and the corrected native-byte contract, while preserving all original hypotheses.
+
+`arguments/reference-corrections.json` records, additively, rustc 1.98.0's
+witness for `arguments/constructor-provider.rs` and
+`arguments/constructor-complete.rs`, whose frozen contracts record metadata
+status 0: both reject their written fn-pointer `impl Copy` (E0206) and its
+Clone impl (E0283), among other errors. The contracts and fixtures are
+unchanged; `constructor-builtin`, then `constructor-real` and
+`constructor-statement`, are the successors.

@@ -749,3 +749,11 @@ and written tuple and fn pointer impls (E0206) are rejected. The tuple and fn
 pointer cases are recorded gaps. Each outcome was declared before its rustc
 1.98.0 oracle, one by recorded amendment. A private invariant checks them;
 there is no graded manifest.
+
+`spec/pointer-composition/reference-corrections.json`,
+`spec/source-format-macros/arguments/reference-corrections.json` and
+`spec/unadjusted-request/reference-corrections.json` record, from census batch
+13, rustc 1.98.0's witnesses for six superseded fixtures that write tuple or
+fn-pointer Copy and Clone impls (E0206). Each names the frozen declaration, its
+recorded outcome, the witnessed result and the active successor that already
+fixes it. No superseded declaration or fixture changed.

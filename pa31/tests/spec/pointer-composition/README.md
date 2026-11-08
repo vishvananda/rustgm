@@ -28,3 +28,11 @@ core, removing only duplicate language/diagnostic ownership attributes. Its
 explicit const array/slice methods and real raw-parts calls pass independent
 metadata/object/native checks with `9 91` plus LF. This narrower companion does
 not close the full no_core source, const, borrow or metadata requirements.
+
+`reference-corrections.json` records, additively, rustc 1.98.0's witness for
+`source-profile-positive.rs` and `source-profile-wrong-signature.rs`: their
+written `impl Copy for ()` is rejected (E0206), so the frozen
+`source-profile-predictions.json` positive was wrong. The prediction files and
+fixtures are unchanged. The disagreement itself is recorded in
+[docs/pa28-raw-pointer-composition.md](../../../../docs/pa28-raw-pointer-composition.md)
+(line 74); `source-profile-valid.rs` is the successor.

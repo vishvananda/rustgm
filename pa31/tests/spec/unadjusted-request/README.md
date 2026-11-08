@@ -58,3 +58,10 @@ implemented, not changed to failures.
 
 See the [checkpoint](../../../../docs/pa28-unadjusted-abi-checkpoint.md) for exact
 evidence, compiler identity and the remaining original-library frontier.
+
+`reference-corrections.json` records, additively, rustc 1.98.0's witness for
+`native-unadjusted.rs` and `native-unadjusted-v3.rs`, which the superseded
+`contract-v2.json` and `contract-v3.json` record as status 0: both reject their
+written fn-pointer Copy and Clone impls (E0206, E0283) and unary minus on f64
+(E0600). The `rustc_stdout` those contracts carry is contract-v4's witnessed
+output. The superseded contracts, cases and fixtures are unchanged.
