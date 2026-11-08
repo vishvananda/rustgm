@@ -63,9 +63,9 @@ fn frozen_macro_metadata_outcomes_hold_for_every_case() -> Result {
     // Fifteen declarative cases, fourteen builtin-row and allowance cases,
     // fifteen re-export cases, fourteen stability cases, seventeen imported
     // panic-family, legacy-client and import-stability cases, thirteen
-    // no_std source-client cases, five variant re-export cases and four
-    // `--extern core=` cases.
-    assert!(receipt.contains("\"cases\": 97"), "{receipt}");
+    // no_std source-client cases, five variant re-export cases, four
+    // `--extern core=` cases and fifteen shim glob cases.
+    assert!(receipt.contains("\"cases\": 112"), "{receipt}");
     Ok(())
 }
 

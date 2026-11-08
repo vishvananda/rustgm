@@ -2,6 +2,7 @@
 mod bound_macro_rows;
 mod original_declarations;
 mod public_names;
+mod shim_globs;
 mod token_images;
 pub(crate) use bound_macro_rows::{
     ImportedMacro, ImportedRow, root_spelling as macro_root_spelling,
@@ -33,6 +34,7 @@ pub use consumer_inputs::ConsumerRequest;
 pub(crate) use consumer_inputs::{ConsumerInput, ConsumerReservation};
 pub(in crate::resolve) use consumer_inputs::{ReservationSeed, reserve_names};
 pub(crate) use original_declarations::Work as ReservationWork;
+pub(in crate::resolve) use shim_globs::record_module_globs;
 use std::sync::Arc;
 
 pub struct Imported {
@@ -55,6 +57,7 @@ pub struct Imported {
 struct ColdImports {
     work: original_declarations::Work,
     macros: bound_macro_rows::MacroImports,
+    globs: shim_globs::GlobImports,
 }
 impl Imported {
     pub(crate) fn has_availability(&self) -> bool {
@@ -299,6 +302,8 @@ impl Resolver<'_> {
         {
             self.import_macro_reexports(scope, artifact, artifact_index, &imported, &macros)?;
         }
+        // Glob rows see every artifact's definitions and macro re-exports.
+        self.expand_glob_reexports(&artifacts, &roots, &mut imported)?;
         self.bind_crate_aliases(external, &imported)?;
         self.facts.extern_scope = Some(external);
         imported.origins.freeze().map_err(error)?;

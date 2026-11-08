@@ -173,6 +173,9 @@ impl Interface {
         if macros.max_owner() as usize > self.dependencies.len() {
             return Err("exported macro re-export names an unknown owner");
         }
+        if macros.max_glob_owner() as usize > self.dependencies.len() {
+            return Err("exported glob re-export names an unknown owner");
+        }
         let atoms = self.atoms.saturating_add(macros.atoms());
         if atoms > MAX_COMPONENTS || macros.bytes() > super::MAX_BYTES {
             return Err("exported macros exceed combined profile budget");

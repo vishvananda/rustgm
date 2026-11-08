@@ -16,12 +16,19 @@
 //! `allow_internal_unsafe`) and adds kind 3, a semiopaque `pub macro` row: its
 //! placement and the declarative fields, list and stability. Only a table with
 //! such a row or flag writes version four.
+//!
+//! Version five keeps the version-four layout and adds kind 4, a glob
+//! re-export of a dependency module: its placement, a u32 owner (one more
+//! than a dependency index, never 0) and the target module's path in that
+//! owner. A glob row has no name; it sorts before every named row of its
+//! placement, and glob rows of one placement sort by owner and target. Only
+//! a table with a glob row writes version five.
 use super::{Interface, MAGIC, Reader, SCHEMA, Writer};
 use crate::support::{
     crates::exported_macros::{
-        BuiltinMacro, Delimiter, MAX_FEATURES, MAX_IDENTITY_BYTES, MAX_IMAGE_BYTES, MAX_MACROS,
-        MAX_NAME_BYTES, MAX_ROWS, Macro, MacroKind, Macros, ReexportMacro, Row, ScopedMacro,
-        Syntax, TokenClass,
+        BuiltinMacro, Delimiter, GlobReexport, MAX_FEATURES, MAX_IDENTITY_BYTES, MAX_IMAGE_BYTES,
+        MAX_MACROS, MAX_NAME_BYTES, MAX_ROWS, Macro, MacroKind, Macros, ReexportMacro, Row,
+        ScopedMacro, Syntax, TokenClass,
     },
     edition::Edition,
 };
@@ -30,11 +37,13 @@ const VERSION_ONE: u8 = 1;
 const VERSION_TWO: u8 = 2;
 const VERSION_THREE: u8 = 3;
 const VERSION_FOUR: u8 = 4;
+const VERSION_FIVE: u8 = 5;
 const GROUP: u8 = 0x80;
 const DECLARATIVE: u8 = 0;
 const BUILTIN: u8 = 1;
 const REEXPORT: u8 = 2;
 const SCOPED: u8 = 3;
+const GLOB: u8 = 4;
 const INTERNAL_UNSAFE: u8 = 1;
 const EDITIONS: [Edition; 4] = [
     Edition::Rust2015,
@@ -49,29 +58,34 @@ enum Entry<'a> {
     Builtin(&'a BuiltinMacro),
     Reexport(&'a ReexportMacro),
     Scoped(&'a ScopedMacro),
+    Glob(&'a GlobReexport),
 }
 impl Entry<'_> {
+    /// A glob row's empty name sorts it before every named row of its placement.
     fn key(&self) -> (&[String], &str) {
         match self {
             Self::Declarative(row) => (&[], row.name()),
             Self::Builtin(row) => (row.placement(), row.name()),
             Self::Reexport(row) => (row.placement(), row.name()),
             Self::Scoped(row) => (row.placement(), row.name()),
+            Self::Glob(row) => (row.placement(), ""),
         }
     }
 }
 
-/// Every row of the table, ordered by its unique (placement, name) key.
+/// Every row of the table, ordered by its (placement, name) key. Only glob
+/// rows share a key, and the stable sort keeps their owner and target order.
 fn merged(macros: &Macros) -> Vec<Entry<'_>> {
     let mut entries: Vec<_> = macros
-        .rows()
+        .globs()
         .iter()
-        .map(Entry::Declarative)
+        .map(Entry::Glob)
+        .chain(macros.rows().iter().map(Entry::Declarative))
         .chain(macros.builtins().iter().map(Entry::Builtin))
         .chain(macros.reexports().iter().map(Entry::Reexport))
         .chain(macros.scoped().iter().map(Entry::Scoped))
         .collect();
-    entries.sort_unstable_by(|left, right| left.key().cmp(&right.key()));
+    entries.sort_by(|left, right| left.key().cmp(&right.key()));
     entries
 }
 
@@ -84,7 +98,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     let version = macros.version();
     if version > VERSION_ONE {
         let three = version >= VERSION_THREE;
-        let four = version == VERSION_FOUR;
+        let four = version >= VERSION_FOUR;
         output.bytes(&[0, 0, TAG, version])?;
         let entries = merged(macros);
         output.u32(entries.len())?;
@@ -121,6 +135,12 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
                     output.u32(row.owner() as usize)?;
                     output.path(row.target_placement())?;
                     output.string(row.target_name())?;
+                }
+                Entry::Glob(row) => {
+                    output.u8(GLOB)?;
+                    output.path(row.placement())?;
+                    output.u32(row.owner() as usize)?;
+                    output.path(row.target())?;
                 }
             }
         }
@@ -210,7 +230,9 @@ pub(super) fn decode(input: &mut Reader<'_>) -> Result<Interface, &'static str> 
             }
             Macros::new(rows)?
         }
-        version @ (VERSION_TWO | VERSION_THREE | VERSION_FOUR) => decode_placed(input, version)?,
+        version @ (VERSION_TWO | VERSION_THREE | VERSION_FOUR | VERSION_FIVE) => {
+            decode_placed(input, version)?
+        }
         _ => return Err("unknown exported macro metadata version"),
     };
     let length = input.u32()?;
@@ -220,18 +242,22 @@ pub(super) fn decode(input: &mut Reader<'_>) -> Result<Interface, &'static str> 
     }
     super::decode(inner)?.with_macros(macros)
 }
+/// The canonical order of one decoded row: placement and name, then a glob
+/// row's owner and target.
+type Key = (Vec<String>, String, u32, Vec<String>);
+
 fn decode_placed(input: &mut Reader<'_>, version: u8) -> Result<Macros, &'static str> {
     let three = version >= VERSION_THREE;
-    let four = version == VERSION_FOUR;
+    let four = version >= VERSION_FOUR;
     // Kind, placement count and name length.
     let count = input.count(MAX_MACROS, 7)?;
     let (mut rows, mut builtins, mut reexports) = (Vec::new(), Vec::new(), Vec::new());
-    let mut scoped = Vec::new();
-    let mut previous: Option<(Vec<String>, String)> = None;
+    let (mut scoped, mut globs) = (Vec::new(), Vec::new());
+    let mut previous: Option<Key> = None;
     for _ in 0..count {
         let kind = input.u8()?;
         let placement = input.module_path()?;
-        let key = match kind {
+        let key: Key = match kind {
             DECLARATIVE => {
                 if !placement.is_empty() {
                     return Err("declarative exported macros belong to the crate root");
@@ -239,11 +265,16 @@ fn decode_placed(input: &mut Reader<'_>, version: u8) -> Result<Macros, &'static
                 let row = decode_lists(input, three, four)?;
                 let name = row.name().to_owned();
                 rows.push(row);
-                (placement, name)
+                (placement, name, 0, Vec::new())
             }
             SCOPED if four => {
                 let row = ScopedMacro::new(placement, decode_lists(input, three, four)?)?;
-                let key = (row.placement().to_vec(), row.name().to_owned());
+                let key = (
+                    row.placement().to_vec(),
+                    row.name().to_owned(),
+                    0,
+                    Vec::new(),
+                );
                 scoped.push(row);
                 key
             }
@@ -257,7 +288,12 @@ fn decode_placed(input: &mut Reader<'_>, version: u8) -> Result<Macros, &'static
                 if four {
                     row = row.with_internal_unsafe(decode_flags(input)?);
                 }
-                let key = (row.placement().to_vec(), row.name().to_owned());
+                let key = (
+                    row.placement().to_vec(),
+                    row.name().to_owned(),
+                    0,
+                    Vec::new(),
+                );
                 builtins.push(row);
                 key
             }
@@ -269,8 +305,26 @@ fn decode_placed(input: &mut Reader<'_>, version: u8) -> Result<Macros, &'static
                 let target_name = input.string(MAX_NAME_BYTES)?;
                 let row =
                     ReexportMacro::new(placement, name, owner, target_placement, target_name)?;
-                let key = (row.placement().to_vec(), row.name().to_owned());
+                let key = (
+                    row.placement().to_vec(),
+                    row.name().to_owned(),
+                    0,
+                    Vec::new(),
+                );
                 reexports.push(row);
+                key
+            }
+            GLOB if version == VERSION_FIVE => {
+                let owner = u32::try_from(input.u32()?)
+                    .map_err(|_| "exported glob re-export names an unknown owner")?;
+                let row = GlobReexport::new(placement, owner, input.module_path()?)?;
+                let key = (
+                    row.placement().to_vec(),
+                    String::new(),
+                    row.owner(),
+                    row.target().to_vec(),
+                );
+                globs.push(row);
                 key
             }
             _ => return Err("unknown exported macro row kind"),
@@ -280,9 +334,10 @@ fn decode_placed(input: &mut Reader<'_>, version: u8) -> Result<Macros, &'static
         }
         previous = Some(key);
     }
-    let macros = Macros::with_scoped(rows, builtins, reexports, scoped)?;
+    let macros = Macros::with_globs(rows, builtins, reexports, scoped, globs)?;
     if macros.version() != version {
         return Err(match version {
+            VERSION_FIVE => "version-five exported macro table has no glob re-export row",
             VERSION_FOUR => "version-four exported macro table has only version-three rows",
             VERSION_THREE => "version-three exported macro table has only version-two rows",
             _ => "version-two exported macro table has only version-one rows",

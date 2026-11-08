@@ -18,6 +18,9 @@ use crate::support::{
 /// Which table of the provider's macro metadata one imported row comes from.
 pub(crate) use crate::support::crates::exported_macros::DefinitionRow as ImportedRow;
 
+/// A macro row's placement names no public module of its provider.
+const PLACEMENT: &str = "exported macro placement has no public imported module";
+
 /// Imported definitions by artifact index and definition row.
 pub(super) type MacroDefinitions = HashMap<(usize, ImportedRow), DefId>;
 
@@ -103,7 +106,7 @@ impl Imported {
 }
 
 /// Module rows of a source artifact, keyed by parent row and name.
-type SourceModules = HashMap<(DeclarationRef, String), DeclarationRef>;
+pub(super) type SourceModules = HashMap<(DeclarationRef, String), DeclarationRef>;
 
 fn source_modules(rows: &[s::Declaration]) -> Result<SourceModules, Error> {
     let mut modules = HashMap::default();
@@ -127,16 +130,17 @@ fn source_modules(rows: &[s::Declaration]) -> Result<SourceModules, Error> {
 
 impl Resolver<'_> {
     /// The member scope of the provider's public module at `path`, found by
-    /// the module's own identity in the artifact's tables.
-    fn placement_scope(
+    /// the module's own identity in the artifact's tables. A path that names
+    /// no public module is rejected with `missing`.
+    pub(super) fn placement_scope(
         &self,
         root: ScopeId,
         artifact: &Interface,
         imported: &Imported,
         modules: &mut Option<SourceModules>,
         path: &[String],
+        missing: &'static str,
     ) -> Result<ScopeId, Error> {
-        const MISSING: &str = "exported macro placement has no public imported module";
         if path.is_empty() {
             return Ok(root);
         }
@@ -156,12 +160,12 @@ impl Resolver<'_> {
                 row = *modules
                     .get(&(row, component.clone()))
                     .filter(|&&child| rows[child.0 as usize].public)
-                    .ok_or_else(|| error(MISSING))?;
+                    .ok_or_else(|| error(missing))?;
             }
             imported
                 .origins
                 .get()
-                .ok_or_else(|| error(MISSING))?
+                .ok_or_else(|| error(missing))?
                 .definition_at(artifact.identity(), row)
                 .map_err(error)?
         } else {
@@ -173,13 +177,13 @@ impl Resolver<'_> {
             .map_err(error)?;
             imported
                 .definition(&identity)
-                .ok_or_else(|| error(MISSING))?
+                .ok_or_else(|| error(missing))?
         };
         let module = &self.facts.definitions[definition.0 as usize];
         if module.kind != DefKind::Module || module.access != Access::Public {
-            return Err(error(MISSING));
+            return Err(error(missing));
         }
-        module.members.ok_or_else(|| error(MISSING))
+        module.members.ok_or_else(|| error(missing))
     }
     /// Bind every exported macro definition row of one artifact publicly at
     /// its placement, and register its `$crate` root by the artifact's crate
@@ -229,13 +233,25 @@ impl Resolver<'_> {
                 .saturating_add(macros.scoped().len()),
         );
         for (row, entry) in macros.builtins().iter().enumerate() {
-            let scope =
-                self.placement_scope(scope, artifact, imported, &mut modules, entry.placement())?;
+            let scope = self.placement_scope(
+                scope,
+                artifact,
+                imported,
+                &mut modules,
+                entry.placement(),
+                PLACEMENT,
+            )?;
             placed.push((scope, entry.name(), ImportedRow::Builtin(row)));
         }
         for (row, entry) in macros.scoped().iter().enumerate() {
-            let scope =
-                self.placement_scope(scope, artifact, imported, &mut modules, entry.placement())?;
+            let scope = self.placement_scope(
+                scope,
+                artifact,
+                imported,
+                &mut modules,
+                entry.placement(),
+                PLACEMENT,
+            )?;
             placed.push((scope, entry.name(), ImportedRow::Scoped(row)));
         }
         for (scope, name, row) in declarative.chain(placed) {
@@ -304,8 +320,14 @@ impl Resolver<'_> {
                 .and_then(|owner| owner.definition(row.target_placement(), row.target_name()))
                 .and_then(|target| definitions.get(&(owner, target)).copied())
                 .ok_or_else(|| error("macro re-export names no imported definition row"))?;
-            let placed =
-                self.placement_scope(scope, artifact, imported, &mut modules, row.placement())?;
+            let placed = self.placement_scope(
+                scope,
+                artifact,
+                imported,
+                &mut modules,
+                row.placement(),
+                PLACEMENT,
+            )?;
             let name = self.package.names.intern(row.name()).map_err(error)?;
             self.bind_imported_macro(placed, name, target)?;
         }

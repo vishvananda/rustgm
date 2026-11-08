@@ -5,8 +5,9 @@
 //! row naming that definition row's identity. Definition rows also carry their
 //! `allow_internal_unstable` list, `#[unstable]` feature and
 //! `allow_internal_unsafe` flag. Semiopaque `pub macro` definitions publish
-//! their canonical body trees at their own placement.
-use super::{DefKind, Error, Report, error};
+//! their canonical body trees at their own placement. A public glob of a
+//! dependency's module publishes one glob row instead of the names it gave.
+use super::{DefKind, Error, Report, dependency_globs, error};
 use crate::{
     resolve::{
         expansion::{Body, Definition},
@@ -18,7 +19,8 @@ use crate::{
         crates::{
             CrateIdentity,
             exported_macros::{
-                BuiltinMacro, DefinitionRow, Macro, Macros, ReexportMacro, ScopedMacro, Syntax,
+                BuiltinMacro, DefinitionRow, GlobReexport, Macro, Macros, ReexportMacro,
+                ScopedMacro, Syntax,
             },
         },
         hash::{HashMap, HashSet},
@@ -68,22 +70,34 @@ impl Bound<'_> {
     }
 }
 
+/// The public macro bindings of a crate, and the placement of every module
+/// reachable through public direct module declarations.
+struct Placed<'a> {
+    bound: Vec<Bound<'a>>,
+    placements: HashMap<ScopeId, Rc<[String]>>,
+    /// Modules that only public re-exports reach.
+    aliased: HashSet<ScopeId>,
+}
+
 /// Visit every module reachable through public direct module declarations
 /// once, and gather its public macro bindings. A module that a public
 /// re-export alone reaches has no public placement, so a public macro binding
-/// there is rejected by name rather than dropped.
-fn bindings(report: &Report) -> Result<Vec<Bound<'_>>, Error> {
+/// there is rejected by name rather than dropped. Names a glob row carries
+/// are left out.
+fn bindings<'a>(report: &'a Report, globs: &dependency_globs::Globs) -> Result<Placed<'a>, Error> {
     let resolution = &report.resolution;
     let root = resolution.module_scopes[0];
     let mut bound = Vec::new();
     let mut aliased = Vec::new();
     let mut work = vec![root];
     let mut seen = HashSet::from_iter([root]);
+    let mut placements = HashMap::default();
     while let Some(scope) = work.pop() {
         let module = resolution.scopes[scope.0 as usize].module;
         let placement: Rc<[String]> = module_path(report, module)?.into();
+        placements.insert(scope, Rc::clone(&placement));
         for (name, namespace, binding) in resolution.bindings.scope(scope) {
-            if binding.access != Access::Public {
+            if binding.access != Access::Public || globs.covered(scope, binding) {
                 continue;
             }
             let target = &resolution.definitions[binding.target.0 as usize];
@@ -116,12 +130,14 @@ fn bindings(report: &Report) -> Result<Vec<Bound<'_>>, Error> {
         }
     }
     // Modules reached only through public aliases, and their public children.
+    let mut only_aliased = HashSet::default();
     while let Some(scope) = aliased.pop() {
         if !seen.insert(scope) {
             continue;
         }
+        only_aliased.insert(scope);
         for (_, namespace, binding) in resolution.bindings.scope(scope) {
-            if binding.access != Access::Public {
+            if binding.access != Access::Public || globs.covered(scope, binding) {
                 continue;
             }
             let target = &resolution.definitions[binding.target.0 as usize];
@@ -138,7 +154,11 @@ fn bindings(report: &Report) -> Result<Vec<Bound<'_>>, Error> {
             }
         }
     }
-    Ok(bound)
+    Ok(Placed {
+        bound,
+        placements,
+        aliased: only_aliased,
+    })
 }
 
 /// Imported macro definitions by their binding identity: the owning
@@ -225,6 +245,7 @@ struct Table {
     builtins: Vec<BuiltinMacro>,
     reexports: Vec<ReexportMacro>,
     scoped: Vec<ScopedMacro>,
+    globs: Vec<GlobReexport>,
 }
 impl Table {
     /// Publish one local definition and its other public bindings. Its row
@@ -317,25 +338,41 @@ impl Table {
         self.scoped.sort_unstable_by(|left, right| {
             (left.placement(), left.name()).cmp(&(right.placement(), right.name()))
         });
-        Macros::with_scoped(self.rows, self.builtins, self.reexports, self.scoped).map_err(error)
+        Macros::with_globs(
+            self.rows,
+            self.builtins,
+            self.reexports,
+            self.scoped,
+            self.globs,
+        )
+        .map_err(error)
     }
 }
 
 /// Publish every public macro binding of the crate: each local definition
 /// once as a definition row, and every other binding, local or imported, as
-/// a re-export of a definition row's identity. Owners are this crate (0) or
-/// one of `dependencies`, which is sorted.
+/// a re-export of a definition row's identity. Each public glob of a
+/// dependency's module is one glob row. Owners are this crate (0) or one of
+/// `dependencies`, which is sorted.
 pub(super) fn collect(
     report: &Report,
     dependencies: &[CrateIdentity],
 ) -> Result<Option<Macros>, Error> {
-    let bound = bindings(report)?;
-    if bound.is_empty() {
+    let globs = dependency_globs::Globs::new(report);
+    let Placed {
+        bound,
+        placements,
+        aliased,
+    } = bindings(report, &globs)?;
+    let mut table = Table {
+        globs: dependency_globs::rows(report, &placements, &aliased, dependencies)?,
+        ..Table::default()
+    };
+    if bound.is_empty() && table.globs.is_empty() {
         return Ok(None);
     }
     let imported = imported_rows(report);
     let mut local: HashMap<DefId, Vec<&Bound<'_>>> = HashMap::default();
-    let mut table = Table::default();
     for entry in &bound {
         let target = &report.resolution.definitions[entry.target.0 as usize];
         if target.kind != DefKind::Macro {

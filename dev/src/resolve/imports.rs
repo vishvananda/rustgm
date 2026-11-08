@@ -88,6 +88,13 @@ impl Work {
     pub fn observe(&mut self) {
         self.observe = true;
     }
+    /// The final source scope of every connected glob import, by index.
+    pub(super) fn glob_sources(&self) -> impl Iterator<Item = (usize, ScopeId)> + '_ {
+        self.sources
+            .iter()
+            .enumerate()
+            .filter_map(|(index, source)| source.map(|source| (index, source)))
+    }
     pub fn extend(&mut self, facts: &super::model::Resolution) {
         for index in self.resolved.len()..facts.imports.len() {
             self.queue.push_back(index);

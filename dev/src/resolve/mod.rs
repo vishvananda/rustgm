@@ -120,6 +120,8 @@ pub fn analyze_expanded(
         .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
     float_features::validate_paths(&report)
         .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
+    crates::record_module_globs(&mut report.resolution, work.glob_sources())
+        .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
     report
         .complete_hidden_globs(work)
         .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;

@@ -230,6 +230,17 @@ files.
 modules. All four outcomes were declared before any rustc or RustGM run of
 these cases; the opponent was redesigned once before any run.
 
+`shim-glob-outcomes.json` freezes glob re-exports of a dependency, the
+`rustc_std_workspace_core` shape, under `spec/shim-globs/`. A shim publishes
+`pub use core::*;` as one version-five GLOB row, and the `no-std-clients`
+clients run natively with that shim as their `core`. The controls cover
+`core`'s exported macro, its `pub(crate)` and private names, an explicit
+shim module that shadows the glob, and one name with two glob targets, used
+and unused. All fifteen outcomes were declared before the rustc oracle and
+before any RustGM candidate run of these cases; exploratory probes of
+similar shapes ran first. Under the oracle's `--cap-lints=allow`, rustc
+accepts the used ambiguity, which RustGM rejects by name.
+
 `provider-guard-outcomes.json` freezes the version-thirteen provider-guard
 packet under `spec/provider-guards/`. The packet holds:
 

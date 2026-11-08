@@ -21,6 +21,10 @@
 //! declarative images with `macro_rules!` hygiene, and the typed
 //! `allow_internal_unsafe` flag of every definition row. An edition-panic
 //! contract needs no field: it is the `edition_panic` member of a row's list.
+//!
+//! Version five adds glob re-export rows, `pub use dependency::module::*`:
+//! each binds at its placement every name that the dependency's module makes
+//! visible outside its crate, unless this crate binds that name there itself.
 use crate::support::edition::Edition;
 
 /// Exported macros in one artifact.
@@ -627,6 +631,59 @@ impl ReexportMacro {
     }
 }
 
+/// A glob re-export of a dependency's module. Its owner is one more than the
+/// dependency's index; a crate's own modules never travel as globs. The
+/// target is the module's path in its owner, never a path a consumer
+/// resolves. A consumer binds each name the target makes visible outside its
+/// crate at `placement`, unless the publication binds that name there itself.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct GlobReexport {
+    placement: Vec<String>,
+    owner: u32,
+    target: Vec<String>,
+}
+impl GlobReexport {
+    /// # Errors
+    /// Rejects a glob of this crate's own module and invalid placements.
+    pub fn new(
+        placement: Vec<String>,
+        owner: u32,
+        target: Vec<String>,
+    ) -> Result<Self, &'static str> {
+        if owner == 0 {
+            return Err("exported glob re-export requires a dependency owner");
+        }
+        validate_placement(&placement)?;
+        validate_placement(&target)?;
+        Ok(Self {
+            placement,
+            owner,
+            target,
+        })
+    }
+    /// The module path of the scope that binds the glob's names.
+    #[must_use]
+    pub fn placement(&self) -> &[String] {
+        &self.placement
+    }
+    /// One more than the owning dependency's index.
+    #[must_use]
+    pub const fn owner(&self) -> u32 {
+        self.owner
+    }
+    /// The globbed module's path in its owner; empty is the owner's root.
+    #[must_use]
+    pub fn target(&self) -> &[String] {
+        &self.target
+    }
+    fn key(&self) -> (&[String], u32, &[String]) {
+        (&self.placement, self.owner, &self.target)
+    }
+    fn bytes(&self) -> usize {
+        names_bytes(&self.placement).saturating_add(names_bytes(&self.target))
+    }
+}
+
 /// Which definition row of one table a placement and name identify.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum DefinitionRow {
@@ -703,12 +760,14 @@ fn validate_layout(image: &[u8], rows: &[Row]) -> Result<(), &'static str> {
 /// sorted strictly by name; builtin and re-export rows are each sorted
 /// strictly by placement and name. No scope binds one name twice, and every
 /// re-export of this crate's own row names a definition row of this table.
+/// Glob rows are sorted strictly by placement, owner and target.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Macros {
     rows: Vec<Macro>,
     builtins: Vec<BuiltinMacro>,
     reexports: Vec<ReexportMacro>,
     scoped: Vec<ScopedMacro>,
+    globs: Vec<GlobReexport>,
 }
 impl Macros {
     /// # Errors
@@ -745,13 +804,29 @@ impl Macros {
         reexports: Vec<ReexportMacro>,
         scoped: Vec<ScopedMacro>,
     ) -> Result<Self, &'static str> {
+        Self::with_globs(rows, builtins, reexports, scoped, Vec::new())
+    }
+    /// # Errors
+    /// As [`Self::with_scoped`], with glob rows sorted strictly by placement,
+    /// owner and target. A table may hold glob rows alone.
+    pub fn with_globs(
+        rows: Vec<Macro>,
+        builtins: Vec<BuiltinMacro>,
+        reexports: Vec<ReexportMacro>,
+        scoped: Vec<ScopedMacro>,
+        globs: Vec<GlobReexport>,
+    ) -> Result<Self, &'static str> {
         let count = rows
             .len()
             .saturating_add(builtins.len())
             .saturating_add(reexports.len())
-            .saturating_add(scoped.len());
+            .saturating_add(scoped.len())
+            .saturating_add(globs.len());
         if count == 0 || count > MAX_MACROS {
             return Err("invalid exported macro count");
+        }
+        if globs.windows(2).any(|pair| pair[0].key() >= pair[1].key()) {
+            return Err("exported glob re-exports must be unique and sorted");
         }
         if rows.windows(2).any(|pair| pair[0].name >= pair[1].name)
             || builtins
@@ -780,6 +855,7 @@ impl Macros {
             builtins,
             reexports,
             scoped,
+            globs,
         };
         if table.reexports.iter().any(|row| {
             row.owner == 0
@@ -808,6 +884,11 @@ impl Macros {
     #[must_use]
     pub fn scoped(&self) -> &[ScopedMacro] {
         &self.scoped
+    }
+    /// The glob re-exports of dependency modules.
+    #[must_use]
+    pub fn globs(&self) -> &[GlobReexport] {
+        &self.globs
     }
     #[must_use]
     pub fn get(&self, name: &str) -> Option<&Macro> {
@@ -886,14 +967,26 @@ impl Macros {
             .max()
             .unwrap_or(0)
     }
-    /// The least envelope version that holds every row: 4 for a semiopaque
-    /// row or any `allow_internal_unsafe` row, 3 for a builtin allowance list
+    /// The largest dependency ordinal a glob row names.
+    #[must_use]
+    pub fn max_glob_owner(&self) -> u32 {
+        self.globs
+            .iter()
+            .map(GlobReexport::owner)
+            .max()
+            .unwrap_or(0)
+    }
+    /// The least envelope version that holds every row: 5 for a glob row, 4
+    /// for a semiopaque row or any `allow_internal_unsafe` row, 3 for a
+    /// builtin allowance list
     /// or any `#[unstable]` row, 2 for a builtin row, a re-export row or a
     /// declarative allowance list, and otherwise 1, whose bytes stay exactly
     /// as before.
     #[must_use]
     pub fn version(&self) -> u8 {
-        if !self.scoped.is_empty()
+        if !self.globs.is_empty() {
+            5
+        } else if !self.scoped.is_empty()
             || self.rows.iter().any(|row| row.internal_unsafe)
             || self.builtins.iter().any(|row| row.internal_unsafe)
         {
@@ -925,8 +1018,11 @@ impl Macros {
         let builtins = self.builtins.iter().fold(scoped, |total, row| {
             total.saturating_add(1 + row.placement.len())
         });
-        self.reexports.iter().fold(builtins, |total, row| {
+        let reexports = self.reexports.iter().fold(builtins, |total, row| {
             total.saturating_add(1 + row.placement.len() + row.target_placement.len())
+        });
+        self.globs.iter().fold(reexports, |total, row| {
+            total.saturating_add(1 + row.placement.len() + row.target.len())
         })
     }
     pub(super) fn bytes(&self) -> usize {
@@ -942,8 +1038,12 @@ impl Macros {
             .builtins
             .iter()
             .fold(scoped, |total, row| total.saturating_add(row.bytes()));
-        self.reexports
+        let reexports = self
+            .reexports
             .iter()
-            .fold(builtins, |total, row| total.saturating_add(row.bytes()))
+            .fold(builtins, |total, row| total.saturating_add(row.bytes()));
+        self.globs
+            .iter()
+            .fold(reexports, |total, row| total.saturating_add(row.bytes()))
     }
 }

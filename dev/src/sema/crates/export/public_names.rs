@@ -1,5 +1,6 @@
 //! Traverse public module identities once; aliases retain their defining targets.
-use super::{DefId, DefKind, Error, Report, error, records};
+//! Names that a dependency-module glob row carries are left to that row.
+use super::{DefId, DefKind, Error, Report, dependency_globs, error, records};
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::model::{Access, Origin, ScopeId},
@@ -22,6 +23,7 @@ pub(super) fn collect(report: &Report, identity: &CrateIdentity) -> Result<Plan,
         .flat_map(|imports| imports.definitions().map(|(external, id)| (id, external)))
         .collect();
     let root = report.resolution.module_scopes[0];
+    let globs = dependency_globs::Globs::new(report);
     let mut work = vec![(root, Vec::new())];
     let mut seen = HashSet::from_iter([root]);
     let mut targets = HashMap::<DefId, ExternalDef>::default();
@@ -35,6 +37,7 @@ pub(super) fn collect(report: &Report, identity: &CrateIdentity) -> Result<Plan,
             // Public macro bindings travel in their own macro table.
             if binding.access != Access::Public
                 || super::declarative_rows::exported(namespace, binding)
+                || globs.covered(scope, binding)
             {
                 continue;
             }

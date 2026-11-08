@@ -1,5 +1,6 @@
 //! Library exports consume resolved bindings and completed signature/member facts.
 mod declarative_rows;
+mod dependency_globs;
 mod named_values;
 mod public_names;
 mod records;

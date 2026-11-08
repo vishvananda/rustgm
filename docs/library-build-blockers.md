@@ -5,6 +5,21 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane B [shim glob rows and `compiler_builtins`](parallel/shim-globs-builtins.md)
+lets crates whose `core` is the `rustc_std_workspace_core` shim resolve
+through its `pub use core::*` as rustc does.
+
+- Macro envelope version 5 adds one glob row per `pub use dependency::path::*`
+  (kind 4: placement, `u32` owner, target path). The consumer re-binds the
+  target's externally visible type, value and macro names at the placement.
+  An explicit shim item shadows a glob name, and two glob targets for one
+  name are an error only where it is used. Other tables keep their bytes.
+- 15 declared PA29 cases match the rustc 1.98.0 oracle natively, with 112
+  in all. A used cross-crate ambiguity is a declared divergence: rustc's
+  deny-by-default lint `ambiguous_glob_imports` is capped in the oracle, and
+  RustGM rejects the use by name.
+- Every PA1 to PA24 suite passes, with PA20 at 1451/1451.
+
 Lane A [census batch 10](parallel/census-batch10.md) repairs census 10's
 crate record and the three records its repair uncovered. Census 11
 (`fcd444bc`, from `d7d0cfc97` on main `f98c5d7c8`) checks 42,310

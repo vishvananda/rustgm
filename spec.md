@@ -6643,7 +6643,7 @@ Every public macro binding of a crate's public modules is published, or the
 export fails by name; none is dropped. A local definition has one definition
 row, at its own binding when that is public, otherwise at the least public
 (placement, name) key. Every other public macro binding, direct, imported or
-glob, is a re-export row: kind byte 2, its placement and name, then an owner
+glob, is a re-export row unless a version-5 glob row publishes it: kind byte 2, its placement and name, then an owner
 ordinal (`u32`; 0 is the artifact itself, `k` its `k`-th sorted dependency),
 the target placement and the target name. The target is the key of a
 definition row of that owner, never another re-export, so chains flatten to the
@@ -6710,6 +6710,34 @@ unstable imported row needs the same feature or allowance as a call of it,
 whether or not the row is called; a glob import is checked only at its module.
 Builtin derive output roots each `crate::` path at the defining crate's
 identity, as `$crate` does; an imported derive row does not yet run.
+
+Version 5 of the macro envelope is written only when a table has a glob row;
+otherwise the version-1 to version-4 bytes are unchanged. It keeps the
+version-4 layout and adds kind 4, a glob re-export of a dependency's module
+(`pub use dependency::path::*`): its placement, a `u32` owner (`k` for the
+`k`-th sorted dependency; 0 is rejected) and the path of the target module in
+that owner. A glob row has no name. It sorts before the named rows of its
+placement, and glob rows of one placement sort by owner and target. A public
+glob import whose source is a dependency's module publishes this one row
+instead of the names it gives in any namespace, so no public-name, macro or
+re-export row repeats them. A glob in a private module binds nothing outside
+the crate and publishes nothing. The export rejects by name a glob in a module
+that only a re-export reaches, a target module whose owner reaches it only
+through a non-public module, and an owner that is not a direct dependency. A
+consumer expands glob rows after it binds every artifact's definitions and
+macro re-exports and before it binds crate aliases, each artifact after the
+artifacts its rows name. The owner is found by crate identity through the
+publication's dependency list, and the target and placement through the
+owner's and the publication's public module identities, never by name or
+alias. Every binding of the target that is visible outside the owner's crate,
+in the type, value or macro namespace, is bound at the placement unless the
+placement binds that name itself. When two glob rows give one name different
+targets, the name is ambiguous, and only a use of it is an error, by name.
+Rustc 1.98 reports such a use across crates through the deny-by-default
+future-incompatible lint `ambiguous_glob_imports` and, when that lint is
+allowed, selects one glob's target; RustGM keeps the use an error. Each row is
+charged one unit and one per binding of its target module that it visits,
+within a fixed budget. Older readers reject version 5 by name.
 
 ## Lowering and backend facts
 

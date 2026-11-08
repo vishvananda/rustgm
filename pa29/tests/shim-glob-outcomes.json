@@ -1,0 +1,401 @@
+{
+ "profile": "Rust 1.98.0 x86_64-unknown-linux-gnu, -Cpanic=abort --cap-lints=allow, RUSTC_BOOTSTRAP=1, an empty sysroot with -L crate=, --extern core= for each shim and client and an explicit compiler_builtins for each client, per-case editions; declared 2026-11-08 before the frozen rustc oracle and before any RustGM candidate run of these cases (exploratory rustc and RustGM probes of similar shapes ran first under obj/lane-b3/probes)",
+ "cases": [
+  {
+   "name": "shim-glob-core",
+   "path": "tests/spec/shim-globs/core.rs",
+   "source_sha256": "3ca59a26e05ab6c010b4a0bd163c4b211690e6b085a4df2091d45c0c706b04e5",
+   "kind": "rlib",
+   "crate": "core",
+   "edition": "2024",
+   "deps": {},
+   "source_core": true,
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "frontend_expected_after_implementation": 0,
+   "native": false,
+   "note": "no_core source-core provider named core with the no-std-clients prelude shape, plus glob controls: pub(crate) internal, private, a private module sealed, and left::shared and right::shared with different targets"
+  },
+  {
+   "name": "shim-glob-builtins",
+   "path": "tests/spec/no-std-clients/builtins.rs",
+   "source_sha256": "d99ad3683a2997aebf6142c624aa25dce56e6103e4f026d3cfb0c2141fde60c2",
+   "kind": "rlib",
+   "crate": "compiler_builtins",
+   "edition": "2021",
+   "deps": {},
+   "rustc_deps": {
+    "core": "shim-glob-core"
+   },
+   "rustc_only": true,
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "native": false,
+   "note": "rustc only: the empty compiler_builtins stand-in that rustc's no_std injection needs without a sysroot, built over shim-glob-core"
+  },
+  {
+   "name": "shim-glob-shim",
+   "path": "tests/spec/shim-globs/shim.rs",
+   "source_sha256": "f7d172ed794108139dab74190ccf2323828596448ee797a86d2198b2246c7cee",
+   "kind": "rlib",
+   "crate": "rustc_std_workspace_core",
+   "edition": "2024",
+   "deps": {
+    "core": "shim-glob-core"
+   },
+   "source_client": "shim-glob-core",
+   "metadata_version": 5,
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "frontend_expected_after_implementation": 0,
+   "native": false,
+   "note": "the rustc_std_workspace_core shape: pub use core::*; publishes one version-five GLOB row at its root naming its core dependency's root"
+  },
+  {
+   "name": "shim-glob-shadow-shim",
+   "path": "tests/spec/shim-globs/shadow-shim.rs",
+   "source_sha256": "62f1d59d7328574e79c757a9f2c4b48a3d8d5bfddd53a3ec2898a87bdefeffd8",
+   "kind": "rlib",
+   "crate": "rustc_std_workspace_core",
+   "edition": "2024",
+   "deps": {
+    "core": "shim-glob-core"
+   },
+   "source_client": "shim-glob-core",
+   "metadata_version": 5,
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "frontend_expected_after_implementation": 0,
+   "native": false,
+   "note": "the glob shim with its own empty option module, which shadows the glob's option"
+  },
+  {
+   "name": "shim-glob-ambiguous-shim",
+   "path": "tests/spec/shim-globs/ambiguous-shim.rs",
+   "source_sha256": "a4270bbdb14ca6a4746ccf2f47e75c474f91512b64e12ac08b70394f66f07edc",
+   "kind": "rlib",
+   "crate": "rustc_std_workspace_core",
+   "edition": "2024",
+   "deps": {
+    "core": "shim-glob-core"
+   },
+   "source_client": "shim-glob-core",
+   "metadata_version": 5,
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "frontend_expected_after_implementation": 0,
+   "native": false,
+   "note": "three globs at one root: core::*, core::left::* and core::right::*; shared has two targets, which is no error while unused"
+  },
+  {
+   "name": "shim-glob-2018-client",
+   "path": "tests/spec/no-std-clients/client.rs",
+   "source_sha256": "00cf37bd11ed0987f148ce863a1661250c23dd1d52fac5b697ec26ab80734f20",
+   "kind": "object",
+   "crate": "client",
+   "edition": "2018",
+   "deps": {
+    "core": "shim-glob-shim"
+   },
+   "rustc_deps": {
+    "compiler_builtins": "shim-glob-builtins"
+   },
+   "inventory": [
+    "shim-glob-core"
+   ],
+   "source_client": "shim-glob-core",
+   "native": true,
+   "native_driver": "tests/spec/no-std-clients/native-driver.c",
+   "native_driver_sha256": "f826a9b3aa306043f0cec7848e130647bc58c11f68f216ba8f537ac5be8dac24",
+   "native_stdout": "42 40\n",
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "frontend_expected_after_implementation": 0,
+   "note": "a 2018 no_std client whose core is the shim: the injected prelude glob, forty_two! and core::base all reach the provider through the shim's GLOB row"
+  },
+  {
+   "name": "shim-glob-2024-client",
+   "path": "tests/spec/no-std-clients/client.rs",
+   "source_sha256": "00cf37bd11ed0987f148ce863a1661250c23dd1d52fac5b697ec26ab80734f20",
+   "kind": "object",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "core": "shim-glob-shim"
+   },
+   "rustc_deps": {
+    "compiler_builtins": "shim-glob-builtins"
+   },
+   "inventory": [
+    "shim-glob-core"
+   ],
+   "source_client": "shim-glob-core",
+   "native": true,
+   "native_driver": "tests/spec/no-std-clients/native-driver.c",
+   "native_driver_sha256": "f826a9b3aa306043f0cec7848e130647bc58c11f68f216ba8f537ac5be8dac24",
+   "native_stdout": "42 40\n",
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "frontend_expected_after_implementation": 0,
+   "note": "the 2024 client through the shim; its prelude is core's rust_2024 through the glob"
+  },
+  {
+   "name": "shim-glob-2015-client",
+   "path": "tests/spec/no-std-clients/client-2015.rs",
+   "source_sha256": "2eb80fe9d5df8715dd2dbd5ae2163fecc50d89071720d5e3b93439df06a80cde",
+   "kind": "object",
+   "crate": "client",
+   "edition": "2015",
+   "deps": {
+    "core": "shim-glob-shim"
+   },
+   "rustc_deps": {
+    "compiler_builtins": "shim-glob-builtins"
+   },
+   "inventory": [
+    "shim-glob-core"
+   ],
+   "source_client": "shim-glob-core",
+   "native": true,
+   "native_driver": "tests/spec/no-std-clients/native-driver.c",
+   "native_driver_sha256": "f826a9b3aa306043f0cec7848e130647bc58c11f68f216ba8f537ac5be8dac24",
+   "native_stdout": "42 40\n",
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "frontend_expected_after_implementation": 0,
+   "note": "the 2015 client through the shim, by a use path and crate::core"
+  },
+  {
+   "name": "shim-glob-macro-client",
+   "path": "tests/spec/shim-globs/macro-client.rs",
+   "source_sha256": "ea49c615c86d8ee27c6f77b608b735f30fc54920a9a7ba48a3db2710ddd36502",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "core": "shim-glob-shim"
+   },
+   "rustc_deps": {
+    "compiler_builtins": "shim-glob-builtins"
+   },
+   "inventory": [
+    "shim-glob-core"
+   ],
+   "source_client": "shim-glob-core",
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "frontend_expected_after_implementation": 0,
+   "native": false,
+   "note": "core::forty_two! names core's exported macro through the shim's glob in the macro namespace"
+  },
+  {
+   "name": "shim-glob-hidden-client",
+   "path": "tests/spec/shim-globs/hidden-client.rs",
+   "source_sha256": "7b73c8bee42bcbe4a9c5f4fe863e1ff4b34e5d34af4c2fd4a57af7eac12e11b1",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "core": "shim-glob-shim"
+   },
+   "rustc_deps": {
+    "compiler_builtins": "shim-glob-builtins"
+   },
+   "inventory": [
+    "shim-glob-core"
+   ],
+   "source_client": "shim-glob-core",
+   "rustc": 1,
+   "rustc_codes": [
+    "E0425"
+   ],
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "frontend_expected_after_implementation": 1,
+   "frontend_diagnostic": "unresolved value name",
+   "native": false,
+   "note": "opponent: a pub(crate) function of core is not visible outside core, so the glob does not carry it"
+  },
+  {
+   "name": "shim-glob-sealed-client",
+   "path": "tests/spec/shim-globs/sealed-client.rs",
+   "source_sha256": "bade98cd92d7f86574f2ab01a04da9d703475e31ed1651c96d1f7983740a588c",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "core": "shim-glob-shim"
+   },
+   "rustc_deps": {
+    "compiler_builtins": "shim-glob-builtins"
+   },
+   "inventory": [
+    "shim-glob-core"
+   ],
+   "source_client": "shim-glob-core",
+   "rustc": 1,
+   "rustc_codes": [
+    "E0433"
+   ],
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "frontend_expected_after_implementation": 1,
+   "frontend_diagnostic": "unresolved value name",
+   "native": false,
+   "note": "opponent: a private module of core is not carried by the glob"
+  },
+  {
+   "name": "shim-glob-shadow-client",
+   "path": "tests/spec/shim-globs/shadow-client.rs",
+   "source_sha256": "b31987991dea35b9d75a7b42a4a5c6d6a372663c4cb5b04eecc8d78c7b97e04c",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "core": "shim-glob-shadow-shim"
+   },
+   "rustc_deps": {
+    "compiler_builtins": "shim-glob-builtins"
+   },
+   "inventory": [
+    "shim-glob-core"
+   ],
+   "source_client": "shim-glob-core",
+   "rustc": 1,
+   "rustc_codes": [
+    "E0425",
+    "E0433"
+   ],
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "frontend_expected_after_implementation": 1,
+   "frontend_diagnostic": "unresolved type name",
+   "native": false,
+   "note": "opponent: the shim's explicit option module shadows the glob's, so core::option::Option is missing"
+  },
+  {
+   "name": "shim-glob-shadow-control",
+   "path": "tests/spec/shim-globs/shadow-client.rs",
+   "source_sha256": "b31987991dea35b9d75a7b42a4a5c6d6a372663c4cb5b04eecc8d78c7b97e04c",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "core": "shim-glob-shim"
+   },
+   "rustc_deps": {
+    "compiler_builtins": "shim-glob-builtins"
+   },
+   "inventory": [
+    "shim-glob-core"
+   ],
+   "source_client": "shim-glob-core",
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "frontend_expected_after_implementation": 0,
+   "native": false,
+   "note": "control: through the plain shim core::option::Option resolves; amended after candidate round 1, where the first shape's public `Option<u32>` return failed the client export with \"generic nominals are outside the metadata profile\" after resolution succeeded, so `Option` is now used only privately"
+  },
+  {
+   "name": "shim-glob-unused-ambiguity-client",
+   "path": "tests/spec/shim-globs/unused-ambiguity-client.rs",
+   "source_sha256": "fcfc024d3144471dba9b15b34aa53109495904a35adb68b6651a7872ee939136",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "core": "shim-glob-ambiguous-shim"
+   },
+   "rustc_deps": {
+    "compiler_builtins": "shim-glob-builtins"
+   },
+   "inventory": [
+    "shim-glob-core"
+   ],
+   "source_client": "shim-glob-core",
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "frontend_expected_after_implementation": 0,
+   "native": false,
+   "note": "control: the ambiguous shim's only_left and right::shared resolve while the ambiguous shared stays unused"
+  },
+  {
+   "name": "shim-glob-used-ambiguity-client",
+   "path": "tests/spec/shim-globs/used-ambiguity-client.rs",
+   "source_sha256": "f8f12fc6f71828a5c9606ff7a24ba68af364f4f793e05ee37179877fa6927e9e",
+   "kind": "rlib",
+   "crate": "client",
+   "edition": "2024",
+   "deps": {
+    "core": "shim-glob-ambiguous-shim"
+   },
+   "rustc_deps": {
+    "compiler_builtins": "shim-glob-builtins"
+   },
+   "inventory": [
+    "shim-glob-core"
+   ],
+   "source_client": "shim-glob-core",
+   "rustc": 0,
+   "rustc_codes": [],
+   "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc_sysroot": "empty",
+   "frontend_expected_after_implementation": 1,
+   "frontend_diagnostic": "ambiguous value name `shared`",
+   "native": false,
+   "note": "requirement: rustc 1.98 reports this use through the deny-by-default future-incompatible lint ambiguous_glob_imports (\"`shared` is ambiguous\"), which the oracle's --cap-lints=allow silences, and then selects one glob's target; RustGM keeps a used glob ambiguity an error by name, as within one crate (E0659), and does not choose between the globs"
+  }
+ ]
+}
