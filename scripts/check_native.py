@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import shutil
 import signal
+import struct
 import subprocess
 import sys
 import time
@@ -23,8 +24,10 @@ REVIEWED_WARNING_CODES = (
     "unused_must_use", "unused_attributes", "duplicate_macro_attributes",
     "malformed_diagnostic_attributes", "malformed_diagnostic_format_literals",
     "misplaced_diagnostic_attributes",
-    "unsafe_op_in_unsafe_fn", "static_mut_refs",
+    "unsafe_op_in_unsafe_fn", "static_mut_refs", "unreachable_patterns",
 )
+# ELF symbol types that name generated code or data: object, function, common, TLS, indirect function.
+CODE_OR_DATA_SYMBOLS = (1, 2, 5, 6, 10)
 
 
 def classification(case):
@@ -48,6 +51,8 @@ def classification(case):
         kind = native.get("kind", "execute")
         if library != (kind == "object"):
             raise ValueError("library native checks require object emission; programs require executables")
+        if "lowir" in native and (kind != "object" or native["lowir"] != "empty"):
+            raise ValueError("only a library object may declare an empty LowIR unit, as lowir: empty")
         if kind in ("codegen", "object"):
             if (not isinstance(native.get("reason"), str) or not native["reason"].strip()
                     or "outcome" in native or "rustc_outcome" in native):
@@ -102,11 +107,52 @@ def native_cases(manifest, cases):
     return selected
 
 
-def accepted_frontend(actual, expected_stderr=b"", declared_codes=()):
+def declares_empty_lowir(case):
+    return case.get("native", {}).get("lowir") == "empty"
+
+
+def defined_code_or_data(path):
+    """Name each symbol an ELF64 relocatable object defines for generated code or data."""
+    data = path.read_bytes()
+    try:
+        offset, = struct.unpack_from("<Q", data, 0x28)
+        size, count = struct.unpack_from("<HH", data, 0x3A)
+        if count and size != 64:
+            raise ValueError("object section headers have an unexpected entry size")
+        sections = [struct.unpack_from("<IIQQQQIIQQ", data, offset + index * size) for index in range(count)]
+        names = []
+        for _, kind, _, _, start, length, link, _, _, entry in sections:
+            if kind != 2:  # SHT_SYMTAB
+                continue
+            if entry != 24:
+                raise ValueError("object symbol table has an unexpected entry size")
+            strings = sections[link][4]
+            for index in range(length // entry):
+                name, info, _, section, _, _ = struct.unpack_from("<IBBHQQ", data, start + index * entry)
+                if section != 0 and info & 0xF in CODE_OR_DATA_SYMBOLS:
+                    names.append(data[strings + name:data.index(b"\0", strings + name)].decode())
+        return names
+    except (struct.error, IndexError, UnicodeError) as error:
+        raise ValueError("object symbol table is malformed") from error
+
+
+def empty_objects(objects):
+    """A declared empty LowIR unit is accepted only when neither compiler generated code or data."""
+    for label, path in objects:
+        defined = defined_code_or_data(path)
+        if defined:
+            raise ValueError(f"declared empty LowIR, but the {label} object defines {defined}")
+
+
+def accepted_frontend(actual, expected_stderr=b"", declared_codes=(), empty=False):
     """Accept only the exact independently reviewed successful-warning reference."""
     stdout, stderr, status = actual
-    if status != b"0\n" or not stdout:
-        raise ValueError("successful LowIR emission requires exit 0 and nonempty stdout")
+    if status != b"0\n":
+        raise ValueError("successful LowIR emission requires exit 0")
+    if empty and stdout:
+        raise ValueError("a declared empty LowIR unit requires empty stdout")
+    if not empty and not stdout:
+        raise ValueError("successful LowIR emission requires nonempty stdout unless the case declares lowir: empty")
     if stderr != expected_stderr:
         raise ValueError("successful frontend stderr differs from its declared reference")
     if not expected_stderr:
@@ -187,7 +233,8 @@ def check(app, jobs, stage="pa11", *, unit=None, case_paths=None):
                 raise ValueError(f"frontend outcome differs: {actual[2]!r}, {actual[1]!r}")
             if not case["exit_status"]:
                 warning_reference = Path(str(fixture) + ".ref.stderr")
-                accepted_frontend(actual, warning_reference.read_bytes(), case.get("warnings", []))
+                accepted_frontend(actual, warning_reference.read_bytes(), case.get("warnings", []),
+                                  declares_empty_lowir(case))
                 evidence["warning_reference"] = str(warning_reference.relative_to(ROOT))
                 evidence["warning_reference_sha256"] = digest(warning_reference)
                 evidence["declared_warning_codes"] = case.get("warnings", [])
@@ -215,7 +262,10 @@ def check(app, jobs, stage="pa11", *, unit=None, case_paths=None):
                         result = run(command, "backend-object")
                         if result.returncode:
                             raise ValueError(f"object backend failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
+                    # A declared empty unit still crosses the object bridge, proving the backend accepts it.
                     emit_object(text, native, tools, run=object_run)
+                    if declares_empty_lowir(case):
+                        empty_objects((("rustc", rustexe), ("cppgm", native)))
                     evidence["objects"] = {"rustc_sha256": digest(rustexe), "native_sha256": digest(native)}
                 else:
                     validated = folder / "validated.lowir"
@@ -248,8 +298,10 @@ def check(app, jobs, stage="pa11", *, unit=None, case_paths=None):
     accepted = [c["native"] for c in cases if "native" in c]
     compiled = sum(n.get("kind", "execute") == "codegen" for n in accepted)
     objects = sum(n.get("kind") == "object" for n in accepted)
+    empty = sum(n.get("lowir") == "empty" for n in accepted)
     scope = f" selected {len(cases)}/{selection['eligible_cases']}" if case_paths is not None else ""
-    print(f"PASS: {stage.upper()}{scope}: {len(cases)} independent checks; {len(accepted) - compiled - objects} executable comparisons; {compiled} codegen-only comparisons; {objects} object comparisons")
+    print(f"PASS: {stage.upper()}{scope}: {len(cases)} independent checks; {len(accepted) - compiled - objects} executable comparisons; {compiled} codegen-only comparisons; {objects} object comparisons"
+          + (f", {empty} of them declared empty LowIR units" if empty else ""))
     print(f"Evidence: {directory.relative_to(ROOT)}")
     differences = sum(c.get("native", {}).get("rustc_outcome", c.get("native", {}).get("outcome"))
                       != c.get("native", {}).get("outcome") for c in cases)

@@ -1,12 +1,37 @@
 from pathlib import Path
 import signal
+import struct
 import subprocess
 import sys
+import tempfile
 import unittest
 
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
-from check_native import accepted_frontend, classification, execution, native_cases, native_selection, run_executables
+from check_native import (accepted_frontend, classification, defined_code_or_data, empty_objects, execution,
+                          native_cases, native_selection, run_executables)
+
+
+def relocatable(symbols):
+    """Build a minimal ELF64 x86-64 relocatable object whose one symbol table holds these symbols."""
+    strings = b"\0" + b"".join(name.encode() + b"\0" for name, _, _ in symbols)
+    table = bytearray(24)
+    position = 1
+    for name, info, section in symbols:
+        table += struct.pack("<IBBHQQ", position, info, 0, section, 0, 0)
+        position += len(name) + 1
+    strings_at = 64
+    table_at = strings_at + len(strings)
+    headers_at = table_at + len(table)
+    header = bytearray(64)
+    header[:7] = b"\x7fELF\x02\x01\x01"
+    header[16:20] = b"\x01\x00\x3e\x00"
+    struct.pack_into("<Q", header, 0x28, headers_at)
+    struct.pack_into("<HH", header, 0x3A, 64, 3)
+    sections = bytes(64)
+    sections += struct.pack("<IIQQQQIIQQ", 0, 2, 0, 0, table_at, len(table), 2, 1, 8, 24)
+    sections += struct.pack("<IIQQQQIIQQ", 0, 3, 0, 0, strings_at, len(strings), 0, 0, 1, 0)
+    return bytes(header) + strings + bytes(table) + sections
 
 
 class NativeContract(unittest.TestCase):
@@ -105,6 +130,40 @@ class NativeContract(unittest.TestCase):
             with self.assertRaises(ValueError):
                 execution(subprocess.CompletedProcess([], status, b"", stderr), "panic", compiler)
 
+    def test_only_library_objects_declare_an_empty_lowir_unit(self):
+        case = {"exit_status": 0, "rustc": {"kind": "library", "status": 0},
+                "library": {"crate_name": "values", "disambiguator": "test"},
+                "native": {"kind": "object", "lowir": "empty", "reason": "Private items generate no code"}}
+        classification(case)
+        for value in ("", "none", "Empty", True, None):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                classification(case | {"native": case["native"] | {"lowir": value}})
+        program = {"exit_status": 0, "rustc": {"kind": "program", "status": 0}}
+        for native in ({"outcome": "pass", "lowir": "empty"},
+                       {"kind": "codegen", "reason": "main diverges", "lowir": "empty"}):
+            with self.subTest(native=native), self.assertRaises(ValueError):
+                classification(program | {"native": native})
+
+    def test_declared_empty_units_require_objects_without_generated_code_or_data(self):
+        file, section, imported = ("unit.rs", 0x04, 0xFFF1), ("", 0x03, 1), ("callee", 0x12, 0)
+        with tempfile.TemporaryDirectory() as folder:
+            empty = Path(folder) / "empty.o"
+            empty.write_bytes(relocatable([file, section, imported]))
+            self.assertEqual(defined_code_or_data(empty), [])
+            empty_objects((("rustc", empty), ("cppgm", empty)))
+            for symbol in (("f", 0x12, 1), ("local", 0x02, 1), ("value", 0x01, 2), ("tls", 0x16, 3),
+                           ("common", 0x15, 0xFFF2)):
+                with self.subTest(symbol=symbol):
+                    generated = Path(folder) / "generated.o"
+                    generated.write_bytes(relocatable([file, symbol]))
+                    self.assertEqual(defined_code_or_data(generated), [symbol[0]])
+                    with self.assertRaises(ValueError):
+                        empty_objects((("rustc", empty), ("cppgm", generated)))
+            truncated = Path(folder) / "truncated.o"
+            truncated.write_bytes(relocatable([file])[:80])
+            with self.assertRaises(ValueError):
+                defined_code_or_data(truncated)
+
     def test_codegen_controls_are_qualified_but_never_executed(self):
         case = {"exit_status": 0, "rustc": {"kind": "program", "status": 0},
                 "native": {"kind": "codegen", "reason": "main intentionally diverges"}}
@@ -130,12 +189,21 @@ class SuccessfulFrontendDiagnostics(unittest.TestCase):
             with self.subTest(actual=actual), self.assertRaises(ValueError):
                 accepted_frontend(actual)
 
+    def test_empty_lowir_is_accepted_exactly_when_declared(self):
+        accepted_frontend((b"", b"", b"0\n"), empty=True)
+        accepted_frontend((b"", self.warning, b"0\n"), self.warning, ("unused_must_use",), empty=True)
+        for actual, empty in (((b"", b"", b"0\n"), False), ((b"program\n", b"", b"0\n"), True),
+                              ((b"", b"", b"1\n"), True), ((b"", self.warning, b"0\n"), True)):
+            with self.subTest(actual=actual, empty=empty), self.assertRaises(ValueError):
+                accepted_frontend(actual, empty=empty)
+
     def test_exact_declared_warning_is_accepted(self):
         accepted_frontend((b"program\n", self.warning, b"0\n"), self.warning, ("unused_must_use",))
 
     def test_reviewed_diagnostics_require_explicit_exact_code_and_bytes(self):
         for code in ("malformed_diagnostic_attributes", "malformed_diagnostic_format_literals",
-                     "misplaced_diagnostic_attributes", "unsafe_op_in_unsafe_fn", "static_mut_refs"):
+                     "misplaced_diagnostic_attributes", "unsafe_op_in_unsafe_fn", "static_mut_refs",
+                     "unreachable_patterns"):
             warning = f"warning[{code}]: file 0: 37: declared diagnostic\n".encode()
             accepted_frontend((b"program\n", warning, b"0\n"), warning, (code,))
             with self.assertRaises(ValueError):

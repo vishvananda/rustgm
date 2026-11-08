@@ -196,9 +196,11 @@ control rejection of wholly unreachable arms. The default warning level does not
 reject them: default and explicit `warn` emit a typed
 `warning[unreachable_patterns]: file FILE: BYTE: unreachable pattern` for each
 wholly unreachable arm. Successful views can therefore have declared nonempty
-stderr while retaining their exit status and stdout. `allow` suppresses that
-diagnostic; nested allow/warn cannot weaken forbid. Individual redundant
-alternatives within an otherwise useful arm remain outside this producer.
+stderr while retaining their exit status and stdout. An accepted native program
+with such a warning declares `warnings: ["unreachable_patterns"]`. `allow`
+suppresses that diagnostic; nested allow/warn cannot weaken forbid. Individual
+redundant alternatives within an otherwise useful arm remain outside this
+producer.
 Item inheritance follows lexical policy independently of body and unsafe
 contexts. Warning contracts preserve exact code, count, order and source byte
 locations rather than discarding diagnostics during comparison.

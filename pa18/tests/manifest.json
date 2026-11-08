@@ -6665,7 +6665,10 @@
       },
       "native": {
         "outcome": "pass"
-      }
+      },
+      "warnings": [
+        "unreachable_patterns"
+      ]
     },
     {
       "path": "tests/spec/aliases/reject-qualified-missing-arguments.rs",
@@ -7772,6 +7775,7 @@
       },
       "native": {
         "kind": "object",
+        "lowir": "empty",
         "reason": "Unused generic defining-body proof; no exported runtime root or native execution claimed"
       }
     },
@@ -7792,6 +7796,7 @@
       },
       "native": {
         "kind": "object",
+        "lowir": "empty",
         "reason": "Unused generic defining-body proof; no exported runtime root or native execution claimed"
       }
     },
@@ -7812,6 +7817,7 @@
       },
       "native": {
         "kind": "object",
+        "lowir": "empty",
         "reason": "Unused generic defining-body proof; no exported runtime root or native execution claimed"
       }
     },

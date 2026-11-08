@@ -202,8 +202,9 @@ The suite declares 502 fixtures: 315 accepted and 187 rejected. The manifest
 selects 305 accepted programs for execution through both pinned rustc and the
 qualified CPPGM backend; three intentionally diverge and must only undergo code
 generation. Four accepted pattern inspections and three generic library object
-checks do not execute. Growing-instance
-rejections use rustc object generation: metadata-only success cannot qualify them.
+checks do not execute; those three libraries declare empty LowIR units.
+Growing-instance rejections use rustc object generation: metadata-only success
+cannot qualify them.
 No compilation-only result counts as a runtime comparison. Native panic cases
 retain the established qualified abort contract.
 

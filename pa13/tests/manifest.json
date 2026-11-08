@@ -4082,7 +4082,10 @@
       },
       "native": {
         "outcome": "pass"
-      }
+      },
+      "warnings": [
+        "unreachable_patterns"
+      ]
     },
     {
       "path": "tests/spec/floats/f64-0-adjacent-normal.rs",
@@ -4472,7 +4475,10 @@
       },
       "native": {
         "outcome": "pass"
-      }
+      },
+      "warnings": [
+        "unreachable_patterns"
+      ]
     },
     {
       "path": "tests/spec/floats/reference-f32-constant-negative-first-one.rs",
@@ -9551,7 +9557,10 @@
       },
       "native": {
         "outcome": "pass"
-      }
+      },
+      "warnings": [
+        "unreachable_patterns"
+      ]
     },
     {
       "path": "tests/spec/scalars/loop-transfer.rs",

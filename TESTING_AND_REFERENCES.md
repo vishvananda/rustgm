@@ -412,6 +412,14 @@ runner requires the separately pinned CPPGM object capability, verifies both
 outputs are x86-64 ELF relocatable objects, records their hashes and removes them.
 Object qualification makes no runtime equivalence claim. Programs retain their
 existing executable and explicitly justified code-generation-only contracts.
+A library whose items generate no code, such as one holding only private unused
+functions, emits an empty LowIR unit. Its case declares `native.lowir = "empty"`
+beside the object reason; only library objects may declare it. The runner
+accepts empty stdout exactly when the case declares it, still compiles the empty
+unit through the CPPGM object bridge, and fails unless both rustc's object and
+CPPGM's define no code or data symbol. A successful case whose stderr reference
+is nonempty lists each reviewed lint code in `warnings`; `check_native.py`
+holds the reviewed codes and rejects any other code.
 The syntax runner honors `RUSTGM_TEST_JOBS`, or an explicit `--jobs` from 1 to 8.
 
 PA4's `check_syntax.py pa4` checks expression fragments in explicit wrappers.

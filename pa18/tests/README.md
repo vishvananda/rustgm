@@ -36,4 +36,7 @@ PA31. Reviewed text oracles are integrator-owned.
 The generic loan-view attempt is retained as an explicit inspection boundary;
 these cases use the existing defining-template/LowIR pipeline. Accepted generic
 libraries export no runtime root and their empty object checks claim no execution.
+Each declares `native.lowir: "empty"`: the native runner accepts its empty LowIR
+unit only because of that declaration, compiles it through the CPPGM object bridge
+and requires that neither rustc's object nor CPPGM's defines code or data.
 The ordinary/source general call profiles carry separate real native traces.
