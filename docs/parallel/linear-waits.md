@@ -2,13 +2,15 @@
 
 Lane B batch of 2026-11-08, branch `implement/linear-waits-20261108` on main
 `016b1f54d`. It removes the two quadratic hazards the
-[nightly private repair](nightly-private-repair.md) found. The core census
-runs field storage at whole-crate width, so a quadratic walk there would
-become a budget record.
+[nightly private repair](nightly-private-repair.md) found, and a third that
+the second's demand exposed. The core census runs field storage and early
+conformance at whole-crate width, so a quadratic walk there would become a
+budget record.
 
 Every count below was measured on `016b1f54d`, where consumers of
-type-generic-only providers also prepare body storage. The counts are the
-same as on the previous base, `e07b0c511`.
+type-generic-only providers also prepare body storage. They are the same as
+on the previous base, `e07b0c511`, except that section 2's source contract
+work includes section 3's index: one more unit, for its box.
 
 ## 1. Success rows
 
@@ -83,10 +85,8 @@ not published yet costs the body one wait, and the body resumes from
    with "missing nominal outlives facts", where rustc accepts. This was a
    correctness bug, not only cost.
 
-The outlives demand (`demand_reached_outlives`) is unchanged. It rebuilds its
-explicit-bound map from every nominal bound of the crate once per newly
-demanded nominal, which is charged but costs (newly demanded nominals ×
-crate bounds). It is recorded in section 4.
+The outlives demand that the body then makes for each collected nominal had
+its own product cost. Section 3 repairs it.
 
 ### Repair
 
@@ -132,8 +132,8 @@ nominals declared after the length's owner. Its source contract work is:
 
 | shape | n = 6 | n = 24 | n = 96 | before the repair |
 | --- | --- | --- | --- | --- |
-| `wide`: `n` parameters `M<&L{i}<'_>>` | 1,070 | 2,634 | 8,842 | every `n` rejected with "missing nominal outlives facts"; from 256, "source contract work or retention exceeds its input-graph bound" |
-| chain: `L{i}<'a> { next: M<&'a L{i+1}<'a>> }` | 1,334 | 3,965 | 14,345 | 827, 1,129 and 3,534 at 2, 3 and 8; from 64, the input-graph bound |
+| `wide`: `n` parameters `M<&L{i}<'_>>` | 1,071 | 2,635 | 8,843 | every `n` rejected with "missing nominal outlives facts"; from 256, "source contract work or retention exceeds its input-graph bound" |
+| chain: `L{i}<'a> { next: M<&'a L{i+1}<'a>> }` | 1,335 | 3,966 | 14,346 | 827, 1,129 and 3,534 at 2, 3 and 8; from 64, the input-graph bound |
 
 The increments are 87 and 146 per nominal, and the invariant requires them to
 stay near-linear in the same way. It uses 6, 24 and 96 nominals because of the
@@ -157,7 +157,51 @@ is `obj/lane-b3/declarations/lifetime-contract-waits.declared.json` (sha256
 `variance_contract_constants.rs`'s `CASES` grows from 8 to 11. The original
 eight cases and their expectations are unchanged.
 
-## 3. Files
+## 3. Explicit nominal bounds
+
+### Cause
+
+`Lifetimes::demand_reached_outlives` (`sema/lifetimes.rs`) grouped every
+explicit nominal bound of the crate by owner before each newly demanded
+nominal's outlives contract. It was charged, but the work was (newly demanded
+nominals × crate bounds). Both of its callers run at whole-crate width:
+declaration-time bodies (section 2) and early scalar conformance, which
+demands each implementation's nominal subject.
+
+### Repair
+
+`Lifetimes` keeps a boxed index of the bounds by owner and the number of
+bounds already indexed. Declarations only append bounds, so a demand indexes
+only the bounds published since the previous demand, and each bound is
+indexed and charged once. The map growth and up to four slots per new bound
+are charged before they are allocated. If the bound list were ever shorter
+than the index, the index would be rebuilt. The crate-wide inference, which
+groups the bounds once per pass, is unchanged.
+
+### Exact growth
+
+`sema::lifetimes::tests::demanded_outlives_contracts_index_each_explicit_bound_once`
+declares `b` structs `B{j}<'a, 'b: 'a> { a: &'a u8, b: &'b u8 }`, whose bounds
+no field implies, and `n` structs `L{i}<'a> { value: &'a u8 }`. It demands
+every `L{i}` and then `B0`, and checks each contract against the crate-wide
+inference. The paid work is:
+
+| | b = 64 | b = 256 | b = 512 |
+| --- | --- | --- | --- |
+| n = 64 | 1,945 | 2,905 | 4,185 |
+| n = 256 | 6,705 | | |
+| n = 512 | 13,045 | 14,005 | 15,285 |
+
+Each bound costs 5 and each demanded nominal about 24.8. The bounds' share
+is the same at 64 and 512 nominals: the invariant requires those increments
+to be equal and both series to grow near-linearly. The restarted control
+forgets the index before every demand, as each demand regrouped every bound
+before the repair. It costs 1,326,517 at `n = b = 512`, and the invariant
+requires at least `512 × 512` more than the repair. Before the repair a
+demand was charged `b + 1`, so at `n = b = 512` the grouping alone was
+513 × 513 = 263,169.
+
+## 4. Files
 
 - `types/aggregate/instances.rs`: geometric success rows.
 - `types/variance/solver.rs`, `types/variance/payments.rs`: park and resume a
@@ -167,35 +211,44 @@ eight cases and their expectations are unchanged.
 - `types/variance.rs`: re-exports `PendingReach`.
 - `sema/bodies/field_storage.rs`, `sema/bodies/finalization.rs`: the body's
   nominals, its index and the waiting reach live in `FieldWaits`.
-- Tests: the new `tests/invariants/success_rows.rs`, plus
-  `reachable_variance.rs` and `variance_contract_constants.rs`.
-- No `sema::traits` file, wire byte or `Declarations` layout changes. The
-  boxed per-body `Publication` grows by `FieldWaits`' three new fields.
+- `sema/lifetimes.rs`: the explicit nominal bound index.
+- Tests: the new `tests/invariants/success_rows.rs` and
+  `tests/invariants/explicit_bounds.rs`, plus `reachable_variance.rs` and
+  `variance_contract_constants.rs`. `Declarations` grows by 8 bytes, to
+  7,152, for the boxed index: `prototype_headers.rs` pins it as a literal
+  twice, and seven layout tests add `size_of::<Option<Box<()>>>()` to their
+  sums.
+- No `sema::traits` file or wire byte changes. The boxed per-body
+  `Publication` grows by `FieldWaits`' three new fields.
 
-## 4. Remaining limits
+## 5. Remaining limit
 
-- **Chained nominals attempt more bytes than their input allows.** A chain
-  nominal costs about 3.77 KB of attempted source-contract bytes. About 2.16 KB
-  is the variance graph's conservative `Growth` charges and about 1.25 KB is
-  the outlives closure. The input-graph bound allows about 2.94 KB per such
-  nominal. The cost is linear, but a chain of about 200 or more referenced
-  nominals that all wait in one declaration-time body exceeds the bound.
-  Nothing here raises the bound. Shrinking the `Growth` estimates for parked
-  graphs would be a separate decision.
-- **`demand_reached_outlives` rebuilds its explicit-bound map for each newly
-  demanded nominal.** The cost is (newly demanded nominals × crate nominal
-  bounds). It is charged, and not changed here.
+**Chained nominals attempt more bytes than their input allows.** A chain
+nominal costs about 3.77 KB of attempted source-contract bytes. About 2.16 KB
+is the variance graph's conservative `Growth` estimates and about 1.25 KB is
+the outlives closure. The input-graph bound allows about 2.94 KB per such
+nominal. The cost is linear, but a chain of about 200 or more referenced
+nominals that all wait in one declaration-time body exceeds the bound.
 
-## 5. Checks
+The repair is queued after task 3: charge the parked graph's actual retained
+bytes instead of an estimate, as the `path_compatibility` repair made the
+accounting match real retention. The bound itself stays. The repair moves
+ahead of the queue if census 12 or any control reaches this limit.
 
-All on this branch over `016b1f54d`, with receipts under
-`obj/qualification/fast/`:
+## 6. Checks
+
+All on this branch's third commit over `016b1f54d`, with receipts under
+`obj/qualification/fast/`. The same selections, without the 34 private tests
+section 3 added, also passed on the second commit (`1794130804456421647`,
+`1794131170068085480`, `1794131274063180692`, `1794131328252468694` and
+`1794131407599894826`).
 
 | check | receipt | result |
 | --- | --- | --- |
-| 30 private tests: the three new invariants, the 11 lifetime contract controls, the five other `reachable_variance` tests, the layout kernel's two, the resumable field walk, batch 5 and batch 7's declaration-time controls, and the 11 PhantomData role, callable template and member transaction tests of `016b1f54d` | `1794130804456421647` | pass |
-| 96 integration tests: 91 in 13 roots (`shape_constructors`, `nominal_instances`, `nominal_variance`, `nominal_outlives`, `field_outlives`, `finite_storage`, `size_conditions`, `derive_contracts`, `tail_rules`, `nominal_declarations`, `destructor_conformance`, `borrowed_receivers`, `census_mode`) and five `crate_linking::phantom_roles` cases | `1794131170068085480` | pass |
-| PA1–PA12 | `1794131274063180692` | pass |
-| PA13–PA19, PA21–PA24 | `1794131328252468694` | pass |
-| PA20 | `1794131407599894826` | 1451/1451 |
-| `make test-upstream` | `obj/lane-b3/t1/upstream-2.log` | 128 fixtures, 126 Reference files |
+| 64 private tests: the four new invariants, the 11 lifetime contract controls, the five other `reachable_variance` tests, the layout kernel's two, the resumable field walk, batch 5 and batch 7's declaration-time controls, the 11 PhantomData role, callable template and member transaction tests of `016b1f54d`, the nine early conformance tests, the five demanded outlives tests, and all 19 tests that measure `size_of::<Declarations>()` | `1794133823204162398` | pass |
+| 96 integration tests: 91 in 13 roots (`shape_constructors`, `nominal_instances`, `nominal_variance`, `nominal_outlives`, `field_outlives`, `finite_storage`, `size_conditions`, `derive_contracts`, `tail_rules`, `nominal_declarations`, `destructor_conformance`, `borrowed_receivers`, `census_mode`) and five `crate_linking::phantom_roles` cases | `1794132844873204870` | pass |
+| 32 outlives integration tests: `outlives_types`, `outlives_verification`, `caller_outlives` and `region_constraints::nominal_bounds_are_enforced_and_implied_while_alias_bounds_remain_unenforced` | `1794133227237829766` | pass |
+| PA1–PA12 | `1794133274325843176` | pass |
+| PA13–PA19, PA21–PA24 | `1794133323458885736` | pass |
+| PA20 | `1794133546656439564` | 1451/1451 |
+| `make test-upstream` (second commit; the third changes no fixture) | `obj/lane-b3/t1/upstream-2.log` | 128 fixtures, 126 Reference files |

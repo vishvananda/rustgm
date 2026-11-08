@@ -709,6 +709,34 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
       then the `[const]` supertrait gap, which may share the
       `const_conditions` split.
 
+- **During Lane B's [linear waits](parallel/linear-waits.md)**, 2026-11-08.
+  Three quadratic walks it found during the nightly repair are now linear:
+  - Storage completions' dense success rows grow geometrically. At 512
+    completions they cost 4,288 steps, against 145,153 before.
+  - A declaration-time body's lifetime-contract demand resumes at the
+    nominal and closure owner it waited for: 54 steps per nominal, against
+    about 20n² when restarted.
+    - This also fixed a correctness bug. The rescan dropped nominals that
+      completed before a later wait, so their outlives contracts were never
+      demanded, and core-like code rustc accepts failed with "missing
+      nominal outlives facts".
+    - Three PA31 controls, declared before the oracle, agree with rustc.
+  - **Fixed in the same checkpoint, not queued:** the explicit-bound index.
+    Demanded outlives contracts regrouped every explicit bound in the crate
+    per newly demanded nominal. Each bound is now indexed once, costing
+    nominals plus bounds; the restarted control costs 1.3M at 512 × 512.
+    - Why now: core has thousands of explicit bounds, and the census runs at
+      whole-crate width.
+    - Cost: `Declarations` grows by one pointer. The join found that its
+      seven sum-spelled size asserts had been missed again, so every
+      `size_of::<Declarations>()` test is now selected.
+  - **Recorded known limit, queued after Lane B's task 3:** parked variance
+    graphs are charged conservative growth estimates, 2.16 KB of the 3.77 KB
+    a chained nominal attempts against a 2.94 KB allowance. A body with about
+    200 or more waiting nominals then exceeds the input-graph bound.
+    - The fix: charge the parked graph's actual retained bytes.
+    - It moves ahead if a census or control hits it.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

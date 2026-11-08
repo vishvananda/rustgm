@@ -252,12 +252,15 @@ fn iterator_layout_keeps_ordinary_records_compact() {
     // Source member identity and the cold async destructor family add two words.
     // The once-per-crate header input bound adds two more.
     // The pending Copy selection a declaration-time constant awaits adds one.
+    // The boxed explicit nominal bound index of demanded outlives contracts adds
+    // one pointer.
     assert_eq!(
         size_of::<Declarations>(),
         7048 + size_of::<Vec<()>>()
             + 6 * size_of::<usize>()
             + 2 * size_of::<usize>()
             + size_of::<usize>()
+            + size_of::<Option<Box<()>>>()
     );
     assert_eq!(size_of::<Original>(), 56);
     // The demand-only collection catalog adds one optional Box to this owner.

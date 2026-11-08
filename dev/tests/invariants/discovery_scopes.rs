@@ -188,12 +188,15 @@ fn scope_walk_rejects_unknown_definition_sites_and_counts_failed_work() -> TestR
     // Source member identity and the cold async destructor family add two words.
     // The once-per-crate header input bound adds two more.
     // The pending Copy selection a declaration-time constant awaits adds one.
+    // The boxed explicit nominal bound index of demanded outlives contracts adds
+    // one pointer.
     assert_eq!(
         size_of::<Declarations>(),
         7048 + size_of::<Vec<()>>()
             + 6 * size_of::<usize>()
             + 2 * size_of::<usize>()
             + size_of::<usize>()
+            + size_of::<Option<Box<()>>>()
     );
     assert_eq!(size_of::<crate::resolve::model::Scope>(), 32);
     Ok(())

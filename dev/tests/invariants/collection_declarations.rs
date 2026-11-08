@@ -310,12 +310,15 @@ fn collection_layout_preserves_scalar_owners_and_padded_derive_entries() {
     // Source member identity and the cold async destructor family add two words.
     // The once-per-crate header input bound adds two more.
     // The pending Copy selection a declaration-time constant awaits adds one.
+    // The boxed explicit nominal bound index of demanded outlives contracts adds
+    // one pointer.
     assert_eq!(
         size_of::<crate::sema::model::Declarations>(),
         7048 + size_of::<Vec<()>>()
             + 6 * size_of::<usize>()
             + 2 * size_of::<usize>()
             + size_of::<usize>()
+            + size_of::<Option<Box<()>>>()
     );
     assert_eq!(size_of::<Type>(), 24);
     assert_eq!(

@@ -7,6 +7,9 @@ use crate::{
     types::{GenericArgs, Store, TypeId, substitute::Bound},
 };
 use std::collections::hash_map::Entry;
+#[cfg(test)]
+#[path = "../../tests/invariants/explicit_bounds.rs"]
+mod tests;
 
 #[derive(Clone)]
 pub struct FunctionRegions {
@@ -67,6 +70,8 @@ pub struct Lifetimes {
     pub(crate) rigid_inputs: Option<Box<crate::types::variance::RigidInputs>>,
     pub callables: crate::types::callable::Templates,
     pub nominal_bounds: Vec<(crate::types::ItemId, crate::types::outlives::Pair)>,
+    /// `nominal_bounds` by owner, once a nominal's outlives contract is demanded.
+    explicit_bounds: Option<Box<ExplicitBounds>>,
     /// Completed field and declared requirements; all consumers share this result.
     pub nominal_requirements: crate::types::outlives::Bounds,
     pub functions: HashMap<DefId, FunctionRegions>,
@@ -75,6 +80,15 @@ pub struct Lifetimes {
     pub parameters: HashMap<DefId, Vec<DefId>>,
     pub named: HashMap<DefId, crate::types::RegionId>,
     substitutions: HashMap<GenericArgs, Bound>,
+}
+
+/// Declarations only append explicit nominal bounds, so demands extend this
+/// index with the bounds published since the previous one, each indexed and
+/// charged once, instead of grouping every bound of the crate again.
+#[derive(Default)]
+struct ExplicitBounds {
+    indexed: usize,
+    owners: HashMap<crate::types::ItemId, Vec<crate::types::outlives::Pair>>,
 }
 
 impl Lifetimes {
@@ -123,17 +137,50 @@ impl Lifetimes {
         if self.nominal_requirements.get(item).is_some() {
             return Ok(());
         }
-        let bounds = &self.nominal_bounds;
-        pay(
-            bounds.len().saturating_add(1),
-            size_of_val(bounds.as_slice()),
-        )?;
-        let mut explicit = HashMap::<_, Vec<_>>::default();
-        for &(owner, pair) in bounds {
-            explicit.entry(owner).or_default().push(pair);
+        if self
+            .explicit_bounds
+            .as_ref()
+            .is_some_and(|explicit| explicit.indexed > self.nominal_bounds.len())
+        {
+            // The bounds were replaced, not appended: index them again.
+            self.explicit_bounds = None;
         }
-        self.nominal_requirements
-            .append_reached(types, definitions, item, &explicit, clauses, pay)
+        if self.explicit_bounds.is_none() {
+            pay(1, size_of::<ExplicitBounds>())?;
+        }
+        let explicit = self.explicit_bounds.get_or_insert_with(Box::default);
+        let fresh = self
+            .nominal_bounds
+            .get(explicit.indexed..)
+            .ok_or("invalid explicit nominal bound index")?;
+        // Each new bound may start an owner row; a row's slots are at most
+        // four times its bounds.
+        let growth = crate::support::retained::Growth::map::<
+            crate::types::ItemId,
+            Vec<crate::types::outlives::Pair>,
+        >(
+            explicit.owners.len(),
+            explicit.owners.capacity(),
+            fresh.len(),
+        );
+        pay(
+            fresh.len().saturating_add(growth.work).saturating_add(1),
+            size_of_val(fresh)
+                .saturating_mul(4)
+                .saturating_add(growth.bytes),
+        )?;
+        for &(owner, pair) in fresh {
+            explicit.owners.entry(owner).or_default().push(pair);
+        }
+        explicit.indexed = self.nominal_bounds.len();
+        self.nominal_requirements.append_reached(
+            types,
+            definitions,
+            item,
+            &explicit.owners,
+            clauses,
+            pay,
+        )
     }
 }
 

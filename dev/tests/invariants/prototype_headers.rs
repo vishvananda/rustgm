@@ -7,8 +7,9 @@ const PACKET: &str = "pa28/tests/spec/intrinsic-declarations";
 // Source Reborrow storage belongs to the existing optional source catalog.
 // Check ordinary records during metadata compilation as well as runtime. The
 // once-per-crate header input bound adds 16 bytes, and the one pending Copy
-// selection a declaration-time constant may await adds 8.
-const _: [(); 7144] = [(); size_of::<Declarations>()];
+// selection a declaration-time constant may await adds 8. The boxed index of
+// explicit nominal bounds that demanded outlives contracts share adds 8.
+const _: [(); 7152] = [(); size_of::<Declarations>()];
 const _: [(); 456] = [(); size_of::<crate::body::ir::Body>()];
 const _: [(); 24] = [(); size_of::<crate::body::ir::Value>()];
 const _: [(); 36] = [(); size_of::<crate::syntax::ast::Node>()];
@@ -42,9 +43,9 @@ fn registry_retains_distinct_identities_and_shared_finite_profiles() -> TestResu
     assert_eq!(size_of::<SourceIntrinsic>(), 4);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
-    // The once-per-crate header input bound adds 16 bytes and the pending Copy
-    // selection wait adds 8.
-    assert_eq!(size_of::<Declarations>(), 7144);
+    // The once-per-crate header input bound adds 16 bytes, the pending Copy
+    // selection wait adds 8 and the boxed explicit nominal bound index adds 8.
+    assert_eq!(size_of::<Declarations>(), 7152);
     Ok(())
 }
 
