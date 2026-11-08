@@ -68,7 +68,7 @@ impl Search<'_> {
             Err(error) => return Err(inference(error)),
         };
         frame.require_nominal_formed(facts, goal.ty)?;
-        let shape = self.query.builtins.physical_shape(facts, goal.ty)?;
+        let shape = self.builtin_shape(facts, frame, goal.ty)?;
         if !shape.well_formed {
             return Ok(Some(Action::Complete(Decision::Absent)));
         }
@@ -179,6 +179,22 @@ impl Search<'_> {
         Ok(self
             .source_sizing_result(facts, frame)?
             .filter(|action| !matches!(action, Action::Complete(Decision::Absent))))
+    }
+    /// The physical shape of a source builtin goal's subject, whose nominal
+    /// formation the frame already retains as child goals. Normalized inputs
+    /// keep their rigid projections and the caller's lifetimes, so the builtin
+    /// proof must not normalize them again.
+    pub(super) fn builtin_shape(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &Frame,
+        ty: crate::types::TypeId,
+    ) -> Result<crate::types::parameters::shape::Properties, &'static str> {
+        if Self::normalized_inputs(frame) {
+            self.query.builtins.normalized_physical_shape(facts, ty)
+        } else {
+            self.query.builtins.physical_shape(facts, ty)
+        }
     }
     fn normalized_inputs(frame: &Frame) -> bool {
         frame.normalized_inputs.is_some()

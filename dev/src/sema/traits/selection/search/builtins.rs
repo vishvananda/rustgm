@@ -161,6 +161,16 @@ impl Search<'_> {
                         sized
                     }
                 }
+            } else if frame
+                .normalization
+                .as_ref()
+                .is_some_and(|normalization| normalization.original_inputs().is_some())
+            {
+                // `advance_inputs` replaced every projected input with its
+                // normalized value under this query's environment. Their
+                // remaining projections are rigid and keep the caller's
+                // lifetimes, so the builtin proof must not normalize them again.
+                self.query.builtins.prove_normalized(facts, goal)?
             } else {
                 self.query.builtins.prove(facts, goal)?
             };

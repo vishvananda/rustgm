@@ -15,6 +15,9 @@ use crate::types::{
 pub(super) use requirements::{
     FormationRequirements, Requirements, formation_requirements_counted, immediate, requirements,
 };
+#[cfg(test)]
+#[path = "../../tests/invariants/normalized_sizing_lifetimes.rs"]
+mod tests;
 
 /// Predicate proofs are reusable only within one immutable declaration environment.
 pub(super) struct Proof {
@@ -158,6 +161,26 @@ impl Proof {
         ty: TypeId,
         count: Option<u32>,
     ) -> Result<crate::types::parameters::shape::Properties, &'static str> {
+        self.prepare_shapes(facts, ty, count)?;
+        let projected = facts.types.contains_projections(ty) == Some(true);
+        if let Some(properties) = self.shape_properties(facts, ty, count, false)?
+            && (!projected || properties.sized && properties.well_formed)
+        {
+            return Ok(properties);
+        }
+        let ty = if let Some(count) = count {
+            self.normalize_clause_term(facts, ty, count)?
+        } else {
+            self.normalize(facts, ty)?
+        };
+        self.normalized_shape(facts, ty, count, projected)
+    }
+    fn prepare_shapes(
+        &mut self,
+        facts: &Declarations,
+        ty: TypeId,
+        count: Option<u32>,
+    ) -> Result<(), &'static str> {
         if count.is_some() && self.term_shapes.is_none() {
             let environment = if let Some(environment) = &self.environment {
                 std::sync::Arc::clone(environment)
@@ -182,17 +205,18 @@ impl Proof {
                 environment,
             )));
         }
-        let projected = facts.types.contains_projections(ty) == Some(true);
-        if let Some(properties) = self.shape_properties(facts, ty, count, false)?
-            && (!projected || properties.sized && properties.well_formed)
-        {
-            return Ok(properties);
-        }
-        let ty = if let Some(count) = count {
-            self.normalize_clause_term(facts, ty, count)?
-        } else {
-            self.normalize(facts, ty)?
-        };
+        Ok(())
+    }
+    /// The shape of a root already normalized in this proof's environment: its
+    /// remaining projections are rigid, and their formation stays with the
+    /// proof that normalized them.
+    fn normalized_shape(
+        &mut self,
+        facts: &mut Declarations,
+        ty: TypeId,
+        count: Option<u32>,
+        projected: bool,
+    ) -> Result<crate::types::parameters::shape::Properties, &'static str> {
         if let Some(properties) = self.shape_properties(facts, ty, count, projected)? {
             return Ok(properties);
         }
@@ -261,6 +285,32 @@ impl Proof {
             .nominal_requirements
             .prepare(&mut facts.types, ty)?;
         self.shape(facts, ty)
+    }
+    /// As [`Self::physical_shape`] for a root that a selection query has
+    /// already normalized under the same environment and that retains the
+    /// root's nominal formation as child goals. Normalizing it again here
+    /// would restore the query's caller lifetimes in a proof that does not
+    /// own them.
+    pub(in crate::sema) fn normalized_physical_shape(
+        &mut self,
+        facts: &mut Declarations,
+        ty: TypeId,
+    ) -> Result<crate::types::parameters::shape::Properties, &'static str> {
+        facts
+            .lifetimes
+            .nominal_requirements
+            .prepare(&mut facts.types, ty)?;
+        self.rigid_shape(facts, ty)
+    }
+    /// The shape of a root already normalized in this proof's environment.
+    fn rigid_shape(
+        &mut self,
+        facts: &mut Declarations,
+        ty: TypeId,
+    ) -> Result<crate::types::parameters::shape::Properties, &'static str> {
+        self.prepare_shapes(facts, ty, None)?;
+        let projected = facts.types.contains_projections(ty) == Some(true);
+        self.normalized_shape(facts, ty, None, projected)
     }
     pub fn check(
         &mut self,
@@ -363,6 +413,25 @@ impl Proof {
         requirement: Predicate,
     ) -> Result<bool, &'static str> {
         let requirement = self.normalize_builtin(facts, requirement)?;
+        self.prove_builtin(facts, requirement, false)
+    }
+    /// As [`Self::prove`] for a requirement whose inputs a selection query has
+    /// already normalized under the same environment. Its remaining
+    /// projections are rigid; normalizing them again here would restore the
+    /// query's caller lifetimes in a proof that does not own them.
+    pub(in crate::sema) fn prove_normalized(
+        &mut self,
+        facts: &mut Declarations,
+        requirement: Predicate,
+    ) -> Result<bool, &'static str> {
+        self.prove_builtin(facts, requirement, true)
+    }
+    fn prove_builtin(
+        &mut self,
+        facts: &mut Declarations,
+        requirement: Predicate,
+        normalized: bool,
+    ) -> Result<bool, &'static str> {
         let valid = match requirement.bound {
             Bound::ProjectionEqual(_) => {
                 self.trait_state(facts)?
@@ -372,6 +441,7 @@ impl Proof {
                 self.prove_trait(facts, requirement)?
             }
             Bound::Auto(_) => self.trait_state(facts)?.prove(facts, requirement, false)?,
+            Bound::Sized if normalized => self.rigid_shape(facts, requirement.ty)?.sized,
             Bound::Sized => self.shape(facts, requirement.ty)?.sized,
             Bound::Copy | Bound::Clone => {
                 if !self.provisional {

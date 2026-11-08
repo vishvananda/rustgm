@@ -614,6 +614,14 @@ declared controls to `spec/declaration-lifetime-contracts/`: a nominal that
 completes before another waits, and a covariant chain of referenced nominals
 with its invariant opponent.
 
+`spec/rigid-projection-lifetimes/` freezes twenty-one declared no_core
+controls from Lane B's nested projection batch: census batch 9's `Option<&'a
+<H::Inner as Deref>::Target>` without `[const]`, where only an associated
+type's item bound forms the projection, with its elided, lang, nested,
+supertrait, method and tuple forms, three controls and two opponents; and the
+same shape under source `Freeze` and `Destruct` bounds, with its premise,
+three ordinary controls and an unsized opponent.
+
 `spec/projection-sizedness/` and `spec/normalized-projection-sizing/` freeze
 thirteen declared no_core controls from census batch 8: rigid projections as
 sizing arguments under rustc 1.98's sizedness hierarchy. They cover core's

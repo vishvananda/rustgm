@@ -182,7 +182,7 @@ impl Search<'_> {
             return Ok(Some(Action::Complete(Decision::Absent)));
         }
         frame.require_nominal_formed(facts, goal.ty)?;
-        let shape = self.query.builtins.physical_shape(facts, goal.ty)?;
+        let shape = self.builtin_shape(facts, frame, goal.ty)?;
         if !shape.well_formed {
             return Ok(Some(Action::Complete(Decision::Absent)));
         }

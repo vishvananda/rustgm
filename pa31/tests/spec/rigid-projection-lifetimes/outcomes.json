@@ -1,0 +1,164 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The shapes reduce census batch 9's draft `Option<&'a <H::Inner as Deref>::Target>` (obj/parallel/census-batch9/repro/nested-item.rs), which has no `[const]` bound. Exploration drafts of alias-bound, elided-lifetime, lang-deref, sized-target, where-premise, raw-pointer and missing-bound (obj/lane-b3/t2/explore) were run through rustc 1.98.0 and this compiler, and drafts of nested-holder, supertrait-bound, method and concrete-result through this compiler only, so those are a regression record of that exploration; sized-tuple and unsized-tuple were not run by anyone. Each outcome follows the stated rule (a projection whose subject's trait is proved by an associated type's item bounds is well formed, its rigid result keeps the caller's reference lifetimes, and an unsized rigid projection is still not a sized argument)",
+ "declaration_sha256": "f9394c2ab4bba573f189e17ed6059c68a008925fcdd5d718d2aae3a8f5c14e89",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "additions_declared": "2026-11-08. Eight additions to rigid-projection-lifetimes. The four sibling drafts keep version 2's declared outcomes; the three ordinary controls are exploration probes that rustc 1.98.0 and this compiler ran before this declaration, so they are a regression record; the opponent is declared before any rustc or RustGM run of its bytes.",
+ "additions_declaration_sha256": "5fab7f9e1d11f35509ecd857895581f4caade75d2da4f4e84bcf9243f3a1ba20",
+ "cases": {
+  "alias-bound.rs": {
+   "sha256": "832ed4df1ff80a11d02bf9aed1dbd75822cf515cc96666ad68e0ad8d2c757e2e",
+   "declared": 0,
+   "reason": "census batch 9's nested shape without `[const]`: `Option<&'a <H::Inner as View>::Target>` where `Holder`'s `type Inner: View` is the only premise for the inner projection; the rigid projection keeps the caller's `'a`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "elided-lifetime.rs": {
+   "sha256": "2d7aae391b1b5e3fc3b502f9e862a4b7a5d2e4e76f29694ca0ae48d178b238e1",
+   "declared": 0,
+   "reason": "the same return type with an elided reference lifetime",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "lang-deref.rs": {
+   "sha256": "ce038c1061dd11cd27288a3f2bfd436571aa1e3acce6f65fd7e7f5864b9a721e",
+   "declared": 0,
+   "reason": "the census draft's shape with the `deref` lang trait, without `const`: `Option<&'a <H::Inner as Deref>::Target>`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "sized-target.rs": {
+   "sha256": "34b0a0ea48bde6546b1e0dc0bf4681d786bca9cf50c23d627c653258adc2be62",
+   "declared": 0,
+   "reason": "the same shape when the associated `Target` is `Sized`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "nested-holder.rs": {
+   "sha256": "4c3d50b25cf4964055125fd89f3bfffbc13d5f56792fcce1b80212e7b8f224a0",
+   "declared": 0,
+   "reason": "two levels of item bounds: `Option<&'a <<H::Inner as Leaf>::Value as View>::Target>`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "supertrait-bound.rs": {
+   "sha256": "0291e060e57a4f5ba0f4405889269fc1e20861383e7bf3c1a967bb529425b2c4",
+   "declared": 0,
+   "reason": "the item bound is `SubView`, whose supertrait `View` forms the projection",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "method.rs": {
+   "sha256": "77758b5a93c0816968e22873629de2a5d540e7429d3e0a4b1f2dd125061f3db6",
+   "declared": 0,
+   "reason": "an inherent method on `Wrapper<H>` returning `Option<&'a <H::Inner as View>::Target>` from `&'a self`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "sized-tuple.rs": {
+   "sha256": "be9b61a5c2050777c83a3685e226a2058ffde059be95d6ac16f8fca4e2c7bc42",
+   "declared": 0,
+   "reason": "`Option<(&'a u8, <H::Inner as View>::Target)>` with a `Sized` `Target`: the rigid projection is a sized tuple field beside the caller's reference",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "where-premise.rs": {
+   "sha256": "caed76975674409d06e5a472815fbacb6c03619e6717b431249103a9b72c72fa",
+   "declared": 0,
+   "reason": "control: an explicit `H::Inner: View` premise forms the projection without normalization",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "raw-pointer.rs": {
+   "sha256": "a153a2941ca376d8f677fbf10d7f4d29dac0c465c31386fbaf8e9adc4f3bdca7",
+   "declared": 0,
+   "reason": "control: `Option<*const <H::Inner as View>::Target>` has no caller lifetime",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "concrete-result.rs": {
+   "sha256": "4ae90d2555e80b1d900febe8f606b957145388d71de857c74082d793219af612",
+   "declared": 0,
+   "reason": "control: `Option<&'a <u8 as View>::Target>` normalizes through `impl View for u8`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "unsized-tuple.rs": {
+   "sha256": "d4b648b4d0420732840d8a9d7aee4db0d5c1ddc20ce1d6a505d9a0a2291b2955",
+   "declared": 1,
+   "reason": "opponent: `Option<(&'a u8, <H::Inner as View>::Target)>` with `Target: ?Sized` is not a sized `Option` argument (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "missing-bound.rs": {
+   "sha256": "6a3e8fb7bd84f3dee5fdb51783148977d14a68aace0b47f1e5ef62f0666547e4",
+   "declared": 1,
+   "reason": "opponent: `Holder`'s `type Inner` has no `View` bound, so `<H::Inner as View>` is not formed (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "freeze-nested.rs": {
+   "sha256": "1b07292893c085f28088b4bec7c30bfa26ff2228dbaa71211e1c59513eef18b1",
+   "declared": 0,
+   "reason": "declared in 3a8ed5e3fad5d93374c140c14c15624eb7673c759506ba729c207dc40f62b3df: `Frozen<Option<&'a <H::Inner as View>::Target>>`, a source Freeze bound on the nested shape",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "freeze-premise.rs": {
+   "sha256": "7d8cae52739ebc2f4c89cbb712e1de77817f03a0943252b274adf75797ca40f6",
+   "declared": 0,
+   "reason": "declared in 3a8ed5e3fad5d93374c140c14c15624eb7673c759506ba729c207dc40f62b3df: the same with an explicit `H::Inner: View` premise",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "destruct-nested.rs": {
+   "sha256": "434ac506724115b2545f8eff79b4248bfafa1899f9bce4c5da83e514fa822ecc",
+   "declared": 0,
+   "reason": "declared in 3a8ed5e3fad5d93374c140c14c15624eb7673c759506ba729c207dc40f62b3df: `Gone<Option<&'a <H::Inner as View>::Target>>`, an ordinary Destruct bound on the nested shape",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "destruct-premise.rs": {
+   "sha256": "f14c1c41896ffd86881d0fc16214df47962400b5f1c714eebb150ce1804e73fe",
+   "declared": 0,
+   "reason": "declared in 3a8ed5e3fad5d93374c140c14c15624eb7673c759506ba729c207dc40f62b3df: the same with an explicit `H::Inner: View` premise",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "freeze-plain-reference.rs": {
+   "sha256": "cada322a95e401a21f676ce28d7ce99be3440650f373c14683336aeea8c9cdd1",
+   "declared": 0,
+   "reason": "ordinary control, run as exploration before this declaration: `Frozen<Option<&'a u8>>`, the caller's lifetime without a projection",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "destruct-generic-reference.rs": {
+   "sha256": "50eb458af3818752e011e80b710051a9952d781c8ad545c70eb93faa5493176e",
+   "declared": 0,
+   "reason": "ordinary control, run as exploration before this declaration: `Gone<Option<&'a H>>`, a type parameter behind the caller's lifetime",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "destruct-raw-projection.rs": {
+   "sha256": "223a747dce00c9f722a56ea22d9ebd8cd8ec39caf28fd5de4003359ed78e4ab2",
+   "declared": 0,
+   "reason": "ordinary control, run as exploration before this declaration: `Gone<Option<*const <H::Inner as View>::Target>>`, the rigid projection without a lifetime",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "destruct-unsized-pair.rs": {
+   "sha256": "c8f980050359c76d67528fc439581fabd7a7602ca935b4256e38e56015e3ed18",
+   "declared": 1,
+   "reason": "opponent, declared before any run of these bytes: `Gone<(&'a P, P)>` with `P = <H::Inner as View>::Target: ?Sized`; the tuple's last element is unsized, so `Gone`'s implicit `Sized` bound fails (E0277) on a type that carries the caller's 'a through the builtin sizing path",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  }
+ }
+}
