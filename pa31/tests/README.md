@@ -675,8 +675,8 @@ census batch 10: impls beside core's `impl<F> MultiCharEq for F where F:
 FnMut(char) -> bool`, whose sugar binder binds no region, so its condition
 proves disjointness like any where clause. The opponents are a second blanket
 over another argument tuple and an impl for `&T` (each E0119). Three controls
-with core's const callable reference impls are a recorded `[const]`
-requirement gap. Each outcome was declared before its rustc 1.98.0 oracle; its
+with core's const callable reference impls, a recorded `[const]` requirement
+gap until census batch 12, now pass. Each outcome was declared before its rustc 1.98.0 oracle; its
 one fixture amendment was declared before the amended oracle and before any
 candidate run. A private invariant checks them; there is no graded manifest.
 
@@ -732,3 +732,11 @@ ordinary parent and the ordinary pair, beside a non-const and a weaker const
 child that do not specialize and a `const` marker bound. Each outcome was
 declared before its rustc 1.98.0 oracle. A private invariant checks them;
 there is no graded manifest.
+
+`spec/const-supertrait-requirements/` freezes seven declared no_core controls
+from census batch 12: const impls of `const trait Shared: [const] Once` whose
+`[const] Once` holds through a const impl over the impl's own `[const]`
+premises, directly or by elaboration, a plain supertrait and ordinary impls,
+beside an ordinary supertrait impl, an ordinary premise and a `const` premise
+that do not satisfy it (E0277). Each outcome was declared before its rustc
+1.98.0 oracle. A private invariant checks them; there is no graded manifest.

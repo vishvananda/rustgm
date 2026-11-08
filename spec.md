@@ -242,7 +242,7 @@ An overlap condition whose quantifier binds no region, as parenthesized
 callable sugar writes, is an ordinary where clause, as in rustc 1.98; one that
 binds a region still proves no disjointness. The
 [callable sugar coherence controls](pa31/tests/spec/callable-sugar-coherence/README.md)
-record independent outcomes and a `[const]` requirement gap.
+record independent outcomes.
 
 Attribute feature queries follow the pinned gate's actual construct span.
 Unstable builtin attributes use their retained `#` through `]` envelope: an
@@ -2048,6 +2048,15 @@ normalization. An effect goal still requires its qualified premise. The [const
 bound projections](pa31/tests/spec/const-bound-projections/README.md) controls
 retain core's `as_deref`, `as_deref_mut`, `Pin::as_ref` and `<[T]>::get`
 shapes, their guards and their opponents.
+
+A const impl proves its trait's `[const]` supertraits and where clauses as
+`[const]` goals, as rustc's wfcheck proves the trait's const conditions, under
+the impl's own `[const]` premises and their `[const]` supertraits. Its plain
+supertraits stay ordinary obligations. A `[const]` goal still needs a const
+impl or a `[const]` premise, and a `[const]` premise does not prove a `const`
+one. The [const supertrait controls](pa31/tests/spec/const-supertrait-requirements/README.md)
+record independent outcomes; they include core's const callable reference
+impls through the callable sugar controls.
 
 A trait object, like a slice or str, has no fixed layout. The crate-wide layout
 pass demands no static layout for a declaration whose last field is, or ends

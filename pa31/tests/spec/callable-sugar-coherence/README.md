@@ -31,8 +31,10 @@ changed. The prefix is the `spec/fn-sugar-impl-parameters/const-call-adapter.rs`
 foundation, which includes core's callable trait declarations. It keeps Rust's
 MIT/Apache-2.0 attribution; see root NOTICE and `third_party/sources.json`.
 
-`core-pattern`, `array-reference` and `slice-reference` are recorded gaps:
-their `MultiCharEq` impls are disjoint here, but the const callable reference
-impls do not yet prove their `[const]` supertrait requirement from a `[const]`
-premise, which rustc accepts. `dev/tests/invariants/vacuous_callable_coherence.rs`
-checks every case. See `docs/parallel/census-batch10.md`.
+`core-pattern`, `array-reference` and `slice-reference` were recorded gaps
+in census batch 10: their `MultiCharEq` impls were disjoint, but the const
+callable reference impls did not prove their `[const]` supertrait requirement
+from a `[const]` premise, which rustc accepts. Census batch 12 proves a const
+impl's `[const]` requirements as `[const]` goals, and all three pass.
+`dev/tests/invariants/vacuous_callable_coherence.rs` checks every case. See
+`docs/parallel/census-batch10.md` and `docs/parallel/census-batch12.md`.

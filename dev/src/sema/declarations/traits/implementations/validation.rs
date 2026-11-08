@@ -1,4 +1,7 @@
 //! An impl's trait requirements are obligations, never extra assumptions about Self.
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/supertrait_effects.rs"]
+mod supertrait_tests;
 use super::methods::Members;
 use super::{Checker, DefId, Error, NodeKey};
 use crate::{
@@ -437,6 +440,16 @@ pub(in crate::sema::declarations) fn impl_contract_obligations(
     predicate: Predicate,
     proof: &mut crate::sema::nominals::Proof,
 ) -> Result<std::sync::Arc<crate::sema::traits::Requirements>, String> {
+    // As rustc's wfcheck, a const impl proves its trait's `[const]` supertraits
+    // and where clauses as `[const]` goals, under the impl's own `[const]`
+    // assumptions, not as `const` goals. Its plain supertraits stay ordinary.
+    let checked = match predicate.bound {
+        Bound::ConstTrait(application) => Predicate {
+            ty: predicate.ty,
+            bound: Bound::MaybeConstTrait(application),
+        },
+        _ => predicate,
+    };
     let requirements = if matches!(predicate.bound, Bound::Auto(_)) {
         std::sync::Arc::new(crate::sema::traits::Requirements::default())
     } else {
@@ -445,7 +458,7 @@ pub(in crate::sema::declarations) fn impl_contract_obligations(
             .traits
             .as_mut()
             .ok_or_else(|| "missing trait contracts".to_owned())?
-            .requirements(&mut facts.types, predicate)?
+            .requirements(&mut facts.types, checked)?
     };
     validate_impl_requirements(facts, predicate, proof, &requirements)?;
     Ok(requirements)

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The shapes isolate batch 10's recorded `[const]` supertrait gap (docs/parallel/census-batch10.md, section 3; pa31/tests/spec/callable-sugar-coherence core-pattern, array-reference and slice-reference, where core's `const impl<A: Tuple, F: ?Sized> Fn<A> for &F where F: [const] Fn<A>` fails \"trait implementation does not satisfy the trait's requirements\"); batch 10's drafts repro/const-super-*.rs, with other bytes, were run with rustc 1.98.0 then. Each outcome follows the rule read in the pinned rustc 1.98.0 sources (compiler/rustc_hir_analysis/src/check/wfcheck.rs, which for a conditionally const impl registers each of the trait's const_conditions as a `[const]` (BoundConstness::Maybe) HostEffect goal; compiler/rustc_ty_utils/src/ty.rs `param_env`, which extends a conditionally const item's param-env with its own const_conditions as `[const]` assumptions; compiler/rustc_type_ir/src/elaborate.rs, which elaborates a `[const]` assumption to the trait's `[const]` supertraits; compiler/rustc_hir_analysis/src/hir_ty_lowering/mod.rs, which lowers a `const Tr` where clause to `Tr` plus a `const` HostEffect clause): a const impl's `[const]` supertrait holds through a const impl whose `[const]` premises follow from the impl's own `[const]` bounds, a plain supertrait needs only an ordinary impl, and a `[const]` supertrait fails through an ordinary impl, an ordinary premise or a `const` premise",
+ "declaration_sha256": "0f71aaf2e1d1f259560881c07d4548359082951eeae91962a28d41a354e2a502",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "shared-premise.rs": {
+   "sha256": "72fa905f635e159825cf5db0b600727a53ea6aad8325297d5c5e1d877c570838",
+   "declared": 0,
+   "reason": "batch 10's `const-super-struct`: `const trait Shared: [const] Once`, `const impl<F> Shared for W<F> where F: [const] Shared` and `const impl<F> Once for W<F> where F: [const] Shared`; the const condition `W<F>: [const] Once` holds through the const `Once` impl, whose `F: [const] Shared` is the impl's own assumption",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "once-premise.rs": {
+   "sha256": "38c4bab3335e920fc9f20a3addc6d91e892bf9cb792081fe63b0bfbf1a2a9221",
+   "declared": 0,
+   "reason": "the same with `const impl<F> Once for W<F> where F: [const] Once`; the assumption `F: [const] Shared` elaborates to `F: [const] Once`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "plain-supertrait.rs": {
+   "sha256": "6689a6eacd9ffff3fa87ca8105a33fa74fcd6c893deed5df6990565e7d15a41d",
+   "declared": 0,
+   "reason": "control: `const trait Shared: Once` with an ordinary `impl<F> Once for W<F>`; a plain supertrait is no const condition",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "ordinary-impls.rs": {
+   "sha256": "0b6e208d978fd040a264bf7d896d704cdb16070c469814aafda74b2b3521812d",
+   "declared": 0,
+   "reason": "control: ordinary impls of both const traits; an ordinary impl has no const conditions to check",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "ordinary-supertrait-impl.rs": {
+   "sha256": "b23ea50dd6d93e3dc41f53236a10765a7d371c33b52ad63ad9b68354b95a7f31",
+   "declared": 1,
+   "reason": "opponent: the const `Shared` impl beside an ordinary `impl<F> Once for W<F>`; the const condition `W<F>: [const] Once` needs a const impl or a `[const]` assumption",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "ordinary-premise.rs": {
+   "sha256": "9c8898ef2f1baff37a8facddfb7f2480df6d4198f8ea9369622533883a60f573",
+   "declared": 1,
+   "reason": "opponent: `const impl<F> Shared for W<F> where F: Shared` beside the const `Once` impl over `F: [const] Shared`; the ordinary premise gives no `[const]` assumption, so `F: [const] Shared` and with it `W<F>: [const] Once` fail",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "const-premise-required.rs": {
+   "sha256": "2c108955bc9fe3622fdb47d28018b1aed1ca00a5a92a38f969170e708708e45d",
+   "declared": 1,
+   "reason": "opponent: the const `Shared` impl beside `const impl<F> Once for W<F> where F: const Shared`; the `[const]` assumption does not prove the `const` premise",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  }
+ }
+}

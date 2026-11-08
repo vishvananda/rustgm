@@ -11,29 +11,20 @@ const OVERLAP: &str = "overlapping trait implementation headers require coherenc
 
 /// Independently checked rustc outcomes: `None` accepts, otherwise the first
 /// error this compiler reports for the control rustc also rejects (E0119).
-const CASES: [(&str, Option<&str>); 6] = [
+/// Core's const callable reference impls (`const impl<A: Tuple, F: ?Sized>
+/// Fn<A> for &F where F: [const] Fn<A>`) prove their `[const]` supertraits as
+/// `[const]` goals from that premise, as rustc's wfcheck does.
+const CASES: [(&str, Option<&str>); 9] = [
     ("array", None),
     ("primitive", None),
     ("nominal", None),
     ("explicit", None),
+    ("core-pattern", None),
+    ("array-reference", None),
+    ("slice-reference", None),
     ("other-arguments", Some(OVERLAP)),
     ("generic-reference", Some(OVERLAP)),
 ];
-
-/// Declared controls whose rustc outcome this analysis does not reach yet,
-/// each with the outcome it has instead. The assertion fails when one changes.
-/// Core's const callable reference impls (`const impl<A: Tuple, F: ?Sized>
-/// Fn<A> for &F where F: [const] Fn<A>`) do not yet prove their `[const]`
-/// supertrait requirement from a `[const]` premise, which rustc accepts. That
-/// requirement is checked after coherence, so these controls report it only
-/// once their `MultiCharEq` impls are disjoint; `generic-reference` shows the
-/// overlap is still reported first.
-const GAPS: [(&str, &str); 3] = [
-    ("core-pattern", REQUIREMENTS),
-    ("array-reference", REQUIREMENTS),
-    ("slice-reference", REQUIREMENTS),
-];
-const REQUIREMENTS: &str = "trait implementation does not satisfy the trait's requirements";
 
 fn analyze(name: &str) -> TestResult<Result<(), String>> {
     let path = format!("{CONTROLS}/{name}.rs");
@@ -55,9 +46,6 @@ fn vacuous_callable_conditions_prove_disjoint_impls_like_rustc() -> TestResult {
                 return Err(format!("{name}: accepted, not {message}").into());
             }
         }
-    }
-    for (name, message) in GAPS {
-        assert_eq!(analyze(name)?, Err(message.to_owned()), "{name}");
     }
     Ok(())
 }
