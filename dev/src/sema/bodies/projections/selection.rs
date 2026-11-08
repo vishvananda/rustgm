@@ -208,6 +208,14 @@ impl Checker<'_> {
             .infer
             .account_work(fold.steps)
             .map_err(|e| self.error(node, e))?;
+        #[cfg(test)]
+        crate::sema::copy_trace::record(|| {
+            format!(
+                "body-environment-view body={:?} folded={}",
+                self.state.body,
+                fold.steps != 0
+            )
+        });
         self.state
             .projections
             .data

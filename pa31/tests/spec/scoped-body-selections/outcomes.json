@@ -155,7 +155,133 @@
    "error_codes": [
     "E0308"
    ]
+  },
+  "let-annotation.rs": {
+   "sha256": "d90d346ab04d492a66d63fd868d841b930387bcfb9ce7b6741aafae6d7fab006",
+   "declared": 0,
+   "reason": "audit origin, a let annotation naming the caller's 'x: `let v: Option<&'x u8> = s.next()` equates the selected impl's result, B = &'x u8 through the caller premise, with the declaration-form annotation",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "annotation-bound.rs": {
+   "sha256": "2d3ef80ae94392ab25f03bd604bb547a051b49938dbdbf18f3d80199483097a4",
+   "declared": 0,
+   "reason": "audit origin, annotation well-formedness: `let v: S<'x, F>` where `S<'a, F: Out<O = Option<&'a u8>>>` needs the caller's equality premise at 'x",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "turbofish-region.rs": {
+   "sha256": "198ddd8d7dc446589cba6fd22669bfe8dfe24e33f349329dbdd50e07479f8638",
+   "declared": 0,
+   "reason": "audit origin, a turbofish naming 'x: `get::<'x, F>(f)` whose callee bound `F: Out<O = Option<&'a u8>>` needs the caller premise at 'x",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "qualified-region.rs": {
+   "sha256": "963c37050cdf579449c818cae7f51acdc72ddcd35875e6a969730972f447d8a4",
+   "declared": 0,
+   "reason": "audit origin, a qualified path naming 'x: `<F as Tr<'x>>::make(f)` whose result normalizes through `F: Tr<'x, O = Option<&'x u8>>`",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "qualified-self-region.rs": {
+   "sha256": "14fdf982ffddb51c0249fc5bbd9de160dcd782b55d4f9e518655ad64e55a5d3a",
+   "declared": 0,
+   "reason": "audit origin, a qualified impl path whose self type names 'x: `<W2<F, &'x u8> as Iterator>::next(s)` with B fixed through the caller premise",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "closure-qualified.rs": {
+   "sha256": "907db71fcb3361d8791346da550ba36b3a8ac0cae3ff0caaa95a036b9cf7ec48",
+   "declared": 0,
+   "reason": "audit origin, a closure signature naming 'x: `|g: &F| -> <F as Tr<'x>>::O { <F as Tr<'x>>::make(g) }`",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "annotated-reference.rs": {
+   "sha256": "cb654a06425e7fd9e594c5bfcf1bf4cf3de64141084fce0f16cc645c5e1016e5",
+   "declared": 0,
+   "reason": "audit origin, an annotated reference naming 'x over the selected wrapper: `let w: &'x mut Wrap<F> = s; w.next()`",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "by-value.rs": {
+   "sha256": "161110cbbe1d4ef7a6f246261bfc95b5d286e26c05866712b9e9bc205ddc153d",
+   "declared": 0,
+   "reason": "ordinary control: a by-value receiver, so the call has no callable binder, and B = &'x u8 through the caller premise",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "bound-only.rs": {
+   "sha256": "1559a20fbddde7784e4e07e6ae23f3b671be40592a915accbe1543c9dbaa119c",
+   "declared": 0,
+   "reason": "ordinary control: only `Wrap<F>: Iterator` is required, by a generic callee, and no selected result is used",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "unsized-output.rs": {
+   "sha256": "4addd1477f6a0f17cce08c10c9473a3df6fc19b6d0e88f8ee0aeeeb3200e652c",
+   "declared": 0,
+   "reason": "ordinary control: `impl<B: ?Sized, F> Get for Wrap<F> where F: Out<O = B>` with `F: Out<O = &'x u8>`; the impl parameter's Sized requirement is not involved",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "region-in-input.rs": {
+   "sha256": "367aa032ce34d35d4d7dee7a66ee190263dad30a8d4c6fa257823f320983c8f3",
+   "declared": 0,
+   "reason": "ordinary control: the premise's caller lifetime 'x also appears in the goal's own input `W2<F, &'x u8>`",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "premise-static.rs": {
+   "sha256": "0923cc81b895005390e8419aab68383f86d1533ade006455751269ff12cb218d",
+   "declared": 0,
+   "reason": "ordinary control: the premise output names 'static, which has no body alias",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "premise-type.rs": {
+   "sha256": "517314a6eb4c004f7f1fae4eee61efa670b0517dc9668daea8ab07e8eb82ee35",
+   "declared": 0,
+   "reason": "ordinary control: the premise output names a caller type parameter, `Option<T>`",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "repeated-selections.rs": {
+   "sha256": "4c6f94aed7bda3f1d2dec52e95f409407cbf41ff6cba82cebde2ef1cc3aca3b2",
+   "declared": 0,
+   "reason": "once-only control, declared before any run of these bytes: ten selections of `Wrap<F>: Iterator` through region-bearing caller premises in two bodies with lifetime binders",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "ambiguous-premises.rs": {
+   "sha256": "c94e3a7fea7070d76a24b880ab16193376c6c2c5eddbf44841c503a14c38d2aa",
+   "declared": 1,
+   "reason": "opponent: two written premises `F: Out<O = Option<&'x u8>> + Out<O = Option<&'x u16>>` whose results differ in a type, not a region, so `s.next()` has no unique B; removing the alias copies must not deduplicate a real ambiguity",
+   "declared_error_codes": [
+    "E0284"
+   ],
+   "rustc_status": 1,
+   "error_codes": [
+    "E0284"
+   ]
   }
  },
- "declaration_sha256": "13ce8e0feacbaeb92a2b1bd15b5477040afc627e0b58f422e29ee5f7afd64f57"
+ "declaration_sha256": "13ce8e0feacbaeb92a2b1bd15b5477040afc627e0b58f422e29ee5f7afd64f57",
+ "additions_declared": "2026-11-08. Fifteen additions to scoped-body-selections for the alias-view environment of body trait queries. repeated-selections is declared before any rustc or RustGM run of its bytes. The other fourteen are exploration probes (obj/lane-b3/t3) that rustc 1.98.0 and this compiler ran before this declaration, so they are a regression record. caller-region and ordinary-region keep their declared and checked acceptance; only this compiler's expected outcome changes, from a recorded gap to acceptance.",
+ "additions_declaration_sha256": "3e3c2e4a1c7ac1b7beb978cfcf6fe43cd671165967cf4e6baa39da40574e40f3"
 }

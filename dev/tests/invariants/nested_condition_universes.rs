@@ -1,14 +1,16 @@
 //! A generic body that selects an impl with a region-binding condition attaches
 //! that selection's own binders below the universe of the query that made it,
 //! as rustc proves the condition with its regions instantiated in a nested
-//! universe of the caller's.
+//! universe of the caller's. Its trait queries see the caller's premises in
+//! the body's alias form, so a premise that names a caller lifetime does not
+//! compete with its declaration-form copy.
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
 const CONTROLS: &str = "pa31/tests/spec/scoped-body-selections";
 
 /// Independently checked rustc 1.98.0 outcomes: `None` accepts, otherwise the
 /// first error this compiler reports for the control rustc also rejects.
-const CASES: [(&str, Option<&str>); 15] = [
+const CASES: [(&str, Option<&str>); 32] = [
     ("path-call", None),
     ("qualified-call", None),
     ("matched", None),
@@ -30,22 +32,25 @@ const CASES: [(&str, Option<&str>); 15] = [
         Some("selected type retains an unmapped lifetime"),
     ),
     ("adapter-mismatch", Some("incompatible types")),
-];
-
-/// Declared controls whose rustc outcome (acceptance) this analysis does not
-/// reach yet, each with the outcome it has instead. The assertion fails when
-/// one changes. A body-selected impl parameter that a caller premise
-/// determines to name a caller lifetime stays an unresolved trait goal, with
-/// or without a region binder (`ordinary-region` fails the same way before
-/// this change); it is a separate cause.
-const GAPS: [(&str, &str); 2] = [
+    ("caller-region", None),
+    ("ordinary-region", None),
+    ("let-annotation", None),
+    ("annotation-bound", None),
+    ("turbofish-region", None),
+    ("qualified-region", None),
+    ("qualified-self-region", None),
+    ("closure-qualified", None),
+    ("annotated-reference", None),
+    ("by-value", None),
+    ("bound-only", None),
+    ("unsized-output", None),
+    ("region-in-input", None),
+    ("premise-static", None),
+    ("premise-type", None),
+    ("repeated-selections", None),
     (
-        "caller-region",
-        "trait obligation requires an unambiguous matching assumption or implementation",
-    ),
-    (
-        "ordinary-region",
-        "trait obligation requires an unambiguous matching assumption or implementation",
+        "ambiguous-premises",
+        Some("associated type requires an unambiguous validated implementation"),
     ),
 ];
 
@@ -70,8 +75,50 @@ fn body_selections_keep_scoped_impl_conditions_and_match_independent_outcomes() 
             }
         }
     }
-    for (name, message) in GAPS {
-        assert_eq!(analyze(name)?, Err(message.to_owned()), "{name}");
+    Ok(())
+}
+
+/// Ten selections through region-bearing caller premises, in two bodies with
+/// lifetime binders, build the alias view of each body's premises once.
+#[test]
+fn body_trait_queries_share_one_alias_view_per_body() -> TestResult {
+    #[derive(Debug, Default)]
+    struct Body {
+        queries: usize,
+        views: usize,
+        folded: bool,
     }
+    let capture = crate::sema::copy_trace::Capture::matching(&[
+        "body-trait-environment ",
+        "body-environment-view ",
+    ])?;
+    let result = analyze("repeated-selections")?;
+    let rows = capture.rows()?;
+    drop(capture);
+    assert_eq!(result, Ok(()));
+    let mut bodies = std::collections::BTreeMap::<&str, Body>::new();
+    for row in &rows {
+        if let Some(body) = row.strip_prefix("body-trait-environment body=") {
+            bodies.entry(body).or_default().queries += 1;
+        } else if let Some(view) = row.strip_prefix("body-environment-view body=") {
+            let (body, folded) = view
+                .rsplit_once(" folded=")
+                .ok_or("malformed alias view row")?;
+            let entry = bodies.entry(body).or_default();
+            entry.views += 1;
+            entry.folded |= folded == "true";
+        }
+    }
+    for (body, record) in &bodies {
+        assert_eq!(record.views, 1, "{body}: {bodies:?}");
+    }
+    let mut selecting: Vec<_> = bodies
+        .values()
+        .filter(|record| record.folded)
+        .map(|record| record.queries)
+        .collect();
+    selecting.sort_unstable();
+    assert_eq!(selecting.len(), 2, "{bodies:?}");
+    assert!(selecting[0] >= 2 && selecting[1] >= 8, "{bodies:?}");
     Ok(())
 }

@@ -196,12 +196,23 @@ impl Search<'_> {
             self.query.builtins.physical_shape(facts, ty)
         }
     }
+    /// The frame's inputs are normalized under this search's environment: it
+    /// normalized them itself ([`Self::own_inputs_normalized`]), or they arrived
+    /// normalized, from a parent normalization (`Frame::child`) or from a
+    /// borrowed query in normalized or projection mode. A shape walk needs only
+    /// that their remaining projections are rigid, which both guarantee.
     fn normalized_inputs(frame: &Frame) -> bool {
-        frame.normalized_inputs.is_some()
-            || frame
-                .normalization
-                .as_ref()
-                .is_some_and(|normalization| normalization.original_inputs().is_some())
+        frame.normalized_inputs.is_some() || Self::own_inputs_normalized(frame)
+    }
+    /// `advance_inputs` replaced every projected input root of this frame with
+    /// its normalized value. Unlike [`Self::normalized_inputs`] this excludes
+    /// inputs that arrived normalized: the builtin proof skips its own
+    /// normalization only on the record of the normalization this frame ran.
+    pub(super) fn own_inputs_normalized(frame: &Frame) -> bool {
+        frame
+            .normalization
+            .as_ref()
+            .is_some_and(|normalization| normalization.original_inputs().is_some())
     }
     /// Reuse the same actual terminal as metadata normalization. In particular,
     /// an opaque external terminal has unit metadata without becoming `MetaSized`.

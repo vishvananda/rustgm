@@ -182,17 +182,22 @@ impl Checker<'_> {
         Ok(selected)
     }
 
-    /// Nested queries consume the same opened premises as projected inputs.
-    /// The declaration environment and its ordinary proof obligations stay intact.
+    /// Body trait queries see the caller's premises in the same alias form as
+    /// body projection queries: one cached view per body. The method
+    /// environment also keeps each premise that names a caller universal in its
+    /// declaration form, beside the alias copy that body goals use. Both copies
+    /// of one projection equality would otherwise compete as distinct written
+    /// results. The declaration environment and its ordinary proof obligations
+    /// stay intact.
     pub(super) fn trait_query_environment(
         &mut self,
         node: NodeId,
     ) -> Result<Option<Arc<crate::types::parameters::environment::Environment>>, Error> {
-        if self.state.projections.has_inherited_environment() {
-            self.projection_environment(node)
-        } else {
-            Ok(self.state.method_environment.clone())
-        }
+        #[cfg(test)]
+        crate::sema::copy_trace::record(|| {
+            format!("body-trait-environment body={:?}", self.state.body)
+        });
+        self.projection_environment(node)
     }
 
     pub(super) fn trait_assumptions(

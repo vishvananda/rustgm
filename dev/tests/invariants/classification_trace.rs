@@ -6,6 +6,8 @@ const LIMIT: usize = 256;
 struct Events {
     rows: Vec<String>,
     overflow: bool,
+    /// Rows outside these prefixes are neither retained nor counted.
+    only: Option<&'static [&'static str]>,
 }
 thread_local! {
     static ACTIVE: RefCell<Option<Rc<RefCell<Events>>>> = const { RefCell::new(None) };
@@ -13,12 +15,22 @@ thread_local! {
 pub(crate) struct Capture(Rc<RefCell<Events>>);
 impl Capture {
     pub(crate) fn new() -> Result<Self, &'static str> {
+        Self::install(None)
+    }
+    /// As [`Capture::new`], keeping only rows that start with one of `prefixes`.
+    pub(crate) fn matching(prefixes: &'static [&'static str]) -> Result<Self, &'static str> {
+        Self::install(Some(prefixes))
+    }
+    fn install(only: Option<&'static [&'static str]>) -> Result<Self, &'static str> {
         ACTIVE.with(|active| {
             let mut active = active.borrow_mut();
             if active.is_some() {
                 return Err("opaque Copy diagnostic capture is already active");
             }
-            let events = Rc::new(RefCell::new(Events::default()));
+            let events = Rc::new(RefCell::new(Events {
+                only,
+                ..Events::default()
+            }));
             *active = Some(Rc::clone(&events));
             Ok(Self(events))
         })
@@ -54,12 +66,20 @@ pub(crate) fn record_checked(row: impl FnOnce() -> Option<String>) {
             return;
         };
         let mut events = events.borrow_mut();
+        let Some(row) = row() else {
+            events.overflow = true;
+            return;
+        };
+        if events
+            .only
+            .is_some_and(|prefixes| !prefixes.iter().any(|prefix| row.starts_with(prefix)))
+        {
+            return;
+        }
         if events.rows.len() == LIMIT {
             events.overflow = true;
-        } else if let Some(row) = row() {
-            events.rows.push(row);
         } else {
-            events.overflow = true;
+            events.rows.push(row);
         }
     });
 }
@@ -84,5 +104,12 @@ fn diagnostic_scope_rejects_reentry_and_clears_after_error() -> Result<(), &'sta
         record(|| "bounded".into());
     }
     assert!(capture.rows().is_err());
+    drop(capture);
+    let capture = Capture::matching(&["kept"])?;
+    for _ in 0..=LIMIT {
+        record(|| "dropped".into());
+    }
+    record(|| "kept row".into());
+    assert_eq!(capture.rows()?, ["kept row"]);
     Ok(())
 }

@@ -49,7 +49,8 @@ evidence").
   a body-selected impl parameter that is determined to name a caller lifetime
   (`caller-region`, `ordinary-region`). The trial stays `Progress::Inferred`
   and fails as "trait obligation requires an unambiguous matching assumption
-  or implementation".
+  or implementation". (Amended 2026-11-08: both now pass. The cause and the
+  repair are in [caller-region premises](caller-region-premises.md).)
 
 ## 2. Variant re-exports
 
