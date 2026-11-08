@@ -150,6 +150,10 @@ grows with:
 - Storage that demanded instances, factories and adapters add pays the
   existing demand `Budget` (100,000 bodies, 64 MB). Each pays its own actual
   retained bytes once.
+- Header queries and caller inputs charged while a demanded instance is
+  traversed or emitted pay the demand budget too, in work and bytes, through
+  a lexical demand scope. Demanded-instance cost is proportional to the
+  output, and its work follows the same rule as its bytes.
 
 Monomorphization is legitimately superlinear in its input. In a chain of `n`
 generic functions, where each forwards to the one before and each is
@@ -175,7 +179,9 @@ item 1).
 | Original proofs and rows pushed back | nothing new: they fill the exact reservations | lowering, if they ever grow |
 | Demanded proofs and rows (`push_instance`, factories, adapters) | the actual added slots, plus one work unit per moved element | demand |
 | `Budget::enter` | the instance body's retained bytes and its contract slices (unchanged) | demand |
-| Header queries and caller inputs while the account is open | their existing work and bytes | lowering |
+| Header queries and caller inputs for original bodies while the account is open | their existing work and bytes | lowering |
+| Header queries and caller inputs inside a demand traversal step (dispatch, callsite, coercion and instantiation) | their existing work and bytes, collected by the scope | demand: work to `canonical_steps`, bytes to the 64 MB cap |
+| Header queries and caller inputs while a demanded body is emitted (`emit_pending`, `index_bodies`) | their existing work and bytes, collected by the scope | demand: work to `canonical_steps`, bytes to the 64 MB cap |
 | Header-row storage (`ledger()`) | unchanged | header |
 
 A full proof or row vector that a demanded body grows adds slots for as many
@@ -186,6 +192,38 @@ instance after 1,024 trivial functions would have paid about half a megabyte
 of proof slots sized by the originals. This figure is derived from the growth
 policy, not measured. Builder grows from 1,776 to 1,784 bytes, for the
 `originals` count.
+
+### The demand scope
+
+Lowering's `Account` holds an optional scope tally. While a scope is open,
+`Account::charge` adds work and bytes to that tally instead of to lowering's
+totals and checks no bound of its own. The scope's opener pays the tally to
+the demand budget when the scope closes.
+
+- Scopes are lexical. `Declarations::pay_demand_traversal` and
+  `pay_demand_emission` open a scope, run one closure and close the scope in
+  the same function, whatever the closure returns. A charge cannot stay
+  misrouted after the instance finishes, and an error still closes the scope
+  before it propagates. A nested scope leaves its charges to the outer one.
+- The traversal scopes each `traversal.step`. `Budget::pay_scope` adds the
+  step's work to `canonical_steps` and its bytes to the budget's bytes, then
+  checks the 64 MB cap.
+- When the traversal ends, `materialize` carries the first demanded proof
+  index and the budget's bytes to emission (`carry_demand`). Emission scopes
+  each body at or after that index. `Context` keeps a `[bytes, steps]` tally
+  that starts from the traversal's bytes and is capped by the same 64 MB
+  (`BODY_BYTES`). `run` adds its steps to `canonical_steps`. `settle_demand`
+  clears the carried boundary after emission, and reopening the account
+  clears it too.
+- Original bodies, and work before the first traversal step, stay on
+  lowering's account.
+
+An instrumented run of the chain below found that its traversal steps charge
+nothing to lowering's account. All of its per-instance work is emission's
+header queries, such as `caller_tracking`, asked by `function::lower`.
+
+Lowering's `Option<Account>` field in `Headers` grows from 40 to 88 bytes for
+the scope and the carried boundary.
 
 ### Bound
 
@@ -230,9 +268,15 @@ These are per item, measured from 256 to 1,024 items inserted into the
 | shared generic, one instance each | 37 | 2 | 768 of 4,256 | 18% | 13 of 276 | 5% | 1,824 |
 | own generic, one instance each | 49 | 3 | 768 of 6,176 | 12% | 13 of 388 | 3% | 1,824 |
 | generic Drop instance | 58 | 3 | 768 of 6,464 | 12% | 13 of 424 | 3% | 3,944 |
+| generic instance calling a plain fn | 51 | 3 | 768 of 6,240 | 12% | 14 of 396 | 4% | 1,908 |
 
 No shape sorted by the originals exceeds 50% of its grant after the
 preallocation charge. The worst is the trivial function at 46%.
+
+The last row's instance body calls `h()`, so emitting it asks a header
+query. It pays one demand work unit per instance, and its lowering work is
+its originals'. The other three instance shapes ask no query while their
+instances lower, and pay no demand work.
 
 Header-account margins are unchanged by this split, as slope shares of the
 header bound:
@@ -271,24 +315,30 @@ through a `sync` lang item and the `auto_traits` feature.
 
 ### The superlinear chain
 
-| n | Instances | Lowering bytes | Byte share | Lowering work | Work share | Demand bytes |
-| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 8 | 36 | 14,088 | 13% | 247 | 3% | |
-| 16 | 136 | 18,696 | 11% | 548 | 5% | |
-| 32 | 528 | 30,984 | 12% | 1,537 | 9% | 806,688 |
-| 64 | 2,080 | 55,560 | 12% | 5,054 | 17% | 3,190,912 |
-| 128 | 8,256 | 104,712 | 12% | 18,235 | 32% | |
+| n | Instances | Lowering bytes | Byte share | Lowering work | Work share | Demand bytes | Demand work |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 32 | 528 | 30,984 | 12% | 545 | 3% | 806,688 | 992 |
+| 64 | 2,080 | 55,560 | 12% | 1,022 | 3% | 3,190,912 | 4,032 |
+| 128 | 8,256 | 104,712 | 12% | 1,979 | 3% | 12,690,080 | 16,256 |
 
-The rows for 8, 16 and 128 come from the uncommitted probe, whose base
-enables two more features; the rows for 32 and 64 are the committed control.
-Each instance pays about 1,530 demand bytes, so the 64 MB cap is reached near
-41,800 instances (n ≈ 288). Lowering's byte share stays flat.
+All three rows come from the committed control. Each instance pays about
+1,530 demand bytes, so the 64 MB cap is reached near 41,800 instances
+(n ≈ 288).
 
-Its work share does not. Instance lowering still asks header queries and pays
-caller inputs on lowering's account, about two work units per instance here.
-Extrapolated to n ≈ 288, that is about 72% of the work bound, so the demand
-cap rejects this chain first. In a chain like this one, three or more such
-units per instance would let the lowering account reject first (open item 3).
+Both of lowering's shares stay flat. Lowering work grows by about 15 units
+per item, and before the demand scope its share was 9%, 17% and 32%. Demand
+work is exactly 2·(instances − n): each instance that forwards to another
+instance pays two units for its emission's header queries.
+
+`forged_instance_charges_pay_only_the_demand_budget` forges 64 work units
+and 1,000 bytes into a `charge_caller_inputs` call at the start of every
+instance's `specialize`, at n = 64. That is 133,120 units, more than four
+times lowering's work bound of 30,516. Lowering's account stays at exactly
+1,022 units and 55,560 bytes, the unforged figures. The demand budget gains
+65·2,080 work units (each forged charge also pays one authentication unit)
+and 1,000·2,080 bytes. With the cap preloaded so that the unforged chain
+still fits, the forged chain is rejected with the demand budget's message,
+never lowering's.
 
 ### Rejected options
 
@@ -310,9 +360,9 @@ units per instance would let the lowering account reject first (open item 3).
    `Vec::with_capacity(facts.functions.len())` and pushes uncharged. It belongs
    to the body phase's ledger, charged at build where it is allocated, not to
    lowering's account.
-3. Header queries and caller inputs that instance lowering pays still reach
-   lowering's account (section above). Routing them to the demand budget needs
-   a scope around instance work, on which no decision has been made.
+3. Closed: header queries and caller inputs charged while a demanded instance
+   is traversed or emitted pay the demand budget through the lexical demand
+   scope (section above). They no longer reach lowering's account.
 4. A crate without a ledger opens no lowering account. Its demand growth pays
    only the demand budget.
 
@@ -322,10 +372,15 @@ units per instance would let the lowering account reject first (open item 3).
   `dev/tests/invariants/prototype_headers.rs` and asserted at run time by
   `registry_retains_distinct_identities_and_shared_finite_profiles`.
 - `Headers` gains `lowering: Option<Account>` inside the boxed `Ledger`, one
-  per crate, and grows from 136 to 176 bytes. A grep for every spelling,
-  summed or single, found one assertion: `ledger_capacity.rs` pins `Headers`.
-  That pin is updated, and its test is selected. The other spellings are
-  diagnostic prints:
+  per crate. It grows from 136 to 224 bytes: 176 with the account, and 224
+  once the account holds the demand scope and the carried boundary. `Headers`
+  stays inline: the 88 bytes are paid once per crate inside the boxed
+  `Ledger`. Boxing the account would add an allocation and an indirection to
+  every lowering charge on the hot path. The pin's comment records this
+  reason. A grep for every spelling, summed or single, found one assertion:
+  `ledger_capacity.rs` pins `Headers`. That pin is updated, and its test is
+  selected. The 176 and 224 spellings elsewhere in `dev/` pin unrelated
+  structs. The other spellings are diagnostic prints:
   - `attribute_storage` in `declared_origins.rs`, read by
     `compose_operands.rs` and `cpu_policy.rs`;
   - `pointee_consumers.rs`, `origin_integrity.rs` and `always_const.rs`.
@@ -356,19 +411,25 @@ units per instance would let the lowering account reject first (open item 3).
   and 1,024 functions lower. At 1,024, analysis and lowering together need
   more than the header bound, so the old shared account would fail.
 - `demanded_instances_pay_the_demand_budget_once_by_their_own_size`:
-  - three instance shapes each pay constant demand bytes per instance;
+  - four instance shapes each pay constant demand bytes and constant demand
+    work per instance;
+  - only the shape whose instance calls a plain function pays demand work;
   - lowering's account follows only the originals;
   - one instance pays 3,248 demand bytes after either 256 or 1,024 trivial
     originals;
   - demanding each instance twice yields the same symbols and the same demand
     bytes.
 - `superlinear_instantiation_lowers_until_the_fixed_demand_cap`:
-  - at n = 32 and n = 64 the chain emits exactly n + n(n+1)/2 symbols beyond
+  - at n = 32, 64 and 128 the chain emits exactly n + n(n+1)/2 symbols beyond
     the base, a private LowIR equality;
-  - demand grows quadratically and lowering bytes linearly, with both bytes
-    and work inside half of lowering's bound;
+  - demand bytes and demand work grow quadratically;
+  - lowering bytes and lowering work grow linearly, both inside half of
+    lowering's bound;
   - with the cap preloaded to twice the 32-item demand, 32 still lowers and 64
     fails with the demand budget's own message.
+- `forged_instance_charges_pay_only_the_demand_budget`: the forged chain
+  above. Its lowering account and header account equal the unforged run's,
+  and only the demand cap rejects it.
 - `superlinear_lowering_charges_are_rejected_once_inputs_grow`: a forged
   quadratic charge on the opened account, through both
   `charge_caller_inputs` and `pay_lowering_growth`, fits at 256 functions and
@@ -384,7 +445,18 @@ units per instance would let the lowering account reject first (open item 3).
   - reopening keeps its totals;
   - charges beyond its bound fail with lowering's message, leaving the header
     account untouched.
-- `crates_without_a_ledger_open_no_account`.
+- `demand_scopes_collect_charges_only_while_open`:
+  - before the account opens, a scope collects nothing;
+  - once it opens, a scope collects a query, a payment and a charge beyond
+    lowering's bound, a nested scope collects nothing, and lowering's account
+    does not move;
+  - a scope whose closure fails still closes, so the next charge lands on
+    lowering's account;
+  - emission scopes only bodies at or after the carried first index;
+  - after `settle_demand`, and after reopening, nothing is scoped;
+  - the header account does not move.
+- `crates_without_a_ledger_open_no_account`: also, scopes collect nothing and
+  nothing is carried.
 
 `consumed_originals_pay_their_rows_once_and_shrinking_pays_only_work` now
 measures lowering's account. Its other controls moved to `ledger_tests`.
@@ -395,12 +467,16 @@ Receipts are under `obj/qualification/fast/`.
 
 | Selection | Receipt | Result |
 | --- | --- | --- |
-| Measurement: the uncommitted probe and the first controls | `1794147536548509120` | tables above; two controls amended (constructor demand, forged charge rounding) |
-| Private: the 6 ledger controls, the shrink control, 6 `Originals` row tests, the `needs_drop` kernel test, `d2bcb1f89`'s 8 header tests and the 2 account controls | `1794148181168937695` | 23 passed; the `Headers` pin failed at 176 against 136 and was updated |
-| Private: the `Headers` pin test, the chain control, 8 proof tests, 10 adapter tests and 3 sealed-permission tests | `1794148522221647511` | 23 passed; the 64-item chain fails with `generic instance bodies exceed 64 MB budget` |
-| Integration: `access_sources`, `stream_sources`, `needs_drop_provider`, `cstr_sources`, `vactx` | `1794148716381584114` | 21 passed |
-| Integration, demand-budget consumers: `demanded_cleanup`, `instance_values` and `source_closures` growth limits | `1794149063522219243` | 3 passed |
-| Exact `--ignored` native scaling test | `1794149233013321854` | 1 passed, all 13 inputs |
+| Measurement: the uncommitted probe and the first controls | `1794147536548509120` | the tables before the demand scope; two controls amended (constructor demand, forged charge rounding) |
+| Demand scope: the 7 ledger controls, the 3 account controls and the `Headers` pin | `1794150551512766930` | chain and measurement tables above; three controls amended (per-item demand work is constant rather than positive, the calling-instance shape added, a forged charge's authentication unit) |
+| The three amended controls | `1794150812994707362` | 3 passed |
+| Private: the 7 ledger controls, the shrink control, 6 `Originals` row tests, the `needs_drop` kernel test, `d2bcb1f89`'s 8 header tests and the 3 account controls | `1794151386139192365` | 26 passed |
+| Private: the `Headers` pin test, the chain control, 8 proof tests, 10 adapter tests and 3 sealed-permission tests | `1794151663494627357` | 23 passed |
+| Integration: `access_sources`, `stream_sources`, `needs_drop_provider`, `cstr_sources`, `vactx` and `asynccleanup` | `1794151722083032424` | 25 passed |
+| Integration, demand-budget consumers: `demanded_cleanup`, `instance_values` and `source_closures` growth limits, and `instance_bodies` | `1794152027775849598` | 10 passed |
+| Exact `--ignored` native scaling test | `1794152153688188003` | 1 passed, all 13 inputs |
 
-The last two receipts cover the final tree. The earlier ones precede only a
-comment edit to the `Headers` field documentation.
+The last five receipts cover the final tree, both commits rebased onto
+`89cb62ee5`: each receipt's source fingerprint equals that tree's.
+`asynccleanup` and `instance_bodies` are selected for the changed emission
+and future-entry charges in `lower/context.rs`.

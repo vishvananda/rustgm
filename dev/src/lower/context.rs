@@ -63,6 +63,34 @@ pub(super) struct Context<'a> {
     pub table_queue: Vec<crate::sema::vtable_plans::TableId>,
     abort: Option<SymbolId>,
     remainders: [Option<SymbolId>; 2],
+    /// The ledger whose demand scopes route demanded bodies' charges.
+    ledger: &'a Declarations,
+    /// The demand budget's bytes, carried from its traversal, and the work
+    /// demanded bodies' emission paid it.
+    demand: [usize; 2],
+}
+/// Pay what a demanded body's emission scope collected to the demand budget
+/// carried from its traversal, against the same fixed cap.
+fn pay_demand(demand: &mut [usize; 2], [steps, bytes]: [usize; 2]) -> Result<(), &'static str> {
+    let [paid, work] = *demand;
+    *demand = [paid.saturating_add(bytes), work.saturating_add(steps)];
+    if demand[0] > super::instances::BODY_BYTES {
+        return Err(super::instances::BODIES_EXCEEDED);
+    }
+    Ok(())
+}
+/// Charge an emission input for proof `index`: a demanded body's charge pays
+/// the demand budget, an original's charges lowering's account.
+fn charge_indexed(
+    demand: &mut [usize; 2],
+    facts: &Declarations,
+    index: usize,
+    (work, bytes): (usize, usize),
+) -> Result<(), &'static str> {
+    let (charged, demanded) =
+        facts.pay_demand_emission(index, || facts.charge_caller_inputs(work, bytes));
+    pay_demand(demand, demanded)?;
+    charged
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum Generated {
@@ -182,7 +210,11 @@ fn run(
         roots,
     );
     facts.layouts = layouts;
-    result
+    facts.settle_demand();
+    let (program, steps) = result?;
+    // Demanded bodies' emission work joins the demand traversal's.
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
+    Ok(program)
 }
 #[derive(Clone, Copy)]
 pub(super) struct ScalarStorage {
@@ -314,7 +346,7 @@ impl<'a> Context<'a> {
             Option<&crate::borrow::incremental::Forwarding>,
         ),
         roots: super::roots::Selected<'_>,
-    ) -> Result<Program, Error> {
+    ) -> Result<(Program, usize), Error> {
         require_runtime_entries(facts, bodies.as_slice(), forwarding)?;
         let source = bodies
             .as_slice()
@@ -376,6 +408,8 @@ impl<'a> Context<'a> {
             table_queue: Vec::new(),
             abort: None,
             remainders: [None; 2],
+            ledger: facts,
+            demand: [facts.carried_demand().map_or(0, |[_, bytes]| bytes), 0],
         };
         context.index_bodies(facts).map_err(|message| Error {
             node: source,
@@ -411,7 +445,16 @@ impl<'a> Context<'a> {
                 message: "entry-free library requires packed address initialization support",
             });
         }
-        Ok(context.output)
+        Ok(context.finish())
+    }
+    /// The emitted program and the work demanded bodies' emission paid.
+    fn finish(self) -> (Program, usize) {
+        let [_, steps] = self.demand;
+        #[cfg(test)]
+        if self.ledger.carried_demand().is_some() {
+            super::instances::record_demand(self.demand[0], steps);
+        }
+        (self.output, steps)
     }
     /// Demand queues own their identities before any dependency is emitted.
     /// Newly discovered functions, drop glue and data append without recursion.
@@ -483,12 +526,21 @@ impl<'a> Context<'a> {
                 .as_deref()
                 .or_else(|| destruction.and_then(|proof| proof.plan(index)));
             let signature = self.output.symbols[symbol.0 as usize].signature;
-            let lowered =
+            // A demanded body's emission pays the demand budget, not lowering's
+            // input-proportional account.
+            let ledger = self.ledger;
+            let (lowered, demanded) = ledger.pay_demand_emission(index, || {
                 if let Some(lowered) = runtime_cleanup.lower(self, index, &body, signature)? {
-                    lowered
+                    Ok(lowered)
                 } else {
-                    function::lower(self, index, &body, plan, signature)?
-                };
+                    function::lower(self, index, &body, plan, signature)
+                }
+            });
+            pay_demand(&mut self.demand, demanded).map_err(|message| Error {
+                node: Some(body.source.into()),
+                message,
+            })?;
+            let lowered = lowered?;
             self.output
                 .define(symbol, lowered)
                 .map_err(|message| Error {
@@ -537,7 +589,12 @@ impl<'a> Context<'a> {
                         self.instance_indices.capacity(),
                         1,
                     );
-                    facts.charge_caller_inputs(growth.work.saturating_add(1), growth.bytes)?;
+                    charge_indexed(
+                        &mut self.demand,
+                        facts,
+                        index,
+                        (growth.work.saturating_add(1), growth.bytes),
+                    )?;
                     if self.instance_indices.insert(instance, index).is_some() {
                         return Err("duplicate checked future poll instance");
                     }
@@ -548,9 +605,14 @@ impl<'a> Context<'a> {
                     self.adapter_indices.capacity(),
                     1,
                 );
-                facts.charge_caller_inputs(
-                    growth.work.saturating_add(1),
-                    growth.bytes.saturating_add(size_of::<Self>()),
+                charge_indexed(
+                    &mut self.demand,
+                    facts,
+                    index,
+                    (
+                        growth.work.saturating_add(1),
+                        growth.bytes.saturating_add(size_of::<Self>()),
+                    ),
                 )?;
                 if body.instance.is_some()
                     || key.operation != crate::types::future::Operation::Drop

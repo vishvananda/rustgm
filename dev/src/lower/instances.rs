@@ -2,6 +2,9 @@
 mod artifact_client;
 pub use artifact_client::with_provided_client;
 mod demand;
+#[cfg(test)]
+pub(super) use demand::record_demand;
+pub(super) use demand::{BODIES_EXCEEDED, BODY_BYTES};
 mod dependencies;
 mod namespace_snapshot;
 mod proof;

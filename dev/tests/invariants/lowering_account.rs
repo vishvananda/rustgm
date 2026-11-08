@@ -1,6 +1,7 @@
 //! Lowering's account opens once on the crate's own ledger. Header queries
 //! and payments made before it opens charge the header account; the same
-//! charges made after it opens charge lowering's account only.
+//! charges made after it opens charge lowering's account only, except inside
+//! a lexical demand scope, which collects them for the demand budget.
 use super::super::{charge_source_contract_query, source_contract_costs};
 use super::*;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
@@ -69,11 +70,79 @@ fn charges_move_to_lowering_only_once_its_account_opens() -> Result {
 }
 
 #[test]
+fn demand_scopes_collect_charges_only_while_open() -> Result {
+    let source = crate::test_source::fixture(BASE)?;
+    let report = crate::test_source::source_provider(&source, "needs_drop_work")?;
+    let mut facts = crate::pipeline::analyze_source(&report)?.facts;
+    // Before lowering's account opens, a scope collects nothing.
+    let (paid, unopened) = facts.pay_demand_traversal(|facts| pay_growth(facts, 1, 1));
+    paid?;
+    assert_eq!(unopened, [0, 0]);
+    open(&report, &mut facts)?;
+    let granted = bound(&report);
+    let header = source_contract_costs(&facts);
+    // Inside a traversal scope, a query and payments are collected even past
+    // lowering's bound, and a nested scope leaves them to the enclosing one.
+    let (inner, outer) = facts.pay_demand_traversal(|facts| {
+        let queried = charge_source_contract_query(facts, 3).is_ok();
+        let (paid, nested) = facts.pay_demand_traversal(|facts| pay_growth(facts, 5, 7));
+        let over = pay_growth(facts, 0, granted.bytes);
+        (queried && paid.is_ok() && over.is_ok(), nested)
+    });
+    assert_eq!(inner, (true, [0, 0]));
+    assert_eq!(outer, [8, 7 + granted.bytes]);
+    assert_eq!(
+        lowering_costs(&facts),
+        Some([0, 0, granted.work, granted.bytes])
+    );
+    // A scope whose work fails still closes: the next charge is lowering's.
+    let (failed, charged) =
+        facts.pay_demand_traversal(|facts| -> std::result::Result<(), &'static str> {
+            pay_growth(facts, 2, 2)?;
+            Err("demanded body failed")
+        });
+    assert_eq!((failed, charged), (Err("demanded body failed"), [2, 2]));
+    pay_growth(&facts, 1, 1)?;
+    assert_eq!(
+        lowering_costs(&facts),
+        Some([1, 1, granted.work, granted.bytes])
+    );
+    // Emission scopes only proofs at or past the carried boundary, and only
+    // until emission settles.
+    facts.carry_demand(10, 0);
+    assert_eq!(facts.carried_demand(), Some([10, 0]));
+    let (paid, original) = facts.pay_demand_emission(9, || pay_growth(&facts, 1, 1));
+    paid?;
+    let (paid, demanded) = facts.pay_demand_emission(10, || pay_growth(&facts, 4, 4));
+    paid?;
+    assert_eq!((original, demanded), ([0, 0], [4, 4]));
+    facts.settle_demand();
+    let (paid, settled) = facts.pay_demand_emission(10, || pay_growth(&facts, 1, 1));
+    paid?;
+    assert_eq!(settled, [0, 0]);
+    assert_eq!(
+        lowering_costs(&facts),
+        Some([3, 3, granted.work, granted.bytes])
+    );
+    // Reopening for a later lowering clears any carried boundary.
+    facts.carry_demand(0, 0);
+    open(&report, &mut facts)?;
+    assert_eq!(facts.carried_demand(), None);
+    assert_eq!(source_contract_costs(&facts), header);
+    Ok(())
+}
+
+#[test]
 fn crates_without_a_ledger_open_no_account() -> Result {
     let report = crate::test_source::resolve("fn main(){}", true)?;
     let mut facts = crate::pipeline::analyze_source(&report)?.facts;
     open(&report, &mut facts)?;
     assert!(lowering_costs(&facts).is_none());
     pay_growth(&facts, usize::MAX, usize::MAX)?;
+    let (paid, charged) = facts.pay_demand_traversal(|facts| pay_growth(facts, 1, 1));
+    paid?;
+    assert_eq!(charged, [0, 0]);
+    facts.carry_demand(0, 0);
+    assert_eq!(facts.carried_demand(), None);
     Ok(())
 }

@@ -130,6 +130,46 @@ impl Declarations {
         super::lowering_account::pay_growth(self, work, bytes)
     }
 
+    /// Run one demand traversal action inside a demand scope: every header
+    /// query and payment it makes is collected instead of charging lowering's
+    /// account, and returned as work and bytes for the demand budget to pay.
+    /// The scope closes before this returns. Without an open account, or
+    /// inside an enclosing scope, nothing is collected here.
+    pub(crate) fn pay_demand_traversal<T>(
+        &mut self,
+        work: impl FnOnce(&mut Self) -> T,
+    ) -> (T, [usize; 2]) {
+        super::lowering_account::traverse(self, work)
+    }
+
+    /// Carry the demand traversal's boundary into emission: proof indices
+    /// from `first` on were demanded, and `bytes` is what the traversal left
+    /// on the demand budget.
+    pub(crate) fn carry_demand(&self, first: usize, bytes: usize) {
+        super::lowering_account::carry(self, first, bytes);
+    }
+
+    /// The carried first demanded index and demand bytes, if any.
+    pub(crate) fn carried_demand(&self) -> Option<[usize; 2]> {
+        super::lowering_account::carried(self)
+    }
+
+    /// Emit proof `index` inside a demand scope when it was demanded, and
+    /// return what it charged there for the demand budget to pay. Originals
+    /// still charge lowering's account. The scope closes before this returns.
+    pub(crate) fn pay_demand_emission<T>(
+        &self,
+        index: usize,
+        work: impl FnOnce() -> T,
+    ) -> (T, [usize; 2]) {
+        super::lowering_account::emit(self, index, work)
+    }
+
+    /// End emission's use of the carried demand boundary.
+    pub(crate) fn settle_demand(&self) {
+        super::lowering_account::settle(self);
+    }
+
     /// Disjoint typed traversal/accounting borrows, never header or body permission.
     pub(crate) fn caller_input_store(
         &mut self,

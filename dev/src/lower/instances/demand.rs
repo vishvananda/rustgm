@@ -205,6 +205,10 @@ impl Ordinary {
         }))
     }
 }
+/// The demand budget's fixed byte cap, rustc-style: it bounds instantiation by
+/// output, since demanded bodies may legitimately grow superlinearly in input.
+pub(in crate::lower) const BODY_BYTES: usize = 64_000_000;
+pub(in crate::lower) const BODIES_EXCEEDED: &str = "generic instance bodies exceed 64 MB budget";
 #[derive(Default)]
 struct Budget {
     active: HashMap<BodyKey, usize>,
@@ -422,10 +426,26 @@ impl Budget {
             .saturating_add(std::mem::size_of_val(input.assumptions.as_slice()))
             .saturating_add(std::mem::size_of_val(input.type_assumptions.as_slice()));
         self.bytes = self.bytes.saturating_add(bytes);
-        if self.bytes > 64_000_000 {
-            return Err("generic instance bodies exceed 64 MB budget");
+        if self.bytes > BODY_BYTES {
+            return Err(BODIES_EXCEEDED);
         }
         *active += 1;
+        Ok(())
+    }
+    /// Pay what one traversal action's demand scope collected: its work as
+    /// canonical steps and its bytes against the fixed cap.
+    fn pay_scope(
+        &mut self,
+        facts: &mut Declarations,
+        [steps, bytes]: [usize; 2],
+    ) -> Result<(), &'static str> {
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
+        self.bytes = self.bytes.saturating_add(bytes);
+        #[cfg(test)]
+        record_demand(self.bytes, steps);
+        if self.bytes > BODY_BYTES {
+            return Err(BODIES_EXCEEDED);
+        }
         Ok(())
     }
 }
@@ -492,6 +512,8 @@ fn materialize(
     }
     let (work, dependencies) =
         initial_work(report, facts, roots, &mut program, ordinary, &mut budget)?;
+    // Every proof appended from here on is demanded.
+    let first = program.proved();
     let mut traversal = Traversal {
         program,
         ordinary,
@@ -508,31 +530,53 @@ fn materialize(
         {
             templates.demand(report, facts, &mut traversal.program, *instance, service)?;
         }
-        templates.with_checked(report, |templates| {
-            traversal.step(report, facts, templates, action)
-        })?;
+        // Demanded work pays the demand budget, never lowering's account.
+        let (stepped, charged) = facts.pay_demand_traversal(|facts| {
+            templates.with_checked(report, |templates| {
+                traversal.step(report, facts, templates, action)
+            })
+        });
+        let paid = traversal.budget.pay_scope(facts, charged);
+        stepped?;
+        paid.map_err(|e| diagnostic(report, None, e.into()))?;
     }
     #[cfg(test)]
-    DEMAND.set([DEMAND.get()[0], traversal.budget.bytes]);
+    record_demand(traversal.budget.bytes, 0);
+    facts.carry_demand(first, traversal.budget.bytes);
     Ok(traversal.program)
 }
 
 #[cfg(test)]
 thread_local! {
     /// Test-only: the bytes a demand budget starts from, so a control can
-    /// reach the fixed cap without 64 MB of input, and the bytes the last
-    /// finished traversal on this thread held.
-    static DEMAND: std::cell::Cell<[usize; 2]> = const { std::cell::Cell::new([0, 0]) };
+    /// reach the fixed cap without 64 MB of input; the bytes the last demand
+    /// budget on this thread held; and the work its demand scopes paid.
+    static DEMAND: std::cell::Cell<[usize; 3]> = const { std::cell::Cell::new([0, 0, 0]) };
+    /// Test-only: work and bytes every specialized instance also charges.
+    static FORGED: std::cell::Cell<[usize; 2]> = const { std::cell::Cell::new([0, 0]) };
 }
 /// Test-only: start every later demand budget on this thread at `bytes`.
 #[cfg(test)]
-pub(in crate::lower::instances) fn preload_demand(bytes: usize) {
-    DEMAND.set([bytes, 0]);
+pub(in crate::lower) fn preload_demand(bytes: usize) {
+    DEMAND.set([bytes, 0, 0]);
 }
-/// Test-only: the bytes the last finished demand traversal held.
+/// Test-only: the demand budget's bytes and the work its scopes paid.
 #[cfg(test)]
-pub(in crate::lower::instances) fn demand_bytes() -> usize {
-    DEMAND.get()[1]
+pub(in crate::lower) fn demand_costs() -> [usize; 2] {
+    let [_, bytes, steps] = DEMAND.get();
+    [bytes, steps]
+}
+/// Test-only: record the demand budget's bytes and work one scope paid.
+#[cfg(test)]
+pub(in crate::lower) fn record_demand(bytes: usize, steps: usize) {
+    let [preload, _, paid] = DEMAND.get();
+    DEMAND.set([preload, bytes, paid.saturating_add(steps)]);
+}
+/// Test-only: make every later specialized instance on this thread also
+/// charge `work` and `bytes` through its caller-input payer.
+#[cfg(test)]
+pub(in crate::lower) fn forge_instance_charges(work: usize, bytes: usize) {
+    FORGED.set([work, bytes]);
 }
 
 /// One ordinary DFS owns the same program, work stack and instance accounting.
@@ -842,6 +886,13 @@ pub(super) fn specialize(
     request: Specialization<'_>,
 ) -> Result<usize, Error> {
     let error = |e: &str| diagnostic(report, Some(request.source), e.into());
+    #[cfg(test)]
+    {
+        let [work, bytes] = FORGED.get();
+        if work != 0 || bytes != 0 {
+            facts.charge_caller_inputs(work, bytes).map_err(error)?;
+        }
+    }
     body::assembly::prepay_instance(report, &request.template.body)?;
     let caller = request
         .caller

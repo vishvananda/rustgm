@@ -133,8 +133,8 @@ fn pay_growth<T>(
     };
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(length);
     *budget = budget.saturating_add(bytes);
-    if *budget > 64_000_000 {
-        return Err("generic instance bodies exceed 64 MB budget");
+    if *budget > super::demand::BODY_BYTES {
+        return Err(super::demand::BODIES_EXCEEDED);
     }
     Ok(())
 }
@@ -960,6 +960,10 @@ impl Builder {
         pay_growth::<incremental::Proved>(facts, demand, index, (before, after))?;
         self.bodies.push(proof);
         Ok(index)
+    }
+    /// Proofs appended so far, originals first.
+    pub(super) fn proved(&self) -> usize {
+        self.bodies.len()
     }
     /// Proofs retained after the originals' exact reservation.
     fn demanded(&self) -> usize {
