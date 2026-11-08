@@ -999,6 +999,23 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     blocked. Its crate record is core's `CoerceUnsized` impl for pattern types
     over raw pointers (`pat.rs:80`), "source CoerceUnsized implementation does
     not retain a permitted pointer coercion". Next: (a)'s locate report.
+  - **(a): a trait path's omitted defaults take its subject for `Self`**
+    (`d97f986eb`, on main `078d3f238`).
+    - One substitution is shared by the default's normal and unreduced folds
+      and by its alias contract expansion. A nested default's dependency maps
+      its subject as it maps its arguments.
+    - `applied_trait` only interns, so a written `Self` stays the enclosing
+      trait's own. Decided with the coordinator: both effects go in one
+      commit, because either half alone leaves the tree wrong in a new way.
+    - The caller audit found no caller that needs `Self` mapped in a
+      non-default argument.
+    - Subject-bearing folds are not cached, and each use pays the
+      substitution account in proportion to its fold.
+    - Recorded, not changed: when a trait header demands a default first,
+      the header phase gives it no contract. This is why core's 1,448 default
+      uses, `Try: FromResidual` among them, never showed the gap.
+  - **Census 17** (pin `c020dad2`) is byte-identical to census 16. Next: the
+    fold follow-up.
 
 ## Lanes
 

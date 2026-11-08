@@ -5,6 +5,26 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 15](parallel/census-batch15.md), section 5, repairs
+batch 14's recorded `default-bound-satisfied` gap on main `078d3f238`
+(`d97f986eb`). Census 17 (`c020dad2`) has census 16's 8 records byte for
+byte.
+
+- A trait path's omitted default now takes the path's subject for `Self`. One
+  substitution is shared by the default's normal and unreduced folds and by
+  its alias contract expansion. So `impl Fill for Short` with
+  `R = <Self as Source>::Item` requires `Short: Source`, as rustc does.
+- `applied_trait` only interns, so a `Self` written among a trait path's
+  arguments stays the enclosing trait's `Self`. Census 16's pin rejected
+  three rustc-accepted programs of this shape and accepted two that rustc
+  rejects with E0277.
+- No census saw the gap because core never instantiates a default contract:
+  none of its 1,448 default uses has one.
+- 24 controls (6 in PA19, 18 in PA20) were declared before the rustc 1.98.0
+  oracle, and all agree. Census 16's pin disagreed on 13 of them. PA1 to PA24
+  pass, with PA19 at 1199/1199 and PA20 at 1482/1482.
+- What remains: the fold keeping each cause's category.
+
 Lane A [census batch 15](parallel/census-batch15.md) repairs census 15's
 record on main `6cd9f9e82`. Census 16 (`ed88ef69`, from `90ba44c16`) checks
 42,310 declarations, with none failed or blocked. Its crate record, "source
