@@ -47,6 +47,26 @@ struct Query {
     ambient: scoped::Ambient,
     scopes: scoped::Mapping,
 }
+/// A normalization root: a written source node, or an impl trait reference
+/// argument that has no node of its own. An argument is identified by its impl
+/// and argument index; `site` is that impl's trait path, used only to locate
+/// diagnostics, so no node-keyed table ever holds an argument root.
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub(super) enum RootKey {
+    Node(NodeKey),
+    Argument {
+        implementation: DefId,
+        index: u16,
+        site: NodeKey,
+    },
+}
+impl RootKey {
+    pub(super) const fn site(self) -> NodeKey {
+        match self {
+            Self::Node(key) | Self::Argument { site: key, .. } => key,
+        }
+    }
+}
 #[derive(Clone, Copy)]
 enum Destination {
     Annotation,
@@ -63,8 +83,8 @@ struct Root {
 }
 #[derive(Default)]
 pub(super) struct Pending {
-    rechecks: Vec<(NodeKey, regions::Context, scoped::Ambient, TypeId, TypeId)>,
-    headers: Vec<(NodeKey, regions::Context, TypeId)>,
+    rechecks: Vec<(RootKey, regions::Context, scoped::Ambient, TypeId, TypeId)>,
+    headers: Vec<(RootKey, regions::Context, TypeId)>,
     self_bounded: HashMap<DefId, bool>,
     lookup: lookup::Pending,
     sized: Vec<(NodeKey, regions::Context, scoped::Ambient, TypeId)>,
@@ -80,7 +100,7 @@ pub(super) struct Pending {
         HashMap<DefId, std::sync::Arc<crate::types::parameters::environment::Environment>>,
     alias_templates: HashMap<regions::BinderId, aliases::Template>,
     alias_scopes: HashMap<aliases::ScopeKey, crate::sema::alias_requirements::Scope>,
-    roots: HashMap<NodeKey, Query>,
+    roots: HashMap<RootKey, Query>,
     scopes: HashMap<Option<regions::BinderId>, usize>,
     proofs: Vec<(
         NodeKey,
@@ -201,7 +221,7 @@ impl Checker<'_> {
         // in this scope. Trait defaults may introduce new projections, so only
         // the checked subject, not the newly assembled arguments, is reusable.
         self.normalize_annotation_root(
-            key,
+            RootKey::Node(key),
             Root {
                 ty,
                 normalized_subject: Some(subject),
@@ -216,8 +236,19 @@ impl Checker<'_> {
         ty: TypeId,
         context: regions::Context,
     ) -> Result<(), Error> {
+        self.normalize_root(RootKey::Node(key), ty, context)
+    }
+
+    /// A root whose subject is not yet normalized: a written annotation, or an
+    /// impl trait reference argument that has no node of its own.
+    pub(super) fn normalize_root(
+        &mut self,
+        root: RootKey,
+        ty: TypeId,
+        context: regions::Context,
+    ) -> Result<(), Error> {
         self.normalize_annotation_root(
-            key,
+            root,
             Root {
                 ty,
                 normalized_subject: None,
@@ -226,55 +257,77 @@ impl Checker<'_> {
         )
     }
 
+    /// Written annotations and impl trait reference arguments share this
+    /// routine; only where the original and the result are kept depends on
+    /// the root.
     fn normalize_annotation_root(
         &mut self,
-        key: NodeKey,
-        root: Root,
+        root: RootKey,
+        value: Root,
         context: regions::Context,
     ) -> Result<(), Error> {
-        let ty = root.ty;
+        let ty = value.ty;
         if self.facts.types.contains_projections(ty) != Some(true) {
-            return self.store(key, ty);
+            return self.store_root(root, ty);
         }
-        self.facts.unreduced.retain_node(key, ty);
-        if self.header_projection_context(context) {
-            self.projections.raw_bound_nodes.remove(&key);
-            return self.store(key, ty);
-        }
-        if self.projections.raw_bound_nodes.remove(&key) {
-            return self.store(key, ty);
+        // Only written nodes are raw bounds; an argument root keeps its
+        // original beside its result in the impl's pending reference.
+        let raw_bound = match root {
+            RootKey::Node(key) => {
+                self.facts.unreduced.retain_node(key, ty);
+                self.projections.raw_bound_nodes.remove(&key)
+            }
+            RootKey::Argument { .. } => false,
+        };
+        if self.header_projection_context(context) || raw_bound {
+            return self.store_root(root, ty);
         }
         if self.self_bounded_header(context) {
-            self.projections.headers.push((key, context, ty));
-            return self.store(key, ty);
+            self.projections.headers.push((root, context, ty));
+            return self.store_root(root, ty);
         }
         self.start_scoped_normalization(
-            key,
             root,
+            value,
             context,
             Destination::Annotation,
             scoped::Ambient::Root,
         )
     }
 
+    fn store_root(&mut self, root: RootKey, ty: TypeId) -> Result<(), Error> {
+        match root {
+            RootKey::Node(key) => self.store(key, ty),
+            RootKey::Argument {
+                implementation,
+                index,
+                site,
+            } => self
+                .impl_headers
+                .complete_argument(implementation, index, ty)
+                .map_err(|e| self.error(site, e)),
+        }
+    }
+
     fn start_scoped_normalization(
         &mut self,
-        key: NodeKey,
-        root: Root,
+        root: RootKey,
+        value: Root,
         context: regions::Context,
         destination: Destination,
         ambient: scoped::Ambient,
     ) -> Result<(), Error> {
+        let key = root.site();
         let mut fold = Normalizer::default();
-        let step = match root.normalized_subject {
-            Some(input) => fold.start_with_input(&mut self.facts.types, root.ty, input),
-            None => fold.start(&mut self.facts.types, root.ty),
+        let step = match value.normalized_subject {
+            Some(input) => fold.start_with_input(&mut self.facts.types, value.ty, input),
+            None => fold.start(&mut self.facts.types, value.ty),
         }
         .map_err(|e| self.error(key, e))?;
         self.projections.roots.insert(
-            key,
+            root,
             Query {
-                original: root.ty,
+                original: value.ty,
                 provisional_size: false,
                 fold,
                 context,
@@ -286,20 +339,21 @@ impl Checker<'_> {
                 scopes: scoped::Mapping::default(),
             },
         );
-        self.advance_projection(key, step)
+        self.advance_projection(root, step)
     }
 
-    fn advance_projection(&mut self, key: NodeKey, step: Step) -> Result<(), Error> {
+    fn advance_projection(&mut self, root: RootKey, step: Step) -> Result<(), Error> {
+        let key = root.site();
         match step {
             Step::Complete(ty) => {
                 let query = self
                     .projections
                     .roots
-                    .remove(&key)
+                    .remove(&root)
                     .ok_or_else(|| self.error(key, "missing completed projection query"))?;
                 if query.provisional_size {
                     self.projections.rechecks.push((
-                        key,
+                        root,
                         query.context,
                         query.ambient,
                         query.original,
@@ -319,33 +373,34 @@ impl Checker<'_> {
                         let depth = self.ambient_depth(key, query.ambient)?;
                         self.prove_alias_size(key, query.context, depth, ty)
                     }
-                    Destination::Annotation => self.store(key, ty),
+                    Destination::Annotation => self.store_root(root, ty),
                     Destination::Recheck(_) | Destination::Header(_) | Destination::Requirement => {
                         Ok(())
                     }
                 }
             }
             Step::Resolve(request) => {
-                self.work.push(Work::ProjectionSelection(key, request));
-                self.demand_projection_environment(key, request)
+                self.work.push(Work::ProjectionSelection(root, request));
+                self.demand_projection_environment(root, request)
             }
         }
     }
 
     pub(super) fn complete_projection_selection(
         &mut self,
-        key: NodeKey,
+        root: RootKey,
         request: Request,
     ) -> Result<(), Error> {
-        let selected = match self.select_projection(key, request)? {
-            Selection::Deferred => return self.defer_projection_requirement(key, request),
+        let key = root.site();
+        let selected = match self.select_projection(root, request)? {
+            Selection::Deferred => return self.defer_projection_requirement(root, request),
             Selection::Dependency(dependency) => {
-                self.work.push(Work::ProjectionSelection(key, request));
+                self.work.push(Work::ProjectionSelection(root, request));
                 self.work.push(Work::selection_dependency(dependency));
                 return Ok(());
             }
             Selection::Contract(member) => {
-                self.work.push(Work::ProjectionSelection(key, request));
+                self.work.push(Work::ProjectionSelection(root, request));
                 self.work.push(Work::Definition(member, false));
                 return Ok(());
             }
@@ -354,31 +409,32 @@ impl Checker<'_> {
                 let query = self
                     .projections
                     .roots
-                    .get_mut(&key)
+                    .get_mut(&root)
                     .ok_or_else(|| Error::at(key.file, 0, "missing pending projection fold"))?;
                 let step = query
                     .fold
                     .resume(&mut self.facts.types, request, resolution)
                     .map_err(|e| self.error(key, e))?;
-                return self.advance_projection(key, step);
+                return self.advance_projection(root, step);
             }
         };
         let definition = selected.definition;
         self.projections
             .roots
-            .get_mut(&key)
+            .get_mut(&root)
             .ok_or_else(|| Error::at(key.file, 0, "missing projection scope"))?
             .selected = Some(selected);
-        self.work.push(Work::ProjectionResult(key));
+        self.work.push(Work::ProjectionResult(root));
         self.work.push(Work::Definition(definition, false));
         Ok(())
     }
 
-    pub(super) fn complete_projection_result(&mut self, key: NodeKey) -> Result<(), Error> {
+    pub(super) fn complete_projection_result(&mut self, root: RootKey) -> Result<(), Error> {
+        let key = root.site();
         let mut selected = self
             .projections
             .roots
-            .get_mut(&key)
+            .get_mut(&root)
             .and_then(|query| query.selected.take())
             .ok_or_else(|| self.error(key, "missing selected projection definition"))?;
         let template = self.facts.definitions[selected.definition.0 as usize]
@@ -403,7 +459,7 @@ impl Checker<'_> {
         let query = self
             .projections
             .roots
-            .get_mut(&key)
+            .get_mut(&root)
             .ok_or_else(|| Error::at(key.file, 0, "missing pending projection fold"))?;
         let step = query
             .fold
@@ -413,6 +469,6 @@ impl Checker<'_> {
                 Resolution::Type(ty),
             )
             .map_err(|e| self.error(key, e))?;
-        self.advance_projection(key, step)
+        self.advance_projection(root, step)
     }
 }

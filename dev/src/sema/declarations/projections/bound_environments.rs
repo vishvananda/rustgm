@@ -84,7 +84,7 @@ impl Checker<'_> {
         };
         for (key, context) in bounds.roots {
             self.start_scoped_normalization(
-                key,
+                super::RootKey::Node(key),
                 super::Root {
                     ty: self.ty(key)?,
                     normalized_subject: None,

@@ -757,3 +757,13 @@ there is no graded manifest.
 fn-pointer Copy and Clone impls (E0206). Each names the frozen declaration, its
 recorded outcome, the witnessed result and the active successor that already
 fixes it. No superseded declaration or fixture changed.
+
+`spec/defaulted-impl-arguments/` freezes eight declared no_core impls from
+census batch 14 whose trait path leaves an argument to a default naming an
+associated type. The omitted `FromResidual` default, the same default written
+out, a default naming another member, the omitted default under `Self`-naming
+bounds, core's `NeverShortCircuit<T>` shape and a scaling control are
+accepted. A default naming another trait's member is accepted when it
+satisfies the parameter's bound and rejected when it does not (E0277); the
+accepted case is a recorded gap. Each outcome was declared before its rustc
+1.98.0 oracle. A private invariant checks them; there is no graded manifest.

@@ -1,6 +1,6 @@
 //! Projection queries retain both source proof scopes and callable scopes introduced by types.
 mod proofs;
-use super::{Checker, Error, NodeKey, Request, aliases, regions};
+use super::{Checker, Error, NodeKey, Request, RootKey, aliases, regions};
 use crate::support::hash::HashMap;
 use crate::types::{
     lifetime_proof::{ScopeId, ScopePlan, map_scopes},
@@ -59,14 +59,15 @@ impl Checker<'_> {
     }
     pub(super) fn scoped_projection_environment(
         &mut self,
-        key: NodeKey,
+        root: RootKey,
         request: Request,
         context: regions::Context,
     ) -> Result<(Option<Arc<Environment>>, u32), Error> {
+        let key = root.site();
         let query = self
             .projections
             .roots
-            .get(&key)
+            .get(&root)
             .ok_or_else(|| self.error(key, "missing scoped projection query"))?;
         let depth = self
             .ambient_depth(key, query.ambient)?
@@ -91,7 +92,7 @@ impl Checker<'_> {
             .map_err(|e| self.error(key, e))?;
         self.projections
             .roots
-            .get_mut(&key)
+            .get_mut(&root)
             .ok_or_else(|| Error::at(key.file, 0, "missing scoped projection query"))?
             .scopes
             .environments
@@ -101,25 +102,26 @@ impl Checker<'_> {
 
     pub(super) fn projection_alias_request_scope(
         &mut self,
-        key: NodeKey,
+        root: RootKey,
         request: Request,
         context: regions::Context,
         template: aliases::Template,
     ) -> Result<ScopeId, Error> {
-        let root = self.projection_alias_scope(key, context, template)?;
+        let key = root.site();
+        let outer = self.projection_alias_scope(key, context, template)?;
         if request.scope == ScopeId::ROOT {
-            return Ok(root);
+            return Ok(outer);
         }
         let query = self
             .projections
             .roots
-            .get_mut(&key)
+            .get_mut(&root)
             .ok_or_else(|| Error::at(key.file, 0, "missing alias projection query"))?;
         let requirements = &mut self.facts.alias_requirements;
         map_binders(
             &mut query.scopes.bindings,
             &query.fold,
-            root,
+            outer,
             request.scope,
             |parent, count| {
                 let scope = requirements.scope(template.owner, template.parameters, parent)?;

@@ -124,8 +124,8 @@ enum Work {
     ),
     HeaderProjection(NodeKey, regions::Context),
     ProjectionBound(projections::lookup::Seed, bool),
-    ProjectionSelection(NodeKey, crate::types::substitute::Request),
-    ProjectionResult(NodeKey),
+    ProjectionSelection(projections::RootKey, crate::types::substitute::Request),
+    ProjectionResult(projections::RootKey),
     ProjectionEnvironment(DefId, regions::Context, bool),
     NormalizeBound(NodeKey, regions::Context),
     NominalContract(ItemId, bool),
@@ -727,11 +727,11 @@ impl Checker<'_> {
             Work::ProjectionBound(seed, finish) => {
                 self.complete_projection_bound(seed, finish)?;
             }
-            Work::ProjectionResult(key) => {
-                self.complete_projection_result(key)?;
+            Work::ProjectionResult(root) => {
+                self.complete_projection_result(root)?;
             }
-            Work::ProjectionSelection(key, request) => {
-                self.complete_projection_selection(key, request)?;
+            Work::ProjectionSelection(root, request) => {
+                self.complete_projection_selection(root, request)?;
             }
             Work::ProjectionEnvironment(owner, context, finish) => {
                 self.complete_projection_environment(owner, context, finish)?;

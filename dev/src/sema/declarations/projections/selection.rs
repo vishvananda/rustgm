@@ -1,5 +1,5 @@
 //! Declaration projection selections resume with their original immutable environment.
-use super::{Checker, DefId, Error, NodeKey, Request, Selected, Selection, regions};
+use super::{Checker, DefId, Error, NodeKey, Request, RootKey, Selected, Selection, regions};
 use crate::{
     sema::{
         nominals::traits::{Projected, normal_form},
@@ -30,9 +30,10 @@ struct Attempt {
 impl Checker<'_> {
     pub(super) fn select_projection(
         &mut self,
-        key: NodeKey,
+        root: RootKey,
         request: Request,
     ) -> Result<Selection, Error> {
+        let key = root.site();
         if request.alias.associated().is_none() {
             return Ok(Selection::Resolved(
                 crate::types::substitute::Resolution::Opaque,
@@ -41,16 +42,16 @@ impl Checker<'_> {
         let context = self
             .projections
             .roots
-            .get(&key)
+            .get(&root)
             .ok_or_else(|| self.error(key, "missing projection scope"))?
             .context;
-        if let Some(member) = self.subject_contract(key, request)? {
+        if let Some(member) = self.subject_contract(root, request)? {
             return Ok(Selection::Contract(member));
         }
         let Some(Attempt {
             progress,
             mut delivery,
-        }) = self.projection_attempt(key, request, context)?
+        }) = self.projection_attempt(root, request, context)?
         else {
             return Ok(Selection::Deferred);
         };
@@ -75,22 +76,22 @@ impl Checker<'_> {
                 }
                 self.projections
                     .roots
-                    .get_mut(&key)
+                    .get_mut(&root)
                     .ok_or_else(|| Error::at(key.file, 0, "missing suspended projection"))?
                     .pending = Some(Pending { query, delivery });
                 return Ok(Selection::Dependency(owner));
             }
         };
-        self.finish_projection_selection(key, request, context, projected, delivery)
+        self.finish_projection_selection(root, request, context, projected, delivery)
     }
 
     /// A fresh query over a projected subject reads the subject's result
     /// contract. A trait associated type not yet prepared is demanded first.
-    fn subject_contract(&self, key: NodeKey, request: Request) -> Result<Option<DefId>, Error> {
+    fn subject_contract(&self, root: RootKey, request: Request) -> Result<Option<DefId>, Error> {
         let pending = self
             .projections
             .roots
-            .get(&key)
+            .get(&root)
             .is_some_and(|root| root.pending.is_some());
         let parent = request.alias.associated().and_then(|application| {
             match self.facts.types.kind(application.subject) {
@@ -106,14 +107,15 @@ impl Checker<'_> {
 
     fn projection_attempt(
         &mut self,
-        key: NodeKey,
+        root: RootKey,
         request: Request,
         context: regions::Context,
     ) -> Result<Option<Attempt>, Error> {
+        let key = root.site();
         let pending = self
             .projections
             .roots
-            .get_mut(&key)
+            .get_mut(&root)
             .ok_or_else(|| Error::at(key.file, 0, "missing projection query"))?
             .pending
             .take();
@@ -149,7 +151,7 @@ impl Checker<'_> {
         {
             return Ok(None);
         }
-        let (environment, first) = self.scoped_projection_environment(key, request, context)?;
+        let (environment, first) = self.scoped_projection_environment(root, request, context)?;
         let progress = normal_form::begin_with_scope(
             &mut self.facts,
             environment,
@@ -170,12 +172,13 @@ impl Checker<'_> {
 
     fn finish_projection_selection(
         &mut self,
-        key: NodeKey,
+        root: RootKey,
         request: Request,
         context: regions::Context,
         projected: Projected,
         delivery: Delivery,
     ) -> Result<Selection, Error> {
+        let key = root.site();
         if projected.provisional_size {
             if delivery.deferred {
                 // A lazy alias retains the original requirement at its use,
@@ -184,7 +187,7 @@ impl Checker<'_> {
             }
             self.projections
                 .roots
-                .get_mut(&key)
+                .get_mut(&root)
                 .ok_or_else(|| Error::at(key.file, 0, "missing provisional projection query"))?
                 .provisional_size = true;
         }
@@ -200,7 +203,7 @@ impl Checker<'_> {
         };
         let proof = projected.proof;
         if let Some(resolution) = projected.resolution {
-            self.retain_selection_proof(key, request, context, proof, delivery)?;
+            self.retain_selection_proof(root, request, context, proof, delivery)?;
             return Ok(Selection::Resolved(resolution));
         }
         let Source::Implementation { owner, arguments } = source else {
@@ -214,7 +217,7 @@ impl Checker<'_> {
             ))
         };
         self.retain_alias_sizes(
-            key,
+            root,
             request,
             context,
             projected.sized,
@@ -222,7 +225,7 @@ impl Checker<'_> {
         )?;
         // Arguments use the private selection's original identities. Keep their
         // restoration before rebasing a canonical declaration template.
-        self.retain_selection_proof(key, request, context, proof, delivery)?;
+        self.retain_selection_proof(root, request, context, proof, delivery)?;
         let item = request
             .alias
             .associated()
@@ -243,15 +246,16 @@ impl Checker<'_> {
 
     fn retain_selection_proof(
         &mut self,
-        key: NodeKey,
+        root: RootKey,
         request: Request,
         context: regions::Context,
         mut proof: Obligations,
         delivery: Delivery,
     ) -> Result<(), Error> {
+        let key = root.site();
         if let Some(reservation) = delivery.reservation {
             return self.retain_reserved_projection_proof(
-                key,
+                root,
                 request,
                 context,
                 proof,
@@ -266,6 +270,6 @@ impl Checker<'_> {
                     .map_err(|e| self.error(key, e))?;
             }
         }
-        self.retain_scoped_projection_proof(key, request, context, proof)
+        self.retain_scoped_projection_proof(root, request, context, proof)
     }
 }

@@ -2,7 +2,7 @@
 #[cfg(test)]
 #[path = "../../../../tests/invariants/normalized_impl_headers.rs"]
 mod tests;
-use super::{Checker, DefId, DefKind, Error, NodeKey, Work, regions};
+use super::{Checker, DefId, DefKind, Error, NodeKey, RootKey, Work, regions};
 use crate::sema::declarations::State;
 use crate::types::{
     parameters::predicates::{Bound, Predicate},
@@ -12,9 +12,10 @@ use crate::types::{
 impl Checker<'_> {
     pub(super) fn demand_projection_environment(
         &mut self,
-        key: NodeKey,
+        root: RootKey,
         request: Request,
     ) -> Result<(), Error> {
+        let key = root.site();
         let Some(application) = request.alias.associated() else {
             return Ok(());
         };
@@ -35,7 +36,7 @@ impl Checker<'_> {
         let context = self
             .projections
             .roots
-            .get(&key)
+            .get(&root)
             .ok_or_else(|| self.error(key, "missing projection scope"))?
             .context;
         let mut binder = context.binder;

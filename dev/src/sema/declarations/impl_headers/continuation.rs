@@ -1,10 +1,23 @@
 //! Header contexts survive declaration dependencies without recursive drains or replay.
-use super::{Checker, DefId, Error, Partial, Work, regions};
+#[cfg(test)]
+#[path = "../../../../tests/invariants/defaulted_impl_arguments.rs"]
+mod tests;
+use super::{Checker, DefId, Error, NodeKey, Partial, Work, regions};
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
     sema::associated::{OwnerId, OwnerKind, SourceOwner as Owner},
-    types::parameters::predicates::{Bound, Predicate},
+    types::{
+        TypeId,
+        arguments::Argument,
+        parameters::predicates::{Bound, Predicate},
+    },
 };
+
+#[cfg(test)]
+thread_local! {
+    /// Test-only: the defaulted impl trait reference arguments normalized.
+    static DEFAULTED: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
 
 #[derive(Clone, Copy)]
 pub(in crate::sema::declarations) enum Phase {
@@ -14,7 +27,16 @@ pub(in crate::sema::declarations) enum Phase {
     Arguments,
     /// Record the trait reference once its path arguments are lowered.
     Reference,
+    /// Replace the reference's defaulted arguments by their normal forms.
+    Defaults,
     Finish,
+}
+
+/// A trait reference argument left to its default: the default as the path
+/// instantiated it, and the normal form the annotation routine completes.
+struct Defaulted {
+    original: TypeId,
+    normal: Option<TypeId>,
 }
 
 #[derive(Default)]
@@ -24,6 +46,11 @@ pub(in crate::sema::declarations) struct Pending {
     partial: HashMap<DefId, Partial>,
     /// Trait references, active (`None`) or complete, demanded before Finish.
     references: HashMap<DefId, Option<Predicate>>,
+    /// References whose defaulted arguments are still normalizing; they stay
+    /// active until `Defaults`, as a reference does while its written ones do.
+    unnormalized: HashMap<DefId, Predicate>,
+    /// Defaulted arguments by impl and argument index.
+    defaulted: HashMap<(DefId, u16), Defaulted>,
     pub(in crate::sema::declarations) unsupported: Option<HashSet<OwnerId>>,
 }
 
@@ -107,12 +134,16 @@ impl Checker<'_> {
             Phase::Reference => {
                 let path = trait_type
                     .ok_or_else(|| self.error(owner.source, "missing impl trait path"))?;
-                let reference = self.impl_trait_reference(
-                    owner,
-                    path,
-                    self.ty(target)?,
-                    self.impl_context(owner)?,
-                )?;
+                let context = self.impl_context(owner)?;
+                let reference =
+                    self.impl_trait_reference(owner, path, self.ty(target)?, context)?;
+                self.normalize_defaulted_arguments(id, path, reference, context)?;
+            }
+            Phase::Defaults => {
+                let reference = self.impl_headers.unnormalized.remove(&id).ok_or_else(|| {
+                    self.error(owner.source, "missing defaulted impl trait reference")
+                })?;
+                let reference = self.normalized_reference(id, owner.source, reference)?;
                 self.impl_headers.references.insert(id, Some(reference));
             }
             Phase::Finish => {
@@ -201,6 +232,139 @@ impl Checker<'_> {
         self.work.push(resume);
         self.begin_trait_reference(owner, path)?;
         Ok(None)
+    }
+
+    /// Normalize each argument the trait path leaves to a default that still
+    /// names a projection, by the routine a written argument uses, keyed by
+    /// (impl, argument index); `site` only locates its diagnostics.
+    fn normalize_defaulted_arguments(
+        &mut self,
+        id: DefId,
+        path: NodeKey,
+        reference: Predicate,
+        context: regions::Context,
+    ) -> Result<(), Error> {
+        let (site, definition) = self.resolved_impl_trait_path(path)?;
+        let defaulted = self.defaulted_projections(site, definition, reference)?;
+        if defaulted.is_empty() {
+            self.impl_headers.references.insert(id, Some(reference));
+            return Ok(());
+        }
+        self.impl_headers.unnormalized.insert(id, reference);
+        self.work.push(Work::ImplHeader(id, Phase::Defaults));
+        for (index, original) in defaulted {
+            let entry = Defaulted {
+                original,
+                normal: None,
+            };
+            if self
+                .impl_headers
+                .defaulted
+                .insert((id, index), entry)
+                .is_some()
+            {
+                return Err(self.error(site, "defaulted impl trait argument began twice"));
+            }
+            #[cfg(test)]
+            DEFAULTED.with(|count| count.set(count.get() + 1));
+            let root = super::super::projections::RootKey::Argument {
+                implementation: id,
+                index,
+                site,
+            };
+            self.normalize_root(root, original, context)?;
+        }
+        Ok(())
+    }
+
+    /// The type arguments after the written ones that still name projections.
+    fn defaulted_projections(
+        &self,
+        path: NodeKey,
+        definition: DefId,
+        reference: Predicate,
+    ) -> Result<Vec<(u16, TypeId)>, Error> {
+        let Some((application, _)) = reference.bound.trait_parts() else {
+            return Ok(Vec::new());
+        };
+        if crate::sema::lifetimes::call_arguments(self.report, path)?.is_some() {
+            return Ok(Vec::new());
+        }
+        let (list, omitted) = self.supplied_arguments(path, definition)?;
+        let ast = &self.report.package.unit(path.file).configured.ast;
+        let written = omitted + list.map_or(0, |list| ast.list(list).len());
+        let types = &self.facts.types;
+        let arguments = types
+            .trait_application(application)
+            .and_then(|application| types.arguments(application.arguments))
+            .ok_or_else(|| self.error(path, "missing impl trait reference arguments"))?;
+        let mut defaulted = Vec::new();
+        for (index, argument) in arguments.enumerate().skip(written) {
+            if let Argument::Type(ty) = argument
+                && types.contains_projections(ty) == Some(true)
+            {
+                let index = u16::try_from(index)
+                    .map_err(|_| self.error(path, "too many impl trait reference arguments"))?;
+                defaulted.push((index, ty));
+            }
+        }
+        Ok(defaulted)
+    }
+
+    /// The reference with each defaulted argument replaced by its normal form.
+    fn normalized_reference(
+        &mut self,
+        id: DefId,
+        source: NodeKey,
+        reference: Predicate,
+    ) -> Result<Predicate, Error> {
+        let (application, constness) = reference
+            .bound
+            .trait_parts()
+            .ok_or_else(|| self.error(source, "defaulted impl arguments require a trait"))?;
+        let mut application = self
+            .facts
+            .types
+            .trait_application(application)
+            .ok_or_else(|| self.error(source, "missing impl trait application"))?;
+        let mut arguments = self
+            .facts
+            .types
+            .arguments(application.arguments)
+            .ok_or_else(|| self.error(source, "missing impl trait reference arguments"))?
+            .collect::<Vec<_>>();
+        for (index, argument) in arguments.iter_mut().enumerate() {
+            let Some(entry) = u16::try_from(index)
+                .ok()
+                .and_then(|index| self.impl_headers.defaulted.get(&(id, index)))
+            else {
+                continue;
+            };
+            match (*argument, entry.normal) {
+                (Argument::Type(ty), Some(normal)) if ty == entry.original => {
+                    *argument = Argument::Type(normal);
+                }
+                _ => {
+                    return Err(
+                        self.error(source, "defaulted impl trait argument has no normal form")
+                    );
+                }
+            }
+        }
+        application.arguments = self
+            .facts
+            .types
+            .intern_arguments(&arguments)
+            .map_err(|e| self.error(source, e))?;
+        let application = self
+            .facts
+            .types
+            .intern_trait_application(application)
+            .map_err(|e| self.error(source, e))?;
+        Ok(Predicate {
+            ty: reference.ty,
+            bound: Bound::trait_application(application, constness),
+        })
     }
 
     fn activate_library_impl_header(&mut self, id: DefId) -> Result<bool, Error> {
@@ -296,5 +460,24 @@ impl Checker<'_> {
     fn finish_header_state(&mut self, id: DefId) {
         self.impl_headers.active.remove(&id);
         self.impl_headers.complete.insert(id);
+    }
+}
+
+impl Pending {
+    /// A defaulted argument's normal form, completed once beside its default.
+    pub(in crate::sema::declarations) fn complete_argument(
+        &mut self,
+        implementation: DefId,
+        index: u16,
+        ty: TypeId,
+    ) -> Result<(), &'static str> {
+        let entry = self
+            .defaulted
+            .get_mut(&(implementation, index))
+            .ok_or("missing defaulted impl trait argument")?;
+        if entry.normal.replace(ty).is_some() {
+            return Err("defaulted impl trait argument normalized twice");
+        }
+        Ok(())
     }
 }

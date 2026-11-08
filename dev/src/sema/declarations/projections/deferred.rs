@@ -1,5 +1,5 @@
 //! Unproved alias type formation is discharged with the actual use's completed environment.
-use super::{Checker, Destination, Error, NodeKey, Request, Resolution, TypeId, regions};
+use super::{Checker, Destination, Error, NodeKey, Request, Resolution, RootKey, TypeId, regions};
 use crate::{resolve::model::DefKind, types::parameters::predicates::Predicate};
 
 impl Checker<'_> {
@@ -8,9 +8,9 @@ impl Checker<'_> {
         steps: &mut usize,
         limit: usize,
     ) -> Result<(), Error> {
-        while let Some((key, context, ambient, ty, expected)) = self.projections.rechecks.pop() {
+        while let Some((root, context, ambient, ty, expected)) = self.projections.rechecks.pop() {
             self.start_scoped_normalization(
-                key,
+                root,
                 super::Root {
                     ty,
                     normalized_subject: None,
@@ -22,9 +22,9 @@ impl Checker<'_> {
             self.drain(steps, limit)?;
         }
         // Every impl header now has its complete environment.
-        while let Some((key, context, ty)) = self.projections.headers.pop() {
+        while let Some((root, context, ty)) = self.projections.headers.pop() {
             self.start_scoped_normalization(
-                key,
+                root,
                 super::Root {
                     ty,
                     normalized_subject: None,
@@ -85,19 +85,20 @@ impl Checker<'_> {
 
     pub(super) fn defer_projection_requirement(
         &mut self,
-        key: NodeKey,
+        root: RootKey,
         request: Request,
     ) -> Result<(), Error> {
+        let key = root.site();
         let context = self
             .projections
             .roots
-            .get(&key)
+            .get(&root)
             .ok_or_else(|| self.error(key, "missing deferred projection query"))?
             .context;
         let template = self
             .projection_alias_owner(context)
             .ok_or_else(|| self.error(key, "deferred projection requires an alias contract"))?;
-        let scope = self.projection_alias_request_scope(key, request, context, template)?;
+        let scope = self.projection_alias_request_scope(root, request, context, template)?;
         let ty = self.intern(key, request.alias.kind())?;
         self.facts
             .alias_requirements
@@ -106,13 +107,13 @@ impl Checker<'_> {
         let query = self
             .projections
             .roots
-            .get_mut(&key)
+            .get_mut(&root)
             .ok_or_else(|| Error::at(key.file, 0, "missing deferred projection query"))?;
         let step = query
             .fold
             .resume(&mut self.facts.types, request, Resolution::Deferred)
             .map_err(|e| self.error(key, e))?;
-        self.advance_projection(key, step)
+        self.advance_projection(root, step)
     }
 
     pub(in super::super) fn complete_alias_normalizations(
@@ -123,7 +124,7 @@ impl Checker<'_> {
         loop {
             if let Some((key, context, ambient, ty)) = self.projections.deferred.pop() {
                 self.start_scoped_normalization(
-                    key,
+                    RootKey::Node(key),
                     super::Root {
                         ty,
                         normalized_subject: None,
@@ -136,7 +137,7 @@ impl Checker<'_> {
             } else if let Some((key, context, ambient, ty)) = self.projections.sized.pop() {
                 if self.facts.types.contains_projections(ty) == Some(true) {
                     self.start_scoped_normalization(
-                        key,
+                        RootKey::Node(key),
                         super::Root {
                             ty,
                             normalized_subject: None,
@@ -158,12 +159,13 @@ impl Checker<'_> {
 
     pub(super) fn retain_alias_sizes(
         &mut self,
-        key: NodeKey,
+        root: RootKey,
         request: Request,
         context: regions::Context,
         sized: Vec<TypeId>,
         mut restore: Option<&mut crate::types::substitute::Bound>,
     ) -> Result<(), Error> {
+        let key = root.site();
         if sized.is_empty() {
             return Ok(());
         }
@@ -183,7 +185,7 @@ impl Checker<'_> {
             } else {
                 ty
             };
-            let scope = self.projection_alias_request_scope(key, request, context, template)?;
+            let scope = self.projection_alias_request_scope(root, request, context, template)?;
             self.facts
                 .alias_requirements
                 .sized(template.owner, template.parameters, ty, scope)

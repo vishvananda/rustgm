@@ -1,0 +1,68 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The shapes reduce census 14's crate record \"trait implementation does not satisfy the trait's requirements\" at core's `const impl<T> Try for NeverShortCircuit<T>` (library/core/src/ops/try_trait.rs:433), whose `const impl<T> FromResidual for NeverShortCircuit<T>` (line 448) leaves `FromResidual`'s argument to its default `<Self as Try>::Residual`. Exploration drafts with other bytes were run first: obj/parallel/census-batch13/repro/never-short-circuit/ (rustc 1.98.0 accepted all nine; the census 14 pin rejected the omitted default at the Try impl and accepted the same impl with the argument written out, as `<Short as Try>::Residual` or as `ShortResidual`, with or without constness, the Destruct bound or impl order; a first run without const_precise_live_drops was rejected by rustc with E0493 in `branch`). Each outcome follows the rule read in the pinned rustc 1.98.0 sources: compiler/rustc_hir_analysis/src/hir_ty_lowering/mod.rs (line 780) fills an omitted type argument with its default instantiated by the preceding arguments, Self included; compiler/rustc_hir_analysis/src/check/wfcheck.rs `check_impl` (line 1387) deeply normalizes the impl's trait reference and proves its well-formedness, including the trait parameter's bounds (E0277); and compiler/rustc_trait_selection/src/traits/select/mod.rs `match_impl` (line 2545) normalizes the instantiated impl trait reference before equating it with the goal. A default that mentions a parameter, Self included, is not checked at the trait's own declaration.",
+ "declaration_sha256": "6980afc4ca800be630e7a1a8f73ee91e25cc040baa6f3c7204c0134267cade84",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "default-omitted.rs": {
+   "sha256": "5201468b8f3bd83521f486087b5af3e2a521eeee9913042744c548e69a405b31",
+   "declared": 0,
+   "reason": "census 14's shape, ordinary and not generic: `impl FromResidual for Short` omits the argument, which is `<Short as Try>::Residual` and normalizes to `ShortResidual`, so Try's supertrait `Short: FromResidual<ShortResidual>` holds",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "default-written.rs": {
+   "sha256": "b3c9a174975011877fcfdb51ea8117bc64c28bd7fdc2aae87d947ac1f46be178",
+   "declared": 0,
+   "reason": "the same impl with the default written out, `impl FromResidual<<Short as Try>::Residual> for Short`; it must check as the omitted default does",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "default-other-member.rs": {
+   "sha256": "be4e9c497419670f07303d638d2a0e380baffe64b2e0ce4a1ba3a0a19f03fc29",
+   "declared": 0,
+   "reason": "the default names the trait's other associated type, `R = <Self as Try>::Output`, which normalizes to `u8`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "default-self-bounds.rs": {
+   "sha256": "f02f1eb0b19ee0ddd3db3c0a110ad68bd1f0fdaa17accca58b7df70a0fdf48ca",
+   "declared": 0,
+   "reason": "the omitted default in an impl whose where clause names its own Self, `where Self: Sized`, a bound without parameters that holds",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "core-never-short-circuit.rs": {
+   "sha256": "c80ead16887ebc13d8eb3a5bb3d6f04327444c77ef6809aa6f78412f1210a3e6",
+   "declared": 0,
+   "reason": "core's generic shape at try_trait.rs:433 to 457: const `Try`, `FromResidual` and `Residual`, `NeverShortCircuit<T>`'s Try and defaulted FromResidual impls and `NeverShortCircuitResidual`'s Residual impl under `T: [const] Destruct`, with core's const_precise_live_drops",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "default-bound-satisfied.rs": {
+   "sha256": "296b55a3f5046d665cb6d9898b9e9a2c2ef8490442d7751fa0fddda29497b845",
+   "declared": 0,
+   "reason": "twin of the opponent: `Fill<R: Marker = <Self as Source>::Item>` with the default naming another trait's associated type, which normalizes to `Marked: Marker`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "default-bound-unsatisfied.rs": {
+   "sha256": "e9aa8f3325166ac90de686d51b757b1ba9ac3b085126fad7c8d18f95a61ec454",
+   "declared": 1,
+   "reason": "opponent: the same default normalizes to `Plain`, which is not `Marker`; the impl's normalized trait reference is not well-formed (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "default-scaling.rs": {
+   "sha256": "8f857b28067fff248d4387610f5d11a642651bd7ebccc38bffd3409713527694",
+   "declared": 0,
+   "reason": "scaling control: three types with omitted defaults, each selected through two traits `UseN: Try + FromResidual`; dev/tests/invariants/defaulted_impl_arguments.rs builds the same shape at larger sizes",
+   "rustc_status": 0,
+   "error_codes": []
+  }
+ }
+}

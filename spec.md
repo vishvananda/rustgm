@@ -391,6 +391,19 @@ environment after publication. Once every impl environment is complete, each
 such projection is normalized again under it, and a result other than the
 written projection is rejected by name: the header must stay rigid.
 
+An impl trait reference argument that its path leaves to a default, as core's
+`impl<T> FromResidual for NeverShortCircuit<T>` leaves `<Self as Try>::Residual`,
+is that default instantiated by the preceding arguments with `Self` set to the
+impl's self type. It is normalized by the routine a written argument uses, under
+the same rules, before the trait header is published, and the reference stays
+active until it is. Its normal form is kept beside the default by impl and
+argument index, never under a source node. A default whose normal form does not
+satisfy the parameter's bound is rejected (E0277). The default's retained alias
+requirement is still instantiated without the trait's `Self`, so a default that
+names another trait's member is rejected by name, a recorded gap. The
+[defaulted impl argument controls](pa31/tests/spec/defaulted-impl-arguments/README.md)
+record independent outcomes.
+
 Fundamental policy belongs to the actual struct or trait and uses its distinct
 `fundamental` feature or genuine attribute-name macro allowance; `rustc_attrs`
 and sizing-language identity are not substitutes. Reuse the configured header

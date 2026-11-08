@@ -1,5 +1,7 @@
 //! Scoped evidence is published immediately so later queries cannot reuse its region interval.
-use super::{Ambient, Checker, Error, NodeKey, Plan, Request, ScopeId, Sink, map_binders, regions};
+use super::{
+    Ambient, Checker, Error, NodeKey, Plan, Request, RootKey, ScopeId, Sink, map_binders, regions,
+};
 use crate::{
     sema::model::{BodyRegion, BodyRegionOrigin, QuantifiedProof},
     sema::traits::obligations::Reservation,
@@ -9,12 +11,13 @@ use crate::{
 impl Checker<'_> {
     pub(in super::super) fn retain_reserved_projection_proof(
         &mut self,
-        key: NodeKey,
+        root: RootKey,
         request: Request,
         context: regions::Context,
         proof: Obligations,
         mut reservation: Reservation,
     ) -> Result<(), Error> {
+        let key = root.site();
         let (regions::Position::Local(body) | regions::Position::Constant(body)) = context.position
         else {
             return Err(self.error(key, "body reservation requires a body projection"));
@@ -36,7 +39,7 @@ impl Checker<'_> {
         let query = self
             .projections
             .roots
-            .get_mut(&key)
+            .get_mut(&root)
             .ok_or_else(|| Error::at(key.file, 0, "missing reserved projection query"))?;
         let index = if let Some(index) = query.reserved_sink {
             index
@@ -52,22 +55,23 @@ impl Checker<'_> {
             query.reserved_sink = Some(index);
             index
         };
-        self.append_scoped_projection(key, request, Sink::Body(index), proof)
+        self.append_scoped_projection(root, request, Sink::Body(index), proof)
             .map_err(|e| self.error(key, e))
     }
 
     pub(in super::super) fn retain_scoped_projection_proof(
         &mut self,
-        key: NodeKey,
+        root: RootKey,
         request: Request,
         context: regions::Context,
         proof: Obligations,
     ) -> Result<(), Error> {
+        let key = root.site();
         if proof.is_empty() {
             return Ok(());
         }
         if let Some(template) = self.projection_alias_owner(context) {
-            let scope = self.projection_alias_request_scope(key, request, context, template)?;
+            let scope = self.projection_alias_request_scope(root, request, context, template)?;
             return self
                 .facts
                 .alias_requirements
@@ -77,7 +81,7 @@ impl Checker<'_> {
         let query = self
             .projections
             .roots
-            .get(&key)
+            .get(&root)
             .ok_or_else(|| self.error(key, "missing scoped projection proof query"))?;
         let reserved = query.reserved_sink;
         if reserved.is_none() && request.depth == 0 && self.ambient_depth(key, query.ambient)? == 0
@@ -94,7 +98,7 @@ impl Checker<'_> {
         } else {
             self.projection_sink(key, context, allocated.start)?
         };
-        self.append_scoped_projection(key, request, sink, proof)
+        self.append_scoped_projection(root, request, sink, proof)
             .map_err(|e| self.error(key, e))?;
         if let Sink::Body(index) = sink {
             let body = self.facts.quantified_proofs[index].body;
@@ -163,7 +167,7 @@ impl Checker<'_> {
 
     fn append_scoped_projection(
         &mut self,
-        key: NodeKey,
+        root: RootKey,
         request: Request,
         sink: Sink,
         proof: Obligations,
@@ -171,7 +175,7 @@ impl Checker<'_> {
         let query = self
             .projections
             .roots
-            .get_mut(&key)
+            .get_mut(&root)
             .ok_or("missing scoped projection query")?;
         let destination = match sink {
             Sink::Declaration(index) => &mut self.projections.proofs[index].2,
