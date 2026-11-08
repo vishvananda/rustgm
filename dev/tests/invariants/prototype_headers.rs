@@ -131,30 +131,66 @@ fn failed_structural_work_and_distinct_late_regions_cannot_publish_a_signature()
     Ok(())
 }
 
+fn executed_intrinsic(source: &str) -> Result<Result<(), String>, Box<dyn std::error::Error>> {
+    let report = crate::test_source::source_provider(source, "intrinsic_execution")?;
+    let result = crate::pipeline::analyze_source(&report).and_then(|analysis| {
+        let crate::pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = analysis;
+        crate::lower::instances::build_roots_prepared(
+            &report,
+            &mut facts,
+            crate::lower::Roots {
+                entry: None,
+                exports: &[],
+            },
+            prepared,
+        )
+    });
+    Ok(result.map(drop).map_err(|error| error.to_string()))
+}
+
 #[test]
 fn reached_intrinsics_cannot_execute_their_authored_fallback() -> TestResult {
-    for name in ["const", "runtime", "reified"] {
-        let source = crate::test_source::fixture(&format!("{PACKET}/execution/{name}.rs"))?;
-        let report = crate::test_source::source_provider(&source, "intrinsic_execution")?;
-        let result = crate::pipeline::analyze_source(&report).and_then(|analysis| {
-            let crate::pipeline::Analysis {
-                mut facts,
-                prepared,
-            } = analysis;
-            crate::lower::instances::build_roots_prepared(
-                &report,
-                &mut facts,
-                crate::lower::Roots {
-                    entry: None,
-                    exports: &[],
-                },
-                prepared,
-            )
-        });
-        let error = result
+    // `ctpop` has a validated constant handler: `ctpop(7)` is 3, never the
+    // authored fallback's 7. Each length is accepted only with the handler's.
+    let constant = crate::test_source::fixture(&format!("{PACKET}/execution/const.rs"))?;
+    for (length, accepted) in [(3, true), (7, false)] {
+        let source = format!("{constant}fn length(a:[u8;ANSWER as usize])->[u8;{length}]{{a}}\n");
+        match executed_intrinsic(&source)? {
+            Ok(()) => assert!(accepted, "`ctpop` executed its fallback: [u8; {length}]"),
+            Err(error) => assert!(
+                !accepted && error.contains("incompatible types"),
+                "[u8; {length}]: {error}"
+            ),
+        }
+    }
+    // An intrinsic with no constant handler keeps rejecting reached execution.
+    let unhandled = constant
+        .replace(
+            "ctpop<T0:Copy>(a0:T0)->u32{7}",
+            "bswap<T0:Copy>(a0:T0)->T0{a0}",
+        )
+        .replace("ctpop(7u32)", "bswap(7u32)");
+    assert_ne!(
+        unhandled, constant,
+        "the unhandled intrinsic source changed"
+    );
+    for (name, source) in [
+        ("unhandled const", unhandled),
+        (
+            "runtime",
+            crate::test_source::fixture(&format!("{PACKET}/execution/runtime.rs"))?,
+        ),
+        (
+            "reified",
+            crate::test_source::fixture(&format!("{PACKET}/execution/reified.rs"))?,
+        ),
+    ] {
+        let error = executed_intrinsic(&source)?
             .err()
-            .ok_or("unsupported source intrinsic executed its fallback")?
-            .to_string();
+            .ok_or("unsupported source intrinsic executed its fallback")?;
         assert!(
             error.contains("source intrinsic")
                 && error.contains(if name == "reified" {
