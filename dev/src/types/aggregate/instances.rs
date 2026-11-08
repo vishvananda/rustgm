@@ -2,6 +2,9 @@
 use super::{Definition, Variant};
 use crate::support::hash::{HashMap, HashSet};
 use crate::types::{Kind, ListId, Store, TypeId, substitute::Bound};
+#[cfg(test)]
+#[path = "../../../tests/invariants/success_rows.rs"]
+mod tests;
 
 #[derive(Clone, Copy)]
 struct Range {
@@ -60,15 +63,21 @@ impl Prepared {
 }
 impl Instances {
     /// Source storage completion prepays its dense success rows before publication.
+    /// The rows grow geometrically, so completions that each publish a newer
+    /// type copy them only when their capacity doubles, each copy charged once.
     pub(super) fn prepare_success_rows(&mut self, count: usize) -> Result<(), &'static str> {
         let length = self.prepared.ready.len();
         let capacity = self.prepared.ready.capacity();
-        let copying = if count > capacity { capacity } else { 0 };
+        let (copying, target) = if count > capacity {
+            (capacity, count.max(capacity.saturating_mul(2)))
+        } else {
+            (0, capacity)
+        };
         self.charge(count.saturating_sub(length).saturating_add(copying))?;
-        self.retain(count.saturating_sub(capacity))?;
+        self.retain(target.saturating_sub(capacity))?;
         self.prepared
             .ready
-            .try_reserve_exact(count.saturating_sub(length))
+            .try_reserve_exact(target.saturating_sub(length))
             .map_err(|_| "aggregate prepared-row allocation failed")?;
         if count > length {
             self.prepared.ready.resize(count, 0);
