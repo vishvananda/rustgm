@@ -113,3 +113,26 @@ is now `file 97: 6032: object requires exactly one principal trait`, in 20.09 s
 with 375 opened sources. File 97 is original `core/src/any.rs`, and byte 6032 is
 the `Send` bound in `impl fmt::Debug for dyn Any + Send` at line 162. No
 original artifact or whole assignment is complete.
+
+## Amendment: lowering payments (2026-11-08)
+
+The input-graph bound also covers lowering. `Payments::charge` is the payer
+behind `charge_caller_inputs`, and `d2bcb1f89` gave it the same bound. The
+sizing above measured header work only up to `Checker::run`.
+
+That bound turned the ignored native test
+`needs_drop_provider::linked::source_needs_drop_scaling_native_answers` red. Its
+1,024-nominal input lowered to 121% of the byte bound. Each consumed body's
+storage was paid a second time as `Originals::shrink` released it.
+[The needs-drop native repair](needs-drop-native-repair.md) makes that shrink
+work-only. Its margins are:
+
+- all 13 native scaling inputs use 1% to 66% of their byte bound, the
+  1,024-nominal input 66%, and at most 10% of their work bound;
+- literal constant items, the densest bodies measured, take 115 of 128 bytes
+  per element (90%);
+- trivial functions take 244 bytes per element. A source-core crate with Drop
+  rows fails to lower at 256 of them.
+
+Lowering needs its own measured per-phase constants. The 128-byte header
+factor must not be raised to absorb lowering.

@@ -21,7 +21,7 @@ pub(in crate::sema) use local::{
     inherit_tracking, marker_trait,
 };
 #[cfg(test)]
-pub(in crate::sema) use local::{source_contract_bound, source_contract_costs};
+pub(crate) use local::{source_contract_bound, source_contract_costs};
 #[cfg(test)]
 #[path = "../../tests/invariants/nodeless_owners.rs"]
 mod owner_compatibility_tests;

@@ -108,6 +108,10 @@ impl<'report> Originals<'report> {
             .transpose()?;
         Ok(Some((body, row)))
     }
+    /// Release the consumed slots of both containers once fewer than half are
+    /// live. Shrinking never raises retained storage above what the builder
+    /// and [`Self::take`] already paid for, so the copy pays work only: one
+    /// unit per moved body and row.
     pub(in crate::lower::instances) fn shrink(
         &mut self,
         facts: &Declarations,
@@ -117,12 +121,7 @@ impl<'report> Originals<'report> {
                 rows.payer.charge(
                     facts,
                     self.bodies.len().saturating_add(rows.values.len()),
-                    self.bodies
-                        .len()
-                        .saturating_mul(size_of::<Body>())
-                        .saturating_add(
-                            rows.values.len().saturating_mul(size_of::<Requirements>()),
-                        ),
+                    0,
                 )?;
             }
             self.bodies.shrink_to_fit();
@@ -165,6 +164,9 @@ pub(super) fn parent_history_gap(
     Ok(!crate::borrow::loans::templates::no_cleanup(row))
 }
 
+#[cfg(test)]
+#[path = "../../../../tests/invariants/shrunk_originals.rs"]
+mod shrink_tests;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/origrow.rs"]
 mod tests;

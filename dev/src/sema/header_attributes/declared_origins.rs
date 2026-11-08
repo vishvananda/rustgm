@@ -162,7 +162,7 @@ impl InputBound {
     }
 }
 #[cfg(test)]
-pub(in crate::sema) const fn source_contract_bound(facts: &Declarations) -> (usize, usize) {
+pub(crate) const fn source_contract_bound(facts: &Declarations) -> (usize, usize) {
     (facts.header_bound.work, facts.header_bound.bytes)
 }
 pub(in crate::sema) fn has_comptime_headers(facts: &Declarations) -> bool {
@@ -606,7 +606,7 @@ pub(in crate::sema) fn charge_source_contract_query(
 }
 
 #[cfg(test)]
-pub(in crate::sema) fn source_contract_costs(facts: &Declarations) -> (usize, usize) {
+pub(crate) fn source_contract_costs(facts: &Declarations) -> (usize, usize) {
     facts
         .must_use_contracts
         .as_deref()
