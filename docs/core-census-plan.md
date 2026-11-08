@@ -1087,6 +1087,33 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     native emission would advertise a capability the pin does not provide.
     An ordinary vector store is not a substitute for `movntps`.
 
+- **During Lane A's [census batch 16](parallel/census-batch16.md)** (item
+  C2c, moved from Lane C), 2026-11-08, on main `bfbf43049`.
+  - **A pair of pattern types coerces as rustc decides it.** One identical
+    pattern, then an ordinary `base_a: CoerceUnsized<base_b>` obligation in
+    the impl's environment, the goal a nominal impl's changed field proves.
+    Core's `pat.rs:80` impl passes, and so does core's `NonNull` shape in
+    its control.
+    - Decided with the coordinator: no `DispatchFromDyn` change. Core's
+      pattern `DispatchFromDyn` impl (`pat.rs:85`, a type parameter base)
+      and `NonNull`'s have passed since batch 6, under rustc's rule of one
+      identical pattern and no base obligation.
+    - Fenced, because no core declaration needs them: general arrays and
+      `CoerceUnsized`, and executing a pattern-type coercion.
+    - Stricter than rustc by name, accepted for now: a non-null pattern over
+      a reference or over a pattern type, and a body that executes the
+      coercion.
+  - **16 controls** in PA31, which has no graded manifest, were declared
+    before the rustc 1.98.0 oracle; all statuses agree.
+  - **Recorded, not changed:** `Head::Pattern` keys by constraint only, so
+    each pair of a pattern impl and a consumer goal costs about 20 steps.
+    Core has one pattern `CoerceUnsized` impl.
+  - **Census 19** (pin `480f4169`): 42,310 declarations, none failed or
+    blocked. Records 1 and 2, `ZipImpl` among them, are replaced by core's
+    `impl<'a, P> FusedIterator for RSplit<'a, P> where P: Pattern<Searcher<'a>: ReverseSearcher<'a>>`
+    (`str/iter.rs:569`), "trait implementation does not satisfy the trait's
+    requirements". Records 3 to 8 are unchanged.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

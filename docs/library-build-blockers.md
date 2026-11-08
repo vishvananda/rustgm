@@ -5,6 +5,28 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 16](parallel/census-batch16.md), item C2c, repairs
+census 18's record on main `bfbf43049`. Census 19 (`480f4169`) checks 42,310
+declarations, with none failed or blocked. Its crate record, "trait
+implementation does not satisfy the trait's requirements", is core's
+`FusedIterator` impl for `RSplit` (`str/iter.rs:569`, from
+`generate_pattern_iterators!`). Record 2 now names the same impl, so
+census 18's `ZipImpl` record is gone with record 1. Records 3 to 8 are
+unchanged.
+
+- A `CoerceUnsized` impl between two pattern types now requires one
+  identical pattern and proves `base_a: CoerceUnsized<base_b>`, as rustc
+  1.98.0 does. Core's `pat.rs:80` impl passes, and so does core's `NonNull`
+  shape in its control.
+- Core's pattern `DispatchFromDyn` impl (`pat.rs:85`) has passed since batch
+  6; it needed no change.
+- 16 PA31 controls were declared before the rustc 1.98.0 oracle; all
+  statuses agree. PA31 has no graded manifest. Three stay stricter than
+  rustc by name: reference and nested pattern bases, and an executed
+  coercion.
+- Validation work is linear in pattern impls and in consumers. Recorded: a
+  consumer's goal visits every non-null pattern impl, about 20 steps a pair.
+
 Lane D [refreshes the backend pin](backend-current-checkpoint.md) for inline
 assembly, on main `347373f7f`. All three CPPGM tools now pin cppgm-extended
 `17b024f69` through the `backend-pins-v3` distribution. The reviewed object
