@@ -247,20 +247,11 @@ fn iterator_layout_keeps_ordinary_records_compact() {
         size_of::<crate::sema::iteration::Call>(),
         size_of::<body::ir::Value>()
     );
-    // The compilation-wide owner has an interned-policy Vec and cold request,
-    // SIMD and coherence pointers; dense nodes and body rows are unchanged.
-    // Source member identity and the cold async destructor family add two words.
-    // The once-per-crate header input bound adds two more.
-    // The pending Copy selection a declaration-time constant awaits adds one.
-    // The boxed explicit nominal bound index of demanded outlives contracts adds
-    // one pointer.
+    // Dense nodes and body rows are unchanged.
+    // `DECLARATIONS_SIZE` records every term of the compilation-wide owner's size.
     assert_eq!(
         size_of::<Declarations>(),
-        7048 + size_of::<Vec<()>>()
-            + 6 * size_of::<usize>()
-            + 2 * size_of::<usize>()
-            + size_of::<usize>()
-            + size_of::<Option<Box<()>>>()
+        crate::sema::model::DECLARATIONS_SIZE
     );
     assert_eq!(size_of::<Original>(), 56);
     // The demand-only collection catalog adds one optional Box to this owner.

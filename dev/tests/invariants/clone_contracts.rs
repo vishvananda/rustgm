@@ -222,20 +222,11 @@ fn iterator_clone_preserves_ordinary_record_sizes_and_lazy_owner_cost() {
         size_of::<types::infer::Context>(),
         size_of::<types::Store>()
     );
-    // The compilation-wide owner has an interned-policy Vec and cold request,
-    // SIMD and coherence pointers; dense nodes and body rows are unchanged.
-    // Source member identity and the cold async destructor family add two words.
-    // The once-per-crate header input bound adds two more.
-    // The pending Copy selection a declaration-time constant awaits adds one.
-    // The boxed explicit nominal bound index of demanded outlives contracts adds
-    // one pointer.
+    // Dense nodes and body rows are unchanged.
+    // `DECLARATIONS_SIZE` records every term of the compilation-wide owner's size.
     assert_eq!(
         size_of::<Declarations>(),
-        7048 + size_of::<Vec<()>>()
-            + 6 * size_of::<usize>()
-            + 2 * size_of::<usize>()
-            + size_of::<usize>()
-            + size_of::<Option<Box<()>>>()
+        crate::sema::model::DECLARATIONS_SIZE
     );
     // A lazy item-scope owner adds eight bytes; per-item and body rows are unchanged.
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);

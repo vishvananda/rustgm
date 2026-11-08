@@ -363,6 +363,23 @@ pub struct UnionWork {
     pub steps: usize,
     pub unique_types: usize,
 }
+/// The size every layout test pins for [`Declarations`], so that growing it is
+/// one reviewed edit here. The terms are:
+/// - the measured 7,048-byte base;
+/// - the compilation-wide owner's interned-policy `Vec`;
+/// - six words: its cold request, SIMD and coherence pointers, source member
+///   identity and the cold async destructor family;
+/// - two words for the once-per-crate header input bound;
+/// - one word for the pending Copy selection a declaration-time constant awaits;
+/// - one pointer for the boxed explicit nominal bound index of demanded outlives
+///   contracts.
+#[cfg(test)]
+pub(crate) const DECLARATIONS_SIZE: usize = 7048
+    + size_of::<Vec<()>>()
+    + 6 * size_of::<usize>()
+    + 2 * size_of::<usize>()
+    + size_of::<usize>()
+    + size_of::<Option<Box<()>>>();
 pub struct Declarations {
     pub(super) must_use_contracts: Option<Box<super::must_use::Contracts>>,
     /// Snapshotted before any header charge from this crate's input graph.
