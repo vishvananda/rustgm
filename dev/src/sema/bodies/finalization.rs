@@ -23,8 +23,8 @@ pub(super) struct Publication {
     evidence: HashMap<usize, Source>,
     storage: Option<Batch>,
     implementation_cursor: usize,
-    /// The nominal whose field template publication last waited for.
-    field_wait: Option<crate::types::ItemId>,
+    /// Field template waits, resumed where each one stopped.
+    fields: super::field_storage::FieldWaits,
 }
 impl Checker<'_> {
     pub(super) fn finish(&mut self, body: NodeId) -> Result<Option<Dependency>, Error> {
@@ -90,7 +90,7 @@ impl Checker<'_> {
             evidence,
             storage,
             implementation_cursor: 0,
-            field_wait: None,
+            fields: super::field_storage::FieldWaits::default(),
         })
     }
     pub(super) fn resume_finalization(
@@ -130,12 +130,11 @@ impl Checker<'_> {
             return Ok(Some(dependency));
         }
         if let Some(requirement) = match self
-            .field_template_dependency(&publication.solved, &mut publication.field_wait)?
+            .field_template_dependency(&publication.solved, &mut publication.fields)?
         {
             Some(requirement) => Some(requirement),
-            None => {
-                self.lifetime_contract_dependency(&publication.solved, &mut publication.field_wait)?
-            }
+            None => self
+                .lifetime_contract_dependency(&publication.solved, &mut publication.fields.last)?,
         } {
             let source = self.key(self.state.body.node);
             self.state.finalization = Some(Box::new(Finalization::Caller(Box::new(publication))));

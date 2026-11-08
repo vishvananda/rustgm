@@ -309,9 +309,13 @@ fn collection_layout_preserves_scalar_owners_and_padded_derive_entries() {
     // SIMD and coherence pointers; dense nodes and body rows are unchanged.
     // Source member identity and the cold async destructor family add two words.
     // The once-per-crate header input bound adds two more.
+    // The pending Copy selection a declaration-time constant awaits adds one.
     assert_eq!(
         size_of::<crate::sema::model::Declarations>(),
-        7048 + size_of::<Vec<()>>() + 6 * size_of::<usize>() + 2 * size_of::<usize>()
+        7048 + size_of::<Vec<()>>()
+            + 6 * size_of::<usize>()
+            + 2 * size_of::<usize>()
+            + size_of::<usize>()
     );
     assert_eq!(size_of::<Type>(), 24);
     assert_eq!(

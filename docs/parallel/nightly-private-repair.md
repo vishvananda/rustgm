@@ -62,3 +62,155 @@ private failures as `4a9a3441f`.
 Neither code fix changes any wire byte, diagnostic or accepted program. The
 Try-plan change affects only allocation growth and its accounting. The memo
 caches a per-body answer that the body checker already treated as fixed.
+
+## Second qualification: main `f98c5d7c8`
+
+The full CI qualification of main `f98c5d7c8` (run 42450534500) failed 35
+tests. Nineteen are the failures above, which this branch repairs but main did
+not yet contain. The other sixteen are new since the 2026-11-07 nightly. Each
+cause below was found by exact selection at a candidate commit and at its
+parent. This checkpoint repairs the causes in this lane's area, the amended
+controls and the accepted layout growth; the rest are listed at the end.
+
+### Storage walks of declaration-time bodies (`65a9eae6c`)
+
+`shape_constructors::early_type_arguments_share_declaration_dependencies`
+(1,601,553 steps against a bound of 32,768) and
+`shape_constructors::repeated_shape_defaults_reuse_completed_nominal_instances`
+passed at the nightly `054b91950` and failed at `b55c0dc49`. Bisecting
+`054b91950..b55c0dc49` with the two tests selected exactly, the first bad
+commit is `65a9eae6c`; its parent `2a13ab4a9` passes both.
+
+`65a9eae6c` made every declaration-time body walk its storage roots, through
+`field_template_dependency`, to find a field template its declaration had not
+published yet. That walk used the non-caching storage preparation. On success
+it charged every visited type a second time and prepaid the dense success rows
+up to the largest visited type id. The rows are reserved exactly, so each
+growth also charges the copied capacity. Every body therefore paid again for
+rows that earlier types already held, which is quadratic in the crate.
+Missing-template failures were also no longer cached (next section).
+
+Field instantiation steps for the test's chain, measured on the built test
+harness:
+
+| Constants | `2a13ab4a9` | `65a9eae6c` | This checkpoint |
+| --- | --- | --- | --- |
+| 64 | 1,727 | 28,177 | 1,728 |
+| 128 | 3,455 | 105,489 | 3,456 |
+| 256 | 6,911 | 407,569 | 6,912 |
+| 512 | 13,823 | 1,601,553 | 13,824 |
+| Repeated defaults | 18 | 74 | 19 |
+
+The culprit is exactly 6n² + 56n + 17, the parent 27n − 1 and the repair 27n.
+A chain whose structs are declared after its constants gives the same numbers.
+The repair's one extra step is the body walk's own visit, which the parent did
+not make.
+
+The repair keeps batch 5's single wait per nominal:
+
+- The walk is resumable. `PendingFields` holds its stack and visited set. A
+  nominal without a published template stays on top of the stack, unvisited
+  and uncharged, and the resumed walk continues there instead of at its root.
+- Each visited type is charged once, when it is visited. The completed walk
+  publishes its types as the crate-wide preparation does, without a second
+  charge or a row prepayment.
+- `FieldWaits` collects a body's solved storage roots once, since they are
+  fixed while it waits. It also keeps the next root, so a completed root is
+  never walked again after a wait.
+- A second miss on the same nominal is still "missing aggregate field
+  template".
+
+Controls:
+
+- The two `shape_constructors` tests pass unchanged, with their bounds.
+- New `shape_constructors::early_type_argument_chains_keep_field_work_linear`
+  requires equal increments per constant at 64, 256 and 512 constants. The
+  culprit's measured steps fail it.
+- New private
+  `types::aggregate::preparation::tests::waited_field_templates_resume_their_storage_walk_linearly`
+  publishes each template of a 64-, 256- and 512-nominal chain only after the
+  walk waits for it. It requires linear steps, one wait per nominal and no work
+  for the prepared root. As a control in the same test, a walk restarted at its
+  root after every wait must cost more than 64 times the resumed one at 512.
+
+A source-level wait control was not possible. A scratch probe counted waits
+over every `pa31/tests/spec` control and over generated chains (struct
+literals and array annotations, in and out of a module). Only
+`signature-constant-privacy/signature-leaked-value-length.rs` waited, and only
+once. In the generated chains, typing the bodies already publishes every
+template.
+
+### Final crate-wide preparation failures (`65a9eae6c`)
+
+`pipeline::execution::layout_kernel::tests::structural_readiness_preserves_pending_fields_closedness_and_failed_work`
+(queried_storage.rs:222) and
+`nominal_instances::incomplete_field_graphs_never_publish_successful_descendants`
+(17 steps against 11) fail at `65a9eae6c` and pass at `2a13ab4a9`.
+
+`65a9eae6c` added `&& missing.is_none()` to the failure cache of the
+crate-wide `prepare` and `prepare_equality`. A root whose walk met an
+unpublished template was then never cached as failed. A repeated query walked
+again, and a query after the template's publication succeeded, where these
+controls require the first failure to be final.
+
+The condition is not needed for batch 5's rule that a pending miss is never
+cached. That rule concerns the storage preparation of declaration-time bodies
+and layout demands, which never caches failures: before `65a9eae6c`, in it and
+after this repair. The crate-wide preparation requires completed declarations,
+so for it a missing template is a final failure. The repair restores that
+cache, including a root that is itself the missing nominal. The storage path is
+unchanged.
+
+Batch 5's repaired case still passes with the cache restored. Its invariant
+`early_constant_execution.rs` passes over all 12 `declaration-constant-execution`
+controls, and `privacy_of_signature_constants.rs` and
+`residual_object_equalities.rs` pass over the other 15 batch 5 controls.
+`signature-leaked-value-length.rs`, the one control that waits, is among them.
+The original-core census (diag5 to diag10) was not rerun, because it needs a
+release pin.
+
+### Amended control: `ctfix` (`65a9eae6c`)
+
+`ctfix::no_drop_repair_keeps_reached_intrinsic_body_fences` fails at
+`65a9eae6c` ("authored unsupported intrinsic executed") and passes at
+`2a13ab4a9`. Batch 5 gave source `ctpop` a validated constant handler, so
+`pa28/tests/spec/intrinsic-declarations/execution/const.rs` now evaluates
+`ctpop(7u32)` to 3. Lane A's `e2c0ead9e` amended the sibling
+`prototype_headers.rs` control and missed this one.
+
+The control now mirrors `e2c0ead9e`:
+
+- `const.rs` with a `[u8; 3]` length is accepted and with `[u8; 7]` (the
+  fallback's value) is rejected as incompatible types.
+- The same source with `bswap`, which has no constant handler, still fails with
+  "source intrinsic ... not implemented".
+- The unchanged `runtime` and `reified` fixtures still fail as before.
+
+The no-drop repair therefore still keeps a reached intrinsic body fenced, and
+the "authored unsupported intrinsic executed" assertion is unchanged.
+
+### Accepted growth: `Declarations` 7,136 → 7,144 bytes (`c6b5642dc`)
+
+Seven controls assert `Declarations` as
+`7048 + size_of::<Vec<()>>() + 6 * size_of::<usize>() + 2 * size_of::<usize>()`:
+
+- `body::iterator_factories::tests::{cloning::iterator_clone_preserves_ordinary_record_sizes_and_lazy_owner_cost, iterator_layout_keeps_ordinary_records_compact, mutable_collections::mutable_iteration_keeps_ordinary_record_sizes_and_records_lazy_catalog_cost, progression::range_catalog_preserves_ordinary_record_sizes}`;
+- `sema::declarations::library_types::collection_tests::collection_layout_preserves_scalar_owners_and_padded_derive_entries`;
+- `sema::methods::names::tests::actual_source_receiver_and_path_sites_retain_their_identifier_context`;
+- `sema::methods::visible::tests::scope_walk_rejects_unknown_definition_sites_and_counts_failed_work`.
+
+`c6b5642dc` added `pending_copy_selection: Option<selection::Dependency>`, one
+word. `census-batch6.md` section 1.3 records the growth, but only
+`prototype_headers.rs` (7,144) was updated. Each of the seven now adds one
+`usize` with that reason. A search for `7048`, `7136`, `7144` and their
+underscored forms finds no other exact assertion of this size; other uses only
+print it.
+
+### Accepted growth: `Imports` gains the deferred-use vector (`c5d056327`)
+
+`resolve::stability::availability_imports::path_compatibility::tests::repeated_groups_share_real_event_dedup_and_warm_lookup_has_no_retained_growth`
+asserts `Imports` as its legacy tuple plus 32 bytes (path uses and their
+completion flag). `c5d056327` added `deferred: RefCell<Vec<Deferred>>`, the
+denied uses inside expansions that await their frames' allowance lists. That is
+exactly 32 bytes: 216 against 184. The control now adds
+`size_of::<RefCell<Vec<Deferred>>>()` with that reason.

@@ -145,7 +145,14 @@ fn repeated_groups_share_real_event_dedup_and_warm_lookup_has_no_retained_growth
         1
     );
     assert!(after.steps > before.steps);
-    assert_eq!(size_of::<Imports>(), size_of::<LegacyImports>() + 32);
+    // Path uses and their completion flag add 32 bytes. The denied uses that
+    // await their expansion frames' allowance lists add one `RefCell` vector.
+    assert_eq!(
+        size_of::<Imports>(),
+        size_of::<LegacyImports>()
+            + 32
+            + size_of::<std::cell::RefCell<Vec<super::super::Deferred>>>()
+    );
     println!(
         "compatibility Imports={} oldowner={} PathUse={} Entry={} warm128={} retainedgrowth={}",
         size_of::<Imports>(),

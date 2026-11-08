@@ -2,6 +2,18 @@
 use super::Definitions;
 use crate::support::hash::HashSet;
 use crate::types::{ItemId, Kind, ListId, Store, TypeId};
+#[cfg(test)]
+#[path = "../../../tests/invariants/resumable_field_walks.rs"]
+mod tests;
+
+/// A storage walk that waits for field templates their declarations have not
+/// published yet. Its pending types and visited set survive each wait, so a
+/// resumed walk continues at the waited nominal rather than at its root.
+#[derive(Default)]
+pub(crate) struct PendingFields {
+    work: Vec<TypeId>,
+    seen: HashSet<TypeId>,
+}
 
 impl Definitions {
     /// Prepare this root's fields and nominal type arguments without expanding
@@ -53,6 +65,48 @@ impl Definitions {
             (Err(error), None) => Err(error),
         }
     }
+    /// A declaration-time body's storage walk, resumable: after a wait,
+    /// `pending` continues at the nominal that lacked its template. Each
+    /// visited type is charged once, when it is visited, and is published as
+    /// the crate-wide preparation publishes it, so a body never pays again for
+    /// rows other types already occupy.
+    /// # Errors
+    /// Rejects malformed fields and bounded substitution/graph exhaustion.
+    pub(crate) fn resume_storage_fields(
+        &mut self,
+        types: &mut Store,
+        root: TypeId,
+        pending: &mut PendingFields,
+    ) -> Result<Option<ItemId>, &'static str> {
+        if pending.work.is_empty() {
+            if self
+                .instances
+                .as_ref()
+                .and_then(|instances| instances.prepared.get(root, false))
+                .is_some_and(|result| result.is_ok())
+            {
+                return Ok(None);
+            }
+            pending.work.push(root);
+        }
+        let mut missing = None;
+        let result = self.prepare_graph(
+            types,
+            &mut pending.work,
+            false,
+            false,
+            &mut pending.seen,
+            &mut missing,
+        );
+        match (result, missing) {
+            (Ok(()), _) => {
+                self.publish_prepared(std::mem::take(&mut pending.seen), false, false)?;
+                Ok(None)
+            }
+            (Err(_), Some(item)) => Ok(Some(item)),
+            (Err(error), None) => Err(error),
+        }
+    }
     fn prepare_with(
         &mut self,
         types: &mut Store,
@@ -70,41 +124,75 @@ impl Definitions {
             return result;
         }
         let mut seen = HashSet::default();
-        let result =
-            self.prepare_graph(types, root, references, cache_failures, &mut seen, missing);
-        let instances = self.instances.get_or_insert_with(Default::default);
+        let result = self.prepare_graph(
+            types,
+            &mut vec![root],
+            references,
+            cache_failures,
+            &mut seen,
+            missing,
+        );
         if result.is_ok() {
-            if !cache_failures {
-                instances.charge(seen.len())?;
-                let rows = seen.iter().map(|ty| ty.0 as usize + 1).max().unwrap_or(0);
-                instances.prepare_success_rows(rows)?;
-            }
-            for ty in seen {
-                instances.prepared.insert(ty, references, Ok(()));
-            }
-        } else if cache_failures && seen.contains(&root) && missing.is_none() {
+            self.publish_prepared(seen, references, !cache_failures)?;
+        } else if cache_failures && (seen.contains(&root) || missing.is_some()) {
             // A failed query cannot publish unfinished descendants as prepared.
-            // A template its declaration has yet to publish is not a failure.
-            instances.prepared.insert(root, references, result);
+            // Its declarations are complete, so a missing template is final
+            // here too; only storage preparation waits for one.
+            self.instances
+                .get_or_insert_with(Default::default)
+                .prepared
+                .insert(root, references, result);
         }
         result
     }
+    /// Publish a completed walk's visited types as prepared. A walk that does
+    /// not cache failures also pays for the rows it publishes.
+    fn publish_prepared(
+        &mut self,
+        seen: HashSet<TypeId>,
+        references: bool,
+        charged: bool,
+    ) -> Result<(), &'static str> {
+        let instances = self.instances.get_or_insert_with(Default::default);
+        if charged {
+            instances.charge(seen.len())?;
+            let rows = seen.iter().map(|ty| ty.0 as usize + 1).max().unwrap_or(0);
+            instances.prepare_success_rows(rows)?;
+        }
+        for ty in seen {
+            instances.prepared.insert(ty, references, Ok(()));
+        }
+        Ok(())
+    }
+    /// Walk `work` to completion. A nominal without a published template stays
+    /// on top of `work`, unvisited and uncharged, and is named in `missing`.
     fn prepare_graph(
         &mut self,
         types: &mut Store,
-        root: TypeId,
+        work: &mut Vec<TypeId>,
         references: bool,
         reuse_failures: bool,
         seen: &mut HashSet<TypeId>,
         missing: &mut Option<ItemId>,
     ) -> Result<(), &'static str> {
-        let mut work = vec![root];
-        while let Some(ty) = work.pop() {
+        while let Some(&ty) = work.last() {
+            let cached = self
+                .instances
+                .as_ref()
+                .and_then(|instances| instances.prepared.get(ty, references))
+                .filter(|result| reuse_failures || result.is_ok());
+            if cached.is_none()
+                && !seen.contains(&ty)
+                && let Some(Kind::Adt(item, _)) = types.kind(ty)
+                && self.get(item).is_none()
+            {
+                *missing = Some(item);
+                return Err("missing aggregate field template");
+            }
+            work.pop();
             let instances = self.instances.get_or_insert_with(Default::default);
             instances.charge(1)?;
-            if let Some(result) = instances.prepared.get(ty, references)
-                && (reuse_failures || result.is_ok())
-            {
+            if let Some(result) = cached {
                 result?;
                 continue;
             }
@@ -114,11 +202,7 @@ impl Definitions {
             instances.retain(64)?;
             seen.insert(ty);
             match types.kind(ty).ok_or("invalid field preparation type")? {
-                Kind::Adt(item, arguments) => {
-                    if self.get(item).is_none() {
-                        *missing = Some(item);
-                        return Err("missing aggregate field template");
-                    }
+                Kind::Adt(_, arguments) => {
                     self.instantiate(types, ty)?;
                     let shape = self.raw_shape(types, ty)?;
                     let mut count = 0_usize;
@@ -137,7 +221,7 @@ impl Definitions {
                         .ok_or("missing field query")?
                         .charge(count)?;
                     for variant in self.raw_shape(types, ty)?.variants() {
-                        extend(types, variant.fields, &mut work)?;
+                        extend(types, variant.fields, work)?;
                     }
                     let arguments = types
                         .arguments(arguments)
@@ -163,7 +247,7 @@ impl Definitions {
                         .ok_or("invalid field preparation tuple")?
                         .len();
                     instances.charge(count)?;
-                    extend(types, list, &mut work)?;
+                    extend(types, list, work)?;
                 }
                 Kind::Array { element, .. }
                 | Kind::ArrayTerm { element, .. }

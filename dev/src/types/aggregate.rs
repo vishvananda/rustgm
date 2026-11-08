@@ -11,6 +11,7 @@ mod lane_limits;
 mod packing;
 mod phantom;
 mod preparation;
+pub(crate) use preparation::PendingFields;
 mod prepared_shapes;
 pub(crate) use prepared_shapes::{ImportedEnum, Prepared as PreparedShapes};
 mod simd;

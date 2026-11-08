@@ -3,8 +3,10 @@ use crate::resolve as source;
 use rustgm::{lowir::program::Program, pipeline};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 fn program(path: &str) -> Result<Program> {
-    let text = source::fixture(path)?;
-    let report = source::source_provider(&text, "const_cleanup_repair")?;
+    program_text(&source::fixture(path)?)
+}
+fn program_text(text: &str) -> Result<Program> {
+    let report = source::source_provider(text, "const_cleanup_repair")?;
     let pipeline::Analysis {
         mut facts,
         prepared,
@@ -92,12 +94,45 @@ fn actual_known_enum_cleanup_definitions_are_separate_from_unknown_payloads() ->
 
 #[test]
 fn no_drop_repair_keeps_reached_intrinsic_body_fences() -> Result {
-    for name in ["const", "runtime", "reified"] {
-        let error = program(&format!(
-            "pa28/tests/spec/intrinsic-declarations/execution/{name}.rs"
-        ))
-        .err()
-        .ok_or("authored unsupported intrinsic executed")?;
+    let execution = "pa28/tests/spec/intrinsic-declarations/execution";
+    // `ctpop` has a validated constant handler: `ctpop(7)` is 3, never the
+    // authored fallback's 7, so only the handler's length is accepted.
+    let constant = source::fixture(&format!("{execution}/const.rs"))?;
+    for (length, accepted) in [(3, true), (7, false)] {
+        let text = format!("{constant}fn length(a:[u8;ANSWER as usize])->[u8;{length}]{{a}}\n");
+        match program_text(&text) {
+            Ok(_) => assert!(accepted, "`ctpop` executed its fallback: [u8; {length}]"),
+            Err(error) => assert!(
+                !accepted && error.to_string().contains("incompatible types"),
+                "[u8; {length}]: {error}"
+            ),
+        }
+    }
+    // An intrinsic without a constant handler keeps its reached body fenced.
+    let unhandled = constant
+        .replace(
+            "ctpop<T0:Copy>(a0:T0)->u32{7}",
+            "bswap<T0:Copy>(a0:T0)->T0{a0}",
+        )
+        .replace("ctpop(7u32)", "bswap(7u32)");
+    assert_ne!(
+        unhandled, constant,
+        "the unhandled intrinsic source changed"
+    );
+    for (name, text) in [
+        ("const", unhandled),
+        (
+            "runtime",
+            source::fixture(&format!("{execution}/runtime.rs"))?,
+        ),
+        (
+            "reified",
+            source::fixture(&format!("{execution}/reified.rs"))?,
+        ),
+    ] {
+        let error = program_text(&text)
+            .err()
+            .ok_or("authored unsupported intrinsic executed")?;
         let error = error.to_string();
         assert!(error.contains("source intrinsic"), "{name}: {error}");
         assert!(

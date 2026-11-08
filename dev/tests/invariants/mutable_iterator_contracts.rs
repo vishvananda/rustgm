@@ -219,9 +219,13 @@ fn mutable_iteration_keeps_ordinary_record_sizes_and_records_lazy_catalog_cost()
     // SIMD and coherence pointers; dense nodes and body rows are unchanged.
     // Source member identity and the cold async destructor family add two words.
     // The once-per-crate header input bound adds two more.
+    // The pending Copy selection a declaration-time constant awaits adds one.
     assert_eq!(
         size_of::<Declarations>(),
-        7048 + size_of::<Vec<()>>() + 6 * size_of::<usize>() + 2 * size_of::<usize>()
+        7048 + size_of::<Vec<()>>()
+            + 6 * size_of::<usize>()
+            + 2 * size_of::<usize>()
+            + size_of::<usize>()
     );
     assert_eq!(size_of::<types::Kind>(), 24);
     assert_eq!(size_of::<types::infer::Context>(), 400);

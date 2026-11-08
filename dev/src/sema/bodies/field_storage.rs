@@ -13,6 +13,17 @@ use crate::types::lifetime_proof::Obligations;
 #[path = "../../../tests/invariants/variance_contract_constants.rs"]
 mod tests;
 
+/// A declaration-time body's waits for unpublished field templates. Its
+/// solved storage roots are fixed while it waits, so they are collected once.
+#[derive(Default)]
+pub(super) struct FieldWaits {
+    /// The nominal whose field template publication last waited for.
+    pub(super) last: Option<crate::types::ItemId>,
+    roots: Option<Vec<TypeId>>,
+    next: usize,
+    walk: crate::types::aggregate::PendingFields,
+}
+
 impl Checker<'_> {
     /// Inference retains provisional templates that are not body value types.
     /// Demand only published roots; expanding every term creates symbolic field
@@ -74,10 +85,12 @@ impl Checker<'_> {
     /// declaration has not yet published its field template. Without projected
     /// templates no storage batch waits for it, so publication waits here, once
     /// per nominal: a second miss means its declaration cannot publish one.
+    /// The roots and the walk survive each wait, so a resumed walk continues
+    /// at the waited nominal and the whole demand stays linear in its types.
     pub(super) fn field_template_dependency(
         &mut self,
         solved: &crate::types::infer::Solved,
-        waited: &mut Option<crate::types::ItemId>,
+        waits: &mut FieldWaits,
     ) -> Result<Option<Requirement>, Error> {
         if matches!(
             self.availability,
@@ -88,18 +101,26 @@ impl Checker<'_> {
             return Ok(None);
         }
         let node = self.state.body.node;
-        for root in self.storage_roots(solved)? {
+        if waits.roots.is_none() {
+            waits.roots = Some(self.storage_roots(solved)?);
+        }
+        while let Some(&root) = waits
+            .roots
+            .as_deref()
+            .and_then(|roots| roots.get(waits.next))
+        {
             let missing = self
                 .facts
                 .aggregates
-                .prepare_storage_fields_pending(&mut self.facts.types, root)
+                .resume_storage_fields(&mut self.facts.types, root, &mut waits.walk)
                 .map_err(|error| self.error(node, error))?;
             if let Some(item) = missing {
-                if waited.replace(item) == Some(item) {
+                if waits.last.replace(item) == Some(item) {
                     return Err(self.error(node, "missing aggregate field template"));
                 }
                 return Ok(Some(Requirement::Nominal(item)));
             }
+            waits.next += 1;
         }
         Ok(None)
     }

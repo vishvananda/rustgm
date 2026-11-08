@@ -109,9 +109,9 @@ fn repeated_shape_defaults_reuse_completed_nominal_instances()
     Ok(())
 }
 
-#[test]
-fn early_type_arguments_share_declaration_dependencies() -> Result<(), Box<dyn std::error::Error>> {
-    let count = 512;
+/// `count` early constants, each storing `W<S{i}<u8>>` whose field chain runs
+/// from `S{i}` to the last `S`.
+fn shared_chain(count: usize) -> Result<String, std::fmt::Error> {
     let mut source = String::from("#![recursion_limit=\"4096\"]");
     for index in 0..count {
         let field = if index + 1 == count {
@@ -128,6 +128,13 @@ fn early_type_arguments_share_declaration_dependencies() -> Result<(), Box<dyn s
             "type A{index}<const N:usize={{W::<S{index}<u8>>{{v:[],n:3}}.n}}>=[u8;N];fn f{index}(_:A{index}){{}}"
         )?;
     }
+    Ok(source)
+}
+
+#[test]
+fn early_type_arguments_share_declaration_dependencies() -> Result<(), Box<dyn std::error::Error>> {
+    let count = 512;
+    let source = shared_chain(count)?;
     rustc::qualify("early-shared-declarations", &source, true)?;
     let (_, facts) = semantic::analyze(&source)?;
     assert!(
@@ -139,6 +146,27 @@ fn early_type_arguments_share_declaration_dependencies() -> Result<(), Box<dyn s
         facts.types.len() < count * 32,
         "{} types",
         facts.types.len()
+    );
+    Ok(())
+}
+
+/// Each early constant's body walks the storage its declarations already
+/// prepared, so field work grows by the same amount per added constant.
+#[test]
+fn early_type_argument_chains_keep_field_work_linear() -> Result<(), Box<dyn std::error::Error>> {
+    let mut steps = Vec::new();
+    for count in [64, 256, 512] {
+        let (_, facts) = semantic::analyze(&shared_chain(count)?)?;
+        steps.push(facts.aggregates.instantiation_steps());
+    }
+    let [small, middle, large] = steps[..] else {
+        return Err("three chain lengths".into());
+    };
+    // 192 constants are added from 64 to 256 and 256 from 256 to 512.
+    assert_eq!(
+        (middle - small) * 256,
+        (large - middle) * 192,
+        "field instantiation steps {small} {middle} {large} are not linear"
     );
     Ok(())
 }
