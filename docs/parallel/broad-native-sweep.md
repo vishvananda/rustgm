@@ -141,10 +141,12 @@ matched.
 
 ## 4. Checks
 
+### First run, before integration
+
 Release binary `obj/rust/release/rustgm` sha256 `a3c9d445…` was built from
-`15ba5e670` with no `dev/` changes. Native evidence records the `dev/rustgm`
-wrapper's hash, `ad053a19…`. The backend is the current lock, b7c6b8e72.
-Logs are in `obj/lane-b5/`.
+`15ba5e670` with no `dev/` changes. Native evidence then recorded only the
+`dev/rustgm` launcher's hash, `ad053a19…` (section 6). The backend was the v2
+lock, b7c6b8e72. Logs are in `obj/lane-b5/`.
 
 | Check | Result |
 | --- | --- |
@@ -159,6 +161,46 @@ Logs are in `obj/lane-b5/`.
 
 The empty units' objects are identical across the three cases: rustc
 `ffb876a8…` and CPPGM `6e93d358…`.
+
+### Rebased run under v3
+
+On `59ec4ba99`, rebased onto origin/main `2a27e11ca`, the backend was
+reconfigured to the v3 lock (cppgm-extended 17b024f69): lowir `65a8ebde`,
+lowir2native `aa740c24`, cppgm++ `614689ec`. `make test-backend` passed its
+executable, object and assembly checks. The release binary was rebuilt as
+sha256 `38e7124d00a16d55…`.
+
+The scheduled step's exact loop then ran locally across all 13 lanes and
+passed 5028 of 5028 cases in about 760 s (`obj/lane-b5/sweep.log`). Every
+evidence file has scope `complete`, backend 17b024f69, and every case passed.
+
+| Lane | Checks | Executable | Codegen-only | Object | Time | `evidence.json` sha256 |
+| --- | --- | --- | --- | --- | --- | --- |
+| PA11 | 191 | 180 | 0 | 0 | 121 s | `53505eb5f385f288` |
+| PA12 | 113 | 64 | 0 | 0 | 36 s | `152e2e0e46b2e3ec` |
+| PA13 | 532 | 365 | 0 | 0 | 64 s | `956a1b71deae6319` |
+| PA14 | 12 | 12 | 0 | 0 | 23 s | `7bccf69eeb1416c4` |
+| PA16 | 131 | 123 | 0 | 2 | 34 s | `22ce444e9bd5a93e` |
+| PA17 | 205 | 135 | 0 | 0 | 36 s | `4c4f6c6c6b8c2b79` |
+| PA18 | 500 | 307 | 3 | 3, all declared empty | 59 s | `8e09cd798c50c7e7` |
+| PA19 | 731 | 309 | 0 | 0 | 64 s | `edec33bd81ca8cd5` |
+| PA20 | 868 | 528 | 0 | 0 | 81 s | `cf8e500ba8616e52` |
+| PA21 | 484 | 283 | 0 | 0 | 56 s | `e2f0b0f1a546e959` |
+| PA22 | 356 | 120 | 134 | 0 | 48 s | `c4256c17245eff56` |
+| PA23 | 415 | 86 | 185 | 0 | 49 s | `877d0493e1df25f2` |
+| PA24 | 490 | 326 | 3 | 10 | 89 s | `78123a768f094076` |
+
+The other checks on the same tree also passed:
+
+- `test_native.py`: 18 tests.
+- `make test-harness`: 310 tests and the 44-stage layout.
+- `make test-upstream`.
+- `course.py pa13`: 805/805.
+- `course.py pa18`: 505/505.
+
+These lane evidence files predate section 6, so their `candidate_sha256` is
+still the launcher's hash. The binary that produced them is the
+`38e7124d…` build above.
 
 ## 5. Scheduled sweep
 
@@ -194,3 +236,67 @@ Tradeoffs:
     setup split into its own step, with the sweep gated on setup alone.
   - I left this as it is, since a failed maintainer step already fails the
     run.
+
+## 6. Binding evidence to the compiler
+
+`check_native.py` recorded `candidate_sha256` as the hash of its `--app`. The
+default `--app` is `dev/rustgm`, a launcher script that execs
+`obj/rust/release/rustgm`. Every lane therefore recorded the launcher's
+`ad053a19…`, and no evidence identified the compiler that ran.
+
+`candidate_identity` now resolves the program that actually runs:
+
+- An ELF `--app` is the compiler itself, and `wrapper` is null.
+- Otherwise the launcher must have exactly the repository form:
+  - `#!/bin/sh`
+  - `set -eu`
+  - `root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)`
+  - `exec "$root/RELATIVE" "$@"`
+
+  Comments may appear anywhere. The checker resolves it as the shell does,
+  to the launcher's parent directory's parent joined with `RELATIVE`, and it
+  never runs the launcher. `RELATIVE` may not contain `..`.
+- Any other script fails closed with a clear message before any case runs.
+  So does a target that is missing or not an ELF executable.
+
+The evidence records `candidate` and `candidate_sha256` for the executed
+binary, and `wrapper` and `wrapper_sha256` for the launcher. The
+end-of-run check compares the whole identity, so a rebuild or a launcher edit
+during the run fails it.
+
+Checks:
+
+- `test_native.py`: 21 tests, 3 new.
+  - Both repository launchers resolve to `obj/rust/release/rustgm`.
+  - A synthetic launcher and binary pair binds both hashes. A rebuilt binary
+    changes only `candidate_sha256`.
+  - Seven launcher mutations fail: environment target, parent escape,
+    absolute target, extra statement, other root, other interpreter and
+    dropped arguments. So do non-UTF-8 bytes, a script target and a missing
+    target.
+- `test_course_units.py`'s unit-identity test gave `check_native` a Python
+  script as its candidate, which now correctly fails closed. Since `run_case`
+  is mocked there, it now passes an ELF-headed stub, and it asserts that the
+  receipt's `candidate_sha256` is the stub's and `wrapper_sha256` is null.
+- `make test-harness`: 313 tests OK.
+- `make test-native-pa14` under v3 passes 12/12. Its evidence
+  (`a9f3a1fb…`) records `candidate_sha256` `38e7124d…`, equal to the release
+  binary, and `wrapper_sha256` `ad053a19…`.
+- `check_native.py pa14 --app scripts/course.py` fails closed:
+  "cannot resolve the compiler this launcher execs without running it".
+
+Other evidence writers, not changed here:
+
+- `check_layouts.py` hashes `--app` the same way, and the Makefile passes
+  `dev/rustgm`, so it has the same gap.
+- `course.py` results and reference receipts record the command and
+  `compiler_source_sha256`, but no binary hash. `check_syntax.py` and
+  `check_literals.py` record no candidate hash at all. These are unbound
+  rather than misbound.
+- These metadata checkers hash `--app` directly: `check_storage_metadata`,
+  `check_aggregate_metadata`, `check_macro_metadata`, `check_public_names`,
+  `check_source_attributes` and `check_transitive_metadata`. Their
+  maintainer tests pass `CARGO_BIN_EXE_rustgm`, a real binary, so today's use
+  is bound. They would hash a launcher if one were passed.
+- `fastcheck_run.py` and `maintainer_batch.py` hash the Cargo test
+  executables they run directly, so they have no gap.

@@ -1,3 +1,4 @@
+import hashlib
 from pathlib import Path
 import signal
 import struct
@@ -8,8 +9,9 @@ import unittest
 
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
-from check_native import (accepted_frontend, classification, defined_code_or_data, empty_objects, execution,
-                          native_cases, native_selection, run_executables)
+from check_native import (accepted_frontend, candidate_identity, classification, defined_code_or_data,
+                          empty_objects, execution, launcher_target, native_cases, native_selection,
+                          run_executables)
 
 
 def relocatable(symbols):
@@ -234,3 +236,66 @@ class SuccessfulFrontendDiagnostics(unittest.TestCase):
                      b"warning[unknown]: file 0: 37: arbitrary stderr\n"):
             with self.subTest(text=text), self.assertRaises(ValueError):
                 accepted_frontend((b"program\n", text, b"0\n"), text, ("unused_must_use",))
+
+
+class CandidateIdentity(unittest.TestCase):
+    launcher = (SCRIPTS.parent / "dev/rustgm").read_bytes()
+
+    def test_repository_launchers_resolve_to_the_release_compiler(self):
+        for name in ("rustgm", "rustgm-ref"):
+            with self.subTest(name=name):
+                launcher = SCRIPTS.parent / "dev" / name
+                self.assertEqual(launcher_target(launcher, launcher.read_text()),
+                                 SCRIPTS.parent / "obj/rust/release/rustgm")
+
+    def test_evidence_binds_the_executed_compiler_and_its_launcher(self):
+        with tempfile.TemporaryDirectory() as folder:
+            launcher = Path(folder) / "dev/rustgm"
+            launcher.parent.mkdir()
+            launcher.write_bytes(self.launcher)
+            binary = Path(folder) / "obj/rust/release/rustgm"
+            binary.parent.mkdir(parents=True)
+            binary.write_bytes(b"\x7fELF compiler")
+            self.assertEqual(candidate_identity(launcher), {
+                "candidate": str(binary), "candidate_sha256": hashlib.sha256(b"\x7fELF compiler").hexdigest(),
+                "wrapper": str(launcher), "wrapper_sha256": hashlib.sha256(self.launcher).hexdigest()})
+            self.assertEqual(candidate_identity(binary), {
+                "candidate": str(binary), "candidate_sha256": hashlib.sha256(b"\x7fELF compiler").hexdigest(),
+                "wrapper": None, "wrapper_sha256": None})
+            before = candidate_identity(launcher)
+            binary.write_bytes(b"\x7fELF rebuilt compiler")
+            self.assertNotEqual(candidate_identity(launcher)["candidate_sha256"], before["candidate_sha256"])
+            self.assertEqual(candidate_identity(launcher)["wrapper_sha256"], before["wrapper_sha256"])
+
+    def test_unresolvable_launchers_fail_closed(self):
+        text = self.launcher.decode()
+        variants = {
+            "environment target": text.replace('"$root/obj/rust/release/rustgm"', '"$HOME/rustgm"'),
+            "parent escape": text.replace("$root/obj/rust", "$root/../rust"),
+            "absolute target": text.replace('"$root/obj/rust/release/rustgm"', '"/usr/bin/rustgm"'),
+            "extra statement": text.replace("set -eu\n", "set -eu\necho side effect\n"),
+            "other root": text.replace('/.." && pwd', '" && pwd'),
+            "other interpreter": text.replace("#!/bin/sh", "#!/usr/bin/env python3"),
+            "dropped arguments": text.replace(' "$@"', ""),
+        }
+        with tempfile.TemporaryDirectory() as folder:
+            launcher = Path(folder) / "dev/rustgm"
+            launcher.parent.mkdir()
+            binary = Path(folder) / "obj/rust/release/rustgm"
+            binary.parent.mkdir(parents=True)
+            binary.write_bytes(b"\x7fELF compiler")
+            for name, variant in variants.items():
+                self.assertNotEqual(variant, text, name)
+                launcher.write_text(variant)
+                with self.subTest(name=name), self.assertRaises(ValueError):
+                    candidate_identity(launcher)
+            launcher.write_bytes(b"\xff\xfe not a launcher")
+            with self.assertRaises(ValueError):
+                candidate_identity(launcher)
+            launcher.write_bytes(self.launcher)
+            binary.write_bytes(self.launcher)
+            with self.assertRaises(ValueError):
+                candidate_identity(launcher)
+            binary.unlink()
+            with self.assertRaises(ValueError):
+                candidate_identity(launcher)

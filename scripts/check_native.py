@@ -28,6 +28,49 @@ REVIEWED_WARNING_CODES = (
 )
 # ELF symbol types that name generated code or data: object, function, common, TLS, indirect function.
 CODE_OR_DATA_SYMBOLS = (1, 2, 5, 6, 10)
+# The repository launchers (`dev/rustgm`, `dev/rustgm-ref`) take this one form.
+LAUNCHER_ROOT = 'root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)'
+LAUNCHER_EXEC = re.compile(r'exec "\$root/((?:[A-Za-z0-9_][A-Za-z0-9_.-]*/)*[A-Za-z0-9_][A-Za-z0-9_.-]*)" "\$@"')
+
+
+def launcher_target(launcher, text):
+    """Resolve a repository launcher as the shell does, or return None for any other script.
+
+    The launcher sets `root` to its own directory's parent and execs `$root/RELATIVE`.
+    No other statement is accepted, so the result is the program that actually runs.
+    """
+    lines = text.splitlines()
+    if not lines or lines[0] != "#!/bin/sh":
+        return None
+    statements = [line for line in lines[1:] if line.strip() and not line.lstrip().startswith("#")]
+    if len(statements) != 3 or statements[:2] != ["set -eu", LAUNCHER_ROOT]:
+        return None
+    command = LAUNCHER_EXEC.fullmatch(statements[2])
+    if command is None or ".." in command[1].split("/"):
+        return None
+    return launcher.parent.parent / command[1]
+
+
+def executable(path):
+    with path.open("rb") as stream:
+        return stream.read(4) == b"\x7fELF"
+
+
+def candidate_identity(app):
+    """Bind evidence to the compiler that runs: the binary itself, or the one its launcher execs."""
+    if executable(app):
+        return {"candidate": str(app), "candidate_sha256": digest(app), "wrapper": None, "wrapper_sha256": None}
+    try:
+        target = launcher_target(app, app.read_text(encoding="utf-8"))
+    except UnicodeError:
+        target = None
+    if target is None:
+        raise ValueError(f"{app}: cannot resolve the compiler this launcher execs without running it; "
+                         "pass the compiler binary or a repository launcher")
+    if not target.is_file() or not executable(target):
+        raise ValueError(f"{app} execs {target}, which is not a built compiler executable")
+    return {"candidate": str(target), "candidate_sha256": digest(target),
+            "wrapper": str(app), "wrapper_sha256": digest(app)}
 
 
 def classification(case):
@@ -191,7 +234,7 @@ def check(app, jobs, stage="pa11", *, unit=None, case_paths=None):
     version = subprocess.check_output(["rustc", "--version"], text=True)
     if not version.startswith("rustc 1.98.0 "):
         raise ValueError(f"expected pinned rustc 1.98.0: {version.strip()}")
-    candidate_hash = digest(app)
+    identity = candidate_identity(app)
     required = {"lowir", "lowir2native"} if any(c["rustc"]["kind"] == "program" for c in cases) else set()
     if any(c.get("native", {}).get("kind") == "object" for c in cases):
         required.add("cppgm++")
@@ -285,9 +328,9 @@ def check(app, jobs, stage="pa11", *, unit=None, case_paths=None):
 
     with ThreadPoolExecutor(max_workers=jobs) as pool:
         results = list(pool.map(worker, cases))
-    if digest(app) != candidate_hash:
+    if candidate_identity(app) != identity:
         raise ValueError("candidate bytes changed during the independent run")
-    (directory / "evidence.json").write_text(json.dumps({"rustc": version.strip(), "candidate_sha256": candidate_hash,
+    (directory / "evidence.json").write_text(json.dumps({"rustc": version.strip(), **identity,
         **paths.identity, "manifest_sha256": digest(paths.manifest), "selection": selection,
         "backend": json.loads((ROOT / "backend.lock.json").read_text()), "cases": results}, indent=2) + "\n")
     failures = [item for item in results if not item["passed"]]

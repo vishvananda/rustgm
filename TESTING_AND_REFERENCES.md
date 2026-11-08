@@ -483,7 +483,11 @@ course lane of `make test-native` after the maintainer native tests. Compiler
 signals and exit 86 always fail. Explicit runtime-panic cases require CPPGM exit
 134 with empty streams and rustc SIGABRT with a panic diagnostic. Success
 requires clean exit zero; source assertions compare full values. No native
-outcome is inferred from a text-oracle match. See `docs/pa11-validation.md`.
+outcome is inferred from a text-oracle match. Native evidence names the compiler
+that ran: `candidate_sha256` hashes the binary that the `dev/rustgm` launcher
+execs, resolved from the launcher's one accepted form without running it, and
+`wrapper_sha256` hashes the launcher. Any other launcher fails closed. See
+`docs/pa11-validation.md`.
 
 Maintainer Cargo tests that execute CPPGM are explicitly ignored in the default
 frontend suite. Run `make test-maintainer-native` to qualify the backend and run

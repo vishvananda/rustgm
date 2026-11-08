@@ -1,6 +1,7 @@
 """Component publication shares the course runner without activating its parent PA."""
 import contextlib
 import copy
+import hashlib
 import io
 import json
 from pathlib import Path
@@ -309,6 +310,9 @@ class CourseUnits(unittest.TestCase):
             (root / "backend.lock.json").write_text('{"pin": "test only"}')
             rejected = (None, (b"", b"ERROR: fixture rejection\n", b"1\n"))
             result = SimpleNamespace(returncode=1, stdout=b"", stderr=b"fixture rejection")
+            # Native evidence binds an executable compiler; run_case is mocked, so it never runs.
+            compiler = root / "compiler"
+            compiler.write_bytes(b"\x7fELF fixture compiler")
             with mock.patch("check_native.ROOT", root), mock.patch("check_syntax.ROOT", root), \
                     mock.patch("check_native.load_tools", return_value={}), \
                     mock.patch("subprocess.check_output", return_value="rustc 1.98.0 pinned"), \
@@ -316,11 +320,13 @@ class CourseUnits(unittest.TestCase):
                     mock.patch("check_native.run_case", return_value=rejected), \
                     mock.patch("check_syntax.run_case", return_value=rejected), \
                     contextlib.redirect_stdout(io.StringIO()):
-                check_native.check(app, 1, "pa27", unit="unsafe-places")
+                check_native.check(compiler, 1, "pa27", unit="unsafe-places")
                 check_syntax.check("pa27", app, 1, unit="unsafe-places")
             receipt = json.loads((root / "obj/native/pa27/units/unsafe-places/evidence.json").read_text())
             self.assertEqual(receipt["unit"], "unsafe-places")
             self.assertEqual(receipt["manifest_path"], "pa27/tests/units/unsafe-places.json")
+            self.assertEqual(receipt["candidate_sha256"], hashlib.sha256(compiler.read_bytes()).hexdigest())
+            self.assertIsNone(receipt["wrapper_sha256"])
             self.assertTrue((root / "obj/rustc-syntax/pa27/units/unsafe-places/tests/places/x/rustc.stderr").is_file())
             self.assertFalse((root / "obj/native/pa27/tests").exists())
 
