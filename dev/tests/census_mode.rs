@@ -408,6 +408,47 @@ fn budget_exhaustion_is_sticky_and_ends_the_census() -> Result {
 }
 
 #[test]
+fn later_crate_wide_passes_still_run_after_a_failed_pass_and_follow_it() -> Result {
+    let later = "struct Recursive(Recursive);\nstruct Fine(u8);\n";
+    let both = input(
+        "lookahead",
+        &format!("pub struct S; impl S {{ fn f() {{}} }} impl S {{ fn f() {{}} }}\n{later}"),
+    )?;
+    let infinite = "recursive type has infinite size";
+    for mode in ["--emit-types", "--emit-semantics"] {
+        let text = census(mode, &both, mode.trim_start_matches("--emit-"), &[])?;
+        assert_eq!(
+            records(&text),
+            [
+                [
+                    "declarations",
+                    "crate",
+                    "pass `validate_inherent_overlaps`",
+                    "-",
+                    "duplicate inherent method in overlapping implementations"
+                ],
+                [
+                    "declarations",
+                    "lookahead",
+                    "pass `complete_layouts`",
+                    "1",
+                    infinite
+                ],
+            ]
+        );
+        assert!(text.contains("\nsummary\tdeclarations\tchecked\t26\tfailed\t0\tblocked\t0\n"));
+        assert!(text.contains("\nsummary\tbodies\tchecked\t0\tfailed\t0\tblocked\t0\n"));
+        assert!(text.ends_with("terminal\t1\tdeclarations\tcrate\nend\t2\n"));
+        ordinary_matches_first_record(&both, &text)?;
+    }
+    // Without the failed pass, ordinary checking reports the lookahead error.
+    let alone = rustgm("--emit-types", &input("lookahead-alone", later)?, &[])?;
+    assert_eq!(alone.status.code(), Some(1));
+    assert!(String::from_utf8(alone.stderr)?.ends_with(&format!("{infinite}\n")));
+    Ok(())
+}
+
+#[test]
 fn a_census_of_a_passing_crate_still_fails_without_view_output() -> Result {
     let input = input("passing", "fn ok() -> u8 { 1 }\n")?;
     for mode in ["--emit-types", "--emit-semantics"] {

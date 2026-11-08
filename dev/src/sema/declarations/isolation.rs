@@ -90,6 +90,8 @@ pub(super) struct Ledger {
     failing: Option<Work>,
     /// The record whose failure left a const body active that this root needs.
     abandoned: Option<usize>,
+    /// After a crate-wide pass failed, the later passes' first errors.
+    pub(super) lookahead: Option<Box<super::passes::Lookahead>>,
 }
 impl Ledger {
     pub(super) fn new(census: Census) -> Self {

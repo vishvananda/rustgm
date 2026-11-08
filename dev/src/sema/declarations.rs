@@ -45,6 +45,7 @@ mod method_prefix;
 mod methods;
 mod objects;
 mod offset_paths;
+mod passes;
 mod primitive_constants;
 mod projections;
 mod qualified_aliases;
@@ -319,13 +320,14 @@ pub(crate) fn census_with_executor(
     let blocker = checker.census_blocker();
     let consistent = checker.census_consistent();
     let stopped = checker.census_stops();
-    let Some(ledger) = checker.census.take() else {
+    let Some(mut ledger) = checker.census.take() else {
         census.stop(
             Phase::Declarations,
             &Error::unlocated("declaration census lost its ledger"),
         );
         return None;
     };
+    let lookahead = ledger.lookahead.take();
     *census = ledger.into_census();
     match result {
         Err(error) => {
@@ -335,6 +337,13 @@ pub(crate) fn census_with_executor(
                     census.stop_blocked(Phase::Declarations, &error, cause);
                 }
                 _ => census.stop(Phase::Declarations, &error),
+            }
+            if let Some(lookahead) = lookahead {
+                let following = lookahead
+                    .following
+                    .into_iter()
+                    .map(|(pass, error)| (pass, report.diagnostic(error)));
+                census.look_ahead(Phase::Declarations, lookahead.pass, following);
             }
             None
         }
@@ -586,42 +595,7 @@ impl Checker<'_> {
         if self.census_stops() {
             return Ok(());
         }
-        self.complete_deferred_declarations(&mut steps, work_limit)?;
-        self.complete_nominals(&mut steps, work_limit)?;
-        self.complete_compiler_value_headers()?;
-        super::traits::results::prepare_opaque_outlives(&mut self.facts)
-            .map_err(|e| Error::at(FileId(0), 0, e))?;
-        self.trait_defaults()?;
-        self.validate_destructors()?;
-        self.validate_async_destructors()?;
-        self.validate_owner_bounds()?;
-        self.validate_associated_type_bounds()?;
-        self.validate_required_family_bounds()?;
-        self.validate_signatures()?;
-        super::compiler_items::pinning::complete(self.report, &mut self.facts)?;
-        super::compiler_items::interval_values::complete_constructor(self.report, &mut self.facts)?;
-        super::compiler_items::streams::complete_helpers(self.report, &mut self.facts)?;
-        self.validate_trait_implementations()?;
-        self.validate_const_parameter_types()?;
-        self.validate_trait_impl_owners()?;
-        self.validate_trait_regions()?;
-        self.validate_inherent_overlaps()?;
-        self.local_annotations(&mut steps, work_limit)?;
-        self.complete_alias_normalizations(&mut steps, work_limit)?;
-        self.validate_projection_regions()?;
-        self.validate_objects()?;
-        self.complete_discriminants(&mut steps, work_limit)?;
-        if !self.method_queries.is_empty() {
-            return Err(Error::at(
-                FileId(0),
-                0,
-                "unfinished method applicability queries",
-            ));
-        }
-        self.complete_layouts()?;
-        super::api_exposure::check(self.report, &self.facts)?;
-        self.reject_alias_execution()?;
-        super::specialization::require_execution(&self.facts)
+        self.crate_passes(&mut steps, work_limit)
     }
     /// Declaration selections order specializing candidates as rustc does. A
     /// staged consumer's imported conformance never seals a local graph.

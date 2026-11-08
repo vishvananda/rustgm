@@ -54,6 +54,10 @@ pub enum Category {
     Crate,
     /// Later passes consume completed facts of every item, so they did not run.
     Stopped,
+    /// A later crate-wide pass ran after the failed pass that ended the census,
+    /// on whatever facts that pass left. Its record follows the terminal
+    /// record, names it in `blocked_by` and may be derived from it.
+    Lookahead,
 }
 impl Category {
     #[must_use]
@@ -64,6 +68,7 @@ impl Category {
             Self::Budget => "budget",
             Self::Crate => "crate",
             Self::Stopped => "stopped",
+            Self::Lookahead => "lookahead",
         }
     }
 }
@@ -175,6 +180,28 @@ impl Census {
             message,
             blocked_by: None,
         }));
+    }
+    /// Name the crate-wide pass whose failure ended the census, then record
+    /// each later pass's first error as following that terminal record. No
+    /// count changes: a lookahead isolates nothing and qualifies nothing.
+    pub(crate) fn look_ahead(
+        &mut self,
+        phase: Phase,
+        pass: &str,
+        following: impl IntoIterator<Item = (&'static str, Error)>,
+    ) {
+        let Some(terminal) = self.terminal else {
+            return;
+        };
+        if let Some(record) = self.records.get_mut(terminal) {
+            record.item = Some(format!("pass `{pass}`"));
+        }
+        for (pass, error) in following {
+            let item = Some(format!("pass `{pass}`"));
+            let mut record = Self::diagnostic(phase, Category::Lookahead, item, &error);
+            record.blocked_by = Some(terminal);
+            self.push(record);
+        }
     }
     pub(crate) const fn checked(&mut self, phase: Phase, count: usize) {
         let counts = &mut self.counts[phase.index()];

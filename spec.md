@@ -1999,6 +1999,15 @@ bound projections](pa31/tests/spec/const-bound-projections/README.md) controls
 retain core's `as_deref`, `as_deref_mut`, `Pin::as_ref` and `<[T]>::get`
 shapes, their guards and their opponents.
 
+An analysis-only declaration census that fails a crate-wide declaration pass
+for any reason other than sticky budget exhaustion still runs every later pass
+exactly as ordinary checking would, with census isolation suspended. Each later
+pass's first error becomes a `lookahead` record that names its pass and the
+terminal record it follows; it may derive from that failure, changes no count
+and never lets bodies run or the census qualify. The terminal record names the
+failed pass. Ordinary checking still stops at the first error. The [core
+census mode](docs/parallel/core-census-mode.md) record describes the census.
+
 Actual source Unsize selection checks both endpoint formations even after a
 conversion mismatch or an unresolved peer. Pointee shape alone does not pay
 nominal lifetime requirements: retain their existing symbolic region/type-outlives

@@ -124,3 +124,80 @@ fn split_fixed_messages_keep_exhaustion_apart_from_invalid_causes() {
     let message = "projection work budget exceeded";
     assert_eq!(fold_cause(&message, "exhausted", "invalid"), "exhausted");
 }
+
+#[test]
+fn lookahead_records_follow_the_failed_pass_and_change_no_count() {
+    let mut census = Census::default();
+    let later = Error::at(FileId(0), 9, "recursive type has infinite size");
+    census.look_ahead(
+        Phase::Declarations,
+        "validate_signatures",
+        [("complete_layouts", later)],
+    );
+    assert!(
+        census.records().is_empty(),
+        "a lookahead needs a terminal record"
+    );
+    census.checked(Phase::Declarations, 4);
+    let failed = Error::at(FileId(0), 3, "invalid canonical trait selection");
+    census.stop(Phase::Declarations, &failed);
+    let later = [
+        (
+            "complete_layouts",
+            Error::at(FileId(0), 9, "recursive type has infinite size"),
+        ),
+        (
+            "check_api_exposure",
+            Error::unlocated("private type in public interface"),
+        ),
+    ];
+    census.look_ahead(Phase::Declarations, "validate_signatures", later);
+    let rows: Vec<_> = census
+        .records()
+        .iter()
+        .map(|record| {
+            (
+                record.category.name(),
+                record.item.as_deref(),
+                record.blocked_by,
+                record.message.as_str(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        rows,
+        [
+            (
+                "crate",
+                Some("pass `validate_signatures`"),
+                None,
+                "invalid canonical trait selection"
+            ),
+            (
+                "lookahead",
+                Some("pass `complete_layouts`"),
+                Some(0),
+                "recursive type has infinite size"
+            ),
+            (
+                "lookahead",
+                Some("pass `check_api_exposure`"),
+                Some(0),
+                "private type in public interface"
+            ),
+        ]
+    );
+    let terminal = census
+        .terminal()
+        .map(|(index, record)| (index, record.category));
+    assert_eq!(terminal, Some((0, Category::Crate)));
+    assert_eq!(
+        census.counts(Phase::Declarations),
+        Counts {
+            checked: 4,
+            failed: 0,
+            blocked: 0
+        }
+    );
+    assert!(!census.has_failures(Phase::Declarations));
+}

@@ -59,6 +59,16 @@ initializers, which need only signatures. Any body record ends the census before
 constant patterns, authentication, constant evaluation, the panic handler and lint
 finalization.
 
+**Lookahead.** The crate-wide passes after that loop run in a fixed named order
+(`dev/src/sema/declarations/passes.rs`). When one fails with an error that is not
+sticky budget exhaustion, the census still ends there: the terminal record names
+that pass and bodies are skipped. First, though, the ledger is parked and each
+later pass runs exactly as in ordinary checking, recording nothing. Each later
+pass's first error becomes a `lookahead` record after the terminal record. It
+names its pass, puts the terminal record in `blocked_by` and may derive from
+that failure. Lookahead records change no count. A budget error ends the
+lookahead.
+
 **Output.** `dev/src/sema/census.rs` returns typed records in discovery order,
 which is deterministic. Each record has a phase, category, item, file id and byte
 offset (or unlocated), the expansion trace, the message and an optional blocking
