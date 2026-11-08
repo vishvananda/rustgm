@@ -477,11 +477,13 @@ See `docs/pa10-validation.md` for the feature handoff and measurements.
 PA11 has 191 scalar LowIR fixtures, including 180 executable comparisons with
 pinned rustc and the qualified CPPGM backend. `make test-native` is required
 locally; ordinary hosted CI has no qualified backend binary and checks the
-committed text, frontend invariants and harness instead. Compiler signals and
-exit 86 always fail. Explicit runtime-panic cases require CPPGM exit 134 with
-empty streams and rustc SIGABRT with a panic diagnostic. Success requires clean
-exit zero; source assertions compare full values. No native outcome is inferred
-from a text-oracle match. See `docs/pa11-validation.md`.
+committed text, frontend invariants and harness instead. The scheduled and
+manually dispatched qualification job configures the backend and runs every
+course lane of `make test-native` after the maintainer native tests. Compiler
+signals and exit 86 always fail. Explicit runtime-panic cases require CPPGM exit
+134 with empty streams and rustc SIGABRT with a panic diagnostic. Success
+requires clean exit zero; source assertions compare full values. No native
+outcome is inferred from a text-oracle match. See `docs/pa11-validation.md`.
 
 Maintainer Cargo tests that execute CPPGM are explicitly ignored in the default
 frontend suite. Run `make test-maintainer-native` to qualify the backend and run

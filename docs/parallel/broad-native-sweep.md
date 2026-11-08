@@ -2,9 +2,9 @@
 
 Lane B batch of 2026-11-08, branch `implement/chain-bytes-20261108` on
 `15ba5e670`. Seven PA13 and PA18 native checks had been failing on main since
-2026-10-28. Hosted CI never runs `make test-native`, so nothing reported them.
-Lane D's old-pin baseline on `347373f7f` found them: `check_native.py` passed
-5021 of 5028 cases.
+2026-10-28. Scheduled CI ran only the maintainer native subset, so nothing
+reported them. Lane D's old-pin baseline on `347373f7f` found them:
+`check_native.py` passed 5021 of 5028 cases.
 
 | Stage | Case | Failure |
 | --- | --- | --- |
@@ -160,12 +160,37 @@ Logs are in `obj/lane-b5/`.
 The empty units' objects are identical across the three cases: rustc
 `ffb876a8…` and CPPGM `6e93d358…`.
 
-## 5. Recommendation
+## 5. Scheduled sweep
 
-Add the broad native sweep (`make test-native`, or at least
-`check_native.py --released-units` and every active `paN` lane) to the
-scheduled `qualification` job, after `setup_backend.py`. That job already
-configures the qualified backend for `make test-maintainer-native`. These
-seven failures sat on main for eleven days because only that maintainer subset
-runs there. This is a recommendation only, and the workflow change is the
-integrator's decision.
+I recommended adding the broad native sweep to the scheduled `qualification`
+job, and the integrator approved it. That job already configures the qualified
+backend for `make test-maintainer-native`, but these seven failures sat on main
+for eleven days because only that maintainer subset ran there.
+
+A new step, "Broad native course sweep", follows "Native maintainer
+qualification". It runs `check_native.py` for exactly the lanes `make
+test-native` lists: PA11–PA14 and PA16–PA24, without PA15. Each lane runs
+through `storage.py run`. `make test-native` itself would repeat the maintainer
+step.
+
+The step finishes every lane and then fails if any lane failed, so one run
+reports all of them. It runs on the schedule and on manual dispatch only. The
+push and pull-request `fast` job is unchanged.
+
+Tradeoffs:
+
+- **Time.** The step adds scheduled CI time to catch failures like these
+  sooner.
+  - The course lanes took 447 s of Lane D's 1102 s local baseline. The rest
+    was the maintainer step.
+  - The integrator estimates about 20 minutes on a hosted runner.
+  - The last green scheduled run, on 2026-11-06, took 35 m 43 s of the job's
+    60-minute limit. Even the high estimate fits, with little margin. If it
+    nears the limit, `timeout-minutes` needs raising.
+- **Skipped on maintainer failure.** The step uses the default `success()`
+  condition, so it is skipped when an earlier step fails. That happened on
+  2026-11-08, when "Native maintainer qualification" failed.
+  - Making the sweep independent of that failure would need the backend
+    setup split into its own step, with the sweep gated on setup alone.
+  - I left this as it is, since a failed maintainer step already fails the
+    run.

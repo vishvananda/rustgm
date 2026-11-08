@@ -64,6 +64,14 @@ jobs:
         run: |
           python3 scripts/storage.py run --no-prune -- python3 scripts/setup_backend.py
           make test-maintainer-native
+      - name: Broad native course sweep
+        # The course lanes of `make test-native`, which would repeat the maintainer step.
+        run: |
+          status=0
+          for stage in pa11 pa12 pa13 pa14 pa16 pa17 pa18 pa19 pa20 pa21 pa22 pa23 pa24; do
+            python3 scripts/storage.py run -- python3 scripts/check_native.py "$stage" --app dev/rustgm || status=1
+          done
+          exit "$status"
       - name: Debug invariants
         run: make test-debug-invariants
       - name: Retire completed debug build cache
