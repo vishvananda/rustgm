@@ -100,7 +100,7 @@ impl Stage {
             .get(item)
             .ok_or("source nominal lacks its completed shape")?;
         let enumeration = shape.kind == aggregate::Kind::Enum;
-        let repr = record_repr(shape.repr, enumeration)?;
+        let repr = record_repr(shape.repr, enumeration, self.body_nodes())?;
         if facts.aggregates.shared_mutation(item) != Some(aggregate::SharedMutation::Ordinary)
             || facts.aggregates.permits_dangling_pointers(item) != Some(false)
             || !(shape.kind == aggregate::Kind::Struct || enumeration)
@@ -255,8 +255,13 @@ impl Stage {
     }
 }
 /// The record representation a nominal header carries; an enum's integer
-/// tag travels in its variant table.
-fn record_repr(repr: aggregate::Repr, enumeration: bool) -> Result<RecordRepr, &'static str> {
+/// tag travels in its variant table. Version thirteen also carries a
+/// transparent struct.
+fn record_repr(
+    repr: aggregate::Repr,
+    enumeration: bool,
+    body_nodes: bool,
+) -> Result<RecordRepr, &'static str> {
     Ok(match repr {
         aggregate::Repr {
             representation: aggregate::Representation::Rust,
@@ -272,6 +277,13 @@ fn record_repr(repr: aggregate::Repr, enumeration: bool) -> Result<RecordRepr, &
             tag: None,
             arguments: aggregate::ArgumentPassing::Ordinary,
         } if !enumeration => RecordRepr::C,
+        aggregate::Repr {
+            representation: aggregate::Representation::Transparent,
+            packed: None,
+            align: None,
+            tag: None,
+            arguments: aggregate::ArgumentPassing::Ordinary,
+        } if !enumeration && body_nodes => RecordRepr::Transparent,
         // An enum's integer tag travels in its variant table.
         aggregate::Repr {
             representation: aggregate::Representation::Rust,

@@ -6557,6 +6557,20 @@ pointer mutability. Older profiles reject both forms by name ("source type
 form requires an explicitly supported transport row"), and packets without
 them keep their exact bytes.
 
+A version-thirteen struct header may also be `#[repr(transparent)]`. The
+nominal header's representation byte, its last, gains 2 = Transparent beside
+0 = Rust and 1 = C. Only a struct header with no packing, alignment or tag
+carries it, and an enum header with byte 2 is rejected. No layout or ABI fact
+travels. A consumer interns the struct as transparent, and its own layout
+pass re-runs the representation check and the rule that at most one field is
+nontrivial over its own field layouts. Older profiles reject a transparent
+struct by name ("source nominal representation requires its wider complete
+contract"), and the older non-source record writer rejects it too. Packets
+without one keep their exact bytes. Rewriting byte 2 to byte 0 relabels a
+transparent struct as `repr(Rust)` without detection: the representation is
+authenticated by the packet's inventory identity, not re-proved, and a later
+ABI digest may close that gap.
+
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core
 profile. A crate that exports no macros writes no envelope and keeps its exact

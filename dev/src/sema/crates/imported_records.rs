@@ -125,6 +125,7 @@ fn publish(
                 representation: match record.repr() {
                     RecordRepr::Rust => aggregate::Representation::Rust,
                     RecordRepr::C => aggregate::Representation::C,
+                    RecordRepr::Transparent => aggregate::Representation::Transparent,
                 },
                 ..aggregate::Repr::default()
             },

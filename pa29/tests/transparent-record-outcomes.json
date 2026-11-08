@@ -1,0 +1,142 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+ "providers": [
+  {
+   "file": "spec/transparent-records/provider.rs",
+   "sha256": "4e827d42eadbb39425410eebe36ffde7df0b69d206ee1264e9587272dca48e36"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "declared": "2026-11-08T05:02:15Z",
+ "development_note": "declared before any rustc or RustGM run of these files; main rejects a transparent provider at export with `source nominal representation requires its wider complete contract`",
+ "wire_rule": "integrator-approved shape: the version-13 NominalHeader representation byte (the last byte of the nominal row) gains 2 = Transparent beside 0 = Rust and 1 = C. It is read only under body_nodes() and only on struct headers; an enum header with byte 2 is rejected by the existing sum_contracts check. No layout or ABI fact travels: every consumer re-runs validate_repr and the transparent declaration check over its own facts. Known integrity limit: rewriting byte 2 to 0 relabels a transparent struct as repr(Rust); the representation byte is authenticated by the packet's inventory identity, not re-proved",
+ "cases": [
+  {
+   "file": "spec/transparent-records/wrap.rs",
+   "provider": "spec/transparent-records/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "763ba4d949ad069e2dbf7a0bfcf8ff8c0b1771865cbabad4e87b7d04a9e58d2c"
+  },
+  {
+   "file": "spec/transparent-records/wrap-call.rs",
+   "provider": "spec/transparent-records/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "df420befb493cbd9afde1421287e6dfcd1d836864ab17825f8007859837d0b8f"
+  },
+  {
+   "file": "spec/transparent-records/tagged.rs",
+   "provider": "spec/transparent-records/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "06cd5672f37300cb18662d54d4a7020a4c1c8177ad251d00425dc7596bdfbe6e"
+  },
+  {
+   "file": "spec/transparent-records/cell.rs",
+   "provider": "spec/transparent-records/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "a14d07435176fa320284bfe56e5b3820b9c3b566ace6f85cf09ae45b87669bcd"
+  },
+  {
+   "file": "spec/transparent-records/cell-wrap.rs",
+   "provider": "spec/transparent-records/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "f2781cc41616594fcded01d7307675919850d0e641501f864e2175163ac9658f"
+  },
+  {
+   "file": "spec/transparent-records/ptr.rs",
+   "provider": "spec/transparent-records/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "959fd9cf82ee692aacee9489618b04ff64619f35df5659e7dc6c11b5f528a889"
+  },
+  {
+   "file": "spec/transparent-records/outer.rs",
+   "provider": "spec/transparent-records/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "019eaf644433439077ea17d3e4a5b48afdf5cd0823976b2b9b082c3aa914749f"
+  },
+  {
+   "file": "spec/transparent-records/mismatch.rs",
+   "provider": "spec/transparent-records/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0308",
+   "candidate_diagnostic": "incompatible types",
+   "sha256": "c8e120033bf33b55f766dd55500d1e37cca0ce32e6965b27c656951584c5549b"
+  },
+  {
+   "file": "spec/transparent-records/pair.rs",
+   "provider": "spec/transparent-records/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0690",
+   "candidate_diagnostic": "transparent aggregate has more than one nontrivial field",
+   "sha256": "c06e245d174ef52bb8f3198a1f4b0a925f5c5c765379dc74b6915807fde7c7dc"
+  }
+ ],
+ "generated_controls": [
+  {
+   "control": "older profiles: the shared lines plus `#[repr(transparent)] pub struct Wrap { pub v: u32 }` and `pub fn unwrap(w: Wrap) -> u32 { w.v }` under versions 10 and 12",
+   "expected": "rejected with `source nominal representation requires its wider complete contract`; the same provider exports under version 13 and a client calling `unwrap` is accepted",
+   "amended": {
+    "reason": "the packet's shared lines are already rejected under versions 10 and 12 by their alias transport (`named, associated or generic alias transport requires its wider profile`, as the pointer-slice packet records), so they cannot witness the representation gate",
+    "control": "`spec/source-nominals/provider.rs`, as the earlier gates use, plus `#[repr(transparent)] pub struct Wrap { pub v: u32 }` and `pub fn unwrap(w: Wrap) -> u32 { w.v }`; the client is `let _v = base::unwrap(base::Wrap { v: 42 }); 42`, since `source-nominals` has no `Copy` for `u32`",
+    "expected": "unchanged",
+    "declared": "2026-11-08T05:25:42Z, before any RustGM run of this control"
+   }
+  },
+  {
+   "control": "a version-13 provider of the shared lines plus `#[repr(transparent)] pub struct Two(pub u8, pub u8);`",
+   "expected": "rejected before export with `transparent aggregate has more than one nontrivial field` (rustc E0690)"
+  },
+  {
+   "control": "forged representation byte 3 on `Wrap`'s nominal header",
+   "expected": "rejected with `unknown source nominal representation`"
+  },
+  {
+   "control": "forged representation byte 2 on an enum's nominal header (the shared lines' `Opt`)",
+   "expected": "rejected with `source enum nominal header carries record fields or representation`",
+   "amended": {
+    "reason": "an integration test can find a header's representation byte only through a provider pair whose bytes differ in exactly that byte, and an enum header has no such pair; the wire control therefore declares its own enum directly after `Two`, whose header row it follows",
+    "control": "forged representation byte 2 on the nominal header of the wire control's `pub enum Mode { A, B }`, the row after `Two`'s",
+    "expected": "unchanged",
+    "declared": "2026-11-08T05:29:23Z, before any RustGM run of this control"
+   }
+  },
+  {
+   "control": "forged representation byte 2 on a `#[repr(C)] pub struct Two { pub a: u8, pub b: u8 }` header",
+   "expected": "rejected in the fresh consumer with `transparent aggregate has more than one nontrivial field`"
+  },
+  {
+   "control": "the honest packet relabelled as version 12",
+   "expected": "rejected with `unknown source declaration kind`"
+  },
+  {
+   "control": "every strict prefix of the honest packet",
+   "expected": "fails to decode"
+  },
+  {
+   "control": "scaling: the shared lines plus 6, 24 and 96 transparent tuple structs with a constructor function each",
+   "expected": "packet bytes grow by the same amount per struct, and a fresh client's LowIR does not grow"
+  }
+ ],
+ "native": {
+  "expected": "the seven accepted clients exit 42 natively, as rustc's do"
+ },
+ "provider_amended": {
+  "observed_first": "rustc 1.98.0 on the declared provider (sha256 7dfaf6fdf7ef5509): wrap, wrap-call, cell-wrap and outer stopped with an internal compiler error (`error performing operation: fully_perform`, a delayed bug) on matching a `u32` call result, because the shared lines declare `Copy` for `u8` and `bool` only; tagged, cell and ptr exited 42 and mismatch (E0308) and pair (E0690) were rejected as declared",
+  "explored": "a scratch provider with the two lines below appended let all four compile and exit 42 (obj/parallel/transparent/explore1)",
+  "change": "the provider appends `impl Clone for u32 { fn clone(&self) -> Self { *self } }` and `impl Copy for u32 {}`; no client and no expected outcome changes",
+  "declared": "2026-11-08T05:07:39Z, before any RustGM run of these files"
+ }
+}

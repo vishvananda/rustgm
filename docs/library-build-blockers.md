@@ -5,8 +5,19 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
-Lane C [shared statics require Sync](parallel/shared-static-sync.md) is a
-local checkpoint, not yet joined. It fixes a false acceptance: main accepted a
+Lane C [transparent record headers](parallel/transparent-records.md) is
+joined on main. Version 13 carries `#[repr(transparent)]`
+structs in the nominal header's representation byte: 2 = Transparent, beside 0
+= Rust and 1 = C. No layout or ABI fact travels. Each consumer's own layout
+pass re-runs the representation check and the one-nontrivial-field rule, so a
+forged transparent header over two `u8` fields is rejected by name. Rewriting
+byte 2 to 0 goes undetected, a recorded integrity limit. Older profiles and the
+older record writer reject a transparent struct by name. Seven clients run
+natively and exit 42. PhantomData's Pointee role and NonNull's diagnostic role,
+with pattern types, remain before `Location`.
+
+Lane C [shared statics require Sync](parallel/shared-static-sync.md) is
+joined on main. It fixes a false acceptance: main accepted a
 source-client `static` with no `sync` lang item, and rustc rejects it. A
 static that is not `mut`, foreign or thread-local now requires the `sync` lang
 item (rustc's "requires `sync` lang_item") and a proof that its type

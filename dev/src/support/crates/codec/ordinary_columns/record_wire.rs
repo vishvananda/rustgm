@@ -2,6 +2,15 @@
 use super::{Input, Writer, id, range, s};
 use crate::support::crates::{RecordRepr, generics::TypeRef, owner_catalog::DeclarationRef};
 pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(), &'static str> {
+    // Version thirteen alone carries a transparent struct header.
+    if !rows.descriptor().profile().body_nodes()
+        && rows
+            .nominals
+            .iter()
+            .any(|row| row.repr == RecordRepr::Transparent)
+    {
+        return Err("source nominal representation requires its wider complete contract");
+    }
     super::write(out, &rows.nominals, nominal_write)?;
     super::write(out, &rows.fields, field_write)
 }
@@ -16,6 +25,7 @@ fn nominal_write(out: &mut Writer, row: &s::NominalHeader) -> Result<(), &'stati
     out.u8(match row.repr {
         RecordRepr::Rust => 0,
         RecordRepr::C => 1,
+        RecordRepr::Transparent => 2,
     })
 }
 pub(super) fn nominal_read(read: &mut Input<'_, '_>) -> Result<s::NominalHeader, &'static str> {
@@ -30,6 +40,7 @@ pub(super) fn nominal_read(read: &mut Input<'_, '_>) -> Result<s::NominalHeader,
         repr: match read.reader.u8()? {
             0 => RecordRepr::Rust,
             1 => RecordRepr::C,
+            2 if read.profile.body_nodes() => RecordRepr::Transparent,
             _ => return Err("unknown source nominal representation"),
         },
     })

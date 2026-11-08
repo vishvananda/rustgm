@@ -48,6 +48,8 @@ mod match_transport;
 mod named_values;
 #[path = "crate_linking/namespace_clients.rs"]
 mod namespace_clients;
+#[path = "crate_linking/newtype_records.rs"]
+mod newtype_records;
 #[path = "crate_linking/node_transport.rs"]
 mod node_transport;
 #[path = "crate_linking/non_exhaustive.rs"]

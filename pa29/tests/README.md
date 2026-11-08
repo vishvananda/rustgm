@@ -372,3 +372,16 @@ The `crate_linking::addressed_views` integration controls consume it.
   explicit `impl !Sync` (E0277) with its `static mut` form.
 
 The `crate_linking::synced_statics` integration controls consume it.
+
+`transparent-record-outcomes.json` freezes the version-thirteen transparent
+record packet under `spec/transparent-records/`. The packet holds:
+
+- `#[repr(transparent)]` tuple, record, generic and raw-pointer structs, the
+  record with a trivial `()` second field;
+- seven accepted clients, one of which declares its own transparent struct
+  over an imported one, and two opponents (E0308 and E0690);
+- generated controls: an older-profile gate, a transparent struct with two
+  nontrivial fields, forged representation, enum and version rows, and a
+  6/24/96 scaling control.
+
+The `crate_linking::newtype_records` integration controls consume it.

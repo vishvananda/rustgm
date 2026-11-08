@@ -76,6 +76,8 @@ pub(super) fn prepare(
             representation: match row.repr {
                 RecordRepr::Rust => aggregate::Representation::Rust,
                 RecordRepr::C => aggregate::Representation::C,
+                // The consumer's own layout pass re-proves it.
+                RecordRepr::Transparent => aggregate::Representation::Transparent,
             },
             ..aggregate::Repr::default()
         };

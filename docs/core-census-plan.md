@@ -471,6 +471,75 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     adds the `sync` item and witnesses the provenance rejection (rustc
     E0080). Lane A's pattern-type invariant changes only that case.
 
+- **Before Lane C's transparent record headers**, 2026-11-08:
+  - **`repr(transparent)` uses the nominal header's representation byte.**
+    It gains 2 = Transparent, read only under version 13 and only on struct
+    headers. Each consumer re-proves the representation from its own fields.
+    No layout or ABI fact travels.
+    - Cost: rewriting byte 2 to 0 is not detected. That is a recorded
+      integrity limit: the representation is authenticated by the packet's
+      inventory identity, not re-proved. A later ABI digest may close it.
+  - **Pattern types get type recipe tag 16**, `Pattern { base, constraint }`.
+    - Lane C reports the exact constraint encoding before using it. It must
+      cover `!null` over a raw-pointer base and the integer ranges core
+      uses.
+    - Each consumer re-proves the pattern against its own base.
+    - Integer and reference `!null` bases stay rejected, a recorded
+      deviation.
+
+- **Main's full CI on `f98c5d7c8`**, 2026-11-08 (a manual qualification run):
+  35 tests fail, 29 lib and 6 integration. That is the 17 lib tests from
+  `4a9a3441f` plus regressions from this session's lane work, which
+  lane-selected joins did not select.
+  - **The nightly repair widens to all 35**, still Lane B's task 0, in two
+    checkpoints. Most failures are record or layout size asserts after
+    accepted growths, so each one either takes the growth with a recorded
+    reason or gets a fix. None is blessed.
+  - **`shape_constructors` is a real regression.** Lane B bisected it to
+    `65a9eae6c` (census batch 5): `field_template_dependency` re-walks every
+    storage root after each wait. That makes it quadratic, about 1.6M steps
+    for a 512-field chain.
+    - Lane B makes it resumable per nominal: each root is charged once and
+      waits only once, with a linear scaling invariant. The tests' bounds stay
+      unchanged.
+    - Why Lane B: it holds the analysis, and Lane A stays on the frontier.
+      Lane A avoids `field_storage.rs` until the fix joins.
+  - **Joins probe the 35 by exact name** and fail on any failure outside that
+    list. `verbatim_links` cannot be selected by fastcheck, so CI is its only
+    check.
+  - **The integrator runs full CI after each significant integration**, not
+    only nightly.
+    - Why: these regressions went unnoticed for a day.
+    - Cost: one qualification run per integration.
+  - **Accepting a record growth means updating every assert on an enclosing
+    size.** The integrator greps for those asserts before accepting.
+- **During Lane C's PhantomData Pointee role**, 2026-11-08:
+  - **The shape is approved.**
+    - It reuses version 13's spelled role row, admitted only under
+      `body_nodes()` and only for `BindingProfile::Languages`.
+    - Each consumer re-proves PhantomData:
+      - a module-owned unit struct;
+      - one type formal with no default;
+      - `T: PointeeSized`.
+  - **Integrity anchor: each consumer re-runs rustc's unused-parameter rule
+    (E0392) over imported nominal headers.**
+    - It computes each imported formal's variance itself. A type or lifetime
+      formal that comes out bivariant fails the import as a transport
+      integrity failure, because the exporter would have rejected the
+      declaration. Const formals are exempt, as in rustc.
+    - Only the declaration bound to the re-proved PhantomData role is exempt.
+      Deleting that role row therefore fails the import.
+    - Why: unlike the repr byte flip, a deleted role row makes `T` bivariant
+      at the consumer, and a lifetime could then be extended through the
+      imported type. That is a soundness hole, not a conservative loss, so it
+      cannot be recorded as a known limit.
+    - Rejected: recording it as a known limit and closing it later. That
+      would join a known-unsound import.
+    - Cost: a variance check over each imported header's field types,
+      linear in their size, with a 6/24/96 scaling invariant. If it needs a
+      new variance pass that consumers lack, Lane C reports the shape and
+      cost before building it.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

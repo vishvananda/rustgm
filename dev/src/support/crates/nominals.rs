@@ -14,6 +14,9 @@ pub enum RecordRepr {
     #[default]
     Rust,
     C,
+    /// `#[repr(transparent)]`: only a version-thirteen source struct header
+    /// carries it, and every consumer re-proves it from its own fields.
+    Transparent,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
