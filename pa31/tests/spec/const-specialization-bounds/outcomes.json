@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The shapes reduce census 12's crate record \"minimal specialization introduces a non-marker predicate\" at core's `SpecNextChunk` pair (array/mod.rs:1044 and 1062, located by the analysis-only diagnostic obj/parallel/census-batch11/diagnostics/d9-marker). Exploration drafts with other bytes (obj/parallel/census-batch11/repro/maybe-const/) were run first: rustc 1.98.0 accepted the core pair, the pair with a plain marker supertrait, a `[const]` child over an ordinary parent bound and the ordinary pair; the census 12 pin rejected the first three with the census message. Each outcome follows the rule read in the pinned rustc 1.98.0 sources (compiler/rustc_hir_analysis/src/hir_ty_lowering/mod.rs, which lowers a `[const] Tr` bound to the ordinary `Tr` clause of predicates_of and its constness only to const_conditions, and a `const Tr` bound to `Tr` plus a HostEffect clause; compiler/rustc_hir_analysis/src/impl_wf_check/min_specialization.rs `check_predicates`, which compares elaborated predicates_of only, and `check_specialization_on`, which allows a Trait clause on a `rustc_unsafe_specialization_marker` trait and rejects any other clause, a HostEffect clause included, unless it is global; compiler/rustc_trait_selection/src/traits/specialize/mod.rs `specializes`, which requires a conditionally const child for a conditionally const parent and proves the parent's const_conditions as `[const]` HostEffect goals under the child's param-env; compiler/rustc_trait_selection/src/traits/coherence.rs, where impls that overlap without that ordering conflict, E0119)",
+ "declaration_sha256": "ccf6235547907d11918ff03aace723acc18ac45abe90767b3dabe930671ca237",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "core-next-chunk.rs": {
+   "sha256": "0dedfa61cf3916e856e1ecacf7783604531d710cbb495d199e29c915f4a67d41",
+   "declared": 0,
+   "reason": "core's shape: `const impl<I: [const] Iterator<Item = T>, T, const N: usize> SpecNextChunk<T, N> for I` and a child adding `TrustedLen`, `const unsafe trait TrustedLen: [const] Iterator` with `#[rustc_unsafe_specialization_marker]`; both impls' predicates_of hold the ordinary `I: Iterator`, so the child adds only the marker",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "plain-marker-supertrait.rs": {
+   "sha256": "f7b31db6ad0f6034d92dc5ec25d0d52b9f27362a531eb0292fd765916cde4a8b",
+   "declared": 0,
+   "reason": "the same pair with `unsafe trait TrustedLen: Iterator`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "child-only-const.rs": {
+   "sha256": "07f4b809c143ded0484220389d43b332b0eafcda46fe93334945ad7acdc66a80",
+   "declared": 0,
+   "reason": "an ordinary parent bound `I: Iterator<Item = T>` and a child `I: [const] Iterator<Item = T> + TrustedLen`; the child's `[const]` is a const condition, not a predicate, and the parent is const in every case the child is",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "ordinary-pair.rs": {
+   "sha256": "327aeaeac64fbd94ebd4baa99cf21e56793b138eec81ca0fe1a7e0997c5c945f",
+   "declared": 0,
+   "reason": "control: the same pair as ordinary impls with ordinary bounds",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "child-not-const.rs": {
+   "sha256": "d2cda60480d90c2df358e202ba92d7a5278953fe949b0cdbe064df05d8d5073e",
+   "declared": 1,
+   "reason": "opponent: core's parent beside an ordinary child impl `impl<I: Iterator<Item = T> + TrustedLen, ..>`; the parent is conditionally const and the child is not, so the child does not specialize and the impls conflict (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "child-weaker-const.rs": {
+   "sha256": "0553d889a04035b5d9333bd31ee0a35a557c5322952b33617c8946aed8c2f582",
+   "declared": 1,
+   "reason": "opponent: core's parent beside a const child with only ordinary bounds, `const impl<I: Iterator<Item = T> + TrustedLen, ..>`; the parent's const condition `I: [const] Iterator` does not hold under the child's param-env, so the child does not specialize (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "const-marker-bound.rs": {
+   "sha256": "c65a4c51e36ea467a1f80f2c8fe0cdf76a8ead882918224ae646af97e1cf066d",
+   "declared": 1,
+   "reason": "opponent: a child `const impl<I: [const] Iterator<Item = T> + const Exact, ..>` over a `const unsafe trait Exact` marker; `const Exact` adds a HostEffect clause the parent lacks, which is never a marker clause",
+   "rustc_status": 1,
+   "error_codes": []
+  }
+ }
+}

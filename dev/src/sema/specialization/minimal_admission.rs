@@ -12,7 +12,9 @@ use crate::{
     types::{
         GenericArgs, RegionId, TypeId,
         arguments::Argument,
-        parameters::{clauses::Clause, constraints::Constraints, uses::Multiplicities},
+        parameters::{
+            clauses::Clause, constraints::Constraints, predicates::Bound, uses::Multiplicities,
+        },
     },
 };
 pub(super) fn validate(
@@ -182,7 +184,10 @@ pub(super) fn additional(
     if predicate.requires_definition_proof(&facts.types)? {
         return Ok(());
     }
-    if let Some((application, _)) = predicate.bound.trait_parts() {
+    // Only an ordinary trait clause may name a marker. A `const` bound's own
+    // clause is rustc's host-effect clause, which `check_specialization_on`
+    // never treats as a marker.
+    if let Bound::Trait(application) = predicate.bound {
         let definition = DefId(
             facts
                 .types

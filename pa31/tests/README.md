@@ -723,3 +723,12 @@ parameters under two lifetimes, a function and a trait method with two, and an
 opponent whose second const parameter type does not implement `ConstParamTy_`.
 Each outcome was declared before its rustc 1.98.0 oracle. A private invariant
 checks them; there is no graded manifest.
+
+`spec/const-specialization-bounds/` freezes seven declared `min_specialization`
+controls from census batch 12: core's `SpecNextChunk` pair, whose `[const]`
+parent bound stands for the ordinary trait clause a `TrustedLen` marker
+supertrait elaborates to, with a plain supertrait, a `[const]` child over an
+ordinary parent and the ordinary pair, beside a non-const and a weaker const
+child that do not specialize and a `const` marker bound. Each outcome was
+declared before its rustc 1.98.0 oracle. A private invariant checks them;
+there is no graded manifest.

@@ -1,9 +1,18 @@
 //! Minimal admission compares real elaborated clauses, not rendered predicate names.
+#[cfg(test)]
+#[path = "../../../tests/invariants/host_effect_specialization.rs"]
+mod tests;
 use super::{header_conditions::Conditions, retention_work::Budget};
 use crate::{
     sema::model::Declarations,
     support::{hash::HashSet, retained::Growth},
-    types::{outlives::Pair, parameters::clauses::Clause},
+    types::{
+        outlives::Pair,
+        parameters::{
+            clauses::Clause,
+            predicates::{Bound, Predicate},
+        },
+    },
 };
 #[derive(Default)]
 pub(super) struct Basis {
@@ -31,7 +40,37 @@ impl Basis {
         }
         Ok(())
     }
+    /// As rustc 1.98's `predicates_of`, which `min_specialization` compares, a
+    /// `[const] Tr` bound is the ordinary `Tr` clause: its constness is a const
+    /// condition, which `specializes` proves and this comparison never reads. A
+    /// `const Tr` bound is `Tr` and also itself, standing for rustc's host-effect
+    /// clause, so it elaborates its `const` supertraits.
     pub(super) fn insert(&mut self, clause: Clause, budget: &Budget) -> Result<(), &'static str> {
+        let Clause::Predicate(Predicate { ty, bound }) = clause else {
+            return self.insert_clause(clause, budget);
+        };
+        match bound {
+            Bound::MaybeConstTrait(application) => self.insert_clause(
+                Clause::Predicate(Predicate {
+                    ty,
+                    bound: Bound::Trait(application),
+                }),
+                budget,
+            ),
+            Bound::ConstTrait(application) => {
+                self.insert_clause(
+                    Clause::Predicate(Predicate {
+                        ty,
+                        bound: Bound::Trait(application),
+                    }),
+                    budget,
+                )?;
+                self.insert_clause(clause, budget)
+            }
+            _ => self.insert_clause(clause, budget),
+        }
+    }
+    fn insert_clause(&mut self, clause: Clause, budget: &Budget) -> Result<(), &'static str> {
         budget.charge(1, 0)?;
         if self.clauses.contains(&clause) {
             return Ok(());

@@ -355,6 +355,15 @@ does. Both rules have recorded independent outcomes:
 [fixpoint](pa31/tests/spec/specialization-fixpoint/README.md) and
 [determined-argument](pa31/tests/spec/determined-parents/README.md) controls.
 
+`min_specialization` compares the two impls' clauses as rustc's
+`predicates_of` holds them: a `[const] Tr` bound is the ordinary `Tr` clause,
+and a `const Tr` bound is `Tr` plus its own host-effect clause, which is never
+a marker clause. Constness is checked by the ordering instead. A parent that is
+const in more cases than its child, because the child is not a const impl or
+cannot prove the parent's `[const]` bounds, orders nothing. The
+[const bound controls](pa31/tests/spec/const-specialization-bounds/README.md)
+record independent outcomes.
+
 An override's bounds are compared with its trait method's bounds in the impl's
 normal forms, as rustc normalizes the impl's param-env first. The trait
 method's own bounds, substituted for the impl, and the override's bounds are
