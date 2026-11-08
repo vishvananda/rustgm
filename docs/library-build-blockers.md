@@ -5,6 +5,40 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 11](parallel/census-batch11.md) repairs census 11's
+budget record, the record it uncovered, and lookahead record 2, on main
+`016b1f54d`. Census 12 (`a108ae93`, from `13fcdf82d`) checks 42,310
+declarations, with none failed or blocked. Its crate record, "minimal
+specialization introduces a non-marker predicate", is core's `SpecNextChunk`
+pair (`array/mod.rs:1044` and `1062`), located by an instrumented diagnostic:
+the child's `TrustedLen` marker elaborates to the ordinary `I: Iterator`,
+which the parent's `[const] Iterator` bound does not admit. rustc's
+`predicates_of` holds a `[const] Tr` bound as the ordinary `Tr`. Seven
+lookahead records follow.
+
+- Coherence asks whether two trait references could unify before
+  instantiating either header, as rustc's deep reject does, and a reserved
+  overlap condition pays one step, and its bytes only on regrowth. Core's
+  overlap work falls from 2,404,914 to 263,268 steps; the fixed one-million
+  cap stays as runaway protection.
+- A pattern marker whose base lacks `Copy` reports it again, instead of
+  relisting impl candidates after `f9a2c96d4`.
+- A specializing child's parent obligations are solved to a fixpoint, and
+  `min_specialization` omits the parent arguments the parent's own
+  equalities determine, as rustc's `specializes` and
+  `unconstrained_parent_impl_args` do. This repairs core's `SpecExtend` pair.
+- A const parameter's type is proven under its owner's environment, as
+  rustc's `check_param_wf` does. This repairs core's `TransmuteFrom<Src,
+  const ASSUME: Assume>`. The first census 12 pin showed that a second const
+  parameter reused the first one's lifetime numbering (core's
+  `Arguments::new<const N, const M>`); each parameter now gets its own proof.
+- 39 PA31 controls were declared before the rustc 1.98.0 oracle; 38 agree,
+  and the one wrong prediction and one fixture amendment are recorded.
+- Every PA1 to PA24 suite passes, with PA20 at 1451/1451.
+- What remains: census 12's record 1 (proposed repair: minimal admission
+  reads a `[const]` bound as its ordinary trait clause), then its lookahead
+  records; the `[const]` supertrait gap of batch 10, not attempted.
+
 Lane C [PhantomData roles](parallel/phantom-roles.md) transports core's
 `PhantomData` in version 13 as the existing spelled role row, alone of the
 Pointee family. No kind, variance or layout fact travels. Each consumer stages

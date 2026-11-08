@@ -666,6 +666,49 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     The test now checks the acceptance path's costs. Its failed-attempt and
     peak assertions are unchanged.
 
+- **During Lane A's [census batch 11](parallel/census-batch11.md)**,
+  2026-11-08.
+  - **Census 11's overlap budget record was paid but unnecessary work, not
+    real work. The fixed cap stays.** Read-only measurement found:
+    - core has 22,895 pairs, the index matches rustc's buckets, and no pair
+      is checked twice;
+    - 41% of the 2,404,914 steps went to 20,986 pairs whose trait references
+      cannot unify, because both headers were instantiated before a
+      structural reject;
+    - 54% were allocation bytes charged as steps, with the left side
+      recounted on regrowth;
+    - about 175k steps were real work.
+  - **The fixes:**
+    - a deep reject before header instantiation, as rustc's `DeepRejectCtxt`
+      does. Params, inference variables, projections, aliases, opaques and
+      placeholders match anything;
+    - reservations charge one step per condition, and only their new bytes,
+      in the byte ledger.
+    - Result: 263,268 steps, under the unchanged one-million constant.
+    - Rejected: a size-based cap, since no real work needs one.
+  - **A specializing child's parent obligations are solved to a fixpoint**,
+    and leftover ambiguity means "does not specialize", as rustc's
+    `specializes` does. This repairs core's `SpecExtend` pair, whose `T`
+    appears only in where clauses.
+  - **A const parameter's type is proved under its owner's environment**, as
+    rustc's `check_param_wf` does. Each const parameter gets its own proof,
+    numbered after the last retained one.
+    - The first pin reused one proof per owner. Its lifetime witnesses
+      collided at core's `Arguments::new<const N, const M>`.
+    - Five PA31 controls, declared before the oracle, agree with rustc.
+  - **`f9a2c96d4`'s selection regression is fixed.** A pattern marker whose
+    base lacks `Copy` relisted impl candidates until selection work ran out.
+    Main's last known failing test, `abi::storage_relation`, passes.
+  - **Census 12** has no per-definition failure. Its crate record is "minimal
+    specialization introduces a non-marker predicate" at core's
+    `SpecNextChunk` pair (`array/mod.rs:1044` and `1062`).
+    - rustc stores a `[const] Tr` bound in `predicates_of` as the ordinary
+      `Tr` clause; constness goes to `const_conditions`, which
+      `check_predicates` does not compare.
+    - Lane A repairs it next in `sema/specialization/predicate_basis.rs`,
+      then the `[const]` supertrait gap, which may share the
+      `const_conditions` split.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |
