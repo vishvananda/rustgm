@@ -1975,6 +1975,20 @@ The [whole-caller sizing investigation](docs/pa31-source-sizing-reuse.md) shows
 why isolated query DAG counters must be complemented by full typed source calls:
 separate roots can repeat a complete nested suffix despite each query being linear.
 
+Source sizing follows rustc 1.98's hierarchy. `PointeeSized` holds for every
+type. A rigid projection is `MetaSized` or `Sized` only from an environment
+assumption that names it or from its associated type's own item bounds: its
+written bounds, the implicit `MetaSized` of a `?Sized` result or a declared
+`Sized`. After input normalization, an
+environment sizing assumption over another projection that cannot yet be
+compared does not defer such a goal when those item bounds, or for
+`PointeeSized` every type, prove it; any other answer stays deferred. A
+normalized rigid projection whose item bounds do not prove `MetaSized` or
+`Sized` is absent, never a selection failure. The [projection
+sizedness](pa31/tests/spec/projection-sizedness/README.md) and [normalized
+projection sizing](pa31/tests/spec/normalized-projection-sizing/README.md)
+controls retain the accepted shapes and their opponents.
+
 Actual source Unsize selection checks both endpoint formations even after a
 conversion mismatch or an unresolved peer. Pointee shape alone does not pay
 nominal lifetime requirements: retain their existing symbolic region/type-outlives

@@ -5,6 +5,36 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 8](parallel/census-batch8.md) repairs census 8's crate
+record and the one after it. Census 9 (`10c45c62`, from `97110f230` on main
+`4a9a3441f`) checks 42,310 declarations, with none failed or blocked. Its one
+crate record is "invalid canonical trait selection" at `option.rs:1386`.
+Bodies are not entered, so Milestone 2 is not reached.
+
+- Sizing follows rustc 1.98's hierarchy. A rigid projection is `MetaSized` or
+  `Sized` from its associated type's own item bounds, even when an
+  environment sizing assumption over another projection cannot be compared
+  with it, and `PointeeSized` holds for every type. This repairs core's `Pin`
+  PartialEq impl (`pin.rs:1105`) and `Flatten` Iterator impl
+  (`iter/adapters/flatten.rs:226`).
+  - 13 PA31 no_core controls were declared before the rustc 1.98.0 oracle,
+    and all agree.
+  - The only `sema::traits` changes are in `selection/search/inputs.rs` and
+    `selection/search/sizing_fallback.rs`.
+- `reached_intrinsics_cannot_execute_their_authored_fallback` expects
+  `ctpop`'s constant handler: for `ctpop(7)`, `[u8; 3]` is accepted and
+  `[u8; 7]` rejected. `bswap`, which has no handler, keeps the original
+  rejection.
+- Every PA1 to PA24 suite passes, with PA20 at 1451/1451.
+- What remains:
+  - `option.rs:1386`: `Option<&'a T::Target>` under `T: [const] Deref` fails
+    with "selected type retains an unmapped lifetime" in nominal conjunction
+    selection. Lane A owns it next, because Lane B is repairing the
+    nightly private failures.
+  - Keep-going across the crate-wide declaration passes is not added. It
+    needs a dependency audit of about 29 passes that publish facts later
+    passes read. A labelled, analysis-only lookahead is approved instead.
+
 Lane B [scoped body proofs, variant re-exports and `--extern
 core=`](parallel/scoped-proofs-shim-globs.md) clears three of its assigned
 items.

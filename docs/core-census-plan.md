@@ -334,6 +334,50 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
 
     The two caller-lifetime gaps (`caller-region`, `ordinary-region`) follow
     if they are cheap.
+- **Main's private tests have failed since the 2026-11-07 nightly**, 2026-11-08.
+  The last good nightly was `31c3a6077`, the first bad one `054b91950`.
+  Re-running its failures by exact name on main `4a9a3441f` showed:
+  - 17 lib tests still fail, on layout sizes and work budgets;
+  - the integration failures are still being checked.
+
+  Joined checks missed them because they select only each lane's own tests.
+  - **Lane B repairs them first**, ahead of the `GLOB` row and builtins. Each
+    test gets a cause commit and either a code fix or a recorded reason for a
+    justified growth. Nothing is blessed to hide a failure. The record goes
+    in `parallel/nightly-private-repair.md`.
+    - Why Lane B: 11 of the 17 are resolve tests, and std crate loading is
+      off core's critical path.
+    - Rejected: a fourth worktree. Registering one needs an idle resource
+      controller.
+    - Cost: std crate loading slips one batch.
+  - **Joined checks now also run the latest nightly's failing tests** as a
+    probe. A join passes when the probe shows no failure outside that known
+    list. The integrator reads the nightly result each day.
+- **After Lane A's [census batch 8](parallel/census-batch8.md)** (census 9: no
+  per-definition failure, one crate record at `option.rs:1386`), 2026-11-08:
+  - **Lane A owns `option.rs:1386` next.** It is `Option::as_deref`,
+    returning `Option<&T::Target>` under `T: [const] Deref`, and it fails with
+    "selected type retains an unmapped lifetime" in nominal conjunction
+    selection. rustc accepts it.
+    - Why: it is the census frontier, Lane B is on the nightly repair, and
+      the `[const]` conjunction is near Lane A's constant work.
+    - Cost: Lane A edits shared selection and substitution code again. It
+      lists every file.
+  - **The full keep-going across crate-wide passes is deferred.** It needs a
+    consume/publish audit of about 29 passes. Instead, the census may run a
+    labelled, analysis-only lookahead:
+    - after a failed crate-wide pass, the later passes still run on whatever
+      facts exist;
+    - every later record is marked as following that failure and possibly
+      derived from it;
+    - bodies are still not entered;
+    - the lookahead is never a qualifying result.
+
+    Lane A adds it only if it takes at most half a checkpoint.
+    - Why: each census has shown only one crate record. A lookahead lets the
+      remaining records be shared across lanes.
+    - Cost: some listed records may be artefacts of the earlier failure.
+      Each is re-proved when its turn comes.
 
 ## Lanes
 

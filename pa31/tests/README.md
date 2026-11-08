@@ -607,3 +607,17 @@ added and stronger opponents) and const Drop fields of pattern types (core's
 `NonNull` and array `Drain`, with an unbounded parameter-base opponent). Each
 outcome was declared before its rustc 1.98.0 oracle. Private invariants check
 them; there is no graded manifest.
+
+`spec/projection-sizedness/` and `spec/normalized-projection-sizing/` freeze
+thirteen declared no_core controls from census batch 8: rigid projections as
+sizing arguments under rustc 1.98's sizedness hierarchy. They cover core's
+`PartialEq<Rhs: PointeeSized>` and `Pin` PartialEq impl header, a `MetaSized`
+argument from a `?Sized` Deref target in a function and a tuple struct
+where-clause, `PointeeSized`-only and default associated types, and core's
+`Flatten` Iterator impl, whose `Option<U::Item>` needs a sized item while the
+environment assumes sizing of another projection (impl method, inherent and
+free function forms), and a `MetaSized` argument from a `?Sized` item in that
+environment. Three opponents are E0277: an implicitly `Sized` argument, a
+`MetaSized` argument from a `PointeeSized`-only associated type and `Option`
+of a `?Sized` item. Each outcome was declared before its rustc 1.98.0 oracle.
+A private invariant checks them; there is no graded manifest.
