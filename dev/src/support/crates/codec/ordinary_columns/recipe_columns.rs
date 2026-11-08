@@ -2,7 +2,45 @@
 use super::{Input, Writer, address_read, address_write, g, id, option, range, s};
 use crate::support::constness::Constness;
 
-pub(super) fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static str> {
+/// Version thirteen's pattern constraint kinds after tag 16 and its base.
+const NON_NULL: u8 = 0;
+const SCALAR_RANGE: u8 = 1;
+/// Every type row, with each range pattern's endpoints written in place. The
+/// ranges are dense in type-row order, so the reader rebuilds the same refs.
+pub(super) fn types_write(
+    out: &mut Writer,
+    rows: &[s::Type],
+    ranges: &[s::PatternRange],
+) -> Result<(), &'static str> {
+    out.u32(rows.len())?;
+    let mut next = 0_usize;
+    for row in rows {
+        if let s::Type::Pattern { base, constraint } = *row {
+            out.u8(16)?;
+            id(out, base.0)?;
+            match constraint {
+                s::PatternConstraint::NonNull => out.u8(NON_NULL)?,
+                s::PatternConstraint::Range(reference) => {
+                    let range = ranges
+                        .get(next)
+                        .filter(|_| reference.0 as usize == next)
+                        .ok_or("source pattern ranges are not in type-row order")?;
+                    out.u8(SCALAR_RANGE)?;
+                    out.bytes(&range.start.to_le_bytes())?;
+                    out.bytes(&range.end.to_le_bytes())?;
+                    next += 1;
+                }
+            }
+        } else {
+            type_write(out, row)?;
+        }
+    }
+    if next != ranges.len() {
+        return Err("source pattern range has no type row");
+    }
+    Ok(())
+}
+fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static str> {
     match *row {
         // Scalar has a permanent repr(u8) shared by all existing wire profiles.
         s::Type::Projection(reference) => {
@@ -61,10 +99,35 @@ pub(super) fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static
             })?;
             id(out, application.0)
         }
+        s::Type::Pattern { .. } => Err("source pattern type requires its range table"),
     }
 }
-pub(super) fn type_read(read: &mut Input<'_, '_>) -> Result<s::Type, &'static str> {
+/// One type row. A range pattern's endpoints are appended to `ranges`, and
+/// the row names them by position.
+pub(super) fn type_read(
+    read: &mut Input<'_, '_>,
+    ranges: &mut Vec<s::PatternRange>,
+) -> Result<s::Type, &'static str> {
     Ok(match read.reader.u8()? {
+        16 if read.profile.body_nodes() => {
+            let base = g::TypeRef(read.id()?);
+            let constraint = match read.reader.u8()? {
+                NON_NULL => s::PatternConstraint::NonNull,
+                SCALAR_RANGE => {
+                    let range = s::PatternRange {
+                        start: read.reader.u128()?,
+                        end: read.reader.u128()?,
+                    };
+                    read.reserve(size_of::<s::PatternRange>())?;
+                    let reference = u32::try_from(ranges.len())
+                        .map_err(|_| "source pattern range table overflow")?;
+                    ranges.push(range);
+                    s::PatternConstraint::Range(s::PatternRangeRef(reference))
+                }
+                _ => return Err("unknown source pattern constraint"),
+            };
+            s::Type::Pattern { base, constraint }
+        }
         7 if read.profile.compiler_operations() || read.profile.body_nodes() => {
             s::Type::Projection(s::ProjectionRef(read.id()?))
         }

@@ -54,6 +54,8 @@ mod newtype_records;
 mod node_transport;
 #[path = "crate_linking/non_exhaustive.rs"]
 mod non_exhaustive;
+#[path = "crate_linking/nonnull_patterns.rs"]
+mod nonnull_patterns;
 #[path = "crate_linking/normalized_results.rs"]
 mod normalized_results;
 #[path = "crate_linking/packet_libraries.rs"]

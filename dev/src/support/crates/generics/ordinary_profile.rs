@@ -768,6 +768,7 @@ pub(super) fn bindings(
         )?;
         declarations[role.role.index()] = Some(address.declaration);
     }
+    diagnostic_bindings(rows, headers, work, profile)?;
     owned_role_members(rows, headers, work, &declarations)?;
     let sizing = [
         declarations[LangItem::Sized.index()],
@@ -821,6 +822,53 @@ pub(super) fn bindings(
     })
 }
 
+/// Version thirteen's diagnostic identities: each names, once, one of this
+/// provider's own struct nominals, as the local `NonNull` rule requires.
+fn diagnostic_bindings(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+    profile: BindingProfile,
+) -> Result<(), &'static str> {
+    let diagnostics = rows.diagnostics();
+    if diagnostics.is_empty() {
+        return Ok(());
+    }
+    if profile != BindingProfile::Languages {
+        return Err("source diagnostic identity requires a language role table");
+    }
+    let mut seen = [false; super::super::DiagnosticRole::ALL.len()];
+    for row in diagnostics {
+        work.charge(1)?;
+        if row.declaration.artifact != super::super::ArtifactRef(0) {
+            return Err("source diagnostic identity belongs to a foreign provider");
+        }
+        let slot = &mut seen[row.role as usize];
+        if *slot {
+            return Err("duplicate source diagnostic identity");
+        }
+        *slot = true;
+        let struct_kind = rows
+            .declarations
+            .get(row.declaration.declaration.0 as usize)
+            .is_some_and(|declaration| {
+                declaration.definition.kind == super::super::DefinitionKind::Struct
+            });
+        if !struct_kind
+            || !matches!(
+                headers.header(row.declaration.declaration, work)?,
+                Some(super::super::HeaderRef::Nominal(_))
+            )
+        {
+            return Err(match row.role {
+                super::super::DiagnosticRole::NonNull => {
+                    "imported NonNull diagnostic item requires its nominal declaration profile"
+                }
+            });
+        }
+    }
+    Ok(())
+}
 /// The declaration/header kind each bound role may claim under `profile`.
 fn role_header(
     profile: BindingProfile,

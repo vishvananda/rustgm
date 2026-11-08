@@ -67,6 +67,12 @@ pub(super) enum Node {
     /// Version thirteen: the unsized `[T]`; its element's sizedness is
     /// re-proved by every consumer.
     Slice(NodeId),
+    /// Version thirteen: a pattern over a raw pointer or concrete scalar
+    /// base. Signature matching compares range constraints by value.
+    Pattern {
+        base: NodeId,
+        constraint: s::PatternConstraint,
+    },
     FunctionItem(s::FunctionApplicationRef),
     SignatureResult(NodeId),
     SignatureInput {
@@ -313,9 +319,12 @@ impl Arena {
                 }
                 facts
             }
-            // `*const T` is formed whenever `T` is; `[T]` also needs `T: Sized`,
-            // which an unbounded parameter element must prove by an input.
-            Node::RawPointer { pointee, .. } => self.facts_of(pointee, work)?,
+            // `*const T` and a pattern are formed whenever their child is;
+            // `[T]` also needs `T: Sized`, which an unbounded parameter
+            // element must prove by an input.
+            Node::RawPointer { pointee, .. } | Node::Pattern { base: pointee, .. } => {
+                self.facts_of(pointee, work)?
+            }
             Node::Slice(element) => {
                 let mut facts = self.facts_of(element, work)?;
                 if matches!(self.nodes.get(element.0 as usize), Some(Node::Parameter(_))) {

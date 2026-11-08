@@ -184,6 +184,32 @@ impl Stage {
         Ok(())
     }
 
+    /// Version thirteen transports `NonNull`'s diagnostic identity as a role
+    /// table row after the language rows; older profiles reject it by name.
+    /// It runs after every other export stage, so an export that fails earlier
+    /// keeps its own diagnostic.
+    pub(super) fn diagnostic_roles(&mut self, report: &Report) -> Result<(), &'static str> {
+        self.charge(1)?;
+        let Some(declaration) = report
+            .resolution
+            .source_bindings
+            .as_deref()
+            .and_then(Reservations::nonnull_declaration)
+        else {
+            return Ok(());
+        };
+        if !self.body_nodes() {
+            return Err("source NonNull diagnostic identity transport requires version 13");
+        }
+        let address = self.address(declaration.definition)?;
+        self.reserve(4 * size_of::<s::DiagnosticBinding>())?;
+        self.cold()?.diagnostics.push(s::DiagnosticBinding {
+            role: s::DiagnosticRole::NonNull,
+            declaration: address,
+        });
+        Ok(())
+    }
+
     fn exported_role(
         &mut self,
         report: &Report,

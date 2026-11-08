@@ -49,10 +49,11 @@ impl Stage {
                     }
                     | Kind::Pointer { pointee: child, .. }
                     | Kind::Slice(child)
+                    | Kind::Pattern { base: child, .. }
                         if matches!(kind, Kind::Reference { .. }) || self.body_nodes() =>
                     {
-                        // A pointer or slice row, like a reference, follows
-                        // its one completed child.
+                        // A pointer, slice or pattern row, like a reference,
+                        // follows its one completed child.
                         self.type_work(&mut pending, Task::Reference(key, context))?;
                         let child = self.type_key(facts, child, context)?;
                         self.type_work(&mut pending, Task::Enter(child, context))?;
@@ -242,6 +243,9 @@ impl Stage {
             Kind::Slice(element) if self.body_nodes() => {
                 s::Type::Slice(self.completed_child(facts, element, context)?)
             }
+            Kind::Pattern { base, constraint } if self.body_nodes() => {
+                self.pattern_row(facts, base, constraint, context)?
+            }
             Kind::Primitive(crate::types::Primitive::Str) if self.body_nodes() => s::Type::Str,
             Kind::Never if self.body_nodes() => s::Type::Never,
             Kind::Primitive(_) | Kind::Tuple(_)
@@ -253,6 +257,54 @@ impl Stage {
                 )
             }
             _ => return Err("source type form requires an explicitly supported transport row"),
+        })
+    }
+
+    /// Version thirteen: a pattern row over its completed base. A range's
+    /// canonical endpoints are appended in type-row order. A non-null pattern
+    /// over a type parameter is fenced: only core's `DispatchFromDyn` impl
+    /// header names one, and no export reaches it yet.
+    fn pattern_row(
+        &mut self,
+        facts: &Declarations,
+        base: TypeId,
+        constraint: crate::types::Constraint,
+        context: Context,
+    ) -> Result<s::Type, &'static str> {
+        let constraint = match constraint {
+            crate::types::Constraint::NonNull => {
+                match facts.types.kind(base) {
+                    Some(Kind::Pointer { .. }) => {}
+                    Some(Kind::Parameter(_)) => {
+                        return Err(
+                            "source non-null pattern over a type parameter is not transported",
+                        );
+                    }
+                    _ => return Err("source non-null pattern requires a raw pointer base"),
+                }
+                s::PatternConstraint::NonNull
+            }
+            crate::types::Constraint::ScalarRange(id) => {
+                let range = facts
+                    .types
+                    .scalar_range(id)
+                    .filter(|range| range.base == base)
+                    .ok_or("source scalar pattern lost its canonical interval")?;
+                self.reserve(4 * size_of::<s::PatternRange>())?;
+                let ranges = &mut self.cold()?.pattern_ranges;
+                let reference = s::PatternRangeRef(
+                    u32::try_from(ranges.len()).map_err(|_| "source pattern range overflow")?,
+                );
+                ranges.push(s::PatternRange {
+                    start: range.start,
+                    end: range.end,
+                });
+                s::PatternConstraint::Range(reference)
+            }
+        };
+        Ok(s::Type::Pattern {
+            base: self.completed_child(facts, base, context)?,
+            constraint,
         })
     }
 

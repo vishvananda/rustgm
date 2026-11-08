@@ -423,3 +423,24 @@ packet under `spec/phantom-roles/`. The packet holds:
   lifetime-generic import, with their rustc outcomes.
 
 The `crate_linking::phantom_roles` integration controls consume it.
+
+`nonnull-pattern-outcomes.json` freezes the version-thirteen `NonNull` and
+pattern-type packet under `spec/nonnull-patterns/`. The packet holds:
+
+- core's `pattern_type` macro declaration, core's `NonNull`, core's closed
+  niche types `Nanoseconds`, `NonZeroCharInner` and `CodePointInner`, and two
+  authored closed ranges;
+- eight clients that rustc accepts, each binding `Opt::None` of one imported
+  type, and two opponents (E0616 and E0308). RustGM accepts four. The other
+  four are pending its scalar-range niche layout and are rejected by name, in
+  a fresh consumer and in one source-core crate alike;
+- generated controls: older-profile and diagnostic-identity gates, the
+  parameter-base fence, a layout witness for each range type and a 6/24/96
+  scaling control;
+- wire controls: a rewritten constraint kind, rewritten bases and endpoints, a
+  well-formed rewritten wrapped row, a respelled, moved, duplicated and deleted
+  identity row, and version-12 packets with tags 16 and 254.
+
+Amendments are recorded beside the declarations they amend, each before the
+run it governs. The `crate_linking::nonnull_patterns` integration controls
+consume it.

@@ -762,6 +762,62 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
       adding only `!`. Then it re-checks lookahead record 2 (`SpecFill for
       [MaybeUninit<T>]`) for derivation.
 
+- **During Lane C's [NonNull and pattern types](parallel/nonnull-patterns.md)
+  slice (item 4)**, 2026-11-08.
+  - **Wire shape.** A pattern type is type recipe tag 16: a base recipe, a
+    kind byte and its operands.
+    - Kind 0 is `!null`, over a raw pointer base only. The exporter fences a
+      `!null` over a type parameter by name; no current export reaches one,
+      including original core's `pat.rs` `DispatchFromDyn` header.
+    - Kind 1 is a closed inclusive interval of raw bits, as two `u128`s. A
+      wrapped signed range is split into its connected alternatives and
+      re-interned. Bits beyond the base width are rejected by name.
+    - Every consumer re-proves the pattern through its own interning.
+    - Rejected: endpoints sized to the base width. They save under 1 KB and
+      need width dispatch.
+  - **Integrity limit, same class as the transparent flip.** Rewriting a
+    pattern to its bare base changes ABI (`Option<NonNull<T>>` is 8 bytes
+    across crates, 16 without the pattern). Constant endpoints travel as
+    provider-evaluated bits. Both are authenticated by the packet's identity,
+    not re-derived.
+  - **`NonNull`'s diagnostic identity** is role row 254, spelled from a
+    closed table. Each new spelling needs its own approval.
+    - Rejected: a separate diagnostics table, which would add a column to
+      every version 13 packet.
+    - Versions 10 and 12 fence the identity by name, as with `PhantomData`.
+      The identity run (30 packets, 1,002 runs) flips no existing version 10
+      or 12 outcome.
+    - `rustc_nonnull_optimization_guaranteed` has no byte. Nothing consumes
+      it, and the guarantee follows from the `!null` field, which runs
+      natively.
+  - **Declared-outcome amendments**, each recorded before its run:
+    - Four range clients that rustc accepts (`nanoseconds`, `nonzero-char`,
+      `code-point`, `percent`) hit the local fence "scalar pattern enum
+      niches require their complete ABI profile" (`niches.rs:316`), the same
+      way in one crate. They are pending cases; the LowIR equality is the
+      transport claim.
+    - `holder`: `Opt<H>` over a non-transparent `H(NonNull<u8>)` is 16x8 in
+      RustGM and 8x8 in rustc. The nullable-carrier walk descends only
+      `repr(transparent)`, rustc's guaranteed null-pointer optimization,
+      while rustc also uses unguaranteed niches through ordinary struct
+      fields. The oracle keeps 8x8; 16x8 is a separate divergence, pinned so
+      a layout change surfaces. Rejected: field-niche placement inside this
+      slice, since it changes every aggregate layout and needs its own
+      declared oracle sweep. Also rejected: fencing `holder`, which would
+      reject valid code.
+    - Five layout witnesses check the range types through a function
+      pointer, all at rustc's size. Their single-crate control waits on
+      fn-item-to-fn-pointer reification, which has no version 13 body row.
+  - **Open items.** "Niches: scalar ranges and placement through
+    non-transparent struct fields" is frontend layout work (the backend
+    stays frozen), with an owner assigned when bodies reach it.
+    - Risk: `size_of` diverges silently wherever a runtime size is compared
+      with rustc's. Core's const size asserts would fail at const-eval; the
+      pinned core has none over such a struct.
+    - Lane C's queue gains item 5b after auto traits (module const items,
+      associated consts and the `RangePattern` roles), then fn-item
+      reification. `Location` and the caller ABI move one slice later.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

@@ -1,0 +1,223 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj); an oracle-only observer client (outside the fixtures) reports each case's size and alignment through rustc's size_of and align_of intrinsics",
+  "providers": [
+    {
+      "file": "spec/nonnull-patterns/provider.rs",
+      "sha256": "7303d2121512d7a86dfb777413f8a285024747256dd18414f4cc9fd2df9dc735"
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "declared": "2026-11-08T09:40:34Z",
+  "development_note": "declared before any rustc or RustGM run of these files. Scratch probes of the provider lines with main's CLI (obj/parallel/nonnull/explore/p1) found three fences: a pattern field stops export with `source type form requires an explicitly supported transport row`; core's open, exclusive and alternative ranges need the RangeMin/RangeMax/RangeSub roles, which the exporter fences with `source range helper contract transport is not implemented`; and a const endpoint needs a module `const` item, which fails with `source declaration kind is outside the initial source profile`. So the provider carries NonNull, core's closed ranges and two authored closed ranges. Clients cannot build a pattern-typed value (no transmute transport) or call size_of (clients cannot declare intrinsics; body-less intrinsics do not export), so each accepted client binds `Opt::None` of one imported type",
+  "wire_rule": "approved shapes. Type recipe tag 16, version 13 only: [16][u32 base][u8 kind]; kind 0 is `!null` with no operands over a tag-12 raw pointer base; kind 1 is a scalar range [u128 start][u128 end] of raw target-width bits over a tag-0 integer or char base; any other kind is `unknown source pattern constraint`. The consumer re-proves each pattern through the local interning: a range in source order through intern_scalar_range, a wrapped one split into `MIN..=end` and `start..=MAX` through intern_scalar_or. NonNull's diagnostic identity is role-table escape tag 254, [254][string \"NonNull\"][address], after the language rows and outside the policy's role range; the spelling comes from a closed table, and the consumer requires this provider's own module-owned struct. `rustc_nonnull_optimization_guaranteed` has no byte. No layout, niche or ABI fact travels",
+  "cases": [
+    {
+      "file": "spec/nonnull-patterns/nonnull.rs",
+      "provider": "spec/nonnull-patterns/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "local": "Opt<base::NonNull<u8>>",
+      "rustc_size": 8,
+      "rustc_align": 8,
+      "sha256": "886c5dc54e1c9595522179a8e208bf8650890f619171aa53ecb5dc3ad716eaef"
+    },
+    {
+      "file": "spec/nonnull-patterns/nonnull-str.rs",
+      "provider": "spec/nonnull-patterns/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "local": "Opt<base::NonNull<str>>",
+      "rustc_size": 16,
+      "rustc_align": 8,
+      "sha256": "1a5112a0e0ef67a5ac7b911eeb0d8898291b1cd0266fa0e3419f49727f6d8ea0"
+    },
+    {
+      "file": "spec/nonnull-patterns/holder.rs",
+      "provider": "spec/nonnull-patterns/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "local": "Opt<H>, H(base::NonNull<u8>)",
+      "rustc_size": 8,
+      "rustc_align": 8,
+      "sha256": "52e3a88070d5633401a9d25e17e3feee0864d19c3e4cbd54140cc78acf6cad07",
+      "amended": "at 2026-11-08T11:14:00Z, after the first candidate run reached its slot check: rustc's `Opt<H>` is 8x8, but RustGM's is obj<16x8>, the tagged layout, in both the fresh consumer and the single-crate control, whose entry LowIR is equal. The nullable-carrier walk (dev/src/abi/layout/niches.rs, the Kind::Adt arm) descends only repr(transparent) structs, which is rustc's guaranteed null-pointer optimization; rustc also takes the unguaranteed niche of a non-transparent struct's field. A local layout gap, not a transport gap: the client stays accepted with native exit 42 and LowIR equality, and its slot is pinned at 16x8 pending niche-through-struct-field layout",
+      "candidate_divergence": {
+        "candidate_size": 16,
+        "candidate_align": 8,
+        "reason": "tagged layout, identical in the fresh consumer and the single-crate control; pending niche placement through non-transparent struct fields (niches.rs Niches::carrier, Kind::Adt descends only repr(transparent))"
+      }
+    },
+    {
+      "file": "spec/nonnull-patterns/nanoseconds.rs",
+      "provider": "spec/nonnull-patterns/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "local": "Opt<base::Nanoseconds>",
+      "rustc_size": 4,
+      "rustc_align": 4,
+      "sha256": "093797bbed28261c534b32ab59e5da89b902021bab4547fa5a74a0194ab8922f",
+      "amended": "at 2026-11-08T11:03:38Z, after the first candidate run reached the client: rustc accepts it and exits 42, but RustGM rejects it with `scalar pattern enum niches require their complete ABI profile` (dev/src/abi/layout/niches.rs, from 929b90e28, the pa12 niche profile, pinned by integer_niches.rs and integer_source.rs). Only `!null` pointers and zero-excluded unsigned ranges have nullable carriers. The same entry compiled in one source-core crate gives the same rejection, so this is a local layout gap, not a transport gap: a pending case whose fresh consumer and single-crate control reject identically by name. The pre-declaration probes on main could not reach any client, because the provider did not export"
+    },
+    {
+      "file": "spec/nonnull-patterns/nonzero-char.rs",
+      "provider": "spec/nonnull-patterns/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "local": "Opt<base::NonZeroCharInner>",
+      "rustc_size": 4,
+      "rustc_align": 4,
+      "sha256": "62bf270b5247421e607bc6d852b8ab0897d77535f35cf7c516dd6df243e619c7",
+      "amended": "at 2026-11-08T11:03:38Z, after the first candidate run reached the client: rustc accepts it and exits 42, but RustGM rejects it with `scalar pattern enum niches require their complete ABI profile` (dev/src/abi/layout/niches.rs, from 929b90e28, the pa12 niche profile, pinned by integer_niches.rs and integer_source.rs). Only `!null` pointers and zero-excluded unsigned ranges have nullable carriers. The same entry compiled in one source-core crate gives the same rejection, so this is a local layout gap, not a transport gap: a pending case whose fresh consumer and single-crate control reject identically by name. The pre-declaration probes on main could not reach any client, because the provider did not export"
+    },
+    {
+      "file": "spec/nonnull-patterns/code-point.rs",
+      "provider": "spec/nonnull-patterns/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "local": "Opt<base::CodePointInner>",
+      "rustc_size": 4,
+      "rustc_align": 4,
+      "sha256": "8a4e4bc77e825f6b3552f64a324f8a788a1927c7a6815a251e6dc6805730f3fa",
+      "amended": "at 2026-11-08T11:03:38Z, after the first candidate run reached the client: rustc accepts it and exits 42, but RustGM rejects it with `scalar pattern enum niches require their complete ABI profile` (dev/src/abi/layout/niches.rs, from 929b90e28, the pa12 niche profile, pinned by integer_niches.rs and integer_source.rs). Only `!null` pointers and zero-excluded unsigned ranges have nullable carriers. The same entry compiled in one source-core crate gives the same rejection, so this is a local layout gap, not a transport gap: a pending case whose fresh consumer and single-crate control reject identically by name. The pre-declaration probes on main could not reach any client, because the provider did not export"
+    },
+    {
+      "file": "spec/nonnull-patterns/nonzero-u8.rs",
+      "provider": "spec/nonnull-patterns/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "local": "Opt<base::NonZeroU8>",
+      "rustc_size": 1,
+      "rustc_align": 1,
+      "sha256": "94fc5619867611fa48ce7ac6fb33746b4093918524003b846b615570c83b4585"
+    },
+    {
+      "file": "spec/nonnull-patterns/percent.rs",
+      "provider": "spec/nonnull-patterns/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "local": "Opt<base::Percent>",
+      "rustc_size": 1,
+      "rustc_align": 1,
+      "sha256": "5a9c61626ca3b109241328b255c62081ca033b0ce5839e09321057040efb95cf",
+      "amended": "at 2026-11-08T11:03:38Z, after the first candidate run reached the client: rustc accepts it and exits 42, but RustGM rejects it with `scalar pattern enum niches require their complete ABI profile` (dev/src/abi/layout/niches.rs, from 929b90e28, the pa12 niche profile, pinned by integer_niches.rs and integer_source.rs). Only `!null` pointers and zero-excluded unsigned ranges have nullable carriers. The same entry compiled in one source-core crate gives the same rejection, so this is a local layout gap, not a transport gap: a pending case whose fresh consumer and single-crate control reject identically by name. The pre-declaration probes on main could not reach any client, because the provider did not export"
+    },
+    {
+      "file": "spec/nonnull-patterns/private.rs",
+      "provider": "spec/nonnull-patterns/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0616",
+      "candidate_diagnostic": "aggregate field is private",
+      "sha256": "7a855eda6c713a775be2add004bc8a176d1a8c99cfea05636970727181f59150"
+    },
+    {
+      "file": "spec/nonnull-patterns/mismatch.rs",
+      "provider": "spec/nonnull-patterns/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0308",
+      "candidate_diagnostic": "incompatible types",
+      "sha256": "083919d7726a5c3064f46836ff2dfc8ae3dc742a65f490579bdd043ae2994566"
+    }
+  ],
+  "layout": {
+    "expected": "each accepted client's `entry` LowIR equals the LowIR of the same entry compiled in one source-core crate with the provider's lines (base:: paths as crate::), and the slot holding `o` has rustc's size and alignment",
+    "amended": "at 2026-11-08T11:03:38Z: the equality and slot claims hold for the four clients whose `Opt` has a carrier (nonnull, nonnull-str, holder, nonzero-u8). For the four pending range clients, the fresh consumer and the single-crate control each reject with the same named niche fence. Each range type's own layout is witnessed by the generated layout-witness control instead"
+  },
+  "native": {
+    "expected": "the eight accepted clients exit 42 natively, as rustc's do",
+    "amended": "at 2026-11-08T11:03:38Z: the four accepted clients with carriers exit 42 natively; the four pending range clients are rejected before LowIR"
+  },
+  "generated_controls": [
+    {
+      "control": "older profiles: the provider under versions 12 and 10",
+      "expected": "rejected with `source declaration kind is outside the initial source profile` (its tuple structs), as on main"
+    },
+    {
+      "control": "NonNull diagnostic gate: `spec/source-nominals/provider.rs` plus `#[rustc_diagnostic_item = \"NonNull\"] pub struct NonNull<T> { value: T }` under versions 12 and 10",
+      "expected": "rejected with `source NonNull diagnostic identity transport requires version 13` (main exports it and drops the identity); the same provider exports under version 13, its packet carries one 254 row, and a client naming `base::NonNull<u8>` is accepted"
+    },
+    {
+      "control": "parameter base fence: `spec/source-nominals/provider.rs` plus the pattern macro and `pub struct Field<T>(pattern_type!(T is !null));` under version 13",
+      "expected": "rejected with `source non-null pattern over a type parameter is not transported`"
+    },
+    {
+      "control": "scaling: the shared lines plus 6, 24 and 96 structs `R{i}(pattern_type!(u32 is 0..=N))` with distinct N",
+      "expected": "packet bytes grow exactly linearly; a fresh client of each is accepted with LowIR within 64 bytes; consumer work for the patterns grows exactly linearly",
+      "amended": "after the first candidate run of the lib invariant `imported_interval_work_grows_linearly` (the CLI reports no consumer work): re-proving a warm interval costs exactly 14 steps at each width, but a cold interval also pays the store's table growth, which copies at geometric thresholds. Cold work was 127, 576 and 2,348 steps at 6, 24 and 96: bounded linear (each step's increase is at most four times the previous one, and at most 25 steps per interval), not exact. The declared exact claim held only for the warm work",
+      "amended_client": "at 2026-11-08T11:03:38Z: the fresh client `Opt<base::R005>` reaches the same niche fence, so the client becomes the layout witness for R005: `fn hold(_v: base::R005) -> i32 { 42 }` with `let _f: fn(base::R005) -> i32 = hold;` in entry; it is accepted, with LowIR within 64 bytes across widths"
+    },
+    {
+      "control": "layout witness: for each range type T of Nanoseconds, NonZeroCharInner, CodePointInner, NonZeroU8 and Percent, a generated client `fn hold(_v: base::T) -> i32 { 42 }` whose entry binds `let _f: fn(base::T) -> i32 = hold;` and returns 42, so hold is lowered with T's by-value slot",
+      "declared": "2026-11-08T11:03:38Z",
+      "expected": "rustc accepts each witness and it exits 42; rustc's size and alignment of the bare type are 4/4 for Nanoseconds, NonZeroCharInner and CodePointInner and 1/1 for NonZeroU8 and Percent. RustGM accepts each fresh consumer; its entry and hold LowIR equal the same functions compiled in one source-core crate (internal symbol names normalized), and hold's slot is obj<size x align>",
+      "development_note": "pre-declaration exploration: one feasibility probe of this form for Nanoseconds against the candidate (obj/parallel/nonnull/explore/c2/c-fp.rs) gave a hold slot of obj<4x4>. Private and pub functions are otherwise not lowered from a client",
+      "oracle": "ran after the 2026-11-08T11:03:38Z declaration and before the 2026-11-08T11:10:31Z amendment, so it counts for both: rustc 1.98.0 accepted all five witnesses and each exited 42; a std replica of the declarations reported 4/4, 4/4, 4/4, 1/1 and 1/1, as declared (obj/parallel/nonnull/oracle/witness)",
+      "amended": "at 2026-11-08T11:10:31Z, before any candidate run of the witness test: the single-crate control cannot be built. Version-13 module-body export has no row for fn-item-to-fn-pointer reification, so the provider's lines plus the witness entry reject with `source rvalue requires a complete wider transport row` (dev/src/lower/transported_source/cfg_rows/value_rows.rs). Exploration probes found no other single-crate form that lowers a by-value hold: by-value forwarding through `extern \"C\"` (`C aggregate ABI profile requires a nonempty aligned repr(C) struct`), a Rust-ABI no_mangle forwarder (`exact callable requires its actual fixed primitive C signature`), a client-declared struct through `base::pattern_type!` (`imported builtin macro requires its provider's source declaration`), and a diverging call (hold is never lowered). Expected instead: each fresh consumer is accepted and hold's by-value slot has rustc's size and alignment; the single-crate control rejects with `source rvalue requires a complete wider transport row`, a pending body-transport gap that the LowIR equality claim waits for; the Nanoseconds and CodePointInner witnesses, over the same u32 base, have identical normalized LowIR; and the wrapped-Percent wire control's witness LowIR equals the honest Percent witness's"
+    }
+  ],
+  "wire_controls": [
+    {
+      "control": "honest packet",
+      "expected": "one tag-16 kind-0 row, five tag-16 kind-1 rows and one 254 row spelled NonNull; every prefix fails to decode"
+    },
+    {
+      "control": "constraint kind byte rewritten to 2",
+      "expected": "rejected with `unknown source pattern constraint`"
+    },
+    {
+      "control": "the `!null` base rewritten to the u32 scalar recipe, to a reference recipe and to a parameter recipe",
+      "expected": "each rejected with `imported non-null pattern requires a raw pointer base`"
+    },
+    {
+      "control": "a range base rewritten to the raw pointer recipe",
+      "expected": "rejected with `scalar pattern requires an integer or char base`"
+    },
+    {
+      "control": "NonZeroU8 rewritten to start 2, end 1 (an unsigned wrapped range)",
+      "expected": "rejected with `scalar alternatives require a signed integer base`"
+    },
+    {
+      "control": "NonZeroCharInner rewritten to start 0x10ffff, end 1 (a reversed char range)",
+      "expected": "rejected with `scalar alternatives require a signed integer base`"
+    },
+    {
+      "control": "NonZeroCharInner end rewritten to 0xd800 (a surrogate)",
+      "expected": "rejected with `scalar pattern endpoint is invalid for its actual base`"
+    },
+    {
+      "control": "NonZeroU8 end rewritten to 0x1ff (a bit beyond the base width)",
+      "expected": "rejected with `scalar pattern endpoint is invalid for its actual base`"
+    },
+    {
+      "control": "well-formed rewritten row, not an honest export: Percent rewritten to start 1, end 0xff, the bits of `i8 is ..0 | 1..`",
+      "expected": "accepted; the consumer interns exactly the interval that intern_scalar_or gives a local `..0 | 1..`, so Opt<Percent> takes the same niche; its honest witness arrives with RangePattern role transport (item 5b)",
+      "amended": "at 2026-11-08T11:03:38Z: the Percent client's `Opt<Percent>` reaches the niche fence before the interval matters, so this control's client becomes the Percent layout witness. The rewritten packet is accepted; the consumer still interns exactly the `..0 | 1..` interval (the lib invariant wrapped_rows_intern_the_local_connected_alternative), and the witness LowIR equals the honest Percent witness's, an obj<1x1> slot"
+    },
+    {
+      "control": "254 spelling rewritten to `NonNulx`",
+      "expected": "rejected with `unknown source diagnostic identity spelling`"
+    },
+    {
+      "control": "254 row moved to the Clone trait declaration",
+      "expected": "rejected with `imported NonNull diagnostic item requires its nominal declaration profile`"
+    },
+    {
+      "control": "254 row duplicated",
+      "expected": "rejected with `duplicate source diagnostic identity`"
+    },
+    {
+      "control": "254 row moved to `Packet`, and 254 row deleted",
+      "expected": "accepted: the local rule requires only a struct, and nothing consumes the identity before Location (item 6), whose re-proof rejects both by name"
+    },
+    {
+      "control": "a version-12 packet with one recipe tag rewritten to 16, and one with a role tag rewritten to 254",
+      "expected": "rejected with `unknown source function type recipe` and `unknown source function role ID`"
+    }
+  ]
+}

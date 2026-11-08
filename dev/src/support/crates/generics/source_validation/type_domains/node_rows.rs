@@ -1,5 +1,6 @@
 //! Type recipes are traversed once; callable recursion is not a recipe cycle.
 use super::{BoundUse, Builder, HeaderRef, Summary, Work, g, s};
+use crate::support::crates::Scalar;
 
 impl Builder<'_, '_> {
     pub(super) fn dependencies(
@@ -51,7 +52,8 @@ impl Builder<'_, '_> {
                     referent: child, ..
                 }
                 | s::Type::RawPointer { pointee: child, .. }
-                | s::Type::Slice(child) => self.push_type(child, work)?,
+                | s::Type::Slice(child)
+                | s::Type::Pattern { base: child, .. } => self.push_type(child, work)?,
                 s::Type::Tuple(elements) => {
                     for &element in elements.slice(&rows.roots)?.iter().rev() {
                         self.push_type(element, work)?;
@@ -159,6 +161,9 @@ impl Builder<'_, '_> {
                 }
                 self.child(element, work)?
             }
+            s::Type::Pattern { base, constraint } => {
+                self.pattern_summary(base, constraint, work)?
+            }
             s::Type::Function(signature) => self.signature(signature, work)?,
             s::Type::Tuple(elements) => {
                 let elements = elements.slice(&rows.roots)?;
@@ -185,6 +190,40 @@ impl Builder<'_, '_> {
                 return Err("source application signature recipe is unsupported");
             }
         })
+    }
+    /// A pattern row carries no region. Only its structural form is checked
+    /// here; every consumer re-proves the constraint against its own base.
+    fn pattern_summary(
+        &self,
+        base: g::TypeRef,
+        constraint: s::PatternConstraint,
+        work: &mut Work,
+    ) -> Result<Summary, &'static str> {
+        let rows = self.headers.rows();
+        let base_row = rows.types.get(base.0 as usize);
+        match constraint {
+            s::PatternConstraint::NonNull => {
+                if !matches!(base_row, Some(s::Type::RawPointer { .. })) {
+                    return Err("imported non-null pattern requires a raw pointer base");
+                }
+            }
+            s::PatternConstraint::Range(range) => {
+                if range.0 as usize >= rows.pattern_ranges().len() {
+                    return Err("source pattern has no actual range row");
+                }
+                let integer_or_char = matches!(
+                    base_row,
+                    Some(s::Type::Scalar(scalar)) if !matches!(
+                        scalar,
+                        Scalar::Unit | Scalar::Bool | Scalar::F32 | Scalar::F64
+                    )
+                );
+                if !integer_or_char {
+                    return Err("scalar pattern requires an integer or char base");
+                }
+            }
+        }
+        self.child(base, work)
     }
     fn nominal_summary(
         &self,

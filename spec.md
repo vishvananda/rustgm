@@ -6673,6 +6673,34 @@ unit value of a type-generic import, such as `base::Opt::<u8>::None` or
 path, so its local could not be lowered ("generic aggregate requires
 instantiated fields").
 
+A version-thirteen type recipe may also be a pattern type (tag 16):
+`[16][u32 base][u8 kind]`. Kind 0 is `!null` over a raw pointer recipe. Kind 1
+is a closed scalar interval, two u128 endpoints of raw target-width bits, over
+an integer or char recipe. Any other kind is rejected ("unknown source pattern
+constraint"). No layout, niche or ABI fact travels. Every consumer re-proves
+the pattern over its own base. A `!null` base must be a raw pointer. An
+interval in its base's source order is interned under the local pattern
+rules. A wrapped interval is split into `MIN..=end` and `start..=MAX` and
+interned as the connected alternative, which only a signed base admits.
+Endpoint bits beyond the base width, or a surrogate char, are rejected. The
+exporter fences a `!null` pattern over a type parameter ("source non-null
+pattern over a type parameter is not transported"). Older profiles keep their
+type-form rejection. Two limits are authenticated only by the packet's
+identity, as the transparent byte is. A pattern row rewritten to its bare base
+still validates, though a consumer would then lay out `Option<NonNull<T>>`
+at 16 bytes instead of 8. Endpoints are re-proved valid for the base, but not
+equal to the provider's const values.
+
+`NonNull`'s `rustc_diagnostic_item` travels as a version-thirteen role row
+(tag 254): `[254][string spelling][address]`, after every language row and
+outside the policy's role range. Its spelling comes from a closed table
+holding only `NonNull`, so each later spelling is a separate admission. A
+consumer requires the provider's own struct with a nominal header, at most
+once, and re-proves it as a struct over its own remap. Versions 10 and 12
+reject the identity by name ("source NonNull diagnostic identity transport
+requires version 13") instead of dropping it. `rustc_nonnull_optimization_guaranteed`
+has no byte: the guarantee follows from the `!null` field.
+
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core
 profile. A crate that exports no macros writes no envelope and keeps its exact

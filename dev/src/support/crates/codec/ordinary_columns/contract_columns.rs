@@ -250,10 +250,7 @@ pub(super) fn role_write(out: &mut Writer, row: &s::RoleBinding) -> Result<(), &
 }
 /// Version thirteen keeps the version-ten compact IDs byte-for-byte and spells
 /// every other role; a compact role is never spelled.
-pub(super) fn language_role_write(
-    out: &mut Writer,
-    row: &s::RoleBinding,
-) -> Result<(), &'static str> {
+fn language_role_write(out: &mut Writer, row: &s::RoleBinding) -> Result<(), &'static str> {
     match ordinary_id(row.role) {
         Some(id) => out.u8(id)?,
         None if row.role == LangItem::From => out.u8(9)?,
@@ -276,8 +273,70 @@ fn spelled_role(read: &mut Input<'_, '_>) -> Result<LangItem, &'static str> {
     }
     Ok(role)
 }
+/// Version thirteen's diagnostic identity tag: the closed table's spelling
+/// follows. Only the role table of a language profile carries it.
+const SPELLED_DIAGNOSTIC: u8 = 254;
+/// A format bound on one diagnostic spelling.
+const MAX_DIAGNOSTIC_SPELLING: usize = 64;
+/// Version thirteen's role table: every language row, then each diagnostic
+/// identity row. Without a diagnostic row the bytes are the earlier table's.
+pub(super) fn language_roles_write(
+    out: &mut Writer,
+    roles: &[s::RoleBinding],
+    diagnostics: &[s::DiagnosticBinding],
+) -> Result<(), &'static str> {
+    out.u32(
+        roles
+            .len()
+            .checked_add(diagnostics.len())
+            .ok_or("source role table overflow")?,
+    )?;
+    for row in roles {
+        language_role_write(out, row)?;
+    }
+    for row in diagnostics {
+        out.u8(SPELLED_DIAGNOSTIC)?;
+        out.string(row.role.spelling())?;
+        address_write(out, row.declaration)?;
+    }
+    Ok(())
+}
+/// The language rows of a version-thirteen role table; its diagnostic rows,
+/// which must follow every language row, are appended to `diagnostics`.
+pub(super) fn language_roles_read(
+    read: &mut Input<'_, '_>,
+    diagnostics: &mut Vec<s::DiagnosticBinding>,
+) -> Result<Vec<s::RoleBinding>, &'static str> {
+    let count = read
+        .reader
+        .count(crate::support::crates::MAX_COMPONENTS, 9)?;
+    read.reader.atoms(count)?;
+    read.reserve(count.saturating_mul(size_of::<s::RoleBinding>()))?;
+    let mut roles = Vec::with_capacity(count);
+    for _ in 0..count {
+        let tag = read.reader.u8()?;
+        if tag == SPELLED_DIAGNOSTIC {
+            let role = s::DiagnosticRole::from_spelling(read.reader.text(MAX_DIAGNOSTIC_SPELLING)?)
+                .ok_or("unknown source diagnostic identity spelling")?;
+            read.reserve(size_of::<s::DiagnosticBinding>())?;
+            diagnostics.push(s::DiagnosticBinding {
+                role,
+                declaration: address_read(read)?,
+            });
+        } else if !diagnostics.is_empty() {
+            return Err("source language role follows a diagnostic identity");
+        } else {
+            roles.push(tagged_role_read(read, tag)?);
+        }
+    }
+    Ok(roles)
+}
 pub(super) fn role_read(read: &mut Input<'_, '_>) -> Result<s::RoleBinding, &'static str> {
-    let role = match read.reader.u8()? {
+    let tag = read.reader.u8()?;
+    tagged_role_read(read, tag)
+}
+fn tagged_role_read(read: &mut Input<'_, '_>, tag: u8) -> Result<s::RoleBinding, &'static str> {
+    let role = match tag {
         0 => LangItem::Sized,
         1 => LangItem::MetaSized,
         2 => LangItem::PointeeSized,

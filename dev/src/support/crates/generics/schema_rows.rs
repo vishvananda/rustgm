@@ -211,6 +211,59 @@ pub enum Type {
     /// Version thirteen: the unsized slice `[T]`, reachable only behind a
     /// reference or pointer recipe. Each consumer proves its element sized.
     Slice(TypeRef),
+    /// Version thirteen: a pattern type over `base`. Each consumer re-proves
+    /// the constraint against its own base; no layout or niche fact travels.
+    Pattern {
+        base: TypeRef,
+        constraint: PatternConstraint,
+    },
+}
+/// A transported pattern constraint. A range's endpoints are held out of line
+/// in [`ColdColumns::pattern_ranges`], so a type row stays small.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum PatternConstraint {
+    /// `!null`, over a raw pointer base.
+    NonNull,
+    /// A canonical inclusive scalar interval, over an integer or char base.
+    Range(PatternRangeRef),
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct PatternRangeRef(pub u32);
+/// A canonical inclusive interval in raw target-width bits. A signed interval
+/// whose start follows its end in value order wraps through the base's
+/// maximum, as a connected `A | B` alternative does.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct PatternRange {
+    pub start: u128,
+    pub end: u128,
+}
+/// Version thirteen's transported diagnostic identities. The table is closed:
+/// each admitted spelling is a separate, reviewed admission.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DiagnosticRole {
+    NonNull,
+}
+impl DiagnosticRole {
+    pub const ALL: [Self; 1] = [Self::NonNull];
+    #[must_use]
+    pub const fn spelling(self) -> &'static str {
+        match self {
+            Self::NonNull => "NonNull",
+        }
+    }
+    #[must_use]
+    pub fn from_spelling(spelling: &str) -> Option<Self> {
+        Self::ALL
+            .into_iter()
+            .find(|role| role.spelling() == spelling)
+    }
+}
+/// A diagnostic identity row. It follows every language role row in the role
+/// table, outside the policy's role range.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct DiagnosticBinding {
+    pub role: DiagnosticRole,
+    pub declaration: DeclarationAddress,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TraitApplication {
@@ -463,6 +516,10 @@ pub type SourceRows = Rows;
 pub struct ColdColumns {
     pub associated_definitions: Vec<AssociatedDefinition>,
     pub enums: EnumColumns,
+    /// Version thirteen: each range pattern's endpoints, in type-row order.
+    pub pattern_ranges: Vec<PatternRange>,
+    /// Version thirteen: diagnostic identities, after the language roles.
+    pub diagnostics: Vec<DiagnosticBinding>,
     pub(crate) bodies: Option<std::sync::Arc<bodymap::Lookup>>,
 }
 static EMPTY_COLD: ColdColumns = ColdColumns {
@@ -472,6 +529,8 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
         variants: Vec::new(),
         fields: Vec::new(),
     },
+    pattern_ranges: Vec::new(),
+    diagnostics: Vec::new(),
     bodies: None,
 };
 impl ColdColumns {
@@ -480,7 +539,11 @@ impl ColdColumns {
     }
     #[must_use]
     pub fn is_empty(&self) -> bool {
-        self.associated_definitions.is_empty() && self.enums.is_empty() && self.bodies.is_none()
+        self.associated_definitions.is_empty()
+            && self.enums.is_empty()
+            && self.pattern_ranges.is_empty()
+            && self.diagnostics.is_empty()
+            && self.bodies.is_none()
     }
 }
 impl Rows {
@@ -495,6 +558,14 @@ impl Rows {
     #[must_use]
     pub fn associated_definitions(&self) -> &[AssociatedDefinition] {
         &self.cold().associated_definitions
+    }
+    #[must_use]
+    pub fn pattern_ranges(&self) -> &[PatternRange] {
+        &self.cold().pattern_ranges
+    }
+    #[must_use]
+    pub fn diagnostics(&self) -> &[DiagnosticBinding] {
+        &self.cold().diagnostics
     }
     /// The cold groups, allocated on first write. A writer accounts for
     /// `size_of::<ColdColumns>()` before the first call.

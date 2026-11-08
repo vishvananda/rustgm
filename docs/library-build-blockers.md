@@ -5,6 +5,42 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [NonNull and pattern types](parallel/nonnull-patterns.md) transports
+core's `NonNull` in version 13. Its field's pattern type travels as type recipe
+tag 16: `!null` over a raw pointer, or a closed interval of raw bits over an
+integer or char. Its `rustc_diagnostic_item` travels as role row tag 254,
+spelled from a closed table. No layout or niche fact travels. Every consumer
+re-proves the pattern over its own base through the local interning rules,
+and a wrapped interval becomes the signed connected alternative. The exporter
+fences a `!null` pattern over a type parameter, which no export reaches today.
+Versions 10 and 12 reject the identity by name instead of dropping it. The
+identity run flips no existing version 10 or 12 export.
+
+- Four clients run natively and exit 42: `Option`-like enums over
+  `NonNull<u8>`, `NonNull<str>`, a local struct over `NonNull<u8>` and
+  `NonZeroU8`. Five layout witnesses give rustc's size for each transported
+  range type.
+- Lane A's `32e0d8259` cleared the selection loop this provider first hit; no
+  selection code changes here.
+- Open item, frontend layout, with an owner assigned when bodies reach it:
+  **niches: scalar ranges and placement through non-transparent struct fields
+  (rustc's unguaranteed niche use).**
+  - Four clients that rustc accepts are rejected by name ("scalar pattern
+    enum niches require their complete ABI profile").
+  - A local struct over `NonNull<u8>` gets the tagged 16-byte `Option`
+    layout where rustc uses 8.
+  - Risk: `size_of` differs from rustc's without any diagnostic wherever a
+    runtime size is compared, and core's const size asserts will fail loudly
+    at const-eval once bodies are entered. A grep of the pinned core found no
+    such assert over a non-transparent struct with a niche field. Its
+    `Option`/`Result` asserts (`io/error/repr_bitpacked.rs:348-351`) are over
+    a `repr(transparent)` wrapper of `NonNull`, which the current walk covers.
+- Open transport item, queued for Lane C after item 5b: fn-item-to-fn-pointer
+  reification in exported bodies ("source rvalue requires a complete wider
+  transport row").
+- `Location` follows auto traits and item 5b (range helper roles, module
+  const items).
+
 Lane A [census batch 12](parallel/census-batch12.md) repairs census 12's
 record and batch 10's `[const]` supertrait gap, on main `ad05f4d61`. Both
 repairs follow rustc's split: constness lives in const conditions, not in

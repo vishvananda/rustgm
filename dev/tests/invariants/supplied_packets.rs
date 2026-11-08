@@ -288,11 +288,15 @@ fn denied(
 }
 #[test]
 fn functions_reader_denies_each_wider_tag_before_allocation() {
-    for tag in [4, 5] {
-        denied(&[tag], |read| recipe_columns::type_read(read).map(|_| ()));
+    // Version thirteen's pattern recipe and diagnostic identity tags are
+    // wider tags too.
+    for tag in [4, 5, 16] {
+        denied(&[tag], |read| {
+            recipe_columns::type_read(read, &mut Vec::new()).map(|_| ())
+        });
     }
     denied(&[3], |read| recipe_columns::region_read(read).map(|_| ()));
-    for tag in [7, 8] {
+    for tag in [7, 8, 254] {
         denied(&[tag], |read| contract_columns::role_read(read).map(|_| ()));
     }
     for tag in [1, 2] {

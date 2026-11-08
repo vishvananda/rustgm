@@ -556,6 +556,9 @@ impl<M: Storage> Worklist<M> {
                     Demand::Blocked(dependency) => return Ok(Demand::Blocked(dependency)),
                 }
             }
+            s::Type::Pattern { base, constraint } => {
+                return self.pattern(port, store, base, constraint, budget);
+            }
             s::Type::Function(signature) => {
                 signature_shapes::check(port.rows(), None, signature)?;
                 let frame = port.rows().binders[signature.binder.0 as usize];
@@ -637,6 +640,96 @@ impl<M: Storage> Worklist<M> {
         }))
     }
 }
+impl<M: Storage> Worklist<M> {
+    /// Version thirteen: a pattern over its completed base. The constraint is
+    /// re-proved against this consumer's own base: `!null` needs a raw
+    /// pointer, and a range interval is interned through the same checks as a
+    /// local pattern. A signed interval whose start follows its end in value
+    /// order is the connected `MIN..=end | start..=MAX` alternative.
+    fn pattern<'rows, B: Budget, P: Port<'rows, B>>(
+        &self,
+        port: &P,
+        store: &mut Store,
+        base: g::TypeRef,
+        constraint: s::PatternConstraint,
+        budget: &mut B,
+    ) -> Result<Demand<TypeId>, Error> {
+        let base = self.child(base)?;
+        let constraint = match constraint {
+            s::PatternConstraint::NonNull => {
+                if !matches!(store.kind(base), Some(Kind::Pointer { .. })) {
+                    return Err(error(
+                        "imported non-null pattern requires a raw pointer base",
+                    ));
+                }
+                crate::types::Constraint::NonNull
+            }
+            s::PatternConstraint::Range(reference) => {
+                let range = *port
+                    .rows()
+                    .pattern_ranges()
+                    .get(reference.0 as usize)
+                    .ok_or_else(|| error("source pattern has no actual range row"))?;
+                crate::types::Constraint::ScalarRange(scalar_range(store, base, range, budget)?)
+            }
+        };
+        store
+            .intern(Kind::Pattern { base, constraint })
+            .map(Demand::Ready)
+            .map_err(error)
+    }
+}
+#[cfg(test)]
+#[path = "../../../../tests/invariants/wrapped_intervals.rs"]
+mod interval_tests;
+/// Interns one transported interval, paying the store's own interning work
+/// and growth to the consumer's budget. A budget refusal keeps its own error.
+fn scalar_range(
+    store: &mut Store,
+    base: TypeId,
+    range: s::PatternRange,
+    budget: &mut impl Budget,
+) -> Result<crate::types::RangeId, Error> {
+    let refusal = std::cell::Cell::new(None);
+    let budget = std::cell::RefCell::new(budget);
+    let pay = |steps, bytes| {
+        let mut budget = budget.borrow_mut();
+        budget
+            .charge(steps)
+            .and_then(|()| budget.reserve(bytes))
+            .map_err(|refused| {
+                refusal.set(Some(refused));
+                "imported scalar pattern exhausted its budget"
+            })
+    };
+    let interval = |start, end| crate::types::ScalarRange { base, start, end };
+    // The base's source-order bounds in raw bits. A start after its end in
+    // that order is a wrapped interval; only a signed base may carry one, and
+    // the store's alternative check names every other base.
+    let bounds = match store.kind(base) {
+        Some(Kind::Primitive(crate::types::Primitive::Char)) => Some((0, 0, 0x0010_ffff)),
+        Some(Kind::Primitive(primitive)) => primitive.integer().map(|(signed, width)| {
+            let maximum = u128::MAX >> (128 - width);
+            if signed {
+                let bias = 1_u128 << (width - 1);
+                (bias, bias, bias - 1)
+            } else {
+                (0, 0, maximum)
+            }
+        }),
+        _ => None,
+    };
+    let result = match bounds {
+        Some((bias, minimum, maximum)) if (range.start ^ bias) > (range.end ^ bias) => store
+            .intern_scalar_or(
+                interval(minimum, range.end),
+                interval(range.start, maximum),
+                &pay,
+            ),
+        _ => store.intern_scalar_range(interval(range.start, range.end), &pay),
+    };
+    result.map_err(|message| refusal.take().unwrap_or_else(|| error(message)))
+}
 impl Worklist<Vec<Option<TypeId>>> {
     fn into_complete(self, budget: &mut impl Budget) -> Result<Vec<TypeId>, Error> {
         // The final dense vector may coexist with the optional memo during
@@ -712,7 +805,8 @@ fn next(
             referent: child, ..
         }
         | s::Type::RawPointer { pointee: child, .. }
-        | s::Type::Slice(child) => (cursor == 0).then_some(child),
+        | s::Type::Slice(child)
+        | s::Type::Pattern { base: child, .. } => (cursor == 0).then_some(child),
         s::Type::Tuple(elements) => elements
             .slice(&rows.roots)
             .map_err(error)?

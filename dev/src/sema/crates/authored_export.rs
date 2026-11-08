@@ -503,6 +503,7 @@ impl Stage {
         }
         stage.functions(report, facts)?;
         stage.implementations(facts)?;
+        stage.diagnostic_roles(report)?;
         stage.install_private_symbols(facts, identity)?;
         Ok(stage)
     }

@@ -1,0 +1,7 @@
+#![feature(no_core)]
+#![no_core]
+extern crate base;
+enum Opt<T> { None, Some(T) }
+struct H(base::NonNull<u8>);
+#[unsafe(no_mangle)]
+pub extern "C" fn entry() -> i32 { let o: Opt<H> = Opt::None; match o { Opt::None => 42, Opt::Some(_) => 7 } }

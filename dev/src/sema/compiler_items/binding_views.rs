@@ -293,6 +293,7 @@ fn reserve_roles(
         .ok_or("source role range is outside its validated payload")?;
     let mut result = [None; LangItem::ALL.len()];
     let mut attributes = [crate::resolve::bindings::HeaderAttributes::EMPTY; LangItem::ALL.len()];
+    diagnostic_roles(descriptor, origins, work)?;
     for role in roles {
         charge(work, 1)?;
         if role.declaration.artifact != s::ArtifactRef(0) {
@@ -341,6 +342,33 @@ fn reserve_roles(
         }
     }
     Ok((result, attributes))
+}
+
+/// Each transported diagnostic identity re-proves the local rule over this
+/// consumer's own declaration remap: the provider's own struct. Its packet
+/// row is the record a later consumer reads.
+fn diagnostic_roles(
+    descriptor: SourceDescriptor<'_>,
+    origins: &Origins,
+    work: &mut usize,
+) -> Result<(), &'static str> {
+    for row in descriptor.rows().diagnostics() {
+        charge(work, 1)?;
+        if row.declaration.artifact != s::ArtifactRef(0) {
+            return Err("source diagnostic identity belongs to a foreign provider");
+        }
+        let definition =
+            origins.definition_at(descriptor.provider(), row.declaration.declaration)?;
+        let declaration = origins.declaration(definition)?;
+        origins
+            .validate_declaration(declaration, definition, DefKind::Struct)
+            .map_err(|_| match row.role {
+                s::DiagnosticRole::NonNull => {
+                    "imported NonNull diagnostic item requires its nominal declaration profile"
+                }
+            })?;
+    }
+    Ok(())
 }
 
 fn role_parent(

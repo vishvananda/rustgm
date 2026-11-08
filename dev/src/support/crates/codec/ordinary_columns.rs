@@ -258,7 +258,7 @@ fn encode_profile(
     write(out, &rows.slots, owner_rows::slot_write)?;
     write(out, &rows.scopes, owner_rows::scope_write)?;
     write(out, &rows.binders, owner_rows::binder_write)?;
-    write(out, &rows.types, recipe_columns::type_write)?;
+    recipe_columns::types_write(out, &rows.types, rows.pattern_ranges())?;
     write_copy(out, &rows.roots, recipe_columns::root_write)?;
     write(out, &rows.regions, recipe_columns::region_write)?;
     write_copy(out, &rows.arguments, recipe_columns::argument_write)?;
@@ -287,7 +287,9 @@ fn encode_profile(
     write_copy(out, &rows.members, owner_rows::declaration_ref_write)?;
     write(out, &rows.member_links, contract_columns::member_write)?;
     if rows.descriptor().profile().body_nodes() {
-        write(out, &rows.roles, contract_columns::language_role_write)?;
+        contract_columns::language_roles_write(out, &rows.roles, rows.diagnostics())?;
+    } else if !rows.diagnostics().is_empty() {
+        return Err("source diagnostic identity requires a language role table");
     } else if rows.descriptor().profile().conversion_roles() {
         write(out, &rows.roles, contract_columns::conversion_role_write)?;
     } else {
@@ -400,7 +402,9 @@ fn decode_profile_with(
         base,
         profile,
     };
-    let rows = s::SourceRows {
+    let mut ranges = Vec::new();
+    let mut diagnostics = Vec::new();
+    let mut rows = s::SourceRows {
         associated_types: Vec::new(),
         cold: None,
         projections: Vec::new(),
@@ -419,7 +423,9 @@ fn decode_profile_with(
         slots: read.list(crates::MAX_COMPONENTS, 14, owner_rows::slot_read)?,
         scopes: read.list(crates::MAX_COMPONENTS, 17, owner_rows::scope_read)?,
         binders: read.list(crates::MAX_COMPONENTS, 10, owner_rows::binder_read)?,
-        types: read.list(crates::MAX_COMPONENTS, 2, recipe_columns::type_read)?,
+        types: read.list(crates::MAX_COMPONENTS, 2, |read| {
+            recipe_columns::type_read(read, &mut ranges)
+        })?,
         roots: read.list(crates::MAX_COMPONENTS, 4, recipe_columns::root_read)?,
         regions: read.list(crates::MAX_COMPONENTS, 1, recipe_columns::region_read)?,
         arguments: read.list(crates::MAX_COMPONENTS, 5, recipe_columns::argument_read)?,
@@ -447,7 +453,11 @@ fn decode_profile_with(
         formals: read.list(crates::MAX_COMPONENTS, 5, contract_columns::formal_read)?,
         members: read.list(crates::MAX_COMPONENTS, 4, owner_rows::declaration_ref_read)?,
         member_links: read.list(crates::MAX_COMPONENTS, 2, contract_columns::member_read)?,
-        roles: read.list(crates::MAX_COMPONENTS, 9, contract_columns::role_read)?,
+        roles: if read.profile.body_nodes() {
+            contract_columns::language_roles_read(&mut read, &mut diagnostics)?
+        } else {
+            read.list(crates::MAX_COMPONENTS, 9, contract_columns::role_read)?
+        },
         originals: read.list(crates::MAX_FUNCTIONS, 70, operation_columns::original_read)?,
         body_inputs: read.list(crates::MAX_FUNCTIONS, 30, relation_columns::body_read)?,
         body_units: if read.regional() {
@@ -456,6 +466,11 @@ fn decode_profile_with(
             Vec::new()
         },
     };
+    if !ranges.is_empty() || !diagnostics.is_empty() {
+        let cold = read.cold(&mut rows)?;
+        cold.pattern_ranges = ranges;
+        cold.diagnostics = diagnostics;
+    }
     Ok((rows, read.bytes))
 }
 

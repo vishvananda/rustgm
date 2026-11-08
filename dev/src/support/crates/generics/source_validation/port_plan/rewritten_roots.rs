@@ -21,6 +21,11 @@ enum Recipe {
         child: Key,
     },
     Slice(Key),
+    /// Version thirteen: a pattern follows its one base child.
+    Pattern {
+        constraint: s::PatternConstraint,
+        child: Key,
+    },
     Function(g::Signature),
     Nominal(s::DeclarationAddress, g::Range),
     Projection(s::ProjectionRef),
@@ -70,7 +75,8 @@ impl Arena {
                         Recipe::Alias(child)
                         | Recipe::Reference { child, .. }
                         | Recipe::Pointer { child, .. }
-                        | Recipe::Slice(child) => {
+                        | Recipe::Slice(child)
+                        | Recipe::Pattern { child, .. } => {
                             self.push(pending, Task::Enter(child), work)?;
                         }
                         Recipe::Nominal(declaration, arguments) => {
@@ -120,13 +126,8 @@ impl Arena {
                                 work,
                             )?
                         }
-                        Recipe::Pointer { mutable, child } => {
-                            let pointee = self.child(child, work)?;
-                            self.intern(Node::RawPointer { mutable, pointee }, work)?
-                        }
-                        Recipe::Slice(child) => {
-                            let element = self.child(child, work)?;
-                            self.intern(Node::Slice(element), work)?
+                        Recipe::Pointer { .. } | Recipe::Slice(_) | Recipe::Pattern { .. } => {
+                            self.single_child(recipe, work)?
                         }
                         Recipe::Nominal(declaration, arguments) => {
                             let regions = Regions::of(declaration);
@@ -299,6 +300,10 @@ impl Arena {
                 s::Type::Slice(element) => {
                     Recipe::Slice(uses::key(domains, element, key.rewrite, key.caller, work)?)
                 }
+                s::Type::Pattern { base, constraint } => Recipe::Pattern {
+                    constraint,
+                    child: uses::key(domains, base, key.rewrite, key.caller, work)?,
+                },
                 s::Type::FunctionItem(application) if key.rewrite == Rewrite::Original => {
                     Recipe::Leaf(Node::FunctionItem(application))
                 }
@@ -316,6 +321,23 @@ impl Arena {
                 }
             },
         )
+    }
+    /// Version thirteen's raw pointer, slice and pattern nodes over their one
+    /// completed child.
+    fn single_child(&mut self, recipe: Recipe, work: &mut Work) -> Result<NodeId, &'static str> {
+        let node = match recipe {
+            Recipe::Pointer { mutable, child } => Node::RawPointer {
+                mutable,
+                pointee: self.child(child, work)?,
+            },
+            Recipe::Slice(child) => Node::Slice(self.child(child, work)?),
+            Recipe::Pattern { constraint, child } => Node::Pattern {
+                base: self.child(child, work)?,
+                constraint,
+            },
+            _ => return Err("source single-child recipe changed its form"),
+        };
+        self.intern(node, work)
     }
     fn child(&self, key: Key, work: &mut Work) -> Result<NodeId, &'static str> {
         work.charge(1)?;

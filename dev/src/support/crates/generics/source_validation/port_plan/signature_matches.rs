@@ -2,7 +2,7 @@
 use super::{
     DomainIndex, Work,
     nodes::{Arena, Node, NodeId, Region, Rewrite},
-    uses,
+    s, uses,
 };
 use crate::support::{
     crates::owner_catalog::{BodyRef, DeclarationRef},
@@ -119,22 +119,9 @@ impl Arena {
                 }
                 ((ac, bc), None)
             }
-            (
-                Node::RawPointer {
-                    mutable: a,
-                    pointee: ac,
-                },
-                Node::RawPointer {
-                    mutable: b,
-                    pointee: bc,
-                },
-            ) => {
-                if a != b {
-                    return Err("source signature raw-pointer mutability differs");
-                }
-                ((ac, bc), None)
+            (Node::RawPointer { .. } | Node::Slice(_) | Node::Pattern { .. }, _) => {
+                (single_child(domains, nodes)?, None)
             }
-            (Node::Slice(ac), Node::Slice(bc)) => ((ac, bc), None),
             (
                 Node::Nominal {
                     declaration: a,
@@ -262,4 +249,62 @@ fn opened_region(
         .get(slot as usize)
         .ok_or("source signature comparison omitted a complete late argument")?;
     uses::region(domains, arena, region, Rewrite::Original, work)
+}
+/// Version thirteen's raw pointer, slice and pattern nodes compare their own
+/// form, then their one child.
+fn single_child(
+    domains: &DomainIndex<'_, '_>,
+    nodes: (Node, Node),
+) -> Result<(NodeId, NodeId), &'static str> {
+    match nodes {
+        (
+            Node::RawPointer {
+                mutable: a,
+                pointee: ac,
+            },
+            Node::RawPointer {
+                mutable: b,
+                pointee: bc,
+            },
+        ) => {
+            if a != b {
+                return Err("source signature raw-pointer mutability differs");
+            }
+            Ok((ac, bc))
+        }
+        (Node::Slice(ac), Node::Slice(bc)) => Ok((ac, bc)),
+        (
+            Node::Pattern {
+                base: ac,
+                constraint: a,
+            },
+            Node::Pattern {
+                base: bc,
+                constraint: b,
+            },
+        ) => {
+            if !same_constraint(domains, a, b) {
+                return Err("source signature pattern constraint differs");
+            }
+            Ok((ac, bc))
+        }
+        _ => Err("source signature differs after complete application and late opening"),
+    }
+}
+/// Two pattern constraints agree when both are `!null` or both name the same
+/// canonical interval, whichever range rows carry it.
+fn same_constraint(
+    domains: &DomainIndex<'_, '_>,
+    first: s::PatternConstraint,
+    second: s::PatternConstraint,
+) -> bool {
+    let ranges = domains.headers.rows().pattern_ranges();
+    match (first, second) {
+        (s::PatternConstraint::NonNull, s::PatternConstraint::NonNull) => true,
+        (s::PatternConstraint::Range(a), s::PatternConstraint::Range(b)) => {
+            let (a, b) = (ranges.get(a.0 as usize), ranges.get(b.0 as usize));
+            a.is_some() && a == b
+        }
+        _ => false,
+    }
 }
