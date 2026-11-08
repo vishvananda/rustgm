@@ -6385,6 +6385,17 @@ they reject every nominal lifetime. Methods with early lifetimes or lifetime bou
 methods and methods of trait impls that capture lifetimes stay rejected by
 name. Packets without such methods keep their exact bytes.
 
+A version-thirteen original may also write, or borrow mutably, through a
+mutable dereference reached from an immutable owning local, as rustc admits
+`*c.n = v` for an immutable `c: Count<'_>` whose field `n` is `&mut u8`. A
+path is unique when it is a local, a temporary, a field of a unique path or a
+mutable dereference of a unique path. A place is writable when it is a
+mutable local, a field of a writable place or a mutable dereference of a
+unique path. Older profiles keep requiring a writable parent projection under
+every dereference and reject such a write by name. No write proof is
+transported: each consumer recomputes write access over the rebuilt places,
+and its own borrow checker proves every write and loan.
+
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core
 profile. A crate that exports no macros writes no envelope and keeps its exact

@@ -1,0 +1,129 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+ "providers": [
+  {
+   "file": "spec/unique-writes/provider.rs",
+   "sha256": "33aa95d6591c7886f218bddeb88cf8ef905a677ce5d28866da9a126463affe6e"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "development_note": "the failing write shape and the older-profile control's diagnostics were probed with the baseline during development (generated files under obj/parallel/impl-regions/t3probe, not these fixtures); the fixtures, their outcomes and every generated and wire control below were written down before any rustc or RustGM run of these files",
+ "cases": [
+  {
+   "file": "spec/unique-writes/bump.rs",
+   "provider": "spec/unique-writes/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "33f36b9928de6c288cf7a4e4dda435aa947c574cc249ecce352a5eb01a9154a2"
+  },
+  {
+   "file": "spec/unique-writes/after.rs",
+   "provider": "spec/unique-writes/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "e8167ebe75de8bb73e2a70414cfdbe344f33a7198d557c606162c2e299ff88ec"
+  },
+  {
+   "file": "spec/unique-writes/lend.rs",
+   "provider": "spec/unique-writes/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "a83019257f0164c0735307297a81d5f4272a9267cd302246d562562bfa5b2827"
+  },
+  {
+   "file": "spec/unique-writes/set.rs",
+   "provider": "spec/unique-writes/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "e1b095d8b668d66ed941c3b6a96c22dd84e506cef1d569b6b475df880333fb17"
+  },
+  {
+   "file": "spec/unique-writes/put.rs",
+   "provider": "spec/unique-writes/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "e4d38e537e05baf8fd552a96454c021dd53cd832c3db97bfdd9b1521dd22f1d6"
+  },
+  {
+   "file": "spec/unique-writes/deep.rs",
+   "provider": "spec/unique-writes/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "22c50b32d3aa3bf2968665a6e5142af63fd0f720ed20e7a7de393c0b397f995d"
+  },
+  {
+   "file": "spec/unique-writes/shared-path.rs",
+   "provider": "spec/unique-writes/provider.rs",
+   "accepted": false,
+   "rustc": "E0594",
+   "rustgm": "cannot assign through a shared reference",
+   "sha256": "fab1be215b18493b92cc56e428d4035ce9db016b8d39fe513fd554ea1ab698db"
+  },
+  {
+   "file": "spec/unique-writes/field-write.rs",
+   "provider": "spec/unique-writes/provider.rs",
+   "accepted": false,
+   "rustc": "E0594",
+   "rustgm": "cannot assign through an immutable local",
+   "sha256": "48d526d6d7470cd1fe45774646735e32d7bb7dcc583af6b5fef14f84f9ae40f9"
+  }
+ ],
+ "generated_controls": [
+  {
+   "control": "the full provider exported under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected by name with `named, associated or generic alias transport requires its wider profile`, from the shared lifetime-nominal lines"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `pub struct Own { pub r: &'static mut u8 }` and `pub fn poke(o: Own) { *o.r = 42; }`",
+   "expected": "rejected under module-branches-v12 and module-nominals-v10 with main's `source operation omitted a required nontrivial formation input`, byte for byte the baseline's; exported under version 13, which the baseline rejects with `source Store writes through an immutable dereference`"
+  },
+  {
+   "control": "6, 24 and 96 generated functions `pub fn wNNN(c: Count<'_>) { *c.n = 42; }` after the lifetime-nominal provider and `pub struct Count<'a> { pub n: &'a mut u8 }`, and one client calling `w005`",
+   "expected": "packet bytes grow exactly linearly; the client LowIR stays bounded"
+  }
+ ],
+ "wire_controls": [
+  {
+   "mutation": "none: a generated minimal provider (the lifetime-nominal provider, `pub struct Count<'a> { pub n: &'a mut u8 }` and `pub fn poke(c: Count<'_>) { *c.n = 42; }`) and a client that calls `poke` and reads the written byte",
+   "expected": "accepted",
+   "amended": {
+    "change": "the generated `Count` gains a leading `pub z: u8` field, and the client passes `z: 0`, so that `poke`'s field projection (ordinal 1) and its dereference are the only such rows beside the shared lines' projections",
+    "when": "while writing the integration control, before any run of it",
+    "expected": "unchanged"
+   }
+  },
+  {
+   "mutation": "`poke`'s Store retargeted from `*c.n` to the immutable owning field `c.n`",
+   "expected": "source Store writes through an immutable dereference"
+  },
+  {
+   "mutation": "`poke`'s dereference row claims a shared dereference",
+   "expected": "source dereference changed its referent, lifetime or mutability"
+  },
+  {
+   "mutation": "relabelled version 12",
+   "expected": "unknown source declaration kind"
+  },
+  {
+   "mutation": "every strict prefix",
+   "expected": "fails to decode"
+  }
+ ],
+ "native": {
+  "expected": "all six accepted clients exit 42 natively, as rustc's do",
+  "observed": "as declared: all six exit 42 with empty stdout"
+ },
+ "oracle": {
+  "round_1": "rustc 1.98.0 (88d9e12ae 2026-08-18): the provider compiles; bump, after, lend, set, put and deep exit 42; shared-path and field-write fail with E0594, as declared"
+ },
+ "observed": {
+  "candidate": "all eight outcomes as declared",
+  "generated_controls": "as declared",
+  "wire_controls": "as declared, with the recorded `z` field amendment"
+ }
+}

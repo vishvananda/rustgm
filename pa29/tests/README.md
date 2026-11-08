@@ -285,3 +285,15 @@ method packet under `spec/impl-region-methods/`. The packet holds:
   and slot rows and a 6/24/96 scaling control.
 
 The `crate_linking::lifetime_methods` integration controls consume it.
+
+`unique-write-outcomes.json` freezes the version-thirteen unique-path write
+packet under `spec/unique-writes/`. The packet holds:
+
+- writes and a mutable reborrow through a `&mut` field of an immutable
+  by-value binding, a method with an immutable by-value receiver and a path
+  through two unique references;
+- six accepted clients and two opponents (both E0594);
+- generated controls: an older-profile write gate, forged Store and
+  dereference rows and a 6/24/96 scaling control.
+
+The `crate_linking::unique_writes` integration controls consume it.

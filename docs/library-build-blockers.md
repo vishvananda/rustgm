@@ -16,7 +16,11 @@ escapes, invariant shrinking, E0515 and E0597 cases, as rustc does. Thirteen
 clients run natively and exit 42. Trait impls that capture lifetimes, early
 or bounded method lifetimes and const inherent methods stay fenced by name.
 Core's `Arguments::from_str` is a const inherent method of
-`impl<'a> Arguments<'a>`, so the const fence is on the panic path.
+`impl<'a> Arguments<'a>`, so the const fence is on the panic path. A second
+checkpoint, [writes through unique references](parallel/unique-writes-transport.md),
+fixes gap 6 under version 13: a write or mutable reborrow through a `&mut`
+field of an immutable by-value binding is admitted as rustc admits it, and
+older profiles keep main's gate by name. Six clients run natively.
 
 Lane B [override bounds, region-binding sugar and impl header
 projections](parallel/core-sites-reexports.md) clears the last four "associated

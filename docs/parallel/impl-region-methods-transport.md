@@ -183,4 +183,5 @@ first candidate round is `candidate1.log` beside it. The identity receipt is
 - Method region bounds and early method lifetimes (`where 'a: 'b`).
 - Trait impls that capture lifetimes.
 - Writes through a `&mut` field of an immutable by-value binding (gap 6).
-  The `Cell::set` fixture takes `mut self` to stay clear of it.
+  The `Cell::set` fixture takes `mut self` to stay clear of it. The
+  [unique-write checkpoint](unique-writes-transport.md) fixes it.

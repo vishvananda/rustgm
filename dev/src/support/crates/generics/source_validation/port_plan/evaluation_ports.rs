@@ -9,7 +9,16 @@ use super::{
 pub(super) struct Ports {
     pub evaluated: Vec<Option<u32>>,
     pub requested: Vec<Option<u32>>,
-    writable: Vec<bool>,
+    access: Vec<Access>,
+}
+/// A projection's write access. `writable` admits a write or a mutable borrow
+/// of the place itself. `unique` holds when every dereference on its path is
+/// mutable: rustc then admits a write through a mutable dereference of it even
+/// where its root local is immutable.
+#[derive(Clone, Copy, Default)]
+struct Access {
+    writable: bool,
+    unique: bool,
 }
 impl Ports {
     pub(super) fn new(
@@ -21,13 +30,13 @@ impl Ports {
         let projections = original.projections.len();
         let bytes = size_of::<Self>()
             .saturating_add(values.saturating_mul(2 * size_of::<Option<u32>>()))
-            .saturating_add(projections);
+            .saturating_add(projections.saturating_mul(size_of::<Access>()));
         arena.held_scratch(bytes, work)?;
         work.charge(values.saturating_mul(2).saturating_add(projections))?;
         let mut ports = Self {
             evaluated: vec![None; values],
             requested: vec![None; values],
-            writable: vec![false; projections],
+            access: vec![Access::default(); projections],
         };
         for statement in &original.statements {
             work.charge(1)?;
@@ -79,7 +88,10 @@ impl Ports {
                         ordinal,
                         work,
                     )?;
-                    self.writable[index] = self.writable(original, projection.base, work)?;
+                    self.access[index] = Access {
+                        writable: self.writable(original, projection.base, work)?,
+                        unique: self.unique(projection.base),
+                    };
                     continue;
                 }
                 s::ProjectionKind::Dereference { region, mutable } => (region, mutable),
@@ -105,11 +117,19 @@ impl Ports {
             {
                 return Err("source dereference changed its referent, lifetime or mutability");
             }
-            self.writable[index] = mutable
-                && match projection.base {
-                    s::Place::Local(_) | s::Place::Temporary(_) => true,
-                    s::Place::Projection(parent) => self.writable[parent as usize],
-                };
+            // Version thirteen follows rustc: a mutable dereference is writable
+            // through a unique path even from an immutable owning local. Older
+            // profiles keep requiring a writable parent projection.
+            let path = match projection.base {
+                s::Place::Projection(parent) if !builder.domains.bodies => {
+                    self.access[parent as usize].writable
+                }
+                base => self.unique(base),
+            };
+            self.access[index] = Access {
+                writable: mutable && path,
+                unique: mutable && path,
+            };
         }
         Ok(())
     }
@@ -141,12 +161,26 @@ impl Ports {
                 .locals
                 .get(index as usize)
                 .map(|local| local.mutable),
-            s::Place::Projection(index) => self.writable.get(index as usize).copied(),
+            s::Place::Projection(index) => self
+                .access
+                .get(index as usize)
+                .map(|access| access.writable),
             s::Place::Temporary(_) => {
                 return Err("source direct temporary writes require wider proof");
             }
         }
         .ok_or("source writable place is foreign to its original body")
+    }
+    /// Locals and temporaries own their values uniquely; a projection's path
+    /// is recorded before any projection that names it.
+    fn unique(&self, place: s::Place) -> bool {
+        match place {
+            s::Place::Local(_) | s::Place::Temporary(_) => true,
+            s::Place::Projection(parent) => self
+                .access
+                .get(parent as usize)
+                .is_some_and(|access| access.unique),
+        }
     }
     pub(super) fn site(&self, value: u32, work: &mut Work) -> Result<u32, &'static str> {
         work.charge(1)?;

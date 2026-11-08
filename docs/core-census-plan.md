@@ -194,6 +194,51 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
 - **Forged shared region rows** may be rejected by the earlier Self-identity
   or field-substitution check. A forgery must be rejected by name, but it
   needs no check of its own.
+- **After Lane C's [lifetime-capturing methods](parallel/impl-region-methods-transport.md)
+  and [unique-reference writes](parallel/unique-writes-transport.md)**,
+  2026-11-08:
+  - **Tuple and unit struct constructors are variant declarations (tag 11)
+    parented by their struct**, bound in the struct's module value namespace,
+    with tuple fields named by their ordinals. There is no new tag. Local sema
+    already treats a struct's constructor as the constructor of its single
+    `Variant`, and Lane B's value-namespace variant re-exports use the same
+    row.
+    - The consumer re-derives everything from the parent it installed:
+      - a struct-parented variant must be that struct's only variant;
+      - it must have tuple or unit shape and carry the struct's name;
+      - a record struct has no constructor.
+    - The constructor's visibility is computed as rustc computes it: the
+      narrowest of the struct's and its fields' visibilities, narrowed to the
+      defining crate by `#[non_exhaustive]`. It is never taken from the wire.
+    - Forgeries include:
+      - a record struct with a constructor;
+      - a second variant under a struct;
+      - an enum variant claiming a struct parent;
+      - a widened constructor visibility;
+      - every strict prefix.
+    - `struct T();` stays fenced by name until a demanded use appears.
+    - Cost: every consumer path that reads a variant dispatches on its parent's
+      kind. Lane B's variant re-export gate rejects a struct-parented target by
+      name until Lane C extends it.
+    - Rejected: a new constructor tag. It would duplicate the variant's shape
+      and field rows and diverge from the local IR.
+  - **The const fence on methods of lifetime-capturing inherent impls lifts
+    next**, after struct constructors. Core's `Arguments::from_str` is such a
+    method, and `PanicInfo::new` probably is too. A fresh consumer gives these
+    methods the same const checks and evaluation that version-13 const free
+    originals get, with the captured regions as leading early parameters. No
+    const evidence is transported.
+  - **Lane C's order** after that:
+    1. other-provider region nominals;
+    2. the caller-location ABI (`#[track_caller]` imports and
+       `Location::caller()`);
+    3. the `panic_impl` extern, together with the unsizing coercion fence.
+  - **Lane C's amended controls are accepted:**
+    - the three capture-count forgeries now reject earlier, by name;
+    - the held client binds a `&'static str`, because its provider never
+      makes `u8` `Copy`;
+    - the lifetime-nominal gate moved to the trait-impl form;
+    - the unique-write provider gained its leading field before its first run.
 
 ## Lanes
 
