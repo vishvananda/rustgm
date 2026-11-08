@@ -5,6 +5,35 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 13](parallel/census-batch13.md) repairs census 13's
+record and records rustc witnesses for six superseded PA31 fixtures, on main
+`825f443a8`. Census 14 (`188a5350`, from `7ca25fb64`) checks 42,310
+declarations, with none failed or blocked. Its crate record, "trait
+implementation does not satisfy the trait's requirements", is core's `const
+impl<T> Try for NeverShortCircuit<T>` (`ops/try_trait.rs:433`). Its
+`FromResidual` impl leaves the trait argument to its default,
+`<Self as Try>::Residual`. The same impl with that projection written out
+passes. Seven lookahead records follow.
+
+- A source Copy impl accepts exactly the targets rustc 1.98's
+  `type_allowed_to_implement_copy` allows without fields: scalars, `!`, raw
+  pointers, shared references and arrays, without an element check. `str`
+  and unique references are rejected. This repairs core's `impl Copy for !`.
+  A written Copy impl for a fn pointer or a tuple of Copy elements is still
+  accepted, which rustc rejects (E0206); these are recorded gaps.
+- rustc 1.98.0 rejects six superseded PA31 fixtures that write tuple or fn
+  pointer Copy impls, which their declarations did not predict. Additive
+  `reference-corrections.json` records in three packets hold the witnesses;
+  every declaration and fixture keeps its bytes. Unrelated E0204, E0508 and
+  E0600 errors in three of them are findings awaiting per-packet calls.
+- Census 13's record 2, core's `SpecFill` child (`maybe_uninit.rs:1659`), is
+  derived: conformance order moves specializing children behind the failed
+  impl, and the owner pass reports the first one left unvalidated.
+- 13 PA31 controls were declared before the rustc 1.98.0 oracle; all agree.
+- Every PA1 to PA24 suite passes, with PA20 at 1451/1451.
+- What remains: census 14's record 1 (proposed repair: a defaulted impl trait
+  argument treated like a written one), then its lookahead records.
+
 Lane C [NonNull and pattern types](parallel/nonnull-patterns.md) transports
 core's `NonNull` in version 13. Its field's pattern type travels as type recipe
 tag 16: `!null` over a raw pointer, or a closed interval of raw bits over an

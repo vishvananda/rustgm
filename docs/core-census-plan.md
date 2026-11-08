@@ -818,6 +818,44 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
       associated consts and the `RangePattern` roles), then fn-item
       reification. `Location` and the caller ABI move one slice later.
 
+- **During Lane A's [census batch 13](parallel/census-batch13.md)**,
+  2026-11-08.
+  - **Copy impl targets follow rustc's `type_allowed_to_implement_copy`.**
+    - Accepted without fields: scalars, `!`, raw pointers, `&T` and arrays,
+      with no element check. Core's `impl Copy for !` passes.
+    - Rejected: `str` and `&mut T`.
+    - Written Copy impls for tuples and fn pointers are recorded gaps.
+      RustGM still accepts them; rustc rejects them with E0206, because it
+      provides those impls itself.
+    - All 13 controls were declared before the oracle and agree with rustc.
+  - **Three superseded PA31 declarations recorded rustc outcomes that rustc
+    never gave.** A rustc 1.98.0 run showed this for pointer-composition,
+    source-format-macros/arguments and unadjusted-request: each records
+    acceptance of a written tuple or fn-pointer Copy impl. No test reads
+    them, and each packet's active successor was already witnessed.
+    - The superseded bytes stay frozen. They are pre-registration history,
+      and successors link to them.
+    - Each packet gets an additive `reference-corrections.json` with the
+      witnessed status, codes, shas and options, and its active successor.
+    - Rejected: correcting the files in place. It would blur "frozen before
+      observation" and risk the link hashes.
+    - Unrelated errors in the same superseded bytes (E0204, E0508, E0600),
+      and one classification that names only some of the observed errors,
+      get no further action. The correction records state them, and the
+      successors no longer have them.
+  - **Lookahead record 2 (`SpecFill`) is derived.** Specializing children are
+    ordered behind the impl that fails, and the owner pass reports the
+    first unvalidated child. No repair is needed.
+  - **Census 14** (pin `188a5350`): 42,310 declarations, none failed or
+    blocked. Its crate record is core's `const impl<T> Try for
+    NeverShortCircuit<T>` (`ops/try_trait.rs:433`).
+    - The reduction is an ordinary `impl FromResidual for Short` that leaves
+      the argument at its default, `<Self as Try>::Residual`. Writing the
+      argument out passes. rustc substitutes the default and normalizes the
+      impl's trait reference before matching.
+    - Lane A repairs it next: a defaulted impl trait argument is checked as
+      if it were written. It first locates the divergence.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |
