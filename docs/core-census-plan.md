@@ -540,6 +540,41 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
       new variance pass that consumers lack, Lane C reports the shape and
       cost before building it.
 
+- **After Lane A's [census batch 10](parallel/census-batch10.md)**, 2026-11-08.
+  Census 11 has no per-definition failure. Its one record is a budget record:
+  core's crate-wide overlap pair checks take 2,404,914 steps against fixed
+  one-million caps.
+  - **Lane A owns the overlap budget, as the frontier. The fixed cap is not
+    raised.**
+    - First, Lane A shows whether the 2.4M steps are real per-pair work or
+      repeated payment. It compares our pair enumeration with rustc's.
+      rustc's specialization graph checks a new impl only against children
+      with the same simplified self type, plus the blanket impls, after
+      `DeepRejectCtxt` fast rejection.
+    - If pairs cross simplified-type buckets, or a pair or its headers is
+      paid more than once, the repair is that index plus fast rejection,
+      charging each pair once. A 6/24/96 scaling invariant must show no
+      cross-bucket pair work.
+    - Only work that remains real gets a size-based cap, as the user
+      approved. The cap is derived up front from the candidate pairs the
+      index admits, times each pair's header size, with the old constant
+      only as a floor.
+    - Rejected: a larger fixed constant. It would hide repeated payment and
+      break the spec's bounded-work rule.
+    - Cost: a size-based cap grows with a crate's input. Within one bucket,
+      rustc has the same worst case.
+  - **Lane A repairs lookahead record 2** (`ConstParamTy_` under
+    `#[unstable_feature_bound]`, `mem/transmutability.rs:91`) after the
+    budget and after the next record behind it, "specialization implication
+    still awaits a declaration dependency". It is genuine, in Lane A's
+    parameter-kind code, and next on the frontier. No other lane is in
+    `nominals/traits.rs`.
+  - **Lane A also owns the `[const]` supertrait gap**, queued behind the
+    frontier. That gap is `&F: [const] Fn` not proving its `[const]` FnMut
+    and FnOnce supertraits.
+    - Why Lane A: it continues the batch 9 `[const]` premise work.
+    - Its three control cases stay listed as gaps in the invariant.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

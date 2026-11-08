@@ -644,3 +644,32 @@ before another field and as an enum variant field. Each outcome was declared
 before its rustc 1.98.0 oracle; its two prefix amendments were each declared
 before the next oracle and before any candidate run. A private invariant checks
 them; there is no graded manifest.
+
+`spec/fn-pointer-coherence/` freezes fourteen declared no_core controls from
+census batch 10: impls beside a blanket `impl<F: FnPtr> Trait for F`, as in
+core's `PartialEq` (census 10's crate record). Only a function pointer
+implements `FnPtr`. With `with_negative_coherence`, which core enables, the
+builtin `impl !FnPtr for T` makes core's reference impls, a fundamental
+nominal, a tuple and a trait object disjoint from the blanket; without it, a
+reference or fundamental nominal over an unknown type overlaps (E0119). The
+opponents are a parameter and a function pointer. Each outcome was declared
+before its rustc 1.98.0 oracle. A private invariant checks them; there is no
+graded manifest.
+
+`spec/lifetime-specialization/` freezes nine declared no_core
+`min_specialization` controls from census batch 10: core's `&mut I` iterator
+specializations and related reference and nominal shapes, where each parent
+header lifetime is the child's corresponding one, with a `'static`
+specialization and a repeated lifetime as opponents. Each outcome was declared
+before its rustc 1.98.0 oracle. A private invariant checks them; there is no
+graded manifest.
+
+`spec/callable-sugar-coherence/` freezes nine declared no_core controls from
+census batch 10: impls beside core's `impl<F> MultiCharEq for F where F:
+FnMut(char) -> bool`, whose sugar binder binds no region, so its condition
+proves disjointness like any where clause. The opponents are a second blanket
+over another argument tuple and an impl for `&T` (each E0119). Three controls
+with core's const callable reference impls are a recorded `[const]`
+requirement gap. Each outcome was declared before its rustc 1.98.0 oracle; its
+one fixture amendment was declared before the amended oracle and before any
+candidate run. A private invariant checks them; there is no graded manifest.

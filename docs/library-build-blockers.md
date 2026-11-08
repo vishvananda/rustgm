@@ -5,6 +5,46 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 10](parallel/census-batch10.md) repairs census 10's
+crate record and the three records its repair uncovered. Census 11
+(`fcd444bc`, from `d7d0cfc97` on main `f98c5d7c8`) checks 42,310
+declarations, with none failed or blocked. Its one record is the budget
+record "implementation prerequisite work budget exceeded" at core_simd's
+`ops/shift_scalar.rs:802`; a budget record ends the lookahead. Bodies are not
+entered, so Milestone 2 is not reached.
+
+- Coherence decides `T: FnPtr` from the outer Self type, as rustc 1.98 does,
+  and negative coherence applies rustc's builtin `impl !FnPtr for T` to every
+  rigid type that is not a function pointer. Core enables
+  `with_negative_coherence`, which is why its reference `PartialEq` impls do
+  not conflict with `impl<F: FnPtr> PartialEq for F` (`ptr/mod.rs:2592`) while
+  batch 9's reduction without the feature is E0119.
+- A specialization parent's header lifetimes are named by the child's, as
+  rustc's `specializes` equates them. This repairs core's `&mut I` iterator
+  specializations (`iter/traits/double_ended.rs:498`).
+- A callable sugar clause whose binder binds no region is an ordinary overlap
+  condition. This repairs core's `MultiCharEq` (`str/pattern.rs:645`).
+- 32 PA31 no_core controls were declared before the rustc 1.98.0 oracle, and
+  all agree. Their one fixture amendment is recorded.
+- Every PA1 to PA24 suite passes, with PA20 at 1451/1451.
+- What remains:
+  - The crate-wide overlap work caps: core's pair checks take 2,404,914 steps
+    against fixed one-million caps. Raising them (instrumented, never
+    committed) reaches "specialization implication still awaits a declaration
+    dependency: Some(None)". Lane A owns it next. It first shows whether the
+    work is real per-pair work or repeated payment, against rustc's
+    simplified-type candidate index and fast rejection. A fixed cap is not
+    raised; only real work gets a size-based bound.
+  - Lookahead record 2 (`mem/transmutability.rs:91`) is genuine: a const
+    parameter type's closed proof cannot use the trait's own
+    `#[unstable_feature_bound]` for a feature-bound `ConstParamTy_` impl,
+    which rustc 1.98.0 accepts. Lane A repairs it after the budget. Records 3
+    and 5 derive from the failed crate pass.
+  - Const callable reference impls (`const impl Fn<A> for &F where F: [const]
+    Fn<A>`) do not prove their `[const]` supertrait requirement, which rustc
+    accepts; census 11 does not reach it. Lane A owns it, queued behind the
+    frontier.
+
 Lane C [transparent record headers](parallel/transparent-records.md) is
 joined on main. Version 13 carries `#[repr(transparent)]`
 structs in the nominal header's representation byte: 2 = Transparent, beside 0

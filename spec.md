@@ -238,6 +238,12 @@ and definition walks; existing metadata profiles must reject unencoded policy.
 The [negative-coherence packet](pa31/tests/spec/negative-coherence/README.md)
 records independent source predictions and the remaining transport boundary.
 
+An overlap condition whose quantifier binds no region, as parenthesized
+callable sugar writes, is an ordinary where clause, as in rustc 1.98; one that
+binds a region still proves no disjointness. The
+[callable sugar coherence controls](pa31/tests/spec/callable-sugar-coherence/README.md)
+record independent outcomes and a `[const]` requirement gap.
+
 Attribute feature queries follow the pinned gate's actual construct span.
 Unstable builtin attributes use their retained `#` through `]` envelope: an
 allowing macro can generate `#[$meta]` while the captured name keeps its caller
@@ -328,6 +334,14 @@ the selected impl omits comes from its nearest defining ancestor, with its
 arguments translated through each relation, as rustc's `assoc_def` does. Under
 `min_specialization` only a root may define one, so a child that overrides its
 parent's associated type is rejected.
+
+A child is compared with its parent as rustc's `specializes` does: the child's
+trait reference is equated with the parent's fresh instantiation, lifetimes
+included, so each parent header lifetime is named by the child's corresponding
+one without resolving any region constraint. `min_specialization` still rejects
+a `'static` or repeated lifetime among the parent's arguments. The
+[lifetime specialization controls](pa31/tests/spec/lifetime-specialization/README.md)
+record independent outcomes.
 
 An override's bounds are compared with its trait method's bounds in the impl's
 normal forms, as rustc normalizes the impl's param-env first. The trait
@@ -515,6 +529,17 @@ selection accepts actual function pointers with their complete signature,
 safety, ABI and binders, retaining current inference, formation and real caller
 obligations. Function items, closures, references and raw pointers receive no
 such evidence directly. Do not require the pointer's arguments/results to Copy.
+
+Coherence decides `T: FnPtr` from the outer Self type alone, as rustc 1.98
+does: a rigid type that is not a function pointer has no evidence whatever its
+unresolved arguments; variables, parameters, projections and opaque types are
+not rigid. Stable coherence still treats a reference or fundamental nominal
+over an unknown type as one a downstream crate could own. Negative coherence,
+which core requests, applies rustc's builtin `impl !FnPtr for T` to each such
+rigid type, so core's reference `PartialEq` impls are disjoint from its `FnPtr`
+blanket. That absence needs no formation of the Self type. The
+[function-pointer coherence controls](pa31/tests/spec/fn-pointer-coherence/README.md)
+record independent outcomes.
 
 The [function-pointer packet](pa31/tests/spec/function-pointers/README.md)
 qualifies the ordinary standard address method through a demanded typed body:
