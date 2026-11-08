@@ -44,9 +44,17 @@ impl Stage {
                 .ok_or("source type graph has an unknown child")?;
             let row = match task {
                 Task::Enter(_, _) => match kind {
-                    Kind::Reference { referent, .. } => {
+                    Kind::Reference {
+                        referent: child, ..
+                    }
+                    | Kind::Pointer { pointee: child, .. }
+                    | Kind::Slice(child)
+                        if matches!(kind, Kind::Reference { .. }) || self.body_nodes() =>
+                    {
+                        // A pointer or slice row, like a reference, follows
+                        // its one completed child.
                         self.type_work(&mut pending, Task::Reference(key, context))?;
-                        let child = self.type_key(facts, referent, context)?;
+                        let child = self.type_key(facts, child, context)?;
                         self.type_work(&mut pending, Task::Enter(child, context))?;
                         continue;
                     }
@@ -219,23 +227,21 @@ impl Stage {
                 mutable,
                 region,
                 referent,
-            } => {
-                let child = self.type_key(facts, referent, context)?;
-                let referent = self
-                    .graph
-                    .types
-                    .get(&child)
-                    .copied()
-                    .ok_or("source referent was not completed before its parent")?;
-                s::Type::Reference {
-                    mutable,
-                    region: self.region(region, context)?,
-                    referent,
-                }
-            }
+            } => s::Type::Reference {
+                mutable,
+                region: self.region(region, context)?,
+                referent: self.completed_child(facts, referent, context)?,
+            },
             Kind::FunctionItem {
                 item, arguments, ..
             } => s::Type::FunctionItem(self.function_application(facts, item, arguments, context)?),
+            Kind::Pointer { mutable, pointee } if self.body_nodes() => s::Type::RawPointer {
+                mutable,
+                pointee: self.completed_child(facts, pointee, context)?,
+            },
+            Kind::Slice(element) if self.body_nodes() => {
+                s::Type::Slice(self.completed_child(facts, element, context)?)
+            }
             Kind::Primitive(crate::types::Primitive::Str) if self.body_nodes() => s::Type::Str,
             Kind::Never if self.body_nodes() => s::Type::Never,
             Kind::Primitive(_) | Kind::Tuple(_)
@@ -248,5 +254,21 @@ impl Stage {
             }
             _ => return Err("source type form requires an explicitly supported transport row"),
         })
+    }
+
+    /// The single child of a reference, pointer or slice row, which the
+    /// iterative walk completed before its parent.
+    fn completed_child(
+        &mut self,
+        facts: &Declarations,
+        child: TypeId,
+        context: Context,
+    ) -> Result<g::TypeRef, &'static str> {
+        let child = self.type_key(facts, child, context)?;
+        self.graph
+            .types
+            .get(&child)
+            .copied()
+            .ok_or("source referent was not completed before its parent")
     }
 }

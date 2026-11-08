@@ -345,3 +345,17 @@ packet under `spec/const-methods/`. The packet holds:
 - rustc controls for a temporary-field read and write.
 
 The `crate_linking::evaluated_methods` integration controls consume it.
+
+`pointer-slice-outcomes.json` freezes the version-thirteen raw-pointer and
+slice packet under `spec/pointer-slices/`. The packet holds:
+
+- raw pointers of each mutability, to a sized, an unsized and a generic
+  pointee, and a record with a raw-pointer field;
+- shared slices passed through, held by a lifetime-generic record and of a
+  generic element;
+- seven accepted clients and four opponents (E0308 three times and E0133);
+- generated controls: older-profile gates, forged mutability, pointee,
+  element and version rows, a forged slice of a `?Sized` parameter that only
+  the consumer's own facts reject, and a 6/24/96 scaling control.
+
+The `crate_linking::addressed_views` integration controls consume it.

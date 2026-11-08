@@ -550,19 +550,10 @@ impl<M: Storage> Worklist<M> {
                     )),
                 };
             }
-            s::Type::Reference {
-                mutable,
-                region,
-                referent,
-            } => {
-                let region = match port.region(region, budget)? {
-                    Demand::Ready(region) => region,
+            s::Type::Reference { .. } | s::Type::RawPointer { .. } | s::Type::Slice(_) => {
+                match self.indirect(port, store, row, budget)? {
+                    Demand::Ready(kind) => kind,
                     Demand::Blocked(dependency) => return Ok(Demand::Blocked(dependency)),
-                };
-                Kind::Reference {
-                    mutable,
-                    region,
-                    referent: self.child(referent)?,
                 }
             }
             s::Type::Function(signature) => {
@@ -604,6 +595,46 @@ impl<M: Storage> Worklist<M> {
             }
         };
         store.intern(kind).map(Demand::Ready).map_err(error)
+    }
+}
+impl<M: Storage> Worklist<M> {
+    /// A reference, raw pointer or slice over one completed child. Only a
+    /// reference has a region.
+    fn indirect<'rows, B: Budget, P: Port<'rows, B>>(
+        &self,
+        port: &mut P,
+        store: &Store,
+        row: s::Type,
+        budget: &mut B,
+    ) -> Result<Demand<Kind>, Error> {
+        Ok(Demand::Ready(match row {
+            s::Type::Reference {
+                mutable,
+                region,
+                referent,
+            } => Kind::Reference {
+                mutable,
+                region: match port.region(region, budget)? {
+                    Demand::Ready(region) => region,
+                    Demand::Blocked(dependency) => return Ok(Demand::Blocked(dependency)),
+                },
+                referent: self.child(referent)?,
+            },
+            s::Type::RawPointer { mutable, pointee } => Kind::Pointer {
+                mutable,
+                pointee: self.child(pointee)?,
+            },
+            s::Type::Slice(element) => {
+                // The element's sizedness comes from this consumer's own
+                // structural facts, never from the wire.
+                let element = self.child(element)?;
+                if store.is_sized(element) != Some(true) {
+                    return Err(error("source slice element requires a sized type"));
+                }
+                Kind::Slice(element)
+            }
+            _ => return Err(error("source type row is not an indirect recipe")),
+        }))
     }
 }
 impl Worklist<Vec<Option<TypeId>>> {
@@ -677,7 +708,11 @@ fn next(
                 s::Argument::Region(_) => None,
             })
             .nth(cursor),
-        s::Type::Reference { referent, .. } => (cursor == 0).then_some(referent),
+        s::Type::Reference {
+            referent: child, ..
+        }
+        | s::Type::RawPointer { pointee: child, .. }
+        | s::Type::Slice(child) => (cursor == 0).then_some(child),
         s::Type::Tuple(elements) => elements
             .slice(&rows.roots)
             .map_err(error)?

@@ -15,6 +15,12 @@ enum Recipe {
         region: super::nodes::Region,
         child: Key,
     },
+    /// Version thirteen: `*const T`, `*mut T` and `[T]` follow one child.
+    Pointer {
+        mutable: bool,
+        child: Key,
+    },
+    Slice(Key),
     Function(g::Signature),
     Nominal(s::DeclarationAddress, g::Range),
     Projection(s::ProjectionRef),
@@ -61,7 +67,10 @@ impl Arena {
                     let recipe = self.recipe(domains, key, work)?;
                     self.push(pending, Task::Finish(key, recipe), work)?;
                     match recipe {
-                        Recipe::Alias(child) | Recipe::Reference { child, .. } => {
+                        Recipe::Alias(child)
+                        | Recipe::Reference { child, .. }
+                        | Recipe::Pointer { child, .. }
+                        | Recipe::Slice(child) => {
                             self.push(pending, Task::Enter(child), work)?;
                         }
                         Recipe::Nominal(declaration, arguments) => {
@@ -110,6 +119,14 @@ impl Arena {
                                 },
                                 work,
                             )?
+                        }
+                        Recipe::Pointer { mutable, child } => {
+                            let pointee = self.child(child, work)?;
+                            self.intern(Node::RawPointer { mutable, pointee }, work)?
+                        }
+                        Recipe::Slice(child) => {
+                            let element = self.child(child, work)?;
+                            self.intern(Node::Slice(element), work)?
                         }
                         Recipe::Nominal(declaration, arguments) => {
                             let regions = Regions::of(declaration);
@@ -275,6 +292,13 @@ impl Arena {
                     region: self.rewritten_region(domains, region, key.rewrite, work)?,
                     child: uses::key(domains, referent, key.rewrite, key.caller, work)?,
                 },
+                s::Type::RawPointer { mutable, pointee } => Recipe::Pointer {
+                    mutable,
+                    child: uses::key(domains, pointee, key.rewrite, key.caller, work)?,
+                },
+                s::Type::Slice(element) => {
+                    Recipe::Slice(uses::key(domains, element, key.rewrite, key.caller, work)?)
+                }
                 s::Type::FunctionItem(application) if key.rewrite == Rewrite::Original => {
                     Recipe::Leaf(Node::FunctionItem(application))
                 }

@@ -202,6 +202,15 @@ pub enum Type {
     Str,
     /// Version thirteen: the never type `!`.
     Never,
+    /// Version thirteen: `*const T` or `*mut T`. The pointee may be unsized;
+    /// each consumer derives its sizedness from its own facts.
+    RawPointer {
+        mutable: bool,
+        pointee: TypeRef,
+    },
+    /// Version thirteen: the unsized slice `[T]`, reachable only behind a
+    /// reference or pointer recipe. Each consumer proves its element sized.
+    Slice(TypeRef),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TraitApplication {

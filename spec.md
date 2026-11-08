@@ -6501,6 +6501,25 @@ declaration by name. `struct T();`, tuple and unit structs marked
 `#[non_exhaustive]` and the `phantom_data` role stay rejected by name. Packets
 without tuple or unit structs keep their exact bytes.
 
+A version-thirteen type recipe may also be a raw pointer or a slice.
+
+- Tag 12 is `[u8 12][u8 mutable][id pointee]`: `*const T` when `mutable` is 0
+  and `*mut T` when it is 1. Any other byte is rejected by name. A raw pointer
+  has no region, and its pointee may be unsized: `str`, a slice, or a
+  `?Sized` parameter.
+- Tag 13 is `[u8 13][id element]`: the unsized `[T]`.
+- Tags 14 and 15 are reserved for arrays and `dyn` trait objects.
+
+No sizedness travels. Validation rejects a slice whose element row is `str`
+or a slice. A fresh consumer interns each row in its own store and proves a
+slice element sized from its own structural facts, including a parameter's
+declared bound, before it builds `[T]`. A raw pointer is formed whenever its
+pointee is, and a slice of a parameter is formed only with a formation input.
+Signature comparison follows a pointer's or slice's child and requires equal
+pointer mutability. Older profiles reject both forms by name ("source type
+form requires an explicitly supported transport row"), and packets without
+them keep their exact bytes.
+
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core
 profile. A crate that exports no macros writes no envelope and keeps its exact

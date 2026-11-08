@@ -59,6 +59,14 @@ pub(super) enum Node {
         region: Region,
         referent: NodeId,
     },
+    /// Version thirteen: a raw pointer has no region and accepts any pointee.
+    RawPointer {
+        mutable: bool,
+        pointee: NodeId,
+    },
+    /// Version thirteen: the unsized `[T]`; its element's sizedness is
+    /// re-proved by every consumer.
+    Slice(NodeId),
     FunctionItem(s::FunctionApplicationRef),
     SignatureResult(NodeId),
     SignatureInput {
@@ -302,6 +310,16 @@ impl Arena {
                 }
                 if region != Region::Static {
                     facts.0 |= NodeFacts::REGIONAL;
+                }
+                facts
+            }
+            // `*const T` is formed whenever `T` is; `[T]` also needs `T: Sized`,
+            // which an unbounded parameter element must prove by an input.
+            Node::RawPointer { pointee, .. } => self.facts_of(pointee, work)?,
+            Node::Slice(element) => {
+                let mut facts = self.facts_of(element, work)?;
+                if matches!(self.nodes.get(element.0 as usize), Some(Node::Parameter(_))) {
+                    facts.0 &= !NodeFacts::FORMED;
                 }
                 facts
             }

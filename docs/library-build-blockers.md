@@ -5,8 +5,23 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
-Lane C [const inherent methods](parallel/const-inherent-methods.md) is a local
-checkpoint, not yet joined. Version 13 carries const methods of inherent impls,
+Lane C [raw-pointer and slice type rows](parallel/raw-pointer-slice-rows.md) is
+joined on main. Version 13 carries `*const T`, `*mut T` and
+`[T]` in the integrator's allocated type recipe tags: 12 is `[u8 12][u8
+mutable][id pointee]` and 13 is `[u8 13][id element]`. Tags 14 and 15 stay
+reserved. A raw pointer has no region and admits an unsized pointee. No
+sizedness travels: validation rejects a `str` or slice element by name, and
+every consumer proves a slice element sized from its own facts. A forged
+slice of a `?Sized` parameter passes validation and is rejected by the fresh
+consumer. Older profiles keep main's rejection by name and their exact bytes.
+Seven clients run natively and exit 42. This is the first prerequisite of the
+caller-location chain. `repr(transparent)`, PhantomData's Pointee role and
+NonNull's diagnostic role remain, then `Location`, the caller ABI and
+`PanicInfo`/`panic_impl`. No client can build a slice value until
+`CoerceUnsized` and unsizing coercions transport.
+
+Lane C [const inherent methods](parallel/const-inherent-methods.md) is joined
+on main. Version 13 carries const methods of inherent impls,
 including impls that capture lifetimes as core's `impl<'a> Arguments<'a>` does,
 with no new tag or shape. Each method uses the existing const constness and
 const-definition context. Validation re-proves the body as it re-proves a free

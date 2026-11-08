@@ -378,6 +378,61 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
       remaining records be shared across lanes.
     - Cost: some listed records may be artefacts of the earlier failure.
       Each is re-proved when its turn comes.
+- **After Lane C's struct constructors, const inherent methods and
+  raw-pointer and slice rows**, 2026-11-08:
+  - **Another provider's region nominals (Lane C's old task 3) are blocked on
+    multi-packet source export.** The exporter writes artifact 0 only, and a
+    source core cannot import another version-13 packet. Clients of core
+    already handle core's region nominals.
+    - The export itself stays required. std consumes alloc's generic API, so
+      alloc, as a source client, must publish a version-13 descriptor whose
+      rows name core's artifacts. Core bodies and alloc's own build do not
+      need it.
+    - Lane C writes a design proposal
+      (`parallel/multi-packet-export-proposal.md`), and the integrator
+      decides the shape before any code is written.
+    - Cost: std-path transport starts later. The design runs while core and
+      alloc are in progress.
+  - **Type recipe tags:**
+    - 12 is `RawPointer`: `[u8 12][u8 mutable][id pointee]`.
+    - 13 is `Slice`: `[u8 13][id element]`.
+    - 14 is reserved for arrays, whose const length encoding needs its own
+      proposal.
+    - 15 is reserved for `dyn` trait objects.
+
+    No sizedness travels: each consumer proves a slice element sized from its
+    own facts.
+    - Why now: raw pointers and slices run through core's whole API, which
+      alloc consumes, not just the panic chain.
+  - **The caller-location ABI and `panic_impl` wait on core's real
+    `Location`**, which needs `repr(transparent)`, PhantomData's Pointee role
+    and NonNull's diagnostic-item role. Lane C reports each exact shape
+    before using it.
+  - **Lane C's order:**
+    1. the `sync` lang-item fix below;
+    2. `repr(transparent)`;
+    3. PhantomData's Pointee role;
+    4. NonNull's diagnostic role;
+    5. auto trait export (`Send` and `Sync`), which alloc's impls and every
+       static need;
+    6. `Location` and the caller ABI;
+    7. `PanicInfo` and `panic_impl`;
+    8. arrays (tag 14) with `CoerceUnsized`;
+    9. the multi-packet proposal.
+
+    Auto traits come before `Location`, because nearly every alloc type has
+    an auto trait impl.
+  - **Main accepts a source-client `static` without a `sync` lang item, and
+    rustc rejects it.** This is a false acceptance, so it is fixed, not
+    recorded: a static requires the `sync` lang item and `T: Sync`, as in
+    rustc.
+    - Lane C takes it first, because it holds the repro.
+    - Cost: a small edit outside transport, listed for owner review.
+  - **Writes through a call temporary's field stay fenced by name** (rustc
+    admits them). This is a recorded conservative deviation, because core
+    does not need them.
+  - `#[non_exhaustive]` tuple and unit struct constructors and `struct T();`
+    stay fenced by name.
 
 ## Lanes
 

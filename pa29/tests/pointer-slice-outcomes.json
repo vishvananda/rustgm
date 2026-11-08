@@ -1,0 +1,180 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+ "providers": [
+  {
+   "file": "spec/pointer-slices/provider.rs",
+   "sha256": "31ee3670f04f16dc642d16fca2fc8ca6b3825f6da512daef4b0c5f27b79ee706"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "declared": "2026-11-08T02:45Z",
+ "development_note": "RustGM's local wording for the opponents was taken from generated single-crate providers under obj/parallel/pointer-slices/local; the fixtures, outcomes and every control below were written down before any rustc or RustGM run of these files",
+ "wire_rule": "integrator allocation: version-13 type recipe tag 12 RawPointer `[u8 12][u8 mutable][id pointee]` and tag 13 Slice `[u8 13][id element]`; 14 and 15 stay reserved",
+ "cases": [
+  {
+   "file": "spec/pointer-slices/same.rs",
+   "provider": "spec/pointer-slices/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "72e84a4c7fc4488dce1ff65214fe19185a04855fe5bd2942b643251e8569acea"
+  },
+  {
+   "file": "spec/pointer-slices/same-mut.rs",
+   "provider": "spec/pointer-slices/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "f044d31b27d8ac6ab53b00fe4661f3d1aaa3c76de6f323f8a1c1562e9ae3c562"
+  },
+  {
+   "file": "spec/pointer-slices/generic.rs",
+   "provider": "spec/pointer-slices/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "cb2685747f60b38da2f6015690e2d93578fb0d9936fec8881265ca80ba58b4cd"
+  },
+  {
+   "file": "spec/pointer-slices/raw-field.rs",
+   "provider": "spec/pointer-slices/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "f70bdec87a05e7b135fa8f7e5e3c3e54cbadec79f874e4ad8c0ce3a6e964a95e"
+  },
+  {
+   "file": "spec/pointer-slices/raw-literal.rs",
+   "provider": "spec/pointer-slices/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "a478f551378a0a47f0420399d5275c24e7a7fc877cc123fa08be416f857ebdd2"
+  },
+  {
+   "file": "spec/pointer-slices/text-ptr.rs",
+   "provider": "spec/pointer-slices/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "fc0df790ae4be3d22ef6edd00eb96519c981facbf191d6f417f20c91e289f4f5"
+  },
+  {
+   "file": "spec/pointer-slices/slices.rs",
+   "provider": "spec/pointer-slices/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "231772fc11be60d9969bdd79d0b97e5923c5867b80f177420a7d02cd7f766678"
+  },
+  {
+   "file": "spec/pointer-slices/wrong-pointee.rs",
+   "provider": "spec/pointer-slices/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0308",
+   "candidate_diagnostic": "incompatible types",
+   "sha256": "1374b45a498e835ed3d2b660a99a2c597894285d1bd3c759640180473d6e6a28"
+  },
+  {
+   "file": "spec/pointer-slices/const-for-mut.rs",
+   "provider": "spec/pointer-slices/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0308",
+   "candidate_diagnostic": "raw pointer coercion cannot strengthen mutability",
+   "sha256": "a7ab4a33dc4fdd27d4b1be7811d03567b74e2ca937ace67de70e82061881ff5d"
+  },
+  {
+   "file": "spec/pointer-slices/deref-safe.rs",
+   "provider": "spec/pointer-slices/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0133",
+   "candidate_diagnostic": "raw pointer dereference requires an unsafe context",
+   "sha256": "9e12e381f1f182c77c99d56d0a240cb5d806bdba508026278d7969896353f56f"
+  },
+  {
+   "file": "spec/pointer-slices/slice-mismatch.rs",
+   "provider": "spec/pointer-slices/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0308",
+   "candidate_diagnostic": "incompatible types",
+   "sha256": "06903cbd99ec30a9d9faa2c133267b81f60f268ad7e158ace701db3062d3f421"
+  }
+ ],
+ "deviations": [
+  "lines 1-147 of spec/lifetime-nominals/provider.rs are reused unchanged; the raw-pointer and slice section after them is authored",
+  "clients cannot build a slice value without `CoerceUnsized`, which the shared lines lack, so the slice clients check signatures and return 42 without calling them",
+  "clients compare results with nested literal matches"
+ ],
+ "generated_controls": [
+  {
+   "control": "the full provider exported under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected by name with `named, associated or generic alias transport requires its wider profile`, as the shared lines already require version 13"
+  },
+  {
+   "control": "spec/source-nominals/provider.rs plus `pub fn same(p: *const u8) -> *const u8 { p }`, and separately plus `pub fn width(_s: &[u8]) -> u8 { 42 }`, under module-branches-v12 and module-nominals-v10",
+   "expected": "rejected by name with main's `source type form requires an explicitly supported transport row` under both older profiles; both export under version 13, and a client of each is accepted",
+   "amended": {
+    "observed_first": "the first generated client of the raw-pointer gate dereferenced the returned `*const u8` and failed with `cannot move a non-Copy value out of a reference`: spec/source-nominals/provider.rs declares `Copy` but no `impl Copy for u8`",
+    "expected": "the same rejections under both older profiles and the same version-13 exports; the raw-pointer gate's client passes the pointer through and returns 42 without reading it",
+    "reason": "the declared control fixed no client text; the first client needed a Copy impl the foundation lacks, which is unrelated to pointer transport"
+   }
+  },
+  {
+   "control": "6, 24 and 96 generated pairs `pub fn pNNN(p: *const u8) -> *const u8 { p }` and `pub fn sNNN(s: &[u8]) -> &[u8] { s }` after the shared lines, and one client dereferencing `p005`'s result",
+   "expected": "packet bytes grow exactly linearly; the client LowIR stays bounded"
+  }
+ ],
+ "wire_controls": [
+  {
+   "mutation": "none: a generated minimal provider (the shared lines, `same`, `text_ptr` and `width`) and a client of `same`",
+   "expected": "accepted"
+  },
+  {
+   "mutation": "`same`'s raw-pointer row mutability byte set to 2",
+   "expected": "invalid source boolean"
+  },
+  {
+   "mutation": "`same`'s raw-pointer pointee id set past the type table",
+   "expected": "source type reference crosses its typed table namespace"
+  },
+  {
+   "mutation": "`width`'s slice element id set past the type table",
+   "expected": "source type reference crosses its typed table namespace"
+  },
+  {
+   "mutation": "`width`'s slice element set to `text_ptr`'s `str` row",
+   "expected": "source slice element requires a sized type"
+  },
+  {
+   "mutation": "a separate generated provider (the shared lines and `pub fn pair<T, U: ?Sized>(_s: &[T], _p: *const U) -> u8 { 42 }`), exported and consumed by a client that relays `pair::<u8, str>`, then with the `[T]` row's element set to `U`'s parameter row",
+   "expected": "the honest packet and client are accepted; the forgery passes wire validation, which sees only a parameter element, and the fresh consumer rejects it from its own facts with `source slice element requires a sized type`",
+   "declared": "2026-11-08T03:03:42Z",
+   "requested_by": "integrator, after the tag 12 and 13 shapes were reported; declared before any run of this provider"
+  },
+  {
+   "mutation": "relabelled version 12",
+   "expected": "unknown source declaration kind"
+  },
+  {
+   "mutation": "every strict prefix",
+   "expected": "fails to decode"
+  }
+ ],
+ "native": {
+  "expected": "all seven accepted clients exit 42 natively, as rustc's do"
+ },
+ "oracle": {
+  "round_1": "rustc 1.98.0 (88d9e12ae 2026-08-18) on the declared files (obj/parallel/pointer-slices/oracle1.log): the provider compiles; same, same-mut, generic, raw-field, raw-literal, text-ptr and slices exit 42; wrong-pointee, const-for-mut and slice-mismatch fail with E0308 and deref-safe with E0133, as declared",
+  "final": "the committed provider and clients are the declared bytes (hashes above), so oracle1.log covers them"
+ },
+ "observed": {
+  "candidate": "the candidate pin (sha f43c79d8) and the integration controls on the committed bytes: all eleven outcomes as declared; the four opponents fail with `incompatible types`, `raw pointer coercion cannot strengthen mutability`, `raw pointer dereference requires an unsafe context` and `incompatible types`",
+  "generated_controls": "as declared, with the raw-pointer gate's client amended (see that control)",
+  "wire_controls": "as declared; the relaxed `?Sized` forgery passes wire validation and the fresh consumer rejects it with `source slice element requires a sized type`",
+  "native": "the seven accepted clients exit 42 through the CPPGM object backend",
+  "scaling": "46,088, 71,594 and 173,618 bytes for 6, 24 and 96 pairs: 1,417 bytes per pair, exactly linear; the client LowIR is 751 bytes at every width",
+  "identity": "against the task-2 checkpoint pin (sha 8424709d): 3,730 files compared, 27 differ, all in this packet's version-13 run (obj/parallel/pointer-slices/identity/receipt.txt)"
+ }
+}

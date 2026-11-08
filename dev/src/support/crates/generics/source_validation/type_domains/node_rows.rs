@@ -47,7 +47,11 @@ impl Builder<'_, '_> {
                         }
                     }
                 }
-                s::Type::Reference { referent, .. } => self.push_type(referent, work)?,
+                s::Type::Reference {
+                    referent: child, ..
+                }
+                | s::Type::RawPointer { pointee: child, .. }
+                | s::Type::Slice(child) => self.push_type(child, work)?,
                 s::Type::Tuple(elements) => {
                     for &element in elements.slice(&rows.roots)?.iter().rev() {
                         self.push_type(element, work)?;
@@ -120,41 +124,7 @@ impl Builder<'_, '_> {
             s::Type::Nominal {
                 declaration,
                 arguments,
-            } => {
-                if declaration.artifact.0 != 0 {
-                    return Err(
-                        "foreign source nominal requires authenticated dependency transport",
-                    );
-                }
-                let Some(HeaderRef::Nominal(index)) =
-                    self.headers.header(declaration.declaration, work)?
-                else {
-                    return Err("source nominal has no actual nominal declaration");
-                };
-                let header = &rows.nominals[index as usize];
-                let arguments = arguments.slice(&rows.arguments)?;
-                if arguments.len()
-                    != self.headers.scopes().complete_slots(header.scope, work)? as usize
-                {
-                    return Err("source nominal changed its complete generic arity");
-                }
-                let formals = self.headers.scopes().declared_slots(header.scope, work)?;
-                let formals = formals.slice(&rows.slots)?;
-                let mut result = Summary::default();
-                for (argument, formal) in arguments.iter().zip(formals) {
-                    let child = match (argument, formal.kind) {
-                        (s::Argument::Type(ty), s::ParameterKind::Type { .. }) => {
-                            self.child(*ty, work)?
-                        }
-                        (s::Argument::Region(region), s::ParameterKind::Region) => {
-                            region_summary(self.headers, self.binders, *region, work)?
-                        }
-                        _ => return Err("source nominal argument changed its formal kind"),
-                    };
-                    result = self.merge(result, child, work)?;
-                }
-                result
-            }
+            } => self.nominal_summary(declaration, arguments, work)?,
             s::Type::Parameter(slot) => {
                 work.charge(1)?;
                 if rows
@@ -176,6 +146,19 @@ impl Builder<'_, '_> {
                 region_summary(self.headers, self.binders, region, work)?,
                 work,
             )?,
+            // A pointer or slice row carries no region. A structurally unsized
+            // slice element is rejected here; every consumer still re-proves
+            // the element sized from its own facts.
+            s::Type::RawPointer { pointee, .. } => self.child(pointee, work)?,
+            s::Type::Slice(element) => {
+                if matches!(
+                    rows.types.get(element.0 as usize),
+                    Some(s::Type::Str | s::Type::Slice(_))
+                ) {
+                    return Err("source slice element requires a sized type");
+                }
+                self.child(element, work)?
+            }
             s::Type::Function(signature) => self.signature(signature, work)?,
             s::Type::Tuple(elements) => {
                 let elements = elements.slice(&rows.roots)?;
@@ -202,6 +185,40 @@ impl Builder<'_, '_> {
                 return Err("source application signature recipe is unsupported");
             }
         })
+    }
+    fn nominal_summary(
+        &self,
+        declaration: s::DeclarationAddress,
+        arguments: g::Range,
+        work: &mut Work,
+    ) -> Result<Summary, &'static str> {
+        let rows = self.headers.rows();
+        if declaration.artifact.0 != 0 {
+            return Err("foreign source nominal requires authenticated dependency transport");
+        }
+        let Some(HeaderRef::Nominal(index)) = self.headers.header(declaration.declaration, work)?
+        else {
+            return Err("source nominal has no actual nominal declaration");
+        };
+        let header = &rows.nominals[index as usize];
+        let arguments = arguments.slice(&rows.arguments)?;
+        if arguments.len() != self.headers.scopes().complete_slots(header.scope, work)? as usize {
+            return Err("source nominal changed its complete generic arity");
+        }
+        let formals = self.headers.scopes().declared_slots(header.scope, work)?;
+        let formals = formals.slice(&rows.slots)?;
+        let mut result = Summary::default();
+        for (argument, formal) in arguments.iter().zip(formals) {
+            let child = match (argument, formal.kind) {
+                (s::Argument::Type(ty), s::ParameterKind::Type { .. }) => self.child(*ty, work)?,
+                (s::Argument::Region(region), s::ParameterKind::Region) => {
+                    region_summary(self.headers, self.binders, *region, work)?
+                }
+                _ => return Err("source nominal argument changed its formal kind"),
+            };
+            result = self.merge(result, child, work)?;
+        }
+        Ok(result)
     }
     fn projection_summary(
         &self,

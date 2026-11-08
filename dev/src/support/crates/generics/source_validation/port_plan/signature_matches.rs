@@ -120,6 +120,22 @@ impl Arena {
                 ((ac, bc), None)
             }
             (
+                Node::RawPointer {
+                    mutable: a,
+                    pointee: ac,
+                },
+                Node::RawPointer {
+                    mutable: b,
+                    pointee: bc,
+                },
+            ) => {
+                if a != b {
+                    return Err("source signature raw-pointer mutability differs");
+                }
+                ((ac, bc), None)
+            }
+            (Node::Slice(ac), Node::Slice(bc)) => ((ac, bc), None),
+            (
                 Node::Nominal {
                     declaration: a,
                     arguments: ac,

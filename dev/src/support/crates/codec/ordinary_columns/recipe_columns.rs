@@ -19,6 +19,14 @@ pub(super) fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static
         }
         s::Type::Str => out.u8(10),
         s::Type::Never => out.u8(11),
+        s::Type::RawPointer { mutable, pointee } => {
+            out.bytes(&[12, u8::from(mutable)])?;
+            id(out, pointee.0)
+        }
+        s::Type::Slice(element) => {
+            out.u8(13)?;
+            id(out, element.0)
+        }
         s::Type::Scalar(scalar) => out.bytes(&[0, scalar as u8]),
         s::Type::Nominal {
             declaration,
@@ -66,6 +74,11 @@ pub(super) fn type_read(read: &mut Input<'_, '_>) -> Result<s::Type, &'static st
         9 if read.profile.body_nodes() => s::Type::Tuple(read.range()?),
         10 if read.profile.body_nodes() => s::Type::Str,
         11 if read.profile.body_nodes() => s::Type::Never,
+        12 if read.profile.body_nodes() => s::Type::RawPointer {
+            mutable: read.boolean()?,
+            pointee: g::TypeRef(read.id()?),
+        },
+        13 if read.profile.body_nodes() => s::Type::Slice(g::TypeRef(read.id()?)),
         0 => s::Type::Scalar(read.reader.scalar()?),
         1 => s::Type::Parameter(s::SlotRef(read.id()?)),
         6 if read.profile.nominals() => s::Type::Nominal {
