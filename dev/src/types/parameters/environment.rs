@@ -18,6 +18,9 @@ use query_parameters::Parameters;
 #[path = "../../../tests/invariants/builtin_permissions.rs"]
 mod builtin_tests;
 #[cfg(test)]
+#[path = "../../../tests/invariants/elaborated_effect_bounds.rs"]
+mod effect_bound_tests;
+#[cfg(test)]
 #[path = "../../../tests/invariants/premise_scopes.rs"]
 mod scope_tests;
 #[cfg(test)]
@@ -559,16 +562,23 @@ impl Environment {
             .iter()
             .flat_map(move |equalities| equalities.candidates(item))
     }
+    /// Whether `ty` is assumed to implement `application`. As in rustc 1.98,
+    /// a `const` or `[const]` assumption elaborates to its ordinary trait bound,
+    /// so it also forms that trait's projections. Effect goals still require
+    /// their qualified premise through `assumes_predicate`.
     #[must_use]
     pub fn assumes_trait(
         &self,
         ty: TypeId,
         application: crate::types::traits::ApplicationId,
     ) -> bool {
-        self.assumes_predicate(Predicate {
-            ty,
-            bound: Bound::Trait(application),
-        })
+        [
+            Bound::Trait(application),
+            Bound::ConstTrait(application),
+            Bound::MaybeConstTrait(application),
+        ]
+        .into_iter()
+        .any(|bound| self.assumes_predicate(Predicate { ty, bound }))
     }
     /// This fast path preserves effect qualification. Stronger-premise
     /// projection belongs to the ordinary scoped assumption selector.

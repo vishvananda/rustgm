@@ -1,0 +1,121 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The shapes reduce census 9's crate record (core's `Option::as_deref`, `pub const fn as_deref(&self) -> Option<&T::Target> where T: [const] Deref`, option.rs:1386). Census batch 8 (section 2) records that its drafts of the named-lifetime, argument, method, static, raw-pointer, plain-bound and direct-ref shapes (obj/parallel/census-batch8/repro) were run through the compiler and that rustc 1.98.0 accepts the named-lifetime reduction, so `named-lifetime`, `argument`, `as-deref`, `static-ref`, `raw-pointer`, `plain-bound` and `direct-ref` are a regression record of that exploration; the other cases were not run by anyone. Each outcome follows the stated rule (a `[const]` or `const` trait bound implies the ordinary trait bound, as rustc 1.98 elaborates it, so the projection it names is well formed and its rigid result keeps the caller's reference lifetimes; an unsized projection is still not a sized argument and a projection without any bound on its subject is still unproven)",
+ "declaration_sha256": "62fe09cc00b10cf74fcc5e2b1f7ece99626cb1408d74d9543443ade6d52bb8c5",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [
+  {
+   "amended": "2026-11-08, after the first frozen rustc 1.98.0 oracle and before any candidate run of either the original or the amended bytes",
+   "corrected": "this reason first said eleven controls; it was recounted after the amended oracle ran (outcomes and declaration_sha256 unchanged)",
+   "supersedes_declaration_sha256": "3abec18aad8ae1831d72807620d095e1e6db6819cd138dce1718d404fba2bf38",
+   "observation": "obj/parallel/census-batch9/oracle/const-bound-projections.rustc-oracle.json",
+   "observation_sha256": "f510285e4d528abc8e0175f587ef2c9af92a585bdd54ba8d2c08f57fd182f1c7",
+   "reason": "rustc 1.98.0 reported `requires freeze lang_item` for twelve controls, rejecting ten declared to be accepted: const checking of a const fn that yields an ADT value queries `Freeze`, which the no_core prefix lacked. Every file gains `auto_traits` in its feature list and `#[lang = \"freeze\"] pub unsafe auto trait Freeze {}` (the PA28 source-transmute declaration) after `Copy`. No signature, body or declared outcome changes."
+  }
+ ],
+ "cases": {
+  "as-deref.rs": {
+   "sha256": "8437132c6ca07332fe19343641376543ed453c1327a9e53e4f700304f6475120",
+   "declared": 0,
+   "reason": "core's exact `Option::as_deref` method shape (option.rs:1386): `Option<&T::Target>` under `T: [const] Deref` with an elided reference lifetime",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "named-lifetime.rs": {
+   "sha256": "2da6b485a921e31666f424360311264c4b2460839527b3004b26694a56974e19",
+   "declared": 0,
+   "reason": "the free-function reduction with a named lifetime: `Option<&'a T::Target>` under `T: [const] Deref`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "argument.rs": {
+   "sha256": "6203fb780885196db8129278645555c70e38953901e52fb36785ddfaaa248059",
+   "declared": 0,
+   "reason": "the same `Option<&T::Target>` as a parameter type",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "as-deref-mut.rs": {
+   "sha256": "a2f6f52e6da7cf05b33008ef02e131c3a83de95d58e7aa283db9a3807045aac0",
+   "declared": 0,
+   "reason": "core's `Option::as_deref_mut` shape: `Option<&mut T::Target>` under `T: [const] DerefMut`, whose supertrait is `[const] Deref`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "result-as-deref.rs": {
+   "sha256": "c04ed1a27f95d7b3d7071e612beaabdbfcb361c6696769df91539044c26d140c",
+   "declared": 0,
+   "reason": "core's `Result::as_deref` shape: `Result<&T::Target, &E>` under `T: [const] Deref`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "pin-as-ref.rs": {
+   "sha256": "bff3f405ad264ce584adc0ebbc43a1dccc33ddfff98c1e90fe49582e4eea8ebd",
+   "declared": 0,
+   "reason": "core's `Pin::as_ref` shape: `Pin<&Ptr::Target>` under `Ptr: [const] Deref`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "slice-index.rs": {
+   "sha256": "7b625968a0eb500b9df2a7c0d08df823c5c7e60dea293db29b8d182f3077f10b",
+   "declared": 0,
+   "reason": "core's `<[T]>::get` shape as a free function: `Option<&'a I::Output>` under `I: [const] SliceIndex<[T]>`, a const trait with a type parameter",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "always-const.rs": {
+   "sha256": "d092a0a124e881543ba5b24d6eb9836e01f05d861946b999b9c82a87a885aff3",
+   "declared": 0,
+   "reason": "the reduction under an always-const `T: const Deref` bound",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "static-ref.rs": {
+   "sha256": "a9412422c5d97406369d4e669087bb9c1ae49a51284abf7cf008ed38f7af5b48",
+   "declared": 0,
+   "reason": "guard: `Option<&'static T::Target>` under `T: [const] Deref`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "raw-pointer.rs": {
+   "sha256": "82af056b3c626f561b111ebdec6564c9d99f52151b2ec994c9bb4e6d966a5463",
+   "declared": 0,
+   "reason": "guard: `Option<*const T::Target>` under `T: [const] Deref`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "plain-bound.rs": {
+   "sha256": "5a6a5a1ab92071c0fb8b88cf17d22db914b65fe6b154aff6aca028a42b8adcbd",
+   "declared": 0,
+   "reason": "guard: `Option<&'a T::Target>` under a plain `T: Deref` bound",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "direct-ref.rs": {
+   "sha256": "3fcbc7f1b1780051de070ed1dda6ba6009312db17eb310f817373c4c3c7a9dab",
+   "declared": 0,
+   "reason": "guard: `&T::Target` without a nominal wrapper under `T: [const] Deref`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "unsized-target.rs": {
+   "sha256": "264805854f12db22e19f9d69e6325cbf17181cd5148d217e8af94c71e6bcb9df",
+   "declared": 1,
+   "reason": "opponent: `Option<T::Target>` under `T: [const] Deref` needs `T::Target: Sized`, which a `?Sized` target lacks (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "missing-bound.rs": {
+   "sha256": "200cbaea37f4f982eb7a4d617ab0e270649c410e3dc106fb1fc8774edc366342",
+   "declared": 1,
+   "reason": "opponent: `Option<&'a <T as Deref>::Target>` with no bound on `T` leaves `T: Deref` unproven (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  }
+ }
+}

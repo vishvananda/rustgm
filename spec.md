@@ -1989,6 +1989,16 @@ sizedness](pa31/tests/spec/projection-sizedness/README.md) and [normalized
 projection sizing](pa31/tests/spec/normalized-projection-sizing/README.md)
 controls retain the accepted shapes and their opponents.
 
+A `const` or `[const]` trait bound implies its ordinary trait bound, as rustc
+1.98 elaborates it. Any query for the ordinary trait over an environment
+premise, including the shape walk that keeps a parameter's projection rigid,
+accepts the effect-qualified premise, so the projection it names is well formed
+inside a nominal argument and keeps the caller's lifetimes without
+normalization. An effect goal still requires its qualified premise. The [const
+bound projections](pa31/tests/spec/const-bound-projections/README.md) controls
+retain core's `as_deref`, `as_deref_mut`, `Pin::as_ref` and `<[T]>::get`
+shapes, their guards and their opponents.
+
 Actual source Unsize selection checks both endpoint formations even after a
 conversion mismatch or an unresolved peer. Pointee shape alone does not pay
 nominal lifetime requirements: retain their existing symbolic region/type-outlives

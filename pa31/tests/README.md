@@ -621,3 +621,16 @@ environment. Three opponents are E0277: an implicitly `Sized` argument, a
 `MetaSized` argument from a `PointeeSized`-only associated type and `Option`
 of a `?Sized` item. Each outcome was declared before its rustc 1.98.0 oracle.
 A private invariant checks them; there is no graded manifest.
+
+`spec/const-bound-projections/` freezes fourteen declared no_core controls from
+census batch 9: projections named through a `[const]` or `const` trait bound,
+which rustc 1.98 elaborates to its ordinary trait bound. They cover core's
+`Option::as_deref` (census 9's crate record), `Option::as_deref_mut`,
+`Result::as_deref`, `Pin::as_ref` and `<[T]>::get` signature shapes, a named
+lifetime, a parameter type and an always-`const` bound, with guards for a
+`'static` reference, a raw pointer, a plain `Deref` bound and a bare reference.
+Two opponents are E0277: `Option` of a `?Sized` target and a projection with
+no bound on its subject. Each outcome was declared before its rustc 1.98.0
+oracle; the one amendment, adding the `Freeze` lang item that rustc's const
+checking requires, was declared before the amended oracle and before any
+candidate run. A private invariant checks them; there is no graded manifest.
