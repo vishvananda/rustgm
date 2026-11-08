@@ -1,0 +1,118 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The shapes reduce census 10's crate record (core's `impl<F: FnPtr> PartialEq for F`, ptr/mod.rs:2592, \"overlapping implementation headers have no specialization ordering\"). Census batch 9 ran two related drafts (obj/parallel/census-batch9/repro/fnptr-tuple-spec.rs and fnptr-ref-spec.rs, a non-const `PartialEq` with a one-element tuple impl or core's `&A` impl, with `min_specialization` and without `with_negative_coherence`) through the census 10 pin and, for exploration, through rustc 1.98.0, which accepted the tuple draft and rejected the reference draft with E0119; `stable-tuple` and `stable-core-references` are the nearest of these controls, and no control here was run by anyone. Each outcome follows the rule read in the pinned rustc 1.98.0 sources (compiler/rustc_trait_selection/src/traits/coherence.rs `overlap` and `impl_intersection_has_negative_obligation`, compiler/rustc_next_trait_solver/src/solve/trait_goals.rs `consider_builtin_fn_ptr_trait_candidate`, compiler/rustc_type_ir/src/ty_kind.rs `is_known_rigid`): in every mode, `T: FnPtr` holds only for a function pointer, so a knowable goal whose Self type is any other type constructor is impossible; without `with_negative_coherence` a goal whose Self type is a reference or a fundamental nominal over an unknown type is not knowable, because a downstream crate could own that Self type, and the impls overlap (E0119); with `with_negative_coherence`, as core enables at lib.rs:166, coherence also proves a negated where clause over the intersection with its unknowns as placeholders, and the builtin `impl !FnPtr for T` holds for every rigid type that is not a function pointer, so a reference, a fundamental nominal, a tuple or a trait object is disjoint from the blanket impl, while a placeholder parameter or a function pointer is not; a strict coherence trait keeps only that negative reasoning",
+ "declaration_sha256": "4f486efffaca8c71664f29b798fac62094b1523a1f754b8567a2bcbac3fd48be",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "core-references.rs": {
+   "sha256": "7d8f6ae3c498cb2e553d0736ec234be205da41ef28ca238393c629fa1918813b",
+   "declared": 0,
+   "reason": "core's exact shapes under core's features (`min_specialization`, `with_negative_coherence`): the const trait `PartialEq`, the blanket `impl<F: FnPtr> PartialEq for F` (ptr/mod.rs:2592) and core's four const reference impls `PartialEq<&B> for &A`, `PartialEq<&mut B> for &mut A`, `PartialEq<&mut B> for &A` and `PartialEq<&B> for &mut A` under `A: [const] PartialEq<B>` (cmp.rs:2117, 2192, 2265, 2281); `&A: !FnPtr` holds",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "reference.rs": {
+   "sha256": "a6803bd0a58a0a479057d332fc96a074712672740f00b9026120d39ed623543e",
+   "declared": 0,
+   "reason": "negative coherence: the blanket `impl<F: FnPtr> Mark for F` beside `impl<T: PointeeSized> Mark for &T`; `&T: !FnPtr` holds",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "fundamental.rs": {
+   "sha256": "97d4d1f2bff9a057572f4ba653180e989042fa9746bcfd22e4c42ab67a0bacd5",
+   "declared": 0,
+   "reason": "negative coherence: the blanket beside `impl<T> Mark for Wrap<T>` over a `#[fundamental]` struct; `Wrap<T>: !FnPtr` holds",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "trait-object.rs": {
+   "sha256": "5a4d9d451b75bf4bd5ebb86287006be456a281f5d84906df62e47b0ac7976e98",
+   "declared": 0,
+   "reason": "guard: negative coherence with the blanket beside `impl Mark for dyn Local`, core's `impl Debug for dyn Any` shape (any.rs:152); the trait object is neither sized nor a function pointer",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "parameter.rs": {
+   "sha256": "48cfbeda4a977a391662eebb169634de1cb8b12b4a986e7b23dda063f5799aad",
+   "declared": 1,
+   "reason": "opponent: negative coherence with the blanket beside `impl<T: Other> Mark for T`; the intersection's Self type is a placeholder, which is not rigid, so nothing is refuted and the impls overlap (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "function-pointer.rs": {
+   "sha256": "e8158cf2d7f7669540fcfc25c2a6cf489777529c6c317aeae397c96842b51eb3",
+   "declared": 1,
+   "reason": "opponent: negative coherence with the blanket beside `impl Mark for fn()`; a function pointer implements `FnPtr`, so the impls overlap (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "strict-tuple.rs": {
+   "sha256": "e83198f1d0622930498361f0f6d113358332700bf3818e648a12026ab7fe0645",
+   "declared": 0,
+   "reason": "a `#[rustc_strict_coherence]` trait: the blanket beside `impl<T> Mark for (T,)`; strict mode has no implicit absence, and the builtin `(T,): !FnPtr` still holds",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "stable-core-references.rs": {
+   "sha256": "609984e489fefffadf29c07b14301df55d70842ae3c7e83258aa81e10bee318f",
+   "declared": 1,
+   "reason": "opponent: `core-references` without `with_negative_coherence`; `&_: FnPtr` is not knowable because a downstream crate could own `&Local`, so the impls overlap (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "stable-reference.rs": {
+   "sha256": "7dc4d43d241e5a4a10b9dd6c89d7601289169d74c30a9d9956fb298a2329d85a",
+   "declared": 1,
+   "reason": "opponent: `reference` without `with_negative_coherence` (E0119, as for `stable-core-references`)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "stable-fundamental.rs": {
+   "sha256": "a5f740acc5d41bb34ede5f4758f14252212d2e22ecdc3cd964b9d2cb7e3fe439",
+   "declared": 1,
+   "reason": "opponent: `fundamental` without `with_negative_coherence`; a downstream crate could own `Wrap<Local>` (E0119)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0119"
+   ]
+  },
+  "stable-tuple.rs": {
+   "sha256": "2b3d36c2199bb97e3b0f1fe703649479047b81673bd6862c9b4c58c5172d383d",
+   "declared": 0,
+   "reason": "stable coherence: the blanket beside `impl<T> Mark for (T,)`; a tuple is not fundamental, so `(_,): FnPtr` is knowable and impossible",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "stable-nominal.rs": {
+   "sha256": "59e22c21029c522b45f2e63f0d3f177b5c6ff124decae33e59ae26fd5704dbe2",
+   "declared": 0,
+   "reason": "stable coherence: the blanket beside `impl<T> Mark for Holder<T>` over an ordinary generic struct",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "stable-raw-pointer.rs": {
+   "sha256": "97f40d2e0526d164b8f42e025b410fc3256cf753a42a87196e2ba8457d6f1d85",
+   "declared": 0,
+   "reason": "stable coherence: the blanket beside `impl<T: PointeeSized> Mark for *const T`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "stable-array.rs": {
+   "sha256": "ac42512dd09b725d2d05b1120a3b1ae84e7116942f137b04df77ecc4c704ab48",
+   "declared": 0,
+   "reason": "stable coherence: the blanket beside `impl<T, const N: usize> Mark for [T; N]`",
+   "rustc_status": 0,
+   "error_codes": []
+  }
+ }
+}

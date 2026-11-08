@@ -74,7 +74,10 @@ impl Search<'_> {
             || source_destruct_goal(facts, frame)?
             || Self::source_no_drop_goal(facts, &frame.goal)?
             || Self::source_builtin_marker_goal(facts, frame)?
-            || Self::source_fn_pointer_goal(facts, &frame.goal)?
+            // No rigid type other than a function pointer has `FnPtr` evidence
+            // to form; its absence never depends on the Self type's formation.
+            || (Self::source_fn_pointer_goal(facts, &frame.goal)?
+                && !Self::rigid_non_fn_pointer(facts, &mut frame.inputs.context, &frame.goal)?)
             || Self::source_refinement_marker_goal(facts, frame)?;
         if !source_rule {
             return Ok(None);

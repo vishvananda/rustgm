@@ -53,6 +53,14 @@ pub(in crate::sema) fn may_overlap_with(
         &[crate::types::TypeId],
     ) -> Result<bool, String>,
 ) -> Result<bool, String> {
+    if mode.negative()
+        && Search::source_fn_pointer_goal(facts, goal)?
+        && Search::rigid_non_fn_pointer(facts, context, goal)?
+    {
+        // rustc 1.98's builtin `impl !FnPtr for T` for each rigid T that is not
+        // a function pointer: a negated where clause with no nested goals.
+        return Ok(false);
+    }
     let empty = Assumptions::default();
     let caller = Caller {
         assumptions: &empty,
