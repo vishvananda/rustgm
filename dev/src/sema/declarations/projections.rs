@@ -53,6 +53,8 @@ enum Destination {
     Requirement,
     Sized,
     Recheck(TypeId),
+    /// A header kept as written beside a bound on its own `Self`.
+    Header(TypeId),
 }
 #[derive(Clone, Copy)]
 struct Root {
@@ -62,6 +64,8 @@ struct Root {
 #[derive(Default)]
 pub(super) struct Pending {
     rechecks: Vec<(NodeKey, regions::Context, scoped::Ambient, TypeId, TypeId)>,
+    headers: Vec<(NodeKey, regions::Context, TypeId)>,
+    self_bounded: HashMap<DefId, bool>,
     lookup: lookup::Pending,
     sized: Vec<(NodeKey, regions::Context, scoped::Ambient, TypeId)>,
     alias_environments:
@@ -240,6 +244,10 @@ impl Checker<'_> {
         if self.projections.raw_bound_nodes.remove(&key) {
             return self.store(key, ty);
         }
+        if self.self_bounded_header(context) {
+            self.projections.headers.push((key, context, ty));
+            return self.store(key, ty);
+        }
         self.start_scoped_normalization(
             key,
             root,
@@ -303,12 +311,18 @@ impl Checker<'_> {
                         key,
                         "projection normalization changed after declaration completion",
                     )),
+                    Destination::Header(written) if ty != written => Err(self.error(
+                        key,
+                        "impl header projection must stay rigid when the impl's bounds name `Self`",
+                    )),
                     Destination::Sized => {
                         let depth = self.ambient_depth(key, query.ambient)?;
                         self.prove_alias_size(key, query.context, depth, ty)
                     }
                     Destination::Annotation => self.store(key, ty),
-                    Destination::Recheck(_) | Destination::Requirement => Ok(()),
+                    Destination::Recheck(_) | Destination::Header(_) | Destination::Requirement => {
+                        Ok(())
+                    }
                 }
             }
             Step::Resolve(request) => {

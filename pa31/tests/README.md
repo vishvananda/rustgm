@@ -586,11 +586,14 @@ separate cause (an impl parameter determined to name a caller lifetime). Each
 outcome was declared before its rustc 1.98.0 oracle. A private invariant
 checks them; there is no graded manifest.
 
-`spec/impl-header-projections/` freezes ten declared no_core controls for an
-impl header that names a projection of its own parameter (core `ControlFlow`
-`from_try` shape), inline, qualified, where-clause, trait-impl and `Self`
-where-clause forms, with an unbounded and an unconstrained (E0207) opponent
-and one recorded gap. Each outcome was declared before its rustc 1.98.0 oracle. A private invariant
+`spec/impl-header-projections/` freezes fifteen declared no_core controls for
+an impl header that names a projection of its own parameter (core
+`ControlFlow` `from_try` shape), inline, qualified, where-clause, trait-impl
+and `Self` where-clause forms, with an unbounded and an unconstrained (E0207)
+opponent. Five more name the impl's own `Self` in its bounds: nested, as a
+trait argument, beside a header without a projection, unbounded (E0277), and
+beside a projection that normalizes to `u8`, which is the one recorded gap.
+Each outcome was declared before its rustc 1.98.0 oracle. A private invariant
 checks them; there is no graded manifest.
 
 `spec/assume-constant-execution/`, `spec/declaration-lifetime-contracts/`,

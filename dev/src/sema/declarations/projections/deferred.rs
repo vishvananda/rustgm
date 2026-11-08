@@ -21,6 +21,20 @@ impl Checker<'_> {
             )?;
             self.drain(steps, limit)?;
         }
+        // Every impl header now has its complete environment.
+        while let Some((key, context, ty)) = self.projections.headers.pop() {
+            self.start_scoped_normalization(
+                key,
+                super::Root {
+                    ty,
+                    normalized_subject: None,
+                },
+                context,
+                Destination::Header(ty),
+                super::scoped::Ambient::Root,
+            )?;
+            self.drain(steps, limit)?;
+        }
         Ok(())
     }
 

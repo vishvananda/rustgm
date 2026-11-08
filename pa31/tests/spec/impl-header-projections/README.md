@@ -1,6 +1,6 @@
 # Impl headers naming a projection of their parameter
 
-Ten no_core source-core libraries for an impl header whose type names a
+Fifteen no_core source-core libraries for an impl header whose type names a
 projection of the impl's own parameter, as in core's
 `impl<R: ops::Try> ControlFlow<R, R::Output>` (`ops/control_flow.rs`). Rustc
 checks that header under the impl's predicates, where `<R as Try>::Output`
@@ -13,13 +13,21 @@ bounds, a trait impl, a method returning `Self` and a `where Self: Sized`
 clause. The opponents name the projection without an `R: Try` bound (E0277)
 and use `R` only inside a projection, which leaves it unconstrained (E0207).
 
-`self-where` stays a recorded gap: its `where Self: Sized` bound names the
-self type that the header projection's environment would need before that
-type is formed. The same bound beside a header without a projection passes.
+`self-where` names the impl's own self type in `where Self: Sized`. Rustc's
+`Self` there is the unnormalized header, so the header keeps its projection as
+written and is normalized again once the impl's environment is complete. Five
+more controls were declared on 2026-11-08 before any rustc or RustGM run:
+`Self` nested in `Option<Self>` beside a method returning `Self`, `Self` as a
+trait argument in `R: Same<Self>`, the bound beside a header without a
+projection, an unbounded opponent (E0277), and `self-equality`. That one stays
+a recorded gap. Rustc accepts `impl<R: Try<Output = u8>> W<R, R::Output> where
+Self: Sized`, but RustGM would have to re-form a header that `Self` already
+names as written, so it rejects the non-rigid result by name.
 
 Outcomes were declared before the frozen rustc 1.98.0 oracle; see
 `outcomes.json`. Seven reduced shapes had exploratory rustc runs in scratch
-first; `where-clause`, `self-where` and `unbounded` had none.
+first; `where-clause`, `self-where`, `unbounded` and the five later `self-`
+controls had none.
 
 The lang-item prefix and the `Tuple`, `Fn`, `FnMut` and `FnOnce` declarations
 are the exact pinned Rust core fragment of

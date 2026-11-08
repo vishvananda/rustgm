@@ -7,7 +7,9 @@ const CONTROLS: &str = "pa31/tests/spec/impl-header-projections";
 
 /// Independently checked rustc 1.98.0 outcomes: `None` accepts, otherwise the
 /// first error this compiler reports for the control rustc also rejects.
-const CASES: [(&str, Option<&str>); 9] = [
+/// The `self-` controls name the impl's own `Self` in its bounds, so a header
+/// projection stays as written until the impl's environment is complete.
+const CASES: [(&str, Option<&str>); 14] = [
     ("control-flow", None),
     ("try-residual", None),
     ("pair", None),
@@ -23,16 +25,25 @@ const CASES: [(&str, Option<&str>); 9] = [
         "unconstrained",
         Some("impl type and const parameters must constrain its target"),
     ),
+    ("self-where", None),
+    ("self-nested", None),
+    ("self-argument", None),
+    ("self-plain", None),
+    (
+        "self-unbounded",
+        Some("associated type requires an unambiguous implementation"),
+    ),
 ];
 
 /// A declared control whose rustc outcome this analysis does not reach yet,
 /// with the outcome it has instead. The assertion fails when it changes.
-/// `self-where`: the impl's bounds name its own self type, which the header
-/// projection's environment would need before that type is formed. The same
-/// bound beside a header without a projection passes.
+/// `self-equality`: rustc accepts `impl<R: Try<Output = u8>> W<R, R::Output>
+/// where Self: Sized`. Its header must stay as written while `Self` names it,
+/// and the completed environment normalizes it to `W<R, u8>`, which is
+/// rejected by name instead of re-forming the header.
 const GAPS: [(&str, Option<&str>); 1] = [(
-    "self-where",
-    Some("nominal or associated types require later semantic assignments"),
+    "self-equality",
+    Some("impl header projection must stay rigid when the impl's bounds name `Self`"),
 )];
 
 fn analyze(name: &str) -> TestResult<Result<(), String>> {

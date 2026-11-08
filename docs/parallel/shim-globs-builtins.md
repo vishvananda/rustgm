@@ -315,3 +315,84 @@ The rustc 1.98.0 oracle matches all 118 declared outcomes natively
   - `1794114538180565247` (PA20, 1451/1451).
 - `make test-upstream` passes: 128 pinned upstream fixtures and 126
   Reference files.
+
+## 3. Impl bounds that name `Self`
+
+`pa31/tests/spec/impl-header-projections/self-where.rs` was the recorded gap
+of the [core sites batch](core-sites-reexports.md):
+
+```rust
+impl<R: Try> W<R, R::Output> where Self: Sized { pub fn f(self) -> Self { loop {} } }
+```
+
+Forming `R::Output` demanded the impl's environment while the header formed.
+That environment scheduled every bound subject, including `Self`, whose impl
+had no schema yet. It stopped with "nominal or associated types require later
+semantic assignments".
+
+Rustc does not need that order. Its `Self` in an impl's predicates is
+`type_of(impl)`, the unnormalized header `W<R, <R as Try>::Output>`. The
+parameter environment holds that predicate unnormalized and is normalized
+afterwards.
+
+### Change
+
+The fix is in `sema::declarations`, with no `sema::traits` edits:
+
+- `Checker::bounds_name` (`generics/bounds.rs`) walks an owner's written
+  bound syntax (subjects and trait paths) once, for a reference to a given
+  definition.
+- `self_bounded_header` (`projections/environments.rs`) holds when a
+  projection's nearest binder owner is an impl's lexical `Self` that has no
+  schema yet and whose bounds name it. The answer is cached per impl.
+- In that case, `normalize_annotation_root` stores the header projection as
+  written and queues it. The header is published with it, and the impl's
+  environment forms after publication through the existing
+  `Work::ProjectionEnvironment`, with `Self` as the written header, as in
+  rustc.
+- `complete_size_rechecks` then normalizes each queued projection under the
+  completed environment (`Destination::Header`). A result other than the
+  written projection is rejected with "impl header projection must stay
+  rigid when the impl's bounds name `Self`", so a header is never used in a
+  form that its environment would change.
+- An impl whose bounds do not name `Self` keeps the earlier order and its
+  normalized header.
+
+### Controls
+
+`dev/tests/invariants/normalized_impl_headers.rs` now checks 14 cases and
+one gap. `self-where` moved from the gap list to the checked cases. Five
+controls were added. Their outcomes were declared in `outcomes.json` on
+2026-11-08, before any rustc or RustGM run on them (declaration copy
+`obj/lane-b3/declarations/impl-header-projections-outcomes.json`, sha256
+`5e57d560…`):
+
+- `self-nested`: `where Option<Self>: Sized`, with a method returning `Self`;
+- `self-argument`: `where R: Same<Self>`;
+- `self-plain`: `where Self: Sized` beside a header without a projection;
+- `self-unbounded`: `<R as Try>::Output` without `R: Try` (rustc E0277;
+  RustGM "associated type requires an unambiguous implementation");
+- `self-equality`, the recorded gap: rustc accepts
+  `impl<R: Try<Output = u8>> W<R, R::Output> where Self: Sized`. The written
+  header names `<R as Try>::Output`, the environment normalizes it to `u8`,
+  and RustGM rejects it by name rather than re-form a published header.
+
+The frozen rustc 1.98.0 oracle agrees with all 15 declarations
+(`obj/lane-b3/oracle-self-where/receipt.json`). The ten earlier outcomes are
+unchanged.
+
+### Evidence
+
+- Fastcheck `1794114936497459224` passes
+  `sema::declarations::projections::environments::tests::projected_impl_headers_normalize_under_the_impl_bounds_like_rustc`
+  and `quantified_outputs_constrain_impl_parameters_only_through_known_inputs`.
+  The pinned `rustgm-cand-2` still stops `self-where.rs` with the old error.
+- PA fastchecks:
+  - `1794115172459519167` (PA1–PA12);
+  - `1794115316103021491` (PA13–PA19 and PA21–PA24);
+  - `1794115396736545235` (PA20, 1451/1451, with the impl-header invariant,
+    `legacy_availability_remains_unknown_and_hot_records_do_not_grow` and
+    `marker_shape_ordinary_storage_and_derive_owner_layouts_preserve_boundaries`).
+- No metadata layout or wire shape changes. Only an impl whose bounds name
+  its own `Self` beside a header projection takes the new order, and every
+  such impl failed before.

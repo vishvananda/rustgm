@@ -30,6 +30,12 @@ through its `pub use core::*` as rustc does, and follows rustc 1.98's
   RustGM, as amended before any run. Six cases are added, including the
   exact upstream `rustc-std-workspace-core/lib.rs`, and 118 match the rustc
   1.98.0 oracle natively.
+- An impl whose bounds name its own `Self` (`where Self: Sized`) keeps its
+  header projections as written, as rustc's unnormalized `type_of(impl)`
+  does, and forms its environment after publication. Each projection is then
+  normalized again and must stay rigid. `self-where` passes, five new PA31
+  controls agree with rustc 1.98.0, and one is a recorded gap: a header
+  projection that the environment normalizes to `u8` beside a `Self` bound.
 - Every PA1 to PA24 suite passes, with PA20 at 1451/1451.
 
 Lane A [census batch 10](parallel/census-batch10.md) repairs census 10's

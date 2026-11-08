@@ -363,8 +363,12 @@ inferred to name one of those regions cannot leave the trial, so that selection
 fails. An impl header that names a projection of its own parameter, as core's
 `impl<R: Try> ControlFlow<R, R::Output>` does, is normalized under the impl's
 bounds, formed on demand before the header is published, as a signature is under
-its own. An impl bound naming `Self` cannot be formed before that header and is
-still rejected.
+its own. Rustc's `Self` in an impl's bounds is the unnormalized header, so when
+any bound of the impl names its own `Self` (`where Self: Sized`, `Option<Self>`,
+`R: Same<Self>`), its header keeps each projection as written and forms its
+environment after publication. Once every impl environment is complete, each
+such projection is normalized again under it, and a result other than the
+written projection is rejected by name: the header must stay rigid.
 
 Fundamental policy belongs to the actual struct or trait and uses its distinct
 `fundamental` feature or genuine attribute-name macro allowance; `rustc_attrs`

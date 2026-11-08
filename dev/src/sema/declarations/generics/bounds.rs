@@ -462,6 +462,35 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         self.bound_subject_inputs(key, owner, None)
     }
+    /// Whether a written bound of `owner` names `definition` in its subject or
+    /// trait path, as an impl's bounds may name its own `Self`. The walk visits
+    /// each written node once.
+    pub(in super::super) fn bounds_name(&self, owner: DefId, definition: DefId) -> bool {
+        let Some(bounds) = self.bound_syntax.get(&owner) else {
+            return false;
+        };
+        let mut work = Vec::new();
+        for bound in bounds {
+            if let Subject::Type(key) = bound.subject {
+                work.push(key);
+            }
+            if let Written::User { path, .. } | Written::Alias { path, .. } = bound.bound {
+                work.push(path);
+            }
+        }
+        let mut children = Vec::new();
+        while let Some(key) = work.pop() {
+            if self.facts.node(key).and_then(|facts| facts.reference)
+                == Some(Target::Definition(definition))
+            {
+                return true;
+            }
+            let ast = &self.report.package.unit(key.file).configured.ast;
+            ast.push_children(key.node, &mut children);
+            work.extend(children.drain(..).map(|node| NodeKey { node, ..key }));
+        }
+        false
+    }
     /// Retain written identities during the existing syntax walk, before aliases
     /// erase arguments. Nested binders have distinct resolved definitions.
     pub(in super::super) fn bound_subject_inputs(

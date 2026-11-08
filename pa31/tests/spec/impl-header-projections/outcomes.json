@@ -91,11 +91,57 @@
    "error_codes": [
     "E0207"
    ]
+  },
+  "self-nested.rs": {
+   "sha256": "6d4acd904cb671c65549d8bea215de1d187afb677a62266cc891cae038a315ed",
+   "declared": 0,
+   "reason": "Self nested in a where-clause subject, Option<Self>: Sized, beside the header projection, with a method returning Self",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "self-argument.rs": {
+   "sha256": "7b9d817822637d8a470adc11da1651793e8001cade0f0728e3b63626c2bb8606",
+   "declared": 0,
+   "reason": "Self as a trait argument of a parameter's where clause, R: Same<Self>, beside the header projection",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "self-plain.rs": {
+   "sha256": "99912ad91d309fe51ac15fc94f4f66493943fc41dc2a6a035e8db738f7344d79",
+   "declared": 0,
+   "reason": "where Self: Sized beside a header without a projection",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "self-unbounded.rs": {
+   "sha256": "736106b810a8d272e79ecb4a6cf0223fd194c977fec04ea7e7d209e08c276d13",
+   "declared": 1,
+   "reason": "opponent: <R as Try>::Output without an R: Try bound beside where Self: Sized (E0277)",
+   "declared_error_codes": [
+    "E0277"
+   ],
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "self-equality.rs": {
+   "sha256": "b4d0ae688e947a9609b8cdda25fc97b72fcddb3a5cdd2a674adf0700f0f176d7",
+   "declared": 0,
+   "reason": "where Self: Sized beside a header projection that R: Try<Output = u8> normalizes to u8",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
   }
  },
  "declaration_sha256": "54926dfe39646870813f6679795b10dda41e2a758bb448ff702346c785ddfa7a",
  "amendments": [
-  "2026-11-07 after oracle v1: where-clause.rs, self-where.rs and unbounded.rs v1 repeated the prefix's own `pub enum Option` line, so rustc rejected the fixture itself (E0428), which is not an outcome. v2 removes the repeated line; each case body and declared outcome is unchanged, and no RustGM run on them preceded this amendment. The v1 declaration hash is declaration_sha256; this amended declaration is hashed as amended_declaration_sha256. Declared before oracle v2."
+  "2026-11-07 after oracle v1: where-clause.rs, self-where.rs and unbounded.rs v1 repeated the prefix's own `pub enum Option` line, so rustc rejected the fixture itself (E0428), which is not an outcome. v2 removes the repeated line; each case body and declared outcome is unchanged, and no RustGM run on them preceded this amendment. The v1 declaration hash is declaration_sha256; this amended declaration is hashed as amended_declaration_sha256. Declared before oracle v2.",
+  "2026-11-08, Lane B: self-nested.rs, self-argument.rs, self-plain.rs, self-unbounded.rs and self-equality.rs are added, declared after the implementation change and before any rustc or RustGM run on them; no exploratory rustc run preceded them. Their prefix is self-where.rs's. This declaration is hashed as self_bound_declaration_sha256."
  ],
- "amended_declaration_sha256": "3a857888fa2673bcc6303480dfe8380ee2e586d92efd26ffdbd09b51e168777e"
+ "amended_declaration_sha256": "3a857888fa2673bcc6303480dfe8380ee2e586d92efd26ffdbd09b51e168777e",
+ "self_bound_declaration_sha256": "5e57d560fa7c4473aa600e30a8a9e0f14e3f566605b5fe102d5e52b501033864"
 }

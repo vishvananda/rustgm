@@ -84,6 +84,35 @@ impl Checker<'_> {
         Ok(())
     }
 
+    /// Rustc's `Self` in an impl's bounds is the unnormalized header, so an
+    /// impl whose bounds name its own `Self` has no environment while that
+    /// header forms. Its header projections stay as written, and each is
+    /// normalized again once the impl's environment is complete.
+    pub(super) fn self_bounded_header(&mut self, context: regions::Context) -> bool {
+        let mut binder = context.binder;
+        let owner = loop {
+            let Some(current) = binder else {
+                return false;
+            };
+            if let Some(owner) = self.regions.owner(current) {
+                break owner;
+            }
+            binder = self.regions.parent(current);
+        };
+        if self.report.resolution.definitions[owner.0 as usize].kind != DefKind::SelfType
+            || self.facts.associated.schema(owner).is_some()
+            || !self.implementation(owner)
+        {
+            return false;
+        }
+        if let Some(&named) = self.projections.self_bounded.get(&owner) {
+            return named;
+        }
+        let named = self.bounds_name(owner, owner);
+        self.projections.self_bounded.insert(owner, named);
+        named
+    }
+
     /// A lexical `Self` owns an impl's binder; a trait's owns its own.
     fn implementation(&self, owner: DefId) -> bool {
         self.report.resolution.definitions[owner.0 as usize]
