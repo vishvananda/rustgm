@@ -1,4 +1,7 @@
 //! Const parameter identity precedes the mandatory completed source marker proof.
+#[cfg(test)]
+#[path = "../../../../tests/invariants/unstable_bound_parameters.rs"]
+mod feature_bound_tests;
 use super::{Argument, Checker, ConstKind, DefId, Error, NodeKey, Type, TypeId};
 use crate::{
     support::bindings::LangItem,
@@ -147,8 +150,11 @@ impl Checker<'_> {
                 .intern_trait_application(application)
                 .map_err(|e| self.error(key, e))?
         };
+        // rustc's `check_param_wf` proves `Ty: ConstParamTy_` under the
+        // owner's param-env, so the owner's `#[unstable_feature_bound]` proves
+        // an impl's feature condition. The type itself is already closed.
         if !proof
-            .prove_closed_trait(
+            .prove(
                 &mut self.facts,
                 Predicate {
                     ty,

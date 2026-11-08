@@ -1,0 +1,47 @@
+{
+ "schema": 1,
+ "declared": "2026-11-08, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run of these bytes. The shapes reduce census 11's record after its overlap budget (an analysis-only diagnostic census, obj/parallel/census-batch11/diagnostics/d7-postfix): \"const parameter type must implement actual ConstParamTy\" at core's `TransmuteFrom<Src, const ASSUME: Assume>` (mem/transmutability.rs:85-95), whose `Assume: ConstParamTy_` impl (mem/transmutability.rs:291-293) holds only under `#[unstable_feature_bound(transmutability)]`. Each outcome follows the rule read in the pinned rustc 1.98.0 sources (compiler/rustc_hir_analysis/src/check/wfcheck.rs `check_param_wf`, which registers `Ty: ConstParamTy_` under the param-env of the parameter's owner; compiler/rustc_hir_analysis/src/collect/predicates_of.rs, which adds each `#[unstable_feature_bound]` of an item to its predicates; compiler/rustc_type_ir/src/infer_ctxt.rs `may_use_unstable_feature`, which holds a feature bound when the param-env names it and otherwise, outside a staged-API crate, when the crate enables it; wfcheck.rs `check_false_global_bounds`, which proves an item's global where clauses in an empty param-env): the owner's own feature bound proves the impl's, a missing or different bound does not, and a where clause naming the trait cannot stand in for it",
+ "declaration_sha256": "f219805e610ebfeb0bf91c01480d5fbe14f45124ddd86043bce5d3e12f5bad11",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [
+  "2026-11-08 after oracle v1 (feature-bound-const-parameters.rustc-oracle.json): every v1 case was rejected by rustc for the fixture itself (E0425 `AssertParamIsEq` is not in the prefix's `cmp`, and E0204 `bool` does not implement `ConstParamTy_` there), which is not an outcome. v2 makes `Assume` a fieldless enum, as the prefix's own `SimdAlign` is; every case body is otherwise unchanged and every declared outcome is unchanged. Declared before oracle v2 and before any candidate run."
+ ],
+ "cases": {
+  "bound-trait.rs": {
+   "sha256": "a9cfc0e7e434e1f3f79c9dbd40626be3bde2c84d7959d33585c8c4a4915a1113",
+   "declared": 0,
+   "reason": "core's shape: `#[unstable_feature_bound(transmutability)] pub unsafe trait TransmuteFrom<Src, const ASSUME: Assume>` with `#[unstable_feature_bound(transmutability)] impl ConstParamTy_ for Assume`; the trait's environment holds the feature",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "unbound-trait.rs": {
+   "sha256": "83245fe9045e611768361572d4836fff48b99ecef192bddcd54072f05db0cb3d",
+   "declared": 1,
+   "reason": "opponent: the same trait without `#[unstable_feature_bound]`; a staged-API crate never holds a feature bound by its own `#![feature]`, so `Assume: ConstParamTy_` is not proven",
+   "rustc_status": 1,
+   "error_codes": []
+  },
+  "other-feature-trait.rs": {
+   "sha256": "4385e01a840cd03b4a5ef4c10ffdedf25b29dfbd9a78a8cc78a4638844027afa",
+   "declared": 1,
+   "reason": "opponent: the trait's bound names `other_feature`; only the matching feature is assumed",
+   "rustc_status": 1,
+   "error_codes": []
+  },
+  "bound-function.rs": {
+   "sha256": "9ef784bf3888268c46de540e4e6c6fecac84a731f6133b4371cd6cc7eb57bcb4",
+   "declared": 0,
+   "reason": "a function `#[unstable_feature_bound(transmutability)] pub fn transmute<const ASSUME: Assume>()`; its own environment holds the feature",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "where-clause-trait.rs": {
+   "sha256": "90d6e640c04f91e7aa7bc0ea63aac833abca6f451773a4c8f2eea6d437ccf946",
+   "declared": 1,
+   "reason": "opponent: the unbound trait with `where Assume: ConstParamTy_`; that global where clause must itself hold in an empty environment, and it does not",
+   "rustc_status": 1,
+   "error_codes": []
+  }
+ }
+}

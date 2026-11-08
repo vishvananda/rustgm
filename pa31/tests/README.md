@@ -702,3 +702,13 @@ checks, beside guards without the equality and two unmarked lifetime pairs
 (E0119). Each outcome was declared before its rustc 1.98.0 oracle; one
 prediction was wrong and is recorded. A private invariant checks them; there
 is no graded manifest.
+
+`spec/feature-bound-const-parameters/` freezes five declared staged-API
+`min_adt_const_params` controls from census batch 11: core's
+`TransmuteFrom<Src, const ASSUME: Assume>`, whose `ConstParamTy_` impl holds
+only under the owner's `#[unstable_feature_bound(transmutability)]`, and a
+function with the same bound, beside an unbound trait, a trait bound to another
+feature and a global where clause that cannot stand in for the bound. Each
+outcome was declared before its rustc 1.98.0 oracle, and the one fixture
+amendment is recorded. A private invariant checks them; there is no graded
+manifest.

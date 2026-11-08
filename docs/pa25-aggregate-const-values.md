@@ -84,9 +84,15 @@ permission. Semantic registration separately requires the real
 dependent parameter types, projections and free regions outside this profile.
 After all ordinary implementation validation completes, every local const
 parameter under that feature, including unused and primitive parameters, must
-prove the validated source `ConstParamTy` application. Closed types cannot justify
-themselves with a caller's assumed trait premise. Proof scratch is shared within
-one owner's environment; the declaration inventory is traversed once.
+prove the validated source `ConstParamTy` application under its owner's
+environment, as rustc's `check_param_wf` proves it under the owner's param-env.
+The owner's `#[unstable_feature_bound]` therefore proves a feature-bound marker
+impl, as for core's `TransmuteFrom<Src, const ASSUME: Assume>`
+([controls](../pa31/tests/spec/feature-bound-const-parameters/README.md)).
+Closed types still cannot justify themselves with a caller's assumed trait
+premise: like rustc's `check_false_global_bounds`, that global premise must
+itself be proven without the environment. Proof scratch is shared within one
+owner's environment; the declaration inventory is traversed once.
 
 The actual marker header retains its required `StructuralPartialEq` and `Eq`
 identities. Its implementations inspect every real struct/enum variant and
