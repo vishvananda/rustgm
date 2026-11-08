@@ -5,6 +5,40 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 9](parallel/census-batch9.md) repairs census 9's crate
+record and adds the declaration lookahead. Census 10 (`1375fd2b`, from
+`b8e58f062` on main `85dbaaff0`) checks 42,310 declarations, with none failed
+or blocked. Its crate record is "overlapping implementation headers have no
+specialization ordering" at `ptr/mod.rs:2592`
+(`impl<F: FnPtr> PartialEq for F`). Eight lookahead records follow it. Bodies
+are not entered, so Milestone 2 is not reached.
+
+- A `const` or `[const]` trait premise forms its parameter's projections, as
+  the ordinary trait bound rustc 1.98 elaborates it to. This repairs core's
+  `Option::as_deref` (`option.rs:1386`). The only shared change is
+  `Environment::assumes_trait` (`types/parameters/environment.rs`).
+- After a crate-wide declaration pass fails, an analysis-only census still runs
+  every later pass and records each one's first error as a `lookahead` record
+  that follows the terminal record. These records change no count and may
+  derive from the failure.
+- A declaration whose last field is or ends in a trait object has no static
+  layout to demand. This repairs core's `Request` (`error.rs:588`), which the
+  lookahead found.
+- 22 PA31 no_core controls were declared before the rustc 1.98.0 oracle, and
+  all agree. Their three prefix amendments are recorded.
+- Every PA1 to PA24 suite passes, with PA20 at 1451/1451.
+- What remains:
+  - `ptr/mod.rs:2592`: coherence cannot rule out the builtin-only `FnPtr`
+    for a generic non-fundamental self type. A reduction with a one-element
+    tuple `PartialEq` impl gives the same message, and rustc 1.98.0 accepts
+    it. The record does not name core's competing impl. Lane A owns it, as
+    the census frontier.
+  - `<H::Inner as Deref>::Target` inside a nominal argument still fails with
+    "invalid canonical trait selection": the unscoped builtins proof cannot
+    restore the caller's lifetimes after normalization. rustc 1.98.0 accepts
+    it; census 10 has no record of it. It joins Lane B's queue after the
+    nightly repair.
+
 Lane C [raw-pointer and slice type rows](parallel/raw-pointer-slice-rows.md) is
 joined on main. Version 13 carries `*const T`, `*mut T` and
 `[T]` in the integrator's allocated type recipe tags: 12 is `[u8 12][u8

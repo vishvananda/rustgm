@@ -433,6 +433,33 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     does not need them.
   - `#[non_exhaustive]` tuple and unit struct constructors and `struct T();`
     stay fenced by name.
+- **After Lane A's [census batch 9](parallel/census-batch9.md)**, 2026-11-08.
+  Census 10 has no per-definition failure. Its terminal crate record is
+  `FnPtr` coherence at `ptr/mod.rs:2592`, followed by 8 lookahead records.
+  - **The census frontier belongs to Lane A, whatever code it lands in.**
+    Lane A therefore owns `ptr/mod.rs:2592`. Records off the frontier go to
+    the lane whose area they are in.
+    - Why: the frontier is the critical path, and each hand-off costs a
+      batch.
+    - Cost: Lane A edits shared selection and coherence code. It keeps those
+      edits minimal and lists every file, and the other lanes are told.
+  - **Explain why core's reference impls don't conflict.** rustc accepts core
+    but rejects a reduction of its `&A` impl with E0119. The repair must
+    follow rustc's actual coherence rule for `FnPtr`. A shortcut that
+    happens to accept core is not enough.
+  - **The nested projection case goes to Lane B's queue after the nightly
+    repair.** That case is `Option<&'a <H::Inner as Deref>::Target>` with no
+    `[const]` bound, and it is not on the frontier.
+  - **Lane A reduces lookahead records 2, 3 and 5 now**, giving each a repro
+    and an owner guess. It repairs only those that are its own, and only
+    after record 1. The records are:
+    - 2: `ConstParamTy`;
+    - 3: conformance and selection semantics;
+    - 5: a missing completed const argument.
+
+    Records that follow record 1 wait for it.
+    - Why: reduced records can be handed to idle lanes before the frontier
+      reaches them.
 
 ## Lanes
 
