@@ -4382,6 +4382,14 @@ proof storage unchanged until interleaving actually occurs. Caller substitution
 preserves this ownership; streamed body evidence cannot enter the fresh declaration
 template rebasing or grafting paths.
 
+A body query's selected implementation may carry a quantified condition, whose
+binders that selection opened below the query's own scope. Its streamed
+evidence keeps them there, through an owned graft that never rebases the
+evidence as a template. Map each of its scopes below the query scope, attach
+its owned intervals and scoped blocks in allocation order and keep every
+foreign interval excluded; a foreign interval that crosses an owned block is
+an error. A streamed child without binders keeps the flat attachment above.
+
 Projection and trait progress run before numeric fallback and body publication.
 Normalization never substitutes for the original well-formedness proof. Isolated
 method-prefix queries still reject pending projection proofs until that query mode
@@ -6289,6 +6297,20 @@ its enum's member scope; its own paths, calls and patterns resolve through that
 binding. It synthesizes every constructor that its own or a rebuilt body
 references from the re-authenticated enum header.
 
+A version-thirteen module binding may also re-export a variant, as core's
+`prelude::v1` does with `pub use crate::option::Option::{self, None, Some}`.
+The binding is an ordinary module binding row in the value namespace whose
+target is the kind-11 variant declaration; there is no new row or tag. Rustc
+also binds a tuple or unit variant in the type namespace. That alias is not
+emitted, just as the enum's member scope omits it, and only a type-namespace
+alias beside the same variant's value binding may be dropped. A consumer
+re-derives the binding's namespace from the target's installed parent: an
+enum's variant binds its value constructor, and a struct parent is rejected by
+name until struct constructors travel. Older profiles reject a variant
+re-export by name, on both export and import. A type-namespace use of a
+re-exported variant, such as a braced `Some { 0: x }` pattern, is a recorded
+deviation.
+
 A version-thirteen impl header may also have no trait application. That is
 an inherent impl, and its member links name implementations with no trait
 member.
@@ -6518,12 +6540,15 @@ call sites stay rejected by name. Source clients of every edition pass one
 gate. Each pre-2021 rule they reach is selected or rejected by name, and Rust
 2021 shares the before-2024 rules. A source client is either `#![no_core]`
 with its source feature or `#![no_std]` over a provider named `core`. In the
-second case, as for rustc, the authenticated provider is the injected `core`
-extern-prelude entry, which Rust 2015 also names as a crate-root item. That
-provider's public `prelude::rust_20xx` module for the client's own edition is
-the client's glob prelude. Injected `core` carries no `macro_use`, and no
-`--extern` alias may spell `core`. A provider without that prelude module is
-rejected by name. An imported row's
+second case, as for rustc, the injected `core` is the extern-prelude entry,
+which Rust 2015 also names as a crate-root item. An `--extern core=` alias
+names the direct dependency, which may be the provider itself or a crate
+re-exporting it, such as `rustc_std_workspace_core`. The entry must be that
+dependency's imported crate root. Without the alias, the entry is the
+authenticated provider's root. The entry's public `prelude::rust_20xx` module
+for the client's own edition is the client's glob prelude. Injected `core`
+carries no `macro_use`, and `std` stays a reserved alias. A crate without that
+prelude module is rejected by name. An imported row's
 `allow_internal_unsafe` covers only sites in its own expansion frame, never a
 nested expansion of another definition. A single `use` import binding an
 unstable imported row needs the same feature or allowance as a call of it,
