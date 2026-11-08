@@ -103,6 +103,18 @@ impl<'a> Solver<'a> {
             steps: parked.steps,
         }
     }
+    /// The scratch capacity this solver retains, as its paid reservations
+    /// charge it.
+    #[cfg(test)]
+    pub(super) fn retained(&self) -> usize {
+        use crate::support::retained::{map, sum, vector};
+        sum([
+            vector(&self.nodes),
+            map(&self.products),
+            vector(&self.edges),
+            vector(&self.queue),
+        ])
+    }
     pub(super) fn pay(&self, work: usize, bytes: usize) -> Result<(), &'static str> {
         self.payment.map_or(Ok(()), |pay| pay(work, bytes))
     }

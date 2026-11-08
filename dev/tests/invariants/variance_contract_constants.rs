@@ -99,29 +99,41 @@ fn waiting_nominals(count: usize, wide: bool) -> Result<String, Box<dyn std::err
 
 /// Each wait for a nominal's field template resumes the body's contract
 /// demand at that nominal: its unreached nominals are collected once and a
-/// nominal's closure walk continues at the owner it waited for.
+/// nominal's closure walk continues at the owner it waited for. A waiting
+/// closure's graph pays the capacity it retains, so a chain of 512 nominals
+/// that all wait in one body stays inside the input-graph bound, where the
+/// conservative estimates exceeded it from about 256.
 #[test]
 fn waited_lifetime_contracts_resume_at_the_waited_nominal() -> TestResult {
     for wide in [true, false] {
         let mut costs = Vec::new();
-        for count in [6, 24, 96] {
+        for count in [64, 256, 512] {
             let source = waiting_nominals(count, wide)?;
             let report = crate::test_source::source_provider(&source, "lifetime_contract")?;
             let analysis = crate::pipeline::analyze_source(&report)
                 .map_err(|error| format!("wide={wide} count={count}: {error}"))?;
-            let (work, _) = crate::sema::header_attributes::source_contract_costs(&analysis.facts);
-            eprintln!("lifetime contracts wide={wide} count={count} work={work}");
-            costs.push(work);
+            let (work, bytes) =
+                crate::sema::header_attributes::source_contract_costs(&analysis.facts);
+            let bound = crate::sema::header_attributes::source_contract_bound(&analysis.facts);
+            eprintln!(
+                "lifetime contracts wide={wide} count={count} work={work} bytes={bytes} bound={bound:?}"
+            );
+            costs.push((work, bytes));
         }
         let [small, middle, large] = costs[..] else {
             return Err("three nominal counts".into());
         };
-        // Near-linear increments: 18 nominals from 6 to 24 and 72 from 24 to
-        // 96. Geometric scratch growth pays each relocation once.
-        assert!(
-            (large - middle) * 18 < (middle - small) * 72 * 3 / 2,
-            "wide={wide} contract work {small} {middle} {large} is not linear"
-        );
+        // Near-linear increments: 192 nominals from 64 to 256 and 256 from 256
+        // to 512. Geometric scratch growth pays each relocation once.
+        for (name, [small, middle, large]) in [
+            ("work", [small.0, middle.0, large.0]),
+            ("bytes", [small.1, middle.1, large.1]),
+        ] {
+            assert!(
+                (large - middle) * 192 < (middle - small) * 256 * 3 / 2,
+                "wide={wide} contract {name} {small} {middle} {large} is not linear"
+            );
+        }
     }
     Ok(())
 }

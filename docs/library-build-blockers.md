@@ -154,6 +154,34 @@ natively. Nineteen opponents are rejected, as rustc rejects them.
     header names a region.
 - `dyn Trait + Send` still waits on Lane B's object tag 15.
 
+Lane B [caller-region premises](parallel/caller-region-premises.md) and
+[exact variance scratch charges](parallel/linear-waits.md#5-chained-nominals-and-exact-scratch-charges):
+
+- Body trait queries see the caller's premises in the per-body alias form that
+  body projection queries already use. A premise that names a caller lifetime
+  no longer competes with its declaration-form copy, so an impl parameter it
+  determines is selected as rustc 1.98.0 selects it. 15 PA31 controls were
+  declared before the rustc 1.98.0 oracle, and all agree. `caller-region` and
+  `ordinary-region` now pass.
+- A waiting reached-variance graph pays the capacity it actually retains,
+  instead of conservative growth estimates. A declaration-time body whose
+  512 chained lifetime nominals all wait now stays inside its input-graph
+  bound; before, the limit was about 200.
+- Queued for Lane B, low priority, in this order:
+  - Negative coherence with a `?Sized` or `MetaSized` negative impl:
+    `pay_negative` (`overlap/inputs.rs`) pays only `Sized` premises, so the
+    negative impl's `MetaSized` premise is never paid from the intersection's
+    own assumption. `pub trait A {} impl<T: ?Sized> !A for &T {} pub trait B
+    {} impl<T: A> B for T {} impl<T: ?Sized> B for &T {}` is rejected with
+    "overlapping trait implementation headers require coherence proof",
+    where rustc accepts it. Lane C's C3 declares a control that flips with
+    the fix.
+  - A closure whose declared return type names a caller lifetime. In
+    `fn item<'x, F: Out<O = Option<&'x u8>>>(s: &mut Wrap<F>)`, the closure
+    `|w: &mut Wrap<F>| -> Option<&'x u8> { w.next() }` is rejected with
+    "missing lifetime argument", where rustc 1.98.0 accepts it (caller-region
+    audit a08). Core's census does not reach it.
+
 Lane A [census batch 14](parallel/census-batch14.md) repairs census 14's
 record on main `4a1ac00c4`. Census 15 (`6df12612`, from `d1756b87f`) checks
 42,310 declarations, with none failed or blocked. Its crate record, "invalid

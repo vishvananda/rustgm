@@ -221,19 +221,83 @@ demand was charged `b + 1`, so at `n = b = 512` the grouping alone was
 - No `sema::traits` file or wire byte changes. The boxed per-body
   `Publication` grows by `FieldWaits`' three new fields.
 
-## 5. Remaining limit
+## 5. Chained nominals and exact scratch charges
 
-**Chained nominals attempt more bytes than their input allows.** A chain
-nominal costs about 3.77 KB of attempted source-contract bytes. About 2.16 KB
-is the variance graph's conservative `Growth` estimates and about 1.25 KB is
-the outlives closure. The input-graph bound allows about 2.94 KB per such
-nominal. The cost is linear, but a chain of about 200 or more referenced
-nominals that all wait in one declaration-time body exceeds the bound.
+**Recorded limit.** A chain nominal cost about 3.77 KB of attempted
+source-contract bytes. About 2.16 KB of that was the variance graph's
+conservative `Growth` estimates, and about 1.25 KB was the outlives closure.
+The input-graph bound allows about 2.94 KB per such nominal. The cost was
+linear, but a chain of about 200 or more referenced nominals that all wait in
+one declaration-time body exceeded the bound. Before the repair, the CLI
+(`obj/lane-b4/before`, binary `d1e59941…`, analysis-only instrumentation
+that only prints) accepted the generated chain at 224 nominals and rejected it
+at 256 and 512 with "source contract work or retention exceeds its
+input-graph bound". The wide shape was accepted at 512.
 
-The repair is queued after task 3: charge the parked graph's actual retained
-bytes instead of an estimate, as the `path_compatibility` repair made the
-accounting match real retention. The bound itself stays. The repair moves
-ahead of the queue if census 12 or any control reaches this limit.
+**Repair (amended 2026-11-08, on `43e23b1c6`).** A paid graph pays the
+capacity it actually retains, as the `path_compatibility` repair made the
+accounting match real retention. `Growth` charged four times the needed
+slots at every growth step. Over a geometric sequence that sums to about four
+times the capacity the graph finally holds.
+
+- `types/variance/payments.rs`: each paid reservation charges exactly the
+  slots it adds, before it allocates. A vector reserves its geometric target
+  exactly: twice the capacity, at least the needed length, and at least four
+  slots, or eight for bytes. A table's target is the capacity the pinned
+  standard table has after the reservation: 3, 7 or 14 entries below 15,
+  then seven eighths of the next power of two buckets. An exploration program
+  (`obj/lane-b4/predict/check.rs`) checked that prediction against rustc
+  1.98.0's tables before the change, for up to 6,000 entries. Paid tables never
+  remove entries, and their entries are at least four bytes, which a
+  compile-time assertion enforces. After each reservation the actual
+  capacity is checked against the charge, and a mismatch is an error. Work is
+  still `Growth`'s relocation estimate.
+- `types/variance/reachable.rs`: the published rows pay through the same
+  exact reservations.
+- The exact charge is never more than the estimate, and work is unchanged,
+  so no budget can fail that passed before. The bound itself stays.
+
+**Exact growth.**
+
+- `types::variance::reachable::tests::paid_scratch_reservations_charge_exactly_the_capacity_they_add`
+  reserves vectors of 1, 4, 24 and 48 byte elements, tables of 8 and 24 byte
+  entries, and a seen set. It uses mixed steps from empty up to more than
+  10,000 entries, and after every reservation the charged bytes equal
+  `retained::vector` or `retained::map` of the collection.
+- `waited_reached_closures_resume_at_the_owner_they_waited_for` now also
+  requires, at every wait, that the bytes the graph has paid equal the
+  capacity its parked graph retains. Its work is unchanged: 3,465, 13,897 and
+  27,793 at 64, 256 and 512, against 5,337,425 for the restarted control.
+- `waited_lifetime_contracts_resume_at_the_waited_nominal` now uses 64, 256
+  and 512 nominals instead of 6, 24 and 96, and requires near-linear bytes as
+  well as work:
+
+| shape | n = 64 | n = 256 | n = 512 | bound at 512 |
+| --- | --- | --- | --- | --- |
+| `wide`, work | 6,507 | 24,283 | 47,971 | 317,424 |
+| `wide`, bytes | 127,800 | 483,832 | 958,168 | 2,539,392 |
+| chain, work | 10,310 | 39,590 | 78,590 | 211,232 |
+| chain, bytes | 148,274 | 566,418 | 1,123,010 | 1,689,856 |
+
+A chain nominal now attempts about 2.17 KB from 256 to 512, against the
+bound's 2.94 KB per nominal, so a chain of any length stays inside it.
+The same generated chain and wide sources (`obj/lane-b4/chain`) were run
+through an uninstrumented dev-fast CLI of this change
+(`obj/lane-b3/t3/dev/chain-after`, `46c65a6d…`). It accepts both shapes at
+every count from 64 through 512.
+
+**Checks.** All ran on the committed tree, and every receipt's source
+fingerprint equals it. Receipts are under `obj/qualification/fast/`.
+
+| check | receipt | result |
+| --- | --- | --- |
+| 13 private tests: the seven `reachable_variance` tests (one new), both lifetime-contract tests, the explicit bound index, and the three `Location` completion tests | `1794169383206020841` | pass |
+| 61 integration tests in nine roots: `borrowed_receivers`, `nominal_declarations`, `nominal_instances`, `nominal_variance`, `size_conditions`, `tail_rules`, `shape_constructors`, `finite_storage`, `destructor_conformance` | `1794173358095533612` | pass |
+| 89 integration tests in 13 roots: the five outlives roots, `derive_contracts`, `idxops`, `vactx`, `census_mode`, and four source-core roots whose fixtures claim `panic_location` (`assertion_sources`, `edition_packages`, `from_yeet_sources`, `guaranteed_pointers`) | `1794172722382366800` | pass |
+| five `crate_linking::phantom_roles` cases | `1794172995639467639` | pass |
+
+No course text or fixture changed, and the exact charge can only lower a byte
+total, so the PA course batches were not rerun.
 
 ## 6. Checks
 

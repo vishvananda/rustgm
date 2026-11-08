@@ -3,10 +3,7 @@ use super::{
     Argument, Definitions, GenericArgs, Graph, ItemId, Kind, ListId, Store, TypeId, Variance,
     Variances, solver::Term,
 };
-use crate::support::{
-    hash::HashSet,
-    retained::{Growth, Payment},
-};
+use crate::support::{hash::HashSet, retained::Payment};
 #[cfg(test)]
 #[path = "../../../tests/invariants/reachable_variance.rs"]
 mod tests;
@@ -130,23 +127,14 @@ impl Variances {
             .checked_add(graph.solver.steps)
             .filter(|steps| *steps <= 1_000_000)
             .ok_or("reached variance work budget exceeded")?;
-        let mut growth = Growth::map::<ItemId, (usize, usize)>(
-            self.ranges.len(),
-            self.ranges.capacity(),
-            inferred.ranges.len(),
-        );
-        growth.include(Growth::vector::<Variance>(
-            self.values.len(),
-            self.values.capacity(),
-            inferred.values.len(),
-        ));
+        // The published rows pay exactly the capacity they add. A refused
+        // payment leaves at most reserved capacity, never a row.
         pay(
-            growth
-                .work
-                .saturating_add(inferred.ranges.len())
-                .saturating_add(inferred.values.len()),
-            growth.bytes,
+            inferred.ranges.len().saturating_add(inferred.values.len()),
+            0,
         )?;
+        super::payments::map(Some(pay), &mut self.ranges, inferred.ranges.len())?;
+        super::payments::vector(Some(pay), &mut self.values, inferred.values.len())?;
         let base = self.values.len();
         self.values.extend(inferred.values);
         for (owner, (start, end)) in inferred.ranges {

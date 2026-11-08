@@ -360,10 +360,26 @@ fn bundle_variances(
     Ok((values, order))
 }
 
+/// The scratch capacity a reached-closure graph retains, measured as
+/// `retained::vector` and `retained::map` measure owned collections.
+fn retained_graph(graph: &Graph<'_>) -> usize {
+    let mut allocation = crate::support::retained::Allocation::default();
+    allocation.vector(&graph.pending);
+    allocation.vector(&graph.result.values);
+    allocation.map(&graph.result.ranges);
+    allocation.vector(&graph.slots);
+    allocation.vector(&graph.variables);
+    allocation.vector(&graph.work);
+    allocation.set(&graph.seen);
+    allocation.add(graph.solver.retained());
+    allocation.bytes
+}
+
 /// Paid work of the reached variance of `L0<'a> { next: &'a L1<'a> }` through
 /// `L{count - 1}<'a> { r: &'a u8 }`, where each field template is published
 /// only after the append waits for it. A `restart` append forgets its graph
-/// at every wait, so it walks the published prefix again.
+/// at every wait, so it walks the published prefix again. At every wait the
+/// bytes the graph has paid equal the capacity its parked graph retains.
 fn waited_chain_work(count: usize, restart: bool) -> TestResult<usize> {
     let mut source = String::new();
     for index in 0..count {
@@ -380,8 +396,10 @@ fn waited_chain_work(count: usize, restart: bool) -> TestResult<usize> {
     let mut values = Variances::default();
     let mut waiting = PendingReach::new(root);
     let paid = Cell::new(0_usize);
-    let pay = |work, _| {
+    let graph_bytes = Cell::new(0_usize);
+    let pay = |work, bytes| {
         paid.set(paid.get().saturating_add(work));
+        graph_bytes.set(graph_bytes.get().saturating_add(bytes));
         Ok(())
     };
     let mut waits = 0;
@@ -394,6 +412,12 @@ fn waited_chain_work(count: usize, restart: bool) -> TestResult<usize> {
         &mut waiting,
     )? {
         waits += 1;
+        let parked = waiting.graph.as_deref().ok_or("parked chain graph")?;
+        assert_eq!(
+            graph_bytes.get(),
+            retained_graph(parked),
+            "wait {waits}: paid bytes and parked capacity"
+        );
         let definition = facts.aggregates.get(owner).ok_or("chain field template")?;
         published.insert(
             owner,
@@ -403,6 +427,7 @@ fn waited_chain_work(count: usize, restart: bool) -> TestResult<usize> {
         )?;
         if restart {
             waiting = PendingReach::new(root);
+            graph_bytes.set(0);
         }
     }
     assert_eq!(waits, count, "each nominal is waited for once");
@@ -432,5 +457,104 @@ fn waited_reached_closures_resume_at_the_owner_they_waited_for() -> TestResult {
         restarted > large * 32,
         "restarted chain {restarted} against resumed {large}"
     );
+    Ok(())
+}
+
+/// Reserve `steps` in turn through the paid vector payment, from empty, and
+/// check after each that the bytes charged equal the retained capacity.
+fn grow_vector<T>(charged: &Cell<usize>, steps: &[usize], make: impl Fn(usize) -> T) -> TestResult {
+    let pay = |_: usize, bytes: usize| {
+        charged.set(charged.get().saturating_add(bytes));
+        Ok(())
+    };
+    charged.set(0);
+    let mut values = Vec::new();
+    let mut next = 0;
+    for &step in steps {
+        super::super::payments::vector(Some(&pay), &mut values, step)?;
+        values.extend((next..next + step).map(&make));
+        next += step;
+        assert_eq!(
+            charged.get(),
+            crate::support::retained::vector(&values),
+            "vector at {next}"
+        );
+    }
+    Ok(())
+}
+/// As [`grow_vector`] for a paid table.
+fn grow_map<K: Eq + std::hash::Hash, V>(
+    charged: &Cell<usize>,
+    steps: &[usize],
+    make: impl Fn(usize) -> (K, V),
+) -> TestResult {
+    let pay = |_: usize, bytes: usize| {
+        charged.set(charged.get().saturating_add(bytes));
+        Ok(())
+    };
+    charged.set(0);
+    let mut values = crate::support::hash::HashMap::default();
+    let mut next = 0;
+    for &step in steps {
+        super::super::payments::map(Some(&pay), &mut values, step)?;
+        values.extend((next..next + step).map(&make));
+        next += step;
+        assert_eq!(
+            charged.get(),
+            crate::support::retained::map(&values),
+            "map at {next}"
+        );
+    }
+    Ok(())
+}
+fn narrow<T: TryFrom<usize> + Default>(value: usize) -> T {
+    T::try_from(value).unwrap_or_default()
+}
+
+/// Every paid scratch reservation charges exactly the capacity it adds, for
+/// each entry size the reached graph uses, from empty through mixed steps to
+/// more than 10,000 entries.
+#[test]
+fn paid_scratch_reservations_charge_exactly_the_capacity_they_add() -> TestResult {
+    let steps: Vec<usize> = [1, 1, 2, 1, 3, 5, 1, 7, 13, 1, 64]
+        .into_iter()
+        .cycle()
+        .take(1200)
+        .collect();
+    let charged = Cell::new(0_usize);
+    grow_vector(&charged, &steps, |index| narrow::<u8>(index % 4))?;
+    grow_vector(&charged, &steps, narrow::<u32>)?;
+    grow_vector(&charged, &steps, |index| {
+        (index, index, narrow::<u16>(index % 7))
+    })?;
+    grow_vector(&charged, &steps, |index| [index; 6])?;
+    grow_map(&charged, &steps, |index| {
+        (narrow::<u32>(index), (index, index))
+    })?;
+    grow_map(&charged, &steps, |index| ((index, index), index))?;
+    grow_map(&charged, &steps, |index| {
+        (narrow::<u32>(index), narrow::<u32>(index))
+    })?;
+    let pay = |_: usize, bytes: usize| {
+        charged.set(charged.get().saturating_add(bytes));
+        Ok(())
+    };
+    charged.set(0);
+    let mut seen = crate::support::hash::HashSet::default();
+    for index in 0..6000_usize {
+        let key = (
+            narrow::<u32>(index),
+            narrow::<u32>(index / 2),
+            index,
+            narrow::<u16>(index % 7),
+        );
+        assert!(super::super::payments::insert(Some(&pay), &mut seen, key)?);
+        assert!(!super::super::payments::insert(Some(&pay), &mut seen, key)?);
+        assert_eq!(
+            charged.get(),
+            seen.capacity() * size_of_val(&key),
+            "set at {index}"
+        );
+    }
     Ok(())
 }
