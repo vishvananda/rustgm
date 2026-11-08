@@ -5,6 +5,28 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane B [scoped body proofs, variant re-exports and `--extern
+core=`](parallel/scoped-proofs-shim-globs.md) clears three of its assigned
+items.
+
+- A generic body that selects an impl with a quantified condition grafts that
+  selection's evidence below its query's universe and keeps foreign intervals
+  excluded. This fixes "invalid scoped proof evidence".
+  - 17 PA31 controls were declared before the rustc 1.98.0 oracle; all agree.
+  - Two caller-lifetime gaps remain, with a separate cause that main shares.
+- Core's `prelude::v1` variant re-exports travel as value-namespace module
+  bindings to the variant's constructor declaration. The consumer re-derives
+  each one from its installed enum parent and rejects a struct parent by
+  name.
+- `--extern core=` may name a crate's direct `core` dependency, and the
+  `no_std` injection resolves through it.
+- 9 PA29 cases were declared before the oracle; all agree, natively where
+  they run.
+- Decided by the integrator and not yet implemented:
+  - the shim's `pub use core::*` as a tag-14 version-5 `GLOB` row;
+  - `#![compiler_builtins]` as a crate-loader flags record in the legacy
+    profile chain.
+
 Lane A [census batch 7](parallel/census-batch7.md) gives `intrinsics::assume` a
 constant-evaluation handler and repairs the first four crate-wide declaration
 records. Census 8 (`f99b369d`, from `9f04f8694` on main `519f8eda3`) checks

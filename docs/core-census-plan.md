@@ -279,6 +279,61 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     Lane A adds this only if it fits in one checkpoint. Census 8 surfaced four
     crate records one at a time.
   - Tracker head entries stay newest first.
+- **After Lane B's [scoped body proofs, variant re-exports and `--extern
+  core=`](parallel/scoped-proofs-shim-globs.md) batch**, 2026-11-08. Lane B
+  found that only `--source-core` builds publish a version-13 source
+  descriptor. The shim and the `compiler_builtins` stand-in are source clients,
+  which export the legacy core table, `PublicNames` (profile tag 6) and the
+  tag-14 macro wrapper. So the earlier "version-13 glob row" and
+  "version-13 descriptor flag" decisions are revised:
+  - **The shim's glob is a tag-14 macro table version 5 row**, kind 4 `GLOB`:
+    `[u8 4][placement][u32 owner][target module path]`.
+    - `owner` is 1 plus the index in the publication's sorted alias
+      dependencies, as for `REEXPORT` rows; 0 is rejected.
+    - A table that needs no `GLOB` row keeps its exact version 2, 3 or 4
+      bytes.
+    - The consumer expands the row in `import_crates`, after macro re-exports
+      and before `bind_crate_aliases`. It works per name, across the type,
+      value and macro namespaces.
+    - The semantics follow rustc:
+      - only names visible outside the target crate are expanded;
+      - an explicit shim binding shadows a glob name;
+      - two globs giving one name different targets are an error only when
+        that name is used;
+      - each expanded name is charged once.
+    - Older readers reject version 5 by name.
+    - Forgeries:
+      - owner 0;
+      - an owner past the alias list;
+      - a target module the owner does not export;
+      - every strict prefix.
+    - Why: one row carries all three namespaces, including core's
+      `#[macro_export]` macros.
+    - Rejected: splitting it across `PublicNames` and tag 14. That would be
+      two expansions and two proofs for one `use`.
+  - **`#![compiler_builtins]` is a crate-loader flags record**, profile tag
+    15: `[u8 15][u8 flags]`, with bit 0 = `compiler_builtins`.
+    - It is written only when a flag is set. Unknown bits are rejected by
+      name, and older readers reject the tag by name.
+    - Why: rustc keeps these crate-root attributes together, and std's graph
+      needs more of them. `panic_abort` is `#![panic_runtime]` and std is
+      `#![needs_panic_runtime]`; those bits join this record.
+    - Cost: one more profile record kind.
+    - Rejected: a flags byte in the tag-14 version-5 table. That would tie
+      crate-loader state to the macro table.
+  - **The struct-parent rejection in the variant re-export consumer is not
+    reachable yet.** The enum header check and the version-13 enum gates
+    catch those forgeries first. It stays as the branch Lane C extends for
+    struct constructors.
+  - **Re-exported variants used as types are a recorded deviation.**
+    `Some { 0: x }` gives "unresolved type name" where rustc gives E0573.
+  - **Lane B's next batch:**
+    1. the `GLOB` row with the controls and forgeries above;
+    2. `compiler_builtins` injection with the tag-15 record;
+    3. `self-where`.
+
+    The two caller-lifetime gaps (`caller-region`, `ordinary-region`) follow
+    if they are cheap.
 
 ## Lanes
 
