@@ -169,9 +169,14 @@ fn ordinary_attributes_do_not_spend_or_revive_panic_permissions() -> TestResult 
             let (visit, file, _) = initial(engine)?;
             let contracts = &engine.loader.package.source_core().ok_or("source")?.macros;
             let before = contracts.usage().0;
+            // Amended: stop one unit below the actual admitted allowance rather
+            // than below the old fixed 1,000,000.
+            let last = contracts
+                .work_limit()
+                .checked_sub(1)
+                .ok_or("empty permission allowance")?;
             contracts.charge(
-                999_999_usize
-                    .checked_sub(before)
+                last.checked_sub(before)
                     .ok_or("unexpected initial permission work")?,
                 0,
             )?;
@@ -185,7 +190,7 @@ fn ordinary_attributes_do_not_spend_or_revive_panic_permissions() -> TestResult 
                     .macros
                     .usage()
                     .0,
-                999_999
+                last
             );
             let before = payer(engine)?.work().steps;
             assert!(

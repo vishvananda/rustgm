@@ -39,11 +39,14 @@ fn complete_module_costs_prepay_sort_forest_transactions_and_enclosing_layouts()
         )
         .is_ok()
     );
-    assert_eq!(size_of::<s::SourceRows>(), 784);
+    // Version thirteen's associated definitions and enum tables share one
+    // out-of-line box; raw rows pay its one pointer, frozen columns nothing.
+    assert_eq!(size_of::<s::SourceRows>(), 792);
     assert_eq!(size_of::<s::Columns>(), 768);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
-    // Inline import work adds one lineage pointer and nine usize counters.
-    assert_eq!(size_of::<crate::resolve::expansion::Report>(), 3096);
+    // Inline import work adds one lineage pointer and nine usize counters,
+    // plus the lineage ledger's admitted-byte grant (census batch 3).
+    assert_eq!(size_of::<crate::resolve::expansion::Report>(), 3104);
     assert_eq!(size_of::<s::TraitFlags>(), 2);
     println!(
         "v2 layouts ValidatedRows={} Payload={} Interface={} Columns={} SourceRows={} ModuleColumns={} ModuleRows={} Binding={} Domain={} ForestFrame={} Attributes={}",

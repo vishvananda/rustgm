@@ -231,7 +231,9 @@ fn malformed_non_type_rows_and_legacy_profiles_cannot_drop_or_invent_debt() -> R
     let mut failed = g::Work::default();
     assert!(changed(&artifact, |_| {}, crates::MAX_BYTES, &mut failed).is_err());
     assert!(failed.steps > 0);
-    assert_eq!(size_of::<s::SourceRows>(), 784);
+    // Version thirteen's associated definitions and enum tables share one
+    // out-of-line box; raw rows pay its one pointer, frozen columns nothing.
+    assert_eq!(size_of::<s::SourceRows>(), 792);
     assert_eq!(size_of::<s::Columns>(), 768);
     assert_eq!(size_of::<crate::types::parameters::clauses::Clause>(), 12);
     println!(

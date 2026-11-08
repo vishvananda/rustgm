@@ -47,8 +47,10 @@ fn ordinary_requests_do_not_allocate_a_provider_or_library_policy() -> Result {
     }
     assert_eq!(size_of::<Features>(), 16);
     assert_eq!(size_of::<MacroFeatures>(), 1);
-    // The cold provider includes 120 bytes of contracts (including inventory retention) and a second permission word.
-    assert_eq!(size_of::<SourceCore>(), 200);
+    // The cold provider includes 160 bytes of contracts and a second permission
+    // word. The contracts hold inventory retention, the admitted-source grant
+    // and the optional explicit caps that bound the macro-contract ledger.
+    assert_eq!(size_of::<SourceCore>(), 240);
     assert_eq!(size_of::<Package>(), 256);
     Ok(())
 }

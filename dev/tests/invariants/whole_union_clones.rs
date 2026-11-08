@@ -295,9 +295,11 @@ fn rejected_actual_union_payment_leaves_source_and_effect_unpublished() -> TestR
             .ok_or("actual source payer")?
             .macros;
         let usage = payer.usage();
+        // Amended: exhaust the actual admitted allowance rather than the old fixed 64 MiB.
         payer.charge(
             0,
-            (64 * 1024 * 1024_usize)
+            payer
+                .attempted_limit()
                 .saturating_sub(usage.1)
                 .saturating_sub(1024),
         )?;

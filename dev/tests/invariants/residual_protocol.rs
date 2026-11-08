@@ -243,6 +243,7 @@ fn retained_try_storage_and_empty_paths_keep_actual_enclosing_layouts() -> Resul
         .split_once("#[unsafe(no_mangle)]")
         .ok_or("actual source foundation")?
         .0;
+    let mut costs = Vec::new();
     for width in [8, 32, 128] {
         use std::fmt::Write;
         let mut source = prefix.to_owned();
@@ -250,6 +251,7 @@ fn retained_try_storage_and_empty_paths_keep_actual_enclosing_layouts() -> Resul
             write!(source, "fn p{index}()->Outcome<u8>{{try{{7}}}}")?;
         }
         let (_, analysis) = analyze(&source)?;
+        costs.push(crate::sema::header_attributes::source_contract_costs(&analysis.facts).1);
         let contexts = analysis
             .facts
             .source_bindings
@@ -274,6 +276,15 @@ fn retained_try_storage_and_empty_paths_keep_actual_enclosing_layouts() -> Resul
             analysis.facts.body_work.inference_steps
         );
     }
+    // Each added Try function retains and attempts a flat amount of header
+    // storage: plan growth is geometric, never a re-charge of every plan.
+    let early = (costs[1] - costs[0]) / 24;
+    let late = (costs[2] - costs[1]) / 96;
+    println!("Try header bytes {costs:?} per function early={early} late={late}");
+    assert!(
+        late * 10 <= early * 11,
+        "Try storage stays linear: {costs:?}"
+    );
     let plain = prefix
         .split_once("pub enum ControlFlow")
         .ok_or("actual ordinary declarations")?

@@ -582,19 +582,30 @@ impl Checker<'_> {
         if !self.state.in_function {
             return Ok(false);
         }
+        // The enclosing function's defining context is fixed for one body, so
+        // its header contracts are queried once per body, not once per use.
+        let key = (self.state.environment_owner, self.state.body);
+        if let Some((owner, body, runtime)) = self.state.runtime_callee.get()
+            && (owner, body) == key
+        {
+            return Ok(runtime);
+        }
         // Closures retain the enclosing environment, but own a distinct body.
         let function = self
             .state
             .environment_owner
             .and_then(|owner| self.facts.function_indices.get(&owner))
             .and_then(|&index| self.facts.functions.get(index));
-        let Some(function) = function.filter(|f| f.body == Some(self.state.body)) else {
-            return Ok(true);
+        let runtime = match function.filter(|f| f.body == Some(self.state.body)) {
+            None => true,
+            Some(function) => !self
+                .facts
+                .source_function_context(self.report, function.definition, self.state.body)
+                .map_err(|e| self.error(self.state.body.node, e))?
+                .checks_const(),
         };
-        self.facts
-            .source_function_context(self.report, function.definition, self.state.body)
-            .map(|context| !context.checks_const())
-            .map_err(|e| self.error(self.state.body.node, e))
+        self.state.runtime_callee.set(Some((key.0, key.1, runtime)));
+        Ok(runtime)
     }
 
     pub(super) fn instantiate_bound_obligation(

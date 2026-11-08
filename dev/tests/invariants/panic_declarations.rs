@@ -209,7 +209,10 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     // The source panic hook extends cold tables; ordinary records stay fixed.
     assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 5208);
-    assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 200);
+    // The cold provider includes 160 bytes of contracts and a second permission
+    // word. The contracts hold inventory retention, the admitted-source grant
+    // and the optional explicit caps that bound the macro-contract ledger.
+    assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 240);
     assert_eq!(size_of::<Declaration>(), 20);
     assert_eq!(size_of::<Option<Declaration>>(), 20);
     assert_eq!(

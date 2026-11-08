@@ -35,6 +35,11 @@ fn package(source: &str) -> TestResult<Package> {
     package_with_source("install!();", source)
 }
 fn package_with_source(physical: &str, generated: &str) -> TestResult<Package> {
+    // Amended: each generated token is an exact copy of its own spelling in a
+    // trailing comment, as a transcribed definition token is, so the edition
+    // of a `use` path's first token is found from its copied origin.
+    let copied = u32::try_from(physical.len() + 2)?;
+    let physical = format!("{physical}/*{generated}*/");
     let mut package = resolve::load::load(
         InputFile {
             identity: "keys.rs".into(),
@@ -44,14 +49,14 @@ fn package_with_source(physical: &str, generated: &str) -> TestResult<Package> {
         &mut NoFiles,
         &Config::default(),
     )?;
-    let (target, context, original) = package.units[0]
+    let (target, context) = package.units[0]
         .configured
         .ast
         .nodes
         .iter()
         .enumerate()
         .find_map(|(index, node)| match node.kind {
-            Kind::Macro { context, .. } => Some((index, context, node.span)),
+            Kind::Macro { context, .. } => Some((index, context)),
             _ => None,
         })
         .ok_or("missing expansion installation target")?;
@@ -78,7 +83,10 @@ fn package_with_source(physical: &str, generated: &str) -> TestResult<Package> {
             },
             original: Location {
                 file: FileId(0),
-                span: original,
+                span: Span {
+                    start: copied + token.start,
+                    end: copied + token.end,
+                },
             },
             context: Some(SyntaxContextId::ROOT),
             introduction: ExpansionId(1),
@@ -94,7 +102,7 @@ fn package_with_source(physical: &str, generated: &str) -> TestResult<Package> {
             &origins,
         )
         .map_err(|error| format!("{error:?}"))?;
-    assert_eq!(package.units[0].source.original(), physical);
+    assert_eq!(package.units[0].source.original(), physical.as_str());
     assert_eq!(package.syntax_context(FileId(0), 0)?, SyntaxContextId::ROOT);
     Ok(package)
 }

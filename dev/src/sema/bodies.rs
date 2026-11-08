@@ -318,6 +318,9 @@ pub(super) struct State {
     opaque_terms: Vec<(crate::types::opaque::OpaqueId, TermId)>,
     opaque_callables: Option<Box<crate::support::hash::HashMap<TermId, TypeId>>>,
     in_function: bool,
+    /// The last enclosing (owner, body) whose callee-use context was queried,
+    /// with its answer.
+    runtime_callee: std::cell::Cell<Option<(Option<DefId>, NodeKey, bool)>>,
     safety: safety::Context,
     infer: Context,
     terms: slots::Terms,
@@ -421,6 +424,7 @@ impl State {
             opaque_terms: Vec::new(),
             opaque_callables: None,
             in_function: true,
+            runtime_callee: std::cell::Cell::new(None),
             safety: safety::Context::default(),
             infer: Context::default(),
             touched: scratch.touched,

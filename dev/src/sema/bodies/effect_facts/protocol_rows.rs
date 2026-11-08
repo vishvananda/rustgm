@@ -46,7 +46,9 @@ impl CallContexts {
         if length <= self.plans.capacity() {
             return Ok((0, 0));
         }
-        let bytes = length
+        // Grow geometrically: an exact reservation per published body copied
+        // and re-charged every earlier plan, quadratic in the crate's Try sites.
+        let bytes = Self::protocol_capacity(self.plans.capacity(), length)
             .checked_mul(2 * size_of::<Plan>())
             .ok_or("Try plan storage overflow")?;
         if self.bytes(self.rows.capacity())?.saturating_add(bytes) > MAX_TRANSIENT
@@ -62,13 +64,18 @@ impl CallContexts {
         }
         Ok((self.plans.len(), bytes))
     }
+    /// The plan capacity after growth to `length`: at least double the old one.
+    fn protocol_capacity(capacity: usize, length: usize) -> usize {
+        length.max(capacity.saturating_mul(2).min(MAX_ROWS))
+    }
     fn reserve_protocol(&mut self, count: usize) -> Result<(), &'static str> {
         let (_, bytes) = self.protocol_growth(count)?;
         if bytes == 0 {
             return Ok(());
         }
+        let capacity = Self::protocol_capacity(self.plans.capacity(), self.plans.len() + count);
         self.plans
-            .try_reserve_exact(count)
+            .try_reserve_exact(capacity - self.plans.len())
             .map_err(|_| "Try plan allocation failed")?;
         if self.plans.capacity().saturating_mul(size_of::<Plan>()) > bytes
             || self.bytes(self.rows.capacity())? > MAX_RETAINED

@@ -74,12 +74,10 @@ fn unsafe_lint_metadata_keeps_witness_and_global_failed_budget_on_warm_queries()
     };
     // The borrowed public session cannot survive source mutation; this deliberate
     // private transferred-memo opponent must still reject when global work failed.
-    report
-        .package
-        .source_core()
-        .ok_or("source")?
-        .macros
-        .charge(1_000_001, 0)
+    // Amended: exceed the actual admitted allowance rather than the old fixed 1,000,000.
+    let contracts = &report.package.source_core().ok_or("source")?.macros;
+    contracts
+        .charge(contracts.work_limit().saturating_add(1), 0)
         .err()
         .ok_or("failed work")?;
     assert!(warm.allows_unsafe_code_lint(site).is_err());

@@ -85,7 +85,10 @@ fn foreign_requests_retain_no_cpu_permissions_or_ordinary_binding_owner() -> Res
     }
     assert_eq!(size_of::<super::Features>(), 16);
     assert_eq!(size_of::<super::MacroFeatures>(), 1);
-    assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 200);
+    // The cold provider includes 160 bytes of contracts and a second permission
+    // word. The contracts hold inventory retention, the admitted-source grant
+    // and the optional explicit caps that bound the macro-contract ledger.
+    assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 240);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     Ok(())
 }
