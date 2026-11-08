@@ -404,3 +404,22 @@ record packet under `spec/transparent-records/`. The packet holds:
   6/24/96 scaling control.
 
 The `crate_linking::newtype_records` integration controls consume it.
+
+`phantom-role-outcomes.json` freezes the version-thirteen `PhantomData` role
+packet under `spec/phantom-roles/`. The packet holds:
+
+- core's `PhantomData<T: PointeeSized>`, a function returning one and a
+  record holding one beside a value;
+- six accepted clients, one of which shortens a `PhantomData<&'b u8>` and one
+  of which declares its own struct over an imported `PhantomData`, and three
+  opponents: two lengthen a lifetime through an imported formal, and one is
+  E0308;
+- generated controls: an older-profile gate, the role row retargeted to a
+  unit struct with no formal, a record and an enum, respelled and unknown
+  roles, the role row deleted, a record whose only use of its formal was
+  removed, a version row and a 6/24/96 scaling control;
+- the found false rejection's controls: the gate client's `PhantomData`
+  unit value and an imported generic enum's unit variant, both without a
+  lifetime-generic import, with their rustc outcomes.
+
+The `crate_linking::phantom_roles` integration controls consume it.

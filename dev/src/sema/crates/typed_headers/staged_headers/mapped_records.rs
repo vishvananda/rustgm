@@ -4,6 +4,7 @@ use crate::{
     resolve::model::{Access, DefId},
     sema::members::{ExternalVariant, Field, Name, Origin, PreparedMembers},
     support::{
+        bindings::LangItem,
         crates::{RecordRepr, generics::source as s},
         retained,
     },
@@ -104,6 +105,7 @@ pub(super) fn prepare(
         shapes.push((ItemId(owner.0), repr, fields_type));
         owners.push(owner);
     }
+    let phantom = phantom_role(context, budget)?;
     let mut pay = |steps, bytes| {
         budget
             .charge(steps)
@@ -118,13 +120,32 @@ pub(super) fn prepare(
         .map_err(error)?;
     let shapes = facts
         .aggregates
-        .prepare_imported_nominals(&facts.types, &shapes, &enum_shapes, pay)
+        .prepare_imported_nominals(&facts.types, &shapes, &enum_shapes, phantom, pay)
         .map_err(error)?;
     Ok(Some(Prepared {
         members,
         shapes,
         owners,
     }))
+}
+/// The declaration the packet's own `PhantomData` role names. Only a struct
+/// with it is interned with a logical argument; the role re-proof later
+/// checks its unit shape.
+fn phantom_role(
+    context: &mapped_source::Context<'_>,
+    budget: &mut Headers,
+) -> Result<Option<ItemId>, Error> {
+    let rows = context.descriptor.rows();
+    let roles = rows
+        .roles
+        .get(rows.policy.roles.start as usize..rows.policy.roles.end as usize)
+        .ok_or_else(|| error("source role range is outside its validated payload"))?;
+    budget.charge(roles.len())?;
+    let Some(role) = roles.iter().find(|role| role.role == LangItem::PhantomData) else {
+        return Ok(None);
+    };
+    let owner = context.definition(role.declaration.declaration, budget)?;
+    Ok(Some(ItemId(owner.0)))
 }
 /// A record's named fields with their canonical types and access.
 fn record_fields(

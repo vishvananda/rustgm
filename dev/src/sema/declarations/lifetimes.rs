@@ -87,13 +87,15 @@ impl Checker<'_> {
                 .get(item)
                 .is_some_and(|values| values.contains(&crate::types::variance::Variance::Bivariant))
             {
+                // Every exporter rejects a bivariant formal, so an imported
+                // nominal with one comes from a forged or corrupted packet.
                 let key = self.report.resolution.definitions[item.0 as usize]
                     .node
                     .ok_or_else(|| {
                         Error::at(
                             crate::resolve::unit::FileId(0),
                             0,
-                            "missing lifetime declaration source",
+                            "imported source nominal has a bivariant formal: its packet is forged or corrupted",
                         )
                     })?;
                 return Err(self.error(

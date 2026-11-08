@@ -159,6 +159,23 @@ pub fn unique(bytes: &[u8], pattern: &[u8]) -> Result<usize> {
     }
     Ok(first)
 }
+/// The one offset at which two otherwise identical packets differ.
+pub fn difference(left: &[u8], right: &[u8]) -> Result<usize> {
+    if left.len() != right.len() {
+        return Err("packet lengths differ".into());
+    }
+    let found: Vec<usize> = left
+        .iter()
+        .zip(right)
+        .enumerate()
+        .filter(|(_, (a, b))| a != b)
+        .map(|(offset, _)| offset)
+        .collect();
+    let [offset] = *found.as_slice() else {
+        return Err(format!("packet differences {found:?}").into());
+    };
+    Ok(offset)
+}
 pub fn relabel(bytes: &[u8], version: u8) -> Vec<u8> {
     let mut changed = bytes.to_vec();
     changed[13] = version;

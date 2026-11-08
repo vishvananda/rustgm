@@ -1,0 +1,188 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+ "providers": [
+  {
+   "file": "spec/phantom-roles/provider.rs",
+   "sha256": "64cfd09aee1d808edac7b45615bfe44a40406c8b1a34c16ba988455e69c0a46d"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "declared": "2026-11-08T05:59:47Z",
+ "development_note": "declared before any rustc or RustGM run of these files; main rejects the provider at export with `source Pointee contract transport is not implemented`. core's `Clone` and `Copy` impls for `PhantomData<T>` are left out: generic trait impls on provider nominals have no transport evidence yet",
+ "wire_rule": "proposed shape reported to the integrator: no new tag or byte. Version 13's role row spells the role ([255][\"phantom_data\"][declaration address]); older readers already reject 255, and versions 10 and 12 keep the exporter's Pointee fence. The reader admits a nominal header only for this role under the language profile. The consumer interns the named struct as PhantomData and re-proves, from its own facts, the provider's checks: a module-owned unit struct with no fields, exactly one type formal with no default, and a declared `T: PointeeSized` bound naming the imported role. No variance, ownership or layout fact travels. A deleted role row is rejected (see wire_rule_amended)",
+ "cases": [
+  {
+   "file": "spec/phantom-roles/value.rs",
+   "provider": "spec/phantom-roles/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "223fad6b8e49a148215ef1e1988ae81514f9af7500657c2862680937c2a2f359"
+  },
+  {
+   "file": "spec/phantom-roles/marker.rs",
+   "provider": "spec/phantom-roles/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "13b93341c2559d1b8458a7dee9a8ae33da886a2d0cfb597fd0bab9f5b0ace96d"
+  },
+  {
+   "file": "spec/phantom-roles/marked.rs",
+   "provider": "spec/phantom-roles/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "c107c0d3e2bdd7443786bb54f75098ddb5328e99d8c46bdacde0e61de02d674c"
+  },
+  {
+   "file": "spec/phantom-roles/marked-call.rs",
+   "provider": "spec/phantom-roles/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "e993a08b3026c8e6d944d39931d4c15364911aebb6656315807066c2a91fb579"
+  },
+  {
+   "file": "spec/phantom-roles/shrink.rs",
+   "provider": "spec/phantom-roles/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "48a0d11b6ccf8ce5d9e4db7fce5d3e0a3511fe6c61ebadaa4869a85a64230e02"
+  },
+  {
+   "file": "spec/phantom-roles/local.rs",
+   "provider": "spec/phantom-roles/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "4a2b475fb11f1442df56942a14828e4f8a2219f7a37733e268c72f2bea303276"
+  },
+  {
+   "file": "spec/phantom-roles/grow.rs",
+   "provider": "spec/phantom-roles/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "lifetime may not live long enough",
+   "candidate_diagnostic": "required lifetime does not outlive its target",
+   "sha256": "771b93832ac960a15171e2cd103b1319cc079bc89b73d23c81ecac28aef2a8a5"
+  },
+  {
+   "file": "spec/phantom-roles/marked-grow.rs",
+   "provider": "spec/phantom-roles/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "lifetime may not live long enough",
+   "candidate_diagnostic": "required lifetime does not outlive its target",
+   "sha256": "1c43bbfba3a42f88299bf3ca7e7e4da964e3b10cf2ea5382715c34eebebe8bd2"
+  },
+  {
+   "file": "spec/phantom-roles/mismatch.rs",
+   "provider": "spec/phantom-roles/provider.rs",
+   "accepted": false,
+   "native_exit": null,
+   "rustc": "E0308",
+   "candidate_diagnostic": "incompatible types",
+   "sha256": "fbab9a033046f29112afe7aeb28ab9b532e5d9ce54bd92cd4a0626083cad1a03"
+  }
+ ],
+ "generated_controls": [
+  {
+   "control": "older profiles: `spec/source-nominals/provider.rs` plus `#[lang = \"phantom_data\"] pub struct PhantomData<T: PointeeSized>;` under versions 10 and 12",
+   "expected": "rejected with `source Pointee contract transport is not implemented`; the same provider exports under version 13 and a client naming `base::PhantomData::<u8>` is accepted",
+   "amended": {
+    "observed": "the first candidate run of this control rejected the provider under versions 12 and 10 with `source declaration kind is outside the initial source profile`, before the role export; a scratch provider of the same lines plus a plain `pub struct Unit;` is rejected identically under both (obj/parallel/phantom/explore/gate-unit-*.out)",
+    "reason": "unit and tuple struct constructors transport only in version 13, and the provider's own `PhantomData` check requires a unit struct, so no valid older-profile provider reaches the Pointee fence; the fence stays as defence in depth",
+    "expected": "rejected under versions 12 and 10 with `source declaration kind is outside the initial source profile`; the same provider exports under version 13 and its client is accepted",
+    "declared": "2026-11-08T08:01:16Z, after the first candidate run of this control, which observed it"
+   }
+  },
+  {
+   "control": "the wire control: the shared lines, `PhantomData`, `pub struct Unit;`, `#[repr(C)] pub struct Two { pub a: u8, pub b: u8 }` and `pub enum Mode { A, B }`, with an honest client",
+   "expected": "exports, and the client is accepted"
+  },
+  {
+   "control": "the role row's declaration retargeted to `Unit`",
+   "expected": "rejected in the fresh consumer: it has no type formal"
+  },
+  {
+   "control": "the role row's declaration retargeted to `Two`",
+   "expected": "rejected in the fresh consumer: it is not a unit structure"
+  },
+  {
+   "control": "the role row's declaration retargeted to `Mode`",
+   "expected": "rejected in the fresh consumer: it is an enum"
+  },
+  {
+   "control": "the role spelling rewritten to the same-length `maybe_uninit`",
+   "expected": "rejected with `ordinary source roles cannot claim a nominal declaration`"
+  },
+  {
+   "control": "the role spelling rewritten to the unknown `phantom_dat_`",
+   "expected": "rejected with `unknown source language role spelling`"
+  },
+  {
+   "control": "the honest packet relabelled as version 12",
+   "expected": "rejected with `unknown source declaration kind`"
+  },
+  {
+   "control": "every strict prefix of the honest packet",
+   "expected": "fails to decode"
+  },
+  {
+   "control": "scaling: the shared lines, `PhantomData` and 6, 24 and 96 records `M000<T> { pub v: u8, pub m: PhantomData<T> }` with a constructor function each",
+   "expected": "packet bytes grow by the same amount per record, and a fresh client's LowIR does not grow"
+  },
+  {
+   "control": "the role row deleted (its row removed, the role column count and the policy role range each reduced by one)",
+   "expected": "rejected in the fresh consumer as an integrity failure: `PhantomData`'s formal is bivariant",
+   "declared": "2026-11-08T06:03:14Z"
+  },
+  {
+   "control": "the role row moved onto a different unit struct",
+   "expected": "rejected in the fresh consumer by the role re-proof",
+   "declared": "2026-11-08T06:03:14Z",
+   "note": "the only other unit struct an honest packet can carry has no formal: a type or lifetime formal would be bivariant, which the provider rejects, and const arguments do not transport, so the target is `Unit`"
+  },
+  {
+   "control": "the wire control's `pub struct Held<T> { pub held_byte: u8, pub held_mark: PhantomData<T> }` with `held_mark`'s field type replaced by `held_byte`'s",
+   "expected": "rejected in the fresh consumer as an integrity failure: `Held`'s formal is bivariant",
+   "declared": "2026-11-08T06:03:14Z"
+  },
+  {
+   "control": "variance scaling: the scaling control's 6, 24 and 96 imported records",
+   "expected": "the fresh consumer's variance work grows by the same amount per record",
+   "declared": "2026-11-08T06:03:14Z"
+  }
+ ],
+ "native": {
+  "expected": "the six accepted clients exit 42 natively, as rustc's do"
+ },
+ "wire_rule_amended": {
+  "reason": "integrator decision (option b): a deleted role row would make the formal bivariant at the consumer and let a lifetime be extended through an imported type, a soundness hole rather than a conservative loss, so it cannot be recorded as a known limit",
+  "rule": "every consumer computes each imported nominal header's formal variances from its own field layouts and rejects a bivariant type or lifetime formal as a transport integrity failure on the import, not as a user diagnostic; const formals are exempt, as in rustc; only the declaration bound to the re-proved PhantomData role is exempt. The cost is linear in each header's field types",
+  "declared": "2026-11-08T06:03:14Z, before any rustc or RustGM run of these files"
+ },
+ "found_false_rejection": {
+  "observed": "a fresh consumer of a provider with no lifetime-generic nominal fails to lower a local holding a unit value of an imported type-generic nominal with `generic aggregate requires instantiated fields`: the gate provider's `let _m: base::PhantomData<u8> = base::PhantomData;` on this slice's candidate, and `let _o: base::Opt<u8> = base::Opt::None;` against `spec/source-nominals/provider.rs` lines 1-57 plus `pub enum Opt<T> { None, Some(T) }` already on the joined-main CLI (sha 93651a06); explorations in obj/parallel/phantom/explore/gate3-gate7",
+  "cause": "`definition_cells::regional_nominals` sets the consumer's nominal-requirement flag only for an imported nominal with a lifetime, while a local nominal with any formal or own clause sets it; without the flag no body prepares the storage of a unit value, which has no call or literal that would prepare it, and lowering's layout query finds no instance",
+  "rule": "an imported nominal with a lifetime or type formal, or an own clause, sets the flag, exactly as a local one does; consumers of type-generic-only providers therefore also run the nominal bound proofs (integrator decision)",
+  "controls": [
+   {
+    "control": "the gate provider (`spec/source-nominals/provider.rs` plus `PhantomData`) under version 13 and the client `let _m: base::PhantomData<u8> = base::PhantomData; 42`",
+    "rustc": "accepted; the native entry exits 42",
+    "candidate": "accepted"
+   },
+   {
+    "control": "`spec/source-nominals/provider.rs` plus `pub enum Opt<T> { None, Some(T) }` under version 13 and the client `let _o: base::Opt<u8> = base::Opt::None; 42`",
+    "rustc": "accepted; the native entry exits 42",
+    "candidate": "accepted"
+   },
+   {
+    "control": "scaling: the same provider plus 6, 24 and 96 enums `pub enum ONNN<T> { N, S(T) }` and one client binding each one's unit variant once",
+    "candidate": "accepted at every width; the consumer's body and instantiation work grows by at most a fixed amount per enum"
+   }
+  ],
+  "declared": "2026-11-08T08:29:59Z, after the observations above and before the rustc run and any candidate run of the fix"
+ }
+}

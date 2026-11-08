@@ -6600,6 +6600,35 @@ transparent struct as `repr(Rust)` without detection: the representation is
 authenticated by the packet's inventory identity, not re-proved, and a later
 ABI digest may close that gap.
 
+A version-thirteen role row may also name `PhantomData`: the existing spelled
+form (tag 255, `phantom_data` and the declaration address), alone of the
+Pointee family. Its declaration is an ordinary `repr(Rust)` unit struct
+header, so no kind, variance, ownership or layout fact travels. A consumer
+admits a nominal header only for this role and stages that struct as its own
+`PhantomData`, which gives the formal its covariance, logical ownership and
+zero-sized layout. The role is re-proved over the consumer's facts: a
+module-owned unit struct with one type formal, no default and the bound
+`T: PointeeSized` on the imported `PointeeSized` role. Every consumer also
+infers each imported nominal's variances from its own field layouts and
+rejects a bivariant type or lifetime formal as an integrity failure ("imported
+source nominal has a bivariant formal"), so a deleted role row or a removed
+field use is detected. Const formals are exempt, as in rustc. The moved-row
+forgery targets a formal-free unit struct, because an honest packet cannot
+carry another one-formal unit struct: its formal would be bivariant, and const
+arguments do not transport. `Pointee`, its `Metadata` type and `DynMetadata`
+stay fenced. Versions 10 and 12 cannot export the role, because unit structs
+are version-thirteen-only ("source declaration kind is outside the initial
+source profile").
+
+A fresh consumer sets its nominal-requirement flag for every imported nominal
+with a lifetime or type formal, or an own clause, exactly as a local nominal
+does. Every body then prepares the storage of its value types, and runs the
+nominal bound proofs. Before, only a lifetime-generic import set the flag. A
+unit value of a type-generic import, such as `base::Opt::<u8>::None` or
+`base::PhantomData::<u8>`, has no call or literal that prepares it on another
+path, so its local could not be lowered ("generic aggregate requires
+instantiated fields").
+
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core
 profile. A crate that exports no macros writes no envelope and keeps its exact

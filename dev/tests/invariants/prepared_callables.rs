@@ -387,21 +387,79 @@ fn private_callable_templates_keep_failed_attempt_and_peak_costs() -> Result {
         size_of::<Prepared>(),
         size_of::<SignaturePair>()
     );
-    let mut work = ReservationWork::default();
-    let error = start(
-        "\nfn declared<'a>(x:&'a u8)->&'a u8{x}",
-        "declared",
-        &mut work,
-    )
-    .err()
-    .ok_or("named lifetime unexpectedly passed its earlier catalog boundary")?;
-    assert!(
-        error
-            .to_string()
-            .contains("imported body declaration is not a source-free declaration")
-    );
+    named_lifetime_template_costs()?;
+    no_source_shape_reaches_the_catalog_boundary();
     blocked_body_dependency()?;
     Ok(())
+}
+
+/// Amended control: since 2b0b5cf07 the body-origin catalog admits a region
+/// parameter, so a named lifetime, which rustc accepts, reaches its template.
+/// Its failed attempts and peak cost are those of any private template.
+fn named_lifetime_template_costs() -> Result {
+    const DECLARED: &str = "\nfn declared<'a>(x:&'a u8)->&'a u8{x}";
+    for storage in [false, true] {
+        let mut work = ReservationWork::default();
+        let (session, owner) = start(DECLARED, "declared", &mut work)?;
+        let session = ready(session.signature_pair(owner, &mut work)?)?;
+        if storage {
+            work.retained = crate::support::crates::MAX_BYTES;
+        } else {
+            work.steps = crate::support::crates::MAX_COMPONENTS;
+        }
+        assert!(session.callable_template(owner, &mut work).is_err());
+        if storage {
+            assert!(work.peak > crate::support::crates::MAX_BYTES);
+        } else {
+            assert!(work.steps > crate::support::crates::MAX_COMPONENTS);
+        }
+    }
+    let mut work = ReservationWork::default();
+    let (session, owner) = start(DECLARED, "declared", &mut work)?;
+    let session = ready(session.callable_template(owner, &mut work)?)?;
+    prepared(&session)?
+        .ready
+        .iter()
+        .flatten()
+        .next()
+        .ok_or("named lifetime template record")?;
+    assert!(work.peak >= work.retained);
+    eprintln!(
+        "named lifetime template retained={} peak={} steps={}",
+        prepared(&session)?.retained_bytes(),
+        work.peak,
+        work.steps
+    );
+    Ok(())
+}
+
+/// Every transported declaration kind now maps into the catalog's admitted
+/// kinds, so no source shape reaches its kind check: each of these is either
+/// accepted or rejected earlier by its own name.
+fn no_source_shape_reaches_the_catalog_boundary() {
+    const SHAPES: [&str; 9] = [
+        "\nfn probe(x:u8)->u8{'l: loop { break 'l x }}",
+        "\nfn probe(x:u8)->u8{'b: { break 'b x }}",
+        "\nfn probe(x:u8)->u8{fn inner(y:u8)->u8{y} inner(x)}",
+        "\nfn probe(x:u8)->u8{struct L(u8); L(x).0}",
+        "\nfn probe(x:u8)->u8{const C: u8 = 1; x}",
+        "\nfn probe(x:u8)->u8{let f = |y: u8| y; f(x)}",
+        "\nfn probe<const N: usize>(x:u8)->u8{x}",
+        "\nfn probe<'a, T>(x:&'a T)->&'a T{x}",
+        "\nfn probe(x:&u8)->&u8{x}",
+    ];
+    for shape in SHAPES {
+        let mut work = ReservationWork::default();
+        let outcome = start(shape, "probe", &mut work).map(drop);
+        let message = outcome.as_ref().err().map(ToString::to_string);
+        assert!(
+            !message
+                .as_deref()
+                .is_some_and(|text| text.contains("is not a source-free declaration")),
+            "{shape}"
+        );
+        eprintln!("catalog boundary shape {shape:?}: {message:?}");
+    }
 }
 
 fn registration_boundary() -> Result {

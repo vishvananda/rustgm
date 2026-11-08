@@ -58,6 +58,8 @@ mod non_exhaustive;
 mod normalized_results;
 #[path = "crate_linking/packet_libraries.rs"]
 mod packet_libraries;
+#[path = "crate_linking/phantom_roles.rs"]
+mod phantom_roles;
 #[path = "crate_linking/records.rs"]
 mod records;
 #[path = "crate_linking/reexports.rs"]

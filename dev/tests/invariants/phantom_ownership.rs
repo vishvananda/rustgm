@@ -334,3 +334,129 @@ fn observe_layouts() {
         size_of::<crate::resolve::bindings::Reservations>()
     );
 }
+/// An imported record `M<T> { v: u8, m: PhantomData<T> }` uses `T` only
+/// through its marker. Its consumer's variance work is linear in the records'
+/// field types, and with the marker interned as a plain struct, as a deleted
+/// role row would leave it, every formal is bivariant.
+#[test]
+fn imported_marker_records_cost_linear_variance_work_and_need_the_marker_kind() -> Result {
+    let mut observed = Vec::new();
+    for width in [6, 24, 96] {
+        observed.push(marker_records(width, types::aggregate::Kind::PhantomData)?);
+        marker_records(width, types::aggregate::Kind::Struct)?;
+    }
+    let [small, middle, large] = <[usize; 3]>::try_from(observed.as_slice())?;
+    assert_eq!(
+        (middle - small) * 4,
+        large - middle,
+        "{small} {middle} {large}"
+    );
+    Ok(())
+}
+fn marker_records(width: u32, kind: types::aggregate::Kind) -> Result<usize> {
+    let mut store = Store::default();
+    let mut defs = Definitions::default();
+    let marker = ItemId(1);
+    let empty = store.intern_list(&[])?;
+    defs.insert(
+        marker,
+        kind,
+        Repr::default(),
+        &[Variant {
+            fields: empty,
+            discriminant: 0,
+        }],
+    )?;
+    let mut parameters = Vec::new();
+    for index in 0..=width {
+        let item = ItemId(1 + index);
+        let formal = store.intern_parameter(Parameter {
+            owner: item,
+            index: 0,
+            kind: ParameterKind::Type { sized: index != 0 },
+        })?;
+        let formal = store.intern(Kind::Parameter(formal))?;
+        let arguments = store.intern_arguments(&[Argument::Type(formal)])?;
+        if index != 0 {
+            let held = store.intern(Kind::Adt(marker, arguments))?;
+            let fields = store.intern_list(&[TypeId::primitive(types::Primitive::U8), held])?;
+            defs.insert(
+                item,
+                types::aggregate::Kind::Struct,
+                Repr::default(),
+                &[Variant {
+                    fields,
+                    discriminant: 0,
+                }],
+            )?;
+        }
+        parameters.push((item, arguments));
+    }
+    let variances = Variances::infer(&store, &defs, &parameters)?;
+    let expected = if kind == types::aggregate::Kind::PhantomData {
+        Variance::Covariant
+    } else {
+        Variance::Bivariant
+    };
+    for (item, _) in parameters {
+        assert_eq!(variances.get(item), Some(&[expected][..]), "{item:?}");
+    }
+    Ok(variances.steps)
+}
+/// A found false rejection: a fresh consumer importing no lifetime-generic
+/// nominal prepared no body storage, so it could not lower a unit value of an
+/// imported type-generic enum. Each imported generic nominal now sets the
+/// nominal-requirement flag, as a local one does, and a client binding each of
+/// `width` unit variants once pays at most a fixed amount of body and
+/// instantiation work per enum.
+#[test]
+fn imported_generic_unit_values_prepare_storage_with_linear_work() -> Result {
+    const PER_ENUM: usize = 4096;
+    let mut baseline = None;
+    for width in [6_usize, 24, 96] {
+        let work = generic_unit_values(width)?;
+        println!("imported generic unit values width={width} work={work}");
+        match baseline {
+            None => baseline = Some(work),
+            Some(base) => assert!(work <= base + (width - 6) * PER_ENUM, "{width}: {work}"),
+        }
+    }
+    Ok(())
+}
+fn generic_unit_values(width: usize) -> Result<usize> {
+    use std::fmt::Write as _;
+    let mut provider = test_source::fixture("pa29/tests/spec/source-nominals/provider.rs")?;
+    provider.push_str("// Generated generic unit-variant scaling control.\n");
+    let mut client = String::from(
+        "#![feature(no_core)]\n#![no_core]\nextern crate base;\n#[unsafe(no_mangle)]\npub extern \"C\" fn entry() -> i32 { ",
+    );
+    for index in 0..width {
+        writeln!(provider, "pub enum O{index:03}<T> {{ N, S(T) }}")?;
+        write!(
+            client,
+            "let _o{index}: base::O{index:03}<u8> = base::O{index:03}::N; "
+        )?;
+    }
+    client.push_str("42 }\n");
+    let interface = crate::module_packets::exported_profile(
+        &provider,
+        crate::lower::instances::SourcePublication::ModuleBodies,
+        "generic_units",
+    )?;
+    let interface = crate::support::crates::decode(&crate::support::crates::encode(&interface)?)?;
+    let (report, analysis, current) = crate::source_packets::client_analysis(interface, &client)?;
+    let crate::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = analysis;
+    assert!(facts.generics.has_nominal_requirements);
+    let work = facts
+        .body_work
+        .inference_steps
+        .saturating_add(facts.body_work.canonical_steps)
+        .saturating_add(facts.body_work.trait_selections)
+        .saturating_add(facts.body_work.storage_steps)
+        .saturating_add(facts.aggregates.instantiation_steps());
+    crate::lower::instances::build_library_prepared(&report, &mut facts, current, prepared)?;
+    Ok(work)
+}

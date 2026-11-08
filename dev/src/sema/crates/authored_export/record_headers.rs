@@ -103,7 +103,9 @@ impl Stage {
         let repr = record_repr(shape.repr, enumeration, self.body_nodes())?;
         if facts.aggregates.shared_mutation(item) != Some(aggregate::SharedMutation::Ordinary)
             || facts.aggregates.permits_dangling_pointers(item) != Some(false)
-            || !(shape.kind == aggregate::Kind::Struct || enumeration)
+            || !(shape.kind == aggregate::Kind::Struct
+                || enumeration
+                || (shape.kind == aggregate::Kind::PhantomData && self.body_nodes()))
             || facts.aggregates.destruction(item) != Some(aggregate::FieldDestruction::Fields)
         {
             return Err("source nominal destruction/shape requires its wider complete contract");

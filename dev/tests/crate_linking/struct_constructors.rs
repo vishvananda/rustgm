@@ -34,7 +34,7 @@ const WRAP_CLIENTS: [(&str, &str); 2] = [
     ("wrap-called", "match base::wrap(42).0 { 42 => 42, _ => 7 }"),
     ("wrap-direct", "match base::Wrap(42).0 { 42 => 42, _ => 7 }"),
 ];
-const FENCED: [(&str, &str, &str); 3] = [
+const FENCED: [(&str, &str, &str); 2] = [
     (
         "empty",
         "// Generated empty tuple-struct gate.\npub struct Empty(); pub fn empty() -> Empty { Empty() }\n",
@@ -45,12 +45,10 @@ const FENCED: [(&str, &str, &str); 3] = [
         "// Generated non_exhaustive tuple-struct gate.\n#[non_exhaustive] pub struct Open(pub u8); pub fn open(x: u8) -> Open { Open(x) }\n",
         "source non_exhaustive struct constructors require their wider profile",
     ),
-    (
-        "phantom",
-        "// Generated PhantomData gate.\n#[lang = \"phantom_data\"] pub struct PhantomData<T: PointeeSized>;\npub fn phantom() -> PhantomData<u8> { PhantomData }\n",
-        "source Pointee contract transport is not implemented",
-    ),
 ];
+/// Amended by the `PhantomData` role slice: the unit-struct role now exports
+/// under version 13 (`pa29/tests/struct-constructor-outcomes.json`).
+const PHANTOM: &str = "// Generated PhantomData gate.\n#[lang = \"phantom_data\"] pub struct PhantomData<T: PointeeSized>;\npub fn phantom() -> PhantomData<u8> { PhantomData }\n";
 const WIRE: &str = "// Generated struct-constructor wire control.\npub struct Tup(pub u8);\npub struct Two(pub u8);\npub struct Rec { pub x: u8 }\npub enum Sum { One(u8) }\npub mod m { pub mod n { pub struct Sec(pub(super) u8); pub fn sec(x: u8) -> Sec { Sec(x) } } }\n";
 const TUP: &str = "let base::Tup(x) = base::Tup(42); match x { 42 => 42, _ => 7 }";
 fn publish(label: &str) -> Result<Packet> {
@@ -151,6 +149,16 @@ fn older_profiles_and_unsupported_struct_shapes_reject_by_name() -> Result {
             diagnostic,
         )?;
     }
+    let source = generated(&packet, "phantom.rs", &format!("{nominals}{PHANTOM}"))?;
+    let phantom = packet.folder.join("phantom.rgcrate");
+    exported(&packet, &source, &phantom)?;
+    let consumer = client(
+        &packet,
+        "phantom-called",
+        "let _: base::PhantomData<u8> = base::phantom(); 42",
+    )?;
+    let mut fresh = packet.consumer(&consumer, "phantom-called", &phantom, &packet.owner());
+    super::artifacts::checked("phantom-called", &packet.folder, &mut fresh)?;
     Ok(())
 }
 fn word(bytes: &[u8], offset: usize) -> Result<u32> {

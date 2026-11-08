@@ -66,18 +66,18 @@ fn external_shape_batches_require_paid_unique_current_destination_frontiers() ->
     let row = (ItemId(7), Repr::default(), fields);
     assert!(
         shapes
-            .prepare_imported_nominals(&types, &[row], &[], |_, _| Err("unpaid"))
+            .prepare_imported_nominals(&types, &[row], &[], None, |_, _| Err("unpaid"))
             .is_err()
     );
     assert!(shapes.get(ItemId(7)).is_none());
     assert!(
         shapes
-            .prepare_imported_nominals(&types, &[row, row], &[], |_, _| Ok(()))
+            .prepare_imported_nominals(&types, &[row, row], &[], None, |_, _| Ok(()))
             .is_err()
     );
-    let plan = shapes.prepare_imported_nominals(&types, &[row], &[], |_, _| Ok(()))?;
+    let plan = shapes.prepare_imported_nominals(&types, &[row], &[], None, |_, _| Ok(()))?;
     assert!(plan.ready(&mut Definitions::default()).is_err());
-    let plan = shapes.prepare_imported_nominals(&types, &[row], &[], |_, _| Ok(()))?;
+    let plan = shapes.prepare_imported_nominals(&types, &[row], &[], None, |_, _| Ok(()))?;
     shapes.insert(
         ItemId(8),
         Kind::Struct,
@@ -88,7 +88,7 @@ fn external_shape_batches_require_paid_unique_current_destination_frontiers() ->
         }],
     )?;
     assert!(plan.ready(&mut shapes).is_err());
-    let plan = shapes.prepare_imported_nominals(&types, &[row], &[], |_, _| Ok(()))?;
+    let plan = shapes.prepare_imported_nominals(&types, &[row], &[], None, |_, _| Ok(()))?;
     plan.ready(&mut shapes)?.install();
     assert_eq!(shapes.iter().count(), 2);
     Ok(())

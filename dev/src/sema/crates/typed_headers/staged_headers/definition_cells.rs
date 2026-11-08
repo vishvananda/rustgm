@@ -256,17 +256,22 @@ fn formal_cells(
     }
     Ok(())
 }
-/// Version thirteen: a lifetime-generic nominal requires every body's storage
-/// preparation, exactly as a local generic nominal does.
-pub(super) fn regional_nominals(
+/// An imported nominal with a formal or an own clause requires every body's
+/// storage preparation, exactly as a local one does. A unit value of one, such
+/// as an enum's unit variant or `PhantomData`, has no call or literal that
+/// would prepare it.
+pub(super) fn generic_nominals(
     rows: s::ValidatedView<'_>,
     budget: &mut Headers,
 ) -> Result<bool, Error> {
-    let mut regional = false;
     for header in &rows.nominals {
-        regional |= nominal_regions(rows, header.self_type, budget)? != 0;
+        if header.inputs.start != header.inputs.end
+            || !self_arguments(&rows, header.self_type, budget)?.is_empty()
+        {
+            return Ok(true);
+        }
     }
-    Ok(regional)
+    Ok(false)
 }
 /// A version-thirteen nominal's lifetimes are the leading region arguments of
 /// its own Self recipe, which validation fixed in slot order.
@@ -275,6 +280,18 @@ pub(super) fn nominal_regions(
     self_type: crate::support::crates::generics::TypeRef,
     budget: &mut Headers,
 ) -> Result<u32, Error> {
+    let regions = self_arguments(&rows, self_type, budget)?
+        .iter()
+        .take_while(|argument| matches!(argument, s::Argument::Region(_)))
+        .count();
+    u32::try_from(regions).map_err(|_| error("source enum lifetime count overflow"))
+}
+/// A nominal's own Self recipe arguments, its formals in slot order.
+fn self_arguments<'a>(
+    rows: &'a s::ValidatedView<'_>,
+    self_type: crate::support::crates::generics::TypeRef,
+    budget: &mut Headers,
+) -> Result<&'a [s::Argument], Error> {
     let Some(s::Type::Nominal { arguments, .. }) = rows.types.get(self_type.0 as usize) else {
         return Err(error(
             "source enum cell lost its actual nominal Self recipe",
@@ -282,11 +299,7 @@ pub(super) fn nominal_regions(
     };
     let arguments = arguments.slice(&rows.arguments).map_err(error)?;
     budget.charge(arguments.len())?;
-    let regions = arguments
-        .iter()
-        .take_while(|argument| matches!(argument, s::Argument::Region(_)))
-        .count();
-    u32::try_from(regions).map_err(|_| error("source enum lifetime count overflow"))
+    Ok(arguments)
 }
 /// A tuple variant's or tuple struct's constructor signature `fn(payload..)
 /// -> Self`, read from its own payload rows; the cell and the callable

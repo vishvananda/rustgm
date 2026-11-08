@@ -621,6 +621,51 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     - Why first: the core census runs field storage at whole-crate width, so
       a quadratic walk there becomes a budget record later.
 
+- **During Lane C's [PhantomData roles](parallel/phantom-roles.md)**,
+  2026-11-08:
+  - **The shape is approved.**
+    - It reuses version 13's spelled role row, admitted only under
+      `body_nodes()` and only for the languages binding profile.
+    - Each consumer re-proves PhantomData:
+      - a module-owned unit struct;
+      - one type formal with no default;
+      - `T: PointeeSized`.
+  - **Integrity anchor: rustc's unused-parameter rule (E0392), re-run on
+    imports.**
+    - The consumer's existing variance pass already covers imported nominals
+      and rejects bivariant formals. A bivariant formal on a source-free
+      imported nominal now reports an integrity failure: the packet is
+      forged or corrupted.
+    - Only the declaration bound to the re-proved role is exempt, so deleting
+      or moving the role row fails the import.
+    - Why: unlike the repr byte flip, a deleted role row makes `T` bivariant
+      at the consumer. A lifetime could then be extended through the
+      imported type, which is a soundness hole, not a conservative loss.
+    - Rejected: recording the deletion as a known limit, which would join a
+      known-unsound import.
+    - Cost: one error arm in the existing linear variance pass. No new pass,
+      row or wire byte.
+  - **The moved-row forgery targets a zero-formal `pub struct Unit;`.** An
+    honest packet cannot carry a second unit struct with one formal: a type
+    or lifetime formal would be bivariant and rejected by the provider, and
+    const arguments do not transport.
+  - **A false rejection on main is fixed in this slice.** A consumer could not
+    lower a unit value of an imported type-generic nominal, such as
+    `base::Opt::<u8>::None`, because imports set the nominal-requirement flag
+    only for lifetime nominals.
+    - The rule is now the local one: any lifetime or type formal, or an own
+      clause.
+    - 969 baseline-to-candidate runs over every PA29 provider and client
+      differ only in the new phantom-roles packet. That is the evidence that
+      the extra bound proofs reject nothing.
+    - Work is linear: exactly 23 steps per enum at 6, 24 and 96.
+  - **`template_demands` is amended, not weakened.** `2b0b5cf07`
+    intentionally admits late-region free originals, and rustc accepts the
+    old opponent. No source shape still reaches that catalog boundary: nine
+    shapes were surveyed, and each is either accepted or rejected earlier.
+    The test now checks the acceptance path's costs. Its failed-attempt and
+    peak assertions are unchanged.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

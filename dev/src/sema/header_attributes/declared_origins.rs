@@ -542,11 +542,13 @@ fn validate_header(
         }
         DefKind::Struct => {
             let item = crate::types::ItemId(definition.0);
-            if facts
-                .aggregates
-                .get(item)
-                .is_none_or(|aggregate| aggregate.kind != crate::types::aggregate::Kind::Struct)
-                || !matches!(facts.definitions.get(definition.0 as usize).copied().flatten().and_then(|ty|facts.types.kind(ty)),Some(crate::types::Kind::Adt(owner,_)) if owner == item)
+            if facts.aggregates.get(item).is_none_or(|aggregate| {
+                !matches!(
+                    aggregate.kind,
+                    crate::types::aggregate::Kind::Struct
+                        | crate::types::aggregate::Kind::PhantomData
+                )
+            }) || !matches!(facts.definitions.get(definition.0 as usize).copied().flatten().and_then(|ty|facts.types.kind(ty)),Some(crate::types::Kind::Adt(owner,_)) if owner == item)
             {
                 return Err(Error::at(
                     key.file,

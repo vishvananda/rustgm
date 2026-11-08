@@ -5,6 +5,21 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [PhantomData roles](parallel/phantom-roles.md) transports core's
+`PhantomData` in version 13 as the existing spelled role row, alone of the
+Pointee family. No kind, variance or layout fact travels. Each consumer stages
+the named unit struct as its own PhantomData, which gives the formal its
+covariance and logical ownership, and re-proves the role: a module-owned unit
+struct with one type formal and `T: PointeeSized`. Each consumer also rejects
+an imported nominal whose formal comes out bivariant as an integrity failure,
+so a deleted role row is detected. Six clients run natively and exit 42, and
+two lifetime-lengthening opponents are rejected only through the covariant
+formal. The slice fixes a false rejection found on main: a consumer that
+imports no lifetime-generic nominal could not lower a unit value of a
+type-generic one, such as `base::Opt::<u8>::None`. It also amends the private
+template-demands control, which failed on main from 2b0b5cf07. NonNull's
+diagnostic role, with pattern types, remains before `Location`.
+
 Lane B [shim glob rows and `compiler_builtins`](parallel/shim-globs-builtins.md)
 lets crates whose `core` is the `rustc_std_workspace_core` shim resolve
 through its `pub use core::*` as rustc does, and follows rustc 1.98's

@@ -279,6 +279,10 @@ fn trait_headers(
                 super::super::runtime_panics::imported(facts, declaration, role, steps)?;
                 complete.insert(role);
             }
+            LangItem::PhantomData => {
+                super::super::phantom::imported(facts, catalog, declaration, steps)?;
+                complete.insert(role);
+            }
             _ => return Err("imported source role requires its wider explicit header profile"),
         }
     }

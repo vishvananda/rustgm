@@ -202,7 +202,13 @@
   },
   {
    "control": "spec/source-nominals/provider.rs plus `#[lang = \"phantom_data\"] pub struct PhantomData<T: PointeeSized>;` and `pub fn phantom() -> PhantomData<u8> { PhantomData }`, under version 13",
-   "expected": "rejected by name with main's `source Pointee contract transport is not implemented`: the PhantomData role does not transport"
+   "expected": "rejected by name with main's `source Pointee contract transport is not implemented`: the PhantomData role does not transport",
+   "amended": {
+    "by": "the PhantomData role slice (docs/parallel/phantom-roles.md, pa29/tests/phantom-role-outcomes.json), which transports the `phantom_data` role alone of the Pointee family under version 13",
+    "observed": "the slice's candidate CLI exports this provider under version 13, and a fresh client binding `base::phantom()` to `base::PhantomData<u8>` is accepted (obj/parallel/phantom/explore/sc-gate)",
+    "expected": "exported under version 13, and a fresh client `let _: base::PhantomData<u8> = base::phantom(); 42` is accepted; the empty tuple and non_exhaustive fences are unchanged",
+    "declared": "2026-11-08T08:05:06Z, after the candidate CLI observation above and before the amended control ran"
+   }
   },
   {
    "control": "6, 24 and 96 generated tuple structs `pub struct WNNN(pub u8);` with `pub fn wNNN(x: u8) -> WNNN { WNNN(x) }`, after the shared lines, and one client calling `base::W005(42)` and `base::w005(42)`",

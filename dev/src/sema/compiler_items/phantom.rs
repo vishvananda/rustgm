@@ -1,13 +1,18 @@
 //! Actual source `PhantomData` contributes logical ownership, never invented storage.
 use crate::{
-    resolve::{bindings::Declaration, expansion::Report, model::DefKind, package::Error},
+    resolve::{
+        bindings::Declaration,
+        expansion::Report,
+        model::{DefId, DefKind},
+        package::Error,
+    },
     sema::model::Declarations,
     support::{bindings::LangItem, constness::Constness},
     syntax::{
         ast::Kind as Syntax,
         item::{ItemKind, Shape},
     },
-    types::{ItemId, Kind, aggregate, arguments::Argument},
+    types::{ItemId, Kind, TypeId, aggregate, arguments::Argument},
 };
 
 pub(in crate::sema) fn declaration(
@@ -49,40 +54,22 @@ pub(in crate::sema) fn declaration(
             "source PhantomData requires its actual module-owned unit structure",
         ));
     }
-    let target = formal(report, facts, declaration)?;
+    let target = formal(facts, declaration.definition).map_err(error)?;
     let pointee = catalog
         .header_role(LangItem::PointeeSized)
         .map_err(error)?
         .ok_or_else(|| error("source PhantomData requires actual PointeeSized"))?;
-    let predicates = facts.generics.predicates.get(&declaration.definition);
-    crate::sema::header_attributes::charge_source_contract_query(
+    let mut inputs = 0;
+    let bounded = pointee_bounded(
         facts,
-        predicates.map_or(0, Vec::len),
-    )?;
-    if !facts
-        .generics
-        .declared_predicates_in_scope(declaration.definition)
-        .any(|clause| {
-            let crate::types::parameters::clauses::Clause::Predicate(predicate) = clause.value
-            else {
-                return false;
-            };
-            predicate.ty == target
-                && predicate.bound.trait_parts().is_some_and(|(id, effect)| {
-                    effect == Constness::Ordinary
-                        && facts
-                            .types
-                            .trait_application(id)
-                            .is_some_and(|application| {
-                                application.item.0 == pointee.definition.0
-                                    && facts
-                                        .types
-                                        .arguments(application.arguments)
-                                        .is_some_and(|arguments| arguments.len() == 0)
-                            })
-                })
-        })
-    {
+        declaration.definition,
+        target,
+        pointee.definition,
+        &mut inputs,
+    )
+    .map_err(error)?;
+    crate::sema::header_attributes::charge_source_contract_query(facts, inputs)?;
+    if !bounded {
         return Err(error(
             "source PhantomData requires its actual PointeeSized formal bound",
         ));
@@ -90,33 +77,109 @@ pub(in crate::sema) fn declaration(
     Ok(true)
 }
 
-fn formal(
-    report: &Report,
+/// Whether `definition` declares the ordinary, argument-free bound
+/// `target: PointeeSized`, as written in source or carried by its import.
+/// Each declared input read is charged to `steps`.
+fn pointee_bounded(
     facts: &Declarations,
-    declaration: Declaration,
-) -> Result<crate::types::TypeId, Error> {
-    let item = ItemId(declaration.definition.0);
-    let error = |message| Declarations::error(report, declaration.origin, message);
+    definition: DefId,
+    target: TypeId,
+    pointee: DefId,
+    steps: &mut usize,
+) -> Result<bool, &'static str> {
+    Ok(crate::sema::declaration_inputs::declared(
+        &facts.generics,
+        facts.crates.as_deref(),
+        definition,
+    )?
+    .any(|input| {
+        *steps = steps.saturating_add(1);
+        let crate::types::parameters::clauses::Clause::Predicate(predicate) = input.value else {
+            return false;
+        };
+        predicate.ty == target
+            && predicate.bound.trait_parts().is_some_and(|(id, effect)| {
+                effect == Constness::Ordinary
+                    && facts
+                        .types
+                        .trait_application(id)
+                        .is_some_and(|application| {
+                            application.item.0 == pointee.0
+                                && facts
+                                    .types
+                                    .arguments(application.arguments)
+                                    .is_some_and(|arguments| arguments.len() == 0)
+                        })
+            })
+    }))
+}
+
+/// The declaration's one type formal, with no default.
+fn formal(facts: &Declarations, definition: DefId) -> Result<TypeId, &'static str> {
+    let item = ItemId(definition.0);
     let parameters = facts
         .generics
         .parameters
-        .get(&declaration.definition)
-        .ok_or_else(|| error("source PhantomData parameters are not complete"))?;
+        .get(&definition)
+        .ok_or("source PhantomData parameters are not complete")?;
     let [parameter] = parameters.as_slice() else {
-        return Err(error("source PhantomData requires one actual type formal"));
+        return Err("source PhantomData requires one actual type formal");
     };
     let Argument::Type(target) = parameter.argument else {
-        return Err(error("source PhantomData requires a type formal"));
+        return Err("source PhantomData requires a type formal");
     };
     if parameter.default.is_some()
         || parameter.anonymous
         || !matches!(facts.types.kind(target), Some(Kind::Parameter(id)) if facts.types.parameter(id).is_some_and(|p| p.owner == item && p.index == 0))
     {
-        return Err(error(
-            "source PhantomData formal changed its actual owner or default",
-        ));
+        return Err("source PhantomData formal changed its actual owner or default");
     }
     Ok(target)
+}
+
+/// A source client re-proves its provider's `PhantomData` over its own
+/// interned facts: the provider's checks, and the logical category it staged
+/// for the struct the role names. The consumer's variance pass re-derives
+/// every other imported formal, so only this struct may leave one unused.
+pub(super) fn imported(
+    facts: &Declarations,
+    catalog: &super::Catalog,
+    declaration: super::Role,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    let definition = declaration.definition;
+    let item = ItemId(definition.0);
+    let variants = facts.members.variants(item);
+    *steps = steps.saturating_add(4 + variants.len());
+    let unit = matches!(variants, [variant] if facts.members.variants[variant.0 as usize].shape == Shape::Unit
+        && facts.members.fields(*variant).is_some_and(<[_]>::is_empty));
+    if declaration.parent.is_some()
+        || !unit
+        || facts
+            .aggregates
+            .get(item)
+            .is_none_or(|actual| actual.kind != aggregate::Kind::PhantomData)
+    {
+        return Err("imported PhantomData requires its module-owned unit structure");
+    }
+    let target = formal(facts, definition)?;
+    let pointee = catalog
+        .role(LangItem::PointeeSized)?
+        .ok_or("imported PhantomData requires actual PointeeSized")?;
+    if !pointee_bounded(facts, definition, target, pointee.definition, steps)? {
+        return Err("imported PhantomData requires its actual PointeeSized formal bound");
+    }
+    let ty = facts
+        .definitions
+        .get(item.0 as usize)
+        .copied()
+        .flatten()
+        .ok_or("imported PhantomData has no canonical actual type")?;
+    facts
+        .aggregates
+        .phantom_argument(&facts.types, ty)?
+        .ok_or("imported PhantomData lost its logical type argument")?;
+    Ok(())
 }
 
 /// Nominal role completion follows the existing deferred bound/field worklist,

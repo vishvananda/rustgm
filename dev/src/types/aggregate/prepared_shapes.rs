@@ -28,12 +28,15 @@ pub(crate) struct Ready<'a> {
 impl Definitions {
     /// Imported enums keep their validated variant order and completed
     /// discriminants; no source discriminant query is pending. A re-derived
-    /// nullable policy is staged with its shape and installed with it.
+    /// nullable policy is staged with its shape and installed with it. The one
+    /// struct named by the packet's `PhantomData` role, re-proved later, is
+    /// staged with its logical argument.
     pub(crate) fn prepare_imported_nominals(
         &mut self,
         types: &crate::types::Store,
         structs: &[(ItemId, Repr, ListId)],
         rows: &[ImportedEnum],
+        phantom: Option<ItemId>,
         mut pay: impl FnMut(usize, usize) -> Result<(), &'static str>,
     ) -> Result<Prepared, &'static str> {
         let variants = rows
@@ -54,7 +57,7 @@ impl Definitions {
         }
         let count = rows.len().saturating_add(structs.len());
         self.prepare_staged(count, variants, pay, |staged, destination| {
-            stage_structs(staged, destination, structs)?;
+            stage_structs(staged, destination, structs, phantom)?;
             for row in rows {
                 if destination.get(row.item).is_some()
                     || destination.nullable_enum(row.item).is_some()
@@ -137,6 +140,7 @@ fn stage_structs(
     staged: &mut Definitions,
     destination: &Definitions,
     rows: &[(ItemId, Repr, ListId)],
+    phantom: Option<ItemId>,
 ) -> Result<(), &'static str> {
     for &(item, repr, fields) in rows {
         if destination.get(item).is_some() {
@@ -144,7 +148,11 @@ fn stage_structs(
         }
         staged.insert(
             item,
-            Kind::Struct,
+            if phantom == Some(item) {
+                Kind::PhantomData
+            } else {
+                Kind::Struct
+            },
             repr,
             &[Variant {
                 fields,

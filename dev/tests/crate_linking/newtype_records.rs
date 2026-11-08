@@ -2,7 +2,7 @@
 //! Only the representation byte travels: every consumer re-runs the
 //! representation check and the one-nontrivial-field rule over its own field
 //! layouts.
-use super::fresh_packets::{Packet, Result, relabel};
+use super::fresh_packets::{Packet, Result, difference, relabel};
 use rustgm::support::crates;
 use std::{fmt::Write as _, path::Path};
 const SPEC: &str = "pa29/tests/spec/transparent-records";
@@ -61,23 +61,6 @@ fn header_row(bytes: &[u8], offset: usize) -> bool {
     (42..bytes.len()).contains(&offset)
         && bytes[offset - 42..offset - 38] == bytes[offset - 32..offset - 28]
         && bytes[offset - 34..offset - 32] == [0, 0]
-}
-/// The one offset at which two otherwise identical packets differ.
-fn difference(left: &[u8], right: &[u8]) -> Result<usize> {
-    if left.len() != right.len() {
-        return Err("packet lengths differ".into());
-    }
-    let found: Vec<usize> = left
-        .iter()
-        .zip(right)
-        .enumerate()
-        .filter(|(_, (a, b))| a != b)
-        .map(|(offset, _)| offset)
-        .collect();
-    let [offset] = *found.as_slice() else {
-        return Err(format!("packet differences {found:?}").into());
-    };
-    Ok(offset)
 }
 fn with_byte(bytes: &[u8], offset: usize, value: u8) -> Vec<u8> {
     let mut changed = bytes.to_vec();
