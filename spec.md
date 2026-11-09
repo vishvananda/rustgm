@@ -2102,6 +2102,17 @@ or premise is rejected, and two applicable trait methods are ambiguous. The
 [const supertrait lookup controls](pa31/tests/spec/const-supertrait-lookup/README.md)
 record independent outcomes for core's `<*const VTable>::cmp` shape.
 
+Callable sugar such as `F: FnMut(T) -> U` publishes its bound and output
+equality inside a binder even when it names no lifetime. Method lookup reads
+a binder that quantifies no lifetime and captures nothing outside it as its
+body, an ordinary condition. A condition read this way that equals a flat
+clause of the same scope, such as the callable's implied `MetaSized`, is the
+same condition and is checked once. A binder that quantifies a lifetime
+still requires a scoped consumer. The [quantified lookup
+controls](pa31/tests/spec/quantified-lookup-conditions/README.md) record
+independent outcomes for core's `Drain::new` shape and the bound-region
+shapes that remain rejected.
+
 A trait object, like a slice or str, has no fixed layout. The crate-wide layout
 pass demands no static layout for a declaration whose last field is, or ends
 in, a trait object, as rustc 1.98 accepts such declarations; any other unsized

@@ -46,12 +46,20 @@ const CASES: [(&str, Option<&str>); 22] = [
     ("ambiguous-plain-seq", Some(AMBIGUOUS)),
 ];
 
+#[path = "empty_binder_lookups.rs"]
+mod empty_binders;
+
 #[test]
 fn const_supertrait_lookups_match_declared_outcomes() -> TestResult {
-    for (name, expected) in CASES {
-        let path = format!("{CONTROLS}/{name}.rs");
+    match_outcomes(CONTROLS, &CASES, "const_supertrait_lookup")
+}
+
+/// Each control's first error, or its acceptance, is the declared outcome.
+fn match_outcomes(controls: &str, cases: &[(&str, Option<&str>)], label: &str) -> TestResult {
+    for &(name, expected) in cases {
+        let path = format!("{controls}/{name}.rs");
         let source = crate::test_source::fixture(&path)?;
-        let report = crate::test_source::source_provider(&source, "const_supertrait_lookup")?;
+        let report = crate::test_source::source_provider(&source, label)?;
         match (expected, crate::pipeline::analyze_source(&report)) {
             (None, Ok(_)) => {}
             (Some(message), Err(error)) => assert_eq!(error.message, message, "{path}"),
@@ -158,11 +166,33 @@ struct Lookup {
 
 fn conditions(foundation: &str, depth: usize, conditional: bool, form: &str) -> TestResult<Lookup> {
     let source = hierarchy(foundation, depth, conditional, &[form])?;
-    let report = crate::test_source::source_provider(&source, "supertrait_lookup_conditions")?;
-    let capture = crate::sema::copy_trace::Capture::matching(&["supertrait-lookup "])?;
-    crate::pipeline::analyze_source(&report)
-        .map_err(|error| format!("depth {depth}, conditional {conditional}: {error}"))?;
-    let rows = capture.rows()?;
+    let lookup = lookup_trace(
+        &source,
+        &format!("depth {depth}, conditional {conditional}"),
+    )?;
+    // A single call: one row per scope predicate.
+    assert_eq!(lookup.rows, lookup.scope, "depth {depth}: {form}");
+    Ok(lookup)
+}
+
+/// The supertrait-lookup trace of one analysis whose rows share one scope.
+fn lookup_trace(source: &str, label: &str) -> TestResult<Lookup> {
+    parse_lookup(&traced(source, label, &["supertrait-lookup "])?)
+}
+
+/// The trace rows of one analysis that start with one of `prefixes`. Every
+/// error names the analysis by `label`.
+fn traced(source: &str, label: &str, prefixes: &'static [&'static str]) -> TestResult<Vec<String>> {
+    let labelled = |error: &str| format!("{label}: {error}");
+    let report = crate::test_source::source_provider(source, "supertrait_lookup_conditions")
+        .map_err(|error| labelled(&error))?;
+    let capture = crate::sema::copy_trace::Capture::matching(prefixes).map_err(labelled)?;
+    crate::pipeline::analyze_source(&report).map_err(|error| labelled(&error.to_string()))?;
+    Ok(capture.rows().map_err(labelled)?)
+}
+
+/// Supertrait-lookup rows that share one scope.
+fn parse_lookup(rows: &[String]) -> TestResult<Lookup> {
     let mut lookup = Lookup {
         rows: rows.len(),
         kept: Vec::new(),
@@ -170,7 +200,7 @@ fn conditions(foundation: &str, depth: usize, conditional: bool, form: &str) -> 
         mapped: 0,
         charge: 0,
     };
-    for row in &rows {
+    for row in rows {
         let mut fields = row.splitn(6, ' ').skip(1);
         let mut field = |name: &str| {
             fields
@@ -183,9 +213,11 @@ fn conditions(foundation: &str, depth: usize, conditional: bool, form: &str) -> 
         lookup.charge += field("charge=")?.parse::<usize>()?;
         let kept: bool = field("kept=")?.parse()?;
         let predicate = field("")?;
-        // A single call: one row per scope predicate, all with one scope.
-        assert_eq!(rows.len(), scope, "{row}");
-        assert!(lookup.scope == 0 || lookup.mapped == mapped, "{row}");
+        // A single call: every row reports the one scope.
+        assert!(
+            lookup.scope == 0 || (lookup.scope, lookup.mapped) == (scope, mapped),
+            "{row}"
+        );
         (lookup.scope, lookup.mapped) = (scope, mapped);
         if kept {
             lookup.kept.push(predicate.to_owned());

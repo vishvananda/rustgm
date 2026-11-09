@@ -1480,6 +1480,36 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     - the associated unsafe widening covers unsafe associated declarations,
       as Lane D found in F.
 
+- **During Lane A's [census batch 21](parallel/census-batch21.md)**,
+  2026-11-09, on main `0bcba9e3f`, under the approved notice `ab59bd13`.
+  - **D0** (code reading and four declared probe rounds): callable sugar
+    always opens a binder, so `F: FnMut(T) -> U` is published as zero-region
+    quantified clauses. Method applicability read every quantified clause
+    through `Clause::ordinary`, which rejects it, on the path core's
+    `ZipImpl::new` forces for `Drain::new`.
+  - **Fix A:** lookup reads an empty binder, one that quantifies no lifetime
+    and captures nothing outside it, as its body. **D1** (after the declared
+    twin invariant failed in `fc-1`): elaboration lifts a sugar bound's
+    `MetaSized` and `PointeeSized` into its binder, so a condition read this
+    way that equals a flat clause of the same scope is skipped. The
+    lookup-local reader pays P + M canonical steps per lookup that reads an
+    empty binder and nothing otherwise. A sugar bound's lookup then has
+    exactly its flat twin's conditions and method selection work, and with no
+    empty binder every counter equals the base's.
+  - **Controls:** 22 declared PA31 controls agree with rustc 1.98.0, with
+    nine flips to accept and six bound-region known rejects-valid. The flip
+    survey over 1,086 committed sugar and `for<` inputs changed none of them.
+  - **Census 24** (pin `88273b11`): 42,310 declarations, none failed or
+    blocked, one record. Record 1 at `array/mod.rs:643` is gone. The crate
+    record is `local_annotations` at `iter/traits/iterator.rs:698`, in
+    `Iterator::intersperse`: `Intersperse::new(self, separator)` reports
+    "candidate properties require associated type normalization".
+  - **Tracked:** f01's higher-ranked accepts-invalid (batch 22's lead-in,
+    before A+O for the bound-region shapes), f03a's `[const]` sugar
+    supertrait rejects-valid, the inherent-impl `[const]` bound
+    accepts-invalid, `methods/overlap.rs:111` and D3
+    (library-build-blockers.md, census-batch21.md).
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

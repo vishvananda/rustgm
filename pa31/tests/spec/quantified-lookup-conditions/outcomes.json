@@ -1,0 +1,172 @@
+{
+ "schema": 1,
+ "declared": "2026-11-09, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run of them, in obj/parallel/census-batch21/fixtures/declared.txt (sha256 408efeb693e68af92d82ec1edc956ba47b33008e078524e2d819fd24a4d31f9d). Each file is byte-identical to a declared exploration probe (obj/parallel/census-batch21/probes/r1 to r3, each declared before its run, with the census 23 pin and rustc 1.98.0). The shapes reduce census 23's crate record \"quantified clause requires a scoped consumer\" at core's `drain::Drain::new(&mut me, &mut f)` in `<[T; N]>::try_map` (library/core/src/array/mod.rs:643), an inherent `const unsafe fn new` of `impl<'l, 'f, T, U, F: FnMut(T) -> U> Drain<'l, 'f, T, F>` beside the trait method `ZipImpl::new`. Each outcome follows the rule observed in those rustc runs: callable sugar that names no lifetime is an ordinary method lookup condition, an unsatisfied inherent condition falls back to an applicable trait method, and an unsatisfied one with no fallback is rejected (E0277 when the callable type is inferred, E0599 otherwise)",
+ "declaration_sha256": "f73a56e7ae51733a45058a860c08fb60f0d01701e0cc517e8ce6afe12aa16cbd",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "core-drain-shape.rs": {
+   "sha256": "d63ca6890fa3dcdf1d2fb13814d4cba7466857cbf81e4d79e7d93686aef629cd",
+   "declared": 0,
+   "reason": "record 1's shape: `Drain::new(&mut me, &mut f)` in a const fn, of an inherent `const unsafe fn new` under `F: FnMut(T) -> U`, beside `ZipImpl::new`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "nonconst-caller.rs": {
+   "sha256": "69e6d4d1a4823b41aa96dfad8c25e082fc132fe590e7a9b4ac7a53ac96007283",
+   "declared": 0,
+   "reason": "the same call from a non-const fn under `impl FnMut(T) -> R`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "nonconst-new.rs": {
+   "sha256": "c728f6ccb75aaefcfb9cd1c2639c09efce6a8938620dec41a82acc9a03b3bf71",
+   "declared": 0,
+   "reason": "the same with a non-const `unsafe fn new`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "safe-new.rs": {
+   "sha256": "f3e7efe13807c6286fb01397bcddbc7dc52ad800115ac08bb9e5a65197021e1c",
+   "declared": 0,
+   "reason": "the same with a safe `const fn new`, called without an unsafe block",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "by-value.rs": {
+   "sha256": "c8357e7c3d7e92b3eb4a25bd58b193f275e7ececca983db5f841a3f6dd3fdb0a",
+   "declared": 0,
+   "reason": "the same with `new(a: T, f: F)` taking both by value",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "method-call.rs": {
+   "sha256": "830f0f55a21f8270a820aefd17497cbb1974e70e84fcfec807cfb76819524de0",
+   "declared": 0,
+   "reason": "the method-call form: `h.get()` of `impl<T, U, F: FnMut(T) -> U> Holder<T, F>`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "drop-impl.rs": {
+   "sha256": "ee01dd2ea5c40570c1f9530f96500d29f70469b02d345595c0c2768eba7d68a5",
+   "declared": 0,
+   "reason": "record 1's shape with core's `const impl Drop for Drain`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "sugar-supertrait.rs": {
+   "sha256": "ec7233416adbb0e9fefab5e2e70fe0fd9bcd163b43ce57b79dc234d14b235245",
+   "declared": 0,
+   "reason": "a default method of `trait Tr: Fn(u8) -> u8`, called through `X: Tr`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "trait-fallback.rs": {
+   "sha256": "d345c91f5027666efa6cb90167b9a8981a256a7c0876f8dbf3e1d4ea318ac12e",
+   "declared": 0,
+   "reason": "`S::<u8, u8>::new()`: the inherent `new` under `F: FnMut(T) -> U` does not apply to `u8`, so the path resolves to `Make::new`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "unique-inherent.rs": {
+   "sha256": "6345f1c1e815b6be964ac793f6de4a3f115fcd267bac1d43b227fb5d4124e1aa",
+   "declared": 0,
+   "reason": "control: record 1's shape without a trait `new`; lookup takes the unique inherent candidate",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "plain-bound.rs": {
+   "sha256": "c088a1712e46e813216cf2c48dd3c658bf9f83ef97ef5767aeff9c9b6f937b58",
+   "declared": 0,
+   "reason": "control: record 1's shape under an ordinary `F: Call<T, Out = U>` bound",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "sugar-lifetime-unique.rs": {
+   "sha256": "be40454695ad0cd9b7337d2a4e83ded6ba598227657211815dd1fa14636ea663",
+   "declared": 0,
+   "reason": "control: `F: FnMut(&T) -> U` without a trait `new`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "explicit-binder.rs": {
+   "sha256": "1d9de9bc7c417dff6c3266b75dae69dd2c81416e7ce9ccda3c5918b90031dd64",
+   "declared": 0,
+   "reason": "a higher-ranked `F: for<'a> Tr<'a>` beside `ZipImpl::new`; known rejects-valid, the bound region requires a scoped consumer",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "sugar-lifetime.rs": {
+   "sha256": "a28633fe2843feb3e1e7f012e97ca80b845f03a3704583f9b2ae9652dbdd1067",
+   "declared": 0,
+   "reason": "`F: FnMut(&T) -> U` beside `ZipImpl::new`; known rejects-valid, as explicit-binder",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "split-shape.rs": {
+   "sha256": "0bfe744dfd90adc7c4bb0232652b3b2a4e03c6450f25b52229ae7442d1c01560",
+   "declared": 0,
+   "reason": "core's slice/iter.rs `Split::new` shape: `P: FnMut(&T) -> bool` beside `ZipImpl::new`; known rejects-valid",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "trait-fallback-region.rs": {
+   "sha256": "256f3420e140b85c47482510f58a4a5df5ad442a92ef69d9498c69def54ce822",
+   "declared": 0,
+   "reason": "trait-fallback with `F: FnMut(&T) -> U`; known rejects-valid",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "trait-fallback-leak.rs": {
+   "sha256": "2ee0bbe1968539de527dfad3edc65596511f3e099e2a9dabdaa6021cf17a448f",
+   "declared": 0,
+   "reason": "`F: for<'r> Tr<'r>` with only `impl Tr<'static> for u8`, falling back to `Make::new`; known rejects-valid",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "receiver-sugar-lifetime.rs": {
+   "sha256": "f94d6f241ccc8f9e3e07a65287b48b4bf182cbae936eb200fbf844596f8229e2",
+   "declared": 0,
+   "reason": "the method-call form `h.do_inspect(x)` under `F: FnMut(&T)`; known rejects-valid",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "fail-inferred.rs": {
+   "sha256": "33e088a4bee04c943044663c2d103af9a489e6932262d15783f15b57e21aa60b",
+   "declared": 1,
+   "reason": "opponent: `S::new(1u8, 2u8)` beside `ZipImpl::new`; `u8: FnMut(u8)` is not satisfied (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "fail-explicit.rs": {
+   "sha256": "802e5983d5eadff747960e276e45bd003ea0a707a2eb9984019a1f6048141363",
+   "declared": 1,
+   "reason": "opponent: `S::<u8, u8>::new(1, 2)` beside `ZipImpl::new`, which `S<u8, u8>` does not implement (E0599)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0599"
+   ]
+  },
+  "fail-unique.rs": {
+   "sha256": "bee3564e7b828318e9a01c36740113d3a9aa284b6840586f1d87ffd6bfc39ce9",
+   "declared": 1,
+   "reason": "opponent: `S::<u8, u8>::new(1, 2)` without a trait `new`; the inherent condition is not satisfied (E0599)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0599"
+   ]
+  },
+  "fail-region-unique.rs": {
+   "sha256": "8fe0d58003d0d9c88e01c42e4ba0f84a71a13f28a5ce38b8ab7e79f0da9417b3",
+   "declared": 1,
+   "reason": "opponent: the same under `F: FnMut(&T) -> U` (E0599)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0599"
+   ]
+  }
+ }
+}

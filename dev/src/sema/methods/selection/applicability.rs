@@ -11,7 +11,12 @@ use crate::{
     },
     types::{
         infer::{self, Context, Instantiation, TermId, arguments::Argument, properties::Query},
-        parameters::{ParameterKind, environment::Environment, predicates::Bound},
+        parameters::{
+            ParameterKind,
+            clauses::Clause,
+            environment::Environment,
+            predicates::{Bound, Predicate},
+        },
     },
 };
 use std::sync::Arc;
@@ -130,8 +135,9 @@ fn declaration_conditions(
     mut conditions: Conditions,
 ) -> Result<Option<Conditions>, &'static str> {
     let mut mapped = Vec::new();
+    let mut scope = ScopeConditions::new(&facts.generics, owner);
     for predicate in facts.generics.predicates_in_scope(owner) {
-        if let crate::types::parameters::clauses::Clause::UnstableFeature(id) = predicate.value {
+        if let Clause::UnstableFeature(id) = predicate.value {
             let work = std::cell::Cell::new(0_usize);
             let proven =
                 facts.prove_feature(id, caller.environment.map(Arc::as_ref), &|steps, _| {
@@ -145,7 +151,10 @@ fn declaration_conditions(
             }
             continue;
         }
-        let predicate = predicate.value.ordinary()?;
+        let clause = predicate.value;
+        let Some(predicate) = scope.condition(&facts.types, &mut facts.body_work, clause)? else {
+            continue;
+        };
         // Applicability checks the abstract marker and Sized requirements. The
         // chosen callable retains and proves its complete canonical trait goal.
         if facts
@@ -169,7 +178,6 @@ fn declaration_conditions(
             // callable proves its complete clause under the use's effect.
             // prepare is the only caller, for the type-qualified (paths.rs)
             // and method-call (receiver.rs) lookups.
-            use crate::types::parameters::clauses::Clause;
             let written = predicate;
             let predicate = crate::sema::traits::effects::in_context(
                 &mut facts.types,
@@ -179,8 +187,9 @@ fn declaration_conditions(
             .ordinary()?;
             // A trait's `[const]` supertrait is also in scope as its self
             // bound's elaborated ordinary consequence. Of a `[const]` condition
-            // and an equal ordinary one, lookup keeps the first in scope order;
-            // no other duplicate is compared. Each visit is charged.
+            // and an equal ordinary one, lookup keeps the first in scope order,
+            // reading each clause as its condition; no other duplicate is
+            // compared. Each visit is charged.
             let conditional = matches!(written.bound, Bound::MaybeConstTrait(_));
             let mut steps = 0_usize;
             let twin = if conditional {
@@ -189,9 +198,9 @@ fn declaration_conditions(
                     .predicates_in_scope(owner)
                     .take_while(|earlier| {
                         steps += 1;
-                        earlier.value != Clause::Predicate(written)
+                        earlier.value != clause
                     })
-                    .any(|earlier| earlier.value == Clause::Predicate(predicate))
+                    .any(|earlier| lookup_condition(&facts.types, earlier.value) == Ok(predicate))
             } else if matches!(predicate.bound, Bound::Trait(_)) {
                 steps = mapped.len();
                 mapped.contains(&predicate)
@@ -204,7 +213,7 @@ fn declaration_conditions(
                 let (size, maybe) = facts.generics.predicates_in_scope(owner).fold(
                     (0_usize, 0_usize),
                     |(size, maybe), located| {
-                        let bound = located.value.ordinary().map(|p| p.bound);
+                        let bound = lookup_condition(&facts.types, located.value).map(|p| p.bound);
                         let found = matches!(bound, Ok(Bound::MaybeConstTrait(_)));
                         (size + 1, maybe + usize::from(found))
                     },
@@ -236,6 +245,88 @@ fn declaration_conditions(
         conditions.builtins.push((term, predicate.bound));
     }
     Ok(Some(conditions))
+}
+
+/// Reads one lookup's scope clauses as its conditions. Elaboration lifts a
+/// sugar bound's consequences into its binder, so a condition read from an
+/// empty binder can equal a flat clause of the same scope, such as the
+/// callable's implied `MetaSized`. Such a condition is skipped; the flat clause
+/// keeps its own position.
+struct ScopeConditions<'a> {
+    generics: &'a crate::sema::generics::Generics,
+    owner: DefId,
+    /// The scope's flat clauses, collected by its first read from an empty binder.
+    flat: Option<crate::support::hash::HashSet<Predicate>>,
+}
+
+impl<'a> ScopeConditions<'a> {
+    const fn new(generics: &'a crate::sema::generics::Generics, owner: DefId) -> Self {
+        Self {
+            generics,
+            owner,
+            flat: None,
+        }
+    }
+
+    /// The clause's lookup condition, or `None` when it is read from an empty
+    /// binder and equals a flat clause. The first such read charges a step per
+    /// scope clause, and each read charges one more.
+    fn condition(
+        &mut self,
+        store: &crate::types::Store,
+        work: &mut crate::sema::model::BodyWork,
+        clause: Clause,
+    ) -> Result<Option<Predicate>, &'static str> {
+        let predicate = lookup_condition(store, clause)?;
+        if !matches!(clause, Clause::ForAll(_)) {
+            return Ok(Some(predicate));
+        }
+        let (generics, owner) = (self.generics, self.owner);
+        let mut steps = 1_usize;
+        let flat = self.flat.get_or_insert_with(|| {
+            generics
+                .predicates_in_scope(owner)
+                .filter_map(|located| {
+                    steps += 1;
+                    match located.value {
+                        Clause::Predicate(ordinary) => Some(ordinary),
+                        Clause::ForAll(_) | Clause::UnstableFeature(_) => None,
+                    }
+                })
+                .collect()
+        });
+        work.canonical_steps = work.canonical_steps.saturating_add(steps);
+        let duplicate = flat.contains(&predicate);
+        #[cfg(test)]
+        crate::sema::copy_trace::record(|| {
+            let scope = generics.predicates_in_scope(owner).count();
+            format!(
+                "empty-binder-lookup scope={scope} charge={steps} kept={} {predicate:?}",
+                !duplicate
+            )
+        });
+        Ok((!duplicate).then_some(predicate))
+    }
+}
+
+/// Callable sugar such as `F: FnMut(T) -> U` publishes its bound and output
+/// equality inside a binder even when it names no lifetime. An empty binder
+/// whose body captures nothing outside it quantifies nothing, so lookup reads
+/// it as its body, the same predicate. A binder that quantifies a lifetime, or
+/// encloses an outer capture, still requires a scoped consumer.
+fn lookup_condition(
+    store: &crate::types::Store,
+    clause: Clause,
+) -> Result<Predicate, &'static str> {
+    if let Clause::ForAll(id) = clause {
+        let scoped = store
+            .quantified(id)
+            .ok_or("invalid quantified method condition")?;
+        if scoped.bound_regions == 0 && scoped.predicate.escaping_binders(store)? == 0 {
+            return Ok(scoped.predicate);
+        }
+    }
+    clause.ordinary()
 }
 
 pub(super) fn builtin_requirements(

@@ -5,6 +5,38 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 21](parallel/census-batch21.md) repairs census 23's
+record. It was qualified and censused on main `0bcba9e3f`. Census 24
+(`88273b11`) checks 42,310 declarations, with none failed or blocked, and
+has one record. The crate record is `local_annotations` at
+`iter/traits/iterator.rs:698`, in `Iterator::intersperse`:
+`Intersperse::new(self, separator)` reports "candidate properties require
+associated type normalization". Its impl has a `where I::Item: Clone`
+condition.
+
+- Method lookup now reads callable sugar that names no lifetime, an empty
+  binder, as an ordinary condition, and checks a condition equal to a flat
+  clause of the same scope once. `:643` passes. Twenty-two PA31 controls were
+  declared before the rustc 1.98.0 oracle; all agree, nine flip to accept,
+  and six bound-region shapes rustc accepts stay rejected as known
+  rejects-valid ("quantified clause requires a scoped consumer"), among them
+  core's `Split::new` shape.
+- **f01, batch 22's lead-in** (tracked accepts-invalid, census batch 21
+  probe `f01`): `S::<u8>::new()` of `impl<F: for<'r> Tr<'r>> S<F>` with only
+  `impl Tr<'static> for u8` is accepted on the unique route, where rustc
+  1.98.0 reports E0599. The bound fails only by rustc's higher-ranked leak
+  check. Batch 22 closes f01; then the bound-region lookup shapes (A+O) can
+  open a quantified lifetime.
+- Tracked rejects-valid, low priority (probe `f03a`): a const trait with a
+  `[const]` callable-sugar supertrait, `pub const trait Run: [const]
+  FnMut(u8) -> u8 {}`, is rejected with "ambiguous trait assumptions in
+  declaration", where rustc 1.98.0 accepts it.
+- Tracked accepts-invalid (probe `g01`): `[const]` bounds on an inherent
+  impl's parameters, such as `impl<T, U, F: [const] FnMut(T) -> U> S<T, F>`,
+  are accepted, where rustc 1.98.0 rejects them ("`[const]` is not allowed
+  here").
+- Census 24's record 1 is the next lead.
+
 Lane B [item B, negative premises in nested trait proofs](parallel/negative-nested-proofs.md)
 carries the other header's Sized and `MetaSized` premises into every nested
 trait proof of a negative coherence query and retires the projected-size
