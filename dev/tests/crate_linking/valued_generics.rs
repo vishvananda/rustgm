@@ -1,8 +1,9 @@
 //! Version thirteen exports const parameters over integer, bool and char
 //! types with their concrete and rigid arguments, in signatures and in body
 //! applications. Fresh consumers instantiate imported const-generic
-//! nominals, impls and functions natively, older profiles and
-//! readers reject the new rows by name, and forged terms fail at decode.
+//! nominals, impls and functions, and the ignored native test runs them.
+//! Older profiles and readers reject the new rows by name, and forged terms
+//! fail at decode.
 use super::fresh_packets::{Packet, Result, relabel};
 use rustgm::support::crates;
 use std::path::PathBuf;
@@ -59,7 +60,7 @@ fn forged(bytes: &[u8], at: usize, value: &[u8]) -> Vec<u8> {
 }
 
 #[test]
-fn const_parameter_packets_export_and_run_in_fresh_consumers() -> Result {
+fn const_parameter_packets_export_to_fresh_consumers() -> Result {
     let packet = Packet::publish(GROUP, SPEC, "frontend", "provider", PROFILE)?;
     let bytes = std::fs::read(&packet.metadata)?;
     // A plain version-thirteen core: no macro envelope.
@@ -68,7 +69,6 @@ fn const_parameter_packets_export_and_run_in_fresh_consumers() -> Result {
     assert_eq!(crates::encode(&interface)?, bytes);
     for name in ACCEPTED {
         super::artifacts::checked(name, &packet.folder, &mut packet.client(name))?;
-        assert_eq!(packet.native(name)?.status.code(), Some(42), "{name}");
     }
     for (name, diagnostic) in REJECTED {
         packet.rejected(name, &mut packet.client(name), diagnostic)?;
@@ -77,6 +77,16 @@ fn const_parameter_packets_export_and_run_in_fresh_consumers() -> Result {
     for profile in OLDER {
         let older = packet.folder.join(format!("{profile}.rgcrate"));
         packet.rejected(profile, &mut packet.export(profile, &source, &older), ALIAS)?;
+    }
+    Ok(())
+}
+#[test]
+#[ignore = "requires configured locked CPPGM object backend and host C compiler"]
+fn const_parameter_clients_execute_natively() -> Result {
+    let packet = Packet::publish(GROUP, SPEC, "native", "provider", PROFILE)?;
+    for name in ACCEPTED {
+        super::artifacts::checked(name, &packet.folder, &mut packet.client(name))?;
+        assert_eq!(packet.native(name)?.status.code(), Some(42), "{name}");
     }
     Ok(())
 }
