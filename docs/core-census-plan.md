@@ -969,7 +969,7 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     marker bounds are. It removes C2's temporary
     `negative.rs::imported_nominal_inputs`. Its controls are rustc's E0277
     opponent, a positive with a satisfying argument, and an unchanged
-    source-local nominal.
+    source-local nominal. Closed by C2b (below).
   - **Silent fallback removed.** `freezing.rs::object_marker` and
     `has_source` propagate an `auto_marker` integrity error. They never
     degrade it to "not a marker".
@@ -1150,6 +1150,31 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     - Lane B's MetaSized premise item follows in `overlap/inputs.rs`, rebased
       on C3b; `negative-metasized-param` is its parametric repro with
       imported conditions.
+
+- **During Lane C's [auto traits](parallel/auto-traits.md) slice (item 5,
+  C2b)**, 2026-11-09.
+  - **Rule.** A client forms each imported nominal it names under that
+    nominal's transported where-clauses. There is no wire change.
+    - The requirements are its original inputs, declared and implied,
+      substituted at the instance's arguments, with outlives omitted. They
+      are reported with the source twin's text and location.
+    - Why: `fn hold(_r: base::Rc<u8, NotAlloc>)` was accepted against
+      rustc's E0277 (found in C2).
+    - Payment: an uncharged walk pays the installed header budget exactly
+      its attempted substitution, once per instance. A charged walk pays
+      only its own closure. Cache hits pay as source hits on both paths,
+      whichever path filled them.
+  - **C2's workaround is removed.** Negative coverage reads
+    `nominals::requirements` for every nominal, and the C2 entry's C2b item
+    closes.
+  - **Survey.** Only the new packet's seven imported opponents flip, from
+    accepted to rejected. Every other run is byte-identical, including C2's
+    `auto-impls` packet.
+  - **Recorded:**
+    - pa29 has no `manifest.json` yet, and the packet's outcomes file lists
+      every input with its sha256;
+    - the baseline already enforced an imported nominal's Sized edges
+      (`slot-unsized`), so only where-clauses were missing.
 
 ## Lanes
 

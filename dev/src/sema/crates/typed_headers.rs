@@ -129,11 +129,13 @@ impl Headers {
         Ok(())
     }
     pub(in crate::sema) fn reserve(&mut self, growth: usize) -> Result<(), Error> {
+        self.reserve_bytes(growth).map_err(error)
+    }
+    /// The byte budget's fixed wording, for payers whose phase errors are texts.
+    fn reserve_bytes(&mut self, growth: usize) -> Result<(), &'static str> {
         self.bytes = self.bytes.saturating_add(growth);
         if self.bytes.saturating_add(self.base) > crate::support::crates::MAX_BYTES {
-            return Err(error(
-                "canonical generic headers exceed combined retained storage budget",
-            ));
+            return Err("canonical generic headers exceed combined retained storage budget");
         }
         Ok(())
     }
@@ -161,9 +163,13 @@ impl Headers {
         self.reserve(growth)
     }
     pub(in crate::sema) fn charge(&self, count: usize) -> Result<(), Error> {
+        self.charge_work(count).map_err(error)
+    }
+    /// The work budget's fixed wording, for payers whose phase errors are texts.
+    fn charge_work(&self, count: usize) -> Result<(), &'static str> {
         self.work.set(self.work.get().saturating_add(count));
         if self.work.get() > crate::support::crates::MAX_COMPONENTS {
-            return Err(error("imported generic header work budget exceeded"));
+            return Err("imported generic header work budget exceeded");
         }
         Ok(())
     }
@@ -492,18 +498,25 @@ pub(in crate::sema) fn charge_source_headers(
     steps: usize,
     bytes: usize,
 ) -> Result<(), Error> {
+    pay_source_headers(facts, steps, bytes).map_err(error)
+}
+/// `charge_source_headers` with its fixed wording, for payers such as nominal
+/// formation whose errors are texts. The checks and texts are the same.
+pub(in crate::sema) fn pay_source_headers(
+    facts: &mut Declarations,
+    steps: usize,
+    bytes: usize,
+) -> Result<(), &'static str> {
     let headers = facts
         .crates
         .as_deref_mut()
         .and_then(|l| l.originals.as_deref_mut())
-        .ok_or_else(|| error("source validation lacks its installed header budget"))?;
+        .ok_or("source validation lacks its installed header budget")?;
     if headers.source.is_none() {
-        return Err(error(
-            "source validation cannot use legacy header authority",
-        ));
+        return Err("source validation cannot use legacy header authority");
     }
-    headers.charge(steps)?;
-    headers.reserve(bytes)?;
+    headers.charge_work(steps)?;
+    headers.reserve_bytes(bytes)?;
     headers.observed.add(bytes);
     Ok(())
 }

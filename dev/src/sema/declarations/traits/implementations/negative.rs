@@ -2,11 +2,7 @@
 use super::{Checker, DefId, Error, NodeKey, Predicate};
 use crate::{
     support::hash::HashSet,
-    types::{
-        Kind,
-        arguments::Argument,
-        parameters::{ParameterKind, clauses::Clause, predicates::Bound},
-    },
+    types::{Kind, arguments::Argument, parameters::ParameterKind},
 };
 impl Checker<'_> {
     pub(super) fn validate_impl_polarity_profile(
@@ -64,21 +60,20 @@ impl Checker<'_> {
         {
             return Ok(());
         }
-        self.negative_coverage(owner, predicate, false)
-            .map_err(|message| {
-                Error::at(
-                    source.file,
-                    self.report
-                        .package
-                        .unit(source.file)
-                        .configured
-                        .ast
-                        .node(source.node)
-                        .span
-                        .start,
-                    message,
-                )
-            })
+        self.negative_coverage(owner, predicate).map_err(|message| {
+            Error::at(
+                source.file,
+                self.report
+                    .package
+                    .unit(source.file)
+                    .configured
+                    .ast
+                    .node(source.node)
+                    .span
+                    .start,
+                message,
+            )
+        })
     }
 
     /// Version thirteen: an imported negative impl of its own packet's auto
@@ -93,7 +88,7 @@ impl Checker<'_> {
         if !matches!(self.facts.types.kind(predicate.ty), Some(Kind::Adt(..))) {
             return Ok(());
         }
-        self.negative_coverage(owner, predicate, true)
+        self.negative_coverage(owner, predicate)
             .map_err(Error::unlocated)
     }
 
@@ -104,14 +99,10 @@ impl Checker<'_> {
         &mut self,
         owner: DefId,
         predicate: Predicate,
-        imported: bool,
     ) -> Result<(), &'static str> {
-        let clauses = if imported {
-            imported_nominal_inputs(&mut self.facts, predicate.ty)?
-        } else {
-            let mut formation = crate::sema::nominals::Requirements::default();
-            crate::sema::nominals::requirements(&mut self.facts, predicate.ty, &mut formation)?
-        };
+        let mut formation = crate::sema::nominals::Requirements::default();
+        let clauses =
+            crate::sema::nominals::requirements(&mut self.facts, predicate.ty, &mut formation)?;
         let required: HashSet<_> = clauses.into_iter().collect();
         let declared = crate::sema::declaration_inputs::declared(
             &self.facts.generics,
@@ -131,40 +122,6 @@ impl Checker<'_> {
         }
         negative_parameters(&self.facts, owner, predicate)
     }
-}
-
-/// A source client installs no imported nominal's predicates. Its declared
-/// and implied inputs are borrowed from the installed header and instantiated
-/// at Self's arguments; outlives inputs are omitted as formation omits them.
-fn imported_nominal_inputs(
-    facts: &mut crate::sema::model::Declarations,
-    ty: crate::types::TypeId,
-) -> Result<Vec<Clause>, &'static str> {
-    let Some(Kind::Adt(item, arguments)) = facts.types.kind(ty) else {
-        return Err("imported negative coverage requires its nominal Self");
-    };
-    let nominal = DefId(item.0);
-    let inputs =
-        crate::sema::declaration_inputs::all(&facts.generics, facts.crates.as_deref(), nominal)?
-            .map(|input| input.value)
-            .filter(|clause| {
-                !matches!(
-                    clause,
-                    Clause::Predicate(Predicate {
-                        bound: Bound::Outlives(_),
-                        ..
-                    })
-                )
-            })
-            .collect::<Vec<_>>();
-    inputs
-        .into_iter()
-        .map(|clause| {
-            facts
-                .generics
-                .substitute_clause(&mut facts.types, nominal, arguments, clause)
-        })
-        .collect()
 }
 
 fn negative_parameters(

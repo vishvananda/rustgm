@@ -534,3 +534,22 @@ crate whose coherence each proves. The packet holds:
 Amendments are recorded beside the declarations they amend, each before the
 run it governs. The `crate_linking::absence_transport` integration controls
 and the `overlap::disjointness` scaling control consume it.
+
+`imported-formation-outcomes.json` freezes the formation packet under
+`spec/imported-formation/`, in which a client forms each imported nominal
+under its transported where-clauses. The packet holds:
+
+- the knowable-absence provider plus authored, alloc-shaped lines: `Allocator`,
+  `Global`, `Rc<T: ?Sized, A: Allocator>`, `Bounded<T> where T: Copy` and
+  `Nested<A: Allocator>`;
+- six clients that rustc accepts: a satisfying argument, a caller bound, a
+  client impl of the imported trait, a `?Sized` argument, a holding
+  where-clause and a source-local positive;
+- seven imported opponents, each E0277 in rustc and each rejected at the same
+  kind of site as its local twin: a signature, a generic signature, a field, a
+  reference, an impl header, a where-clause and a nested nominal;
+- `slot-unsized`, whose imported Sized edge was already enforced, and four
+  source-local twins, all unchanged.
+
+The `crate_linking::where_clause_transport` integration controls and the
+`nominals::requirements` payment and scaling invariants consume it.

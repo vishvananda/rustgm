@@ -6793,9 +6793,20 @@ provider: rustc checks it only in a crate without `auto_traits`, and declaring
 the packet's own auto trait requires that feature. Imported custom auto traits
 prove structurally as role-bound markers do, each re-checked by name as its
 packet's version-13 declaration. A client's impl of an imported Freeze needs
-`freeze_impls`. Until C2b, an imported nominal's transported where-clauses are
-not formation requirements in a client, so negative coverage reads them from
-the nominal's transported inputs directly.
+`freeze_impls`.
+
+A client forms each imported nominal it names under that nominal's transported
+where-clauses, as rustc does: its formation requirements are its sized
+parameters' Sized edges and its original inputs, declared and implied, the
+same inputs selection and coherence read. They are substituted at the
+instance's arguments, with outlives omitted as for a source nominal, and
+reported with the source twin's text and location. Negative coverage reads the
+same requirements. Each instance's clauses are cached once. A walk that has no
+caller-owned budget pays the installed header budget exactly the substitution
+it attempted, and a charged walk, as specialization admission makes, pays only
+its own closure. The [imported-formation
+packet](pa29/tests/spec/imported-formation/README.md) records independent
+outcomes.
 
 Coherence proves a goal's absence for the crate whose coherence it proves, as
 rustc 1.98's `trait_ref_is_knowable` does. A consumer re-proves a pair of

@@ -5,6 +5,28 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [auto traits](parallel/auto-traits.md), C2b, forms each imported
+nominal a client names under that nominal's transported where-clauses, as
+rustc does. There is no wire change:
+
+- `fn hold(_r: base::Rc<u8, NotAlloc>)` was accepted, against rustc's E0277.
+  So were its field, reference, impl-header, generic, where-clause and nested
+  forms. Each is now rejected with "nominal type argument must implement its
+  declared trait", at the same kind of site as its source-local twin.
+- C2's temporary `negative.rs::imported_nominal_inputs` is removed. Negative
+  coverage reads the same requirements as formation.
+- An uncharged walk pays the installed header budget exactly the
+  substitution it attempted, once per instance. A charged walk, as
+  specialization admission makes, pays only its own closure.
+
+Six clients exit 42 natively. The flip survey changes only the new packet:
+its seven imported opponents go from accepted to rejected. Every other run is
+byte-identical, including C2's `auto-impls` packet, whose clients re-prove
+imported negative auto impls on nominals.
+
+- Open in this item: 5b follows. pa29 has no `manifest.json` yet; the
+  packet's outcomes file lists every input with its sha256.
+
 Lane D [stage B1](source-asm-vector-join.md#initial-native-assembly-profile)
 lowers the original `_mm_stream_ps` to the pinned backend's LowIR `assembly`
 templates and `asm` invocations, on main `2a27e11ca`.
@@ -238,7 +260,8 @@ natively. Nineteen opponents are rejected, as rustc rejects them.
     marker bounds are. Until then, C2's imported negative coverage reads the
     nominal's transported inputs directly
     (`negative.rs::imported_nominal_inputs`). That workaround is temporary,
-    and C2b removes it. C2b follows C3 and precedes 5b.
+    and C2b removes it. C2b follows C3 and precedes 5b. Closed by C2b
+    (above).
   - C3: non-auto negative impls, and plain unsafe traits and impls.
   - `!Send for Arguments<'_>` stays a conditional refutation, because its
     header names a region.

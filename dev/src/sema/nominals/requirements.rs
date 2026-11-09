@@ -615,6 +615,61 @@ fn instance<const CHARGED: bool>(
         reserve::<_, CHARGED>(output, 1, charge)?;
         output.push(predicate);
     }
+    imported_inputs::<CHARGED>(facts, owner, arguments, output, charge)
+}
+
+/// An imported nominal's transported where-clauses: the inputs a source
+/// nominal keeps in `predicates`, read from the original inputs selection and
+/// coherence read, with outlives omitted as above. Each unit of work has one
+/// payer. A charged caller pays through its own closure; an uncharged walk
+/// pays the installed header budget exactly the substitution it attempted.
+fn imported_inputs<const CHARGED: bool>(
+    facts: &mut Declarations,
+    owner: DefId,
+    arguments: GenericArgs,
+    output: &mut Vec<Clause>,
+    charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+) -> Result<(), &'static str> {
+    let Some(linkage) = facts.crates.as_deref() else {
+        return Ok(());
+    };
+    let inputs = linkage.original_inputs(&facts.generics, owner, false)?;
+    if inputs.is_empty() {
+        return Ok(());
+    }
+    let attempted = std::cell::Cell::new((0_usize, 0_usize));
+    let observe = |steps: usize, bytes: usize| {
+        if CHARGED {
+            return charge(steps, bytes);
+        }
+        let (work, retained) = attempted.get();
+        attempted.set((work.saturating_add(steps), retained.saturating_add(bytes)));
+        Ok(())
+    };
+    for input in inputs {
+        if matches!(
+            input.value,
+            Clause::Predicate(Predicate {
+                bound: Bound::Outlives(_),
+                ..
+            })
+        ) {
+            continue;
+        }
+        let clause = facts.generics.substitute_clause_charged(
+            &mut facts.types,
+            owner,
+            arguments,
+            input.value,
+            &observe,
+        )?;
+        reserve::<_, CHARGED>(output, 1, charge)?;
+        output.push(clause);
+    }
+    if !CHARGED {
+        let (steps, bytes) = attempted.get();
+        crate::sema::crates::pay_source_headers(facts, steps, bytes)?;
+    }
     Ok(())
 }
 
@@ -633,6 +688,9 @@ fn reserve<T, const CHARGED: bool>(
 #[cfg(test)]
 #[path = "../../../tests/invariants/charged_formation.rs"]
 mod counted_tests;
+#[cfg(test)]
+#[path = "../../../tests/invariants/where_clause_payments.rs"]
+mod where_clause_tests;
 
 struct ClauseOutput<'a> {
     values: &'a mut Vec<Clause>,

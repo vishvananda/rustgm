@@ -1,0 +1,205 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+  "providers": [
+    {
+      "file": "spec/imported-formation/provider.rs",
+      "sha256": "fe7d204d2f193e3c627672c40a6db23922cf4067ce033865f78e10cafe8d2332"
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "declared": "2026-11-09T00:30:25Z",
+  "development_note": "every rustc, baseline and C2b outcome was declared in scratch before the rustc oracle and the baseline probe ran, and the integrator approved the design and these outcomes before code; this file was frozen after both and before any candidate run. rustc 1.98.0 gave every declared rustc outcome. One baseline prediction missed: slot-unsized was predicted accepted, but the baseline already rejects it at 52 with `nominal type argument must be sized`, because the Sized edge reads imported nominals' parameters; only where-clauses were missing. A local-generic-unbound offset written as 107 was corrected to 111 before any run of that file.",
+  "rule": "approved design; no wire change. An imported nominal's transported where-clauses are formation requirements in a client, read from the same original inputs selection and coherence read (`Linkage::original_inputs`, every input, outlives omitted) and substituted at the instance's arguments, as a source nominal's `predicates` are. An uncharged formation walk pays the installed header budget exactly the substitution it attempted, once per distinct instance; a charged caller pays through its own closure. C2's negative-coverage workaround `imported_nominal_inputs` is removed, so negative coverage and formation read one source.",
+  "cases": [
+    {
+      "file": "spec/imported-formation/bounded-copy.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`fn hold(_b: base::Bounded<u8>)`: the where-clause `T: Copy` holds",
+      "sha256": "755c77e9c557cd8d24b50ddc7b1749fc48445eafbc1c856c664e5f187687bfef"
+    },
+    {
+      "file": "spec/imported-formation/bounded-not-copy.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277: the trait bound `NotCopy: Copy` is not satisfied",
+      "candidate_diagnostic": "nominal type argument must implement its declared trait",
+      "candidate_location": "file 0: 68: located at the client's `fn hold(_b: base::Bounded<NotCopy>) {}`",
+      "sha256": "6afc137495dd974382299acef40410ac4787fac590c32a5e4c7a7cf64df29b1f"
+    },
+    {
+      "file": "spec/imported-formation/impl-header.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277: the trait bound `NotAlloc: Allocator` is not satisfied",
+      "candidate_diagnostic": "nominal type argument must implement its declared trait",
+      "candidate_location": "file 0: 83: located at the client's `impl Mine for base::Rc<u8, NotAlloc> {}`",
+      "sha256": "1a31e1a71c8b267e88f5dfe6837e133e97f4f11ff2e3f2ccedfd067e8529a1eb"
+    },
+    {
+      "file": "spec/imported-formation/local-control.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277: the trait bound `NotAlloc: LocalAlloc` is not satisfied",
+      "candidate_diagnostic": "nominal type argument must implement its declared trait",
+      "candidate_location": "file 0: 128: located at the client's `fn hold(_r: LocalRc<NotAlloc>) {}`; unchanged from the baseline",
+      "sha256": "42962f050e0bcf91d4c0573ce87959e7b4aba83b0bbd2492b55e05217967c949"
+    },
+    {
+      "file": "spec/imported-formation/local-field.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277: the trait bound `NotAlloc: LocalAlloc` is not satisfied",
+      "candidate_diagnostic": "nominal type argument must implement its declared trait",
+      "candidate_location": "file 0: 144: located at the field `r: LocalRc<NotAlloc>`; unchanged from the baseline",
+      "sha256": "97b7b1ad85c08f98d7eebe53a90458c7903808cacc4e3523c82d232c1442f96e"
+    },
+    {
+      "file": "spec/imported-formation/local-generic-unbound.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277: the trait bound `A: LocalAlloc` is not satisfied",
+      "candidate_diagnostic": "nominal type argument must implement its declared trait",
+      "candidate_location": "file 0: 111: located at the client's `fn hold<A>(_r: LocalRc<A>) {}`; unchanged from the baseline",
+      "sha256": "bc80b263c711c32af0321d37808b5de4e61729ecd683fbd8b60fc9cd2af26c34"
+    },
+    {
+      "file": "spec/imported-formation/local-impl-header.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277: the trait bound `NotAlloc: LocalAlloc` is not satisfied",
+      "candidate_diagnostic": "nominal type argument must implement its declared trait",
+      "candidate_location": "file 0: 142: located at the client's `impl Mine for LocalRc<NotAlloc> {}`; unchanged from the baseline",
+      "sha256": "b761643921f56bccbe7cfd7be757ff25424ca9776532288f88b87c9a8968dd6d"
+    },
+    {
+      "file": "spec/imported-formation/local-positive.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "a source-local `LocalRc<A: LocalAlloc>` with a satisfying argument",
+      "sha256": "2d077f9514eab1e8c5d8972aedb61da6daa682486c3a86722a35fd520fb27936"
+    },
+    {
+      "file": "spec/imported-formation/nested-not-alloc.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277: the trait bound `NotAlloc: Allocator` is not satisfied",
+      "candidate_diagnostic": "nominal type argument must implement its declared trait",
+      "candidate_location": "file 0: 69: located at the client's `fn hold(_n: base::Nested<NotAlloc>) {}`",
+      "sha256": "9dfb8e486ce99d7325e123969f73cf481a278814c2a0a24e48459bfc7575d0fe"
+    },
+    {
+      "file": "spec/imported-formation/rc-client-impl.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`impl base::Allocator for Mine {}` and `fn hold(_r: base::Rc<u8, Mine>)`",
+      "sha256": "fd24a01db908adbd83141690c32101d6242d787a6cee49740205cb3c31515279"
+    },
+    {
+      "file": "spec/imported-formation/rc-field.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277: the trait bound `NotAlloc: Allocator` is not satisfied",
+      "candidate_diagnostic": "nominal type argument must implement its declared trait",
+      "candidate_location": "file 0: 85: located at the field `r: base::Rc<u8, NotAlloc>`",
+      "sha256": "e419a5b78b6b5cb3d8b7a58fd3ed3abc018c9915ef848321570ae554c3a443e7"
+    },
+    {
+      "file": "spec/imported-formation/rc-generic-bound.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`fn hold<A: base::Allocator>(_r: base::Rc<u8, A>)`: the caller's own bound proves it",
+      "sha256": "d931df02a3772667570777e983fd75efe3d584036d964999c46ff232d0de9684"
+    },
+    {
+      "file": "spec/imported-formation/rc-generic-unbound.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277: the trait bound `A: Allocator` is not satisfied",
+      "candidate_diagnostic": "nominal type argument must implement its declared trait",
+      "candidate_location": "file 0: 52: located at the client's `fn hold<A>(_r: base::Rc<u8, A>) {}`",
+      "sha256": "a7f041bbb76c1450523d55133f242f71d201ba2cc1f185cccfc6c6af999ccefb"
+    },
+    {
+      "file": "spec/imported-formation/rc-global.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`fn hold(_r: base::Rc<u8, base::Global>)`: the imported `A: Allocator` holds",
+      "sha256": "a0b195c17010ce12d00b902ec7f2a66065ac617e3f4f6b1facfcd0ab98aac567"
+    },
+    {
+      "file": "spec/imported-formation/rc-not-alloc.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277: the trait bound `NotAlloc: Allocator` is not satisfied",
+      "candidate_diagnostic": "nominal type argument must implement its declared trait",
+      "candidate_location": "file 0: 69: located at the client's `fn hold(_r: base::Rc<u8, NotAlloc>) {}`",
+      "sha256": "2ef7092114738ebd579fc4b301995fe5e6de1d7e79ae5a2ca94dd38eeb1cfd83"
+    },
+    {
+      "file": "spec/imported-formation/rc-reference.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277: the trait bound `NotAlloc: Allocator` is not satisfied",
+      "candidate_diagnostic": "nominal type argument must implement its declared trait",
+      "candidate_location": "file 0: 69: located at the client's `fn hold(_r: &base::Rc<u8, NotAlloc>) {}`",
+      "sha256": "6c7f880333dd5694381f0122d341d4394e73fddee03ac6da692888ccd500254e"
+    },
+    {
+      "file": "spec/imported-formation/rc-unsized.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`fn hold(_r: &base::Rc<str, base::Global>)`: `T: ?Sized` adds no Sized requirement",
+      "sha256": "6e35bbe59dacfa72d99f9c5075cd253d55f389321e5b4977681fbfecb3de62d2"
+    },
+    {
+      "file": "spec/imported-formation/slot-unsized.rs",
+      "provider": "spec/imported-formation/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0277: the size for values of type `str` cannot be known at compilation time",
+      "candidate_diagnostic": "nominal type argument must be sized",
+      "candidate_location": "file 0: 52: located at the client's `fn hold(_s: &base::Slot<str>) {}`; unchanged from the baseline",
+      "sha256": "cd725e194c9695ea871b99fde52fd6bc90c240b64c58ea2c259f065ad4a6607d"
+    }
+  ],
+  "outcome_counts": {
+    "provider": "1 export, accepted under module-bodies-v13",
+    "clients": 18,
+    "accepted_clients": 6,
+    "rejected_clients": 12,
+    "note": "19 declared outcomes: the provider export and 18 clients. rustc accepts six clients and rejects twelve with E0277. On the C3b baseline the seven imported trait-bound opponents are accepted; C2b rejects each at the item its local twin is located at."
+  },
+  "native": {
+    "expected": "the six accepted clients exit 42 natively with empty stdout, as rustc's do"
+  },
+  "observations": [
+    "baseline (C3b CLI sha256 7cc3e3ef, module-bodies-v13): the provider exports and the six positives are accepted; rc-not-alloc, rc-generic-unbound, rc-field, rc-reference, impl-header, bounded-not-copy and nested-not-alloc are accepted, the gap C2b closes; slot-unsized and the four local twins are rejected exactly as declared for C2b",
+    "the local twins locate a signature's failure at its function item, a field's at the field and an impl header's at the impl item; each imported opponent is declared at the same kind of site"
+  ],
+  "limits": [
+    "a legacy-authority imported nominal (versions 10 and 12) carries no original inputs; if one did, the source payer would refuse it by name (`source validation cannot use legacy header authority`), which the flip survey checks across every provider's older exports"
+  ]
+}

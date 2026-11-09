@@ -2,8 +2,9 @@
 
 This is a Lane C checkpoint in `rustgm-async-work` on
 `implement/auto-traits-20261108`. C1 started on pushed main `b47b51e79` and
-landed as `89cb62ee5`. C2 landed as `c9fb67cc3` and C3 as `bfbf43049`,
-and C3b is developed on main `bfbf43049`. It is item 5 of the
+landed as `89cb62ee5`. C2 landed as `c9fb67cc3`, C3 as `bfbf43049` and
+C3b as `aa6c36f65`. C2b is developed on C3b and rebased onto main
+`f32b8d168`. It is item 5 of the
 [core census plan](../core-census-plan.md). It is a transport slice, not a
 library milestone, and makes no claim about an original-core artifact or a
 whole assignment.
@@ -19,10 +20,10 @@ then added C3b and C2b:
 - **C3** (`bfbf43049`): unsafe traits that are not auto, and every trait
   impl's own safety and polarity
   ([C3](#c3-unsafe-traits-and-non-auto-negative-impls)).
-- **C3b**, this commit: knowable absence relative to the crate whose
+- **C3b** (`aa6c36f65`): knowable absence relative to the crate whose
   coherence is proved ([C3b](#c3b-knowable-absence)).
-- **C2b**, after C3b: an imported nominal's transported where-clauses as its
-  formation requirements ([C2b](#c2b-imported-nominal-formation)).
+- **C2b**, this commit: an imported nominal's transported where-clauses as
+  its formation requirements ([C2b](#c2b-imported-nominal-formation)).
 
 C2c, core's `CoerceUnsized` impl for `pattern_type!(*const T is !null)`
 (`pat.rs:80`), moved to Lane A and is done in census batch 16.
@@ -450,10 +451,11 @@ does five things:
      (`negative_parameters`, unchanged).
    - The impl's declared inputs now come from `declaration_inputs::declared`.
      It adds imported inputs and is identical for a source owner.
-   - A source client installs no imported nominal's predicates (C2b).
-     Instead, the imported nominal's inputs come from
-     `declaration_inputs::all`, with outlives omitted as formation omits
-     them.
+   - A source client installs no imported nominal's predicates, so C2 read
+     the imported nominal's inputs from `declaration_inputs::all`, with
+     outlives omitted as formation omits them. C2b removed that workaround:
+     coverage now reads `nominals::requirements` for every nominal
+     ([C2b](#c2b-imported-nominal-formation)).
    - A non-ADT negative Self is skipped. rustc skips it when the impl's crate
      has `auto_traits`, and declaring the packet's own auto trait required
      that feature.
@@ -552,7 +554,7 @@ Coverage of an imported negative impl on a non-ADT (for example `!Send for
 trait means the provider compiled with auto_traits, and primitive impls are
 provider-only.
 
-### C2b: imported nominal formation
+### The C2b gap (found in C2)
 
 C2 found an accepts-invalid gap that predates it. `nominals::requirements`
 reads only `generics.predicates`, and a source client installs no imported
@@ -570,6 +572,8 @@ The integrator assigned it to Lane C as item C2b, after C3 and before 5b:
 - **Temporary workaround.** C2's imported negative coverage reads the
   nominal's transported inputs directly (`negative.rs::imported_nominal_inputs`).
   C2b removes it, so coverage and formation read one source.
+
+[C2b](#c2b-imported-nominal-formation) closed it.
 
 ### Fixtures and outcomes (C2)
 
@@ -816,7 +820,7 @@ At the join, owners review:
   `automatic_subject`, `automatic_sized_subject` and `imported_sized_bound`;
 - `declarations/traits/implementations/negative.rs`: `negative_coverage`,
   `validate_imported_negative_header` and `imported_nominal_inputs` (C2b's
-  workaround);
+  workaround, since removed);
 - `traits/selection/search/automatic_traits.rs`: `predicate`,
   `require_automatic_header` and `Search::automatic_result`, the selection
   lift;
@@ -1482,12 +1486,257 @@ At the join, owners review:
   656 to 664 plus the test log, one word for the purpose's perspective, and
   `Perspective::Packet`'s `u16` ordinal.
 
+## C2b: imported nominal formation
+
+C2b is the fifth commit of this item. It was developed on C3b and rebased
+onto main `f32b8d168` (B1). A client now forms each imported nominal it names
+under that nominal's transported where-clauses, as rustc's well-formedness
+check does. So `fn hold(_r: base::Rc<u8, NotAlloc>)` is rejected with E0277's
+counterpart, at the same kind of site as its source-local twin. There is no
+wire change.
+
+### Rule (C2b)
+
+The integrator approved this design before code:
+
+- **One source of requirements.** `nominals::requirements::instance` appends
+  `imported_inputs` after the Sized edges and source predicates.
+  - An imported nominal's requirements are its original inputs, declared and
+    implied (`Linkage::original_inputs(.., false)`). Selection and coherence
+    read the same inputs.
+  - They are substituted at the instance's arguments. Outlives inputs are
+    omitted, as they are for source predicates.
+  - A source nominal has no original inputs, so its requirements are
+    unchanged.
+  - Both paths keep caching the instance's clauses per `TypeId` in
+    `nominal_requirements`.
+- **Diagnostics.** The texts and locations are those of the source twin. A
+  signature is reported at its function item, a field at the field, and an
+  impl header at the impl item.
+- **C2's workaround is removed.** `negative.rs::imported_nominal_inputs` is
+  gone. `negative_coverage` lost its `imported` parameter and reads
+  `nominals::requirements` for every nominal, so negative coverage and
+  formation read one source.
+
+### Payment (C2b)
+
+Each unit of work has one payer.
+
+- **The uncharged walk.** It serves signature, field and impl-header
+  formation, negative coverage and `immediate`.
+  - A cache miss accumulates the attempted steps and bytes of substituting
+    the imported inputs.
+  - It then pays exactly that to the installed header budget through
+    `pay_source_headers`, which refuses legacy header authority by name.
+  - A hit pays nothing, as a source hit does.
+- **The charged walk** (`formation_requirements_counted`, specialization's
+  `minimal_admission`) pays only through its own closure: exactly the
+  attempted substitution, beyond what its source twin's walk pays. The header
+  budget is unchanged on that path (integrator Q2).
+- **The static-core split** (integrator Q1, owner review at integration).
+  - `typed_headers.rs` gains `pay_source_headers -> Result<(), &'static str>`.
+    `charge_source_headers`, `Headers::charge` and `Headers::reserve` (the
+    linkage's originals) are now thin `Error` wrappers over it and its two
+    cores, `charge_work` and `reserve_bytes`.
+  - The split is behavior-preserving. Every header-budget text is
+    byte-identical, and the existing header-budget tests pass unchanged.
+
+`tests/invariants/where_clause_payments.rs`, mounted as
+`nominals::requirements::where_clause_tests`, asserts the payment rule:
+
+- **The uncharged path.** A miss pays the header budget exactly a
+  fresh-session measurement of its substitution, and a repeated walk pays
+  nothing. A source twin, `LocalRc<T: ?Sized, A: LocalAlloc>`, never pays
+  the header budget.
+- **The charged path.** It leaves the header budget unchanged. Beyond its
+  substitution, an imported walk's closure total equals its source twin's.
+- **Cache hits** (integrator condition 1). The cache is filled in both
+  orders: uncharged then charged, and charged then uncharged. In each, a hit
+  returns the filled clauses and pays the header budget nothing, and an
+  imported hit's closure total equals a source hit's.
+- **Scaling.** N = 8, 16 and 32 generated `pub struct Wnnn<A: Allocator>`
+  nominals are appended to the provider.
+  - Packet bytes stay within `2 * previous + 64`.
+  - A client naming all N instances is accepted.
+  - In a fresh session, the least per-instance payment is the same at every N
+    (25 steps, 220 bytes).
+  - Every other walk pays strictly more steps and bytes, because it resizes
+    the shared `(owner, args)` substitution cache. At most
+    `floor(log2 N) + 1` walks do, and total steps stay within
+    `2 * N * constant`.
+
+The first version of the scaling test bounded the whole client's header work
+(a client using all N against an empty client) by `2 * previous + 64`. It
+failed at N = 32 ("954 after 178"). A temporary diagnostic, since removed,
+showed that this measure was not formation work:
+
+- The whole-client work was 193, 164, 178 and 954 for N = 4, 8, 16 and 32.
+  That is not monotonic.
+- At N = 16 it was below the 474 steps that the direct walks alone pay.
+- The direct walks were constant per instance, apart from the cache's
+  amortized doubling: (99, 12,220) at index 5 and (169, 23,420) at index 19.
+
+The corrected invariant above was declared before its first run. No source
+or outcome changed.
+
+### Fixtures and outcomes (C2b)
+
+`pa29/tests/imported-formation-outcomes.json` was frozen at 00:30:25Z, after
+the rustc oracle and the baseline probe and before any candidate run. Every
+outcome was declared in scratch before either ran. It holds 19 outcomes: the
+provider export and 18 clients.
+
+- **The provider** is the knowable-absence provider plus authored lines
+  shaped as alloc 1.98.0's `rc.rs`: `Allocator`, `Global`,
+  `Rc<T: ?Sized, A: Allocator>`, `Bounded<T> where T: Copy` and
+  `Nested<A: Allocator>` (see the packet README).
+- **The manifest.** pa29 is a planned assignment with no `manifest.json` yet.
+  The outcomes file lists every input with its sha256, as each pa29 packet's
+  outcomes file does.
+
+| Client | rustc 1.98.0 | Baseline (C3b CLI) | C2b |
+| --- | --- | --- | --- |
+| rc-global, rc-generic-bound, rc-client-impl, rc-unsized, bounded-copy, local-positive | exit 42 | accepted | accepted |
+| rc-not-alloc, rc-reference, nested-not-alloc | E0277 | accepted | declared-trait text at 69 |
+| rc-generic-unbound | E0277 | accepted | declared-trait text at 52 |
+| rc-field | E0277 | accepted | declared-trait text at 85 (the field) |
+| impl-header | E0277 | accepted | declared-trait text at 83 (the impl) |
+| bounded-not-copy | E0277 | accepted | declared-trait text at 68 |
+| slot-unsized | E0277 | sized text at 52 | the same |
+| local-control, local-field, local-impl-header, local-generic-unbound | E0277 | declared-trait text at 128, 144, 142, 111 | the same |
+
+- The declared-trait text is "nominal type argument must implement its
+  declared trait", and the sized text is "nominal type argument must be
+  sized". The integration test asserts each offset.
+- **One baseline prediction missed.** `slot-unsized` was predicted accepted.
+  The baseline already rejects it, because the Sized edge reads an imported
+  nominal's parameters; only where-clauses were missing. It is not a
+  candidate outcome.
+- **One offset was corrected before any run.** `local-generic-unbound`'s
+  offset, first written as 107, is 111.
+- The six positives exit 42 natively with empty stdout
+  (`formation_clients_execute_natively`).
+- Under versions 12 and 10 the provider stops at "named, associated or
+  generic alias transport requires its wider profile", as the
+  knowable-absence provider does.
+
+### Flip survey (C2b)
+
+The survey (`obj/parallel/auto-traits/flip5/`) ran two CLIs:
+
+- the baseline, C3b's `cand3b/rustgm` (sha256 `7cc3e3ef`, on `2a27e11ca`);
+- C2b on `f32b8d168` (`c2b/rustgm`, sha256 `4c63e7bb`).
+
+B1, in the candidate's base only, lowers inline assembly. No pa29 spec file
+contains `asm!`, so B1 was declared invisible to the survey.
+
+Each CLI exported every pa29 spec provider under versions 10, 12 and 13, then
+ran every fixture client against each export: 35 providers, 105 exports and
+1,266 runs. The declared outcomes, recorded before the survey, all held.
+
+- **Only `imported-formation` under version 13 differs.** Its seven imported
+  trait-bound opponents go from accepted to rejected, each at its frozen
+  offset. Those are the only 21 differing files: status, stderr and LowIR.
+- **Integrator condition 2.** Every other run's status, stderr and LowIR is
+  byte-identical.
+  - That includes C2's negative-coverage packet `auto-impls` (27 runs per
+    version). Each of its clients re-proves the provider's imported negative
+    auto impls on nominals (`Arguments`, `Cell`, `PhantomPinned` and `Rc`),
+    which is the removed `imported` branch.
+  - `unsafe-negative-impls`, `knowable-absence` and `auto-declarations` are
+    byte-identical too.
+  - `polarity_transport`'s generated and forged controls pass unchanged in
+    the focused run.
+- There is no other accepted→rejected flip. No run reports "legacy header
+  authority" or a missing installed header budget.
+  - Version 13 accepts 221 runs before and 214 after.
+  - Version 12 accepts 14 runs both times, and version 10 accepts 6.
+
+### Evidence (C2b)
+
+Every run below used the C2b tree rebased onto `f32b8d168`, with identical
+code. Receipts are under `obj/qualification/fast/`, and each one passed.
+
+The focused run is receipt `1794187168629567379`, 12 tests:
+
+- `where_clause_transport`'s non-native test;
+- `polarity_transport`'s four non-native tests, C2's controls, including the
+  generated and forged negative-coverage controls;
+- the four `where_clause_tests`;
+- `counted_tests`' rollback case and C1's two `freezing::payment_tests`.
+
+Non-native results:
+
+| Selection | Tests | Receipt |
+| --- | --- | --- |
+| lib cases: `sema::traits`, `sema::nominals`, `sema::specialization`, `sema::generics`, `sema::declaration_inputs`, `types::parameters::environment` | 412 | `1794187556880685380` |
+| lib cases: `sema::declarations`, `sema::crates`, `sema::bodies` | 352 | `1794187620664290658` |
+| lib cases: `pipeline::execution`, `lower::instances` | 82 | `1794187675580932516` |
+| auto-trait integration cases (C3b's set) | 19 | `1794187767351568114` |
+| overlap, specialization, projected-condition, call-trait, library-nominal, declared-ability and aggregate-bound roots | 19 | `1794187871792944662` |
+| linking suite, part 1 | 49 | `1794187960076885426` |
+| linking suite, part 2 | 49 | `1794188088260410342` |
+| linking suite, part 3 | 48 | `1794188312935756784` |
+| linking suite, part 4 | 52 | `1794188397620674623` |
+| linking suite, part 5 | 49 | `1794188550270927784` |
+| private source-client cases, part 1 | 85 | `1794188774901400541` |
+| private source-client cases, part 2 | 84 | `1794188831354285548` |
+| course text pa1-pa12 | passed | `1794189145439220038` |
+| course text pa13-pa19, pa21-pa24 | passed | `1794189197292120439` |
+| course text pa20 | passed | `1794189281791846346` |
+
+- **Header-budget tests.** The `sema::crates` cases include the 47 under
+  `typed_headers`, which cover the static-core split. They pass unchanged.
+- **The linking suite.** Its five parts are the inventory's 247 non-ignored
+  tests: C3b's 246 plus `where_clause_transport`'s one.
+- **Private source-client cases.** These are C1's two parts, unchanged.
+
+`make test-upstream` verified 128 pinned fixtures and 126 Reference files.
+`make test-harness` found 465 roots in 13 binaries, 44 stages and no orphan
+fixtures.
+
+Native results (`--ignored`, reported separately):
+
+| Selection | Tests | Receipt |
+| --- | --- | --- |
+| linking suite native, part 1 | 27 | `1794188873563140864` |
+| linking suite native, part 2 | 26 | `1794188942986601943` |
+
+The two parts are the inventory's 53 ignored tests: C3b's 52 plus
+`formation_clients_execute_natively`. In that test the six accepted clients
+exit 42 with empty stdout. With the non-native parts, that is all 300.
+
+Earlier focused runs:
+
+- One failed formatting. One failed the architecture audit's repeated-stem
+  rule (`imported` and `formation`, seven files each), so the two new test
+  files were renamed before any test ran.
+- Two exhausted the budget on a cold private-lint cache after the rebase. A
+  Clippy `type_complexity` error in the new test was fixed.
+- One failed the first scaling invariant (above).
+
+**Oracle (rustc 1.98.0).** The fixture oracle ran before the outcomes were
+frozen and before any candidate run, and it gave every declared outcome. The
+provider compiles, the six positives exit 42, and the twelve opponents give
+E0277; `slot-unsized`'s is for `str: Sized`. The committed `.rs` files are
+byte-identical to the oracle's inputs: each sha256 matches the outcomes
+file.
+
+### Owner review (C2b)
+
+At the join, owners review:
+
+- `sema/crates/typed_headers.rs`: the static-core split
+  (`pay_source_headers`, `charge_work` and `reserve_bytes`; integrator Q1);
+- `sema/crates.rs`: the `pay_source_headers` export;
+- `sema/nominals/requirements.rs`: `imported_inputs` and its call from
+  `instance`;
+- `declarations/traits/implementations/negative.rs`: `negative_coverage`
+  without its `imported` parameter, and the removal of
+  `imported_nominal_inputs`.
+
 ## Remaining gaps
 
-- **C2b** (Lane C, next, before 5b): an imported nominal's transported
-  where-clauses are not formation requirements in a client, so
-  `fn hold(_r: base::Rc<u8, NotAlloc>)` is accepted against rustc's E0277.
-  C2's `negative.rs::imported_nominal_inputs` is its temporary workaround.
 - **Lifetime-capturing trait-impl methods** (a core transport blocker,
   unowned; a candidate for the multi-packet item): "source
   function early/captured callable frame transport is not implemented" for

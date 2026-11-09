@@ -99,6 +99,8 @@ mod unique_writes;
 mod variadic_transport;
 #[path = "crate_linking/versioned_clients.rs"]
 mod versioned_clients;
+#[path = "crate_linking/where_clause_transport.rs"]
+mod where_clause_transport;
 use rustgm::support::crates;
 use std::process::Command;
 

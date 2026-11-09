@@ -35,7 +35,8 @@ pub(in crate::sema) use typed_headers::{
 };
 pub(super) use typed_headers::{
     charge_source_header_query, charge_source_headers,
-    mapped_source::Readiness as ImportedReadiness, source_readiness, source_trait_header,
+    mapped_source::Readiness as ImportedReadiness, pay_source_headers, source_readiness,
+    source_trait_header,
 };
 pub(crate) use typed_headers::{
     is_source_original, mapped_source::SourceOriginal, prepare_source_original, source_original,
