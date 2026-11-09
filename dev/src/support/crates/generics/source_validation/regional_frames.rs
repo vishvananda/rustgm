@@ -26,7 +26,13 @@ pub(super) struct BinderIndex<'a> {
     pub max_depth: usize,
 }
 impl<'a> BinderIndex<'a> {
-    pub(super) fn new(headers: &HeaderIndex<'a>, work: &mut Work) -> Result<Self, &'static str> {
+    /// `bodies` is version thirteen, whose nominal fields own their closed
+    /// callable frames.
+    pub(super) fn new(
+        headers: &HeaderIndex<'a>,
+        work: &mut Work,
+        bodies: bool,
+    ) -> Result<Self, &'static str> {
         let rows = headers.rows();
         let (bytes, peak) = preflight(headers, work)?;
         let count = rows.binders.len();
@@ -55,7 +61,7 @@ impl<'a> BinderIndex<'a> {
             if slots > crates::MAX_COMPONENTS {
                 return Err("source binder slots exceed the complete unused-formal budget");
             }
-            index.frame(headers, ordinal, frame, work)?;
+            index.frame(headers, ordinal, frame, bodies, work)?;
         }
         let children = buckets::Buckets::new(
             count.saturating_add(1),

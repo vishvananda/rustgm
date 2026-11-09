@@ -1,0 +1,310 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj); each generated provider is compiled to an object (--emit=obj)",
+  "providers": [
+    {
+      "file": "spec/callable-fields/provider.rs",
+      "sha256": "304caebd213b8fa36721ea2808491bf82f1a96ddc0f783dd12fa32d4fb1563a4",
+      "inherits": {
+        "file": "spec/pointer-calls/provider.rs",
+        "sha256": "92acaa3d8f200243fd9b4da8f3c2ad68b1a07127a6cd9505996d55eac5d7c491",
+        "note": "unchanged first 132 lines"
+      }
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "declared": "2026-11-09T16:04:57Z",
+  "frozen": "2026-11-09T16:05:53Z",
+  "development_note": "the integrator approved the (ii) notice (obj/parallel/callable-fields/notice.md), its request_ports trace and two deviations before this file: the constructor-payload arm with forged rows (a) and (b), and R2's associated shape. Exploration ran against development builds before the declaration: obj/parallel/callable-fields/explore e1 (the provider's shapes with bin, the tree without the constructor arm), e2 (generated opponents and the constructor calls, with bin2, the tree with it) and e3 (older-profile providers, base pin and bin2). The first e3 run executed both binaries outside the resources/storage wrapper, a process deviation; later runs used the wrapper. The self-demand probe ran before this declaration. Every rustc, baseline, old-reader, forged-row, scaling, flip-survey and native outcome below was declared before the rustc oracle, the baseline and any candidate run of these frozen inputs. Departures from the notice's fixture plan, declared here: the notice drafted the tightening's rows 6 and 7 over the nominal's open `fn() -> T`; a call root naming the nominal's `T` in the calling body is captured by the consuming-root check first (forged row 7 here), so the tightening's rows 5 and 6 use a closed copy bound in Slot's frame. `Pair` is the hand-written expansion of the derive (accepted deviation 3). The notice's formation probe item, `fn(T) -> T` over `T: ?Sized`, is the `inv` client at `[u8]`",
+  "amendments": [
+    {
+      "recorded": "2026-11-09T16:08:39Z",
+      "before": "any candidate run of these inputs; the rustc oracle (obj/parallel/callable-fields/oracle/run.log), run after the freeze, observed it",
+      "change": "a fixture amendment. rustc 1.98.0 ICEs on the declared apply and pair clients with a delayed bug, `error performing operation: fully_perform`, at a match on an i32 scrutinee: the no_core provider implements Copy for u8 and u16 only, and a client-local match on i32 alone reproduces it (oracle/fix/i32match.rs). `apply` now instantiates `Apply` at u8 and matches the u8 result; `pair` binds the first call's result instead of matching it. Both rewritten clients compile with no warnings and exit 42 under rustc (oracle/fix). Their predictions are unchanged (accepted, native exit 42); the provider and every other input keep their bytes"
+    },
+    {
+      "recorded": "2026-11-09T16:17:58Z",
+      "before": "any further run; fastcheck fc2 (obj/parallel/callable-fields/runs/fc2.log, receipt obj/qualification/fast/1794240932741062080), the first candidate test run, observed it",
+      "change": "a failed prediction of the scaling control. An empty client's installed header-budget work for N = 8, 16 and 32 is 50701, 56569 and 68873: its second difference, 12304, exceeds twice the first, 5868, plus 64 by 504. Packet bytes (70405, 79653, 98149) grow exactly affinely and the restage's work (63420, 71288, 87024) exactly linearly, as declared. Each generated item is a struct with a fn field and a function over a reference to it. Declared before its run: a twin family replaces each field with `u8` and each function with `pub fn vNNN(s: &FNNN) -> u8 { s.f }`, measured the same way. If the twins' client work grows the same way, that growth is a pre-existing cost of mapping function headers over distinct nominals, and the fn family's client work must exceed its twins' by at most a constant per struct (second difference at most twice the first plus 64). If the twins grow affinely, the fn field causes the growth, and that is reported as a stop. Also a harness correction, not a changed expectation: the same run found that store owns three closed callable frames, so forged row (a) now selects the frame of store's public fn-pointer parameter, as declared, instead of requiring that store own one frame. No forged row had run"
+    }
+  ],
+  "rule": "approved design, with no wire change. Version 13 admits a CallableType binder owned by a nominal, with no parent and no slots (frame_owners, gate a); versions 10 and 12 keep `source shared call type requires an actual closed callable frame`. The port plan forms a nominal field's Function root in that nominal's header frame (Rewrite::Nominal), and a called constructor's payload in its own nominal's header frame (Target::Constructor), checking zero slots, the Rust convention and the exact owner; function targets keep their checks (gate b). A field type whose frame binds slots keeps `source nominal callable field requires its wider binder profile`. A call signature's closed CallableType frame must belong to a function header (request_ports), so a nominal's frame never types a call",
+  "cases": [
+    {
+      "file": "spec/callable-fields/apply.rs",
+      "provider": "spec/callable-fields/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "a generic `Apply<T> { f: fn(T) -> T }`, instantiated by the consumer at u8 with a client-local fn (amendment 1)",
+      "sha256": "56ef8e16c3c80e1741aac865440ea46ba2e6c4455143b0447696566ddd09da64"
+    },
+    {
+      "file": "spec/callable-fields/choose.rs",
+      "provider": "spec/callable-fields/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "a tuple variant `Choice::Computed(fn(u8) -> i32)` built by the client; the provider matches it and calls the bound pointer",
+      "sha256": "0e8eb730a09eec93e3245bd8b0ca1f2e0381f33ce79d052c4b1c4380a0f4a3c2"
+    },
+    {
+      "file": "spec/callable-fields/computed.rs",
+      "provider": "spec/callable-fields/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::computed()`: the provider calls the variant constructor `Choice::Computed(inc3)` (accepted deviation 1)",
+      "sha256": "b8290a2946f5820341e9d49561bf8dbf86764386b5c20c100f402d36e3b73072"
+    },
+    {
+      "file": "spec/callable-fields/inv.rs",
+      "provider": "spec/callable-fields/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`Inv<T: ?Sized>(PhantomData<fn(T) -> T>)`, the PhantomInvariant shape, at `u8` and `[u8]`; the notice's formation probe item: `fn([u8]) -> [u8]` is formed with no Sized requirement, as rustc forms it",
+      "sha256": "2aff07999fc4ea022a159dafbe924e320ef51c26f83037487896a7f794e2432e"
+    },
+    {
+      "file": "spec/callable-fields/markers.rs",
+      "provider": "spec/callable-fields/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::contra()` and `base::inv_new()`: generic provider fns call the markers' constructors with a `PhantomData` payload (accepted deviation 1)",
+      "sha256": "3134d121174065eab4d7e5d499331f90d68e8454d5d2ee8104a0ada758cdf310"
+    },
+    {
+      "file": "spec/callable-fields/method.rs",
+      "provider": "spec/callable-fields/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::Slot { f: base::hold }.call()`: an inherent method calls `(self.f)(7)`",
+      "sha256": "7830969230e43b540430f18913c995cd92fa7e2f8e39b7826835229b2a00a70e"
+    },
+    {
+      "file": "spec/callable-fields/narrow.rs",
+      "provider": "spec/callable-fields/provider.rs",
+      "accepted": false,
+      "shape": "`Contra<&'static u8>` narrowed to `Contra<&'a u8>`, unsound because `Contra` is contravariant",
+      "rustc_status": 1,
+      "rustc_diagnostic": "lifetime may not live long enough",
+      "rustgm_diagnostic": "required lifetime does not outlive its target",
+      "note": "RustGM accepting it would be unsound and is a stop. Both texts are predictions; RustGM's was observed in exploration (bin2), where phantom-roles' `grow` gives the same pair",
+      "sha256": "5da3de04d7667a37de89298ade6532fbd1d207c90c409f302b4a54e514c40bc7"
+    },
+    {
+      "file": "spec/callable-fields/op.rs",
+      "provider": "spec/callable-fields/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "a tuple struct `Op(pub fn(u8, u8) -> i32)` built by the client over a client-local fn; the provider calls `(o.0)(a, b)`",
+      "sha256": "6529fb63014efeea321b94db235f51b1ea893bb181a22f240e716da8238ba749"
+    },
+    {
+      "file": "spec/callable-fields/op-new.rs",
+      "provider": "spec/callable-fields/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::op_new()`: the provider calls the tuple-struct constructor `Op(add3)`, whose fn payload is formed in `Op`'s header frame (accepted deviation 1)",
+      "sha256": "5e6a0d689fd77c351f4863150ca44c0b5a66183c9bfe835a773f988a5b235631"
+    },
+    {
+      "file": "spec/callable-fields/pair.rs",
+      "provider": "spec/callable-fields/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`Pair { f: fn(u8) -> i32, v: u8 }` with the hand-written expansion of `#[derive(Clone, Copy)]`: the client copies it, clones it and calls through both copies (amendment 1)",
+      "sha256": "b42406de65be522049313ba8603fd1f8250d4fd5b622019b8663f35869438352"
+    },
+    {
+      "file": "spec/callable-fields/send.rs",
+      "provider": "spec/callable-fields/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`fn need<T: base::Send + base::Sync>(_: &T)` over an imported `Slot`: both auto traits hold of a fn-pointer field",
+      "sha256": "df7258684b8e67a8a02fb058e134262fbe0e1e15f5f58454d7c213c212d453ee"
+    },
+    {
+      "file": "spec/callable-fields/slot-new.rs",
+      "provider": "spec/callable-fields/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::via(&base::slot_new())`: the provider builds `Slot { f: hold }` with a reified item in a struct expression",
+      "sha256": "da1fa683df9404e6f6484bc68e4f583438a8f84cae34cc37101953d7cff74d23"
+    },
+    {
+      "file": "spec/callable-fields/store.rs",
+      "provider": "spec/callable-fields/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "the client builds a `Slot` over a client-local fn, the provider assigns `s.f = f` with `hold`, and `via` calls the stored pointer",
+      "sha256": "a400a6cb8416aeedbe197afa3579ee9456214fd2d9762e33f50ec686fd08dcc7"
+    },
+    {
+      "file": "spec/callable-fields/table.rs",
+      "provider": "spec/callable-fields/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "RawWakerVTable's shape: a `Table` of two `unsafe fn` fields over client-local unsafe fns, called by an unsafe provider fn in an unsafe block",
+      "sha256": "9777581719ff4cb3c313bfae618d1f501c915179b49e919b6378d6dd623a4ce6"
+    },
+    {
+      "file": "spec/callable-fields/via.rs",
+      "provider": "spec/callable-fields/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::via(&base::Slot { f: base::hold })`: a provider fn calls through a borrowed struct's `fn(u8) -> i32` field, the shape of core's io/error.rs OsFunctions",
+      "sha256": "5e2396f80cfe8eb9fb4ef6ec0bf944cd30441efb73779f90576cc6168a42589e"
+    },
+    {
+      "file": "spec/callable-fields/widen.rs",
+      "provider": "spec/callable-fields/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`Contra<T>(PhantomData<fn(T)>)`, the marker/variance.rs PhantomContravariant shape: `Contra<&'a u8>` widens to `Contra<&'static u8>`",
+      "sha256": "a1584ce35c119e30931d313a81435d0f709f6ab77453ec2f760fd0eb602892cf"
+    }
+  ],
+  "generated_opponents": {
+    "note": "each appends its lines to the frozen provider after `// Generated callable-field opponent.`; RustGM's version-13 export rejects each by name and writes no packet. rustc 1.98.0 is predicted to compile every one (status 0)",
+    "hr": {
+      "appended": "pub struct Hr { pub f: fn(&u8) -> u8 }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source anonymous callable requires its supported closed Rust frame",
+      "note": "a higher-ranked field, as OsFunctions' format_os_error; the HR item must cover nominal-owned callable frames with bound slots as well as pointer-call frames; known rejects-valid"
+    },
+    "region": {
+      "appended": "pub struct Ctx<'a> { pub m: PhantomData<fn(&'a ()) -> &'a ()> }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source anonymous callable requires its supported closed Rust frame",
+      "note": "a field capturing an early region; known rejects-valid"
+    },
+    "c": {
+      "appended": "pub struct Cf { pub f: extern \"C\" fn(u8) -> i32 }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source anonymous callable requires its supported closed Rust frame",
+      "note": "a C fn-pointer field keeps the anonymous callable fence with C pointers; known rejects-valid"
+    },
+    "record-variant": {
+      "appended": "pub enum Kind { Placeholder { value: u8, formatter: unsafe fn(u8, u8) -> i32 }, Count(u16) }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source record variants require their wider profile",
+      "note": "a record variant holding a fn: item (i), Lane D after F; known rejects-valid"
+    },
+    "associated": {
+      "appended": "impl Table { pub fn go(&self, p: *const ()) -> i32 { unsafe { (self.call)(p) } } }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source unsafe associated Calls require their wider actual profile",
+      "note": "accepted deviation 2: R2's shape, a safe associated fn calling an unsafe fn field in an unsafe block, keeps ruling 4's fence. An unsafe associated declaration (`pub unsafe fn go`) instead hits `source nonordinary callable effect/safety/convention requires a wider profile`, as Lane D found in F; the widening is one item; known rejects-valid"
+    },
+    "argument-type": {
+      "appended": "pub enum ArgumentType<'a> { Placeholder { value: *const (), formatter: unsafe fn(*const (), &mut u8) -> i32, _lifetime: PhantomData<&'a ()> }, Count(u16) }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source record variants require their wider profile",
+      "note": "core's fmt::rt ArgumentType: its record variant fences first, and its formatter is also higher-ranked; known rejects-valid"
+    }
+  },
+  "controls": [
+    {
+      "control": "approved flip: R2's generated `field` opponent (pointer-call-outcomes.json amendment 2)",
+      "rustc_status": 0,
+      "expected": "spec/pointer-calls/provider.rs plus `pub struct Slot { pub f: fn(u8) -> i32 }` and `via` exports under module-bodies-v13; versions 12 and 10 keep their texts; `record-variant` keeps `source record variants require their wider profile`",
+      "observed": "as expected in the flip survey; called_pointers' amended control exports it (fastcheck fc3, receipt obj/qualification/fast/1794241171146984764, 30 exact tests)"
+    },
+    {
+      "control": "older profile: spec/source-branches/provider.rs plus `// Generated callable-field control.` and `pub struct Slot { pub f: fn(u8) -> i32 }`",
+      "rustc_status": 0,
+      "expected": "module-branches-v12 rejects it with `source shared call type requires an actual closed callable frame` and writes no packet; module-bodies-v13 exports it. module-nominals-v10 rejects the provider's own CFG exits first (`source Branch/Panic CFG exits require the version-twelve profile`), on the base pin too",
+      "observed": "as expected (fastcheck fc3, receipt obj/qualification/fast/1794241171146984764, 30 exact tests)"
+    },
+    {
+      "control": "arena: spec/source-nominals/provider.rs plus the same lines",
+      "rustc_status": 0,
+      "expected": "module-bodies-v13 rejects it with the exporter's pre-existing `source anonymous callable requires its actual prepared type arena` and writes no packet, as the base pin does in every profile; known rejects-valid outside this item",
+      "observed": "as expected (fastcheck fc3, receipt obj/qualification/fast/1794241171146984764, 30 exact tests)"
+    },
+    {
+      "control": "old reader: the base pin (obj/parallel/callable-fields/base, sha256 b612c926e901b1c3d4fba2da2f2db054e2a91c7e2c8a68485820b99411c06fd3, built from clean c8c2a8eda) consumes the candidate's callable-fields packet with every client",
+      "expected": "every client is rejected with `source shared call type requires an actual closed callable frame`",
+      "observed": "as expected: all 16 clients (obj/parallel/callable-fields/oldreader/run.log)"
+    },
+    {
+      "control": "baseline: the base pin exports the frozen provider under module-bodies-v13",
+      "expected": "rejected with `source shared call type requires an actual closed callable frame`, writing no packet",
+      "observed": "as expected (obj/parallel/callable-fields/oracle/run.log)"
+    },
+    {
+      "control": "forged rows, restaged with Payload::from_source_module_bodies; the honest restage succeeds",
+      "expected": [
+        "Slot's frame given a parent: `source shared call type requires an actual closed callable frame`",
+        "Slot's frame given one slot: the same",
+        "Slot's frame owned by the trait Tr: the same",
+        "Slot's frame owned by the nominal Table: `source Function input lost its exact zero-slot Rust formation domain`",
+        "Slot's frame owned by the function via: the same",
+        "via's pointer-call signature an appended copy bound in Slot's frame: `source Call signature belongs to another actual original context` (the request_ports tightening)",
+        "held's direct call signature and its request an appended copy bound in Slot's frame: the same",
+        "via's pointer-call signature Apply's `fn(T) -> T` field row: `source consuming type root captures another parameter owner`",
+        "forged row (a): store's parameter frame owned by the nominal Slot, a Function target whose payload frame a nominal owns: `source Function input lost its exact zero-slot Rust formation domain`, from the function's own header formation before any application",
+        "forged row (b): Contra's payload frame owned by the nominal Inv, so a Constructor target's payload frame names another nominal: `source Function input lost its exact zero-slot Rust formation domain`",
+        "Apply's field retyped `fn(T) -> T` over Contra's `T` in Apply's own frame: `source consuming type root captures another parameter owner`"
+      ],
+      "observed": "as expected, every row (fastcheck fc3, receipt obj/qualification/fast/1794241171146984764, 30 exact tests)"
+    },
+    {
+      "control": "older versions: spec/source-nominals/provider.rs plus `pub fn keep(f: fn(u8) -> i32) -> fn(u8) -> i32 { f }`, exported under each profile with keep's closed frames retargeted to the nominal Packet",
+      "expected": [
+        "module-nominals-v10 restage: `source shared call type requires an actual closed callable frame`",
+        "module-branches-v12 restage: the same",
+        "module-bodies-v13 restage: `source Function input lost its exact zero-slot Rust formation domain`, gate (a) admitting the owner and the formation check rejecting it"
+      ],
+      "observed": "as expected (fastcheck fc3, receipt obj/qualification/fast/1794241171146984764, 30 exact tests)"
+    },
+    {
+      "control": "request_ports tightening: a call signature's closed CallableType frame must belong to a function header",
+      "expected": "every field call in via, slot-new, method, store, table, op, op-new, choose, computed, apply and pair has a function-owned signature frame and survives it; forged rows 5 and 6 fail by name",
+      "observed": "as expected: every listed client is accepted, and rows 5 and 6 fail by name (fastcheck fc3, receipt obj/qualification/fast/1794241171146984764, 30 exact tests)"
+    },
+    {
+      "control": "scaling: the frozen provider plus N zero-padded `pub struct FNNN { pub f: fn(u8) -> i32 }` and `pub fn vNNN(s: &FNNN) -> i32 { (s.f)(7) }`, N = 8, 16 and 32",
+      "expected": "packet bytes grow exactly affinely; the restage's work and an empty client's installed header-budget work grow by at most a constant per struct (second difference at most twice the first plus 64)",
+      "amended_expected": "amendment 2: the fn family's packet bytes grow exactly affinely and its restage's work by at most a constant per struct; its client work exceeds the u8 twin family's by at most a constant per struct",
+      "observed": "fc2 failed the declared client bound (amendment 2). Under amendment 2, fc3 passes: packet bytes 70405, 79653 and 98149; restage work 63420, 71288 and 87024; client work over the u8 twins 49821, 54809 and 65353, the same growth as the fn family's 50701, 56569 and 68873; the fn family's excess 880, 1760 and 3520, exactly 110 per struct (values from the fc3 test binary, sha256 f8a85bcb..., rerun with --nocapture, obj/parallel/callable-fields/runs/fc3-observe.log)"
+    },
+    {
+      "control": "self-demand probe, run before this declaration: spec/pointer-calls/provider.rs plus k structs `FNNN { pub f: fn(u8) -> i32 }` against k `u8` twins, k = 1, 2 and 4, with a client copying each `s.f` out of a borrow",
+      "expected": "no mapping is blocked, and the client's installed header counters (work, retained bytes, observed bytes and visits) for the fn fields exceed the twins' by a constant per field (second difference at most twice the first plus 64)",
+      "observed": "passed before the declaration (fastcheck receipt obj/qualification/fast/1794239890739061327; values from the same test binary, sha256 4777523c..., rerun with --nocapture under the wrapper, obj/parallel/callable-fields/runs/probe-observe.log). No mapping was blocked. For k = 1, 2 and 4 the fn fields exceed the u8 twins by exactly 14k header-work steps and 289k retained bytes, with no extra observed bytes or visits, so mapping a field's frame never visits its owner again. One u8 twin struct alone costs 80 steps, about 4,100 retained bytes, 152 observed bytes and 7 visits. Two earlier attempts failed at format and at Clippy's similar_names before any test ran"
+    },
+    {
+      "control": "R2's constructor and pointer controls",
+      "expected": "pointer-calls' ctor, variant and some clients, R1's struct-ctor, variant-ctor and generic-ctor opponents, and their natives (pointer_call_clients_execute_natively, reified_clients_execute_natively) stay byte-identical in the survey and pass; any movement is a stop",
+      "observed": "as expected: no R2 or R1 input moved in the survey, and the three native tests pass (fastcheck receipt obj/qualification/fast/1794241946295764851)"
+    },
+    {
+      "control": "flip survey: tools-identity.sh, the base pin against the candidate, over every pa29 provider under versions 10, 12 and 13 and every fixture client, plus every R1, R2 and (ii) generated provider under 10, 12 and 13",
+      "expected": "only spec/callable-fields and the (ii) generated providers are new; among existing inputs exactly one flips, gen-r2-field under module-bodies-v13 (rejected to accepted); the 49 packets R2 compared stay byte-identical, and every other status, stderr, LowIR and packet byte is unchanged",
+      "observed": "as expected (obj/parallel/callable-fields/flip/analysis.txt): 1,602 runs; among existing inputs only gen-r2-field flips, under module-bodies-v13; spec/callable-fields, gen-cf-older's version-13 export and gen-cf-associated's text are new; 58 packets compared, none differing"
+    }
+  ],
+  "outcome_counts": {
+    "provider": "1 export, accepted under module-bodies-v13",
+    "clients": 16,
+    "accepted_clients": 15,
+    "rejected_clients": 1,
+    "generated_opponents": 6,
+    "known_rejects_valid": "hr, region, c, record-variant, associated, argument-type, and the arena control"
+  },
+  "native": {
+    "expected": "the 15 accepted clients exit 42 natively with empty stdout, as rustc's do",
+    "observed": "as expected: the 15 accepted clients exit 42 with empty stdout (fastcheck receipt obj/qualification/fast/1794241946295764851, with R2's two native tests)"
+  },
+  "limits": [
+    "zero-slot Rust frames only: higher-ranked, early-region and C fn fields keep the anonymous callable fence at export, and the HR item must cover nominal-owned callable frames with bound slots as well as pointer-call frames",
+    "record variants holding fns keep their fence: item (i), Lane D after F",
+    "unsafe calls inside associated fns keep ruling 4's fence, and unsafe associated declarations the nonordinary fence; their widening is one item",
+    "the exporter's pre-existing arena fence rejects the source-nominals provider plus a fn field in every profile on the base pin and the candidate",
+    "the provider leaves out RawWakerVTable's `derive(PartialEq)`: comparing fn pointers is unpredictable, and rustc warns `unpredictable_function_pointer_comparisons`"
+  ],
+  "oracle_observed": "rustc 1.98.0 (obj/parallel/callable-fields/oracle/run.log): after amendment 1 all 15 accepted clients exit 42 with no warnings; narrow is rejected (status 1) with the unnumbered `lifetime may not live long enough`; the provider compiles with one unused_unsafe warning at the inherited safe_block; every generated provider and control compiles (status 0). The first run (run1.log) ICEd on apply and pair (amendment 1)"
+}

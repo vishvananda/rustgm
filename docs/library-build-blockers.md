@@ -5,6 +5,46 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [zero-slot nominal callable fields](parallel/callable-fields.md), (ii),
+lets a version-13 export carry a struct's or tuple variant's closed Rust fn
+field, with no wire change. Version 13 admits a callable-type binder that a
+nominal owns, with no parent and no slots. Each consumer forms the field in
+that nominal's header frame, and a called constructor's payload in its own
+nominal's, with the exact owner. A call signature's frame must belong to a
+function.
+
+- 15 clients exit 42 natively: struct, tuple-struct and tuple-variant fn
+  fields built by clients and by provider bodies and constructor calls,
+  RawWakerVTable's two `unsafe fn` fields, a generic `fn(T) -> T` field, a
+  derived `Copy` struct, `Send + Sync`, and the variance markers, including
+  `fn([u8]) -> [u8]`. The unsound narrowing of the contravariant marker is
+  rejected, as rustc rejects it.
+- Kept fences, each by name and known rejects-valid: higher-ranked,
+  early-region and C fn fields; record variants holding fns (item (i)); and
+  unsafe calls in associated fns. An unsafe associated declaration hits "source
+  nonordinary callable effect/safety/convention requires a wider profile", as
+  Lane D found in F; their widening is one item.
+- Versions 12 and 10, and the base reader, keep "source shared call type
+  requires an actual closed callable frame".
+- Among existing inputs the flip survey changes only R2's `field` opponent,
+  now exported (pointer-call amendment 2). The 58 compared packets are
+  byte-identical.
+- **The HR item** must also cover nominal-owned callable frames with bound
+  slots, such as `OsFunctions::format_os_error` and `ArgumentType`'s
+  formatter, as well as pointer-call frames. The port plan keeps "source
+  nominal callable field requires its wider binder profile" for them.
+- **Recorded:**
+  - an empty client's header work over N functions, each over a distinct
+    nominal, grows faster than linearly, for `u8` twins as for fn fields. The
+    fn fields add exactly 110 steps per struct. It is pre-existing, and a
+    failed prediction of the declared bound (amendment 2);
+  - the exporter's pre-existing arena fence, "source anonymous callable
+    requires its actual prepared type arena", rejects the source-nominals
+    provider plus a fn field in every profile, on the base pin too;
+  - rustc 1.98.0 ICEs on a match over an i32 value in the no_core fixtures,
+    whose provider gives i32 no Copy; two clients were rewritten before any
+    candidate run (amendment 1).
+
 Lane A [census batch 20](parallel/census-batch20.md) repairs census 22's
 record. It was qualified and censused on main `4df942467`. Census 23
 (`93fb6b89`) checks 42,310 declarations, with none failed or blocked, and
@@ -107,7 +147,8 @@ instance.
   - (ii) Nominal callable fields: `frame_owners` requires a function header
     to own each callable-type binder ("source shared call type requires an
     actual closed callable frame"), and the port plan keeps "source nominal
-    callable field requires its wider binder profile".
+    callable field requires its wider binder profile". (ii) now carries
+    zero-slot fields (see above); fields with bound slots wait for HR.
 - **Associated unsafe calls.** "source unsafe associated Calls require their
   wider actual profile" widens for direct and pointer calls together, as its
   own item before HR/C. It is the fmt chain's next blocker after HR/C's
@@ -416,7 +457,8 @@ with `unsafe` added but never removed.
     Result`, Lane C's item after 5b;
   - R2, for the call through the stored formatter. R2 calls a pointer in
     a body; the stored formatter also needs record variants and nominal
-    callable fields (see R2 above).
+    callable fields (see R2 above). (ii) carries zero-slot fields; the
+    formatter's own field is higher-ranked, so it waits for the HR item.
 - Target-feature note: Lane D's F admits only `unsafe` target-feature exports,
   so reification yields an `unsafe fn` pointer, which rustc allows. If F admits
   safe target-feature functions, a coercion to a safe pointer must be

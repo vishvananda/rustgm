@@ -6467,10 +6467,24 @@ with a direct call's matrix, at validation and over the rebuilt body, then
 calls the pointer value in its own lowering. A safe callee records Safe, in
 an unsafe block or not. Export rejects these by name: higher-ranked and C
 pointers, an unsafe call inside an associated function, and a pointer stored
-in a record variant or a nominal field, whose header fences come first.
-Earlier profiles keep the direct-call text, and an older reader rejects the
-node as malformed operands. The [pointer-call
-packet](pa29/tests/spec/pointer-calls/README.md) records independent outcomes.
+in a record variant, whose header fence comes first. Earlier profiles keep the
+direct-call text, and an older reader rejects the node as malformed operands.
+The [pointer-call packet](pa29/tests/spec/pointer-calls/README.md) records
+independent outcomes.
+
+Version thirteen also carries zero-slot fn fields, with no wire change. A
+struct's or tuple variant's field whose type is a closed Rust fn pointer, or
+contains one, travels as a callable-type binder that the nominal owns, with no
+parent and no slots. Only the version-thirteen profile admits such a binder;
+earlier profiles reject it as they did before. A fresh consumer forms the
+field's fn type in that nominal's own header frame, and a called constructor's
+payload in its own nominal's; the frame's owner must be exactly that nominal.
+A call signature's callable-type frame must belong to a function, so a
+nominal's frame never types a call. Export keeps rejecting higher-ranked,
+early-region and C fn fields, and fn fields in record variants, by name. An
+older reader rejects the binder by name. The [callable-field
+packet](pa29/tests/spec/callable-fields/README.md) records independent
+outcomes.
 
 Version thirteen also carries named constants of primitive and unit types.
 Declaration kind 13 is a constant, parented by a module or a function. One

@@ -70,7 +70,9 @@ operand is a `FnPtr` value. It also admits constructor reification.
     variadicness and node-by-node parameters and result: "source pointer Call
     signature differs from its callee's pointer type";
   - its frame must be this body's call signature or a parentless callable
-    type: "source Call signature belongs to another actual original context";
+    type that a function owns: "source Call signature belongs to another
+    actual original context". (ii) added the function-owner condition, so a
+    nominal's field frame never types a call;
   - the original must be runtime;
   - then argument and result relations, shared with direct calls.
 - **Safety, checked twice with direct Call's own matrix and texts.**
@@ -133,8 +135,9 @@ oracle and candidate run (`pa29/tests/pointer-call-outcomes.json`).
     associated Calls require their wider actual profile" (ruling 4).
   - The stored-formatter witness, a record variant holding an `unsafe fn`,
     stops at "source record variants require their wider profile".
-  - A field call `(s.f)(7)` stops at "source shared call type requires an
-    actual closed callable frame".
+  - A field call `(s.f)(7)` stopped at "source shared call type requires an
+    actual closed callable frame". It exports since (ii) (outcomes
+    amendment 2).
   - These five are known rejects-valid: rustc accepts each. The last two are
     pre-existing nominal-header fences outside R2's body scope (option a).
     Exploration showed base2 rejecting the same shapes with the same texts

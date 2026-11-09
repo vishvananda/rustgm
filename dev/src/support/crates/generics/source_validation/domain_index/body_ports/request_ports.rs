@@ -84,6 +84,28 @@ impl DomainIndex<'_, '_> {
         }
         Ok(())
     }
+    /// A call's signature frame is its own call site's or a function's closed
+    /// callable type. A nominal field's closed frame never types a call.
+    fn signature_frame(
+        &self,
+        original: &s::Original,
+        frame: &s::Binder,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        match frame.kind {
+            s::BinderKind::CallSignature { body, .. } if body == original.body => Ok(()),
+            s::BinderKind::CallableType
+                if frame.parent.is_none()
+                    && matches!(
+                        self.headers.header(frame.owner, work)?,
+                        Some(HeaderRef::Function(_))
+                    ) =>
+            {
+                Ok(())
+            }
+            _ => Err("source Call signature belongs to another actual original context"),
+        }
+    }
     /// Version thirteen: a call through a fn pointer selects no target. Its
     /// signature is its callee's closed pointer type, it runs only in a runtime
     /// original, and its lexical safety follows a direct call's rule.
@@ -114,11 +136,7 @@ impl DomainIndex<'_, '_> {
         {
             return Err("source pointer Call signature differs from its callee's pointer type");
         }
-        match frame.kind {
-            s::BinderKind::CallSignature { body, .. } if body == original.body => {}
-            s::BinderKind::CallableType if frame.parent.is_none() => {}
-            _ => return Err("source Call signature belongs to another actual original context"),
-        }
+        self.signature_frame(original, frame, work)?;
         if original.context != s::CallContext::Runtime {
             return Err("source pointer Call requires a runtime original context");
         }
@@ -182,11 +200,7 @@ impl DomainIndex<'_, '_> {
             return Err("source Call request signature has a different type kind");
         };
         let frame = &rows.binders[signature.binder.0 as usize];
-        match frame.kind {
-            s::BinderKind::CallSignature { body, .. } if body == original.body => {}
-            s::BinderKind::CallableType if frame.parent.is_none() => {}
-            _ => return Err("source Call signature belongs to another actual original context"),
-        }
+        self.signature_frame(original, frame, work)?;
         if let Some(constructor) = s::Constructor::of(
             (rows.enums(), &rows.declarations),
             application.declaration.declaration,

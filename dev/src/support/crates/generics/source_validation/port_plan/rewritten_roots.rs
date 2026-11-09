@@ -1,5 +1,6 @@
 //! One completed template node per exact type/application/context use.
 use super::{
+    super::Target,
     Context, DomainIndex, Work, g,
     nodes::{Arena, Key, Node, NodeId, Rewrite},
     s, uses,
@@ -530,8 +531,18 @@ fn function_domain(
     work.charge(1)?;
     let rows = domains.headers.rows();
     let (owner, context) = match key.rewrite {
-        Rewrite::Nominal { .. } => {
-            return Err("source nominal callable field requires its wider binder profile");
+        // Version thirteen: a nominal field's closed callable frame belongs to
+        // exactly that nominal. A frame with bound slots needs the wider
+        // higher-ranked profile.
+        Rewrite::Nominal { owner, .. } => {
+            if rows
+                .binders
+                .get(signature.binder.0 as usize)
+                .is_some_and(|frame| frame.count != 0)
+            {
+                return Err("source nominal callable field requires its wider binder profile");
+            }
+            (owner, nominal_frame(domains, owner, work)?)
         }
         Rewrite::Original => {
             let caller = key
@@ -556,15 +567,22 @@ fn function_domain(
                 .function_applications
                 .get(application.0 as usize)
                 .ok_or("source Function rewrite has no actual application")?;
-            let header = domains.function(application.declaration.declaration, work)?;
-            (
-                header.declaration,
-                Context {
-                    owner: header.scope,
-                    frame: Some(header.callable.binder),
-                    body: None,
-                },
-            )
+            match domains.target(application.declaration.declaration, work)? {
+                Target::Function(header) => (
+                    header.declaration,
+                    Context {
+                        owner: header.scope,
+                        frame: Some(header.callable.binder),
+                        body: None,
+                    },
+                ),
+                // A called constructor's payload is its nominal's fields,
+                // whose closed callable frames that nominal owns.
+                Target::Constructor { enumeration, .. } => (
+                    enumeration.declaration,
+                    nominal_frame(domains, enumeration.declaration, work)?,
+                ),
+            }
         }
     };
     let frame = rows
@@ -584,6 +602,18 @@ fn function_domain(
     domains.types.root(domains.headers, context, key.root, work)
 }
 
+/// A nominal's header context, which forms its field roots.
+fn nominal_frame(
+    domains: &DomainIndex<'_, '_>,
+    owner: crate::support::crates::owner_catalog::DeclarationRef,
+    work: &mut Work,
+) -> Result<Context, &'static str> {
+    Ok(Context {
+        owner,
+        frame: Some(domains.binders.declaration(owner, work)?),
+        body: None,
+    })
+}
 /// The projection's Self and complete trait arguments; the member alone names
 /// its trait because every projection row was checked against its header.
 fn projection(
@@ -644,3 +674,7 @@ fn nominal_child(
         s::Argument::Const(_) => Ok(None),
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../../../tests/invariants/fielded_callable_rows.rs"]
+mod tests;

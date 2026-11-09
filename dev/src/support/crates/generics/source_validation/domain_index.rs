@@ -97,7 +97,7 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
         let traits = headers.rows().trait_applications.len();
         let applications = functions.saturating_add(traits);
         work.charge(applications)?;
-        let binders = BinderIndex::new(headers, work)?;
+        let binders = BinderIndex::new(headers, work, bodies)?;
         let mut types = Types::new(headers, &binders, work)?;
         let overhead =
             size_of::<Self>().saturating_sub(size_of::<BinderIndex<'_>>() + size_of::<Types>());

@@ -3,9 +3,9 @@
 //! re-proves a call's signature against the callee's pointer type and its
 //! lexical safety, then calls the pointer value in its own lowering.
 //! Higher-ranked, C and associated unsafe calls keep their fences by name, as
-//! do pointers stored in nominal fields and record variants; older profiles
-//! and readers reject the form, and malformed code-30 operand lists and
-//! unknown safety flags reject by name.
+//! do pointers stored in record variants; older profiles and readers reject
+//! the form, and malformed code-30 operand lists and unknown safety flags
+//! reject by name. A call through a nominal fn field exports since (ii).
 use super::fresh_packets::{Packet, Result, spliced, with_id};
 use rustgm::support::crates;
 const SPEC: &str = "pa29/tests/spec/pointer-calls";
@@ -33,7 +33,7 @@ const DIRECT: &str = "source Call requires its actual direct function-item appli
 const MALFORMED: &str = "body IR value node has malformed operands";
 /// Each generated provider opponent appends these lines to the frozen
 /// provider. rustc 1.98.0 compiles every one but `const-fn`.
-const OPPONENTS: [(&str, &str, &str); 6] = [
+const OPPONENTS: [(&str, &str, &str); 5] = [
     (
         "hr",
         "pub fn hr_call(f: for<'a> fn(&'a u8) -> &'a u8, v: &u8) -> u8 { *f(v) }\n",
@@ -55,16 +55,15 @@ const OPPONENTS: [(&str, &str, &str); 6] = [
         "source record variants require their wider profile",
     ),
     (
-        "field",
-        "pub struct Slot { pub f: fn(u8) -> i32 }\npub fn via(s: &Slot) -> i32 { (s.f)(7) }\n",
-        "source shared call type requires an actual closed callable frame",
-    ),
-    (
         "const-fn",
         "pub const fn const_call(f: fn(u8) -> i32) -> i32 { f(7) }\n",
         "non-const calls are not allowed in const functions",
     ),
 ];
+/// The former `field` opponent, which exports since (ii): outcomes
+/// amendment 2.
+const FIELD: &str =
+    "pub struct Slot { pub f: fn(u8) -> i32 }\npub fn via(s: &Slot) -> i32 { (s.f)(7) }\n";
 /// The lines the older-profile control appends to the nominals provider.
 const OLDER: &str =
     "// Generated pointer-call control.\npub fn call_ptr(f: fn(u8) -> i32) -> i32 { f(7) }\n";
@@ -118,6 +117,14 @@ fn clients_call_pointers_and_stored_pointers_keep_their_fences() -> Result {
         packet.rejected(name, &mut export, diagnostic)?;
         assert!(unwritten(&metadata)?, "{name} wrote a packet");
     }
+    let source = packet.folder.join("field.rs");
+    std::fs::write(
+        &source,
+        format!("{provider}// Generated pointer-call opponent.\n{FIELD}"),
+    )?;
+    let metadata = packet.folder.join("field.rgcrate");
+    let mut export = packet.export(PROFILE, &source, &metadata);
+    super::artifacts::checked("field", &packet.folder, &mut export)?;
     Ok(())
 }
 #[test]

@@ -28,6 +28,8 @@ mod evaluated_methods;
 mod expander_rows;
 #[path = "crate_linking/exports.rs"]
 mod exports;
+#[path = "crate_linking/fielded_callables.rs"]
+mod fielded_callables;
 #[path = "crate_linking/fn_roles.rs"]
 mod fn_roles;
 #[path = "crate_linking/fresh_packets.rs"]

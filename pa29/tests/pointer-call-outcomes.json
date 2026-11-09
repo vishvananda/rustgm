@@ -25,6 +25,12 @@
       "recorded": "2026-11-09T13:42:49Z",
       "before": "any further run; R2 fastcheck fc7 (obj/parallel/pointer-calls/cp2/fc7.log), the first test run of these inputs, observed it",
       "change": "a failed prediction of forged row 9: ctor's reification typed as an appended `fn(u16) -> P` row is rejected with `source operation omitted a required nontrivial formation input`, not the re-proof text. The forged pointer's nominal result is not intrinsically formed and the forgery supplied no formation input, so the formation check stops it first. Row 9 is expected as observed. Row 11 is added: row 9 plus the WellFormed obligation a consistent forger would supply for the new row, at the site of the body's existing WellFormed input for ctor's honest pointer, expected `reified function pointer differs from its item's signature`. Every other outcome is unchanged"
+    },
+    {
+      "recorded": "2026-11-09T16:05:05Z",
+      "before": "any candidate run of Lane C's (ii), whose declaration (pa29/tests/callable-field-outcomes.json) names this flip; the integrator approved it by name with the (ii) notice",
+      "governs": "Lane C's (ii), zero-slot nominal callable fields (pa29/tests/callable-field-outcomes.json)",
+      "change": "the `field` opponent, `pub struct Slot { pub f: fn(u8) -> i32 }` and `pub fn via(s: &Slot) -> i32 { (s.f)(7) }`, is expected exported under module-bodies-v13 with a packet written, no longer rejected with `source shared call type requires an actual closed callable frame`: version 13 forms a nominal's closed fn field in that nominal's own header frame. rustc 1.98.0 accepts it (R2 oracle, obj/parallel/pointer-calls/oracle/gen). Its provider lines, its rustc status, its version-12 and version-10 texts and every other case are unchanged; `record-variant` keeps `source record variants require their wider profile`. The generated opponents become five and the amended controls one"
     }
   ],
   "rule": "approved design. Version-13 value code 30 gains a second shape, `(30, [Type(signature), Value(callee), Range(arguments), Flag(safety)])`, read as `ValueKind::PointerCall` and admitted only under the body-node profile; a direct call keeps `(30, [Type, Value, Range])` and the read matches the whole operand slice. The flag is the request codec's: 0 Safe, 1 ExplicitUnsafeBlock, 2 UnsafeFunction. A pointer call owns no request row: its site is its one evaluation. Every consumer re-proves the signature against the callee's closed Rust pointer type node by node (convention, variadicness, unsafety, arity, parameters and result) and the safety with direct Call's own matrix, at validation and again over the rebuilt body; local lowering calls the pointer value. Q3 Branch A also admits constructor reification: each consumer defines its own constructor instance. Existing packets keep their bytes: export fenced both forms before",
@@ -174,7 +180,8 @@
       "appended": "pub struct Slot { pub f: fn(u8) -> i32 }\npub fn via(s: &Slot) -> i32 { (s.f)(7) }\n",
       "rustc_status": 0,
       "rustgm_export": "source shared call type requires an actual closed callable frame",
-      "note": "a fn-pointer type in a nominal field: frame_owners requires a function header to own each CallableType binder, and the port plan keeps `source nominal callable field requires its wider binder profile`; pre-existing (base2 rejects the same); known rejects-valid, not a flip"
+      "note": "a fn-pointer type in a nominal field: frame_owners requires a function header to own each CallableType binder, and the port plan keeps `source nominal callable field requires its wider binder profile`; pre-existing (base2 rejects the same); known rejects-valid, not a flip",
+      "amended_rustgm_export": "exported: module-bodies-v13 writes a packet (amendment 2, Lane C's (ii))"
     },
     "const-fn": {
       "appended": "pub const fn const_call(f: fn(u8) -> i32) -> i32 { f(7) }\n",
@@ -245,8 +252,9 @@
     "rejected_clients": 0,
     "pointer_call_nodes": "11: 7 Safe, 3 ExplicitUnsafeBlock, 1 UnsafeFunction",
     "reified_nodes": 12,
-    "generated_opponents": 6,
-    "known_rejects_valid": "hr, c, associated, record-variant, field"
+    "generated_opponents": 5,
+    "known_rejects_valid": "hr, c, associated, record-variant",
+    "amended_controls": "1 (field, amendment 2)"
   },
   "native": {
     "expected": "the 13 accepted clients exit 42 natively with empty stdout, as rustc's do"

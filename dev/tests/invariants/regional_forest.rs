@@ -66,7 +66,7 @@ fn sibling_width_preserves_constant_query_work_and_distinct_preorder_intervals()
         }
         let mut work = Work::default();
         let headers = HeaderIndex::new(&rows, 0, &mut work)?;
-        let index = BinderIndex::new(&headers, &mut work)?;
+        let index = BinderIndex::new(&headers, &mut work, false)?;
         let before = work.steps;
         for pair in siblings.windows(2) {
             assert!(index.ancestor(root, pair[0], &mut work)?);
@@ -99,7 +99,7 @@ fn depth_and_query_width_use_one_forest_traversal_without_multiplied_walks() -> 
             let mut work = Work::default();
             let headers = HeaderIndex::new(&rows, 0, &mut work)?;
             let before = work.steps;
-            let index = BinderIndex::new(&headers, &mut work)?;
+            let index = BinderIndex::new(&headers, &mut work, false)?;
             observed[d][q] = work.steps - before;
             assert_eq!(index.queries, bound + queries);
             assert_eq!(index.max_depth, depth + 1);
@@ -171,7 +171,7 @@ fn malformed_ancestor_depth_slot_cycle_and_foreign_owner_reject_before_publicati
         let mut work = Work::default();
         let headers = HeaderIndex::new(&rows, 0, &mut work)?;
         let before = work.steps;
-        let Err(error) = BinderIndex::new(&headers, &mut work) else {
+        let Err(error) = BinderIndex::new(&headers, &mut work, false) else {
             return Err(format!("case{case} unexpectedly returned an index").into());
         };
         assert!(work.steps > before);

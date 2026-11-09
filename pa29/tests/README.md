@@ -633,13 +633,39 @@ pointers and return reified constructors. The packet holds:
   - a safe pointer in an unnecessary unsafe block;
   - the fmt-shaped formatter twin, and a call in an inherent associated fn;
   - struct, variant and generic constructors;
-- six generated provider opponents that keep their export fences by name,
-  and the older-profile, old-reader, wire, forged-row, scaling and
-  flip-survey controls.
+- five generated provider opponents that keep their export fences by name,
+  one former opponent, a call through a struct's fn field, that exports since
+  Lane C's (ii) (amendment 2), and the older-profile, old-reader, wire,
+  forged-row, scaling and flip-survey controls.
 
 The `crate_linking::called_pointers` integration controls, the
 `input_plan::values` row and scaling invariants and the
 `ordinary_columns::ir_nodes` wire invariant consume it.
+
+`callable-field-outcomes.json` freezes the callable-field packet under
+`spec/callable-fields/`, Lane C's (ii). Its provider's structs and variants
+hold zero-slot Rust fn fields, which its bodies build and call. The packet
+holds:
+
+- the pointer-calls provider plus authored lines;
+- 15 clients that rustc accepts:
+  - a struct's fn field, called by a provider fn and a method, built by a
+    struct expression and assigned;
+  - RawWakerVTable's shape, two `unsafe fn` fields;
+  - a tuple struct's and a tuple variant's fn payload, each built by the
+    client and by a provider constructor call;
+  - a generic `fn(T) -> T` field, and a `Pair` with the hand-written
+    expansion of `#[derive(Clone, Copy)]`;
+  - `Send + Sync` of a struct with a fn field;
+  - the contravariant and invariant markers in their valid directions;
+- one client that both reject, the unsound narrowing of the contravariant
+  marker;
+- six generated provider opponents that keep their export fences by name, and
+  the older-profile, arena, old-reader, forged-row, scaling, self-demand and
+  flip-survey controls.
+
+The `crate_linking::fielded_callables` integration controls and the
+`input_plan::roots` row, scaling and self-demand invariants consume it.
 
 `named-constant-outcomes.json` freezes the named-constant packet under
 `spec/named-constants/`, Lane C's item 5b-1. Its providers export named

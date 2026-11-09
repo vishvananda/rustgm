@@ -1455,6 +1455,31 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     pointer comparison rejects-valid, and b1's `[const]` placement
     accepts-invalid (library-build-blockers.md).
 
+- **During Lane C's [zero-slot nominal callable fields](parallel/callable-fields.md)
+  ((ii))**, 2026-11-09, from `c8c2a8eda`. The integrator approved the notice,
+  its request_ports trace and two deviations: the constructor-payload arm and
+  R2's associated shape.
+  - **Rule, no wire change.** Version 13 admits a nominal-owned callable-type
+    binder with no parent and no slots (gate a). The port plan forms a field
+    in its nominal's header frame and a called constructor's payload in its
+    own nominal's, with the exact owner (gate b). A call signature's frame
+    must belong to a function.
+  - **Amended before their runs:** R2's `field` opponent now exports
+    (pointer-call amendment 2); the `apply` and `pair` clients avoid a rustc
+    ICE on an i32 match (amendment 1); the scaling control's client bound
+    compares against `u8` twins (amendment 2, a failed prediction).
+  - **Survey.** Against the base pin, among existing inputs only `field`
+    changes, and the 58 compared packets are byte-identical.
+  - **Recorded:**
+    - the HR item must cover nominal-owned callable frames with bound slots,
+      not just pointer-call frames;
+    - an empty client's header work over functions on distinct nominals grows
+      faster than linearly, before (ii) and without fn fields;
+    - the exporter's arena fence rejects the source-nominals provider plus a
+      fn field, on the base pin too;
+    - the associated unsafe widening covers unsafe associated declarations,
+      as Lane D found in F.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |
