@@ -139,6 +139,7 @@ fn defining_environment_rejects_incomplete_actual_alias_scope_before_publication
         universals,
         Some(Arc::clone(&declaration)),
         &[clause],
+        &[],
     )?;
     assert!(
         prepared
@@ -169,6 +170,7 @@ fn defining_environment_rejects_incomplete_actual_alias_scope_before_publication
             universals,
             None,
             &[clause],
+            &[],
         )
         .is_err()
     );
@@ -193,6 +195,7 @@ fn defining_environment_ordinary_path_keeps_the_actual_declaration_arc() -> Resu
         Some(function.signature),
         0,
         Some(Arc::clone(&declaration)),
+        &[],
         &[],
     )?
     .finish(0, Vec::new())?;

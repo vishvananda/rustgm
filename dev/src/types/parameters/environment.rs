@@ -316,6 +316,76 @@ impl Environment {
         )
     }
 
+    /// Certify trait premises of this exact environment as normal forms: its
+    /// owner's declared bounds that completed their own bound normalization.
+    /// A premise without projections is never recorded. Extending this
+    /// environment or substituting any type in it drops every certificate; a
+    /// lifetime-only substitution carries each to its premise's mapped value,
+    /// and so does a body's extension by its own opened clauses, through
+    /// [`Self::opened_certificates`].
+    /// Premises shared with another environment stay uncertified, so nothing
+    /// is cloned.
+    /// # Errors
+    /// Rejects an opened caller view and invalid quantified identities.
+    pub fn certify_normal_premises(
+        &mut self,
+        types: &Store,
+        clauses: &[Clause],
+    ) -> Result<(), &'static str> {
+        if clauses.is_empty() {
+            return Ok(());
+        }
+        if let Some(traits) = self.traits.as_mut().and_then(Arc::get_mut) {
+            traits.certify(types, clauses)?;
+        }
+        Ok(())
+    }
+
+    /// Whether this exact, unopened environment certified `clause` normal.
+    #[must_use]
+    pub fn certified_normal_premise(&self, clause: Clause) -> bool {
+        self.traits
+            .as_ref()
+            .is_some_and(|traits| traits.certified(clause))
+    }
+
+    #[must_use]
+    pub fn has_normal_premises(&self) -> bool {
+        self.traits
+            .as_ref()
+            .is_some_and(|traits| traits.has_certificates())
+    }
+
+    /// The certificates an extension by opened clauses carries. `images[i]`
+    /// is `sources[i]` with its binder lifetimes replaced, as a body opens
+    /// its declaration's binder clauses at its universal aliases: a
+    /// lifetime-only substitution, so each certified source's image is
+    /// returned. A source that is not one of this environment's own trait
+    /// premises could add a fact it never had, and then none is returned.
+    /// # Errors
+    /// Rejects images without sources.
+    pub fn opened_certificates(
+        &self,
+        sources: &[Clause],
+        images: &[Clause],
+    ) -> Result<Vec<Clause>, &'static str> {
+        let Some(traits) = self.traits.as_deref().filter(|_| !sources.is_empty()) else {
+            return Ok(Vec::new());
+        };
+        if sources.len() != images.len() {
+            return Err("opened clauses lost their sources");
+        }
+        if !sources.iter().all(|&source| traits.holds(source)) {
+            return Ok(Vec::new());
+        }
+        Ok(sources
+            .iter()
+            .zip(images)
+            .filter(|&(&source, _)| traits.certified(source))
+            .map(|(_, &image)| image)
+            .collect())
+    }
+
     /// Retain whole quantified trait and builtin assumptions beside ordinary predicates.
     /// Lifetime clauses validate membership here; the caller retains their whole
     /// scopes for its separate directed lifetime proof, as for ordinary outlives.

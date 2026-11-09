@@ -28,7 +28,7 @@ impl Context {
             if bound != proof.bound {
                 return Err(Error::Mismatch);
             }
-            return self.equate_canonical_input(store, goal.subject(), proof.ty, &[]);
+            return self.equate_canonical_input(store, goal.subject(), proof.ty, &[], None);
         }
         let Some(result) = goal.projection_result() else {
             return self.equate_trait_predicate(store, goal, proof);
@@ -46,7 +46,7 @@ impl Context {
         // unresolved result binds to it. Projections in the result still block.
         let normal = self.known(store, expected)?;
         self.retain_opaque_results(store, normal)?;
-        self.equate_canonical_input(store, result, expected, &[])
+        self.equate_canonical_input(store, result, expected, &[], None)
     }
 
     /// Existential header compatibility, with lifetime proof deliberately deferred.
@@ -194,6 +194,35 @@ impl Context {
         assumption: Canonical,
         ambient: &[u32],
     ) -> Result<(), Error> {
+        self.equate_trait_inputs(store, predicate, assumption, ambient, None)
+    }
+
+    /// Equate a goal with a premise that its own environment certified normal.
+    /// A blocked pair whose goal side is a recorded rigid normal form and whose
+    /// premise side is a projection subterm of that premise, with one associated
+    /// item and layout, relates its inputs invariantly; its lifetimes become
+    /// region equalities for the caller's region proof. Every other pair keeps
+    /// the exact compare of [`Self::equate_trait_predicate`].
+    /// # Errors
+    /// Rejects mismatched traits/arguments, invalid identities, occurs cycles and work limits.
+    pub fn equate_normal_premise(
+        &mut self,
+        store: &mut Store,
+        predicate: &Predicate,
+        assumption: Canonical,
+    ) -> Result<(), Error> {
+        let mut premise = super::normal_premises::Premise::new(assumption);
+        self.equate_trait_inputs(store, predicate, assumption, &[], Some(&mut premise))
+    }
+
+    fn equate_trait_inputs(
+        &mut self,
+        store: &mut Store,
+        predicate: &Predicate,
+        assumption: Canonical,
+        ambient: &[u32],
+        premise: Option<&mut super::normal_premises::Premise>,
+    ) -> Result<(), Error> {
         let Requirement::Trait(trait_) = &predicate.requirement else {
             return Err(Error::Mismatch);
         };
@@ -215,6 +244,7 @@ impl Context {
             &trait_.arguments,
             application.arguments,
             ambient,
+            premise,
         )
     }
 
@@ -225,6 +255,7 @@ impl Context {
         inferred: &[Argument],
         arguments: crate::types::GenericArgs,
         ambient: &[u32],
+        mut premise: Option<&mut super::normal_premises::Premise>,
     ) -> Result<(), Error> {
         let count = store
             .arguments(arguments)
@@ -241,7 +272,7 @@ impl Context {
             {
                 return Ok(());
             }
-            context.equate_canonical_input(store, term, ty, ambient)
+            context.equate_canonical_input(store, term, ty, ambient, premise.as_deref_mut())
         };
         if let Some((term, ty)) = subject {
             equate(self, store, term, ty)?;
@@ -275,6 +306,7 @@ impl Context {
         term: super::TermId,
         canonical: super::TypeId,
         ambient: &[u32],
+        premise: Option<&mut super::normal_premises::Premise>,
     ) -> Result<(), Error> {
         self.step()?;
         let term = self.root(term)?;
@@ -304,6 +336,9 @@ impl Context {
             // The blocked result pairs never contribute equations on their inputs.
             let mut blocked = Vec::new();
             self.unify(store, term, known, true, Some(&mut blocked))?;
+            if let Some(premise) = premise {
+                return self.relate_normal_premise(store, blocked, premise);
+            }
             for (left, right) in blocked {
                 if self.resolved(store, left)? != self.resolved(store, right)? {
                     return Err(Error::Normalization);

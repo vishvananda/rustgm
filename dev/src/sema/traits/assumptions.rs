@@ -234,6 +234,23 @@ impl Assumptions {
             Option<&Arc<crate::types::parameters::premise_index::Opening>>,
         ),
     > {
+        self.certified_candidates(item, head)
+            .map(|(predicate, opening, _)| (predicate, opening))
+    }
+    /// Each candidate with whether its own layer's environment certified it
+    /// normal. An opened view reads its base's certificates: the opening
+    /// substitutes regions only.
+    fn certified_candidates(
+        &self,
+        item: ItemId,
+        head: Head,
+    ) -> impl Iterator<
+        Item = (
+            Predicate,
+            Option<&Arc<crate::types::parameters::premise_index::Opening>>,
+            bool,
+        ),
+    > {
         self.index
             .iter()
             .flat_map(|index| index.layers())
@@ -244,8 +261,21 @@ impl Assumptions {
                     .into_iter()
                     .flatten()
                     .copied()
-                    .map(move |predicate| (predicate, opening))
+                    .map(move |predicate| {
+                        (
+                            predicate,
+                            opening,
+                            index.normal_premise(Clause::Predicate(predicate)),
+                        )
+                    })
             })
+    }
+    /// Whether the layer holding quantified premises certified `id` normal.
+    fn normal_quantified(&self, id: crate::types::parameters::clauses::QuantifiedId) -> bool {
+        self.index
+            .as_ref()
+            .and_then(|index| index.layers().find(|(layer, _)| layer.quantified.is_some()))
+            .is_some_and(|(layer, _)| layer.normal_premise(Clause::ForAll(id)))
     }
     fn quantified(&self) -> Option<&QuantifiedIndex> {
         self.index.as_ref().and_then(|index| {
@@ -300,6 +330,47 @@ impl Assumptions {
 
     pub fn insert_clause(&mut self, store: &Store, clause: Clause) -> Result<(), infer::Error> {
         Arc::make_mut(self.index.get_or_insert_with(Default::default)).insert_clause(store, clause)
+    }
+
+    /// Premises copied from `environment`: each `(source, copy)` pair holds
+    /// a source premise and that premise under a lifetime-only substitution.
+    /// A copy inherits its own source's certificate and no other.
+    /// # Errors
+    /// Rejects invalid clauses.
+    pub(in crate::sema) fn copied(
+        store: &Store,
+        environment: Option<&crate::types::parameters::environment::Environment>,
+        premises: &[(Clause, Clause)],
+    ) -> Result<Self, String> {
+        let mut assumptions = Self::default();
+        let mut certified = Vec::new();
+        for &(source, copy) in premises {
+            assumptions
+                .insert_clause(store, copy)
+                .map_err(|e| e.to_string())?;
+            if environment.is_some_and(|environment| environment.certified_normal_premise(source)) {
+                certified.push(copy);
+            }
+        }
+        assumptions.certify_normal(&certified)?;
+        Ok(assumptions)
+    }
+
+    /// Certify premises these assumptions already hold.
+    /// # Errors
+    /// Rejects a premise they do not hold.
+    pub(in crate::sema) fn certify_normal(
+        &mut self,
+        clauses: &[Clause],
+    ) -> Result<(), &'static str> {
+        if clauses.is_empty() {
+            return Ok(());
+        }
+        let index = self
+            .index
+            .as_mut()
+            .ok_or("certified premise is not held by these assumptions")?;
+        Arc::make_mut(index).certify_held(clauses)
     }
 
     /// A declaration's own exact bound needs equations only when alternatives exist.
@@ -359,7 +430,7 @@ impl Assumptions {
         let candidates = subject.heads().flat_map(|head| {
             discriminants
                 .candidates(application.item, head, value)
-                .map(|predicate| (predicate, None))
+                .map(|predicate| (predicate, None, false))
         });
         Ok(matches!(
             Self::choose_flat(store, context, &goal, candidates)?,
@@ -403,7 +474,9 @@ impl Assumptions {
             store,
             context,
             goal,
-            subject.heads().flat_map(|head| self.candidates(item, head)),
+            subject
+                .heads()
+                .flat_map(|head| self.certified_candidates(item, head)),
         )
     }
 
@@ -416,6 +489,7 @@ impl Assumptions {
             Item = (
                 Predicate,
                 Option<&'a Arc<crate::types::parameters::premise_index::Opening>>,
+                bool,
             ),
         >,
     ) -> Result<Selection, infer::Error> {
@@ -424,11 +498,11 @@ impl Assumptions {
             context,
             goal,
             candidates,
-            |store, context, (predicate, opening)| {
+            |store, context, (predicate, opening, normal)| {
                 let predicate = opening.map_or(Ok(predicate), |opening| {
                     opening.predicate(store, context, predicate)
                 })?;
-                Ok((predicate, Evidence(predicate)))
+                Ok((predicate, Evidence(predicate), normal))
             },
             |_, _, left, right| Ok(alternatives::ordinary_consequence(goal, left.0, right.0)),
         )

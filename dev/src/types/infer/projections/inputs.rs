@@ -73,7 +73,14 @@ impl Context {
             },
             ambient,
         )?;
-        self.equate_canonical_inputs(store, None, &goal.arguments, candidate.arguments, ambient)
+        self.equate_canonical_inputs(
+            store,
+            None,
+            &goal.arguments,
+            candidate.arguments,
+            ambient,
+            None,
+        )
     }
 
     /// Resolve one argument group with a shared reachable-type traversal.

@@ -114,7 +114,15 @@ impl Context {
                 if !self.is_projection(store, id)? {
                     return Err(Error::InvalidIdentity);
                 }
-                results.insert(key, self.known(store, ty)?);
+                let normal = self.known(store, ty)?;
+                if S::COMPLETE {
+                    // A complete plan holds finished search fold outputs, whose
+                    // remaining projections are this frame's normal forms. Only
+                    // the certified premise relation reads these marks, and the
+                    // original predicate and its roots stay unmarked.
+                    self.retain_rigid_results(store, ty)?;
+                }
+                results.insert(key, normal);
                 continue;
             }
             match self.terms[id.0 as usize].value {

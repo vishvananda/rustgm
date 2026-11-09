@@ -1,6 +1,9 @@
 //! Every assumption alternative uses an isolated trial before committing one match.
 use super::{Context, Goal, Head, Selection, Store, Subject, infer};
 use crate::types::parameters::predicates::Predicate;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/certified_premises.rs"]
+mod certified_premise_tests;
 
 pub(super) fn subject(
     store: &Store,
@@ -26,16 +29,16 @@ pub(super) fn choose<C, E>(
     context: &mut Context,
     goal: &Goal,
     candidates: impl Iterator<Item = C>,
-    mut prepare: impl FnMut(&mut Store, &mut Context, C) -> Result<(Predicate, E), infer::Error>,
+    mut prepare: impl FnMut(&mut Store, &mut Context, C) -> Result<(Predicate, E, bool), infer::Error>,
     mut equivalent: impl FnMut(&mut Store, &mut Context, &E, &E) -> Result<bool, infer::Error>,
 ) -> Result<Selection<E>, infer::Error> {
     let mut selected = None;
     let mut needs_normalization = false;
     for candidate in candidates {
-        let (predicate, evidence) = prepare(store, context, candidate)?;
+        let (predicate, evidence, normal) = prepare(store, context, candidate)?;
         let mut probe = Context::default();
         let imported = probe.import_predicate(store, context, goal)?;
-        let result = probe.equate_trait_predicate(store, &imported, predicate);
+        let result = equate(store, &mut probe, &imported, predicate, normal);
         context.account_work(probe.steps)?;
         match result {
             Ok(()) => {
@@ -48,7 +51,7 @@ pub(super) fn choose<C, E>(
                     )
                 });
                 match &selected {
-                    Some((previous, prior))
+                    Some((previous, prior, _))
                         if *previous != predicate
                             && !equivalent(store, context, prior, &evidence)? =>
                     {
@@ -64,7 +67,7 @@ pub(super) fn choose<C, E>(
                     // Opening equivalent clauses may erase only unused local slots.
                     // Keep one actual premise and its owned instantiation interval.
                     Some(_) => {}
-                    None => selected = Some((predicate, evidence)),
+                    None => selected = Some((predicate, evidence, normal)),
                 }
             }
             Err(infer::Error::Mismatch | infer::Error::Occurs) => {}
@@ -91,13 +94,29 @@ pub(super) fn choose<C, E>(
             Err(error) => return Err(error),
         }
     }
-    if let Some((predicate, evidence)) = selected {
-        context.equate_trait_predicate(store, goal, predicate)?;
+    if let Some((predicate, evidence, normal)) = selected {
+        equate(store, context, goal, predicate, normal)?;
         Ok(Selection::Proven(evidence))
     } else if needs_normalization {
         Err(infer::Error::Normalization)
     } else {
         Ok(Selection::Absent)
+    }
+}
+
+/// A premise its environment certified normal relates a goal's rigid normal
+/// forms by their inputs; every other premise keeps the exact equation.
+fn equate(
+    store: &mut Store,
+    context: &mut Context,
+    goal: &Goal,
+    predicate: Predicate,
+    normal: bool,
+) -> Result<(), infer::Error> {
+    if normal {
+        context.equate_normal_premise(store, goal, predicate)
+    } else {
+        context.equate_trait_predicate(store, goal, predicate)
     }
 }
 

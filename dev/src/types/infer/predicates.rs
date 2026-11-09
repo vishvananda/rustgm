@@ -1,6 +1,7 @@
 //! Trait obligations retain inference arguments until the whole body is solved.
 mod binder_mapping;
 mod equations;
+mod normal_premises;
 #[cfg(test)]
 #[path = "../../../tests/invariants/qualifiers.rs"]
 mod source_effect_tests;

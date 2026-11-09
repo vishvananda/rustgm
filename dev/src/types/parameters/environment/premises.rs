@@ -25,6 +25,10 @@ pub(super) struct TraitAssumptions {
     pub constants: HashSet<ParameterId>,
     projected: HashMap<ProjectionKey, Vec<usize>>,
     quantified: Option<Box<Quantifiers>>,
+    /// Premises with projections that this exact clause set certified normal.
+    /// Adding a clause or substituting a type drops every certificate; a
+    /// lifetime-only substitution carries each to the mapped premise.
+    normal: Option<Box<HashSet<Clause>>>,
 }
 
 #[derive(Clone, Default)]
@@ -103,6 +107,10 @@ impl TraitAssumptions {
             total.boxed(mapped.as_ref());
             total.add(2 * size_of::<usize>());
         }
+        if let Some(normal) = &self.normal {
+            total.boxed(normal.as_ref());
+            total.set(normal);
+        }
         total
     }
 }
@@ -153,6 +161,7 @@ impl TraitAssumptions {
                         .insert_clause(types, clause)
                         .map_err(|_| "invalid caller trait assumption index")?;
                 }
+                index.certify_normal(self.normal.as_deref())?;
                 Ok(Arc::new(index))
             })
             .clone()?;
@@ -183,6 +192,12 @@ impl TraitAssumptions {
         for clause in self.clauses() {
             index.insert_clause_charged(types, clause, charge)?;
         }
+        if let Some(normal) = &self.normal {
+            let allocation =
+                crate::support::retained::Growth::map::<Clause, ()>(0, 0, normal.len());
+            charge(allocation.work.saturating_add(1), allocation.bytes)?;
+        }
+        index.certify_normal(self.normal.as_deref())?;
         let index = Arc::new(index);
         if self.index.set(Ok(Arc::clone(&index))).is_ok() {
             return Ok(index);
@@ -206,6 +221,69 @@ impl TraitAssumptions {
                 .quantified
                 .as_ref()
                 .is_none_or(|q| q.entries.is_empty())
+    }
+
+    /// Certify premises of this exact clause set as normal forms. Only clauses
+    /// already present and containing a projection are recorded; any later
+    /// insertion or type substitution drops the certificates.
+    pub(super) fn certify(
+        &mut self,
+        types: &Store,
+        clauses: &[Clause],
+    ) -> Result<(), &'static str> {
+        if self.mapped.is_some() {
+            return Err("opened caller clauses cannot be certified");
+        }
+        for &clause in clauses {
+            let (present, predicate) = match clause {
+                Clause::Predicate(predicate) => (self.unique.contains(&predicate), predicate),
+                Clause::ForAll(id) => (
+                    self.quantified
+                        .as_ref()
+                        .is_some_and(|q| q.unique.contains(&id)),
+                    types
+                        .quantified(id)
+                        .ok_or("invalid quantified assumption")?
+                        .predicate,
+                ),
+                Clause::UnstableFeature(_) => continue,
+            };
+            if present && predicate.contains_projections(types)? {
+                self.normal
+                    .get_or_insert_with(Default::default)
+                    .insert(clause);
+                self.index.take();
+            }
+        }
+        Ok(())
+    }
+
+    /// Whether this exact clause set certified `clause` normal.
+    pub(super) fn certified(&self, clause: Clause) -> bool {
+        self.mapped.is_none()
+            && self
+                .normal
+                .as_ref()
+                .is_some_and(|normal| normal.contains(&clause))
+    }
+
+    pub(super) fn has_certificates(&self) -> bool {
+        self.mapped.is_none() && self.normal.is_some()
+    }
+
+    /// Whether `clause` is one of this unopened set's own trait premises.
+    pub(super) fn holds(&self, clause: Clause) -> bool {
+        if self.mapped.is_some() {
+            return false;
+        }
+        match clause {
+            Clause::Predicate(predicate) => self.unique.contains(&predicate),
+            Clause::ForAll(id) => self
+                .quantified
+                .as_ref()
+                .is_some_and(|quantified| quantified.unique.contains(&id)),
+            Clause::UnstableFeature(_) => false,
+        }
     }
 
     pub fn insert(&mut self, types: &Store, clause: Clause) -> Result<(), &'static str> {
@@ -244,6 +322,7 @@ impl TraitAssumptions {
                     features.entries.push((position, id));
                     self.index.take();
                     self.opening.take();
+                    self.normal = None;
                 }
             }
             Clause::Predicate(predicate) => {
@@ -253,6 +332,7 @@ impl TraitAssumptions {
                 if self.unique.insert(predicate) {
                     self.index.take();
                     self.opening.take();
+                    self.normal = None;
                     if let Some(key) = projection(types, predicate)? {
                         self.projected
                             .entry(key)
@@ -276,6 +356,7 @@ impl TraitAssumptions {
                 if quantified.unique.insert(id) {
                     self.index.take();
                     self.opening.take();
+                    self.normal = None;
                     if let Some(key) = projection(types, value.predicate)? {
                         quantified.projected.entry(key).or_default().push(id);
                     }
@@ -353,12 +434,18 @@ impl TraitAssumptions {
                 return Err("charged declaration mapping requires an unopened caller environment");
             }
         }
+        // A lifetime-only substitution keeps each certified premise's own
+        // projections rigid, so its certificate follows the substituted value.
+        // Any type substitution drops every certificate.
+        let regions_only = fold.regions_only();
+        let mut certified = self.normal.take().filter(|_| regions_only);
         if let Some(mapped) = self.mapped.take() {
             let opening = mapped
                 .index
                 .opening()
                 .ok_or("missing composed trait opening")?;
             let mut materialized = Self::default();
+            let mut opened = Normal::default();
             for clause in mapped.source.clauses() {
                 if matches!(clause, Clause::UnstableFeature(_)) {
                     materialized.insert(types, clause)?;
@@ -370,12 +457,20 @@ impl TraitAssumptions {
                 let mut work = 0;
                 let result = opening.substitute(types, predicate, &mut work);
                 fold.account_region_summary_work(work)?;
-                materialized.insert(types, result?.into())?;
+                let result = result?;
+                opened.follow(
+                    mapped.source.normal.as_deref().filter(|_| regions_only),
+                    clause,
+                    result.into(),
+                );
+                materialized.insert(types, result.into())?;
             }
             *self = materialized;
+            certified = opened.0;
         }
         self.index.take();
         self.opening.take();
+        let mut normal = Normal::default();
         // Traverse mixed declaration order: fresh captured aliases must not depend
         // on storage kind, randomized hash order or duplicate canonical results.
         let mut position = 0;
@@ -402,22 +497,39 @@ impl TraitAssumptions {
                 let Clause::ForAll(mapped) = mapped else {
                     return Err("substitution flattened quantified environment clause");
                 };
+                normal.follow(
+                    certified.as_deref(),
+                    Clause::ForAll(*id),
+                    Clause::ForAll(mapped),
+                );
                 *id = mapped;
                 region_mapping |= Clause::ForAll(mapped).has_free_regions(types)?;
             } else {
+                let original = self.predicates[position];
                 self.predicates[position] = if CHARGED {
                     charge(1, 0)?;
-                    fold.clause_charged(types, self.predicates[position].into(), charge)?
+                    fold.clause_charged(types, original.into(), charge)?
                         .ordinary()?
                 } else {
-                    fold.predicate(types, self.predicates[position])?
+                    fold.predicate(types, original)?
                 };
+                normal.follow(
+                    certified.as_deref(),
+                    original.into(),
+                    self.predicates[position].into(),
+                );
                 region_mapping |= self.predicates[position].has_free_regions(types)?;
                 position += 1;
             }
         }
         self.region_mapping = region_mapping;
-        self.rebuild_observed::<CHARGED>(types, charge)
+        self.rebuild_observed::<CHARGED>(types, charge)?;
+        if CHARGED && let Some(normal) = &normal.0 {
+            let growth = crate::support::retained::Growth::map::<Clause, ()>(0, 0, normal.len());
+            charge(growth.work.saturating_add(1), growth.bytes)?;
+        }
+        self.normal = normal.0;
+        Ok(())
     }
     fn rebuild_observed<const CHARGED: bool>(
         &mut self,
@@ -448,6 +560,17 @@ impl TraitAssumptions {
             }
         }
         Ok(())
+    }
+}
+
+/// Certificates of one substitution's results, allocated on the first one.
+#[derive(Default)]
+struct Normal(Option<Box<HashSet<Clause>>>);
+impl Normal {
+    fn follow(&mut self, certified: Option<&HashSet<Clause>>, original: Clause, result: Clause) {
+        if certified.is_some_and(|certified| certified.contains(&original)) {
+            self.0.get_or_insert_with(Default::default).insert(result);
+        }
     }
 }
 
@@ -496,6 +619,13 @@ impl TraitAssumptions {
         }
         for values in self.projected.values() {
             charge(1 + values.len(), retained::vector(values))?;
+        }
+        if let Some(normal) = &self.normal {
+            charge(
+                1 + normal.len(),
+                size_of::<HashSet<Clause>>()
+                    .saturating_add(normal.capacity().saturating_mul(size_of::<Clause>())),
+            )?;
         }
         if let Some(q) = &self.quantified {
             charge(1, size_of::<Quantifiers>())?;

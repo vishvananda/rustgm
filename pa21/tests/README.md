@@ -54,3 +54,17 @@ qualified compiler rejects its ordinary call, independently of source Try hooks.
 The case declares semantic success. Its selected official reference is generated
 and reviewed; all 758 text cases pass with the integrated solver correction.
 The pinned two-edition metadata observations add no native execution claim.
+
+The `spec/assoc-bounds/certified-premises/` controls (Lane A census batch 17)
+test a declared bound on a generic associated type,
+`P: Pattern<Searcher<'a>: ReverseSearcher<'a>>`, proving a supertrait
+condition whose subject is the same rigid projection at another lifetime.
+rustc relates the projection's inputs invariantly, which leaves a region
+equality to prove. Their 19 rustc 1.98.0 outcomes were declared before the
+oracle ran, and all agree. rustc rejects five: a missing bound, a different
+associated item, another lifetime, a one-way outlives and a required
+higher-ranked bound. `raw-environment-premise` is accepted by rustc and
+stays stricter than rustc by name. The 13 accepted controls declare native
+execution. The
+private invariant `certified_bound_premises_match_declared_outcomes` checks
+each control's first error.

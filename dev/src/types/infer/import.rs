@@ -1,6 +1,6 @@
 //! Copy only a query's reachable graph; failed probes cannot constrain the caller.
 use super::{
-    Constructor, Context, Error, Store, TermId, Value,
+    Constructor, Context, Error, Store, TermId, TypeId, Value,
     arguments::{Argument, Slot},
     constants::ConstTermId,
 };
@@ -61,6 +61,11 @@ impl Context {
                 self.import_slot_facts(source, id, copied, false)?;
                 continue;
             }
+            if let Some(copied) = self.import_rigid_root(store, source, id)? {
+                self.import_slot_facts(source, id, copied, false)?;
+                mappings.types.insert(id, copied);
+                continue;
+            }
             if let Some(ty) = source.settled_type(id) {
                 let copied = self.known(store, ty)?;
                 self.import_slot_facts(source, id, copied, false)?;
@@ -78,6 +83,7 @@ impl Context {
                 }
                 Value::Known(ty) => {
                     let copied = self.known(store, ty)?;
+                    self.carry_rigid_marks(store, source, ty)?;
                     self.import_slot_facts(source, id, copied, false)?;
                     mappings.types.insert(id, copied);
                     continue;
@@ -115,6 +121,63 @@ impl Context {
             .get(&root)
             .copied()
             .ok_or(Error::InvalidIdentity)
+    }
+}
+
+impl Context {
+    /// Carry rigid normal-form marks as data. A copied known type is marked only
+    /// when every one of its outermost projection subterms is marked in the
+    /// source; a partly marked type copies with no marks. A source without
+    /// marks pays nothing.
+    /// A marked projection that is the source's own term for its canonical
+    /// type copies as this context's term for that type, with its mark, even
+    /// after the source has expanded it. Any other term copies as before.
+    fn import_rigid_root(
+        &mut self,
+        store: &Store,
+        source: &mut Self,
+        id: TermId,
+    ) -> Result<Option<TermId>, Error> {
+        if !source.has_rigid_marks() {
+            return Ok(None);
+        }
+        let Some(ty) = source.rigid_projection(id) else {
+            return Ok(None);
+        };
+        let Some(&known) = source.known.get(&ty) else {
+            return Ok(None);
+        };
+        if source.root(known)? != id {
+            return Ok(None);
+        }
+        let copied = self.known(store, ty)?;
+        self.retain_rigid_results(store, ty)?;
+        Ok(Some(copied))
+    }
+
+    fn carry_rigid_marks(
+        &mut self,
+        store: &Store,
+        source: &mut Self,
+        ty: TypeId,
+    ) -> Result<(), Error> {
+        if !source.has_rigid_marks() {
+            return Ok(());
+        }
+        let roots = self.projection_subterms(store, ty)?;
+        for &root in &roots {
+            let Some(&original) = source.known.get(&root) else {
+                return Ok(());
+            };
+            let original = source.root(original)?;
+            if source.rigid_projection(original) != Some(root) {
+                return Ok(());
+            }
+        }
+        if !roots.is_empty() {
+            self.retain_rigid_results(store, ty)?;
+        }
+        Ok(())
     }
 }
 

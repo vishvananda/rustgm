@@ -1208,6 +1208,44 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     - order after R1: 5b-1, developed on K's join commit and qualified once
       K is on origin/main, then R2. If K needs an amendment, R2 goes first.
 
+- **During Lane A's [census batch 17](parallel/census-batch17.md)**,
+  2026-11-08 to 2026-11-09, declared on main `952781b14`, qualified on
+  `dcb956cf8` and censused on `28e2b19fb`.
+  - **A certified premise relates a rigid projection's inputs invariantly**,
+    the approved option B. The relation applies only when the premise's own
+    environment proved it normal: its owner's declared bounds after their
+    normalization completed. It applies only to a goal side that a complete
+    input rewrite marked rigid, and only under four layout gates. The
+    lifetimes become region equalities for the region proof. Every gate
+    failure keeps the exact compare's result. Core's `RSplit`
+    `FusedIterator` impl (`str/iter.rs:569`) now passes.
+  - **Certificates.** They are keyed by the clause value and carried only
+    through lifetime-only constructions: the regions-only fold, a body's
+    defining clauses, and the body's trait assumptions. Any type
+    substitution and every other site drops them. Three sites are
+    conservative-uncertified by name.
+  - **19 PA21 controls** were declared before the rustc 1.98.0 oracle; all
+    statuses agree. Eight flip to accept as declared. `hrtb-required`'s
+    text differs from rustc's E0277 (amendment 2), and
+    `raw-environment-premise` stays stricter than rustc.
+  - **A wrong explanation, recorded.** Record 6's change was first
+    attributed to rigid marks leaking through the opaque map. E0, a declared
+    diagnostic pin that skipped only census 19's record 1 impl on the clean
+    base, disproved that. The `rigid` map stays, justified only by gate 1's
+    reads.
+  - **Census 20** (pin `6a699887`): 42,310 declarations, none failed or
+    blocked. `str/iter.rs:569` passes. Record 1 moves to the same
+    expansion's `DoubleEndedIterator for RSplit` (`str/iter.rs:595`), and
+    record 2 follows it. Record 6 changes text and is classified as a
+    lookahead over a partial validated set. Records 3, 4, 5, 7 and 8 are
+    unchanged.
+  - **Batch 18's leads:** certify elaborated supertrait premises (record 1).
+    In census mode, a lookahead selection over a partial validated impl set
+    is reported `blocked_by` the crate record, option (i) (record 6).
+  - **Open:** option A, the general body relation of rigid projections; a
+    type-parameter GAT member; the named open risk that region substitution
+    cannot make a rigid projection normalizable.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

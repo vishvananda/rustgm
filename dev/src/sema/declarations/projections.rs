@@ -96,6 +96,9 @@ pub(super) struct Pending {
     environments: HashMap<DefId, super::State>,
     raw_bound_nodes: crate::support::hash::HashSet<NodeKey>,
     raw_bounds: HashMap<DefId, bound_environments::Bounds>,
+    /// Declared bounds that completed this owner's bound normalization, kept
+    /// until its environment is published and certified.
+    normal_bounds: HashMap<DefId, Vec<crate::types::parameters::clauses::Clause>>,
     raw_environments:
         HashMap<DefId, std::sync::Arc<crate::types::parameters::environment::Environment>>,
     alias_templates: HashMap<regions::BinderId, aliases::Template>,

@@ -27,6 +27,10 @@ pub(crate) struct ClauseIndex {
     pub seen: HashSet<Predicate>,
     parameter_traits: OnceLock<HashMap<ParameterId, Vec<ItemId>>>,
     pub quantified: Option<Box<QuantifiedIndex>>,
+    /// Premises with projections that their own environment certified normal.
+    /// Only a base layer built from caller assumptions carries this set; opened
+    /// views read their base's set, and private extension layers have none.
+    normal: Option<Box<HashSet<Clause>>>,
 }
 #[derive(Clone, Default)]
 pub(crate) struct QuantifiedIndex {
@@ -93,6 +97,10 @@ impl ClauseIndex {
                 for values in q.candidates.values() {
                     total.vector(values);
                 }
+            }
+            if let Some(normal) = &self.normal {
+                total.boxed(normal.as_ref());
+                total.set(normal);
             }
         }
         total.visits = total.visits.saturating_add(1);
@@ -186,6 +194,52 @@ impl ClauseIndex {
                 Vec::as_slice,
             )
     }
+    /// Whether this layer's environment certified `clause` normal. A premise
+    /// without projections needs no certificate, so it is never recorded.
+    pub(crate) fn normal_premise(&self, clause: Clause) -> bool {
+        self.normal
+            .as_ref()
+            .is_some_and(|normal| normal.contains(&clause))
+    }
+
+    pub(in crate::types::parameters) fn certify_normal(
+        &mut self,
+        normal: Option<&HashSet<Clause>>,
+    ) -> Result<(), &'static str> {
+        if self.view.is_some() {
+            return Err("normal premises belong to a base caller index");
+        }
+        self.normal = normal.map(|normal| Box::new(normal.clone()));
+        Ok(())
+    }
+
+    /// Certify premises a caller copied from an environment that certified
+    /// them, under a lifetime-only substitution.
+    /// # Errors
+    /// Rejects a view layer and a premise this base layer does not hold.
+    pub(crate) fn certify_held(&mut self, clauses: &[Clause]) -> Result<(), &'static str> {
+        if self.view.is_some() {
+            return Err("normal premises belong to a base caller index");
+        }
+        for &clause in clauses {
+            let held = match clause {
+                Clause::Predicate(predicate) => self.seen.contains(&predicate),
+                Clause::ForAll(id) => self
+                    .quantified
+                    .as_ref()
+                    .is_some_and(|quantified| quantified.seen.contains(&id)),
+                Clause::UnstableFeature(_) => false,
+            };
+            if !held {
+                return Err("certified premise is not held by this index");
+            }
+            self.normal
+                .get_or_insert_with(Default::default)
+                .insert(clause);
+        }
+        Ok(())
+    }
+
     pub fn insert_clause(&mut self, store: &Store, clause: Clause) -> Result<(), infer::Error> {
         self.insert_observed::<false, infer::Error>(store, clause, &|_, _| Ok(()))
     }

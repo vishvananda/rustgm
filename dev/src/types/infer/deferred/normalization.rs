@@ -124,6 +124,92 @@ impl Context {
         Ok(())
     }
 
+    /// Record a finished search fold output's rigid projection roots. Every
+    /// projection left in such an output is a normal form of that frame's
+    /// search, so only the complete input rewrite calls this. Each root is
+    /// this context's one term for that canonical type. The marks are the
+    /// certified premise relation's alone: every other operation, including
+    /// `head`, `structural` and normalization waits, still defers them.
+    pub(in crate::types::infer) fn retain_rigid_results(
+        &mut self,
+        store: &Store,
+        ty: TypeId,
+    ) -> Result<(), Error> {
+        for root in self.projection_subterms(store, ty)? {
+            let term = self.known(store, root)?;
+            self.dependencies
+                .get_or_insert_with(Default::default)
+                .equations
+                .rigid
+                .insert(term, root);
+        }
+        Ok(())
+    }
+
+    /// The outermost projection subterms of a canonical type, in source order.
+    /// A projection-free type costs nothing, as its interned flag says so; a
+    /// projection itself needs no traversal; any other type is walked once in
+    /// a fresh graph, so a term this context has already materialized cannot
+    /// hide its identity, and the walk is charged to this context's work.
+    pub(in crate::types::infer) fn projection_subterms(
+        &mut self,
+        store: &Store,
+        ty: TypeId,
+    ) -> Result<Vec<TypeId>, Error> {
+        if !store
+            .contains_projections(ty)
+            .ok_or(Error::InvalidIdentity)?
+        {
+            return Ok(Vec::new());
+        }
+        self.step()?;
+        let normalizable = match store.kind(ty).ok_or(Error::InvalidIdentity)? {
+            crate::types::Kind::Projection(_) => true,
+            crate::types::Kind::Opaque(id, _) => {
+                store.opaque_declaration(id).is_some_and(|d| d.trait_result)
+            }
+            _ => false,
+        };
+        if normalizable {
+            return Ok(vec![ty]);
+        }
+        let mut probe = Self::default();
+        let found = probe.known_projection_roots(store, ty);
+        self.account_work(probe.steps)?;
+        found
+    }
+
+    fn known_projection_roots(&mut self, store: &Store, ty: TypeId) -> Result<Vec<TypeId>, Error> {
+        let mut found = Vec::new();
+        let mut work = vec![self.known(store, ty)?];
+        while let Some(term) = work.pop() {
+            self.step()?;
+            // Every term of a fresh graph starts known; one already expanded
+            // here was reached earlier through a shared canonical child.
+            let Value::Known(ty) = self.terms[term.0 as usize].value else {
+                continue;
+            };
+            if !store
+                .contains_projections(ty)
+                .ok_or(Error::InvalidIdentity)?
+            {
+                continue;
+            }
+            if self.materialize(store, term)?.normalizable(store) {
+                found.push(ty);
+                continue;
+            }
+            let entry = self.terms[term.0 as usize];
+            self.account_work((entry.end - entry.start) as usize)?;
+            work.extend(
+                self.edges[entry.start as usize..entry.end as usize]
+                    .iter()
+                    .rev(),
+            );
+        }
+        Ok(found)
+    }
+
     pub(in crate::types::infer) fn retain_opaque_results(
         &mut self,
         store: &mut Store,

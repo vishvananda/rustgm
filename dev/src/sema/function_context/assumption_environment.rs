@@ -46,6 +46,9 @@ pub(in crate::sema) struct Completed {
 
 impl Prepared {
     /// Borrow complete declaration inputs without allocating temporary vectors.
+    /// `sources` are the declaration clauses that `clauses` open at the body's
+    /// universal aliases, or empty when a defining clause opens none; only
+    /// they carry the declaration's normal-premise certificates.
     pub(in crate::sema) fn for_declaration(
         facts: &mut Declarations,
         owner: crate::resolve::model::DefId,
@@ -53,6 +56,7 @@ impl Prepared {
         universals: u32,
         environment: Option<Arc<Environment>>,
         clauses: &[Clause],
+        sources: &[Clause],
     ) -> Result<Self, String> {
         if clauses.is_empty()
             && environment
@@ -85,7 +89,11 @@ impl Prepared {
             )?
             .map(|input| input.value),
         };
-        Self::begin(
+        let certified = environment.as_deref().map_or_else(
+            || Ok(Vec::new()),
+            |e| e.opened_certificates(sources, clauses),
+        )?;
+        let mut prepared = Self::begin(
             Context {
                 types: &mut facts.types,
                 requirements: &mut facts.lifetimes.nominal_requirements,
@@ -95,7 +103,12 @@ impl Prepared {
             scope,
             environment,
             clauses,
-        )
+        )?;
+        // The extension above is this producer's own, so it is unshared.
+        if let Some(environment) = prepared.environment.as_mut().and_then(Arc::get_mut) {
+            environment.certify_normal_premises(&facts.types, &certified)?;
+        }
+        Ok(prepared)
     }
     /// Defining clauses have already been translated through the actual body's
     /// universal substitution. Import callers authenticate their complete staged

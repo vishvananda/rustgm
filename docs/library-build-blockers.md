@@ -5,6 +5,30 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 17](parallel/census-batch17.md) repairs census 19's
+record. It was qualified on main `dcb956cf8`, and census 20 ran on
+`28e2b19fb`. Census 20 (`6a699887`) checks 42,310 declarations, with none
+failed or blocked. Its crate record is core's
+`DoubleEndedIterator for RSplit` (`str/iter.rs:595`), from the same
+`generate_pattern_iterators!` expansion, with the same requirements text.
+
+- A premise its own environment certified normal now relates a rigid
+  projection's inputs invariantly, with the lifetimes left to the region
+  proof, as rustc 1.98.0 relates a rigid alias. Only an owner's declared
+  bounds whose normalization completed are certified. Elaborated, raw and
+  imported premises are not. Core's `RSplit` `FusedIterator` impl
+  (`str/iter.rs:569`) passes.
+- 19 PA21 controls were declared before the rustc 1.98.0 oracle; all
+  statuses agree. `raw-environment-premise` stays stricter than rustc by
+  name.
+- The relation's work is linear in blocked pairs and premise subterms, and
+  premise requests do not grow with GAT lifetime arguments. The three
+  projection-free scaling controls have unchanged work at base and
+  candidate. `ClauseIndex` grows by 8 bytes.
+- Census 20's record 1 needs elaborated supertrait premises certified
+  (batch 18). Record 6 is a lookahead over a partial validated impl set,
+  not a core blocker.
+
 Lane C [fn-item reification](parallel/fn-reification.md), R1, transports a fn
 item coerced to a closed Rust fn pointer in version-13 exported bodies, as
 value code 23 over the item's Function value. No coercion decision travels:

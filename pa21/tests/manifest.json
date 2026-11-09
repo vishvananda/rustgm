@@ -12967,6 +12967,363 @@
       }
     },
     {
+      "path": "tests/spec/assoc-bounds/certified-premises/bound-positive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "6b73168f26456736d6b03e7cf92ab55ade230caa9732b77ddd4f8395212b95c3",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/where-positive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "6c7285a0f5e4ffb45f833937f23fd8b09db346ef6870c1372072aeaf176b9e66",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/mixed-positive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "f420fdf9e46707d7e704a3f5a5489f995f5ee4ef27f9d6635b55906e9a243a9b",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/hrtb-positive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "a26bde73c0ec9b2f211551081f957730bb18f5de916227bcced1bb202b3cb2de",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/hrtb-premise.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "f41d1aeb652d5a1b223f23305cfa625fd08b67eae104e15ac3e95a2f403e4ddf",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/outlives-both-ways.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "4c9da286cee8cad1395c0c465b42e0f5de93a576b0e4dc4db3156788950bf84c",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/lifetime-trait-positive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "85f84837aaab35095fd8d5890f1aa3a3676e30ba6ce728e72f22a8947214312c",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/body-impl-positive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "f91564764d0c70682f14e04de16aed68536ba70ce5e2401cf4f3f11908de3ec5",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/plain-positive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "135656e05bf0ce911d2e2be575e2ddea0e8f1c4b81340049c2ab97ed0b31d712",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/static-positive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "412d059efd2775d02f66627f14f76c1a5b93bcbbe0ac90adff6fb2e349a9efd0",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/normalizable-region.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "658d3b7b71208a9a7ac907e4b9139c2f2ef84405780b8ddcd85d85587fc56bfb",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/call-positive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "a2d440f4a5975528bf64908a10c220064936e38263a8a71b27b1e40c44f0bff1",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/substituted-normalizable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "7442dc2fba3adb73db9e2a5ba00103f16c350f23390a1e2f727edb63fb674bd5",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/bound-missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "f9179dc77ee17dc95643fde69984a7d98bc6c8bdbcb9141e970dc8b6892396c4"
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/hrtb-required.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "83fb0bd7ef9ceb6ba7c1600f2e476eb504b27f64979595cc87a7a97edd7fa6f7"
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/other-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "f26b9016e307bb518bd366c82a72bea3886ea84c1155a3f1a811a342dddf5d7a"
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/outlives-one-way.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "cf7e040d6e4cf4128191cfb9e76983d4a13e5c8c108735591f03f4d495a065fc"
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/gate-different-item.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "0bc65807c2b65ace330b371671543c33d9d32fc0edfe506d116d4cf046615e60"
+    },
+    {
+      "path": "tests/spec/assoc-bounds/certified-premises/raw-environment-premise.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj",
+        "reason": "The impl's bound on <P::Searcher<'a> as Tr>::Out normalizes against the quantified raw-environment premise, which is never certified normal; census batch 17 keeps that premise's exact equation, stricter than rustc 1.98.0."
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "bf051f1b50115b80df95d48edc6b4cb77af9e52c2470c6c02c0ddd5549143921"
+    },
+    {
       "path": "tests/spec/binders/constrained-results/bound-result.rs",
       "exit_status": 0,
       "features": [

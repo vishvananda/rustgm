@@ -167,8 +167,8 @@ impl Assumptions {
             return Ok(Selection::Deferred);
         };
         let candidates = subject.heads().flat_map(|head| {
-            self.candidates(item, head)
-                .map(|(predicate, opening)| (Clause::Predicate(predicate), opening))
+            self.certified_candidates(item, head)
+                .map(|(predicate, opening, normal)| (Clause::Predicate(predicate), opening, normal))
                 .chain(
                     index
                         .candidates
@@ -176,7 +176,9 @@ impl Assumptions {
                         .into_iter()
                         .flatten()
                         .copied()
-                        .map(|clause| (Clause::ForAll(clause), None)),
+                        .map(|clause| {
+                            (Clause::ForAll(clause), None, self.normal_quantified(clause))
+                        }),
                 )
         });
         let mut openings = Openings::default();
@@ -185,14 +187,15 @@ impl Assumptions {
             context,
             goal,
             candidates,
-            |store, context, (clause, opening)| {
+            |store, context, (clause, opening, normal)| {
                 let clause = match (clause, opening) {
                     (Clause::Predicate(predicate), Some(opening)) => {
                         Clause::Predicate(opening.predicate(store, context, predicate)?)
                     }
                     _ => clause,
                 };
-                openings.prepare(store, context, clause, first)
+                let (predicate, evidence) = openings.prepare(store, context, clause, first)?;
+                Ok((predicate, evidence, normal))
             },
             |store, context, left, right| {
                 if matches!(

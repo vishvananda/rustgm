@@ -221,9 +221,11 @@ impl Checker<'_> {
         if clauses.is_empty() {
             return Ok(None);
         }
-        let mut assumptions = Assumptions::default();
+        // Each premise is copied, or aliased at the body's universals, a
+        // lifetime-only substitution, so its certificate follows the copy.
+        let mut premises = Vec::with_capacity(clauses.len());
         for clause in clauses {
-            let clause = if clause
+            let copy = if clause
                 .escaping_binders(&self.facts.types)
                 .map_err(|e| self.error(node, e))?
                 != 0
@@ -232,10 +234,10 @@ impl Checker<'_> {
             } else {
                 clause
             };
-            assumptions
-                .insert_clause(&self.facts.types, clause)
-                .map_err(|e| self.error(node, e))?;
+            premises.push((clause, copy));
         }
+        let assumptions = Assumptions::copied(&self.facts.types, environment.as_deref(), &premises)
+            .map_err(|e| self.error(node, e))?;
         let assumptions = Arc::new(assumptions);
         self.state.trait_environment = Some(Arc::clone(&assumptions));
         Ok(Some(assumptions))

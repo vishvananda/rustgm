@@ -352,13 +352,74 @@ impl Checker<'_> {
         context: regions::Context,
     ) -> Result<(), Error> {
         if let Some(bounds) = self.projections.raw_bounds.remove(&owner) {
+            let normalized = self.normalized_bound_contexts(context, &bounds.roots);
             self.bound_syntax.insert(owner, bounds.syntax);
             self.complete_bounds(owner, context)?;
             // Successfully proved opaque roots remain projections. Their rebuilt
             // predicates must not schedule this completed normalization again.
             self.projections.raw_bounds.remove(&owner);
+            if normalized && !self.bound_syntax.contains_key(&owner) {
+                self.retain_normal_bounds(owner)?;
+            }
         }
         self.projections.raw_environments.remove(&owner);
         Ok(())
+    }
+
+    /// Every root normalized under the owner's raw environment: no trait header
+    /// keeps written equations, no impl header defers its Self-naming roots and
+    /// no alias template may defer a projection.
+    fn normalized_bound_contexts(&mut self, context: regions::Context, roots: &[Root]) -> bool {
+        std::iter::once(context)
+            .chain(roots.iter().map(|&(_, context)| context))
+            .all(|context| {
+                !self.header_projection_context(context)
+                    && self.projection_alias_owner(context).is_none()
+                    && !self.self_bounded_header(context)
+            })
+    }
+
+    /// The owner's completed declared bounds with projections. Elaborated
+    /// supertrait premises are appended only at publication, so none is here.
+    fn retain_normal_bounds(&mut self, owner: DefId) -> Result<(), Error> {
+        use crate::types::parameters::clauses::Clause;
+        let mut normal = Vec::new();
+        for predicate in self
+            .facts
+            .generics
+            .predicates
+            .get(&owner)
+            .into_iter()
+            .flatten()
+        {
+            let value = match predicate.value {
+                Clause::Predicate(value) => value,
+                Clause::ForAll(id) => {
+                    self.facts
+                        .types
+                        .quantified(id)
+                        .ok_or_else(|| Error::unlocated("invalid completed quantified bound"))?
+                        .predicate
+                }
+                Clause::UnstableFeature(_) => continue,
+            };
+            if value
+                .contains_projections(&self.facts.types)
+                .map_err(Error::unlocated)?
+            {
+                normal.push(predicate.value);
+            }
+        }
+        if !normal.is_empty() {
+            self.projections.normal_bounds.insert(owner, normal);
+        }
+        Ok(())
+    }
+
+    pub(in super::super) fn projections_normal_bounds(
+        &mut self,
+        owner: DefId,
+    ) -> Option<Vec<crate::types::parameters::clauses::Clause>> {
+        self.projections.normal_bounds.remove(&owner)
     }
 }

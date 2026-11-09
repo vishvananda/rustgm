@@ -43,6 +43,9 @@ struct Leaf {
 #[derive(Default)]
 pub(super) struct Storage {
     pub(super) opaque: HashMap<TermId, super::TypeId>,
+    /// Rigid normal forms a complete input rewrite left. Only the certified
+    /// premise relation reads them; every other operation still defers them.
+    pub(super) rigid: HashMap<TermId, super::TypeId>,
     equations: Vec<Equation>,
     leaves: Vec<Leaf>,
     waiting: HashMap<TermId, Vec<usize>>,
@@ -56,6 +59,7 @@ impl Storage {
     pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
         let mut total = crate::support::retained::Allocation::default();
         total.map(&self.opaque);
+        total.map(&self.rigid);
         total.vector(&self.equations);
         total.vector(&self.leaves);
         for equation in &self.equations {
@@ -97,6 +101,19 @@ impl Context {
             .as_ref()
             .and_then(|storage| storage.equations.opaque.get(&term))
             .copied()
+    }
+
+    pub(super) fn rigid_projection(&self, term: TermId) -> Option<super::TypeId> {
+        self.dependencies
+            .as_ref()
+            .and_then(|storage| storage.equations.rigid.get(&term))
+            .copied()
+    }
+
+    pub(super) fn has_rigid_marks(&self) -> bool {
+        self.dependencies
+            .as_ref()
+            .is_some_and(|storage| !storage.equations.rigid.is_empty())
     }
 
     pub(super) fn needs_normalization(&self, store: &Store, term: TermId) -> Result<bool, Error> {

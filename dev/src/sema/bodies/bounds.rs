@@ -127,6 +127,18 @@ impl Checker<'_> {
                 predicates.push(predicate.value);
             }
         }
+        // These are the declaration's own clauses, opened below at the body's
+        // universal aliases. Their sources are kept only when the declaration
+        // certified a premise, and a const trait default's Self premise opens
+        // none, so then no certificate is carried.
+        let mut sources = if declaration_environment
+            .as_ref()
+            .is_some_and(|environment| environment.has_normal_premises())
+        {
+            predicates.clone()
+        } else {
+            Vec::new()
+        };
         if signature.is_some()
             && let Some(clause) = self
                 .facts
@@ -134,6 +146,7 @@ impl Checker<'_> {
                 .map_err(|e| self.error(node, e))?
         {
             predicates.push(clause);
+            sources.clear();
         }
         for predicate in &mut predicates {
             *predicate = self.alias_clause(node, *predicate)?;
@@ -146,6 +159,7 @@ impl Checker<'_> {
                 self.state.body_binders,
                 declaration_environment,
                 &predicates,
+                &sources,
             )
             .map_err(|e| self.error(node, e))?;
         if defining.needs_aliases() {

@@ -435,6 +435,19 @@ impl Generics {
         self.environments.insert(owner, Arc::new(environment));
         Ok(())
     }
+    /// Certify premises in an environment this crate just published. A shared
+    /// environment Arc is left unchanged, which keeps the exact equations.
+    pub(crate) fn certify_environment(
+        &mut self,
+        store: &Store,
+        owner: DefId,
+        normal: &[crate::types::parameters::clauses::Clause],
+    ) -> Result<(), &'static str> {
+        if let Some(environment) = self.environments.get_mut(&owner).and_then(Arc::get_mut) {
+            environment.certify_normal_premises(store, normal)?;
+        }
+        Ok(())
+    }
     fn prepay_environment(
         &self,
         pay: Option<crate::support::retained::Payment<'_>>,

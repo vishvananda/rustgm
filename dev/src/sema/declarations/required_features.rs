@@ -148,6 +148,25 @@ impl crate::sema::model::Declarations {
             None => self.generics.complete_environment(&mut self.types, owner),
         }
     }
+    /// Certify the owner's own completed declared bounds in the environment it
+    /// just published. A shared published environment stays uncertified.
+    pub(crate) fn certify_source_environment(
+        &mut self,
+        report: &Report,
+        key: NodeKey,
+        owner: DefId,
+        normal: &[crate::types::parameters::clauses::Clause],
+    ) -> Result<(), &'static str> {
+        if let Some(pay) = payment(report, key) {
+            let growth = crate::support::retained::Growth::map::<
+                crate::types::parameters::clauses::Clause,
+                (),
+            >(0, 0, normal.len());
+            pay(growth.work.saturating_add(1), growth.bytes)?;
+        }
+        self.generics
+            .certify_environment(&self.types, owner, normal)
+    }
     pub(crate) fn source_parameter_environment(
         &self,
         report: &Report,
@@ -192,6 +211,12 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         self.facts
             .source_complete_environment(self.report, key, owner)
+            .map_err(|e| self.error(key, e))?;
+        let Some(normal) = self.projections_normal_bounds(owner) else {
+            return Ok(());
+        };
+        self.facts
+            .certify_source_environment(self.report, key, owner, &normal)
             .map_err(|e| self.error(key, e))
     }
     pub(super) fn elaborated_source_environment(
