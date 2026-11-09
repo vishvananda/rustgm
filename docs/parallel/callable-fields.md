@@ -118,7 +118,13 @@ the oracle (`pa29/tests/callable-field-outcomes.json`).
   is captured first (row 7). `Pair` is a hand-written expansion.
 - **The exporter's arena fence.** The source-nominals provider plus a fn
   field rejects with "source anonymous callable requires its actual prepared
-  type arena" in every profile, on the base pin too. It is outside this item.
+  type arena" in every profile, on the base pin too. The exporter prepares
+  that arena only from function signatures, transported bodies and other
+  analyses, never from a field's type. It is outside this item.
+- **Integrator rulings.** Amendments 1 and 2 and the `store` harness
+  correction are accepted. The client growth is about 2.1 times the previous
+  increment per doubling, close to linear. It is an existing header-mapping
+  cost and is not scheduled.
 - **Process deviation.** The first older-profile exploration ran both
   binaries outside the resources/storage wrapper.
 - **The HR item** must also cover nominal-owned callable frames with bound

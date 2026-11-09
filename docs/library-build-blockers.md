@@ -112,13 +112,33 @@ function.
   formatter, as well as pointer-call frames. The port plan keeps "source
   nominal callable field requires its wider binder profile" for them.
 - **Recorded:**
-  - an empty client's header work over N functions, each over a distinct
-    nominal, grows faster than linearly, for `u8` twins as for fn fields. The
-    fn fields add exactly 110 steps per struct. It is pre-existing, and a
-    failed prediction of the declared bound (amendment 2);
-  - the exporter's pre-existing arena fence, "source anonymous callable
-    requires its actual prepared type arena", rejects the source-nominals
-    provider plus a fn field in every profile, on the base pin too;
+  - an existing header-mapping cost, not scheduled. An empty client's
+    header work over N functions, each over a reference to a distinct
+    nominal, is 49,821, 54,809 and 65,353 steps for `u8` twins at N = 8, 16
+    and 32. With fn fields it is 50,701, 56,569 and 68,873.
+    - Each doubling adds about 2.1 times the previous increment in both
+      families: 4,988 then 10,544, and 5,868 then 12,304. That is close to
+      linear, and the second difference is 568 in both.
+    - The fn fields add exactly 110 steps per struct (880, 1,760, 3,520).
+    - The cost predates (ii). It missed the declared bound by 504, a failed
+      prediction (amendment 2);
+  - a pre-existing exporter fence, unassigned: "source anonymous callable
+    requires its actual prepared type arena"
+    (`sema/crates/authored_export/canonical_nodes/memo_owner.rs:76`). The
+    exporter prepares its canonical type arena only on demand:
+    - from a function signature with a fn-pointer type
+      (`authored_functions.rs:123`);
+    - from a transported body's types (`lower/transported_source.rs`);
+    - from another analysis that calls `Store::arena_identity`.
+
+    A nominal field's type never prepares it. The shape that hits the fence
+    is a provider whose only anonymous callable type is a field's, and in
+    which nothing else prepared the arena. One example is
+    `pa29/tests/spec/source-nominals/provider.rs`, whose three functions
+    mention no fn type and which has no impl body, plus `pub struct Slot {
+    pub f: fn(u8) -> i32 }`. It rejects in every profile, on the base pin
+    too. After the source-branches provider, the same field exports under
+    version 13;
   - rustc 1.98.0 ICEs on a match over an i32 value in the no_core fixtures,
     whose provider gives i32 no Copy; two clients were rewritten before any
     candidate run (amendment 1).

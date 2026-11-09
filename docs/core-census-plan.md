@@ -1473,10 +1473,15 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
   - **Recorded:**
     - the HR item must cover nominal-owned callable frames with bound slots,
       not just pointer-call frames;
-    - an empty client's header work over functions on distinct nominals grows
-      faster than linearly, before (ii) and without fn fields;
-    - the exporter's arena fence rejects the source-nominals provider plus a
-      fn field, on the base pin too;
+    - an existing header-mapping cost, not scheduled: an empty client's
+      header work over functions on distinct nominals adds about 2.1 times
+      its previous increment per doubling, close to linear. It is the same
+      for `u8` twins, before (ii) and without fn fields
+      (library-build-blockers.md has the numbers);
+    - a pre-existing exporter fence: a field's fn type never prepares the
+      canonical type arena, so the source-nominals provider plus a fn field
+      rejects with "source anonymous callable requires its actual prepared
+      type arena", on the base pin too;
     - the associated unsafe widening covers unsafe associated declarations,
       as Lane D found in F.
 
