@@ -5,6 +5,30 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 19](parallel/census-batch19.md) repairs census 21's
+record. It was qualified and censused on main `4ac1361c3`. Census 22
+(`7df1f865`) checks 42,310 declarations, with none failed or blocked, and
+has one record: `validate_trait_implementations` passes for all of core.
+The crate record is `local_annotations` at `ptr/metadata.rs:251`,
+`<*const VTable>::cmp(..)`: "no applicable trait method for this prefix".
+
+- A member's conformance contract environment now certifies its copies of
+  the owner's certified premises when the trait method contributes no
+  clause of its own after elaboration and every contract clause is one of
+  the owner's own. `:600` passes, and so does every later impl. Thirteen
+  PA21 controls were declared before the rustc 1.98.0 oracle; all statuses
+  agree, and seven flip to accept as declared.
+- Stricter than rustc: `cond-method-bound` (rustc 0, RustGM exit 1, "associated
+  type requires an unambiguous validated implementation" at `next_back`).
+  The trait method's own `Q: Copy` is a clause of the member's contract, and
+  census batch 19 carries certificates only into a contract whose method
+  adds no clause of its own, stricter than rustc 1.98.0.
+- Census 21's records 2 to 8 are gone. Each phase now runs and passes, as an
+  ordinary pass or as a lookahead over a complete impl epoch.
+- Census 22's record 1 is batch 20's lead. Declared probes reduce it to a
+  call of a const trait's method whose supertraits are `[const]` bounds, as
+  core 1.98 declares `Ord`, through a non-const impl. rustc accepts it.
+
 Lane D [B2 S, SIMD header rows](parallel/simd-header-rows.md) carries
 `#[repr(simd)]` structs under version 13 as nominal header representation
 byte 3. No lane, count or layout fact travels: each consumer maps the byte to

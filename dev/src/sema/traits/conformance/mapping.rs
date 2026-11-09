@@ -16,6 +16,7 @@ use crate::{
         substitute,
     },
 };
+use std::sync::Arc;
 
 struct Folders {
     expected: substitute::Bound,
@@ -231,7 +232,9 @@ pub(super) fn contract(
         .copied()
         .chain(method_parameters.iter().map(|(expected, _)| *expected))
         .collect();
-    let (environment, parameters) = environment(&facts.types, &scope, &assumptions)?;
+    let (mut environment, parameters) = environment(&facts.types, &scope, &assumptions)?;
+    let own = assumptions.len().saturating_sub(method_bounds);
+    carry_certificates(facts, owner, own, &mut environment)?;
     let mut assumed_regions = pairs(
         &mut facts.types,
         &mut folders.expected,
@@ -343,6 +346,51 @@ fn method_requirements(
         }
     }
     Ok(obligations)
+}
+
+/// Certify the contract's copies of the owner's certified premises, as
+/// [`carried_certificates`] selects them. The scan is canonical structural work.
+fn carry_certificates(
+    facts: &mut Declarations,
+    owner: DefId,
+    own: usize,
+    environment: &mut Environment,
+) -> Result<(), &'static str> {
+    let mut steps = 0;
+    let carried = carried_certificates(
+        facts.generics.environments.get(&owner).map(Arc::as_ref),
+        own,
+        environment,
+        &mut steps,
+    );
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
+    // The contract formed this environment itself, so it is unshared.
+    environment.certify_normal_premises(&facts.types, &carried?)
+}
+
+/// The owner's certified premises a member's conformance contract may carry.
+/// The contract holds the owner's own inputs, and only the trait method's
+/// clauses could add a fact that normalizes one of those premises'
+/// projections. So the method must contribute no clause of its own after
+/// elaboration: `own` counts its declared and elaborated inputs, and a type
+/// parameter's implicit `Sized` is its parameter kind, never a clause. Every
+/// trait clause of the contract must then be one of the owner's own by
+/// canonical value, and only the owner's certified ones are returned, so a
+/// contract never certifies a premise its owner did not. Collecting, holding
+/// and filtering each contract clause is one step each.
+pub(in crate::sema) fn carried_certificates(
+    owner: Option<&Environment>,
+    own: usize,
+    contract: &Environment,
+    steps: &mut usize,
+) -> Result<Vec<Clause>, &'static str> {
+    *steps = steps.saturating_add(1);
+    let Some(owner) = owner.filter(|owner| own == 0 && owner.has_normal_premises()) else {
+        return Ok(Vec::new());
+    };
+    let clauses: Vec<_> = contract.trait_clauses()?.collect();
+    *steps = steps.saturating_add(clauses.len().saturating_mul(3));
+    owner.opened_certificates(&clauses, &clauses)
 }
 
 pub(super) fn environment(

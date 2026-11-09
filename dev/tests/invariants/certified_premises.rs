@@ -517,3 +517,159 @@ fn uncertified_owner_pays_no_elaborated_scan() -> TestResult {
     assert!(!called.get());
     Ok(())
 }
+
+const CONDITIONS: &str = "pa21/tests/spec/assoc-bounds/projection-conditions";
+/// Census 21's record 1: the projection path found no selected implementation.
+const RECORD: &str = "associated type requires an unambiguous validated implementation";
+
+/// Batch 19's outcomes. The first six are batch 18's probes, whose rustc 1.98.0
+/// outcomes were observed; the next five were declared before rustc ran, and
+/// the last two after it. A member's conformance contract carries its owner's
+/// certified premises when the trait method contributes no clause of its own.
+const CONDITION_CASES: [(&str, Option<&str>); 13] = [
+    ("cond-elaborated", None),
+    ("cond-written", None),
+    ("cond-where-form", None),
+    ("cond-item-signature", None),
+    ("cond-no-bound", None),
+    ("cond-no-item", None),
+    ("cond-body-call", None),
+    ("cond-hrtb", None),
+    ("cond-missing", Some(REQUIREMENTS)),
+    (
+        "cond-other-lifetime",
+        Some(
+            "implementation method lifetime contract does not satisfy trait: required lifetime does not outlive its target",
+        ),
+    ),
+    // The declared signature mismatch at `next_back`, with its first observed text.
+    ("cond-wrong-item", Some("incompatible types")),
+    // rustc accepts; the trait method's own `Q: Copy` keeps the exact compare. Stricter.
+    ("cond-method-bound", Some(RECORD)),
+    // An unbounded method type parameter's implicit `Sized` is its kind, not a clause.
+    ("cond-method-type-parameter", None),
+];
+
+#[test]
+fn projection_conditions_match_declared_outcomes() -> TestResult {
+    let differences = declared_differences(CONDITIONS, &CONDITION_CASES)?;
+    assert!(differences.is_empty(), "{differences:#?}");
+    Ok(())
+}
+
+/// An owner environment over `clauses` that certified `certified`, and a
+/// member contract over the same clauses plus `extra`, with one more type
+/// parameter, as a trait method's unbounded `Q` adds.
+fn contract_pair(
+    f: &mut Elaborated,
+    clauses: &[crate::types::parameters::clauses::Clause],
+    certified: &[crate::types::parameters::clauses::Clause],
+    extra: &[crate::types::parameters::clauses::Clause],
+) -> TestResult<(
+    std::sync::Arc<crate::types::parameters::environment::Environment>,
+    crate::types::parameters::environment::Environment,
+)> {
+    use crate::types::{
+        ItemId,
+        parameters::{
+            Parameter, ParameterKind,
+            environment::{Abilities, Environment},
+        },
+    };
+    let method = f.store.intern_parameter(Parameter {
+        owner: ItemId(101),
+        index: 0,
+        kind: ParameterKind::Type { sized: true },
+    })?;
+    let mut owner = Environment::new(&f.store, &[(f.parameter, Abilities::default())])?
+        .with_clauses(&f.store, clauses)?;
+    owner.certify_normal_premises(&f.store, certified)?;
+    let mut all = clauses.to_vec();
+    all.extend_from_slice(extra);
+    let parameters = [
+        (f.parameter, Abilities::default()),
+        (method, Abilities::default()),
+    ];
+    let contract = Environment::new(&f.store, &parameters)?.with_clauses(&f.store, &all)?;
+    Ok((std::sync::Arc::new(owner), contract))
+}
+
+/// A contract whose method adds no clause carries exactly its owner's certified
+/// premises; a method clause, a contract clause the owner lacks, or an owner
+/// without certificates carries none, and the owner itself never changes.
+#[test]
+fn member_contracts_carry_exactly_their_owners_certified_premises() -> TestResult {
+    use crate::sema::traits::conformance::carried_certificates;
+    let mut f = Elaborated::new()?;
+    let (searcher, key) = (f.searcher, f.key);
+    let declared = f.premise(searcher, 10, &[])?;
+    let reverse = f.premise(searcher, 11, &[])?;
+    let rebound = f.quantified(12)?;
+    let uncertified = f.premise(key, 13, &[])?;
+    let clauses = [declared, reverse, rebound, uncertified];
+    let certified = [declared, reverse, rebound];
+    let (owner, contract) = contract_pair(&mut f, &clauses, &certified, &[])?;
+    let count = std::sync::Arc::strong_count(&owner);
+    let mut steps = 0;
+    let mut carried = carried_certificates(Some(&owner), 0, &contract, &mut steps)?;
+    carried.sort_unstable_by_key(|clause| format!("{clause:?}"));
+    let mut expected = certified.to_vec();
+    expected.sort_unstable_by_key(|clause| format!("{clause:?}"));
+    assert_eq!(carried, expected);
+    assert_eq!(std::sync::Arc::strong_count(&owner), count);
+    assert!(
+        clauses.iter().all(|&clause| {
+            owner.certified_normal_premise(clause) == certified.contains(&clause)
+        })
+    );
+    // Certification writes only through this contract's own clause set.
+    let shared = contract.clone();
+    let mut copy = contract;
+    copy.certify_normal_premises(&f.store, &carried)?;
+    assert!(!copy.has_normal_premises() && !shared.has_normal_premises());
+    drop(shared);
+    copy.certify_normal_premises(&f.store, &carried)?;
+    assert!(
+        certified
+            .iter()
+            .all(|&clause| copy.certified_normal_premise(clause))
+    );
+    assert!(!copy.certified_normal_premise(uncertified));
+    // A method clause of its own, after elaboration, carries nothing.
+    assert!(carried_certificates(Some(&owner), 1, &copy, &mut steps)?.is_empty());
+    // A contract clause the owner lacks carries nothing, even when uncounted.
+    let foreign = f.premise(searcher, 14, &[])?;
+    let (owner, contract) = contract_pair(&mut f, &clauses, &certified, &[foreign])?;
+    assert!(carried_certificates(Some(&owner), 0, &contract, &mut steps)?.is_empty());
+    // An owner without certificates pays one step and scans nothing.
+    let (owner, contract) = contract_pair(&mut f, &clauses, &[], &[])?;
+    let mut steps = 0;
+    assert!(carried_certificates(Some(&owner), 0, &contract, &mut steps)?.is_empty());
+    assert!(carried_certificates(None, 0, &contract, &mut steps)?.is_empty());
+    assert_eq!(steps, 2);
+    Ok(())
+}
+
+/// The carry reads each contract clause a fixed number of times.
+#[test]
+fn member_contract_carry_costs_linear_work() -> TestResult {
+    use crate::sema::traits::conformance::carried_certificates;
+    let mut f = Elaborated::new()?;
+    let searcher = f.searcher;
+    let mut observed = Vec::new();
+    for count in [1_u32, 16, 256] {
+        let clauses = (0..count)
+            .map(|index| f.premise(searcher, 20 + index, &[]))
+            .collect::<TestResult<Vec<_>>>()?;
+        let (owner, contract) = contract_pair(&mut f, &clauses, &clauses, &[])?;
+        let mut steps = 0;
+        let carried = carried_certificates(Some(&owner), 0, &contract, &mut steps)?;
+        assert_eq!(carried.len(), clauses.len());
+        let held = contract.trait_clauses()?.count();
+        assert_eq!(held, clauses.len());
+        assert_eq!(steps, 3 * held + 1, "{count}");
+        observed.push((count, steps));
+    }
+    println!("member-contract-carry work={observed:?}");
+    Ok(())
+}

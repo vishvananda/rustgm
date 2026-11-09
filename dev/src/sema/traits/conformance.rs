@@ -22,6 +22,8 @@ use crate::{
         },
     },
 };
+#[cfg(test)]
+pub(in crate::sema) use mapping::carried_certificates;
 pub(in crate::sema) use override_inputs::Method;
 pub(in crate::sema) use projections::Definitions;
 use std::sync::Arc;

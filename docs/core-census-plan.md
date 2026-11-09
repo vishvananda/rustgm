@@ -1352,6 +1352,44 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
       body's Copy goal reads the coarse `heads` bucket;
     - Lane C's next item is R2, with `emit()` factored first.
 
+- **During Lane A's [census batch 19](parallel/census-batch19.md)**,
+  2026-11-09, on main `4ac1361c3`, under the approved notice `8bd84f0a`
+  (D1 to D5).
+  - **D0** (`cfg(test)` rows only, reverted) showed one signature, H2. In
+    the projection query the condition's premise is uncertified, so the
+    exact compare defers. The environment is the member-conformance
+    contract's, which `mapping.rs` forms and nothing certified, so option
+    A's carry through the opening would change nothing.
+  - **A′** (approved with six conditions). A member's conformance contract
+    certifies its copies of the owner's certified premises. The gate is
+    structural: the trait method contributes no clause of its own after
+    elaboration, and a type parameter's implicit `Sized` is its parameter
+    kind (`sema/declarations/generics.rs:231`). Every contract trait clause
+    must be one of the owner's own by canonical value, and only the
+    owner's certified ones are certified. The carry is 3N + 1 canonical
+    steps, and the opening's summary cache is untouched. Thirteen PA21
+    controls were declared before the oracle; all statuses agree, with
+    seven declared flips, and `cond-method-bound` stays stricter than
+    rustc by name.
+  - **Census 22** (pin `7df1f865`): 42,310 declarations, none failed or
+    blocked, one record. `validate_trait_implementations` passes for all
+    of core, and batch 18's 3.7 claim holds for all four expansions. The
+    crate record is `local_annotations` at `ptr/metadata.rs:251`,
+    `<*const VTable>::cmp(..)`: "no applicable trait method for this
+    prefix". Census 21's records 2 to 8 are gone: every pass after the
+    record still runs as a lookahead, now over a complete impl epoch, and
+    passes. Census 22 does not cover the local annotations after the record
+    or the bodies phase.
+  - **Batch 20's lead:** census 22's record 1. Declared probes reduce it to
+    a call of a const trait's method whose supertraits are `[const]`
+    bounds, through a non-const impl. It fails in both the type-qualified
+    and the method-call form, and rustc accepts both. It is not an
+    impl-condition failure in the projection path, so option C's trigger
+    does not fire.
+  - **Open:** option C stays the recorded item. Its trigger also covers
+    raw or imported premises, batch 18's uncertified shapes and methods
+    with their own bounds.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

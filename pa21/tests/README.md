@@ -83,3 +83,18 @@ stays stricter than rustc by name, because its elaborated premise
 native execution. The private invariant
 `elaborated_premises_match_declared_outcomes` checks each control's first
 error.
+
+The `spec/assoc-bounds/projection-conditions/` controls (Lane A census batch
+19) test a member's signature whose `Self::Item` normalizes through an impl
+with a condition on a rigid GAT projection,
+`P: Pattern<Searcher<'a>: ReverseSearcher<'a>>`. A member's conformance
+contract carries its owner's certified premises when the trait method adds
+no clause of its own; a method type parameter's implicit `Sized` is its
+parameter kind, not a clause. Their 13 rustc 1.98.0 outcomes were declared
+before the oracle ran, and all agree. rustc rejects three: a missing bound
+(E0277), another lifetime (E0478 and E0803) and a mismatched item type
+(E0053). `cond-method-bound` is accepted by rustc and stays stricter than
+rustc by name, because its trait method's own `Q: Copy` bound is a clause of
+the contract. The nine accepted controls declare native execution. The
+private invariant `projection_conditions_match_declared_outcomes` checks
+each control's first error.

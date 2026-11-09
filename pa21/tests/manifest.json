@@ -13493,6 +13493,251 @@
       "source_sha256": "43e23ed328080bf89a3daf30abb96ac44c86a249549a5bec1320fc51dcdae78d"
     },
     {
+      "path": "tests/spec/assoc-bounds/projection-conditions/cond-elaborated.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CONDITION_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "2333c7aade9ce9975a93ce030253b6a1a68bbbfa9009da23607aeca166e1f23a",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/projection-conditions/cond-written.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CONDITION_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "52623cfe8ffebe4e2dcd081e3dcbf965444c478cfe6588bcb5d36086d2fdc3a8",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/projection-conditions/cond-where-form.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CONDITION_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "4b8b06361b969eeefbe932b00c4ab7dec40d6a5d2be55f618d73cfb52cfb36f8",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/projection-conditions/cond-item-signature.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CONDITION_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "03e1ed6614d62e4edef53edf751d23a4d653fa3308d019576dcf4e3493a68401",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/projection-conditions/cond-no-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CONDITION_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "63f190b8dd329c46926280377f5b67a097efb4d244b0a9169723c68adc88dc64",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/projection-conditions/cond-no-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CONDITION_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "674feca9b2ff2257d792c9fe5fd3aafa9357058ae53f89e6649de54d6afa5056",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/projection-conditions/cond-body-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CONDITION_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "418914bda250bb9472efee33ef38cb4a477628fca1b182fc2e475474475ce836",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/projection-conditions/cond-hrtb.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CONDITION_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "e0d9977504ed654651bc8c8a5efd9c8170f017bfbf0df36e655ce62d236aec17",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/projection-conditions/cond-missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CONDITION_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "c99824161a7cf333fa8061897aa8c7e2c0a62a8cd09e0cbd1b0cacddd8f4e243"
+    },
+    {
+      "path": "tests/spec/assoc-bounds/projection-conditions/cond-other-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CONDITION_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "738654897dee1c29467174c14cbdf34b972689d6969a2b6889481abc31b4ea3a"
+    },
+    {
+      "path": "tests/spec/assoc-bounds/projection-conditions/cond-wrong-item.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CONDITION_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "5e8ab666d2ed026086d5257bde2464a6005a1f7e55ed25a6322038232a10ec64"
+    },
+    {
+      "path": "tests/spec/assoc-bounds/projection-conditions/cond-method-bound.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj",
+        "reason": "The trait method's own Q: Copy bound is a clause of the member's conformance contract; census batch 19 carries the impl's certified premises into that contract only when the method contributes no clause of its own, stricter than rustc 1.98.0."
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CONDITION_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "e1786a4c70ad26b89667b297da821527f712a94315f89dc4f17b05f3abb1085a"
+    },
+    {
+      "path": "tests/spec/assoc-bounds/projection-conditions/cond-method-type-parameter.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:CONDITION_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "a500b2097555652cdac0ee640d664d68a9eddc21bdda9eb4e30d4ab9c07beddb",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/binders/constrained-results/bound-result.rs",
       "exit_status": 0,
       "features": [
