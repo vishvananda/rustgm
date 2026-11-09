@@ -642,6 +642,6 @@ before the eager implementation walk. The packet holds:
   cleanup fence;
 - the specialization-gate, selected-mode, scaling and flip-survey controls.
 
-Its one amendment is recorded beside the declarations it amends, before the
-run it governs. The `crate_linking::scheduling_context` integration controls
+Its amendments are recorded beside the declarations they amend, each before
+the run it governs. The `crate_linking::scheduling_context` integration controls
 and the `executable_demands` and `unordered_imports` invariants consume it.

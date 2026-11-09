@@ -494,6 +494,12 @@
       "eight over primitives-provider (D=8)": 14,
       "local-placed over primitives-provider": 1,
       "rule": "each demanded owner appears once; imported-body goals read the coarse heads bucket and pay for every primitive-headed Copy impl, a local body's resolved goal pays only for its own"
+    },
+    "repeat": {
+      "declared": "amendment 2",
+      "control": "after the minspec client's declaration analysis over usize-provider, a repeat demand of every imported owner, each already validated",
+      "expected": "no `demanded conformance` or `imported conformance` ledger row, and the client specialization graph's observed work unchanged: a repeat returns at `is_validated` before the gate",
+      "bound": "total relates work is at most the distinct demanded owners times (A+R+1), where A and R are the client graph's attempts and relations"
     }
   },
   "exclusions": [
@@ -518,6 +524,12 @@
       "before": "any further oracle, candidate, integration or native run of these files",
       "governs": "focused fastcheck fc3 (obj/parallel/auto-traits/fence/fc3.log): every accepted case held, but generic-usize was rejected with `defining cleanup requires its actual language declaration` at the blanket provider's `id` body, and the candidate probe obj/parallel/auto-traits/fence/probe-generic/cand1 showed overlap stopping at the same text before the walk's pair check",
       "change": "(a) generic-usize is a failed prediction, amended to rejected with that text; rustc accepts it and exits 42. The fence is existing and independent of this item: on the base pin, `four` against a provider with `const fn id<T: Copy>` and no Clone or Copy impl, and `body` against a provider with usize's impls and `id`, are rejected with the same text (obj/parallel/auto-traits/fence/probe-generic/base). Defining cleanup of the Copy-bounded generic body requires the Destruct language item, which the branch provider's 57 lines do not declare and core does. (b) The blanket provider mixed two controls: blanket-provider.rs drops `id`, so overlap reaches the pair check; the new generic-provider.rs has usize's Clone and Copy impls and `id`, and generic-usize and local-copy move to it. local-copy keeps its declared source-backed text, which the candidate probe reached before cleanup. overlap and overlap-twin keep the overlap text. No other case changes"
+    },
+    {
+      "recorded": "2026-11-09T10:41:59Z",
+      "before": "the focused fastcheck of the review follow-up",
+      "governs": "Lane A's read-review of e6635526c, relayed by the integrator: pin the charge of a repeat demand, which the D=8 ledger shows only as each owner appearing once",
+      "change": "scaling.repeat is declared; the cfg(test) ledger gains `imported conformance owner=N`, recorded only when imported conformance runs. No case, provider, text or count changes"
     }
   ]
 }

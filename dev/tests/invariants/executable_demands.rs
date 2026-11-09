@@ -41,3 +41,51 @@ fn demanded_conformance_pays_each_imported_owner_once() -> Result {
     assert!(demanded("nominal-provider", "four")?.is_empty());
     Ok(())
 }
+/// A repeat demand of an owner that an earlier demand or the walk already
+/// validated returns before the specialization gate: it charges the client's
+/// graph nothing and pays no conformance again.
+#[test]
+fn repeat_demand_of_a_validated_owner_charges_nothing() -> Result {
+    let interface = module_packets::exported_profile(
+        &fixture("usize-provider")?,
+        SourcePublication::ModuleBodies,
+        "scheduling_context",
+    )?;
+    let report = source_packets::client_report(interface, &fixture("minspec")?)?;
+    let mut checker = super::Checker::new(&report)?;
+    checker
+        .facts
+        .set_constant_executor(crate::pipeline::execution::Context::default().executor());
+    checker.run()?;
+    let registry = checker
+        .facts
+        .generics
+        .implementations
+        .as_deref()
+        .ok_or("actual client registry")?;
+    let imported: Vec<_> = registry
+        .headers()
+        .filter(|header| header.source.is_none())
+        .map(|header| header.owner)
+        .collect();
+    assert!(imported.len() >= 3, "imported impls {imported:?}");
+    assert!(imported.iter().all(|&owner| registry.is_validated(owner)));
+    let graph_work = |facts: &crate::sema::model::Declarations| {
+        facts
+            .generics
+            .implementations
+            .as_deref()
+            .and_then(|registry| registry.specialization_graph())
+            .map(|graph| graph.observation().work)
+    };
+    let before = graph_work(&checker.facts).ok_or("the minspec client keeps its graph")?;
+    let capture = Capture::matching(&["demanded conformance", "imported conformance"])?;
+    for &owner in &imported {
+        checker.advance_impl_validation(owner, super::Phase::Begin)?;
+    }
+    let rows = capture.rows()?;
+    drop(capture);
+    assert!(rows.is_empty(), "a repeat demand paid again: {rows:?}");
+    assert_eq!(graph_work(&checker.facts), Some(before));
+    Ok(())
+}

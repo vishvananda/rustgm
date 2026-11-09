@@ -143,6 +143,8 @@ impl Checker<'_> {
         {
             return Ok(());
         }
+        #[cfg(test)]
+        crate::sema::copy_trace::record(|| format!("imported conformance owner={}", owner.0));
         self.validate_imported_trait_implementation(owner, predicate)
     }
 

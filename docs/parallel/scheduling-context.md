@@ -61,6 +61,30 @@ and std clients that const-evaluate anything imported from core.
 
   A private test forges each endpoint.
 
+## Review
+
+Lane A read-reviewed the change and answered yes to each question:
+
+- **Contract.** Source-core providers, including the PA31 generic Copy
+  waits, still reach `source_implementation_context`. Only a sourceless
+  package's pre-walk demand changes text, and no reference carries either
+  text.
+- **The skip.** A demanded owner runs the same `imported_conformance` and
+  `complete()`, which writes its member links and validated status in one
+  step. Without the skip, the walk would fail with "trait implementation was
+  validated twice". The walk still runs `verify_applicable_impls` and
+  `conformance_order` over every header.
+- **Gate cost.** Total `relates` work is at most the distinct demanded owners
+  times (A+R+1), where A and R are the client graph's attempts and
+  relations, which are only local positive pairs. A repeat demand returns at
+  `is_validated` before the gate, and the scaling invariant pins that it
+  charges no graph work and pays no conformance again (amendment 2).
+- **Precedence.** Valid programs get the same answer. For an invalid one, a
+  demanded owner's conformance error now comes before an overlap error that
+  the eager walk would have reported first.
+- **Follow-up.** A large local specialization graph would want an endpoint
+  set updated on insert, so that `relates` is O(1).
+
 ## Traces
 
 The probes ran on the base pin `23030f23` (built from `1aa288ad1`) and on
@@ -85,8 +109,8 @@ anyway.
 ## Results
 
 `pa29/tests/scheduling-context-outcomes.json` froze the outcomes before any
-run of its fixtures. One amendment is recorded there, before the run it
-governs.
+run of its fixtures. Two amendments are recorded there, each before the run
+it governs.
 
 | Evidence | Result |
 | --- | --- |
@@ -96,7 +120,7 @@ governs.
 | overlap (A3) | Rejected before and after, in a different order. The base pin reports the fence; the candidate reports the overlap text, the same diagnostic line as `overlap-twin` |
 | client-local Copy (A4) | `local-copy` reports the source-backed text, a known rejects-valid |
 | `generic-usize` | A failed prediction, rejected by an existing, independent cleanup fence (amendment 1) |
-| scaling | 14 demanded owners for `four` (D=1) and for `eight` (D=8), and 1 for `local-placed`, each owner once |
+| scaling | 14 demanded owners for `four` (D=1) and for `eight` (D=8), and 1 for `local-placed`, each owner once; a repeat demand of a validated owner charges no graph work and pays no conformance |
 | gate (F2) | A forged forest vertex, relation and comparison each stop demand by name; the unforged `min_specialization` client relates no imported impl |
 | named-constants `const-call` | Accepted, and exits 42 natively (its amendment 9) |
 | flip survey | 1,401 runs over 39 packets against the base pin: only named-constants `const-call` flips, and all 48 exported packets are byte-identical |
@@ -126,7 +150,8 @@ governs.
   tests for this packet and for named constants passed in
   `obj/qualification/fast/1794219860834649831`. The upstream fixture
   verifier, the maintainer suite registry and the assignment layout check
-  pass.
+  pass. The review's repeat-demand invariant and the scaling invariant passed
+  in `obj/qualification/fast/1794220984800295572`.
 
 ## Recorded
 

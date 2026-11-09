@@ -3,7 +3,7 @@
 `scheduling-context-outcomes.json` freezes eight providers and twelve clients
 in 35 cases: their hashes, edition, target, independent outcomes, the base
 pin's outcomes, the controls and the scaling counts. They were declared in
-scratch before the rustc oracle and any candidate run. The one amendment is
+scratch before the rustc oracle and any candidate run. Each amendment is
 recorded in that file before the run it governs.
 
 Every provider is the first 57 lines of `spec/source-branches/provider.rs`
