@@ -11,6 +11,9 @@ use crate::{
 };
 use std::fmt::Write as _;
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
+// Version thirteen's declared set is one more 16-byte FeatureSet per row,
+// 96 -> 112 bytes.
+const _: [(); 112] = [(); size_of::<Contract>()];
 fn input(name: &str) -> TestResult<String> {
     Ok(crate::test_source::fixture(&format!(
         "pa41/tests/spec/target-features/{name}.rs"
@@ -764,5 +767,47 @@ fn projected_bound_staging_keeps_linear_headroom_in_ordinary_crates() -> TestRes
             "{shape}: staging stays linear: {costs:?}"
         );
     }
+    Ok(())
+}
+
+/// Rustc's rule for an imported target-feature body's asm, over a synthetic
+/// baseline without sse: the owner's imported closure admits `xmm_reg`, and
+/// nothing else does. Unknown and forbidden names never resolve.
+#[test]
+fn imported_assembly_bodies_use_the_baseline_and_their_imported_closure() -> TestResult {
+    const UNKNOWN: &str = "unknown source target feature";
+    let pay = |_| Ok::<_, &'static str>(());
+    let without = FeatureSet::default();
+    let sse = FeatureSet::imported(["sse"], pay, std::convert::identity)?;
+    assert_eq!(without.admit_imported_xmm(sse), Ok(()));
+    assert_eq!(
+        without.admit_imported_xmm(FeatureSet::default()),
+        Err("assembly register class requires the sse target feature")
+    );
+    let sse2 = FeatureSet::imported(["sse2"], pay, std::convert::identity)?;
+    assert!(sse2.covers(sse), "the consumer closes sse2 itself");
+    assert_eq!(without.admit_imported_xmm(sse2), Ok(()));
+    let baseline = FeatureSet::target_baseline(pay, std::convert::identity)?;
+    assert_eq!(baseline.admit_imported_xmm(FeatureSet::default()), Ok(()));
+    // Gated names resolve without the consumer's own crate gate.
+    assert!(FeatureSet::imported(["x87"], pay, std::convert::identity).is_ok());
+    for name in ["ssx", "soft-float", "retpoline-external-thunk", ""] {
+        assert_eq!(
+            FeatureSet::imported([name], pay, std::convert::identity).err(),
+            Some(UNKNOWN),
+            "{name}"
+        );
+    }
+    // The declared set keeps only the named features, in table order.
+    let (report, analysis) =
+        analyze("#[target_feature(enable = \"sse2,sse\")] unsafe fn keep() {} fn main() {}")?;
+    let keep = named(&report, "keep")?;
+    let row = analysis
+        .facts
+        .target_feature_functions
+        .get(&keep)
+        .ok_or("keep's local row")?;
+    assert_eq!(row.declared.names().collect::<Vec<_>>(), ["sse", "sse2"]);
+    assert!(row.features().covers(row.declared));
     Ok(())
 }

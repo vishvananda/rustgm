@@ -38,6 +38,7 @@ impl Stage {
             inline: None,
             cold: false,
             caller_tracking: false,
+            target_features: None,
         })
     }
     /// Record one exported variant constructor's declaration row.

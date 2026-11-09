@@ -32,6 +32,9 @@ pub(super) struct Headers {
     catalog: Rc<Catalog>,
     inventory: Arc<Dependencies>,
     entries: HashMap<DefId, Header>,
+    /// Version thirteen: the sparse function rows with declared target
+    /// features, each checked once its header is installed.
+    targeted: Vec<DefId>,
     pub(super) work: Cell<usize>,
 }
 impl Headers {
@@ -116,8 +119,10 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
         catalog,
         inventory: imported.shared_dependencies(),
         entries: HashMap::default(),
+        targeted: Vec::new(),
         work: Cell::new(steps),
     };
+    let mut rows_with_features = Vec::new();
     for (artifact, interface) in headers.inventory.artifacts().iter().enumerate() {
         let Some(descriptor) = interface.source_descriptor() else {
             continue;
@@ -165,6 +170,15 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
                 ));
             }
         }
+        if descriptor.profile().body_nodes() {
+            bytes = targeted(
+                &headers,
+                &mut rows_with_features,
+                imported,
+                interface,
+                bytes,
+            )?;
+        }
     }
     for (external, definition) in imported.definitions() {
         headers.charge(1)?;
@@ -180,10 +194,140 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
             header.external = Some(external.clone());
         }
     }
+    headers.targeted = rows_with_features;
     if !headers.entries.is_empty() {
         super::local::bounded_ledger(facts).imported = Some(Box::new(headers));
     }
     Ok(())
+}
+/// One fixed charge and slot per version-thirteen row with declared target
+/// features; names are paid when the row is checked.
+fn targeted(
+    headers: &Headers,
+    found: &mut Vec<DefId>,
+    imported: &crate::resolve::crates::Imported,
+    interface: &crate::support::crates::Interface,
+    mut bytes: usize,
+) -> Result<usize, Error> {
+    let Some(attributes) = interface
+        .source_descriptor()
+        .and_then(|descriptor| descriptor.rows().header_attributes())
+    else {
+        return Ok(bytes);
+    };
+    for contract in &attributes.functions {
+        if contract.target_features.is_none() {
+            continue;
+        }
+        headers.charge(1)?;
+        bytes = bytes.saturating_add(size_of::<DefId>());
+        if bytes > MAX_BYTES {
+            return Err(Error::unlocated(
+                "imported header contracts exceed retained storage",
+            ));
+        }
+        found.push(
+            imported
+                .generic_definition(interface.identity(), contract.declaration)
+                .map_err(Error::unlocated)?,
+        );
+    }
+    Ok(bytes)
+}
+pub(in crate::sema) fn target_feature_rows(facts: &Declarations) -> &[DefId] {
+    facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .and_then(|ledger| ledger.imported.as_deref())
+        .map_or(&[], |headers| headers.targeted.as_slice())
+}
+/// An imported function's declared target features, re-proved on the
+/// consumer's installed header in the exporter's order (trait member, form,
+/// unsafe) and then resolved against the consumer's own table and closed.
+/// `None` when the row declares none.
+pub(in crate::sema) fn target_features(
+    facts: &Declarations,
+    definition: DefId,
+) -> Result<Option<crate::sema::target_features::FeatureSet>, &'static str> {
+    use crate::types::{Kind, callable::Abi};
+    let Some(headers) = facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .and_then(|ledger| ledger.imported.as_deref())
+    else {
+        return Ok(None);
+    };
+    let Some(header) = headers.entries.get(&definition) else {
+        return Ok(None);
+    };
+    let interface = &headers.inventory.artifacts()[header.artifact];
+    let Some(descriptor) = interface.source_descriptor() else {
+        return Ok(None);
+    };
+    if !descriptor.profile().body_nodes() {
+        return Ok(None);
+    }
+    let Some(declared) = descriptor
+        .rows()
+        .header_contract(header.declaration)?
+        .and_then(|contract| contract.target_features.as_deref())
+    else {
+        return Ok(None);
+    };
+    let budget = |steps| {
+        headers
+            .charge(steps)
+            .map_err(|_| "imported target-feature work budget exceeded")
+    };
+    budget(1)?;
+    headers
+        .catalog
+        .validate_declaration(header.handle, definition, DefKind::Function)?;
+    let semantic = facts
+        .declaration_header(definition)?
+        .ok_or("imported target-feature function has no canonical function header")?;
+    if semantic.declaration
+        != crate::resolve::body_origin::DeclarationOrigin::Imported(header.handle)
+    {
+        return Err("imported target-feature function changed its actual canonical owner");
+    }
+    if facts
+        .associated
+        .owner(definition)
+        .and_then(|owner| facts.associated.get(owner))
+        .is_some_and(|owner| {
+            !matches!(
+                owner.kind,
+                crate::sema::associated::OwnerKind::ImportedInherent(_)
+            )
+        })
+    {
+        return Err(
+            "source trait member target features require their trait implementation transport",
+        );
+    }
+    let Some(Kind::Function {
+        convention,
+        unsafe_,
+        ..
+    }) = facts.types.kind(semantic.signature)
+    else {
+        return Err("imported target-feature function has no canonical signature");
+    };
+    if convention.abi != Abi::Rust || facts.is_const_function(definition) {
+        return Err("source target-feature function form requires its wider profile");
+    }
+    if !unsafe_ {
+        return Err("source target-feature function is not declared unsafe");
+    }
+    crate::sema::target_features::FeatureSet::imported(
+        declared.names.iter().map(|name| &**name),
+        |growth| budget(growth.work),
+        |message| message,
+    )
+    .map(Some)
 }
 pub(super) fn query<'a>(
     facts: &'a Declarations,

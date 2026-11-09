@@ -217,10 +217,11 @@ pub(super) fn validate(
     Ok(())
 }
 /// Each `xmm_reg` input is re-proved against the consumer's own facts: a
-/// 128-bit vector, under the consumer's target baseline. The imported
-/// function carries no target features until their own transport exists.
+/// 128-bit vector, under the consumer's target baseline plus the closure of
+/// the owning function's imported declared target features, if any.
 pub(super) fn check(
     facts: &Declarations,
+    view: &SourceOriginal<'_>,
     body: &Body,
     work: &mut ImportedOriginals,
 ) -> Result<(), &'static str> {
@@ -237,16 +238,15 @@ pub(super) fn check(
             facts,
             operand.ty.ok_or("source assembly operand lost its type")?,
         )?;
-        let features = match available {
+        let (baseline, imported) = match available {
             Some(features) => features,
-            None => *available.insert(FeatureSet::target_baseline(
-                |growth| work.charge(growth.work),
-                |message| message,
-            )?),
+            None => *available.insert((
+                FeatureSet::target_baseline(|growth| work.charge(growth.work), |message| message)?,
+                crate::sema::target_features::imported(facts, view.definition())?
+                    .unwrap_or_default(),
+            )),
         };
-        if !features.supports_xmm() {
-            return Err("assembly register class requires the sse target feature");
-        }
+        baseline.admit_imported_xmm(imported)?;
     }
     Ok(())
 }

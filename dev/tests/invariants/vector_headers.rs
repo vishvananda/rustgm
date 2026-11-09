@@ -8,7 +8,7 @@ type Row<T> = std::result::Result<T, &'static str>;
 
 // The representation stays one byte, so the header row keeps its layout.
 const _: [(); 1] = [(); size_of::<RecordRepr>()];
-const _: [(); 96] = [(); size_of::<s::NominalHeader>()];
+const _: [(); 104] = [(); size_of::<s::NominalHeader>()];
 
 const BODIES: s::Profile = s::Profile::Source2024ModuleBodies;
 const BRANCHES: s::Profile = s::Profile::Source2024ModuleBranches;
@@ -23,6 +23,7 @@ fn header(repr: RecordRepr) -> s::NominalHeader {
             inline: None,
             cold: false,
             caller_tracking: false,
+            target_features: None,
         },
         declaration: DeclarationRef(1),
         scope: DeclarationRef(0),

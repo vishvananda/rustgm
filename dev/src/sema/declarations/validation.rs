@@ -36,6 +36,7 @@ impl Checker<'_> {
         self.validate_alias_declarations()
     }
     pub(super) fn validate_signatures(&mut self) -> Result<(), Error> {
+        crate::sema::target_features::validate_imported(&self.facts)?;
         let mut allowances = self.report.macro_allowances();
         let mut unsized_parameters = crate::sema::unsized_parameters::Draft::default();
         for index in 0..self.facts.functions.len() {

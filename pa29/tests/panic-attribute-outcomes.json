@@ -121,7 +121,14 @@
   {
    "mutation": "`rare`'s header flag byte set to 8 (an unknown bit)",
    "expected": "unknown transported inline or callable advisory flags",
-   "observed": "as declared"
+   "observed": "as declared",
+   "amended": {
+    "reason": "B2 slice F allocates flag bit 3 (8) to declared target features under version 13, so byte 8 now reads a target-feature row; an amendment, not a rebless, as S amended the transparent wire control for byte 3",
+    "observed_first": "F's first integration run (fastcheck 1794234053762672239): `source target-feature name exceeds transport profile limit`, because the next row's declaration is read as the count and its site as the first name's length",
+    "control": "flag byte 16 (0x10, the first value above the four defined bits) takes over the unknown-bit role; flag byte 8 stays as a second control",
+    "expected": "byte 16: `unknown transported inline or callable advisory flags`; byte 8: `source target-feature name exceeds transport profile limit`",
+    "declared": "2026-11-09T14:23:30Z in obj/parallel/target-feature-transport/f-amendments/amendment-3.json, before its rerun"
+   }
   },
   {
    "mutation": "`rare`'s header flags set to cold and caller tracking (6), with the `relay` client",

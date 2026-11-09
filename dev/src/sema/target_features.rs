@@ -30,6 +30,9 @@ pub(super) struct Contract {
     image: SourceImage,
     sites: Vec<Site>,
     features: FeatureSet,
+    /// The explicitly named features before implication, which version
+    /// thirteen writes for an exported function.
+    declared: FeatureSet,
     declared_unsafe: bool,
 }
 pub(super) use cpu_origins::{body_unsafe, validate_method};
@@ -61,7 +64,9 @@ pub(super) fn publish(
     facts.target_feature_functions.insert(definition, row);
     Ok(())
 }
-/// Unknown imported policy cannot authorize contextual safety weakening.
+/// Unknown imported policy cannot authorize contextual safety weakening. A
+/// transported declared set widens only an imported body's asm CPU check,
+/// which reads it through [`imported`].
 pub(super) enum Policy<'a> {
     Local(Option<&'a Contract>),
     ImportedUnknown,
@@ -113,6 +118,42 @@ pub(super) fn query<'a>(
         }
     }
     Ok(Policy::Local(None))
+}
+/// The imported closure of a version-thirteen function row with declared
+/// target features, re-proved on the consumer's installed header and resolved
+/// against its own table; `None` for every other import.
+pub(crate) fn imported(
+    facts: &Declarations,
+    definition: DefId,
+) -> Result<Option<FeatureSet>, &'static str> {
+    header_attributes::imported_target_features(facts, definition)
+}
+/// Every imported row with declared target features, checked once the
+/// consumer's headers are installed, so a forged row on an unused function is
+/// still rejected.
+pub(super) fn validate_imported(facts: &Declarations) -> Result<(), Error> {
+    for &definition in header_attributes::imported_target_feature_rows(facts) {
+        imported(facts, definition).map_err(Error::unlocated)?;
+    }
+    Ok(())
+}
+/// Whether a local target-feature function was written `unsafe`; its
+/// canonical signature always is.
+pub(super) fn declared_unsafe(facts: &Declarations, definition: DefId) -> bool {
+    facts
+        .target_feature_functions
+        .get(&definition)
+        .is_some_and(|row| row.declared_unsafe)
+}
+/// The declared names an exported function row writes.
+pub(super) fn declared_names(
+    facts: &Declarations,
+    definition: DefId,
+) -> Option<impl Iterator<Item = &'static str>> {
+    facts
+        .target_feature_functions
+        .get(&definition)
+        .map(|row| row.declared.names())
 }
 impl Contract {
     pub(super) const fn features(&self) -> FeatureSet {

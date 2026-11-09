@@ -7,6 +7,11 @@ use crate::support::{
 };
 
 pub const MAX_REASON_BYTES: usize = 64 * 1024;
+/// Version thirteen's declared target-feature sets: at most the consumer
+/// table's size, each name no longer than this bound, which exceeds the
+/// table's longest name.
+pub const MAX_TARGET_FEATURES: usize = 128;
+pub const MAX_TARGET_FEATURE_NAME: usize = 32;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum InlineHint {
@@ -30,6 +35,13 @@ pub struct InlineContract {
     pub hint: InlineHint,
     pub applicability: InlineApplicability,
 }
+/// The explicitly named `enable` features of a function, deduplicated and in
+/// strictly increasing byte order. Implication is never written; each
+/// consumer resolves the names against its own table and closes them.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct DeclaredFeatures {
+    pub names: Vec<Box<str>>,
+}
 /// Within a complete row, None is positively checked absence. An older profile
 /// has no columns at all and therefore cannot claim that absence.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -42,11 +54,14 @@ pub struct HeaderContract {
     pub cold: bool,
     /// Version thirteen only, on function rows: the written caller ABI policy.
     pub caller_tracking: bool,
+    /// Version thirteen only, on function rows with an original body: the
+    /// declared target features.
+    pub target_features: Option<Box<DeclaredFeatures>>,
 }
 impl HeaderContract {
     #[must_use]
     pub const fn callable_advisories(&self) -> bool {
-        self.cold || self.caller_tracking
+        self.cold || self.caller_tracking || self.target_features.is_some()
     }
 }
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -110,6 +125,11 @@ impl HeaderAttributeColumns {
             }) {
                 return Err("source inline applicability differs from its actual function body");
             }
+            if contract.target_features.is_some() && !callable_advisories {
+                return Err(
+                    "source target-feature rows require the version-thirteen header profile",
+                );
+            }
             if contract.callable_advisories() && !callable_advisories {
                 return Err(
                     "source cold and caller tracking rows require the version-thirteen header profile",
@@ -120,6 +140,18 @@ impl HeaderAttributeColumns {
             if contract.caller_tracking && !matches!(header.body, super::FunctionBody::Original(_))
             {
                 return Err("source caller tracking requires an exported original body");
+            }
+            if let Some(features) = &contract.target_features {
+                // Only a defined body has an enabled feature set; consumers
+                // re-prove its shape and names on their installed header.
+                if !matches!(header.body, super::FunctionBody::Original(_)) {
+                    return Err("source target features require an exported original body");
+                }
+                work.charge(features.names.len())?;
+                bytes = bytes
+                    .saturating_add(size_of::<DeclaredFeatures>())
+                    .saturating_add(retained::vector(&features.names))
+                    .saturating_add(features.names.iter().map(|name| name.len()).sum());
             }
         }
         for (contract, header) in self.traits.iter().zip(traits) {

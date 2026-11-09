@@ -70,20 +70,22 @@ impl Stage {
             if function.definition != definition {
                 return Err("source function header index names another declaration");
             }
-            if facts.target_feature_functions.contains_key(&definition)
-                || !self.exact_linkage()
-                    && facts
-                        .foreign
-                        .as_deref()
-                        .and_then(|registry| registry.function(definition))
-                        .is_some_and(|function| {
-                            function.naming != crate::support::linkage::Naming::Rust
-                                || function.linkage != crate::support::linkage::Linkage::Internal
-                        })
-            {
+            let named = facts
+                .foreign
+                .as_deref()
+                .and_then(|registry| registry.function(definition))
+                .is_some_and(|function| {
+                    function.naming != crate::support::linkage::Naming::Rust
+                        || function.linkage != crate::support::linkage::Linkage::Internal
+                });
+            let targeted = facts.target_feature_functions.contains_key(&definition);
+            if named && (targeted || !self.exact_linkage()) || targeted && !self.body_nodes() {
                 return Err(
                     "source named/foreign/target-feature function metadata requires its wider profile",
                 );
+            }
+            if targeted {
+                target_feature_form(facts, &function)?;
             }
             if facts
                 .source_bindings
@@ -544,3 +546,50 @@ mod effect_storage {
 #[cfg(test)]
 #[path = "../../../../tests/invariants/required_exports.rs"]
 mod conditional_tests;
+
+/// Version thirteen writes declared target features only for a free or
+/// inherent `unsafe fn` with the Rust ABI, in this order; the first failure
+/// wins. Its canonical signature is always unsafe, so the declared safety is
+/// read from the source row.
+fn target_feature_form(
+    facts: &Declarations,
+    function: &crate::sema::model::Function,
+) -> Result<(), &'static str> {
+    if facts
+        .associated
+        .owner(function.definition)
+        .and_then(|owner| facts.associated.get(owner))
+        .is_some_and(|owner| {
+            !matches!(
+                owner.kind,
+                OwnerKind::Impl {
+                    trait_type: None,
+                    ..
+                }
+            )
+        })
+    {
+        return Err(
+            "source trait member target features require their trait implementation transport",
+        );
+    }
+    if !matches!(
+        facts.types.kind(function.signature),
+        Some(Kind::Function { convention, .. })
+            if convention.abi == crate::types::callable::Abi::Rust
+    ) || facts.is_const_function(function.definition)
+    {
+        return Err("source target-feature function form requires its wider profile");
+    }
+    if !crate::sema::target_features::declared_unsafe(facts, function.definition) {
+        return Err(
+            "source safe target-feature function export requires its contextual call policy",
+        );
+    }
+    if crate::sema::target_features::declared_names(facts, function.definition)
+        .is_none_or(|mut names| names.next().is_none())
+    {
+        return Err("unknown source target feature");
+    }
+    Ok(())
+}

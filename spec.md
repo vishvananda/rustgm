@@ -6592,8 +6592,9 @@ exact bytes.
 A version-thirteen function header may also carry two callable advisories.
 The byte that marks an inline contract becomes a flag set: bit 0 is the
 inline contract, bit 1 the written `#[cold]` advisory and bit 2 the written
-`#[track_caller]` caller policy. Other bits are rejected, and older profiles
-reject bits 1 and 2 by name. Trait and nominal header rows carry neither
+`#[track_caller]` caller policy. Bit 3, declared target features, is
+described below; higher bits are rejected, and older profiles reject bits 1
+and 2 by name. Trait and nominal header rows carry neither
 advisory. Caller tracking requires an exported original body on a free
 function or an inherent method. A role row may also name a `#[lang =
 "panic"]` function. No completion is transported: a fresh consumer re-proves
@@ -6780,6 +6781,36 @@ passing at C boundaries. An asm operand's re-proof rejects that rewrite by
 name. Without one, it is a silent mismatch that, like the transparent rewrite,
 is authenticated only by the packet's inventory identity and left for a later
 ABI digest.
+
+A version-thirteen function header may also carry its declared target
+features as flag bit 3. After the inline payload come a u32 count and that
+many names, each a u32 length and its bytes: 1 to 128 names of 1 to 32
+bytes in strictly increasing byte order, exactly the explicitly enabled
+features before implication. Only a free `unsafe fn` with the Rust ABI and
+an exported original body carries the bit, and bit 3 with an always-inline
+hint is rejected. Older profiles reject the bit by name ("source
+target-feature rows require the version-thirteen header profile") and keep
+the export fence for every target-feature function ("source
+named/foreign/target-feature function metadata requires its wider
+profile"). At version thirteen, a trait or trait-impl member, a non-Rust-ABI
+or `const` function and a safe target-feature function keep named fences,
+and an unsafe inherent method keeps the existing unsafe associated-function
+fence. No closure or table index travels. A fresh consumer re-proves every
+imported bit-3 row on its own installed header (not a trait member, Rust
+ABI, not `const`, declared `unsafe`) and resolves the names against its own
+feature table, rejecting a name it does not know ("unknown source target
+feature"). It calls the function through its ordinary unsafe signature, and
+`LowIR` carries no target-feature attribute. The imported closure widens
+only that body's asm CPU check, to the consumer's baseline plus the closure.
+A forged addition to an imported function's declared target features (bit 3
+on a function that had none, or an extra name) therefore widens that
+imported body's asm CPU check to the consumer's baseline plus the claimed
+closure. It is harmless while every admitted register class needs only
+baseline features (`reg`, and `xmm_reg` with sse). Any later item that
+admits a register class needing a non-baseline feature (`ymm_reg`,
+`zmm_reg`, `kreg`) must revisit forged additions first: the inventory
+identity, or an authenticated feature set, must cover them. Rows without
+bit 3 keep their exact earlier bytes.
 
 A version-thirteen role row may also name `PhantomData`: the existing spelled
 form (tag 255, `phantom_data` and the declaration address), alone of the

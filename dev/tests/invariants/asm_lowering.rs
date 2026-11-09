@@ -6,14 +6,6 @@ use crate::{lower::instances::SourcePublication, pipeline, resolve::model::DefId
 use std::fmt::Write as _;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const SPEC: &str = "pa41/tests/spec/asm-native";
-/// The crate holding the real stream body. B1 observed it stopping at the
-/// crate-wide macro provenance fence, since `vps!` and `concat!` expand inside
-/// it. B2's macro-context slice admits those semi-opaque marks, its
-/// const-parameter slice lifts the const-formal gate, and its SIMD slice
-/// carries `__m128`'s `repr(simd)` header, so it stops at `_mm_stream_ps`'s
-/// `#[target_feature]`, declared before the run.
-const STREAM_OBSERVED: &str =
-    "source named/foreign/target-feature function metadata requires its wider profile";
 /// The provider function whose `LowIR` the control demands.
 fn root(
     report: &crate::resolve::expansion::Report,
@@ -206,14 +198,54 @@ fn inline_asm_bodies_join_v13_module_body_transport() -> Result {
         SourcePublication::ModuleBodies,
         "asm_transport_prelude",
     )?;
+    // The crate holding the real stream body. B1 observed it stopping at the
+    // crate-wide macro provenance fence, since `vps!` and `concat!` expand
+    // inside it. B2's macro-context slice admits those semi-opaque marks, its
+    // const-parameter slice lifts the const-formal gate, its SIMD slice
+    // carries `__m128`'s `repr(simd)` header, and slice F carries
+    // `_mm_stream_ps`'s declared `sse` as header bit 3 beside its inline
+    // hint, so the body joins the publication with its one template.
     let stream = crate::module_packets::exported_profile(
         &native_prefix("// Authored observers")?,
         SourcePublication::ModuleBodies,
         "asm_stream_transport",
-    )
-    .err()
-    .ok_or("v13 publication exported the stream asm body")?;
-    assert!(stream.to_string().contains(STREAM_OBSERVED), "{stream}");
+    )?;
+    let decoded = crates::decode(&crates::encode(&stream)?)?;
+    let (rows, attributes, _) = crate::module_packets::raw(&decoded)?;
+    let texts: Vec<&str> = rows
+        .originals
+        .iter()
+        .filter_map(|original| original.assembly.as_deref())
+        .flat_map(|columns| columns.templates.iter().map(|template| &*template.text))
+        .collect();
+    assert_eq!(texts, ["movntps [{p}],{a}"]);
+    let targeted: Vec<&s::HeaderContract> = attributes
+        .functions
+        .iter()
+        .filter(|row| row.target_features.is_some())
+        .collect();
+    let [row] = *targeted.as_slice() else {
+        return Err(format!("target-feature rows {targeted:?}").into());
+    };
+    let name = rows
+        .declarations
+        .get(row.declaration.0 as usize)
+        .and_then(|declaration| declaration.name.as_deref());
+    assert_eq!(name, Some("_mm_stream_ps"));
+    let inline = row
+        .inline
+        .as_ref()
+        .map(|inline| (inline.hint, inline.applicability));
+    assert_eq!(
+        inline,
+        Some((s::InlineHint::Hint, s::InlineApplicability::FunctionBody))
+    );
+    assert!(!row.cold && !row.caller_tracking);
+    let names = row
+        .target_features
+        .as_deref()
+        .map(|features| &features.names[..]);
+    assert_eq!(names, Some(&["sse".into()][..]));
     Ok(())
 }
 /// A generic body instantiated for `n` distinct types gives exactly `n`

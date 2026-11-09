@@ -22,7 +22,10 @@ the stream witness, the crate that holds the real `_mm_stream_ps` body.
   `body_nodes()`. Bytes from 4 up stay "unknown source nominal
   representation", as does byte 3 in an older profile.
 - `support::crates::RecordRepr` gains `Simd`. It stays one byte, and
-  `s::NominalHeader` keeps its 96 bytes (`vector_headers.rs`).
+  `s::NominalHeader` keeps its 96 bytes (`vector_headers.rs`). F later
+  moved that pin to 104, because `NominalHeader` embeds `HeaderContract`,
+  which grew from 56 to 64 bytes
+  ([target-feature-rows.md](target-feature-rows.md)).
 - No value code, type tag, lane, count or layout column is added, and the
   version is not bumped. A header written by the pre-v13 encoder with `Simd`
   fails with "source nominal representation requires its wider complete
@@ -73,8 +76,8 @@ and vector-register passing at C boundaries.
 - **Without asm.** It is a silent runtime mismatch. Like the transparent
   rewrite (byte 2 to 0), it is authenticated only by the packet's inventory
   identity and is left for a later ABI digest. F's forged-bit-3 limit,
-  which widens one body's asm CPU policy and is not ABI-changing, joins
-  these two when F lands.
+  which widens one body's asm CPU policy and is not ABI-changing, joined
+  these two as a named spec.md condition when F landed.
 
 ## Fixture and outcomes
 
@@ -144,7 +147,9 @@ candidate rebuilt from `008593ab5` with identical bytes.
 
 ## Remaining
 
-- **F**, target-feature rows, is next. The stream witness now stops at
-  `_mm_stream_ps`'s `#[target_feature]`.
+- **F**, target-feature rows, landed after S
+  ([target-feature-rows.md](target-feature-rows.md)). Its stream witness
+  exports the real `_mm_stream_ps` body and now stops at its client's
+  `extern "C"` signatures over the imported `__m128`.
 - **S3**: generic SIMD records, with a lane proof at each consumer's
   instantiation (`docs/library-build-blockers.md`).

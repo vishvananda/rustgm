@@ -12,6 +12,9 @@ mod constant_tests;
 mod contract_columns;
 mod enums_wire;
 mod exemption_wire;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/enabled_headers.rs"]
+mod feature_tests;
 mod free_constants_wire;
 #[path = "ordinary_columns/annotation_rows.rs"]
 mod header_facts;

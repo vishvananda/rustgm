@@ -92,7 +92,8 @@ minimal provider: lines 1-126, `panic` with only its role, `#[cold] rare`,
 
 | Mutation | Fresh consumer |
 | --- | --- |
-| `rare`'s flag byte set to 8 | "unknown transported inline or callable advisory flags" |
+| `rare`'s flag byte set to 16 | "unknown transported inline or callable advisory flags" |
+| `rare`'s flag byte set to 8 (F's bit 3, amended) | "source target-feature name exceeds transport profile limit" |
 | `rare` marked cold and tracked, `relay` client | "tracked call lacks its actual sealed caller site" |
 | the same packet, `rare` client | "imported caller tracking requires its provider's transported Location" |
 | the `panic` row retargeted to `rare` | "source panic role requires a const declaration with never result" |

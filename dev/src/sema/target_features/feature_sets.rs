@@ -117,6 +117,42 @@ impl FeatureSet {
     pub(crate) fn supports_xmm(self) -> bool {
         named("sse").is_some_and(|feature| self.0 & (1_u128 << feature.0) != 0)
     }
+    /// An imported asm body may use the consumer's baseline plus its owner's
+    /// imported closure, rustc's rule for a target-feature function's body.
+    pub(crate) fn admit_imported_xmm(self, imported: Self) -> Result<(), &'static str> {
+        if self.union(imported).supports_xmm() {
+            Ok(())
+        } else {
+            Err("assembly register class requires the sse target feature")
+        }
+    }
+    /// The explicitly named features in table order, which is strictly
+    /// increasing byte order.
+    pub(super) fn names(self) -> impl Iterator<Item = &'static str> {
+        FEATURES
+            .iter()
+            .enumerate()
+            .filter(move |(bit, _)| self.0 & (1_u128 << bit) != 0)
+            .map(|(_, spec)| spec.name)
+    }
+    /// A transported declared set resolved against this consumer's own table
+    /// and closed here. Crate gates belong to the defining crate.
+    pub(in crate::sema) fn imported<'a, E>(
+        names: impl IntoIterator<Item = &'a str>,
+        mut pay: impl FnMut(Growth) -> Result<(), E>,
+        error: impl Fn(&'static str) -> E,
+    ) -> Result<Self, E> {
+        let mut result = Self::default();
+        for name in names {
+            result.insert(
+                name,
+                &mut pay,
+                |_| Ok(true),
+                |_| error("unknown source target feature"),
+            )?;
+        }
+        Ok(result)
+    }
     #[cfg(test)]
     pub(super) const fn uses_upper_word(self) -> bool {
         self.0 >> 64 != 0
@@ -171,6 +207,7 @@ impl FeatureSet {
 pub(super) struct Closed {
     features: FeatureSet,
     gated: FeatureSet,
+    declared: FeatureSet,
 }
 impl Closed {
     pub(super) fn insert<E>(
@@ -184,10 +221,14 @@ impl Closed {
         if FEATURES[feature.0 as usize].gate.is_some() {
             self.gated = self.gated.union(FeatureSet(1_u128 << feature.0));
         }
+        self.declared = self.declared.union(FeatureSet(1_u128 << feature.0));
         self.features.close(feature, pay, error)
     }
     pub(super) const fn features(self) -> FeatureSet {
         self.features
+    }
+    pub(super) const fn declared(self) -> FeatureSet {
+        self.declared
     }
     /// A reusing site pays for and obtains its own crate gate results.
     pub(super) fn require<E>(
@@ -195,7 +236,7 @@ impl Closed {
         mut pay: impl FnMut(Growth) -> Result<(), E>,
         mut allowed: impl FnMut(Gate) -> Result<bool, E>,
         error: impl Fn(&'static str) -> E,
-    ) -> Result<FeatureSet, E> {
+    ) -> Result<Self, E> {
         let mut pending = self.gated.0;
         while pending != 0 {
             let bit = pending.trailing_zeros();
@@ -211,7 +252,7 @@ impl Closed {
                 ));
             }
         }
-        Ok(self.features)
+        Ok(self)
     }
 }
 /// Pay for one explicit name and its own crate gate; implication is separate.

@@ -37,3 +37,14 @@ their outcomes, the generated export controls and the forged rows before any
 run. Its one client amendment is recorded beside the outcome it changes.
 They are checkpoint inputs, not an active grading suite. The evidence is in
 [simd-header-rows.md](../../docs/parallel/simd-header-rows.md).
+
+`spec/target-feature-transport/` holds B2 slice F's module-body packet: a
+provider whose first 73 lines are `spec/asm-native/native.rs` through
+`__m128`'s Clone and Copy impls, byte for byte, seven ordinary clients, and
+the stream witness's provider and client. `target-feature-transport-outcomes.json`
+lists every input with its sha256 and froze their outcomes, the generated
+export controls, the local twins and the forged rows before any run. Its
+four amendments are recorded beside the outcomes they change; the second
+withdrew the declared inherent method and its client. They are checkpoint
+inputs, not an active grading suite. The evidence is in
+[target-feature-rows.md](../../docs/parallel/target-feature-rows.md).

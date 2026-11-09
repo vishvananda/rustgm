@@ -1,0 +1,276 @@
+{
+  "schema": 1,
+  "edition": 2024,
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "declared": "2026-11-09T12:30:08Z",
+  "expectation_frozen_before_candidate": true,
+  "development_note": "declared during the integrator's joined-F0 hold, before any rustc run of these files and before any F code, from the integrator-approved F notice (sections 0-11, scratchpad f-notice-20261109.md) and its rulings",
+  "rule": "B2 slice F: version thirteen's function HeaderContract flags bit 3 (0x08) means declared target features follow (count u32, then length u32 and name bytes, strictly increasing byte order, 1-128 names of 1-32 bytes), admitted only under body_nodes(); the consumer resolves the names against its own table, closes them, re-proves the function's shape and widens only the imported asm CPU policy (baseline plus closure)",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort; providers as rlib with --emit=link,obj -Ccodegen-units=1; clients as lib objects with --extern base; native clients link the provider object, the client object and a C main calling entry (the stream witness: asm-native observer.c and entry.c)",
+  "inputs": {
+    "spec/call.rs": "2479ea95f50b6cf27204d92d210a01474c6077de3d2b4d8c4a8fd751e242eb71",
+    "spec/gated.rs": "218e9da2dfebc57d0eb311531f507c4a12646efbca7d6d5696b9274769de5ec9",
+    "spec/generic.rs": "27a5d17f0cd7f6f1443ca1ce7e90c1a9084cb2e77bce78703403233a4069c9ef",
+    "spec/pointer.rs": "138270c1d57e8f524935344b99097233665976fc71a68208d1338ecb6cc44c2c",
+    "spec/provider.rs": "63368856f6189f145e8123ac620cb34292eebc436aa14aa528093789b8a71a23",
+    "spec/safe-pointer.rs": "bcd3678d29dd3b5ace65b18ac9cbaad9e84ba70b295334ef7497160ccd3aed84",
+    "spec/stream-client.rs": "ddcfb088325e81b39fc5cf206b407a80508ccf8d33378ae43a0845246207759e",
+    "spec/stream-provider.rs": "8327d49e3733a7605c966ec022238f85e4832fb9bd2c1efe48c6d3e5ffdb700a",
+    "spec/unsafe-free.rs": "db8c417debca45c8f11e5cc85b4aff286efff8380a7da63504b61c934ff9dfc0",
+    "spec/wide.rs": "c1c6b0134beaee0d616cc62eab23bcde1b2d6a95a9cd02514b8289d5dc787f20",
+    "generated/gated.rs": "c392f6bca3598681ad9e9fbc894379ddba4e551cbddcb2a1e45200736c72ab9b",
+    "generated/inherent-forgery.rs": "bad0196feb6c90192fb232e3abf5dea7235eb99c3ac0617add24880fea4cf3be",
+    "generated/older-gate.rs": "60bbdcaddaab4c1e658131fb60451a41b3bf1226863e43af8504f2f8c0e6b74b",
+    "generated/opponent-const.rs": "e33d2efdf1c6566394f4b37446e277a26d7a136c5293455ad01410930e547260",
+    "generated/opponent-extern-c.rs": "64fbe927feb20d92fde848da79e85b7c22ece724981906b88cb17fb3835f860c",
+    "generated/opponent-inherent.rs": "5f50acc9c2cc3121f4f3134b3fda94cf3d7065deefecf5854f104621394f6874",
+    "generated/opponent-inline-always.rs": "30f97bc7b18a57c367b5264557d67a52d1cacf3e4a354b2105b32944f3ad18ba",
+    "generated/opponent-no-mangle.rs": "7b286a62a75cfcb62e503fae11621f150fafe230638a1adafd084b124855c111",
+    "generated/opponent-safe.rs": "31707ccd61d028361002fda54cdb0d3326db0105530dcc8d888addb25aa02ff5",
+    "generated/opponent-trait-default.rs": "8859d1ee766c1d5995286aa59181bc230ae7d0646297d8409cb5a9b97d8ac72c",
+    "generated/opponent-trait-impl.rs": "c2c5b55d5db4ef3678c329f0c07f98be5d2a88d50c2a5ef74b2c9daa7d37706a",
+    "generated/twin-keep.rs": "74bb2a249f57cd698876c70a5bf3cc0099b40d11193b859c5ca0c9ae8cd368d1",
+    "generated/twin-safe-pointer.rs": "80bf1475b1dbd394fd9692ba0ea1980c9ae1af0c9e96891a7c492f100104d7d0",
+    "generated/twin-unsafe-free.rs": "ff85441388e018a11c3545be2d31bbf0d3a0a93ecc7ba99a0f0667637585c874"
+  },
+  "provider": {
+    "file": "spec/target-feature-transport/provider.rs",
+    "foundation": "lines 1-73 of spec/asm-native/native.rs, byte for byte, as S's provider",
+    "rows": {
+      "second": "08 | 01000000 | 04000000 sse2",
+      "keep": "08 | 02000000 | 03000000 sse | 04000000 sse2",
+      "wide": "08 | 01000000 | 03000000 avx",
+      "every other row": "unchanged bytes, flags 00 (plain, bare, zero, the Clone impls, the foundation)"
+    },
+    "rows_note": "second, keep and wide each have a unique byte pattern for the byte-level controls",
+    "second_note": "`second(a, b) -> b` replaces the approved `add`: the foundation declares no `add` lang item, so no_core `+` would not type-check (integrator ruling 1)",
+    "rustc": "builds",
+    "amended": {
+      "recorded": "2026-11-09T14:07:40Z (amendment 2), after the first RustGM runs of the declared provider and before any run of the amended one",
+      "observed": "the declared provider (95f4eb1a0a0533e0ad38c9b1b5437e45d99aecdbe3edcac42533fe58e868c76f) stopped export at version 13 with `source nonordinary callable effect/safety/convention requires a wider profile`, in process and through the CLI",
+      "cause": "its `pub struct Lane; impl Lane { #[target_feature(enable = \"sse\")] pub unsafe fn get(value: u32) -> u32 { value } }`: ordinary_profile.rs:399 fences every unsafe associated function under every profile (`!free_effects && header.original.unsafe_`), already a declared control in pa29/tests/const-method-outcomes.json (`unsafe inherent methods stay fenced`) and evaluated_methods.rs FENCED \"unsafe\". The notice's `(an inherent method, admitted)` is a recorded failed prediction",
+      "change": "the five Lane lines are removed; every other byte is unchanged. Its row (`08 | 01000000 | 03000000 sse`) is withdrawn with it",
+      "expected": "the amended provider exports at version 13 with the three remaining bit-3 rows"
+    }
+  },
+  "cases": [
+    {
+      "file": "call.rs",
+      "accepted": true,
+      "native_exit": 42
+    },
+    {
+      "file": "generic.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "lowir_parity": "the client's keep::<u8> function block equals generated/twin-keep.rs's byte for byte once each symbol spelling is replaced by one placeholder; LowIR carries no target-feature attribute (Lane C condition 1)",
+      "amended": {
+        "recorded": "2026-11-09T14:28:00Z (amendment 4)",
+        "observed_first": "generated/twin-keep.rs exports at version 13, so amendment 1's named-fence prediction and its twin-keep-rust substitute are withdrawn",
+        "expected": "the declared parity, against generated/twin-keep.rs itself"
+      }
+    },
+    {
+      "file": "inherent.rs",
+      "withdrawn": true,
+      "sha256": "44239d92e9d51a76aa97b5f2010f7b45f85e8da687ba9a4616cb98da60272b2b",
+      "declared": {
+        "accepted": true,
+        "native_exit": 42
+      },
+      "amended": "2026-11-09T14:07:40Z (amendment 2): withdrawn with Lane::get, because unsafe inherent methods cannot be exported (see provider.amended). Target features on an inherent method become a control of the queued associated-unsafe widening item (`source unsafe associated Calls require their wider actual profile`)"
+    },
+    {
+      "file": "pointer.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "note": "coerces the imported unsafe target-feature fn item to an unsafe fn pointer"
+    },
+    {
+      "file": "wide.rs",
+      "accepted": true,
+      "native": "none: metadata and LowIR only, avx is never executed"
+    },
+    {
+      "file": "gated.rs",
+      "provider": "generated/gated.rs",
+      "accepted": true,
+      "native": "none",
+      "note": "the client declares no x87_target_feature gate: gates are checked only in the defining crate (Lane C Q1)"
+    },
+    {
+      "file": "unsafe-free.rs",
+      "accepted": false,
+      "rustc": "E0133",
+      "candidate_diagnostic": "call to unsafe function requires an unsafe context",
+      "local_twin": "generated/twin-unsafe-free.rs, the same text"
+    },
+    {
+      "file": "safe-pointer.rs",
+      "accepted": false,
+      "rustc": "E0308",
+      "candidate_diagnostic": "incompatible types",
+      "local_twin": "generated/twin-safe-pointer.rs, the same text",
+      "amended": {
+        "recorded": "2026-11-09T14:23:30Z (amendment 3), after the client's first run and before its twin's",
+        "observed_first": "the client is rejected with `incompatible callable convention or safety` (calls.rs:150): an unsafe fn item never weakens to a safe fn pointer",
+        "expected": "the client and generated/twin-safe-pointer.rs are both rejected with `incompatible callable convention or safety`, as cpu_policy.rs's local `safe-pointer-missing` control is; rustc's E0308 is unchanged. A recorded failed prediction, frozen as observed"
+      }
+    }
+  ],
+  "fn_traits": "not exercised: the foundation declares no Fn traits; covered by the signature-driven rule (an unsafe fn is never Fn-compatible, and rustc's candidate assembly also requires empty target_features)",
+  "export_controls": {
+    "note": "generated/opponent-*.rs: provider lines 1-73, the section comment, then one line",
+    "safe": {
+      "line": "#[target_feature(enable = \"sse2\")] pub fn s() {}",
+      "rustc": "accepted",
+      "v13_before": "source named/foreign/target-feature function metadata requires its wider profile",
+      "v13_after": "source safe target-feature function export requires its contextual call policy",
+      "note": "stricter than rustc for now"
+    },
+    "trait-impl": {
+      "line": "pub trait T { unsafe fn m(); } pub struct X; impl T for X { #[target_feature(enable = \"sse2\")] unsafe fn m() {} }",
+      "rustc": "accepted",
+      "v13_before": "source named/foreign/target-feature function metadata requires its wider profile",
+      "v13_after": "source trait member target features require their trait implementation transport",
+      "note": "stricter than rustc for now"
+    },
+    "trait-default": {
+      "line": "pub trait D { #[target_feature(enable = \"sse2\")] unsafe fn m() {} }",
+      "rustc": "accepted",
+      "v13_before": "source named/foreign/target-feature function metadata requires its wider profile",
+      "v13_after": "source trait member target features require their trait implementation transport",
+      "note": "stricter than rustc for now"
+    },
+    "extern-c": {
+      "line": "#[target_feature(enable = \"sse2\")] pub unsafe extern \"C\" fn c() {}",
+      "rustc": "accepted",
+      "v13_before": "source named/foreign/target-feature function metadata requires its wider profile",
+      "v13_after": "source target-feature function form requires its wider profile",
+      "note": "if the named/foreign test fires first, a recorded failed prediction"
+    },
+    "inherent": {
+      "line": "pub struct Lane; impl Lane { #[target_feature(enable = \"sse\")] pub unsafe fn get(value: u32) -> u32 { value } }",
+      "rustc": "builds",
+      "v13_before": "source named/foreign/target-feature function metadata requires its wider profile",
+      "v13_after": "source nonordinary callable effect/safety/convention requires a wider profile",
+      "note": "added by amendment 2 (2026-11-09T14:07:40Z) before it ran: F's exporter checks pass it and the existing unsafe associated-function fence rejects it, writing no packet; stricter than rustc until the associated-unsafe widening item"
+    },
+    "const": {
+      "line": "#[target_feature(enable = \"sse2\")] pub const unsafe fn k() {}",
+      "rustc": "accepted",
+      "v13_before": "source named/foreign/target-feature function metadata requires its wider profile",
+      "v13_after": "source target-feature function form requires its wider profile",
+      "note": "stricter than rustc for now"
+    },
+    "no-mangle": {
+      "line": "#[unsafe(no_mangle)] #[target_feature(enable = \"sse2\")] pub unsafe fn n() {}",
+      "rustc": "accepted",
+      "v13_before": "source named/foreign/target-feature function metadata requires its wider profile",
+      "v13_after": "source named/foreign/target-feature function metadata requires its wider profile",
+      "note": "the named test keeps its text"
+    },
+    "inline-always": {
+      "line": "#[inline(always)] #[target_feature(enable = \"sse2\")] pub unsafe fn a() {}",
+      "rustc": "rejected (cannot use `#[inline(always)]` with `#[target_feature]`, no code)",
+      "v13_before": "cannot use `#[inline(always)]` with `#[target_feature]` (the before binary d9883c84 already holds F0)",
+      "v13_after": "cannot use `#[inline(always)]` with `#[target_feature]`",
+      "note": "F0's local rule, before export: the exporter never sees the combination"
+    },
+    "older_gate": {
+      "control": "generated/older-gate.rs: pa29 spec/source-nominals/provider.rs then `second`'s line",
+      "rustc": "builds",
+      "v12_and_v10_before_and_after": "source named/foreign/target-feature function metadata requires its wider profile",
+      "v13_after": "exports"
+    },
+    "provider_v13": {
+      "before": "source named/foreign/target-feature function metadata requires its wider profile",
+      "after": "exports"
+    }
+  },
+  "forged_rows": {
+    "codec_level": {
+      "note": "private codec tests over written rows (the S precedent's vector_headers mount): each is read back and rejected by name",
+      "flags_0x18": "unknown transported inline or callable advisory flags",
+      "bit3_without_body_nodes": "source target-feature rows require the version-thirteen header profile",
+      "flags_0x0b_without_body_nodes": "source target-feature rows require the version-thirteen header profile (checked before the cold/caller text)",
+      "count_0": "source target-feature set is empty",
+      "count_129": "source target-feature set exceeds transport profile limit",
+      "name_length_33": "source target-feature name exceeds transport profile limit",
+      "name_length_0": "unknown source target feature",
+      "name_not_utf8": "unknown source target feature",
+      "pair_swapped": "non-canonical source target-feature set",
+      "name_duplicated": "non-canonical source target-feature set",
+      "bit3_with_inline_always": "source target-feature function cannot use an always-inline hint",
+      "bit3_on_trait_row": "source trait header cannot carry a callable advisory",
+      "bit3_on_bodyless_function": "source target features require an exported original body (the foundation's required `Clone::clone`)"
+    },
+    "consumer_level": {
+      "note": "private row-level forgeries: the provider exported in process, decoded, one HeaderContract changed, re-encoded, then a fresh client analysis",
+      "name_ssx_on_second": "unknown source target feature",
+      "name_soft_float_on_second": "unknown source target feature",
+      "bit3_on_u32_clone_impl": "source trait member target features require their trait implementation transport",
+      "bit3_on_zero": "source target-feature function form requires its wider profile",
+      "bit3_on_plain": "source target-feature function is not declared unsafe",
+      "bit3_on_safe_inherent": "generated/inherent-forgery.rs (the amended provider plus a safe `Lane::get(value: u32) -> u32`), exported in process; bit 3 with [sse] on Lane::get is rejected with `source target-feature function is not declared unsafe`, past the trait-member check because its owner is an imported inherent impl. Added by amendment 2 before it ran, as a named test of its own",
+      "order": "body (codec), then trait member, form, unsafe and the table, the exporter's order. This amends the notice's 'unsafe, body, trait member, form' so the foundation's own rows serve as forgery targets"
+    },
+    "declared_accepted": {
+      "note": "the bit-3 limit: neither forgery can be told apart, and neither changes an outcome or a LowIR byte on this target",
+      "bit3_avx_on_bare": "call.rs against the forged packet is accepted and its LowIR equals its LowIR against the genuine packet",
+      "bit3_stripped_from_keep": "generic.rs is accepted and its LowIR equals the genuine packet's"
+    }
+  },
+  "old_readers": {
+    "868d91e1": "unknown transported inline or callable advisory flags on F's provider packet and on the stream packet",
+    "ca3ba92f": "unknown transported inline or callable advisory flags on both: header attributes decode before the nominal headers",
+    "legacy_codec": "unchanged: target-feature exports are outside the generic/scalar metadata profile"
+  },
+  "byte_identity": "the F0 candidate d9883c84 (b2a14ea76) and the F candidate publish identical version-thirteen packets and LowIR for pa29 spec/transparent-records, panic-attributes, macro-contexts, const-parameters, pointer-slices, named-constants and array-types, pa41 spec/asm-transport and spec/simd-transport providers and the native.rs prelude before `#[repr(simd)]`",
+  "flip_survey": "against d9883c84 under version 13: predicted to change only spec/target-feature-transport (its provider and accepted clients flip to accepted, its rejected clients reach their declared texts once a packet exists)",
+  "width": "s::HeaderContract 56 -> 64 bytes (predicted, asserted after measurement); DeclaredFeatures 24 bytes; target_features::Contract grows by 16 bytes (the declared FeatureSet)",
+  "bounded_work": "generated providers with D = 1, 2 and 8 sse2 target-feature functions: the client's imported header work satisfies w(8) - w(1) = 7 * (w(2) - w(1))",
+  "cpu_policy": "private: the imported-asm union helper over a synthetic baseline without sse admits xmm_reg with imported {sse} and rejects it with 'assembly register class requires the sse target feature' with no import; no public control can distinguish it on this target",
+  "always_inline_span": "integrator review point: always_inline falls back to the owner's first target_feature attribute span when the inline view has no source site. Declarations::inline_hint only ever builds ContractOrigin::source_site, so the fallback is defensive and never points at offset 0",
+  "stream_witness": {
+    "step_1": {
+      "source": "spec/asm-native/native.rs lines 1-95 (before `// Authored observers`)",
+      "before": "source named/foreign/target-feature function metadata requires its wider profile",
+      "after": "exports: `_mm_stream_ps`'s row is `decl | site | 00 | 09 | owner_site | 00 | 00 | 01000000 | 03000000 sse` and its one template is `movntps [{p}],{a}`",
+      "stop_rule": "any other fence is recorded by its text and reported; no workaround"
+    },
+    "step_2": {
+      "source": "spec/target-feature-transport/stream-provider.rs (lines 1-95 equal native.rs's, asserted)",
+      "after": "exports",
+      "named_risks": [
+        "the SIMD tuple constructor `__m128(lanes)` in a transported body",
+        "the operand block `{ a = high; p }` with an assignment in a transported asm",
+        "an imported SIMD type in a client `extern \"C\"` signature"
+      ],
+      "stop_rule": "a named risk that appears stops the witness, recorded and reported"
+    },
+    "step_3": {
+      "client": "spec/target-feature-transport/stream-client.rs",
+      "rustgm_lowir": "6 assembly templates (`_mm_stream_ps` once, stream_default, reassigned, operand_order, tagged::<u8>, tagged::<u32>); headers 5 x `intel readwrite 1 24 0 2` and 1 x `intel readwrite 13 24 7 2`; `_mm_stream_ps`'s template equals spec/asm-native/stream-template.lowir up to its @asmN label",
+      "native": "client.o observer.o entry.o: stdout equals spec/asm-native/expected.stdout, exit 0, 6 movntps with an xmm source in the RustGM object",
+      "rustc": "base rlib and object, client object, linked with observer.o and entry.o: the same stdout, at least one movntps",
+      "amended": {
+        "recorded": "2026-11-09T14:28:00Z (amendment 4), after the first run of step 3",
+        "observed": "step 2 exports as declared; the fresh stream-client consumer is rejected with `nominal shape or representation is outside the metadata profile` (sema/crates/export/records.rs:267): its own non-source library interface discovery reaches `__m128` in the `extern \"C\"` signatures of rg_stream_ps, rg_stream_default and rg_generic and admits named-field records only",
+        "named_risk": "the third, an imported SIMD type in a client `extern \"C\"` signature",
+        "stop_rule": "the witness stops at step 3: the text is recorded by the integration test, the native witness does not run, and the integrator decides the next step; stream-client.rs is unchanged"
+      }
+    }
+  },
+  "backend": "nothing beyond the v3 pin: LowIR carries no target-feature attribute and the witness's forms already run on v3; a backend rejection stops F and is reported",
+  "spec_condition": "beside S4: a forged addition widens the imported asm CPU check to baseline plus the claimed closure; any later item admitting a register class that needs a non-baseline feature (ymm_reg, zmm_reg, kreg) must first cover forged additions by inventory identity or an authenticated feature set",
+  "amended_before_any_run": "2026-11-09T12:31Z: two wording corrections to declared_accepted.bit3_avx_on_bare and export_controls.inline-always.v13_before; no outcome changed and nothing had run",
+  "amendments": {
+    "1": "obj/parallel/target-feature-transport/f-amendments/amendment-1.json, 2026-11-09T13:30:02Z, after the rustc oracle and before any RustGM run: twin-keep's named fence, the twin texts, the untargeted bounded-work comparison, the NominalHeader 96 -> 104 pin, the consumer forgery client and mechanism, the u32 clone row and in-process LowIR for the declared-accepted forgeries",
+    "2": "obj/parallel/target-feature-transport/f-amendments/amendment-2.json, 2026-11-09T14:07:40Z, the integrator's option A: Lane::get and inherent.rs withdrawn, opponent-inherent and the safe-inherent forgery added; the original declared outcomes are 644bb438305380c14a7a392df14794724eacbea28157228379e41bb54e6216e7",
+    "3": "obj/parallel/target-feature-transport/f-amendments/amendment-3.json, 2026-11-09T14:23:30Z, after the first integration run: safe-pointer's text for the client and its twin, pa29's unknown-flags wire control moved from byte 8 to 16 with byte 8 kept as a target-feature control, and the stream witness's packet name",
+    "4": "obj/parallel/target-feature-transport/f-amendments/amendment-4.json, 2026-11-09T14:28:00Z, after the integration rerun: twin-keep's declared parity restored (amendment 1's prediction withdrawn) and the stream witness stopped at step 3 by its third named risk, with one declared diagnostic probe"
+  }
+}

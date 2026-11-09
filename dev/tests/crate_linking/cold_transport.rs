@@ -170,11 +170,19 @@ fn forgeries(bytes: &[u8]) -> Result<(Vec<Forgery>, Vec<u8>)> {
     untracked[rows + 29] = 0;
     Ok((
         vec![
+            // F's bit 3 made byte 8 a declared target-feature row, so 16
+            // takes over the unknown-bit role (F amendment 3).
             (
                 "unknown-flags",
                 "relay",
-                flagged(8),
+                flagged(16),
                 "unknown transported inline or callable advisory flags",
+            ),
+            (
+                "feature-flags",
+                "relay",
+                flagged(8),
+                "source target-feature name exceeds transport profile limit",
             ),
             (
                 "tracked-callee",

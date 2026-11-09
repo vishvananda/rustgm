@@ -273,10 +273,24 @@
         "after": "aca501ee17dd7a4fb6ad28f131275c641d31e2ab19a61d3f2a5f85a93b421166"
       },
       "unchanged": "controls keeps the B1 record; transport.rs, the stream template and the native outcome are unchanged; observations_after_run keeps the B1 observation as recorded"
+    },
+    {
+      "item": "B2 F, target-feature rows (docs/parallel/target-feature-rows.md)",
+      "declared": "2026-11-09T12:30:08Z, before any F oracle, development or candidate run, in pa41/tests/target-feature-transport-outcomes.json (stream_witness.step_1)",
+      "stream_body_module_bodies_v13": {
+        "before": "source named/foreign/target-feature function metadata requires its wider profile",
+        "after": "exports: `_mm_stream_ps`'s row carries its inline hint (FunctionBody) and the declared target features [sse] as header bit 3, and the packet's one template is \"movntps [{p}],{a}\"",
+        "reason": "version 13 carries a free unsafe fn's declared target features as function header bit 3; the consumer re-proves the row and resolves the names against its own table"
+      },
+      "README.md": {
+        "before": "aca501ee17dd7a4fb6ad28f131275c641d31e2ab19a61d3f2a5f85a93b421166",
+        "after": "8c1e92fe5c69ab12d937ffb8dd01ddee8a4151ee9921548875f3fd41ecb8a97d"
+      },
+      "unchanged": "controls keeps the B1 record; transport.rs, the stream template, native.rs, observer.c, entry.c and the native outcome are unchanged; observations_after_run keeps the B1 observation as recorded. The cross-crate witness (spec/target-feature-transport) stops at its client's `extern \"C\"` signatures over the imported `__m128`, recorded in target-feature-transport-outcomes.json"
     }
   ],
   "files": {
-    "README.md": "aca501ee17dd7a4fb6ad28f131275c641d31e2ab19a61d3f2a5f85a93b421166",
+    "README.md": "8c1e92fe5c69ab12d937ffb8dd01ddee8a4151ee9921548875f3fd41ecb8a97d",
     "entry.c": "98452b8d8fabcf47485e56e1b93d1965cbdc46132d8114ff42f835fc9765b266",
     "expected.stdout": "d01b7cec7494caaf9554d95bd3352dfe829a351b0be188b1a1ae905d03ea7522",
     "native.rs": "1631be50578cad11c570aa89b0ca8d5be751bf64f62fb07b8150c48e63fd5e94",

@@ -119,3 +119,12 @@ candidate `d9883c84`:
 - The only changes are the three new rejected inputs, which move from
   acceptance or the export fence to the new error. This is an accepted-to-rejected
   flip that matches rustc.
+
+## Transport amendment (B2 F, 2026-11-09)
+
+[Target-feature rows](parallel/target-feature-rows.md) opens the
+target-feature transport fence for one form. Under version 13, a free
+`unsafe fn` with the Rust ABI exports its declared features as function
+header bit 3. Each consumer re-proves the row on its own header and table,
+and the imported closure widens only that body's asm CPU check. Every other
+form keeps a named fence. The Fn-trait fences are unchanged.

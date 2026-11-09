@@ -86,9 +86,15 @@ the initial source profile", until B2's const-parameter slice
 the declared stop after that, "source nominal representation requires its
 wider complete contract", until B2's SIMD slice
 (`docs/parallel/simd-header-rows.md`) carried `__m128`'s `repr(simd)` header.
-It now pins the declared stop after that, "source named/foreign/target-feature
+It then pinned the declared stop after that, "source named/foreign/target-feature
 function metadata requires its wider profile", from `_mm_stream_ps`'s
-`#[target_feature]`. `contract.json` keeps the B1 observation as recorded.
+`#[target_feature]`, until B2's target-feature slice
+(`docs/parallel/target-feature-rows.md`) carried its declared `sse` as
+header bit 3. The packet now exports, with `_mm_stream_ps`'s inline hint,
+its one feature and its one template `movntps [{p}],{a}`. The cross-crate
+witness in `../target-feature-transport` then stops at its client's
+`extern "C"` signatures over the imported `__m128`. `contract.json` keeps
+the B1 observation as recorded.
 
 Amendment (B2 A's comment fence, `docs/parallel/asm-transport.md`): the
 pinned backend's assembler reads only `#` comments. `block-comment.rs` and

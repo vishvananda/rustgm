@@ -175,6 +175,10 @@ impl Declarations {
 }
 pub(super) use bootstrap::owner as bootstrap_owner;
 pub(super) use imported::prepare as prepare_imported;
+pub(in crate::sema) use imported::{
+    target_feature_rows as imported_target_feature_rows,
+    target_features as imported_target_features,
+};
 pub(super) use local::{InputBound, bind_definition, finish, observe_owner};
 pub(in crate::sema) use local::{
     bind_cold_prototype, caller_payments, capture_cold_prototype, charge_attribute_retention,
@@ -182,6 +186,16 @@ pub(in crate::sema) use local::{
     intrinsic_fallback_is_spec, require_protocol_variant, require_recorded_pointee_image,
     reserve_source_contracts, role_source_image, source_payments,
 };
+/// The import ledger's accumulated header work, for bounded-work controls.
+#[cfg(test)]
+pub(crate) fn imported_header_work(facts: &Declarations) -> Option<usize> {
+    facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .and_then(|ledger| ledger.imported.as_deref())
+        .map(|headers| headers.work.get())
+}
 pub(super) fn has_imported(facts: &Declarations, definition: DefId) -> bool {
     facts
         .must_use_contracts

@@ -244,6 +244,7 @@ impl Stage {
             inline,
             cold: false,
             caller_tracking: false,
+            target_features: None,
         })
     }
 }
@@ -376,6 +377,19 @@ impl Stage {
             ContractKnowledge::KnownPresent(()) => true,
         };
         contract.caller_tracking = facts.checked_caller_tracking(report, definition)?;
+        // The export gate has admitted only a free or inherent unsafe Rust-ABI
+        // function; its explicitly named features are replayed, not re-parsed.
+        if let Some(names) = crate::sema::target_features::declared_names(facts, definition) {
+            let names: Vec<Box<str>> = names.map(Box::from).collect();
+            let bytes = names.iter().map(|name| name.len()).sum::<usize>();
+            self.charge(1 + names.len() + bytes)
+                .map_err(Error::unlocated)?;
+            self.reserve(
+                size_of::<s::DeclaredFeatures>() + names.len() * size_of::<Box<str>>() + bytes,
+            )
+            .map_err(Error::unlocated)?;
+            contract.target_features = Some(Box::new(s::DeclaredFeatures { names }));
+        }
         Ok(())
     }
 }

@@ -235,6 +235,15 @@ that row. Each consumer now re-proves an imported asm body's `xmm_reg`
 operand: S's `store` client lowers `movups [{p}],{a}` over an imported
 `V([u32; 4])` and exits 42 natively.
 
+Amendment (B2 F, [target-feature rows](parallel/target-feature-rows.md)):
+version 13 now carries a free `unsafe fn`'s declared target features as
+function header bit 3, so the stream body's crate exports, with
+`_mm_stream_ps`'s inline hint, `[sse]` and its one template, as declared in
+`pa41/tests/target-feature-transport-outcomes.json`. The cross-crate witness
+then stops at its client's `extern "C"` signatures over the imported
+`__m128`, with "nominal shape or representation is outside the metadata
+profile", one of the witness's three named risks.
+
 ### Qualification
 
 All outcomes except the stream body's publication error were declared in

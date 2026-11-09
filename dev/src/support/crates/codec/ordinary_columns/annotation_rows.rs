@@ -28,11 +28,13 @@ pub(super) fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(),
         }
     }
     // Version thirteen widens the inline presence byte into a flag set: bit 0
-    // is the inline hint, bit 1 the cold advisory and bit 2 caller tracking.
-    // Rows without the two advisories keep their exact earlier bytes.
+    // is the inline hint, bit 1 the cold advisory, bit 2 caller tracking and
+    // bit 3 declared target features. Rows without the advisories keep their
+    // exact earlier bytes.
     out.u8(u8::from(row.inline.is_some())
         | u8::from(row.cold) << 1
-        | u8::from(row.caller_tracking) << 2)?;
+        | u8::from(row.caller_tracking) << 2
+        | u8::from(row.target_features.is_some()) << 3)?;
     if let Some(value) = row.inline {
         id(out, value.owner_site)?;
         out.u8(match value.hint {
@@ -44,6 +46,13 @@ pub(super) fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(),
             s::InlineApplicability::FunctionBody => 0,
             s::InlineApplicability::DiagnosedNoBody => 1,
         })?;
+    }
+    // Written as declared: the reader, not the writer, owns canonical form.
+    if let Some(features) = &row.target_features {
+        out.u32(features.names.len())?;
+        for name in &features.names {
+            out.string(name)?;
+        }
     }
     Ok(())
 }
@@ -63,26 +72,72 @@ pub(super) fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'
         None
     };
     let flags = read.reader.u8()?;
-    if flags > 7 {
+    if flags > 15 {
         return Err("unknown transported inline or callable advisory flags");
     }
-    if flags > 1 && !read.profile.body_nodes() {
+    if flags & 8 != 0 && !read.profile.body_nodes() {
+        return Err("source target-feature rows require the version-thirteen header profile");
+    }
+    if flags & 6 != 0 && !read.profile.body_nodes() {
         return Err(
             "source cold and caller tracking rows require the version-thirteen header profile",
         );
     }
+    let inline = if flags & 1 == 1 {
+        Some(inline_read(read)?)
+    } else {
+        None
+    };
+    let target_features = if flags & 8 == 0 {
+        None
+    } else {
+        // Pinned rustc rejects the combination in the provider.
+        if inline.is_some_and(|value| value.hint == s::InlineHint::Always) {
+            return Err("source target-feature function cannot use an always-inline hint");
+        }
+        Some(Box::new(features_read(read)?))
+    };
     Ok(s::HeaderContract {
         declaration,
         declaration_site,
         must_use,
-        inline: if flags & 1 == 1 {
-            Some(inline_read(read)?)
-        } else {
-            None
-        },
+        inline,
         cold: flags & 2 != 0,
         caller_tracking: flags & 4 != 0,
+        target_features,
     })
+}
+/// Syntax only: support cannot see sema's feature table, so each consumer
+/// resolves the names when it checks its import ledger.
+fn features_read(read: &mut Input<'_, '_>) -> Result<s::DeclaredFeatures, &'static str> {
+    let count = read.reader.u32()?;
+    if count == 0 {
+        return Err("source target-feature set is empty");
+    }
+    if count > s::MAX_TARGET_FEATURES {
+        return Err("source target-feature set exceeds transport profile limit");
+    }
+    read.reader.atoms(count)?;
+    read.reserve(size_of::<s::DeclaredFeatures>() + count * size_of::<Box<str>>())?;
+    let mut names: Vec<Box<str>> = Vec::with_capacity(count);
+    for _ in 0..count {
+        let length = read.reader.u32()?;
+        if length > s::MAX_TARGET_FEATURE_NAME {
+            return Err("source target-feature name exceeds transport profile limit");
+        }
+        if length == 0 {
+            return Err("unknown source target feature");
+        }
+        read.reader.atoms(length)?;
+        read.reserve(length)?;
+        let name = std::str::from_utf8(read.reader.bytes(length)?)
+            .map_err(|_| "unknown source target feature")?;
+        if names.last().is_some_and(|last| **last >= *name) {
+            return Err("non-canonical source target-feature set");
+        }
+        names.push(Box::from(name));
+    }
+    Ok(s::DeclaredFeatures { names })
 }
 fn inline_read(read: &mut Input<'_, '_>) -> Result<s::InlineContract, &'static str> {
     Ok(s::InlineContract {

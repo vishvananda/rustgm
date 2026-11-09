@@ -5,6 +5,35 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane D [B2 F, target-feature rows](parallel/target-feature-rows.md)
+carries a free `unsafe fn`'s declared target features under version 13 as
+function header bit 3. No closure or table index travels: each consumer
+re-proves every imported bit-3 row on its own installed header, resolves the
+names against its own feature table and widens only that body's asm CPU
+check, to its baseline plus the closure.
+
+- `call`, `generic` and `pointer` call imported target-feature functions
+  through their ordinary unsafe signatures and exit 42 natively. The
+  imported `keep::<u8>` instance equals the local twin's byte for byte.
+- The real `_mm_stream_ps` body now exports with its inline hint, `[sse]`
+  and its one template. The cross-crate stream witness then stops at its
+  client's `extern "C"` signatures over the imported `__m128`, with "nominal
+  shape or representation is outside the metadata profile", one of its
+  three named risks; the integrator decides the next step.
+- Stricter than rustc: safe target-feature functions, trait and trait-impl
+  members, non-Rust-ABI and `const` target-feature functions keep named
+  fences at export.
+- Integrity condition beside S4 (spec.md): a forged bit-3 addition widens
+  one imported body's asm CPU check. Any item that admits a register class
+  needing a non-baseline feature must cover forged additions first.
+- Queued with the associated-unsafe widening item ahead of HR/C ("source
+  unsafe associated Calls require their wider actual profile"): target
+  features on an unsafe inherent method. F's declared `Lane::get` and its
+  `inherent` client were withdrawn, because unsafe inherent methods keep
+  "source nonordinary callable effect/safety/convention requires a wider
+  profile" at export; the withdrawn client becomes one of that item's
+  controls.
+
 Lane C [calls through fn pointers](parallel/pointer-calls.md), R2, carries a
 call through a closed Rust fn pointer in version-13 exported bodies as a
 second shape of value code 30, `(30, [Type, Value, Range, Flag(safety)])`,
@@ -90,8 +119,8 @@ its own field, and re-proves an imported asm body's `xmm_reg` operand.
 - Integrity limit (S4): without asm, a 3-to-0 rewrite is ABI-visible and
   undetected, like the transparent 2-to-0 rewrite. It is left for a later
   ABI digest.
-- Open: F. The stream witness now stops at `_mm_stream_ps`'s
-  `#[target_feature]`.
+- F followed: the stream witness now exports `_mm_stream_ps` (see F's
+  entry above).
 
 Lane D [B2 T, array type rows](parallel/array-type-rows.md) exports whole
 `[T; N]` values under version 13 as type recipe tag 14, `14 | element |

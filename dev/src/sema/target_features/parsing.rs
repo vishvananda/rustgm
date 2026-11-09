@@ -42,7 +42,7 @@ pub(in crate::sema) fn collect(
                 node = value;
             }
             let source = NodeKey { file, node };
-            let mut targeted = false;
+            let mut targeted = None;
             for (effect, attribute, forest) in
                 unit.retained_indexed_attributes(owner.attributes.clone())
             {
@@ -74,6 +74,7 @@ pub(in crate::sema) fn collect(
                             image: SourceImage::capture(unit, node),
                             sites: Vec::new(),
                             features: FeatureSet::default(),
+                            declared: FeatureSet::default(),
                             declared_unsafe: flags.safety == Safety::Unsafe,
                         },
                     );
@@ -87,7 +88,7 @@ pub(in crate::sema) fn collect(
                     source,
                     forest,
                     attribute,
-                    &mut row.features,
+                    (&mut row.features, &mut row.declared),
                     &mut literals,
                 )?;
                 let growth = Growth::vector::<Site>(row.sites.len(), row.sites.capacity(), 1);
@@ -106,10 +107,10 @@ pub(in crate::sema) fn collect(
                     attribute,
                     input,
                 });
-                targeted = true;
+                targeted.get_or_insert(attribute.span.start);
             }
-            if targeted {
-                always_inline(report, facts, source)?;
+            if let Some(first) = targeted {
+                always_inline(report, facts, source, first)?;
             }
         }
     }
@@ -118,14 +119,25 @@ pub(in crate::sema) fn collect(
 /// Pinned rustc rejects `#[inline(always)]` on every target-feature function,
 /// generic, unused or associated, at the inline attribute, after its features.
 /// Inline hints are collected first, so the owner's own row answers.
-fn always_inline(report: &Report, facts: &Declarations, source: NodeKey) -> Result<(), Error> {
+fn always_inline(
+    report: &Report,
+    facts: &Declarations,
+    source: NodeKey,
+    first: u32,
+) -> Result<(), Error> {
     let Some(view) = facts.inline_hint(report, source)? else {
         return Ok(());
     };
     if view.hint != crate::sema::inlining::Hint::Always {
         return Ok(());
     }
-    let start = view.origin.source().map_or(0, |site| site.span.start);
+    // `inline_hint` builds every view with `ContractOrigin::source_site`, so
+    // the owner's own first target_feature attribute is only a defensive
+    // fallback that never points at offset 0.
+    let start = match view.origin.source() {
+        Some(site) => site.span.start,
+        None => first,
+    };
     Err(Error::at(
         source.file,
         start,
@@ -152,7 +164,7 @@ fn parse<'a>(
     key: NodeKey,
     forest: &Forest,
     attribute: Attribute,
-    features: &mut FeatureSet,
+    (features, declared): (&mut FeatureSet, &mut FeatureSet),
     literals: &mut Literals<'a>,
 ) -> Result<(), Error> {
     let error = |message| Error::at(key.file, attribute.span.start, message);
@@ -199,7 +211,8 @@ fn parse<'a>(
                 .start,
         };
         let required = requirement(report, facts, literals, source, token, place)?;
-        *features = features.union(required);
+        *features = features.union(required.features());
+        *declared = declared.union(required.declared());
         cursor += 3;
         if cursor < range.end {
             if !forest.punctuation(cursor, Punctuation::Comma) {
@@ -219,7 +232,7 @@ fn requirement<'a>(
     source: &'a str,
     token: Token,
     place: Place,
-) -> Result<FeatureSet, Error> {
+) -> Result<Closed, Error> {
     let length = (token.end - token.start) as usize;
     let spelling = (token.kind == TokenKind::String)
         .then(|| source.get(token.start as usize..token.end as usize))
@@ -248,7 +261,7 @@ fn requirement<'a>(
             .map_err(|_| place.attribute("target-feature literal allocation failed"))?;
         literals.insert(spelling, closed);
     }
-    Ok(closed.features())
+    Ok(closed)
 }
 /// Decode, validate and close one `enable` value at its first actual site.
 fn validate(
