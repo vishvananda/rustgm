@@ -1,224 +1,232 @@
-# RustGM handoff — 2026-11-07
+# RustGM handoff — 2026-11-09
 
-The goal is active: **complete all assignment requirements to build the
-original std crates**. Execution follows the
-[core census and transport plan](docs/core-census-plan.md). The backend stays
-frozen. Commits use the repository's single-line subjects without trailers.
+The goal is unchanged: **complete all assignment requirements to build the
+original std crates**, starting with core. Work follows the
+[core census and transport plan](docs/core-census-plan.md) and
+[docs/parallel-work.md](docs/parallel-work.md). No original core, alloc or std
+artifact exists yet. Don't infer assignment completion from a census count or
+a focused checkpoint.
 
-Progress on main: LIB-193 repaired (memoized `enable` spellings, input-graph
-header bound); analysis-only census mode; body transport v12 (branches) and v13
-(stable generic body IR); target-unit executor; census batch 1. Census 2 of
-original core checks 10,408 declarations with 6 failed and 31 blocked, and stops
-at the first-error `finish_constant_headers` check before associated types and
-the per-definition loop. Bodies are not reached yet.
+Standing user instructions:
+- The integrator makes decisions without blocking on the user and records
+  their tradeoffs.
+- Commits use the repository's single-line subjects with no trailers (no
+  Co-Authored-By).
+- Never build in `/home/vishvananda/rustgm`; build only in the
+  `/mnt/vizier/rustgm-scratch` worktrees.
+- Don't create more worktrees.
+- Don't edit the cppgm-extended or v5rust checkouts.
+- The backend stays pinned to v3 (`17b024f69`). Only the user raises backend
+  extensions.
+- `rm` takes only literal, inspected absolute paths: no variable or command
+  substitution, globs, `xargs rm`, `find -delete` or `-exec rm`. Bulk cleanup
+  goes through `storage.py prune` or `make tidy`. Repeat this rule in every
+  subagent brief.
 
-Active lanes, each committing locally for integrator review:
-- A, `rustgm-pa29-work`, census batch 2: on-demand preparation for impl-header
-  ordering gaps, isolation of the terminal check, invalid/exhausted message split.
-- B, `rustgm-pa26-work`: re-plan the frozen unit graphs with RustGM's profile,
-  then core's auto traits as object markers (`any.rs:162/169`).
-- C, `rustgm-async-work`: imported language-role transport under v13, with
-  parameter defaults, associated types and checked-arithmetic Panic.
-The integrator cherry-picks each lane's commits onto main, runs the joined
-focused checks and harness in an idle worktree, and pushes.
+## Main and CI
 
-## Published checkpoint and assignment status
+`origin/main` is **`198fdea9b`**. Landed in this session, newest first:
 
-Main compiler checkpoint: `fb2acd69c292469d01596ef274906e69f888ccfa`.
-The subsequent handoff-only commit changes no compiler or qualification inputs.
+| Commit(s) | Item |
+| --- | --- |
+| `375c125e7`, `f500e9692`, `198fdea9b` | Lane A census batch 21 (empty callable binders in method applicability, D1 dedupe through the lookup-local `ScopeConditions` reader); Lane C's (ii) rulings docs and associated-unsafe functions under version 13 |
+| `d9f6ad4f6`..`65670125b` | Lane B item B, negative premises in nested trait proofs |
+| `a6be80084` | Lane C (ii), zero-slot nominal fn fields |
+| `0bcba9e3f` | batch 20 |
+| `20e079fa3`, `fbe18b8a8` | F target features and the stream witness |
+| `99f79b8d0`, `c8c2a8eda` | R2 pointer calls |
+| `4df942467` | batch 19 |
+| `b2a14ea76` | F0 |
 
-- `18fad82a8`: actual Field OFFSET/default/layout execution and typed projection
-  dependency/body-proof publication repairs.
-- `6b994c816`: joined real pointer guarantees/native fallbacks and captured const
-  execution through shared/mutable/owned environments and existing components.
-- `09ca0fd48`: cold trait/foreign prototypes use actual bound header owners.
-- `567ab37b5`: actual staged/ordinary deprecation release semantics; inactive
-  attributes emit no event or expectation fulfillment; malformed staged headers
-  still reject before use and independently of caps.
-- `fb2acd69c`: combined qualification, specification and LIB193 tracker update.
+Full CI is workflow `381630191`, dispatched with
+`gh workflow run 381630191 --ref main`.
+- A push runs only the fast job; a dispatch adds qualification.
+- A new dispatch cancels the one in progress, so wait for it to finish.
+- Passed: 42659856520 (`0bcba9e3f`), 42668881267 (`a6be80084`) and
+  42679123457 (`65670125b`).
+- **42689087036 (`198fdea9b`) was still running at handoff.** Check it first:
+  `gh run view 42689087036 --json status,conclusion,jobs`.
 
-PA1–20 remain implemented-draft while release records are reconciled; PA21–24
-are implemented for their documented course profiles. **PA25–44 remain incomplete
-as whole assignments.** The dependency plan still has37 units:10 implemented
-finite profiles,15 partial,12 missing; all37 component publications are pending.
-No original core, alloc or std artifact exists. Do not infer assignment completion
-from a finite checkpoint or a successful semantic view.
+Census 24 used batch 21's pin `88273b11` at
+`rustgm-pa29-work/obj/parallel/census-batch21/qualified-1/pin/`, which is the
+current census baseline.
+- It checked 42,310 declarations, with none failed or blocked.
+- **It found one record:** `local_annotations` at
+  `iter/traits/iterator.rs:698`, in `Intersperse::new`, failing with
+  "candidate properties require associated type normalization".
+- Batch 22 targets that record.
+- The next known blocker after it is `slice/mod.rs:2251` `Split::new`, with
+  "quantified clause requires a scoped consumer". That is batch 21's
+  bound-region fence, and the provisional lead for batch 23 (A+O).
 
-Read `AGENTS.md`, `spec.md`, `ROADMAP.md`, `assignment-plan.json`,
-`docs/assignment-order.md`, `docs/library-build-blockers.md` and the owning handout.
-The authoritative latest checkpoint is
-`docs/parallel/cold-deprecation-main-join.{md,json}`. Older frontier paragraphs
-are historical; use the tracker's first entry and newest evidence.
+## Integrator state and procedure
 
-## Current core frontier: LIB193
+**The durable integrator kit is `/mnt/vizier/rustgm-scratch/integrator-20261109/`.**
+- `pending_decisions.md`: the append-only log of every ruling and its
+  tradeoffs this session. Read it before ruling on anything in flight.
+- `joined_common.sh`, `joined_d7.sh` and `admit_retry.sh`: join runners.
+- `tools/`: `fresh.py` dedups selections across stages, `verify_receipts.py`,
+  `warm_fastcheck.py` and `build_cli.py`.
+- `keep_both.py`: doc conflict resolution. Use the default, ours-first, for
+  `core-census-plan.md`, and `theirs` for `library-build-blockers.md`.
+- `d7-private-a0.args` and `joined_d7.out`.
 
-Current qualified immutable compiler:
+Join pattern:
+1. Cherry-pick the lane's commits onto main in a temporary
+   `integrate/<item>` branch in the main checkout. Resolve doc conflicts
+   keep-both, and verify that the +/- lines match the lane's commits.
+2. In the lane's worktree, check that the tree is clean, then write
+   `obj/parallel/integrator-hold`.
+3. The script switches to a temporary branch at the joined sha, runs the
+   stages and switches back.
+4. Watch for `rc=[1-9]|abort|never admitted|fatal|switched back`.
+5. If everything passes, fast-forward main, push, delete the temporary
+   branch, release the hold with `rm` on its literal path, and dispatch full
+   CI.
 
-```
-/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/cold-deprecation-main-join-v1/pin/rustgm
-SHA256 48a0b12a2578d1753a8d8d0f094e72b9bd129d3a015c0fc3fba8761a0c7f788c
-```
+Rules for joins:
+- **Join one at a time.** Machine load is about 20, and the 300 s
+  fastcheck budget includes admission.
+- Put the pa31 stages last, and split pa31-other into its a/b/c receipts.
+- `fresh.py` marks tests as seen when it selects them, so a stage that fails
+  hides its tests from later stages. Rerun that stage's exact args afterwards.
+- Before a join, check that every selected test still exists at the joined
+  sha. Pre-seed SEEN with tests that were removed or renamed.
 
-Its actual unchanged-source observation clears LIB192 and reports:
+Rules for outcomes and flips:
+- No accepted→rejected flip where rustc accepts.
+- No rejected→accepted flip without rustc returning 0 and the integrator
+  approving it by name.
+- Outcomes are declared before runs. A failed prediction is a stop and report;
+  an amendment is declared before it is rerun.
+- Version 13 additions go only under `body_nodes()`, with presence derived.
+  Existing packets stay byte-identical, and older readers reject by name.
+- Amendment numbering: amendments already landed keep their numbers. A rebased
+  item takes the next free numbers, with truthful timestamps and a
+  `renumbered` field.
 
-```
-ERROR: input: source header contract query work exceeds profile limit
-```
+## Lanes
 
-It takes19.6071s, opens375 original sources, preserves all722 input hashes, all
-six current configuration-source pins, profile/options and limits. **722 is the
-manifest's checked input count, not722 successfully compiled files.** This is
-an unlocated guard failure, not an artifact, complete body checking or coverage
-percentage. The last profile remains Rust1.98/edition2024/x86-64 Linux/panic-abort,
-explicit cap-lints=allow, source-contract work14500624/attempted1GiB/retained64MiB.
-Final uncapped qualification remains required. No resource limit was raised.
+Each lane is a background agent with a worktree under
+`/mnt/vizier/rustgm-scratch/`. All four were wound down at a safe point; each
+wrote a restart note. **No integrator hold is active.**
 
-Root observation folder:
-`/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/cold-deprecation-main-join-v1/`.
-It contains the receipt, producer/manifest bindings, raw diagnostics/opened
-sources and frozen pin. Do not repeat this known failure without a real repair
-or specifically justified new diagnostic.
+| Lane | Worktree, branch, HEAD | Item and state | Restart note |
+| --- | --- | --- | --- |
+| A | `rustgm-pa29-work`, `implement/census-batch22-20261109`, `198fdea9b`, clean | Census batch 22. Notice `obj/parallel/census-batch22/drafts/notice.txt` (f76db5c9) is approved: P1, which leaves an unresolved projection in `types/infer/properties.rs` UNKNOWN. Base pin `pins/base-198fdea9b` (259d0ebe). T1 is done and reverted: rustc matched every row, and P1's premise is confirmed. **The four T1 departures (`probes/p1/observed.txt`, a7be5dd8) are ruled below; relay them to Lane A.** Next: P1 candidate build and probe run (which confirms h09's text), then fixtures, code, invariants, survey, qualification, census 25. Retire the T1 pin 2f9dc9bb. | `obj/parallel/census-batch22/handoff.md` |
+| B | `rustgm-pa26-work`, `implement/nested-proof-reuse-20261109`, `b621764b0` | Reuse item, which makes 2^d − 1 nested normalizations linear. Draft 3 of `obj/parallel/lane-b-reuse-design-notice.md` (020e6c9e) is approved. Committed, not on main: the behavior-preserving preparatory commit `b621764b0`, which adds the nesting level and `Caller::root`. Its focused fastcheck passed (`1794254952115849884`). **Its byte-identity gates (74 twins, survey, golden table) have not run.** A shared-storage admission refusal stopped them at 239.0 GiB free against 241.7 GiB required. A dev-fast CLI build for `obj/lane-b10/prep-dev-fast/` was still finishing at handoff, so verify its hash before using it. Kept pins: `obj/lane-b10/base-dev-fast` (43818e28) and `base-release` (21f66e51). Four notice edits are still owed (listed in the note). Next: the gates (`gates-retry.sh prep <HEAD>`), then checkpoint 2 (ledger in `infer::Context` and the depth budget at L_nest = 93), then checkpoint 3 (reuse). **Checkpoints 2 and 3 land together.** Rebase onto main after (i) lands. | `obj/parallel/lane-b-reuse-handoff.md` |
+| C | `rustgm-async-work`, `implement/guarded-methods-20261109`, `b3a89c643` | Higher-ranked fn pointers (the HR item). Notice `obj/parallel/hr-callables/notice.md` is approved, with rulings folded in. **Waits for (i) to land, then branches from main.** No code and no pins yet. | `obj/parallel/hr-callables/handoff.md` |
+| D | `rustgm-backend-work`, `implement/record-variants-20261109`, `5e5665580` | Item (i), record variants: `7047a05d9` (i128 slot control) and `5e5665580`, rebased onto `198fdea9b` and union-merged with Lane C's associated movers. **Ready, but its join is incomplete.** Keep pins `base-198fdea9b` (0680f6ad) and `cand4` (0b096be3) until (i) is on main. Next item: client exports. It has an unsent draft, `obj/parallel/client-exports/notice-draft-20261109.md` (d1771b19), which still lacks its fixture plan, invariants and survey; the rulings it needs are listed below. | `obj/parallel/record-variants/handoff.md` |
 
-Source's separate analysis-only diagnostic at clean97574, **without cold44f0**,
-identifies the last crossing charge during target-feature collection:
+## Rulings to relay, and rulings still open
 
-```
-steps=1000002 delta=2 bytes=14686030
-declarations=26322 definitions=26564 owners=24723
-caller=src/sema/target_features.rs:38:5
-charge_query -> reserve_source_contracts -> target_features::pay
- -> parsing::parse -> FeatureSet::insert -> parsing::collect
- -> Checker::from_facts -> Checker::new -> declarations::analyze_with_executor
-```
+**Lane A, batch 22: ruled at wind-down; send these on resume.**
+1. h06 stays rejected, with its observed base text "no applicable trait
+   method for this prefix".
+2. h07 is already accepted on the base through `Make::new`.
+   - It becomes an accepted control that must stay accepted, and leaves the
+     known rejects-valid list.
+   - Drop the error-propagation blockers entry for the `?` that loses the
+     whole lookup, because nothing witnesses it. Record nothing without a
+     witness.
+3. Correct D0's wording: the projection reaches demand through its Sized
+   builtin, while Clone is a polled trait condition. P1 is unchanged.
+4. h13, a method call on an unresolved receiver, becomes invariant (i)'s
+   method-call shape.
 
-This crosses the existing local1M work limit; storage is below16,000,000 bytes.
-It does not establish how prior aggregate work was distributed, prove quadratic
-behavior or identify the current combined compiler's exact caller. **Lane A:
-attribute actual shared-budget contributions and collector work, then repair per
-the plan's LIB-193 section.** Preserve sticky failures and genuine
-source/target permissions. Replace the header ledger's borrowed fixed constants with the
-input-proportional bound of the amended spec budget rule; never tune charges,
-skip checks or raise a factor to absorb repeated work.
+**Lane D, client exports: open.** Lane D's probes found:
+- Both fences sit in the source client's legacy interface (SCHEMA 1), and a
+  source client cannot publish a version 13 packet.
+- Any Rust consumer of a source client first stops at "imported API
+  availability is unknown in its metadata profile".
+- The pinned backend passes `__m128` in xmm0 and exits 42 natively.
+- rustc 1.98 accepts every probe.
 
-## Qualification and CI
+The draft recommends B1 (a pointer node) plus B2 (a source-owned nominal
+reference) in the legacy interface. It needs rulings on:
+- A versus B;
+- B2's identity scheme and consumer;
+- whether the availability error is fixed first or as a follow-up.
 
-Final same-snapshot Root receipts under
-`/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/qualification/fast/`:
+The fixture plan, invariants and survey come after those rulings.
 
-| Receipt | Actual passing scope | Seconds |
-| --- | --- | --- |
-| `1794021721253894418` | Strict cfg(test) lint/link +4 private cold-owner/replay/scaling/transport controls |218.33|
-| `1794022014299758566` |23 regular cold/deprecation/pointer/closure/overflow controls |204.54|
-| `1794022233450994874` |6 actual native tests including both new families and pointer/closure regressions |34.31|
+## Next integrator actions, in order
 
-Format, architecture and strict selected/private Clippy pass. Harness282,
-460 registered roots, upstream127/Reference126 pass. Main matches all3717
-qualified input hashes and73 new fixture/reference hashes. Native streams include
-`cold-foreign 28 36 2`, `future-deprecation 23`, genuine pointer fallback variants,
-and `closure-source 23 47 23 23 47`.
+1. **Check CI 42689087036.** If it failed, investigate before anything else.
+   **Check shared storage:** `/mnt/vizier` had 239 GiB free at handoff, just
+   under the 241.7 GiB the resource controller required for Lane B's gate.
+   Run `make tidy`, then `make tidy-archive`, at idle boundaries in each
+   worktree before the next heavy runs. Don't lower any reserve.
+2. **Rerun the (i) join.**
+   - The first attempt reached `private-a2`. Every stage passed except
+     `private-a0`, which was refused with "Another protected RustGM command
+     is running; cleanup refused" because Lane D ran probes during the hold.
+     That was not a test failure.
+   - Rerun from the start: write the hold in backend-work, then delete only
+     the literal `/mnt/vizier/rustgm-scratch/integrator-20261109/joined_d7.seen`
+     if it exists. The script recreates SEEN.
+   - Run `/mnt/vizier/rustgm-scratch/integrator-20261109/joined_d7.sh` in the
+     background with a watcher.
+   - If it passes: fast-forward main to `5e5665580`, push, dispatch CI and
+     release the hold. Then tell Lane D, and tell Lane C to start HR from main.
+   - Then Lane D retires `base-198fdea9b` and `cand4`.
+3. **Lane B:** rebase onto main after (i) lands. Join only when checkpoints
+   2 and 3 are both complete.
+4. **Lane A:** continue batch 22. Join it, then read census 25's first record
+   to confirm or replace the A+O lead.
+5. **Lane D:** rule on the client-export notice.
+6. **Cleanup:** many old `integrate/joined-*` branches remain in the shared
+   repository. Delete them, and each lane's pre-rebase backup branches, once
+   their items are on main.
 
-Earlier6b integration also executes all3 new sealed closure-record adversaries
-and the five-fault source Copy overlay control in private1794020317010221757;
-28 regular and6 native controls pass. Field's complete native output is
-`field 4 23 29 37 41 47 31 1`. All raw measurements and setup failures are retained;
-the calibrated ordinary/creation controls establish no general speed change.
+## Recorded debt and follow-ups (not queued unless noted)
 
-Full CI **42333296811** targets older main6b994c816, not the final cold/deprecation
-checkpoint. At the last poll its fast job, lint/architecture/harness, independent
-host graph, release and course stages passed; native qualification was running.
-The preceding push fast run42333274746 passed. New final-main fast CI starts on
-push. On resume inspect actual status/logs first:
+**Functions at their line limit.** The next edit that adds lines to any of
+these must factor first:
+- `declaration_conditions` (99/100);
+- `select_projection` and `prove_canonical_trait`.
 
-```sh
-cd /home/vishvananda/rustgm
-gh run view 42333296811 --json status,conclusion,jobs
-gh run list --limit 5 --json databaseId,headSha,status,conclusion,event
-```
+**Candidate fixes:**
+- D3: lift the closed consequences of an empty binder in
+  `elaborate_trait_bounds`.
+- P2n: normalize projections in properties, after Lane B's reuse item lands.
+- h07: a lookup error that kills the whole lookup instead of filtering the
+  candidate.
+- Body inference's Cursor owners leave Gap B open: bounded, but not summed.
+- A frontend worker thread with a larger stack would lift the depth limit
+  L_d from 31 toward rustc's 64. This is a `dev/bin` change.
+- A canonical-selection rejects-valid at d ≥ 2:
+  `Field<U>(for<'a> fn(P^d<&'a U>), u8)`.
 
-Keep an admitted run intact. Fetch terminal failure logs and resolve real
-regressions. After this full run is terminal, dispatch one full successor for
-current main if still needed; do not cancel it by immediately redispatching:
-`gh workflow run check.yml --ref main`. Focused passing evidence permits main
-integration, but is not full release qualification.
+**Known rejects-valid recorded with Lane C's items:**
+- C, early-region and default-body fences;
+- passing a `&mut` parameter on into a call;
+- fn-pointer impl Self types;
+- fn types as application type arguments;
+- generic aliases;
+- promoted `&5`.
 
-## Restartable worktrees
+**For the user:** the alignment of a LowIR i128 slot is unspecified in
+`shared/lowir.md`. 16 bytes is observed under v3. It is recorded in the
+blockers doc, with no frontend workaround.
 
-Main checkout is `/home/vishvananda/rustgm`. All build work stays on btrfs.
-Git refs are shared; inspect status from each repository root before mutations.
+**Other queued items:**
+- f01, then A+O;
+- f03a, low priority;
+- `SliceIndex` needs const trait impls;
+- the fmt chain still needs HR, the transmute intrinsic transport and the
+  client-export fences.
 
-**Root integration tree:** `/mnt/vizier/rustgm-scratch/rustgm-pa26-work`, branch
-`implement/forced-indirect-abi-lib111-20261030`. Qualified source checkpoint is
-`cb12ec17e`; qualification/spec/tracker commit is `f9d7df50d`, cherry-equivalent
-to mainfb2acd69c. Preserve the warm `obj/rust/dev-fast` and
-`obj/rust/private-lint/dev-fast` caches. There is no live Root validation handle
-after wrap-up. Merge current main at an idle boundary before new source edits.
+## Resource rules (summary; AGENTS.md is authoritative)
 
-**Source worker:** `/mnt/vizier/rustgm-scratch/rustgm-pa29-work`, branch
-`implement/source-future-deprecation-20261107`, clean HEAD
-`97574aca92ed3a52d0206daeca188ad691b3cb71`. Its qualified changes are integrated.
-Detailed restart note:
-`obj/parallel/source-transport/header-query-budget/handoff.md`.
-Diagnostic evidence is `header-query-budget/diagnostic1/`, including the saved
-instrumentation patch, raw backtrace, immutable binary/binding and restored.json.
-Temporary production instrumentation was removed; handle4349 terminated normally.
-Diagnostic SHA isf56f18d54efd3916eb245cdb04363ddb0e7620dd7914574f7d0a23bc51a67aa6.
-**Its mutable obj/rust/dev-fast/rustgm is diagnostic, not qualified.** Qualified
-Source dfbd113e is frozen under future-deprecation/final1/rustgm. Preserve existing
-Source cache flags (nonincremental plus its type-size diagnostic flags); do not
-create a replacement cache. Resume budget attribution against the correct
-integrated baseline, preserving diagnostic scope differences.
-
-**Const-callable worker:** `/mnt/vizier/rustgm-scratch/rustgm-async-work`, branch
-`implement/const-closures-20261107`, clean HEAD
-`c9b968a756d910edfd829935b7f862460b7188f4`; read its root `handoff.md`.
-Reference-only458ad516e independently qualifies generic/conditional Rust
-metadata/object/native `conditions 23 23 47`; ordinary Flag rejects E0277.
-Source WIP0f156fe84 (33 files) is **UNQUALIFIED and NOT ON MAIN**: no candidate
-compile/public/native/metadata gate ran, and its last format predates final edits.
-Do not blindly cherry-pick it into main or infer support from reference outcomes.
-
-That WIP shares inherited argument reconstruction, folds genuine defining clauses
-with a paid Bound, retains scoped conditional children, and introduces the approved
-Dispatcher::const_callable port. Its actual member/full arguments/source/effect,
-unused-argument mutation, region/debt publication, borrow/API correctness, formatting
-and predicted width assertions still need review and validation. Callee clauses
-must never become caller premises. Generic-F receiver adaptation, prove_adapter,
-bootstrap, binders/anonymous owners, complete capture destruction and metadata
-transport remain required. Merge current main safely before its first coherent
-focused gate; the worker note gives exact commands and limitations.
-
-The existing `/root/source_transport` and `/root/async_signatures` workers are
-idle, restartable with follow-up tasks after an explicit resume. No new agents,
-trees or caches are needed.
-
-## Resource, cleanup and verification rules
-
-- Keep2 heavy jobs globally,1 per tree,16GiB absolute output cap per tree,
-  150GiB filesystem reserve; check space before work. No root-drive builds.
-- Use existing guarded cached dev-fast checks, <=300s including admission,
-  jobs2. No local release/full sweep per edit. Root uses incremental1; preserve
-  each other tree's established flags. Full longer checks belong in CI.
-- Keep exact selections and authoritative process handles; observation timeout
-  is not terminal. Do not mutate compiler/fixtures during live qualification.
-- Safe idiomatic Rust, Clippy all/pedantic -Dwarnings; syntax-aware file/function,
-  nesting and phase audits apply. No production unwrap/expect/panic/unsafe/env.
-- Parse once, consume typed facts, share indexed work and preserve exact caller
-  obligations. Measure algorithm checkpoints with immutable A/B, A/A+ABBA,
-  frozen inputs and retained observations; Python timeout polling quantizes short
-  wall samples, so use blocking waitpid inside an outer guarded deadline.
-- Backend pin is 17b024f692a5b537a4db6c4d3b6dc33bc930c680 (backend-pins-v3, with
-  the optional assembly capability; see `docs/backend-current-checkpoint.md`).
-  Do not edit cppgm-extended or v5rust during RustGM work.
-
-Root retired7 superseded compiler pins (~0.63GiB unshared blocks) and retains
-only current48a0b12a and predecessor987578c2 for this series. Retirement receipt:
-`obj/parallel/cold-deprecation-main-join-v1/pin-retirement.json`. Historical Field
-and older baseline binaries are pruned; their receipts/hashes remain. Do not claim
-those executables are still available for a new measurement.
-
-Root also completed Source's released5bd header-pin retirement (2 binaries,
-~0.18GiB), preserving evidence/currentdfbd/b800/diagnosticf56. Receipt:
-`/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/pin-retirement/header-5bd/receipt.json`.
-This supersedes the Source worker note's earlier cleanup-pending paragraph.
-Keep existing warm caches for restart and continue scoped cleanup at idle
-boundaries; never remove another active tree's artifacts.
+- **Storage:** each worktree has a 16 GiB absolute output cap. Run
+  `make tidy`, then `make tidy-archive`, then `make tidy-build` if needed.
+  Never lower caps or reserves.
+- **Fastcheck:** run it through the wrappers, within its 300 s budget. Don't
+  wrap it in `timeout`.
+- **Pins:** keep only current pins with `.keep-artifacts`. To retire one,
+  remove its file by literal path, then run a scoped
+  `storage.py prune --apply --prune-under`.
+- **Code:** safe, idiomatic Rust. Clippy all and pedantic warnings are
+  errors. No production unwrap, expect, panic or unsafe. No blanket lint
+  allowances, and no mechanical file splitting.
