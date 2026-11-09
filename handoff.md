@@ -25,7 +25,9 @@ Standing user instructions:
 
 ## Main and CI
 
-`origin/main` is **`198fdea9b`**. Landed in this session, newest first:
+The last compiler commit on `origin/main` is **`198fdea9b`**. The handoff
+commits after it change only `handoff.md`. Landed in this session, newest
+first:
 
 | Commit(s) | Item |
 | --- | --- |
@@ -167,8 +169,11 @@ The fixture plan, invariants and survey come after those rulings.
      if it exists. The script recreates SEEN.
    - Run `/mnt/vizier/rustgm-scratch/integrator-20261109/joined_d7.sh` in the
      background with a watcher.
-   - If it passes: fast-forward main to `5e5665580`, push, dispatch CI and
-     release the hold. Then tell Lane D, and tell Lane C to start HR from main.
+   - If it passes: main now carries handoff-only commits on top of
+     `198fdea9b`, so fast-forwarding to `5e5665580` is no longer possible.
+     Instead, cherry-pick `7047a05d9` and `5e5665580` onto main. Check that
+     `git diff 5e5665580 HEAD` shows only `handoff.md`, then push, dispatch
+     CI and release the hold. Then tell Lane D, and tell Lane C to start HR from main.
    - Then Lane D retires `base-198fdea9b` and `cand4`.
 3. **Lane B:** rebase onto main after (i) lands. Join only when checkpoints
    2 and 3 are both complete.
