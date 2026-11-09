@@ -3,7 +3,7 @@ use super::{
     super::Target,
     Context, DomainIndex, Work, g,
     matching::Opening,
-    nodes::{Arena, NodeId, Rewrite},
+    nodes::{Arena, Node, NodeId, Rewrite},
     s, uses,
 };
 use crate::support::retained;
@@ -150,6 +150,58 @@ impl Arena {
         }
         Ok(())
     }
+    /// Version thirteen: a reified item's applied signature is the pointer's
+    /// own, as a client's `let f: fn(..) = item;` requires. Convention and
+    /// variadicness are equal and `unsafe` may be added, never removed. The
+    /// admitted pointer domain binds no region, so the item opens no late
+    /// slot and interned nodes compare exactly; no regional relation remains.
+    pub(super) fn reified(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        application: s::FunctionApplicationRef,
+        caller: Context,
+        (target, pointer): (g::Signature, NodeId),
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        const DIFFERS: &str = "reified function pointer differs from its item's signature";
+        let template = self.template(domains, application, caller, work)?;
+        let rows = domains.headers.rows();
+        let declaration = rows.function_applications[application.0 as usize]
+            .declaration
+            .declaration;
+        let late = match domains.target(declaration, work)? {
+            Target::Function(header) => rows.binders[header.callable.binder.0 as usize]
+                .count
+                .checked_sub(header.regions.captures)
+                .ok_or("source reified target captures exceed its public frame")?,
+            Target::Constructor { .. } => 0,
+        };
+        let actual = Flags::of(target);
+        if late != rows.binders[target.binder.0 as usize].count
+            || template.flags.convention != actual.convention
+            || template.flags.variadic != actual.variadic
+            || template.flags.unsafe_ && !actual.unsafe_
+        {
+            return Err(DIFFERS);
+        }
+        let Node::Function { mut signature, .. } = self.nodes[pointer.0 as usize] else {
+            return Err("source reification type lost its function pointer node");
+        };
+        for &expected in template.roots.slice(&self.signature_roots)? {
+            work.charge(1)?;
+            let Node::SignatureInput { ty, next } = self.nodes[signature.0 as usize] else {
+                return Err(DIFFERS);
+            };
+            if ty != expected {
+                return Err(DIFFERS);
+            }
+            signature = next;
+        }
+        if self.nodes[signature.0 as usize] != Node::SignatureResult(template.result) {
+            return Err(DIFFERS);
+        }
+        Ok(())
+    }
     fn template(
         &mut self,
         domains: &DomainIndex<'_, '_>,
@@ -262,3 +314,7 @@ fn same_flags(expected: Flags, actual: Flags) -> Result<(), &'static str> {
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "../../../../../../tests/invariants/reified_rows.rs"]
+mod tests;

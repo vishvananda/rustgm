@@ -89,12 +89,16 @@ pub(super) fn emit(
                 arguments,
             )?,
             ir::Rvalue::Call { .. } => call(stage, facts, context, index, value.kind)?,
+            ir::Rvalue::Reify(operand) if stage.body_nodes() => {
+                reify(facts, body, index, value.ty, operand)?
+            }
             _ => return Err("source rvalue requires a complete wider transport row"),
         };
         let ty = stage.ty(facts, value.ty, context)?;
         if stage.feature_predicates() && matches!(kind, s::ValueKind::Function(_))
             || requested_formation(stage, facts, value.ty)
             || parameter_reborrow(stage, facts, value.ty, kind)
+            || parameter_pointer(facts, value.ty, kind)
         {
             sites.function_formation(stage, body.source.root_body_site(), value.ty, ty)?;
         }
@@ -163,6 +167,48 @@ fn invoke(
             end: arguments.end,
         },
     })
+}
+
+/// Version thirteen: a function item reified to a fn pointer keeps its
+/// preceding Function value; every consumer re-proves the item's applied
+/// signature against the pointer. Closures, constructors and tracked items
+/// need a shim of their own, so each keeps its fence.
+fn reify(
+    facts: &Declarations,
+    body: &Body,
+    before: usize,
+    result: crate::types::TypeId,
+    operand: ir::ValueId,
+) -> Result<s::ValueKind, &'static str> {
+    use crate::types::Kind;
+    if operand.0 as usize >= before {
+        return Err("source reification changed its actual preceding operand");
+    }
+    let input = body
+        .values
+        .get(operand.0 as usize)
+        .ok_or("source reification lost its actual operand")?;
+    if matches!(facts.types.kind(input.ty), Some(Kind::Closure { .. })) {
+        return Err("source closure reification requires its closure transport");
+    }
+    let (ir::Rvalue::Function(definition), Some(Kind::FunctionItem { item, .. })) =
+        (input.kind, facts.types.kind(input.ty))
+    else {
+        return Err("source reification requires its actual function-item value");
+    };
+    if item.0 != definition.0 {
+        return Err("source reification changed its actual declaration");
+    }
+    if facts.members.constructor(definition).is_some() {
+        return Err("source constructor reification requires its shim transport");
+    }
+    if facts.recorded_caller_tracking(definition)? {
+        return Err("source tracked function reification requires its caller-location ABI");
+    }
+    if !matches!(facts.types.kind(result), Some(Kind::Function { .. })) {
+        return Err("source reification result is not a function pointer");
+    }
+    Ok(s::ValueKind::Reify(operand.0))
 }
 
 fn scalar_cast(
@@ -318,6 +364,12 @@ fn parameter_reborrow(
             Some(crate::types::Kind::Reference { referent, .. })
                 if matches!(facts.types.kind(referent), Some(crate::types::Kind::Parameter(_)))
         )
+}
+/// Version thirteen: a fn pointer over a type parameter is formed only
+/// conditionally, so a reification to one requests its formation. The
+/// consumer proves it again.
+fn parameter_pointer(facts: &Declarations, ty: crate::types::TypeId, kind: s::ValueKind) -> bool {
+    matches!(kind, s::ValueKind::Reify(_)) && facts.types.contains_parameters(ty) == Some(true)
 }
 /// Version thirteen: a literal joins its original's text column in value
 /// order. Only a shared `'static` reference to `str` is a text value.

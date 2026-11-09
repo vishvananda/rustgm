@@ -1,0 +1,208 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj); each generated provider is compiled to an object (--emit=obj)",
+  "providers": [
+    {
+      "file": "spec/reified-items/provider.rs",
+      "sha256": "4901f6aacb0aa64b14a400d880f0c9d816b9bb97bc17691fd2e18906ff65e9fa",
+      "inherits": {
+        "file": "spec/callable-roles/provider.rs",
+        "sha256": "2fe97cbc9c02e8190ef869b8ad5286155188a47cd0637ff099708c6820acb8a7",
+        "note": "unchanged first 88 lines"
+      }
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "declared": "2026-11-09T03:56:30Z",
+  "development_note": "the integrator approved the design notice and its four scope changes before this declaration. Exploration probes of the shapes (obj/parallel/auto-traits/reify/explore) ran against development builds before it. Every rustc, baseline, old-reader, forged-row, scaling, flip-survey and nonnull outcome was declared in scratch before the rustc oracle, the baseline probe and any candidate run of these frozen inputs; this file was frozen after the oracle and the baseline probe and before any candidate run. rustc 1.98.0 accepted all nine clients (exit 42, no warnings) and every generated provider but the two tracked ones, which needed the `panic_location` lang item for their reify shim; they gained the oracle-only `Location` that the panic-attributes and struct-constructors providers use, recorded before any candidate run of them, and then compiled. The notice's `make` returned `fn(&T) -> u8`; a reference parameter makes the target higher-ranked, which stays fenced, so `make` is `fn(T) -> u8` over `fn show(self)`",
+  "rule": "approved design. Version-13 value code 23, `(23, [Value(item)])`, read as `ValueKind::Reify`, admitted only under the body-node profile. Its operand is a preceding code-16 Function value of `FunctionItem` type and its own type is a `Function` row; no coercion decision is serialized. Every consumer re-proves the item's applied signature (the template a direct call opens) against the pointer, as a client's own `let f: fn(..) = item;` requires: convention and variadicness equal, `unsafe` added but never removed, and the admitted closed Rust pointer domain binds no region, so interned parameter and result nodes compare exactly. A fn pointer over a type parameter is formed only conditionally, so its reification requests formation. Existing packets keep their bytes: export fenced code 23 before",
+  "cases": [
+    {
+      "file": "spec/reified-items/as-unsafe.rs",
+      "provider": "spec/reified-items/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`unsafe { base::as_unsafe()(7) }`: the safe item `hold` reified to `unsafe fn(u8) -> i32`; adding unsafe is allowed",
+      "sha256": "635ac86f6b2840080a853254c3e585a1a0e3716307ab48c44e7464d4e62ed7c8"
+    },
+    {
+      "file": "spec/reified-items/erase.rs",
+      "provider": "spec/reified-items/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`let f = base::erase::<u8>(); f(42u8) as i32`: `erase<T: Copy>` reifies `id::<T>` to `fn(T) -> T`, which requests its formation; the consumer instantiates it at u8",
+      "sha256": "9005ba0dd10570f6c86dd963d2f1a0aecdf2714ed3496c14eff3c3ae28131a79"
+    },
+    {
+      "file": "spec/reified-items/getter.rs",
+      "provider": "spec/reified-items/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::getter()(base::W(42)) as i32`: the inherent method `W::get` reified to `fn(W) -> u8`",
+      "sha256": "67e32e923a285ccfd3d5f7655ed1156ad9d2baec913393dcf99b8b9d514e1af3"
+    },
+    {
+      "file": "spec/reified-items/make-local.rs",
+      "provider": "spec/reified-items/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::make::<L>()(L) as i32` with a client `impl base::Show for L`: the const fn `make<T: Show>` reifies `<T as Show>::show` under a rigid `T`, shaped as `argument_new!`, and the consumer selects the client impl",
+      "sha256": "11485d25fe57f78c049289f0377516f24aab7399f069faf99f9cdb1abf9bd683"
+    },
+    {
+      "file": "spec/reified-items/make-provider.rs",
+      "provider": "spec/reified-items/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::make::<u8>()(42u8) as i32`: the same const fn at a provider type, selecting the provider impl",
+      "sha256": "7eaf3ce35918c3d33e5cf0000c9db66e26d3eef9a89ce4a30a3efa326bdc5367"
+    },
+    {
+      "file": "spec/reified-items/method.rs",
+      "provider": "spec/reified-items/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::method()(41u8) as i32`: the trait method `<u8 as Tr>::f`, selected by the consumer, reified to `fn(u8) -> u8`",
+      "sha256": "28306bad5e5aab2acc71991db98e15c87b10ce44f8d1bcefdc753485c09af0e1"
+    },
+    {
+      "file": "spec/reified-items/pick.rs",
+      "provider": "spec/reified-items/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`let f = base::pick(); f(42u16) as i32`: the instance `id::<u16>` reified to `fn(u16) -> u16`",
+      "sha256": "5f19385a22a38f7cf698d826f589bee49f64aff2308903caf9fa0af05f2b0bf7"
+    },
+    {
+      "file": "spec/reified-items/raw-ptr.rs",
+      "provider": "spec/reified-items/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`unsafe { base::raw_ptr()(7) }`: the unsafe item `raw` reified to `unsafe fn(u8) -> i32`",
+      "sha256": "5d4682d1572402567cecd36ea5addadf6e0373561883c0e4290dac39d90b5db8"
+    },
+    {
+      "file": "spec/reified-items/take.rs",
+      "provider": "spec/reified-items/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::take()(7)`: a provider body returns the safe item `hold` as `fn(u8) -> i32`; the client calls the pointer locally",
+      "sha256": "5275fb6bed05385a9bd14eac7b9d44abf03bb6d75387d2ac167e47e4bef3c50a"
+    }
+  ],
+  "generated_opponents": {
+    "note": "each appends its lines to the frozen provider after `// Generated reification opponent.`; rustc accepts every one and RustGM's version-13 export rejects it and writes no packet",
+    "hr": {
+      "appended": "pub fn first(x: &u8) -> &u8 { x }\npub fn hr() -> for<'a> fn(&'a u8) -> &'a u8 { first }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source anonymous callable requires its supported closed Rust frame",
+      "note": "higher-ranked pointers keep the anonymous callable fence; queued after 5b"
+    },
+    "c": {
+      "appended": "pub extern \"C\" fn cfn(_v: u8) -> i32 { 42 }\npub fn c() -> extern \"C\" fn(u8) -> i32 { cfn }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source anonymous callable requires its supported closed Rust frame",
+      "note": "C pointers keep the anonymous callable fence; queued after 5b"
+    },
+    "closure": {
+      "appended": "pub fn clo() -> fn(u8) -> i32 { |_v| 42 }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source rvalue requires a complete wider transport row",
+      "note": "closure construction stops before its reification; the defensive \"source closure reification requires its closure transport\" stays"
+    },
+    "tracked": {
+      "appended": "#[cfg(rustc_oracle)]\n#[lang = \"panic_location\"]\npub struct Location<'a> { file: &'a str, line: u32, col: u32 }\n#[track_caller]\npub fn tr(_v: u8) -> i32 { 42 }\npub fn tracked() -> fn(u8) -> i32 { tr }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source tracked function reification requires its caller-location ABI",
+      "note": "rustc reifies a #[track_caller] function through a ReifyShim; it belongs with the Location/caller-ABI item"
+    },
+    "tracked-generic": {
+      "appended": "#[cfg(rustc_oracle)]\n#[lang = \"panic_location\"]\npub struct Location<'a> { file: &'a str, line: u32, col: u32 }\n#[track_caller]\npub fn tr(_v: u8) -> i32 { 42 }\npub fn tracked<T>() -> fn(u8) -> i32 { tr }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source tracked function reification requires its caller-location ABI"
+    },
+    "struct-ctor": {
+      "appended": "pub struct P(pub u8);\npub fn ctor() -> fn(u8) -> P { P }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source constructor reification requires its shim transport",
+      "note": "Q3 Branch B: the declared probe passed export and fresh clients, but its single-crate controls stopped at R2's indirect-call fence; a re-probe is declared under R2"
+    },
+    "variant-ctor": {
+      "appended": "pub enum E { A(u8), B }\npub fn variant() -> fn(u8) -> E { E::A }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source constructor reification requires its shim transport"
+    },
+    "generic-ctor": {
+      "appended": "pub enum Opt<T> { Some(T), None }\npub fn some<T>() -> fn(T) -> Opt<T> { Opt::Some }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source constructor reification requires its shim transport"
+    },
+    "indirect": {
+      "appended": "pub fn call_ptr(f: fn(u8) -> i32) -> i32 { f(7) }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source Call requires its actual direct function-item application",
+      "note": "a call through a fn pointer in an exported body is R2"
+    },
+    "cast": {
+      "appended": "pub fn cast() -> fn(u8) -> i32 { hold as fn(u8) -> i32 }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source cast operand requires a closed primitive type",
+      "note": "an explicit fn-item-to-pointer cast lowers as Rvalue::Cast, not Reify: a recorded gap outside R1"
+    }
+  },
+  "controls": [
+    {
+      "control": "older profile: spec/source-branches/provider.rs plus `pub fn hold(_v: u8) -> i32 { 42 }` and `pub fn take() -> fn(u8) -> i32 { hold }`",
+      "rustc_status": 0,
+      "expected": "module-branches-v12 rejects it with `source rvalue requires a complete wider transport row` and writes no packet; module-bodies-v13 exports it and the frozen take client is accepted"
+    },
+    {
+      "control": "old reader: the C2b pin (sha256 4c63e7bb14108a2b84d0cc4c9c7f1826fda12862c8c62b1c8475dfed5d97b73e) consumes the candidate's reified-items packet",
+      "expected": "every client is rejected with `encoded Rvalue::Reify is not reconstructable by this consumer`"
+    },
+    {
+      "control": "baseline: the C2b pin exports the frozen provider under module-bodies-v13",
+      "expected": "rejected with `source rvalue requires a complete wider transport row`",
+      "observed": "as expected (obj/parallel/auto-traits/reify/r1/baseline)"
+    },
+    {
+      "control": "forged rows, restaged with Payload::from_source_module_bodies; the honest restage succeeds",
+      "expected": [
+        "take's operand Function value rewritten to Unit: `source reification lost its function item or pointer type`",
+        "take's reification typed as its operand's FunctionItem row: the same",
+        "take's reification typed as an appended copy of its pointer row with pick's u16 parameters: `reified function pointer differs from its item's signature`",
+        "the same with pick's u16 result: the same",
+        "raw_ptr's reification typed as an appended copy of its `unsafe fn(u8) -> i32` row without unsafe: the same",
+        "take's reification typed as an appended copy with convention C: `source Function input lost its exact zero-slot Rust formation domain`",
+        "take's reification typed as an appended copy whose binder is pick's pointer binder, another original's: the same"
+      ]
+    },
+    {
+      "control": "scaling: the frozen provider plus N zero-padded pairs `pub fn hNNN(_v: u8) -> i32 { 42 }` and `pub fn tNNN() -> fn(u8) -> i32 { hNNN }`, N = 8, 16 and 32",
+      "expected": "packet bytes grow exactly affinely; the restage's work and an empty client's installed header-budget work grow by at most a constant per pair (second difference at most twice the first plus 64)"
+    },
+    {
+      "control": "flip survey: tools-identity.sh, the C2b pin against the candidate, over every pa29 provider under versions 10, 12 and 13 and every fixture client",
+      "expected": "every existing spec directory keeps its status, stderr, LowIR and packet bytes; only spec/reified-items differs: its version-13 provider is exported and its clients are accepted"
+    }
+  ],
+  "outcome_counts": {
+    "provider": "1 export, accepted under module-bodies-v13",
+    "clients": 9,
+    "accepted_clients": 9,
+    "rejected_clients": 0,
+    "generated_opponents": 10
+  },
+  "native": {
+    "expected": "the nine accepted clients exit 42 natively with empty stdout, as rustc's do"
+  },
+  "limits": [
+    "closed Rust fn pointers only: higher-ranked and C targets keep their type-row fence until the anonymous callable item after 5b; argument_new!'s `fn(&T, &mut Formatter<'_>) -> Result` is that item's witness",
+    "the fmt chain's next dependencies stay fenced: the transmute to `unsafe fn(NonNull<()>, ..)` (intrinsic transport) and calls through the stored pointer (R2)",
+    "target-feature functions: F admits only unsafe target-feature exports, so a reification produces an unsafe fn pointer, as rustc allows; if F admits safe target-feature functions, a coercion to a safe pointer must be rejected"
+  ]
+}

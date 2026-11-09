@@ -5,6 +5,41 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [fn-item reification](parallel/fn-reification.md), R1, transports a fn
+item coerced to a closed Rust fn pointer in version-13 exported bodies, as
+value code 23 over the item's Function value. No coercion decision travels:
+each consumer re-proves the item's applied signature against the pointer,
+with `unsafe` added but never removed.
+
+- Nine clients exit 42 natively. They cover:
+  - a safe item, an unsafe item, and a safe item reified to `unsafe fn`;
+  - a generic instance;
+  - inherent and trait methods;
+  - `argument_new!`'s rigid-`Self` method in a const fn.
+- The nonnull-patterns layout witness's single-crate control now builds, and
+  its declared LowIR equality is checked.
+- Kept fences, each by name:
+  - higher-ranked and C pointers;
+  - closures and tracked functions;
+  - constructors (Q3, Branch B; re-probed under R2);
+  - calls through a pointer (R2);
+  - explicit `as fn(..)` casts (a recorded gap).
+- The flip survey changes only the new packet. Version-12 export keeps the
+  generic rvalue text, and the C2b reader rejects code 23 by name.
+- The fmt chain (`argument_new!`, `Argument::fmt`) next needs three things,
+  each still fenced:
+  - the transmute intrinsic transport, for the cast to
+    `unsafe fn(NonNull<()>, ..)`;
+  - higher-ranked anonymous callables, for `fn(&T, &mut Formatter<'_>) ->
+    Result`, Lane C's item after 5b;
+  - R2, for the call through the stored formatter.
+- Target-feature note: Lane D's F admits only `unsafe` target-feature exports,
+  so reification yields an `unsafe fn` pointer, which rustc allows. If F admits
+  safe target-feature functions, a coercion to a safe pointer must be
+  rejected.
+- Lane C's order after R1 is 5b-1 and then R2. 5b-1 qualifies once K is on
+  origin/main.
+
 Lane D [B2 K, const parameters](parallel/const-parameters.md) exports const
 generic parameters of integer, bool and char types under version 13, with
 evaluated and rigid const arguments in nominal and function applications.
@@ -473,7 +508,7 @@ identity run flips no existing version 10 or 12 export.
     a `repr(transparent)` wrapper of `NonNull`, which the current walk covers.
 - Open transport item, queued for Lane C after item 5b: fn-item-to-fn-pointer
   reification in exported bodies ("source rvalue requires a complete wider
-  transport row").
+  transport row"). Closed for closed Rust fn pointers by R1 (above).
 - `Location` follows auto traits and item 5b (range helper roles, module
   const items).
 

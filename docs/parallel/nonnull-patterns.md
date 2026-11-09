@@ -265,12 +265,20 @@ before the run it governs.
     macro requires its provider's source declaration";
   - a diverging call: `hold` is never lowered.
 
-  The control now asserts that rejection, a pending body-transport gap. The
-  equality claim waits for it, and two cross-consumer equalities stand in
+  The control asserted that rejection, a pending body-transport gap. The
+  equality claim waited for it, and two cross-consumer equalities stood in
   meanwhile: the `Nanoseconds` and `CodePointInner` witnesses (one u32 base)
   have identical LowIR, and so do the wrapped-Percent and honest Percent
   witnesses. One feasibility probe of the witness form, for `Nanoseconds`, ran
   before its declaration (`obj/parallel/nonnull/explore/c2/c-fp.rs`).
+
+  Amended at 2026-11-09T04:04:04Z, with fn-item reification
+  ([fn-reification.md](fn-reification.md)) and before any candidate run of
+  the amended test. The single-crate control is now built. It is declared
+  accepted, with `hold`'s slot obj<4x4>, and its entry and `hold` equal the
+  fresh `Nanoseconds` witness's once internal names are normalized. So the
+  originally declared equality is checked, and the rejection assertion is
+  removed.
 - **The wrapped-Percent wire control.** It is "a well-formed rewritten row,
   not an honest export": Percent rewritten to `1..=0xff`, the bits of
   `i8 is ..0 | 1..`. Its `Opt<Percent>` client reaches the niche fence before
@@ -422,10 +430,11 @@ For owner review:
   which is `repr(transparent)` over `NonNull<()>` and inside the transparent
   walk. `mem/alignment.rs:25-26` assert `Alignment`'s size and alignment
   against `usize`, with no `Option`.
-- **Fn-item-to-fn-pointer reification in exported bodies.** Version-13
-  module-body export rejects it ("source rvalue requires a complete wider
-  transport row"). Core's bodies reify function items in many places
-  (fn-pointer fields and callbacks). Queued for Lane C after item 5b.
+- **Fn-item-to-fn-pointer reification in exported bodies.** Closed Rust fn
+  pointers are transported as value code 23
+  ([fn-reification.md](fn-reification.md)). Higher-ranked and C pointers,
+  closures, tracked functions, constructors and calls through a pointer keep
+  their fences there.
 - **Range helper roles and module const items**: item 5b, from the two
   fences above.
 - **`!null` over a type parameter**, fenced at export (b), until an export

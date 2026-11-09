@@ -298,6 +298,9 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
         s::ValueKind::Text(_) => {
             Err("source text literals require the version-thirteen body IR profile")
         }
+        s::ValueKind::Reify(_) => {
+            Err("source function reification requires the version-thirteen body IR profile")
+        }
         s::ValueKind::Call {
             signature,
             callee,

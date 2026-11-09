@@ -810,6 +810,7 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     - Five layout witnesses check the range types through a function
       pointer, all at rustc's size. Their single-crate control waits on
       fn-item-to-fn-pointer reification, which has no version 13 body row.
+      Closed by R1 (below).
   - **Open items.** "Niches: scalar ranges and placement through
     non-transparent struct fields" is frontend layout work (the backend
     stays frozen), with an owner assigned when bodies reach it.
@@ -1175,6 +1176,37 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
       every input with its sha256;
     - the baseline already enforced an imported nominal's Sized edges
       (`slot-unsized`), so only where-clauses were missing.
+
+- **During Lane C's [fn-item reification](parallel/fn-reification.md) (R1)**,
+  2026-11-09.
+  - **Wire shape.** Value code 23 is `(23, [Value(item)])`, a preceding
+    code-16 Function value. Its own type is the target `Function` row.
+    - No coercion decision travels. Each consumer re-proves the item's
+      applied signature against the pointer, as a client's own `let f: fn(..)
+      = item;` does: equal convention and variadicness, and `unsafe` added
+      but never removed.
+    - A pointer over a type parameter requests its formation.
+    - Existing packets keep their bytes.
+  - **Scope, accepted before code.** Closed Rust fn pointers only:
+    - higher-ranked and C targets keep their type-row text;
+    - closures stop at construction first, and their defensive fence stays;
+    - tracked functions wait for the caller-location ABI;
+    - constructors take Q3's Branch B. The declared probe's single-crate
+      controls stopped at R2's indirect-call fence, so R2 re-probes them.
+  - **Amended before its run:** the nonnull-patterns layout witness's
+    single-crate control now builds, and its declared LowIR equality is
+    checked.
+  - **Survey.** Against the C2b pin, only the new packet differs.
+  - **Recorded:**
+    - the fmt chain's next dependencies, each still fenced:
+      - the transmute intrinsic transport;
+      - higher-ranked anonymous callables, whose witness is `argument_new!`'s
+        `fn(&T, &mut Formatter<'_>) -> Result`;
+      - R2, for calls through a pointer;
+    - the target-feature note for Lane D's F;
+    - explicit `item as fn(..)` casts stay fenced by the scalar-cast text;
+    - order after R1: 5b-1, developed on K's join commit and qualified once
+      K is on origin/main, then R2. If K needs an amendment, R2 goes first.
 
 ## Lanes
 

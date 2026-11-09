@@ -559,6 +559,7 @@ fn originals(
                             | ValueKind::IsVariant { .. }
                             | ValueKind::EnumCast(_)
                             | ValueKind::Text(_)
+                            | ValueKind::Reify(_)
                     ))
             {
                 return Err("source value operation requires a wider explicit profile");

@@ -31,9 +31,6 @@ const ACCEPTED: [(&str, u32, u32); 4] = [
 /// Their fresh consumers and single-crate controls reject alike.
 const PENDING: [&str; 4] = ["nanoseconds", "nonzero-char", "code-point", "percent"];
 const NICHE: &str = "scalar pattern enum niches require their complete ABI profile";
-/// Version-thirteen module-body export has no fn-item-to-fn-pointer
-/// reification row, so a witness's single-crate control waits for it.
-const REIFY: &str = "source rvalue requires a complete wider transport row";
 /// Each range type and rustc's size and alignment of it, witnessed by the
 /// by-value slot of a function whose address the entry takes.
 const WITNESSES: [(&str, u32, u32); 5] = [
@@ -316,7 +313,9 @@ fn range_types_keep_their_layout_in_fresh_consumers() -> Result {
     let packet = Packet::publish(GROUP, SPEC, "witness", "provider", PROFILE)?;
     let entry_line = format!("#[unsafe(no_mangle)]\n{}\n", witness(WITNESSES[0].0));
     let mut local = single_crate(&packet, "local", &entry_line)?;
-    packet.rejected("local", &mut local, REIFY)?;
+    super::artifacts::checked("local", &packet.folder, &mut local)?;
+    let (_, size, align) = WITNESSES[0];
+    let single = held(&lowir(&packet, "local")?, "entry", size, align)?;
     let mut observed = Vec::new();
     for (name, size, align) in WITNESSES {
         let label = format!("witness-{name}");
@@ -325,6 +324,9 @@ fn range_types_keep_their_layout_in_fresh_consumers() -> Result {
         super::artifacts::checked(&label, &packet.folder, &mut fresh)?;
         observed.push(held(&lowir(&packet, &label)?, "entry", size, align)?);
     }
+    // Amended with fn-item reification: the single-crate control is built, and
+    // its entry and hold equal the fresh Nanoseconds witness's.
+    assert_eq!(single, observed[0]);
     // Nanoseconds and CodePointInner share the u32 base.
     assert_eq!(observed[0], observed[2]);
     Ok(())

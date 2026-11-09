@@ -215,6 +215,7 @@ fn dependency(
         s::ValueKind::Constrain(value)
         | s::ValueKind::ScalarCast(value)
         | s::ValueKind::EnumCast(value)
+        | s::ValueKind::Reify(value)
             if ordinal == 0 =>
         {
             Some(value)

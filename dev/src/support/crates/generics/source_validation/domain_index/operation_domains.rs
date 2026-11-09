@@ -125,6 +125,21 @@ impl DomainIndex<'_, '_> {
                     return Err("source Function value changed its exact application type");
                 }
             }
+            // Version thirteen: a reified operand is a preceding Function value
+            // and the reification's own type is a fn pointer row.
+            s::ValueKind::Reify(operand) => {
+                prefix_value(original, operand, index, work)?;
+                let rows = self.headers.rows();
+                if !matches!(
+                    original.values[operand as usize].kind,
+                    s::ValueKind::Function(_)
+                ) || !matches!(
+                    rows.types.get(value.ty.0 as usize),
+                    Some(s::Type::Function(_))
+                ) {
+                    return Err("source reification lost its function item or pointer type");
+                }
+            }
             s::ValueKind::Call {
                 signature,
                 callee,

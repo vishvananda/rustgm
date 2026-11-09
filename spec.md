@@ -6427,6 +6427,20 @@ environment. No provider selection or proof is trusted. Closures inside
 provider bodies and closure call entries stay rejected by name. Packets
 without these rows keep their exact bytes.
 
+Version thirteen also carries fn-item reification to closed Rust fn pointers.
+Body IR value node 23 reifies a preceding Function value of function-item type.
+The node's own type is the target fn pointer row, and no coercion decision is
+serialized. A fresh consumer re-proves the item's applied signature against the
+pointer, as a client's own `let f: fn(..) = item;` requires. Convention and
+variadicness are equal, and `unsafe` may be added but never removed. The
+pointer binds no region, so parameters and result compare exactly. A pointer
+over a type parameter requests its own formation. The consumer then links or
+instantiates the item as a direct call would. Export rejects these by name:
+higher-ranked and C pointers, closures, tracked functions, constructors, calls
+through a pointer and explicit casts. Earlier profiles keep the generic
+rvalue text, and an older reader rejects code 23 by name. The [reified-item
+packet](pa29/tests/spec/reified-items/README.md) records independent outcomes.
+
 Version thirteen also carries enums. Declaration kind 10 is an enum, whose
 nominal header has no record fields, and kind 11 is one of its variants,
 parented by the enum and published once as its value-namespace constructor.

@@ -131,6 +131,9 @@ fn value_kind(
             regional_records::borrow(view, place, BorrowKind::TwoPhase)?
         }
         s::ValueKind::Constrain(value) => Rvalue::Constrain(ValueId(value)),
+        s::ValueKind::Reify(value) if view.rows().descriptor().profile().body_nodes() => {
+            Rvalue::Reify(ValueId(value))
+        }
         s::ValueKind::Binary { .. } => binary(view, value.kind)?,
         s::ValueKind::ScalarCast(_) => {
             let (kind, operand) = scalar_cast(view, value)?;
@@ -694,6 +697,11 @@ fn same_value(
             s::ValueKind::ScalarCast(_),
         ) => (kind, operand) == scalar_cast(view, record)?,
         (Rvalue::Constrain(actual), s::ValueKind::Constrain(record)) => actual.0 == record,
+        (Rvalue::Reify(actual), s::ValueKind::Reify(record))
+            if view.rows().descriptor().profile().body_nodes() =>
+        {
+            actual.0 == record
+        }
         (Rvalue::Function(actual), s::ValueKind::Function(raw)) if v4(view) => {
             actual == view.function(raw, steps)?
         }

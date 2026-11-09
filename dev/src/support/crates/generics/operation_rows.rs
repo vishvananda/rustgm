@@ -103,6 +103,10 @@ pub enum ValueKind {
     /// Version thirteen: a `&'static str` literal, the original's text with
     /// this ordinal. Ordinals follow value order densely.
     Text(u32),
+    /// Version thirteen: a preceding function-item value reified to the fn
+    /// pointer `Value.ty`. No provider coercion decision is serialized: every
+    /// consumer re-proves the item's applied signature against the pointer.
+    Reify(u32),
 }
 /// The reconstructable primitive operators. Add, Sub and Mul are checked: each
 /// consumer instance lowers its own overflow guard and abort exit. Div, Rem and

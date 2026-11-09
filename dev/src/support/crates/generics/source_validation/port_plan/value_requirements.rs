@@ -1,6 +1,6 @@
 //! Value typing retains actual source ports and derives requests without paying them.
 use super::{
-    OperationPort, OperationSite, RequiredKind, Work, g,
+    Context, OperationPort, OperationSite, RequiredKind, Work, g,
     matching::Opening,
     nodes::{Node, NodeId, Rewrite},
     ports::Ports,
@@ -93,6 +93,7 @@ impl Builder<'_, '_, '_> {
                 }
                 Ok(())
             }
+            s::ValueKind::Reify(operand) => self.reified(original, value.ty, operand, work),
             s::ValueKind::Invoke {
                 signature,
                 arguments,
@@ -117,6 +118,42 @@ impl Builder<'_, '_, '_> {
                 work,
             ),
         }
+    }
+    /// Version thirteen: a reification re-proves its operand's applied item
+    /// signature against its own pointer type. The operand's Function value
+    /// already charged the item's use and formation.
+    fn reified(
+        &mut self,
+        original: &s::Original,
+        ty: g::TypeRef,
+        operand: u32,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let s::ValueKind::Function(application) = original.values[operand as usize].kind else {
+            return Err("source reification lost its function item or pointer type");
+        };
+        let Some(&s::Type::Function(signature)) =
+            self.domains.headers.rows().types.get(ty.0 as usize)
+        else {
+            return Err("source reification lost its function item or pointer type");
+        };
+        let pointer = self.node(original, ty, work)?;
+        let caller = Context {
+            owner: original.declaration,
+            frame: Some(
+                self.domains.headers.rows().body_inputs
+                    [self.domains.headers.original_index(original.body)?]
+                .frame,
+            ),
+            body: Some(original.body),
+        };
+        self.arena.reified(
+            self.domains,
+            application,
+            caller,
+            (signature, pointer),
+            work,
+        )
     }
     /// A read relates its exact place type and requests the active Copy query.
     fn read_input(

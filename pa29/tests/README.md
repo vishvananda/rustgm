@@ -583,3 +583,24 @@ packet holds:
 Amendments are recorded beside the declarations they amend, each before the
 run it governs. The `crate_linking::valued_generics` integration controls
 consume it, and the `valued_slots` validation invariant reads its provider.
+
+`reified-item-outcomes.json` freezes the reification packet under
+`spec/reified-items/`. Its provider bodies return fn items reified to closed
+Rust fn pointers, and its clients call those pointers. The packet holds:
+
+- the callable-roles provider plus authored lines;
+- nine clients that rustc accepts:
+  - a safe item;
+  - a generic instance;
+  - a formation-requesting generic;
+  - an inherent method;
+  - a trait method;
+  - a rigid-`Self` method in a const fn, at a client and at a provider type;
+  - a safe item reified to `unsafe fn`;
+  - an unsafe item;
+- ten generated provider opponents that keep their export fences by name, and
+  the older-profile, old-reader, forged-row, scaling and flip-survey controls.
+
+The `crate_linking::reified_items` integration controls and the
+`input_plan::signatures` row and scaling invariants consume it. The
+nonnull-patterns layout witness's single-crate control also depends on it.
