@@ -2,6 +2,8 @@
 use super::{
     Body, Context, Declarations, Stage, g, instruction_rows::value as assembly, ir, place, s,
 };
+/// Every value form without a row under the stage's profile.
+const WIDER: &str = "source rvalue requires a complete wider transport row";
 pub(super) fn emit(
     stage: &mut Stage,
     facts: &mut Declarations,
@@ -15,101 +17,156 @@ pub(super) fn emit(
         stage.charge(1)?;
         raw.arguments.push(argument.0);
     }
-    for (index, value) in body.values.iter().enumerate() {
+    for (index, &value) in body.values.iter().enumerate() {
         stage.charge(1)?;
         stage.prepare_type_arena(facts, value.ty)?;
         let kind = match value.kind {
-            ir::Rvalue::Unit => s::ValueKind::Unit,
-            ir::Rvalue::Aggregate {
-                variant: Some(variant),
-                fields,
-            } if stage.nominal_transport() => aggregate(stage, facts, value.ty, variant, fields)?,
-            ir::Rvalue::IsVariant { .. }
-            | ir::Rvalue::Cast {
-                kind: crate::sema::model::Cast::EnumToInteger,
-                direct_variant: false,
-                ..
-            } if stage.body_nodes() => variant_operation(stage, value.kind)?,
-            ir::Rvalue::Scalar(id) if stage.feature_predicates() => {
-                scalar(facts, body, value.ty, id)?
+            ir::Rvalue::Read(_) | ir::Rvalue::Borrow { .. } | ir::Rvalue::Constrain(_) => {
+                place_value(stage, value.kind)?
             }
-            ir::Rvalue::Text(text) if stage.body_nodes() => {
-                text_literal(stage, facts, raw, value.ty, text)?
+            ir::Rvalue::IsVariant { .. } | ir::Rvalue::Binary { .. } | ir::Rvalue::Cast { .. } => {
+                operator(stage, facts, body, index, value)?
             }
-            ir::Rvalue::Read(ir::Place::Temporary(value)) if stage.conversion_roles() => {
-                s::ValueKind::Read(s::Place::Temporary(value.0))
-            }
-            ir::Rvalue::Read(target) => s::ValueKind::Read(place(target)?),
-            ir::Rvalue::Borrow {
-                place: target,
-                kind: ir::BorrowKind::Immediate,
-            } => s::ValueKind::Borrow(place(target)?),
-            ir::Rvalue::Borrow {
-                place: target,
-                kind: ir::BorrowKind::TwoPhase,
-            } if stage.body_nodes() => s::ValueKind::TwoPhaseBorrow(place(target)?),
-            ir::Rvalue::Constrain(value) => s::ValueKind::Constrain(value.0),
-            ir::Rvalue::Binary {
-                operands,
-                operator,
-                left,
-                right,
-            } if stage.body_nodes() => binary(
-                facts,
-                body,
-                index,
-                value.ty,
-                operands,
-                operator,
-                [left, right],
-            )?,
-            ir::Rvalue::Binary { .. } => {
-                return Err(
-                    "source Binary operations require the version-thirteen body IR profile",
-                );
-            }
-            ir::Rvalue::Cast {
-                kind,
-                operand,
-                direct_variant: false,
-            } if stage.conversion_roles() => {
-                scalar_cast(facts, body, index, value.ty, operand, kind)?
-            }
-            ir::Rvalue::Function(definition) => {
-                function(stage, facts, value.ty, definition, context)?
-            }
-            ir::Rvalue::Invoke {
-                kind,
-                signature,
-                arguments,
-            } => invoke(
-                stage,
-                facts,
-                (body, index, context),
-                kind,
-                signature,
-                arguments,
-            )?,
-            ir::Rvalue::Call { .. } => call(stage, facts, context, index, value.kind)?,
-            ir::Rvalue::Reify(operand) if stage.body_nodes() => {
-                reify(facts, body, index, value.ty, operand)?
-            }
-            ir::Rvalue::Assembly { .. } if stage.body_nodes() => assembly(value.kind)?,
-            ir::Rvalue::Constant(item) if stage.body_nodes() => stage.constant_read(item)?,
-            _ => return Err("source rvalue requires a complete wider transport row"),
+            ir::Rvalue::Function(_)
+            | ir::Rvalue::Invoke { .. }
+            | ir::Rvalue::Call { .. }
+            | ir::Rvalue::Reify(_) => callable(stage, facts, (body, index, context), value)?,
+            _ => item(stage, facts, body, raw, value)?,
         };
         let ty = stage.ty(facts, value.ty, context)?;
-        if stage.feature_predicates() && matches!(kind, s::ValueKind::Function(_))
-            || requested_formation(stage, facts, value.ty)
-            || parameter_reborrow(stage, facts, value.ty, kind)
-            || parameter_pointer(facts, value.ty, kind)
-        {
+        if requests_formation(stage, facts, value.ty, kind) {
             sites.function_formation(stage, body.source.root_body_site(), value.ty, ty)?;
         }
         stage.reserve(4 * size_of::<s::Value>())?;
         raw.values.push(s::Value { ty, kind });
     }
     Ok(())
+}
+/// Reads, borrows and constraints of a place or an earlier value.
+fn place_value(stage: &Stage, kind: ir::Rvalue) -> Result<s::ValueKind, &'static str> {
+    Ok(match kind {
+        ir::Rvalue::Read(ir::Place::Temporary(value)) if stage.conversion_roles() => {
+            s::ValueKind::Read(s::Place::Temporary(value.0))
+        }
+        ir::Rvalue::Read(target) => s::ValueKind::Read(place(target)?),
+        ir::Rvalue::Borrow {
+            place: target,
+            kind: ir::BorrowKind::Immediate,
+        } => s::ValueKind::Borrow(place(target)?),
+        ir::Rvalue::Borrow {
+            place: target,
+            kind: ir::BorrowKind::TwoPhase,
+        } if stage.body_nodes() => s::ValueKind::TwoPhaseBorrow(place(target)?),
+        ir::Rvalue::Constrain(value) => s::ValueKind::Constrain(value.0),
+        _ => return Err(WIDER),
+    })
+}
+/// Primitive operators, primitive casts and enum variant operations. The
+/// variant arm comes first: a fieldless enum's integer cast is a variant
+/// operation under the body-node profile and a scalar cast otherwise.
+fn operator(
+    stage: &mut Stage,
+    facts: &Declarations,
+    body: &Body,
+    index: usize,
+    value: ir::Value,
+) -> Result<s::ValueKind, &'static str> {
+    match value.kind {
+        ir::Rvalue::IsVariant { .. }
+        | ir::Rvalue::Cast {
+            kind: crate::sema::model::Cast::EnumToInteger,
+            direct_variant: false,
+            ..
+        } if stage.body_nodes() => variant_operation(stage, value.kind),
+        ir::Rvalue::Binary {
+            operands,
+            operator,
+            left,
+            right,
+        } if stage.body_nodes() => binary(
+            facts,
+            body,
+            index,
+            value.ty,
+            operands,
+            operator,
+            [left, right],
+        ),
+        ir::Rvalue::Binary { .. } => {
+            Err("source Binary operations require the version-thirteen body IR profile")
+        }
+        ir::Rvalue::Cast {
+            kind,
+            operand,
+            direct_variant: false,
+        } if stage.conversion_roles() => scalar_cast(facts, body, index, value.ty, operand, kind),
+        _ => Err(WIDER),
+    }
+}
+/// Function items, call operators, calls and reifications. R2's pointer call
+/// joins this family.
+fn callable(
+    stage: &mut Stage,
+    facts: &mut Declarations,
+    (body, index, context): (&Body, usize, Context),
+    value: ir::Value,
+) -> Result<s::ValueKind, &'static str> {
+    match value.kind {
+        ir::Rvalue::Function(definition) => function(stage, facts, value.ty, definition, context),
+        ir::Rvalue::Invoke {
+            kind,
+            signature,
+            arguments,
+        } => invoke(
+            stage,
+            facts,
+            (body, index, context),
+            kind,
+            signature,
+            arguments,
+        ),
+        ir::Rvalue::Call { .. } => call(stage, facts, context, index, value.kind),
+        ir::Rvalue::Reify(operand) if stage.body_nodes() => {
+            reify(facts, body, index, value.ty, operand)
+        }
+        _ => Err(WIDER),
+    }
+}
+/// Literals, constructors, constant reads and inline assembly.
+fn item(
+    stage: &mut Stage,
+    facts: &Declarations,
+    body: &Body,
+    raw: &mut s::Original,
+    value: ir::Value,
+) -> Result<s::ValueKind, &'static str> {
+    match value.kind {
+        ir::Rvalue::Unit => Ok(s::ValueKind::Unit),
+        ir::Rvalue::Aggregate {
+            variant: Some(variant),
+            fields,
+        } if stage.nominal_transport() => aggregate(stage, facts, value.ty, variant, fields),
+        ir::Rvalue::Scalar(id) if stage.feature_predicates() => scalar(facts, body, value.ty, id),
+        ir::Rvalue::Text(text) if stage.body_nodes() => {
+            text_literal(stage, facts, raw, value.ty, text)
+        }
+        ir::Rvalue::Assembly { .. } if stage.body_nodes() => assembly(value.kind),
+        ir::Rvalue::Constant(item) if stage.body_nodes() => stage.constant_read(item),
+        _ => Err(WIDER),
+    }
+}
+/// Whether a value's consumer proves its formation again, in the original
+/// predicate's short-circuit order.
+fn requests_formation(
+    stage: &Stage,
+    facts: &Declarations,
+    ty: crate::types::TypeId,
+    kind: s::ValueKind,
+) -> bool {
+    stage.feature_predicates() && matches!(kind, s::ValueKind::Function(_))
+        || requested_formation(stage, facts, ty)
+        || parameter_reborrow(stage, facts, ty, kind)
+        || parameter_pointer(facts, ty, kind)
 }
 
 /// A direct call keeps its own actual signature and argument range.
