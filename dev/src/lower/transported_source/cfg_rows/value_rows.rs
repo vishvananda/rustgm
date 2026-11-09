@@ -103,8 +103,7 @@ fn operator(
         _ => Err(WIDER),
     }
 }
-/// Function items, call operators, calls and reifications. R2's pointer call
-/// joins this family.
+/// Function items, call operators, direct and pointer calls and reifications.
 fn callable(
     stage: &mut Stage,
     facts: &mut Declarations,
@@ -125,6 +124,9 @@ fn callable(
             signature,
             arguments,
         ),
+        ir::Rvalue::Call { callee, .. } if stage.body_nodes() && pointer(facts, body, callee) => {
+            pointer_call(stage, facts, context, index, value.kind)
+        }
         ir::Rvalue::Call { .. } => call(stage, facts, context, index, value.kind),
         ir::Rvalue::Reify(operand) if stage.body_nodes() => {
             reify(facts, body, index, value.ty, operand)
@@ -199,6 +201,40 @@ fn call(
         },
     })
 }
+/// Whether a call's callee is a fn-pointer value rather than a function item.
+fn pointer(facts: &Declarations, body: &Body, callee: ir::ValueId) -> bool {
+    body.values.get(callee.0 as usize).is_some_and(|callee| {
+        matches!(
+            facts.types.kind(callee.ty),
+            Some(crate::types::Kind::Function { .. })
+        )
+    })
+}
+/// Version thirteen: a call through a fn pointer keeps its actual signature
+/// and argument range. Its lexical safety joins with its evaluation's request
+/// ports; until then it holds the safe context.
+fn pointer_call(
+    stage: &mut Stage,
+    facts: &mut Declarations,
+    context: Context,
+    index: usize,
+    kind: ir::Rvalue,
+) -> Result<s::ValueKind, &'static str> {
+    let s::ValueKind::Call {
+        signature,
+        callee,
+        arguments,
+    } = call(stage, facts, context, index, kind)?
+    else {
+        return Err("source call changed its actual form");
+    };
+    Ok(s::ValueKind::PointerCall {
+        signature,
+        callee,
+        arguments,
+        safety: s::CallSafety::Safe,
+    })
+}
 /// A call operator keeps its call trait and caller-side signature; a closure
 /// call entry would need its closure transport.
 fn invoke(
@@ -232,8 +268,9 @@ fn invoke(
 
 /// Version thirteen: a function item reified to a fn pointer keeps its
 /// preceding Function value; every consumer re-proves the item's applied
-/// signature against the pointer. Closures, constructors and tracked items
-/// need a shim of their own, so each keeps its fence.
+/// signature against the pointer. A constructor needs no shim: each consumer
+/// defines its own constructor instance. Closures and tracked items need a
+/// shim of their own, so each keeps its fence.
 fn reify(
     facts: &Declarations,
     body: &Body,
@@ -259,9 +296,6 @@ fn reify(
     };
     if item.0 != definition.0 {
         return Err("source reification changed its actual declaration");
-    }
-    if facts.members.constructor(definition).is_some() {
-        return Err("source constructor reification requires its shim transport");
     }
     if facts.recorded_caller_tracking(definition)? {
         return Err("source tracked function reification requires its caller-location ABI");

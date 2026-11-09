@@ -42,7 +42,7 @@ requires a complete wider transport row". The body builder emits Reify for
     caller-location ABI". rustc reifies a `#[track_caller]` function through a
     ReifyShim, which belongs with the Location/caller-ABI item.
   - a constructor: "source constructor reification requires its shim
-    transport" (Q3, Branch B, below).
+    transport" (Q3, Branch B, below). R2 retired this fence.
   - a higher-ranked or C pointer type keeps its type-row text, "source
     anonymous callable requires its supported closed Rust frame".
   - A fn pointer over a type parameter is formed only conditionally, so its
@@ -79,6 +79,11 @@ bind the call result to a local first. If all four declared steps pass, R2
 admits constructor reification with its declared opponents and a native
 client.
 
+All four passed under R2 (Branch A), so [R2](pointer-calls.md) retires the
+fence: each consumer defines its own constructor instance. R1's
+`struct-ctor`, `variant-ctor` and `generic-ctor` opponents now export
+(reified-item amendment 2), as `indirect` does (amendment 1).
+
 ## Fixture and evidence
 
 [`pa29/tests/spec/reified-items`](../../pa29/tests/spec/reified-items/README.md)
@@ -101,7 +106,7 @@ Every outcome was declared before its oracle and candidate run
 | Control | Result |
 | --- | --- |
 | nine fresh clients | accepted; each exits 42 natively, as rustc's do |
-| ten generated provider opponents | each rejected at export by name; rustc accepts each |
+| ten generated provider opponents | each rejected at export by name; rustc accepts each. Since R2, six; `indirect` and the three constructors export (amendments 1 and 2) |
 | `module-branches-v12` | rejects the reification with the generic rvalue text and writes no packet |
 | old reader, the C2b pin `4c63e7bb` | rejects every client with "encoded Rvalue::Reify is not reconstructable by this consumer" |
 | seven forged rows | rejected by name: non-Function operand, non-pointer type, changed parameter, changed result, dropped `unsafe`, convention C, another original's binder |
@@ -127,7 +132,9 @@ Every outcome was declared before its oracle and candidate run
 - **The fmt chain's next dependencies stay fenced.**
   - `argument_new!`'s transmute to `unsafe fn(NonNull<()>, &mut Formatter<'_>)
     -> Result` needs the transmute intrinsic transport.
-  - Calling the stored formatter needs R2.
+  - Calling the stored formatter needs R2. R2 calls a pointer in a body;
+    a formatter stored in a record variant's field still needs record
+    variants and nominal callable fields.
   - The pointer type itself is higher-ranked, so it needs the HR/C anonymous
     callable item that follows 5b. Its witness is `fn(&T, &mut Formatter<'_>)
     -> Result`.

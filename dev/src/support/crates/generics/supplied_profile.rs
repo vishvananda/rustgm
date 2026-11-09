@@ -145,6 +145,9 @@ const fn bodies_only(kind: s::ValueKind) -> Option<&'static str> {
         s::ValueKind::Reify(_) => {
             "source function reification requires the version-thirteen body IR profile"
         }
+        s::ValueKind::PointerCall { .. } => {
+            "source pointer call requires the version-thirteen body IR profile"
+        }
         s::ValueKind::Assembly { .. } => {
             "source inline assembly requires the version-thirteen body IR profile"
         }

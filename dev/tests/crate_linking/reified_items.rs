@@ -2,8 +2,9 @@
 //! bodies. Every consumer re-proves the item's applied signature against the
 //! pointer, then links or instantiates the item, and the client calls the
 //! pointer in its own code. Higher-ranked and C pointers, closures, tracked
-//! functions, constructors, calls through a pointer and explicit casts keep
-//! their export fences by name. The version-twelve profile rejects reification.
+//! functions and explicit casts keep their export fences by name; a call
+//! through a pointer and constructor reification export since R2. The
+//! version-twelve profile rejects reification.
 use super::fresh_packets::{Packet, Result};
 use rustgm::support::crates;
 const SPEC: &str = "pa29/tests/spec/reified-items";
@@ -25,11 +26,10 @@ const ACCEPTED: [&str; 9] = [
 const CALLABLE: &str = "source anonymous callable requires its supported closed Rust frame";
 const TRANSPORT: &str = "source rvalue requires a complete wider transport row";
 const TRACKED: &str = "source tracked function reification requires its caller-location ABI";
-const CONSTRUCTOR: &str = "source constructor reification requires its shim transport";
 /// Each generated provider opponent appends these lines to the frozen
 /// provider; rustc 1.98.0 compiles every one. A tracked opponent also
 /// declares the oracle-only `Location` that rustc's reify shim needs.
-const OPPONENTS: [(&str, &str, &str); 10] = [
+const OPPONENTS: [(&str, &str, &str); 6] = [
     (
         "hr",
         "pub fn first(x: &u8) -> &u8 { x }\npub fn hr() -> for<'a> fn(&'a u8) -> &'a u8 { first }\n",
@@ -57,29 +57,29 @@ const OPPONENTS: [(&str, &str, &str); 10] = [
         TRACKED,
     ),
     (
+        "cast",
+        "pub fn cast() -> fn(u8) -> i32 { hold as fn(u8) -> i32 }\n",
+        "source cast operand requires a closed primitive type",
+    ),
+];
+/// Former opponents that R2 exports: amendment 1's call through a pointer and
+/// amendment 2's constructors, whose consumers define their own instances.
+const AMENDED: [(&str, &str); 4] = [
+    (
+        "indirect",
+        "pub fn call_ptr(f: fn(u8) -> i32) -> i32 { f(7) }\n",
+    ),
+    (
         "struct-ctor",
         "pub struct P(pub u8);\npub fn ctor() -> fn(u8) -> P { P }\n",
-        CONSTRUCTOR,
     ),
     (
         "variant-ctor",
         "pub enum E { A(u8), B }\npub fn variant() -> fn(u8) -> E { E::A }\n",
-        CONSTRUCTOR,
     ),
     (
         "generic-ctor",
         "pub enum Opt<T> { Some(T), None }\npub fn some<T>() -> fn(T) -> Opt<T> { Opt::Some }\n",
-        CONSTRUCTOR,
-    ),
-    (
-        "indirect",
-        "pub fn call_ptr(f: fn(u8) -> i32) -> i32 { f(7) }\n",
-        "source Call requires its actual direct function-item application",
-    ),
-    (
-        "cast",
-        "pub fn cast() -> fn(u8) -> i32 { hold as fn(u8) -> i32 }\n",
-        "source cast operand requires a closed primitive type",
     ),
 ];
 /// The lines the older-profile control appends to the branch provider.
@@ -107,6 +107,17 @@ fn clients_consume_reified_items_and_other_forms_keep_their_fences() -> Result {
         let mut export = packet.export(PROFILE, &source, &metadata);
         packet.rejected(name, &mut export, diagnostic)?;
         assert!(unwritten(&metadata)?, "{name} wrote a packet");
+    }
+    for (name, lines) in AMENDED {
+        let source = packet.folder.join(format!("{name}.rs"));
+        std::fs::write(
+            &source,
+            format!("{provider}// Generated reification opponent.\n{lines}"),
+        )?;
+        let metadata = packet.folder.join(format!("{name}.rgcrate"));
+        let mut export = packet.export(PROFILE, &source, &metadata);
+        super::artifacts::checked(name, &packet.folder, &mut export)?;
+        assert!(!unwritten(&metadata)?, "{name} wrote no packet");
     }
     Ok(())
 }

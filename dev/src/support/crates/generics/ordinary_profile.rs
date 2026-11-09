@@ -560,6 +560,7 @@ fn originals(
                             | ValueKind::EnumCast(_)
                             | ValueKind::Text(_)
                             | ValueKind::Reify(_)
+                            | ValueKind::PointerCall { .. }
                             | ValueKind::Assembly { .. }
                             | ValueKind::Constant(_)
                     ))

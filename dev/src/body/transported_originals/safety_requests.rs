@@ -57,11 +57,30 @@ pub(super) fn check(
         {
             return Err("source call safety changed its actual selected declaration");
         }
-        match (unsafe_, request.safety) {
-            (false, s::CallSafety::Safe) | (true, s::CallSafety::ExplicitUnsafeBlock) => {}
-            (true, s::CallSafety::UnsafeFunction) if caller_unsafe => {}
-            _ => return Err("source call safety has no matching actual caller obligation"),
+        matching(unsafe_, request.safety, caller_unsafe)?;
+    }
+    // Version thirteen: a call through a fn pointer carries its own context.
+    for (index, value) in view.raw().values.iter().enumerate() {
+        let s::ValueKind::PointerCall {
+            signature, safety, ..
+        } = value.kind
+        else {
+            continue;
+        };
+        work.charge(1)?;
+        let Some(Rvalue::Call {
+            signature: rebuilt, ..
+        }) = body.values.get(index).map(|value| value.kind)
+        else {
+            return Err("source call safety belongs to another operation kind");
+        };
+        if rebuilt != view.ty(signature, &mut work.steps)? {
+            return Err("source call safety changed its fresh opened signature");
         }
+        let Some(Kind::Function { unsafe_, .. }) = facts.types.kind(rebuilt) else {
+            return Err("source call safety lost its actual function signature");
+        };
+        matching(unsafe_, safety, caller_unsafe)?;
     }
     // Inline assembly's recorded context follows the rule for unsafe calls.
     for instruction in view
@@ -78,6 +97,14 @@ pub(super) fn check(
         }
     }
     work.charge(0)
+}
+/// A recorded context discharges exactly its callee's unsafety.
+fn matching(unsafe_: bool, safety: s::CallSafety, caller_unsafe: bool) -> Result<(), &'static str> {
+    match (unsafe_, safety) {
+        (false, s::CallSafety::Safe) | (true, s::CallSafety::ExplicitUnsafeBlock) => Ok(()),
+        (true, s::CallSafety::UnsafeFunction) if caller_unsafe => Ok(()),
+        _ => Err("source call safety has no matching actual caller obligation"),
+    }
 }
 
 #[cfg(test)]

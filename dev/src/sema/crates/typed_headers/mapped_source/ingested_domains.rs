@@ -90,6 +90,7 @@ impl Lazy {
             .chain(original.values.iter().flat_map(|value| {
                 std::iter::once(value.ty).chain(match value.kind {
                     s::ValueKind::Call { signature, .. }
+                    | s::ValueKind::PointerCall { signature, .. }
                     | s::ValueKind::Invoke { signature, .. } => Some(signature),
                     _ => None,
                 })

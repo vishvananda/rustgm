@@ -1193,6 +1193,7 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     - tracked functions wait for the caller-location ABI;
     - constructors take Q3's Branch B. The declared probe's single-crate
       controls stopped at R2's indirect-call fence, so R2 re-probes them.
+      R2's re-probe passed all four steps and retired the fence.
   - **Amended before its run:** the nonnull-patterns layout witness's
     single-crate control now builds, and its declared LowIR equality is
     checked.
@@ -1202,7 +1203,7 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
       - the transmute intrinsic transport;
       - higher-ranked anonymous callables, whose witness is `argument_new!`'s
         `fn(&T, &mut Formatter<'_>) -> Result`;
-      - R2, for calls through a pointer;
+      - R2, for calls through a pointer, which R2 now exports;
     - the target-feature note for Lane D's F;
     - explicit `item as fn(..)` casts stay fenced by the scalar-cast text;
     - order after R1: 5b-1, developed on K's join commit and qualified once
@@ -1389,6 +1390,42 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
   - **Open:** option C stays the recorded item. Its trigger also covers
     raw or imported premises, batch 18's uncertified shapes and methods
     with their own bounds.
+
+- **During Lane C's [calls through fn pointers](parallel/pointer-calls.md)
+  (R2)**, 2026-11-09, rebased onto `645df0a92`. Checkpoint 1 factors
+  `emit()` byte-identically; checkpoint 2 is the item. The integrator
+  approved the notice, rulings 1-10, the option-(a) scope ruling and Q3's
+  Branch A, and Lane D reviewed the codec.
+  - **Wire shape.** Value code 30's second shape, `(30, [Type(signature),
+    Value(callee), Range(arguments), Flag(safety)])`, read as
+    `PointerCall`. The read matches the whole operand slice, the flag is the
+    request codec's, and a pointer call owns no request row.
+    - Each consumer re-proves the signature against the callee's pointer
+      type node by node, and the safety with direct Call's matrix, both at
+      validation and over the rebuilt body. A safe callee records Safe, in an
+      unsafe block or not.
+    - Existing packets keep their bytes.
+  - **Scope (option a).** R2 is body-scoped. A pointer stored in a record
+    variant or a struct field keeps its pre-existing header fence; both are
+    generated opponents and known rejects-valid.
+  - **Q3, Branch A.** All four steps passed, so the constructor fence is
+    retired: each consumer defines its own constructor instance.
+  - **Amended before their runs:** R1's `indirect` (amendment 1, observed
+    first by fc2, which is not evidence) and its three constructor
+    opponents (amendment 2) now export.
+  - **Survey.** Against base2, among existing inputs only those four
+    change; R2's own new inputs differ as declared.
+  - **Recorded:**
+    - the fmt chain's blockers ahead of HR/C: record variants, and nominal
+      callable fields. core's `ArgumentType` needs both, and R2 alone does
+      not unblock it;
+    - the associated unsafe call fence widens for direct and pointer calls
+      together, as its own item before HR/C;
+    - rustc's const-fn diagnostic is unnumbered, a failed prediction of the
+      declared E0015;
+    - forged row 9 stopped at the formation check before the re-proof, a
+      failed prediction; a consistent forgery with its formation input
+      reaches the re-proof (outcomes amendment 1).
 
 ## Lanes
 

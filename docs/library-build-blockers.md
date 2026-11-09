@@ -5,6 +5,48 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [calls through fn pointers](parallel/pointer-calls.md), R2, carries a
+call through a closed Rust fn pointer in version-13 exported bodies as a
+second shape of value code 30, `(30, [Type, Value, Range, Flag(safety)])`,
+with no request row. Each consumer re-proves the signature against the
+callee's pointer type node by node, and the safety with direct Call's own
+matrix, at validation and again over the rebuilt body. R2 also retires
+"source constructor reification requires its shim transport": Q3's re-probe
+passed all four steps, because each consumer defines its own constructor
+instance.
+
+- 13 clients exit 42 natively. They cover pointer parameters, nested and
+  generic calls, a reified local, unsafe pointers in unsafe blocks and bare
+  in an unsafe fn, a safe pointer in an unnecessary unsafe block, a safe
+  call in an inherent associated fn, the fmt-shaped twin that receives its
+  formatter as a parameter, and three reified constructors.
+- Kept fences, each by name: higher-ranked and C pointers, an unsafe call in
+  an associated fn, a pointer stored in a record variant or a struct field,
+  and const fns, which rustc also rejects.
+- Versions 12 and 10 keep the direct-call text. The base2 reader rejects the
+  node with "body IR value node has malformed operands", which an
+  operand-swap forgery also gets.
+- Among existing inputs, the flip survey changes only R1's four amended
+  opponents: `indirect` and the struct, variant and generic constructors.
+- **The fmt chain.** core's `ArgumentType` stores its formatter in a record
+  variant's fn-pointer field, so it needs both of these, ahead of HR/C. R2
+  alone does not unblock it.
+  - (i) Record variants: "source record variants require their wider
+    profile".
+  - (ii) Nominal callable fields: `frame_owners` requires a function header
+    to own each callable-type binder ("source shared call type requires an
+    actual closed callable frame"), and the port plan keeps "source nominal
+    callable field requires its wider binder profile".
+- **Associated unsafe calls.** "source unsafe associated Calls require their
+  wider actual profile" widens for direct and pointer calls together, as its
+  own item before HR/C. It is the fmt chain's next blocker after HR/C's
+  prerequisites.
+- Failed predictions: rustc 1.98.0 rejects the const-fn opponent with the
+  unnumbered "function pointer calls are not allowed in constant functions",
+  not the declared E0015. A forged constructor pointer with a changed payload
+  stops at the formation check first; with its formation input it reaches the
+  re-proof (outcomes amendment 1).
+
 Lane A [census batch 19](parallel/census-batch19.md) repairs census 21's
 record. It was qualified and censused on main `4ac1361c3`. Census 22
 (`7df1f865`) checks 42,310 declarations, with none failed or blocked, and
@@ -289,8 +331,9 @@ with `unsafe` added but never removed.
 - Kept fences, each by name:
   - higher-ranked and C pointers;
   - closures and tracked functions;
-  - constructors (Q3, Branch B; re-probed under R2);
-  - calls through a pointer (R2);
+  - constructors (Q3, Branch B). R2's re-probe passed, and R2 retired
+    this fence;
+  - calls through a pointer, which R2 exports;
   - explicit `as fn(..)` casts (a recorded gap).
 - The flip survey changes only the new packet. Version-12 export keeps the
   generic rvalue text, and the C2b reader rejects code 23 by name.
@@ -300,7 +343,9 @@ with `unsafe` added but never removed.
     `unsafe fn(NonNull<()>, ..)`;
   - higher-ranked anonymous callables, for `fn(&T, &mut Formatter<'_>) ->
     Result`, Lane C's item after 5b;
-  - R2, for the call through the stored formatter.
+  - R2, for the call through the stored formatter. R2 calls a pointer in
+    a body; the stored formatter also needs record variants and nominal
+    callable fields (see R2 above).
 - Target-feature note: Lane D's F admits only `unsafe` target-feature exports,
   so reification yields an `unsafe fn` pointer, which rustc allows. If F admits
   safe target-feature functions, a coercion to a safe pointer must be

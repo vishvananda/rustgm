@@ -230,6 +230,9 @@ fn dependency(
         } => fields.slice(&original.arguments)?.get(ordinal).copied(),
         s::ValueKind::Call {
             callee, arguments, ..
+        }
+        | s::ValueKind::PointerCall {
+            callee, arguments, ..
         } => {
             if ordinal == 0 {
                 Some(callee)

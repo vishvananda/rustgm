@@ -66,6 +66,16 @@ pub enum ValueKind {
         callee: u32,
         arguments: Range,
     },
+    /// Version thirteen: a call through a preceding closed Rust fn-pointer
+    /// value. It selects no target and owns no request row: its site is its
+    /// one evaluation, and `safety` is its lexical unsafe context. Every
+    /// consumer re-proves the signature against the callee's pointer type.
+    PointerCall {
+        signature: TypeRef,
+        callee: u32,
+        arguments: Range,
+        safety: CallSafety,
+    },
     /// Version thirteen: a closed primitive comparison or bitwise operation. The
     /// operand and result types decide its typed operation; no provider operator
     /// selection, overflow decision or proof is serialized.

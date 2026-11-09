@@ -98,6 +98,18 @@ impl Builder<'_, '_, '_> {
                 arguments,
                 work,
             ),
+            s::ValueKind::PointerCall {
+                signature,
+                callee,
+                arguments,
+                ..
+            } => self.pointer_inputs(
+                original,
+                OperationSite { port, site },
+                (signature, callee),
+                arguments,
+                work,
+            ),
         }
     }
     /// A constraint relates its operand's actual type to its own expected type
@@ -325,6 +337,71 @@ impl Builder<'_, '_, '_> {
         let request = ports.requested[value as usize]
             .and_then(|index| original.calls.get(index as usize))
             .ok_or("source Call omitted its actual retained request")?;
+        self.call_relations(original, location, signature, arguments, work)?;
+        self.emit(
+            port,
+            s::InputSite::Body(site),
+            RequiredKind::Call {
+                target: request.target,
+                method: request.method,
+                effect: request.effect,
+            },
+            work,
+        )
+    }
+    /// Version thirteen: a call through a fn pointer requests no target. Its
+    /// signature is exactly its callee's closed pointer type, compared node by
+    /// node, and it relates its arguments and result as a direct call does.
+    fn pointer_inputs(
+        &mut self,
+        original: &s::Original,
+        location: OperationSite,
+        (signature, callee): (g::TypeRef, u32),
+        arguments: g::Range,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        const DIFFERS: &str =
+            "source pointer Call signature differs from its callee's pointer type";
+        let rows = self.domains.headers.rows();
+        let (Some(&s::Type::Function(pointer)), Some(&s::Type::Function(expected))) = (
+            rows.types
+                .get(original.values[callee as usize].ty.0 as usize),
+            rows.types.get(signature.0 as usize),
+        ) else {
+            return Err(DIFFERS);
+        };
+        let (actual, declared) = (
+            pointer.parameters.slice(&rows.roots)?,
+            expected.parameters.slice(&rows.roots)?,
+        );
+        if pointer.convention != expected.convention
+            || pointer.variadic != expected.variadic
+            || pointer.unsafe_ != expected.unsafe_
+            || actual.len() != declared.len()
+        {
+            return Err(DIFFERS);
+        }
+        let results = std::iter::once((&pointer.result, &expected.result));
+        for (&actual, &declared) in actual.iter().zip(declared).chain(results) {
+            if self.node(original, actual, work)? != self.node(original, declared, work)? {
+                return Err(DIFFERS);
+            }
+        }
+        self.call_relations(original, location, signature, arguments, work)
+    }
+    /// A call relates each argument and its result exactly to its signature.
+    fn call_relations(
+        &mut self,
+        original: &s::Original,
+        location: OperationSite,
+        signature: g::TypeRef,
+        arguments: g::Range,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let OperationSite { port, site } = location;
+        let OperationPort::Value { value, .. } = port else {
+            return Err("source Call request has no actual value port");
+        };
         let rows = self.domains.headers.rows();
         let s::Type::Function(signature) = rows.types[signature.0 as usize] else {
             return Err("source Call type changed from its checked complete signature");
@@ -349,16 +426,6 @@ impl Builder<'_, '_, '_> {
             site,
             original.values[value as usize].ty,
             signature.result,
-            work,
-        )?;
-        self.emit(
-            port,
-            s::InputSite::Body(site),
-            RequiredKind::Call {
-                target: request.target,
-                method: request.method,
-                effect: request.effect,
-            },
             work,
         )
     }
@@ -408,3 +475,7 @@ fn reborrowed(original: &s::Original, place: s::Place) -> bool {
         .get(id as usize)
         .is_some_and(|projection| matches!(projection.kind, s::ProjectionKind::Dereference { .. }))
 }
+
+#[cfg(test)]
+#[path = "../../../../../../tests/invariants/called_pointer_rows.rs"]
+mod tests;

@@ -325,6 +325,9 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
         s::ValueKind::Reify(_) => {
             Err("source function reification requires the version-thirteen body IR profile")
         }
+        s::ValueKind::PointerCall { .. } => {
+            Err("source pointer call requires the version-thirteen body IR profile")
+        }
         s::ValueKind::Assembly { .. } => {
             Err("source inline assembly requires the version-thirteen body IR profile")
         }

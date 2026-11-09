@@ -156,7 +156,9 @@ impl BinderIndex<'_> {
             .values
             .get(value as usize)
             .ok_or("source Call binder has an unknown representative value")?;
-        let s::ValueKind::Call { signature, .. } = call.kind else {
+        let (s::ValueKind::Call { signature, .. } | s::ValueKind::PointerCall { signature, .. }) =
+            call.kind
+        else {
             return Err("source Call binder representative is not a Call value");
         };
         let Some(s::Type::Function(signature)) = self.rows.types.get(signature.0 as usize) else {

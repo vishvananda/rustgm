@@ -8,6 +8,8 @@ mod artifacts;
 mod borrowed;
 #[path = "crate_linking/branch_transport.rs"]
 mod branch_transport;
+#[path = "crate_linking/called_pointers.rs"]
+mod called_pointers;
 #[path = "crate_linking/cold_transport.rs"]
 mod cold_transport;
 #[path = "crate_linking/constructor_transport.rs"]

@@ -19,6 +19,20 @@
   "expectation_frozen_before_candidate": true,
   "declared": "2026-11-09T03:56:30Z",
   "development_note": "the integrator approved the design notice and its four scope changes before this declaration. Exploration probes of the shapes (obj/parallel/auto-traits/reify/explore) ran against development builds before it. Every rustc, baseline, old-reader, forged-row, scaling, flip-survey and nonnull outcome was declared in scratch before the rustc oracle, the baseline probe and any candidate run of these frozen inputs; this file was frozen after the oracle and the baseline probe and before any candidate run. rustc 1.98.0 accepted all nine clients (exit 42, no warnings) and every generated provider but the two tracked ones, which needed the `panic_location` lang item for their reify shim; they gained the oracle-only `Location` that the panic-attributes and struct-constructors providers use, recorded before any candidate run of them, and then compiled. The notice's `make` returned `fn(&T) -> u8`; a reference parameter makes the target higher-ranked, which stays fenced, so `make` is `fn(T) -> u8` over `fn show(self)`",
+  "amendments": [
+    {
+      "recorded": "2026-11-09T12:43:59Z",
+      "before": "any further R2 run; R2's focused fastcheck fc2 (obj/parallel/pointer-calls/cp2/fc2.log) had already observed this flip, which the approved R2 notice and its ruling 6 predicted",
+      "governs": "Lane C's R2, calls through closed Rust fn pointers (pa29/tests/pointer-call-outcomes.json)",
+      "change": "the `indirect` opponent, `pub fn call_ptr(f: fn(u8) -> i32) -> i32 { f(7) }`, is expected exported under module-bodies-v13 with a packet written, no longer rejected with `source Call requires its actual direct function-item application`. Its provider lines, rustc status and every other case are unchanged; the generated opponents become nine and the amended control one"
+    },
+    {
+      "recorded": "2026-11-09T13:10:34Z",
+      "before": "any candidate run of R2 with the constructor fence removed; the Q3 re-probe (obj/parallel/pointer-calls/q3, probe 6eb12946) passed its four declared steps and the integrator approved these three flips by name",
+      "governs": "Lane C's R2, calls through closed Rust fn pointers (pa29/tests/pointer-call-outcomes.json), Q3 Branch A",
+      "change": "the struct-ctor, variant-ctor and generic-ctor opponents are expected exported under module-bodies-v13 with a packet written, no longer rejected with `source constructor reification requires its shim transport`, which is retired: each consumer defines its own constructor instance (Q3 some.lowir's client-internal rg.27.i2). rustc 1.98.0 accepts each (R2 oracle, obj/parallel/pointer-calls/oracle/gen). Their provider lines, rustc statuses and every other case are unchanged; the generated opponents become six and the amended controls four"
+    }
+  ],
   "rule": "approved design. Version-13 value code 23, `(23, [Value(item)])`, read as `ValueKind::Reify`, admitted only under the body-node profile. Its operand is a preceding code-16 Function value of `FunctionItem` type and its own type is a `Function` row; no coercion decision is serialized. Every consumer re-proves the item's applied signature (the template a direct call opens) against the pointer, as a client's own `let f: fn(..) = item;` requires: convention and variadicness equal, `unsafe` added but never removed, and the admitted closed Rust pointer domain binds no region, so interned parameter and result nodes compare exactly. A fn pointer over a type parameter is formed only conditionally, so its reification requests formation. Existing packets keep their bytes: export fenced code 23 before",
   "cases": [
     {
@@ -129,23 +143,27 @@
       "appended": "pub struct P(pub u8);\npub fn ctor() -> fn(u8) -> P { P }\n",
       "rustc_status": 0,
       "rustgm_export": "source constructor reification requires its shim transport",
-      "note": "Q3 Branch B: the declared probe passed export and fresh clients, but its single-crate controls stopped at R2's indirect-call fence; a re-probe is declared under R2"
+      "note": "Q3 Branch B under R1: the declared probe passed export and fresh clients, but its single-crate controls stopped at R2's indirect-call fence. R2's re-probe passed all four steps (Branch A)",
+      "amended_rustgm_export": "exported: module-bodies-v13 writes a packet (amendment 2, R2 Q3 Branch A)"
     },
     "variant-ctor": {
       "appended": "pub enum E { A(u8), B }\npub fn variant() -> fn(u8) -> E { E::A }\n",
       "rustc_status": 0,
-      "rustgm_export": "source constructor reification requires its shim transport"
+      "rustgm_export": "source constructor reification requires its shim transport",
+      "amended_rustgm_export": "exported: module-bodies-v13 writes a packet (amendment 2, R2 Q3 Branch A)"
     },
     "generic-ctor": {
       "appended": "pub enum Opt<T> { Some(T), None }\npub fn some<T>() -> fn(T) -> Opt<T> { Opt::Some }\n",
       "rustc_status": 0,
-      "rustgm_export": "source constructor reification requires its shim transport"
+      "rustgm_export": "source constructor reification requires its shim transport",
+      "amended_rustgm_export": "exported: module-bodies-v13 writes a packet (amendment 2, R2 Q3 Branch A)"
     },
     "indirect": {
       "appended": "pub fn call_ptr(f: fn(u8) -> i32) -> i32 { f(7) }\n",
       "rustc_status": 0,
       "rustgm_export": "source Call requires its actual direct function-item application",
-      "note": "a call through a fn pointer in an exported body is R2"
+      "note": "a call through a fn pointer in an exported body is R2",
+      "amended_rustgm_export": "exported: module-bodies-v13 writes a packet (amendment 1, R2)"
     },
     "cast": {
       "appended": "pub fn cast() -> fn(u8) -> i32 { hold as fn(u8) -> i32 }\n",
@@ -195,7 +213,8 @@
     "clients": 9,
     "accepted_clients": 9,
     "rejected_clients": 0,
-    "generated_opponents": 10
+    "generated_opponents": 6,
+    "amended_controls": "4 (indirect, amendment 1; struct-ctor, variant-ctor and generic-ctor, amendment 2)"
   },
   "native": {
     "expected": "the nine accepted clients exit 42 natively with empty stdout, as rustc's do"

@@ -130,6 +130,12 @@ const CALLABLES: [crate::support::call_traits::CallTrait; 3] = [
     crate::support::call_traits::CallTrait::FnMut,
     crate::support::call_traits::CallTrait::Fn,
 ];
+/// Stable lexical unsafe-context flags of a pointer call, as a request's.
+const SAFETIES: [s::CallSafety; 3] = [
+    s::CallSafety::Safe,
+    s::CallSafety::ExplicitUnsafeBlock,
+    s::CallSafety::UnsafeFunction,
+];
 const ACTION_FORMS: [u8; 12] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 const TERMINATOR_FORMS: [u8; 6] = [0, 1, 2, 3, 4, 5];
 const PROJECTION_FORMS: [u8; 2] = [1, 3];
@@ -308,6 +314,14 @@ pub(super) fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'stat
                 Operand::Flag(code(&FORMS, operands)?),
             ],
         ),
+        s::ValueKind::Invoke { .. }
+        | s::ValueKind::Call { .. }
+        | s::ValueKind::PointerCall { .. } => call_write(out, row.kind),
+    }
+}
+/// Call operators, direct calls and calls through a fn pointer.
+fn call_write(out: &mut Writer, call: s::ValueKind) -> Result<(), &'static str> {
+    match call {
         s::ValueKind::Invoke {
             kind,
             signature,
@@ -334,6 +348,24 @@ pub(super) fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'stat
                 Operand::Range(arguments),
             ],
         ),
+        // A call through a fn pointer adds its safety flag; the operand kinds,
+        // not the count alone, distinguish the two shapes of code 30.
+        s::ValueKind::PointerCall {
+            signature,
+            callee,
+            arguments,
+            safety,
+        } => node_write(
+            out,
+            30,
+            &[
+                Operand::Type(signature.0),
+                Operand::Value(callee),
+                Operand::Range(arguments),
+                Operand::Flag(code(&SAFETIES, safety)?),
+            ],
+        ),
+        _ => Err("body IR call node changed its value form"),
     }
 }
 pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static str> {
@@ -408,6 +440,22 @@ pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static 
             signature: g::TypeRef(signature),
             callee,
             arguments,
+        },
+        (
+            30,
+            &[
+                Operand::Type(signature),
+                Operand::Value(callee),
+                Operand::Range(arguments),
+                Operand::Flag(safety),
+            ],
+        ) => s::ValueKind::PointerCall {
+            signature: g::TypeRef(signature),
+            callee,
+            arguments,
+            safety: *SAFETIES
+                .get(safety as usize)
+                .ok_or("unknown source call safety context")?,
         },
         (code, _) => {
             return Err(rejected(
@@ -609,3 +657,7 @@ pub(super) fn projection_read(read: &mut Input<'_, '_>) -> Result<s::Projection,
     };
     Ok(s::Projection { base, ty, kind })
 }
+
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/called_pointer_wire.rs"]
+mod tests;

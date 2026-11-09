@@ -1,0 +1,260 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj); each generated provider is compiled to an object (--emit=obj)",
+  "providers": [
+    {
+      "file": "spec/pointer-calls/provider.rs",
+      "sha256": "92acaa3d8f200243fd9b4da8f3c2ad68b1a07127a6cd9505996d55eac5d7c491",
+      "inherits": {
+        "file": "spec/reified-items/provider.rs",
+        "sha256": "4901f6aacb0aa64b14a400d880f0c9d816b9bb97bc17691fd2e18906ff65e9fa",
+        "note": "unchanged first 108 lines"
+      }
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "declared": "2026-11-09T13:07:55Z",
+  "frozen": "2026-11-09T13:10:14Z",
+  "development_note": "the integrator approved the R2 notice, its rulings, the option-(a) scope ruling, Q3 Branch A and Lane D's codec review before this file. Exploration probes of the shapes ran against development builds before the declaration: obj/parallel/pointer-calls/explore e2 and e3 (body-level shapes), e4 (these inputs, with the Q3 probe binary 6eb12946, the R2 tree minus the constructor fence) and e5 (older-profile providers). Every rustc, baseline, old-reader, forged-row, wire, scaling, flip-survey and native outcome was declared in scratch before the rustc oracle, the base2 baseline and any candidate run of these frozen inputs; this file was frozen after the oracle and the baseline and before any candidate run. rustc 1.98.0 accepted all 13 clients (exit 42, no warnings), the provider with one unused_unsafe warning at safe_block, and every generated provider but const-fn",
+  "amendments": [
+    {
+      "recorded": "2026-11-09T13:42:49Z",
+      "before": "any further run; R2 fastcheck fc7 (obj/parallel/pointer-calls/cp2/fc7.log), the first test run of these inputs, observed it",
+      "change": "a failed prediction of forged row 9: ctor's reification typed as an appended `fn(u16) -> P` row is rejected with `source operation omitted a required nontrivial formation input`, not the re-proof text. The forged pointer's nominal result is not intrinsically formed and the forgery supplied no formation input, so the formation check stops it first. Row 9 is expected as observed. Row 11 is added: row 9 plus the WellFormed obligation a consistent forger would supply for the new row, at the site of the body's existing WellFormed input for ctor's honest pointer, expected `reified function pointer differs from its item's signature`. Every other outcome is unchanged"
+    }
+  ],
+  "rule": "approved design. Version-13 value code 30 gains a second shape, `(30, [Type(signature), Value(callee), Range(arguments), Flag(safety)])`, read as `ValueKind::PointerCall` and admitted only under the body-node profile; a direct call keeps `(30, [Type, Value, Range])` and the read matches the whole operand slice. The flag is the request codec's: 0 Safe, 1 ExplicitUnsafeBlock, 2 UnsafeFunction. A pointer call owns no request row: its site is its one evaluation. Every consumer re-proves the signature against the callee's closed Rust pointer type node by node (convention, variadicness, unsafety, arity, parameters and result) and the safety with direct Call's own matrix, at validation and again over the rebuilt body; local lowering calls the pointer value. Q3 Branch A also admits constructor reification: each consumer defines its own constructor instance. Existing packets keep their bytes: export fenced both forms before",
+  "cases": [
+    {
+      "file": "spec/pointer-calls/bare.rs",
+      "provider": "spec/pointer-calls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`unsafe { base::bare_call(base::raw) }`: an unsafe fn calls its unsafe pointer parameter bare under `#[allow(unsafe_op_in_unsafe_fn)]`",
+      "safety": "UnsafeFunction",
+      "sha256": "453dca87d5cec80b4cfa2edaf9a410939290647d90bd5d95fb0152ebff9c3ca9"
+    },
+    {
+      "file": "spec/pointer-calls/block.rs",
+      "provider": "spec/pointer-calls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::block_call(base::raw)`: a safe fn calls its `unsafe fn(u8) -> i32` parameter in an unsafe block",
+      "safety": "ExplicitUnsafeBlock",
+      "sha256": "1114e7adb096f71aef5868cf58106866858c31fed23ec59ffd60a28b684c10d5"
+    },
+    {
+      "file": "spec/pointer-calls/call.rs",
+      "provider": "spec/pointer-calls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::call_ptr(base::hold)`: a provider body calls its `fn(u8) -> i32` parameter; the client reifies its argument",
+      "safety": "Safe",
+      "sha256": "1c507ac6fff1842099af553cec9500d53653e4ec46883ddd699bcd021637c375"
+    },
+    {
+      "file": "spec/pointer-calls/ctor.rs",
+      "provider": "spec/pointer-calls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::ctor()(41)` matched on its field: the tuple-struct constructor `P` reified to `fn(u8) -> P`; the consumer defines the constructor instance itself",
+      "sha256": "e9c1c22e681ab743ae9d939e2d440e6e435f2214c0e693ef0ec0aba9d1235ab0"
+    },
+    {
+      "file": "spec/pointer-calls/formatter.rs",
+      "provider": "spec/pointer-calls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`unsafe { base::fmt(20, 22, base::render) }`: the fmt-shaped twin, a free unsafe fn calling its `unsafe fn(u8, u8) -> i32` formatter parameter in an unsafe block",
+      "safety": "ExplicitUnsafeBlock",
+      "sha256": "87cd658ff3cc2e7025aa90ab9ed93eeff30a5b149cce15ae0831ba7cd527d380"
+    },
+    {
+      "file": "spec/pointer-calls/generic.rs",
+      "provider": "spec/pointer-calls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::apply_ptr(base::id::<u8>, 42u8) as i32`: `apply_ptr<T>` calls its `fn(T) -> T` parameter; the consumer instantiates it at u8",
+      "safety": "Safe",
+      "sha256": "fc37df0b699bbdeeab0e427749beb33b11e0407de37f114d12a45caa3f3577d1"
+    },
+    {
+      "file": "spec/pointer-calls/method.rs",
+      "provider": "spec/pointer-calls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::Runner::run(base::hold)`: a safe pointer call in an inherent associated fn of a unit struct",
+      "safety": "Safe",
+      "sha256": "5db4693297f0a012a8b9c794e498f4d654635b341671b7fec5de357bee85d484"
+    },
+    {
+      "file": "spec/pointer-calls/nested.rs",
+      "provider": "spec/pointer-calls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`unsafe { base::nested_call(base::raw) }`: an unsafe fn calls its unsafe pointer parameter in an unsafe block",
+      "safety": "ExplicitUnsafeBlock",
+      "sha256": "05dfbbaeec59ea98fd85c144d7f6b404f22a2f80b1e9e1bb0e0c29d46a50b2fb"
+    },
+    {
+      "file": "spec/pointer-calls/reified.rs",
+      "provider": "spec/pointer-calls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::reified_call()`: one provider body reifies `hold` to a local pointer and calls it",
+      "safety": "Safe",
+      "sha256": "32088c032bab1aaae67c68461a10e406832db9adb61313b49d6e7a82f8638de4"
+    },
+    {
+      "file": "spec/pointer-calls/safe-block.rs",
+      "provider": "spec/pointer-calls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::safe_block(base::hold)`: a safe pointer called inside an unnecessary unsafe block records Safe, as a direct call does; rustc warns unused_unsafe on the provider",
+      "safety": "Safe",
+      "sha256": "bf092dfeafe323bb33de0a8625e7c7ec41f6e26a5fe33f3da63e52557339c505"
+    },
+    {
+      "file": "spec/pointer-calls/some.rs",
+      "provider": "spec/pointer-calls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::some::<u8>()(41)` matched: the generic variant constructor `Opt::Some` reified to `fn(T) -> Opt<T>`; the consumer instantiates and defines it",
+      "sha256": "5d57fac1849c8b6ab8dae1fc5b60d35d44c4066e34a213e109069e3a9e8eaa71"
+    },
+    {
+      "file": "spec/pointer-calls/twice.rs",
+      "provider": "spec/pointer-calls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::twice(inc, 40) as i32` with a client-local `inc`: two nested calls through one pointer",
+      "safety": "Safe",
+      "sha256": "768874b3449f9475fc9a467ec96304ba2c75f385ea532819ec48411f2067b77d"
+    },
+    {
+      "file": "spec/pointer-calls/variant.rs",
+      "provider": "spec/pointer-calls/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::variant()(41)` matched: the variant constructor `E::A` reified to `fn(u8) -> E`",
+      "sha256": "202bf66972e58f4d943839e5c1b4ab14c3b36435b7dec1e3615adfba252ab4e3"
+    }
+  ],
+  "generated_opponents": {
+    "note": "each appends its lines to the frozen provider after `// Generated pointer-call opponent.`; RustGM's version-13 export rejects each by name and writes no packet. Every rustc status carries the provider's one unused_unsafe warning",
+    "hr": {
+      "appended": "pub fn hr_call(f: for<'a> fn(&'a u8) -> &'a u8, v: &u8) -> u8 { *f(v) }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source anonymous callable requires its supported closed Rust frame",
+      "note": "higher-ranked pointers keep the anonymous callable fence; known rejects-valid until that item"
+    },
+    "c": {
+      "appended": "pub fn c_call(f: extern \"C\" fn(u8) -> i32) -> i32 { f(7) }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source anonymous callable requires its supported closed Rust frame",
+      "note": "C pointers keep the anonymous callable fence; known rejects-valid until that item"
+    },
+    "associated": {
+      "appended": "pub struct H;\nimpl H { pub fn call(f: unsafe fn(u8) -> i32) -> i32 { unsafe { f(7) } } }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source unsafe associated Calls require their wider actual profile",
+      "note": "ruling 4: the associated unsafe call fence widens for direct and pointer calls together as its own item before HR/C; known rejects-valid"
+    },
+    "record-variant": {
+      "appended": "pub enum Kind { Placeholder { value: u8, formatter: unsafe fn(u8, u8) -> i32 }, Count(u16) }\npub struct Arg { pub ty: Kind }\npub fn stored(value: u8) -> Arg { Arg { ty: Kind::Placeholder { value, formatter: render } } }\npub unsafe fn stored_fmt(arg: &Arg, f: u8) -> i32 { match arg.ty { Kind::Placeholder { value, formatter } => unsafe { formatter(value, f) }, Kind::Count(_) => 7 } }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source record variants require their wider profile",
+      "note": "core's stored formatter, shaped as fmt::rt::Argument; pre-existing nominal-header fence outside R2 (base2 rejects a bare record variant the same way); known rejects-valid, not a flip (scope ruling, option a)"
+    },
+    "field": {
+      "appended": "pub struct Slot { pub f: fn(u8) -> i32 }\npub fn via(s: &Slot) -> i32 { (s.f)(7) }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source shared call type requires an actual closed callable frame",
+      "note": "a fn-pointer type in a nominal field: frame_owners requires a function header to own each CallableType binder, and the port plan keeps `source nominal callable field requires its wider binder profile`; pre-existing (base2 rejects the same); known rejects-valid, not a flip"
+    },
+    "const-fn": {
+      "appended": "pub const fn const_call(f: fn(u8) -> i32) -> i32 { f(7) }\n",
+      "rustc_status": 1,
+      "rustc_diagnostic": "function pointer calls are not allowed in constant functions",
+      "rustgm_export": "non-const calls are not allowed in const functions",
+      "note": "ruling 5: both reject. RustGM's text was recorded as observed in exploration. The declaration predicted rustc's E0015; rustc 1.98.0 emits the unnumbered diagnostic above, a recorded failed prediction of the code only"
+    }
+  },
+  "controls": [
+    {
+      "control": "older profiles: spec/source-nominals/provider.rs plus `// Generated pointer-call control.` and `pub fn call_ptr(f: fn(u8) -> i32) -> i32 { f(7) }`",
+      "rustc_status": 0,
+      "expected": "module-branches-v12 and module-nominals-v10 each reject it with `source Call requires its actual direct function-item application` and write no packet; module-bodies-v13 exports it"
+    },
+    {
+      "control": "old reader: base2 (obj/parallel/pointer-calls/base2, sha256 a9d8ac32..., built from 6e55468a7) consumes the candidate's pointer-calls packet",
+      "expected": "every client is rejected with `body IR value node has malformed operands`, which cannot be told apart from an operand-swap forgery (Lane D ruling a); the provider has no target-feature row, so F's flags text does not come first"
+    },
+    {
+      "control": "baseline: base2 exports the frozen provider under module-bodies-v13",
+      "expected": "rejected with `source Call requires its actual direct function-item application`",
+      "observed": "as expected (obj/parallel/pointer-calls/oracle/baseline)"
+    },
+    {
+      "control": "fresh-CLI wire forgeries of the first pointer-call node, consumed by the call client",
+      "expected": [
+        "position 0 Type (4) rewritten to Application (6): `body IR value node has malformed operands`",
+        "position 1 Value (0) rewritten to Place::Local (11): the same",
+        "position 3 Flag (8) rewritten to Value (0): the same",
+        "flag 3: `unknown source call safety context`"
+      ]
+    },
+    {
+      "control": "private codec test called_pointer_wire.rs over the provider's own PointerCall rows",
+      "expected": "every honest row round-trips through value_write and value_read with no trailing bytes; the Range operand (kind 9 and 8 bytes) replaced by a Value operand (kind 0 and 4 bytes) is exactly `body IR value node has malformed operands` with the shorter node consumed and no trailing bytes; flag 3 is exactly `unknown source call safety context`"
+    },
+    {
+      "control": "forged rows, restaged with Payload::from_source_module_bodies; the honest restage succeeds",
+      "expected": [
+        "reified_call's callee rewritten to its Function item value: `source pointer Call lost its fn-pointer callee`",
+        "a direct CallRequest added for reified_call's pointer call: `source request does not belong to a Call value`",
+        "reified_call's signature an appended copy with pick's u16 parameters: `source pointer Call signature differs from its callee's pointer type`",
+        "block_call's signature an appended copy without unsafe: the same",
+        "(unsafe, Safe) on block_call: `source unsafe Call omitted its actual lexical context`",
+        "(unsafe, UnsafeFunction) on block_call, whose caller is safe: `source unsafe-function Call changed its actual caller declaration`",
+        "(safe, ExplicitUnsafeBlock) on reified_call: `source safe Call cannot claim an unsafe obligation`",
+        "(safe, UnsafeFunction) on reified_call: the same",
+        "reified_call's callee rewritten to the call's own index: `source value recipe is cyclic, forward or unknown`",
+        "ctor's reification typed as an appended copy of its pointer row with pick's u16 parameters: `source operation omitted a required nontrivial formation input` (amendment 1; declared as the re-proof text)",
+        "ctor's reification typed as an appended copy with take's i32 result: `reified function pointer differs from its item's signature`",
+        "the u16 row above with the WellFormed obligation a consistent forger supplies for it: `reified function pointer differs from its item's signature` (amendment 1)"
+      ]
+    },
+    {
+      "control": "scaling: the frozen provider plus N zero-padded `pub fn cNNN(f: fn(u8) -> i32) -> i32 { f(7) }`, N = 8, 16 and 32",
+      "expected": "packet bytes grow exactly affinely; the restage's work and an empty client's installed header-budget work grow by at most a constant per call (second difference at most twice the first plus 64)"
+    },
+    {
+      "control": "flip survey: tools-identity.sh, base2 against the candidate, over every pa29 provider under versions 10, 12 and 13 and every fixture client, plus every R1 and R2 generated provider under version 13",
+      "expected": "only spec/pointer-calls is new; among existing inputs exactly four flip, R1's indirect, struct-ctor, variant-ctor and generic-ctor opponents (reified-item-outcomes.json amendments 1 and 2); no existing version-13 provider body newly exports and every other status, stderr, LowIR and packet byte is unchanged"
+    }
+  ],
+  "outcome_counts": {
+    "provider": "1 export, accepted under module-bodies-v13",
+    "clients": 13,
+    "accepted_clients": 13,
+    "rejected_clients": 0,
+    "pointer_call_nodes": "11: 7 Safe, 3 ExplicitUnsafeBlock, 1 UnsafeFunction",
+    "reified_nodes": 12,
+    "generated_opponents": 6,
+    "known_rejects_valid": "hr, c, associated, record-variant, field"
+  },
+  "native": {
+    "expected": "the 13 accepted clients exit 42 natively with empty stdout, as rustc's do"
+  },
+  "limits": [
+    "body scope only (option a): a fn pointer stored in a nominal field or a record variant keeps its pre-existing header fences, so core's ArgumentType needs both record variants and nominal callable fields; R2 alone does not unblock it",
+    "unsafe pointer calls inside or to associated functions keep ruling 4's fence, widened for direct and pointer calls together before HR/C",
+    "higher-ranked and C pointers keep the anonymous callable fence",
+    "const fns cannot call pointers, as in rustc"
+  ]
+}

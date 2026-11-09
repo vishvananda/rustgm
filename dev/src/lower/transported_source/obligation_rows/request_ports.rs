@@ -45,7 +45,14 @@ pub(in super::super) fn emit(
         if std::mem::replace(&mut seen[value.0 as usize], true) {
             return Err("source call value has duplicate evaluation ownership");
         }
-        ports.one(statement, value, signature, callee)?;
+        if matches!(
+            ports.raw.values.get(value.0 as usize).map(|row| row.kind),
+            Some(s::ValueKind::PointerCall { .. })
+        ) {
+            ports.pointer(statement, value, signature)?;
+        } else {
+            ports.one(statement, value, signature, callee)?;
+        }
     }
     for (index, value) in body.values.iter().enumerate() {
         ports.source.stage.charge(1)?;
@@ -66,13 +73,39 @@ struct Ports<'a> {
     owner: NodeKey,
 }
 impl Ports<'_> {
-    fn one(
+    /// Version thirteen: a call through a fn pointer owns no request row. Its
+    /// evaluation supplies its site, it runs only in a runtime original, and
+    /// its value row carries the lexical unsafe context of its completed use.
+    fn pointer(
         &mut self,
         statement: &ir::Statement,
         value: ir::ValueId,
         signature: crate::types::TypeId,
-        callee: ir::ValueId,
     ) -> Result<(), &'static str> {
+        let (key, source_use) = self.completed(statement, signature)?;
+        let effect = source_use.effect_for(self.facts, self.owner)?;
+        if self.raw.context != s::CallContext::Runtime || effect != self.raw.context.request() {
+            return Err("source pointer Call requires a runtime original context");
+        }
+        self.source.stage.charge(32)?;
+        let safety = source_use.call_safety(self.facts, self.owner, key.node, signature)?;
+        let Some(s::ValueKind::PointerCall { safety: slot, .. }) = self
+            .raw
+            .values
+            .get_mut(value.0 as usize)
+            .map(|row| &mut row.kind)
+        else {
+            return Err("source emitted Call value changed kind");
+        };
+        *slot = safety;
+        Ok(())
+    }
+    /// The completed call operation at an evaluation's source site.
+    fn completed(
+        &mut self,
+        statement: &ir::Statement,
+        signature: crate::types::TypeId,
+    ) -> Result<(NodeKey, crate::sema::model::SourceCallUse), &'static str> {
         let key = self
             .body
             .source
@@ -93,6 +126,16 @@ impl Ports<'_> {
             return Err("source Call changed its completed typed signature");
         }
         self.source.stage.charge(1)?;
+        Ok((key, source_use))
+    }
+    fn one(
+        &mut self,
+        statement: &ir::Statement,
+        value: ir::ValueId,
+        signature: crate::types::TypeId,
+        callee: ir::ValueId,
+    ) -> Result<(), &'static str> {
+        let (key, source_use) = self.completed(statement, signature)?;
         let effect = source_use.effect_for(self.facts, self.owner)?;
         self.source.stage.charge(32)?;
         let safety = source_use.call_safety(self.facts, self.owner, key.node, signature)?;

@@ -613,12 +613,33 @@ Rust fn pointers, and its clients call those pointers. The packet holds:
   - a rigid-`Self` method in a const fn, at a client and at a provider type;
   - a safe item reified to `unsafe fn`;
   - an unsafe item;
-- ten generated provider opponents that keep their export fences by name, and
-  the older-profile, old-reader, forged-row, scaling and flip-survey controls.
+- six generated provider opponents that keep their export fences by name, four
+  former opponents that export since R2 (amendments 1 and 2), and the
+  older-profile, old-reader, forged-row, scaling and flip-survey controls.
 
 The `crate_linking::reified_items` integration controls and the
 `input_plan::signatures` row and scaling invariants consume it. The
 nonnull-patterns layout witness's single-crate control also depends on it.
+
+`pointer-call-outcomes.json` freezes the pointer-call packet under
+`spec/pointer-calls/`, Lane C's R2. Its provider bodies call closed Rust fn
+pointers and return reified constructors. The packet holds:
+
+- the reified-items provider plus authored lines;
+- 13 clients that rustc accepts:
+  - a pointer parameter, two nested calls and a generic `fn(T) -> T`;
+  - a body that reifies an item and calls it;
+  - unsafe pointers in unsafe blocks, and one called bare in an unsafe fn;
+  - a safe pointer in an unnecessary unsafe block;
+  - the fmt-shaped formatter twin, and a call in an inherent associated fn;
+  - struct, variant and generic constructors;
+- six generated provider opponents that keep their export fences by name,
+  and the older-profile, old-reader, wire, forged-row, scaling and
+  flip-survey controls.
+
+The `crate_linking::called_pointers` integration controls, the
+`input_plan::values` row and scaling invariants and the
+`ordinary_columns::ir_nodes` wire invariant consume it.
 
 `named-constant-outcomes.json` freezes the named-constant packet under
 `spec/named-constants/`, Lane C's item 5b-1. Its providers export named

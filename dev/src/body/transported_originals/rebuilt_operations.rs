@@ -163,6 +163,21 @@ fn value_kind(
                 end: arguments.end,
             },
         },
+        // The consumer's validation re-proved the pointer signature and the
+        // call's lexical safety; local lowering calls the pointer value.
+        s::ValueKind::PointerCall {
+            signature,
+            callee,
+            arguments,
+            ..
+        } if view.rows().descriptor().profile().body_nodes() => Rvalue::Call {
+            signature: view.ty(signature, &mut work.steps)?,
+            callee: ValueId(callee),
+            arguments: crate::body::ir::ValueList {
+                start: arguments.start,
+                end: arguments.end,
+            },
+        },
         s::ValueKind::Invoke {
             kind,
             signature,
@@ -652,6 +667,69 @@ fn same_variant_value(
         _ => return Ok(None),
     }))
 }
+/// Direct calls, calls through a fn pointer and call operators keep their
+/// signature, operands and argument range.
+fn same_invocation(
+    view: &SourceOriginal<'_>,
+    (actual, record): (Rvalue, s::ValueKind),
+    steps: &mut usize,
+) -> Result<Option<bool>, &'static str> {
+    Ok(Some(match (actual, record) {
+        (
+            Rvalue::Call {
+                signature,
+                callee,
+                arguments,
+            },
+            s::ValueKind::Call {
+                signature: raw,
+                callee: c,
+                arguments: a,
+            },
+        ) if v4(view) => {
+            signature == view.ty(raw, steps)?
+                && callee.0 == c
+                && arguments.start == a.start
+                && arguments.end == a.end
+        }
+        (
+            Rvalue::Call {
+                signature,
+                callee,
+                arguments,
+            },
+            s::ValueKind::PointerCall {
+                signature: raw,
+                callee: c,
+                arguments: a,
+                ..
+            },
+        ) if view.rows().descriptor().profile().body_nodes() => {
+            signature == view.ty(raw, steps)?
+                && callee.0 == c
+                && arguments.start == a.start
+                && arguments.end == a.end
+        }
+        (
+            Rvalue::Invoke {
+                kind,
+                signature,
+                arguments,
+            },
+            s::ValueKind::Invoke {
+                kind: k,
+                signature: raw,
+                arguments: a,
+            },
+        ) if view.rows().descriptor().profile().body_nodes() => {
+            kind == k
+                && signature == view.ty(raw, steps)?
+                && arguments.start == a.start
+                && arguments.end == a.end
+        }
+        _ => return Ok(None),
+    }))
+}
 fn same_value(
     view: &SourceOriginal<'_>,
     (actual, record): (&Value, s::Value),
@@ -663,6 +741,9 @@ fn same_value(
         return Ok(same);
     }
     if let Some(same) = encoded_assembly::same(actual.kind, record.kind) {
+        return Ok(same);
+    }
+    if let Some(same) = same_invocation(view, (actual.kind, record.kind), steps)? {
         return Ok(same);
     }
     Ok(match (actual.kind, record.kind) {
@@ -723,40 +804,6 @@ fn same_value(
         }
         (Rvalue::Function(actual), s::ValueKind::Function(raw)) if v4(view) => {
             actual == view.function(raw, steps)?
-        }
-        (
-            Rvalue::Call {
-                signature,
-                callee,
-                arguments,
-            },
-            s::ValueKind::Call {
-                signature: raw,
-                callee: c,
-                arguments: a,
-            },
-        ) if v4(view) => {
-            signature == view.ty(raw, steps)?
-                && callee.0 == c
-                && arguments.start == a.start
-                && arguments.end == a.end
-        }
-        (
-            Rvalue::Invoke {
-                kind,
-                signature,
-                arguments,
-            },
-            s::ValueKind::Invoke {
-                kind: k,
-                signature: raw,
-                arguments: a,
-            },
-        ) if view.rows().descriptor().profile().body_nodes() => {
-            kind == k
-                && signature == view.ty(raw, steps)?
-                && arguments.start == a.start
-                && arguments.end == a.end
         }
         (actual, raw) => same_binary(view, actual, raw)?,
     })

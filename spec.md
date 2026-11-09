@@ -6437,11 +6437,30 @@ pointer, as a client's own `let f: fn(..) = item;` requires. Convention and
 variadicness are equal, and `unsafe` may be added but never removed. The
 pointer binds no region, so parameters and result compare exactly. A pointer
 over a type parameter requests its own formation. The consumer then links or
-instantiates the item as a direct call would. Export rejects these by name:
-higher-ranked and C pointers, closures, tracked functions, constructors, calls
-through a pointer and explicit casts. Earlier profiles keep the generic
-rvalue text, and an older reader rejects code 23 by name. The [reified-item
+instantiates the item as a direct call would. A reified constructor needs no
+shim: each consumer defines its own constructor instance. Export rejects these
+by name: higher-ranked and C pointers, closures, tracked functions and
+explicit casts. Earlier profiles keep the generic rvalue text, and an older
+reader rejects code 23 by name. The [reified-item
 packet](pa29/tests/spec/reified-items/README.md) records independent outcomes.
+
+Version thirteen also carries calls through closed Rust fn pointers. Body IR
+value node 30 has a second shape, `(30, [Type, Value, Range, Flag])`: the call
+signature, a preceding callee value of fn-pointer type, the arguments and the
+call's lexical safety, coded as a request's. The read matches the whole
+operand list, so a direct call keeps its three-operand shape. A pointer call
+selects no target and owns no request row; its site is its one evaluation.
+A fresh consumer re-proves the signature against the callee's pointer type:
+equal unsafety, convention and variadicness, no bound region, one parameter
+per argument, and equal parameter and result nodes. It re-proves the safety
+with a direct call's matrix, at validation and over the rebuilt body, then
+calls the pointer value in its own lowering. A safe callee records Safe, in
+an unsafe block or not. Export rejects these by name: higher-ranked and C
+pointers, an unsafe call inside an associated function, and a pointer stored
+in a record variant or a nominal field, whose header fences come first.
+Earlier profiles keep the direct-call text, and an older reader rejects the
+node as malformed operands. The [pointer-call
+packet](pa29/tests/spec/pointer-calls/README.md) records independent outcomes.
 
 Version thirteen also carries named constants of primitive and unit types.
 Declaration kind 13 is a constant, parented by a module or a function. One

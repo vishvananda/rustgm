@@ -36,6 +36,9 @@ RustGM's version-13 export rejects each of these by name:
 - higher-ranked and C pointers;
 - closures;
 - tracked functions;
-- struct, variant and generic constructors;
-- calls through a pointer;
 - explicit `as fn(..)` casts.
+
+Four former opponents export since R2, each amended in the outcomes file
+before its run: the call through a pointer (`indirect`, amendment 1) and the
+struct, variant and generic constructors (amendment 2), whose consumers
+define their own constructor instances.

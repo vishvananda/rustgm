@@ -122,6 +122,46 @@ impl DomainIndex<'_, '_> {
                 prefix_value(original, right, index, work)?;
                 value.binary_types(original, &self.headers.rows().types)?;
             }
+            s::ValueKind::Function(_)
+            | s::ValueKind::Reify(_)
+            | s::ValueKind::Call { .. }
+            | s::ValueKind::PointerCall { .. }
+            | s::ValueKind::Invoke { .. } => {
+                self.callable(context, original, index, value, work)?;
+            }
+            s::ValueKind::Aggregate { fields }
+            | s::ValueKind::Assembly {
+                arguments: fields, ..
+            } => {
+                for &argument in fields.slice(&original.arguments)? {
+                    prefix_value(original, argument, index, work)?;
+                }
+            }
+            s::ValueKind::VariantAggregate { variant, fields } => {
+                self.variant(variant, work)?;
+                for &argument in fields.slice(&original.arguments)? {
+                    prefix_value(original, argument, index, work)?;
+                }
+            }
+            s::ValueKind::IsVariant { place, variant } => {
+                self.variant(variant, work)?;
+                Self::place(original, place, None, work)?;
+            }
+            s::ValueKind::Unit => {}
+        }
+        Ok(())
+    }
+    /// Function items, reifications, direct and pointer calls and call
+    /// operators: each operand precedes its value and each signature is rooted.
+    fn callable(
+        &mut self,
+        context: Context,
+        original: &s::Original,
+        index: usize,
+        value: &s::Value,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        match value.kind {
             s::ValueKind::Function(application) => {
                 self.function_use(context, application, work)?;
                 if self.headers.rows().types.get(value.ty.0 as usize)
@@ -149,6 +189,12 @@ impl DomainIndex<'_, '_> {
                 signature,
                 callee,
                 arguments,
+            }
+            | s::ValueKind::PointerCall {
+                signature,
+                callee,
+                arguments,
+                ..
             } => {
                 self.types.root(self.headers, context, signature, work)?;
                 prefix_value(original, callee, index, work)?;
@@ -169,25 +215,7 @@ impl DomainIndex<'_, '_> {
                     prefix_value(original, argument, index, work)?;
                 }
             }
-            s::ValueKind::Aggregate { fields }
-            | s::ValueKind::Assembly {
-                arguments: fields, ..
-            } => {
-                for &argument in fields.slice(&original.arguments)? {
-                    prefix_value(original, argument, index, work)?;
-                }
-            }
-            s::ValueKind::VariantAggregate { variant, fields } => {
-                self.variant(variant, work)?;
-                for &argument in fields.slice(&original.arguments)? {
-                    prefix_value(original, argument, index, work)?;
-                }
-            }
-            s::ValueKind::IsVariant { place, variant } => {
-                self.variant(variant, work)?;
-                Self::place(original, place, None, work)?;
-            }
-            s::ValueKind::Unit => {}
+            _ => return Err("source callable value changed its operation kind"),
         }
         Ok(())
     }

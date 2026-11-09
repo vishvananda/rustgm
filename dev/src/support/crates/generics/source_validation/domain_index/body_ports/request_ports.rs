@@ -24,8 +24,10 @@ impl DomainIndex<'_, '_> {
                     .values
                     .get(value as usize)
                     .ok_or("source evaluated value is unknown")?;
-                if matches!(actual.kind, s::ValueKind::Call { .. })
-                    && evaluated[value as usize].replace(statement.site).is_some()
+                if matches!(
+                    actual.kind,
+                    s::ValueKind::Call { .. } | s::ValueKind::PointerCall { .. }
+                ) && evaluated[value as usize].replace(statement.site).is_some()
                 {
                     return Err("source Call has duplicate actual evaluation ownership");
                 }
@@ -67,11 +69,91 @@ impl DomainIndex<'_, '_> {
         }
         for (index, value) in original.values.iter().enumerate() {
             work.charge(1)?;
-            if matches!(value.kind, s::ValueKind::Call { .. }) && requested[index].is_none() {
-                return Err("source Call has no complete retained request");
+            match value.kind {
+                s::ValueKind::Call { .. } if requested[index].is_none() => {
+                    return Err("source Call has no complete retained request");
+                }
+                s::ValueKind::PointerCall {
+                    signature,
+                    callee,
+                    arguments,
+                    safety,
+                } => self.pointer_call(original, (signature, callee), arguments, safety, work)?,
+                _ => {}
             }
         }
         Ok(())
+    }
+    /// Version thirteen: a call through a fn pointer selects no target. Its
+    /// signature is its callee's closed pointer type, it runs only in a runtime
+    /// original, and its lexical safety follows a direct call's rule.
+    fn pointer_call(
+        &self,
+        original: &s::Original,
+        (signature, callee): (g::TypeRef, u32),
+        arguments: g::Range,
+        safety: s::CallSafety,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let rows = self.headers.rows();
+        let callee = original
+            .values
+            .get(callee as usize)
+            .ok_or("source Call callee is unknown")?;
+        let Some(s::Type::Function(pointer)) = rows.types.get(callee.ty.0 as usize) else {
+            return Err("source pointer Call lost its fn-pointer callee");
+        };
+        let Some(s::Type::Function(signature)) = rows.types.get(signature.0 as usize) else {
+            return Err("source pointer Call signature differs from its callee's pointer type");
+        };
+        let frame = &rows.binders[signature.binder.0 as usize];
+        if signature.unsafe_ != pointer.unsafe_
+            || frame.count != 0
+            || signature.parameters.slice(&rows.roots)?.len()
+                != arguments.slice(&original.arguments)?.len()
+        {
+            return Err("source pointer Call signature differs from its callee's pointer type");
+        }
+        match frame.kind {
+            s::BinderKind::CallSignature { body, .. } if body == original.body => {}
+            s::BinderKind::CallableType if frame.parent.is_none() => {}
+            _ => return Err("source Call signature belongs to another actual original context"),
+        }
+        if original.context != s::CallContext::Runtime {
+            return Err("source pointer Call requires a runtime original context");
+        }
+        self.call_safety(original, (signature.unsafe_, safety), false, work)
+    }
+    /// A call's lexical context discharges exactly its callee's unsafety. An
+    /// unsafe call inside or to an associated function needs a wider profile.
+    fn call_safety(
+        &self,
+        original: &s::Original,
+        (unsafe_, safety): (bool, s::CallSafety),
+        associated: bool,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        match (unsafe_, safety) {
+            (false, s::CallSafety::Safe) => Ok(()),
+            (true, s::CallSafety::ExplicitUnsafeBlock | s::CallSafety::UnsafeFunction) => {
+                let defining = self.function(original.declaration, work)?;
+                if associated || defining.parent.is_some() {
+                    return Err(
+                        "source unsafe associated Calls require their wider actual profile",
+                    );
+                }
+                if safety == s::CallSafety::UnsafeFunction && !defining.callable.unsafe_ {
+                    return Err(
+                        "source unsafe-function Call changed its actual caller declaration",
+                    );
+                }
+                Ok(())
+            }
+            (true, s::CallSafety::Safe) => {
+                Err("source unsafe Call omitted its actual lexical context")
+            }
+            (false, _) => Err("source safe Call cannot claim an unsafe obligation"),
+        }
     }
     fn call(
         &mut self,
@@ -131,26 +213,12 @@ impl DomainIndex<'_, '_> {
         if signature.unsafe_ != header.callable.unsafe_ {
             return Err("source Call changed its actual callable safety");
         }
-        match (signature.unsafe_, request.safety) {
-            (false, s::CallSafety::Safe) => {}
-            (true, s::CallSafety::ExplicitUnsafeBlock | s::CallSafety::UnsafeFunction) => {
-                let defining = self.function(original.declaration, work)?;
-                if header.parent.is_some() || defining.parent.is_some() {
-                    return Err(
-                        "source unsafe associated Calls require their wider actual profile",
-                    );
-                }
-                if request.safety == s::CallSafety::UnsafeFunction && !defining.callable.unsafe_ {
-                    return Err(
-                        "source unsafe-function Call changed its actual caller declaration",
-                    );
-                }
-            }
-            (true, s::CallSafety::Safe) => {
-                return Err("source unsafe Call omitted its actual lexical context");
-            }
-            (false, _) => return Err("source safe Call cannot claim an unsafe obligation"),
-        }
+        self.call_safety(
+            original,
+            (signature.unsafe_, request.safety),
+            header.parent.is_some(),
+            work,
+        )?;
         if signature.parameters.slice(&rows.roots)?.len()
             != arguments.slice(&original.arguments)?.len()
         {
