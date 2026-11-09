@@ -23,7 +23,7 @@ mod tracked_readiness;
 pub(super) use effect_facts::CallContexts;
 pub use effect_facts::{OffsetPlanId, ProtocolPlanId, SourceCallUse};
 mod access_paths;
-mod assembly_values;
+pub(crate) mod assembly_values;
 mod environment_values;
 mod field_storage;
 mod finalization;

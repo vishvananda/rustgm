@@ -90,6 +90,7 @@ fn snapshot() -> s::Original {
         calls: Vec::new(),
         guards: None,
         texts: None,
+        assembly: None,
     }
 }
 
@@ -274,4 +275,79 @@ fn branching_snapshots_are_block_local_only_in_version_thirteen() {
     );
     local.blocks[1] = block(1, 5, g::Terminator::Unreachable);
     assert!(validate(&local, &mut Work::default(), true).is_err());
+}
+
+/// Version thirteen: an assembly value's inputs are snapshot uses like a
+/// call's arguments. An input evaluated only in a sibling block is refused;
+/// without the assembly arm it would drop out of both availability walks.
+#[test]
+fn assembly_inputs_must_be_dominated_by_their_evaluation() {
+    let block = |start, end, terminator| g::Block {
+        statements: g::Range { start, end },
+        site: 0,
+        terminator,
+    };
+    let body = |actions: [s::Action; 6], blocks| {
+        let mut original = snapshot();
+        original.values.push(s::Value {
+            ty: g::TypeRef(0),
+            kind: s::ValueKind::Assembly {
+                instruction: 0,
+                arguments: g::Range { start: 0, end: 1 },
+            },
+        });
+        original.arguments = vec![2];
+        original.statements = actions
+            .into_iter()
+            .map(|action| s::Statement { site: 0, action })
+            .collect();
+        original.blocks = blocks;
+        original
+    };
+    let branch = g::Terminator::Branch {
+        condition: 1,
+        yes: 1,
+        no: 2,
+    };
+    let store = s::Action::Store {
+        place: s::Place::Local(0),
+        value: 1,
+    };
+    let forged = body(
+        [
+            s::Action::Evaluate(1),
+            store,
+            s::Action::Evaluate(3),
+            s::Action::Evaluate(0),
+            s::Action::Project(0),
+            s::Action::Evaluate(2),
+        ],
+        vec![
+            block(0, 2, branch),
+            block(2, 3, g::Terminator::Unreachable),
+            block(3, 6, g::Terminator::Unreachable),
+        ],
+    );
+    let mut work = Work::default();
+    assert_eq!(
+        validate(&forged, &mut work, true),
+        Err("source SSA snapshot use is not dominated by its actual evaluation")
+    );
+    assert!(work.steps > 0);
+    let twin = body(
+        [
+            s::Action::Evaluate(1),
+            store,
+            s::Action::Evaluate(0),
+            s::Action::Project(0),
+            s::Action::Evaluate(2),
+            s::Action::Evaluate(3),
+        ],
+        vec![
+            block(0, 2, branch),
+            block(2, 2, g::Terminator::Unreachable),
+            block(2, 6, g::Terminator::Unreachable),
+        ],
+    );
+    assert_eq!(validate(&twin, &mut Work::default(), true), Ok(()));
 }

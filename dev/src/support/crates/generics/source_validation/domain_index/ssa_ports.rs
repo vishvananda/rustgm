@@ -203,27 +203,29 @@ fn dependency(
             Ok(None)
         };
     }
+    // Every kind states its dependencies; a new kind cannot fall through.
     let operand = match original.values[node].kind {
         s::ValueKind::Read(target)
         | s::ValueKind::Borrow(target)
         | s::ValueKind::TwoPhaseBorrow(target)
-        | s::ValueKind::IsVariant { place: target, .. }
-            if ordinal == 0 =>
-        {
-            return place(original, target);
+        | s::ValueKind::IsVariant { place: target, .. } => {
+            return if ordinal == 0 {
+                place(original, target)
+            } else {
+                Ok(None)
+            };
         }
         s::ValueKind::Constrain(value)
         | s::ValueKind::ScalarCast(value)
         | s::ValueKind::EnumCast(value)
-        | s::ValueKind::Reify(value)
-            if ordinal == 0 =>
-        {
-            Some(value)
-        }
+        | s::ValueKind::Reify(value) => (ordinal == 0).then_some(value),
         s::ValueKind::Binary { left, right, .. } => [left, right].get(ordinal).copied(),
         s::ValueKind::Aggregate { fields }
         | s::ValueKind::VariantAggregate { fields, .. }
         | s::ValueKind::Invoke {
+            arguments: fields, ..
+        }
+        | s::ValueKind::Assembly {
             arguments: fields, ..
         } => fields.slice(&original.arguments)?.get(ordinal).copied(),
         s::ValueKind::Call {
@@ -238,7 +240,10 @@ fn dependency(
                     .copied()
             }
         }
-        _ => None,
+        s::ValueKind::Unit
+        | s::ValueKind::Scalar(_)
+        | s::ValueKind::Text(_)
+        | s::ValueKind::Function(_) => None,
     };
     match operand {
         Some(value) if (value as usize) < original.values.len() => Ok(Some(value as usize)),

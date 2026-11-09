@@ -560,6 +560,7 @@ fn originals(
                             | ValueKind::EnumCast(_)
                             | ValueKind::Text(_)
                             | ValueKind::Reify(_)
+                            | ValueKind::Assembly { .. }
                     ))
             {
                 return Err("source value operation requires a wider explicit profile");

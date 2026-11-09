@@ -18,3 +18,11 @@ explicit entry in `native-family-probe.rs`, the unchanged C observer, and
 grading suite. Their predeclared output, independent Rust observation, exact
 entry adaptation and remaining library-mode rejection are recorded in
 [source-simd-layout-checkpoint.md](../../docs/source-simd-layout-checkpoint.md).
+
+`spec/asm-transport/` holds B2 slice A's module-body packet: a provider
+whose first 69 lines are `spec/asm-native/native.rs` before `#[repr(simd)]`,
+byte for byte, two accepted clients and two opponents.
+`asm-transport-outcomes.json` lists every input with its sha256 and froze
+their outcomes, the generated export controls and the forged rows before any
+run. They are checkpoint inputs, not an active grading suite. The evidence
+is in [asm-transport.md](../../docs/parallel/asm-transport.md).

@@ -1,10 +1,10 @@
 //! Owned assembly data follows its actual Body through templates and instances.
-use super::ir::{Place, ValueId};
+use super::ir::{BodyOrigin, BodySite, Place, ValueId};
 use crate::{
-    resolve::unit::NodeKey,
     syntax::{assembly::Register, ast::List},
     types::TypeId,
 };
+pub(crate) mod profile;
 #[derive(Clone)]
 pub struct Template {
     pub text: String,
@@ -25,16 +25,18 @@ pub struct Operand {
     pub ty: Option<TypeId>,
     pub late: bool,
 }
+/// One invocation. Its site is interpreted only together with the payload's
+/// body origin, so local and imported bodies share one representation.
 #[derive(Clone)]
 pub struct Instruction {
-    pub source: NodeKey,
+    pub site: BodySite,
     pub templates: List,
     pub operands: List,
     pub options: u16,
 }
 #[derive(Clone, Default)]
 pub struct Payload {
-    pub(crate) source: Option<NodeKey>,
+    pub(crate) source: Option<BodyOrigin>,
     pub instructions: Vec<Instruction>,
     pub templates: Vec<Template>,
     pub pieces: Vec<Piece>,
@@ -84,18 +86,14 @@ pub(crate) fn instruction(body: &super::ir::Body, id: u32) -> Result<&Instructio
         .assembly
         .as_deref()
         .ok_or("assembly effect has no retained body data")?;
-    if data.source != body.source.source() {
+    if data.source != Some(body.source) {
         return Err("assembly payload belongs to another actual source body");
     }
     let instruction = data
         .instructions
         .get(id as usize)
         .ok_or("assembly instruction identity is stale")?;
-    if body
-        .source
-        .source()
-        .is_none_or(|source| source.file != instruction.source.file)
-    {
+    if body.source.proof_site(instruction.site).is_err() {
         return Err("assembly instruction belongs to another source body");
     }
     let operands = data
@@ -220,12 +218,22 @@ pub(crate) fn prepay_instance(
         .saturating_add(data.pieces.len())
         .saturating_add(data.operands.len())
         .saturating_add(body.values.len());
-    report.prepare_assembly(first.source, work, 0)?;
+    if let BodyOrigin::Imported(_) = body.source {
+        // A client has no source-core budget and no local invocation: import
+        // paid this payload's rows, template bytes and retained bytes once,
+        // and each instance copies it as it copies the rest of the body.
+        return validate(body).map_err(|message| report.body_error(body.source, message));
+    }
     let bytes = size_of::<Payload>().saturating_add(data.allocation_bytes());
-    report.prepare_assembly(first.source, 1, bytes)?;
+    let key = |site| {
+        body.syntax_site(site)
+            .map_err(|message| report.body_error(body.source, message))
+    };
+    report.prepare_assembly(key(first.site)?, work, 0)?;
+    report.prepare_assembly(key(first.site)?, 1, bytes)?;
     validate(body).map_err(|message| report.body_error(body.source, message))?;
     for instruction in data.instructions.iter().skip(1) {
-        report.prepare_assembly(instruction.source, 1, 0)?;
+        report.prepare_assembly(key(instruction.site)?, 1, 0)?;
     }
     Ok(())
 }

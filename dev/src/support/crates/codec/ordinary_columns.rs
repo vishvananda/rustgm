@@ -11,6 +11,7 @@ mod enums_wire;
 mod exemption_wire;
 #[path = "ordinary_columns/annotation_rows.rs"]
 mod header_facts;
+mod instruction_columns;
 mod invoked_rows;
 mod ir_nodes;
 mod namespace_rows;
@@ -21,6 +22,9 @@ mod owner_rows;
 #[path = "ordinary_columns/supplied_extensions.rs"]
 mod provided_extensions;
 mod recipe_columns;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/register_wire.rs"]
+mod register_tests;
 mod relation_columns;
 mod results_wire;
 #[cfg(test)]

@@ -63,6 +63,20 @@ pub(super) fn check(
             _ => return Err("source call safety has no matching actual caller obligation"),
         }
     }
+    // Inline assembly's recorded context follows the rule for unsafe calls.
+    for instruction in view
+        .raw()
+        .assembly
+        .iter()
+        .flat_map(|rows| &rows.instructions)
+    {
+        work.charge(1)?;
+        match instruction.safety {
+            s::CallSafety::ExplicitUnsafeBlock => {}
+            s::CallSafety::UnsafeFunction if caller_unsafe => {}
+            _ => return Err("source inline assembly has no matching unsafe context"),
+        }
+    }
     work.charge(0)
 }
 

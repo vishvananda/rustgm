@@ -12,16 +12,14 @@ impl Checker<'_> {
         args: crate::syntax::ast::List,
     ) -> Result<(), Error> {
         self.require_unsafe(node, "inline assembly requires an unsafe context")?;
+        self.retain_assembly_context(node)?;
         if !self.state.in_function
             || self
                 .state
                 .environment_owner
                 .is_some_and(|id| self.facts.is_const_function(id))
         {
-            return Err(self.error(
-                node,
-                "inline assembly is not permitted in constant contexts",
-            ));
+            return Err(self.error(node, crate::support::initial_assembly::CONSTANT));
         }
         let unit = self.report.package.unit(self.state.file);
         for &arg in unit.configured.ast.list(args) {
@@ -253,35 +251,33 @@ impl Checker<'_> {
         }
     }
     fn assembly_simd_type(&self, node: NodeId, ty: TypeId) -> Result<(), Error> {
-        let shape = self
-            .facts
-            .aggregates
-            .simd_shape(&self.facts.types, ty)
-            .map_err(|message| self.error(node, message))?;
-        let SimdShape::Ready { lane, count } = shape else {
-            return Err(self.error(
-                node,
-                "assembly SIMD operand requires its completed genuine representation",
-            ));
-        };
-        let bits = match self.facts.types.kind(lane) {
-            Some(Type::Primitive(p)) => match p {
-                Primitive::F32 => Some(32),
-                Primitive::F64 => Some(64),
-                _ => p
-                    .integer()
-                    .map(|(_, bits)| bits)
-                    .filter(|bits| matches!(bits, 8 | 16 | 32 | 64)),
-            },
-            _ => None,
-        };
-        if bits.and_then(|bits| count.checked_mul(u64::from(bits))) == Some(128) {
-            Ok(())
-        } else {
-            Err(self.error(
-                node,
-                "assembly xmm vector requires exactly 128 bits of supported numeric lanes",
-            ))
-        }
+        simd_operand(&*self.facts, ty).map_err(|message| self.error(node, message))
+    }
+}
+/// An `xmm_reg` vector: exactly 128 bits of supported numeric lanes. The
+/// local checker and every imported body's re-proof share this one check.
+pub(crate) fn simd_operand(
+    facts: &crate::sema::model::Declarations,
+    ty: TypeId,
+) -> Result<(), &'static str> {
+    let shape = facts.aggregates.simd_shape(&facts.types, ty)?;
+    let SimdShape::Ready { lane, count } = shape else {
+        return Err("assembly SIMD operand requires its completed genuine representation");
+    };
+    let bits = match facts.types.kind(lane) {
+        Some(Type::Primitive(p)) => match p {
+            Primitive::F32 => Some(32),
+            Primitive::F64 => Some(64),
+            _ => p
+                .integer()
+                .map(|(_, bits)| bits)
+                .filter(|bits| matches!(bits, 8 | 16 | 32 | 64)),
+        },
+        _ => None,
+    };
+    if bits.and_then(|bits| count.checked_mul(u64::from(bits))) == Some(128) {
+        Ok(())
+    } else {
+        Err("assembly xmm vector requires exactly 128 bits of supported numeric lanes")
     }
 }

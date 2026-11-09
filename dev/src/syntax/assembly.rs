@@ -9,14 +9,9 @@ pub enum Direction {
     Const,
     Sym,
 }
-pub(crate) const PURE: u16 = 1;
-pub(crate) const NOMEM: u16 = 2;
-pub(crate) const READONLY: u16 = 4;
-pub(crate) const PRESERVES_FLAGS: u16 = 8;
-pub(crate) const NORETURN: u16 = 16;
-pub(crate) const NOSTACK: u16 = 32;
-pub(crate) const ATT_SYNTAX: u16 = 64;
-pub(crate) const RAW: u16 = 128;
+pub(crate) use crate::support::initial_assembly::{
+    ATT_SYNTAX, NOMEM, NORETURN, NOSTACK, PRESERVES_FLAGS, PURE, RAW, READONLY,
+};
 pub(crate) fn option(name: &str) -> Option<u16> {
     Some(match name {
         "pure" => PURE,

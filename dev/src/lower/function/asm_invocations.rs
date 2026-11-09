@@ -13,43 +13,8 @@ use crate::{
     types::Kind as TypeKind,
 };
 
-/// The unsupported options, reported in bit order before any operand.
-const OPTIONS: [(u16, &str); 6] = [
-    (
-        syntax::PURE,
-        "inline assembly pure option is outside the initial assembly profile",
-    ),
-    (
-        syntax::NOMEM,
-        "inline assembly nomem option is outside the initial assembly profile",
-    ),
-    (
-        syntax::READONLY,
-        "inline assembly readonly option is outside the initial assembly profile",
-    ),
-    (
-        syntax::NORETURN,
-        "inline assembly noreturn option is outside the initial assembly profile",
-    ),
-    (
-        syntax::ATT_SYNTAX,
-        "inline assembly att_syntax option is outside the initial assembly profile",
-    ),
-    (
-        syntax::RAW,
-        "inline assembly raw option is outside the initial assembly profile",
-    ),
-];
-pub(super) const OUTPUT: &str =
-    "inline assembly output operand is outside the initial assembly profile";
-const GENERAL: &str =
-    "inline assembly reg input other than a raw pointer is outside the initial assembly profile";
-const ABCD: &str = "inline assembly reg_abcd operand is outside the initial assembly profile";
-const BYTE: &str = "inline assembly reg_byte operand is outside the initial assembly profile";
-const EXPLICIT: &str =
-    "inline assembly explicit register operand is outside the initial assembly profile";
-const XMM: &str = "inline assembly xmm_reg input other than a 128-bit vector is outside the initial assembly profile";
-const MODIFIER: &str = "inline assembly template modifier is outside the initial assembly profile";
+pub(super) use crate::support::initial_assembly::OUTPUT;
+use crate::support::initial_assembly::{GENERAL, XMM};
 /// Status flags hold an undefined value on entry and DF is clear, so no
 /// status read is needed; the template may depend on rounding control.
 const READS: u8 = lowir::X87_CONTROL | lowir::MXCSR_CONTROL;
@@ -66,12 +31,12 @@ impl Lower<'_, '_, '_> {
             .assembly
             .as_deref()
             .ok_or("assembly effect has no retained body data")?;
-        if let Some(&(_, form)) = OPTIONS
-            .iter()
-            .find(|&&(bit, _)| instruction.options & bit != 0)
-        {
-            return Err(form);
-        }
+        self.arguments.clear();
+        assembly::profile::admit(data, instruction, |register, input| {
+            let argument = self.assembly_input(register, input)?;
+            self.arguments.push(argument);
+            Ok(())
+        })?;
         let operands = data
             .operands
             .get(instruction.operands.start as usize..instruction.operands.end as usize)
@@ -80,22 +45,6 @@ impl Lower<'_, '_, '_> {
             .templates
             .get(instruction.templates.start as usize..instruction.templates.end as usize)
             .ok_or("assembly template range is invalid")?;
-        self.arguments.clear();
-        for operand in operands {
-            let (Some(input), None) = (operand.input, operand.output) else {
-                return Err(OUTPUT);
-            };
-            let argument = self.assembly_input(operand.register, input)?;
-            self.arguments.push(argument);
-        }
-        for template in templates {
-            if pieces(&data.pieces, template)?
-                .iter()
-                .any(|piece| piece.modifier != 0)
-            {
-                return Err(MODIFIER);
-            }
-        }
         let mut draft = self.context.output.assembly()?;
         for operand in operands {
             draft.operand(if operand.register == Register::Xmm {
@@ -161,9 +110,9 @@ impl Lower<'_, '_, '_> {
                 };
                 self.pointer(snapshot)
             }
-            Register::Abcd => Err(ABCD),
-            Register::Byte => Err(BYTE),
-            Register::Explicit { .. } => Err(EXPLICIT),
+            Register::Abcd | Register::Byte | Register::Explicit { .. } => {
+                Err(assembly::profile::class(register).unwrap_or(GENERAL))
+            }
         }
     }
 }

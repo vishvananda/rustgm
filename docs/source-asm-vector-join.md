@@ -95,8 +95,9 @@ to the existing typed collector; distinct source Copy goals still share one set,
 sort and caller proof. No wall-time speedup or whole-compiler performance claim
 is inferred from the counters.
 
-Remaining LIB-045/PA41 work includes authenticated assembly body transport (B2),
-the other library forms in the [inventory](#pinned-library-asm-inventory),
+Remaining LIB-045/PA41 work includes the rest of assembly body transport (B2:
+`xmm_reg` inputs need S and T's vector type rows; A transports the pointer
+forms), the other library forms in the [inventory](#pinned-library-asm-inventory),
 demanded const/symbol operands and broader target/register/option/clobber/
 global/naked/unwind closure. Backend work remains separately coordinated.
 
@@ -194,6 +195,16 @@ whether or not the array impls behind it would transport. That outcome was
 declared before the K
 candidate run in `pa41/tests/spec/asm-native/contract.json`, and the test pins
 it in place of the M observation.
+
+Amendment (B2 A, [asm transport](parallel/asm-transport.md)): version 13 now
+exports the initial assembly profile's forms as value code 0 and a cold
+`Original.assembly` column. The pointer-only transport control above no
+longer fails: its packet carries one assembly value and the template
+`prefetchnta [{p}]`, and `asm_lowering.rs` pins that in place of "source
+rvalue requires a complete wider transport row". Every form outside the
+profile keeps its lowering text at export, through the same table. The real
+stream body's crate still stops at `__m128`'s `repr(simd)`, as declared in
+`pa41/tests/asm-transport-outcomes.json`.
 
 ### Qualification
 

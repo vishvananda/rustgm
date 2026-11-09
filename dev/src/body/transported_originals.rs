@@ -1,5 +1,6 @@
 //! Immutable imported originals share one owner; no row is a Checked or Permit.
 mod decoded_bodies;
+mod encoded_assembly;
 mod encoded_literals;
 mod encoded_texts;
 #[path = "transported_originals/reconstruction.rs"]

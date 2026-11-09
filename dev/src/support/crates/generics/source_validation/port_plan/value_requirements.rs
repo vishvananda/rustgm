@@ -35,12 +35,14 @@ impl Builder<'_, '_, '_> {
                 self.variant_test(original, (value.ty, place), variant, work)
             }
             s::ValueKind::EnumCast(operand) => self.enum_cast(original, value.ty, operand, work),
-            // Domain validation checked the exact primitive type and canonical bits.
+            // Domain validation checked the exact primitive type and canonical bits,
+            // and an assembly effect's unit type and operand types.
             // Formation above remains an ordinary unpaid request.
             s::ValueKind::Scalar(_)
             | s::ValueKind::ScalarCast(_)
             | s::ValueKind::Binary { .. }
-            | s::ValueKind::Text(_) => Ok(()),
+            | s::ValueKind::Text(_)
+            | s::ValueKind::Assembly { .. } => Ok(()),
             s::ValueKind::Read(place) => self.read_input(
                 original,
                 OperationSite { port, site },

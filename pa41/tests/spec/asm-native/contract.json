@@ -205,10 +205,24 @@
         "after": "f5ea06509819bc6a39131470195cd765815d237d44c173cdfee85a65ee8ebee6"
       },
       "unchanged": "observations_after_run keeps the B1 observation as recorded"
+    },
+    {
+      "item": "B2 A, the asm-transport slice (docs/parallel/asm-transport.md)",
+      "declared": "2026-11-09T04:20:08Z, before any A oracle or candidate run, in pa41/tests/asm-transport-outcomes.json",
+      "controls.opponents/transport.rs.module-bodies-v13": {
+        "before": "source rvalue requires a complete wider transport row",
+        "after": "exports: one assembly value with instruction 0 and the template \"prefetchnta [{p}]\" in its original's assembly columns",
+        "reason": "version 13 admits value code 0 for the initial assembly profile's forms; the control's pointer-only reg input with no options is one of them"
+      },
+      "README.md": {
+        "before": "f5ea06509819bc6a39131470195cd765815d237d44c173cdfee85a65ee8ebee6",
+        "after": "e244a327318b1ff25b59230ef6c84c4c721fff1d90555b5e7889954e8fa4eeda"
+      },
+      "unchanged": "controls keeps the B1 record; the stream witness keeps \"source nominal representation requires its wider complete contract\"; observations_after_run keeps the B1 observation as recorded"
     }
   ],
   "files": {
-    "README.md": "f5ea06509819bc6a39131470195cd765815d237d44c173cdfee85a65ee8ebee6",
+    "README.md": "e244a327318b1ff25b59230ef6c84c4c721fff1d90555b5e7889954e8fa4eeda",
     "entry.c": "98452b8d8fabcf47485e56e1b93d1965cbdc46132d8114ff42f835fc9765b266",
     "expected.stdout": "d01b7cec7494caaf9554d95bd3352dfe829a351b0be188b1a1ae905d03ea7522",
     "native.rs": "1631be50578cad11c570aa89b0ca8d5be751bf64f62fb07b8150c48e63fd5e94",

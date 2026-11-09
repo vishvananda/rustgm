@@ -7,6 +7,7 @@ pub mod crates;
 pub(crate) mod decorations;
 pub mod edition;
 pub mod hash;
+pub mod initial_assembly;
 pub(crate) mod intern_slice;
 pub mod intrinsics;
 pub mod iteration;

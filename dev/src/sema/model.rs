@@ -374,14 +374,16 @@ pub struct UnionWork {
 /// - one pointer for the boxed explicit nominal bound index of demanded outlives
 ///   contracts;
 /// - one pointer for the cold set of anonymous bodies folded into const
-///   arguments.
+///   arguments;
+/// - one pointer for the cold lexical unsafe contexts of a source provider's
+///   inline assembly.
 #[cfg(test)]
 pub(crate) const DECLARATIONS_SIZE: usize = 7048
     + size_of::<Vec<()>>()
     + 6 * size_of::<usize>()
     + 2 * size_of::<usize>()
     + size_of::<usize>()
-    + 2 * size_of::<Option<Box<()>>>();
+    + 3 * size_of::<Option<Box<()>>>();
 pub struct Declarations {
     pub(super) must_use_contracts: Option<Box<super::must_use::Contracts>>,
     /// Snapshotted before any header charge from this crate's input graph.
@@ -420,6 +422,16 @@ pub struct Declarations {
     /// an array length, allocated on first use. A type carries the value; the
     /// body never executes.
     pub(crate) evaluated_arguments: Option<Box<crate::support::hash::HashSet<NodeKey>>>,
+    /// Version thirteen: each inline assembly's lexical unsafe context in a
+    /// source provider, allocated on first use. Export reads it by node.
+    pub(crate) assembly_contexts: Option<
+        Box<
+            crate::support::hash::HashMap<
+                NodeKey,
+                crate::support::crates::generics::source::CallSafety,
+            >,
+        >,
+    >,
     pub(super) constant_annotation_bodies: crate::support::hash::HashSet<NodeKey>,
     pub generics: super::generics::Generics,
     /// Repeat operands selected as constant paths before runtime coercion wrappers.
@@ -721,6 +733,7 @@ impl Declarations {
             nested_outputs: None,
             anonymous_constants: crate::support::hash::HashMap::default(),
             evaluated_arguments: None,
+            assembly_contexts: None,
             constant_annotation_bodies: crate::support::hash::HashSet::default(),
             generics: super::generics::Generics::default(),
             constant_repeats: crate::support::hash::HashSet::default(),

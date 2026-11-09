@@ -1,5 +1,7 @@
 //! Calls keep their own actual signature; source context is checked separately.
-use super::{Body, Context, Declarations, Stage, g, ir, place, s};
+use super::{
+    Body, Context, Declarations, Stage, g, instruction_rows::value as assembly, ir, place, s,
+};
 pub(super) fn emit(
     stage: &mut Stage,
     facts: &mut Declarations,
@@ -92,6 +94,7 @@ pub(super) fn emit(
             ir::Rvalue::Reify(operand) if stage.body_nodes() => {
                 reify(facts, body, index, value.ty, operand)?
             }
+            ir::Rvalue::Assembly { .. } if stage.body_nodes() => assembly(value.kind)?,
             _ => return Err("source rvalue requires a complete wider transport row"),
         };
         let ty = stage.ty(facts, value.ty, context)?;

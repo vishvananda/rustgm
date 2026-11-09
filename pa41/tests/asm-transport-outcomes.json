@@ -1,0 +1,152 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+ "providers": [
+  {
+   "file": "spec/asm-transport/provider.rs",
+   "sha256": "d5b91a59fc779b3c03238e0a8db9805331594eea1aac6b3673afe71d27afade5",
+   "foundation": "lines 1-69 of spec/asm-native/native.rs (before `#[repr(simd)]`), byte-identical, then `// Authored asm transport section.`",
+   "amended": "2026-11-09T07:07:22Z, after the first native development run and before any candidate run: `tagged`'s template `/* {p} */` is now `# {p}`, a line comment in both LLVM's and the pinned backend's x86 assembler, so the body still has no effect and no options; the previous provider was bc0c089ad8ae574d45a83ceb8bee9405f8450ac4f4dc831fa6c7806dbefa5ced and every other byte is unchanged"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "declared": "2026-11-09T04:20:08Z",
+ "amended": "2026-11-09T04:35:02Z, before any rustc, development or candidate run: the integrator's review decisions 1-5 and Lane C's SSA item (notice amendments A1-A9)",
+ "development_note": "declared from source reading only, while the integrator held backend-work for the M+K join; no local twin probe, oracle or development CLI had run against these files. The A baseline's local twins (each client body appended to the provider as one crate, 2026-11-09T05:35Z) give unsafe-free `call to unsafe function requires an unsafe context` and mistyped `incompatible types`, as declared; the stored and tagged twins pass the local frontend and stop only at publishing the twin crate in the default metadata profile (`source stability contracts are outside this metadata profile`), and the baseline's v13 provider and all fifteen controls stop at `source rvalue requires a complete wider transport row`",
+ "rule": "integrator-approved B2 slice A: value code 0 `Assembly { instruction, arguments }` with operands [Flag, Range] and a conditional `Original.assembly` column after texts (and after R2's indirect_calls if R2 lands first), present iff some value is code 0; instructions `site | templates | operands | options u16 | safety u8`, templates `text | pieces`, pieces `start | end | operand | modifier u8`, operands `class u8 | input option | output u8 | ty | late u8`; decode admits class 0 and 3, output 0, modifier 0 and safety 1 or 2, each admitted only under body_nodes()",
+ "cases": [
+  {
+   "file": "spec/asm-transport/stored.rs",
+   "provider": "spec/asm-transport/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "621279117672d37ecb605d60be0ed24361dfda1074c356bdd092244888ab85bd",
+   "note": "imported `store` (explicit unsafe block, nostack and preserves_flags) writes 40 and imported `bump` (unsafe fn context, two templates, nostack) adds 1 twice"
+  },
+  {
+   "file": "spec/asm-transport/tagged.rs",
+   "provider": "spec/asm-transport/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "995ecf17c03b7dab2456fa91690932bc11f82892092f07a68ab24fec33e321de",
+   "lowir_templates": 2,
+   "failed_prediction": {
+    "observed": "2026-11-09T07:05:26Z, the first native development run (obj/qualification/fast/1794207926680186785), before any candidate run: the fresh consumer lowered both templates with B1's no-option property set, as declared, and `stored` exited 42, but the pinned CPPGM backend rejected tagged.lowir with `assembly line 1: expected module assembly identifier`",
+    "reason": "the pinned backend's module assembly text (cppgm-extended dev/src/asm/module_text.cpp) strips `#` line comments but has no `/* */` block comments, so the substituted `/* rax */` is read as a statement; rustc's LLVM assembler accepts both. A fixture choice, not a transport outcome: the provider's template is amended to `# {p}`, and the oracle is rerun on the amended provider before any candidate run",
+    "amended_after": "exits 42 natively with the amended provider; its LowIR holds two `tagged` templates, each `text \"# \"` then `use 0 0 0 0`"
+   },
+   "note": "`tagged::<u8>` and `tagged::<u16>` are two emitted instances of one imported asm body, each with B1's property set for no options"
+  },
+  {
+   "file": "spec/asm-transport/unsafe-free.rs",
+   "provider": "spec/asm-transport/provider.rs",
+   "accepted": false,
+   "rustc": "E0133",
+   "rustgm": "call to unsafe function requires an unsafe context",
+   "sha256": "cabaa17ad924134a35cb0f1eae89d50283df392133b4fe829aa9a128187f3a23"
+  },
+  {
+   "file": "spec/asm-transport/mistyped.rs",
+   "provider": "spec/asm-transport/provider.rs",
+   "accepted": false,
+   "rustc": "E0308",
+   "rustgm": "incompatible types",
+   "sha256": "0ee2a2611248c792fe4ecf6947f53b4884f78109891c838df9bc08a2993a1fab"
+  }
+ ],
+ "export_controls": {
+  "note": "generated providers: the foundation, the u8 and u64 Clone/Copy impls, then one asm-native opponent with `use core::arch::asm;` removed, `asm!(` written `crate::arch::asm!(` and `<T>` inserted after `pub fn f`, so the provider lowers nothing; exported_profile (module-bodies-v13) rejects each with its B1 text through the exporter's body preflight; rustc accepts every control crate as a library",
+  "amended": "2026-11-09T05:34:19Z, after the first oracle run and before any development or candidate run: rustc 1.98.0 rejected pure, output, inout, reg-integer and reg-byte with `arguments for inline assembly must be copyable`, because the foundation makes only raw pointers and f32 Copy. Each generated control now places `impl Clone for u8`/`impl Copy for u8` and the same pair for u64, in the foundation's own form, between the foundation and its opponent. The provider, clients and every declared RustGM text are unchanged; the first run accepted the other ten controls, the provider and all four clients as declared",
+  "excluded": {
+   "att-syntax": "its inner `#![feature(repr_simd)]` cannot follow the foundation and its repr(simd) struct stops at S's fence first"
+  },
+  "controls": {
+   "pure": "inline assembly pure option is outside the initial assembly profile",
+   "nomem": "inline assembly nomem option is outside the initial assembly profile",
+   "readonly": "inline assembly readonly option is outside the initial assembly profile",
+   "noreturn": "inline assembly noreturn option is outside the initial assembly profile",
+   "raw": "inline assembly raw option is outside the initial assembly profile",
+   "output": "inline assembly output operand is outside the initial assembly profile",
+   "inout": "inline assembly output operand is outside the initial assembly profile",
+   "clobber": "inline assembly output operand is outside the initial assembly profile",
+   "reg-integer": "inline assembly reg input other than a raw pointer is outside the initial assembly profile",
+   "reg-function": "inline assembly reg input other than a raw pointer is outside the initial assembly profile",
+   "reg-abcd": "inline assembly reg_abcd operand is outside the initial assembly profile",
+   "reg-byte": "inline assembly reg_byte operand is outside the initial assembly profile",
+   "explicit": "inline assembly explicit register operand is outside the initial assembly profile",
+   "xmm-scalar": "inline assembly xmm_reg input other than a 128-bit vector is outside the initial assembly profile",
+   "modifier": "inline assembly template modifier is outside the initial assembly profile"
+  },
+  "provider_v13": {
+   "before": "source rvalue requires a complete wider transport row",
+   "after": "exports; the packet is a plain version [13, 0] core with no macro envelope",
+   "failed_prediction": {
+    "observed": "2026-11-09T06:58:06Z, the first development run of the fresh-process linking test (obj/qualification/fast/1794207486355456091), before any candidate run: the provider exports, and its packet is Lane B's declarative macro envelope, tag 14 version 2, wrapping a version [13, 0] core",
+    "reason": "the frozen foundation's source-owned `pub macro asm` in `mod arch` is an exported builtin macro row, which needs envelope version 2 (exported_macros.rs Macros::version); the declared text overlooked the foundation's own macro rows. Export, every client and every other outcome are unchanged",
+    "amended_after": "exports; the packet is a [14, 2] macro envelope holding the builtin row arch::asm, wrapping a version [13, 0] core"
+   }
+  },
+  "provider_older_profiles": {
+   "profiles": [
+    "module-branches-v12",
+    "module-nominals-v10"
+   ],
+   "before_and_after": "source type form requires an explicitly supported transport row",
+   "recorded": "2026-11-09T05:35Z by the A baseline (the K candidate CLI, SHA-256 9fab7f87cfa04b5cf2720d3b9d33dc47ee2441c0da3c0f96d0b67baa219f6455) before any A development or candidate run, as declared: the raw-pointer parameter has no type row outside body_nodes(); A must not change it"
+  },
+  "failed_prediction_rule": "an earlier fence that fires first is recorded here with its amendment, as in K"
+ },
+ "forged_rows": {
+  "note": "rows 1-21 are packet outcomes: each forges the provider's own v13 packet. Row 22 is a unit-level control, not a packet outcome: it is built in rows in dev/tests/invariants/ssa_projection_ports.rs because no A provider body has a temporary place, which the snapshot walk requires",
+  "1_class_1": "inline assembly reg_abcd operand is outside the initial assembly profile",
+  "2_class_4_no_payload": "inline assembly explicit register operand is outside the initial assembly profile",
+  "3_class_5": "unknown source assembly register class",
+  "4_class_3_on_pointer_input": "inline assembly xmm_reg input other than a 128-bit vector is outside the initial assembly profile",
+  "5_unknown_option_bit": "unknown source assembly option",
+  "6_option_nomem": "inline assembly nomem option is outside the initial assembly profile",
+  "7_output_flag_1": "inline assembly output operand is outside the initial assembly profile",
+  "8_late_input": "source assembly input cannot be late",
+  "9_safety_0": "source inline assembly has no unsafe context",
+  "10_safety_2_in_safe_tagged": "source inline assembly has no matching unsafe context",
+  "11_piece_outside_text": "source assembly placeholder is malformed",
+  "12_pieces_out_of_order": "source assembly placeholder is malformed",
+  "13_piece_operand_out_of_range": "source assembly placeholder is malformed",
+  "14_modifier_1": "inline assembly template modifier is outside the initial assembly profile",
+  "15_two_values_one_instruction": "source assembly ordinal leaves its value order",
+  "16_column_longer_than_values": "source assembly column differs from its assembly values",
+  "17_arguments_differ_from_inputs": "assembly input order differs from retained operands",
+  "18_ty_differs_from_input": "assembly input type differs from retained operand",
+  "19_input_names_itself": "source value recipe is cyclic, forward or unknown",
+  "20_const_header_and_context": "inline assembly is not permitted in constant contexts",
+  "21_template_ranges_not_partitioning": "source assembly template ranges do not partition their column",
+  "22_ssa_input_in_non_dominating_block": {
+   "classification": "unit-level control, not a packet outcome (integrator, 2026-11-09T04:46:42Z): no A provider body has a temporary place, so no provider packet reaches the snapshot walk; the row is built directly in rows and passed to the domain index's snapshot validate",
+   "text": "source SSA snapshot use is not dominated by its actual evaluation",
+   "body": "snapshot() plus v3 = Assembly { instruction: 0, arguments: [v2] } (arguments [2]); statements Evaluate(1), Store { Local(0), 1 }, Evaluate(3), Evaluate(0), Project(0), Evaluate(2); block 0 = 0..2 branches on v1 to 1 and 2, block 1 = 2..3 and block 2 = 3..6 are unreachable; validate(.., branching = true) fails at block 1",
+   "twin": "statements Evaluate(1), Store, Evaluate(0), Project(0), Evaluate(2), Evaluate(3) with block 1 empty and block 2 = 2..6 validates",
+   "gap": "without the Assembly arm dependency() returns None for v3 and the forged body validates; every other use is block-local"
+  }
+ },
+ "old_readers": {
+  "pre_a_reader": "the K candidate CLI (the A baseline) consuming the A provider packet rejects it with `encoded Rvalue::Assembly is not reconstructable by this consumer`"
+ },
+ "byte_identity": "existing version-thirteen providers published by the A baseline (K candidate) and the A candidate CLI produce identical packets: pa29 spec/transparent-records/provider.rs, spec/panic-attributes/provider.rs, spec/macro-contexts/provider.rs and spec/const-parameters/provider.rs, and the pa41 prelude-only publication (native.rs before `#[repr(simd)]`)",
+ "width": "assembly::Instruction 28 -> 24 bytes and Payload 104 -> 112; s::ValueKind and s::Value keep their sizes (asserted before and after, and with R1's Reify per Lane C); s::Original grows by one Option<Box> pointer, recorded where its size is accounted",
+ "bounded_work": {
+  "asm_scaling": "a provider with N in {8, 16, 32} pointer inputs and N templates exports and validates with charged Work.steps exactly affine in N (zero second difference); asm-free bodies allocate no Original.assembly",
+  "k_followup": "wide<const A0: usize, ..., const A{N-1}: usize>() applied once in an exported body at N = 8, 16, 32: validation's charged Work.steps has zero second difference, Δ(16→32) = 2·Δ(8→16)"
+ },
+ "local_invariance": "all 16 B1 opponents keep their lowering texts; asm_effect_contracts, asm_lowering, the B1 native _mm_stream_ps check and every ssa_projection_ports case pass unchanged; B1 PA text cases (PA11, PA14, PA16, PA18-PA21, PA24) pass unchanged in scheduled CI",
+ "closures": "not declared: no closure or inline-const body reaches the asm rows at A's scope (Owner::Closure at transported_source.rs:446, closure types at recipe_emission.rs:259, closure calls at cfg_rows.rs:305, const contexts at sema/bodies/assembly_values.rs:15-25)",
+ "stream_witness": {
+  "source": "pa41/tests/spec/asm-native/native.rs before `// Authored observers`",
+  "before": "source nominal representation requires its wider complete contract",
+  "after": "source nominal representation requires its wider complete contract"
+ },
+ "oracle": "rustc 1.98.0 accepts the provider and both accepted clients, which exit 42 natively; rejects unsafe-free with E0133 and mistyped with E0308; accepts every export control crate as a library",
+ "oracle_rerun": "2026-11-09T07:08Z on the amended provider d5b91a59fc779b3c03238e0a8db9805331594eea1aac6b3673afe71d27afade5, before any candidate run: as declared, the provider builds, stored and tagged exit 42, unsafe-free fails with E0133, mistyped with E0308, and all fifteen generated controls build as libraries"
+}

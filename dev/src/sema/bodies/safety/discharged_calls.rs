@@ -33,6 +33,33 @@ impl Checker<'_> {
         }
         self.retain_safety_record(node, PendingKind::Discharged(kind))
     }
+    /// Version thirteen: a source provider retains each inline assembly's
+    /// lexical unsafe context for export. A replay finds the same context.
+    pub(in crate::sema::bodies) fn retain_assembly_context(
+        &mut self,
+        node: NodeId,
+    ) -> Result<(), Error> {
+        if self.facts.source_bindings.is_none() {
+            return Ok(());
+        }
+        let kind = self.lexical_call_context();
+        if kind == CallSafety::Safe {
+            return Err(self.error(node, "checked inline assembly lost its lexical context"));
+        }
+        self.state
+            .infer
+            .account_work(1)
+            .map_err(|e| self.error(node, e))?;
+        let key = self.key(node);
+        let contexts = self.facts.assembly_contexts.get_or_insert_default();
+        if *contexts.entry(key).or_insert(kind) != kind {
+            return Err(self.error(
+                node,
+                "inline assembly replay changed its lexical unsafe context",
+            ));
+        }
+        Ok(())
+    }
     fn lexical_call_context(&self) -> CallSafety {
         if self.state.safety.blocks != 0 {
             CallSafety::ExplicitUnsafeBlock

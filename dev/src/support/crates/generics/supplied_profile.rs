@@ -117,15 +117,37 @@ fn original_operations(rows: &SourceRows, work: &mut Work) -> Result<(), &'stati
             if matches!(value.kind, s::ValueKind::ScalarCast(_)) {
                 return Err("source scalar cast requires its explicit v9 ordinary profile");
             }
-            if matches!(value.kind, s::ValueKind::Binary { .. }) {
-                return Err(
-                    "source Binary operations require the version-thirteen body IR profile",
-                );
-            }
-            if matches!(value.kind, s::ValueKind::Text(_)) {
-                return Err("source text literals require the version-thirteen body IR profile");
+            if let Some(form) = bodies_only(value.kind) {
+                return Err(form);
             }
         }
     }
     Ok(())
+}
+/// The value kinds only the version-thirteen body IR profile admits, each
+/// with its legacy writer's text.
+const fn bodies_only(kind: s::ValueKind) -> Option<&'static str> {
+    Some(match kind {
+        s::ValueKind::Binary { .. } => {
+            "source Binary operations require the version-thirteen body IR profile"
+        }
+        s::ValueKind::Text(_) => {
+            "source text literals require the version-thirteen body IR profile"
+        }
+        s::ValueKind::Invoke { .. } => {
+            "source call operators require the version-thirteen body IR profile"
+        }
+        s::ValueKind::VariantAggregate { .. }
+        | s::ValueKind::IsVariant { .. }
+        | s::ValueKind::EnumCast(_) => {
+            "source enum operations require the version-thirteen body IR profile"
+        }
+        s::ValueKind::Reify(_) => {
+            "source function reification requires the version-thirteen body IR profile"
+        }
+        s::ValueKind::Assembly { .. } => {
+            "source inline assembly requires the version-thirteen body IR profile"
+        }
+        _ => return None,
+    })
 }

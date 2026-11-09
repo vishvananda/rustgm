@@ -1,4 +1,6 @@
 //! Every original-owned port is checked, including values outside the return path.
+#[path = "body_ports/instruction_ports.rs"]
+mod assembly;
 #[path = "body_ports/request_ports.rs"]
 mod calls;
 #[path = "body_ports/cfg_storage.rs"]
@@ -26,6 +28,7 @@ impl DomainIndex<'_, '_> {
             {
                 return Err("source original changed its exact defining frame or semantic context");
             }
+            let unsafe_ = header.callable.unsafe_;
             self.types
                 .root(self.headers, context, original.result, work)?;
             for local in &original.locals {
@@ -48,6 +51,7 @@ impl DomainIndex<'_, '_> {
             }
             self.calls(context, original, work, conversions)?;
             self.storage_ports(original, work)?;
+            self.assembly(context, original, unsafe_, work)?;
             self.input_ports(context, original, input, work)?;
             if snapshots {
                 self.scratch(super::snapshots::allocation(original), work)?;
@@ -164,7 +168,10 @@ impl DomainIndex<'_, '_> {
                     prefix_value(original, argument, index, work)?;
                 }
             }
-            s::ValueKind::Aggregate { fields } => {
+            s::ValueKind::Aggregate { fields }
+            | s::ValueKind::Assembly {
+                arguments: fields, ..
+            } => {
                 for &argument in fields.slice(&original.arguments)? {
                     prefix_value(original, argument, index, work)?;
                 }

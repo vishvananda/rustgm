@@ -72,6 +72,7 @@ fn original() -> s::Original {
         calls: Vec::new(),
         guards: None,
         texts: None,
+        assembly: None,
     }
 }
 

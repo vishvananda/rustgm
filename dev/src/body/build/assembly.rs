@@ -57,11 +57,10 @@ impl Builder<'_> {
             end: self.index(node, self.body.arguments.len())?,
         };
         let mut data = self.body.assembly.take().unwrap_or_default();
-        let source = self
-            .body
-            .source
-            .source()
-            .ok_or_else(|| self.error(node, "assembly body has no actual source owner"))?;
+        let source = self.body.source;
+        if source.source().is_none() {
+            return Err(self.error(node, "assembly body has no actual source owner"));
+        }
         if data.source.is_some_and(|actual| actual != source) {
             return Err(self.error(node, "assembly payload belongs to another source body"));
         }
@@ -75,10 +74,7 @@ impl Builder<'_> {
         };
         let (templates, options) = self.assembly_templates(node, args, &mut data)?;
         data.instructions.push(Instruction {
-            source: crate::resolve::unit::NodeKey {
-                node,
-                ..self.source
-            },
+            site: node.into(),
             templates,
             operands: operand_range,
             options,

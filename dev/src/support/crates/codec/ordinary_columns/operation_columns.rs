@@ -100,12 +100,25 @@ fn original_profile(
     }
     // Text literals follow exactly when a value is text, in value order.
     match (&row.texts, has_text(&row.values)) {
-        (None, false) => Ok(()),
+        (None, false) => {}
         (Some(texts), true) if generation == Generation::Bodies => {
-            write(out, &texts.rows, |out, text| out.string(text))
+            write(out, &texts.rows, |out, text| out.string(text))?;
         }
-        (Some(_), true) => Err("source text literals require the version-thirteen body IR profile"),
-        _ => Err("source text columns differ from the text values of its body"),
+        (Some(_), true) => {
+            return Err("source text literals require the version-thirteen body IR profile");
+        }
+        _ => return Err("source text columns differ from the text values of its body"),
+    }
+    // Assembly columns follow exactly when a value is assembly.
+    match (&row.assembly, has_assembly(&row.values)) {
+        (None, false) => Ok(()),
+        (Some(assembly), true) if generation == Generation::Bodies => {
+            super::instruction_columns::assembly_write(out, assembly)
+        }
+        (Some(_), true) => {
+            Err("source inline assembly requires the version-thirteen body IR profile")
+        }
+        _ => Err("source assembly columns differ from the assembly values of its body"),
     }
 }
 fn has_text(values: &[s::Value]) -> bool {
@@ -113,8 +126,13 @@ fn has_text(values: &[s::Value]) -> bool {
         .iter()
         .any(|value| matches!(value.kind, s::ValueKind::Text(_)))
 }
+fn has_assembly(values: &[s::Value]) -> bool {
+    values
+        .iter()
+        .any(|value| matches!(value.kind, s::ValueKind::Assembly { .. }))
+}
 /// Each literal is charged one atom per byte, outside the name budget.
-fn text_read(read: &mut Input<'_, '_>) -> Result<Box<str>, &'static str> {
+pub(super) fn text_read(read: &mut Input<'_, '_>) -> Result<Box<str>, &'static str> {
     let length = read.reader.count(crates::MAX_COMPONENTS, 1)?;
     read.reader.atoms(length)?;
     read.reserve(length)?;
@@ -205,6 +223,11 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
     } else {
         None
     };
+    let assembly = if read.profile.body_nodes() && has_assembly(&values) {
+        Some(Box::new(super::instruction_columns::assembly_read(read)?))
+    } else {
+        None
+    };
     Ok(s::Original {
         body,
         declaration,
@@ -227,6 +250,7 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
         calls,
         guards,
         texts,
+        assembly,
     })
 }
 pub(super) fn place_write(out: &mut Writer, place: s::Place) -> Result<(), &'static str> {
@@ -300,6 +324,9 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
         }
         s::ValueKind::Reify(_) => {
             Err("source function reification requires the version-thirteen body IR profile")
+        }
+        s::ValueKind::Assembly { .. } => {
+            Err("source inline assembly requires the version-thirteen body IR profile")
         }
         s::ValueKind::Call {
             signature,

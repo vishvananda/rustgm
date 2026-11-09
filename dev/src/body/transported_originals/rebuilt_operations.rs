@@ -1,6 +1,6 @@
 //! Reconstruct the admitted source operation domain from its sealed current view.
 use super::{
-    ImportedOriginals, encoded_literals, encoded_texts,
+    ImportedOriginals, encoded_assembly, encoded_literals, encoded_texts,
     operations::{self, lexical},
     regional_records,
 };
@@ -75,6 +75,7 @@ pub(super) fn build(
         values.push(Value { ty, kind });
     }
     body.values = values;
+    encoded_assembly::payload(view, &mut body, work)?;
     work.charge(record.arguments.len())?;
     body.arguments = record.arguments.iter().copied().map(ValueId).collect();
     body.statements = record
@@ -123,6 +124,7 @@ fn value_kind(
         },
         s::ValueKind::Scalar(_) => encoded_literals::append(view, value, body)?,
         s::ValueKind::Text(_) => encoded_texts::append(view)?,
+        s::ValueKind::Assembly { .. } => encoded_assembly::value(view, value.kind)?,
         s::ValueKind::Read(place) => Rvalue::Read(regional_records::place(view, place)?),
         s::ValueKind::Borrow(place) => {
             regional_records::borrow(view, place, BorrowKind::Immediate)?
@@ -391,72 +393,77 @@ pub(super) fn allocation(
     work: &mut ImportedOriginals,
 ) -> Result<usize, &'static str> {
     use crate::body::{ir, scopes, storage};
-    Ok(regional_records::allocation(record).saturating_add(
-        encoded_literals::count(record, work)?
-            .saturating_mul(size_of::<crate::sema::model::Scalar>())
-            .saturating_add(
-                record
-                    .locals
-                    .len()
-                    .saturating_mul(size_of::<ir::Local>())
-                    .saturating_add(record.values.len().saturating_mul(size_of::<ir::Value>()))
-                    .saturating_add(
-                        record
-                            .statements
-                            .len()
-                            .saturating_mul(size_of::<ir::Statement>()),
-                    )
-                    .saturating_add(record.blocks.len().saturating_mul(size_of::<ir::Block>()))
-                    .saturating_add(
-                        record
-                            .scopes
-                            .len()
-                            .saturating_mul(size_of::<storage::Scope>()),
-                    )
-                    .saturating_add(
-                        record
-                            .exits
-                            .len()
-                            .saturating_mul(size_of::<storage::Exit>()),
-                    )
-                    .saturating_add(
-                        record
-                            .temporaries
-                            .len()
-                            .saturating_mul(size_of::<ir::Temporary>()),
-                    )
-                    .saturating_add(record.owned.as_ref().map_or(0, |owned| {
-                        size_of::<values::Facts>()
-                            .saturating_add(
-                                owned
-                                    .created
-                                    .len()
-                                    .saturating_mul(size_of::<ir::Temporary>()),
-                            )
-                            .saturating_add(
-                                owned
-                                    .returned
-                                    .len()
-                                    .saturating_mul(size_of::<values::Release>()),
-                            )
-                            .saturating_add(
-                                crate::support::retained::new_map::<ir::ValueId, usize>(
-                                    owned.created.len(),
-                                ),
-                            )
-                    }))
-                    // Keep alignment overhead conservative without flattening any owner graph.
-                    .saturating_add(
-                        record
-                            .arguments
-                            .len()
-                            .saturating_mul(size_of::<ir::ValueId>()),
-                    )
-                    .saturating_add(
-                        size_of::<Body>() + size_of::<storage::Facts>() + size_of::<scopes::Id>(),
-                    ),
-            ),
-    ))
+    Ok(regional_records::allocation(record)
+        .saturating_add(encoded_assembly::allocation(record))
+        .saturating_add(
+            encoded_literals::count(record, work)?
+                .saturating_mul(size_of::<crate::sema::model::Scalar>())
+                .saturating_add(
+                    record
+                        .locals
+                        .len()
+                        .saturating_mul(size_of::<ir::Local>())
+                        .saturating_add(record.values.len().saturating_mul(size_of::<ir::Value>()))
+                        .saturating_add(
+                            record
+                                .statements
+                                .len()
+                                .saturating_mul(size_of::<ir::Statement>()),
+                        )
+                        .saturating_add(record.blocks.len().saturating_mul(size_of::<ir::Block>()))
+                        .saturating_add(
+                            record
+                                .scopes
+                                .len()
+                                .saturating_mul(size_of::<storage::Scope>()),
+                        )
+                        .saturating_add(
+                            record
+                                .exits
+                                .len()
+                                .saturating_mul(size_of::<storage::Exit>()),
+                        )
+                        .saturating_add(
+                            record
+                                .temporaries
+                                .len()
+                                .saturating_mul(size_of::<ir::Temporary>()),
+                        )
+                        .saturating_add(record.owned.as_ref().map_or(0, |owned| {
+                            size_of::<values::Facts>()
+                                .saturating_add(
+                                    owned
+                                        .created
+                                        .len()
+                                        .saturating_mul(size_of::<ir::Temporary>()),
+                                )
+                                .saturating_add(
+                                    owned
+                                        .returned
+                                        .len()
+                                        .saturating_mul(size_of::<values::Release>()),
+                                )
+                                .saturating_add(crate::support::retained::new_map::<
+                                    ir::ValueId,
+                                    usize,
+                                >(
+                                    owned.created.len()
+                                ))
+                        }))
+                        // Keep alignment overhead conservative without flattening any owner graph.
+                        .saturating_add(
+                            record
+                                .arguments
+                                .len()
+                                .saturating_mul(size_of::<ir::ValueId>()),
+                        )
+                        .saturating_add(
+                            size_of::<Body>()
+                                + size_of::<storage::Facts>()
+                                + size_of::<scopes::Id>(),
+                        ),
+                ),
+        ))
 }
 
 pub(super) fn validate(
@@ -497,6 +504,7 @@ pub(super) fn validate(
     regional_records::validate(view, body, steps)?;
     ports(view, body, steps)?;
     encoded_texts::validate(texts, view, body, steps)?;
+    encoded_assembly::validate(view, body, steps)?;
     for (actual, record) in body.statements.iter().zip(&record.statements) {
         *steps = steps.saturating_add(1);
         if actual.source != view.site(record.site, steps)?
@@ -649,6 +657,9 @@ fn same_value(
     steps: &mut usize,
 ) -> Result<bool, &'static str> {
     if let Some(same) = same_variant_value(view, (actual.kind, record.kind), steps)? {
+        return Ok(same);
+    }
+    if let Some(same) = encoded_assembly::same(actual.kind, record.kind) {
         return Ok(same);
     }
     Ok(match (actual.kind, record.kind) {

@@ -1,4 +1,5 @@
 //! Actual supported CFG operations are preserved; unsupported tables reject intact.
+mod instruction_rows;
 mod lexical_rows;
 mod value_rows;
 use super::{Body, Context, Declarations, Owner, Stage, g, ir, locations, s};
@@ -13,6 +14,9 @@ pub(super) fn emit(
     sites: &mut Sites,
 ) -> Result<s::Original, &'static str> {
     validate(facts, body, stage.feature_predicates(), stage.body_nodes())?;
+    if stage.body_nodes() {
+        instruction_rows::preflight(stage, facts, body)?;
+    }
     let reference = context
         .body()
         .ok_or("source CFG has no actual original body identity")?;
@@ -38,10 +42,14 @@ pub(super) fn emit(
         calls: Vec::new(),
         guards: None,
         texts: None,
+        assembly: None,
     };
     locals(stage, facts, body, context, &mut raw, sites)?;
     projections(stage, facts, body, context, &mut raw)?;
     value_rows::emit(stage, facts, body, context, &mut raw, sites)?;
+    if stage.body_nodes() {
+        instruction_rows::emit(stage, facts, (body, context), &mut raw, sites)?;
+    }
     for statement in &body.statements {
         stage.reserve(4 * size_of::<s::Statement>())?;
         raw.statements.push(s::Statement {

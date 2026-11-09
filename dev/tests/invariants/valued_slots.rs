@@ -19,6 +19,13 @@ fn validate(
     interface: &crates::Interface,
     rows: s::SourceRows,
 ) -> std::result::Result<(), &'static str> {
+    charged(interface, rows, &mut g::Work::default())
+}
+fn charged(
+    interface: &crates::Interface,
+    rows: s::SourceRows,
+    work: &mut g::Work,
+) -> std::result::Result<(), &'static str> {
     let descriptor = interface.source_descriptor().ok_or("source descriptor")?;
     let (_, attributes, modules) = raw(interface).map_err(|_| "raw rows")?;
     let availability = descriptor
@@ -32,7 +39,7 @@ fn validate(
         modules,
         availability,
         0,
-        &mut g::Work::default(),
+        work,
     )
     .map(|_| ())
 }
@@ -299,5 +306,47 @@ fn const_rows_keep_canonical_values_and_reject_forged_slots_and_terms() -> Resul
             "{label}"
         );
     }
+    Ok(())
+}
+/// The frozen provider and one function of `count` zero-padded const
+/// formals, applied once in an exported body.
+fn wide(provider: &str, count: usize) -> String {
+    let formals: Vec<String> = (0..count)
+        .map(|index| format!("const A{index:03}: usize"))
+        .collect();
+    let values: Vec<String> = (0..count).map(|index| index.to_string()).collect();
+    format!(
+        "{provider}// Generated const formal scaling pair.\npub fn wide<{}>() {{}}\npub fn wide_applied() {{ wide::<{}>() }}\n",
+        formals.join(", "),
+        values.join(", ")
+    )
+}
+/// K's follow-up: validating one application of N const formals costs work
+/// affine in N, with zero second difference, including the walk of the
+/// formals' type space and every other N-linear cost of the packet.
+#[test]
+fn const_formal_validation_work_is_affine_in_formal_count() -> Result {
+    let provider = crate::test_source::fixture(PROVIDER)?;
+    let mut observed = Vec::new();
+    for count in [8, 16, 32] {
+        let interface = exported_profile(
+            &wide(&provider, count),
+            SourcePublication::ModuleBodies,
+            "const_formal_scaling",
+        )?;
+        let decoded = crates::decode(&crates::encode(&interface)?)?;
+        let (rows, _, _) = raw(&decoded)?;
+        let mut work = g::Work::default();
+        charged(&decoded, rows, &mut work)?;
+        observed.push(work.steps);
+    }
+    eprintln!("const formals [8, 16, 32]: {observed:?}");
+    let [small, middle, large] = <[usize; 3]>::try_from(observed).map_err(|_| "counts")?;
+    assert!(middle > small, "{small} {middle} {large}");
+    assert_eq!(
+        large - middle,
+        2 * (middle - small),
+        "{small} {middle} {large}"
+    );
     Ok(())
 }

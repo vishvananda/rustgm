@@ -6,8 +6,6 @@ use crate::{lower::instances::SourcePublication, pipeline, resolve::model::DefId
 use std::fmt::Write as _;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const SPEC: &str = "pa41/tests/spec/asm-native";
-/// The v13 module-body publication has no assembly value row.
-const TRANSPORT: &str = "source rvalue requires a complete wider transport row";
 /// The crate holding the real stream body. B1 observed it stopping at the
 /// crate-wide macro provenance fence, since `vps!` and `concat!` expand inside
 /// it. B2's macro-context slice admits those semi-opaque marks, and its
@@ -118,20 +116,36 @@ fn transport_source() -> Result<String> {
     }
     Ok(text)
 }
+/// B2 slice A (amended 2026-11-09): the pointer-only control's body now
+/// joins the v13 module-body publication as one assembly value and its
+/// columns, copied verbatim from the lowered payload.
 #[test]
-fn inline_asm_bodies_stay_outside_v13_module_body_transport() -> Result {
+fn inline_asm_bodies_join_v13_module_body_transport() -> Result {
+    use crate::support::crates::{self, generics::source as s};
     let text = transport_source()?;
     let (lowir, count) = lowered(&text, "asm_transport_lowered", "f")?;
     assert_eq!(count, Some(1));
     assert!(lowir.contains("  text \"prefetchnta [\"\n  use 0 0 0 0\n  text \"]\"\n"));
-    let error = crate::module_packets::exported_profile(
+    let interface = crate::module_packets::exported_profile(
         &text,
         SourcePublication::ModuleBodies,
         "asm_transport",
-    )
-    .err()
-    .ok_or("v13 publication exported an asm body")?;
-    assert!(error.to_string().contains(TRANSPORT), "{error}");
+    )?;
+    let decoded = crates::decode(&crates::encode(&interface)?)?;
+    let (rows, _, _) = crate::module_packets::raw(&decoded)?;
+    let texts: Vec<&str> = rows
+        .originals
+        .iter()
+        .filter_map(|original| original.assembly.as_deref())
+        .flat_map(|columns| columns.templates.iter().map(|template| &*template.text))
+        .collect();
+    assert_eq!(texts, ["prefetchnta [{p}]"]);
+    assert!(rows.originals.iter().any(|original| {
+        original
+            .values
+            .iter()
+            .any(|value| matches!(value.kind, s::ValueKind::Assembly { instruction: 0, .. }))
+    }));
     crate::module_packets::exported_profile(
         &native_prefix("#[repr(simd)]")?,
         SourcePublication::ModuleBodies,

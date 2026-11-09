@@ -67,9 +67,11 @@ lowering text for each one. Two inputs are positive controls instead:
 - `joined.rs`: two template strings and `{{`/`}}` escapes
 - `transport.rs`: an `#[inline]` pointer-only asm body, appended to
   `native.rs`'s prelude (everything before `#[repr(simd)]`). The prelude
-  alone publishes in version 13. With the body, it still lowers, and its
-  module-body packet fails with "source rvalue requires a complete wider
-  transport row".
+  alone publishes in version 13. With the body, it still lowers. Its
+  module-body packet failed with "source rvalue requires a complete wider
+  transport row" until B2's asm-transport slice
+  (`docs/parallel/asm-transport.md`). It now exports the body's assembly
+  value and its columns.
 
 The real stream body's packet (`native.rs` before its authored observers)
 was observed after the first run, not predicted. It stops earlier, at "source

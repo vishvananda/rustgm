@@ -155,8 +155,8 @@ fn assembly_contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
         for (id, instruction) in data.instructions.iter().enumerate() {
             writeln!(
                 out,
-                "  asm a{id} source={:?} options={} templates={:?} operands={:?}",
-                instruction.source,
+                "  asm a{id} site={} options={} templates={:?} operands={:?}",
+                instruction.site.index(),
                 instruction.options,
                 instruction.templates,
                 instruction.operands

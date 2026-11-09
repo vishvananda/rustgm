@@ -76,6 +76,8 @@ mod polarity_transport;
 mod records;
 #[path = "crate_linking/reexports.rs"]
 mod reexports;
+#[path = "crate_linking/register_transport.rs"]
+mod register_transport;
 #[path = "crate_linking/reified_items.rs"]
 mod reified_items;
 #[path = "crate_linking/representations.rs"]

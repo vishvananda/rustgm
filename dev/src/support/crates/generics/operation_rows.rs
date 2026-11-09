@@ -107,6 +107,13 @@ pub enum ValueKind {
     /// pointer `Value.ty`. No provider coercion decision is serialized: every
     /// consumer re-proves the item's applied signature against the pointer.
     Reify(u32),
+    /// Version thirteen: one inline assembly invocation, the original's
+    /// assembly instruction with this ordinal. Ordinals follow value order
+    /// densely; `arguments` lists its inputs in operand order.
+    Assembly {
+        instruction: u32,
+        arguments: Range,
+    },
 }
 /// The reconstructable primitive operators. Add, Sub and Mul are checked: each
 /// consumer instance lowers its own overflow guard and abort exit. Div, Rem and
@@ -339,6 +346,58 @@ pub struct Guards {
 pub struct Texts {
     pub rows: Vec<Box<str>>,
 }
+/// Version thirteen's cold assembly columns, present exactly when an original
+/// has an assembly value. No provider class, feature or lowering decision
+/// travels: every consumer re-proves the initial assembly profile.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Assembly {
+    pub instructions: Vec<AssemblyInstruction>,
+    pub templates: Vec<AssemblyTemplate>,
+    pub pieces: Vec<AssemblyPiece>,
+    pub operands: Vec<AssemblyOperand>,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct AssemblyInstruction {
+    pub site: u32,
+    pub templates: Range,
+    pub operands: Range,
+    pub options: u16,
+    /// The lexical unsafe context; `Safe` never decodes.
+    pub safety: CallSafety,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct AssemblyTemplate {
+    pub text: Box<str>,
+    pub pieces: Range,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct AssemblyPiece {
+    pub start: u32,
+    pub end: u32,
+    pub operand: u32,
+    /// Only zero decodes; no modifier encoding is defined yet.
+    pub modifier: u8,
+}
+/// The register class tags. Only `General` (`reg`) and `Vector` (`xmm_reg`)
+/// have a wire layout; the others are reserved tags every reader refuses by
+/// their initial-profile texts, so a writer can only forge them.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum AssemblyClass {
+    General,
+    Abcd,
+    Byte,
+    Vector,
+    Explicit,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct AssemblyOperand {
+    pub class: AssemblyClass,
+    pub input: Option<u32>,
+    /// Only `false` decodes; an output place has no encoding yet.
+    pub output: bool,
+    pub ty: TypeRef,
+    pub late: bool,
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Statement {
     pub site: u32,
@@ -424,4 +483,7 @@ pub struct Original {
     pub guards: Option<Box<Guards>>,
     /// Version thirteen: out of line, absent unless the body has a text value.
     pub texts: Option<Box<Texts>>,
+    /// Version thirteen: out of line, absent unless the body has an assembly
+    /// value.
+    pub assembly: Option<Box<Assembly>>,
 }
