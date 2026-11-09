@@ -387,16 +387,29 @@ impl State {
     }
 
     /// The premises of the placeholder proof that owns this State; a State of
-    /// any other proof has none.
-    pub(super) fn assume_placeholders(
+    /// any other proof has none. They are installed once, before the State
+    /// caches any work: no set, empty set or none replaces them afterwards.
+    pub(in crate::sema) fn assume_placeholders(
         &mut self,
         placeholders: Option<crate::types::parameters::shape::Placeholders>,
     ) -> Result<(), &'static str> {
         if placeholders.is_some() && self.environment.is_some() {
             return Err("placeholder premises require a premise-less trait proof");
         }
+        if self.placeholders.is_some() || self.caches_work() {
+            return Err(crate::sema::nominals::PLACEHOLDER_REINSTALL);
+        }
         self.placeholders = placeholders;
         Ok(())
+    }
+    /// Whether a reuse slot, a normal form or a nested query holds work that
+    /// was computed under this State's premises.
+    pub(super) fn caches_work(&self) -> bool {
+        self.reusable.iter().any(Option::is_some)
+            || !self.normalized.is_empty()
+            || self.quantified.is_some()
+            || self.terms.is_some()
+            || self.shapes.is_some()
     }
     #[cfg(test)]
     pub(super) fn placeholders(&self) -> Option<&crate::types::parameters::shape::Placeholders> {
@@ -472,6 +485,9 @@ impl State {
         closed: bool,
     ) -> Result<bool, &'static str> {
         use crate::types::{lifetime_proof::ScopeId, parameters::predicates::Bound};
+        if self.placeholders.is_some() {
+            return Err(crate::sema::nominals::PLACEHOLDER_EQUALITY_FENCE);
+        }
         let Some(fold) = &mut self.fold else {
             return Err("associated equality requires an explicit declaration proof scope");
         };

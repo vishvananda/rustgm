@@ -70,13 +70,16 @@ const CASES: [(&str, &str, Option<&str>); 47] = [
 /// A case's diagnostic, or for an accepted case whether its `Holds` pair may
 /// overlap with each header first.
 type Observation = (Option<String>, Option<[bool; 2]>);
+/// An accepted case's facts and its one pair of `Holds` impl headers, or the
+/// case's diagnostic.
+type Analyzed = Result<(crate::sema::model::Declarations, [(Predicate, DefId); 2]), String>;
 
-fn observe(directory: &str, name: &str) -> TestResult<Observation> {
+fn analyze(directory: &str, name: &str) -> TestResult<Analyzed> {
     let source = crate::test_source::fixture(&format!("{directory}/{name}.rs"))?;
     let report = crate::test_source::source_provider(&source, "negative_premise_sides")?;
-    let mut facts = match crate::pipeline::analyze_source(&report) {
+    let facts = match crate::pipeline::analyze_source(&report) {
         Ok(analysis) => analysis.facts,
-        Err(error) => return Ok((Some(error.message.clone()), None)),
+        Err(error) => return Ok(Err(error.message.clone())),
     };
     let holds = report
         .resolution
@@ -106,7 +109,15 @@ fn observe(directory: &str, name: &str) -> TestResult<Observation> {
             headers.push((header.predicate, header.owner));
         }
     }
-    let [left, right] = <[_; 2]>::try_from(headers).map_err(|_| "one pair of Holds impls")?;
+    let pair = <[_; 2]>::try_from(headers).map_err(|_| "one pair of Holds impls")?;
+    Ok(Ok((facts, pair)))
+}
+
+fn observe(directory: &str, name: &str) -> TestResult<Observation> {
+    let (mut facts, [left, right]) = match analyze(directory, name)? {
+        Ok(analyzed) => analyzed,
+        Err(message) => return Ok((Some(message), None)),
+    };
     let forward = super::super::possible(&mut facts, left, right)?.0;
     let backward = super::super::possible(&mut facts, right, left)?.0;
     Ok((None, Some([forward, backward])))
@@ -144,5 +155,26 @@ fn negative_conditions_assume_only_the_other_headers_premises_in_either_order() 
         pairs += 1;
     }
     assert_eq!(pairs, 17, "every swapped twin is compared");
+    Ok(())
+}
+
+/// A negative coherence query under a non-empty premise set never reaches the
+/// crate-wide memo of closed body goals in neutral callers.
+#[test]
+fn negative_queries_leave_the_body_selection_memo_unchanged() -> TestResult {
+    let (mut facts, [left, right]) = analyze(PACKET, "nested-client-side")?
+        .map_err(|error| format!("nested-client-side: {error}"))?;
+    let entries = facts.generics.selection_memo.entries();
+    let [queries, premised] = super::negative_queries();
+    let forward = super::super::possible(&mut facts, left, right)?.0;
+    let backward = super::super::possible(&mut facts, right, left)?.0;
+    assert!(!forward && !backward, "the pair is disjoint in both orders");
+    let [queries_after, premised_after] = super::negative_queries();
+    assert!(queries_after > queries, "a negative query ran");
+    assert!(
+        premised_after > premised,
+        "a negative query ran under a non-empty premise set"
+    );
+    assert_eq!(facts.generics.selection_memo.entries(), entries);
     Ok(())
 }

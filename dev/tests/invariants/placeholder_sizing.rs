@@ -8,7 +8,9 @@ use super::NegativeSizing;
 use crate::{
     sema::{
         model::Declarations,
-        nominals::{PLACEHOLDER_SIZE_FENCE, Proof, sizes},
+        nominals::{
+            PLACEHOLDER_EQUALITY_FENCE, PLACEHOLDER_REINSTALL, PLACEHOLDER_SIZE_FENCE, Proof, sizes,
+        },
     },
     support::bindings::LangItem,
     types::{
@@ -629,4 +631,125 @@ fn placeholder_premises_cost_callers_and_trait_states_one_word() {
     assert_eq!(size_of::<crate::sema::traits::selection::Caller<'_>>(), 32);
     assert_eq!(size_of::<crate::sema::traits::selection::OwnedCaller>(), 32);
     assert_eq!(size_of::<crate::sema::nominals::traits::State>(), 808);
+}
+
+/// The premise sets of the facts-memo orders.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Premise {
+    Without,
+    B,
+    A,
+}
+
+/// q1, `(u8, Wrap<B>)` Sized, by a fresh builtin proof under `premise` over
+/// the fixture's shared facts.
+fn q1(fixture: &mut Fixture, premise: Premise) -> TestResult<Result<bool, &'static str>> {
+    let facts = &mut fixture.facts;
+    let wrapped = nominal(facts, fixture.wrap, fixture.unsized_)?;
+    let ty = tuple(facts, &[TypeId::primitive(Primitive::U8), wrapped])?;
+    let mut proof = Proof::new(None);
+    let set = match premise {
+        Premise::Without => None,
+        Premise::B => Some(vec![fixture.unsized_]),
+        Premise::A => Some(vec![fixture.sized]),
+    };
+    if let Some(set) = set {
+        proof.assume_placeholders(&facts.types, placeholders(set)?)?;
+    }
+    Ok(prove_sized(&mut proof, facts, ty))
+}
+
+/// No facts-level memo keeps a placeholder answer: q1 is Sized only under
+/// {B}, and every order of premise-less, {B} and {A} proofs on shared facts
+/// answers as the same proof does on fresh facts. Only answers are compared,
+/// because premise-free memos legitimately cheapen a later proof.
+#[test]
+fn placeholder_answers_leave_no_trace_in_facts_memos() -> TestResult {
+    use Premise::{A, B, Without};
+    let mut single = Vec::new();
+    for premise in [Without, B, A] {
+        single.push((premise, q1(&mut fixture()?, premise)?));
+    }
+    let fresh = |premise: Premise| {
+        single
+            .iter()
+            .find(|(each, _)| *each == premise)
+            .map(|(_, answer)| *answer)
+            .ok_or("premise")
+    };
+    assert_eq!(fresh(Without)?, Ok(false));
+    assert_eq!(fresh(B)?, Ok(true));
+    assert_eq!(fresh(A)?, Ok(false));
+    assert_ne!(fresh(Without)?, fresh(B)?, "the set changes q1's answer");
+    assert_ne!(fresh(B)?, fresh(A)?, "which set it is changes q1's answer");
+    for order in [[Without, B], [B, Without], [B, A], [A, B]] {
+        let mut shared = fixture()?;
+        for premise in order {
+            assert_eq!(q1(&mut shared, premise)?, fresh(premise)?, "{order:?}");
+        }
+    }
+    Ok(())
+}
+
+/// A placeholder proof's trait State and normalization cursors take their
+/// premises once, before they cache any work: no set, empty set or none
+/// replaces them afterwards. An associated equality under a set fails by
+/// name before it normalizes anything.
+#[test]
+fn placeholder_owners_take_their_premises_once_before_any_work() -> TestResult {
+    use crate::sema::{
+        nominals::traits::State, projections::Cursor, traits::implementations::Availability,
+    };
+    use crate::types::lifetime_proof::{Obligations, ScopeId};
+    let mut fixture = fixture()?;
+    let facts = &mut fixture.facts;
+    let set = placeholders(vec![fixture.unsized_])?;
+    let empty = placeholders(vec![])?;
+    let mut state = State::new(facts, None, None)?;
+    state.assume_placeholders(Some(set.clone()))?;
+    for again in [Some(set.clone()), Some(empty.clone()), None] {
+        assert_eq!(state.assume_placeholders(again), Err(PLACEHOLDER_REINSTALL));
+    }
+    let projected = nominal(facts, fixture.projected, TypeId::primitive(Primitive::U8))?;
+    let mut used = Proof::new(None);
+    assert_eq!(prove_sized(&mut used, facts, projected), Ok(true));
+    assert!(used.trait_state_caches_work(facts)?);
+    for late in [Some(set.clone()), Some(empty.clone())] {
+        assert_eq!(
+            used.reinstall_trait_placeholders(facts, late),
+            Err(PLACEHOLDER_REINSTALL)
+        );
+    }
+    let proof = Obligations::new(1);
+    let mut cursor = Cursor::new(None, &proof, ScopeId::ROOT, Availability::Declarations)?;
+    cursor.assume_placeholders(Some(set.clone()))?;
+    for again in [Some(set.clone()), Some(empty.clone()), None] {
+        assert_eq!(
+            cursor.assume_placeholders(again),
+            Err(PLACEHOLDER_REINSTALL)
+        );
+    }
+    let mut started = Cursor::new(None, &proof, ScopeId::ROOT, Availability::Declarations)?;
+    started.start(facts, projected)?;
+    for late in [Some(set.clone()), Some(empty), None] {
+        assert_eq!(
+            started.assume_placeholders(late),
+            Err(PLACEHOLDER_REINSTALL)
+        );
+    }
+    let equality = Predicate {
+        ty: TypeId::UNIT,
+        bound: Bound::ProjectionEqual(TypeId::UNIT),
+    };
+    let mut placeholder = Proof::new(None);
+    placeholder.assume_placeholders(&facts.types, set)?;
+    assert_eq!(
+        placeholder.prove_normalized(facts, equality),
+        Err(PLACEHOLDER_EQUALITY_FENCE)
+    );
+    assert_eq!(
+        Proof::new(None).prove_normalized(facts, equality),
+        Err("associated equality requires an explicit declaration proof scope")
+    );
+    Ok(())
 }

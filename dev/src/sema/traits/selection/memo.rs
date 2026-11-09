@@ -67,6 +67,11 @@ impl Memo {
         }
         Ok(true)
     }
+    /// The goals this memo has observed, verified or rejected.
+    #[cfg(test)]
+    pub(in crate::sema) fn entries(&self) -> usize {
+        self.entries.len()
+    }
     /// A verified answer for the prepared key, as fresh evidence at `first`.
     pub fn reuse(&self, first: u32) -> Option<Selection> {
         let State::Verified(answer) = self.entries.get(self.key.as_slice())? else {

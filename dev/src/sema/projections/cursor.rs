@@ -58,6 +58,8 @@ pub(in crate::sema) struct Cursor {
     header: Option<Header>,
     before: usize,
     placeholders: Option<crate::types::parameters::shape::Placeholders>,
+    /// Whether this cursor has started a query.
+    used: bool,
 }
 impl Cursor {
     pub fn new(
@@ -81,17 +83,22 @@ impl Cursor {
             header: None,
             before: 0,
             placeholders: None,
+            used: false,
         })
     }
 
     /// The premises of the placeholder trait proof that owns this cursor; its
-    /// selections decide a rigid parameter's sizing only from them.
+    /// selections decide a rigid parameter's sizing only from them. They are
+    /// installed once, before the cursor starts a query or holds reused proofs.
     pub(in crate::sema) fn assume_placeholders(
         &mut self,
         placeholders: Option<crate::types::parameters::shape::Placeholders>,
     ) -> Result<(), &'static str> {
         if placeholders.is_some() && self.environment.is_some() {
             return Err("placeholder premises require a premise-less normalization");
+        }
+        if self.placeholders.is_some() || self.used || !self.reusable.0.is_empty() {
+            return Err(crate::sema::nominals::PLACEHOLDER_REINSTALL);
         }
         self.placeholders = placeholders;
         Ok(())
@@ -101,6 +108,7 @@ impl Cursor {
         if self.step.is_some() || self.selected.is_some() || self.header.is_some() {
             return Err("normalization cursor has an unfinished query");
         }
+        self.used = true;
         self.before = self.fold.steps();
         self.step = Some(self.fold.start(&mut facts.types, ty)?);
         Ok(())

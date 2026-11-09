@@ -224,6 +224,8 @@ impl Inputs {
                 // rustc 1.98 negates one impl's predicates under the other's
                 // param_env, so only the other header's premises are assumed.
                 let assumed = &premises[side.other().index()];
+                #[cfg(test)]
+                observe_negative(assumed.negative());
                 if !crate::sema::traits::selection::may_overlap_with(
                     facts,
                     context,
@@ -625,6 +627,24 @@ impl Inputs {
         }
         self.prove(facts, context, proof, None)
     }
+}
+
+#[cfg(test)]
+thread_local! {
+    /// Test-only: the negative queries begun with the other header's premises,
+    /// and those whose Sized or `MetaSized` premise set has a member.
+    static NEGATIVE_QUERIES: std::cell::Cell<[usize; 2]> = const { std::cell::Cell::new([0; 2]) };
+}
+#[cfg(test)]
+fn observe_negative(premises: &crate::types::parameters::shape::Placeholders) {
+    NEGATIVE_QUERIES.with(|cell| {
+        let [all, nonempty] = cell.get();
+        cell.set([all + 1, nonempty + usize::from(!premises.is_empty())]);
+    });
+}
+#[cfg(test)]
+fn negative_queries() -> [usize; 2] {
+    NEGATIVE_QUERIES.with(std::cell::Cell::get)
 }
 
 /// One header's own sizing premises, each set sorted by identity in one

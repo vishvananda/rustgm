@@ -23,6 +23,13 @@ mod tests;
 /// trait proof that has no header premises, so a negative coherence query
 /// rejects it rather than decide it by a representative's declarations.
 pub(in crate::sema) const PLACEHOLDER_SIZE_FENCE: &str = "projected-size nominal in a negative builtins proof requires header premises in its nested size proof";
+/// A placeholder proof's trait State and normalization cursors take their set
+/// once, before they cache any work, so no cached answer belongs to another set.
+pub(in crate::sema) const PLACEHOLDER_REINSTALL: &str =
+    "placeholder premises are installed once, before their owner caches any work";
+/// An associated equality normalizes without the other header's premises, so
+/// a negative coherence query rejects it rather than decide it premise-less.
+pub(in crate::sema) const PLACEHOLDER_EQUALITY_FENCE: &str = "associated equality in a negative builtins proof requires header premises in its normalization";
 
 /// Predicate proofs are reusable only within one immutable declaration environment.
 pub(super) struct Proof {
@@ -586,6 +593,21 @@ impl Proof {
         facts: &mut Declarations,
     ) -> Result<bool, &'static str> {
         Ok(self.trait_state(facts)?.placeholders().is_some())
+    }
+    #[cfg(test)]
+    pub(in crate::sema) fn trait_state_caches_work(
+        &mut self,
+        facts: &mut Declarations,
+    ) -> Result<bool, &'static str> {
+        Ok(self.trait_state(facts)?.caches_work())
+    }
+    #[cfg(test)]
+    pub(in crate::sema) fn reinstall_trait_placeholders(
+        &mut self,
+        facts: &mut Declarations,
+        placeholders: Option<crate::types::parameters::shape::Placeholders>,
+    ) -> Result<(), &'static str> {
+        self.trait_state(facts)?.assume_placeholders(placeholders)
     }
     #[cfg(test)]
     pub(in crate::sema) fn shape_steps(&self) -> usize {

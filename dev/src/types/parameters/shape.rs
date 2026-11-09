@@ -59,6 +59,12 @@ impl Placeholders {
     pub fn meta_sized(&self, ty: TypeId) -> (bool, usize) {
         lookup(&self.sets.meta_sized, ty)
     }
+    /// Whether neither premise set has a member.
+    #[cfg(test)]
+    #[must_use]
+    pub(crate) fn is_empty(&self) -> bool {
+        self.sets.sized.is_empty() && self.sets.meta_sized.is_empty()
+    }
 }
 /// One premise set, ordered by identity and deduplicated, and its work.
 fn ordered(set: Arc<[TypeId]>) -> Result<(Arc<[TypeId]>, usize), &'static str> {
