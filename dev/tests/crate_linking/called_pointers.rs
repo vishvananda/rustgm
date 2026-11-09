@@ -2,10 +2,11 @@
 //! exported bodies, and constructors reified to fn pointers. Each consumer
 //! re-proves a call's signature against the callee's pointer type and its
 //! lexical safety, then calls the pointer value in its own lowering.
-//! Higher-ranked, C and associated unsafe calls keep their fences by name, as
-//! do pointers stored in record variants; older profiles and readers reject
-//! the form, and malformed code-30 operand lists and unknown safety flags
-//! reject by name. A call through a nominal fn field exports since (ii).
+//! Higher-ranked and C calls keep their fences by name, as do pointers stored
+//! in record variants; older profiles and readers reject the form, and
+//! malformed code-30 operand lists and unknown safety flags reject by name. A
+//! call through a nominal fn field exports since (ii), and an unsafe call in
+//! an associated fn since the guarded-methods item.
 use super::fresh_packets::{Packet, Result, spliced, with_id};
 use rustgm::support::crates;
 const SPEC: &str = "pa29/tests/spec/pointer-calls";
@@ -33,7 +34,7 @@ const DIRECT: &str = "source Call requires its actual direct function-item appli
 const MALFORMED: &str = "body IR value node has malformed operands";
 /// Each generated provider opponent appends these lines to the frozen
 /// provider. rustc 1.98.0 compiles every one but `const-fn`.
-const OPPONENTS: [(&str, &str, &str); 5] = [
+const OPPONENTS: [(&str, &str, &str); 4] = [
     (
         "hr",
         "pub fn hr_call(f: for<'a> fn(&'a u8) -> &'a u8, v: &u8) -> u8 { *f(v) }\n",
@@ -43,11 +44,6 @@ const OPPONENTS: [(&str, &str, &str); 5] = [
         "c",
         "pub fn c_call(f: extern \"C\" fn(u8) -> i32) -> i32 { f(7) }\n",
         CALLABLE,
-    ),
-    (
-        "associated",
-        "pub struct H;\nimpl H { pub fn call(f: unsafe fn(u8) -> i32) -> i32 { unsafe { f(7) } } }\n",
-        "source unsafe associated Calls require their wider actual profile",
     ),
     (
         "record-variant",
@@ -64,11 +60,30 @@ const OPPONENTS: [(&str, &str, &str); 5] = [
 /// amendment 2.
 const FIELD: &str =
     "pub struct Slot { pub f: fn(u8) -> i32 }\npub fn via(s: &Slot) -> i32 { (s.f)(7) }\n";
+/// The former `associated` opponent, which exports since the guarded-methods
+/// item: outcomes amendment 3, mover M3.
+const ASSOCIATED: &str =
+    "pub struct H;\nimpl H { pub fn call(f: unsafe fn(u8) -> i32) -> i32 { unsafe { f(7) } } }\n";
+const ASSOCIATED_CLIENT: &str = "#![feature(no_core)]\n#![no_core]\nextern crate base;\n#[unsafe(no_mangle)]\npub extern \"C\" fn entry() -> i32 { base::H::call(base::raw) }\n";
 /// The lines the older-profile control appends to the nominals provider.
 const OLDER: &str =
     "// Generated pointer-call control.\npub fn call_ptr(f: fn(u8) -> i32) -> i32 { f(7) }\n";
 fn unwritten(path: &std::path::Path) -> Result<bool> {
     Ok(!path.exists() || std::fs::metadata(path)?.len() == 0)
+}
+/// Exports mover M3's provider and consumes its client.
+fn associated(packet: &Packet, provider: &str) -> Result {
+    let source = packet.folder.join("associated.rs");
+    let text = format!("{provider}// Generated pointer-call opponent.\n{ASSOCIATED}");
+    std::fs::write(&source, text)?;
+    let metadata = packet.folder.join("associated.rgcrate");
+    let mut export = packet.export(PROFILE, &source, &metadata);
+    super::artifacts::checked("associated", &packet.folder, &mut export)?;
+    let client = packet.folder.join("associated-client.rs");
+    std::fs::write(&client, ASSOCIATED_CLIENT)?;
+    let label = "associated-client";
+    let mut consumer = packet.consumer(&client, label, &metadata, &packet.owner());
+    super::artifacts::checked(label, &packet.folder, &mut consumer).map(drop)
 }
 /// Offsets of value nodes `30 | 4 | Type | Value | Range | Flag`.
 fn pointer_nodes(bytes: &[u8]) -> Vec<usize> {
@@ -125,7 +140,7 @@ fn clients_call_pointers_and_stored_pointers_keep_their_fences() -> Result {
     let metadata = packet.folder.join("field.rgcrate");
     let mut export = packet.export(PROFILE, &source, &metadata);
     super::artifacts::checked("field", &packet.folder, &mut export)?;
-    Ok(())
+    associated(&packet, &provider)
 }
 #[test]
 fn older_profiles_and_malformed_pointer_calls_reject_by_name() -> Result {
@@ -174,5 +189,10 @@ fn pointer_call_clients_execute_natively() -> Result {
         assert_eq!(output.status.code(), Some(42), "{name}");
         assert!(output.stdout.is_empty(), "{name}");
     }
+    let provider = std::fs::read_to_string(packet.fixture("provider"))?;
+    associated(&packet, &provider)?;
+    let output = packet.native("associated-client")?;
+    assert_eq!(output.status.code(), Some(42));
+    assert!(output.stdout.is_empty());
     Ok(())
 }

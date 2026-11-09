@@ -1515,6 +1515,23 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     accepts-invalid, `methods/overlap.rs:111` and D3
     (library-build-blockers.md, census-batch21.md).
 
+- **During Lane C's [unsafe associated functions](parallel/guarded-methods.md)**,
+  2026-11-09, from `a6be80084`. The integrator approved the notice, its
+  two-file source footprint and the movers M1 to M4 by name.
+  - **Rule, no wire change.** Under version 13 an associated function may
+    be `unsafe` (gate A); its original and public safety agree; an impl
+    member's safety is its trait member's; and calls inside or to it
+    follow direct Call's matrix (gate B). Constness, convention, variadic
+    and default-body fences stay.
+  - **Amended before their runs:** const-methods' unsafe control, F's
+    `Lane::get` (amendment 6, with `inherent.rs` returned), R2's and
+    (ii)'s associated opponents (amendment 3 each) and M1's client, whose
+    declared match ICEd rustc (amendment 1).
+  - **Survey.** Against the base pin, among existing inputs only M1 to M4
+    change, and the 78 compared packets are byte-identical.
+  - **Recorded:** `SliceIndex` also needs const trait impls; primitive-impl
+    unsafe methods are untested and not claimed.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

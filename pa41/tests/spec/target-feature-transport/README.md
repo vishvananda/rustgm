@@ -9,8 +9,13 @@ recorded under `obj/parallel/target-feature-transport/f-amendments` and
 listed in
 [target-feature-rows.md](../../../../docs/parallel/target-feature-rows.md).
 Amendment 2 withdrew the declared inherent method `Lane::get` and its
-`inherent` client: unsafe inherent methods are fenced at export under every
-profile, so the declared provider could not be exported.
+`inherent` client: unsafe inherent methods were fenced at export under every
+profile, so the declared provider could not be exported. Amendment 6,
+recorded by pa29's associated-unsafe item
+(`../../../../pa29/tests/guarded-method-outcomes.json`), returns
+`inherent.rs` unchanged (sha256 `44239d92`) as the client of
+`export_controls.inherent`, which version 13 now exports with bit 3. The
+provider and F's rows are unchanged.
 
 ## Provider
 

@@ -80,11 +80,12 @@ the oracle (`pa29/tests/callable-field-outcomes.json`).
     callable requires its supported closed Rust frame" at export.
   - A record variant holding a fn, and core's `ArgumentType` shape, keep
     "source record variants require their wider profile": item (i).
-  - A safe associated fn calling an unsafe fn field keeps "source unsafe
+  - A safe associated fn calling an unsafe fn field kept "source unsafe
     associated Calls require their wider actual profile". An unsafe
     associated declaration instead hits "source nonordinary callable
     effect/safety/convention requires a wider profile", as Lane D found in F.
-    Their widening is one item.
+    Their widening is one item. Both export since the associated-unsafe
+    item ([guarded-methods.md](guarded-methods.md), amendment 3).
 - **Forged rows.** Slot's frame with a parent, with one slot, or owned by a
   trait fails gate (a). Owned by another nominal or by a function, it fails
   gate (b). A pointer call's and a direct call's signature copied into Slot's

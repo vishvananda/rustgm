@@ -358,9 +358,10 @@ packet under `spec/const-methods/`. The packet holds:
   them, including a field read of a call's temporary;
 - ten accepted clients and four opponents (E0015, E0435, E0308 and a lifetime
   error), with one declared static client withdrawn;
-- generated controls: older-profile gates, fenced `const unsafe` and early
+- generated controls: older-profile gates, `const unsafe` and early
   lifetime methods, temporary-field reads and writes, forged constness and
-  context rows and a 6/24/96 scaling control;
+  context rows and a 6/24/96 scaling control. The `const unsafe` control
+  exports since the associated-unsafe item, its superseded record beside it;
 - rustc controls for a temporary-field read and write.
 
 The `crate_linking::evaluated_methods` integration controls consume it.
@@ -633,10 +634,11 @@ pointers and return reified constructors. The packet holds:
   - a safe pointer in an unnecessary unsafe block;
   - the fmt-shaped formatter twin, and a call in an inherent associated fn;
   - struct, variant and generic constructors;
-- five generated provider opponents that keep their export fences by name,
-  one former opponent, a call through a struct's fn field, that exports since
-  Lane C's (ii) (amendment 2), and the older-profile, old-reader, wire,
-  forged-row, scaling and flip-survey controls.
+- four generated provider opponents that keep their export fences by name,
+  two former opponents that export, a call through a struct's fn field since
+  Lane C's (ii) (amendment 2) and an unsafe call in an associated fn since
+  the associated-unsafe item (amendment 3), and the older-profile,
+  old-reader, wire, forged-row, scaling and flip-survey controls.
 
 The `crate_linking::called_pointers` integration controls, the
 `input_plan::values` row and scaling invariants and the
@@ -660,12 +662,40 @@ holds:
   - the contravariant and invariant markers in their valid directions;
 - one client that both reject, the unsound narrowing of the contravariant
   marker;
-- six generated provider opponents that keep their export fences by name, and
-  the older-profile, arena, old-reader, forged-row, scaling, self-demand and
-  flip-survey controls.
+- five generated provider opponents that keep their export fences by name,
+  one former opponent, an unsafe call in an associated fn, that exports since
+  the associated-unsafe item (amendment 3), and the older-profile, arena,
+  old-reader, forged-row, scaling, self-demand and flip-survey controls.
 
 The `crate_linking::fielded_callables` integration controls and the
 `input_plan::roots` row, scaling and self-demand invariants consume it.
+
+`guarded-method-outcomes.json` freezes the guarded-method packet under
+`spec/guarded-methods/`, Lane C's associated-unsafe item. Its provider
+declares unsafe inherent methods, trait members and impl members, and its
+bodies call them. The packet holds:
+
+- the callable-fields provider plus authored lines;
+- 16 clients that rustc accepts:
+  - an unsafe method by method syntax and by path, and one with no
+    receiver;
+  - provider safe functions calling unsafe ones in unsafe blocks, and an
+    unsafe method calling another bare;
+  - RawWakerVTable's `invoke`, a generic impl, a late region and a
+    lifetime-capturing impl;
+  - a const unsafe method in a client const;
+  - an unsafe trait member on the concrete type, through a bound and
+    implemented by the client;
+  - a reified unsafe associated fn, and `Argument::fmt`'s shape;
+- one client that both reject, a safe call with no unsafe block (E0133);
+- four generated provider opponents, two that rustc also rejects (E0053)
+  and two known rejects-valid, the four approved movers, and the
+  older-profile, old-reader, forged-row, scaling, self-demand and
+  flip-survey controls.
+
+Amendment 1 rewrote mover M1's client after rustc ICEd on its match. The
+`crate_linking::guarded_methods` integration controls and the
+`body_ports::calls` row, scaling and self-demand invariants consume it.
 
 `named-constant-outcomes.json` freezes the named-constant packet under
 `spec/named-constants/`, Lane C's item 5b-1. Its providers export named

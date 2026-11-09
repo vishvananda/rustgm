@@ -1,0 +1,388 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "rustc 1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; each provider as rlib+obj, each client as an obj linked natively with a C main calling entry; generated opponents as library objects; M2a with F's flags",
+  "providers": {
+    "spec/guarded-methods/provider.rs": {
+      "sha256": "0c96ea893091f8499ad7a869c9d25efdac09886eeee8e195bfd7dfd73c772b80",
+      "lines": "spec/callable-fields/provider.rs unchanged, then the authored associated-unsafe section"
+    }
+  },
+  "expectation_frozen_before_candidate": true,
+  "declared": "2026-11-09T18:11:59Z",
+  "development_note": "the integrator approved the associated-unsafe notice (obj/parallel/associated-unsafe/notice.md, sha256 83df7582) and movers M1, M2 with M2a, M3 and M4 by name before this file. The base-pin exploration (obj/parallel/associated-unsafe/explore) ran the fixture's safe twins and the generated providers before this declaration; it is evidence for nothing, and fixed only the older-profile and trait-default first fences recorded as such. The self-demand probe ran before this declaration and passed its assertions (`unsafe_methods_install_at_their_safe_twins_cost` under fastcheck, obj/parallel/associated-unsafe/runs/probe2.log); a first run stopped at a borrow error in the forgery helper, fixed before the rerun. Departures from the notice, declared here: the scaling and probe twins are called in the same unsafe block, so that only flag bytes differ, as the notice's equal-length prediction requires (in a twin the block holds no unsafe operation, so rustc would warn `unused_unsafe`; the twins run only in RustGM's in-process tests, whose frontend has no such lint, and are not oracle inputs); the older-profile controls and forgeries use the nominals provider, which all three versions export; the base-pin exploration showed versions 10 and 12 stopping a unit struct at `source declaration kind is outside the initial source profile`, so the older trait controls implement for u8 and the older inherent control uses a record struct, which stops at its conformance record as const-methods recorded; forged row 8 forges the u8 impl's trait member `via`, since older profiles stop every inherent impl there",
+  "amendments": [
+    {
+      "number": 1,
+      "recorded": "2026-11-09T18:16:30Z",
+      "before": "the one bounded rustc retry of M1's client and any RustGM run of it; the rustc oracle (obj/parallel/associated-unsafe/runs/oracle.log), run after the freeze, observed the failure",
+      "approved": "the integrator's M1 ruling, as Lane C proposed it, with no second retry",
+      "change": "a fixture amendment after a failed prediction caused by rustc. rustc 1.98.0 ICEs on the declared M1 client (sha256 077f47e18ae2c298ca19e3fdcfcc0509861f2c086ce24f9485776c2aec4f8e72, kept as obj/parallel/associated-unsafe/amendments/m1-const.declared.rs) with a delayed bug, `error performing operation: fully_perform`, at `match N { 42 => 42, _ => 7 }` (obj/parallel/associated-unsafe/oracle/movers/m1-const/client.stderr), status 101. It is the class of callable-field-outcomes.json amendment 1: a match over a provider that declares Copy but implements it for no primitive, here the source-nominals provider. The client's entry now returns `N as i32` (obj/parallel/associated-unsafe/gen-clients/m1-const.rs, sha256 f81f2ee991c443d3e5f98e2de46a865c5a39f2a63f87e661eb6be93d15473c80); its const item is unchanged. M1's prediction is unchanged (accepted, native exit 42) and the provider and every other input keep their bytes. Tradeoff, recorded: the client loses its in-client match, but the exit code still pins N == 42. evaluated_methods.rs gives M1's case this exact client text; the shared client() helper is unchanged for every other case. If the retry also fails or ICEs in rustc, the item stops with no second retry"
+    }
+  ],
+  "rule": {
+    "gate_a": "ordinary_profile::functions: under version 13 an associated function's declared and public `unsafe` no longer require a wider profile; constness, variadic and convention terms keep `free_effects`",
+    "agreement": "under version 13 an associated function's original and public safety agree, else `source associated callable changed its actual original/public safety`",
+    "member_safety": "under version 13 each implementation member's public safety equals its trait member's, else `source implementation member changed its trait member's safety`",
+    "gate_b": "request_ports::call_safety keeps `source unsafe associated Calls require their wider actual profile` only below version 13; at version 13 direct and pointer calls inside or to associated functions follow direct Call's matrix",
+    "wire": "no change and no version bump"
+  },
+  "cases": [
+    {
+      "file": "spec/guarded-methods/assoc.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": true,
+      "shape": "`unsafe { base::Lane::make() }`: an unsafe associated fn with no receiver",
+      "rustc_status": 0,
+      "native_exit": 42,
+      "sha256": "0ec1cec9705c9ce61efe60ba6745929d8bf79f4627a1058d18f672370ce60343"
+    },
+    {
+      "file": "spec/guarded-methods/bare.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": true,
+      "shape": "`Lane::twice`: an unsafe method calls another bare (`UnsafeFunction`) under `#[allow(unsafe_op_in_unsafe_fn)]`",
+      "rustc_status": 0,
+      "native_exit": 42,
+      "sha256": "21148a3ef47737c2e776bc0da621c7cb316c82cc4b7a394e477d464142a13217"
+    },
+    {
+      "file": "spec/guarded-methods/bound.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": true,
+      "shape": "`base::via_get(&base::Key(42))`: a provider generic fn calls an unsafe trait member through its bound",
+      "rustc_status": 0,
+      "native_exit": 42,
+      "sha256": "69bce37b5a855736971dfb69791013baade5e4d36c73869188c6992c885432ae"
+    },
+    {
+      "file": "spec/guarded-methods/captured.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": true,
+      "shape": "`impl<'a> Held<'a> { pub unsafe fn text(&self) -> &'a u8 }`: an unsafe method of a lifetime-capturing impl, reborrowing its field as impl-region-methods' `Held::text` does",
+      "rustc_status": 0,
+      "native_exit": 42,
+      "sha256": "25ec9dfb4833b78758d59e4361758a1b7ecbe2fac770de043cf22f5d4cb6307d"
+    },
+    {
+      "file": "spec/guarded-methods/client-impl.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": true,
+      "shape": "the client implements `base::Get` unsafely for its own type and passes it to `via_get`",
+      "rustc_status": 0,
+      "native_exit": 42,
+      "sha256": "d14487956d4061ba46581044cb924f11d0a84eba3641ccfad1c54dcfedf317b2"
+    },
+    {
+      "file": "spec/guarded-methods/const.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": true,
+      "shape": "`const V: u8 = unsafe { base::Plain { n: 1 }.value() };`: a const unsafe inherent method evaluated in a client const",
+      "rustc_status": 0,
+      "native_exit": 42,
+      "sha256": "4ca4a472348c4e2b1e1cf3e51243a6f760472ab644584e8b762fb19be4772932"
+    },
+    {
+      "file": "spec/guarded-methods/formatter.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": true,
+      "shape": "`base::write(&base::placeholder(20))`: Argument::fmt's shape, an unsafe method matching a tuple variant's unsafe fn payload and calling it and an unsafe free fn in unsafe blocks, called by a safe free fn in an unsafe block (rt.rs:143-156, fmt/mod.rs:1683-1735)",
+      "rustc_status": 0,
+      "native_exit": 42,
+      "sha256": "eadcfca0f74f3ab3027bfe00e1605f943a530c7b45723466fecd64d766b5de89"
+    },
+    {
+      "file": "spec/guarded-methods/generic.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": true,
+      "shape": "`impl<T: Copy> Cell<T> { pub unsafe fn read(&self) -> T }` at u8, NonNull::add's generic-impl shape",
+      "rustc_status": 0,
+      "native_exit": 42,
+      "sha256": "0d63c33f864c3eb1326e63dc0291bb1185ad019c18700391dba8d531681371fe"
+    },
+    {
+      "file": "spec/guarded-methods/inside.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": true,
+      "shape": "`Lane::checked`: a provider safe method calls an unsafe free fn in an unsafe block, the direct-call twin of M3",
+      "rustc_status": 0,
+      "native_exit": 42,
+      "sha256": "99aa53b18b0cb25cdb5e48a9ee4b09ee106cd537dee15b8630bc77cd0e9c6ca4"
+    },
+    {
+      "file": "spec/guarded-methods/late.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": true,
+      "shape": "`Lane::pick<'b>`: an unsafe method with a late region, NonNull::as_ref's shape",
+      "rustc_status": 0,
+      "native_exit": 42,
+      "sha256": "3946c4caadd999e0de18a1455bb5e59f1eea18c7e291f0c75003547540680b2a"
+    },
+    {
+      "file": "spec/guarded-methods/method.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": true,
+      "shape": "`unsafe { l.get() }`: an unsafe inherent method called with method syntax in an unsafe block",
+      "rustc_status": 0,
+      "native_exit": 42,
+      "sha256": "b9fa14565b6f70d124b4e330d3b2c4481423582d41d634751bf3942333f8cb53"
+    },
+    {
+      "file": "spec/guarded-methods/missing.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": false,
+      "shape": "`base::Lane(42).get()` from safe code with no unsafe block",
+      "rustc_status": 1,
+      "rustc_code": "E0133",
+      "rustgm_diagnostic": "call to unsafe function requires an unsafe context",
+      "note": "RustGM accepting it is a stop",
+      "sha256": "9f852f778d6466db284523ca6df60c2e140b34e02c91c8c842e94f082499a773"
+    },
+    {
+      "file": "spec/guarded-methods/path.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": true,
+      "shape": "`unsafe { base::Lane::get(&l) }`: the same method by path",
+      "rustc_status": 0,
+      "native_exit": 42,
+      "sha256": "05215ac9f1edbec2a83d07d0d4b251bffbff9ff0492acc450c5bcedb18de023f"
+    },
+    {
+      "file": "spec/guarded-methods/reified.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": true,
+      "shape": "`base::scaler()`: a provider reifies the unsafe associated fn `Lane::scale` to `unsafe fn(u8) -> u8`; the client calls it in an unsafe block",
+      "rustc_status": 0,
+      "native_exit": 42,
+      "sha256": "42d69e76547e0e0dda3537f1cf2e76a954301006c1eeb982d36cb31aa3bde964"
+    },
+    {
+      "file": "spec/guarded-methods/relay.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": true,
+      "shape": "`base::relay`: a provider safe free fn calls the unsafe method in an unsafe block; the client needs no unsafe",
+      "rustc_status": 0,
+      "native_exit": 42,
+      "sha256": "0f97589a04e8236937be6a49b87eb4b34dd36a2d54043d170cca20c73a20d7f7"
+    },
+    {
+      "file": "spec/guarded-methods/trait.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": true,
+      "shape": "`unsafe { base::Key(42).fetch() }` with `use base::Get`: an unsafe trait member implemented unsafely, called on the concrete type",
+      "rustc_status": 0,
+      "native_exit": 42,
+      "sha256": "c0c2d6da86239d8b910d97e260338203f02d45b71f048559c9e206f2becc1219"
+    },
+    {
+      "file": "spec/guarded-methods/vtable.rs",
+      "provider": "spec/guarded-methods/provider.rs",
+      "accepted": true,
+      "shape": "`Table::invoke`: an unsafe method calls an unsafe fn field in an unsafe block, RawWakerVTable's shape",
+      "rustc_status": 0,
+      "native_exit": 42,
+      "sha256": "d7ef75dea1cfaddd0a2ddfe5269cec8c218f8fab50416e9e48a617b02ed9d7f1"
+    }
+  ],
+  "generated_opponents": {
+    "note": "each is spec/callable-fields/provider.rs, the line `// Generated associated-unsafe control.` and the lines below, as guarded_methods.rs writes it",
+    "safe-impl": {
+      "file": "obj/parallel/associated-unsafe/gen/safe-impl.rs",
+      "sha256": "2f0ceee1f19b92bffab5123963f9da31638d0e56f85836ddcb5d6005d70da2f1",
+      "appended": "pub trait Bad { unsafe fn m(&self) -> u8; }\nimpl Bad for u8 { fn m(&self) -> u8 { 1 } }\n",
+      "rustc_status": 1,
+      "rustc_code": "E0053",
+      "rustgm_export": "incompatible types",
+      "note": "a declared oracle row: a trait's unsafe method implemented safely. RustGM's own frontend rejects it, as pa19's conformance-unsafe-required records, and writes no packet. RustGM accepting it is a stop, and so is rustc differing"
+    },
+    "unsafe-impl": {
+      "file": "obj/parallel/associated-unsafe/gen/unsafe-impl.rs",
+      "sha256": "65ca86b32d59721d8db31da79cfba41d169985a3c16eb78f1d5c86d1d95d6623",
+      "appended": "pub trait Good { fn m(&self) -> u8; }\nimpl Good for u8 { unsafe fn m(&self) -> u8 { 1 } }\n",
+      "rustc_status": 1,
+      "rustc_code": "E0053",
+      "rustgm_export": "incompatible types",
+      "note": "a declared oracle row, the reverse case (pa19's conformance-unsafe-forbidden). RustGM accepting it is a stop, and so is rustc differing"
+    },
+    "extern-c-method": {
+      "file": "obj/parallel/associated-unsafe/gen/extern-c-method.rs",
+      "sha256": "a390db9099f2ffa74a072cba1a6e92048e29ea0fa63b91d0257a4fea747accf5",
+      "appended": "pub struct Ext;\nimpl Ext { pub unsafe extern \"C\" fn c() {} }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source nonordinary callable effect/safety/convention requires a wider profile",
+      "note": "known rejects-valid: an associated fn's convention term keeps the fence"
+    },
+    "trait-default": {
+      "file": "obj/parallel/associated-unsafe/gen/trait-default.rs",
+      "sha256": "deb88ed4a75a3c60bf71b22ff1ea85c021991b6743a7a9eac62cccd175ffa987",
+      "appended": "pub trait D { unsafe fn m(&self) -> u8 { 1 } }\n",
+      "rustc_status": 0,
+      "rustgm_export": "source provided associated bodies require a wider explicit profile",
+      "note": "known rejects-valid: gate A now admits the unsafe default, and the pre-existing default-body fence follows"
+    }
+  },
+  "movers": {
+    "condition": "each approved by name, conditional on its rustc oracle accepting; versions 12 and 10 keep their texts",
+    "M1": {
+      "provider": "obj/parallel/associated-unsafe/gen/m1-const.rs",
+      "provider_sha256": "c99ac4784beb6816f4dcce31f9594a9c0ed4f3d0967f67ec5bdb2699861ad046",
+      "client": "obj/parallel/associated-unsafe/gen-clients/m1-const.rs",
+      "client_sha256": "f81f2ee991c443d3e5f98e2de46a865c5a39f2a63f87e661eb6be93d15473c80",
+      "rustc_status": 0,
+      "before": "const-method-outcomes.json `unsafe inherent methods stay fenced` (evaluated_methods.rs FENCED \"unsafe\"): `source nonordinary callable effect/safety/convention requires a wider profile`",
+      "after": "exported; the client's `const N: u8 = unsafe { base::Plain { n: 1 }.get() };` accepted",
+      "amended_client": "amendment 1: the declared client's `match N { 42 => 42, _ => 7 }` became `N as i32`; the prediction is unchanged"
+    },
+    "M2": {
+      "provider": "obj/parallel/associated-unsafe/gen/m2-inherent.rs",
+      "provider_sha256": "5f50acc9c2cc3121f4f3134b3fda94cf3d7065deefecf5854f104621394f6874",
+      "client": "pa41/tests/spec/target-feature-transport/inherent.rs",
+      "client_sha256": "44239d92e9d51a76aa97b5f2010f7b45f85e8da687ba9a4616cb98da60272b2b",
+      "rustc_status": 0,
+      "before": "target-feature-transport export_controls.inherent (enabled_callables.rs OPPONENTS \"inherent\"): `source nonordinary callable effect/safety/convention requires a wider profile`",
+      "after": "exported with bit 3 [sse] on Lane::get; F's existing packets stay byte-identical",
+      "M2a": "inherent.rs (sha256 44239d92e9d51a76aa97b5f2010f7b45f85e8da687ba9a4616cb98da60272b2b) returns to pa41 against this provider: accepted, native exit 42",
+      "oracle_flags": "F's: provider rlib+obj with -Ccodegen-units=1, client obj"
+    },
+    "M3": {
+      "provider": "obj/parallel/associated-unsafe/gen/m3-associated.rs",
+      "provider_sha256": "fe58105c5969e5212233daeafc10efb09228e1768db457626be93ca475d5b647",
+      "client": "obj/parallel/associated-unsafe/gen-clients/m3-associated.rs",
+      "client_sha256": "b3939b813469cd689a1ec4262fd529304990a5afa32958ad88db8dbf9dd585c0",
+      "rustc_status": 0,
+      "before": "pointer-call-outcomes.json generated_opponents.associated: `source unsafe associated Calls require their wider actual profile`",
+      "after": "exported; `base::H::call(base::raw)` exits 42"
+    },
+    "M4": {
+      "provider": "obj/parallel/associated-unsafe/gen/m4-associated.rs",
+      "provider_sha256": "e90e96a729e5000650d90cd8f0afb7628ac133be330c172f1b52281bd593922c",
+      "client": "obj/parallel/associated-unsafe/gen-clients/m4-associated.rs",
+      "client_sha256": "3ea57e3c07ace54f6066ae95b3167e8a8a806ff1f188a2d6f50260ff745294fd",
+      "rustc_status": 0,
+      "before": "callable-field-outcomes.json generated_opponents.associated: `source unsafe associated Calls require their wider actual profile`",
+      "after": "exported; `t.go(p)` over a client-built Table exits 42"
+    }
+  },
+  "controls": [
+    {
+      "control": "older profiles: spec/source-nominals/provider.rs plus `// Generated associated-unsafe control.` and each line set, exported under module-branches-v12 and module-nominals-v10, then module-bodies-v13",
+      "rows": [
+        {
+          "file": "obj/parallel/associated-unsafe/gen/older-trait.rs",
+          "sha256": "3127bc918341c88cb0d7e25b109a987dcce0fc9afcb37642f54b853b925fac73",
+          "appended": "pub trait Get { unsafe fn fetch(&self); }\nimpl Get for u8 { unsafe fn fetch(&self) {} }\n",
+          "rustc_status": 0,
+          "versions_12_and_10": "source nonordinary callable effect/safety/convention requires a wider profile",
+          "version_13": "exported by the candidate; the base pin rejects it as under versions 12 and 10"
+        },
+        {
+          "file": "obj/parallel/associated-unsafe/gen/older-inherent.rs",
+          "sha256": "3a64f2fa07db0c6815a7694005c1126038101b72fa5fa2f59c3f73d06feb848b",
+          "appended": "pub struct Lane { pub n: u8 }\nimpl Lane { pub unsafe fn get(&self) {} }\n",
+          "rustc_status": 0,
+          "versions_12_and_10": "source impl owner has no completed canonical conformance record",
+          "version_13": "exported by the candidate; the base pin rejects it as under versions 12 and 10"
+        },
+        {
+          "file": "obj/parallel/associated-unsafe/gen/older-call.rs",
+          "sha256": "cce49b358d6f25caa7607031a151626a9bc4054b7ca8020fe70f42a1987b4c2d",
+          "appended": "pub unsafe fn raw() {}\npub trait Via { fn via(&self); }\nimpl Via for u8 { fn via(&self) { unsafe { raw() } } }\n",
+          "rustc_status": 0,
+          "versions_12_and_10": "source unsafe associated Calls require their wider actual profile",
+          "version_13": "exported by the candidate; the base pin rejects it as under versions 12 and 10"
+        }
+      ]
+    },
+    {
+      "control": "safe target-feature method: enabled_callables.rs's new `safe-target` opponent, F's foundation, section comment and `pub struct Lane; impl Lane { #[target_feature(enable = \"sse\")] pub fn s() {} }`",
+      "sha256": "0e62dc58ac8282cc181c65d2939e240a377931c422eea72c2026c72618f0a7d3",
+      "rustc_status": 0,
+      "expected": "rejected at export with F's `source safe target-feature function export requires its contextual call policy` by the base pin and the candidate, writing no packet"
+    },
+    {
+      "control": "old reader: the base pin, built from clean post-join main, consumes the candidate's packets",
+      "expected": "the fixture's packet with every client, M1's and M2's packets and the older-trait and older-inherent version-13 packets: `source nonordinary callable effect/safety/convention requires a wider profile`; M3's and M4's packets and the older-call version-13 packet: `source unsafe associated Calls require their wider actual profile`"
+    },
+    {
+      "control": "baseline: the base pin exports the frozen provider under module-bodies-v13",
+      "expected": "rejected with `source nonordinary callable effect/safety/convention requires a wider profile`, writing no packet"
+    },
+    {
+      "control": "forged rows (guarded_member_rows.rs), restaged with Payload::from_source_module_bodies; the honest restage succeeds",
+      "expected": [
+        "0 and 1: `Lane::get`'s public unsafe cleared with its original kept, then the reverse: `source associated callable changed its actual original/public safety` twice",
+        "2: both bits cleared on `Lane::twice`, which calls `get` bare (`UnsafeFunction`): `source unsafe-function Call changed its actual caller declaration`",
+        "3: both bits cleared on `Lane::get`, which `relay` calls in an unsafe block: `source Call changed its actual callable safety`",
+        "4: `relay`'s request relabeled Safe: `source unsafe Call omitted its actual lexical context`",
+        "5: `Lane::checked`'s request to `raw_u8` relabeled UnsafeFunction: `source unsafe-function Call changed its actual caller declaration`",
+        "6: `Table::invoke`'s pointer call relabeled Safe: `source unsafe Call omitted its actual lexical context`",
+        "7: `Slot::call`'s safe pointer call relabeled ExplicitUnsafeBlock: `source safe Call cannot claim an unsafe obligation`",
+        "8 and 9: `Key::fetch`'s bits cleared while `Get::fetch` stays unsafe, then `Get::fetch`'s cleared while `Key::fetch` stays unsafe: `source implementation member changed its trait member's safety` twice"
+      ]
+    },
+    {
+      "control": "older versions (guarded_member_rows.rs): the older-call twin (`pub fn raw() {}`, the same unsafe block) exported under each profile, restaged honestly and then forged",
+      "expected": [
+        "the u8 impl's `via` member's public unsafe set with its original safe: `source nonordinary callable effect/safety/convention requires a wider profile` under versions 10 and 12, `source associated callable changed its actual original/public safety` under 13",
+        "both of that member's bits set while `Via::via` stays safe: `source nonordinary callable effect/safety/convention requires a wider profile` under 10 and 12, `source implementation member changed its trait member's safety` under 13",
+        "`raw`'s bits set and `via`'s call to it marked unsafe in its signature row and relabeled ExplicitUnsafeBlock: `source unsafe associated Calls require their wider actual profile` under 10 and 12"
+      ]
+    },
+    {
+      "control": "integrity scope",
+      "expected": "no forgery is claimed that passes validation and fails only the rebuilt-body re-proof; clearing both bits on an unsafe method whose body has no unsafe operation and that no provider body calls is undetectable, as for a free unsafe fn"
+    },
+    {
+      "control": "scaling: spec/source-nominals/provider.rs plus N unit structs `SNNN` with `pub unsafe fn get(&self) {}` and `pub fn vNNN(s: &SNNN) { unsafe { s.get() } }`, N = 8, 16, 32, against safe twins called in the same unsafe block",
+      "expected": "packet lengths equal at each N, since only flag bytes differ; the restage's and an empty client's header-step excess over the twins grow at most linearly (each second step at most twice the first plus 64)"
+    },
+    {
+      "control": "self-demand probe, before the fixture freeze: the nominals provider plus k unit structs with an unsafe `get` and no provider caller, k = 1, 2, 4, and a client calling each in an unsafe block, against safe twins and the same client",
+      "expected": "no mapping is blocked; retained bytes, observed bytes and visits equal the twins'; the header-step excess grows at most linearly"
+    },
+    {
+      "control": "flip survey: tools-identity.sh, the post-join base pin against the candidate, over every pa29 and pa41 spec provider and client and every R1, R2, (ii), F, const-method and impl-region-method generated provider under versions 10, 12 and 13, pa31 source-module-compatibility under its own profile, and this item's new inputs",
+      "expected": "among existing inputs only M1-M4 move, under version 13; every other status and stderr is unchanged and every existing packet is byte-identical"
+    }
+  ],
+  "outcome_counts": {
+    "provider": "1 export, accepted under module-bodies-v13",
+    "clients": 17,
+    "accepted_clients": 16,
+    "rejected_clients": 1,
+    "generated_opponents": 4,
+    "known_rejects_valid": "extern-c-method and trait-default"
+  },
+  "native": {
+    "expected": "the 16 accepted clients and the M2a, M3 and M4 clients exit 42 natively with empty stdout, as rustc's do"
+  },
+  "stops": [
+    "any flip other than M1-M4",
+    "any change to an existing packet",
+    "RustGM accepting `missing`, `safe-impl` or `unsafe-impl`",
+    "any rustc oracle row differing from its declared prediction"
+  ],
+  "limits": [
+    "trait default bodies, dyn calls, extern \"C\" and variadic associated fns and safe target-feature methods keep their fences",
+    "primitive-impl unsafe methods (`u8::unchecked_add`) follow from gate A, but no version-13 fixture exports a primitive inherent impl, so they are untested and not claimed",
+    "SliceIndex (slice/index.rs:149) is a const unsafe trait and also needs const trait impls",
+    "clearing both unsafe bits on a method whose body has no unsafe operation and that no provider body calls is undetectable, as for a free unsafe fn"
+  ],
+  "oracle_observed": "rustc 1.98.0 (obj/parallel/associated-unsafe/runs/oracle.log, after the freeze): the provider compiles; the 16 accepted clients exit 42 with no warnings; missing is rejected (status 1) with E0133; safe-impl and unsafe-impl are rejected (status 1) with E0053; extern-c-method, trait-default, the three older controls, safe-target and the M1, M2, M3 and M4 providers compile (status 0); M2a's inherent.rs and the M3 and M4 clients exit 42 with no warnings; the base pin stops the provider at the nonordinary fence, as declared. M1's declared client ICEd rustc (status 101, amendment 1); amendment 1's one bounded retry (obj/parallel/associated-unsafe/runs/m1-retry.log) compiles the unchanged provider and the amended client with no warnings, and it exits 42 with empty stdout",
+  "observed": {
+    "candidate": "obj/parallel/associated-unsafe/cand/rustgm, sha256 1c0bae52f8ab6936a7ab0a9f88b97b20f1179aea5e0c4bf11da27d86e1f1f4c5, dev-fast from 4d33e42b9 plus the item's dev/src diff; base pin obj/parallel/associated-unsafe/base/rustgm, sha256 5f9aa57d559ac2c3129c6d6a4002e88a09652517d3f2316f182ba3e6edb6717b, from 4d33e42b9",
+    "self_demand_probe": "passed before the freeze (obj/parallel/associated-unsafe/runs/probe2.log)",
+    "fastcheck": "15 exact tests, 6 library and 9 crate_linking, passed (obj/parallel/associated-unsafe/runs/fc3.log, receipt obj/qualification/fast/1794249577972890976)",
+    "native": "the guarded, inherent, pointer-call and fn-field native tests passed (obj/parallel/associated-unsafe/runs/native.log, receipt obj/qualification/fast/1794249869848309781): the 16 accepted clients and the M2a, M3 and M4 clients exit 42 with empty stdout",
+    "old_reader": "as declared (obj/parallel/associated-unsafe/runs/oldreader.log): the candidate exports all eight packets; the base pin rejects the fixture's 17 clients and the M1, M2, older-trait and older-inherent clients with the nonordinary text, and the M3, M4 and older-call clients with the associated-call text",
+    "upstream": "make test-upstream verified 128 pinned upstream fixtures and 126 Rust 1.98.0 Reference files",
+    "flip_survey": "as declared (obj/parallel/associated-unsafe/flip/analysis.txt): 1,929 runs over 114 packet folders; among existing inputs only gen-cm-unsafe (M1), gen-f-opponent-inherent (M2), gen-r2-associated (M3) and gen-cf-associated (M4) flip, each to accepted under version 13; versions 10 and 12 and pa31's version 6 are unchanged; the 78 compared packets are byte-identical. New inputs: the fixture's provider and 16 clients and the generated movers and older controls flip to accepted under version 13, missing changes to `call to unsafe function requires an unsafe context`, and trait-default to the provided-body text",
+    "harness_corrections": [
+      "fc1 (obj/parallel/associated-unsafe/runs/fc1.log) stopped at strict Clippy's doc-markdown on enabled_headers.rs's amended comment; `enabled_callables.rs` is now in backticks",
+      "fc2 (obj/parallel/associated-unsafe/runs/fc2.log) failed unsafe_members_restage_and_forged_safety_rejects_by_name with `no single declaration get` before any forged row ran: a member's header parent is its impl's declaration, not its nominal's. The harness now resolves each inherent impl by its self type and Key::fetch through member_links. No declared outcome changed"
+    ]
+  }
+}

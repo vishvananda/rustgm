@@ -3,8 +3,9 @@
 //! nominal's own header frame, a called constructor's payload in its own
 //! nominal's, and calls through the field with a signature its own function
 //! owns. Auto traits and variance read the field as rustc does. Higher-ranked,
-//! early-region and C fields, record variants and unsafe calls in associated
-//! fns keep their fences by name, and version twelve rejects the frame.
+//! early-region and C fields and record variants keep their fences by name,
+//! version twelve rejects the frame, and an unsafe field call in an associated
+//! fn exports since the guarded-methods item.
 use super::fresh_packets::{Packet, Result};
 use rustgm::support::crates;
 const SPEC: &str = "pa29/tests/spec/callable-fields";
@@ -20,7 +21,7 @@ const CALLABLE: &str = "source anonymous callable requires its supported closed 
 const RECORD: &str = "source record variants require their wider profile";
 /// Each generated provider opponent appends these lines to the frozen
 /// provider after `// Generated callable-field opponent.`.
-const OPPONENTS: [(&str, &str, &str); 6] = [
+const OPPONENTS: [(&str, &str, &str); 5] = [
     ("hr", "pub struct Hr { pub f: fn(&u8) -> u8 }\n", CALLABLE),
     (
         "region",
@@ -38,21 +39,36 @@ const OPPONENTS: [(&str, &str, &str); 6] = [
         RECORD,
     ),
     (
-        "associated",
-        "impl Table { pub fn go(&self, p: *const ()) -> i32 { unsafe { (self.call)(p) } } }\n",
-        "source unsafe associated Calls require their wider actual profile",
-    ),
-    (
         "argument-type",
         "pub enum ArgumentType<'a> { Placeholder { value: *const (), formatter: unsafe fn(*const (), &mut u8) -> i32, _lifetime: PhantomData<&'a ()> }, Count(u16) }\n",
         RECORD,
     ),
 ];
+/// The former `associated` opponent, which exports since the guarded-methods
+/// item: outcomes amendment 3, mover M4.
+const ASSOCIATED: &str =
+    "impl Table { pub fn go(&self, p: *const ()) -> i32 { unsafe { (self.call)(p) } } }\n";
+const ASSOCIATED_CLIENT: &str = "#![feature(no_core)]\n#![no_core]\nextern crate base;\nunsafe fn call(_p: *const ()) -> i32 { 42 }\nunsafe fn drop_it(_p: *const ()) {}\n#[unsafe(no_mangle)]\npub extern \"C\" fn entry() -> i32 { let v = (); let p: *const () = &v; let t = base::Table { call, drop: drop_it }; t.go(p) }\n";
 /// The lines the older-profile controls append to an older provider.
 const OLDER: &str =
     "// Generated callable-field control.\npub struct Slot { pub f: fn(u8) -> i32 }\n";
 fn unwritten(path: &std::path::Path) -> Result<bool> {
     Ok(!path.exists() || std::fs::metadata(path)?.len() == 0)
+}
+/// Exports mover M4's provider and consumes its client.
+fn associated(packet: &Packet) -> Result {
+    let provider = std::fs::read_to_string(packet.fixture("provider"))?;
+    let source = packet.folder.join("associated.rs");
+    let text = format!("{provider}// Generated callable-field opponent.\n{ASSOCIATED}");
+    std::fs::write(&source, text)?;
+    let metadata = packet.folder.join("associated.rgcrate");
+    let mut export = packet.export(PROFILE, &source, &metadata);
+    super::artifacts::checked("associated", &packet.folder, &mut export)?;
+    let client = packet.folder.join("associated-client.rs");
+    std::fs::write(&client, ASSOCIATED_CLIENT)?;
+    let label = "associated-client";
+    let mut consumer = packet.consumer(&client, label, &metadata, &packet.owner());
+    super::artifacts::checked(label, &packet.folder, &mut consumer).map(drop)
 }
 #[test]
 fn clients_call_fn_fields_and_wider_fields_keep_their_fences() -> Result {
@@ -82,7 +98,7 @@ fn clients_call_fn_fields_and_wider_fields_keep_their_fences() -> Result {
         )?;
         assert!(unwritten(&metadata)?, "{name} wrote a packet");
     }
-    Ok(())
+    associated(&packet)
 }
 #[test]
 fn version_twelve_rejects_fn_fields_and_thirteen_exports_them() -> Result {
@@ -126,5 +142,9 @@ fn fn_field_clients_execute_natively() -> Result {
         assert_eq!(output.status.code(), Some(42), "{name}");
         assert!(output.stdout.is_empty(), "{name}");
     }
+    associated(&packet)?;
+    let output = packet.native("associated-client")?;
+    assert_eq!(output.status.code(), Some(42));
+    assert!(output.stdout.is_empty());
     Ok(())
 }

@@ -6477,8 +6477,8 @@ per argument, and equal parameter and result nodes. It re-proves the safety
 with a direct call's matrix, at validation and over the rebuilt body, then
 calls the pointer value in its own lowering. A safe callee records Safe, in
 an unsafe block or not. Export rejects these by name: higher-ranked and C
-pointers, an unsafe call inside an associated function, and a pointer stored
-in a record variant, whose header fence comes first. Earlier profiles keep the
+pointers, and a pointer stored in a record variant, whose header fence comes
+first. Earlier profiles keep the
 direct-call text, and an older reader rejects the node as malformed operands.
 The [pointer-call packet](pa29/tests/spec/pointer-calls/README.md) records
 independent outcomes.
@@ -6495,6 +6495,26 @@ nominal's frame never types a call. Export keeps rejecting higher-ranked,
 early-region and C fn fields, and fn fields in record variants, by name. An
 older reader rejects the binder by name. The [callable-field
 packet](pa29/tests/spec/callable-fields/README.md) records independent
+outcomes.
+
+Version thirteen also admits unsafe associated functions, with no wire
+change. An inherent method, a trait member or an impl member may be
+declared `unsafe`; its constness, convention and variadic terms keep their
+fences, so an unsafe `extern "C"` method is still rejected, and a default
+body keeps the provided-body fence. Its original and public safety must
+agree ("source associated callable changed its actual original/public
+safety"), and an implementation member's safety must be its trait member's
+("source implementation member changed its trait member's safety"). Direct
+and pointer calls inside or to an associated function follow direct Call's
+matrix: an unsafe call needs an unsafe block or an unsafe caller, and a safe
+call claims no obligation. Each consumer re-proves both rules at
+validation and the matrix again over the rebuilt body, and its own calls of
+an imported unsafe method need an unsafe context. Earlier profiles keep
+"source nonordinary callable effect/safety/convention requires a wider
+profile" for the declarations and "source unsafe associated Calls require
+their wider actual profile" for the calls, and an older reader rejects a
+version-thirteen packet by the same texts. The [guarded-method
+packet](pa29/tests/spec/guarded-methods/README.md) records independent
 outcomes.
 
 Version thirteen also carries named constants of primitive and unit types.
@@ -6821,16 +6841,17 @@ A version-thirteen function header may also carry its declared target
 features as flag bit 3. After the inline payload come a u32 count and that
 many names, each a u32 length and its bytes: 1 to 128 names of 1 to 32
 bytes in strictly increasing byte order, exactly the explicitly enabled
-features before implication. Only a free `unsafe fn` with the Rust ABI and
-an exported original body carries the bit, and bit 3 with an always-inline
-hint is rejected. Older profiles reject the bit by name ("source
+features before implication. Only a free or inherent `unsafe fn` with the
+Rust ABI and an exported original body carries the bit, and bit 3 with an
+always-inline hint is rejected. Older profiles reject the bit by name
+("source
 target-feature rows require the version-thirteen header profile") and keep
 the export fence for every target-feature function ("source
 named/foreign/target-feature function metadata requires its wider
 profile"). At version thirteen, a trait or trait-impl member, a non-Rust-ABI
-or `const` function and a safe target-feature function keep named fences,
-and an unsafe inherent method keeps the existing unsafe associated-function
-fence. No closure or table index travels. A fresh consumer re-proves every
+or `const` function and a safe target-feature function keep named fences.
+An unsafe inherent method carries the bit as a free function does. No
+closure or table index travels. A fresh consumer re-proves every
 imported bit-3 row on its own installed header (not a trait member, Rust
 ABI, not `const`, declared `unsafe`) and resolves the names against its own
 feature table, rejecting a name it does not know ("unknown source target

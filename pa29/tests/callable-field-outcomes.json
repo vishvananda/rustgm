@@ -30,6 +30,12 @@
       "recorded": "2026-11-09T16:17:58Z",
       "before": "any further run; fastcheck fc2 (obj/parallel/callable-fields/runs/fc2.log, receipt obj/qualification/fast/1794240932741062080), the first candidate test run, observed it",
       "change": "a failed prediction of the scaling control. An empty client's installed header-budget work for N = 8, 16 and 32 is 50701, 56569 and 68873: its second difference, 12304, exceeds twice the first, 5868, plus 64 by 504. Packet bytes (70405, 79653, 98149) grow exactly affinely and the restage's work (63420, 71288, 87024) exactly linearly, as declared. Each generated item is a struct with a fn field and a function over a reference to it. Declared before its run: a twin family replaces each field with `u8` and each function with `pub fn vNNN(s: &FNNN) -> u8 { s.f }`, measured the same way. If the twins' client work grows the same way, that growth is a pre-existing cost of mapping function headers over distinct nominals, and the fn family's client work must exceed its twins' by at most a constant per struct (second difference at most twice the first plus 64). If the twins grow affinely, the fn field causes the growth, and that is reported as a stop. Also a harness correction, not a changed expectation: the same run found that store owns three closed callable frames, so forged row (a) now selects the frame of store's public fn-pointer parameter, as declared, instead of requiring that store own one frame. No forged row had run"
+    },
+    {
+      "recorded": "2026-11-09T18:11:59Z",
+      "before": "any oracle or candidate run of Lane C's associated-unsafe item (pa29/tests/guarded-method-outcomes.json), which names this move (M4)",
+      "governs": "Lane C's associated-unsafe item (pa29/tests/guarded-method-outcomes.json)",
+      "change": "the `associated` opponent, `impl Table { pub fn go(&self, p: *const ()) -> i32 { unsafe { (self.call)(p) } } }`, is expected exported under module-bodies-v13 with a packet written, and a client calling `go` on a client-built `Table`, obj/parallel/associated-unsafe/gen-clients/m4-associated.rs (sha256 3ea57e3c07ace54f6066ae95b3167e8a8a806ff1f188a2d6f50260ff745294fd), accepted with native exit 42, no longer rejected with `source unsafe associated Calls require their wider actual profile`. rustc 1.98.0 accepted the provider in (ii)'s oracle, and this item's oracle runs it with the client. Every other case is unchanged. The generated opponents become five. M4, approved by name by the integrator (2026-11-09), conditional on its rustc oracle accepting"
     }
   ],
   "rule": "approved design, with no wire change. Version 13 admits a CallableType binder owned by a nominal, with no parent and no slots (frame_owners, gate a); versions 10 and 12 keep `source shared call type requires an actual closed callable frame`. The port plan forms a nominal field's Function root in that nominal's header frame (Rewrite::Nominal), and a called constructor's payload in its own nominal's header frame (Target::Constructor), checking zero slots, the Rust convention and the exact owner; function targets keep their checks (gate b). A field type whose frame binds slots keeps `source nominal callable field requires its wider binder profile`. A call signature's closed CallableType frame must belong to a function header (request_ports), so a nominal's frame never types a call",
@@ -196,7 +202,8 @@
       "appended": "impl Table { pub fn go(&self, p: *const ()) -> i32 { unsafe { (self.call)(p) } } }\n",
       "rustc_status": 0,
       "rustgm_export": "source unsafe associated Calls require their wider actual profile",
-      "note": "accepted deviation 2: R2's shape, a safe associated fn calling an unsafe fn field in an unsafe block, keeps ruling 4's fence. An unsafe associated declaration (`pub unsafe fn go`) instead hits `source nonordinary callable effect/safety/convention requires a wider profile`, as Lane D found in F; the widening is one item; known rejects-valid"
+      "note": "accepted deviation 2: R2's shape, a safe associated fn calling an unsafe fn field in an unsafe block, keeps ruling 4's fence. An unsafe associated declaration (`pub unsafe fn go`) instead hits `source nonordinary callable effect/safety/convention requires a wider profile`, as Lane D found in F; the widening is one item; known rejects-valid",
+      "amended_rustgm_export": "exported: module-bodies-v13 writes a packet, and a client's `t.go(p)` exits 42 (amendment 3)"
     },
     "argument-type": {
       "appended": "pub enum ArgumentType<'a> { Placeholder { value: *const (), formatter: unsafe fn(*const (), &mut u8) -> i32, _lifetime: PhantomData<&'a ()> }, Count(u16) }\n",
@@ -292,8 +299,8 @@
     "clients": 16,
     "accepted_clients": 15,
     "rejected_clients": 1,
-    "generated_opponents": 6,
-    "known_rejects_valid": "hr, region, c, record-variant, associated, argument-type, and the arena control"
+    "generated_opponents": 5,
+    "known_rejects_valid": "hr, region, c, record-variant, argument-type, and the arena control"
   },
   "native": {
     "expected": "the 15 accepted clients exit 42 natively with empty stdout, as rustc's do",
@@ -302,7 +309,7 @@
   "limits": [
     "zero-slot Rust frames only: higher-ranked, early-region and C fn fields keep the anonymous callable fence at export, and the HR item must cover nominal-owned callable frames with bound slots as well as pointer-call frames",
     "record variants holding fns keep their fence: item (i), Lane D after F",
-    "unsafe calls inside associated fns keep ruling 4's fence, and unsafe associated declarations the nonordinary fence; their widening is one item",
+    "unsafe calls inside associated fns and unsafe associated declarations are carried by the associated-unsafe item (amendment 3)",
     "the exporter's pre-existing arena fence rejects the source-nominals provider plus a fn field in every profile on the base pin and the candidate",
     "the provider leaves out RawWakerVTable's `derive(PartialEq)`: comparing fn pointers is unpredictable, and rustc warns `unpredictable_function_pointer_comparisons`"
   ],

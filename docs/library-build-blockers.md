@@ -5,6 +5,40 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [unsafe associated functions](parallel/guarded-methods.md) lets a
+version-13 export carry `unsafe` inherent methods, trait members and impl
+members, and the unsafe direct and pointer calls inside or to them, with no
+wire change. Under version 13 an associated function's `unsafe` no longer
+needs a wider profile, its original and public safety must agree, and an impl
+member's safety must be its trait member's. Calls follow direct Call's
+matrix, which each consumer re-proves.
+
+- 16 clients exit 42 natively, including `Argument::fmt`'s shape, an unsafe
+  method of a generic impl, one with a late region and one of a
+  lifetime-capturing impl, a const unsafe method in a client const, an unsafe
+  trait member called through a bound and implemented by the client, and a
+  reified unsafe associated fn. A safe call with no unsafe block is
+  rejected, as rustc rejects it (E0133).
+- The four approved movers export: const-methods' `const unsafe fn get`
+  (M1), F's target-feature `Lane::get` with its returned `inherent` client
+  (M2 and M2a), R2's `H::call` (M3) and (ii)'s `Table::go` (M4).
+- Kept fences, by name: an unsafe `extern "C"` method keeps the nonordinary
+  text and an unsafe trait default keeps the provided-body text, both known
+  rejects-valid. A trait's unsafe method implemented safely, and the reverse,
+  are rejected by RustGM's own frontend, as rustc rejects them (E0053).
+- Versions 12 and 10, and the base reader, keep "source nonordinary callable
+  effect/safety/convention requires a wider profile" and "source unsafe
+  associated Calls require their wider actual profile".
+- Among existing inputs the flip survey (1,929 runs) changes only M1 to M4,
+  under version 13. The 78 compared packets are byte-identical.
+- **`SliceIndex`** (`slice/index.rs:149`) is a const unsafe trait, so it also
+  needs const trait impls.
+- **Recorded:** rustc 1.98.0 ICEs on M1's declared client at a match over a
+  provider that implements `Copy` for no primitive; the approved fixture
+  amendment returns `N as i32` (amendment 1). Primitive-impl unsafe methods,
+  such as `u8::unchecked_add`, follow from the rule but are untested and not
+  claimed.
+
 Lane A [census batch 21](parallel/census-batch21.md) repairs census 23's
 record. It was qualified and censused on main `0bcba9e3f`. Census 24
 (`88273b11`) checks 42,310 declarations, with none failed or blocked, and
@@ -101,7 +135,8 @@ function.
   early-region and C fn fields; record variants holding fns (item (i)); and
   unsafe calls in associated fns. An unsafe associated declaration hits "source
   nonordinary callable effect/safety/convention requires a wider profile", as
-  Lane D found in F; their widening is one item.
+  Lane D found in F; their widening is one item. The associated-unsafe item
+  now carries both, and `Table::go` exports (amendment 3).
 - Versions 12 and 10, and the base reader, keep "source shared call type
   requires an actual closed callable frame".
 - Among existing inputs the flip survey changes only R2's `field` opponent,
@@ -206,13 +241,12 @@ check, to its baseline plus the closure.
 - Integrity condition beside S4 (spec.md): a forged bit-3 addition widens
   one imported body's asm CPU check. Any item that admits a register class
   needing a non-baseline feature must cover forged additions first.
-- Queued with the associated-unsafe widening item ahead of HR/C ("source
-  unsafe associated Calls require their wider actual profile"): target
-  features on an unsafe inherent method. F's declared `Lane::get` and its
-  `inherent` client were withdrawn, because unsafe inherent methods keep
-  "source nonordinary callable effect/safety/convention requires a wider
-  profile" at export; the withdrawn client becomes one of that item's
-  controls.
+- Target features on an unsafe inherent method are carried by the
+  associated-unsafe item. F's declared `Lane::get` and its `inherent`
+  client were withdrawn, because unsafe inherent methods kept "source
+  nonordinary callable effect/safety/convention requires a wider profile"
+  at export. `Lane::get` now exports with bit 3 and `inherent.rs` exits 42
+  as its client (F's amendment 6).
 
 Lane C [calls through fn pointers](parallel/pointer-calls.md), R2, carries a
 call through a closed Rust fn pointer in version-13 exported bodies as a
@@ -231,7 +265,9 @@ instance.
   formatter as a parameter, and three reified constructors.
 - Kept fences, each by name: higher-ranked and C pointers, an unsafe call in
   an associated fn, a pointer stored in a record variant or a struct field,
-  and const fns, which rustc also rejects.
+  and const fns, which rustc also rejects. The associated call exports
+  since the associated-unsafe item (amendment 3), and the struct field
+  since (ii).
 - Versions 12 and 10 keep the direct-call text. The base2 reader rejects the
   node with "body IR value node has malformed operands", which an
   operand-swap forgery also gets.
@@ -248,9 +284,9 @@ instance.
     callable field requires its wider binder profile". (ii) now carries
     zero-slot fields (see above); fields with bound slots wait for HR.
 - **Associated unsafe calls.** "source unsafe associated Calls require their
-  wider actual profile" widens for direct and pointer calls together, as its
-  own item before HR/C. It is the fmt chain's next blocker after HR/C's
-  prerequisites.
+  wider actual profile" widened for direct and pointer calls together under
+  version 13, with unsafe associated declarations, in the associated-unsafe
+  item (see above).
 - Failed predictions: rustc 1.98.0 rejects the const-fn opponent with the
   unnumbered "function pointer calls are not allowed in constant functions",
   not the declared E0015. A forged constructor pointer with a changed payload

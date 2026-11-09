@@ -131,8 +131,10 @@ oracle and candidate run (`pa29/tests/pointer-call-outcomes.json`).
 - **Opponents.**
   - Higher-ranked and C pointers keep "source anonymous callable requires
     its supported closed Rust frame".
-  - An unsafe pointer call in an associated fn keeps "source unsafe
-    associated Calls require their wider actual profile" (ruling 4).
+  - An unsafe pointer call in an associated fn kept "source unsafe
+    associated Calls require their wider actual profile" (ruling 4). It
+    exports since the associated-unsafe item
+    ([guarded-methods.md](guarded-methods.md), outcomes amendment 3).
   - The stored-formatter witness, a record variant holding an `unsafe fn`,
     stops at "source record variants require their wider profile".
   - A field call `(s.f)(7)` stopped at "source shared call type requires an
@@ -183,5 +185,5 @@ oracle and candidate run (`pa29/tests/pointer-call-outcomes.json`).
     callable field requires its wider binder profile".
 - **Associated unsafe calls.** Widening "source unsafe associated Calls
   require their wider actual profile" for direct and pointer calls together
-  is a separate item before HR/C. It is the fmt chain's next blocker after
-  HR/C's prerequisites.
+  was a separate item before HR/C. Version 13 now carries it
+  ([guarded-methods.md](guarded-methods.md)).

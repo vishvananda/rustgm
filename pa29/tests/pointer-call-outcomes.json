@@ -31,6 +31,12 @@
       "before": "any candidate run of Lane C's (ii), whose declaration (pa29/tests/callable-field-outcomes.json) names this flip; the integrator approved it by name with the (ii) notice",
       "governs": "Lane C's (ii), zero-slot nominal callable fields (pa29/tests/callable-field-outcomes.json)",
       "change": "the `field` opponent, `pub struct Slot { pub f: fn(u8) -> i32 }` and `pub fn via(s: &Slot) -> i32 { (s.f)(7) }`, is expected exported under module-bodies-v13 with a packet written, no longer rejected with `source shared call type requires an actual closed callable frame`: version 13 forms a nominal's closed fn field in that nominal's own header frame. rustc 1.98.0 accepts it (R2 oracle, obj/parallel/pointer-calls/oracle/gen). Its provider lines, its rustc status, its version-12 and version-10 texts and every other case are unchanged; `record-variant` keeps `source record variants require their wider profile`. The generated opponents become five and the amended controls one"
+    },
+    {
+      "recorded": "2026-11-09T18:11:59Z",
+      "before": "any oracle or candidate run of Lane C's associated-unsafe item (pa29/tests/guarded-method-outcomes.json), which names this move (M3)",
+      "governs": "Lane C's associated-unsafe item (pa29/tests/guarded-method-outcomes.json)",
+      "change": "the `associated` opponent, `pub struct H;` and `impl H { pub fn call(f: unsafe fn(u8) -> i32) -> i32 { unsafe { f(7) } } }`, is expected exported under module-bodies-v13 with a packet written, and a client calling `base::H::call(base::raw)`, obj/parallel/associated-unsafe/gen-clients/m3-associated.rs (sha256 b3939b813469cd689a1ec4262fd529304990a5afa32958ad88db8dbf9dd585c0), accepted with native exit 42, no longer rejected with `source unsafe associated Calls require their wider actual profile`: version 13 lets an unsafe call inside or to an associated function follow direct Call's rule. rustc 1.98.0 accepted the provider in R2's oracle, and this item's oracle runs it with the client. Its provider lines, its versions 12 and 10 and every other case are unchanged. The generated opponents become four and the amended controls two. M3, approved by name by the integrator (2026-11-09), conditional on its rustc oracle accepting"
     }
   ],
   "rule": "approved design. Version-13 value code 30 gains a second shape, `(30, [Type(signature), Value(callee), Range(arguments), Flag(safety)])`, read as `ValueKind::PointerCall` and admitted only under the body-node profile; a direct call keeps `(30, [Type, Value, Range])` and the read matches the whole operand slice. The flag is the request codec's: 0 Safe, 1 ExplicitUnsafeBlock, 2 UnsafeFunction. A pointer call owns no request row: its site is its one evaluation. Every consumer re-proves the signature against the callee's closed Rust pointer type node by node (convention, variadicness, unsafety, arity, parameters and result) and the safety with direct Call's own matrix, at validation and again over the rebuilt body; local lowering calls the pointer value. Q3 Branch A also admits constructor reification: each consumer defines its own constructor instance. Existing packets keep their bytes: export fenced both forms before",
@@ -168,7 +174,8 @@
       "appended": "pub struct H;\nimpl H { pub fn call(f: unsafe fn(u8) -> i32) -> i32 { unsafe { f(7) } } }\n",
       "rustc_status": 0,
       "rustgm_export": "source unsafe associated Calls require their wider actual profile",
-      "note": "ruling 4: the associated unsafe call fence widens for direct and pointer calls together as its own item before HR/C; known rejects-valid"
+      "note": "ruling 4: the associated unsafe call fence widens for direct and pointer calls together as its own item before HR/C; known rejects-valid",
+      "amended_rustgm_export": "exported: module-bodies-v13 writes a packet, and `base::H::call(base::raw)` exits 42 (amendment 3)"
     },
     "record-variant": {
       "appended": "pub enum Kind { Placeholder { value: u8, formatter: unsafe fn(u8, u8) -> i32 }, Count(u16) }\npub struct Arg { pub ty: Kind }\npub fn stored(value: u8) -> Arg { Arg { ty: Kind::Placeholder { value, formatter: render } } }\npub unsafe fn stored_fmt(arg: &Arg, f: u8) -> i32 { match arg.ty { Kind::Placeholder { value, formatter } => unsafe { formatter(value, f) }, Kind::Count(_) => 7 } }\n",
@@ -252,9 +259,9 @@
     "rejected_clients": 0,
     "pointer_call_nodes": "11: 7 Safe, 3 ExplicitUnsafeBlock, 1 UnsafeFunction",
     "reified_nodes": 12,
-    "generated_opponents": 5,
-    "known_rejects_valid": "hr, c, associated, record-variant",
-    "amended_controls": "1 (field, amendment 2)"
+    "generated_opponents": 4,
+    "known_rejects_valid": "hr, c, record-variant",
+    "amended_controls": "2 (field, amendment 2; associated, amendment 3)"
   },
   "native": {
     "expected": "the 13 accepted clients exit 42 natively with empty stdout, as rustc's do"

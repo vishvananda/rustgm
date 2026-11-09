@@ -2,8 +2,8 @@
 //! function header bit 3. Fresh consumers re-prove each row on their own
 //! installed header and table and call the imported functions through their
 //! ordinary unsafe signatures. Forms outside the slice keep named fences at
-//! export, including the existing unsafe associated-function fence, and older
-//! profiles keep theirs.
+//! export and older profiles keep theirs. Since the guarded-methods item an
+//! unsafe inherent method carries its row as a free function does.
 use super::fresh_packets::{Packet, Result, inner, unique};
 use rustgm::support::crates;
 const SPEC: &str = "pa41/tests/spec/target-feature-transport";
@@ -21,9 +21,6 @@ const FORM: &str = "source target-feature function form requires its wider profi
 const SAFETY: &str = "incompatible callable convention or safety";
 const MEMBER: &str =
     "source trait member target features require their trait implementation transport";
-/// The ordinary profile's unsafe associated-function fence, after F's checks.
-const NONORDINARY: &str =
-    "source nonordinary callable effect/safety/convention requires a wider profile";
 /// The lines every generated control keeps: the provider's first 73, the
 /// pinned foundation with `__m128`.
 const FOUNDATION: usize = 73;
@@ -51,9 +48,9 @@ const OPPONENTS: [(&str, &str, &str); 8] = [
         FORM,
     ),
     (
-        "inherent",
-        "pub struct Lane; impl Lane { #[target_feature(enable = \"sse\")] pub unsafe fn get(value: u32) -> u32 { value } }",
-        NONORDINARY,
+        "safe-target",
+        "pub struct Lane; impl Lane { #[target_feature(enable = \"sse\")] pub fn s() {} }",
+        "source safe target-feature function export requires its contextual call policy",
     ),
     (
         "const",
@@ -71,6 +68,9 @@ const OPPONENTS: [(&str, &str, &str); 8] = [
         "cannot use `#[inline(always)]` with `#[target_feature]`",
     ),
 ];
+/// The former `inherent` opponent, which exports since the guarded-methods
+/// item: outcomes amendment 6, mover M2.
+const INHERENT: &str = "pub struct Lane; impl Lane { #[target_feature(enable = \"sse\")] pub unsafe fn get(value: u32) -> u32 { value } }";
 const KEEP: &str =
     "#[target_feature(enable = \"sse2,sse\")] unsafe fn keep<T: Copy>(value: T) -> T { value }\n";
 const SECOND: &str =
@@ -233,6 +233,37 @@ fn target_feature_forms_outside_the_slice_keep_their_fences_at_export() -> Resul
         &packet.owner(),
     );
     super::artifacts::checked("gated", &packet.folder, &mut client).map(drop)
+}
+/// Mover M2: the unsafe inherent `Lane::get` exports bit 3 with `sse`, and
+/// the returned `inherent.rs` calls it from a fresh consumer (M2a).
+fn inherent_packet(label: &str) -> Result<Packet> {
+    let packet = Packet::new(GROUP, SPEC, label, "provider")?;
+    let (foundation, _) = foundation(&packet)?;
+    let source = format!("{foundation}{SECTION}{INHERENT}\n");
+    let mut export = generated(&packet, "inherent-provider", PROFILE, &source)?;
+    super::artifacts::checked("inherent-provider", &packet.folder, &mut export)?;
+    let metadata = packet.folder.join("inherent-provider.rgcrate");
+    unique(
+        &std::fs::read(&metadata)?,
+        &[8, 1, 0, 0, 0, 3, 0, 0, 0, b's', b's', b'e'],
+    )?;
+    let fixture = packet.fixture("inherent");
+    let mut client = packet.consumer(&fixture, "inherent", &metadata, &packet.owner());
+    super::artifacts::checked("inherent", &packet.folder, &mut client)?;
+    Ok(packet)
+}
+#[test]
+fn unsafe_inherent_target_feature_methods_export_their_rows() -> Result {
+    inherent_packet("feature-inherent").map(drop)
+}
+#[test]
+#[ignore = "requires configured locked CPPGM object backend and host C compiler"]
+fn the_inherent_client_executes_natively() -> Result {
+    let packet = inherent_packet("feature-inherent-native")?;
+    let output = packet.native("inherent")?;
+    assert_eq!(output.status.code(), Some(42));
+    assert!(output.stdout.is_empty());
+    Ok(())
 }
 /// The one assembly template in `lowir`, with its label spelled `@asm0`.
 fn stream_template(lowir: &str) -> Result<String> {

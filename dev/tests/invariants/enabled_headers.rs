@@ -375,9 +375,10 @@ fn forged_feature_rows_reject_on_the_consumers_installed_header() -> Result {
     Ok(())
 }
 
-/// No unsafe inherent method can be imported, so only a forged row reaches the
-/// consumer's inherent admission: generated/inherent-forgery.rs, the provider
-/// with a safe inherent `Lane::get`.
+/// A forged row on a safe inherent method reaches the consumer's inherent
+/// admission and fails as safe: generated/inherent-forgery.rs, the provider
+/// with a safe inherent `Lane::get`. An unsafe one is imported honestly since
+/// the guarded-methods item (`enabled_callables.rs`, mover M2).
 #[test]
 fn forged_rows_on_inherent_functions_pass_the_member_check_and_fail_as_safe() -> Result {
     let lane = "pub struct Lane;\nimpl Lane {\n    pub fn get(value: u32) -> u32 { value }\n}\n";

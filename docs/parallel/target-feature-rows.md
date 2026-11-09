@@ -77,7 +77,10 @@ unsafe associated-function fence of the ordinary profile ("source
 nonordinary callable effect/safety/convention requires a wider profile",
 `ordinary_profile.rs`). F therefore covers free functions only
 (amendment 2). The legacy codec keeps "target-feature exports are outside
-the generic/scalar metadata profile".
+the generic/scalar metadata profile". Since the associated-unsafe item
+([guarded-methods.md](guarded-methods.md)) an unsafe inherent method
+carries bit 3 under version 13, and `inherent.rs` returns as the client of
+`export_controls.inherent` (amendment 6).
 
 ## Consumer
 
@@ -98,10 +101,11 @@ the generic/scalar metadata profile".
 - **CPU policy.** An imported asm body's register-class check
   (`encoded_assembly.rs`) uses the consumer's baseline plus the imported
   closure, read through `target_features::imported`.
-- **Inherent admission.** No unsafe inherent method can be imported, so only
-  a forged row reaches the inherent branch of the member check. A named
-  private test forges bit 3 onto a safe inherent `Lane::get` and gets "not
-  declared unsafe".
+- **Inherent admission.** No unsafe inherent method could be imported, so
+  only a forged row reached the inherent branch of the member check. A
+  named private test forges bit 3 onto a safe inherent `Lane::get` and gets
+  "not declared unsafe". Since the associated-unsafe item an unsafe one is
+  imported honestly.
 
 Accepted deviations from the notice:
 
@@ -140,6 +144,7 @@ records each one beside the outcome it changes.
 | 3 | 14:23:30Z, after the first integration run | safe-pointer's text, pa29's unknown-flags wire control moved from byte 8 to 16, the witness's packet name |
 | 4 | 14:28:00Z, after the rerun | twin-keep's declared parity restored, the witness's stop at step 3, one diagnostic probe |
 | 5 | 14:44:00Z, the integrator's bounded retry, before any run of the new client | a scalar-surface stream client and `generated/stream-main.c`; two rustc fixture rounds recorded before any RustGM run |
+| 6 | 18:11:59Z, by Lane C under the integrator's ruling, governed by the associated-unsafe item | `export_controls.inherent` exports with bit 3 and `inherent.rs` returns as its client; F's rows are final |
 
 Failed predictions, each recorded and not reblessed:
 
@@ -266,7 +271,7 @@ declared before the client's first run.
 
 - The two client export fences of amendment 4, now unassigned blockers
   queued after record variants (library-build-blockers.md).
-- Target features on unsafe inherent methods, with the associated-unsafe
-  widening item.
+- Target features on unsafe inherent methods are carried by the
+  associated-unsafe item (amendment 6).
 - Safe target-feature functions, trait members, and non-Rust-ABI or `const`
   target-feature functions stay fenced, stricter than rustc.

@@ -150,7 +150,11 @@
   },
   {
    "control": "spec/source-nominals/provider.rs plus `Plain` and `impl Plain { pub const unsafe fn get(&self) -> u8 { 42 } }`, under version 13",
-   "expected": "rejected by name with `source nonordinary callable effect/safety/convention requires a wider profile`: unsafe inherent methods stay fenced"
+   "expected": "rejected by name with `source nonordinary callable effect/safety/convention requires a wider profile`: unsafe inherent methods stay fenced",
+   "superseded": {
+    "by": "Lane C's associated-unsafe item (pa29/tests/guarded-method-outcomes.json)",
+    "expected": "under version 13 the same provider exports, and a client evaluating `const N: u8 = unsafe { base::Plain { n: 1 }.get() };`, obj/parallel/associated-unsafe/gen-clients/m1-const.rs (sha256 f81f2ee991c443d3e5f98e2de46a865c5a39f2a63f87e661eb6be93d15473c80, amended by guarded-method amendment 1 from the declared 077f47e18ae2c298, whose match ICEd rustc), is accepted, no longer rejected with `source nonordinary callable effect/safety/convention requires a wider profile`: version 13 admits an unsafe associated function. M1, approved by name by the integrator (2026-11-09), conditional on its rustc oracle accepting; declared at 2026-11-09T18:11:59Z, before it ran"
+   }
   },
   {
    "control": "spec/source-nominals/provider.rs plus `Held<'a> { pub text: &'a str }` and `impl<'a> Held<'a> { pub const fn shorter<'b>(&self, x: &'b u8) -> &'b u8 where 'a: 'b { x } }`, under version 13",

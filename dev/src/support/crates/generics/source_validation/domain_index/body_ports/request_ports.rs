@@ -142,8 +142,9 @@ impl DomainIndex<'_, '_> {
         }
         self.call_safety(original, (signature.unsafe_, safety), false, work)
     }
-    /// A call's lexical context discharges exactly its callee's unsafety. An
-    /// unsafe call inside or to an associated function needs a wider profile.
+    /// A call's lexical context discharges exactly its callee's unsafety.
+    /// Below version thirteen, an unsafe call inside or to an associated
+    /// function needs a wider profile.
     fn call_safety(
         &self,
         original: &s::Original,
@@ -155,7 +156,7 @@ impl DomainIndex<'_, '_> {
             (false, s::CallSafety::Safe) => Ok(()),
             (true, s::CallSafety::ExplicitUnsafeBlock | s::CallSafety::UnsafeFunction) => {
                 let defining = self.function(original.declaration, work)?;
-                if associated || defining.parent.is_some() {
+                if !self.bodies && (associated || defining.parent.is_some()) {
                     return Err(
                         "source unsafe associated Calls require their wider actual profile",
                     );
@@ -357,3 +358,7 @@ impl DomainIndex<'_, '_> {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../../../../tests/invariants/guarded_member_rows.rs"]
+mod tests;

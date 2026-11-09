@@ -183,6 +183,9 @@ fn validate_with(
                 "source const/negative/unsafe implementation requires a wider explicit profile",
             );
         }
+        if roles.languages {
+            member_safety(rows, headers, header, work)?;
+        }
     }
     for clause in &rows.clauses {
         work.charge(1)?;
@@ -202,6 +205,37 @@ fn validate_with(
         profile.conversions(),
         binding == BindingProfile::Languages,
     )
+}
+/// Version thirteen: an implementation member's public safety is its trait
+/// member's, as rustc's E0053 requires of the impl that declares it.
+fn member_safety(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    implementation: &super::super::ImplHeader,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    for link in implementation.members.slice(&rows.member_links)? {
+        work.charge(1)?;
+        let (Some(member), Some(actual)) = (link.trait_member, link.implementation) else {
+            continue;
+        };
+        let (
+            Some(super::super::HeaderRef::Function(expected)),
+            Some(super::super::HeaderRef::Function(actual)),
+        ) = (
+            headers.header(member.declaration, work)?,
+            headers.header(actual, work)?,
+        )
+        else {
+            continue;
+        };
+        if rows.functions[expected as usize].callable.unsafe_
+            != rows.functions[actual as usize].callable.unsafe_
+        {
+            return Err("source implementation member changed its trait member's safety");
+        }
+    }
+    Ok(())
 }
 fn trait_headers(
     rows: &SourceRows,
@@ -366,6 +400,9 @@ fn functions(
     for header in &rows.functions {
         work.charge(1 + 2 * rows.exact_callables.len().checked_ilog2().unwrap_or(0) as usize)?;
         let free_effects = profile.callables() && header.parent.is_none();
+        // Version thirteen: an associated function may also be unsafe. Its
+        // constness, convention and variadic forms keep their fences.
+        let safety = free_effects || (bodies && header.parent.is_some());
         let callable = callable_roles::required_member(header, roles.callables, work)?;
         let required = callable
             || profile.conversions()
@@ -376,7 +413,7 @@ fn functions(
             && !inherent_const
             && header.constness != Constness::Ordinary)
             || !required && header.constness == Constness::Conditional
-            || (!free_effects && header.original.unsafe_)
+            || (!safety && header.original.unsafe_)
             || header.original.variadic
             || !(callable
                 || admitted_convention(
@@ -385,7 +422,7 @@ fn functions(
                     header.original.convention,
                     profile,
                 ))
-            || (!free_effects && header.callable.unsafe_)
+            || (!safety && header.callable.unsafe_)
             || header.callable.variadic
             || !(callable
                 || admitted_convention(
@@ -406,6 +443,9 @@ fn functions(
             return Err(
                 "source free callable changed its actual original/public safety or convention",
             );
+        }
+        if bodies && header.parent.is_some() && header.original.unsafe_ != header.callable.unsafe_ {
+            return Err("source associated callable changed its actual original/public safety");
         }
         let associated = associated_method(rows, headers, header, work, profile, roles, bodies)?;
         if matches!(header.body, FunctionBody::Original(_))

@@ -31,21 +31,18 @@ const OPPONENTS: [(&str, &str); 4] = [
     ("wrong-payload", "incompatible types"),
     ("text-leak", "required lifetime does not outlive its target"),
 ];
-const NONORDINARY: &str =
-    "source nonordinary callable effect/safety/convention requires a wider profile";
 const PLAIN: &str = "// Generated const inherent-method gate.\npub struct Plain { pub n: u8 }\nimpl Plain { pub const fn get(&self) -> u8 { 42 } }\n";
-const FENCED: [(&str, &str, &str); 2] = [
-    (
-        "unsafe",
-        "// Generated const unsafe inherent-method gate.\npub struct Plain { pub n: u8 }\nimpl Plain { pub const unsafe fn get(&self) -> u8 { 42 } }\n",
-        NONORDINARY,
-    ),
-    (
-        "early",
-        "// Generated early-lifetime const-method gate.\npub struct Held<'a> { pub text: &'a str }\nimpl<'a> Held<'a> { pub const fn shorter<'b>(&self, x: &'b u8) -> &'b u8 where 'a: 'b { x } }\n",
-        "source function early/captured callable frame transport is not implemented",
-    ),
-];
+/// Guarded-method mover M1: version thirteen exports a const unsafe inherent
+/// method, and a client's const item calls it in an unsafe block.
+const UNSAFE: &str = "// Generated const unsafe inherent-method gate.\npub struct Plain { pub n: u8 }\nimpl Plain { pub const unsafe fn get(&self) -> u8 { 42 } }\n";
+/// M1's client, the oracle's input: rustc 1.98.0 ICEs on `client`'s match
+/// over this provider, which implements `Copy` for no primitive.
+const UNSAFE_CLIENT: &str = "#![feature(no_core)]\n#![no_core]\nextern crate base;\nconst N: u8 = unsafe { base::Plain { n: 1 }.get() };\n#[unsafe(no_mangle)]\npub extern \"C\" fn entry() -> i32 { N as i32 }\n";
+const FENCED: [(&str, &str, &str); 1] = [(
+    "early",
+    "// Generated early-lifetime const-method gate.\npub struct Held<'a> { pub text: &'a str }\nimpl<'a> Held<'a> { pub const fn shorter<'b>(&self, x: &'b u8) -> &'b u8 where 'a: 'b { x } }\n",
+    "source function early/captured callable frame transport is not implemented",
+)];
 /// A field read of a call's temporary, as `relay` reads `Self::new(..).n`.
 const TEMPORARY: &str = "// Generated temporary-field gate.\npub struct P { pub n: u8 }\npub fn mp() -> P { P { n: 42 } }\npub fn f() -> u8 { mp().n }\n";
 /// rustc 1.98.0 also admits this write; this frontend keeps it fenced by
@@ -126,6 +123,12 @@ fn older_profiles_and_unsupported_const_methods_reject_by_name() -> Result {
     let consumer = client(&packet, "plain-client", "base::Plain { n: 1 }.get()")?;
     let mut fresh = packet.consumer(&consumer, "plain-client", &plain, &packet.owner());
     super::artifacts::checked("plain-client", &packet.folder, &mut fresh)?;
+    let source = generated(&packet, "unsafe.rs", &format!("{nominals}{UNSAFE}"))?;
+    let guarded = packet.folder.join("unsafe.rgcrate");
+    exported(&packet, &source, &guarded)?;
+    let consumer = generated(&packet, "unsafe-client.rs", UNSAFE_CLIENT)?;
+    let mut fresh = packet.consumer(&consumer, "unsafe-client", &guarded, &packet.owner());
+    super::artifacts::checked("unsafe-client", &packet.folder, &mut fresh)?;
     let source = generated(&packet, "temporary.rs", &format!("{nominals}{TEMPORARY}"))?;
     for profile in OLDER {
         let older = packet.folder.join(format!("temporary-{profile}.rgcrate"));
