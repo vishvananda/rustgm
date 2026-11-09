@@ -149,6 +149,8 @@ impl Search<'_> {
                     std::ops::ControlFlow::Break(action) => return Ok(action),
                     std::ops::ControlFlow::Continue(value) => value,
                 }
+            } else if let Some(sized) = self.negative_parameter_sized(facts, goal)? {
+                sized
             } else if goal.bound == Bound::Sized
                 && (facts.types.contains_projected_sizes(goal.ty) == Some(true)
                     || !facts.types.nominal_sizes_sealed()

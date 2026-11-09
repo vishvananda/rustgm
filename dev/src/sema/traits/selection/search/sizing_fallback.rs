@@ -11,26 +11,46 @@ use crate::{
 use std::ops::ControlFlow;
 
 /// rustc 1.98 negates one impl's predicates under the other impl's
-/// `param_env`. A negative coherence query assumes only that other header's
-/// own `MetaSized` premises, and each node one of them proves stays a debt
-/// that the same premises must pay. Every other query has none.
+/// `param_env`, after plugging each unified header variable with a
+/// placeholder. A negative coherence query decides a rigid parameter's `Sized`
+/// and `MetaSized` only from that other header's own premises, never from the
+/// declaration of the parameter `freeze` made the representative. A `Sized`
+/// decision stays an ordinary Sized debt, and each `MetaSized` node stays a
+/// debt that the `MetaSized` premises must pay. Every other query has none.
 pub(super) struct NegativeSizing {
-    premises: std::sync::Arc<[crate::types::TypeId]>,
+    sized: std::sync::Arc<[crate::types::TypeId]>,
+    meta_sized: std::sync::Arc<[crate::types::TypeId]>,
     debts: Vec<usize>,
 }
 impl NegativeSizing {
-    /// `premises` are sorted by identity, as the overlap inputs resolve them,
-    /// and shared by every condition of one pair's side, so assuming them is
-    /// constant work. A lookup finds only an actual member, so a misordered
-    /// set could only assume less.
-    pub(super) fn assume(premises: &std::sync::Arc<[crate::types::TypeId]>) -> Self {
+    /// The premises are sorted by identity, as the overlap inputs resolve
+    /// them, and shared by every condition of one pair's side, so assuming
+    /// them is constant work. A lookup finds only an actual member, so a
+    /// misordered set could only assume less.
+    pub(super) fn assume(premises: super::coherence::NegativePremises<'_>) -> Self {
         Self {
-            premises: std::sync::Arc::clone(premises),
+            sized: std::sync::Arc::clone(premises.sized),
+            meta_sized: std::sync::Arc::clone(premises.meta_sized),
             debts: Vec::new(),
         }
     }
-    fn assumes(&self, ty: crate::types::TypeId) -> bool {
-        self.premises.binary_search_by_key(&ty.0, |ty| ty.0).is_ok()
+    /// Whether the premises give a rigid parameter `kind`, and the lookup's work.
+    fn parameter(
+        &self,
+        kind: LangItem,
+        ty: crate::types::TypeId,
+    ) -> Result<(bool, usize), &'static str> {
+        let premises = match kind {
+            LangItem::Sized => &self.sized,
+            LangItem::MetaSized => &self.meta_sized,
+            LangItem::PointeeSized => return Ok((true, 1)),
+            _ => return Err("invalid negative coherence sizing kind"),
+        };
+        let work = premises.len().max(1).ilog2() as usize + 1;
+        Ok((
+            premises.binary_search_by_key(&ty.0, |ty| ty.0).is_ok(),
+            work,
+        ))
     }
     fn record(&mut self, selected: usize) -> Result<(), &'static str> {
         if self.debts.last().is_some_and(|&last| last >= selected) {
@@ -107,12 +127,17 @@ impl Search<'_> {
             Err(error) => return Err(inference(error)),
         };
         frame.require_nominal_formed(facts, goal.ty)?;
+        if let Some(holds) = self.negative_parameter_sizing(facts, kind, goal.ty)? {
+            if !holds {
+                return Ok(Some(Action::Complete(Decision::Absent)));
+            }
+            let debt = (kind == LangItem::Sized, kind == LangItem::MetaSized);
+            return self.complete_source_sizing(facts, frame, goal, debt);
+        }
         let shape = self.builtin_shape(facts, frame, goal.ty)?;
         if !shape.well_formed {
             return Ok(Some(Action::Complete(Decision::Absent)));
         }
-        let assumed =
-            kind == LangItem::MetaSized && self.assumes_meta_sized(facts, shape.sized, goal.ty);
         let valid = if kind == LangItem::Sized || shape.sized {
             shape.sized
         } else {
@@ -143,8 +168,12 @@ impl Search<'_> {
                 {
                     true
                 }
-                Kind::Foreign(_) | Kind::Array { .. } | Kind::ArrayTerm { .. } => false,
-                Kind::Parameter(_) => assumed,
+                // A rigid parameter in a negative coherence query with
+                // premises was decided above; any other is not `MetaSized`.
+                Kind::Foreign(_)
+                | Kind::Array { .. }
+                | Kind::ArrayTerm { .. }
+                | Kind::Parameter(_) => false,
                 // A normalized projection is rigid. Its own item bounds were
                 // consulted before this fallback and did not prove the goal.
                 Kind::Projection(_) if Self::normalized_inputs(frame) => false,
@@ -175,25 +204,25 @@ impl Search<'_> {
         }
         match kind {
             LangItem::Sized | LangItem::MetaSized | LangItem::PointeeSized => {
-                self.complete_source_sizing(facts, frame, goal, (shape.sized, assumed))
+                self.complete_source_sizing(facts, frame, goal, (shape.sized, false))
             }
             _ => Err("invalid source sizing fallback kind".into()),
         }
     }
-    /// An assumed premise is retained like a Sized debt, so its node is never
-    /// debt-free and never pays an equality-only negative.
+    /// A `MetaSized` premise is retained like a Sized debt, so its node is
+    /// never debt-free and never pays an equality-only negative.
     fn complete_source_sizing(
         &mut self,
         facts: &Declarations,
         frame: &mut Frame,
         goal: Predicate,
-        (sized, assumed): (bool, bool),
+        (sized, meta_sized): (bool, bool),
     ) -> Result<Option<Action>, String> {
-        let node = self.source_builtin_node(frame, goal, sized || assumed);
+        let node = self.source_builtin_node(frame, goal, sized || meta_sized);
         let selected =
             self.query
                 .push_source_sizing(facts, node, frame.scope, frame.first..frame.first)?;
-        if assumed {
+        if meta_sized {
             self.query.steps = self.query.steps.saturating_add(1);
             self.query
                 .negative_sizing
@@ -203,22 +232,50 @@ impl Search<'_> {
         }
         Ok(Some(Action::Complete(Decision::Proven(selected))))
     }
-    /// A rigid parameter is `MetaSized` in a negative coherence query when the
-    /// other header's premises say so; its proof is retained as their debt.
-    fn assumes_meta_sized(
-        &self,
+    /// A rigid parameter's sizing `kind` in a negative coherence query with
+    /// premises, which only the other header's premises decide; `None` for
+    /// every other subject and query.
+    fn negative_parameter_sizing(
+        &mut self,
         facts: &Declarations,
-        sized: bool,
+        kind: LangItem,
         ty: crate::types::TypeId,
-    ) -> bool {
-        self.caller.retain_sized
-            && !sized
-            && matches!(facts.types.kind(ty), Some(Kind::Parameter(_)))
-            && self
-                .query
-                .negative_sizing
-                .as_ref()
-                .is_some_and(|sizing| sizing.assumes(ty))
+    ) -> Result<Option<bool>, &'static str> {
+        if !self.caller.retain_sized || !matches!(facts.types.kind(ty), Some(Kind::Parameter(_))) {
+            return Ok(None);
+        }
+        let Some(sizing) = self.query.negative_sizing.as_deref() else {
+            return Ok(None);
+        };
+        let (holds, work) = sizing.parameter(kind, ty)?;
+        self.query.steps = self.query.steps.saturating_add(work);
+        Ok(Some(holds))
+    }
+    /// A builtin requirement of a selected impl. A rigid parameter's `Sized`
+    /// in a negative coherence query is decided by the other header's premises.
+    pub(super) fn builtin_requirement(
+        &mut self,
+        facts: &mut Declarations,
+        requirement: Predicate,
+    ) -> Result<bool, &'static str> {
+        if requirement.bound == crate::types::parameters::predicates::Bound::Sized
+            && let Some(sized) =
+                self.negative_parameter_sizing(facts, LangItem::Sized, requirement.ty)?
+        {
+            return Ok(sized);
+        }
+        self.query.builtins.prove(facts, requirement)
+    }
+    /// A `Bound::Sized` goal's rigid parameter in a negative coherence query.
+    pub(super) fn negative_parameter_sized(
+        &mut self,
+        facts: &Declarations,
+        goal: Predicate,
+    ) -> Result<Option<bool>, &'static str> {
+        if goal.bound != crate::types::parameters::predicates::Bound::Sized {
+            return Ok(None);
+        }
+        self.negative_parameter_sizing(facts, LangItem::Sized, goal.ty)
     }
     /// After input normalization, an assumption over another projection may be
     /// incomparable with this one. A sizing marker has no items or arguments, so

@@ -11,10 +11,11 @@ const CONTROLS: &str = "pa31/tests/spec/negative-metasized";
 const OVERLAP: &str = "overlapping trait implementation headers require coherence proof";
 const COUNTS: [usize; 3] = [8, 16, 32];
 
-/// The checked rustc outcomes of `outcomes.json`, except one recorded gap:
-/// rustc rejects `sized-premise-side`, whose Sized debt both headers' Sized
-/// premises still pay. Supertrait-implied premises are elaborated, and keep
-/// the side of the impl whose generics own them.
+/// The checked rustc outcomes of `outcomes.json`. Supertrait-implied premises
+/// are elaborated, and keep the side of the impl whose generics own them.
+/// Amended at the premise-sides batch: `sized-premise-side`, the recorded
+/// accepts-invalid, is rejected as rustc rejects it, since only the client's
+/// empty Sized premises decide the blanket's `V: Sized`.
 const CASES: [(&str, Option<&str>); 13] = [
     ("metasized-param", None),
     ("metasized-written", None),
@@ -28,7 +29,7 @@ const CASES: [(&str, Option<&str>); 13] = [
     ("edge-pointee", None),
     ("edge-specialized", None),
     ("premise-side", Some(OVERLAP)),
-    ("sized-premise-side", None),
+    ("sized-premise-side", Some(OVERLAP)),
 ];
 
 fn analyze(source: &str) -> TestResult<Result<Declarations, String>> {

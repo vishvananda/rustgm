@@ -174,6 +174,10 @@ before the box, which changes no behaviour.
 
 ## 7. Open: Sized premises of both sides
 
+Repaired by Lane B's [premise sides](negative-premise-sides.md) batch, which
+also found that a rigid parameter's sizedness was its representative's
+declaration. The text below is the record as it stood.
+
 Negative coherence still pays a Sized debt from both headers' Sized
 premises. `overlap/inputs.rs` gathers both headers' Sized parameters and
 Sized, Copy and Clone subjects into one `sized` set, and `freeze` makes the

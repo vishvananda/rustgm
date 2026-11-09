@@ -40,9 +40,11 @@ an assumed premise proves remains a debt that only those premises can pay.
   break specialization. The negative impl requires `U: Cond`, and a
   specializing `impl<T: ?Sized> Cond for T` applies only with a `MetaSized`
   premise for `U`. rustc accepts both.
-- One recorded gap, `sized-premise-side` (rustc gives E0119): the same side
-  question for a Sized debt. Sized debts are still paid from both headers'
-  Sized premises, so it is accepted here, a recorded accepts-invalid.
+- `sized-premise-side` (rustc gives E0119) asks the same side question for
+  a Sized debt. It was a recorded accepts-invalid. Since Lane B's
+  premise-sides batch (`spec/negative-premise-sides/`), each condition is
+  negated under the other header's own Sized premises, and it is rejected
+  with the overlap text.
 
 Outcomes were declared before the frozen rustc 1.98.0 oracle and before any
 RustGM run of these files. Both are recorded in `outcomes.json`, with two
@@ -55,6 +57,9 @@ amendments:
   compiler already elaborates supertrait bounds into owners' predicates. The
   declared fields are kept. `supertrait-premise-side` was then declared before
   its oracle and its run.
+- In the premise-sides batch, `sized-premise-side` is amended from accepted
+  to the overlap text, as rustc rejects it. The amendment was declared before
+  any code change.
 
 Each file is one crate feature line, then the lang-item prefix and the
 `Tuple`, `Fn`, `FnMut` and `FnOnce` declarations, which are the exact pinned

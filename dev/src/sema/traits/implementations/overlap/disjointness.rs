@@ -40,7 +40,7 @@ pub(super) fn has_unsized(
         }
         // Header lifetime premises are admissible here; the selected
         // normal form is not authority to invent additional premises.
-        inputs.prove(facts, context, &proof)?;
+        inputs.prove(facts, context, &proof, None)?;
         return Ok(true);
     }
     Ok(false)

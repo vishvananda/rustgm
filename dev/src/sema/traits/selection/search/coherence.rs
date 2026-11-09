@@ -47,15 +47,23 @@ pub(in crate::sema) fn may_overlap(
         |_, _, _, _, _| Ok(false),
     )
 }
-/// `premises` are the other header's own `MetaSized` premises, sorted by
-/// identity. `pay` receives the proof's Sized debts, then its `MetaSized` debts.
+/// The other header's own Sized and `MetaSized` premises, each sorted by
+/// identity and shared by every condition of one side of a pair.
+#[derive(Clone, Copy)]
+pub(in crate::sema) struct NegativePremises<'a> {
+    pub sized: &'a std::sync::Arc<[crate::types::TypeId]>,
+    pub meta_sized: &'a std::sync::Arc<[crate::types::TypeId]>,
+}
+/// A negative coherence query with `premises` decides a rigid parameter's
+/// sizing only from them. `pay` receives the proof's Sized debts, then its
+/// `MetaSized` debts.
 pub(in crate::sema) fn may_overlap_with(
     facts: &mut Declarations,
     context: &mut Context,
     goal: &Goal,
     mode: crate::sema::coherence_policy::Mode,
     perspective: Perspective,
-    premises: Option<&std::sync::Arc<[crate::types::TypeId]>>,
+    premises: Option<NegativePremises<'_>>,
     pay: impl FnOnce(
         &mut Declarations,
         &mut Context,
@@ -87,7 +95,7 @@ pub(in crate::sema) fn may_overlap_with(
         Purpose::Coherence(perspective)
     };
     if mode.negative()
-        && let Some(premises) = premises.filter(|premises| !premises.is_empty())
+        && let Some(premises) = premises
     {
         context.account_work(1).map_err(|e| e.to_string())?;
         search.query.negative_sizing = Some(Box::new(

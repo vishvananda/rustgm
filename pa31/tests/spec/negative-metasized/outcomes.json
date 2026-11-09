@@ -6,7 +6,8 @@
   "base": "main at 68c26f42a, containing C3b aa6c36f65; dev-fast CLI sha256 17ffccbc...",
   "amendments": [
     "2026-11-09 after the first oracle run and before any RustGM run of any twin (predictions-corrections.json, sha256 de6412fbba37a8a0f7a6dd6c90f28b7b539daed08aba4b389a808dea6c08b28c): rustc rejected four twins for the fixture itself. edge-pointee and edge-specialized failed with E0277, since a non-auto trait has an implicit `Self: MetaSized` supertrait, and with min_specialization's 'specialization impl does not specialize any associated items'; `Cond` now declares `PointeeSized` and one item that the `PointeeSized` impl defaults and the `?Sized` impl specializes. premise-side and sized-premise-side failed with E0637, since a where-clause `&V` needs a lifetime; their blankets now name `'a`. No declared outcome changed",
-    "2026-11-09 after candidate run 1 (CLI sha256 c87ef088a03d8495a0c700cbc2dbdf66eb185a9f54adbe9cf5c2058c9702bfc2, obj/lane-b7/metasized/after1.txt): supertrait-implied was declared fenced (the overlap text) and is accepted, as rustc accepts it (status 0). The declaration was a wrong prediction, not a behaviour this batch chose: Generics::elaborate_trait_bounds (dev/src/sema/generics/traits.rs:25-49) already appends each owner's supertrait-implied predicates after its declared ones, and declaration_inputs::all returns them, so Foo's implicit `Self: MetaSized` reaches the client's premises as `U: MetaSized`, as in rustc's elaborated param_env. The declared fields stay as declared; the twin now checks that elaborated premises are assumed"
+    "2026-11-09 after candidate run 1 (CLI sha256 c87ef088a03d8495a0c700cbc2dbdf66eb185a9f54adbe9cf5c2058c9702bfc2, obj/lane-b7/metasized/after1.txt): supertrait-implied was declared fenced (the overlap text) and is accepted, as rustc accepts it (status 0). The declaration was a wrong prediction, not a behaviour this batch chose: Generics::elaborate_trait_bounds (dev/src/sema/generics/traits.rs:25-49) already appends each owner's supertrait-implied predicates after its declared ones, and declaration_inputs::all returns them, so Foo's implicit `Self: MetaSized` reaches the client's premises as `U: MetaSized`, as in rustc's elaborated param_env. The declared fields stay as declared; the twin now checks that elaborated premises are assumed",
+    "2026-11-09, Lane B's premise-sides batch (pa31/tests/spec/negative-premise-sides), declared in its predictions5.json (sha256 e28daf9770d7f35ca0b82ebe637008e66a22d30a54deb3716119b58fc7f6d8a9) before any code change: sized-premise-side, the recorded accepts-invalid, is rejected with the overlap text, as rustc rejects it with E0119. Each condition is now negated under the other header's own Sized premises only, and a rigid parameter's Sized is decided by them, not by the representative's declaration. The client's Sized premises are empty. Every other case keeps its outcome"
   ],
   "cases": {
     "metasized-param.rs": {
@@ -163,7 +164,9 @@
       ],
       "rustgm_before": "accepted",
       "rustgm_after": "declared observation of the Sized union",
-      "rustgm_after_observed": "accepted (the recorded accepts-invalid)"
+      "rustgm_after_observed": "accepted (the recorded accepts-invalid)",
+      "rustgm_after_amended": "overlap (declared in the premise-sides predictions5.json)",
+      "rustgm_after_amended_observed": "overlap (premise-sides candidate 2 on 28e2b19fb, dev-fast CLI sha256 db7f19651118a49491c1b5b980012faeaf8b3be95c01fc18ef25a5bccb6e95e3; candidate 1 on dcb956cf8, 9088d4b31cd194f79696b28eafaf28a1d4e4f5a21fa7988737e883a4e69df460, gave the same)"
     },
     "supertrait-premise-side.rs": {
       "sha256": "ca0266fbaf1118fa58c7ac099367a5151ef23ee0e3681b6a53426a4a3066719b",

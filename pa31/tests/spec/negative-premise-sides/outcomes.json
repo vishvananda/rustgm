@@ -1,0 +1,353 @@
+{
+  "schema": 1,
+  "declared": "2026-11-09. Each twin's outcomes for rustc and for this compiler before and after the change were declared in Lane B's union declarations before that twin's rustc oracle and before any RustGM run of it: predictions.json, its strict correction predictions2.json, predictions3.json (the probe-derived controls and type-outlives-premise-side; their rustc outcomes were observed first as probes, probes2.json), predictions4.json (the representative twins) and predictions5.json (the residual twins and every after-outcome, before any code change). sha256: predictions.json 10df1ad33bd1b750e216086351efbf277112b8014d7f74fa1addb2ce27f3eb3b, predictions2.json d03ef490b6bae9d00f86f112c55e6bb8f2451dbd5c5ebd322ad26e579bc05f58, predictions3.json 09df1efd898b03f51ba100ec1d411a238730bad8032d68c44445e556312744b7, predictions4.json f47c68f80e3fd39c4cc5fe9d449d54f2e14b830f998448212b6df1dd14e9fdfb, predictions5.json e28daf9770d7f35ca0b82ebe637008e66a22d30a54deb3716119b58fc7f6d8a9, probes.json db7aa7d8bdd7adb5946e43a3b4d9b8336c4538bb3affb984155d20b0acb4d1a3, probes2.json 9fa545662eb85095fea62646496dc156e1baba6cf74a6efebd5aacc3f628aede",
+  "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+  "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+  "base": "rustgm_before: main at dcb956cf8, dev-fast CLI sha256 05626ce041fcbf0a8693e4e73f04ca7f6c5e5519d5e5b0a7c8173eefe6b2557c; rustgm_before_rebased: main at 28e2b19fb, dev-fast CLI sha256 d4cc6c9267d80bf019bb0b5ce0ff20847ac8d97bc20b16dab06df19408f58f7a",
+  "candidate": "rustgm_after_observed: candidate 2 on 28e2b19fb, dev-fast CLI sha256 db7f19651118a49491c1b5b980012faeaf8b3be95c01fc18ef25a5bccb6e95e3; candidate 1 on dcb956cf8 (9088d4b31cd194f79696b28eafaf28a1d4e4f5a21fa7988737e883a4e69df460) gave the same outcomes",
+  "outcome_names": {
+    "accepted": "status 0",
+    "overlap": "overlapping trait implementation headers require coherence proof",
+    "region": "required lifetime does not outlive its target"
+  },
+  "amendments": [
+    "2026-11-09 after oracle 1 and the probes, before any RustGM run (predictions2.json): the five region twins never reached negative coherence in rustc, since their goals name only foreign types and knowability already made each pair disjoint. They were rewritten with #[rustc_strict_coherence] on Holds, and region-strict-control was added",
+    "2026-11-09 after oracle 2, before any RustGM run (predictions3.json): two wrong rustc predictions, region-client-side and region-head-unified (predicted 0, observed E0119): rustc never assumes a region-region premise between two inference regions",
+    "2026-11-09 after the base before-runs (predictions4.json and predictions5.json): three wrong before predictions, copy-premise-side, sized-client-side and sized-premise-side-swapped, each beside its declaration below. The cause is the representative's declaration (types/parameters/shape.rs:285-290)"
+  ],
+  "symmetry": "one test over the packet: every case named X-swapped has the same outcome as X (in this packet or negative-metasized); every accepted case is also disjoint with its Holds pair passed to overlap::possible in both orders. Exempt by name: the residual pair nested-premise-side / nested-premise-side-swapped, whose outcomes must differ (accepted, overlap) so that a fix updates the record",
+  "residual": "a non-parameter type whose sizedness depends on a rigid parameter, such as a nominal's sizedness argument (`Wrap<V>: Sized`), is still decided by the shape walk, which reads the representative's declaration (types/parameters/shape.rs:285-290); pay_negative's shape proof does the same. The fix threads query premises into the shared types/parameters/shape.rs facility, a separate design. Recorded gap in docs/library-build-blockers.md",
+  "cases": {
+    "copy-client-side.rs": {
+      "sha256": "d7a71660fabd6e74de14ccfbdd6cc07b345bcc5378216004e1d59ec03453808d",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0: the client's U: Copy elaborates to U: Sized in its param_env",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "overlap text (the blanket's ?Sized V is the representative, so Sized is absent by declaration): a rejects-valid",
+      "rustgm_before_declared": "overlap text (the blanket's ?Sized V is the representative, so Sized is absent by declaration): a rejects-valid",
+      "rustgm_before": "overlap",
+      "rustgm_before_rebased": "overlap",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "rejected-to-accepted: the client's U: Copy elaborates through Clone: Sized to a Sized clause, which the client's Sized set includes",
+      "rustgm_after_observed": "accepted"
+    },
+    "copy-premise-side.rs": {
+      "sha256": "223b89a8d6c92b64e03d31c840fcddc3556e5b307cf565c81965c1a502dd2598",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "the blanket's own Copy subject implies V: Sized only in the blanket's param_env; the client's U: ?Sized pays nothing. Before, the Copy subject is in the union Sized set. Declared accepted-to-rejected flip",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "overlap",
+      "rustgm_before_rebased": "overlap",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "the blanket's own V: Copy is never assumed for its own clause",
+      "rustgm_after_observed": "overlap",
+      "amendment": "2026-11-09, after the base before-runs: declared accepted in predictions.json, observed status 1, ERROR: file 0: 6366: overlapping trait implementation headers require coherence proof; rustc gives E0119 (rustc1.txt). the blanket is first, so its ?Sized V is freeze's representative; types/parameters/shape.rs:285-290 makes a rigid parameter's sizedness its representative's declaration, so `T: Sized` is absent before the union could pay it. Matches rustc by accident"
+    },
+    "metasized-sized-representative-swapped.rs": {
+      "sha256": "6ebec99a5e9f88185e71797e241d3490bbb0f47f12ec752bd1cf7cdc96a34cdb",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "accepted (the client's ?Sized U is the representative and is in the client's MetaSized set)",
+      "rustgm_before_declared": "accepted (the client's ?Sized U is the representative and is in the client's MetaSized set)",
+      "rustgm_before": "accepted",
+      "rustgm_before_rebased": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "symmetric",
+      "rustgm_after_observed": "accepted"
+    },
+    "metasized-sized-representative.rs": {
+      "sha256": "87c53887f4d20534e97b8e01fc62635f4cb16f7686f2327f3bdc46fd0cc12850",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0: the client's U: MetaSized proves the negative impl's T: MetaSized",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "accepted (the blanket's Sized V is the representative; its declaration makes MetaSized valid as a Sized debt, which the union pays)",
+      "rustgm_before_declared": "accepted (the blanket's Sized V is the representative; its declaration makes MetaSized valid as a Sized debt, which the union pays)",
+      "rustgm_before": "accepted",
+      "rustgm_before_rebased": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "(f): V's MetaSized is decided and paid by the client's MetaSized set, not V's Sized declaration; without (f) this was the undeclared flip",
+      "rustgm_after_observed": "accepted"
+    },
+    "nested-premise-side-swapped.rs": {
+      "sha256": "d1064317704a92b23d1e522d623b228a5d12ba201eb20b3cb9eff29f20ae7108",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119, as nested-premise-side: rustc checks both orders",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "overlap: the client is first, so its ?Sized U is the representative and Wrap<U> is unsized by U's declaration",
+      "rustgm_before_declared": "overlap: the client is first, so its ?Sized U is the representative and Wrap<U> is unsized by U's declaration",
+      "rustgm_before": "overlap",
+      "rustgm_before_rebased": "overlap",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "the recorded residual, other order",
+      "rustgm_after_observed": "overlap"
+    },
+    "nested-premise-side.rs": {
+      "sha256": "ad932fced3a01526ddc5e86799aadb14e4681c51cdec1672b63f389223a7f1b9",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119: under the client's param_env (U: MetaSized only) `&'a Wrap<U>: !Seal` needs `Wrap<U>: Sized`, so U: Sized, which it lacks; under the blanket's, the client's only clause U: MetaSized has no negative impl. Strict, so knowability cannot decide",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "accepted: the blanket is first, so its Sized V is the representative; `Wrap<V>: Sized` is valid by V's declaration through the nominal's sizedness argument, and pay_negative's shape proof pays the Wrap<V> debt by the same declaration",
+      "rustgm_before_declared": "accepted: the blanket is first, so its Sized V is the representative; `Wrap<V>: Sized` is valid by V's declaration through the nominal's sizedness argument, and pay_negative's shape proof pays the Wrap<V> debt by the same declaration",
+      "rustgm_before": "accepted",
+      "rustgm_before_rebased": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "the recorded residual: an accepts-invalid; breaks symmetry, exempt by name",
+      "rustgm_after_observed": "accepted"
+    },
+    "premise-side-swapped.rs": {
+      "sha256": "a258ec8b7f6f54b9731d4594da3f6a1473b56dbbf04f73858866d9ca21b9b599",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "the committed MetaSized side tags with the client first: the blanket's own V: ?Sized default never pays its own clause",
+      "rustgm_before_declared": "overlap text",
+      "rustgm_before": "overlap",
+      "rustgm_before_rebased": "overlap",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "symmetric with premise-side",
+      "rustgm_after_observed": "overlap"
+    },
+    "region-absent.rs": {
+      "sha256": "5002905b5c62b8f6c238abdf3672545ceea0c80cf308ba6967b22b329925bb0e",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "no header has 'q: 'p; rustc's region error means not disjoint. Before, prove()'s Unsatisfied is a hard error. Declared text change from the region text to the overlap text under (b)",
+      "rustgm_before_declared": "rejected: \"required lifetime does not outlive its target\"",
+      "rustgm_before": "region",
+      "rustgm_before_rebased": "region",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "declared text change under (b)",
+      "rustgm_after_observed": "overlap"
+    },
+    "region-client-side.rs": {
+      "sha256": "8703306a95efe280c62b9d2a41d6b8e64213306d4f0a40bf2304596d4c4eb246",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "the negated clause names the client's own regions (T is the client's tuple); the client's 'q: 'p resolves the negative impl's obligation",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "accepted",
+      "rustgm_before_rebased": "accepted",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "declared flip under (e): the client's 'q: 'p is region-region, never assumed",
+      "rustgm_after_observed": "overlap",
+      "rustc_amendment": "2026-11-09, after oracle 2 and before any RustGM run: predicted 0, observed E0119: the client's region-region premise is never assumed"
+    },
+    "region-head-unified.rs": {
+      "sha256": "ab996f9daaf7663fcd4c874f1679859c1833821a57591d38fb9cf7c304f056a4",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0 (low confidence): the header equation unifies 'x with 'p and 'y with 'q, so the client's 'q: 'p resolves the obligation",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "equate_predicate_shapes does not relate the two headers' region universals and prove() never sees head region equalities, so the obligation 'y: 'x on the blanket's own regions is unpaid (low confidence for before). Recorded rejects-valid (decision (c), a later item). Declared text change from the region text to the overlap text under (b)",
+      "rustgm_before_declared": "rejected: \"required lifetime does not outlive its target\" (low confidence: the headers' universals are never related)",
+      "rustgm_before": "region",
+      "rustgm_before_rebased": "region",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "declared text change under (b); matches rustc",
+      "rustgm_after_observed": "overlap",
+      "rustc_amendment": "2026-11-09, after oracle 2 and before any RustGM run: predicted 0 (low confidence), observed E0119, for the same reason; decision (c) is moot"
+    },
+    "region-implied.rs": {
+      "sha256": "32bbea6facb008c0d7ecc43d0de7f44bdedd106edefcccb17635983642500479",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119 (moderate): OutlivesEnvironment::new(infcx, CRATE_DEF_ID, param_env, []) assumes no WF types",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "prove() assumes formed types; the client's head &'p &'q u8 implies 'q: 'p. (d) drops formed types from the negative payment only; has_unsized keeps them",
+      "rustgm_before_declared": "accepted (formed types imply q: p)",
+      "rustgm_before": "accepted",
+      "rustgm_before_rebased": "accepted",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "declared flip under (d)",
+      "rustgm_after_observed": "overlap"
+    },
+    "region-premise-side.rs": {
+      "sha256": "f06efae963639b29551e669e43d915f20299cd8913fe32bcf49a3436424075ba",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119: the blanket's own 'y: 'x is only in the blanket's param_env; under the client's there is no outlives premise, so resolve_regions fails; the other order negates nothing",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "the lifetime-premise twin: the blanket's own 'y: 'x is only in the blanket's param_env, and the client has no outlives premise, so resolve_regions fails and the clause is not negated; the other order negates nothing (the client has no clauses; RegionOutlives does not flip). Before, prove() assumes the union's 'y: 'x. After, prove(Some(client)) fails with Unsatisfied, which (b) makes not disjoint. Declared accepted-to-rejected flip",
+      "rustgm_before_declared": "accepted (the union's 'y: 'x pays; the obligation names the blanket's own regions)",
+      "rustgm_before": "accepted",
+      "rustgm_before_rebased": "accepted",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "declared flip under (b) and (e)",
+      "rustgm_after_observed": "overlap"
+    },
+    "region-strict-control.rs": {
+      "sha256": "d6bf4a72a53158c947ecedf537b8a65e48b518321b398857c6285c5b0fe7fc1e",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119 (high): strict coherence does not use knowability",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "shows each strict region twin needs its negative impl",
+      "rustgm_before_declared": "overlap text",
+      "rustgm_before": "overlap",
+      "rustgm_before_rebased": "overlap",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "unchanged",
+      "rustgm_after_observed": "overlap"
+    },
+    "sized-client-side-swapped.rs": {
+      "sha256": "c4f48846accaab373ad05f252a0e7a59417acea0a10e3fede6ed8f504dd9cc7c",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "accepted (the client's Sized U is the representative; the union pays)",
+      "rustgm_before_declared": "accepted (the client's Sized U is the representative; the union pays)",
+      "rustgm_before": "accepted",
+      "rustgm_before_rebased": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "symmetric with sized-client-side",
+      "rustgm_after_observed": "accepted"
+    },
+    "sized-client-side.rs": {
+      "sha256": "ca8e77efb98c58ebeb793254019962ee6da35394c7f51cffb6149c06e28fad18",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "the client's own Sized U pays the blanket's negated clause under the client's param_env; the blanket's V is ?Sized",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "overlap",
+      "rustgm_before_rebased": "overlap",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "rejected-to-accepted: the client's Sized U decides V: Sized and pays its debt",
+      "rustgm_after_observed": "accepted",
+      "amendment": "2026-11-09, after the base before-runs: declared accepted in predictions.json, observed status 1, ERROR: file 0: 6357: overlapping trait implementation headers require coherence proof; rustc gives 0 (rustc1.txt). the same representative declaration (the blanket's ?Sized V): a rejects-valid on main at dcb956cf8, fixed by (f)"
+    },
+    "sized-premise-side-swapped.rs": {
+      "sha256": "fc53f4b338670bdd9dd0bb378c9ff6ba7c6b1d9e0bb492bc150dd0e9d2dd26c6",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "sized-premise-side with the client impl first, so the client's binding is freeze's representative; the union leaks either way, per-side premises in neither order. Declared accepted-to-rejected flip",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "overlap",
+      "rustgm_before_rebased": "overlap",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "symmetric with sized-premise-side",
+      "rustgm_after_observed": "overlap",
+      "amendment": "2026-11-09, after the base before-runs: declared accepted in predictions.json, observed status 1, ERROR: file 0: 6333: overlapping trait implementation headers require coherence proof; rustc gives E0119 (rustc1.txt). the client is first, so its ?Sized U is the representative: absent by declaration. Matches rustc by accident; with sized-premise-side accepted, main's outcome depends on header order"
+    },
+    "strict-static-unheld.rs": {
+      "sha256": "1ebd0a04dbf758266558f218c41c06865dae5cc322e409fbd00fa3833ea40747",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119 (observed as a probe)",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "probe-derived: rustc outcome observed first, as probe-strict-static-unheld; RustGM outcomes declared here before any RustGM run",
+      "rustgm_before_declared": "rejected: \"required lifetime does not outlive its target\" (low confidence: the match requires 'q == 'static, which no premise pays; an equality-only path may differ)",
+      "rustgm_before": "region",
+      "rustgm_before_rebased": "region",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "probe-derived; declared text change under (b): 'q == 'static is Unsatisfied",
+      "rustgm_after_observed": "overlap",
+      "label": "probe-derived: rustc outcome observed first, as probe-strict-static-unheld; RustGM outcomes declared here before any RustGM run"
+    },
+    "strict-unconditional.rs": {
+      "sha256": "6625b32a6fa4b50d604bc6649258d3ab31c7a115a2c7c98683c8d1c3e7849d65",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0 (observed as a probe)",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "a negative impl with no region obligation pays nothing",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "accepted",
+      "rustgm_before_rebased": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "probe-derived; unchanged",
+      "rustgm_after_observed": "accepted",
+      "label": "probe-derived: rustc outcome observed first, as probe-strict-unconditional; RustGM outcomes declared here before any RustGM run"
+    },
+    "type-outlives-held.rs": {
+      "sha256": "e98acebb981ebf04253f3b75a9144c2d24c51ef77a3f207a7931ece810d6fe75",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0 (observed as a probe)",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "probe-derived: rustc outcome observed first, as probe-strict-type-outlives-held; RustGM outcomes declared here before any RustGM run",
+      "rustgm_before_declared": "accepted (the union's written U: 'p pays U: 'p)",
+      "rustgm_before": "accepted",
+      "rustgm_before_rebased": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "probe-derived; the client's written U: 'p, kept by (e)",
+      "rustgm_after_observed": "accepted",
+      "label": "probe-derived: rustc outcome observed first, as probe-strict-type-outlives-held; RustGM outcomes declared here before any RustGM run"
+    },
+    "type-outlives-premise-side.rs": {
+      "sha256": "dc43e51daf7f237426286cf2c34371e96b2feb6081bfaad2dbdfdc9f1ec9af69",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119 (declared before its oracle): the blanket's own written V: 'y is only in the blanket's param_env; under the client's, U: 'p has no premise (and no WF types); the other order negates nothing",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "",
+      "rustgm_before_declared": "accepted (the union's written V: 'y, or formed types, pays)",
+      "rustgm_before": "accepted",
+      "rustgm_before_rebased": "accepted",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "declared flip: only the client's written type-outlives premises, and it has none",
+      "rustgm_after_observed": "overlap"
+    },
+    "type-outlives.rs": {
+      "sha256": "0d614c72580d4a8e7d0d27d3366a3fb1c7119838ca0da0fbb83cc5ec25d6ee84",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119 (observed as a probe)",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "probe-derived: rustc outcome observed first, as probe-strict-type-outlives; RustGM outcomes declared here before any RustGM run",
+      "rustgm_before_declared": "accepted (formed &'p U implies U: 'p), a recorded accepts-invalid",
+      "rustgm_before": "accepted",
+      "rustgm_before_rebased": "accepted",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "probe-derived; declared flip under (d): Verification is not disjoint under (b)",
+      "rustgm_after_observed": "overlap",
+      "label": "probe-derived: rustc outcome observed first, as probe-strict-type-outlives; RustGM outcomes declared here before any RustGM run"
+    }
+  }
+}

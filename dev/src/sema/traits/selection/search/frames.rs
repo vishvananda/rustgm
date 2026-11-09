@@ -313,7 +313,7 @@ impl Search<'_> {
             }
             if let Bound::Outlives(region) = bound {
                 requirements.type_outlives.push((ty, region));
-            } else if !self.query.builtins.prove(facts, Predicate { ty, bound })? {
+            } else if !self.builtin_requirement(facts, Predicate { ty, bound })? {
                 return Ok(Some(Decision::Absent));
             } else if bound == Bound::Sized && self.caller.retain_sized {
                 requirements.sized.push(ty);

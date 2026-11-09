@@ -1,6 +1,7 @@
 //! Existential type equations retain each header's separate lifetime premises.
 use super::{Declarations, DefId, Perspective, Predicate};
 use crate::sema::declaration_inputs;
+use crate::support::bindings::LangItem;
 use crate::types::{
     RegionId, TypeId,
     infer::{self, Context, Instantiation, TermId, arguments::Argument},
@@ -13,18 +14,24 @@ use crate::types::{
 
 #[derive(Default)]
 pub(super) struct Inputs {
+    /// Both headers' Sized parameters and Sized, Copy and Clone subjects.
     pub sized: Vec<TermId>,
     traits: Vec<infer::predicates::Predicate>,
     /// The header whose own clause each of `traits` is.
     trait_sides: Vec<Side>,
-    /// Each header's own premises that imply `MetaSized`: its Sized
-    /// parameters, its Sized, Copy and Clone subjects and its `MetaSized`
-    /// clauses, including the default of a `?Sized` parameter.
+    /// Each header's own premises that imply Sized: its Sized parameters, its
+    /// Sized, Copy and Clone subjects and its `Sized` clauses, written or
+    /// elaborated (as `U: Copy` implies `U: Sized` through `Clone`).
+    sized_premises: [Vec<TermId>; 2],
+    /// Each header's own premises that imply `MetaSized`: its Sized premises
+    /// and its `MetaSized` clauses, including the default of a `?Sized`
+    /// parameter.
     meta_sized: [Vec<TermId>; 2],
     headers: u8,
     universals: u32,
     regions: Vec<(RegionId, RegionId)>,
-    outlives: Vec<(TermId, RegionId)>,
+    /// Each header's written type-outlives premises, with that header.
+    outlives: Vec<(TermId, RegionId, Side)>,
     formed: Vec<TermId>,
 }
 pub(super) struct Header {
@@ -34,8 +41,8 @@ pub(super) struct Header {
     side: Side,
 }
 /// One header of the compared pair.
-#[derive(Clone, Copy, Default)]
-enum Side {
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+pub(super) enum Side {
     #[default]
     First,
     Second,
@@ -134,6 +141,7 @@ impl Inputs {
                 )
             {
                 self.sized.push(term);
+                self.sized_premises[side.index()].push(term);
                 self.meta_sized[side.index()].push(term);
             }
             bindings.push((id, argument));
@@ -208,7 +216,10 @@ impl Inputs {
             if self.trait_sides.len() != self.traits.len() {
                 return Err("coherence conditions lost their headers".into());
             }
-            let premises = self.meta_sized_premises(facts, context)?;
+            let premises = [
+                self.premises(facts, context, Side::First)?,
+                self.premises(facts, context, Side::Second)?,
+            ];
             for (goal, side) in self.traits.iter().zip(&self.trait_sides) {
                 // rustc 1.98 negates one impl's predicates under the other's
                 // param_env, so only the other header's premises are assumed.
@@ -219,9 +230,9 @@ impl Inputs {
                     goal,
                     crate::sema::coherence_policy::Mode::Strict,
                     perspective,
-                    Some(assumed),
+                    Some(assumed.negative()),
                     |facts, context, proof, sized, meta_sized| {
-                        self.pay_negative(facts, context, proof, sized, meta_sized, assumed)
+                        self.pay_negative(facts, context, proof, sized, meta_sized, Some(assumed))
                     },
                 )? {
                     return Ok(true);
@@ -265,13 +276,17 @@ impl Inputs {
                 continue;
             };
             if predicate.bound.trait_parts().is_some() {
-                let premise = meta_sized_clause(facts, predicate.bound)?;
+                let premise = sizing_clause(facts, predicate.bound)?;
                 let predicate = header.lifetimes.predicate(&mut facts.types, predicate)?;
                 let goal = context
                     .instantiate_predicate(&mut facts.types, predicate, &mut header.substitution)
                     .map_err(|e| e.to_string())?;
-                if premise {
-                    self.meta_sized[header.side.index()].push(goal.subject());
+                let side = header.side.index();
+                if premise == Some(LangItem::Sized) {
+                    self.sized_premises[side].push(goal.subject());
+                }
+                if matches!(premise, Some(LangItem::Sized | LangItem::MetaSized)) {
+                    self.meta_sized[side].push(goal.subject());
                 }
                 self.traits.push(goal);
                 self.trait_sides.push(header.side);
@@ -288,9 +303,10 @@ impl Inputs {
                 .instantiate_with(&mut facts.types, predicate.ty, &mut header.substitution)
                 .map_err(|e| e.to_string())?;
             if let Bound::Outlives(region) = predicate.bound {
-                self.outlives.push((term, region));
+                self.outlives.push((term, region, header.side));
             } else {
                 self.sized.push(term);
+                self.sized_premises[header.side.index()].push(term);
                 self.meta_sized[header.side.index()].push(term);
             }
         }
@@ -409,23 +425,37 @@ impl Inputs {
         Ok(false)
     }
 
+    /// Whether `proof`'s lifetime obligations hold. Without `assumed`, as for
+    /// `has_unsized` and the single-header comparisons, both headers' schema
+    /// regions, written type-outlives premises and formed types are assumed,
+    /// and a failed obligation is an error. A negative payment assumes only
+    /// the `assumed` header's written type-outlives premises, as rustc 1.98's
+    /// `resolve_regions` assumes that impl's `param_env` with no WF types and
+    /// never relates two of its inference regions, and a failed obligation
+    /// is not disjoint.
     pub fn prove(
         &self,
         facts: &mut Declarations,
         context: &mut Context,
         proof: &Obligations,
-    ) -> Result<(), String> {
+        assumed: Option<Side>,
+    ) -> Result<bool, String> {
         if proof.is_empty() {
-            return Ok(());
+            return Ok(true);
         }
         let mut formed = Vec::new();
-        for &term in &self.formed {
-            if let Some(ty) = resolved(facts, context, term)? {
-                formed.push(ty);
+        if assumed.is_none() {
+            for &term in &self.formed {
+                if let Some(ty) = resolved(facts, context, term)? {
+                    formed.push(ty);
+                }
             }
         }
         let mut outlives = Vec::new();
-        for &(term, region) in &self.outlives {
+        for &(term, region, side) in &self.outlives {
+            if assumed.is_some_and(|assumed| assumed != side) {
+                continue;
+            }
             if let Some(ty) = resolved(facts, context, term)? {
                 outlives.push((ty, region));
             }
@@ -457,8 +487,10 @@ impl Inputs {
                 }
             }
         }
-        for &(a, b) in &self.regions {
-            constraints.assume(a, b).map_err(|e| e.to_string())?;
+        if assumed.is_none() {
+            for &(a, b) in &self.regions {
+                constraints.assume(a, b).map_err(|e| e.to_string())?;
+            }
         }
         for ty in formed {
             constraints.assume_well_formed(&mut queries, ty)?;
@@ -467,44 +499,37 @@ impl Inputs {
             constraints.assume_type_outlives(&mut queries, ty, region)?;
         }
         proof.require(&mut constraints, &mut queries)?;
-        constraints.solve().map_err(|e| e.to_string())?;
-        Ok(())
+        match constraints.solve() {
+            Ok(_) => Ok(true),
+            Err(
+                crate::types::region_graph::Error::Unsatisfied { .. }
+                | crate::types::region_graph::Error::Verification { .. },
+            ) if assumed.is_some() => Ok(false),
+            Err(error) => Err(error.to_string()),
+        }
     }
 
-    /// Resolve each header's own `MetaSized` premises once, after the pair is
-    /// frozen, sorted by identity for the negative queries' lookups.
-    fn meta_sized_premises(
+    /// Resolve one header's own Sized and `MetaSized` premises once, after the
+    /// pair is frozen, sorted by identity for the negative queries' lookups.
+    fn premises(
         &self,
         facts: &mut Declarations,
         context: &mut Context,
-    ) -> Result<[std::sync::Arc<[TypeId]>; 2], String> {
-        let mut premises: [Vec<TypeId>; 2] = Default::default();
-        for (side, terms) in premises.iter_mut().zip(&self.meta_sized) {
-            let count = terms.len();
-            let growth = crate::support::retained::Growth::vector::<TypeId>(0, 0, count);
-            let sorting = count.saturating_mul(count.max(1).ilog2() as usize + 1);
-            // The resolved vector, then its shared copy.
-            let shared = count.saturating_mul(size_of::<TypeId>());
-            let work = growth.work.saturating_add(growth.bytes);
-            context
-                .account_work(work.saturating_add(shared).saturating_add(sorting))
-                .map_err(|e| e.to_string())?;
-            side.try_reserve_exact(count)
-                .map_err(|_| "negative coherence MetaSized premises allocation failed")?;
-            for &term in terms {
-                if let Some(ty) = resolved(facts, context, term)? {
-                    side.push(ty);
-                }
-            }
-            side.sort_unstable_by_key(|ty| ty.0);
-            side.dedup();
-        }
-        // Each side is shared by its conditions' queries, not copied per query.
-        Ok(premises.map(std::sync::Arc::from))
+        side: Side,
+    ) -> Result<Premises, String> {
+        Ok(Premises {
+            side,
+            sized: sorted(facts, context, &self.sized_premises[side.index()])?,
+            meta_sized: sorted(facts, context, &self.meta_sized[side.index()])?,
+        })
     }
 
-    /// Sized debts are paid from both headers' Sized premises or by shape.
-    /// `MetaSized` debts are paid only from the `premises` the query assumed.
+    /// A negative payment with `premises` assumes only that other header's
+    /// Sized and `MetaSized` sets and written type-outlives premises. A rigid
+    /// parameter is that header's placeholder, so no shape proves it Sized.
+    /// The single-header comparisons have no premises: they pay Sized debts
+    /// from their own header's Sized premises or by shape, and no `MetaSized`
+    /// debt.
     pub fn pay_negative(
         &self,
         facts: &mut Declarations,
@@ -512,16 +537,51 @@ impl Inputs {
         proof: &Obligations,
         sized: &[TypeId],
         meta_sized: &[TypeId],
-        premises: &[TypeId],
+        premises: Option<&Premises>,
     ) -> Result<bool, String> {
+        let Some(premises) = premises else {
+            if !meta_sized.is_empty() {
+                context.account_work(1).map_err(|e| e.to_string())?;
+                return Ok(false);
+            }
+            return self.pay_own(facts, context, proof, sized);
+        };
         for &ty in meta_sized {
-            context
-                .account_work(premises.len().max(1).ilog2() as usize + 1)
-                .map_err(|e| e.to_string())?;
-            if premises.binary_search_by_key(&ty.0, |ty| ty.0).is_err() {
+            if !member(context, &premises.meta_sized, ty)? {
                 return Ok(false);
             }
         }
+        let mut shapes = None;
+        for &ty in sized {
+            if member(context, &premises.sized, ty)? {
+                continue;
+            }
+            if matches!(facts.types.kind(ty), Some(crate::types::Kind::Parameter(_)))
+                || !shapes
+                    .get_or_insert_with(|| crate::sema::nominals::Proof::new(None))
+                    .prove(
+                        facts,
+                        Predicate {
+                            ty,
+                            bound: Bound::Sized,
+                        },
+                    )?
+            {
+                return Ok(false);
+            }
+        }
+        self.prove(facts, context, proof, Some(premises.side))
+    }
+
+    /// A single-header comparison's Sized debts are paid from its Sized
+    /// premises or by shape.
+    fn pay_own(
+        &self,
+        facts: &mut Declarations,
+        context: &mut Context,
+        proof: &Obligations,
+        sized: &[TypeId],
+    ) -> Result<bool, String> {
         if !sized.is_empty() {
             let mut assumed = crate::support::hash::HashSet::default();
             let growth =
@@ -553,26 +613,80 @@ impl Inputs {
                 }
             }
         }
-        self.prove(facts, context, proof)?;
-        Ok(true)
+        self.prove(facts, context, proof, None)
     }
 }
 
-/// A clause naming the actual `MetaSized` declaration, written or the default
-/// of a `?Sized` parameter.
-fn meta_sized_clause(facts: &Declarations, bound: Bound) -> Result<bool, String> {
+/// One header's own sizing premises, each sorted by identity and shared by
+/// the negative queries of the other header's conditions.
+pub(super) struct Premises {
+    side: Side,
+    sized: std::sync::Arc<[TypeId]>,
+    meta_sized: std::sync::Arc<[TypeId]>,
+}
+impl Premises {
+    fn negative(&self) -> crate::sema::traits::selection::NegativePremises<'_> {
+        crate::sema::traits::selection::NegativePremises {
+            sized: &self.sized,
+            meta_sized: &self.meta_sized,
+        }
+    }
+}
+
+/// Resolve, sort and deduplicate one premise set, charged for its growth, its
+/// shared copy and the sort.
+fn sorted(
+    facts: &mut Declarations,
+    context: &mut Context,
+    terms: &[TermId],
+) -> Result<std::sync::Arc<[TypeId]>, String> {
+    let count = terms.len();
+    let growth = crate::support::retained::Growth::vector::<TypeId>(0, 0, count);
+    let sorting = count.saturating_mul(count.max(1).ilog2() as usize + 1);
+    // The resolved vector, then its shared copy.
+    let shared = count.saturating_mul(size_of::<TypeId>());
+    let work = growth.work.saturating_add(growth.bytes);
+    context
+        .account_work(work.saturating_add(shared).saturating_add(sorting))
+        .map_err(|e| e.to_string())?;
+    let mut premises = Vec::new();
+    premises
+        .try_reserve_exact(count)
+        .map_err(|_| "negative coherence sizing premises allocation failed")?;
+    for &term in terms {
+        if let Some(ty) = resolved(facts, context, term)? {
+            premises.push(ty);
+        }
+    }
+    premises.sort_unstable_by_key(|ty| ty.0);
+    premises.dedup();
+    // Each side is shared by its conditions' queries, not copied per query.
+    Ok(std::sync::Arc::from(premises))
+}
+
+/// Whether a sorted premise set has `ty`, charged for its binary search.
+fn member(context: &mut Context, premises: &[TypeId], ty: TypeId) -> Result<bool, String> {
+    context
+        .account_work(premises.len().max(1).ilog2() as usize + 1)
+        .map_err(|e| e.to_string())?;
+    Ok(premises.binary_search_by_key(&ty.0, |ty| ty.0).is_ok())
+}
+
+/// The sizing kind of a clause naming an actual sizing declaration, written,
+/// elaborated or the default of a `?Sized` parameter.
+fn sizing_clause(facts: &Declarations, bound: Bound) -> Result<Option<LangItem>, String> {
     let Some((application, _)) = bound.trait_parts() else {
-        return Ok(false);
+        return Ok(None);
     };
     let Some(catalog) = facts.source_bindings.as_deref() else {
-        return Ok(false);
+        return Ok(None);
     };
     let item = facts
         .types
         .trait_application(application)
         .ok_or("missing coherence premise application")?
         .item;
-    Ok(catalog.sizing_kind(DefId(item.0))? == Some(crate::support::bindings::LangItem::MetaSized))
+    Ok(catalog.sizing_kind(DefId(item.0))?)
 }
 
 fn resolved(
@@ -591,6 +705,9 @@ fn resolved(
 #[cfg(test)]
 #[path = "../../../../../tests/invariants/negative_metasized_premises.rs"]
 mod metasized_tests;
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/coherence_premise_sides.rs"]
+mod premise_sides_tests;
 #[cfg(test)]
 #[path = "../../../../../tests/invariants/vacuous_callable_coherence.rs"]
 mod vacuous_tests;

@@ -5,6 +5,41 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane B [premise sides](parallel/negative-premise-sides.md) negates each
+negative coherence condition under the other header's premises only, as
+rustc 1.98's `impl_intersection_has_negative_obligation` does, on main
+`28e2b19fb`:
+
+- A rigid intersection parameter is Sized or `MetaSized` only through the
+  other header's Sized and `MetaSized` premises. This is the placeholder
+  rustc plugs in after equating the headers. The declaration of the
+  representative `freeze` chose is no longer read.
+- A negative payment pays Sized debts only from the other header's Sized
+  premises, now including source `Sized` clauses, written or elaborated (`U:
+  Copy`). Its lifetime obligations assume only that header's written
+  type-outlives premises, with no formed types and no region-region bound.
+  An unpaid obligation means "not disjoint" (the overlap text), not "required
+  lifetime does not outlive its target".
+- Repaired: `sized-premise-side`, the accepts-invalid recorded below.
+  Repaired: `sized-client-side`, a rejects-valid on main at `dcb956cf8`. When
+  the blanket's `?Sized` `V` was the representative, the client's Sized `U`
+  could not pay `T: Sized`. It is accepted, as rustc accepts it.
+- 21 PA31 controls (`negative-premise-sides`) were declared before their
+  rustc 1.98.0 oracle. With `negative-metasized`'s two side twins, 22 of 23
+  match rustc, and each swapped pair has its twin's outcome. Five declared
+  outcomes were wrong predictions and are amended beside their declarations.
+- The flip survey over 336 negative and strict coherence fixtures has no
+  accepted-to-rejected flip. One rejected case changes from the region text
+  to the overlap text. The analysis-only census lookahead's `census.tsv` is
+  byte-identical to the base's.
+- Recorded gap (accepts-invalid): nested sizedness. A non-parameter type
+  whose sizedness depends on a rigid parameter, such as `Wrap<V>: Sized` for
+  `struct Wrap<X: ?Sized>(X)`, is still decided by the shape walk. The walk
+  reads the representative's declaration (`types/parameters/shape.rs:285-290`).
+  Repro: `nested-premise-side` is accepted, while rustc rejects it with E0119,
+  and `nested-premise-side-swapped` is rejected. The fix threads query
+  premises into that shared types facility, as a separate design.
+
 Lane A [census batch 17](parallel/census-batch17.md) repairs census 19's
 record. It was qualified on main `dcb956cf8`, and census 20 ran on
 `28e2b19fb`. Census 20 (`6a699887`) checks 42,310 declarations, with none
@@ -119,7 +154,8 @@ rustc 1.98's `impl_intersection_has_negative_obligation` does, on main
   fenced, is accepted, as rustc accepts it.
 - C3's `negative-coherence` client and C3b's `negative-metasized-param`
   control, which rustc accepts, are amended from recorded gaps to accepted.
-- Open, Lane B's next item (accepts-invalid): negative coherence still pays
+- Repaired by Lane B's [premise sides](parallel/negative-premise-sides.md)
+  (above); kept as recorded (accepts-invalid): negative coherence still pays
   a Sized debt from both headers' Sized premises. `overlap/inputs.rs` gathers
   both headers' Sized parameters and Sized, Copy and Clone subjects into one
   `sized` set, and `freeze` makes the first header's binding the rigid

@@ -800,7 +800,23 @@ predicates under the other impl's `param_env`, so the other header's own
 written `MetaSized`, Sized or supertrait-implied premise is accepted, under
 strict coherence too. A `PointeeSized` premise, a `Sized` negative impl, the
 pair without `with_negative_coherence` and a premise of the negated clause's
-own impl are rejected (E0119). Two specialization edges are accepted, and
-`sized-premise-side`, which rustc rejects, is a recorded accepts-invalid.
-Each outcome was declared before its rustc 1.98.0 oracle, with two recorded
-amendments. A private invariant checks them; there is no graded manifest.
+own impl are rejected (E0119). Two specialization edges are accepted.
+`sized-premise-side`, a recorded accepts-invalid until the premise-sides
+batch, is now rejected as rustc rejects it. Each outcome was declared before
+its rustc 1.98.0 oracle, with three recorded amendments. A private invariant
+checks them; there is no graded manifest.
+
+`spec/negative-premise-sides/` freezes twenty-one declared no_core controls
+from Lane B's premise-sides batch. rustc negates each impl's predicates under
+the other impl's `param_env`, in both orders, so a negated clause's own
+header pays none of its debts. A rigid parameter's Sized and `MetaSized` come
+only from the other header's premises, never from the declaration `freeze`
+chose. A lifetime obligation holds only through the other header's written
+type-outlives premises, with no WF types and no region-region bound. Sized,
+Copy, `MetaSized`, region and type-outlives twins are each checked with
+either header first. Twenty match rustc; `nested-premise-side`, whose
+`Wrap<V>: Sized` is decided by the shape walk, is a recorded accepts-invalid.
+Each outcome was declared before its rustc 1.98.0 oracle, with recorded
+amendments for one fixture correction and five wrong predictions. A private
+invariant checks them and the symmetry of every swapped pair; there is no
+graded manifest.

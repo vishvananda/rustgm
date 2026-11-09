@@ -188,7 +188,7 @@ pub(in crate::sema) fn reference_comparison(
         // This single-header comparison still assumes no MetaSized premise.
         None,
         |facts, context, proof, sized, meta_sized| {
-            inputs.pay_negative(facts, context, proof, sized, meta_sized, &[])
+            inputs.pay_negative(facts, context, proof, sized, meta_sized, None)
         },
     )?;
     Ok((possible, context.steps))
