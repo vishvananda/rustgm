@@ -246,3 +246,91 @@ fn lookahead_records_follow_the_failed_pass_and_change_no_count() {
     );
     assert!(!census.has_failures(Phase::Declarations));
 }
+
+#[test]
+fn partial_lookahead_records_are_blocked_and_counted() {
+    let mut census = Census::default();
+    census.checked(Phase::Declarations, 4);
+    let failed = Error::at(FileId(0), 3, "trait implementation does not satisfy");
+    census.stop(Phase::Declarations, &failed);
+    let later = [
+        (
+            "validate_trait_impl_owners",
+            Error::at(FileId(0), 3, "requires conformance"),
+        ),
+        (
+            "complete_discriminants",
+            Error::at(FileId(0), 7, PARTIAL_EPOCH),
+        ),
+        (
+            "complete_layouts",
+            Error::at(FileId(0), 5, "enum layout requires completed discriminants"),
+        ),
+    ];
+    census.look_ahead(Phase::Declarations, "validate_trait_implementations", later);
+    let rows: Vec<_> = census
+        .records()
+        .iter()
+        .map(|record| (record.category, record.blocked_by, record.message.as_str()))
+        .collect();
+    assert_eq!(
+        rows,
+        [
+            (
+                Category::Crate,
+                None,
+                "trait implementation does not satisfy"
+            ),
+            (Category::Lookahead, Some(0), "requires conformance"),
+            (Category::Blocked, Some(0), PARTIAL_EPOCH),
+            (
+                Category::Lookahead,
+                Some(0),
+                "enum layout requires completed discriminants"
+            ),
+        ]
+    );
+    assert_eq!(
+        census.records()[2].location,
+        Location::Source { file: 0, offset: 7 }
+    );
+    assert_eq!(
+        census.counts(Phase::Declarations),
+        Counts {
+            checked: 4,
+            failed: 0,
+            blocked: 1
+        }
+    );
+    assert_eq!(census.terminal().map(|(index, _)| index), Some(0));
+}
+
+#[test]
+fn only_the_partial_epoch_text_moves_a_lookahead_count() {
+    let near = [
+        format!("source {PARTIAL_EPOCH}"),
+        format!("{PARTIAL_EPOCH}."),
+        PARTIAL_EPOCH.replacen("epoch", "epocs", 1),
+        PARTIAL_EPOCH.to_uppercase(),
+        "constant execution frame limit exceeded".to_owned(),
+        "associated type requires an unambiguous validated implementation".to_owned(),
+    ];
+    let mut census = Census::default();
+    census.stop(
+        Phase::Declarations,
+        &Error::at(FileId(0), 1, "trait implementation does not satisfy"),
+    );
+    census.look_ahead(
+        Phase::Declarations,
+        "validate_trait_implementations",
+        near.iter()
+            .map(|message| ("complete_discriminants", Error::at(FileId(0), 2, message))),
+    );
+    assert_eq!(census.records().len(), 1 + near.len());
+    assert!(
+        census.records()[1..]
+            .iter()
+            .all(|record| record.category == Category::Lookahead && record.blocked_by == Some(0))
+    );
+    assert_eq!(census.counts(Phase::Declarations), Counts::default());
+}

@@ -4,7 +4,11 @@
 //! records that failure as its terminal record, then still runs each later pass
 //! as ordinary checking would, on whatever facts exist. Those lookahead records
 //! follow the failure and may be derived from it; they never make a census, or
-//! any facts, usable.
+//! any facts, usable. The single exception to "as ordinary checking would": a
+//! lookahead pass after unfinished impl validation runs with a partial impl
+//! epoch, where a validated selection that could reach an unvalidated impl
+//! fails with exactly [`census::PARTIAL_EPOCH`], which the census counts as
+//! blocked by the terminal failure. Ordinary checking never reaches that state.
 use super::{Checker, Error, FileId};
 use crate::sema::census;
 
@@ -17,6 +21,9 @@ pub(super) struct Lookahead {
     /// Each later pass that failed and its first error, in pass order.
     pub(super) following: Vec<(&'static str, Error)>,
 }
+
+/// The pass after which every validated selection assumes a complete impl epoch.
+const VALIDATION: &str = "validate_trait_implementations";
 
 /// Each pass in its fixed order, named for census records.
 const PASSES: [(&str, Pass); 29] = [
@@ -64,7 +71,7 @@ const PASSES: [(&str, Pass); 29] = [
     ("complete_stream_helpers", |checker, _, _| {
         crate::sema::compiler_items::streams::complete_helpers(checker.report, &mut checker.facts)
     }),
-    ("validate_trait_implementations", |checker, _, _| {
+    (VALIDATION, |checker, _, _| {
         checker.validate_trait_implementations()
     }),
     ("validate_const_parameter_types", |checker, _, _| {
@@ -143,15 +150,27 @@ impl Checker<'_> {
         Ok(())
     }
     /// Budget exhaustion is sticky crate state, so it also ends a lookahead.
+    /// Each pass after impl validation runs with a partial epoch exactly when
+    /// validation did not finish; the epoch is restored before returning.
     fn look_ahead(
         &mut self,
         passes: &[(&'static str, Pass)],
         steps: &mut usize,
         limit: usize,
     ) -> Vec<(&'static str, Error)> {
+        let mut after_validation = passes.iter().all(|&(pass, _)| pass != VALIDATION);
         let mut following = Vec::new();
         for &(pass, run) in passes {
-            if let Err(error) = run(self, steps, limit) {
+            self.facts.generics.partial_epoch = after_validation
+                && self
+                    .facts
+                    .generics
+                    .implementations
+                    .as_ref()
+                    .is_some_and(|registry| !registry.headers_validated());
+            let result = run(self, steps, limit);
+            after_validation |= pass == VALIDATION;
+            if let Err(error) = result {
                 let sticky = Self::sticky(&error, *steps, limit);
                 following.push((pass, error));
                 if sticky {
@@ -159,6 +178,7 @@ impl Checker<'_> {
                 }
             }
         }
+        self.facts.generics.partial_epoch = false;
         following
     }
     fn sticky(error: &Error, steps: usize, limit: usize) -> bool {

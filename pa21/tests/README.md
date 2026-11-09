@@ -68,3 +68,18 @@ stays stricter than rustc by name. The 13 accepted controls declare native
 execution. The
 private invariant `certified_bound_premises_match_declared_outcomes` checks
 each control's first error.
+
+The `spec/assoc-bounds/elaborated-premises/` controls (Lane A census batch 18)
+test a supertrait condition that only an elaborated premise proves: a bound
+`P: Pattern<Searcher<'a>: DoubleEndedSearcher<'a>>` elaborates to
+`Searcher<'a>: ReverseSearcher<'a>`, which the `Walk` impl needs. An
+elaborated premise inherits a certified declared bound's certificate when
+both have the same subject and binder shape and its trait arguments carry no
+projection. Their nine rustc 1.98.0 outcomes were declared before the oracle
+ran, and all agree. rustc rejects two: a missing bound (E0277) and another
+lifetime (E0803). `elaborated-projection-argument` is accepted by rustc and
+stays stricter than rustc by name, because its elaborated premise
+`Keyed<'a, P::Key>` carries a projection. The six accepted controls declare
+native execution. The private invariant
+`elaborated_premises_match_declared_outcomes` checks each control's first
+error.

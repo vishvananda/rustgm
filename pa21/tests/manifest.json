@@ -13324,6 +13324,175 @@
       "source_sha256": "bf051f1b50115b80df95d48edc6b4cb77af9e52c2470c6c02c0ddd5549143921"
     },
     {
+      "path": "tests/spec/assoc-bounds/elaborated-premises/elaborated-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:ELABORATED_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "d7c4908a8473f2d4aa4299785448d89a2c22e19df94bc4e0067325bb6a542f33",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/elaborated-premises/elaborated-where.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:ELABORATED_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "743e330ce268627b029247e6be7f5fe586118f0bdf2f2a43779d9cabceb7d77d",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/elaborated-premises/elaborated-two-steps.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:ELABORATED_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "061869bd018c697f3ac9b614064c5351b1b6a96f40e1d214738a0cf623d0a8c2",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/elaborated-premises/elaborated-hrtb.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:ELABORATED_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "07084901743bee54cc03e75f46a9d94f0ce1d3e2b2156dbf52719749e410ad2c",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/elaborated-premises/elaborated-body.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:ELABORATED_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "799b6d812e2749ed777a65cd014a16446e484895b015267ebaf10a14ad5db907",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/elaborated-premises/elaborated-explicit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:ELABORATED_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "01c69d6ec42573defbbb85292e3ed7d827f8517d76973aa9a6f0cca7afa30a47",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/assoc-bounds/elaborated-premises/elaborated-missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:ELABORATED_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "ae181a020d62c54566a801df6b4f643af1964dcd8681552eceb1a6f1f51251a3"
+    },
+    {
+      "path": "tests/spec/assoc-bounds/elaborated-premises/elaborated-other-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:ELABORATED_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "37297320052e2d238b7a824e70334984012093b0464238a954f215238237aaf4"
+    },
+    {
+      "path": "tests/spec/assoc-bounds/elaborated-premises/elaborated-projection-argument.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj",
+        "reason": "The impl's DoubleKeyed<'a, P::Key> bound elaborates to Keyed<'a, P::Key>, whose trait application carries a projection; census batch 18 certifies only projection-free elaborated premises of a certified subject, stricter than rustc 1.98.0."
+      },
+      "maintainer_origin": "dev/tests/invariants/certified_premises.rs:ELABORATED_CASES",
+      "mode": "--emit-lowir",
+      "source_sha256": "43e23ed328080bf89a3daf30abb96ac44c86a249549a5bec1320fc51dcdae78d"
+    },
+    {
       "path": "tests/spec/binders/constrained-results/bound-result.rs",
       "exit_status": 0,
       "features": [

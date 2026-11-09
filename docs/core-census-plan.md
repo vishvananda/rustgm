@@ -1286,6 +1286,44 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
       5b-3. R2's next `value_rows.rs` arm needs a real factoring of `emit()`,
       which is at Clippy's line limit.
 
+- **During Lane A's [census batch 18](parallel/census-batch18.md)**,
+  2026-11-09, started on main `044455065` and qualified and censused on
+  `7e8c5cbbf`, under the approved notice `45dad0be` (D1 to D5).
+  - **Part 1, option (i).** A census lookahead never reads a partial
+    validated impl set as complete. After unfinished impl validation, a
+    `Validated` selection whose goal still has unvalidated owners fails with
+    "trait selection requires the completed immutable impl epoch". The
+    census records it `blocked`, `blocked_by` the crate record, and counts
+    it: the single exception to "a lookahead changes no count", matched by
+    the exact `PARTIAL_EPOCH` constant (D2). The guard is in
+    `implementation_candidates` only, and the `Registry` API is unchanged
+    (D3). Lane B read-reviewed it. Ordinary mode cannot change.
+  - **P1** (analysis-only, retired) is census 20 with record 6 alone
+    changed to the `blocked` partial record and declarations `blocked 1`,
+    as previewed.
+  - **Part 2, the subject-shared rule (D4).** An elaborated supertrait
+    premise inherits a certified declared bound's certificate when both
+    have the same binder shape and interned subject and its trait arguments
+    carry no projection. The scan is O(1) per premise on interned
+    properties, paid before it runs, and fails closed.
+    `expanded_trait_bounds` is untouched. Nine PA21 controls were declared
+    before the rustc 1.98.0 oracle; all statuses agree. Five flip to accept
+    as declared, and `elaborated-projection-argument` stays stricter than
+    rustc by name.
+  - **Census 21** (pin `30d6eb8a`): 42,310 declarations, none failed and
+    one blocked. The `:595` header passes in the Split/RSplit expansion,
+    and record 1 moves into the same impl, to `fn next_back`
+    (`str/iter.rs:600`): "associated type requires an unambiguous validated
+    implementation". Declared probes show it needs the `Iterator` impl's
+    requirement on the rigid GAT projection while `Self::Item` normalizes.
+    A written premise fails the same way, on census 20's pin too, so it
+    predates this batch. Record 6 is the `blocked` partial record. Records
+    2 to 5, 7 and 8 are unchanged.
+  - **Batch 19's lead:** census 21's record 1, the projection path's
+    selection of an impl whose where clause is on a rigid GAT projection.
+  - **Open:** projection-bearing supertrait arguments,
+    binder-changing supertraits and other subjects stay uncertified (D4).
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

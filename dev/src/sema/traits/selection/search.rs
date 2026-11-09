@@ -568,6 +568,32 @@ impl Search<'_> {
                 self.query.purpose,
             )
             .map_err(inference)?;
+        // A census lookahead after unfinished validation must not read the
+        // validated subset as the complete inventory: if an impl that could
+        // apply was never validated, the selection depends on that impl. The
+        // re-query's only side effect is a deliberate second work charge,
+        // under partial_epoch only.
+        if facts.generics.partial_epoch
+            && self.query.availability == super::Availability::Validated
+            && matches!(
+                candidates,
+                crate::sema::traits::implementations::Candidates::Ready(_)
+            )
+            && !matches!(
+                registry
+                    .candidates_for(
+                        &mut facts.types,
+                        &mut frame.inputs.context,
+                        &frame.goal,
+                        super::Availability::Executable,
+                        self.query.purpose,
+                    )
+                    .map_err(inference)?,
+                crate::sema::traits::implementations::Candidates::Ready(_)
+            )
+        {
+            return Err(crate::sema::census::PARTIAL_EPOCH.into());
+        }
         #[cfg(test)]
         self.query.candidate_lists.push(match &candidates {
             crate::sema::traits::implementations::Candidates::Ready(owners)

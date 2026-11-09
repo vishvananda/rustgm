@@ -1,6 +1,7 @@
 //! Completed declaration environments and substitutions keyed by owner and arguments.
 mod builtin_formation;
 pub(super) mod captures;
+pub(in crate::sema) mod elaborated_certificates;
 mod families;
 mod formal_arguments;
 mod input_contracts;
@@ -169,6 +170,10 @@ pub struct Generics {
     /// cached under their owner and arguments; each use pays it here. Its
     /// limit fits a `u32`, which the struct's existing padding holds.
     unretained_steps: u32,
+    /// Set only while an analysis-only census lookahead runs a pass after impl
+    /// validation stopped unfinished: a validated selection there is over a
+    /// partial impl set. Ordinary checking never sets it.
+    pub(super) partial_epoch: bool,
     family_substitutions: Option<Box<families::Substitutions>>,
 }
 pub struct ImplementationSelection {
@@ -435,18 +440,54 @@ impl Generics {
         self.environments.insert(owner, Arc::new(environment));
         Ok(())
     }
-    /// Certify premises in an environment this crate just published. A shared
-    /// environment Arc is left unchanged, which keeps the exact equations.
+    /// Certify premises in an environment this crate just published: the
+    /// owner's own normalized declared bounds (`normal`) and each elaborated
+    /// premise that inherits one's certificate ([`elaborated_certificates`]).
+    /// A shared environment Arc is left unchanged, which keeps the exact
+    /// equations. The scan is paid before it runs and the certificate set's
+    /// growth before any certificate is recorded, so exhaustion certifies
+    /// nothing.
     pub(crate) fn certify_environment(
         &mut self,
         store: &Store,
         owner: DefId,
         normal: &[crate::types::parameters::clauses::Clause],
+        pay: Option<crate::support::retained::Payment<'_>>,
     ) -> Result<(), &'static str> {
+        if normal.is_empty() {
+            return Ok(());
+        }
+        let declared = self.declared_predicates(owner).len();
+        let elaborated = self
+            .predicates
+            .get(&owner)
+            .and_then(|predicates| predicates.get(declared..))
+            .unwrap_or_default();
+        let mut inherited = Vec::new();
+        if !elaborated.is_empty() {
+            if let Some(pay) = pay {
+                pay(normal.len().saturating_add(elaborated.len()), 0)?;
+            }
+            inherited = elaborated_certificates::inherited(store, normal, elaborated)?;
+        }
+        if let Some(pay) = pay {
+            let growth = crate::support::retained::Growth::map::<
+                crate::types::parameters::clauses::Clause,
+                (),
+            >(0, 0, normal.len().saturating_add(inherited.len()));
+            pay(growth.work.saturating_add(1), growth.bytes)?;
+        }
         if let Some(environment) = self.environments.get_mut(&owner).and_then(Arc::get_mut) {
             environment.certify_normal_premises(store, normal)?;
+            environment.certify_normal_premises(store, &inherited)?;
         }
         Ok(())
+    }
+    /// Mark `owner`'s first `count` predicates as declared and the rest as
+    /// elaborated, as publication's supertrait elaboration does.
+    #[cfg(test)]
+    pub(in crate::sema) fn assume_declared_count(&mut self, owner: DefId, count: usize) {
+        self.declared_predicate_counts.insert(owner, count);
     }
     fn prepay_environment(
         &self,

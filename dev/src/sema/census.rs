@@ -183,7 +183,10 @@ impl Census {
     }
     /// Name the crate-wide pass whose failure ended the census, then record
     /// each later pass's first error as following that terminal record. No
-    /// count changes: a lookahead isolates nothing and qualifies nothing.
+    /// count changes: a lookahead isolates nothing and qualifies nothing. The
+    /// single exception is an error whose message is exactly [`PARTIAL_EPOCH`]:
+    /// that pass reached an impl the terminal failure left unvalidated, so its
+    /// record is `blocked` by the terminal record and counted as blocked.
     pub(crate) fn look_ahead(
         &mut self,
         phase: Phase,
@@ -198,9 +201,18 @@ impl Census {
         }
         for (pass, error) in following {
             let item = Some(format!("pass `{pass}`"));
-            let mut record = Self::diagnostic(phase, Category::Lookahead, item, &error);
+            let partial = error.message == PARTIAL_EPOCH;
+            let category = if partial {
+                Category::Blocked
+            } else {
+                Category::Lookahead
+            };
+            let mut record = Self::diagnostic(phase, category, item, &error);
             record.blocked_by = Some(terminal);
             self.push(record);
+            if partial {
+                self.counts[phase.index()].blocked += 1;
+            }
         }
     }
     pub(crate) const fn checked(&mut self, phase: Phase, count: usize) {
@@ -273,6 +285,10 @@ impl Census {
         self.records.len() - 1
     }
 }
+
+/// A lookahead selection that would have consulted an impl the stopped validation
+/// never reached. Exactly this text makes a lookahead record `blocked` and counted.
+pub const PARTIAL_EPOCH: &str = "trait selection requires the completed immutable impl epoch";
 
 /// Budget and representation-capacity failures are sticky crate state. This uses
 /// the shared diagnostic vocabulary, including ledgers bounded by their input

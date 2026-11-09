@@ -5,6 +5,33 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 18](parallel/census-batch18.md) repairs census 20's
+record and its lookahead. It was qualified and censused on main
+`7e8c5cbbf`. Census 21 (`30d6eb8a`) checks 42,310 declarations, with none
+failed and one blocked. Its crate record is the `next_back` method of the
+same `DoubleEndedIterator for RSplit` impl (`str/iter.rs:600`):
+"associated type requires an unambiguous validated implementation".
+
+- In a census lookahead after unfinished impl validation, a validated
+  selection whose goal still has unvalidated owners is recorded `blocked`
+  with "trait selection requires the completed immutable impl epoch" and
+  counted, instead of being read as complete. Census 20's record 6 is now
+  that record. Ordinary mode is unchanged.
+- An elaborated supertrait premise inherits a certified declared bound's
+  certificate when both have the same binder shape and subject and its
+  trait arguments carry no projection. The `:595` header passes. Nine PA21
+  controls were declared before the rustc 1.98.0 oracle; all statuses
+  agree.
+- Stricter than rustc under D4: `elaborated-projection-argument` (rustc 0,
+  RustGM exit 1, the requirements text). The impl's
+  `DoubleKeyed<'a, P::Key>` bound elaborates to `Keyed<'a, P::Key>`, whose
+  trait application carries a projection; census batch 18 certifies only
+  projection-free elaborated premises of a certified subject, stricter than
+  rustc 1.98.0. Binder-changing supertraits and other subjects also stay
+  uncertified.
+- Census 21's record 1 predates the batch: a written premise fails the same
+  way on census 20's pin. It is batch 19's lead.
+
 Lane C [named constants](parallel/named-constants.md), 5b-1, exports named
 const items of primitive and unit types under version 13, at module scope and
 inside function bodies, as declaration tag 13 with one header row each, and

@@ -26,6 +26,10 @@ impl Store {
         let properties = self.trait_properties(id)?;
         Some(properties.escaping != 0 || properties.has(super::Property::FreeRegions))
     }
+    /// Cached structural summary: whether any argument mentions a projection.
+    pub(crate) fn trait_application_has_projections(&self, id: ApplicationId) -> Option<bool> {
+        Some(self.trait_properties(id)?.has(super::Property::Projections))
+    }
 
     pub(super) fn trait_tables_bytes(&self) -> usize {
         self.arguments

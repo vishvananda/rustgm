@@ -23,12 +23,16 @@ const CORE: [&str; 6] = [
 const BLOCKED: &str = "blocked by an earlier census failure";
 
 fn input(name: &str, items: &str) -> Result<PathBuf> {
+    source(name, &format!("{HEADER}{items}"))
+}
+/// Write one complete input under this test process's folder.
+fn source(name: &str, text: &str) -> Result<PathBuf> {
     let folder = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../obj/census-tests")
         .join(std::process::id().to_string());
     fs::create_dir_all(&folder)?;
     let path = folder.join(format!("{name}.rs"));
-    fs::write(&path, format!("{HEADER}{items}"))?;
+    fs::write(&path, text)?;
     Ok(path)
 }
 fn rustgm(mode: &str, input: &Path, extra: &[&str]) -> Result<Output> {
@@ -496,5 +500,207 @@ fn census_output_is_limited_to_source_core_analysis_views() -> Result {
         !Path::new(path).exists(),
         "rejected options write no census"
     );
+    Ok(())
+}
+
+/// Core's sized-trait prefix and lang `shl` trait, as census 20's reduced
+/// record 6 repro carries them. This text is from Rust's `library/core`
+/// (MIT/Apache-2.0; see the root NOTICE).
+const CORE_SIZED: &str = r#"#![feature(no_core,lang_items,rustc_attrs,fundamental,pattern_types)]
+#![no_core]
+#![allow(internal_features,dead_code,unused_variables)]
+#[lang = "pointee_sized"]
+#[diagnostic::on_unimplemented(
+    message = "values of type `{Self}` may or may not have a size",
+    label = "may or may not have a known size"
+)]
+#[fundamental]
+#[rustc_specialization_trait]
+#[rustc_deny_explicit_impl]
+#[rustc_coinductive]
+pub trait PointeeSized {
+    // Empty
+}
+#[lang = "meta_sized"]
+#[diagnostic::on_unimplemented(
+    message = "the size for values of type `{Self}` cannot be known",
+    label = "doesn't have a known size"
+)]
+#[fundamental]
+#[rustc_specialization_trait]
+#[rustc_deny_explicit_impl]
+// `MetaSized` being coinductive, despite having supertraits, is okay for the same reasons as
+// `Sized` above.
+#[rustc_coinductive]
+pub trait MetaSized: PointeeSized {
+    // Empty
+}
+#[lang = "sized"]
+#[diagnostic::on_unimplemented(
+    message = "the size for values of type `{Self}` cannot be known at compilation time",
+    label = "doesn't have a size known at compile-time"
+)]
+#[fundamental] // for Default, for example, which requires that `[T]: !Default` be evaluatable
+#[rustc_specialization_trait]
+#[rustc_deny_explicit_impl]
+#[rustc_dyn_incompatible_trait]
+// `Sized` being coinductive, despite having supertraits, is okay as there are no user-written impls,
+// and we know that the supertraits are always implemented if the subtrait is just by looking at
+// the builtin impls.
+#[rustc_coinductive]
+pub trait Sized: MetaSized {
+    // Empty.
+}
+"#;
+const SHL: &str = "#[lang = \"shl\"]\npub trait Shl<Rhs = Self> {\n    type Output;\n    \
+fn shl(self, rhs: Rhs) -> Self::Output;\n}\n";
+/// A crate failure in impl validation that rustc also rejects (E0277).
+const STOP: &str =
+    "pub trait Super {}\npub trait Sub: Super {}\npub struct Stop;\nimpl Sub for Stop {}\n";
+const ALIGNMENT: &str = "#[repr(usize)]\nenum AlignmentEnum {\n    _Align1Shl0 = 1 << 0,\n}\n";
+const INTEGERS: [&str; 12] = [
+    "u8", "u16", "u32", "u64", "u128", "usize", "i8", "i16", "i32", "i64", "i128", "isize",
+];
+const EDITION: &[&str] = &["--edition=2024"];
+const PARTIAL: &str = "trait selection requires the completed immutable impl epoch";
+const REQUIREMENTS: &str = "trait implementation does not satisfy the trait's requirements";
+
+fn shl(subject: &str, rhs: &str) -> String {
+    format!(
+        "impl Shl<{rhs}> for {subject} {{ type Output = {subject}; \
+         fn shl(self, other: {rhs}) -> {subject} {{ loop {{}} }} }}\n"
+    )
+}
+/// The Shl impls, the stop and the 64-bit alignment discriminant in `items` order.
+fn ordered(name: &str, items: &[&str]) -> Result<PathBuf> {
+    source(
+        name,
+        &format!("{CORE_SIZED}{SHL}{}{ALIGNMENT}", items.concat()),
+    )
+}
+fn every_shl_but_u8() -> String {
+    INTEGERS
+        .iter()
+        .flat_map(|subject| INTEGERS.iter().map(move |rhs| (*subject, *rhs)))
+        .filter(|&pair| pair != ("u8", "u8"))
+        .map(|(subject, rhs)| shl(subject, rhs))
+        .collect()
+}
+fn location(text: &str, record: usize) -> Option<&str> {
+    line(text, &format!("record\t{record}\t")).and_then(|line| line.split('\t').nth(5))
+}
+fn declarations_summary(text: &str) -> Option<&str> {
+    line(text, "summary\tdeclarations\t")
+}
+
+#[test]
+fn a_lookahead_selection_over_a_partial_impl_epoch_is_blocked_and_counted() -> Result {
+    let (u8, usize, rest) = (shl("u8", "u8"), shl("usize", "i32"), every_shl_but_u8());
+    for (name, items) in [
+        ("p-u8-first", [u8.as_str(), STOP, rest.as_str()]),
+        ("p-u8-min", [u8.as_str(), STOP, usize.as_str()]),
+        ("p-usize-first", [usize.as_str(), STOP, u8.as_str()]),
+        ("p-none-first", [STOP, u8.as_str(), usize.as_str()]),
+    ] {
+        let input = ordered(name, &items)?;
+        let source = fs::read_to_string(&input)?;
+        let at = |needle: &str| source.find(needle).map(|offset| format!("file 0:{offset}"));
+        for mode in ["--emit-types", "--emit-semantics"] {
+            let text = census(mode, &input, mode.trim_start_matches("--emit-"), EDITION)?;
+            assert_eq!(
+                records(&text),
+                [
+                    [
+                        "declarations",
+                        "crate",
+                        "pass `validate_trait_implementations`",
+                        "-",
+                        REQUIREMENTS
+                    ],
+                    [
+                        "declarations",
+                        "lookahead",
+                        "pass `validate_trait_impl_owners`",
+                        "1",
+                        "trait implementation requires conformance and selection semantics"
+                    ],
+                    [
+                        "declarations",
+                        "blocked",
+                        "pass `complete_discriminants`",
+                        "1",
+                        PARTIAL
+                    ],
+                    [
+                        "declarations",
+                        "lookahead",
+                        "pass `complete_layouts`",
+                        "1",
+                        "enum layout requires completed discriminants"
+                    ],
+                ],
+                "{name}"
+            );
+            let stop = at("impl Sub for Stop");
+            assert_eq!(location(&text, 1).map(String::from), stop, "{name}");
+            assert_eq!(location(&text, 2).map(String::from), stop, "{name}");
+            assert_eq!(location(&text, 3).map(String::from), at("1 << 0"), "{name}");
+            assert_eq!(
+                location(&text, 4).map(String::from),
+                at("enum AlignmentEnum"),
+                "{name}"
+            );
+            let summary = declarations_summary(&text).ok_or("declarations summary")?;
+            assert!(
+                summary.ends_with("\tfailed\t0\tblocked\t1"),
+                "{name}: {summary}"
+            );
+            ordinary_matches_first_record(&input, &text)?;
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn a_lookahead_selection_over_a_complete_matching_set_selects_as_ordinary_checking() -> Result {
+    let (u8, usize, rest) = (shl("u8", "u8"), shl("usize", "i32"), every_shl_but_u8());
+    let before = ordered("p-all-before", &[u8.as_str(), usize.as_str(), STOP])?;
+    for mode in ["--emit-types", "--emit-semantics"] {
+        let text = census(mode, &before, mode.trim_start_matches("--emit-"), EDITION)?;
+        assert_eq!(
+            records(&text),
+            [
+                [
+                    "declarations",
+                    "crate",
+                    "pass `validate_trait_implementations`",
+                    "-",
+                    REQUIREMENTS
+                ],
+                [
+                    "declarations",
+                    "lookahead",
+                    "pass `validate_trait_impl_owners`",
+                    "1",
+                    "trait implementation requires conformance and selection semantics"
+                ],
+            ]
+        );
+        let summary = declarations_summary(&text).ok_or("declarations summary")?;
+        assert!(summary.ends_with("\tfailed\t0\tblocked\t0"), "{summary}");
+        ordinary_matches_first_record(&before, &text)?;
+    }
+    for (name, items) in [
+        ("ord-min", [u8.as_str(), usize.as_str()]),
+        ("ord-full", [u8.as_str(), rest.as_str()]),
+    ] {
+        let input = ordered(name, &items)?;
+        for mode in ["--emit-types", "--emit-semantics"] {
+            let ordinary = rustgm(mode, &input, EDITION)?;
+            assert!(ordinary.status.success(), "{name}");
+            let text = census(mode, &input, mode.trim_start_matches("--emit-"), EDITION)?;
+            assert!(records(&text).is_empty(), "{name}");
+        }
+    }
     Ok(())
 }
