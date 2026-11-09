@@ -235,6 +235,14 @@ check, to its baseline plus the closure.
     `__m128` in an exported `extern "C"` signature;
   - `sema/crates/export.rs:434`, "exposed type is outside the scalar
     metadata profile", for a raw pointer there.
+- **Backend-contract question** (the user's decision; the backend stays
+  frozen): LowIR i128 slot alignment is unspecified; 16 observed under v3.
+  `shared/lowir.md` states no alignment for an `i128` slot. RustGM lays
+  u128 out at 16 bytes and lowers a u128 local as an `i128` slot, so every
+  u128 local, the witness's included, relies on the pinned backend's
+  layout. No frontend change works around it. The native control
+  `u128_locals_stay_sixteen_byte_aligned_natively` fails if that layout
+  regresses.
 - Stricter than rustc: safe target-feature functions, trait and trait-impl
   members, non-Rust-ABI and `const` target-feature functions keep named
   fences at export.

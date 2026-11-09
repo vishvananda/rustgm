@@ -84,6 +84,42 @@ const STREAM_PRELUDE: usize = 95;
 /// `__m128` nor a raw pointer in an exported signature.
 const STREAM_MAIN: &str =
     "int rg_stream_check(void);\nint main(void) { return rg_stream_check(); }\n";
+/// Backend-contract control: `shared/lowir.md` states no alignment for an
+/// `i128` slot, and the pinned v3 backend has placed u128 locals at 16
+/// bytes. Declared in `obj/parallel/target-feature-transport/f-followup`.
+const U128_SLOTS: &str = r#"#![feature(no_core, asm_native_fixture)]
+#![no_core]
+#![allow(internal_features)]
+extern crate base;
+// Backend-contract control: shared/lowir.md states no alignment for an i128
+// slot, and the pinned v3 backend has placed u128 locals at 16 bytes. Each
+// function returns the address of a u128 local; the C main checks it mod 16.
+#[unsafe(no_mangle)]
+pub extern "C" fn rg_u128_alone() -> usize {
+    let mut x: u128 = 0;
+    let p = &raw mut x;
+    p as usize
+}
+#[unsafe(no_mangle)]
+pub extern "C" fn rg_u128_after_small() -> usize {
+    let mut a: u8 = 0;
+    let mut b: u32 = 0;
+    let _a = &raw mut a;
+    let _b = &raw mut b;
+    let mut x: u128 = 0;
+    let p = &raw mut x;
+    p as usize
+}
+"#;
+/// Returns 1 or 2 if either u128 local's address is not a multiple of 16.
+const U128_MAIN: &str = r"unsigned long rg_u128_alone(void);
+unsigned long rg_u128_after_small(void);
+int main(void) {
+    if (rg_u128_alone() % 16 != 0) return 1;
+    if (rg_u128_after_small() % 16 != 0) return 2;
+    return 42;
+}
+";
 
 fn unwritten(path: &std::path::Path) -> Result<bool> {
     Ok(!path.exists() || std::fs::metadata(path)?.len() == 0)
@@ -283,7 +319,7 @@ fn stream_template(lowir: &str) -> Result<String> {
 /// The real `_mm_stream_ps` body crosses the crate boundary with its declared
 /// `sse` and inline hint. The packet is named `provider`, since its name is
 /// the crate disambiguator's stem.
-fn stream_packet(label: &str) -> Result<Packet> {
+fn stream_provider(label: &str) -> Result<Packet> {
     let packet = Packet::new(GROUP, SPEC, label, "provider")?;
     let source = packet.fixture("stream-provider");
     super::artifacts::checked(
@@ -304,6 +340,11 @@ fn stream_packet(label: &str) -> Result<Packet> {
         provider.lines().nth(STREAM_PRELUDE),
         Some("// Authored stream witness section.")
     );
+    Ok(packet)
+}
+/// The stream packet and its accepted witness client.
+fn stream_packet(label: &str) -> Result<Packet> {
+    let packet = stream_provider(label)?;
     super::artifacts::checked(
         "stream-client",
         &packet.folder,
@@ -349,6 +390,39 @@ fn the_stream_witness_client_executes_natively() -> Result {
         .filter(|line| line.contains("movntps XMMWORD PTR [") && line.contains("],xmm"))
         .count();
     assert_eq!(stores, 1);
+    Ok(())
+}
+/// Each u128 local lowers to one `i128` slot, and the pinned backend places
+/// both at 16 bytes. A regression of that unstated layout fails here.
+#[test]
+#[ignore = "requires configured locked CPPGM object backend and host C compiler"]
+fn u128_locals_stay_sixteen_byte_aligned_natively() -> Result {
+    let packet = stream_provider("feature-u128-native")?;
+    let source = packet.folder.join("u128-slots.rs");
+    std::fs::write(&source, U128_SLOTS)?;
+    let mut client = packet.consumer(&source, "u128-slots", &packet.metadata, &packet.owner());
+    super::artifacts::checked("u128-slots", &packet.folder, &mut client)?;
+    let lowir = std::fs::read_to_string(packet.folder.join("u128-slots.lowir"))?;
+    for function in ["rg_u128_alone", "rg_u128_after_small"] {
+        let start = lowir
+            .find(&format!("function @{function}("))
+            .ok_or(function)?;
+        let body = &lowir[start..];
+        let body = &body[..body.find("\n}\n").ok_or(function)?];
+        let slots = body
+            .lines()
+            .filter(|line| line.trim_start().starts_with("slot ") && line.ends_with(": i128"))
+            .count();
+        assert_eq!(slots, 1, "{function}");
+    }
+    let slots = lowir
+        .lines()
+        .filter(|line| line.trim_start().starts_with("slot ") && line.ends_with(": i128"))
+        .count();
+    assert_eq!(slots, 2);
+    let output = packet.native_with("u128-slots", U128_MAIN)?;
+    assert_eq!(output.status.code(), Some(42));
+    assert!(output.stdout.is_empty());
     Ok(())
 }
 #[test]
