@@ -48,6 +48,9 @@ impl State {
         self.context
             .account_work(query.steps.saturating_sub(first))
             .map_err(|_| "scoped decision work exhausted")?;
+        self.context
+            .account_nested(query.nested())
+            .map_err(|_| "scoped decision work exhausted")?;
         match selected? {
             selection::Selection::Absent => Ok(Decision::Absent),
             selection::Selection::Refuted(refutation) => {

@@ -348,7 +348,7 @@ impl Batch {
                     Normalization::Dependency(owner) => {
                         return Ok(Some(Requirement::from(owner)));
                     }
-                    Normalization::Complete { ty, steps } => {
+                    Normalization::Complete { ty, steps, .. } => {
                         facts.body_work.storage_steps += steps;
                         preparation.normalized(facts, query, ty, steps)?;
                         self.normalizing = false;

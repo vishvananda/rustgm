@@ -129,6 +129,9 @@ impl Queries {
         total
             .account_work(context.steps)
             .map_err(|_| "quantified premise selection work exhausted")?;
+        total
+            .account_nested(context.nested())
+            .map_err(|_| "quantified premise selection work exhausted")?;
         let selection::Selection::Proven(evidence) = selected? else {
             return Ok(false);
         };

@@ -309,8 +309,11 @@ impl Storage {
         let cursor = self.cursor.as_mut().ok_or("missing coherence normalizer")?;
         cursor.start(facts, tail)?;
         match cursor.advance(facts, proof, &mut |_, _| Ok(None))? {
-            Progress::Complete { ty, steps } => {
+            Progress::Complete { ty, steps, nested } => {
                 context.account_work(steps).map_err(|e| e.to_string())?;
+                context
+                    .account_nested(nested as usize)
+                    .map_err(|e| e.to_string())?;
                 if ty == tail {
                     return Ok(None);
                 }

@@ -133,6 +133,7 @@ pub(super) fn normalize_reusing_ready(
 /// the borrowed proof for the whole session, including nested callable scopes.
 pub(crate) struct Session<'proof, F> {
     cursor: Cursor,
+    nested: u32,
     proof: &'proof mut Obligations,
     local: F,
 }
@@ -151,6 +152,7 @@ where
     ) -> Result<Self, &'static str> {
         Ok(Self {
             cursor: Cursor::new(environment, proof, ambient, availability)?,
+            nested: 0,
             proof,
             local,
         })
@@ -176,6 +178,9 @@ where
     ) -> Result<(TypeId, usize), &'static str> {
         self.normalize_ready(facts, ty, None, &mut |_, _| Ok(false))
     }
+    pub(crate) const fn nested_work(&self) -> usize {
+        self.nested as usize
+    }
 
     fn normalize_ready(
         &mut self,
@@ -191,7 +196,10 @@ where
         let mut waits = 0;
         loop {
             match self.cursor.advance(facts, self.proof, &mut self.local)? {
-                Progress::Complete { ty, steps } => return Ok((ty, steps + waits)),
+                Progress::Complete { ty, steps, nested } => {
+                    self.nested = self.nested.saturating_add(nested);
+                    return Ok((ty, steps + waits));
+                }
                 Progress::Definition(_) => {
                     return Err("missing completed associated type definition");
                 }

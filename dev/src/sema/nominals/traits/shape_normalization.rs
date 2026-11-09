@@ -18,6 +18,27 @@ struct Scope {
     sizes: sizes::Query,
     cursor: Cursor,
 }
+
+fn scoped_environment(
+    facts: &mut Declarations,
+    environment: Option<&Arc<crate::types::parameters::environment::Environment>>,
+    depth: u16,
+    context: &mut crate::types::infer::Context,
+) -> Result<Option<Arc<crate::types::parameters::environment::Environment>>, &'static str> {
+    environment
+        .map(|environment| {
+            if depth == 0 {
+                return Ok(Arc::clone(environment));
+            }
+            let mut shift = Bound::shift(depth);
+            let shifted = environment.substitute_regions(&mut facts.types, &mut shift)?;
+            context
+                .account_work(shift.steps)
+                .map_err(|_| "size normalization environment budget exceeded")?;
+            Ok(Arc::new(shifted))
+        })
+        .transpose()
+}
 #[derive(Default)]
 pub(super) struct Sizes {
     mappings: HashMap<(Option<u32>, bool), Mapping>,
@@ -92,21 +113,12 @@ impl State {
             return Err("nominal size request changed its binder depth");
         }
         if let std::collections::hash_map::Entry::Vacant(entry) = sizes.queries.entry(scope) {
-            let environment = self
-                .environment
-                .as_ref()
-                .map(|environment| {
-                    if request.depth == 0 {
-                        return Ok(Arc::clone(environment));
-                    }
-                    let mut shift = Bound::shift(request.depth);
-                    let shifted = environment.substitute_regions(&mut facts.types, &mut shift)?;
-                    self.context
-                        .account_work(shift.steps)
-                        .map_err(|_| "size normalization environment budget exceeded")?;
-                    Ok::<_, &'static str>(Arc::new(shifted))
-                })
-                .transpose()?;
+            let environment = scoped_environment(
+                facts,
+                self.environment.as_ref(),
+                request.depth,
+                &mut self.context,
+            )?;
             let mut cursor = Cursor::new(
                 self.environment.clone(),
                 &self.obligations,
@@ -135,7 +147,10 @@ impl State {
                 .cursor
                 .advance(facts, &mut self.obligations, &mut |_, _| Ok(None))?
             {
-                Progress::Complete { ty, steps } => {
+                Progress::Complete { ty, steps, nested } => {
+                    self.context
+                        .account_nested(nested as usize)
+                        .map_err(|_| "size normalization work budget exceeded")?;
                     self.context
                         .account_work(steps)
                         .map_err(|_| "size normalization work budget exceeded")?;

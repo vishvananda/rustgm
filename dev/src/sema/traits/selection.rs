@@ -212,9 +212,37 @@ pub(in crate::sema) enum Selection {
 /// proof is one unit deeper than the proof that started it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub(in crate::sema) struct Nesting(u16);
+pub(crate) const NESTED_PROOF_DEPTH: &str = "nested trait proof depth budget exceeded";
+#[cfg(test)]
+thread_local! {
+    static NESTED_OBSERVATION: std::cell::Cell<(u16, usize)> = const { std::cell::Cell::new((0, 0)) };
+}
+#[cfg(test)]
+pub(in crate::sema) fn take_nested_observation() -> (u16, usize) {
+    NESTED_OBSERVATION.with(std::cell::Cell::take)
+}
+#[cfg(test)]
+pub(in crate::sema) fn record_nested_work(work: usize) {
+    NESTED_OBSERVATION.with(|observation| {
+        let (level, before) = observation.get();
+        observation.set((level, before.saturating_add(work)));
+    });
+}
 impl Nesting {
     /// The level of a proof that no other trait proof started.
     pub const ROOT: Self = Self(0);
+    const LIMIT: Self = Self(93);
+    pub fn checked(self) -> Result<Self, &'static str> {
+        #[cfg(test)]
+        NESTED_OBSERVATION.with(|observation| {
+            let (level, work) = observation.get();
+            observation.set((level.max(self.0), work));
+        });
+        if self > Self::LIMIT {
+            return Err(NESTED_PROOF_DEPTH);
+        }
+        Ok(self)
+    }
     /// The level of a proof this one starts.
     #[must_use]
     pub const fn nested(self) -> Self {

@@ -24,7 +24,11 @@ pub(in crate::sema) struct Completed(HashMap<u16, crate::sema::traits::selection
 
 #[derive(Debug, PartialEq, Eq)]
 pub(in crate::sema) enum Progress {
-    Complete { ty: TypeId, steps: usize },
+    Complete {
+        ty: TypeId,
+        steps: usize,
+        nested: u32,
+    },
     Definition(DefId),
     Dependency(crate::sema::traits::selection::Dependency),
 }
@@ -57,6 +61,7 @@ pub(in crate::sema) struct Cursor {
     selected: Option<Box<Selected>>,
     header: Option<Header>,
     before: usize,
+    nested: u32,
     placeholders: Option<crate::types::parameters::shape::Placeholders>,
     /// The level of the trait proof that owns this cursor; each query it
     /// starts is one unit below it.
@@ -85,6 +90,7 @@ impl Cursor {
             selected: None,
             header: None,
             before: 0,
+            nested: 0,
             placeholders: None,
             nesting: crate::sema::traits::selection::Nesting::ROOT,
             used: false,
@@ -121,6 +127,7 @@ impl Cursor {
             return Err("normalization cursor has an unfinished query");
         }
         self.used = true;
+        self.nested = 0;
         self.before = self.fold.steps();
         self.step = Some(self.fold.start(&mut facts.types, ty)?);
         Ok(())
@@ -180,6 +187,7 @@ impl Cursor {
                     return Ok(Progress::Complete {
                         ty,
                         steps: self.fold.steps().saturating_sub(self.before),
+                        nested: self.nested,
                     });
                 }
                 Step::Resolve(request) => request,
@@ -235,15 +243,7 @@ impl Cursor {
                     return Ok(Progress::Dependency(owner));
                 }
             };
-            let resolution = self.selected_resolution(facts, request, &projected)?;
-            let scope = map_scopes(
-                &mut self.scopes,
-                self.ambient,
-                request.scope,
-                |id| self.fold.binder(id).ok_or("missing normalization binder"),
-                |parent, count| proof.callable_scope(parent, count),
-            )?;
-            proof.append_streamed_at(projected.proof, scope)?;
+            let resolution = self.retain_projected(facts, proof, request, projected)?;
             if let Some(resolution) = resolution {
                 step = self.fold.resume(&mut facts.types, request, resolution)?;
             } else {
@@ -254,6 +254,39 @@ impl Cursor {
                     .ok_or("missing retained projection selection");
             }
         }
+    }
+
+    /// Pay a completed nested query and retain its actual scoped proof before
+    /// continuing the fold or waiting for the selected definition.
+    fn retain_projected(
+        &mut self,
+        facts: &mut Declarations,
+        proof: &mut Obligations,
+        request: Request,
+        projected: Projected,
+    ) -> Result<Option<Resolution>, &'static str> {
+        self.nested = self
+            .nested
+            .saturating_add(u32::try_from(projected.work).unwrap_or(u32::MAX));
+        if self
+            .fold
+            .steps()
+            .saturating_sub(self.before)
+            .saturating_add(self.nested as usize)
+            > 1_000_000
+        {
+            return Err("projection normalization work budget exceeded");
+        }
+        let resolution = self.selected_resolution(facts, request, &projected)?;
+        let scope = map_scopes(
+            &mut self.scopes,
+            self.ambient,
+            request.scope,
+            |id| self.fold.binder(id).ok_or("missing normalization binder"),
+            |parent, count| proof.callable_scope(parent, count),
+        )?;
+        proof.append_streamed_at(projected.proof, scope)?;
+        Ok(resolution)
     }
 
     fn selected_resolution(

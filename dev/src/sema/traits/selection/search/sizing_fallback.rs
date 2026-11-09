@@ -231,7 +231,7 @@ impl Search<'_> {
             self.query
                 .push_source_sizing(facts, node, frame.scope, frame.first..frame.first)?;
         if meta_sized {
-            self.query.steps = self.query.steps.saturating_add(1);
+            self.account_own_work(1)?;
             self.query
                 .negative_sizing
                 .as_mut()
@@ -257,7 +257,7 @@ impl Search<'_> {
             return Ok(None);
         };
         let (holds, work) = sizing.parameter(kind, ty)?;
-        self.query.steps = self.query.steps.saturating_add(work);
+        self.account_own_work(work)?;
         Ok(Some(holds))
     }
     /// A builtin requirement of a selected impl. A rigid parameter's `Sized`
@@ -273,7 +273,7 @@ impl Search<'_> {
         {
             return Ok(sized);
         }
-        self.query.builtins.prove(facts, requirement)
+        self.with_builtins(facts, |proof, facts| proof.prove(facts, requirement))
     }
     /// A `Bound::Sized` goal's rigid parameter in a negative coherence query.
     pub(super) fn negative_parameter_sized(
@@ -329,9 +329,11 @@ impl Search<'_> {
         ty: crate::types::TypeId,
     ) -> Result<crate::types::parameters::shape::Properties, &'static str> {
         if Self::normalized_inputs(frame) {
-            self.query.builtins.normalized_physical_shape(facts, ty)
+            self.with_builtins(facts, |proof, facts| {
+                proof.normalized_physical_shape(facts, ty)
+            })
         } else {
-            self.query.builtins.physical_shape(facts, ty)
+            self.with_builtins(facts, |proof, facts| proof.physical_shape(facts, ty))
         }
     }
     /// The frame's inputs are normalized under this search's environment: it

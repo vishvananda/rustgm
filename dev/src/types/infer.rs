@@ -145,6 +145,8 @@ pub struct Context {
     child_scratch: Vec<TermId>,
     marks: Vec<u32>,
     epoch: u32,
+    /// Work performed by nested proof owners, separate from reported own steps.
+    nested: u32,
     /// Equalities are retained for the later region checker, not silently erased.
     pub region_equalities: Vec<(RegionId, RegionId)>,
     pub steps: usize,
@@ -344,17 +346,30 @@ impl Context {
     /// Rejects work beyond the same budget as inference graph operations.
     pub fn account_work(&mut self, amount: usize) -> Result<(), Error> {
         self.steps = self.steps.saturating_add(amount);
-        if self.steps > 1_000_000 {
+        self.within_budget()
+    }
+    /// Charge nested work once without changing this context's own-work counter.
+    pub(crate) fn account_nested(&mut self, amount: usize) -> Result<(), Error> {
+        self.nested = self
+            .nested
+            .saturating_add(u32::try_from(amount).unwrap_or(u32::MAX));
+        self.within_budget()
+    }
+    pub(crate) const fn nested(&self) -> usize {
+        self.nested as usize
+    }
+    pub(crate) fn take_nested(&mut self) -> usize {
+        std::mem::take(&mut self.nested) as usize
+    }
+    fn within_budget(&self) -> Result<(), Error> {
+        if self.steps.saturating_add(self.nested()) > 1_000_000 {
             return Err(Error::Budget);
         }
         Ok(())
     }
     fn step(&mut self) -> Result<(), Error> {
-        self.steps += 1;
-        if self.steps > 1_000_000 {
-            return Err(Error::Budget);
-        }
-        Ok(())
+        self.steps = self.steps.saturating_add(1);
+        self.within_budget()
     }
     fn occurs(
         &mut self,

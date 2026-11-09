@@ -88,15 +88,19 @@ impl State {
             .get_mut(&key)
             .ok_or("missing clause normalization cursor")?;
         cursor.start(facts, opened)?;
-        let (ty, steps) = match cursor
-            .advance(facts, &mut self.obligations, &mut |_, _| Ok(None))?
-        {
-            Progress::Complete { ty, steps } => (ty, steps),
-            Progress::Definition(_) => return Err("missing completed associated type definition"),
-            Progress::Dependency(_) => {
-                return Err("projection selection requires a prepared implementation header");
-            }
-        };
+        let (ty, steps, nested) =
+            match cursor.advance(facts, &mut self.obligations, &mut |_, _| Ok(None))? {
+                Progress::Complete { ty, steps, nested } => (ty, steps, nested),
+                Progress::Definition(_) => {
+                    return Err("missing completed associated type definition");
+                }
+                Progress::Dependency(_) => {
+                    return Err("projection selection requires a prepared implementation header");
+                }
+            };
+        self.context
+            .account_nested(nested as usize)
+            .map_err(|_| "clause normalization work budget exceeded")?;
         self.context
             .account_work(steps)
             .map_err(|_| "clause normalization work budget exceeded")?;

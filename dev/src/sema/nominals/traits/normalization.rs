@@ -35,6 +35,9 @@ impl State {
         session.nest_at(self.nesting);
         let (normalized, steps) = session.normalize(facts, opened)?;
         self.context
+            .account_nested(session.nested_work())
+            .map_err(|_| "declaration normalization work budget exceeded")?;
+        self.context
             .account_work(steps)
             .map_err(|_| "declaration normalization work budget exceeded")?;
         let mut restore = self.obligations.restoration()?;

@@ -47,10 +47,14 @@ impl Search<'_> {
         expected: super::Predicate,
     ) -> Result<Refutation, String> {
         let before = self.query.steps;
+        let nested_before = self.query.nested;
         let paid = self.pay_negative_equalities(facts, root);
         let charged = context.account_work(self.query.steps.saturating_sub(before));
+        let nested =
+            context.account_nested(self.query.nested.saturating_sub(nested_before) as usize);
         let paid = paid?;
         charged.map_err(super::inference)?;
+        nested.map_err(super::inference)?;
         let result = self.refutation(facts, root, expected)?;
         Ok(match (paid, result) {
             (true, Refutation::Conditional(proof)) => Refutation::Equalities(Paid(proof)),

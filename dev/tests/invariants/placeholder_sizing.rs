@@ -35,6 +35,9 @@ const WELL_FORMED: [&str; 3] = [
 ];
 const TAIL: &str = "pub struct Wrap<X: ?Sized>(X); pub struct Carrier<A, B: ?Sized>(A, *const B); pub trait Tr { type Out: ?Sized; } impl<X: ?Sized> Tr for X { type Out = X; } pub struct P<T: ?Sized + Tr>(<T as Tr>::Out); pub trait Tn { type Out: ?Sized; } pub struct Q<T: ?Sized + Tn>(<T as Tn>::Out); pub trait Ts { type Out; } pub struct R<T: Ts>(<T as Ts>::Out);";
 
+#[path = "nesting_work.rs"]
+mod accounting;
+
 /// The no-core prefix every twin of the packet shares.
 fn prefix() -> TestResult<String> {
     let fixture = crate::test_source::fixture(&format!("{PACKET}/nested-tuple-head.rs"))?;

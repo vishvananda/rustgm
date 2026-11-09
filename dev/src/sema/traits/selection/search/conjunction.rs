@@ -47,6 +47,9 @@ pub(in crate::sema) fn prove_conjunction(
     }
     let roots = search.conjunction_roots(facts, context, requirements);
     let charged = context.account_work(search.query.steps).map_err(inference);
+    let nested = context
+        .account_nested(search.query.nested as usize)
+        .map_err(inference);
     if let Some(reuse) = reuse
         && let Some(active) = search.query.reuse.take()
     {
@@ -54,6 +57,7 @@ pub(in crate::sema) fn prove_conjunction(
     }
     let roots = roots?;
     charged?;
+    nested?;
     match roots {
         Roots::Proven(roots) => search.finish_conjunction(facts, roots).map_err(Into::into),
         Roots::Unproven(index) => Ok(Conjunction::Unproven(index)),

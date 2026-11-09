@@ -118,12 +118,13 @@ pub(in crate::sema) fn begin_reusing(
     availability: Availability,
     reuse: Option<&mut selection::Reuse>,
 ) -> Result<Progress, &'static str> {
+    sizing.nesting.checked()?;
     let known = known(facts, environment.as_deref(), request.0, first).map_err(|error| {
-        if crate::sema::census::exhausts_budget(&error) {
-            "canonical projection premise work exhausted"
-        } else {
-            "invalid canonical projection premise"
-        }
+        normalization_cause(
+            &error,
+            "canonical projection premise work exhausted",
+            "invalid canonical projection premise",
+        )
     })?;
     if let Some(projected) = known {
         return Ok(Progress::Ready(projected));
@@ -157,6 +158,7 @@ fn known(
     Ok(
         selection::known_normalized(facts, environment, request)?.map(|(source, resolution)| {
             Projected {
+                work: 0,
                 provisional_size: false,
                 source: Some(source),
                 resolution: Some(resolution),
@@ -482,7 +484,7 @@ impl Query {
         selected.map_err(|error| {
             #[cfg(test)]
             selection::copy_trace::record(|| format!("normal-form selection: {error}"));
-            crate::sema::census::fold_cause(
+            normalization_cause(
                 &error,
                 "canonical trait selection work exhausted",
                 "invalid canonical trait selection",
@@ -516,7 +518,7 @@ impl Query {
             self.state.obligations.regions.end,
         )
         .map_err(|error| {
-            crate::sema::census::fold_cause(
+            normalization_cause(
                 &error,
                 "associated equality selection work exhausted",
                 "invalid associated equality selection",
@@ -529,6 +531,13 @@ impl Query {
         facts: &mut Declarations,
         mut resolution: Option<Resolution>,
     ) -> Result<Progress, &'static str> {
+        let work = self
+            .state
+            .context
+            .steps
+            .saturating_add(self.state.context.nested());
+        #[cfg(test)]
+        selection::record_nested_work(self.state.context.steps);
         let sized = std::mem::take(&mut self.state.sized);
         let provisional_size = self.state.provisional_size;
         let proof = self.state.finish();
@@ -545,6 +554,7 @@ impl Query {
             resolution = Some(Resolution::Type(ty));
         }
         Ok(Progress::Ready(Projected {
+            work,
             provisional_size,
             source: self.source,
             resolution,
@@ -552,6 +562,19 @@ impl Query {
             sized,
             family: self.alias.arguments(),
         }))
+    }
+}
+
+/// Only the named depth failure crosses these existing normalization folds.
+fn normalization_cause(
+    error: &str,
+    exhausted: &'static str,
+    invalid: &'static str,
+) -> &'static str {
+    if error == selection::NESTED_PROOF_DEPTH {
+        selection::NESTED_PROOF_DEPTH
+    } else {
+        crate::sema::census::fold_cause(&error, exhausted, invalid)
     }
 }
 

@@ -132,7 +132,7 @@ impl Checker<'_> {
             Progress::Dependency(owner) => {
                 self.suspend_projection(continuation, super::super::Requirement::from(owner))
             }
-            Progress::Complete { ty, steps } => {
+            Progress::Complete { ty, steps, .. } => {
                 self.facts.body_work.projection_steps += steps;
                 self.state
                     .infer

@@ -434,7 +434,10 @@ impl Pending {
         let charged = context
             .account_work(std::mem::take(&mut self.query.steps))
             .map_err(super::inference);
-        result.and_then(|hints| charged.map(|()| hints))
+        let nested = context
+            .account_nested(std::mem::take(&mut self.query.nested) as usize)
+            .map_err(super::inference);
+        result.and_then(|hints| charged.and(nested).map(|()| hints))
     }
     /// Reserve every allocated trial ID before declaration work begins.
     pub fn allocation_end(&self) -> u32 {

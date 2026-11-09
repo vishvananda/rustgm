@@ -74,6 +74,7 @@ pub(super) struct Query {
     pub cycles: usize,
     pub reused: bool,
     pub steps: usize,
+    pub nested: u32,
     #[cfg(test)]
     pub storage_steps: usize,
     /// The owner count of each impl candidate list this query assembled.
@@ -115,6 +116,7 @@ impl<'a> Search<'a> {
         caller: Caller<'a>,
         availability: Availability,
     ) -> Result<Self, &'static str> {
+        caller.nesting.checked()?;
         let placeholders = caller.placeholders;
         if placeholders.is_some() && caller.environment.is_some() {
             return Err("placeholder premises require a premise-less caller");
@@ -176,6 +178,7 @@ impl<'a> Search<'a> {
                 cycles: 0,
                 reused: false,
                 steps: 0,
+                nested: 0,
                 #[cfg(test)]
                 storage_steps: 0,
                 #[cfg(test)]
@@ -366,6 +369,9 @@ impl<'a> Search<'a> {
         };
         caller
             .account_work(std::mem::take(&mut self.query.steps))
+            .map_err(super::inference)?;
+        caller
+            .account_nested(std::mem::take(&mut self.query.nested) as usize)
             .map_err(super::inference)?;
         Ok(changed)
     }

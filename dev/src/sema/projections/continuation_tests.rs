@@ -189,7 +189,7 @@ fn shared_graphs_resume_each_selection_once_and_reuse_completed_roots() -> TestR
                     assert!(cursor.start(&mut facts, child).is_err());
                     facts.definitions[definition.0 as usize] = templates.remove(&definition);
                 }
-                Progress::Complete { ty, steps } => {
+                Progress::Complete { ty, steps, .. } => {
                     assert_eq!(ty, expected);
                     break steps;
                 }

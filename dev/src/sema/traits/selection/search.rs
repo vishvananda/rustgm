@@ -258,6 +258,9 @@ impl Search<'_> {
         }
         suspension::observe_work(&mut attempted, self.query.steps);
         context.account_work(self.query.steps).map_err(inference)?;
+        context
+            .account_nested(self.query.nested as usize)
+            .map_err(inference)?;
         match decision {
             Decision::Absent => Ok(Selection::Absent),
             Decision::Deferred => Ok(Selection::Deferred),
@@ -289,14 +292,48 @@ impl Search<'_> {
         }
     }
     fn charge(&mut self, context: &mut Context) -> Result<(), String> {
-        self.account_query_work(1 + std::mem::take(&mut context.steps))
+        self.account_query_work(std::mem::take(&mut context.steps).saturating_add(1))?;
+        self.account_nested_work(context.take_nested())
+            .map_err(Into::into)
     }
     fn account_query_work(&mut self, work: usize) -> Result<(), String> {
+        self.account_own_work(work).map_err(Into::into)
+    }
+    fn account_own_work(&mut self, work: usize) -> Result<(), &'static str> {
         self.query.steps = self.query.steps.saturating_add(work);
-        if self.query.steps > 1_000_000 {
-            return Err("trait selection work budget exceeded".into());
+        self.within_work_budget()
+    }
+    fn account_nested_work(&mut self, work: usize) -> Result<(), &'static str> {
+        self.query.nested = self
+            .query
+            .nested
+            .saturating_add(u32::try_from(work).unwrap_or(u32::MAX));
+        self.within_work_budget()
+    }
+    fn within_work_budget(&self) -> Result<(), &'static str> {
+        if self.query.steps.saturating_add(self.query.nested as usize) > 1_000_000 {
+            return Err("trait selection work budget exceeded");
         }
         Ok(())
+    }
+    fn with_builtins<T>(
+        &mut self,
+        facts: &mut Declarations,
+        action: impl FnOnce(
+            &mut crate::sema::nominals::Proof,
+            &mut Declarations,
+        ) -> Result<T, &'static str>,
+    ) -> Result<T, &'static str> {
+        self.caller.nesting.nested().checked()?;
+        let before = self.query.builtins.own_work();
+        let nested = self.query.builtins.nested_work();
+        let result = action(&mut self.query.builtins, facts)?;
+        let own = self.query.builtins.own_work().saturating_sub(before);
+        let work = own.saturating_add(self.query.builtins.nested_work().saturating_sub(nested));
+        self.account_nested_work(work)?;
+        #[cfg(test)]
+        super::record_nested_work(own);
+        Ok(result)
     }
     fn remember(
         &mut self,

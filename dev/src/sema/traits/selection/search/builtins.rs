@@ -167,9 +167,9 @@ impl Search<'_> {
                 // The remaining projections of this frame's normalized inputs
                 // are rigid and keep the caller's lifetimes, so the builtin
                 // proof must not normalize them again.
-                self.query.builtins.prove_normalized(facts, goal)?
+                self.with_builtins(facts, |proof, facts| proof.prove_normalized(facts, goal))?
             } else {
-                self.query.builtins.prove(facts, goal)?
+                self.with_builtins(facts, |proof, facts| proof.prove(facts, goal))?
             };
             if !valid {
                 return Ok(Action::Complete(Decision::Absent));

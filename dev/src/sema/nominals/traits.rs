@@ -105,6 +105,7 @@ pub(crate) struct State {
     nesting: selection::Nesting,
 }
 pub(crate) struct Projected {
+    pub work: usize,
     pub provisional_size: bool,
     pub source: Option<selection::Source>,
     pub resolution: Option<substitute::Resolution>,
@@ -138,6 +139,9 @@ impl State {
     }
     pub(crate) const fn selection_steps(&self) -> usize {
         self.context.steps
+    }
+    pub(in crate::sema) const fn nested_work(&self) -> usize {
+        self.context.nested()
     }
 
     pub(crate) fn instance(

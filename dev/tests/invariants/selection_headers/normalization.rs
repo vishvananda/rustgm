@@ -187,7 +187,7 @@ fn scoped_projection_waits_preserve_one_provider_and_exclude_foreign_regions() -
                 Progress::Definition(_) => {
                     return Err("completed definitions were unexpectedly lost".into());
                 }
-                Progress::Complete { ty, steps } => {
+                Progress::Complete { ty, steps, .. } => {
                     assert_eq!(ty, f.expected);
                     assert!(steps < 32);
                     break;

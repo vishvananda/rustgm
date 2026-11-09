@@ -89,7 +89,7 @@ fn a_child_can_publish_the_waiting_parents_root_without_replacing_recipe_ids() -
                 } else {
                     progress
                 };
-                let projections::Progress::Complete { ty, steps } = progress else {
+                let projections::Progress::Complete { ty, steps, .. } = progress else {
                     return Err("restored definition did not complete".into());
                 };
                 caller.normalized(&mut facts, &mut query, ty, steps)?;
@@ -246,7 +246,8 @@ fn every_field_wait_retains_the_graph_frontier_in_deep_shared_recipes() -> TestR
                 proof.resume_at(proof.regions.end + 3)?;
                 facts.definitions[definition.0 as usize] = saved;
             }
-            let projections::Progress::Complete { ty, steps } = advance(&mut facts, &mut proof)?
+            let projections::Progress::Complete { ty, steps, .. } =
+                advance(&mut facts, &mut proof)?
             else {
                 return Err("pending field did not complete".into());
             };

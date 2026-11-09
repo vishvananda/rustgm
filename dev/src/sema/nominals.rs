@@ -644,11 +644,17 @@ impl Proof {
     ) -> Result<(), &'static str> {
         self.trait_state(facts)?.assume_placeholders(placeholders)
     }
-    #[cfg(test)]
     pub(in crate::sema) fn shape_steps(&self) -> usize {
         self.shapes
             .as_deref()
             .map_or(0, crate::types::parameters::shape::Shapes::steps)
+    }
+    pub(in crate::sema) fn own_work(&self) -> usize {
+        self.shape_steps()
+            .saturating_add(self.trait_selection_steps())
+    }
+    pub(in crate::sema) fn nested_work(&self) -> usize {
+        self.traits.as_deref().map_or(0, traits::State::nested_work)
     }
     /// The work this proof's trait State has accounted, or none before it has one.
     #[cfg(test)]

@@ -98,6 +98,9 @@ pub(in crate::sema) fn may_overlap_with(
     context
         .account_work(search.query.steps)
         .map_err(|e| e.to_string())?;
+    context
+        .account_nested(search.query.nested as usize)
+        .map_err(|e| e.to_string())?;
     if search.query.cycles != 0 {
         return Ok(true);
     }

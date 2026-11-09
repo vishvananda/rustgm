@@ -34,7 +34,9 @@ impl Checker<'_> {
                 .advance(self.facts, &mut proof, &mut |_, _| Ok(None))
                 .map_err(|e| self.error(node, e))?
             {
-                crate::sema::projections::Progress::Complete { ty, steps } => break (ty, steps),
+                crate::sema::projections::Progress::Complete { ty, steps, .. } => {
+                    break (ty, steps);
+                }
                 crate::sema::projections::Progress::Dependency(
                     crate::sema::traits::selection::Dependency::Header(owner),
                 ) if crate::sema::declarations::iteration::range_contracts::owns_header(
