@@ -92,9 +92,11 @@ function metadata requires its wider profile", from `_mm_stream_ps`'s
 (`docs/parallel/target-feature-rows.md`) carried its declared `sse` as
 header bit 3. The packet now exports, with `_mm_stream_ps`'s inline hint,
 its one feature and its one template `movntps [{p}],{a}`. The cross-crate
-witness in `../target-feature-transport` then stops at its client's
-`extern "C"` signatures over the imported `__m128`. `contract.json` keeps
-the B1 observation as recorded.
+witness in `../target-feature-transport` first stopped at its client's
+`extern "C"` signatures over the imported `__m128`. After F's amendment 5
+its client exports one scalar C function, lowers exactly this template and
+exits 42 natively with the imported `movntps`. `contract.json` keeps the B1
+observation as recorded.
 
 Amendment (B2 A's comment fence, `docs/parallel/asm-transport.md`): the
 pinned backend's assembler reads only `#` comments. `block-comment.rs` and

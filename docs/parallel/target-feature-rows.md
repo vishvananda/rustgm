@@ -129,7 +129,7 @@ holds the provider, seven ordinary clients and the stream witness's provider
 and client. Every outcome was declared in
 `pa41/tests/target-feature-transport-outcomes.json` at 2026-11-09T12:30:08Z
 (sha `644bb438305380c14a7a392df14794724eacbea28157228379e41bb54e6216e7`),
-before the rustc oracle and before any F code. The four amendments are in
+before the rustc oracle and before any F code. The five amendments are in
 `obj/parallel/target-feature-transport/f-amendments`; the outcomes file
 records each one beside the outcome it changes.
 
@@ -139,6 +139,7 @@ records each one beside the outcome it changes.
 | 2 | 14:07:40Z, the integrator's option A | `Lane::get` and `inherent.rs` withdrawn after the first run showed the provider fenced; `opponent-inherent` and the safe-inherent forgery added |
 | 3 | 14:23:30Z, after the first integration run | safe-pointer's text, pa29's unknown-flags wire control moved from byte 8 to 16, the witness's packet name |
 | 4 | 14:28:00Z, after the rerun | twin-keep's declared parity restored, the witness's stop at step 3, one diagnostic probe |
+| 5 | 14:44:00Z, the integrator's bounded retry, before any run of the new client | a scalar-surface stream client and `generated/stream-main.c`; two rustc fixture rounds recorded before any RustGM run |
 
 Failed predictions, each recorded and not reblessed:
 
@@ -176,7 +177,7 @@ Failed predictions, each recorded and not reblessed:
 | cpu policy | the imported-asm union admits `xmm_reg` with an imported `{sse}` over a baseline without sse, and rejects it with no import |
 | stream witness, step 1 | `native.rs` before its observers exports: `_mm_stream_ps` carries its inline hint, `[sse]` and the one template `movntps [{p}],{a}` |
 | stream witness, step 2 | `stream-provider.rs` exports; its lines 1-95 equal `native.rs`'s |
-| stream witness, step 3 | stopped: see below |
+| stream witness, step 3 | amendment 4 stopped it; after amendment 5 the client is accepted, lowers the one imported template and exits 42 natively: see below |
 
 Receipts are in `obj/parallel/target-feature-transport/receipts`. The base
 is the F0 candidate `d9883c84` (from `b2a14ea76`), and the F candidate is
@@ -202,32 +203,69 @@ Focused checks:
   amended wire control.
 - The native root passed 4 (`obj/qualification/fast/1794234728100327619`):
   F's clients and S's, A's and the cold clients.
+- Rebased on main `c8c2a8eda`, F passed the same 20 tests
+  (`obj/qualification/fast/1794236680035455749`) and the native 4
+  (`obj/qualification/fast/1794237148386204197`). The first attempt ran out
+  of the five-minute budget in strict private Clippy on the cache the rebase
+  had invalidated; the retry passed.
+- After amendment 5, the set with the new witness test passed 20
+  (`obj/qualification/fast/1794237796537172947`), and the native root passed
+  5, the witness included (`obj/qualification/fast/1794237860858302885`).
+  `make test-upstream` passed.
 
-## The stream witness's stop
+## The stream witness
 
-The fresh stream-client consumer is rejected with "nominal shape or
-representation is outside the metadata profile"
-(`sema/crates/export/records.rs`). This is the third named risk: an
-imported SIMD type in a client `extern "C"` signature.
+**Amendment 4's stop.** The first stream-client consumer was rejected with
+"nominal shape or representation is outside the metadata profile"
+(`sema/crates/export/records.rs`). This is the third named risk: an imported
+SIMD type in a client `extern "C"` signature.
 
 - A fresh client is a non-source library. Its own legacy interface discovery
   walks every public signature and admits named-field records only.
   `rg_stream_ps(p, a: __m128)`, `rg_stream_default` and `rg_generic` name
   the tuple struct `__m128`.
-- Under the stop rule, the integration test records that text,
-  `stream-client.rs` is unchanged and the native witness does not run.
 - **Probe (declared, diagnostic only).** The client without those three
   functions stops at "exposed type is outside the scalar metadata profile"
   (`sema/crates/export.rs`), from the `*mut f32` parameters of the
-  remaining exports.
-  - Neither of the other two named risks is reached.
-  - Both fences belong to the client's own library export and are
-    independent of F's row.
-- The next step is the integrator's decision.
+  remaining exports. Both fences belong to the client's own library export
+  and are independent of F's row.
+
+**Amendment 5, the integrator's one bounded retry.** The rebuilt client
+exports one scalar C function, `rg_stream_check() -> i32`. It builds a vector
+with `rg_vector([1.0, 2.0, 3.0, 4.0])`, streams it through the imported
+`_mm_stream_ps` into a 16-byte-aligned local and returns 42 only if all four
+lanes read back. `generated/stream-main.c` calls it. Every outcome was
+declared before the client's first run.
+
+- **rustc fixture rounds**, each recorded before any RustGM run:
+  - Round 1: u32 lanes matched against literal patterns stopped rustc 1.98.0
+    with an internal compiler error. The foundation declares no `Copy` for
+    u32, so the lanes became f32.
+  - Round 2: the `#[repr(C, align(16))]` local the ruling named stopped
+    rustc with "requires `freeze` lang_item". Borrowing any local record asks
+    whether it is Freeze, and the foundation declares no `freeze`, as S's
+    store amendment found. Four rustc probes located the borrow.
+  - The buffer is now a u128 local, which x86_64 aligns to 16 bytes in rustc
+    1.98 and in RustGM. The lanes are read through a `#[repr(C)]` view. The
+    surface, the imported call and the four-lane check are unchanged. rustc
+    then builds it, exits 42 and emits one `movntps`.
+- **RustGM**, as declared: the fresh consumer is accepted. Its `LowIR` has
+  exactly one assembly template, equal to
+  `spec/asm-native/stream-template.lowir` once its label is `@asm0`, and one
+  `asm` use, in the imported `_mm_stream_ps` instance.
+- **Native**, as declared: the pinned backend's object, linked with
+  `stream-main.c`, exits 42 with empty stdout. Its disassembly holds exactly
+  one `movntps XMMWORD PTR [r10],xmm14`. This is the cross-crate witness: the
+  imported `movntps` body executes in the client.
+- **Alignment note.** RustGM lowers the u128 local as `slot $s0 : i128`, and
+  the pinned backend placed it at `[rbp-0x10]` of a 16-byte-aligned frame.
+  `shared/lowir.md` states no alignment for an `i128` slot, so this is the
+  backend's observed layout, not a LowIR rule.
 
 ## Remaining
 
-- The stream witness's client fences above.
+- The two client export fences of amendment 4, now unassigned blockers
+  queued after record variants (library-build-blockers.md).
 - Target features on unsafe inherent methods, with the associated-unsafe
   widening item.
 - Safe target-feature functions, trait members, and non-Rust-ABI or `const`

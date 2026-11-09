@@ -79,13 +79,11 @@ const SECOND: &str =
 /// The stream witness shares native.rs's lines before its observers: the
 /// real `_mm_stream_ps` body.
 const STREAM_PRELUDE: usize = 95;
-/// Amendment 4: the witness's client stops at the third named risk, an
-/// imported SIMD type in its `extern "C"` signatures. A fresh client is a
-/// non-source library whose own interface discovery admits named-field
-/// records only, so `rg_stream_ps(p, a: __m128)` stops it. Recorded under the
-/// stop rule; the native witness waits for that fence.
-const STREAM_CLIENT_OBSERVED: &str =
-    "nominal shape or representation is outside the metadata profile";
+/// Amendment 5: the witness's C surface is one scalar function, since a
+/// fresh client's own interface discovery admits neither the imported
+/// `__m128` nor a raw pointer in an exported signature.
+const STREAM_MAIN: &str =
+    "int rg_stream_check(void);\nint main(void) { return rg_stream_check(); }\n";
 
 fn unwritten(path: &std::path::Path) -> Result<bool> {
     Ok(!path.exists() || std::fs::metadata(path)?.len() == 0)
@@ -236,12 +234,26 @@ fn target_feature_forms_outside_the_slice_keep_their_fences_at_export() -> Resul
     );
     super::artifacts::checked("gated", &packet.folder, &mut client).map(drop)
 }
+/// The one assembly template in `lowir`, with its label spelled `@asm0`.
+fn stream_template(lowir: &str) -> Result<String> {
+    const HEADER: &str = "assembly @asm";
+    let starts: Vec<usize> = lowir
+        .match_indices(HEADER)
+        .map(|(offset, _)| offset)
+        .collect();
+    let [start] = *starts.as_slice() else {
+        return Err(format!("assembly templates at {starts:?}").into());
+    };
+    let block = &lowir[start + HEADER.len()..];
+    let end = block.find("\n}\n").ok_or("assembly template end")? + 3;
+    let label = block.find(' ').ok_or("assembly template header")?;
+    Ok(format!("{HEADER}0{}", &block[label..end]))
+}
 /// The real `_mm_stream_ps` body crosses the crate boundary with its declared
 /// `sse` and inline hint. The packet is named `provider`, since its name is
 /// the crate disambiguator's stem.
-#[test]
-fn the_stream_witness_exports_and_its_client_stops_at_the_recorded_fence() -> Result {
-    let packet = Packet::new(GROUP, SPEC, "feature-stream", "provider")?;
+fn stream_packet(label: &str) -> Result<Packet> {
+    let packet = Packet::new(GROUP, SPEC, label, "provider")?;
     let source = packet.fixture("stream-provider");
     super::artifacts::checked(
         "stream-provider",
@@ -261,11 +273,52 @@ fn the_stream_witness_exports_and_its_client_stops_at_the_recorded_fence() -> Re
         provider.lines().nth(STREAM_PRELUDE),
         Some("// Authored stream witness section.")
     );
-    packet.rejected(
+    super::artifacts::checked(
         "stream-client",
+        &packet.folder,
         &mut packet.client("stream-client"),
-        STREAM_CLIENT_OBSERVED,
-    )
+    )?;
+    Ok(packet)
+}
+/// The witness client lowers the imported body's one template and one use.
+#[test]
+fn the_stream_witness_client_lowers_the_imported_template() -> Result {
+    let packet = stream_packet("feature-stream")?;
+    let lowir = std::fs::read_to_string(packet.folder.join("stream-client.lowir"))?;
+    let declared =
+        std::fs::read_to_string(packet.root.join(format!("{NATIVE}/stream-template.lowir")))?;
+    assert_eq!(stream_template(&lowir)?, declared);
+    let uses = lowir
+        .lines()
+        .filter(|line| line.trim_start().starts_with("asm @asm"))
+        .count();
+    assert_eq!(uses, 1);
+    Ok(())
+}
+/// The imported `movntps` body runs in the client: a 16-byte-aligned local
+/// holds every streamed lane.
+#[test]
+#[ignore = "requires configured locked CPPGM object backend, host C compiler and GNU objdump"]
+fn the_stream_witness_client_executes_natively() -> Result {
+    let packet = stream_packet("feature-stream-native")?;
+    let output = packet.native_with("stream-client", STREAM_MAIN)?;
+    assert_eq!(output.status.code(), Some(42));
+    assert!(output.stdout.is_empty());
+    let disassembly = super::artifacts::checked(
+        "objdump",
+        &packet.folder,
+        std::process::Command::new("objdump")
+            .args(["-d", "-M", "intel", "--no-show-raw-insn"])
+            .arg(packet.folder.join("stream-client.o")),
+    )?;
+    let text = String::from_utf8(disassembly.stdout)?;
+    std::fs::write(packet.folder.join("stream-client.disassembly"), &text)?;
+    let stores = text
+        .lines()
+        .filter(|line| line.contains("movntps XMMWORD PTR [") && line.contains("],xmm"))
+        .count();
+    assert_eq!(stores, 1);
+    Ok(())
 }
 #[test]
 #[ignore = "requires configured locked CPPGM object backend and host C compiler"]

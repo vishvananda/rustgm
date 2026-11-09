@@ -101,6 +101,14 @@ impl Packet {
         )
     }
     pub fn native(&self, label: &str) -> Result<Output> {
+        self.native_with(
+            label,
+            "int entry(void); int main(void) { return entry(); }\n",
+        )
+    }
+    /// Lowers `label`'s `LowIR` with the backend, links it with the C `main`
+    /// and runs it.
+    pub fn native_with(&self, label: &str, main: &str) -> Result<Output> {
         let object = self.folder.join(format!("{label}.o"));
         super::artifacts::checked(
             "backend",
@@ -113,10 +121,7 @@ impl Packet {
                 .arg(&object),
         )?;
         let observer = self.folder.join("observer.c");
-        std::fs::write(
-            &observer,
-            "int entry(void); int main(void) { return entry(); }\n",
-        )?;
+        std::fs::write(&observer, main)?;
         let executable = self.folder.join(label);
         super::artifacts::checked(
             "link",

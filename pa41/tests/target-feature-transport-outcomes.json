@@ -8,7 +8,7 @@
   "expectation_frozen_before_candidate": true,
   "development_note": "declared during the integrator's joined-F0 hold, before any rustc run of these files and before any F code, from the integrator-approved F notice (sections 0-11, scratchpad f-notice-20261109.md) and its rulings",
   "rule": "B2 slice F: version thirteen's function HeaderContract flags bit 3 (0x08) means declared target features follow (count u32, then length u32 and name bytes, strictly increasing byte order, 1-128 names of 1-32 bytes), admitted only under body_nodes(); the consumer resolves the names against its own table, closes them, re-proves the function's shape and widens only the imported asm CPU policy (baseline plus closure)",
-  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort; providers as rlib with --emit=link,obj -Ccodegen-units=1; clients as lib objects with --extern base; native clients link the provider object, the client object and a C main calling entry (the stream witness: asm-native observer.c and entry.c)",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort; providers as rlib with --emit=link,obj -Ccodegen-units=1; clients as lib objects with --extern base; native clients link the provider object, the client object and a C main calling entry (the stream witness, after amendment 5: generated/stream-main.c calling rg_stream_check)",
   "inputs": {
     "spec/call.rs": "2479ea95f50b6cf27204d92d210a01474c6077de3d2b4d8c4a8fd751e242eb71",
     "spec/gated.rs": "218e9da2dfebc57d0eb311531f507c4a12646efbca7d6d5696b9274769de5ec9",
@@ -16,7 +16,7 @@
     "spec/pointer.rs": "138270c1d57e8f524935344b99097233665976fc71a68208d1338ecb6cc44c2c",
     "spec/provider.rs": "63368856f6189f145e8123ac620cb34292eebc436aa14aa528093789b8a71a23",
     "spec/safe-pointer.rs": "bcd3678d29dd3b5ace65b18ac9cbaad9e84ba70b295334ef7497160ccd3aed84",
-    "spec/stream-client.rs": "ddcfb088325e81b39fc5cf206b407a80508ccf8d33378ae43a0845246207759e",
+    "spec/stream-client.rs": "10fd1e4ea1e008da3593d54670c888db6cb67006ad426c73c0b7df457eddb4c0",
     "spec/stream-provider.rs": "8327d49e3733a7605c966ec022238f85e4832fb9bd2c1efe48c6d3e5ffdb700a",
     "spec/unsafe-free.rs": "db8c417debca45c8f11e5cc85b4aff286efff8380a7da63504b61c934ff9dfc0",
     "spec/wide.rs": "c1c6b0134beaee0d616cc62eab23bcde1b2d6a95a9cd02514b8289d5dc787f20",
@@ -33,7 +33,8 @@
     "generated/opponent-trait-impl.rs": "c2c5b55d5db4ef3678c329f0c07f98be5d2a88d50c2a5ef74b2c9daa7d37706a",
     "generated/twin-keep.rs": "74bb2a249f57cd698876c70a5bf3cc0099b40d11193b859c5ca0c9ae8cd368d1",
     "generated/twin-safe-pointer.rs": "80bf1475b1dbd394fd9692ba0ea1980c9ae1af0c9e96891a7c492f100104d7d0",
-    "generated/twin-unsafe-free.rs": "ff85441388e018a11c3545be2d31bbf0d3a0a93ecc7ba99a0f0667637585c874"
+    "generated/twin-unsafe-free.rs": "ff85441388e018a11c3545be2d31bbf0d3a0a93ecc7ba99a0f0667637585c874",
+    "generated/stream-main.c": "7c54f9fe64bb4926402b07ca347b4736fa667b5ab93eee013beb2fd60e88d486"
   },
   "provider": {
     "file": "spec/target-feature-transport/provider.rs",
@@ -261,6 +262,19 @@
         "observed": "step 2 exports as declared; the fresh stream-client consumer is rejected with `nominal shape or representation is outside the metadata profile` (sema/crates/export/records.rs:267): its own non-source library interface discovery reaches `__m128` in the `extern \"C\"` signatures of rg_stream_ps, rg_stream_default and rg_generic and admits named-field records only",
         "named_risk": "the third, an imported SIMD type in a client `extern \"C\"` signature",
         "stop_rule": "the witness stops at step 3: the text is recorded by the integration test, the native witness does not run, and the integrator decides the next step; stream-client.rs is unchanged"
+      },
+      "amended_5": {
+        "recorded": "2026-11-09T14:44:00Z (amendment 5, the integrator's one bounded retry), before any run of the rebuilt client; its two rustc fixture rounds were recorded before any RustGM run",
+        "client": "stream-client.rs rebuilt with a scalar C surface, `extern \"C\" fn rg_stream_check() -> i32`: it streams `rg_vector([1.0, 2.0, 3.0, 4.0])` through the imported `_mm_stream_ps` into a u128 local, which x86_64 aligns to 16 bytes, reads the four lanes back as f32 through a `#[repr(C)]` view and returns 42 only if all four match (1 to 4 name the first wrong lane). Declared 7ca42622fb7939b63b39033cc81346ef749c56dfe0e5a2e3fbd8ff5d6c2b9b03, now 10fd1e4ea1e008da3593d54670c888db6cb67006ad426c73c0b7df457eddb4c0",
+        "main": "generated/stream-main.c, `int rg_stream_check(void);` and `int main(void) { return rg_stream_check(); }`; observer.c, entry.c and expected.stdout no longer take part",
+        "rustc_fixture_rounds": [
+          "round 1: u32 lanes matched against literal patterns stopped rustc 1.98.0 with an internal compiler error (`fully_perform`, status 101): the foundation declares no `Copy` for u32. The lanes became f32",
+          "round 2: the `#[repr(C, align(16))]` local the ruling named stopped rustc with `requires `freeze` lang_item` (status 1): borrowing a local record asks whether it is Freeze, and the foundation declares no `freeze`, as simd-transport-outcomes.json's store amendment recorded. Four rustc probes located the borrow. The buffer became a u128 local, aligned by its type; the surface, the imported call and the four-lane check are unchanged"
+        ],
+        "rustc": "observed: the provider and the client build (status 0), link with stream-main.c and exit 42 with empty stdout, and the client object holds one `movntps XMMWORD PTR [..],xmm` in its `_mm_stream_ps` instance",
+        "rustgm_lowir": "observed as declared: the fresh consumer is accepted; its LowIR has exactly one assembly template, equal to spec/asm-native/stream-template.lowir once its label is @asm0, and one `asm` use, in the imported `_mm_stream_ps` instance",
+        "native": "observed as declared: the pinned backend's client object linked with stream-main.c exits 42 with empty stdout, and its disassembly holds exactly one `movntps XMMWORD PTR [r10],xmm14`. This is the cross-crate witness: the imported movntps body executes in the client",
+        "alignment_note": "RustGM lays out u128 at 16 bytes (abi/layout.rs) and lowers the local as `slot $s0 : i128`; the pinned backend placed it at [rbp-0x10] of a 16-byte-aligned frame. shared/lowir.md states no alignment for an i128 slot, so the 16-byte placement is the pinned backend's observed layout, not a LowIR rule"
       }
     }
   },
@@ -271,6 +285,7 @@
     "1": "obj/parallel/target-feature-transport/f-amendments/amendment-1.json, 2026-11-09T13:30:02Z, after the rustc oracle and before any RustGM run: twin-keep's named fence, the twin texts, the untargeted bounded-work comparison, the NominalHeader 96 -> 104 pin, the consumer forgery client and mechanism, the u32 clone row and in-process LowIR for the declared-accepted forgeries",
     "2": "obj/parallel/target-feature-transport/f-amendments/amendment-2.json, 2026-11-09T14:07:40Z, the integrator's option A: Lane::get and inherent.rs withdrawn, opponent-inherent and the safe-inherent forgery added; the original declared outcomes are 644bb438305380c14a7a392df14794724eacbea28157228379e41bb54e6216e7",
     "3": "obj/parallel/target-feature-transport/f-amendments/amendment-3.json, 2026-11-09T14:23:30Z, after the first integration run: safe-pointer's text for the client and its twin, pa29's unknown-flags wire control moved from byte 8 to 16 with byte 8 kept as a target-feature control, and the stream witness's packet name",
-    "4": "obj/parallel/target-feature-transport/f-amendments/amendment-4.json, 2026-11-09T14:28:00Z, after the integration rerun: twin-keep's declared parity restored (amendment 1's prediction withdrawn) and the stream witness stopped at step 3 by its third named risk, with one declared diagnostic probe"
+    "4": "obj/parallel/target-feature-transport/f-amendments/amendment-4.json, 2026-11-09T14:28:00Z, after the integration rerun: twin-keep's declared parity restored (amendment 1's prediction withdrawn) and the stream witness stopped at step 3 by its third named risk, with one declared diagnostic probe",
+    "5": "obj/parallel/target-feature-transport/f-amendments/amendment-5.json, 2026-11-09T14:44:00Z, the integrator's bounded retry of step 3: a scalar-surface stream client and generated stream-main.c, two recorded rustc fixture rounds (u32 lanes, then a borrowed local record without `freeze`), then the declared step 3 and native outcomes as observed"
   }
 }

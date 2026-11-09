@@ -52,8 +52,14 @@ authored observers, byte for byte: the real `_mm_stream_ps` body. After the
 line `// Authored stream witness section.` are `rg_vector`, an unsafe,
 non-const stand-in for `_mm_setr_ps` with `#[inline]` and `enable = "sse"`,
 and native.rs's observer bodies moved into Rust-ABI functions.
-`stream-client.rs` defines the six `rg_*` symbols that
-`../asm-native/observer.c` calls, through the provider's functions.
+`stream-client.rs` (amendment 5) exports one scalar C function,
+`rg_stream_check() -> i32`. It streams `rg_vector([1.0, 2.0, 3.0, 4.0])`
+through the imported `_mm_stream_ps` into a u128 local, which x86_64 aligns
+to 16 bytes as `movntps` requires, reads the lanes back through a
+`#[repr(C)]` view of four f32 and returns 42 only if all four match. The
+test's C `main` (`generated/stream-main.c`) calls it. The first client, which
+exported `__m128` and `*mut f32` signatures for `../asm-native/observer.c`,
+stopped at its own library export (amendment 4).
 
 ## Generated controls
 

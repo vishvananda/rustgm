@@ -287,10 +287,19 @@
         "after": "8c1e92fe5c69ab12d937ffb8dd01ddee8a4151ee9921548875f3fd41ecb8a97d"
       },
       "unchanged": "controls keeps the B1 record; transport.rs, the stream template, native.rs, observer.c, entry.c and the native outcome are unchanged; observations_after_run keeps the B1 observation as recorded. The cross-crate witness (spec/target-feature-transport) stops at its client's `extern \"C\"` signatures over the imported `__m128`, recorded in target-feature-transport-outcomes.json"
+    },
+    {
+      "item": "B2 F amendment 5, the stream witness's bounded retry (docs/parallel/target-feature-rows.md)",
+      "declared": "2026-11-09T14:44:00Z, before any run of the rebuilt client, in obj/parallel/target-feature-transport/f-amendments/amendment-5.json and recorded in pa41/tests/target-feature-transport-outcomes.json (stream_witness.step_3.amended_5)",
+      "README.md": {
+        "before": "8c1e92fe5c69ab12d937ffb8dd01ddee8a4151ee9921548875f3fd41ecb8a97d",
+        "after": "cd332364a0e8c3dcfaaa5ac0482416e555aab5ba6a4303604a1a4b93a64132e3"
+      },
+      "unchanged": "controls keeps the B1 record; transport.rs, the stream template, native.rs, observer.c, entry.c, expected.stdout and the native outcome are unchanged; observations_after_run keeps the B1 observation as recorded. The cross-crate witness's client in spec/target-feature-transport lowers exactly stream-template.lowir once its label is @asm0 and exits 42 natively"
     }
   ],
   "files": {
-    "README.md": "8c1e92fe5c69ab12d937ffb8dd01ddee8a4151ee9921548875f3fd41ecb8a97d",
+    "README.md": "cd332364a0e8c3dcfaaa5ac0482416e555aab5ba6a4303604a1a4b93a64132e3",
     "entry.c": "98452b8d8fabcf47485e56e1b93d1965cbdc46132d8114ff42f835fc9765b266",
     "expected.stdout": "d01b7cec7494caaf9554d95bd3352dfe829a351b0be188b1a1ae905d03ea7522",
     "native.rs": "1631be50578cad11c570aa89b0ca8d5be751bf64f62fb07b8150c48e63fd5e94",

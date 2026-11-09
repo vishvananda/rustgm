@@ -44,7 +44,8 @@ provider whose first 73 lines are `spec/asm-native/native.rs` through
 the stream witness's provider and client. `target-feature-transport-outcomes.json`
 lists every input with its sha256 and froze their outcomes, the generated
 export controls, the local twins and the forged rows before any run. Its
-four amendments are recorded beside the outcomes they change; the second
-withdrew the declared inherent method and its client. They are checkpoint
+five amendments are recorded beside the outcomes they change; the second
+withdrew the declared inherent method and its client, and the fifth rebuilt
+the stream witness's client with a scalar C surface. They are checkpoint
 inputs, not an active grading suite. The evidence is in
 [target-feature-rows.md](../../docs/parallel/target-feature-rows.md).

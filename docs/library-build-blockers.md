@@ -16,10 +16,19 @@ check, to its baseline plus the closure.
   through their ordinary unsafe signatures and exit 42 natively. The
   imported `keep::<u8>` instance equals the local twin's byte for byte.
 - The real `_mm_stream_ps` body now exports with its inline hint, `[sse]`
-  and its one template. The cross-crate stream witness then stops at its
-  client's `extern "C"` signatures over the imported `__m128`, with "nominal
-  shape or representation is outside the metadata profile", one of its
-  three named risks; the integrator decides the next step.
+  and its one template. The cross-crate stream witness runs after
+  amendment 5: a client that exports one scalar C function streams through
+  the imported body into a 16-byte-aligned local, lowers exactly that
+  template and exits 42 natively with the imported `movntps`.
+- **Client export fences** (unassigned, queued after record variants). The
+  witness's first client stopped at its own library export, and either
+  fence blocks any client library that exports C functions over
+  `core::arch` types:
+  - `sema/crates/export/records.rs:267`, "nominal shape or representation
+    is outside the metadata profile", for a tuple-struct SIMD type such as
+    `__m128` in an exported `extern "C"` signature;
+  - `sema/crates/export.rs:434`, "exposed type is outside the scalar
+    metadata profile", for a raw pointer there.
 - Stricter than rustc: safe target-feature functions, trait and trait-impl
   members, non-Rust-ABI and `const` target-feature functions keep named
   fences at export.
