@@ -79,7 +79,9 @@
    "reg-byte": "inline assembly reg_byte operand is outside the initial assembly profile",
    "explicit": "inline assembly explicit register operand is outside the initial assembly profile",
    "xmm-scalar": "inline assembly xmm_reg input other than a 128-bit vector is outside the initial assembly profile",
-   "modifier": "inline assembly template modifier is outside the initial assembly profile"
+   "modifier": "inline assembly template modifier is outside the initial assembly profile",
+   "block-comment": "inline assembly comments other than # are outside the initial assembly profile",
+   "line-comment": "inline assembly comments other than # are outside the initial assembly profile"
   },
   "provider_v13": {
    "before": "source rvalue requires a complete wider transport row",
@@ -98,7 +100,11 @@
    "before_and_after": "source type form requires an explicitly supported transport row",
    "recorded": "2026-11-09T05:35Z by the A baseline (the K candidate CLI, SHA-256 9fab7f87cfa04b5cf2720d3b9d33dc47ee2441c0da3c0f96d0b67baa219f6455) before any A development or candidate run, as declared: the raw-pointer parameter has no type row outside body_nodes(); A must not change it"
   },
-  "failed_prediction_rule": "an earlier fence that fires first is recorded here with its amendment, as in K"
+  "failed_prediction_rule": "an earlier fence that fires first is recorded here with its amendment, as in K",
+  "comment_fence_amended": "2026-11-09T08:12:41Z, after the declared comment probe and before any fence run: the generated block-comment and line-comment controls join the fifteen (17), each failing at export with the comment text and writing no packet; rustc accepts both control crates as libraries. The fifteen earlier controls keep their texts",
+  "accepted_control": {
+   "quoted": "the generated quoted control (asm-native/opponents/quoted.rs, made generic as above) exports in module-bodies-v13 and writes a packet holding `.ascii \"a//b/*c\"` exactly once; rustc accepts the control crate as a library. It is not run natively: see comment_fence.probe"
+  }
  },
  "forged_rows": {
   "note": "rows 1-21 are packet outcomes: each forges the provider's own v13 packet. Row 22 is a unit-level control, not a packet outcome: it is built in rows in dev/tests/invariants/ssa_projection_ports.rs because no A provider body has a temporary place, which the snapshot walk requires",
@@ -129,7 +135,10 @@
    "body": "snapshot() plus v3 = Assembly { instruction: 0, arguments: [v2] } (arguments [2]); statements Evaluate(1), Store { Local(0), 1 }, Evaluate(3), Evaluate(0), Project(0), Evaluate(2); block 0 = 0..2 branches on v1 to 1 and 2, block 1 = 2..3 and block 2 = 3..6 are unreachable; validate(.., branching = true) fails at block 1",
    "twin": "statements Evaluate(1), Store, Evaluate(0), Project(0), Evaluate(2), Evaluate(3) with block 1 empty and block 2 = 2..6 validates",
    "gap": "without the Assembly arm dependency() returns None for v3 and the forged body validates; every other use is block-local"
-  }
+  },
+  "23_tagged_block_comment": "inline assembly comments other than # are outside the initial assembly profile",
+  "24_tagged_line_comment": "inline assembly comments other than # are outside the initial assembly profile",
+  "comment_fence_amended": "2026-11-09T08:12:41Z: rows 23 and 24 forge `tagged`'s template text from `# {p}` to `/* {p} */` and `// {p}`, with its piece moved from 2..5 to 3..6 so that the placeholder stays well formed. Both are packet outcomes restaged in typed rows; each fails with the comment text after every other check of the columns. Decode still reads template text as free bytes"
  },
  "old_readers": {
   "pre_a_reader": "the K candidate CLI (the A baseline) consuming the A provider packet rejects it with `encoded Rvalue::Assembly is not reconstructable by this consumer`"
@@ -138,7 +147,8 @@
  "width": "assembly::Instruction 28 -> 24 bytes and Payload 104 -> 112; s::ValueKind and s::Value keep their sizes (asserted before and after, and with R1's Reify per Lane C); s::Original grows by one Option<Box> pointer, recorded where its size is accounted",
  "bounded_work": {
   "asm_scaling": "a provider with N in {8, 16, 32} pointer inputs and N templates exports and validates with charged Work.steps exactly affine in N (zero second difference); asm-free bodies allocate no Original.assembly",
-  "k_followup": "wide<const A0: usize, ..., const A{N-1}: usize>() applied once in an exported body at N = 8, 16, 32: validation's charged Work.steps has zero second difference, Δ(16→32) = 2·Δ(8→16)"
+  "k_followup": "wide<const A0: usize, ..., const A{N-1}: usize>() applied once in an exported body at N = 8, 16, 32: validation's charged Work.steps has zero second difference, Δ(16→32) = 2·Δ(8→16)",
+  "asm_scaling_comment_fence": "2026-11-09T08:12:41Z: the scaling family's templates become `# {aNNN}` in place of `/* {aNNN} */`, which the fence rejects. Packet bytes and charged validation work, which now includes one step per scanned template byte, keep a zero second difference over N in {8, 16, 32}; the new values are recorded in the evidence"
  },
  "local_invariance": "all 16 B1 opponents keep their lowering texts; asm_effect_contracts, asm_lowering, the B1 native _mm_stream_ps check and every ssa_projection_ports case pass unchanged; B1 PA text cases (PA11, PA14, PA16, PA18-PA21, PA24) pass unchanged in scheduled CI",
  "closures": "not declared: no closure or inline-const body reaches the asm rows at A's scope (Owner::Closure at transported_source.rs:446, closure types at recipe_emission.rs:259, closure calls at cfg_rows.rs:305, const contexts at sema/bodies/assembly_values.rs:15-25)",
@@ -148,5 +158,97 @@
   "after": "source nominal representation requires its wider complete contract"
  },
  "oracle": "rustc 1.98.0 accepts the provider and both accepted clients, which exit 42 natively; rejects unsafe-free with E0133 and mistyped with E0308; accepts every export control crate as a library",
- "oracle_rerun": "2026-11-09T07:08Z on the amended provider d5b91a59fc779b3c03238e0a8db9805331594eea1aac6b3673afe71d27afade5, before any candidate run: as declared, the provider builds, stored and tagged exit 42, unsafe-free fails with E0133, mistyped with E0308, and all fifteen generated controls build as libraries"
+ "oracle_rerun": "2026-11-09T07:08Z on the amended provider d5b91a59fc779b3c03238e0a8db9805331594eea1aac6b3673afe71d27afade5, before any candidate run: as declared, the provider builds, stored and tagged exit 42, unsafe-free fails with E0133, mistyped with E0308, and all fifteen generated controls build as libraries",
+ "forged_row_levels": {
+  "declared": "2026-11-09T08:12:41Z (integrator ruling 4 of the A review): the level each forged row is built at; every declared text above is unchanged",
+  "column_bytes": {
+   "test": "dev/tests/invariants/register_wire.rs forged_store_columns_reject_by_profile_text_at_decode",
+   "byte_patch_of_the_honest_columns": [
+    "1_class_1",
+    "2_class_4_no_payload",
+    "3_class_5",
+    "extra: reserved class tag 2 (reg_byte)",
+    "extra: safety tag 3"
+   ],
+   "typed_columns_written_then_decoded": [
+    "5_unknown_option_bit",
+    "6_option_nomem",
+    "7_output_flag_1",
+    "9_safety_0",
+    "14_modifier_1"
+   ],
+   "writer_refusal": "the column writer refuses the reserved classes 1, 2 and 4 with their profile texts"
+  },
+  "typed_rows_restaged": {
+   "test": "dev/tests/invariants/register_rows.rs provider_assembly_rows_restage_and_forged_rows_reject_by_name (g::Payload::from_source_module_bodies over the decoded provider's rows)",
+   "rows": [
+    "4_class_3_on_pointer_input",
+    "8_late_input",
+    "10_safety_2_in_safe_tagged",
+    "11_piece_outside_text",
+    "12_pieces_out_of_order",
+    "13_piece_operand_out_of_range",
+    "15_two_values_one_instruction",
+    "16_column_longer_than_values",
+    "17_arguments_differ_from_inputs",
+    "18_ty_differs_from_input",
+    "19_input_names_itself",
+    "20_const_header_and_context",
+    "21_template_ranges_not_partitioning",
+    "23_tagged_block_comment",
+    "24_tagged_line_comment"
+   ]
+  },
+  "fresh_packet": {
+   "test": "dev/tests/crate_linking/register_transport.rs forged_option_bytes_reject_at_fresh_decode",
+   "rows": [
+    "5_unknown_option_bit",
+    "6_option_nomem"
+   ],
+   "note": "these two rows are also forged at the column level"
+  },
+  "unit_rows": {
+   "test": "dev/tests/invariants/ssa_projection_ports.rs assembly_inputs_must_be_dominated_by_their_evaluation",
+   "rows": [
+    "22_ssa_input_in_non_dominating_block"
+   ]
+  }
+ },
+ "local_invariance_comment_fence": "2026-11-09T08:12:41Z: the 16 B1 opponents keep their lowering texts and the two comment opponents join them (18). asm_effect_contracts, asm_vector_inputs (whose `/* {0} */` fixtures stop at instance proof, before lowering), the B1 native _mm_stream_ps check and stream_assembly pass unchanged",
+ "comment_fence": {
+  "declared": "2026-11-09T08:12:41Z",
+  "ruling": "integrator ruling 2 of the A review, with the `//` ruling (b) conditional on the probe (2026-11-09)",
+  "probe": {
+   "script": "scratchpad comment-probe/probe.sh with make_sources.py, run under scripts/resources.py and scripts/storage.py --prune-under obj/parallel/asm-comments, before this declaration",
+   "inputs": {
+    "candidate": "6552b73b79e7b1b41bbdfdf26be736a3aeac24d7537eb6c4f848963d4fb337ef (the A candidate)",
+    "provider.rs": "0041558abe15ab79f1f49e0637186f5c9c2653b2cd02d486fe7da46063352d3f: the frozen A foundation, then `slashed<T>` (`// {p}`, no options) and `quoted<T>` (`jmp 2f`, `.ascii \"a//b/*c\"`, `2:`, `# {p}`)",
+    "client.rs": "7240c6500294d76b253ec9fa724e5edd75ff7232b9c9a316c8e0fe3df73c9024 (calls slashed::<u8>, returns 42)",
+    "quoted-client.rs": "11a38c631b1bbe350e5a5c6f432a06430e31f69abcb71b82431beec4efd82c08 (calls quoted::<u8>, returns 42)"
+   },
+   "declared": "rustc 1.98.0 builds the provider and client, which exits 42; the A candidate exports the provider in v13 and lowers client with one `text \"// \"` template; the pinned backend rejects that LowIR. quoted-client is an observation only",
+   "observed": {
+    "rustc provider": "status 0",
+    "rustc client": "exit 42",
+    "rustc quoted-client": "exit 42",
+    "rustgm provider": "exports in module-bodies-v13 (status 0)",
+    "rustgm client": "lowers to one template `text \"// \"`; the pinned backend rejects it with `assembly line 1: expected module assembly identifier`",
+    "rustgm quoted-client": "lowers to one template `text \"jmp 2f\\n.ascii \\\"a//b/*c\\\"\\n2:\\n# \"`; the pinned backend rejects it with `assembly line 2: expected assembly integer`"
+   },
+   "outcome": "as declared. The pinned assembler rejects `//`, so one rule and one text cover `/*` and `//`. It does not assemble the quoted `.ascii` directive, so the quoted control is lowering- and export-only"
+  },
+  "text": "inline assembly comments other than # are outside the initial assembly profile",
+  "detector": "support::initial_assembly::Comments, lexical over each instruction's templates joined with newlines, as rustc joins them and the pinned assembler reads them: placeholder spans are substituted register names; a double-quoted string with backslash escapes holds no comment and may continue into the next template; outside a string, `#` starts a comment that a newline ends; `/*` or `//` anywhere else is reported",
+  "order": "options, operands, modifiers, then comments, at lowering and export (body::assembly::profile::admit); at the consumer after every other check of the columns (instruction_ports.rs), charging one step per byte",
+  "outcomes": {
+   "lowering": "asm-native/opponents/block-comment.rs and line-comment.rs fail with the comment text; rustc --emit=metadata status 0 for both",
+   "export": "the generated block-comment and line-comment controls fail at export with the comment text and write no packet",
+   "consumer": "forged rows 23 and 24 fail at staging with the comment text",
+   "quoted": "asm-native/opponents/quoted.rs lowers to one template: `text \"jmp 2f\\n.ascii \\\"a//b/*c\\\"\\n2:\\n# \"` then `use 0 0 0 0`; its generated control exports (export_controls.accepted_control); no native run",
+   "joined": "asm-native/opponents/joined.rs, amended to `# {{ {p} }}` and `nop`, lowers to one template `text \"# { \"`, `use 0 0 0 0`, `text \" }\\nnop\"`; rustc --emit=metadata status 0",
+   "unchanged": "every other B1 opponent and A export control keeps its text; the A provider's v13 packet is byte-identical to the A candidate's; stored and tagged still exit 42 natively; the five byte-identity providers stay identical against the A candidate; the stream witness keeps its text",
+   "native": "no new native outcome: the probe shows the pinned backend assembles none of the new inputs"
+  },
+  "oracle": "rustc 1.98.0 --emit=metadata status 0 on block-comment.rs, line-comment.rs, quoted.rs and the amended joined.rs; the generated block-comment, line-comment and quoted control crates build as libraries"
+ }
 }

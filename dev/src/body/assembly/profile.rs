@@ -1,10 +1,10 @@
 //! The initial assembly profile's one check order over a body's payload,
 //! shared by native lowering and version-thirteen source export. Its texts
 //! are `support::initial_assembly`'s, which every reader shares as well.
-use super::{Instruction, Payload};
+use super::{Instruction, Payload, Template};
 use crate::{
     body::ir::ValueId,
-    support::initial_assembly::{ABCD, BYTE, EXPLICIT, MODIFIER, OUTPUT, option},
+    support::initial_assembly::{ABCD, BYTE, Comments, EXPLICIT, MODIFIER, OUTPUT, option},
     syntax::assembly::Register,
 };
 
@@ -19,7 +19,8 @@ pub(crate) const fn class(register: Register) -> Option<&'static str> {
 }
 /// Admit one instruction in the profile's order: options in bit order, then
 /// each operand in operand order (its output first, then its class), then
-/// the modifiers. `input` decides each `reg` or `xmm_reg` input's type.
+/// the modifiers, then comments other than `#` over the joined templates.
+/// `input` decides each `reg` or `xmm_reg` input's type.
 pub(crate) fn admit(
     data: &Payload,
     instruction: &Instruction,
@@ -43,14 +44,22 @@ pub(crate) fn admit(
         .templates
         .get(instruction.templates.start as usize..instruction.templates.end as usize)
         .ok_or("assembly template range is invalid")?;
-    for template in templates {
-        let pieces = data
-            .pieces
+    let pieces = |template: &Template| {
+        data.pieces
             .get(template.pieces.start as usize..template.pieces.end as usize)
-            .ok_or("assembly piece range is invalid")?;
-        if pieces.iter().any(|piece| piece.modifier != 0) {
+            .ok_or("assembly piece range is invalid")
+    };
+    for template in templates {
+        if pieces(template)?.iter().any(|piece| piece.modifier != 0) {
             return Err(MODIFIER);
         }
+    }
+    let mut comments = Comments::default();
+    for template in templates {
+        let spans = pieces(template)?
+            .iter()
+            .map(|piece| (piece.start, piece.end));
+        comments.template(&template.text, spans)?;
     }
     Ok(())
 }

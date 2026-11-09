@@ -1,7 +1,8 @@
 //! Version thirteen's assembly columns are exact before any proof: dense
 //! ordinals, partitioned ranges, inputs equal to the value's arguments,
-//! well-formed placeholders and the initial assembly profile. The consumer
-//! still re-proves Copy inputs, CPU features and lowering over its own body.
+//! well-formed placeholders and the initial assembly profile, whose comment
+//! check comes last. The consumer still re-proves Copy inputs, CPU features
+//! and lowering over its own body.
 use super::{Context, DomainIndex, Work, g, s};
 use crate::support::initial_assembly as profile;
 
@@ -77,6 +78,9 @@ impl DomainIndex<'_, '_> {
                     work,
                 )?;
             }
+        }
+        for instruction in &rows.instructions {
+            comments(rows, instruction, work)?;
         }
         Ok(())
     }
@@ -209,6 +213,25 @@ fn placeholders(
             }
             next = end;
         }
+    }
+    Ok(())
+}
+/// Comments other than `#`, over the instruction's checked templates in
+/// order, one step per template byte.
+fn comments(
+    rows: &s::Assembly,
+    instruction: &s::AssemblyInstruction,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let mut comments = profile::Comments::default();
+    for template in instruction.templates.slice(&rows.templates)? {
+        work.charge(template.text.len())?;
+        let spans = template
+            .pieces
+            .slice(&rows.pieces)?
+            .iter()
+            .map(|piece| (piece.start, piece.end));
+        comments.template(&template.text, spans)?;
     }
     Ok(())
 }

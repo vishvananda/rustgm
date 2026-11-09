@@ -63,11 +63,17 @@
   },
   "stream_template": "stream-template.lowir",
   "controls": {
-    "opponents/joined.rs": "one template: text \"/* { \", use 0, text \" } */\\nnop\"",
+    "opponents/joined.rs": "one template: text \"# { \", use 0, text \" }\\nnop\"",
     "opponents/transport.rs": {
       "source": "appended to native.rs before `#[repr(simd)]`, naming asm! through its source-owned arch declaration; that prelude alone publishes in version 13",
       "lowered": "one template: text \"prefetchnta [\", use 0, text \"]\"",
       "module-bodies-v13": "source rvalue requires a complete wider transport row"
+    },
+    "opponents/quoted.rs": {
+      "source": "B1's pointer form with the four templates `jmp 2f`, `.ascii \"a//b/*c\"`, `2:` and `# {p}`: `//` and `/*` lie inside a quoted directive string, which is not a comment",
+      "lowered": "one template: text \"jmp 2f\\n.ascii \\\"a//b/*c\\\"\\n2:\\n# \", use 0",
+      "module-bodies-v13": "its generated A export control (made generic) exports, and its packet holds the four template texts byte for byte",
+      "native": "not run. The declared probe (2026-11-09, A candidate 6552b73b) lowered the same four templates in a fresh client, and the pinned CPPGM backend rejected that LowIR with `assembly line 2: expected assembly integer` at the `.ascii` directive, before the `2:` label; rustc 1.98.0's client exited 42. The control is lowering- and export-only, so it never depends on an unverified backend capability"
     },
     "scaling": "1, 8 and 32 instances of one generic asm body give exactly that many templates; the same counts of asm-free instances allocate no template storage"
   },
@@ -151,6 +157,16 @@
       "source": "opponents/modifier.rs",
       "rustc_metadata_status": 0,
       "rustgm": "inline assembly template modifier is outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/block-comment.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly comments other than # are outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/line-comment.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly comments other than # are outside the initial assembly profile"
     }
   ],
   "changed_expectations": {
@@ -219,24 +235,51 @@
         "after": "e244a327318b1ff25b59230ef6c84c4c721fff1d90555b5e7889954e8fa4eeda"
       },
       "unchanged": "controls keeps the B1 record; the stream witness keeps \"source nominal representation requires its wider complete contract\"; observations_after_run keeps the B1 observation as recorded"
+    },
+    {
+      "item": "B2 A's comment fence (docs/parallel/asm-transport.md, the follow-up before S)",
+      "declared": "2026-11-09T08:12:41Z, after the declared comment probe and before any oracle, development or candidate run of the fence, in pa41/tests/asm-transport-outcomes.json",
+      "rule": "the pinned CPPGM backend's assembler reads `#` line comments only: the probe's `// {p}` client lowered to `text \"// \"` and the backend rejected it with `assembly line 1: expected module assembly identifier`, as it rejected `/* {p} */` in A. One text covers both forms: \"inline assembly comments other than # are outside the initial assembly profile\". It is checked last, after the modifiers, over each instruction's templates joined with newlines, outside placeholder spans, double-quoted strings (with backslash escapes) and `#` comments",
+      "opponents": {
+        "before": 16,
+        "after": 18,
+        "added": [
+          "opponents/block-comment.rs",
+          "opponents/line-comment.rs"
+        ]
+      },
+      "controls.opponents/joined.rs": {
+        "before": "one template: text \"/* { \", use 0, text \" } */\\nnop\"",
+        "after": "one template: text \"# { \", use 0, text \" }\\nnop\"",
+        "reason": "its first template `/* {{ {p} }} */` is now fenced; `# {{ {p} }}` keeps the two templates and both escapes"
+      },
+      "controls.opponents/quoted.rs": "new positive control, lowering- and export-only (see controls)",
+      "README.md": {
+        "before": "e244a327318b1ff25b59230ef6c84c4c721fff1d90555b5e7889954e8fa4eeda",
+        "after": "880c517ac79faae1162fbb7342266787c8d93f65f004aca2d8008e5808c64143"
+      },
+      "unchanged": "the 16 earlier opponents keep their texts: options and operands are checked before templates and modifiers before comments, so nomem, reg-integer, reg-function, reg-abcd, reg-byte, explicit, xmm-scalar and modifier keep their texts over their `/* */` templates; transport.rs, the stream template, the native outcome and the stream witness are unchanged"
     }
   ],
   "files": {
-    "README.md": "e244a327318b1ff25b59230ef6c84c4c721fff1d90555b5e7889954e8fa4eeda",
+    "README.md": "880c517ac79faae1162fbb7342266787c8d93f65f004aca2d8008e5808c64143",
     "entry.c": "98452b8d8fabcf47485e56e1b93d1965cbdc46132d8114ff42f835fc9765b266",
     "expected.stdout": "d01b7cec7494caaf9554d95bd3352dfe829a351b0be188b1a1ae905d03ea7522",
     "native.rs": "1631be50578cad11c570aa89b0ca8d5be751bf64f62fb07b8150c48e63fd5e94",
     "observer.c": "c7541d6d2cbaebc5763a2eac2220b12e426e9bfe1b18f17cd3f8925d042bad6f",
     "opponents/att-syntax.rs": "b2a73cc3d79a05540105b5ea64358b73759f18167f7178ba24e976059380b372",
+    "opponents/block-comment.rs": "1a7750057dba1edf5109a999f98d33d9ff18ca1eeb50363d171db2a6f2063672",
     "opponents/clobber.rs": "2ba026749a2a46f313d72eea949370a9c9ecd51a60a7b1daad0e50cdf090cecc",
     "opponents/explicit.rs": "9c126f2e791a2ae134f89cd99576a724c36bc09c83c5e98f953a56a77d1a9d5b",
     "opponents/inout.rs": "37731feff3424d0c43f76f23b586f1212f26ada60c72070471ae037ab1c8cb69",
-    "opponents/joined.rs": "db2dd46f017d4ddfdba25f7028e201f43c984fee522c583415f788b7b4dac964",
+    "opponents/joined.rs": "3e89fafbdde4b79fb03cddf2daf683dc307ee5f06cce9ec8071adaa9070b7c47",
+    "opponents/line-comment.rs": "65723b86e9e051b2b0f8f4be68bc65daa81b28b1a21d327ee5e9481a6cca22f2",
     "opponents/modifier.rs": "ca80ef930094b22b6e5569c3f7a6e996feddbd9f6497b4807da1221c42813fa4",
     "opponents/nomem.rs": "55ce7f99553dce4cbd035f95af853153bf4e6944e08601afe86599a6d15a74fb",
     "opponents/noreturn.rs": "58e3b2b27ae70e602d7e8441b6e088ce9a7ad844afdb67075bc421d78a950302",
     "opponents/output.rs": "6d25f6077caae3bbd7cd112d4dc06e63207d59f5a5ee4c96d248f02568ac7e5c",
     "opponents/pure.rs": "b79eb3ac7d13dbd5abe15adfdc468e8ac10cd773c0596e525cdec4837033e131",
+    "opponents/quoted.rs": "042af68658d870ba7bbdce5d9d7e5c1d402c9a4c6ec06c01af36c879c4f578a2",
     "opponents/raw.rs": "ad15d7300e2a900dfa3fb1c743ea8371a3d73c8d142c6c05fbcc4829510c2f2d",
     "opponents/readonly.rs": "502b4c85a273bbed87d8432608da948e73a8dee3c32df3364242431bb32a5d0b",
     "opponents/reg-abcd.rs": "52779886544f703189128b03bf03d0ec438a64511d14b67b5c5a97ef01d51075",
@@ -245,7 +288,7 @@
     "opponents/reg-integer.rs": "5e31144c71ddb2065097cbd7d5fb72af4272e49b671a81bc2756cdda1b04d21e",
     "opponents/transport.rs": "a79a84e9fee07ee563dddfaaf0d160c9b84ef062242f0247b70607e2802ef8fc",
     "opponents/xmm-scalar.rs": "e13d8b426dab41b8c9e35b09c5980c80c875e33c7eb61304d924e1ac70f46dcd",
-    "opponents.tsv": "85bbc6a3d8acf45bbf9895763c9f25d4a93715722e2e5e6338cd4cbd711af870",
+    "opponents.tsv": "dd5a302741d81e8b4598d7ec55eaab2239acd83553f7f4e8c610304e8c7169a3",
     "stream-template.lowir": "b2ab124985e4755193c76c01a4bd05a181cf2b2cf75301bdcda9edf007365270"
   }
 }

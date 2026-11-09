@@ -140,8 +140,9 @@ backend from moving status-flag producers across the asm.
 ### Fences
 
 Options are checked first in bit order, then operands in source order, then
-template modifiers. Each text is `inline assembly <form> is outside the
-initial assembly profile`, with these forms:
+template modifiers, then (since B2 A's comment fence) comments other than
+`#`. Each text is `inline assembly <form> is outside the initial assembly
+profile`, with these forms:
 
 - `pure option`, `nomem option`, `readonly option`, `noreturn option`,
   `att_syntax option`, `raw option`
@@ -152,6 +153,8 @@ initial assembly profile`, with these forms:
 - `xmm_reg input other than a 128-bit vector`: the 4- and 8-byte scalars that
   the frontend accepts in `xmm_reg`
 - `template modifier`
+- `comments other than #`: `/* */` and `//` outside a quoted string, added
+  with B2 A's comment fence
 
 `const`, `sym` and `label` operands, ymm and the other unimplemented classes
 stay rejected earlier, at body construction or in the frontend.
@@ -205,6 +208,15 @@ rvalue requires a complete wider transport row". Every form outside the
 profile keeps its lowering text at export, through the same table. The real
 stream body's crate still stops at `__m128`'s `repr(simd)`, as declared in
 `pa41/tests/asm-transport-outcomes.json`.
+
+Amendment (B2 A's comment fence, [asm transport](parallel/asm-transport.md)):
+the pinned backend's assembler reads only `#` comments, so `/* */` and `//`
+templates now fail with "inline assembly comments other than # are outside
+the initial assembly profile", after the modifiers. `opponents/block-comment.rs`
+and `opponents/line-comment.rs` join the 16 opponents. `joined.rs` now uses
+`# {{ {p} }}` in place of a block comment. The new positive control
+`quoted.rs` keeps `//` and `/*` inside a quoted `.ascii` string and lowers.
+`contract.json` records each change with its before and after values.
 
 ### Qualification
 

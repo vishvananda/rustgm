@@ -208,6 +208,7 @@ fn pinned_rust_accepts_every_form_outside_the_initial_profile() -> Result {
         );
         count += 1;
     }
-    assert_eq!(count, 16);
+    // B1's 16 forms, then the two comment forms of A's comment fence.
+    assert_eq!(count, 18);
     Ok(())
 }

@@ -19,11 +19,13 @@ pub(super) fn preflight(
     let Some(data) = body.assembly.as_deref() else {
         return Ok(());
     };
+    // The comment scan reads each template byte once.
     stage.charge(
         data.instructions
             .len()
             .saturating_add(data.operands.len())
-            .saturating_add(data.pieces.len()),
+            .saturating_add(data.pieces.len())
+            .saturating_add(text_bytes(data)),
     )?;
     for instruction in &data.instructions {
         assembly::profile::admit(data, instruction, |register, input| {
@@ -35,6 +37,12 @@ pub(super) fn preflight(
         })?;
     }
     Ok(())
+}
+fn text_bytes(data: &assembly::Payload) -> usize {
+    data.templates
+        .iter()
+        .map(|template| template.text.len())
+        .fold(0_usize, usize::saturating_add)
 }
 /// A `reg` input is a thin raw pointer and an `xmm_reg` input a nominal,
 /// which only a 128-bit vector can be once lowering checks its layout.
@@ -83,11 +91,7 @@ pub(super) fn emit(
         return Ok(());
     };
     dense(body, data.instructions.len())?;
-    let bytes = data
-        .templates
-        .iter()
-        .map(|template| template.text.len())
-        .fold(0_usize, usize::saturating_add);
+    let bytes = text_bytes(data);
     stage.charge(
         data.instructions
             .len()

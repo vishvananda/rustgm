@@ -62,9 +62,11 @@ source. The RustGM object must contain exactly six.
 
 Each `opponents/*.rs` input is a form outside the initial profile that pinned
 Rust accepts. `opponents.tsv` declares rustc's metadata status and RustGM's
-lowering text for each one. Two inputs are positive controls instead:
+lowering text for each one. Three inputs are positive controls instead:
 
 - `joined.rs`: two template strings and `{{`/`}}` escapes
+- `quoted.rs`: a quoted `.ascii` string holding `//` and `/*`, which is not a
+  comment
 - `transport.rs`: an `#[inline]` pointer-only asm body, appended to
   `native.rs`'s prelude (everything before `#[repr(simd)]`). The prelude
   alone publishes in version 13. With the body, it still lowers. Its
@@ -83,6 +85,15 @@ the initial source profile", until B2's const-parameter slice
 (`docs/parallel/const-parameters.md`) admitted const formals. It now pins the
 declared stop after that, "source nominal representation requires its wider
 complete contract". `contract.json` keeps the B1 observation as recorded.
+
+Amendment (B2 A's comment fence, `docs/parallel/asm-transport.md`): the
+pinned backend's assembler reads only `#` comments. `block-comment.rs` and
+`line-comment.rs` therefore fail with "inline assembly comments other than #
+are outside the initial assembly profile", which is checked after the
+modifiers. `joined.rs` held a `/* */` template, so it now uses `# {{ {p} }}`.
+`quoted.rs` lowers and exports with its bytes intact. It does not run
+natively, because the pinned backend rejects its `.ascii` directive with
+"assembly line 2: expected assembly integer".
 
 `stream-template.lowir` is the declared template for the original function.
 The [assembly checkpoint](../../../../docs/source-asm-vector-join.md) records the

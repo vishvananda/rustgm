@@ -15,3 +15,5 @@ opponents/reg-byte.rs	0	inline assembly reg_byte operand is outside the initial 
 opponents/explicit.rs	0	inline assembly explicit register operand is outside the initial assembly profile
 opponents/xmm-scalar.rs	0	inline assembly xmm_reg input other than a 128-bit vector is outside the initial assembly profile
 opponents/modifier.rs	0	inline assembly template modifier is outside the initial assembly profile
+opponents/block-comment.rs	0	inline assembly comments other than # are outside the initial assembly profile
+opponents/line-comment.rs	0	inline assembly comments other than # are outside the initial assembly profile

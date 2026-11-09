@@ -40,4 +40,10 @@ The export controls are generated under `obj/parallel/asm-transport`: each is
 the foundation followed by one `../asm-native/opponents/` body, made generic so
 that the provider lowers nothing. The forged rows are applied to the
 provider's own packet, except the SSA row, which is built directly in rows by
-`dev/tests/invariants/ssa_projection_ports.rs`.
+`dev/tests/invariants/ssa_projection_ports.rs`. The outcomes file's
+`forged_row_levels` names the level each row is forged at.
+
+The comment fence (2026-11-09T08:12:41Z, declared after its probe and before
+any of its runs) adds the `block-comment` and `line-comment` controls (17 in
+all), the accepted `quoted` control and forged rows 23 and 24. It changes no
+file in this directory.

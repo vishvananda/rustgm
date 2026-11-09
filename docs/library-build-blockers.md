@@ -52,6 +52,20 @@ column.
 - Two failed predictions are kept with their amendments: the provider's
   packet carries Lane B's macro envelope for the foundation's builtin
   `arch::asm`, and the pinned backend's assembler has no `/* */` comments.
+- Comment fence (the follow-up before S): `/* */` and `//` templates fail
+  with "inline assembly comments other than # are outside the initial
+  assembly profile". The check runs after the modifiers, at lowering, at
+  export and in every v13 reader. It is lexical over each instruction's
+  joined templates, so `//` and `/*` inside a quoted directive string still
+  lower and export. Two opponents, two export controls and forged rows 23
+  and 24 fail with that text.
+- Backend capability note: the pinned CPPGM assembler reads `#` line comments
+  only. A declared probe showed that it rejects `//` ("assembly line 1:
+  expected module assembly identifier") as it rejects `/* */`, and that it
+  rejects a quoted `.ascii` directive in inline assembly ("assembly line 2:
+  expected assembly integer"). rustc 1.98.0 accepts all three. RustGM fences
+  the two comment forms by name; extending the backend is the user's
+  decision, and cppgm-extended is unchanged.
 - Open: `xmm_reg` inputs wait for S and T's vector type rows. The stream
   witness still stops at `__m128`'s `repr(simd)`.
 

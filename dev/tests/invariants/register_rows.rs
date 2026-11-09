@@ -89,9 +89,20 @@ fn invocation(original: &s::Original) -> Result<(usize, usize)> {
 fn columns(original: &mut s::Original) -> &mut s::Assembly {
     original.assembly.get_or_insert_default()
 }
+/// `tagged`'s one template rewritten to `text`, its placeholder at 3..6.
+fn commented(rows: &mut s::SourceRows, text: &str) -> Option<()> {
+    let tagged = original(rows, "# ").ok()?;
+    let columns = columns(&mut rows.originals[tagged]);
+    let first = columns.templates[0].pieces.start as usize;
+    columns.templates[0].text = text.into();
+    let piece = &mut columns.pieces[first];
+    (piece.start, piece.end) = (3, 6);
+    Some(())
+}
 type Forgery = fn(&mut s::SourceRows, usize, (usize, usize)) -> Option<()>;
-/// Each forgery of `store` (or `tagged`, for row 10) and its rejection.
-const FORGED: [(&str, Forgery, &str); 13] = [
+/// Each forgery of `store` (or `tagged`, for rows 10, 23 and 24) and its
+/// rejection.
+const FORGED: [(&str, Forgery, &str); 15] = [
     (
         "4 xmm class on a pointer",
         |rows, store, _| {
@@ -225,6 +236,16 @@ const FORGED: [(&str, Forgery, &str); 13] = [
         },
         "source inline assembly has no matching unsafe context",
     ),
+    (
+        "23 block comment in tagged's template",
+        |rows, _, _| commented(rows, "/* {p} */"),
+        profile::COMMENT,
+    ),
+    (
+        "24 line comment in tagged's template",
+        |rows, _, _| commented(rows, "// {p}"),
+        profile::COMMENT,
+    ),
 ];
 #[test]
 fn provider_assembly_rows_restage_and_forged_rows_reject_by_name() -> Result {
@@ -265,7 +286,8 @@ fn provider_assembly_rows_restage_and_forged_rows_reject_by_name() -> Result {
     Ok(())
 }
 /// The frozen foundation and one generic body with `count` zero-padded
-/// pointer inputs, each used by its own template.
+/// pointer inputs, each used by its own `#` comment template (`/* */` until
+/// the comment fence).
 fn family(provider: &str, count: usize) -> Result<String> {
     let foundation = provider.split(MARKER).next().ok_or("foundation")?;
     let mut parameters = String::new();
@@ -273,7 +295,7 @@ fn family(provider: &str, count: usize) -> Result<String> {
     let mut operands = String::new();
     for index in 0..count {
         write!(parameters, "a{index:03}: *mut u32, ")?;
-        write!(templates, "\"/* {{a{index:03}}} */\", ")?;
+        write!(templates, "\"# {{a{index:03}}}\", ")?;
         write!(operands, "a{index:03} = in(reg) a{index:03}, ")?;
     }
     Ok(format!(
@@ -284,7 +306,7 @@ fn family(provider: &str, count: usize) -> Result<String> {
 fn measured(provider: &str, count: usize) -> Result<[usize; 2]> {
     let (interface, bytes) = decoded(&family(provider, count)?, "asm_scaling")?;
     let (rows, _, _) = raw(&interface)?;
-    let index = original(&rows, "/* {a000} */")?;
+    let index = original(&rows, "# {a000}")?;
     let columns = rows.originals[index].assembly.as_deref().ok_or("columns")?;
     assert_eq!(
         (columns.templates.len(), columns.operands.len()),

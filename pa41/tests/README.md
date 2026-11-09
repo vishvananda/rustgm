@@ -24,5 +24,7 @@ whose first 69 lines are `spec/asm-native/native.rs` before `#[repr(simd)]`,
 byte for byte, two accepted clients and two opponents.
 `asm-transport-outcomes.json` lists every input with its sha256 and froze
 their outcomes, the generated export controls and the forged rows before any
-run. They are checkpoint inputs, not an active grading suite. The evidence
-is in [asm-transport.md](../../docs/parallel/asm-transport.md).
+run. The comment fence's amendments, declared at 2026-11-09T08:12:41Z, are
+recorded beside them. They are checkpoint inputs, not an active grading
+suite. The evidence is in
+[asm-transport.md](../../docs/parallel/asm-transport.md).

@@ -77,7 +77,8 @@ fn every_form_outside_the_profile_keeps_its_declared_fence() -> Result {
         assert!(error.to_string().contains(expected), "{path}: {error}");
         count += 1;
     }
-    assert_eq!(count, 16);
+    // B1's 16 forms, then the two comment forms of A's comment fence.
+    assert_eq!(count, 18);
     Ok(())
 }
 #[test]
@@ -90,9 +91,61 @@ fn joined_templates_unescape_braces_and_keep_one_newline() -> Result {
         return Err("one joined template".into());
     };
     assert!(template.starts_with("assembly @asm0 intel readwrite 1 24 0 1 {\n"));
-    assert!(template.ends_with("  text \"/* { \"\n  use 0 0 0 0\n  text \" } */\\nnop\"\n}\n"));
+    // Amended with the comment fence: the first template was `/* {{ {p} }} */`.
+    assert!(template.ends_with("  text \"# { \"\n  use 0 0 0 0\n  text \" }\\nnop\"\n}\n"));
     assert_eq!(lowir.matches("asm @asm0(").count(), 1);
     Ok(())
+}
+/// `//` and `/*` inside a quoted directive string are not comments: the
+/// control lowers with its bytes intact. The pinned backend rejects its
+/// `.ascii` directive, so it never runs natively.
+#[test]
+fn quoted_directives_lower_with_their_comment_bytes() -> Result {
+    let text = fixture_source(&format!("{SPEC}/opponents/quoted.rs"))?;
+    let (lowir, count) = lowered(&text, "asm_quoted", "f")?;
+    assert_eq!(count, Some(1));
+    let found = templates(&lowir);
+    let &[template] = &found[..] else {
+        return Err("one quoted template".into());
+    };
+    assert!(template.starts_with("assembly @asm0 intel readwrite 1 24 0 1 {\n"));
+    assert!(
+        template
+            .ends_with("  text \"jmp 2f\\n.ascii \\\"a//b/*c\\\"\\n2:\\n# \"\n  use 0 0 0 0\n}\n")
+    );
+    Ok(())
+}
+/// The comment scan reads one instruction's templates as the pinned
+/// assembler reads their joined text.
+#[test]
+fn comment_scan_follows_quotes_hash_comments_and_template_joins() {
+    use crate::support::initial_assembly::{COMMENT, Comments};
+    let scan = |templates: &[(&str, &[(u32, u32)])]| {
+        let mut comments = Comments::default();
+        templates
+            .iter()
+            .try_for_each(|&(text, pieces)| comments.template(text, pieces.iter().copied()))
+    };
+    for (templates, expected) in [
+        (&[("# {p}", &[(2, 5)][..])][..], Ok(())),
+        (&[("/* {p} */", &[(3, 6)][..])][..], Err(COMMENT)),
+        (&[("// {p}", &[(3, 6)][..])][..], Err(COMMENT)),
+        (&[(".ascii \"a//b/*c\"", &[][..])][..], Ok(())),
+        (&[(".ascii \"a\\\"//\"", &[][..])][..], Ok(())),
+        (&[(".ascii \"#\" //", &[][..])][..], Err(COMMENT)),
+        (&[("mov eax, 4/2", &[][..])][..], Ok(())),
+        (&[("/{p}*", &[(1, 4)][..])][..], Ok(())),
+        (&[("# a /* b", &[][..]), ("nop", &[][..])][..], Ok(())),
+        (&[("# a", &[][..]), ("/* b */", &[][..])][..], Err(COMMENT)),
+        (&[("nop /", &[][..]), ("/ x", &[][..])][..], Ok(())),
+        (&[(".ascii \"a", &[][..]), ("//\"", &[][..])][..], Ok(())),
+        (
+            &[("{p} {q}", &[(4, 7), (0, 3)][..])][..],
+            Err("assembly placeholder lies outside its template"),
+        ),
+    ] {
+        assert_eq!(scan(templates), expected, "{templates:?}");
+    }
 }
 /// `native.rs` before `marker`: its lang-item prelude and the source-owned
 /// `arch::asm` and `concat!` declarations, without the test foundation's

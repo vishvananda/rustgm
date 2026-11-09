@@ -191,11 +191,90 @@ amended oracle's is `oracle-amended-provider.txt` beside it.
   `iterator_clone_preserves_ordinary_record_sizes_and_lazy_owner_cost`.
   `make test-upstream` passes.
 
+## Comment fence (follow-up before S)
+
+Ruling 2 of the A review: a template holding a comment form that the pinned
+backend cannot assemble fails by name, at lowering and at export, through the
+same table. The `//` ruling made the rule conditional on a declared probe.
+
+- **Probe.** Before any fence run, a provider on the frozen A foundation with
+  `slashed<T>` (`// {p}`) and `quoted<T>` (`jmp 2f`, `.ascii "a//b/*c"`,
+  `2:`, `# {p}`) was run under the A candidate. rustc 1.98.0 built it, and
+  both clients exited 42. RustGM exported it and lowered both clients. The
+  pinned backend rejected `// ` with "assembly line 1: expected module
+  assembly identifier", as it rejects `/* */`. It rejected the quoted client
+  with "assembly line 2: expected assembly integer" at the `.ascii`
+  directive. So one rule and one text cover both comment forms, and the
+  quoted control is lowering- and export-only.
+- **Text.** "inline assembly comments other than # are outside the initial
+  assembly profile" (`support::initial_assembly::COMMENT`).
+- **Detector.** `support::initial_assembly::Comments` reads one instruction's
+  templates in order as the pinned assembler reads the text rustc joins with
+  newlines. A placeholder span is a register name. A double-quoted string
+  with backslash escapes holds no comment and may continue into the next
+  template. Outside a string, `#` starts a comment that a newline ends. Any
+  other `/*` or `//` is reported. The scan is lexical and linear in the
+  template bytes.
+- **Order.** `assembly::profile::admit` checks options, operands, modifiers
+  and then comments, at lowering and in the export preflight, which now
+  charges one step per template byte. The consumer's shared validation
+  checks comments after every other column check, one step per byte, so a
+  forged template fails at staging before any proof. Decode still reads
+  template text as free bytes. No row, width or wire byte changes.
+- **Fixtures.** `asm-native/opponents/block-comment.rs` and
+  `line-comment.rs` join `opponents.tsv` (18 rows). `joined.rs` used
+  `/* {{ {p} }} */` and now uses `# {{ {p} }}`. The new positive control
+  `quoted.rs` keeps `//` and `/*` inside a quoted `.ascii` string.
+  `contract.json` records each change with its before and after values and
+  hashes. The generated `block-comment` and `line-comment` export controls
+  join the fifteen (17), and the generated `quoted` control exports. Forged
+  rows 23 and 24 rewrite `tagged`'s template to `/* {p} */` and `// {p}`. The
+  scaling family's templates are now `# {aNNN}`. The outcomes JSON names the
+  level each forged row is built at in `forged_row_levels`.
+
+Declared outcomes (2026-11-09T08:12:41Z, after the probe and before any
+other fence run) are in `pa41/tests/asm-transport-outcomes.json`
+(`comment_fence`, the two new export controls, `accepted_control`, rows 23
+and 24, `forged_row_levels`) and in `asm-native/contract.json`'s amendments.
+Every one held; no prediction failed.
+
+- **Oracle.** rustc 1.98.0 gives `--emit=metadata` status 0 for
+  `block-comment.rs`, `line-comment.rs`, `quoted.rs` and the amended
+  `joined.rs`, and builds the generated `block-comment`, `line-comment` and
+  `quoted` control crates as libraries
+  (`obj/parallel/asm-comments/receipts/oracle.txt`).
+- **Candidate.** The fence candidate CLI is `3960ec90…`, pinned under
+  `obj/parallel/asm-comments/candidate`, against the A candidate `6552b73b…`
+  (`receipts/candidate.txt`). The provider's v13 packet is `420c8e74…` from
+  both. `stored` and `tagged` still exit 42 natively, and the two opponents
+  keep their texts. All 17 generated controls fail at export with their
+  texts, the two new ones with the comment text. The `quoted` control
+  exports, and its packet holds `.ascii "a//b/*c"` once. The stream witness
+  keeps its text. The five byte-identity providers are identical to the A
+  candidate's.
+- **Bounded work.** The scaling family's packet bytes are 8787, 10243 and
+  13155, and its charged validation steps 8769, 10001 and 12465, both with
+  zero second difference. Each template is 4 bytes shorter than A's, and the
+  comment scan charges its 8 bytes (`receipts/scaling.txt`).
+- **Focused checks.** `make fastcheck` passed 20 exact private tests and 4
+  linking tests (`obj/qualification/fast/1794214351634618134`): every
+  `asm_effect_contracts`, `asm_lowering` (18 opponents, the amended joined
+  case, the quoted control and the scan table) and `asm_vector_inputs` case,
+  the register wire and rows invariants with rows 23 and 24 and the scaling
+  check, the SSA domination row, the target-permission control and the four
+  `register_transport` tests, including the new quoted export. With
+  `--ignored`, the native client test and both `stream_assembly` tests passed,
+  the latter with rustc accepting all 18 opponents
+  (`obj/qualification/fast/1794213662827413906`). `make test-upstream`
+  passes.
+
 ## Remaining
 
 - Outputs, `inout`, clobbers, explicit registers, `reg_abcd`/`reg_byte`,
-  integer and function `reg` inputs, modifiers, AT&T syntax and the other
-  options stay outside the profile, at export and at lowering.
+  integer and function `reg` inputs, modifiers, comments other than `#`, AT&T
+  syntax and the other options stay outside the profile, at export and at
+  lowering. The pinned backend lacks `/* */`, `//` and inline `.ascii`;
+  extending it is the user's decision.
 - `xmm_reg` inputs export only once S and T give 128-bit vectors type rows.
   The stream witness still stops at `__m128`'s `repr(simd)`.
 - Closure and inline-const originals cannot reach the asm rows yet (A1).

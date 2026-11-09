@@ -2,8 +2,9 @@
 //! as value code 0 and the original's cold assembly columns. Fresh consumers
 //! rebuild each body's payload, re-prove its unsafe context and lower one
 //! template per emitted instance; every form outside the profile keeps its
-//! lowering text at the exporter's preflight, older profiles keep their text,
-//! and forged option bytes are rejected at decode.
+//! lowering text at the exporter's preflight, quoted directive bytes are not
+//! comments, older profiles keep their text, and forged option bytes are
+//! rejected at decode.
 use super::fresh_packets::{Packet, Result, inner, spliced, unique};
 use rustgm::support::crates;
 const SPEC: &str = "pa41/tests/spec/asm-transport";
@@ -26,8 +27,9 @@ const OLDER_TEXT: &str = "source type form requires an explicitly supported tran
 const COPIES: &str = "impl Clone for u8{fn clone(&self)->Self{*self}}impl Copy for u8{}\nimpl Clone for u64{fn clone(&self)->Self{*self}}impl Copy for u64{}\n";
 /// The B1 opponents each generated export control carries, made generic so
 /// that the provider lowers nothing; `att-syntax` cannot follow the
-/// foundation. Texts come from `asm-native/opponents.tsv`.
-const CONTROLS: [&str; 15] = [
+/// foundation. Texts come from `asm-native/opponents.tsv`; the two comment
+/// forms joined with the comment fence.
+const CONTROLS: [&str; 17] = [
     "pure",
     "nomem",
     "readonly",
@@ -43,6 +45,8 @@ const CONTROLS: [&str; 15] = [
     "explicit",
     "xmm-scalar",
     "modifier",
+    "block-comment",
+    "line-comment",
 ];
 /// B1's template headers: `nostack` with `preserves_flags`, `nostack`
 /// alone, and no options, each over one operand.
@@ -62,6 +66,26 @@ fn headers(lowir: &str) -> Vec<&str> {
 }
 fn unwritten(path: &std::path::Path) -> Result<bool> {
     Ok(!path.exists() || std::fs::metadata(path)?.len() == 0)
+}
+/// The generated export control for B1's opponent `label`: the provider's
+/// foundation, the Copy impls, then the opponent made generic.
+fn control(packet: &Packet, label: &str) -> Result<std::path::PathBuf> {
+    let provider = std::fs::read_to_string(packet.fixture("provider"))?;
+    let foundation = provider.split(MARKER).next().ok_or("foundation")?;
+    let path = format!("pa41/tests/spec/asm-native/opponents/{label}.rs");
+    let opponent = std::fs::read_to_string(packet.root.join(path))?;
+    let lines: Vec<&str> = opponent
+        .lines()
+        .filter(|line| *line != "use core::arch::asm;")
+        .collect();
+    let body = lines.join("\n");
+    assert_eq!(body.matches("pub fn f(").count(), 1, "{label}");
+    let control = body
+        .replace("asm!(", "crate::arch::asm!(")
+        .replace("pub fn f(", "pub fn f<T>(");
+    let source = packet.folder.join(format!("{label}.rs"));
+    std::fs::write(&source, format!("{foundation}{COPIES}{control}\n"))?;
+    Ok(source)
 }
 #[test]
 fn assembly_packets_export_and_fresh_consumers_rebuild_their_payloads() -> Result {
@@ -99,8 +123,6 @@ fn assembly_packets_export_and_fresh_consumers_rebuild_their_payloads() -> Resul
 #[test]
 fn forms_outside_the_profile_keep_their_lowering_texts_at_export() -> Result {
     let packet = Packet::new(GROUP, SPEC, "asm-controls", "provider")?;
-    let provider = std::fs::read_to_string(packet.fixture("provider"))?;
-    let foundation = provider.split(MARKER).next().ok_or("foundation")?;
     let native = packet.root.join("pa41/tests/spec/asm-native");
     let table = std::fs::read_to_string(native.join("opponents.tsv"))?;
     for label in CONTROLS {
@@ -109,23 +131,26 @@ fn forms_outside_the_profile_keep_their_lowering_texts_at_export() -> Result {
             .lines()
             .find_map(|line| line.strip_prefix(&format!("{path}\t0\t")))
             .ok_or(path.clone())?;
-        let opponent = std::fs::read_to_string(native.join(&path))?;
-        let lines: Vec<&str> = opponent
-            .lines()
-            .filter(|line| *line != "use core::arch::asm;")
-            .collect();
-        let body = lines.join("\n");
-        assert_eq!(body.matches("pub fn f(").count(), 1, "{label}");
-        let control = body
-            .replace("asm!(", "crate::arch::asm!(")
-            .replace("pub fn f(", "pub fn f<T>(");
-        let source = packet.folder.join(format!("{label}.rs"));
-        std::fs::write(&source, format!("{foundation}{COPIES}{control}\n"))?;
+        let source = control(&packet, label)?;
         let metadata = packet.folder.join(format!("{label}.rgcrate"));
         let mut export = packet.export(PROFILE, &source, &metadata);
         packet.rejected(label, &mut export, expected)?;
         assert!(unwritten(&metadata)?, "{label} wrote a packet");
     }
+    Ok(())
+}
+/// `//` and `/*` inside a quoted directive string are not comments: the
+/// generated quoted control exports with its template bytes intact.
+#[test]
+fn quoted_directives_export_with_their_bytes() -> Result {
+    let packet = Packet::new(GROUP, SPEC, "asm-quoted", "provider")?;
+    let source = control(&packet, "quoted")?;
+    let metadata = packet.folder.join("quoted.rgcrate");
+    let mut export = packet.export(PROFILE, &source, &metadata);
+    super::artifacts::checked("quoted", &packet.folder, &mut export)?;
+    let bytes = std::fs::read(&metadata)?;
+    unique(&bytes, b".ascii \"a//b/*c\"")?;
+    assert_eq!(crates::encode(&crates::decode(&bytes)?)?, bytes);
     Ok(())
 }
 #[test]
