@@ -101,6 +101,33 @@ fn declaration_forms_required_gates_and_all_owner_sites_are_checked() -> TestRes
     assert_eq!(row.sites.len(), 2);
     Ok(())
 }
+/// Pinned rustc rejects `#[inline(always)]` on a target-feature function,
+/// including generic, unused and associated ones, at the inline attribute
+/// (`predictions-inline-always.json`); the other two hints remain valid.
+#[test]
+fn always_inline_target_feature_functions_are_rejected_at_the_hint() -> TestResult {
+    for name in ["inline-hint", "inline-never"] {
+        analyze(&input(name)?).map_err(|error| format!("{name}: {error}"))?;
+    }
+    for name in [
+        "inline-always",
+        "inline-always-generic",
+        "inline-always-method",
+    ] {
+        let source = input(name)?;
+        let report = crate::test_source::resolve(&source, true)?;
+        let error = pipeline::analyze_source(&report)
+            .err()
+            .ok_or("expected actual source rejection")?;
+        assert_eq!(
+            error.message, "cannot use `#[inline(always)]` with `#[target_feature]`",
+            "{name}"
+        );
+        let hint = source.find("#[inline(always)]").ok_or("inline hint")?;
+        assert_eq!(error.span.start, u32::try_from(hint)?, "{name}");
+    }
+    Ok(())
+}
 #[test]
 fn direct_calls_preserve_body_features_declared_safety_and_constant_results() -> TestResult {
     for name in [

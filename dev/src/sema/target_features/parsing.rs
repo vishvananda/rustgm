@@ -42,6 +42,7 @@ pub(in crate::sema) fn collect(
                 node = value;
             }
             let source = NodeKey { file, node };
+            let mut targeted = false;
             for (effect, attribute, forest) in
                 unit.retained_indexed_attributes(owner.attributes.clone())
             {
@@ -105,10 +106,31 @@ pub(in crate::sema) fn collect(
                     attribute,
                     input,
                 });
+                targeted = true;
+            }
+            if targeted {
+                always_inline(report, facts, source)?;
             }
         }
     }
     Ok(rows)
+}
+/// Pinned rustc rejects `#[inline(always)]` on every target-feature function,
+/// generic, unused or associated, at the inline attribute, after its features.
+/// Inline hints are collected first, so the owner's own row answers.
+fn always_inline(report: &Report, facts: &Declarations, source: NodeKey) -> Result<(), Error> {
+    let Some(view) = facts.inline_hint(report, source)? else {
+        return Ok(());
+    };
+    if view.hint != crate::sema::inlining::Hint::Always {
+        return Ok(());
+    }
+    let start = view.origin.source().map_or(0, |site| site.span.start);
+    Err(Error::at(
+        source.file,
+        start,
+        "cannot use `#[inline(always)]` with `#[target_feature]`",
+    ))
 }
 #[derive(Clone, Copy)]
 struct Place {

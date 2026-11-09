@@ -1,0 +1,60 @@
+{
+  "scope": "F0: #[inline(always)] with #[target_feature]. rustc_codegen_ssa/src/codegen_attrs.rs:429-440 reports it at the inline attribute with no error code; rustc_hir_analysis/src/check/check.rs:820-825 and 1108-1109 force that query for every Fn and AssocFn, so generic, unused and associated functions are covered",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "declared": "2026-11-09T12:01:50Z, as the F0 probe's declared.json, before any run",
+  "probe": "RustGM 868d91e1 accepted the generic case with no diagnostic and took the other four to the library export fence, the same text as their controls: no local rule existed; rustc matched every prediction",
+  "cases": [
+    {
+      "source": "inline-always.rs",
+      "sha256": "38ce9559ecb51eff51c8f65cccc2d5b087a24e8b4090919001455356bbb69bae",
+      "status": 1,
+      "errors": [],
+      "message": "cannot use `#[inline(always)]` with `#[target_feature]`",
+      "warnings": [],
+      "flags": [],
+      "rustgm": "cannot use `#[inline(always)]` with `#[target_feature]`"
+    },
+    {
+      "source": "inline-always-generic.rs",
+      "sha256": "6165bcdbd90d3cf2a2ecf7e7cff906096aae8487e8cd1211680923100b825230",
+      "status": 1,
+      "errors": [],
+      "message": "cannot use `#[inline(always)]` with `#[target_feature]`",
+      "warnings": [],
+      "flags": [],
+      "rustgm": "cannot use `#[inline(always)]` with `#[target_feature]`"
+    },
+    {
+      "source": "inline-always-method.rs",
+      "sha256": "ef77c2485cd75f3e36597621f12bca09d733e914e87a9ee6c0c1cbe20e6e6b5d",
+      "status": 1,
+      "errors": [],
+      "message": "cannot use `#[inline(always)]` with `#[target_feature]`",
+      "warnings": [],
+      "flags": [],
+      "rustgm": "cannot use `#[inline(always)]` with `#[target_feature]`"
+    },
+    {
+      "source": "inline-hint.rs",
+      "sha256": "cd43eb62ad4ea3a6273c6595e31719008f5a941dc566f32a345b353c2d7a1c43",
+      "status": 0,
+      "errors": [],
+      "message": null,
+      "warnings": [],
+      "flags": [],
+      "rustgm": "accepted"
+    },
+    {
+      "source": "inline-never.rs",
+      "sha256": "7675a246c924f7d9657fe6e93a2ab7906c3b1904103b2a6739718368efa734b4",
+      "status": 0,
+      "errors": [],
+      "message": null,
+      "warnings": [],
+      "flags": [],
+      "rustgm": "accepted"
+    }
+  ]
+}

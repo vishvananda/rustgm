@@ -5893,7 +5893,9 @@ actual body context; explicit unsafe declarations keep that requirement. Nested
 functions and constants do not inherit an outer body's features. CPU baseline
 features do not waive language call safety; assembly availability is a separate
 baseline-plus-body consumer. Unstable feature requests require actual crate
-authority, independently of macro allowances. The existing active-call map
+authority, independently of macro allowances. `#[inline(always)]` on any
+target-feature function, generic, unused or associated, is rejected at the
+hint, after its features, as pinned rustc does. The existing active-call map
 retains selected target identity; its measured extra eight bytes per entry also
 applies to ordinary calls. No new body field or second call-policy index is
 needed. See the [target policy checkpoint](docs/source-target-feature-checkpoint.md)

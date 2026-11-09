@@ -87,3 +87,35 @@ owner, separately from body-only language safety. The root-owned assembly join
 and actual SIMD/native consumer remain pending. This checkpoint adds no target
 instruction, AVX-host, unadjusted/LLVM ABI, imported policy or wire/export
 permission. Existing target-feature transport and Fn-trait fences stay closed.
+
+## Always-inline amendment (F0, 2026-11-09)
+
+Pinned rustc rejects `#[inline(always)]` on a target-feature function with
+"cannot use `#[inline(always)]` with `#[target_feature]`", at the inline
+attribute and with no error code (`rustc_codegen_ssa/src/codegen_attrs.rs:429-440`).
+Wfcheck forces that query for every free and associated function
+(`rustc_hir_analysis/src/check/check.rs:820-825, 1108-1109`), so unused and
+generic functions are rejected too. The `target_feature_inline_always` gate was
+removed in 1.97.
+
+RustGM had no such rule. A probe was declared before it ran, in
+`obj/parallel/target-feature-transport/f0-probe`, with the same bytes as the
+committed `pa41/tests/spec/target-features/inline-*.rs` inputs, using the
+frontend at `868d91e1`. It accepted the unused generic case without a
+diagnostic. The other four reached the library export fence with their
+controls' text. rustc matched every declared prediction
+(`predictions-inline-always.json`).
+
+The collector now checks the owner's own inline row once all of the owner's
+target-feature attributes have been parsed. Feature errors are therefore
+reported first, and the new error is reported at the hint. `#[inline]` and
+`#[inline(never)]` remain valid.
+
+The flip survey compared base `05248a42` (built from `645df0a92`) with the
+candidate `d9883c84`:
+
+- 113 committed pa*/dev inputs containing `target_feature`: no difference.
+- 520 stack export and client runs: no difference.
+- The only changes are the three new rejected inputs, which move from
+  acceptance or the export fence to the new error. This is an accepted-to-rejected
+  flip that matches rustc.
