@@ -508,7 +508,8 @@ impl Validation<'_> {
                 | super::HeaderRef::AssociatedType(_)
                 | super::HeaderRef::AssociatedDefinition(_)
                 | super::HeaderRef::Variant(_)
-                | super::HeaderRef::Constructor(_),
+                | super::HeaderRef::Constructor(_)
+                | super::HeaderRef::Constant(_),
             ) => false,
         }
     }

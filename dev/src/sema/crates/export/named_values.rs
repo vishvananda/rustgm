@@ -29,7 +29,7 @@ pub(super) fn export(
     .map_err(error)
 }
 
-pub(super) fn value_bits(ty: Scalar, view: View) -> Result<ScalarValue, Error> {
+pub(in crate::sema::crates) fn value_bits(ty: Scalar, view: View) -> Result<ScalarValue, Error> {
     match (ty, view) {
         (
             Scalar::Unit,

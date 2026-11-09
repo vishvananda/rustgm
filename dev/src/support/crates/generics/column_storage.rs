@@ -66,7 +66,8 @@ impl Columns {
             || !cold.enums.is_empty()
             || !cold.pattern_ranges.is_empty()
             || !cold.diagnostics.is_empty()
-            || !cold.consts.is_empty())
+            || !cold.consts.is_empty()
+            || !cold.constants.is_empty())
         .then(|| {
             Box::new(super::super::ColdColumns {
                 associated_definitions: cold.associated_definitions.clone(),
@@ -74,6 +75,7 @@ impl Columns {
                 pattern_ranges: cold.pattern_ranges.clone(),
                 diagnostics: cold.diagnostics.clone(),
                 consts: cold.consts.clone(),
+                constants: cold.constants.clone(),
                 bodies: None,
             })
         })
@@ -97,6 +99,16 @@ impl Columns {
     #[must_use]
     pub fn consts(&self) -> &[super::super::ConstTerm] {
         &self.cold().consts
+    }
+    #[must_use]
+    pub fn constants(&self) -> &[super::super::ConstantHeader] {
+        &self.cold().constants
+    }
+    /// Each constant declaration with its header row, in declaration order.
+    pub fn constant_rows(
+        &self,
+    ) -> impl Iterator<Item = (DeclarationRef, &super::super::ConstantHeader)> {
+        super::super::free_constants::declared(&self.declarations, self.constants())
     }
     pub(crate) fn original(&self, body: super::super::BodyRef) -> Result<&Original, &'static str> {
         self.originals

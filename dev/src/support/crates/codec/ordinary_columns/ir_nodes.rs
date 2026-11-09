@@ -123,7 +123,7 @@ const FORMS: [s::OperandForm; 5] = [
 ];
 
 /// Reconstructable codes in this consumer, by family.
-const VALUE_FORMS: [u8; 15] = [0, 2, 3, 6, 7, 10, 12, 14, 16, 23, 24, 27, 28, 29, 30];
+const VALUE_FORMS: [u8; 16] = [0, 2, 3, 6, 7, 10, 12, 14, 16, 17, 23, 24, 27, 28, 29, 30];
 /// Stable `Rvalue::Invoke` call-trait flags.
 const CALLABLES: [crate::support::call_traits::CallTrait; 3] = [
     crate::support::call_traits::CallTrait::FnOnce,
@@ -271,6 +271,9 @@ pub(super) fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'stat
         s::ValueKind::Function(application) => {
             node_write(out, 16, &[Operand::Application(application.0)])
         }
+        s::ValueKind::Constant(declaration) => {
+            node_write(out, 17, &[Operand::Declaration(declaration.0)])
+        }
         s::ValueKind::Reify(value) => node_write(out, 23, &[Operand::Value(value)]),
         // The instruction ordinal names the original's assembly column row.
         s::ValueKind::Assembly {
@@ -359,6 +362,9 @@ pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static 
         }
         (16, &[Operand::Application(application)]) => {
             s::ValueKind::Function(s::FunctionApplicationRef(application))
+        }
+        (17, &[Operand::Declaration(declaration)]) => {
+            s::ValueKind::Constant(DeclarationRef(declaration))
         }
         (23, &[Operand::Value(value)]) => s::ValueKind::Reify(value),
         (0, &[Operand::Flag(instruction), Operand::Range(arguments)]) => s::ValueKind::Assembly {

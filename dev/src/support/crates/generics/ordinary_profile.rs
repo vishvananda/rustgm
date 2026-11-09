@@ -561,6 +561,7 @@ fn originals(
                             | ValueKind::Text(_)
                             | ValueKind::Reify(_)
                             | ValueKind::Assembly { .. }
+                            | ValueKind::Constant(_)
                     ))
             {
                 return Err("source value operation requires a wider explicit profile");
@@ -972,7 +973,11 @@ fn role_header(
         | (
             _,
             None
-            | Some(super::super::HeaderRef::Function(_) | super::super::HeaderRef::Implementation(_)),
+            | Some(
+                super::super::HeaderRef::Function(_)
+                | super::super::HeaderRef::Implementation(_)
+                | super::super::HeaderRef::Constant(_),
+            ),
         ) => return Err("source role has a different actual declaration/header kind"),
         (_, Some(super::super::HeaderRef::Trait(_))) => {}
         (

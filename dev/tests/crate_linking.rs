@@ -52,6 +52,8 @@ mod marker_transport;
 mod match_transport;
 #[path = "crate_linking/modifier_transport.rs"]
 mod modifier_transport;
+#[path = "crate_linking/named_constants.rs"]
+mod named_constants;
 #[path = "crate_linking/named_values.rs"]
 mod named_values;
 #[path = "crate_linking/namespace_clients.rs"]

@@ -14,6 +14,8 @@ mod descriptor;
 mod operation_contracts;
 mod results_contract;
 pub use compiler_rows::*;
+#[path = "free_constants.rs"]
+mod free_constants;
 #[path = "traitless_impls.rs"]
 mod inherent_contracts;
 #[path = "relation_inputs.rs"]
@@ -22,6 +24,7 @@ mod inputs;
 mod nominal_contracts;
 #[path = "sum_contracts.rs"]
 mod sum_contracts;
+pub use free_constants::ConstantHeader;
 pub use sum_contracts::{
     Constructor, ConstructorPayload, EnumColumns, EnumHeader, VariantField, VariantHeader,
     VariantShape, nominal_kind, positional,
@@ -551,6 +554,9 @@ pub struct ColdColumns {
     pub diagnostics: Vec<DiagnosticBinding>,
     /// Version thirteen: each const argument's term, in argument-row order.
     pub consts: Vec<ConstTerm>,
+    /// Version thirteen: one header row per constant declaration, in
+    /// declaration order. Each row holds its own term in place.
+    pub constants: Vec<ConstantHeader>,
     pub(crate) bodies: Option<std::sync::Arc<bodymap::Lookup>>,
 }
 static EMPTY_COLD: ColdColumns = ColdColumns {
@@ -563,6 +569,7 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
     pattern_ranges: Vec::new(),
     diagnostics: Vec::new(),
     consts: Vec::new(),
+    constants: Vec::new(),
     bodies: None,
 };
 impl ColdColumns {
@@ -576,6 +583,7 @@ impl ColdColumns {
             && self.pattern_ranges.is_empty()
             && self.diagnostics.is_empty()
             && self.consts.is_empty()
+            && self.constants.is_empty()
             && self.bodies.is_none()
     }
 }
@@ -603,6 +611,14 @@ impl Rows {
     #[must_use]
     pub fn consts(&self) -> &[ConstTerm] {
         &self.cold().consts
+    }
+    #[must_use]
+    pub fn constants(&self) -> &[ConstantHeader] {
+        &self.cold().constants
+    }
+    /// Each constant declaration with its header row, in declaration order.
+    pub fn constant_rows(&self) -> impl Iterator<Item = (DeclarationRef, &ConstantHeader)> {
+        free_constants::declared(&self.declarations, self.constants())
     }
     /// The cold groups, allocated on first write. A writer accounts for
     /// `size_of::<ColdColumns>()` before the first call.

@@ -36,13 +36,15 @@ impl Builder<'_, '_, '_> {
             }
             s::ValueKind::EnumCast(operand) => self.enum_cast(original, value.ty, operand, work),
             // Domain validation checked the exact primitive type and canonical bits,
-            // and an assembly effect's unit type and operand types.
+            // an assembly effect's unit type and operand types, and a constant
+            // read's declared scalar type.
             // Formation above remains an ordinary unpaid request.
             s::ValueKind::Scalar(_)
             | s::ValueKind::ScalarCast(_)
             | s::ValueKind::Binary { .. }
             | s::ValueKind::Text(_)
-            | s::ValueKind::Assembly { .. } => Ok(()),
+            | s::ValueKind::Assembly { .. }
+            | s::ValueKind::Constant(_) => Ok(()),
             s::ValueKind::Read(place) => self.read_input(
                 original,
                 OperationSite { port, site },
@@ -58,36 +60,13 @@ impl Builder<'_, '_, '_> {
                 place,
                 work,
             ),
-            s::ValueKind::Constrain(operand) => {
-                let actual = original.values[operand as usize].ty;
-                let actual_node = self.node(original, actual, work)?;
-                let expected_node = self.node(original, value.ty, work)?;
-                self.coverage.relation(
-                    original.body,
-                    s::InputSite::Body(site),
-                    actual_node,
-                    expected_node,
-                    work,
-                )?;
-                self.arena.same(
-                    self.domains,
-                    actual_node,
-                    expected_node,
-                    Opening::Relation {
-                        body: original.body,
-                    },
-                    work,
-                )?;
-                self.emit(
-                    port,
-                    s::InputSite::Body(site),
-                    RequiredKind::Relation {
-                        actual,
-                        expected: value.ty,
-                    },
-                    work,
-                )
-            }
+            s::ValueKind::Constrain(operand) => self.constrained(
+                original,
+                OperationSite { port, site },
+                value.ty,
+                operand,
+                work,
+            ),
             s::ValueKind::Function(application) => {
                 let node = self.node(original, value.ty, work)?;
                 if self.arena.nodes[node.0 as usize] != Node::FunctionItem(application) {
@@ -120,6 +99,43 @@ impl Builder<'_, '_, '_> {
                 work,
             ),
         }
+    }
+    /// A constraint relates its operand's actual type to its own expected type
+    /// at its site, and requests that relation.
+    fn constrained(
+        &mut self,
+        original: &s::Original,
+        location: OperationSite,
+        expected: g::TypeRef,
+        operand: u32,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let OperationSite { port, site } = location;
+        let actual = original.values[operand as usize].ty;
+        let actual_node = self.node(original, actual, work)?;
+        let expected_node = self.node(original, expected, work)?;
+        self.coverage.relation(
+            original.body,
+            s::InputSite::Body(site),
+            actual_node,
+            expected_node,
+            work,
+        )?;
+        self.arena.same(
+            self.domains,
+            actual_node,
+            expected_node,
+            Opening::Relation {
+                body: original.body,
+            },
+            work,
+        )?;
+        self.emit(
+            port,
+            s::InputSite::Body(site),
+            RequiredKind::Relation { actual, expected },
+            work,
+        )
     }
     /// Version thirteen: a reification re-proves its operand's applied item
     /// signature against its own pointer type. The operand's Function value

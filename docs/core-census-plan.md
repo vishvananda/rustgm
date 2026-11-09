@@ -1246,6 +1246,46 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     type-parameter GAT member; the named open risk that region substitution
     cannot make a rigid projection normalizable.
 
+- **During Lane C's [named constants](parallel/named-constants.md) (5b-1)**,
+  2026-11-09, developed on `28e2b19fb`, qualified on `306b82377` and rebased
+  onto Lane D's A (`f62db7da9`).
+  - **Wire shape.** Declaration tag 13 `Constant`; one header row per
+    constant after the enum columns, `ty | value` with K's term in place (2a);
+    value code 17 `(17, [Declaration(const)])`. Existing packets keep their
+    bytes, and the unnamed-constant packet equals its twin's (2b).
+  - **Scope, accepted before code.** Primitive and unit values, at module
+    scope and inside function bodies (2d):
+    - aggregate, reference and pointer values keep their texts (2c);
+    - associated constants, code 18 and tag-1 values are 5b-2 (2e);
+    - statics keep the declaration-kind text.
+  - **Sites the notice did not list**, found by candidate runs 1 and 2:
+    module bindings admit a constant in the value namespace, and the lazy
+    ordinary graph demands each constant's header type.
+  - **Amended before their runs:**
+    - two forged-row declarations the frozen inputs could not reach as
+      worded (amendment 4);
+    - `const-call`, a failed prediction at an existing client fence
+      (amendment 5);
+    - the forged rows' file, renamed for the architecture audit's
+      filename-stem limit (amendment 6);
+    - the type-parameter parent, which the existing lexical forest rejects
+      first, a failed prediction kept with its text (amendment 7). The
+      free-owner text's witness is a generated unit struct parent, with
+      `INNER` renumbered as its next lexical child (amendment 8).
+  - **Survey.** Against the base pin, only the new packet differs.
+  - **Recorded:**
+    - "implementation validation has no source scheduling context": a client's
+      const evaluation of an imported const fn fails whenever the provider
+      declares primitive Copy impls, with or without constants. Core declares
+      exactly those, so the fence blocks alloc and std clients that
+      const-evaluate anything imported from core;
+    - a provider body reading another crate's constant waits for the
+      multi-packet item;
+    - order after 5b-1 (integrator, 2026-11-09): the scheduling-context fence,
+      starting with a read-only diagnosis and notice, then R2, then 5b-2 and
+      5b-3. R2's next `value_rows.rs` arm needs a real factoring of `emit()`,
+      which is at Clippy's line limit.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

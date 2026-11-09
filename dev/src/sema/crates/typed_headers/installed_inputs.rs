@@ -147,7 +147,7 @@ impl Reader {
             Some(s::HeaderRef::Implementation(index)) => {
                 rows.implementations[index as usize].declared_inputs as usize
             }
-            Some(s::HeaderRef::AssociatedDefinition(_)) => 0,
+            Some(s::HeaderRef::AssociatedDefinition(_) | s::HeaderRef::Constant(_)) => 0,
             Some(s::HeaderRef::Variant(_) | s::HeaderRef::Constructor(_)) => {
                 return Err(error("source variant declarations own no input scope"));
             }

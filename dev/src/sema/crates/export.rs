@@ -23,6 +23,7 @@ use crate::{
     },
     types::{Kind as Type, Primitive, TypeId, arguments::Argument},
 };
+pub(in crate::sema::crates) use named_values::value_bits;
 
 pub struct Exports {
     pub interface: Interface,

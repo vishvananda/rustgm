@@ -591,7 +591,8 @@ impl SelectedConsumer<'_> {
                     | s::HeaderRef::AssociatedType(_)
                     | s::HeaderRef::AssociatedDefinition(_)
                     | s::HeaderRef::Variant(_)
-                    | s::HeaderRef::Constructor(_),
+                    | s::HeaderRef::Constructor(_)
+                    | s::HeaderRef::Constant(_),
                 ) => {
                     return Err(Error::unlocated(
                         "unpaid provided profiles do not own source nominal declarations",

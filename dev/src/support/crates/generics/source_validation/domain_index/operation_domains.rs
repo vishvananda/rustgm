@@ -101,6 +101,7 @@ impl DomainIndex<'_, '_> {
                 let rows = self.headers.rows();
                 value.text_type(&rows.types, &rows.regions)?;
             }
+            s::ValueKind::Constant(constant) => self.constant(constant, value.ty, work)?,
             s::ValueKind::Read(s::Place::Temporary(value)) => {
                 prefix_value(original, value, index, work)?;
             }
@@ -189,6 +190,32 @@ impl DomainIndex<'_, '_> {
             s::ValueKind::Unit => {}
         }
         Ok(())
+    }
+    /// Version thirteen: a constant read names a validated constant row of
+    /// this artifact and has exactly its declared scalar type.
+    fn constant(
+        &self,
+        constant: crate::support::crates::owner_catalog::DeclarationRef,
+        ty: g::TypeRef,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let Some(HeaderRef::Constant(ordinal)) = self.headers.header(constant, work)? else {
+            return Err("source constant read names no validated constant declaration");
+        };
+        let rows = self.headers.rows();
+        let header = rows
+            .constants()
+            .get(ordinal as usize)
+            .ok_or("source constant read names no validated constant declaration")?;
+        match (
+            rows.types.get(ty.0 as usize),
+            rows.types.get(header.ty.0 as usize),
+        ) {
+            (Some(s::Type::Scalar(read)), Some(s::Type::Scalar(declared))) if read == declared => {
+                Ok(())
+            }
+            _ => Err("source constant read changed its declaration's type"),
+        }
     }
     /// A variant operand names a validated variant row of this artifact.
     fn variant(

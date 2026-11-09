@@ -57,6 +57,7 @@ pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<Ledger, &'s
     nominal_inputs(rows, &mut headers, &mut clauses, work)?;
     associated_headers(rows, &mut headers, &mut clauses, work)?;
     function_headers(rows, &mut headers, &mut clauses, work)?;
+    super::super::free_constants::headers(rows, &mut headers, work)?;
     for (index, row) in rows.declarations.iter().enumerate() {
         work.charge(1)?;
         if matches!(
@@ -67,6 +68,7 @@ pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<Ledger, &'s
                 | DefinitionKind::Enum
                 | DefinitionKind::Variant
                 | DefinitionKind::AssociatedType
+                | DefinitionKind::Constant
         ) && headers[index].is_none()
         {
             return Err("source declaration has no complete typed header");

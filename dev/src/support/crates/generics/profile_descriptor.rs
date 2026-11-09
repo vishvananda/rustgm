@@ -421,6 +421,7 @@ impl ValidatedRows {
         let start = work.steps;
         super::nominal_contracts::require_profile(&rows, profile, work)?;
         super::sum_contracts::require_profile(&rows, profile, work)?;
+        super::free_constants::require_profile(&rows, profile, work)?;
         super::inherent_contracts::require_profile(&rows, profile, work)?;
         super::operation_contracts::require_profile(&rows, profile, work)?;
         let features = profile.feature_predicates();
@@ -445,6 +446,7 @@ impl ValidatedRows {
             } else if profile.body_nodes() {
                 functions::validate_module_bodies(&rows, &indexed, work)?;
                 super::results_contract::validate(&rows, &indexed, work)?;
+                super::free_constants::validate(&rows, &indexed, work)?;
             } else if profile.conversion_roles() {
                 functions::validate_module_conversions(&rows, &indexed, work)?;
             } else if profile.call_safety() {
@@ -538,6 +540,7 @@ impl ValidatedRows {
         let start = work.steps;
         super::nominal_contracts::require_profile(&rows, profile, work)?;
         super::sum_contracts::require_profile(&rows, profile, work)?;
+        super::free_constants::require_profile(&rows, profile, work)?;
         super::inherent_contracts::require_profile(&rows, profile, work)?;
         super::operation_contracts::require_profile(&rows, profile, work)?;
         safety_profile::require_profile(&rows, profile, work)?;

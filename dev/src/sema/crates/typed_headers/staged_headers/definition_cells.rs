@@ -49,6 +49,11 @@ pub(super) fn prepare(
     for header in &rows.nominals {
         assign(&mut cells, header.declaration, graph.ty(header.self_type)?)?;
     }
+    // Version thirteen: a constant's cell is its header's declared type.
+    for (declaration, row) in rows.constant_rows() {
+        budget.charge(1)?;
+        assign(&mut cells, declaration, graph.ty(row.ty)?)?;
+    }
     variant_cells(context, graph, facts, &mut cells, budget)?;
     for callable in callables {
         budget.charge(1)?;
@@ -72,6 +77,7 @@ pub(super) fn prepare(
                 | s::DefinitionKind::Variant
                 | s::DefinitionKind::AssociatedType
                 | s::DefinitionKind::Function
+                | s::DefinitionKind::Constant
                 | s::DefinitionKind::SelfType
                 | s::DefinitionKind::TypeParameter
                 | s::DefinitionKind::ConstParameter

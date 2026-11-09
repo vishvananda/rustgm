@@ -32,12 +32,14 @@ impl Graph {
             Some(s::HeaderRef::Trait(index)) => Some(rows.traits[index as usize].self_definition),
             // A called constructor, like a local one, owns no generic scope:
             // its enum's or struct's premises arrive through that type's own
-            // inputs.
+            // inputs. A free constant inherits no generics, even inside a
+            // generic function.
             Some(
                 s::HeaderRef::Implementation(_)
                 | s::HeaderRef::Nominal(_)
                 | s::HeaderRef::Variant(_)
-                | s::HeaderRef::Constructor(_),
+                | s::HeaderRef::Constructor(_)
+                | s::HeaderRef::Constant(_),
             ) => None,
             Some(s::HeaderRef::AssociatedDefinition(_)) => raw.definition.parent,
             None if raw.definition.kind == s::DefinitionKind::SelfType => None,
@@ -123,12 +125,13 @@ impl Graph {
                     "source function omitted its actual canonical input/header installation",
                 );
             }
-            // An implementation's result definition and a variant or struct
-            // constructor declare no inputs of their own.
+            // An implementation's result definition, a variant or struct
+            // constructor and a free constant declare no inputs of their own.
             Some(
                 s::HeaderRef::AssociatedDefinition(_)
                 | s::HeaderRef::Variant(_)
-                | s::HeaderRef::Constructor(_),
+                | s::HeaderRef::Constructor(_)
+                | s::HeaderRef::Constant(_),
             ) => {
                 return Ok(Some(&[]));
             }

@@ -6441,6 +6441,20 @@ through a pointer and explicit casts. Earlier profiles keep the generic
 rvalue text, and an older reader rejects code 23 by name. The [reified-item
 packet](pa29/tests/spec/reified-items/README.md) records independent outcomes.
 
+Version thirteen also carries named constants of primitive and unit types.
+Declaration kind 13 is a constant, parented by a module or a function. One
+header row per constant follows the enum columns, in declaration order: its
+type and its completed value, written as a const term. Body IR value node 17
+reads a constant of the same artifact. No initializer travels. A fresh
+consumer re-proves each value's canonical bits for its declared type, requires
+each code-17 read to have its constant's type, installs that type as the
+declaration's cell and seeds the value as a completed definition, as it does
+for legacy imported scalar constants. An unnamed `const _` exports no row.
+Export rejects these by name: aggregate, reference and pointer values,
+associated constants and statics. Earlier profiles keep the declaration-kind
+text, and an older reader rejects kind 13 by name. The [named-constant
+packet](pa29/tests/spec/named-constants/README.md) records independent outcomes.
+
 Version thirteen also carries enums. Declaration kind 10 is an enum, whose
 nominal header has no record fields, and kind 11 is one of its variants,
 parented by the enum and published once as its value-namespace constructor.

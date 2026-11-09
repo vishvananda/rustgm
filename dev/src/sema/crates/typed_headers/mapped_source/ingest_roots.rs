@@ -15,6 +15,10 @@ pub(super) fn prepare(
     for field in &rows.enums().fields {
         demand(field.ty)?;
     }
+    // Version thirteen: a constant's declared type is its declaration's cell.
+    for header in rows.constants() {
+        demand(header.ty)?;
+    }
     for header in &rows.functions {
         for signature in [header.original, header.callable] {
             for &root in signature.parameters.slice(&rows.roots).map_err(error)? {

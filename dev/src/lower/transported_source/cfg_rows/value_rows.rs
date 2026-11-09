@@ -95,6 +95,7 @@ pub(super) fn emit(
                 reify(facts, body, index, value.ty, operand)?
             }
             ir::Rvalue::Assembly { .. } if stage.body_nodes() => assembly(value.kind)?,
+            ir::Rvalue::Constant(item) if stage.body_nodes() => stage.constant_read(item)?,
             _ => return Err("source rvalue requires a complete wider transport row"),
         };
         let ty = stage.ty(facts, value.ty, context)?;

@@ -328,6 +328,9 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
         s::ValueKind::Assembly { .. } => {
             Err("source inline assembly requires the version-thirteen body IR profile")
         }
+        s::ValueKind::Constant(_) => {
+            Err("source constant read requires the version-thirteen body IR profile")
+        }
         s::ValueKind::Call {
             signature,
             callee,

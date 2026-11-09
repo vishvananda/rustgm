@@ -6,9 +6,13 @@ mod compiler_wire;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/term_codec.rs"]
 mod const_tests;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/evaluated_constant_rows.rs"]
+mod constant_tests;
 mod contract_columns;
 mod enums_wire;
 mod exemption_wire;
+mod free_constants_wire;
 #[path = "ordinary_columns/annotation_rows.rs"]
 mod header_facts;
 mod instruction_columns;
@@ -102,6 +106,7 @@ pub(super) fn encode_module_availability(
     if rows.descriptor().profile().body_nodes() {
         results_wire::encode(out, rows)?;
         enums_wire::encode(out, rows)?;
+        free_constants_wire::encode(out, rows)?;
     }
     let const_bodies = rows.availability()?.const_bodies.as_deref();
     if rows.descriptor().profile().compiler_operations() {
@@ -210,6 +215,7 @@ fn decode_availability_profile(
     if profile.body_nodes() {
         results_wire::decode(&mut read, &mut rows)?;
         enums_wire::decode(&mut read, &mut rows)?;
+        free_constants_wire::decode(&mut read, &mut rows)?;
     }
     availability.const_bodies = if profile.compiler_operations() {
         match read.reader.u8()? {

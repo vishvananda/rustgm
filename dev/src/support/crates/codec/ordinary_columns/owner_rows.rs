@@ -20,6 +20,7 @@ pub(super) fn declaration_write(
         s::DefinitionKind::Enum => 10,
         s::DefinitionKind::Variant => 11,
         s::DefinitionKind::ConstParameter => 12,
+        s::DefinitionKind::Constant => 13,
     })?;
     option(out, row.definition.parent.map(|r| r.0))?;
     id(out, row.ordinal)?;
@@ -54,6 +55,7 @@ pub(super) fn declaration_read(read: &mut Input<'_, '_>) -> Result<s::Declaratio
         10 if read.profile.body_nodes() => s::DefinitionKind::Enum,
         11 if read.profile.body_nodes() => s::DefinitionKind::Variant,
         12 if read.profile.body_nodes() => s::DefinitionKind::ConstParameter,
+        13 if read.profile.body_nodes() => s::DefinitionKind::Constant,
         _ => return Err("unknown source declaration kind"),
     };
     Ok(s::Declaration {

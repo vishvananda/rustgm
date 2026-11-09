@@ -136,6 +136,9 @@ fn value_kind(
         s::ValueKind::Reify(value) if view.rows().descriptor().profile().body_nodes() => {
             Rvalue::Reify(ValueId(value))
         }
+        s::ValueKind::Constant(declaration) if view.rows().descriptor().profile().body_nodes() => {
+            Rvalue::Constant(view.constant(declaration, &mut work.steps)?)
+        }
         s::ValueKind::Binary { .. } => binary(view, value.kind)?,
         s::ValueKind::ScalarCast(_) => {
             let (kind, operand) = scalar_cast(view, value)?;
@@ -712,6 +715,11 @@ fn same_value(
             if view.rows().descriptor().profile().body_nodes() =>
         {
             actual.0 == record
+        }
+        (Rvalue::Constant(actual), s::ValueKind::Constant(record))
+            if view.rows().descriptor().profile().body_nodes() =>
+        {
+            actual == view.constant(record, steps)?
         }
         (Rvalue::Function(actual), s::ValueKind::Function(raw)) if v4(view) => {
             actual == view.function(raw, steps)?

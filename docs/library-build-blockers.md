@@ -5,6 +5,33 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [named constants](parallel/named-constants.md), 5b-1, exports named
+const items of primitive and unit types under version 13, at module scope and
+inside function bodies, as declaration tag 13 with one header row each, and
+lets exported bodies read them as value code 17. No initializer travels: each
+consumer re-proves the value's canonical bits for its declared type and seeds
+it as a completed definition.
+
+- Twelve clients exit 42 natively. They cover runtime reads, a client const,
+  an array length, a pattern, imported bodies reading public, private and
+  item-local constants, f32, f64, u128 and unit values, three same-named
+  item-local constants, the constant after an unnamed one and a generic
+  body's item-local constant.
+- The unnamed-constant control's packet is byte-identical to its twin's
+  without the `const _`.
+- Kept fences, each by name: aggregate, reference and pointer values,
+  associated constants (5b-2) and statics. Older profiles keep the
+  declaration-kind text, and the base reader rejects tag 13 by name.
+- Failed prediction, amendment 5: `const-call`, client const evaluation of the
+  imported const fn `lane_count()`, stops at the existing client fence
+  "implementation validation has no source scheduling context". The base pin
+  reproduces it without any constant whenever the provider declares primitive
+  Copy impls, and both accept it without them. 5b-1 is not widened. Core
+  declares exactly those impls, so the fence blocks alloc and std clients
+  that const-evaluate anything imported from core.
+- Lane C's order after 5b-1 is the scheduling-context fence, then R2, then
+  5b-2 and 5b-3.
+
 Lane D [B2 A, asm transport](parallel/asm-transport.md) exports version 13
 bodies holding the inline assembly forms of B1's initial profile: raw-pointer
 `reg` inputs, Intel templates without modifiers, and `nostack` and

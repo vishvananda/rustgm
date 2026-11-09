@@ -83,6 +83,7 @@ impl Graph {
             s::DefinitionKind::Function => {
                 self.function_ready(catalog, facts, headers, definition, steps)?;
             }
+            s::DefinitionKind::Constant => self.constant_ready(rows, row, *cell)?,
             s::DefinitionKind::SelfType => {
                 let owner = self.installed_owner(facts, definition)?;
                 let schema = facts
@@ -193,6 +194,26 @@ impl Graph {
             return Err("associated definition readiness changed its actual impl/value binding");
         }
         Self::scope_ready(facts, definition)
+    }
+    /// Version thirteen: a constant's cell is its header's type; its value is
+    /// seeded from the same row after readiness.
+    fn constant_ready(
+        &self,
+        rows: s::ValidatedView<'_>,
+        row: crate::support::crates::owner_catalog::DeclarationRef,
+        cell: Option<crate::types::TypeId>,
+    ) -> Result<(), &'static str> {
+        let Some(s::HeaderRef::Constant(index)) = rows.header(row)? else {
+            return Err("source constant readiness lost its installed value type");
+        };
+        let header = rows
+            .constants()
+            .get(index as usize)
+            .ok_or("source constant readiness lost its installed value type")?;
+        if cell.is_none() || cell != self.ty(header.ty).ok() {
+            return Err("source constant readiness lost its installed value type");
+        }
+        Ok(())
     }
     fn value_binding_ready(
         binding: &s::Declaration,

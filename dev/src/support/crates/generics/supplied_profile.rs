@@ -148,6 +148,9 @@ const fn bodies_only(kind: s::ValueKind) -> Option<&'static str> {
         s::ValueKind::Assembly { .. } => {
             "source inline assembly requires the version-thirteen body IR profile"
         }
+        s::ValueKind::Constant(_) => {
+            "source constant read requires the version-thirteen body IR profile"
+        }
         _ => return None,
     })
 }

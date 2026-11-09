@@ -604,3 +604,24 @@ Rust fn pointers, and its clients call those pointers. The packet holds:
 The `crate_linking::reified_items` integration controls and the
 `input_plan::signatures` row and scaling invariants consume it. The
 nonnull-patterns layout witness's single-crate control also depends on it.
+
+`named-constant-outcomes.json` freezes the named-constant packet under
+`spec/named-constants/`, Lane C's item 5b-1. Its providers export named
+constants of primitive and unit types under version 13, and their bodies read
+them through value code 17. The packet holds:
+
+- four providers, each the branch provider's first 57 lines plus authored
+  lines: the module-constant provider, the unnamed-constant pair and the
+  generic item-local provider;
+- thirteen clients that rustc accepts: runtime reads, a client const, an array
+  length, a pattern, imported bodies reading public, private and item-local
+  constants, f32, f64, u128 and unit values, an imported const fn as an array
+  length, three same-named item-local constants, the constant after an
+  unnamed one and a generic body's item-local constant;
+- three opponents (E0308 twice, E0603), each rejected as its local twin is;
+- nine generated provider opponents that keep their export fences by name, and
+  the older-profile, old-reader, forged-row, scaling and flip-survey controls.
+
+Amendments are recorded beside the declarations they amend, each before the
+run it governs. The `crate_linking::named_constants` integration controls and
+the `constant_tests` codec and validation invariants consume it.

@@ -375,6 +375,7 @@ impl Stage {
                     | DefKind::Enum
                     | DefKind::Variant
                     | DefKind::Function
+                    | DefKind::Const
             ) || (definition.kind == DefKind::SelfType
                 && matches!(report.package.unit(source.file).configured.ast.node(source.node).kind,Kind::Item(item) if matches!(report.package.unit(source.file).configured.ast.items[item as usize].kind,crate::syntax::item::ItemKind::Impl {..})));
             if actual {

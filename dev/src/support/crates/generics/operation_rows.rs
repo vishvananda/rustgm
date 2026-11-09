@@ -114,6 +114,9 @@ pub enum ValueKind {
         instruction: u32,
         arguments: Range,
     },
+    /// Version thirteen: a read of a constant declaration of this artifact.
+    /// Its header row holds the only copy of the value.
+    Constant(DeclarationRef),
 }
 /// The reconstructable primitive operators. Add, Sub and Mul are checked: each
 /// consumer instance lowers its own overflow guard and abort exit. Div, Rem and

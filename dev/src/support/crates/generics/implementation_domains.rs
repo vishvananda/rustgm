@@ -359,6 +359,9 @@ impl ModuleContractColumns {
             | s::DefinitionKind::Struct
             | s::DefinitionKind::Enum => Namespace::Type,
             s::DefinitionKind::Function => Namespace::Value,
+            // Version thirteen: a named const binds in its module's value
+            // namespace.
+            s::DefinitionKind::Constant if variants => Namespace::Value,
             s::DefinitionKind::Variant if variants => constructor_namespace(rows, target)?,
             s::DefinitionKind::Variant => {
                 return Err("variant module bindings require the version-13 module-bodies profile");

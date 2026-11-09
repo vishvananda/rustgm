@@ -9,6 +9,7 @@ mod canonical_nodes;
 mod collected_formals;
 mod collected_provider;
 mod contract_rows;
+mod evaluated_constants;
 mod exposed_bindings;
 mod implementation_headers;
 mod modifier_rows;
@@ -501,6 +502,9 @@ impl Stage {
         if stage.compiler_operations || stage.body_nodes() {
             stage.associated_headers(report, facts)?;
         }
+        if stage.body_nodes() {
+            stage.constant_headers(report, facts)?;
+        }
         stage.functions(report, facts)?;
         stage.implementations(facts)?;
         stage.diagnostic_roles(report)?;
@@ -613,6 +617,18 @@ impl Stage {
                 // records its primitive type.
                 DefKind::Generic if definition.namespace == Namespace::Value => {
                     return Ok(Some(s::DefinitionKind::ConstParameter));
+                }
+                // Version thirteen: a named const item. An unnamed const has
+                // no row: its provider already evaluated it and no consumer
+                // can name it.
+                DefKind::Const => {
+                    return if report.package.names.get(definition.name) == "_" {
+                        Ok(None)
+                    } else if facts.associated.owner(id).is_some() {
+                        Err("source associated constants require their wider profile")
+                    } else {
+                        Ok(Some(s::DefinitionKind::Constant))
+                    };
                 }
                 _ => {}
             }

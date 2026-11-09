@@ -443,6 +443,16 @@ impl Source {
         {
             return Ok(());
         }
+        // Version thirteen: a free const's value travels evaluated in its
+        // header row, so its initializer is not an original either.
+        if let Owner::Initializer {
+            definition,
+            kind: crate::sema::model::InitializerKind::Const,
+        } = body.owner
+            && self.stage.evaluated_initializer(facts, definition)?
+        {
+            return Ok(());
+        }
         let Owner::Function {
             definition,
             signature,

@@ -105,6 +105,23 @@ impl Original<'_> {
         }
         Ok(variant)
     }
+    /// Version thirteen: the consumer's own definition for a validated
+    /// constant declaration of this artifact. Its value was seeded from the
+    /// same header row.
+    pub(crate) fn constant(
+        &self,
+        declaration: DeclarationRef,
+        steps: &mut usize,
+    ) -> Result<crate::resolve::model::DefId, &'static str> {
+        super::charge(steps)?;
+        if !matches!(
+            self.rows().header(declaration)?,
+            Some(s::HeaderRef::Constant(_))
+        ) {
+            return Err("source constant read lacks its actual constant header");
+        }
+        self.declaration(declaration, steps)
+    }
     /// A downcast payload field of a validated variant.
     fn variant_field(
         &self,

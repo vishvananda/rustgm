@@ -1,0 +1,431 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj); each generated provider is compiled to an object (--emit=obj)",
+  "providers": [
+    {
+      "file": "spec/named-constants/provider.rs",
+      "sha256": "b6bd07e140466b8b2578e2e2a7910bfe6d72ab6c409a57ba17881c0504458865",
+      "role": "the module-constant provider",
+      "inherits": {
+        "file": "spec/source-branches/provider.rs",
+        "sha256": "d16b8ebc5ba22cfd1128194f0a5da240089944152446c1ba3218c36e72a784b8",
+        "note": "unchanged first 57 lines"
+      }
+    },
+    {
+      "file": "spec/named-constants/unnamed-provider.rs",
+      "sha256": "9da11fca6e7f7b5c5b4ee9d6acf6ad7b34db77f8edf4fc00cd6b0fbf2e44da5d",
+      "role": "unnamed-constant control (2b): `const _: u8 = 7;` before the named `AFTER` and its reader",
+      "inherits": {
+        "file": "spec/source-branches/provider.rs",
+        "sha256": "d16b8ebc5ba22cfd1128194f0a5da240089944152446c1ba3218c36e72a784b8",
+        "note": "unchanged first 57 lines"
+      }
+    },
+    {
+      "file": "spec/named-constants/unnamed-twin.rs",
+      "sha256": "c38644b9e6a7da356e49090e546ffc2bedb1687c7c685d7b2bc2c0028206550e",
+      "role": "the unnamed control's twin: the same file without the `const _` line",
+      "inherits": {
+        "file": "spec/source-branches/provider.rs",
+        "sha256": "d16b8ebc5ba22cfd1128194f0a5da240089944152446c1ba3218c36e72a784b8",
+        "note": "unchanged first 57 lines"
+      }
+    },
+    {
+      "file": "spec/named-constants/generic-local-provider.rs",
+      "sha256": "a8e4f371b83c02d1bd41c86b381222c1bd9ac23ff2dc887dd88954202baa9b8e",
+      "role": "generic item-local control (2d): a generic exported function whose body reads its item-local const",
+      "inherits": {
+        "file": "spec/source-branches/provider.rs",
+        "sha256": "d16b8ebc5ba22cfd1128194f0a5da240089944152446c1ba3218c36e72a784b8",
+        "note": "unchanged first 57 lines"
+      }
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "declared": "2026-11-09T05:09:39Z",
+  "amendments": [
+    {
+      "recorded": "2026-11-09T05:15:20Z",
+      "before": "any oracle, candidate, probe or build run of these files",
+      "governs": "the integrator's decisions on corrections 2a-2f",
+      "change": "provider.rs gains `first_inner` and `second_inner`, each declaring its own `const INNER` (40 and 2), and the client inner-pair.rs reads both beside `nested`; the generated unnamed control becomes the fixture pair unnamed-provider.rs and unnamed-twin.rs with the client unnamed-after.rs; the provider generic-local-provider.rs and the client generic-local.rs are added (2d's generic control)"
+    },
+    {
+      "recorded": "2026-11-09T05:41:00Z",
+      "before": "the oracle's second run and any candidate run",
+      "governs": "rustc's first oracle run (obj/parallel/auto-traits/constants/oracle.log): `read` and `body` failed with `requires neg lang_item` (a `-1` literal pattern), `pattern` with `requires eq lang_item` (a const pattern), `local-const`, `float`, `wide`, `inner-pair` and `unnamed-after` with a delayed-bug ICE at their match scrutinee (no Copy impl for the matched primitive under no_core), and the generated `static` opponent with `requires drop_glue lang_item`; every other input gave its declared rustc outcome",
+      "change": "provider.rs gains Clone and Copy impls for usize, bool, char, u8 and u128 before its constants, and unnamed-provider.rs and unnamed-twin.rs gain them for u8 (the pair still differs by the `const _` line only); read.rs and body.rs match `NEG as u8` and `neg() as u8` against 255 instead of `-1`; pattern.rs gains an oracle-only `eq` lang item and `usize` impl (RustGM's primitives compare structurally, `types/equality.rs`); the generated static opponent gains the oracle-only `drop_glue` item that spec/callable-roles/provider.rs already uses. No declared RustGM outcome changes"
+    },
+    {
+      "recorded": "2026-11-09T05:41:57Z",
+      "before": "the oracle's third run and any candidate run",
+      "governs": "rustc's second oracle run: every input gave its declared rustc outcome except `pattern`, which failed with `requires structural_peq lang_item`",
+      "change": "pattern.rs's oracle-only shim gains the `structural_peq` lang item. No declared RustGM outcome changes"
+    },
+    {
+      "recorded": "2026-11-09T06:08:05Z",
+      "before": "the first run of dev/tests/invariants/constant_rows.rs",
+      "governs": "two forged-row declarations that the frozen inputs cannot reach as worded: the provider declares no struct, and the constant column writer accepts only a validated view",
+      "change": "the struct-parent forgery reparents the item-local `INNER` of `nested` under the provider's first type-parameter declaration (an impl's `T`), which owns no free item either; the writer forgery pushes one surplus constant row, which validation's header ledger rejects with the identical text `source constant rows lack their declaration` before any writer runs, and the writer's own check stays as defense in depth. No expected text changes"
+    },
+    {
+      "recorded": "2026-11-09T06:10:24Z",
+      "before": "any further candidate, integration or native run of const-call.rs",
+      "governs": "candidate run 3: every declared RustGM outcome held except const-call, which the consumer rejected with `implementation validation has no source scheduling context`",
+      "change": "const-call is a failed prediction, amended to rejected with that text. The fence is existing and independent of 5b-1: in obj/parallel/auto-traits/constants/probe-cc, the base pin also rejects a client `const COUNT: usize = base::four();` over a provider with no constant, only `impl Clone for usize`, `impl Copy for usize` and `pub const fn four() -> usize { 4 }`, and accepts it without those impls; the candidate accepts const-call itself over a provider that reads `LANES` without the Copy impls. Those impls are amendment 2's accommodation of rustc's match lowering. 5b-1 is not widened, the fixture is unchanged and the fence is recorded for its owner"
+    },
+    {
+      "recorded": "2026-11-09T06:24:47Z",
+      "before": "the next fastcheck run",
+      "governs": "focused fastcheck fc2: the architecture audit rejected the filename stems `constant` (9 files) and `constants` (7 files), which 5b-1's four new files had raised past the audit's limit of six",
+      "change": "the forged rows' invariant file is renamed from dev/tests/invariants/constant_rows.rs, the name amendment 4 uses, to dev/tests/invariants/evaluated_constant_rows.rs; its mounted module and every test name are unchanged. No input, forgery or expected outcome changes"
+    },
+    {
+      "recorded": "2026-11-09T07:07:08Z",
+      "before": "the next run of dev/tests/invariants/evaluated_constant_rows.rs",
+      "governs": "focused fastcheck fc8: every declared forged row held except amendment 4's type-parameter parent, which the existing lexical forest rejected with `source lexical child has a foreign kind, gap or duplicate ordinal` before any constant check",
+      "change": "the type-parameter parent is a failed prediction, kept and amended to that text. Only a struct or enum parent passes the lexical forest and reaches `source constant header lost its free owner`, and the provider declares neither, so the declared struct-parent forgery is restored over a generated input: the provider followed by `// Generated struct-parent forgery input.` and `pub struct Holder;`, whose unmodified rows validate first as its control. The forged-row count becomes 17. No other input or expected outcome changes"
+    },
+    {
+      "recorded": "2026-11-09T07:11:43Z",
+      "before": "the next run of dev/tests/invariants/evaluated_constant_rows.rs",
+      "governs": "focused fastcheck fc9: amendment 7's struct-parent forgery was rejected with `source lexical child has a foreign kind, gap or duplicate ordinal`, because INNER kept its ordinal 0 under `Holder`, whose unit constructor is the variant declaration already numbered 0 under it",
+      "change": "a failed prediction of the forgery's form, not of the check. The reparenting helper now numbers INNER among its new parent's lexical children in row order and shifts the later children of its old and new parents to match, so only the parent's kind changes. The trait-Self and type-parameter parents have no other children and `nested` has no later child, so those two forged rows are unchanged. The struct-parent row keeps its declared text `source constant header lost its free owner`"
+    }
+  ],
+  "development_note": "declared read-only under the integrator's hold, before any rustc, RustGM, probe or build run of these files; the design is 5b1-notice-20261109.md, which applies the approved 5b notice and asks six corrections (2a-2f). An amendment, if any, is recorded beside this file before the run it governs, and a failed prediction is kept with its amendment.",
+  "rule": "Version-13 declaration tag 13 Constant; one constant header row per tag-13 declaration in declaration order after the enum columns, `ty | value` with value `0` or `1 | term` (K's term codec, in place); value code 17 `(17, [Declaration(const)])` read as `ValueKind::Constant`. Every consumer validates the term with K's canonical check, requires a free const to carry a tag-0 value of its declared scalar type, checks each code-17 value's type against its declaration's header, installs the header type as the declaration's cell and seeds the value as a completed evaluator definition, as legacy imported scalar constants are.",
+  "cases": [
+    {
+      "file": "spec/named-constants/read.rs",
+      "provider": "spec/named-constants/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "runtime reads of LANES, FLAG, LETTER and NEG in one tuple match; NEG's bits are 0xFF and match `-1`",
+      "sha256": "10d63d9ab83a3ca540d7a86c454ea02bd53961eb331f78d8cf6a75c5f48f25c6"
+    },
+    {
+      "file": "spec/named-constants/local-const.rs",
+      "provider": "spec/named-constants/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "a client `const MINE: usize = base::LANES;` matched at runtime",
+      "sha256": "3f2bd867b531d26410e289c10ea9a5a1c0e853d6998b507c5c87eb8656c221e8"
+    },
+    {
+      "file": "spec/named-constants/length.rs",
+      "provider": "spec/named-constants/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`[u8; base::LANES]` in a client signature, called with a four-element array",
+      "sha256": "74e314964c858030f264ea564aa8711082a927821e6bd5151d5b38675e7cc57b"
+    },
+    {
+      "file": "spec/named-constants/pattern.rs",
+      "provider": "spec/named-constants/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::LANES` as a match pattern",
+      "sha256": "8835c11a389f94bccf018e52edbcb417efe26f9f0ec9d13cd81f8cfd6de265d8"
+    },
+    {
+      "file": "spec/named-constants/body.rs",
+      "provider": "spec/named-constants/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "the imported code-17 bodies `lanes()` and `neg()`",
+      "sha256": "7cca9d0d8b758eefe6455033ff14271c3dd673a015d4563ae1404a82229b0d1e"
+    },
+    {
+      "file": "spec/named-constants/secret.rs",
+      "provider": "spec/named-constants/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "the private `SECRET` read through the imported body `secret()`",
+      "sha256": "6b5bb9e4ee4879b310185f387c563d0ee4c34495621da3b925b60a202531189b"
+    },
+    {
+      "file": "spec/named-constants/nested.rs",
+      "provider": "spec/named-constants/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "the item-local `INNER` read through the imported body `nested()`",
+      "sha256": "b054d339873935637aaada3259451e140cd609a9c45a4407fbf220f740f2f461"
+    },
+    {
+      "file": "spec/named-constants/float.rs",
+      "provider": "spec/named-constants/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "f32 42.5 and f64 42.25 bits through `as u8`",
+      "sha256": "f651a5f5f8cfc52db40e11473435ab5df5a7a3af462a16904892b447debe2482"
+    },
+    {
+      "file": "spec/named-constants/wide.rs",
+      "provider": "spec/named-constants/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "u128::MAX's sixteen bytes of bits as a literal pattern, and the unit const",
+      "sha256": "d02bd013f9960f803f990e5d9fc3c2dfab4593c8dd99985a991a157c93578cca"
+    },
+    {
+      "file": "spec/named-constants/const-call.rs",
+      "provider": "spec/named-constants/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "consumer const evaluation of the imported const fn `lane_count()`, a code-17 body, as a client array length",
+      "sha256": "f004201ff21770583f20c8093eaf09ca422f00731705cf127e36dbc5f56d90c9",
+      "failed_prediction": "candidate run 3 (obj/parallel/auto-traits/constants/run3.log) rejected it with `implementation validation has no source scheduling context`, an existing client fence",
+      "amended_expected": "rejected with `implementation validation has no source scheduling context` (amendment 5); rustc accepts it and exits 42"
+    },
+    {
+      "file": "spec/named-constants/inner-pair.rs",
+      "provider": "spec/named-constants/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "three item-local consts all named `INNER` (40 in `first_inner`, 2 in `second_inner`, 42 in `nested`) read by one client: declaration identity is not by name or path text",
+      "sha256": "55a2692a39cf77679d31e473baebfe93503f45511075a6357943af00fe5281bd"
+    },
+    {
+      "file": "spec/named-constants/unnamed-after.rs",
+      "provider": "spec/named-constants/unnamed-provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`base::AFTER` and `base::after()`, a named const declared after the provider's `const _` and a body reading it",
+      "sha256": "e151bda19a9b1d6ec4c9ba894d49248f87cebee54d24b03509a27cf0e6fb11cb"
+    },
+    {
+      "file": "spec/named-constants/generic-local.rs",
+      "provider": "spec/named-constants/generic-local-provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "the generic exported `generic_inner::<u8>`, whose body reads its item-local `INNER`, instantiated by the client",
+      "sha256": "e0e53e2e0e4325fb06250fd78ed37f506b761bdc6756b75f4205c524d99a49ad"
+    },
+    {
+      "file": "spec/named-constants/wrong-length.rs",
+      "provider": "spec/named-constants/provider.rs",
+      "accepted": false,
+      "rustc": "rejects with E0308",
+      "expected": "rejected with its local twin's text, at the twin's corresponding site (the `&[1, 2, 3]` argument)",
+      "shape": "`width(&[1, 2, 3])` against `&[u8; base::LANES]`",
+      "sha256": "9a1a73b9877ba6b618f75f80736da5164c0fb2395be9c30123009856c4a2092b"
+    },
+    {
+      "file": "spec/named-constants/wrong-type.rs",
+      "provider": "spec/named-constants/provider.rs",
+      "accepted": false,
+      "rustc": "rejects with E0308",
+      "expected": "rejected with its local twin's text, at the twin's corresponding site (the `base::LANES` initializer)",
+      "shape": "`let lanes: u8 = base::LANES;`",
+      "sha256": "85d5afa54c39cee894e4900817c6ff9058bc83085a4a7376bdc0d68e1a524875"
+    },
+    {
+      "file": "spec/named-constants/private.rs",
+      "provider": "spec/named-constants/provider.rs",
+      "accepted": false,
+      "rustc": "rejects with E0603",
+      "expected": "rejected with its local twin's text, at the twin's corresponding site (the `SECRET` path segment)",
+      "shape": "`base::SECRET` names a private const",
+      "sha256": "ea9a7b691eac6071ad47fd551362a7e52e76c16749e479b464ff63b8ff696244"
+    }
+  ],
+  "local_twins": {
+    "note": "each twin is lines 1-57 of spec/source-branches/provider.rs followed by these lines, run in single-crate mode by rustc and RustGM; rustc rejects each with the client's code",
+    "twins": {
+      "wrong-length.rs": {
+        "appended": "const LANES: usize = 4;\nfn width(_: &[u8; LANES]) -> i32 { 42 }\n#[unsafe(no_mangle)]\npub extern \"C\" fn entry() -> i32 { width(&[1, 2, 3]) }\n"
+      },
+      "wrong-type.rs": {
+        "appended": "const LANES: usize = 4;\n#[unsafe(no_mangle)]\npub extern \"C\" fn entry() -> i32 { let lanes: u8 = LANES; lanes as i32 }\n"
+      },
+      "private.rs": {
+        "appended": "mod base { const SECRET: u8 = 42; }\n#[unsafe(no_mangle)]\npub extern \"C\" fn entry() -> i32 { base::SECRET as i32 }\n"
+      }
+    }
+  },
+  "generated_opponents": {
+    "note": "each appends its lines to the frozen provider after `// Generated module-constant opponent.`; rustc accepts every one, and RustGM's version-13 export rejects it with the text below and writes no packet",
+    "pair": {
+      "appended": "pub const PAIR: (u8, u8) = (1, 2);\n",
+      "rustc_status": 0,
+      "expected": "rejected: source aggregate const value requires its wider profile"
+    },
+    "bytes": {
+      "appended": "pub const BYTES: [u8; 2] = [1, 2];\n",
+      "rustc_status": 0,
+      "expected": "rejected: source aggregate const value requires its wider profile"
+    },
+    "record": {
+      "appended": "pub struct Wrap(pub u8);\npub const WRAP: Wrap = Wrap(1);\n",
+      "rustc_status": 0,
+      "expected": "rejected: source aggregate const value requires its wider profile"
+    },
+    "name": {
+      "appended": "pub const NAME: &str = \"x\";\n",
+      "rustc_status": 0,
+      "expected": "rejected: source reference const value requires its wider profile"
+    },
+    "borrowed": {
+      "appended": "pub const ONE: &u8 = &1;\n",
+      "rustc_status": 0,
+      "expected": "rejected: source reference const value requires its wider profile"
+    },
+    "null": {
+      "appended": "pub const NULL: *const u8 = 0 as *const u8;\n",
+      "rustc_status": 0,
+      "expected": "rejected: source pointer const value requires its wider profile"
+    },
+    "inherent": {
+      "appended": "pub struct Wide;\nimpl Wide { pub const MAX: u16 = 9; }\n",
+      "rustc_status": 0,
+      "expected": "rejected: source associated constants require their wider profile"
+    },
+    "trait-const": {
+      "appended": "pub trait Limit { const TOP: u32; }\n",
+      "rustc_status": 0,
+      "expected": "rejected: source associated constants require their wider profile"
+    },
+    "static": {
+      "appended": "#[lang = \"sync\"]\npub unsafe auto trait Sync {}\n// Oracle-only shim: rustc's static item needs this item. RustGM never\n// configures `rustc_oracle`.\n#[cfg(rustc_oracle)]\n#[lang = \"drop_glue\"]\npub unsafe fn drop_glue<T: PointeeSized>(_: &mut T) {}\npub static STORED: u8 = 1;\n",
+      "rustc_status": 0,
+      "expected": "rejected: source declaration kind is outside the initial source profile"
+    }
+  },
+  "controls": [
+    {
+      "control": "unnamed constant (2b): spec/named-constants/unnamed-provider.rs and spec/named-constants/unnamed-twin.rs, each exported under version 13",
+      "expected": "both exported; the two packets are byte-identical, so dropping the unnamed row shifts no DeclarationRef; unnamed-after.rs against unnamed-provider.rs's packet exits 42"
+    },
+    {
+      "control": "item-local constants (2d): spec/named-constants/generic-local-provider.rs with generic-local.rs, and provider.rs with inner-pair.rs",
+      "expected": "both exported and both clients exit 42. If either hits an existing item-local fence first, that is recorded as a failed prediction with an amendment; 5b-1 is not widened to pass it"
+    },
+    {
+      "control": "older profiles: the frozen provider under module-branches-v12 and module-nominals-v10",
+      "expected": "rejected under both with `source declaration kind is outside the initial source profile`, no packet"
+    },
+    {
+      "control": "old reader: the base pin (a fresh build of the 5b-1 base, pinned under obj/parallel/auto-traits/constants/base) consuming the candidate's provider packet with read.rs",
+      "expected": "rejected with `unknown source declaration kind`"
+    },
+    {
+      "control": "byte identity: every existing pa29 version-13 packet published by the base pin and by the candidate",
+      "expected": "byte-identical"
+    },
+    {
+      "control": "flip survey: every pa29 provider under v10, v12 and v13 and every client of each, base pin against candidate",
+      "expected": "only spec/named-constants changes (its provider rejected→accepted under v13, its clients as declared above); every other export, packet and client outcome is identical"
+    }
+  ],
+  "forged_rows": {
+    "note": "dev/tests/invariants/evaluated_constant_rows.rs, in-process; each forgery starts from the candidate's valid provider rows and changes one field",
+    "rows": [
+      {
+        "forgery": "u8 const with bits 0x100",
+        "expected": "non-canonical source const value"
+      },
+      {
+        "forgery": "bool const with bits 2",
+        "expected": "non-canonical source const value"
+      },
+      {
+        "forgery": "char const with bits 0xD800",
+        "expected": "non-canonical source const value"
+      },
+      {
+        "forgery": "term tag 1 (a const slot) in a free const",
+        "expected": "source const value over a const parameter requires its wider profile"
+      },
+      {
+        "forgery": "presence 0 (no value) in a free const",
+        "expected": "source free constant requires its value"
+      },
+      {
+        "forgery": "term ty a different row from the header ty",
+        "expected": "source constant value changed its declared type"
+      },
+      {
+        "forgery": "header and term ty a reference row",
+        "expected": "source const value type is not a primitive row"
+      },
+      {
+        "forgery": "code 17 naming a function declaration",
+        "expected": "source constant read names no validated constant declaration"
+      },
+      {
+        "forgery": "code 17 typed u16 over a u8 constant",
+        "expected": "source constant read changed its declaration's type"
+      },
+      {
+        "forgery": "tag 13 under a trait's Self declaration",
+        "expected": "source associated constants require their wider profile"
+      },
+      {
+        "forgery": "tag 13 under a struct declaration",
+        "expected": "source constant header lost its free owner",
+        "input": "spec/named-constants/provider.rs plus one generated line, `pub struct Holder;`, with `nested`'s item-local INNER reparented under that struct (amendment 7)",
+        "failed_prediction": "focused fastcheck fc9 rejected amendment 7's form with `source lexical child has a foreign kind, gap or duplicate ordinal`: INNER kept its ordinal 0 under `Holder`, whose unit constructor is already its lexical child 0",
+        "amended_input": "amendment 8: INNER is renumbered as the next lexical child of its new parent in row order, and the later children of its old and new parents are shifted to match, so the parent's kind is the only change the lexical forest sees",
+        "amended_expected": "source constant header lost its free owner (unchanged)"
+      },
+      {
+        "forgery": "tag 13 under a type parameter declaration (amendment 4's substitute for the struct parent)",
+        "expected": "source constant header lost its free owner",
+        "failed_prediction": "focused fastcheck fc8 rejected it with `source lexical child has a foreign kind, gap or duplicate ordinal`: the existing lexical forest admits only module, struct, enum, trait, Self and function parents, before any constant check",
+        "amended_expected": "source lexical child has a foreign kind, gap or duplicate ordinal (amendment 7)"
+      },
+      {
+        "forgery": "wire: presence byte 2",
+        "expected": "invalid source constant value presence"
+      },
+      {
+        "forgery": "wire: term tag 2",
+        "expected": "unknown source const term"
+      },
+      {
+        "forgery": "wire: tag 13 under a profile without body nodes",
+        "expected": "unknown source declaration kind"
+      },
+      {
+        "forgery": "legacy branches writer given a code-17 value",
+        "expected": "source constant read requires the version-thirteen body IR profile"
+      },
+      {
+        "forgery": "encoder given constant rows with no tag-13 declaration",
+        "expected": "source constant rows lack their declaration"
+      }
+    ]
+  },
+  "scaling": {
+    "inputs": "lines 1-57 of spec/source-branches/provider.rs, then `pub const Cnn: u8 = nn;` for nn = 00..N-1 and `pub fn first() -> u8 { C00 }`, for N = 8, 16 and 32",
+    "expected": "packet bytes grow by one exact constant per const, (B16 - B8) / 8 == (B32 - B16) / 16, and that constant includes the 26-byte header row; consumer validation work W satisfies W32 - W16 <= 2 * (W16 - W8) + 64; seeding completes exactly N definitions"
+  },
+  "outcome_counts": {
+    "provider": "4 exports, each accepted under module-bodies-v13",
+    "providers": 4,
+    "clients": 16,
+    "accepted_clients": 13,
+    "rejected_clients": 3,
+    "local_twins": 3,
+    "generated_opponents": 9,
+    "forged_rows": 17,
+    "amended": "amendment 5: 12 accepted clients, 1 fenced client (const-call), 3 rejected clients"
+  },
+  "native": {
+    "expected": "the thirteen accepted clients exit 42 natively with empty stdout, as rustc's do",
+    "amended": "amendment 5: the twelve accepted clients exit 42 natively with empty stdout; const-call has no executable"
+  },
+  "limits": [
+    "associated consts, code 18, trait-const conformance and tag-1 values are 5b-2; the Q2 opponent is declared there",
+    "a provider body reading another crate's const fails with `source constant read of another crate's declaration requires its wider profile`; its witness waits for the multi-packet item",
+    "statics, inline const blocks, ConstArgument (22) and SourceAssociated keep their fences",
+    "RangePattern and RangeSub are 5b-3"
+  ]
+}

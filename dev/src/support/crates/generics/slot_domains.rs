@@ -19,6 +19,9 @@ pub enum DefinitionKind {
     RegionParameter,
     /// Version thirteen: a const generic parameter, bound to a const slot.
     ConstParameter,
+    /// Version thirteen: one named const item. Its header row holds its type
+    /// and completed value; a free const owns no scope.
+    Constant,
     ValueParameter,
     Local,
     AssociatedType,
@@ -413,6 +416,7 @@ fn valid_parent(
         | DefinitionKind::TypeParameter
         | DefinitionKind::RegionParameter
         | DefinitionKind::ConstParameter
+        | DefinitionKind::Constant
         | DefinitionKind::ValueParameter
         | DefinitionKind::Local => false,
     }

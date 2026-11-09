@@ -240,10 +240,12 @@ fn dependency(
                     .copied()
             }
         }
+        // A constant read names a declaration's header row, not a value.
         s::ValueKind::Unit
         | s::ValueKind::Scalar(_)
         | s::ValueKind::Text(_)
-        | s::ValueKind::Function(_) => None,
+        | s::ValueKind::Function(_)
+        | s::ValueKind::Constant(_) => None,
     };
     match operand {
         Some(value) if (value as usize) < original.values.len() => Ok(Some(value as usize)),
