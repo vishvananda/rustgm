@@ -12,7 +12,10 @@ const SPEC: &str = "pa29/tests/spec/named-constants";
 const GROUP: &str = "auto-traits";
 const PROFILE: &str = "module-bodies-v13";
 /// Frozen outcomes from `pa29/tests/named-constant-outcomes.json`.
-const ACCEPTED: [&str; 10] = [
+/// Amendment 9: `const-call`, which amendment 5 recorded at the scheduling
+/// fence, is accepted again now that a client validates the provider's
+/// imported Copy impls on its executable demand.
+const ACCEPTED: [&str; 11] = [
     "read",
     "local-const",
     "length",
@@ -23,14 +26,8 @@ const ACCEPTED: [&str; 10] = [
     "float",
     "wide",
     "inner-pair",
-];
-/// Amendment 5: rustc accepts `const-call`, but client const evaluation of an
-/// imported const fn from a provider with primitive Copy impls stops at this
-/// existing fence, which the base pin reproduces without any constant.
-const FENCED: (&str, &str) = (
     "const-call",
-    "implementation validation has no source scheduling context",
-);
+];
 /// Each rejected client and its local twin, which the frontend rejects alike.
 const REJECTED: [&str; 3] = ["wrong-length", "wrong-type", "private"];
 const AGGREGATE: &str = "source aggregate const value requires its wider profile";
@@ -118,8 +115,6 @@ fn clients_read_named_constants_and_wider_values_keep_their_fences() -> Result {
     for name in ACCEPTED {
         super::artifacts::checked(name, &packet.folder, &mut packet.client(name))?;
     }
-    let (name, fence) = FENCED;
-    packet.rejected(name, &mut packet.client(name), fence)?;
     let prefix = prefix(&packet)?;
     for (name, lines) in TWINS {
         let twin = packet.folder.join(format!("twin-{name}.rs"));

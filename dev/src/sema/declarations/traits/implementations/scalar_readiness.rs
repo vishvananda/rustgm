@@ -1,4 +1,7 @@
 //! Demand normal source scalar conformance before executable constant work.
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/executable_demands.rs"]
+mod demanded_tests;
 use super::{
     Checker, DefId, Error, Work,
     eligibility_profile::{Eligibility, Plan, Unsupported},
@@ -270,12 +273,41 @@ impl Checker<'_> {
         }
         let mut pending = if let Some(pending) = self.early_implementations.take() {
             pending
+        } else if self.report.package.source_core().is_none() && self.selected.is_none() {
+            // Selected mode has no constant executor and completes imported
+            // conformance only through its selected dependency.
+            return self.demanded_conformance(owner);
         } else {
             self.source_implementation_context(Pending::default())?
         };
         let result = self.advance_scalar_impl(owner, phase, &mut pending);
         self.early_implementations = Some(pending);
         result
+    }
+    /// A client's executable demand before the eager walk: an imported header
+    /// pays the walk's own conformance now, which the walk then skips; a
+    /// source header has no early scheduler outside a source core.
+    fn demanded_conformance(&mut self, owner: DefId) -> Result<(), Error> {
+        let (source, predicate) = self
+            .facts
+            .generics
+            .implementations
+            .as_ref()
+            .and_then(|r| r.header(owner))
+            .map(|h| (h.source, h.predicate))
+            .ok_or_else(|| {
+                Error::unlocated("implementation validation requires its actual header")
+            })?;
+        if source.is_some() {
+            return Err(Error::unlocated(
+                "client implementation validation before the eager walk requires a source scheduling context",
+            ));
+        }
+        crate::sema::specialization::require_unordered_import(&self.facts, owner)
+            .map_err(Error::unlocated)?;
+        #[cfg(test)]
+        crate::sema::copy_trace::record(|| format!("demanded conformance owner={}", owner.0));
+        self.imported_conformance(owner, predicate)
     }
     fn advance_scalar_impl(
         &mut self,

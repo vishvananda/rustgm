@@ -129,14 +129,15 @@ before its own transport began.
 holds four providers and sixteen clients. Every outcome was declared before the
 oracle, the base-pin probe and any candidate run
 (`pa29/tests/named-constant-outcomes.json`). Eight amendments are recorded
-there, each before the run it governs.
+there, each before the run it governs. Amendment 9 belongs to the
+scheduling-context fence item.
 
 | Control | Result |
 | --- | --- |
 | four providers | each exports under `module-bodies-v13` |
 | `unnamed-provider` and `unnamed-twin` | byte-identical packets (2b) |
 | twelve fresh clients | accepted; each exits 42 natively with empty stdout, as rustc's do |
-| `const-call` | rejected with "implementation validation has no source scheduling context", a failed prediction (amendment 5) |
+| `const-call` | rejected with "implementation validation has no source scheduling context", a failed prediction (amendment 5); accepted and exits 42 after the [scheduling-context fence](scheduling-context.md) (amendment 9) |
 | three opponents | each rejected as its local twin is: "incompatible types" twice, "private value name `SECRET`" |
 | nine generated provider opponents | each rejected at export by name; rustc accepts each |
 | `module-branches-v12`, `module-nominals-v10` | "source declaration kind is outside the initial source profile"; no packet |
@@ -180,7 +181,9 @@ there, each before the run it governs.
   provider declares primitive Copy impls, with or without constants. Core
   declares exactly those impls, so the fence blocks alloc and std clients that
   const-evaluate anything imported from core. The integrator made it Lane C's
-  next item, starting with a read-only diagnosis and notice.
+  next item, starting with a read-only diagnosis and notice. The
+  [scheduling-context fence](scheduling-context.md) removes it for imported
+  headers (amendment 9).
 - **Cross-crate constant reads.** A provider body that reads another crate's
   constant keeps "source constant read of another crate's declaration requires
   its wider profile" until the multi-packet item.

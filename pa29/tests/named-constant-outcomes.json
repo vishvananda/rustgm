@@ -97,6 +97,12 @@
       "before": "the next run of dev/tests/invariants/evaluated_constant_rows.rs",
       "governs": "focused fastcheck fc9: amendment 7's struct-parent forgery was rejected with `source lexical child has a foreign kind, gap or duplicate ordinal`, because INNER kept its ordinal 0 under `Holder`, whose unit constructor is the variant declaration already numbered 0 under it",
       "change": "a failed prediction of the forgery's form, not of the check. The reparenting helper now numbers INNER among its new parent's lexical children in row order and shifts the later children of its old and new parents to match, so only the parent's kind changes. The trait-Self and type-parameter parents have no other children and `nested` has no later child, so those two forged rows are unchanged. The struct-parent row keeps its declared text `source constant header lost its free owner`"
+    },
+    {
+      "recorded": "2026-11-09T09:38:47Z",
+      "before": "any candidate, integration or native run of the scheduling-context fence item",
+      "governs": "Lane C's scheduling-context fence item (pa29/tests/scheduling-context-outcomes.json), approved by the integrator after amendment 5's recorded fence",
+      "change": "const-call is expected accepted again, as first declared: a client outside a source core and selected mode now validates the provider's imported Copy impls on the executable demand, through the eager walk's own conformance. Its native expectation returns to exit 42 with empty stdout. The fixture and every other case are unchanged"
     }
   ],
   "development_note": "declared read-only under the integrator's hold, before any rustc, RustGM, probe or build run of these files; the design is 5b1-notice-20261109.md, which applies the approved 5b notice and asks six corrections (2a-2f). An amendment, if any, is recorded beside this file before the run it governs, and a failed prediction is kept with its amendment.",
@@ -182,7 +188,7 @@
       "shape": "consumer const evaluation of the imported const fn `lane_count()`, a code-17 body, as a client array length",
       "sha256": "f004201ff21770583f20c8093eaf09ca422f00731705cf127e36dbc5f56d90c9",
       "failed_prediction": "candidate run 3 (obj/parallel/auto-traits/constants/run3.log) rejected it with `implementation validation has no source scheduling context`, an existing client fence",
-      "amended_expected": "rejected with `implementation validation has no source scheduling context` (amendment 5); rustc accepts it and exits 42"
+      "amended_expected": "accepted and exits 42 natively (amendment 9, the scheduling-context fence item); amendment 5 recorded the fence it removes"
     },
     {
       "file": "spec/named-constants/inner-pair.rs",
@@ -416,11 +422,11 @@
     "local_twins": 3,
     "generated_opponents": 9,
     "forged_rows": 17,
-    "amended": "amendment 5: 12 accepted clients, 1 fenced client (const-call), 3 rejected clients"
+    "amended": "amendment 9: 13 accepted clients, 3 rejected clients"
   },
   "native": {
     "expected": "the thirteen accepted clients exit 42 natively with empty stdout, as rustc's do",
-    "amended": "amendment 5: the twelve accepted clients exit 42 natively with empty stdout; const-call has no executable"
+    "amended": "amendment 9: the thirteen accepted clients exit 42 natively with empty stdout, const-call included"
   },
   "limits": [
     "associated consts, code 18, trait-const conformance and tag-1 values are 5b-2; the Q2 opponent is declared there",

@@ -1324,6 +1324,34 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
   - **Open:** projection-bearing supertrait arguments,
     binder-changing supertraits and other subjects stay uncertified (D4).
 
+- **During Lane C's [scheduling-context fence](parallel/scheduling-context.md)**,
+  2026-11-09, developed on `1aa288ad1`. A read-only diagnosis, notice,
+  pre-addendum and addendum came before code; the integrator approved
+  amendments A1-A4 and rulings F1, F2 and N1.
+  - **Rule.** A source client with no source core, outside selected mode,
+    validates a source-free imported header on an executable demand before
+    the eager walk, through the walk's own conformance. The walk then skips
+    only that header's conformance and still checks every overlap pair first
+    (A3).
+  - **Rulings:**
+    - selected mode keeps the base path and text, because it has no constant
+      executor (N1, option γ);
+    - a client source header keeps a named fence, a known rejects-valid (A4);
+    - an imported endpoint of the client's specialization relations stops by
+      name, a gate no real input reaches, with a forged private test (F2).
+  - **Amended before its run:** `generic-usize`, a failed prediction at the
+    existing cleanup fence "defining cleanup requires its actual language
+    declaration". The blanket provider was split so that the overlap control
+    reaches the pair check (amendment 1).
+  - **Survey.** Against the base pin, only named-constants `const-call`
+    flips, which its amendment 9 records.
+  - **Recorded:**
+    - the cleanup fence: the branch provider's 57 lines declare no Destruct
+      language item, and core does;
+    - the efficiency item, with its untraced hypothesis that an imported
+      body's Copy goal reads the coarse `heads` bucket;
+    - Lane C's next item is R2, with `emit()` factored first.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

@@ -240,6 +240,36 @@ impl Graph {
     pub(super) fn fail(&mut self) {
         self.state = State::Failed;
     }
+    /// Whether `key` is an endpoint of any pending or completed comparison or
+    /// relation, or a vertex of the closed forest.
+    pub(super) fn relates(&self, key: EntryKey) -> Result<bool, &'static str> {
+        match &self.state {
+            State::Building(builder) => {
+                self.budget.charge(
+                    builder
+                        .attempts
+                        .len()
+                        .saturating_add(builder.relations.len())
+                        .saturating_add(1),
+                    0,
+                )?;
+                Ok(builder.sources.contains_key(&key)
+                    || builder
+                        .attempts
+                        .keys()
+                        .any(|pair| pair.entries().contains(&key))
+                    || builder
+                        .relations
+                        .iter()
+                        .any(|relation| relation.child == key || relation.parent == key))
+            }
+            State::Conforming(forest) | State::Sealed(forest) => {
+                self.budget.charge(1, 0)?;
+                Ok(forest.by_entry.contains_key(&key))
+            }
+            State::Failed => Err("specialization graph validation previously failed"),
+        }
+    }
 }
 impl Forest {
     pub(super) fn validate_seal(&self, registry: &Implementations) -> Result<(), &'static str> {
@@ -318,3 +348,6 @@ impl Graph {
         }
     }
 }
+#[cfg(test)]
+#[path = "../../../tests/invariants/unordered_imports.rs"]
+mod imported_endpoint_tests;

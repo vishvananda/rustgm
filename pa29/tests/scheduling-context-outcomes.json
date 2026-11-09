@@ -1,0 +1,523 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj) and runs each accepted client's `entry` through a C observer",
+  "providers": [
+    {
+      "file": "spec/scheduling-context/none-provider.rs",
+      "sha256": "b6d7fff2e41930f0f8a7f577611de0134e01f55e3909991849787571235b8b1b",
+      "role": "no Clone or Copy impl",
+      "inherits": {
+        "file": "spec/source-branches/provider.rs",
+        "sha256": "d16b8ebc5ba22cfd1128194f0a5da240089944152446c1ba3218c36e72a784b8",
+        "note": "unchanged first 57 lines"
+      }
+    },
+    {
+      "file": "spec/scheduling-context/usize-provider.rs",
+      "sha256": "3b5e96d551b84e338edc23cc6feab8b08b3e714031e21af71a992c3fdcd4e8f7",
+      "role": "Clone and Copy for usize only",
+      "inherits": {
+        "file": "spec/source-branches/provider.rs",
+        "sha256": "d16b8ebc5ba22cfd1128194f0a5da240089944152446c1ba3218c36e72a784b8",
+        "note": "unchanged first 57 lines"
+      }
+    },
+    {
+      "file": "spec/scheduling-context/u8-provider.rs",
+      "sha256": "509b833f991a7ebfee240fa73d18c804ce1854c107268ba598987e6f1b1898fd",
+      "role": "Clone and Copy for u8 only; every const fn returns usize",
+      "inherits": {
+        "file": "spec/source-branches/provider.rs",
+        "sha256": "d16b8ebc5ba22cfd1128194f0a5da240089944152446c1ba3218c36e72a784b8",
+        "note": "unchanged first 57 lines"
+      }
+    },
+    {
+      "file": "spec/scheduling-context/bool-provider.rs",
+      "sha256": "d639e4ad5458d5b481e05c3009f9d364205a2090ea4a6fdb09b86e31eddff0eb",
+      "role": "Clone and Copy for bool only; every const fn returns usize",
+      "inherits": {
+        "file": "spec/source-branches/provider.rs",
+        "sha256": "d16b8ebc5ba22cfd1128194f0a5da240089944152446c1ba3218c36e72a784b8",
+        "note": "unchanged first 57 lines"
+      }
+    },
+    {
+      "file": "spec/scheduling-context/nominal-provider.rs",
+      "sha256": "7703e9f63b42892fd19a703efeb1c37471946f540b04d794b017162f82bd5ac1",
+      "role": "Clone and Copy for a unit struct only",
+      "inherits": {
+        "file": "spec/source-branches/provider.rs",
+        "sha256": "d16b8ebc5ba22cfd1128194f0a5da240089944152446c1ba3218c36e72a784b8",
+        "note": "unchanged first 57 lines"
+      }
+    },
+    {
+      "file": "spec/scheduling-context/blanket-provider.rs",
+      "sha256": "cc543c3f0f2ee01cd408ca8ef8e4b823b56b4d4111ecd7218b8f95819c7d030d",
+      "role": "Clone and Copy for usize and `impl<T> Marker for T`",
+      "inherits": {
+        "file": "spec/source-branches/provider.rs",
+        "sha256": "d16b8ebc5ba22cfd1128194f0a5da240089944152446c1ba3218c36e72a784b8",
+        "note": "unchanged first 57 lines"
+      },
+      "declared_sha256": "390b8e3dcbdf901acdeed276c852a9e5e9a07faf80059e0f30837bcd2e1aa8fc",
+      "amended": "amendment 1: `id` moves to generic-provider.rs"
+    },
+    {
+      "file": "spec/scheduling-context/generic-provider.rs",
+      "sha256": "6493e69b551628b92d0f8784564a03eed08516f3d2da109d79816a9046118d9a",
+      "role": "Clone and Copy for usize and `const fn id<T: Copy>`",
+      "amended": "amendment 1: new",
+      "inherits": {
+        "file": "spec/source-branches/provider.rs",
+        "sha256": "d16b8ebc5ba22cfd1128194f0a5da240089944152446c1ba3218c36e72a784b8",
+        "note": "unchanged first 57 lines"
+      }
+    },
+    {
+      "file": "spec/scheduling-context/primitives-provider.rs",
+      "sha256": "e9ae8330e996c5ca459e50a2c5b4e3ccab08266f9918b95b27f8e9337655aad2",
+      "role": "Clone and Copy for u8 u16 u32 u64 u128 usize i8 i16 i32 i64 i128 isize bool char, the scaling provider",
+      "inherits": {
+        "file": "spec/source-branches/provider.rs",
+        "sha256": "d16b8ebc5ba22cfd1128194f0a5da240089944152446c1ba3218c36e72a784b8",
+        "note": "unchanged first 57 lines"
+      }
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "declared": "2026-11-09T09:38:33Z",
+  "development_note": "declared after the read-only diagnosis and the approved addendum, before any oracle, candidate or test run of these files; probe copies under obj/parallel/auto-traits/constants/probe-tr established base outcomes on the base pin 23030f23 (origin/main 1aa288ad1) and rustc 1.98.0 outcomes; these fixtures repeat those probes with authored comments",
+  "rule": "a client without a source core and outside selected mode validates a source-free imported header on an executable demand before the eager walk, through the walk's own conformance, and the walk then skips only that header's conformance; a source header keeps a named fence, and an imported endpoint of any consumer specialization relation stops by name",
+  "base_pin": {
+    "source": "1aa288ad1",
+    "sha256": "23030f23c392f6ef1d6145d369d790a47e9fabd8c1d2696b4968e3f09fbfc643"
+  },
+  "texts": {
+    "base_fence": "implementation validation has no source scheduling context",
+    "source_backed": "client implementation validation before the eager walk requires a source scheduling context",
+    "specialization_gate": "imported implementation validation before its specialization conformance order",
+    "selected_mode": "unchanged: selected mode keeps the base path and text because it installs no constant executor (ruling N1, option gamma)"
+  },
+  "cases": [
+    {
+      "provider": "spec/scheduling-context/none-provider.rs",
+      "file": "spec/scheduling-context/four.rs",
+      "sha256": "110bd5e31627e88896ed8f610b8030cd9fdfc5b555bd5f65cadc9a149715ed9e",
+      "shape": "imported `four()` body, a literal, as a client array length",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/none-provider.rs",
+      "file": "spec/scheduling-context/suffixed.rs",
+      "sha256": "c1fc3065bdb14968061bbaa6e6bde108059a854b84a64bcaf516052641c70cc3",
+      "shape": "imported `suffixed()` body, `4usize`, as a client array length",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/none-provider.rs",
+      "file": "spec/scheduling-context/placed.rs",
+      "sha256": "2464d258ecbca68517e8da5c1fec98223ff196da43d836df2f96dc1e4a96bc8d",
+      "shape": "imported `placed()` body, which copies a usize place, as a client array length",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/none-provider.rs",
+      "file": "spec/scheduling-context/body.rs",
+      "sha256": "ab6e8961908e268b0897c291df612e3865ba02439905b9423888358db7744b77",
+      "shape": "imported `four()` as a client const read only inside a body",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/none-provider.rs",
+      "file": "spec/scheduling-context/local-placed.rs",
+      "sha256": "bfe94c4390eb8669e81af69d7129881208af0dff81fde13712a148217a20d29a",
+      "shape": "client-local const fn copying a usize place, as an array length",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/none-provider.rs",
+      "file": "spec/scheduling-context/local-literal.rs",
+      "sha256": "c319d26cb059300277a455c04986ef947e6f984bbd45c52c077663932de094ee",
+      "shape": "client-local const fn returning a literal, as an array length",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/usize-provider.rs",
+      "file": "spec/scheduling-context/four.rs",
+      "sha256": "110bd5e31627e88896ed8f610b8030cd9fdfc5b555bd5f65cadc9a149715ed9e",
+      "shape": "imported `four()` body, a literal, as a client array length",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": 42
+    },
+    {
+      "provider": "spec/scheduling-context/usize-provider.rs",
+      "file": "spec/scheduling-context/suffixed.rs",
+      "sha256": "c1fc3065bdb14968061bbaa6e6bde108059a854b84a64bcaf516052641c70cc3",
+      "shape": "imported `suffixed()` body, `4usize`, as a client array length",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": 42
+    },
+    {
+      "provider": "spec/scheduling-context/usize-provider.rs",
+      "file": "spec/scheduling-context/placed.rs",
+      "sha256": "2464d258ecbca68517e8da5c1fec98223ff196da43d836df2f96dc1e4a96bc8d",
+      "shape": "imported `placed()` body, which copies a usize place, as a client array length",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": 42
+    },
+    {
+      "provider": "spec/scheduling-context/usize-provider.rs",
+      "file": "spec/scheduling-context/local-placed.rs",
+      "sha256": "bfe94c4390eb8669e81af69d7129881208af0dff81fde13712a148217a20d29a",
+      "shape": "client-local const fn copying a usize place, as an array length",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": 42
+    },
+    {
+      "provider": "spec/scheduling-context/usize-provider.rs",
+      "file": "spec/scheduling-context/minspec.rs",
+      "sha256": "44ab9ebc35a3d37cd333538d06042c5af75a989004ace47b17b296c962fde594",
+      "shape": "`four` as an array length in a min_specialization client, alloc's and std's shape",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": 42
+    },
+    {
+      "provider": "spec/scheduling-context/usize-provider.rs",
+      "file": "spec/scheduling-context/body.rs",
+      "sha256": "ab6e8961908e268b0897c291df612e3865ba02439905b9423888358db7744b77",
+      "shape": "imported `four()` as a client const read only inside a body",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/usize-provider.rs",
+      "file": "spec/scheduling-context/local-literal.rs",
+      "sha256": "c319d26cb059300277a455c04986ef947e6f984bbd45c52c077663932de094ee",
+      "shape": "client-local const fn returning a literal, as an array length",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/u8-provider.rs",
+      "file": "spec/scheduling-context/four.rs",
+      "sha256": "110bd5e31627e88896ed8f610b8030cd9fdfc5b555bd5f65cadc9a149715ed9e",
+      "shape": "imported `four()` body, a literal, as a client array length",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": 42
+    },
+    {
+      "provider": "spec/scheduling-context/u8-provider.rs",
+      "file": "spec/scheduling-context/suffixed.rs",
+      "sha256": "c1fc3065bdb14968061bbaa6e6bde108059a854b84a64bcaf516052641c70cc3",
+      "shape": "imported `suffixed()` body, `4usize`, as a client array length",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": 42
+    },
+    {
+      "provider": "spec/scheduling-context/u8-provider.rs",
+      "file": "spec/scheduling-context/placed.rs",
+      "sha256": "2464d258ecbca68517e8da5c1fec98223ff196da43d836df2f96dc1e4a96bc8d",
+      "shape": "imported `placed()` body, which copies a usize place, as a client array length",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": 42
+    },
+    {
+      "provider": "spec/scheduling-context/u8-provider.rs",
+      "file": "spec/scheduling-context/body.rs",
+      "sha256": "ab6e8961908e268b0897c291df612e3865ba02439905b9423888358db7744b77",
+      "shape": "imported `four()` as a client const read only inside a body",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/u8-provider.rs",
+      "file": "spec/scheduling-context/local-placed.rs",
+      "sha256": "bfe94c4390eb8669e81af69d7129881208af0dff81fde13712a148217a20d29a",
+      "shape": "client-local const fn copying a usize place, as an array length",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/u8-provider.rs",
+      "file": "spec/scheduling-context/local-literal.rs",
+      "sha256": "c319d26cb059300277a455c04986ef947e6f984bbd45c52c077663932de094ee",
+      "shape": "client-local const fn returning a literal, as an array length",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/bool-provider.rs",
+      "file": "spec/scheduling-context/four.rs",
+      "sha256": "110bd5e31627e88896ed8f610b8030cd9fdfc5b555bd5f65cadc9a149715ed9e",
+      "shape": "imported `four()` body, a literal, as a client array length",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": 42
+    },
+    {
+      "provider": "spec/scheduling-context/bool-provider.rs",
+      "file": "spec/scheduling-context/suffixed.rs",
+      "sha256": "c1fc3065bdb14968061bbaa6e6bde108059a854b84a64bcaf516052641c70cc3",
+      "shape": "imported `suffixed()` body, `4usize`, as a client array length",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": 42
+    },
+    {
+      "provider": "spec/scheduling-context/bool-provider.rs",
+      "file": "spec/scheduling-context/placed.rs",
+      "sha256": "2464d258ecbca68517e8da5c1fec98223ff196da43d836df2f96dc1e4a96bc8d",
+      "shape": "imported `placed()` body, which copies a usize place, as a client array length",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": 42
+    },
+    {
+      "provider": "spec/scheduling-context/bool-provider.rs",
+      "file": "spec/scheduling-context/body.rs",
+      "sha256": "ab6e8961908e268b0897c291df612e3865ba02439905b9423888358db7744b77",
+      "shape": "imported `four()` as a client const read only inside a body",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/bool-provider.rs",
+      "file": "spec/scheduling-context/local-placed.rs",
+      "sha256": "bfe94c4390eb8669e81af69d7129881208af0dff81fde13712a148217a20d29a",
+      "shape": "client-local const fn copying a usize place, as an array length",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/bool-provider.rs",
+      "file": "spec/scheduling-context/local-literal.rs",
+      "sha256": "c319d26cb059300277a455c04986ef947e6f984bbd45c52c077663932de094ee",
+      "shape": "client-local const fn returning a literal, as an array length",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/nominal-provider.rs",
+      "file": "spec/scheduling-context/four.rs",
+      "sha256": "110bd5e31627e88896ed8f610b8030cd9fdfc5b555bd5f65cadc9a149715ed9e",
+      "shape": "imported `four()` body, a literal, as a client array length",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/nominal-provider.rs",
+      "file": "spec/scheduling-context/placed.rs",
+      "sha256": "2464d258ecbca68517e8da5c1fec98223ff196da43d836df2f96dc1e4a96bc8d",
+      "shape": "imported `placed()` body, which copies a usize place, as a client array length",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/nominal-provider.rs",
+      "file": "spec/scheduling-context/local-placed.rs",
+      "sha256": "bfe94c4390eb8669e81af69d7129881208af0dff81fde13712a148217a20d29a",
+      "shape": "client-local const fn copying a usize place, as an array length",
+      "base": "accepted",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/generic-provider.rs",
+      "file": "spec/scheduling-context/generic-usize.rs",
+      "sha256": "451815f259573fec23b2d7a01547130765e686f7ccda543843514a63dc6633ec",
+      "shape": "imported generic `id(4usize)` as an array length",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": null,
+      "amended_provider": "amendment 1: from blanket-provider.rs",
+      "failed_prediction": "fastcheck fc3 rejected it with `defining cleanup requires its actual language declaration`, an existing fence independent of this item",
+      "amended_expected": "rejected with `defining cleanup requires its actual language declaration` (amendment 1); rustc accepts it and exits 42"
+    },
+    {
+      "provider": "spec/scheduling-context/blanket-provider.rs",
+      "file": "spec/scheduling-context/overlap-twin.rs",
+      "sha256": "68a41f4363eae21e180ca1353753118656d2d24eda8bac9a3ce60681a25ed54c",
+      "shape": "client `impl base::Marker for Local` overlapping the imported blanket impl, without a constant",
+      "base": "overlapping trait implementation headers require coherence proof",
+      "expected": "overlapping trait implementation headers require coherence proof",
+      "rustc": "rejected E0119",
+      "native_exit": null
+    },
+    {
+      "provider": "spec/scheduling-context/blanket-provider.rs",
+      "file": "spec/scheduling-context/overlap.rs",
+      "sha256": "edaf51b4108eeb514ce949054c2853fedd69514b1fd32e1cc51edf7297bac545",
+      "shape": "the overlapping impl plus `four()` as an array length",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "overlapping trait implementation headers require coherence proof",
+      "rustc": "rejected E0119",
+      "native_exit": null,
+      "order": "differs from base: base stops at the fence because const evaluation runs before the eager walk's pair check; the candidate reaches that check, and the message equals overlap-twin's on base and candidate (A3)"
+    },
+    {
+      "provider": "spec/scheduling-context/generic-provider.rs",
+      "file": "spec/scheduling-context/local-copy.rs",
+      "sha256": "17f6a2547809e5904e6d471321c676f918acdd0ec9920414c30ba13626dc7a92",
+      "shape": "client-local Clone and Copy impls reached through imported generic `id(Local(4))`, read as `[u8; L.0]`",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "client implementation validation before the eager walk requires a source scheduling context",
+      "rustc": "accepted",
+      "native_exit": null,
+      "known_rejects_valid": "A4: a client-local Copy impl has no early scheduler outside a source core; recorded in docs/library-build-blockers.md",
+      "amended_provider": "amendment 1: from blanket-provider.rs"
+    },
+    {
+      "provider": "spec/scheduling-context/primitives-provider.rs",
+      "file": "spec/scheduling-context/four.rs",
+      "sha256": "110bd5e31627e88896ed8f610b8030cd9fdfc5b555bd5f65cadc9a149715ed9e",
+      "shape": "imported `four()` body, a literal, as a client array length",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": 42,
+      "demanded": 14
+    },
+    {
+      "provider": "spec/scheduling-context/primitives-provider.rs",
+      "file": "spec/scheduling-context/eight.rs",
+      "sha256": "df6c04d98c0ab44490ad91c2c4e69471126925fd18d3f8d818f5c270daf8ed87",
+      "shape": "eight client consts each evaluating imported `four()` as an array length, the D=8 scaling client",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": 42,
+      "demanded": 14
+    },
+    {
+      "provider": "spec/scheduling-context/primitives-provider.rs",
+      "file": "spec/scheduling-context/local-placed.rs",
+      "sha256": "bfe94c4390eb8669e81af69d7129881208af0dff81fde13712a148217a20d29a",
+      "shape": "client-local const fn copying a usize place, as an array length",
+      "base": "implementation validation has no source scheduling context",
+      "expected": "accepted",
+      "rustc": "accepted",
+      "native_exit": 42,
+      "demanded": 1
+    }
+  ],
+  "controls": [
+    {
+      "control": "specialization gate (F2)",
+      "expected": "a private registry_graph test forges an imported endpoint into a closed forest, a building relation and a building comparison; each stops demand with `imported implementation validation before its specialization conformance order`; the unforged min_specialization client relates no imported impl"
+    },
+    {
+      "control": "selected mode",
+      "expected": "unchanged; selected clients of provided-contracts-v1 packets cannot const-evaluate (`expression requires the general constant evaluation assignment`), so no selected demand reaches the arm"
+    },
+    {
+      "control": "named-constants const-call",
+      "expected": "accepted and exits 42 natively; amendment 9 of named-constant-outcomes.json records the flip"
+    },
+    {
+      "control": "PA31 generic-copy-waits and the source-core early scalar fixtures",
+      "expected": "unchanged; a source core keeps its scheduler"
+    },
+    {
+      "control": "flip survey against the base pin",
+      "expected": "only these cases and named-constants const-call flip"
+    }
+  ],
+  "scaling": {
+    "ledger": "cfg(test) copy_trace rows `demanded conformance owner=N`",
+    "expected": {
+      "four over primitives-provider (D=1)": 14,
+      "eight over primitives-provider (D=8)": 14,
+      "local-placed over primitives-provider": 1,
+      "rule": "each demanded owner appears once; imported-body goals read the coarse heads bucket and pay for every primitive-headed Copy impl, a local body's resolved goal pays only for its own"
+    }
+  },
+  "exclusions": [
+    {
+      "probe": "u8clone",
+      "reason": "its provider is invalid: `impl Clone for u8 { fn clone(&self) -> Self { *self } }` moves out of a reference without a Copy impl, so both rustc and RustGM reject the provider itself"
+    }
+  ],
+  "outcome_counts": {
+    "providers": 7,
+    "clients": 12,
+    "cases": 35,
+    "flips": 15,
+    "unchanged_accepted": 17,
+    "rejected": 3,
+    "amended": "amendment 1: 8 providers; 14 flips, 17 unchanged accepted clients, 4 rejected (overlap-twin, overlap, local-copy, generic-usize)"
+  },
+  "efficiency_item": "hypothesis, untraced: an imported body's goal reaches candidates_for without a closed shape and reads the coarse heads bucket (implementations.rs:237-242), while a local body's resolved goal reads the exact closed bucket (227-235)",
+  "amendments": [
+    {
+      "recorded": "2026-11-09T10:20:45Z",
+      "before": "any further oracle, candidate, integration or native run of these files",
+      "governs": "focused fastcheck fc3 (obj/parallel/auto-traits/fence/fc3.log): every accepted case held, but generic-usize was rejected with `defining cleanup requires its actual language declaration` at the blanket provider's `id` body, and the candidate probe obj/parallel/auto-traits/fence/probe-generic/cand1 showed overlap stopping at the same text before the walk's pair check",
+      "change": "(a) generic-usize is a failed prediction, amended to rejected with that text; rustc accepts it and exits 42. The fence is existing and independent of this item: on the base pin, `four` against a provider with `const fn id<T: Copy>` and no Clone or Copy impl, and `body` against a provider with usize's impls and `id`, are rejected with the same text (obj/parallel/auto-traits/fence/probe-generic/base). Defining cleanup of the Copy-bounded generic body requires the Destruct language item, which the branch provider's 57 lines do not declare and core does. (b) The blanket provider mixed two controls: blanket-provider.rs drops `id`, so overlap reaches the pair check; the new generic-provider.rs has usize's Clone and Copy impls and `id`, and generic-usize and local-copy move to it. local-copy keeps its declared source-backed text, which the candidate probe reached before cleanup. overlap and overlap-twin keep the overlap text. No other case changes"
+    }
+  ]
+}

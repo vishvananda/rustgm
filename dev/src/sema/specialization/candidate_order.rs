@@ -119,6 +119,24 @@ fn local(
     }
     Ok(true)
 }
+/// A client validates an imported impl on demand only outside every consumer
+/// relation. `local` and witness capture keep imported impls out of them, so a
+/// break of that property becomes this diagnostic, never a silent mis-order.
+pub(in crate::sema) fn require_unordered_import(
+    facts: &Declarations,
+    owner: DefId,
+) -> Result<(), &'static str> {
+    let registry = graph_pairs::registry(facts)?;
+    let Some(graph) = registry.specialization_graph() else {
+        return Ok(());
+    };
+    if graph.relates(registry.entry_key(owner)?)? {
+        return Err(
+            "imported implementation validation before its specialization conformance order",
+        );
+    }
+    Ok(())
+}
 
 /// Rustc's `assoc_def`: an impl that omits an associated type inherits its
 /// nearest defining ancestor's, with arguments translated through each

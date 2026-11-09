@@ -33,8 +33,10 @@ rustc accepts thirteen clients, and each returns 42:
 - `float` and `wide`: f32 and f64 bits, u128's sixteen bytes and the unit
   constant;
 - `const-call`: the imported const fn `lane_count()` as a client array length.
-  RustGM rejects it at an existing client fence, "implementation validation
-  has no source scheduling context" (amendment 5);
+  RustGM first rejected it at an existing client fence, "implementation
+  validation has no source scheduling context" (amendment 5). The
+  [scheduling-context fence](../scheduling-context/README.md) accepts it
+  again (amendment 9);
 - `inner-pair`: the three `INNER`s, read through their three bodies;
 - `unnamed-after`: the constant declared after the unnamed one, and its body;
 - `generic-local`: `generic_inner::<u8>`, instantiated by the client.

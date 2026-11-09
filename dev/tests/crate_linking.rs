@@ -84,6 +84,8 @@ mod register_transport;
 mod reified_items;
 #[path = "crate_linking/representations.rs"]
 mod representations;
+#[path = "crate_linking/scheduling_context.rs"]
+mod scheduling_context;
 #[path = "crate_linking/serialized_records.rs"]
 mod source_nominals;
 #[path = "crate_linking/spelled_roles.rs"]

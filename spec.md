@@ -6823,6 +6823,21 @@ prove structurally as role-bound markers do, each re-checked by name as its
 packet's version-13 declaration. A client's impl of an imported Freeze needs
 `freeze_impls`.
 
+A source client without a source core validates an imported impl when an
+executable demand first needs it, not only in the eager walk after
+declaration preparation. A Copy decision in a body that a client constant
+reaches can wait on an unvalidated imported impl. The client then proves that
+source-free header with the walk's own conformance, and the walk skips only
+that owner's conformance: it still checks every overlap pair before any
+owner. Selected mode installs no constant executor and keeps its text. A
+client source header reached this way reports "client implementation
+validation before the eager walk requires a source scheduling context", a
+known rejects-valid. An imported impl related by the client's specialization
+graph reports "imported implementation validation before its specialization
+conformance order". The [scheduling-context
+packet](pa29/tests/spec/scheduling-context/README.md) records independent
+outcomes.
+
 A client forms each imported nominal it names under that nominal's transported
 where-clauses, as rustc does: its formation requirements are its sized
 parameters' Sized edges and its original inputs, declared and implied, the

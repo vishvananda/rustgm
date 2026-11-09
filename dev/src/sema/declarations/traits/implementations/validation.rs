@@ -82,13 +82,7 @@ impl Checker<'_> {
         let mut constants = self.constant_members.take_members(self.report, &self.facts);
         for (owner, source, predicate) in headers {
             let Some(source) = source else {
-                if let Some(selected) = self.selected.as_deref_mut() {
-                    // Private imported conformance is driven by the actual
-                    // selected dependency, never by this unrelated eager walk.
-                    selected.require_imported_implementation(self.report, &self.facts, owner)?;
-                    continue;
-                }
-                self.validate_imported_trait_implementation(owner, predicate)?;
+                self.imported_conformance(owner, predicate)?;
                 continue;
             };
             self.validate_impl_owner(
@@ -124,6 +118,32 @@ impl Checker<'_> {
             .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
         crate::sema::specialization::seal(&mut self.facts, self.report)
             .map_err(|error| self.implementation_error(None, error))
+    }
+
+    /// One source-free header's conformance, shared by the eager walk and a
+    /// client's executable demand before it. Skipping a header that demand
+    /// already paid skips only this conformance: the walk checks every overlap
+    /// pair before any owner.
+    pub(super) fn imported_conformance(
+        &mut self,
+        owner: DefId,
+        predicate: Predicate,
+    ) -> Result<(), Error> {
+        if let Some(selected) = self.selected.as_deref_mut() {
+            // Private imported conformance is driven by the actual
+            // selected dependency, never by this unrelated eager walk.
+            return selected.require_imported_implementation(self.report, &self.facts, owner);
+        }
+        if self
+            .facts
+            .generics
+            .implementations
+            .as_ref()
+            .is_some_and(|registry| registry.is_validated(owner))
+        {
+            return Ok(());
+        }
+        self.validate_imported_trait_implementation(owner, predicate)
     }
 
     pub(super) fn validate_impl_owner(

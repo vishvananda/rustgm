@@ -38,7 +38,9 @@ pub(in crate::sema) use graph_closure::{prepare as prepare_graph, require_execut
 
 pub(in crate::sema) use member_paths::{conformance_order, inherited_body, inherited_type};
 
-pub(in crate::sema) use candidate_order::{Order, defining_type, open, order};
+pub(in crate::sema) use candidate_order::{
+    Order, defining_type, open, order, require_unordered_import,
+};
 
 pub(in crate::sema) use obligation_chain::{ProjectionRequirements, ProofInputs};
 pub(in crate::sema) use selected_member::{SelectedMethod, resolve as selected_method};

@@ -625,3 +625,23 @@ them through value code 17. The packet holds:
 Amendments are recorded beside the declarations they amend, each before the
 run it governs. The `crate_linking::named_constants` integration controls and
 the `constant_tests` codec and validation invariants consume it.
+
+`scheduling-context-outcomes.json` freezes the scheduling-context packet under
+`spec/scheduling-context/`, Lane C's fence item after 5b-1. Its clients
+const-evaluate imported and local const fns while declarations are prepared,
+before the eager implementation walk. The packet holds:
+
+- eight providers, each the branch provider's first 57 lines plus authored
+  lines: no Copy impl, one primitive's, a unit struct's, fourteen
+  primitives', a blanket marker impl and a Copy-bounded generic const fn;
+- twelve clients in 35 cases. 14 cases flip from the base pin's "implementation
+  validation has no source scheduling context" to accepted, and 17 accepted
+  cases are unchanged;
+- four rejected cases: two overlap clients that rustc rejects with E0119, the
+  client-local Copy rejects-valid and one failed prediction at an existing
+  cleanup fence;
+- the specialization-gate, selected-mode, scaling and flip-survey controls.
+
+Its one amendment is recorded beside the declarations it amends, before the
+run it governs. The `crate_linking::scheduling_context` integration controls
+and the `executable_demands` and `unordered_imports` invariants consume it.

@@ -5,6 +5,42 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [scheduling-context fence](parallel/scheduling-context.md) removes
+"implementation validation has no source scheduling context" for imported
+headers. A source client with no source core, outside selected mode, now
+validates an imported impl when an executable demand during declaration
+preparation first needs it. It uses the eager walk's own conformance, and the
+walk then skips only that owner's conformance.
+
+- 14 rustc-accepted clients that the base pin rejected at the fence are
+  accepted and exit 42 natively, and 17 accepted clients are unchanged.
+  The named-constants client `const-call` is accepted (its amendment 9).
+  Against the base pin, the flip survey changes only `const-call`.
+- The overlap control is rejected before and after, in a different order: the
+  base pin reports the fence, and the candidate reports the overlap text.
+- Selected mode keeps the base path and text, because it installs no constant
+  executor. Completing imported conformance through its selected dependency
+  on demand becomes reachable only if selected mode gains a constant executor.
+- Known rejects-valid: a client-local Copy impl reached through an imported
+  generic const fn during declaration preparation reports "client
+  implementation validation before the eager walk requires a source
+  scheduling context". Its follow-up is an early scheduler for client source
+  headers outside a source core.
+- An imported endpoint of the client's specialization relations stops with
+  "imported implementation validation before its specialization conformance
+  order". No real input reaches it, and a private test forges each endpoint.
+- Efficiency item, an untraced hypothesis: an imported body's Copy goal reads
+  the coarse primitive `heads` bucket, so a client demands every
+  primitive-headed Copy impl (14 for the scaling provider), while a local
+  body's resolved goal reads its exact `closed` bucket. Each such impl is one
+  the eager walk validates anyway.
+- Existing fence, independent of this item: a client const evaluation of an
+  imported Copy-bounded generic const fn stops at "defining cleanup requires
+  its actual language declaration" when the provider declares no Destruct
+  language item. The branch provider's 57 lines lack it, and core declares
+  it.
+- Lane C's next item is R2, with `value_rows.rs`'s `emit()` factored first.
+
 Lane A [census batch 18](parallel/census-batch18.md) repairs census 20's
 record and its lookahead. It was qualified and censused on main
 `7e8c5cbbf`. Census 21 (`30d6eb8a`) checks 42,310 declarations, with none
@@ -55,7 +91,8 @@ it as a completed definition.
   reproduces it without any constant whenever the provider declares primitive
   Copy impls, and both accept it without them. 5b-1 is not widened. Core
   declares exactly those impls, so the fence blocks alloc and std clients
-  that const-evaluate anything imported from core.
+  that const-evaluate anything imported from core. The scheduling-context
+  fence item accepts `const-call` again (amendment 9).
 - Lane C's order after 5b-1 is the scheduling-context fence, then R2, then
   5b-2 and 5b-3.
 
