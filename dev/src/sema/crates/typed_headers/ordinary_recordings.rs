@@ -228,17 +228,25 @@ fn original_formals(
             .types
             .parameter(id)
             .ok_or_else(|| error("ordinary recording lost its actual canonical formal"))?;
-        let s::ParameterKind::Type { sized } = slot.kind else {
-            return Err(error(
-                "ordinary recording original formal is not an actual type",
-            ));
+        let kind = match slot.kind {
+            s::ParameterKind::Type { sized } => crate::types::parameters::ParameterKind::Type {
+                sized: sized.is_some(),
+            },
+            // Version thirteen: a const formal keeps its complete position.
+            s::ParameterKind::Const { ty } => crate::types::parameters::ParameterKind::Const {
+                ty: crate::sema::crates::scalar(
+                    s::const_parameter_type(&rows.types, ty).map_err(error)?,
+                ),
+            },
+            s::ParameterKind::Region => {
+                return Err(error(
+                    "ordinary recording original formal is not an actual type",
+                ));
+            }
         };
         if parameter.owner != ItemId(view.definition(slot.owner, work)?.0)
             || parameter.index != slot.index
-            || parameter.kind
-                != (crate::types::parameters::ParameterKind::Type {
-                    sized: sized.is_some(),
-                })
+            || parameter.kind != kind
         {
             return Err(error(
                 "ordinary recording changed its actual full formal owner or order",

@@ -248,6 +248,43 @@ impl Stage {
         self.argument_rows(facts, actual, context)
     }
 
+    /// A const argument's term: an evaluated value of a primitive const
+    /// parameter type, or the rigid const parameter's own slot.
+    fn const_term(
+        &mut self,
+        facts: &Declarations,
+        term: crate::types::arguments::ConstId,
+        context: Context,
+    ) -> Result<s::ConstTerm, &'static str> {
+        use crate::types::arguments::ConstKind;
+        Ok(
+            match facts
+                .types
+                .const_kind(term)
+                .ok_or("source const argument is unknown")?
+            {
+                ConstKind::Value(value) => {
+                    let ty = self.ty(facts, value.ty, context)?;
+                    s::const_parameter_type(&self.rows.types, ty)?;
+                    s::ConstTerm::Value(s::ConstValue {
+                        ty,
+                        bits: value.bits,
+                    })
+                }
+                ConstKind::Parameter(parameter) => s::ConstTerm::Parameter(
+                    *self
+                        .graph
+                        .parameters
+                        .get(&parameter)
+                        .ok_or("source const term uses an unreserved actual parameter slot")?,
+                ),
+                ConstKind::Aggregate(_) => {
+                    return Err("source aggregate const arguments are outside the initial profile");
+                }
+            },
+        )
+    }
+
     pub(super) fn argument_rows(
         &mut self,
         facts: &Declarations,
@@ -258,16 +295,37 @@ impl Stage {
         // list before appending, so its wire range never absorbs nested inputs.
         self.reserve(actual.len().saturating_mul(8 * size_of::<s::Argument>()))?;
         let mut completed = Vec::with_capacity(actual.len());
+        let mut terms = Vec::new();
         for argument in actual {
             self.charge(1)?;
             let value = match argument {
                 Argument::Type(ty) => s::Argument::Type(self.ty(facts, ty, context)?),
                 Argument::Lifetime(region) => s::Argument::Region(self.region(region, context)?),
+                Argument::Const(term) if self.body_nodes() => {
+                    self.reserve(4 * size_of::<s::ConstTerm>())?;
+                    terms.push(self.const_term(facts, term, context)?);
+                    // Numbered below, when the staged list is appended.
+                    s::Argument::Const(s::ConstRef(u32::MAX))
+                }
                 Argument::Const(_) => {
                     return Err("source const argument transport is not implemented");
                 }
             };
             completed.push(value);
+        }
+        if !terms.is_empty() {
+            // Terms are dense in argument-row order, like the rows naming them.
+            let consts = &mut self.cold()?.consts;
+            let mut next = consts.len();
+            for argument in &mut completed {
+                if let s::Argument::Const(reference) = argument {
+                    *reference = s::ConstRef(
+                        u32::try_from(next).map_err(|_| "source const term table overflow")?,
+                    );
+                    next += 1;
+                }
+            }
+            consts.extend(terms);
         }
         let start = u32::try_from(self.rows.arguments.len())
             .map_err(|_| "source argument table overflow")?;

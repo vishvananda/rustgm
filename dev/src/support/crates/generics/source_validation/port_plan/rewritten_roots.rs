@@ -196,6 +196,10 @@ impl Arena {
                     region: self.rewritten_region(domains, region, key.rewrite, work)?,
                     next: tail,
                 },
+                s::Argument::Const(term) => Node::NominalArgument {
+                    ty: self.const_node(domains, term, key.rewrite, work)?,
+                    next: tail,
+                },
                 _ => {
                     let child = nominal_child(domains, key, *argument, regions, work)?
                         .ok_or("source nominal type argument lost its child")?;
@@ -208,6 +212,53 @@ impl Arena {
             tail = self.intern(node, work)?;
         }
         Ok(tail)
+    }
+    /// Version thirteen: a const argument's node. A value is canonical by
+    /// validation; a rigid term follows its slot's rewrite as a type
+    /// parameter does, and an applied term is its caller's original term.
+    fn const_node(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        term: s::ConstRef,
+        rewrite: Rewrite,
+        work: &mut Work,
+    ) -> Result<NodeId, &'static str> {
+        work.charge(1)?;
+        let rows = domains.headers.rows();
+        let term = *rows
+            .consts()
+            .get(term.0 as usize)
+            .ok_or("source const argument has no term row")?;
+        let slot = match term {
+            s::ConstTerm::Value(value) => {
+                let scalar = s::const_value(&rows.types, value)?;
+                let bytes = value.bits.to_le_bytes();
+                let mut bits = [0; 4];
+                for (lane, chunk) in bits.iter_mut().zip(bytes.as_chunks::<4>().0) {
+                    *lane = u32::from_le_bytes(*chunk);
+                }
+                return self.intern(Node::ConstValue { scalar, bits }, work);
+            }
+            s::ConstTerm::Parameter(slot) => slot,
+        };
+        match rewrite {
+            Rewrite::Nominal { owner, arguments } => {
+                let position = domains
+                    .headers
+                    .scopes()
+                    .type_argument_position(owner, slot, work)?;
+                self.nominal_argument(arguments, position, work)
+            }
+            Rewrite::Application(_) => {
+                match uses::applied_argument(domains, rewrite, slot, work)? {
+                    s::Argument::Const(actual) => {
+                        self.const_node(domains, actual, Rewrite::Original, work)
+                    }
+                    _ => Err("source signature application changed a const argument's kind"),
+                }
+            }
+            Rewrite::Original | Rewrite::Public(_) => self.intern(Node::Parameter(slot), work),
+        }
     }
     fn finish_tuple(
         &mut self,
@@ -549,5 +600,7 @@ fn nominal_child(
         s::Argument::Region(_) => {
             Err("source nominal input planning requires its wider regional profile")
         }
+        // A const term's type is a primitive row: it plans no input.
+        s::Argument::Const(_) => Ok(None),
     }
 }

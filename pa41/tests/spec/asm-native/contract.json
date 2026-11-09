@@ -191,10 +191,24 @@
         "after": "624c737a9c4a2c7dac5ed87a2eb050bb0d57938920745b0c2255f7b9a3a85803"
       },
       "unchanged": "observations_after_run keeps the B1 observation as recorded"
+    },
+    {
+      "item": "B2 K, the const-parameter slice (docs/parallel/const-parameters.md)",
+      "declared": "2026-11-09T01:47:16Z, before any K candidate, in pa29/tests/const-parameter-outcomes.json",
+      "stream_body_module_bodies_v13": {
+        "before": "source const parameters are outside the initial source profile",
+        "after": "source nominal representation requires its wider complete contract",
+        "reason": "version 13 no longer rejects const formals at the export gate; the next fence the crate reaches is the representation of the repr(simd) nominal __m128, which stops it whether or not its array impls' const formals would transport"
+      },
+      "README.md": {
+        "before": "624c737a9c4a2c7dac5ed87a2eb050bb0d57938920745b0c2255f7b9a3a85803",
+        "after": "f5ea06509819bc6a39131470195cd765815d237d44c173cdfee85a65ee8ebee6"
+      },
+      "unchanged": "observations_after_run keeps the B1 observation as recorded"
     }
   ],
   "files": {
-    "README.md": "624c737a9c4a2c7dac5ed87a2eb050bb0d57938920745b0c2255f7b9a3a85803",
+    "README.md": "f5ea06509819bc6a39131470195cd765815d237d44c173cdfee85a65ee8ebee6",
     "entry.c": "98452b8d8fabcf47485e56e1b93d1965cbdc46132d8114ff42f835fc9765b266",
     "expected.stdout": "d01b7cec7494caaf9554d95bd3352dfe829a351b0be188b1a1ae905d03ea7522",
     "native.rs": "1631be50578cad11c570aa89b0ca8d5be751bf64f62fb07b8150c48e63fd5e94",

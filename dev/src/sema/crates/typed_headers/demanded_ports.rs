@@ -158,6 +158,22 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
             .slots
             .get(reference.0 as usize)
             .ok_or_else(|| error("reserved formal slot is outside its immutable schema"))?;
+        if let s::ParameterKind::Const { ty } = slot.kind {
+            let owner = self.view.definition(slot.owner, budget)?;
+            if let Some(binding) = slot.definition {
+                self.view.definition(binding, budget)?;
+            }
+            let scalar = s::const_parameter_type(&self.rows.types, ty).map_err(error)?;
+            let index = slot_bindings::type_index(&self.rows.declarations, slot);
+            let argument = slot_bindings::intern_const(
+                store,
+                owner,
+                index,
+                crate::sema::crates::scalar(scalar),
+            )?;
+            publish(memo, argument)?;
+            return Ok(argument);
+        }
         let s::ParameterKind::Type { sized } = slot.kind else {
             if let Some(region) = slot_bindings::nominal_region(
                 (&self.rows.slots, &self.rows.declarations),

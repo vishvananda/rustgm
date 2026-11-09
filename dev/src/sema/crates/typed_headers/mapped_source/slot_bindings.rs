@@ -15,7 +15,7 @@ pub(in crate::sema::crates::typed_headers) fn kind(kind: s::DefinitionKind) -> D
         s::DefinitionKind::Trait => DefKind::Trait,
         s::DefinitionKind::SelfType => DefKind::SelfType,
         s::DefinitionKind::Function => DefKind::Function,
-        s::DefinitionKind::TypeParameter => DefKind::Generic,
+        s::DefinitionKind::TypeParameter | s::DefinitionKind::ConstParameter => DefKind::Generic,
         s::DefinitionKind::RegionParameter => DefKind::Lifetime,
         s::DefinitionKind::ValueParameter => DefKind::Parameter,
         s::DefinitionKind::Local => DefKind::Local,
@@ -63,6 +63,17 @@ pub(super) fn prepare(
                     error("source region slot exceeds canonical lifetime identity space")
                 })?;
                 Argument::Lifetime(RegionId::bound(0, index).map_err(error)?)
+            }
+            // Validation admitted only an integer, bool or char row, which the
+            // consumer's own primitive names exactly.
+            s::ParameterKind::Const { ty } => {
+                let scalar = s::const_parameter_type(&rows.types, ty).map_err(error)?;
+                intern_const(
+                    &mut facts.types,
+                    owner,
+                    type_index(&rows.declarations, slot),
+                    crate::sema::crates::scalar(scalar),
+                )?
             }
         });
     }
@@ -178,6 +189,26 @@ pub(in crate::sema::crates::typed_headers) fn intern_type(
     store
         .intern(Kind::Parameter(id))
         .map(Argument::Type)
+        .map_err(error)
+}
+/// A version-thirteen const slot: a rigid const parameter of `ty`, named by
+/// its canonical const term exactly as a local const parameter is.
+pub(in crate::sema::crates::typed_headers) fn intern_const(
+    store: &mut crate::types::Store,
+    owner: crate::resolve::model::DefId,
+    index: u32,
+    ty: crate::types::TypeId,
+) -> Result<Argument, Error> {
+    let id = store
+        .intern_parameter(Parameter {
+            owner: ItemId(owner.0),
+            index,
+            kind: ParameterKind::Const { ty },
+        })
+        .map_err(error)?;
+    store
+        .intern_const(crate::types::arguments::ConstKind::Parameter(id))
+        .map(Argument::Const)
         .map_err(error)
 }
 pub(in crate::sema::crates::typed_headers) fn bound(

@@ -5,6 +5,24 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane D [B2 K, const parameters](parallel/const-parameters.md) exports const
+generic parameters of integer, bool and char types under version 13, with
+evaluated and rigid const arguments in nominal and function applications.
+
+- New rows, each only under `body_nodes()`: declaration tag 12, slot tag 3
+  (`3 | ty`), argument tag 2 and a const term (`0 | ty | bits` or
+  `1 | slot`). Declaration tag 13 stays free for Lane C's 5b `Constant`, and
+  the term codec and per-type canonical check are reusable outside the
+  parameter path.
+- A pa29 provider exports; four fresh clients exit 42 natively and four
+  opponents fail with their local twins' texts. Older profiles and the M
+  reader reject the rows by name, forged values, slots and arguments fail by
+  name, and existing v13 packets are byte-identical.
+- A body reading a const parameter, const defaults, aggregate and float
+  const parameters and array lengths stay fenced. The stream witness now
+  stops at `__m128`'s `repr(simd)`, "source nominal representation requires
+  its wider complete contract", as declared.
+
 Lane D [B2 M, macro contexts](parallel/macro-contexts.md) narrows version 13's
 crate-wide macro provenance gate, a LIB-059 sub-item, with no row change.
 
@@ -93,8 +111,9 @@ templates and `asm` invocations, on main `2a27e11ca`.
 - What remains: asm bodies still do not cross module-body transport (B2), so
   LIB-045 stays open. The real stream body's crate first stopped at the
   crate-wide macro provenance fence, with the `repr(simd)` record contract
-  and const-generic array impls behind it. Since B2 M it stops at its const
-  parameter.
+  and const-generic array impls behind it. Since B2 M it stopped at its const
+  parameter, and since B2 K it stops at `__m128`'s `repr(simd)` record
+  contract.
 
 Lane C [auto traits](parallel/auto-traits.md), C3b, proves coherence absence
 for the crate whose coherence it proves, as rustc 1.98's

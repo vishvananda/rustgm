@@ -1,6 +1,10 @@
 //! Type recipes are traversed once; callable recursion is not a recipe cycle.
 use super::{BoundUse, Builder, HeaderRef, Summary, Work, g, s};
-use crate::support::crates::Scalar;
+use crate::support::crates::{Scalar, owner_catalog::DeclarationRef};
+
+/// Const arguments travel in nominal and function applications only.
+const OUTSIDE_APPLICATIONS: &str =
+    "source const arguments outside nominal and function applications require a wider profile";
 
 impl Builder<'_, '_> {
     pub(super) fn dependencies(
@@ -13,9 +17,7 @@ impl Builder<'_, '_> {
             match rows.types[node] {
                 s::Type::Nominal { arguments, .. } => {
                     for argument in arguments.slice(&rows.arguments)?.iter().rev() {
-                        if let s::Argument::Type(ty) = argument {
-                            self.push_type(*ty, work)?;
-                        }
+                        self.push_argument(*argument, work)?;
                     }
                 }
                 s::Type::Projection(reference) => {
@@ -102,12 +104,26 @@ impl Builder<'_, '_> {
             // only a lifetime-generic enum constructor's leading regions.
             for argument in arguments.slice(&rows.arguments)?.iter().rev() {
                 work.charge(1)?;
-                if let s::Argument::Type(ty) = argument {
-                    self.push_type(*ty, work)?;
-                }
+                self.push_argument(*argument, work)?;
             }
         }
         Ok(())
+    }
+    /// A type argument's row, or a const value's primitive row, is a child
+    /// that completes before its parent.
+    fn push_argument(
+        &mut self,
+        argument: s::Argument,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        match argument {
+            s::Argument::Type(ty) => self.push_type(ty, work),
+            s::Argument::Const(term) => match self.headers.rows().consts().get(term.0 as usize) {
+                Some(&s::ConstTerm::Value(value)) => self.push_type(value.ty, work),
+                _ => Ok(()),
+            },
+            s::Argument::Region(_) => Ok(()),
+        }
     }
     pub(super) fn finish(&self, node: usize, work: &mut Work) -> Result<Summary, &'static str> {
         let rows = self.headers.rows();
@@ -253,11 +269,52 @@ impl Builder<'_, '_> {
                 (s::Argument::Region(region), s::ParameterKind::Region) => {
                     region_summary(self.headers, self.binders, *region, work)?
                 }
+                (s::Argument::Const(term), s::ParameterKind::Const { ty }) => {
+                    self.const_summary(*term, ty, work)?
+                }
                 _ => return Err("source nominal argument changed its formal kind"),
             };
             result = self.merge(result, child, work)?;
         }
         Ok(result)
+    }
+    /// A const argument: an evaluated value of an earlier primitive row with
+    /// canonical bits, or a const slot, of its formal's type.
+    fn const_summary(
+        &self,
+        term: s::ConstRef,
+        formal: g::TypeRef,
+        work: &mut Work,
+    ) -> Result<Summary, &'static str> {
+        work.charge(1)?;
+        let rows = self.headers.rows();
+        let parameter_type =
+            |ty| crate::support::crates::generics::source::const_parameter_type(&rows.types, ty);
+        let formal = parameter_type(formal)?;
+        let (ty, summary) = match rows.consts().get(term.0 as usize) {
+            Some(&s::ConstTerm::Value(value)) => {
+                self.child(value.ty, work)?;
+                crate::support::crates::generics::source::const_value(&rows.types, value)?;
+                (parameter_type(value.ty)?, Summary::default())
+            }
+            Some(&s::ConstTerm::Parameter(slot)) => {
+                let Some(s::ParameterKind::Const { ty }) =
+                    rows.slots.get(slot.0 as usize).map(|row| row.kind)
+                else {
+                    return Err("source const term names a non-const slot");
+                };
+                let summary = Summary {
+                    parameter: Some(slot),
+                    ..Summary::default()
+                };
+                (parameter_type(ty)?, summary)
+            }
+            None => return Err("source const argument has no term row"),
+        };
+        if formal != ty {
+            return Err("source const argument changed its parameter type");
+        }
+        Ok(summary)
     }
     fn projection_summary(
         &self,
@@ -282,6 +339,7 @@ impl Builder<'_, '_> {
                         s::Argument::Region(region) => {
                             region_summary(self.headers, self.binders, *region, work)?
                         }
+                        s::Argument::Const(_) => return Err(OUTSIDE_APPLICATIONS),
                     };
                     result = self.merge(result, child, work)?;
                 }
@@ -307,6 +365,7 @@ impl Builder<'_, '_> {
                     s::Argument::Region(region) => {
                         region_summary(self.headers, self.binders, *region, work)?
                     }
+                    s::Argument::Const(_) => return Err(OUTSIDE_APPLICATIONS),
                 };
                 result = self.merge(result, child, work)?;
             }
@@ -363,12 +422,21 @@ impl Builder<'_, '_> {
         {
             return Err("source application omitted or added actual unused type formals");
         }
+        let formals = self.type_space_formals(scope, work)?;
         let mut summary = Summary::default();
         for (index, argument) in arguments.iter().enumerate() {
             work.charge(1)?;
-            let child = match argument {
-                s::Argument::Type(ty) if index >= regions => self.child(*ty, work)?,
-                s::Argument::Region(region) if index < regions => {
+            let formal = index
+                .checked_sub(regions)
+                .and_then(|position| formals.get(position));
+            let child = match (argument, formal) {
+                (s::Argument::Type(ty), Some(s::ParameterKind::Type { .. })) => {
+                    self.child(*ty, work)?
+                }
+                (s::Argument::Const(term), Some(&s::ParameterKind::Const { ty })) => {
+                    self.const_summary(*term, ty, work)?
+                }
+                (s::Argument::Region(region), None) if index < regions => {
                     region_summary(self.headers, self.binders, *region, work)?
                 }
                 _ => return Err("source application changed its actual formal kind"),
@@ -376,6 +444,36 @@ impl Builder<'_, '_> {
             summary = self.merge(summary, child, work)?;
         }
         Ok(summary)
+    }
+    /// The kinds of a callee's complete type-space formals, inherited first and
+    /// each scope in declared order, since const slots share that space.
+    fn type_space_formals(
+        &self,
+        scope: DeclarationRef,
+        work: &mut Work,
+    ) -> Result<Vec<s::ParameterKind>, &'static str> {
+        let scopes = self.headers.scopes();
+        let rows = self.headers.rows();
+        let mut chain = Vec::new();
+        let mut owner = Some(scope);
+        while let Some(current) = owner {
+            work.charge(1)?;
+            chain.push(scopes.declared_slots(current, work)?);
+            owner = scopes.parent(current, work)?;
+        }
+        let mut formals = Vec::with_capacity(scopes.complete_type_slots(scope, work)? as usize);
+        for declared in chain.iter().rev() {
+            for slot in declared.slice(&rows.slots)? {
+                work.charge(1)?;
+                if matches!(
+                    slot.kind,
+                    s::ParameterKind::Type { .. } | s::ParameterKind::Const { .. }
+                ) {
+                    formals.push(slot.kind);
+                }
+            }
+        }
+        Ok(formals)
     }
     fn trait_application(&self, node: usize, work: &mut Work) -> Result<Summary, &'static str> {
         let rows = self.headers.rows();

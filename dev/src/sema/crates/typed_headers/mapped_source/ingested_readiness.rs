@@ -94,17 +94,17 @@ impl Graph {
                 }
                 Self::scope_ready(facts, definition)?;
             }
-            s::DefinitionKind::TypeParameter => {
+            kind @ (s::DefinitionKind::TypeParameter | s::DefinitionKind::ConstParameter) => {
                 let parent = raw
                     .definition
                     .parent
                     .ok_or("source formal readiness lacks its actual owner")?;
-                Self::formal_ready(
-                    facts,
-                    definition,
-                    catalog.definition_at(owner, parent)?,
-                    *cell,
-                )?;
+                let owner = catalog.definition_at(owner, parent)?;
+                if kind == s::DefinitionKind::ConstParameter {
+                    Self::const_formal_ready(facts, definition, owner, *cell)?;
+                } else {
+                    Self::formal_ready(facts, definition, owner, *cell)?;
+                }
             }
             s::DefinitionKind::ValueParameter | s::DefinitionKind::Local => {
                 if cell.is_some() || rows.header(row)?.is_some() {
@@ -288,6 +288,47 @@ impl Graph {
         if actual.owner != ItemId(owner.0)
             || formal.binding != definition
             || Some(formal.argument) != cell.map(crate::types::arguments::Argument::Type)
+        {
+            return Err("source formal readiness changed its actual parameter owner/slot");
+        }
+        Ok(())
+    }
+
+    /// A const formal's cell is its parameter type, and its owner's slot at
+    /// the parameter's index names its own rigid const term.
+    fn const_formal_ready(
+        facts: &Declarations,
+        definition: DefId,
+        owner: DefId,
+        cell: Option<crate::types::TypeId>,
+    ) -> Result<(), &'static str> {
+        use crate::types::arguments::{Argument, ConstKind};
+        let term = facts
+            .generics
+            .constants
+            .get(&definition)
+            .copied()
+            .ok_or("source const formal readiness lacks its actual const term")?;
+        let Some(ConstKind::Parameter(parameter)) = facts.types.const_kind(term) else {
+            return Err("source const formal readiness lost its rigid parameter");
+        };
+        let actual = facts
+            .types
+            .parameter(parameter)
+            .ok_or("source formal readiness lost its actual parameter identity")?;
+        let formal = facts
+            .generics
+            .parameters
+            .get(&owner)
+            .and_then(|parameters| parameters.get(actual.index as usize))
+            .ok_or("source formal readiness omitted its actual original slot")?;
+        let crate::types::parameters::ParameterKind::Const { ty } = actual.kind else {
+            return Err("source const formal readiness names a type parameter");
+        };
+        if actual.owner != ItemId(owner.0)
+            || formal.binding != definition
+            || formal.argument != Argument::Const(term)
+            || cell != Some(ty)
         {
             return Err("source formal readiness changed its actual parameter owner/slot");
         }

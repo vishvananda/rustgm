@@ -609,6 +609,11 @@ impl Stage {
                     self.struct_constructor(report, facts, id)?;
                     return Ok(Some(s::DefinitionKind::Variant));
                 }
+                // Version thirteen: a const generic parameter, whose slot
+                // records its primitive type.
+                DefKind::Generic if definition.namespace == Namespace::Value => {
+                    return Ok(Some(s::DefinitionKind::ConstParameter));
+                }
                 _ => {}
             }
         }

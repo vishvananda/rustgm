@@ -68,6 +68,7 @@ pub(super) fn map(
                     ));
                 }
             },
+            s::Argument::Const(term) => super::super::const_argument(port, store, term, work)?,
         });
     }
     let regions = arguments[..early]

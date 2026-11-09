@@ -186,6 +186,15 @@ stops at its first const parameter, "source const parameters are outside the
 initial source profile". That outcome was declared before the run, and the
 test pins it in place of the B1 observation.
 
+Amendment (B2 K, [const parameters](parallel/const-parameters.md)): version
+13 now exports const parameters, so the const-parameter fence no longer stops
+this crate. It stops at `__m128`'s `repr(simd)`, "source nominal
+representation requires its wider complete contract", which this run reaches
+whether or not the array impls behind it would transport. That outcome was
+declared before the K
+candidate run in `pa41/tests/spec/asm-native/contract.json`, and the test pins
+it in place of the M observation.
+
 ### Qualification
 
 All outcomes except the stream body's publication error were declared in

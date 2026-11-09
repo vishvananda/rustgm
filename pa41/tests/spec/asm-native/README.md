@@ -76,8 +76,11 @@ was observed after the first run, not predicted. It stops earlier, at "source
 macro/semantic-name provenance metadata is not implemented", because `vps!`
 and `concat!` expand in it. The test pinned that observed text until B2's
 macro-context slice (`docs/parallel/macro-contexts.md`) admitted those marks.
-It now pins the declared next stop, "source const parameters are outside the
-initial source profile". `contract.json` keeps the B1 observation as recorded.
+It then pinned the declared next stop, "source const parameters are outside
+the initial source profile", until B2's const-parameter slice
+(`docs/parallel/const-parameters.md`) admitted const formals. It now pins the
+declared stop after that, "source nominal representation requires its wider
+complete contract". `contract.json` keeps the B1 observation as recorded.
 
 `stream-template.lowir` is the declared template for the original function.
 The [assembly checkpoint](../../../../docs/source-asm-vector-join.md) records the

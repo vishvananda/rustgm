@@ -257,18 +257,85 @@ pub(super) fn region_read(read: &mut Input<'_, '_>) -> Result<s::Region, &'stati
         _ => return Err("unknown source function region recipe"),
     })
 }
-pub(super) fn argument_write(out: &mut Writer, row: s::Argument) -> Result<(), &'static str> {
-    let (tag, index) = match row {
-        s::Argument::Type(root) => (0, root.0),
-        s::Argument::Region(region) => (1, region.0),
-    };
-    out.u8(tag)?;
-    id(out, index)
+/// Version thirteen's const term kinds after argument tag 2.
+const CONST_VALUE: u8 = 0;
+const CONST_PARAMETER: u8 = 1;
+/// One const term, written in place at its single reference: `0 | ty | bits`
+/// (16 bytes LE) or `1 | slot`. Each position decides which tags it admits.
+pub(super) fn const_term_write(out: &mut Writer, term: s::ConstTerm) -> Result<(), &'static str> {
+    match term {
+        s::ConstTerm::Value(value) => {
+            out.u8(CONST_VALUE)?;
+            id(out, value.ty.0)?;
+            out.bytes(&value.bits.to_le_bytes())
+        }
+        s::ConstTerm::Parameter(slot) => {
+            out.u8(CONST_PARAMETER)?;
+            id(out, slot.0)
+        }
+    }
 }
-pub(super) fn argument_read(read: &mut Input<'_, '_>) -> Result<s::Argument, &'static str> {
+/// One const term. Every tag above 1 is rejected by name.
+pub(super) fn const_term_read(read: &mut Input<'_, '_>) -> Result<s::ConstTerm, &'static str> {
+    Ok(match read.reader.u8()? {
+        CONST_VALUE => s::ConstTerm::Value(s::ConstValue {
+            ty: g::TypeRef(read.id()?),
+            bits: read.reader.u128()?,
+        }),
+        CONST_PARAMETER => s::ConstTerm::Parameter(s::SlotRef(read.id()?)),
+        _ => return Err("unknown source const term"),
+    })
+}
+/// Every generic argument row, with each const argument's term written in
+/// place. The terms are dense in argument-row order, so the reader rebuilds
+/// the same refs.
+pub(super) fn arguments_write(
+    out: &mut Writer,
+    rows: &[s::Argument],
+    consts: &[s::ConstTerm],
+) -> Result<(), &'static str> {
+    out.u32(rows.len())?;
+    let mut next = 0_usize;
+    for &row in rows {
+        let (tag, index) = match row {
+            s::Argument::Type(root) => (0, root.0),
+            s::Argument::Region(region) => (1, region.0),
+            s::Argument::Const(reference) => {
+                let term = consts
+                    .get(next)
+                    .filter(|_| reference.0 as usize == next)
+                    .ok_or("source const terms are not in argument-row order")?;
+                out.u8(2)?;
+                const_term_write(out, *term)?;
+                next += 1;
+                continue;
+            }
+        };
+        out.u8(tag)?;
+        id(out, index)?;
+    }
+    if next != consts.len() {
+        return Err("source const term has no argument row");
+    }
+    Ok(())
+}
+/// One generic argument row. A const argument's term is appended to
+/// `consts`, and the row names it by position.
+pub(super) fn argument_read(
+    read: &mut Input<'_, '_>,
+    consts: &mut Vec<s::ConstTerm>,
+) -> Result<s::Argument, &'static str> {
     Ok(match read.reader.u8()? {
         0 => s::Argument::Type(g::TypeRef(read.id()?)),
         1 => s::Argument::Region(s::RegionRef(read.id()?)),
+        2 if read.profile.body_nodes() => {
+            let term = const_term_read(read)?;
+            read.reserve(size_of::<s::ConstTerm>())?;
+            let reference =
+                u32::try_from(consts.len()).map_err(|_| "source const term table overflow")?;
+            consts.push(term);
+            s::Argument::Const(s::ConstRef(reference))
+        }
         _ => return Err("unknown source generic argument kind"),
     })
 }

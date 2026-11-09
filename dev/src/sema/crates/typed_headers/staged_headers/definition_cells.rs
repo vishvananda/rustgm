@@ -20,7 +20,7 @@ pub(super) fn prepare(
             .saturating_mul(size_of::<Option<TypeId>>() + size_of::<(DefId, TypeId)>()),
     )?;
     let mut cells = vec![None; rows.declarations.len()];
-    formal_cells(rows, graph, &mut cells, budget)?;
+    formal_cells(context, graph, facts, &mut cells, budget)?;
     for (raw, scope) in rows.scopes.iter().zip(scopes) {
         budget.charge(1)?;
         if matches!(scope.inputs, super::Inputs::Implementation(_)) {
@@ -74,6 +74,7 @@ pub(super) fn prepare(
                 | s::DefinitionKind::Function
                 | s::DefinitionKind::SelfType
                 | s::DefinitionKind::TypeParameter
+                | s::DefinitionKind::ConstParameter
         );
         if required != cell.is_some() {
             return Err(error(
@@ -227,11 +228,13 @@ pub(super) fn struct_constructors(
 }
 /// Each named type formal's cell is its canonical parameter type.
 fn formal_cells(
-    rows: s::ValidatedView<'_>,
+    context: &mapped_source::Context<'_>,
     graph: &mapped_source::Graph,
+    facts: &mut Declarations,
     cells: &mut [Option<TypeId>],
     budget: &mut Headers,
 ) -> Result<(), Error> {
+    let rows = context.descriptor.rows();
     for (index, slot) in rows.slots.iter().enumerate() {
         budget.charge(1)?;
         if let Some(binding) = slot.definition {
@@ -245,7 +248,29 @@ fn formal_cells(
                 {
                     continue;
                 }
-                _ => {
+                // Version thirteen: a const formal's cell is its parameter
+                // type, and its binding names its rigid term, as locally.
+                Argument::Const(term) => {
+                    let ty = facts
+                        .types
+                        .const_type(term)
+                        .ok_or_else(|| error("source const formal lost its parameter type"))?;
+                    let definition = context.definition(binding, budget)?;
+                    budget.reserve(crate::support::retained::new_map::<
+                        DefId,
+                        crate::types::arguments::ConstId,
+                    >(1))?;
+                    if facts
+                        .generics
+                        .constants
+                        .insert(definition, term)
+                        .is_some_and(|actual| actual != term)
+                    {
+                        return Err(error("source const formal has conflicting rigid terms"));
+                    }
+                    ty
+                }
+                Argument::Lifetime(_) => {
                     return Err(error(
                         "named source region cells require their wider declaration profile",
                     ));

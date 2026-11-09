@@ -188,6 +188,10 @@ pub(super) fn scopes(
                     rows.regions.get(region.0 as usize)
                         == Some(&super::Region::Parameter { slot, depth: 0 })
                 }
+                // Version thirteen: a const slot's own rigid term.
+                (super::Argument::Const(term), super::ParameterKind::Const { .. }) => {
+                    rows.consts().get(term.0 as usize) == Some(&super::ConstTerm::Parameter(slot))
+                }
                 _ => false,
             };
             if !valid {

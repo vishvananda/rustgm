@@ -372,14 +372,16 @@ pub struct UnionWork {
 /// - two words for the once-per-crate header input bound;
 /// - one word for the pending Copy selection a declaration-time constant awaits;
 /// - one pointer for the boxed explicit nominal bound index of demanded outlives
-///   contracts.
+///   contracts;
+/// - one pointer for the cold set of anonymous bodies folded into const
+///   arguments.
 #[cfg(test)]
 pub(crate) const DECLARATIONS_SIZE: usize = 7048
     + size_of::<Vec<()>>()
     + 6 * size_of::<usize>()
     + 2 * size_of::<usize>()
     + size_of::<usize>()
-    + size_of::<Option<Box<()>>>();
+    + 2 * size_of::<Option<Box<()>>>();
 pub struct Declarations {
     pub(super) must_use_contracts: Option<Box<super::must_use::Contracts>>,
     /// Snapshotted before any header charge from this crate's input graph.
@@ -414,6 +416,10 @@ pub struct Declarations {
     pub inline_constants: Option<Box<super::inline_constants::Registry>>,
     pub nested_outputs: Option<Box<super::nested_outputs::Registry>>,
     pub(super) anonymous_constants: crate::support::hash::HashMap<NodeKey, TypeId>,
+    /// Retained anonymous bodies evaluated into a generic const argument or
+    /// an array length, allocated on first use. A type carries the value; the
+    /// body never executes.
+    pub(crate) evaluated_arguments: Option<Box<crate::support::hash::HashSet<NodeKey>>>,
     pub(super) constant_annotation_bodies: crate::support::hash::HashSet<NodeKey>,
     pub generics: super::generics::Generics,
     /// Repeat operands selected as constant paths before runtime coercion wrappers.
@@ -714,6 +720,7 @@ impl Declarations {
             inline_constants: None,
             nested_outputs: None,
             anonymous_constants: crate::support::hash::HashMap::default(),
+            evaluated_arguments: None,
             constant_annotation_bodies: crate::support::hash::HashSet::default(),
             generics: super::generics::Generics::default(),
             constant_repeats: crate::support::hash::HashSet::default(),

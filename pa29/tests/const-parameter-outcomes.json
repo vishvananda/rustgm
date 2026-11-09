@@ -1,0 +1,149 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+ "providers": [
+  {
+   "file": "spec/const-parameters/provider.rs",
+   "sha256": "3c44e605d7b2f0815087f60d5fe6644d9ac9a03052e08a3101f4fe559dc38e6b",
+   "amended": "2026-11-09T01:48:38Z, after the first oracle run and before any candidate: rustc 1.98.0 raised an internal compiler error (fully_perform) at `-self` in `impl Neg for i8`, because the prelude gave i8 no Copy. The provider now declares `Clone` and `Copy` for i8 before `Neg`, as it does for u8 before `Add`; the first provider hash was 553d839e97f740aa0343a70c4463b8d337cd668f7d4465a61b75a0ac0a9c7fe6. The second oracle run (provider 827fc33b817a4112fd466738fcce41704892967f50a8f44ce64a277b787a7ea3) failed with `requires panic_const_neg_overflow lang_item`; at 2026-11-09T01:49:05Z the provider declares that oracle-only item as it declares panic_const_add_overflow. No declared outcome changes",
+   "amended_unary": "2026-11-09T02:32:21Z, after development probes of K and before the K candidate: a development CLI stopped the provider at `-self` with `source rvalue requires a complete wider transport row`, because version thirteen transports no unary rvalue. That stop is outside K, so `neg` now subtracts from zero, which overflows exactly where negation does; the provider declares the `Sub` language item and `impl Sub for i8` beside `Neg`, and the oracle-only panic_const_sub_overflow replaces panic_const_neg_overflow. Neither compiler calls `neg` for the literal argument `-1`. The previous provider hash was fa0cc50cc1131d490de60e062a4b68c59f60c18900774ce9572fbbeebcb701aa. Rust 1.98.0 gives every case its declared outcome with this provider. No declared outcome changes",
+   "amended_applications": "2026-11-09T03:22:33Z, after development probes and before the oracle and K candidate runs of these lines: the provider had no function application with a const argument, so the validator's application formals were unexercised. Four functions are appended after `letter`, outside lines 1-147: `nine` calls `wrap::<9>` (an own formal), `five` calls `Tag::<5>::new` (its impl's formal), and `rigid` and `forward` pass their own rigid N to the same two callees. Two clients are added below, `applied` and `misapplied`. A development CLI (SHA-256 9cef76cc497ba0ce26b2fd383ee5469c4cc8bb8f834d5a6e989f5ec1a21d2964) exported the appended provider, ran `applied` to 42 and rejected `misapplied` with `incompatible types`; its local twins (each body appended to the provider as one crate) gave the same outcomes. The previous provider hash was 36e2e1ab8f54dd9835c5e83ec091d5aa7e661803a2a37948d294d45229753231. No earlier declared outcome changes"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "declared": "2026-11-09T01:47:16Z",
+ "development_note": "declared before any rustc run of these files and before any K candidate. Before declaring, the M candidate CLI (SHA-256 e6d207087e2b915cf300efc39d2b144629b23fd3422fd1811a4655ffcfa53be6, the K baseline) checked local twins only: each client body appended to the provider as one crate. That probe made two fixture fixes: the struct-literal scrutinees in mixed and wrong-order take parentheses, and the provider declares the `Neg` language item that `Signed<-1>` needs. It also showed the local twins' texts used below. A probe of an aggregate (adt_const_params) control stopped locally (`ConstParamTy requires actual Eq diagnostic identity`, then `source trait header is outside the pinned provider profile` once Eq was declared), so no aggregate source control is declared",
+ "rule": "integrator-approved B2 slice K under Lane C's conditions: declaration tag 12 (ConstParameter), parameter-slot tag 3 `3 | ty`, generic-argument tag 2 `2 | term`, const term `0 | ty | bits(16 B LE)` or `1 | slot`, each admitted only under body_nodes(). Terms are written in place at their single reference and read into one dense cold column. Bits are Constant's masked two's-complement target-width bits. A term's ty is an earlier primitive type row; a const parameter's type is an integer, bool or char",
+ "cases": [
+  {
+   "file": "spec/const-parameters/tag.rs",
+   "provider": "spec/const-parameters/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "a54f5e867479cc1169e9ef356f0e233284a498b745db98f5b9a4fb4fa2459de3",
+   "note": "`Tag::<3>::new()` instantiates the imported impl at N = 3, and `three()`'s Tag<3> unifies with the client's"
+  },
+  {
+   "file": "spec/const-parameters/mixed.rs",
+   "provider": "spec/const-parameters/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "d3372be70cee9b6cc1f6984ac7abc48c4cc57b21efbd3ffa1b6fe9c4edca70dc",
+   "note": "`Mixed<const N, T>` and `impl<T, const N>` intern the same Parameter::index as a local definition: index 0 is N and index 1 is T in the struct; in the impl, the impl's own slots map through its self type. `wrap::<9>` passes a const argument to an imported generic function"
+  },
+  {
+   "file": "spec/const-parameters/scalars.rs",
+   "provider": "spec/const-parameters/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "f32c302bc34e31ba8a2f0f18a39fe206e259c5713133caa5730e5588970bea90",
+   "note": "i8 -1 travels as bits 0xFF; true as 1; 'z' as 0x7A"
+  },
+  {
+   "file": "spec/const-parameters/applied.rs",
+   "provider": "spec/const-parameters/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "44a1704c60a1df6ede1d2a8003afb71bdef4d1b6386871fa8d84b94a7df78181",
+   "declared": "2026-11-09T03:22:33Z",
+   "note": "the imported bodies of `nine`, `five`, `rigid::<7>` and `forward::<4>` apply `wrap` and `Tag::new` with evaluated and rigid const arguments"
+  },
+  {
+   "file": "spec/const-parameters/wrong-value.rs",
+   "provider": "spec/const-parameters/provider.rs",
+   "accepted": false,
+   "rustc": "E0308",
+   "candidate_diagnostic": "incompatible types",
+   "local_twin": "incompatible types",
+   "sha256": "f955a0f096aa8963ff174ade3b17c90eb2cdb2e1bbf48fc9c811ee109a99399f"
+  },
+  {
+   "file": "spec/const-parameters/wrong-sign.rs",
+   "provider": "spec/const-parameters/provider.rs",
+   "accepted": false,
+   "rustc": "E0308",
+   "candidate_diagnostic": "incompatible types",
+   "local_twin": "incompatible types",
+   "sha256": "3e464aa61ab5e1233dc16f1696f7a3e5941da3904b0aa576da7aee0ea0584a3f"
+  },
+  {
+   "file": "spec/const-parameters/wrong-order.rs",
+   "provider": "spec/const-parameters/provider.rs",
+   "accepted": false,
+   "rustc": "E0747",
+   "candidate_diagnostic": "unsupported value declaration",
+   "local_twin": "unsupported value declaration",
+   "sha256": "32213112aa4ef67cf7e56358031014bd4d23099505addb6701ed4565f664e7b8",
+   "note": "the type argument `u8` in the const slot and `7` in the type slot are diagnosed as the local twin's are"
+  },
+  {
+   "file": "spec/const-parameters/misapplied.rs",
+   "provider": "spec/const-parameters/provider.rs",
+   "accepted": false,
+   "rustc": "E0308",
+   "candidate_diagnostic": "incompatible types",
+   "local_twin": "incompatible types",
+   "sha256": "3aaa9cb5baa120556d6588f864be0cde44329c3ff5412fb9ac92eb5ffd498398",
+   "declared": "2026-11-09T03:22:33Z",
+   "note": "`rigid::<7>()` is a Tag<7>, bound to Tag<6>"
+  }
+ ],
+ "export_controls": {
+  "note": "generated providers: lines 1-147 of the provider, then one control. rustc accepts every control crate",
+  "provider_v13": {
+   "before": "source const parameters are outside the initial source profile",
+   "after": "exports; the packet is a plain version [13, 0] core with no macro envelope"
+  },
+  "provider_older_profiles": {
+   "profiles": [
+    "module-branches-v12",
+    "module-nominals-v10"
+   ],
+   "before_and_after": "source const parameters are outside the initial source profile",
+   "failed_prediction": "the K baseline (the M candidate, SHA-256 e6d207087e2b915cf300efc39d2b144629b23fd3422fd1811a4655ffcfa53be6) stops both older profiles earlier, at `named, associated or generic alias transport requires its wider profile`, which the foundation's aliases reach first. The declared text above was wrong and stays recorded",
+   "amended": "2026-11-09T01:50:45Z, after that baseline observation and before any K candidate: both older profiles are declared to keep the baseline's alias text after K, since K admits nothing outside body_nodes()",
+   "after": "named, associated or generic alias transport requires its wider profile"
+  },
+  "value_read": {
+   "control": "pub fn n<const N: usize>() -> usize { N }",
+   "before": "source const parameters are outside the initial source profile",
+   "after": "source rvalue requires a complete wider transport row"
+  },
+  "const_default": {
+   "control": "pub struct D<const N: usize = 3>;",
+   "before": "source const parameters are outside the initial source profile",
+   "after": "source parameter defaults are outside the initial profile"
+  }
+ },
+ "forged_rows": {
+  "note": "codec controls on the provider's own packet. Each forgery is rejected by name at decode or validation",
+  "term_tag_2": "unknown source const term",
+  "bits_above_usize_width": "non-canonical source const value",
+  "bool_bits_2": "non-canonical source const value",
+  "char_surrogate_bits": "non-canonical source const value",
+  "term_type_not_primitive": "source const value type is not a primitive row",
+  "slot_type_float": "source const parameter type is outside the initial profile",
+  "parameter_term_names_type_slot": "source const term names a non-const slot",
+  "const_slot_default": "source const parameter slot has a default",
+  "const_argument_in_type_slot": "source nominal argument changed its formal kind",
+  "application_value_of_another_type": "source const argument changed its parameter type",
+  "inherited_formal_value_of_another_type": "source const argument changed its parameter type",
+  "type_argument_in_application_const_formal": "source application changed its actual formal kind",
+  "amended": "2026-11-09T03:22:33Z: the three application forgeries above are declared with the appended applications, before any run of them"
+ },
+ "old_readers": {
+  "pre_k_reader": "the M candidate CLI (the K baseline) consuming the K provider packet rejects it with `unknown source declaration kind`",
+  "older_profile_tags": "declaration tag 12, slot tag 3 and argument tag 2 in a profile without body_nodes() are rejected as `unknown source declaration kind`, `unknown source parameter kind` and `unknown source generic argument kind`"
+ },
+ "byte_identity": "existing version-thirteen providers published by the K baseline (M candidate) and the K candidate CLI produce identical packets: spec/transparent-records/provider.rs, spec/panic-attributes/provider.rs and spec/macro-contexts/provider.rs",
+ "width": "s::Type, s::Argument, s::ParameterKind and s::ParameterSlot keep their sizes; only the cold box gains the dense consts column, whose length equals the number of const terms read",
+ "stream_witness": {
+  "source": "pa41/tests/spec/asm-native/native.rs before `// Authored observers`",
+  "before": "source const parameters are outside the initial source profile",
+  "after": "source nominal representation requires its wider complete contract"
+ }
+}

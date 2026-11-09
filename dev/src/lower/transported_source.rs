@@ -430,6 +430,19 @@ impl Source {
         if let Some(collector) = self.collector.as_deref() {
             collector.require_store(facts, &mut self.stage)?;
         }
+        // Version thirteen: a const argument travels as its evaluated term,
+        // so the anonymous body its value was folded from is not an original.
+        if self.stage.body_nodes()
+            && let crate::body::ir::BodyKey::Anonymous(source) = body.key()
+            && matches!(body.owner, Owner::AnonymousConstant)
+            && facts
+                .evaluated_arguments
+                .as_ref()
+                .is_some_and(|evaluated| evaluated.contains(&source))
+            && !facts.array_lengths.contains_key(&source)
+        {
+            return Ok(());
+        }
         let Owner::Function {
             definition,
             signature,

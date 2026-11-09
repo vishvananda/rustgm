@@ -17,6 +17,8 @@ pub enum DefinitionKind {
     Function,
     TypeParameter,
     RegionParameter,
+    /// Version thirteen: a const generic parameter, bound to a const slot.
+    ConstParameter,
     ValueParameter,
     Local,
     AssociatedType,
@@ -49,9 +51,13 @@ struct OwnSlots {
     regions: u32,
 }
 impl OwnSlots {
-    fn check(&mut self, slot: &ParameterSlot) -> Result<(), &'static str> {
+    fn check(&mut self, slot: &ParameterSlot, types: &[super::Type]) -> Result<(), &'static str> {
         match slot.kind {
-            ParameterKind::Type { .. } => {
+            // A version-thirteen const slot shares the type slots' index space.
+            ParameterKind::Type { .. } | ParameterKind::Const { .. } => {
+                if let ParameterKind::Const { ty } = slot.kind {
+                    const_parameter_type(types, ty)?;
+                }
                 let index = if self.nominal {
                     self.types
                 } else {
@@ -159,7 +165,7 @@ impl<'a> ScopeIndex<'a> {
                 if slot.owner != scope.owner || slot.ordinal as usize != ordinal {
                     return Err("source parameter slot has a foreign owner, duplicate or gap");
                 }
-                own.check(slot)?;
+                own.check(slot, &rows.types)?;
                 validate_binding(slot, definitions, &mut bindings, work)?;
             }
             let total = captured
@@ -287,7 +293,10 @@ impl<'a> ScopeIndex<'a> {
         }
         work.charge(3)?;
         let slot = &self.rows.slots[slot.0 as usize];
-        if !matches!(slot.kind, ParameterKind::Type { .. }) {
+        if !matches!(
+            slot.kind,
+            ParameterKind::Type { .. } | ParameterKind::Const { .. }
+        ) {
             return Err("source type argument maps to a regional formal");
         }
         let scope = self.owners[slot.owner.0 as usize]
@@ -403,9 +412,47 @@ fn valid_parent(
         | DefinitionKind::Variant
         | DefinitionKind::TypeParameter
         | DefinitionKind::RegionParameter
+        | DefinitionKind::ConstParameter
         | DefinitionKind::ValueParameter
         | DefinitionKind::Local => false,
     }
+}
+
+/// A version-thirteen const parameter's type is an integer, bool or char
+/// row. Float, unit and every non-scalar type are outside this profile.
+/// # Errors
+/// Rejects every other row by name.
+pub(crate) fn const_parameter_type(
+    types: &[super::Type],
+    ty: super::TypeRef,
+) -> Result<crate::support::crates::Scalar, &'static str> {
+    use crate::support::crates::Scalar;
+    match types.get(ty.0 as usize) {
+        Some(&super::Type::Scalar(scalar))
+            if !matches!(scalar, Scalar::Unit | Scalar::F32 | Scalar::F64) =>
+        {
+            Ok(scalar)
+        }
+        _ => Err("source const parameter type is outside the initial profile"),
+    }
+}
+
+/// A const value's canonical check, a function of its type alone: the type
+/// is a primitive row, and the bits are that type's canonical target-width
+/// bits (integers masked two's-complement, bool 0 or 1, a char scalar value,
+/// any pattern of a float's width). Each position adds its own type policy.
+/// # Errors
+/// Rejects a non-primitive type row and non-canonical bits by name.
+pub(crate) fn const_value(
+    types: &[super::Type],
+    value: super::ConstValue,
+) -> Result<crate::support::crates::Scalar, &'static str> {
+    let Some(&super::Type::Scalar(scalar)) = types.get(value.ty.0 as usize) else {
+        return Err("source const value type is not a primitive row");
+    };
+    crate::support::crates::ScalarValue::new(scalar, value.bits)
+        .map_err(|_| "non-canonical source const value")?;
+    Ok(scalar)
 }
 
 fn validate_binding(
@@ -436,6 +483,10 @@ fn validate_binding(
         }
         ParameterKind::Region => {
             definition.kind == DefinitionKind::RegionParameter
+                && definition.parent == Some(slot.owner)
+        }
+        ParameterKind::Const { .. } => {
+            definition.kind == DefinitionKind::ConstParameter
                 && definition.parent == Some(slot.owner)
         }
     };

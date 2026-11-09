@@ -138,8 +138,14 @@ impl<'a, 'index, 'rows> Builder<'a, 'index, 'rows> {
         let header = self.domains.function(original.declaration, work)?;
         for (ordinal, &slot) in input.parameters.iter().enumerate() {
             work.charge(1)?;
-            let s::ParameterKind::Type { sized } = rows.slots[slot.0 as usize].kind else {
-                return Err("source original type-formal request changed kind");
+            let sized = match rows.slots[slot.0 as usize].kind {
+                s::ParameterKind::Type { sized } => sized,
+                // Version thirteen: a const formal's type is primitive, so it
+                // has no sizing goal; its ordinal stays its complete position.
+                s::ParameterKind::Const { .. } => continue,
+                s::ParameterKind::Region => {
+                    return Err("source original type-formal request changed kind");
+                }
             };
             self.emit(
                 OperationPort::Formal {

@@ -19,6 +19,7 @@ pub(super) fn declaration_write(
         s::DefinitionKind::AssociatedType => 9,
         s::DefinitionKind::Enum => 10,
         s::DefinitionKind::Variant => 11,
+        s::DefinitionKind::ConstParameter => 12,
     })?;
     option(out, row.definition.parent.map(|r| r.0))?;
     id(out, row.ordinal)?;
@@ -52,6 +53,7 @@ pub(super) fn declaration_read(read: &mut Input<'_, '_>) -> Result<s::Declaratio
         }
         10 if read.profile.body_nodes() => s::DefinitionKind::Enum,
         11 if read.profile.body_nodes() => s::DefinitionKind::Variant,
+        12 if read.profile.body_nodes() => s::DefinitionKind::ConstParameter,
         _ => return Err("unknown source declaration kind"),
     };
     Ok(s::Declaration {
@@ -127,6 +129,12 @@ pub(super) fn slot_write(out: &mut Writer, row: &s::ParameterSlot) -> Result<(),
         }
         s::ParameterKind::Region if row.default.is_none() => out.u8(1)?,
         s::ParameterKind::Region => return Err("source region slot cannot declare a type default"),
+        // Tag 3 is version thirteen's const slot: its type and nothing else.
+        s::ParameterKind::Const { ty } if row.default.is_none() => {
+            out.u8(3)?;
+            id(out, ty.0)?;
+        }
+        s::ParameterKind::Const { .. } => return Err("source const parameter slot has a default"),
     }
     Ok(())
 }
@@ -145,6 +153,9 @@ pub(super) fn slot_read(read: &mut Input<'_, '_>) -> Result<s::ParameterSlot, &'
             },
         },
         1 => s::ParameterKind::Region,
+        3 if read.profile.body_nodes() => s::ParameterKind::Const {
+            ty: g::TypeRef(read.id()?),
+        },
         _ => return Err("unknown source parameter kind"),
     };
     let default = if tag == 2 {

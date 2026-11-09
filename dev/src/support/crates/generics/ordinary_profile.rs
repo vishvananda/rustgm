@@ -1029,6 +1029,11 @@ fn slot_bindings(
 ) -> Result<(), &'static str> {
     for slot in &rows.slots {
         work.charge(1)?;
+        // Version thirteen's const slot carries its type and nothing else.
+        if matches!(slot.kind, super::super::ParameterKind::Const { .. }) && slot.default.is_some()
+        {
+            return Err("source const parameter slot has a default");
+        }
         if let Some(default) = slot.default {
             let Some(super::super::HeaderRef::Trait(index)) = headers.header(slot.owner, work)?
             else {
@@ -1074,3 +1079,7 @@ fn admitted_convention(
                 .binary_search_by_key(&declaration.0, |row| row.declaration.0)
                 .is_ok())
 }
+
+#[cfg(test)]
+#[path = "../../../../tests/invariants/valued_slots.rs"]
+mod const_tests;

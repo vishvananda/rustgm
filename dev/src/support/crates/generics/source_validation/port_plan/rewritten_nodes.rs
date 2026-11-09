@@ -50,6 +50,13 @@ pub(super) enum Node {
         next: NodeId,
     },
     Scalar(Scalar),
+    /// Version thirteen: an evaluated const argument by its primitive type and
+    /// canonical bits, held as four words so the node keeps its alignment. A
+    /// rigid const term is a `Parameter` of its const slot.
+    ConstValue {
+        scalar: Scalar,
+        bits: [u32; 4],
+    },
     /// Version thirteen: the unsized `str` and the never type.
     Str,
     Never,
@@ -90,6 +97,8 @@ pub(super) enum Node {
     },
 }
 
+// A const value keeps the node at its version-twelve width.
+const _: [(); 20] = [(); size_of::<Node>()];
 #[derive(Clone, Copy)]
 struct NodeFacts(u8);
 const _: [(); size_of::<bool>()] = [(); size_of::<NodeFacts>()];
@@ -286,9 +295,11 @@ impl Arena {
                 facts.0 &= !NodeFacts::FORMED;
                 facts
             }
-            Node::NominalEnd | Node::Scalar(_) | Node::Str | Node::Never => {
-                NodeFacts(NodeFacts::FORMED)
-            }
+            Node::NominalEnd
+            | Node::Scalar(_)
+            | Node::ConstValue { .. }
+            | Node::Str
+            | Node::Never => NodeFacts(NodeFacts::FORMED),
             Node::NominalArgument { ty, next } => {
                 self.facts_of(ty, work)?.combine(self.facts_of(next, work)?)
             }

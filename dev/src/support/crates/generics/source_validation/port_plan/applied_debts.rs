@@ -41,6 +41,8 @@ impl Arena {
                         "source regional application debts require a complete wider profile",
                     );
                 }
+                // A const term's type is a primitive row with no formation debt.
+                s::Argument::Const(_) => continue,
             };
             self.root(
                 domains,

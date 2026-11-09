@@ -86,19 +86,24 @@ impl<'a, 'b> Expected<'a, 'b> {
             .map(move |mut index| {
                 *steps = steps.saturating_add(1);
                 if index < record.obligations.len() {
-                    return obligation(self.view, record.obligations[index], steps);
+                    return obligation(self.view, record.obligations[index], steps).map(Some);
                 }
                 index -= record.obligations.len();
                 let ty = if index < record.parameters.len() {
-                    self.view.slot_type(record.parameters[index], steps)?
+                    // A const formal has no type to form.
+                    let Some(ty) = self.view.slot_type(record.parameters[index], steps)? else {
+                        return Ok(None);
+                    };
+                    ty
                 } else {
                     self.port(index - record.parameters.len(), steps)?
                 };
-                Ok(Obligation {
+                Ok(Some(Obligation {
                     source: self.root,
                     kind: Kind::WellFormed(ty),
-                })
+                }))
             })
+            .filter_map(Result::transpose)
             .chain(self.result.map(Ok))
     }
     /// Version thirteen lifts only a vacuous clause binder, which parenthesized
@@ -173,16 +178,19 @@ impl<'a, 'b> Expected<'a, 'b> {
                 }
                 index -= self.declared.len();
                 let ty = if index < record.parameters.len() {
-                    let id =
-                        self.view
-                            .parameter(record.parameters[index], &self.facts.types, steps)?;
+                    let reference = record.parameters[index];
+                    // A const formal has no sizing goal.
+                    let Some(ty) = self.view.slot_type(reference, steps)? else {
+                        return Ok(None);
+                    };
+                    let id = self.view.parameter(reference, &self.facts.types, steps)?;
                     if !matches!(
                         self.facts.types.parameter(id).map(|p| p.kind),
                         Some(crate::types::parameters::ParameterKind::Type { sized: true })
                     ) {
                         return Ok(None);
                     }
-                    self.view.slot_type(record.parameters[index], steps)?
+                    ty
                 } else {
                     self.port(index - record.parameters.len(), steps)?
                 };
@@ -209,11 +217,7 @@ pub(super) fn build(
     view.check_const_policies(&mut work.steps)?;
     let expected = Expected::new(view, facts, &mut work.steps)?;
     let record = view.inputs();
-    let parameters = record
-        .parameters
-        .iter()
-        .map(|&id| view.parameter(id, &facts.types, &mut work.steps))
-        .collect::<Result<Vec<_>, _>>()?;
+    let parameters = view.type_parameters(&facts.types, &mut work.steps)?;
     parameter_order(facts, view, &parameters, &mut work.steps)?;
     let assumptions = record
         .assumptions
@@ -315,13 +319,12 @@ fn parameter_order(
 ) -> Result<(), &'static str> {
     use crate::types::{Kind, arguments::Argument};
     if view.numbered() {
-        if parameters.len() != view.inputs().parameters.len() {
+        let raw = view.type_parameters(&facts.types, steps)?;
+        if parameters.len() != raw.len() {
             return Err("selected original changed its complete raw formal domain");
         }
-        for (&raw, &actual) in view.inputs().parameters.iter().zip(parameters) {
-            if view.parameter(raw, &facts.types, steps)? != actual {
-                return Err("selected original changed its actual full formal order");
-            }
+        if raw != parameters {
+            return Err("selected original changed its actual full formal order");
         }
         return Ok(());
     }
@@ -335,14 +338,12 @@ fn parameter_order(
     {
         *steps = steps.saturating_add(1);
         let id = match parameter.argument {
-            Argument::Lifetime(_) => continue,
             Argument::Type(ty) => match facts.types.kind(ty) {
                 Some(Kind::Parameter(id)) => id,
                 _ => return Err("source original lost its canonical rigid type formal"),
             },
-            Argument::Const(_) => {
-                return Err("source const formals require their wider original profile");
-            }
+            // `type_parameters` checked each const formal's rigid identity.
+            Argument::Lifetime(_) | Argument::Const(_) => continue,
         };
         if actual.next() != Some(&id) {
             return Err("source original contract changed its full canonical formal order");
@@ -505,23 +506,22 @@ pub(super) fn validate(
 ) -> Result<(), &'static str> {
     let expected = Expected::new(view, facts, steps)?;
     let record = view.inputs();
+    let parameters = view.type_parameters(&facts.types, steps)?;
     if contract.key != body.key()
         || contract.source != view.source()?
         || contract.signature != Some(view.signature())
         || contract.universals != view.universals()
         || contract.output.is_some()
         || contract.require_result_formation
-        || contract.parameters.len() != record.parameters.len()
+        || contract.parameters.len() != parameters.len()
         || contract.assumptions.len() != record.assumptions.len()
         || contract.type_assumptions.len() != record.type_assumptions.len()
         || contract.proofs.len() != record.normalizations.len()
     {
         return Err("source original changed its complete record contract/header domains");
     }
-    for (&actual, &record) in contract.parameters.iter().zip(&record.parameters) {
-        if actual != view.parameter(record, &facts.types, steps)? {
-            return Err("source original changed its canonical parameter order");
-        }
+    if contract.parameters != parameters {
+        return Err("source original changed its canonical parameter order");
     }
     for (&actual, &record) in contract.assumptions.iter().zip(&record.assumptions) {
         if actual != pair(view, record, steps)? {

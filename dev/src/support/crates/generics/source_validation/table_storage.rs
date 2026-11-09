@@ -175,6 +175,7 @@ fn columns(rows: &SourceRows, count: &mut Count, work: &mut Work) -> Result<(), 
         count.vector(&cold.enums.fields, work)?;
         count.vector(&cold.pattern_ranges, work)?;
         count.vector(&cold.diagnostics, work)?;
+        count.vector(&cold.consts, work)?;
     }
     Ok(())
 }

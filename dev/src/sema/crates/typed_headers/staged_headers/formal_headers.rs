@@ -51,7 +51,7 @@ pub(super) fn parameters(
         let argument = graph.slot(s::SlotRef(ordinal))?;
         // Version thirteen: a nominal's own lifetime is its leading template
         // argument; callable early lifetimes keep their wider profile.
-        if !matches!(argument, Argument::Type(_))
+        if !matches!(argument, Argument::Type(_) | Argument::Const(_))
             && !mapped_source::slot_bindings::nominal_lifetime(&rows.declarations, slot)
         {
             return Err(error(

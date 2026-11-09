@@ -266,6 +266,7 @@ pub(super) fn kind(kind: s::DefinitionKind) -> (DefKind, Namespace) {
         s::DefinitionKind::SelfType => (DefKind::SelfType, Namespace::Type),
         s::DefinitionKind::Function => (DefKind::Function, Namespace::Value),
         s::DefinitionKind::TypeParameter => (DefKind::Generic, Namespace::Type),
+        s::DefinitionKind::ConstParameter => (DefKind::Generic, Namespace::Value),
         s::DefinitionKind::RegionParameter => (DefKind::Lifetime, Namespace::Lifetime),
         s::DefinitionKind::ValueParameter => (DefKind::Parameter, Namespace::Value),
         s::DefinitionKind::Local => (DefKind::Local, Namespace::Value),

@@ -3,6 +3,9 @@ mod allocation_columns;
 mod availability_wire;
 mod cfg_columns;
 mod compiler_wire;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/term_codec.rs"]
+mod const_tests;
 mod contract_columns;
 mod enums_wire;
 mod exemption_wire;
@@ -261,7 +264,7 @@ fn encode_profile(
     recipe_columns::types_write(out, &rows.types, rows.pattern_ranges())?;
     write_copy(out, &rows.roots, recipe_columns::root_write)?;
     write(out, &rows.regions, recipe_columns::region_write)?;
-    write_copy(out, &rows.arguments, recipe_columns::argument_write)?;
+    recipe_columns::arguments_write(out, &rows.arguments, rows.consts())?;
     write(out, &rows.clauses, recipe_columns::clause_write)?;
     write_copy(out, &rows.clause_indices, index_write)?;
     write_copy(out, &rows.region_bounds, recipe_columns::bound_write)?;
@@ -404,6 +407,7 @@ fn decode_profile_with(
     };
     let mut ranges = Vec::new();
     let mut diagnostics = Vec::new();
+    let mut consts = Vec::new();
     let mut rows = s::SourceRows {
         associated_types: Vec::new(),
         cold: None,
@@ -428,7 +432,9 @@ fn decode_profile_with(
         })?,
         roots: read.list(crates::MAX_COMPONENTS, 4, recipe_columns::root_read)?,
         regions: read.list(crates::MAX_COMPONENTS, 1, recipe_columns::region_read)?,
-        arguments: read.list(crates::MAX_COMPONENTS, 5, recipe_columns::argument_read)?,
+        arguments: read.list(crates::MAX_COMPONENTS, 5, |read| {
+            recipe_columns::argument_read(read, &mut consts)
+        })?,
         clauses: read.list(crates::MAX_COMPONENTS, 16, recipe_columns::clause_read)?,
         clause_indices: read.list(crates::MAX_COMPONENTS, 4, Input::id)?,
         region_bounds: read.list(crates::MAX_COMPONENTS, 8, recipe_columns::bound_read)?,
@@ -466,10 +472,11 @@ fn decode_profile_with(
             Vec::new()
         },
     };
-    if !ranges.is_empty() || !diagnostics.is_empty() {
+    if !ranges.is_empty() || !diagnostics.is_empty() || !consts.is_empty() {
         let cold = read.cold(&mut rows)?;
         cold.pattern_ranges = ranges;
         cold.diagnostics = diagnostics;
+        cold.consts = consts;
     }
     Ok((rows, read.bytes))
 }

@@ -65,13 +65,15 @@ impl Columns {
         (!cold.associated_definitions.is_empty()
             || !cold.enums.is_empty()
             || !cold.pattern_ranges.is_empty()
-            || !cold.diagnostics.is_empty())
+            || !cold.diagnostics.is_empty()
+            || !cold.consts.is_empty())
         .then(|| {
             Box::new(super::super::ColdColumns {
                 associated_definitions: cold.associated_definitions.clone(),
                 enums: cold.enums.clone(),
                 pattern_ranges: cold.pattern_ranges.clone(),
                 diagnostics: cold.diagnostics.clone(),
+                consts: cold.consts.clone(),
                 bodies: None,
             })
         })
@@ -91,6 +93,10 @@ impl Columns {
     #[must_use]
     pub fn diagnostics(&self) -> &[super::super::DiagnosticBinding] {
         &self.cold().diagnostics
+    }
+    #[must_use]
+    pub fn consts(&self) -> &[super::super::ConstTerm] {
+        &self.cold().consts
     }
     pub(crate) fn original(&self, body: super::super::BodyRef) -> Result<&Original, &'static str> {
         self.originals

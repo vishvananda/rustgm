@@ -2,7 +2,11 @@
 use super::{DeclarationRef, Declarations, DefId, DefKind, Report, Stage, g, s};
 use crate::{
     support::bindings::LangItem,
-    types::{Kind, arguments::Argument, parameters::ParameterKind},
+    types::{
+        Kind,
+        arguments::{Argument, ConstKind},
+        parameters::ParameterKind,
+    },
 };
 
 impl Stage {
@@ -170,22 +174,52 @@ impl Stage {
                 regions += 1;
                 continue;
             }
-            let Argument::Type(ty) = parameter.argument else {
-                return Err("source const/lifetime generic argument is not a type slot");
-            };
-            let Some(Kind::Parameter(id)) = facts.types.kind(ty) else {
-                return Err("source generic slot has no actual parameter identity");
+            // Version thirteen: a const parameter is a slot in the type index
+            // space, recorded with its primitive type.
+            let (id, constant) = match parameter.argument {
+                Argument::Type(ty) => {
+                    let Some(Kind::Parameter(id)) = facts.types.kind(ty) else {
+                        return Err("source generic slot has no actual parameter identity");
+                    };
+                    (id, false)
+                }
+                Argument::Const(term) if self.body_nodes() => {
+                    let Some(ConstKind::Parameter(id)) = facts.types.const_kind(term) else {
+                        return Err("source generic slot has no actual parameter identity");
+                    };
+                    (id, true)
+                }
+                _ => return Err("source const/lifetime generic argument is not a type slot"),
             };
             let actual = facts
                 .types
                 .parameter(id)
                 .ok_or("source parameter is unknown")?;
-            let ParameterKind::Type { sized } = actual.kind else {
-                return Err("source slot kind is not a type parameter");
-            };
             if actual.owner.0 != owner.0 {
                 return Err("source parameter belongs to another declaration");
             }
+            let sized = match actual.kind {
+                ParameterKind::Type { sized } if !constant => sized,
+                ParameterKind::Const { ty } if constant => {
+                    let context = super::canonical_nodes::Context {
+                        owner: declaration,
+                        frame: None,
+                        body: None,
+                    };
+                    let ty = self.ty(facts, ty, context)?;
+                    s::const_parameter_type(&self.rows.types, ty)?;
+                    self.push_slot(
+                        parameter.binding,
+                        id,
+                        declaration,
+                        (ordinal, regions, leading),
+                        actual.index,
+                        s::ParameterKind::Const { ty },
+                    )?;
+                    continue;
+                }
+                _ => return Err("source slot kind is not a type parameter"),
+            };
             let sized = if sized {
                 let actual = facts
                     .source_bindings
@@ -200,36 +234,56 @@ impl Stage {
             } else {
                 None
             };
-            let definition = Some(self.declaration(parameter.binding)?);
-            let slot = s::SlotRef(
-                u32::try_from(self.rows.slots.len()).map_err(|_| "source slot table overflow")?,
-            );
-            self.reserve(crate::support::retained::new_map::<
-                crate::types::parameters::ParameterId,
-                s::SlotRef,
-            >(1))?;
-            if self.graph.parameters.insert(id, slot).is_some() {
-                return Err("source parameter identity has duplicate slot rows");
-            }
-            self.reserve(4 * size_of::<s::ParameterSlot>())?;
-            let ordinal =
-                u32::try_from(ordinal).map_err(|_| "source parameter ordinal overflow")?;
-            self.rows.slots.push(s::ParameterSlot {
-                owner: declaration,
-                ordinal: if leading == Leading::Inherent {
-                    ordinal - regions
-                } else {
-                    ordinal
-                },
-                index: actual
-                    .index
-                    .checked_sub(regions)
-                    .ok_or("source nominal type slot precedes its lifetimes")?,
-                definition,
-                kind: s::ParameterKind::Type { sized },
-                default: None,
-            });
+            self.push_slot(
+                parameter.binding,
+                id,
+                declaration,
+                (ordinal, regions, leading),
+                actual.index,
+                s::ParameterKind::Type { sized },
+            )?;
         }
+        Ok(())
+    }
+
+    /// One type or const slot, in the type index space after any leading
+    /// lifetimes.
+    fn push_slot(
+        &mut self,
+        binding: DefId,
+        id: crate::types::parameters::ParameterId,
+        declaration: DeclarationRef,
+        (ordinal, regions, leading): (usize, u32, Leading),
+        index: u32,
+        kind: s::ParameterKind,
+    ) -> Result<(), &'static str> {
+        let definition = Some(self.declaration(binding)?);
+        let slot = s::SlotRef(
+            u32::try_from(self.rows.slots.len()).map_err(|_| "source slot table overflow")?,
+        );
+        self.reserve(crate::support::retained::new_map::<
+            crate::types::parameters::ParameterId,
+            s::SlotRef,
+        >(1))?;
+        if self.graph.parameters.insert(id, slot).is_some() {
+            return Err("source parameter identity has duplicate slot rows");
+        }
+        self.reserve(4 * size_of::<s::ParameterSlot>())?;
+        let ordinal = u32::try_from(ordinal).map_err(|_| "source parameter ordinal overflow")?;
+        self.rows.slots.push(s::ParameterSlot {
+            owner: declaration,
+            ordinal: if leading == Leading::Inherent {
+                ordinal - regions
+            } else {
+                ordinal
+            },
+            index: index
+                .checked_sub(regions)
+                .ok_or("source nominal type slot precedes its lifetimes")?,
+            definition,
+            kind,
+            default: None,
+        });
         Ok(())
     }
 

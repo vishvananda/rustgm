@@ -568,3 +568,18 @@ packet holds:
   exported macro and an unused exported `$crate` macro.
 
 The `crate_linking::hygienic_exports` integration controls consume it.
+
+`const-parameter-outcomes.json` freezes the version-thirteen const-parameter
+packet under `spec/const-parameters/`, B2's const-parameter slice (K). The
+packet holds:
+
+- const-generic nominals, impls and functions over usize, i8, bool and char,
+  with the const slot before and after a type slot, and body applications
+  with evaluated and rigid const arguments, own and inherited;
+- four accepted clients and four opponents (E0308 three times, E0747);
+- generated controls: older-profile gates, a body reading `N` as a value and
+  a const default, beside forged terms, values, slots and arguments.
+
+Amendments are recorded beside the declarations they amend, each before the
+run it governs. The `crate_linking::valued_generics` integration controls
+consume it, and the `valued_slots` validation invariant reads its provider.

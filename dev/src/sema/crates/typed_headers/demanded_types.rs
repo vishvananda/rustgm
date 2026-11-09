@@ -429,6 +429,7 @@ impl<M: Storage> Worklist<M> {
                     Demand::Ready(region) => Argument::Lifetime(region),
                     Demand::Blocked(dependency) => return Ok(Demand::Blocked(dependency)),
                 },
+                s::Argument::Const(term) => const_argument(port, store, term, budget)?,
             });
         }
         store
@@ -534,6 +535,7 @@ impl<M: Storage> Worklist<M> {
                             Demand::Ready(region) => Argument::Lifetime(region),
                             Demand::Blocked(dependency) => return Ok(Demand::Blocked(dependency)),
                         },
+                        s::Argument::Const(term) => const_argument(port, store, term, budget)?,
                     });
                 }
                 Kind::Adt(
@@ -798,7 +800,7 @@ fn next(
             .iter()
             .filter_map(|argument| match argument {
                 s::Argument::Type(ty) => Some(*ty),
-                s::Argument::Region(_) => None,
+                s::Argument::Region(_) | s::Argument::Const(_) => None,
             })
             .nth(cursor),
         s::Type::Reference {
@@ -825,11 +827,15 @@ fn next(
                 .function_applications
                 .get(reference.0 as usize)
                 .ok_or_else(|| error("source callable application has no actual argument row"))?;
+            // A const argument has no type child: its value's type is a
+            // primitive row, and a parameter term names a slot.
             match application
                 .arguments
                 .slice(&rows.arguments)
                 .map_err(error)?
-                .get(cursor)
+                .iter()
+                .filter(|argument| !matches!(argument, s::Argument::Const(_)))
+                .nth(cursor)
             {
                 Some(s::Argument::Type(root)) => Some(*root),
                 Some(s::Argument::Region(_)) => {
@@ -837,7 +843,7 @@ fn next(
                         "source application did not advance its regional argument",
                     ));
                 }
-                None => None,
+                Some(s::Argument::Const(_)) | None => None,
             }
         }
     })
@@ -892,6 +898,35 @@ pub(super) fn prepare_functions(
         }
     }
     cursor.into_complete(budget)
+}
+/// A version-thirteen const argument: a canonical value of a primitive row,
+/// or the rigid const parameter its slot names.
+pub(super) fn const_argument<'rows, B: Budget, P: Port<'rows, B>>(
+    port: &mut P,
+    store: &mut Store,
+    term: s::ConstRef,
+    budget: &mut B,
+) -> Result<Argument, Error> {
+    budget.charge(1)?;
+    let rows = port.rows();
+    match rows.consts().get(term.0 as usize).copied() {
+        Some(s::ConstTerm::Value(value)) => {
+            s::const_value(&rows.types, value).map_err(error)?;
+            let scalar = s::const_parameter_type(&rows.types, value.ty).map_err(error)?;
+            store
+                .intern_constant(crate::types::arguments::Constant {
+                    ty: super::super::scalar(scalar),
+                    bits: value.bits,
+                })
+                .map(Argument::Const)
+                .map_err(|_| error("non-canonical source const value"))
+        }
+        Some(s::ConstTerm::Parameter(slot)) => match port.slot(store, slot, budget)? {
+            argument @ Argument::Const(_) => Ok(argument),
+            _ => Err(error("source const term names a non-const slot")),
+        },
+        None => Err(error("source const argument has no term row")),
+    }
 }
 /// Closed leaf rows need neither the port nor a store entry.
 fn leaf(row: s::Type) -> Result<Demand<TypeId>, Error> {

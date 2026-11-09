@@ -94,8 +94,24 @@ pub(super) fn argument(
     slot: s::SlotRef,
     work: &mut Work,
 ) -> Result<Option<Key>, &'static str> {
-    let Rewrite::Application(application) = input.rewrite else {
+    if !matches!(input.rewrite, Rewrite::Application(_)) {
         return Ok(None);
+    }
+    let s::Argument::Type(root) = applied_argument(domains, input.rewrite, slot, work)? else {
+        return Err("source signature application omitted its complete actual type argument");
+    };
+    key(domains, root, Rewrite::Original, input.caller, work).map(Some)
+}
+
+/// The application's actual argument at a type or const formal's position.
+pub(super) fn applied_argument(
+    domains: &DomainIndex<'_, '_>,
+    rewrite: Rewrite,
+    slot: s::SlotRef,
+    work: &mut Work,
+) -> Result<s::Argument, &'static str> {
+    let Rewrite::Application(application) = rewrite else {
+        return Err("source applied formal has no actual application");
     };
     work.charge(1)?;
     let application = domains
@@ -117,11 +133,10 @@ pub(super) fn argument(
         .iter()
         .take_while(|argument| matches!(argument, s::Argument::Region(_)))
         .count();
-    let Some(&s::Argument::Type(root)) = arguments.get(regions.saturating_add(position as usize))
-    else {
-        return Err("source signature application omitted its complete actual type argument");
-    };
-    key(domains, root, Rewrite::Original, input.caller, work).map(Some)
+    arguments
+        .get(regions.saturating_add(position as usize))
+        .copied()
+        .ok_or("source signature application omitted its complete actual type argument")
 }
 
 pub(super) fn region(

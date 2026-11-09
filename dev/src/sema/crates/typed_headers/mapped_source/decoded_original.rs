@@ -321,16 +321,21 @@ impl Original<'_> {
             ),
         }
     }
+    /// A formal's rigid type, or `None` for a version-thirteen const formal,
+    /// which has no type to form or size.
     pub(crate) fn slot_type(
         &self,
         reference: s::SlotRef,
         steps: &mut usize,
-    ) -> Result<TypeId, &'static str> {
+    ) -> Result<Option<TypeId>, &'static str> {
         charge(steps)?;
-        let Argument::Type(ty) = self.slot(reference)? else {
-            return Err("source original contract parameter is not an actual type formal");
-        };
-        Ok(ty)
+        match self.slot(reference)? {
+            Argument::Type(ty) => Ok(Some(ty)),
+            Argument::Const(_) => Ok(None),
+            Argument::Lifetime(_) => {
+                Err("source original contract parameter is not an actual type formal")
+            }
+        }
     }
     pub(crate) fn parameter(
         &self,
@@ -361,6 +366,31 @@ impl Original<'_> {
             return Err("source original contract parameter lost its rigid identity");
         };
         Ok(id)
+    }
+    /// The record's type formals in complete order. A version-thirteen const
+    /// formal shares that order but has no region or sizing, so a rebuilt
+    /// contract omits it once its rigid identity is checked.
+    pub(crate) fn type_parameters(
+        &self,
+        store: &crate::types::Store,
+        steps: &mut usize,
+    ) -> Result<Vec<ParameterId>, &'static str> {
+        let record = &self.inputs().parameters;
+        let mut parameters = Vec::with_capacity(record.len());
+        for &reference in record {
+            charge(steps)?;
+            if let Argument::Const(term) = self.slot(reference)? {
+                if !matches!(
+                    store.const_kind(term),
+                    Some(crate::types::arguments::ConstKind::Parameter(_))
+                ) {
+                    return Err("source original const formal lost its rigid identity");
+                }
+                continue;
+            }
+            parameters.push(self.parameter(reference, store, steps)?);
+        }
+        Ok(parameters)
     }
     pub(crate) fn declaration(
         &self,

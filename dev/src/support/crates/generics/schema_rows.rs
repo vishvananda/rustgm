@@ -61,6 +61,7 @@ pub(crate) use descriptor::{
 };
 pub use inputs::*;
 pub use scopes::{Definition, DefinitionKind, ScopeIndex};
+pub(crate) use scopes::{const_parameter_type, const_value};
 pub(crate) use validation::HeaderRows;
 pub use validation::{
     AllocationOrdinals, DomainIndex, DomainWork, HeaderIndex, HeaderRef, InputWork, NumberingUnits,
@@ -126,6 +127,11 @@ pub enum ParameterKind {
         sized: Option<DeclarationAddress>,
     },
     Region,
+    /// Version thirteen: a const slot of an integer, bool or char type. It
+    /// shares the index space of type slots and has no sizing or default.
+    Const {
+        ty: TypeRef,
+    },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ParameterScope {
@@ -175,6 +181,25 @@ pub enum Region {
 pub enum Argument {
     Type(TypeRef),
     Region(RegionRef),
+    /// Version thirteen: a const argument, whose term is held out of line in
+    /// [`ColdColumns::consts`] and written in place at this reference.
+    Const(ConstRef),
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct ConstRef(pub u32);
+/// A transported const term: an evaluated value or a rigid const slot.
+/// Non-scalar and unevaluated constants are not terms.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ConstTerm {
+    Value(ConstValue),
+    Parameter(SlotRef),
+}
+/// Canonical target-width bits of an integer, bool or char value: masked
+/// two's-complement for signed integers (`types::arguments::Constant`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ConstValue {
+    pub ty: TypeRef,
+    pub bits: u128,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Type {
@@ -524,6 +549,8 @@ pub struct ColdColumns {
     pub pattern_ranges: Vec<PatternRange>,
     /// Version thirteen: diagnostic identities, after the language roles.
     pub diagnostics: Vec<DiagnosticBinding>,
+    /// Version thirteen: each const argument's term, in argument-row order.
+    pub consts: Vec<ConstTerm>,
     pub(crate) bodies: Option<std::sync::Arc<bodymap::Lookup>>,
 }
 static EMPTY_COLD: ColdColumns = ColdColumns {
@@ -535,6 +562,7 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
     },
     pattern_ranges: Vec::new(),
     diagnostics: Vec::new(),
+    consts: Vec::new(),
     bodies: None,
 };
 impl ColdColumns {
@@ -547,6 +575,7 @@ impl ColdColumns {
             && self.enums.is_empty()
             && self.pattern_ranges.is_empty()
             && self.diagnostics.is_empty()
+            && self.consts.is_empty()
             && self.bodies.is_none()
     }
 }
@@ -570,6 +599,10 @@ impl Rows {
     #[must_use]
     pub fn diagnostics(&self) -> &[DiagnosticBinding] {
         &self.cold().diagnostics
+    }
+    #[must_use]
+    pub fn consts(&self) -> &[ConstTerm] {
+        &self.cold().consts
     }
     /// The cold groups, allocated on first write. A writer accounts for
     /// `size_of::<ColdColumns>()` before the first call.

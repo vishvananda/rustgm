@@ -104,16 +104,7 @@ pub(super) fn emit(
         normalizations: Vec::new(),
         builtins: None,
     };
-    stage.reserve(
-        input
-            .parameters
-            .len()
-            .saturating_mul(size_of::<s::SlotRef>()),
-    )?;
-    for &parameter in &input.parameters {
-        stage.charge(1)?;
-        rows.parameters.push(stage.parameter_slot(parameter)?);
-    }
+    rows.parameters = parameter_slots(stage, facts, definition, &input.parameters)?;
     for &pair in &input.assumptions {
         stage.reserve(4 * size_of::<s::RegionBound>())?;
         rows.assumptions.push(relation(stage, pair, context)?);
@@ -152,6 +143,60 @@ pub(super) fn emit(
         .map(|builtins| builtin_rows::emit(stage, facts, definition, builtins, context, sites))
         .transpose()?;
     Ok(rows)
+}
+
+/// The complete formal order: a const formal shares the type index space, so
+/// it keeps its position among the contract's type parameters.
+fn parameter_slots(
+    stage: &mut Stage,
+    facts: &Declarations,
+    definition: DefId,
+    types: &[crate::types::parameters::ParameterId],
+) -> Result<Vec<s::SlotRef>, &'static str> {
+    use crate::types::arguments::{Argument, ConstKind};
+    let (mut walked, mut consts) = (0_usize, 0_usize);
+    for parameter in facts.generics.parameters_in_scope(definition) {
+        walked = walked.saturating_add(1);
+        consts = consts.saturating_add(usize::from(matches!(
+            parameter.argument,
+            Argument::Const(_)
+        )));
+    }
+    stage.charge(walked)?;
+    stage.reserve(
+        types
+            .len()
+            .saturating_add(consts)
+            .saturating_mul(size_of::<s::SlotRef>()),
+    )?;
+    let mut slots = Vec::with_capacity(types.len().saturating_add(consts));
+    if consts == 0 {
+        for &parameter in types {
+            stage.charge(1)?;
+            slots.push(stage.parameter_slot(parameter)?);
+        }
+        return Ok(slots);
+    }
+    let mut remaining = types.iter();
+    for parameter in facts.generics.parameters_in_scope(definition) {
+        stage.charge(1)?;
+        let id = match parameter.argument {
+            Argument::Lifetime(_) => continue,
+            Argument::Type(ty) => match (facts.types.kind(ty), remaining.next()) {
+                (Some(crate::types::Kind::Parameter(id)), Some(&next)) if id == next => id,
+                _ => return Err("source original contract changed its type formal order"),
+            },
+            Argument::Const(term) => match facts.types.const_kind(term) {
+                Some(ConstKind::Parameter(id)) => id,
+                _ => return Err("source original const formal has no rigid identity"),
+            },
+        };
+        slots.push(stage.parameter_slot(id)?);
+    }
+    if remaining.next().is_some() {
+        return Err("source original contract added an unowned type formal");
+    }
+    Ok(slots)
 }
 
 fn obligation_kind(

@@ -214,6 +214,13 @@ pub(in crate::sema::crates::typed_headers) fn application<'rows, B: Budget>(
         arguments.push(match *argument {
             s::Argument::Type(ty) => Argument::Type(port.ty(store, ty, budget)?),
             s::Argument::Region(region) => Argument::Lifetime(port.region(region, budget)?),
+            // Validation admits const arguments in nominal and function
+            // applications only.
+            s::Argument::Const(_) => {
+                return Err(error(
+                    "source trait argument changed its actual formal kind",
+                ));
+            }
         });
     }
     let arguments = port.arguments(store, &arguments, budget)?;
