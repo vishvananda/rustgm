@@ -1,5 +1,5 @@
 //! Lexical ownership is opened once; generic inheritance stays in its own ledger.
-use super::{DefId, Error, ModuleId, Namespace, Resolver, ScopeId, Work, error, kind, s};
+use super::{DefId, Error, ModuleId, Namespace, Records, Resolver, ScopeId, Work, error, s};
 
 pub(super) fn owners(
     resolver: &mut Resolver<'_>,
@@ -139,7 +139,7 @@ pub(super) fn bodies(
 }
 pub(super) fn assign(
     resolver: &mut Resolver<'_>,
-    rows: &s::Columns,
+    rows: (&s::Columns, &Records),
     definitions: &[DefId],
     owners: &[ScopeId],
     body_scopes: &[Vec<ScopeId>],
@@ -157,7 +157,7 @@ pub(super) fn assign(
 }
 pub(super) fn namespace_assign(
     resolver: &mut Resolver<'_>,
-    rows: &s::Columns,
+    rows: (&s::Columns, &Records),
     definitions: &[DefId],
     owners: &[ScopeId],
     body_scopes: &[Vec<ScopeId>],
@@ -167,7 +167,7 @@ pub(super) fn namespace_assign(
 }
 fn assign_mode(
     resolver: &mut Resolver<'_>,
-    rows: &s::Columns,
+    (rows, records): (&s::Columns, &Records),
     definitions: &[DefId],
     owners: &[ScopeId],
     body_scopes: &[Vec<ScopeId>],
@@ -202,7 +202,7 @@ fn assign_mode(
             .definitions
             .get_mut(definitions[index].0 as usize)
             .ok_or_else(|| error("source declaration reservation is absent"))?;
-        let expected = kind(row.definition.kind);
+        let expected = records.kind(index, row);
         if actual.node.is_some() || (actual.kind, actual.namespace) != expected {
             return Err(error(
                 "source declaration reservation changed its actual kind or namespace",

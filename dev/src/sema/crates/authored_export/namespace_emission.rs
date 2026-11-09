@@ -211,10 +211,12 @@ impl Stage {
         self.private_alias(report, facts, binding.target)?;
         Ok(true)
     }
-    /// Version thirteen names a variant once, by its value-namespace
-    /// constructor declaration. A re-exported tuple or unit variant keeps that
-    /// binding; its type-namespace alias is not emitted, as the enum's member
-    /// scope omits it, and only beside the same variant's value binding.
+    /// Version thirteen names a unit or tuple variant once, by its
+    /// value-namespace constructor declaration. A re-exported tuple or unit
+    /// variant keeps that binding; its type-namespace alias is not emitted, as
+    /// the enum's member scope omits it, and only beside the same variant's
+    /// value binding. A record variant's own type-namespace declaration has a
+    /// row, so its re-export is an ordinary type-namespace binding.
     fn variant_alias_binding(
         &mut self,
         report: &Report,
@@ -234,7 +236,14 @@ impl Stage {
         if !self.body_nodes() {
             return Err("variant re-exports require the version-13 module-bodies profile");
         }
-        if namespace != Namespace::Type {
+        if namespace != Namespace::Type
+            || self
+                .definitions
+                .get(binding.target.0 as usize)
+                .copied()
+                .flatten()
+                .is_some()
+        {
             return Ok(false);
         }
         let constructor = report

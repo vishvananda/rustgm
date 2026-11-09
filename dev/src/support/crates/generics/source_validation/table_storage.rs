@@ -97,7 +97,9 @@ pub(super) fn preflight(
         .saturating_mul(size_of::<super::super::Definition>() + 3 * size_of::<u32>() + 1)
         .saturating_add(rows.body_owners.len().saturating_mul(2 * size_of::<u32>()))
         .saturating_add(count.components.saturating_mul(2))
-        .saturating_add(retained::new_map::<&str, ()>(rows.fields.len()));
+        .saturating_add(retained::new_map::<&str, ()>(
+            rows.fields.len().max(rows.enums().names.len()),
+        ));
     let body_index = if rows.compiler_operations.is_empty() {
         0
     } else {
@@ -173,6 +175,7 @@ fn columns(rows: &SourceRows, count: &mut Count, work: &mut Work) -> Result<(), 
         count.vector(&cold.enums.headers, work)?;
         count.vector(&cold.enums.variants, work)?;
         count.vector(&cold.enums.fields, work)?;
+        count.vector(&cold.enums.names, work)?;
         count.vector(&cold.pattern_ranges, work)?;
         count.vector(&cold.diagnostics, work)?;
         count.vector(&cold.consts, work)?;
@@ -279,6 +282,12 @@ fn nominal_names(
         work.charge(field.name.len().saturating_add(1))?;
         *names = names.saturating_add(field.name.len());
         count.bytes = count.bytes.saturating_add(field.name.capacity());
+    }
+    // Version thirteen: record variants' field names.
+    for name in &rows.enums().names {
+        work.charge(name.len().saturating_add(1))?;
+        *names = names.saturating_add(name.len());
+        count.bytes = count.bytes.saturating_add(name.capacity());
     }
     Ok(())
 }

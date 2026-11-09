@@ -634,11 +634,12 @@ pointers and return reified constructors. The packet holds:
   - a safe pointer in an unnecessary unsafe block;
   - the fmt-shaped formatter twin, and a call in an inherent associated fn;
   - struct, variant and generic constructors;
-- four generated provider opponents that keep their export fences by name,
-  two former opponents that export, a call through a struct's fn field since
-  Lane C's (ii) (amendment 2) and an unsafe call in an associated fn since
-  the associated-unsafe item (amendment 3), and the older-profile,
-  old-reader, wire, forged-row, scaling and flip-survey controls.
+- three generated provider opponents that keep their export fences by name,
+  three former opponents that export, a call through a struct's fn field since
+  Lane C's (ii) (amendment 2), an unsafe call in an associated fn since the
+  associated-unsafe item (amendment 3) and the stored formatter in a record
+  variant since Lane D's (i) (amendment 5), and the older-profile, old-reader,
+  wire, forged-row, scaling and flip-survey controls.
 
 The `crate_linking::called_pointers` integration controls, the
 `input_plan::values` row and scaling invariants and the
@@ -662,10 +663,11 @@ holds:
   - the contravariant and invariant markers in their valid directions;
 - one client that both reject, the unsound narrowing of the contravariant
   marker;
-- five generated provider opponents that keep their export fences by name,
-  one former opponent, an unsafe call in an associated fn, that exports since
-  the associated-unsafe item (amendment 3), and the older-profile, arena,
-  old-reader, forged-row, scaling, self-demand and flip-survey controls.
+- four generated provider opponents that keep their export fences by name,
+  two former opponents that export, an unsafe call in an associated fn since
+  the associated-unsafe item (amendment 3) and a record variant holding a fn
+  since Lane D's (i) (amendment 4), and the older-profile, arena, old-reader,
+  forged-row, scaling, self-demand and flip-survey controls.
 
 The `crate_linking::fielded_callables` integration controls and the
 `input_plan::roots` row, scaling and self-demand invariants consume it.
@@ -696,6 +698,27 @@ bodies call them. The packet holds:
 Amendment 1 rewrote mover M1's client after rustc ICEd on its match. The
 `crate_linking::guarded_methods` integration controls and the
 `body_ports::calls` row, scaling and self-demand invariants consume it.
+
+`record-variant-outcomes.json` freezes the version-thirteen record-variant
+packet under `spec/record-variants/`, Lane D's item (i). Its provider declares
+an enum with unit, tuple, record and empty record variants and a
+`FromBytesWithNulError`-shaped enum with Clone and Copy impls; its bodies build
+and match record variants by field name. The packet holds:
+
+- the enum-match provider's first 88 lines plus authored lines;
+- two clients that rustc accepts, each exiting 42 natively: construction and
+  match by field name with shorthand, reordered initializers and `..`, and
+  the `InteriorNul` client that copies through the imported `Copy` impl;
+- four opponents (E0533 twice, E0063 and E0559), each rejected as its local
+  twin is;
+- generated controls: a re-export provider and client, older-profile gates,
+  the record-variant opponents of the pointer-call and callable-field packets
+  with their native witnesses (amendment 4), old-reader, wire, forged-row,
+  scaling and flip-survey controls.
+
+Its amendments are recorded beside the declarations they amend, each before
+the run it governs. The `crate_linking::braced_variants` integration controls
+and the `record_tests` codec and validation invariant consume it.
 
 `named-constant-outcomes.json` freezes the named-constant packet under
 `spec/named-constants/`, Lane C's item 5b-1. Its providers export named

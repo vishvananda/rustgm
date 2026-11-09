@@ -1,0 +1,264 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj); each client is an object linked with the C observer `int entry(void); int main(void) { return entry(); }`",
+  "providers": [
+    {
+      "file": "spec/record-variants/provider.rs",
+      "sha256": "7948b5d9994a437e6ad3d3c4e7769e3ca24c96c39bd2869a19bab0638300cddd",
+      "inherits": {
+        "file": "spec/enum-match/provider.rs",
+        "sha256": "3a7c411c40230b3ae9a68cef311a7e3f5d47d5ad943493595e330fb7a1d28fd5",
+        "note": "unchanged first 88 lines (sha256 2fe97cbc9c02e8190ef869b8ad5286155188a47cd0637ff099708c6820acb8a7)"
+      }
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "declared": "2026-11-09T17:19:26Z",
+  "frozen": "2026-11-09T17:22:16Z",
+  "development_note": "the integrator accepted the (i) notice (obj/parallel/record-variants/notice-20261109.md) and its rulings before this file. Exploration probes of tuple-variant twins ran against the base pin before the declaration (obj/parallel/record-variants/probe p1-p6, c1-c5 and lt-*; none is a frozen input): they fixed the PartialEq and .clone() deviations, the local opponent texts and the tuple twin of R2's record-variant opponent. Every rustc, baseline, old-reader, older-profile, forged-row, wire, scaling, flip-survey and native outcome was declared before the rustc oracle, the baseline and any candidate run of these frozen inputs. The declaration (obj/parallel/record-variants/declared.json, sha256 1be7b8f6...) preceded the rustc oracle and the baseline; this file was frozen after both and before any candidate run. rustc 1.98.0 accepted the provider, both accepted clients (exit 42, empty stdout, no warnings) and the generated re-export provider and client (exit 42), and rejected the four opponents with their declared codes; the provider's one stderr line is the oracle invocation's own note that its output name is adapted for each requested output type",
+  "amendments": [
+    {
+      "recorded": "2026-11-09T17:21:47Z",
+      "before": "any candidate run; the base pin baseline observed it",
+      "change": "a no_core library crate compiles only with an explicit source-core configuration, and a source-core library always exports a packet: with --source-core and no --source-profile the base pin rejects the construct and nul twins with 'source declaration kind is outside the initial source profile' (the default profile has no enums), while the opponent twins stop in analysis first with 'missing value resolution' (record-value, record-call), 'missing aggregate field initializer' and 'unknown aggregate field', exactly their clients' declared texts. a failed prediction of 'the base pin and the candidate agree' for the accepted twins. The twins are compiled in the provider's own export form (--source-profile module-bodies-v13 with --metadata-output). Expected: the base pin rejects the construct and nul twins with 'source record variants require their wider profile', the candidate exports both with status 0; every opponent twin is rejected by both with its client's declared text and identical stderr. Every other outcome is unchanged"
+    },
+    {
+      "recorded": "2026-11-09T17:36:59Z",
+      "before": "any further run; the first candidate run (obj/parallel/record-variants/cand1-runs, candidate cand1 sha256 944a35a3f26f1dffe02d48465ba33d7f5bee0519281ee416d4410c836e4dbc11) observed it",
+      "change": "the candidate rejects the nul twin's export with 'source place transport supports locals and reference projections only'. The twin's exported entry body matches directly on the value expression NulError::NotNulTerminated, a scrutinee that is not a local or reference projection. Base-pin probes of tuple twins (obj/parallel/record-variants/probe p7-p9) locate it: the twin's other matches export (p8, status 0), while a body whose only addition is match crate::NulError::NotNulTerminated { .. } is rejected with the same text (p9). It is a pre-existing body-transport fence of exported bodies, outside (i); the cross-crate nul client is unaffected because a client body is not exported. a failed prediction of the nul twin: expected as observed, a known rejects-valid of exported bodies whose match scrutinee is a unit-variant value. The construct twin exports with status 0 and every opponent twin is rejected with its client's declared text, as amendment 1 declared. Every other outcome is unchanged"
+    },
+    {
+      "recorded": "2026-11-09T18:14:18Z",
+      "before": "any further run; the first fastcheck run of the integration controls (fc8, evidence obj/qualification/fast/1794247747914128815) observed it",
+      "change": "match_transport's forged `unknown-shape` row, enum-match-outcomes.json's wire control `Opt::Some shape byte 2` observed as `unknown source variant shape`, used the byte that (i) assigns to Record. Under the candidate the forged row is a record variant whose name column runs past the packet's end, and the consumer reports `truncated metadata artifact`. It is a forged byte, not a survey input, and its new outcome follows from the accepted wire ruling; a failed prediction of 'every other outcome is unchanged'. The control moves to shape byte 3, expected `unknown source variant shape`, as this packet's own codec control already uses, and enum-match-outcomes.json records the move as its amendment. The same fastcheck found a candidate defect, not an expectation change: the producer left the name column empty when an export's first record variant precedes every field row, so the scaling control's V000 field was written without its name (`invalid canonical metadata path component`). The producer now marks the export's first record variant, so every later field row carries a slot; the scaling expectation is unchanged. Every other outcome is unchanged",
+      "process_note": "this amendment was written after fc8 had already run the forged byte-2 row, not declared before that run; the integrator accepted it because the accepted wire ruling assigns byte 2 to Record"
+    },
+    {
+      "recorded": "2026-11-09T18:44:48Z",
+      "before": "any candidate run on the a6be80084 base; the rebase onto a6be80084 (Lane C's (ii), zero-slot fn fields) and the new base pin (obj/parallel/record-variants/base-a6be80084/rustgm, sha256 5f9aa57d559ac2c3129c6d6a4002e88a09652517d3f2316f182ba3e6edb6717b, built from 5a5ee502e, whose dev/src equals a6be80084's) preceded it; no candidate of the rebased tree has been built or run",
+      "governs": "the (i) x (ii) interaction, as the integrator required: (ii) declared four items that (i) changes (callable-field-outcomes.json's generated opponents `record-variant` and `argument-type`, control 0's `record-variant` clause and limits/1), and this file's pointer-call amendment (pointer-call-outcomes.json amendment 4, numbered 3 when recorded at 17:48:25Z against the 0bcba9e3f base) predicted the `field` text that (ii) retired",
+      "allowed": "per the integrator: a named rejection by a fence that still applies (argument-type must keep the higher-ranked fence), or acceptance of `record-variant` in both packets with the recorded rustc status 0 plus a fresh-consumer native exit-42 witness that calls through the record variant's fn field, a flip the integrator approved by name under those two conditions. Any other text, malformed or truncated metadata, or a panic is a stop",
+      "code_reading": [
+        "export: sum_headers.rs emits a record variant's fields with `self.ty(facts, field.ty, context)` in the enum's nominal frame (record_headers.rs `nominal_frame`), the path a tuple variant's fields take; a zero-slot Rust fn type enters recipe_emission.rs `enter_function` and binds a CallableType frame owned by the enum, so `unsafe fn(u8, u8) -> i32` is emitted as (ii)'s tuple-variant payloads are",
+        "validation: frame_owners.rs admits a CallableType binder owned by a nominal header under version 13 (bodies); port_plan construction_values.rs `nominal_field` forms both a variant aggregate's operands (value_requirements.rs `nominal_value` with Some(variant)) and a downcast field's type through Rewrite::Nominal { owner: the enum's scope }, and rewritten_roots.rs `function_domain` requires the field frame's owner to be exactly that enum, zero slots and the Rust convention: the frame the exporter wrote",
+        "a call through the bound `formatter` is a pointer call whose callee is a local of the calling function, so its signature frame is that function's own and request_ports.rs `signature_frame` admits it, as for R2's `fmt` and (ii)'s `choose`",
+        "argument-type: `formatter: unsafe fn(*const (), &mut u8) -> i32` has one late-bound region (the elided `&mut`), so `enter_function` stops at `parts.bound_regions != 0` with `source anonymous callable requires its supported closed Rust frame`; the earlier `value: *const ()` field emits a RawPointer under body_nodes(), and the enum's shape, destruction, must_use and clause checks in record_headers.rs and sum_headers.rs pass before any variant field"
+      ],
+      "predictions": [
+        "callable-field `record-variant` (spec/callable-fields/provider.rs plus `// Generated callable-field opponent.` and its line): exported under module-bodies-v13 with a packet written, no longer `source record variants require their wider profile`",
+        "callable-field `argument-type`: rejected with `source anonymous callable requires its supported closed Rust frame` (the `hr` opponent's text), no packet",
+        "pointer-call `record-variant` (spec/pointer-calls/provider.rs plus `// Generated pointer-call opponent.` and its Kind, Arg, stored and stored_fmt lines), also callable-field control 0's clause: exported under module-bodies-v13 with a packet written, superseding pointer-call amendment 4's `source shared call type requires an actual closed callable frame`",
+        "witness W1, against the callable-field `record-variant` packet, client `#![feature(no_core)]\\n#![no_core]\\nextern crate base;\\n#[unsafe(no_mangle)]\\npub extern \"C\" fn entry() -> i32 { let k = base::Kind::Placeholder { value: 20, formatter: base::render }; match k { base::Kind::Placeholder { value, formatter } => unsafe { formatter(value, 22) }, base::Kind::Count(_) => 7 } }\\n`: rustc 1.98.0 status 0, no warnings, native exit 42 with empty stdout; RustGM's fresh consumer accepts it and it exits 42 natively with empty stdout",
+        "witness W2, against the pointer-call `record-variant` packet, client `#![feature(no_core)]\\n#![no_core]\\nextern crate base;\\n#[unsafe(no_mangle)]\\npub extern \"C\" fn entry() -> i32 { unsafe { base::stored_fmt(&base::stored(20), 22) } }\\n` (stored_fmt calls through the record variant's fn field inside the imported body; render(20, 22) is 42): rustc 1.98.0 status 0, no warnings, native exit 42 with empty stdout; RustGM's fresh consumer accepts it and it exits 42 natively with empty stdout",
+        "old reader (the a6be80084 base pin): W1 and W2 over the candidate's packets are rejected with `unknown source variant shape`",
+        "base pin: the a6be80084 pin reproduces every base-pin observation in `baseline` above (the 0bcba9e3f pin's) with identical stderr bytes, and rejects both record-variant providers above with `source record variants require their wider profile`",
+        "every other outcome of this file, of callable-field-outcomes.json and of pointer-call-outcomes.json is unchanged; the flip survey against the a6be80084 base, which includes spec/callable-fields, is expected to change only spec/record-variants"
+      ],
+      "witness_clients": {
+        "W1": "#![feature(no_core)]\n#![no_core]\nextern crate base;\n#[unsafe(no_mangle)]\npub extern \"C\" fn entry() -> i32 { let k = base::Kind::Placeholder { value: 20, formatter: base::render }; match k { base::Kind::Placeholder { value, formatter } => unsafe { formatter(value, 22) }, base::Kind::Count(_) => 7 } }\n",
+        "W2": "#![feature(no_core)]\n#![no_core]\nextern crate base;\n#[unsafe(no_mangle)]\npub extern \"C\" fn entry() -> i32 { unsafe { base::stored_fmt(&base::stored(20), 22) } }\n"
+      },
+      "observed": [
+        "every prediction held; no stop",
+        "callable-field `record-variant` provider (obj/parallel/record-variants/generated/w1-provider.rs, sha256 a3ef5daa) under module-bodies-v13 on cand3: status 0, empty stderr, a 61555-byte packet (sha256 b8b2e1ac31b23295fd2429efe779346726a98de15edaec8548e372f03e864a70)",
+        "pointer-call `record-variant` provider (generated/w2-provider.rs, sha256 20dab0cf): status 0, empty stderr, a 43985-byte packet (sha256 e6c79e16c56e22cf0d92862fda0e8dad9ce699747eef713817709fbe02650dde)",
+        "callable-field `argument-type` (generated/argument-type.rs, sha256 2e71faf7): `source anonymous callable requires its supported closed Rust frame`, no packet",
+        "witnesses W1 and W2: rustc 1.98.0 accepts both providers (status 0; the provider's inherited unused_unsafe warning and the emit note only) and both clients (status 0, no warnings), and each linked client exits 42 with empty stdout (obj/parallel/record-variants/rustc-witness); RustGM's fresh consumers accept both with empty stderr, and crate_linking::braced_variants::record_variant_fn_field_witnesses_execute_natively observes exit 42 with empty stdout for each",
+        "old reader: the a6be80084 base pin rejects W1 and W2 over the cand3 packets with `unknown source variant shape`",
+        "base pin a6be80084: every base-pin observation in `baseline` with identical stderr bytes, and both record-variant providers and argument-type rejected with `source record variants require their wider profile`",
+        "every other outcome of this file, of callable-field-outcomes.json and of pointer-call-outcomes.json held; the flip survey against the a6be80084 base, spec/callable-fields included, changed only spec/record-variants",
+        "on the rebase onto 198fdea9b: cand4 and the 198fdea9b base pin reproduce every observation above byte for byte (status, stderr, LowIR and both packets; obj/parallel/record-variants/wcand4 and wbaseline-198fdea9b), and the union with Lane C's associated-unsafe item changes no text"
+      ],
+      "renumbered_references": "on the rebase onto 198fdea9b, Lane C's amendment 3 in pointer-call-outcomes.json and callable-field-outcomes.json (18:11:59Z) keeps its number, and this item's amendments there move to the next free numbers: pointer-call 3 and 4 become 4 and 5, callable-field 3 becomes 4. Only these references changed; the saved pre-run copy (obj/parallel/record-variants/amendment-4.json, sha256 fabede26f1ebc121c245a3d37a73bad46c2387047c96c2bb86df55c16a1e0ca9) keeps the original numbers"
+    }
+  ],
+  "rule": "accepted notice and rulings. Version-13 variant rows gain shape byte 2 (Record). A dense name column follows the variant field rows exactly when some decoded variant row has shape 2: each record variant's field names in variant-row and ordinal order, written as nominal field names are, with no count (the record variants' field ranges imply it). Only body_nodes() profiles write enum columns, so only they can write it; a packet without a record variant keeps its exact bytes. The declaration row keeps kind Variant: for a record variant it names the variant's type-namespace definition. The shape is the one source of the variant's namespace, Type for a record variant and Value for a unit or tuple variant, and each consumer re-derives it at its module binding rows, constructor applications and value cells. Names are validated as nominal field names are (validate_component), unique within their variant; a positional field carries no name. Body IR is unchanged: VariantAggregate lists fields in declaration order, IsVariant names the variant row and downcasts project Field { owner: variant row, ordinal }",
+  "cases": [
+    {
+      "file": "spec/record-variants/construct.rs",
+      "provider": "spec/record-variants/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`Shape::Rect { h, w: 40 }` built in the client with shorthand and reordered initializers, matched by name with a literal subpattern and a renamed binding; the provider's `rect`, `height`, `width` over `Shape::Empty {}` and `pair` (a called tuple constructor beside the record variant)",
+      "sha256": "4efe390be2dd7a4e2b475a277270a1a2be9b1a70815c8e01bc78315414405a74"
+    },
+    {
+      "file": "spec/record-variants/nul.rs",
+      "provider": "spec/record-variants/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "shape": "`NulError::InteriorNul { position: 42 }` built by name, used after a copy through the imported `Copy` impl, matched by name and with `{ .. }`, and the provider's `interior` and `position`",
+      "sha256": "2e6381cd53e6622d5e3429560354d5f477adeee658d3de3d2dbbf3bb8b2879fa"
+    },
+    {
+      "file": "spec/record-variants/record-value.rs",
+      "provider": "spec/record-variants/provider.rs",
+      "accepted": false,
+      "rustc_code": "E0533",
+      "rustgm_client": "missing value resolution",
+      "shape": "`base::Shape::Rect` used as a value: a record variant has no value-namespace definition",
+      "sha256": "84383ffae1a89e5cfcc7deca3aff761eb8fde35657bb6e98ca56a0eb43b0858f"
+    },
+    {
+      "file": "spec/record-variants/record-call.rs",
+      "provider": "spec/record-variants/provider.rs",
+      "accepted": false,
+      "rustc_code": "E0533",
+      "rustgm_client": "missing value resolution",
+      "shape": "`base::Shape::Rect(1, 2)`: a record variant has no called constructor",
+      "sha256": "b091a0199c78fdb4cc8a77eb6a29c168518dddbe3b13f4d4a638d6e6ca2f8d65"
+    },
+    {
+      "file": "spec/record-variants/missing-field.rs",
+      "provider": "spec/record-variants/provider.rs",
+      "accepted": false,
+      "rustc_code": "E0063",
+      "rustgm_client": "missing aggregate field initializer",
+      "shape": "`base::Shape::Rect { w: 1 }` omits `h`",
+      "sha256": "f51c1e0457b8036ba078fce19bed91ba99eb8cd27b9b7953a4d4b2f0853a37a1"
+    },
+    {
+      "file": "spec/record-variants/unknown-field.rs",
+      "provider": "spec/record-variants/provider.rs",
+      "accepted": false,
+      "rustc_code": "E0559",
+      "rustgm_client": "unknown aggregate field",
+      "shape": "`base::Shape::Rect { w: 1, h: 2, d: 3 }` names a field `Rect` lacks",
+      "sha256": "a2c64a44e56019ec28b94cb700d6687e273d4f3e4752060bca118e578765a053"
+    }
+  ],
+  "provider_expected": {
+    "rustc": "the provider compiles with status 0 and no warnings",
+    "candidate": "module-bodies-v13 exports it and writes a packet whose header bytes 13..15 are [13, 0]; decode then encode reproduces the bytes",
+    "baseline": "the base pin (obj/parallel/record-variants/base-0bcba9e3f/rustgm, sha256 94eb4945106b4d4f6ee54f25b9f774d60d933f1f7c4d3f5c7285ade1656eb290, built from 0bcba9e3f) rejects the module-bodies-v13 export with `source record variants require their wider profile` and writes no packet"
+  },
+  "local_twins": {
+    "control": "for each client, the frozen provider plus `// Generated local twin.` and the client's `entry` with every `base::` replaced by `crate::` (removing it would shadow `position` inside nul's arm), exported as the provider is (amendment 1), compiled by RustGM as one library crate, by the base pin and the candidate",
+    "expected": "amendment 1: the base pin rejects the construct and nul twins with `source record variants require their wider profile` and the candidate exports both with status 0; each opponent twin is rejected by both with its client's RustGM text above and identical stderr; amendment 2: the candidate rejects the nul twin with `source place transport supports locals and reference projections only`, a pre-existing fence of exported bodies whose match scrutinee is a unit-variant value"
+  },
+  "generated_controls": [
+    {
+      "control": "re-export provider: the frozen provider plus `// Generated re-export control.`, `pub use Shape::Pair;` and `pub use Shape::Rect;`",
+      "rustc_status": 0,
+      "expected": "the candidate exports it: Pair's re-export is one value-namespace module binding naming its constructor declaration, Rect's is one type-namespace binding naming its record variant declaration; a generated client `match base::width(base::Rect { h: 2, w: 42 }) { 42 => match base::width(base::Pair(42, 1)) { 42 => 42, _ => 2 }, _ => 1 }` is accepted by a fresh consumer"
+    },
+    {
+      "control": "older profiles: the frozen provider under module-branches-v12 and module-nominals-v10",
+      "expected": "the base pin and the candidate each reject it with `named, associated or generic alias transport requires its wider profile` (its callable-role section is rejected first) and write no packet; their stderr bytes are equal"
+    },
+    {
+      "control": "older profiles: lines 1-62 of the frozen provider plus `// Generated record-variant control.` and `pub enum Rec { A { x: u8 }, B }` under module-branches-v12 and module-nominals-v10",
+      "expected": "the base pin and the candidate each reject it with `source declaration kind is outside the initial source profile`; their stderr bytes are equal"
+    },
+    {
+      "control": "R2's record-variant opponent (pointer-call-outcomes.json generated_opponents.record-variant), the pointer-calls provider plus its appended lines",
+      "expected": "it moves from `source record variants require their wider profile` to `source shared call type requires an actual closed callable frame`, the text of R2's `field` opponent and of its tuple twin at the base pin (probe p6), as the unsafe fn field of a record variant now meets the nominal callable field fence; declared as an amendment to pointer-call-outcomes.json, as (ii) has not landed. Its packet is still not written"
+    }
+  ],
+  "old_reader": {
+    "control": "the base pin consumes the candidate's packet of the frozen provider with each of the six clients",
+    "expected": "every client is rejected with `unknown source variant shape` (enums_wire.rs variant_read): the record variant's declaration row is the existing kind 11, nothing decoded before the enum columns consults a variant's shape, and the first record variant row's shape byte 2 stops the decode"
+  },
+  "wire_controls": [
+    "codec unit test: honest rows with record, tuple, unit and empty record variants round-trip through encode and decode with no trailing bytes; a variant row with shape byte 3 is exactly `unknown source variant shape`",
+    "a packet without record variants writes no name column: every existing version-13 packet keeps its bytes (flip survey)",
+    "every proper prefix of the frozen provider's packet fails to decode"
+  ],
+  "forged_rows": {
+    "note": "in-process rows of the frozen provider's packet (and of the re-export provider for the namespace swaps), restaged with Payload::from_source_module_bodies; the honest restage succeeds",
+    "expected": [
+      "Rect's first field name empty: `invalid canonical metadata path component`",
+      "Rect's first field name `0`: the same",
+      "Rect's first field name `a-b`: the same",
+      "Rect's second field name equal to its first: `source record variant has a duplicate field name`",
+      "Pair's shape rewritten to Record, its positional fields unnamed: `invalid canonical metadata path component`",
+      "Rect's shape rewritten to Tuple, its names kept: `source positional variant field carries a name`",
+      "the name column one name short: `source record variant names have incomplete field coverage`",
+      "pair's constructor application retargeted from Pair's declaration to Rect's: `source record variant has no called constructor`",
+      "the re-export provider's Rect binding moved from the type to the value namespace: `module binding changed its target namespace`",
+      "the re-export provider's Pair binding moved from the value to the type namespace: the same"
+    ]
+  },
+  "scaling": {
+    "control": "lines 1-88 of the frozen provider plus `// Generated scaling control.`, `pub enum Wide { V000 { f000: u8 }, ... }` with N record variants, `pub fn lowest() -> Wide { Wide::V000 { f000: 0 } }` and `pub fn rank(w: Wide) -> u8 { match w { Wide::V000 { .. } => 0, ... } }`, N = 6, 24 and 96, each consumed by `match base::rank(base::lowest()) { 0 => 42, _ => 7 }`",
+    "expected": "every export and client is accepted; packet bytes grow exactly affinely in N (fixed-length names); the client's LowIR grows at most linearly (third difference at most five times the second, or 64)"
+  },
+  "flip_survey": {
+    "control": "the base pin against the candidate: every pa29 and pa41 module-bodies provider exported under module-nominals-v10, module-branches-v12 and module-bodies-v13 and every fixture client of each, compared by status, stderr, LowIR and packet bytes; plus every committed .rs fixture containing a record variant compiled as a single-crate library (--emit-lowir --crate-type=lib)",
+    "expected": "only spec/record-variants is new; among existing inputs exactly one flips, R2's record-variant opponent (above); pa29/tests/spec/non-exhaustive-local/same-crate-variants.rs and every other single-crate record-variant fixture keep every status, stderr and LowIR byte; every other status, stderr, LowIR and packet byte is unchanged"
+  },
+  "native": {
+    "expected": "construct and nul exit 42 natively with empty stdout, as rustc's do"
+  },
+  "deviations": [
+    "PartialEq is not part of the packet, unlike the notice's InteriorNul plan: an exported `==` needs the comparison and Not language declarations, which version 13 does not transport. Base-pin probes of tuple twins: `x == y` on usize in an exported body is `source comparison requires its actual language declaration` (sema/compiler_items/comparison_contract.rs:127); a plain `#[lang = \"eq\"] trait PartialEq<Rhs = Self>` is `source trait header is outside the pinned provider profile`; the core-shaped const trait is `source comparison changed its complete member family` with eq only, `source ! requires its actual Not language declaration` with ne, and `source trait role requires completed declaration validation` with core's Not. Comparison and Not role transport is its own item",
+    "the provider exports NulError's derive-equivalent Clone and Copy impls, but clients use Copy, not `.clone()`: a method call through an imported Clone impl is `no applicable method for this receiver` at the base pin (probe c4, a tuple twin), a pre-existing fence of fresh consumers that no version-13 fixture exercises",
+    "the notice's `pub use` of a record and a tuple variant lives in the generated re-export control, so the frozen provider's packet carries only its declarations' module bindings",
+    "local twins are generated from the frozen files, not committed"
+  ],
+  "oracle": {
+    "rustc": "1.98.0",
+    "provider": "status 0",
+    "construct": "status 0, no warnings, native exit 42, empty stdout",
+    "nul": "status 0, no warnings, native exit 42, empty stdout",
+    "record-value": "E0533 expected value, found struct variant `base::Shape::Rect`",
+    "record-call": "E0533 expected value, found struct variant `base::Shape::Rect`",
+    "missing-field": "E0063 missing field `h` in initializer of `Shape`",
+    "unknown-field": "E0559 variant `Shape::Rect` has no field named `d`",
+    "re-export provider and client": "status 0 each; the client exits 42 natively with empty stdout"
+  },
+  "baseline": {
+    "binary": "obj/parallel/record-variants/base-0bcba9e3f/rustgm, sha256 94eb4945106b4d4f6ee54f25b9f774d60d933f1f7c4d3f5c7285ade1656eb290",
+    "observed": [
+      "provider under module-bodies-v13: `source record variants require their wider profile`, no packet",
+      "provider under module-branches-v12 and module-nominals-v10: `named, associated or generic alias transport requires its wider profile`",
+      "lines 1-62 plus `pub enum Rec { A { x: u8 }, B }` under v12 and v10: `source declaration kind is outside the initial source profile`",
+      "re-export provider under module-bodies-v13: `source record variants require their wider profile`",
+      "construct and nul twins: `source record variants require their wider profile`; record-value and record-call twins `missing value resolution`, missing-field `missing aggregate field initializer`, unknown-field `unknown aggregate field`"
+    ]
+  },
+  "earlier_candidates": [
+    {
+      "binary": "obj/parallel/record-variants/cand2/rustgm, sha256 3b5d0c5d03403f9d15364787c9225829b1f3ec76eb7bb439ccbd70ef0ca607a1, built from b7c2280dc plus the item's source diff (sha256 72c6bac03c842cbe4782e99f94d41b6e9386429023ac4e44fed17f947e8608af); retired after the rebase onto a6be80084",
+      "summary": "on 0bcba9e3f, cand2 passed this file's controls under amendments 1-3, and its flip survey against the 0bcba9e3f base pin (obj/parallel/record-variants/survey-cand2-r2, survey.tsv sha256 413c748dd0595bb642e6ce87a1792504268caa05cd3cc3df19384e0ccbc67d20; 71 spec directories, 1810 runs per binary) changed only the seven new spec/record-variants runs",
+      "evidence": [
+        "fastcheck obj/qualification/fast/1794248228626676394: the four crate_linking::braced_variants controls, called_pointers, both match_transport controls, both struct_constructors controls, the non_exhaustive local control, record_tests, variant_tests and two ordinary_columns codec tests pass",
+        "fastcheck obj/qualification/fast/1794248594766190373: crate_linking::braced_variants::record_variant_clients_execute_natively passes"
+      ]
+    },
+    {
+      "binary": "obj/parallel/record-variants/cand3/rustgm, sha256 9af607a3bc9ab730d9527f0ba9cd94b6ede1fc4f521d92e2020240d7149fce86, built from the item on a6be80084 (8496cf63f); base pin obj/parallel/record-variants/base-a6be80084/rustgm, sha256 5f9aa57d559ac2c3129c6d6a4002e88a09652517d3f2316f182ba3e6edb6717b; both retired after the rebase onto 198fdea9b",
+      "summary": "on a6be80084, cand3 passed this file's controls under amendments 1-4, and its flip survey against the a6be80084 base pin (obj/parallel/record-variants/survey-cand3, survey.tsv sha256 4f96e58a265acb222712103171150e4345468b44a508ee1fb7b503b7a2a4732e; 72 spec directories, 1863 runs per binary) changed only the seven new spec/record-variants runs",
+      "evidence": [
+        "fastcheck obj/qualification/fast/1794250650057581843: 13 integration controls (the braced_variants, called_pointers, fielded_callables, match_transport, struct_constructors and non_exhaustive controls) and 8 private controls (record_tests, variant_tests, two ordinary_columns codec tests and the four input_plan::roots fn-field tests, including the scaling invariants) pass",
+        "fastcheck obj/qualification/fast/1794250731909863826: both braced_variants native tests, called_pointers' and fielded_callables' natives pass"
+      ]
+    }
+  ],
+  "candidate": {
+    "binary": "obj/parallel/record-variants/cand4/rustgm, sha256 0b096be392562142d9533d390d3191588045a8d127697fdd14819e521f57c441, built from the item rebased onto 7047a05d9 on 198fdea9b (d83e61437, whose dev/src the final commit keeps); the base pin is obj/parallel/record-variants/base-198fdea9b/rustgm, sha256 0680f6ad1881a30997fd0bb111935ea201391f5e87c23ac87f01bf504ab4ca68, built from 7047a05d9, whose dev/src is 198fdea9b's",
+    "observed": [
+      "provider under module-bodies-v13: status 0; the packet is 23230 bytes (sha256 75e8d0da5a6420c48488d75ec5144608f67b8c87f371acb426294662f82069b3), header bytes 13..15 are [13, 0] and decode then encode reproduces it",
+      "construct and nul clients: status 0; record-value and record-call `missing value resolution`, missing-field `missing aggregate field initializer`, unknown-field `unknown aggregate field`",
+      "re-export provider and its client: status 0; Pair binds the value namespace and Rect the type namespace, each naming its own declaration row",
+      "provider and the older-enum control under module-branches-v12 and module-nominals-v10: rejected with the declared texts, no packet, stderr bytes equal to the base pin's",
+      "local twins: construct exports; nul is rejected with `source place transport supports locals and reference projections only` (amendment 2); each opponent twin is rejected with its client's text and stderr bytes equal to the base pin's",
+      "old reader: the 198fdea9b base pin rejects all six clients over the candidate packet with `unknown source variant shape`",
+      "the record-variant opponents of the callable-field and pointer-call packets: exported, with witnesses W1 and W2 exiting 42 natively; `argument-type` keeps the higher-ranked fence (amendment 4, observed above)",
+      "forged rows, shape bytes 3, 4 and 255, every strict prefix of the packet, both namespace swaps and the constructor retarget: as declared (private record_tests and crate_linking::braced_variants)",
+      "scaling, N = 6, 24 and 96: every export and client accepted, packet bytes exactly affine in N, client LowIR within the declared bound",
+      "native: construct and nul exit 42 with empty stdout",
+      "the declared runs on cand4 and the 198fdea9b base pin (obj/parallel/record-variants/cand4-runs, baseline-198fdea9b) are byte-identical to cand3's and the a6be80084 pin's, the packet included",
+      "flip survey against the 198fdea9b base pin (obj/parallel/record-variants/survey-cand4, survey.tsv sha256 25454798623a4b847d5d3ddfb2afb9394d31e04de07f055e8749bf7a1f358656): 73 spec directories, spec/callable-fields and spec/guarded-methods among them, 1920 runs per binary (204 exports, 1557 clients, 159 committed single-crate record-variant inputs); 7 differences, all new inputs in spec/record-variants under module-bodies-v13 (the provider export and its six clients), with the same hashes as on a6be80084. pa29/tests/spec/non-exhaustive-local/same-crate-variants.rs and every other local input keep their status and stderr bytes, and every existing packet keeps its bytes"
+    ],
+    "evidence": [
+      "fastcheck obj/qualification/fast/1794252988341863603: 16 integration controls (the braced_variants, called_pointers, fielded_callables, guarded_methods, match_transport, struct_constructors and non_exhaustive controls) and 12 private controls (record_tests, variant_tests, two ordinary_columns codec tests, the four input_plan::roots fn-field tests and the four body_ports::calls guarded-member tests, scaling invariants included) pass",
+      "fastcheck obj/qualification/fast/1794253163557520234: both braced_variants native tests and the called_pointers, fielded_callables and guarded_methods natives pass",
+      "candidate runs obj/parallel/record-variants/cand4-runs (old reader cand4-runs/old-reader) and wcand4 (old reader wcand4/old)"
+    ]
+  }
+}

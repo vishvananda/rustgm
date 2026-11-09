@@ -186,10 +186,11 @@ fn forged_enum_headers_tests_and_downcasts_reject_in_fresh_consumers() -> Result
             with_byte(&bytes, some, 0),
             "source unit variant carries payload fields",
         ),
+        // Shape byte 2 is a record variant (record-variant amendment 3).
         (
             "unknown-shape",
             "generic",
-            with_byte(&bytes, some, 2),
+            with_byte(&bytes, some, 3),
             "unknown source variant shape",
         ),
         (

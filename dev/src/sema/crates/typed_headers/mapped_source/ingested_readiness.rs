@@ -45,9 +45,7 @@ impl Graph {
                 self.associated_ready(catalog, facts, definition, row, *cell)?;
             }
             s::DefinitionKind::Variant => {
-                if cell.is_none() || facts.members.constructor(definition).is_none() {
-                    return Err("source variant readiness lost its installed constructor");
-                }
+                Self::variant_ready(rows, facts, (definition, row), *cell)?;
             }
             s::DefinitionKind::Struct | s::DefinitionKind::Enum => {
                 let Some(s::HeaderRef::Nominal(index)) = rows.header(row)? else {
@@ -194,6 +192,21 @@ impl Graph {
             return Err("associated definition readiness changed its actual impl/value binding");
         }
         Self::scope_ready(facts, definition)
+    }
+    /// Every variant has its installed constructor entry; a record variant
+    /// has no value cell, and every other variant has one.
+    fn variant_ready(
+        rows: s::ValidatedView<'_>,
+        facts: &Declarations,
+        (definition, row): (DefId, crate::support::crates::owner_catalog::DeclarationRef),
+        cell: Option<crate::types::TypeId>,
+    ) -> Result<(), &'static str> {
+        if cell.is_some() == rows.record_variant(row)?
+            || facts.members.constructor(definition).is_none()
+        {
+            return Err("source variant readiness lost its installed constructor");
+        }
+        Ok(())
     }
     /// Version thirteen: a constant's cell is its header's type; its value is
     /// seeded from the same row after readiness.

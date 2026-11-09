@@ -1,7 +1,7 @@
 //! Canonical v2 coordinates install one real target per declaration and alias key.
 use super::{
     Access, Binding, DefId, Error, ExternalDef, ExternalKind, Imported, Interface, NameId,
-    Namespace, Origin, Pending, PendingBinding, Resolver, ScopeId, Work, error, kind, s,
+    Namespace, Origin, Pending, PendingBinding, Records, Resolver, ScopeId, Work, error, kind, s,
 };
 use crate::support::{hash::HashSet, retained};
 pub(super) fn prepare(
@@ -125,8 +125,15 @@ fn variant_bindings(
             let target = definitions[variant.declaration.0 as usize];
             let actual = &resolver.facts.definitions[target.0 as usize];
             let key = (actual.scope, actual.name, actual.namespace);
+            // A record variant is named in its enum's type namespace.
+            let (expected, value) = kind(s::DefinitionKind::Variant);
+            let namespace = if variant.shape == s::VariantShape::Record {
+                Namespace::Type
+            } else {
+                value
+            };
             if owner.members != Some(actual.scope)
-                || (actual.kind, actual.namespace) != kind(s::DefinitionKind::Variant)
+                || (actual.kind, actual.namespace) != (expected, namespace)
                 || !keys.insert(key)
                 || resolver.facts.bindings.get(key.0, key.1, key.2).is_some()
             {
@@ -238,6 +245,7 @@ pub(super) fn actual_cells(
     definitions: &[DefId],
     work: &mut Work,
 ) -> Result<(), Error> {
+    let records = Records::new(&rows, work)?;
     for (index, row) in rows.declarations.iter().enumerate() {
         work.charge(1)?;
         let actual = resolver
@@ -246,7 +254,7 @@ pub(super) fn actual_cells(
             .get(definitions[index].0 as usize)
             .ok_or_else(|| error("v2 declaration reservation is absent"))?;
         if actual.node.is_some()
-            || (actual.kind, actual.namespace) != kind(row.definition.kind)
+            || (actual.kind, actual.namespace) != records.kind(index, row)
             || row.name.as_deref() != Some(resolver.package.names.get(actual.name))
             || actual.access
                 != if row.public {

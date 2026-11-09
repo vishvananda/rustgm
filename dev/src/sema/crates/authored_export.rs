@@ -36,6 +36,7 @@ use crate::{
         generics::{self as g, source as s},
         owner_catalog::DeclarationRef,
     },
+    syntax::item::Shape,
 };
 pub(crate) use advisory_rows::require_defaultness_transport;
 pub(crate) use canonical_nodes::Context;
@@ -147,6 +148,9 @@ pub(crate) struct Stage {
     /// Version thirteen: each exported enum variant's constructor declaration,
     /// indexed by its local `VariantId`.
     variants: Vec<Option<DeclarationRef>>,
+    /// Version thirteen: an exported record variant gives every field row from
+    /// its own on a name slot.
+    record_variants: bool,
 }
 /// The original body vocabulary a module publication may retain.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -468,6 +472,7 @@ impl Stage {
             compiler_operations: mode == ExportMode::CompilerOperations,
             body_transport,
             variants: Vec::new(),
+            record_variants: false,
             role_installation_steps: facts
                 .source_bindings
                 .as_deref()
@@ -595,17 +600,21 @@ impl Stage {
         if self.body_nodes() && mode == ExportMode::Nominals {
             match definition.kind {
                 DefKind::Enum => return Ok(Some(s::DefinitionKind::Enum)),
-                // One declaration names a variant: its value-namespace
-                // constructor. The type-namespace alias has no row.
+                // One declaration names a variant: a unit or tuple variant's
+                // value-namespace constructor, whose type-namespace alias has
+                // no row, or a record variant's own type-namespace definition.
                 DefKind::Variant if definition.namespace == Namespace::Value => {
                     return Ok(Some(s::DefinitionKind::Variant));
                 }
                 DefKind::Variant => {
-                    return if facts.members.constructor(id).is_some() {
-                        Ok(None)
-                    } else {
-                        Err("source record variants require their wider profile")
-                    };
+                    let variant = facts
+                        .members
+                        .constructor(id)
+                        .ok_or("source variant lacks its actual constructor")?;
+                    return Ok(
+                        (facts.members.variants[variant.0 as usize].shape == Shape::Record)
+                            .then_some(s::DefinitionKind::Variant),
+                    );
                 }
                 // A tuple or unit struct's constructor is the variant
                 // declaration of its struct's single field group.

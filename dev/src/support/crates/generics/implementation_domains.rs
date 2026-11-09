@@ -168,7 +168,7 @@ impl ModuleContractColumns {
         }
         let index = ModuleIndex::new(rows, headers, work)?;
         let result = Self { rows: raw, index };
-        result.namespace(rows, variants, work)?;
+        result.namespace(rows, (headers, variants), work)?;
         result.domains(rows, headers, work)?;
         for field in &rows.fields {
             work.charge(1)?;
@@ -189,7 +189,7 @@ impl ModuleContractColumns {
     fn namespace(
         &self,
         rows: &SourceRows,
-        variants: bool,
+        (headers, variants): (&HeaderIndex<'_>, bool),
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let names = &self.rows.namespace;
@@ -228,7 +228,7 @@ impl ModuleContractColumns {
             if name_bytes > crates::MAX_NAME_BYTES {
                 return Err("module binding names exceed their combined byte budget");
             }
-            self.binding(rows, entry, variants)?;
+            self.binding(rows, entry, (headers, variants), work)?;
         }
         for pair in names.bindings.windows(2) {
             if compare(&pair[0], &pair[1], work)? != Ordering::Less {
@@ -341,7 +341,8 @@ impl ModuleContractColumns {
         &self,
         rows: &SourceRows,
         entry: &ModuleBindingRow,
-        variants: bool,
+        (headers, variants): (&HeaderIndex<'_>, bool),
+        work: &mut Work,
     ) -> Result<(), &'static str> {
         self.view().require_module(entry.module)?;
         site(rows, entry.module, entry.source_site)?;
@@ -362,7 +363,9 @@ impl ModuleContractColumns {
             // Version thirteen: a named const binds in its module's value
             // namespace.
             s::DefinitionKind::Constant if variants => Namespace::Value,
-            s::DefinitionKind::Variant if variants => constructor_namespace(rows, target)?,
+            s::DefinitionKind::Variant if variants => {
+                constructor_namespace(rows, headers, (entry.target.declaration, target), work)?
+            }
             s::DefinitionKind::Variant => {
                 return Err("variant module bindings require the version-13 module-bodies profile");
             }
@@ -463,12 +466,15 @@ impl ModuleContractColumns {
         Ok(())
     }
 }
-/// A constructor binding is re-derived from its installed parent: an enum's
-/// variant binds its value constructor, and a tuple or unit struct's
+/// A constructor binding is re-derived from its installed parent and shape: an
+/// enum's unit or tuple variant binds its value constructor, a record variant
+/// binds its type-namespace definition, and a tuple or unit struct's
 /// constructor binds in its struct's module value namespace.
 fn constructor_namespace(
     rows: &SourceRows,
-    target: &s::Declaration,
+    headers: &HeaderIndex<'_>,
+    (declaration, target): (DeclarationRef, &s::Declaration),
+    work: &mut Work,
 ) -> Result<Namespace, &'static str> {
     let parent = target
         .definition
@@ -476,7 +482,19 @@ fn constructor_namespace(
         .and_then(|parent| rows.declarations.get(parent.0 as usize))
         .ok_or("variant module binding has no installed parent")?;
     match parent.definition.kind {
-        s::DefinitionKind::Enum | s::DefinitionKind::Struct => Ok(Namespace::Value),
+        s::DefinitionKind::Enum => match headers.header(declaration, work)? {
+            Some(s::HeaderRef::Variant(index))
+                if rows
+                    .enums()
+                    .variants
+                    .get(index as usize)
+                    .is_some_and(|variant| variant.shape == s::VariantShape::Record) =>
+            {
+                Ok(Namespace::Type)
+            }
+            _ => Ok(Namespace::Value),
+        },
+        s::DefinitionKind::Struct => Ok(Namespace::Value),
         _ => Err("variant module binding parent is not an enum or struct"),
     }
 }

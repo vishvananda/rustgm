@@ -1,6 +1,7 @@
 //! Version thirteen: an enum's ordered variants, completed discriminants and
-//! positional payloads follow its ordinary nominal header. No layout, niche or
-//! tag decision travels; each consumer derives them from these source facts.
+//! payloads follow its ordinary nominal header. A record variant's fields
+//! carry their names. No layout, niche or tag decision travels; each consumer
+//! derives them from these source facts.
 use super::{Context, DeclarationRef, Declarations, DefId, Report, Stage, g, s};
 use crate::{
     sema::members::Name,
@@ -41,7 +42,8 @@ impl Stage {
             target_features: None,
         })
     }
-    /// Record one exported variant constructor's declaration row.
+    /// Record one exported variant's declaration row: a unit or tuple
+    /// variant's constructor, or a record variant's own definition.
     pub(super) fn publish_variant(
         &mut self,
         facts: &Declarations,
@@ -90,8 +92,11 @@ impl Stage {
             let shape = match variant.shape {
                 Shape::Unit => s::VariantShape::Unit,
                 Shape::Tuple => s::VariantShape::Tuple,
-                Shape::Record => return Err("source record variants require their wider profile"),
+                Shape::Record => s::VariantShape::Record,
             };
+            if shape == s::VariantShape::Record {
+                self.name_slots()?;
+            }
             ScalarValue::new(tag.unwrap_or(Scalar::Isize), completed.discriminant)
                 .map_err(|_| "source enum negative discriminants require their wider profile")?;
             let row = self.variant(id)?;
@@ -102,9 +107,7 @@ impl Stage {
             let field_start = count(self.rows.enums().fields.len())?;
             for (index, field) in (0_u32..).zip(fields) {
                 self.charge(1)?;
-                if field.name != Name::Index(index) {
-                    return Err("source variant field changed its position");
-                }
+                self.field_name(facts, shape, field.name, index)?;
                 let source = field
                     .origin
                     .source()
@@ -139,6 +142,43 @@ impl Stage {
             tag,
             variants: g::Range { start, end },
         });
+        Ok(())
+    }
+}
+impl Stage {
+    /// Once a record variant exists, every field row has a name slot, empty
+    /// for a positional field, even while no field row precedes it.
+    fn name_slots(&mut self) -> Result<(), &'static str> {
+        self.record_variants = true;
+        let fields = self.rows.enums().fields.len();
+        if self.rows.enums().names.len() < fields {
+            self.reserve(fields.saturating_mul(size_of::<String>()))?;
+            self.cold()?.enums.names.resize(fields, String::new());
+        }
+        Ok(())
+    }
+    /// A record variant's field names its own name; every other field is
+    /// positional.
+    fn field_name(
+        &mut self,
+        facts: &Declarations,
+        shape: s::VariantShape,
+        name: Name,
+        index: u32,
+    ) -> Result<(), &'static str> {
+        let spelling = match (shape, name) {
+            (s::VariantShape::Record, Name::Named(id)) => facts.members.names.get(id),
+            (s::VariantShape::Unit | s::VariantShape::Tuple, Name::Index(position))
+                if position == index =>
+            {
+                ""
+            }
+            _ => return Err("source variant field changed its position"),
+        };
+        if self.record_variants {
+            self.reserve(size_of::<String>().saturating_add(spelling.len()))?;
+            self.cold()?.enums.names.push(spelling.to_owned());
+        }
         Ok(())
     }
 }

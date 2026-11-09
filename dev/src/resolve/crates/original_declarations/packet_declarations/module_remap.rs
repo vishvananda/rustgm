@@ -1,7 +1,7 @@
 //! Preflight and reserve real declaration/scope/binding cells before any catalog publication.
 use super::{
-    DefId, Definition, Error, Key, Namespace, Origin, PendingBinding, Report, Resolver, ScopeId,
-    Work, error, kind, retained, s, scope_rows,
+    DefId, Definition, Error, Key, Namespace, Origin, PendingBinding, Records, Report, Resolver,
+    ScopeId, Work, error, retained, s, scope_rows,
 };
 use crate::{
     resolve::{
@@ -79,9 +79,10 @@ pub(super) fn reserve(
     work: &mut Work,
 ) -> Result<(Vec<DefId>, Vec<ScopeId>), Error> {
     let rows = snapshot.columns();
+    let records = Records::new(rows, work)?;
     let root_scope = resolver.new_scope(None, ModuleId(0), true)?;
     let mut definitions = Vec::with_capacity(rows.declarations.len());
-    for row in &rows.declarations {
+    for (index, row) in rows.declarations.iter().enumerate() {
         work.charge(1)?;
         let spelling = row
             .name
@@ -97,7 +98,7 @@ pub(super) fn reserve(
             u32::try_from(resolver.facts.definitions.len())
                 .map_err(|_| error("namespace remap overflow"))?,
         );
-        let (kind, namespace) = kind(row.definition.kind);
+        let (kind, namespace) = records.kind(index, row);
         resolver.facts.definitions.push(Definition {
             name,
             namespace,
@@ -123,7 +124,14 @@ pub(super) fn reserve(
         snapshot.owners().rows().len(),
         work,
     )?;
-    scope_rows::namespace_assign(resolver, rows, &definitions, &owners, &bodies, work)?;
+    scope_rows::namespace_assign(
+        resolver,
+        (rows, &records),
+        &definitions,
+        &owners,
+        &bodies,
+        work,
+    )?;
     Ok((definitions, owners))
 }
 pub(super) fn pending_bindings(

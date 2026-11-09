@@ -2,6 +2,9 @@
 //! The enum's `NominalHeader` keeps its contract, frame, Self and premises with
 //! an empty field range; these columns own its variants, discriminants and
 //! payload fields. Every consumer re-proves them before any storage exists.
+#[cfg(test)]
+#[path = "../../../../tests/invariants/braced_variant_rows.rs"]
+mod record_tests;
 use super::{
     Declaration, DefinitionKind, HeaderRef, NominalField, NominalHeader, Profile, SourceRows,
 };
@@ -26,6 +29,10 @@ pub struct EnumHeader {
 pub enum VariantShape {
     Unit,
     Tuple,
+    /// Version thirteen: a record variant has no constructor. Its one
+    /// declaration row names its type-namespace definition, and its fields
+    /// carry their names.
+    Record,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct VariantHeader {
@@ -36,7 +43,8 @@ pub struct VariantHeader {
     pub discriminant: u128,
     pub fields: Range,
 }
-/// A positional payload field. Enum fields inherit the enum's visibility.
+/// A payload field, positional unless its variant is a record variant. Enum
+/// fields inherit the enum's visibility.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct VariantField {
     pub owner: DeclarationRef,
@@ -49,11 +57,32 @@ pub struct EnumColumns {
     pub headers: Vec<EnumHeader>,
     pub variants: Vec<VariantHeader>,
     pub fields: Vec<VariantField>,
+    /// Empty unless some variant is a record variant; then one name per
+    /// field row, a record variant's field names and an empty name for every
+    /// positional field. The wire carries only the record variants' names.
+    pub names: Vec<String>,
 }
 impl EnumColumns {
     #[must_use]
     pub fn is_empty(&self) -> bool {
-        self.headers.is_empty() && self.variants.is_empty() && self.fields.is_empty()
+        self.headers.is_empty()
+            && self.variants.is_empty()
+            && self.fields.is_empty()
+            && self.names.is_empty()
+    }
+    /// The field names of variant row `variant`: its own names if it is a
+    /// record variant, otherwise `None`.
+    /// # Errors
+    /// Rejects a record variant whose fields have no names.
+    pub fn record_names(&self, variant: &VariantHeader) -> Result<Option<&[String]>, &'static str> {
+        if variant.shape != VariantShape::Record {
+            return Ok(None);
+        }
+        variant
+            .fields
+            .slice(&self.names)
+            .map(Some)
+            .map_err(|_| "source record variant names have incomplete field coverage")
     }
     /// The enum header owning variant row `index`. Validated headers own
     /// contiguous ascending variant ranges, so this is one binary search.
@@ -147,8 +176,12 @@ impl Constructor {
             .variants
             .get(index as usize)
             .ok_or("source constructor variant row is unknown")?;
-        if variant.shape != VariantShape::Tuple {
-            return Err("source unit variant has no called constructor");
+        match variant.shape {
+            VariantShape::Tuple => {}
+            VariantShape::Unit => return Err("source unit variant has no called constructor"),
+            VariantShape::Record => {
+                return Err("source record variant has no called constructor");
+            }
         }
         let owner = declarations
             .get(declaration.0 as usize)
@@ -216,7 +249,7 @@ pub(super) fn headers(
     headers: &mut [Option<HeaderRef>],
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    let columns = rows.enums();
+    let columns = names_coverage(rows.enums())?;
     work.charge(
         columns
             .headers
@@ -447,6 +480,47 @@ fn payload(
             || field.ty.0 as usize >= rows.types.len()
         {
             return Err("source variant field changed its owner, ordinal, type or site");
+        }
+    }
+    field_names(&rows.enums().names, variant, work)
+}
+/// Names travel exactly when some variant is a record variant, and then for
+/// every field row.
+fn names_coverage(columns: &EnumColumns) -> Result<&EnumColumns, &'static str> {
+    let records = columns
+        .variants
+        .iter()
+        .any(|variant| variant.shape == VariantShape::Record);
+    let expected = if records { columns.fields.len() } else { 0 };
+    if columns.names.len() != expected {
+        return Err("source record variant names have incomplete field coverage");
+    }
+    Ok(columns)
+}
+/// A record variant's fields are named as record fields are, once each; a
+/// positional field carries no name.
+fn field_names(
+    names: &[String],
+    variant: &VariantHeader,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    if names.is_empty() {
+        return Ok(());
+    }
+    let names = variant.fields.slice(names)?;
+    if variant.shape != VariantShape::Record {
+        return if names.iter().all(String::is_empty) {
+            Ok(())
+        } else {
+            Err("source positional variant field carries a name")
+        };
+    }
+    let mut seen = HashSet::default();
+    for name in names {
+        work.charge(name.len().saturating_add(1))?;
+        crate::support::crates::identity::validate_component(name)?;
+        if !seen.insert(name.as_str()) {
+            return Err("source record variant has a duplicate field name");
         }
     }
     Ok(())

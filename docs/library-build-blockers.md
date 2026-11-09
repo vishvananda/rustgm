@@ -5,6 +5,37 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane D [record variants](parallel/record-variants.md), item (i), carries
+enums with record variants under version 13: variant shape byte 2 and a dense
+name column that travels exactly when some variant row is a record variant.
+The declaration row keeps kind Variant and names a record variant's
+type-namespace definition. Each consumer re-derives the namespace from the
+shape at module bindings, constructor applications and value cells.
+
+- `construct` and the `InteriorNul` client exit 42 natively. Four opponents
+  are rejected as their local twins are, and an older reader stops at "unknown
+  source variant shape".
+- With (ii), a record variant's zero-slot fn field exports and forms in its
+  enum's own header frame (record-variant amendment 4, an (i) x (ii)
+  interaction declared before any rebased run). R2's stored formatter and
+  (ii)'s record-variant opponent now export, and two fresh-consumer
+  witnesses that call through the field exit 42 natively, as rustc's do.
+  (ii)'s `ArgumentType` opponent keeps the higher-ranked fence, because its
+  formatter's `&mut` is late-bound.
+- Among existing inputs, the flip survey against `198fdea9b` changes nothing.
+  Enum-match's forged shape-byte-2 row moves to byte 3 (record-variant
+  amendment 3, written after the run that observed it).
+- Not in the packet: `PartialEq`, because an exported `==` needs comparison
+  and `Not` role transport, its own item. A method call through an imported
+  `Clone` impl stays "no applicable method for this receiver", and an exported
+  match on a unit-variant value stays "source place transport supports locals
+  and reference projections only" (amendment 2). Both are pre-existing
+  rejects-valid.
+- core 1.98 has two record-variant enums. `FromBytesWithNulError`'s header,
+  construction and Clone and Copy derives are in reach. `ArgumentType`'s
+  formatter, `unsafe fn(NonNull<()>, &mut Formatter<'_>) -> Result`, is
+  higher-ranked and waits for HR.
+
 Lane C [unsafe associated functions](parallel/guarded-methods.md) lets a
 version-13 export carry `unsafe` inherent methods, trait members and impl
 members, and the unsafe direct and pointer calls inside or to them, with no
@@ -132,11 +163,12 @@ function.
   `fn([u8]) -> [u8]`. The unsound narrowing of the contravariant marker is
   rejected, as rustc rejects it.
 - Kept fences, each by name and known rejects-valid: higher-ranked,
-  early-region and C fn fields; record variants holding fns (item (i)); and
-  unsafe calls in associated fns. An unsafe associated declaration hits "source
-  nonordinary callable effect/safety/convention requires a wider profile", as
-  Lane D found in F; their widening is one item. The associated-unsafe item
-  now carries both, and `Table::go` exports (amendment 3).
+  early-region and C fn fields. Two former fences now export. Unsafe calls in
+  associated fns, with unsafe associated declarations ("source nonordinary
+  callable effect/safety/convention requires a wider profile", as Lane D
+  found in F), are carried by the associated-unsafe item, and `Table::go`
+  exports (amendment 3). Record variants holding fns export since item (i)
+  (amendment 4).
 - Versions 12 and 10, and the base reader, keep "source shared call type
   requires an actual closed callable frame".
 - Among existing inputs the flip survey changes only R2's `field` opponent,
@@ -226,23 +258,15 @@ check, to its baseline plus the closure.
   amendment 5: a client that exports one scalar C function streams through
   the imported body into a 16-byte-aligned local, lowers exactly that
   template and exits 42 natively with the imported `movntps`.
-- **Client export fences** (unassigned, queued after record variants). The
-  witness's first client stopped at its own library export, and either
-  fence blocks any client library that exports C functions over
-  `core::arch` types:
+- **Client export fences** (unassigned, next in the queue now that record
+  variants have landed). The witness's first client stopped at its own
+  library export, and either fence blocks any client library that exports C
+  functions over `core::arch` types:
   - `sema/crates/export/records.rs:267`, "nominal shape or representation
     is outside the metadata profile", for a tuple-struct SIMD type such as
     `__m128` in an exported `extern "C"` signature;
   - `sema/crates/export.rs:434`, "exposed type is outside the scalar
     metadata profile", for a raw pointer there.
-- **Backend-contract question** (the user's decision; the backend stays
-  frozen): LowIR i128 slot alignment is unspecified; 16 observed under v3.
-  `shared/lowir.md` states no alignment for an `i128` slot. RustGM lays
-  u128 out at 16 bytes and lowers a u128 local as an `i128` slot, so every
-  u128 local, the witness's included, relies on the pinned backend's
-  layout. No frontend change works around it. The native control
-  `u128_locals_stay_sixteen_byte_aligned_natively` fails if that layout
-  regresses.
 - Stricter than rustc: safe target-feature functions, trait and trait-impl
   members, non-Rust-ABI and `const` target-feature functions keep named
   fences at export.
@@ -271,11 +295,11 @@ instance.
   in an unsafe fn, a safe pointer in an unnecessary unsafe block, a safe
   call in an inherent associated fn, the fmt-shaped twin that receives its
   formatter as a parameter, and three reified constructors.
-- Kept fences, each by name: higher-ranked and C pointers, an unsafe call in
-  an associated fn, a pointer stored in a record variant or a struct field,
-  and const fns, which rustc also rejects. The associated call exports
-  since the associated-unsafe item (amendment 3), and the struct field
-  since (ii).
+- Kept fences, each by name: higher-ranked and C pointers, and const fns,
+  which rustc also rejects. An unsafe call in an associated fn exports since
+  the associated-unsafe item (amendment 3), a pointer stored in a struct
+  field since (ii), and one in a record variant's field since (i)
+  (amendment 5).
 - Versions 12 and 10 keep the direct-call text. The base2 reader rejects the
   node with "body IR value node has malformed operands", which an
   operand-swap forgery also gets.
@@ -284,8 +308,10 @@ instance.
 - **The fmt chain.** core's `ArgumentType` stores its formatter in a record
   variant's fn-pointer field, so it needs both of these, ahead of HR/C. R2
   alone does not unblock it.
-  - (i) Record variants: "source record variants require their wider
-    profile".
+  - (i) Record variants: done, Lane D's [record
+    variants](parallel/record-variants.md). With (ii), a record variant's
+    zero-slot fn field exports; `ArgumentType`'s formatter is higher-ranked,
+    so it waits for HR.
   - (ii) Nominal callable fields: `frame_owners` requires a function header
     to own each callable-type binder ("source shared call type requires an
     actual closed callable frame"), and the port plan keeps "source nominal
@@ -598,8 +624,9 @@ with `unsafe` added but never removed.
     Result`, Lane C's item after 5b;
   - R2, for the call through the stored formatter. R2 calls a pointer in
     a body; the stored formatter also needs record variants and nominal
-    callable fields (see R2 above). (ii) carries zero-slot fields; the
-    formatter's own field is higher-ranked, so it waits for the HR item.
+    callable fields (see R2 above). (i) carries record variants and (ii)
+    zero-slot fields; the formatter's own field is higher-ranked, so it
+    waits for the HR item.
 - Target-feature note: Lane D's F admits only `unsafe` target-feature exports,
   so reification yields an `unsafe fn` pointer, which rustc allows. If F admits
   safe target-feature functions, a coercion to a safe pointer must be

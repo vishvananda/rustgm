@@ -1,6 +1,6 @@
 //! Owned unpublished reservations never install an `Interface` or `SourceClient` report.
 use super::installed_bindings::PendingBinding;
-use super::{Error, Input, Resolver, Work, error, kind, s, scope_rows};
+use super::{Error, Input, Records, Resolver, Work, error, kind, s, scope_rows};
 use crate::{
     expand::marks::ItemContext,
     resolve::{

@@ -1,8 +1,8 @@
 //! Publish only exact fresh keys; an installation failure withdraws the batch.
 mod binding_publication;
 use super::{
-    Access, DefId, Error, ExternalDef, ExternalKind, Imported, Input, Interface, Resolver, ScopeId,
-    Work, error, kind, s,
+    Access, DefId, Error, ExternalDef, ExternalKind, Imported, Input, Interface, Records, Resolver,
+    ScopeId, Work, error, kind, s,
 };
 use crate::{
     expand::marks::ItemContext,

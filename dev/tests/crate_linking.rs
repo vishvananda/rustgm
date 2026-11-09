@@ -6,6 +6,8 @@ mod addressed_views;
 mod artifacts;
 #[path = "crate_linking/borrowed.rs"]
 mod borrowed;
+#[path = "crate_linking/braced_variants.rs"]
+mod braced_variants;
 #[path = "crate_linking/branch_transport.rs"]
 mod branch_transport;
 #[path = "crate_linking/called_pointers.rs"]

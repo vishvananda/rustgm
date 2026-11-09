@@ -6477,14 +6477,12 @@ per argument, and equal parameter and result nodes. It re-proves the safety
 with a direct call's matrix, at validation and over the rebuilt body, then
 calls the pointer value in its own lowering. A safe callee records Safe, in
 an unsafe block or not. Export rejects these by name: higher-ranked and C
-pointers, and a pointer stored in a record variant, whose header fence comes
-first. Earlier profiles keep the
-direct-call text, and an older reader rejects the node as malformed operands.
-The [pointer-call packet](pa29/tests/spec/pointer-calls/README.md) records
-independent outcomes.
+pointers. Earlier profiles keep the direct-call text, and an older reader
+rejects the node as malformed operands. The [pointer-call
+packet](pa29/tests/spec/pointer-calls/README.md) records independent outcomes.
 
 Version thirteen also carries zero-slot fn fields, with no wire change. A
-struct's or tuple variant's field whose type is a closed Rust fn pointer, or
+struct's or variant's field whose type is a closed Rust fn pointer, or
 contains one, travels as a callable-type binder that the nominal owns, with no
 parent and no slots. Only the version-thirteen profile admits such a binder;
 earlier profiles reject it as they did before. A fresh consumer forms the
@@ -6492,8 +6490,8 @@ field's fn type in that nominal's own header frame, and a called constructor's
 payload in its own nominal's; the frame's owner must be exactly that nominal.
 A call signature's callable-type frame must belong to a function, so a
 nominal's frame never types a call. Export keeps rejecting higher-ranked,
-early-region and C fn fields, and fn fields in record variants, by name. An
-older reader rejects the binder by name. The [callable-field
+early-region and C fn fields by name. An older reader rejects the binder by
+name. The [callable-field
 packet](pa29/tests/spec/callable-fields/README.md) records independent
 outcomes.
 
@@ -6533,27 +6531,39 @@ packet](pa29/tests/spec/named-constants/README.md) records independent outcomes.
 
 Version thirteen also carries enums. Declaration kind 10 is an enum, whose
 nominal header has no record fields, and kind 11 is one of its variants,
-parented by the enum and published once as its value-namespace constructor.
-Exactly when the declaration table names a kind-10 declaration, enum columns
-follow the associated-result columns: headers `(enum, tag, variants)` in
-declaration order, where tag 0 is the default representation and tag 1 is
-followed by an integer scalar; variants `(declaration, ordinal, shape,
-discriminant, fields)`, where shape 0 is unit and 1 is tuple and the
-discriminant is 16 little-endian bytes; and payload fields `(variant, ordinal,
-type, site)`. Ordinals are dense, ranges cover the columns contiguously,
-discriminants fit the tag (or `isize`) and are unique, a data enum without a
-tag keeps ordinal discriminants and a unit variant has no fields. Body IR node
-14 is a `bool` constructor test `[place, variant]`; node 3 with a second
-variant operand is a variant aggregate; cast flag 1 converts a fieldless enum
-to an integer; a field projection whose owner is a variant is a downcast field.
+parented by the enum and published once: a unit or tuple variant as its
+value-namespace constructor, a record variant as its own type-namespace
+definition. Exactly when the declaration table names a kind-10 declaration,
+enum columns follow the associated-result columns: headers `(enum, tag,
+variants)` in declaration order, where tag 0 is the default representation
+and tag 1 is followed by an integer scalar; variants `(declaration, ordinal,
+shape, discriminant, fields)`, where shape 0 is unit, 1 is tuple and 2 is
+record and the discriminant is 16 little-endian bytes; and payload fields
+`(variant, ordinal, type, site)`. Exactly when some variant row is a record
+variant, a name column follows the payload fields: each record variant's field
+names in variant-row and ordinal order, with no count, as their ranges imply
+it. Ordinals are dense, ranges cover the columns contiguously, discriminants
+fit the tag (or `isize`) and are unique, a data enum without a tag keeps
+ordinal discriminants and a unit variant has no fields. A record variant's
+names are canonical path components, unique within the variant; a positional
+field has none. The shape alone fixes a variant's namespace: a consumer
+installs a record variant in its enum's type namespace, requires a re-export
+of it to bind the type namespace, gives it no value cell and never calls it.
+Body IR node 14 is a `bool` constructor test `[place, variant]`; node 3 with a
+second variant operand is a variant aggregate; cast flag 1 converts a
+fieldless enum to an integer; a field projection whose owner is a variant is a
+downcast field.
 No layout, niche or match proof is transported: a fresh consumer re-derives
 each enum's layout and nullable policy, re-checks every variant against its
 installed enum, and over its own rebuilt CFG proves each downcast use by a
 live constructor-test fact and each reachable unreachable exit as following
 an impossible variant path or a never value.
-Record variants, negative discriminants and `must_use` enums stay rejected by
-name; lifetime-generic enums follow the nominal lifetime rule below. Packets
-without enums keep their exact bytes.
+Negative discriminants and `must_use` enums stay rejected by name;
+lifetime-generic enums follow the nominal lifetime rule below. Packets without
+enums keep their exact bytes, as do packets without record variants. An older
+reader rejects shape 2 with "unknown source variant shape". The
+[record-variant packet](pa29/tests/spec/record-variants/README.md) records
+independent outcomes.
 
 A version-thirteen function application may also name a tuple variant: a
 called constructor, with the same `Function` value, `Call` value and call

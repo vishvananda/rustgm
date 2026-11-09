@@ -10,8 +10,9 @@ const _: [(); 20] = [(); size_of::<s::Type>()];
 const _: [(); 8] = [(); size_of::<s::Argument>()];
 const _: [(); 12] = [(); size_of::<s::ParameterKind>()];
 const _: [(); 40] = [(); size_of::<s::ParameterSlot>()];
-// An array's length term lives in its own cold column: one Vec, 24 B.
-const _: [(); 224] = [(); size_of::<s::ColdColumns>()];
+// An array's length term lives in its own cold column: one Vec, 24 B. Record
+// variants' field names live in the enum columns' name column: one Vec more.
+const _: [(); 248] = [(); size_of::<s::ColdColumns>()];
 
 const BODIES: s::Profile = s::Profile::Source2024ModuleBodies;
 const BRANCHES: s::Profile = s::Profile::Source2024ModuleBranches;

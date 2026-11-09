@@ -135,11 +135,13 @@ impl Original<'_> {
         let Some(s::HeaderRef::Variant(index)) = rows.header(declaration)? else {
             return Err("source variant field header disappeared");
         };
-        let field = rows.enums().variants[index as usize]
+        let row = &rows.enums().variants[index as usize];
+        let field = row
             .fields
             .slice(&rows.enums().fields)?
             .get(ordinal as usize)
             .ok_or("source variant field ordinal belongs to another variant")?;
+        let spellings = rows.enums().record_names(row)?;
         let id = actual
             .start
             .checked_add(ordinal)
@@ -158,9 +160,19 @@ impl Original<'_> {
                 return Err("provided profiles cannot reconstruct source variant fields");
             }
         };
+        // A record variant's field keeps its own name; others are positional.
+        let kept = match spellings {
+            Some(spellings) => matches!(
+                found.name,
+                Name::Named(id) if spellings
+                    .get(ordinal as usize)
+                    .is_some_and(|spelling| self.members.names.get(id) == spelling)
+            ),
+            None => found.name == Name::Index(ordinal),
+        };
         if found.origin != actual.origin
             || found.ty != expected
-            || found.name != Name::Index(ordinal)
+            || !kept
             || found.access != crate::resolve::model::Access::Public
         {
             return Err("source variant field changed its canonical type, position or access");

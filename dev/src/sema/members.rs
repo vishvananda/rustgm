@@ -223,10 +223,11 @@ impl Members {
         }
         self.publish(owner, 0, origin, Shape::Record, fields, None)
     }
-    /// Publish a source-free enum's complete ordered positional variants and the
-    /// imported declarations naming each constructor.
+    /// Publish a source-free enum's complete ordered variants and the imported
+    /// declarations naming each: a unit or tuple variant's constructor, or a
+    /// record variant's own definition.
     /// # Errors
-    /// Rejects foreign field owners, named payloads and duplicate enums.
+    /// Rejects foreign field owners, misnamed payloads and duplicate enums.
     pub(crate) fn insert_external_variants(
         &mut self,
         owner: ItemId,
@@ -237,13 +238,17 @@ impl Members {
             return Err("external enum member owner is inconsistent");
         }
         for (ordinal, variant) in (0_u32..).zip(variants) {
-            if variant
-                .fields
-                .iter()
-                .zip(0_u32..)
-                .any(|(field, index)| field.origin != origin || field.name != Name::Index(index))
-                || (variant.shape == Shape::Unit && !variant.fields.is_empty())
-                || variant.shape == Shape::Record
+            let mut names = HashSet::default();
+            if variant.fields.iter().zip(0_u32..).any(|(field, index)| {
+                field.origin != origin
+                    || match variant.shape {
+                        // A record variant's fields are named, once each.
+                        Shape::Record => {
+                            !matches!(field.name, Name::Named(_)) || !names.insert(field.name)
+                        }
+                        Shape::Unit | Shape::Tuple => field.name != Name::Index(index),
+                    }
+            }) || (variant.shape == Shape::Unit && !variant.fields.is_empty())
             {
                 return Err("external enum variant changed its owner, shape or positions");
             }

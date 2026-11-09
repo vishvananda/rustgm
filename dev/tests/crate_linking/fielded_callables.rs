@@ -3,9 +3,9 @@
 //! nominal's own header frame, a called constructor's payload in its own
 //! nominal's, and calls through the field with a signature its own function
 //! owns. Auto traits and variance read the field as rustc does. Higher-ranked,
-//! early-region and C fields and record variants keep their fences by name,
-//! version twelve rejects the frame, and an unsafe field call in an associated
-//! fn exports since the guarded-methods item.
+//! early-region and C fields keep their fences by name, and version twelve
+//! rejects the frame. An unsafe field call in an associated fn exports since
+//! the guarded-methods item, and a record variant's fn field since (i).
 use super::fresh_packets::{Packet, Result};
 use rustgm::support::crates;
 const SPEC: &str = "pa29/tests/spec/callable-fields";
@@ -18,10 +18,9 @@ const ACCEPTED: [&str; 15] = [
     "pair", "send", "widen", "inv", "markers",
 ];
 const CALLABLE: &str = "source anonymous callable requires its supported closed Rust frame";
-const RECORD: &str = "source record variants require their wider profile";
 /// Each generated provider opponent appends these lines to the frozen
 /// provider after `// Generated callable-field opponent.`.
-const OPPONENTS: [(&str, &str, &str); 5] = [
+const OPPONENTS: [(&str, &str, &str); 4] = [
     ("hr", "pub struct Hr { pub f: fn(&u8) -> u8 }\n", CALLABLE),
     (
         "region",
@@ -34,16 +33,16 @@ const OPPONENTS: [(&str, &str, &str); 5] = [
         CALLABLE,
     ),
     (
-        "record-variant",
-        "pub enum Kind { Placeholder { value: u8, formatter: unsafe fn(u8, u8) -> i32 }, Count(u16) }\n",
-        RECORD,
-    ),
-    (
         "argument-type",
         "pub enum ArgumentType<'a> { Placeholder { value: *const (), formatter: unsafe fn(*const (), &mut u8) -> i32, _lifetime: PhantomData<&'a ()> }, Count(u16) }\n",
-        RECORD,
+        // Amendment 4: the record variant exports, and its formatter's elided
+        // `&mut` is a late-bound region.
+        CALLABLE,
     ),
 ];
+/// The former `record-variant` opponent, which exports since (i): outcomes
+/// amendment 4. Its native witness is `braced_variants`'.
+pub(super) const RECORD_VARIANT: &str = "pub enum Kind { Placeholder { value: u8, formatter: unsafe fn(u8, u8) -> i32 }, Count(u16) }\n";
 /// The former `associated` opponent, which exports since the guarded-methods
 /// item: outcomes amendment 3, mover M4.
 const ASSOCIATED: &str =
@@ -98,6 +97,12 @@ fn clients_call_fn_fields_and_wider_fields_keep_their_fences() -> Result {
         )?;
         assert!(unwritten(&metadata)?, "{name} wrote a packet");
     }
+    let source = packet.folder.join("record-variant.rs");
+    let text = format!("{provider}// Generated callable-field opponent.\n{RECORD_VARIANT}");
+    std::fs::write(&source, text)?;
+    let metadata = packet.folder.join("record-variant.rgcrate");
+    let mut export = packet.export(PROFILE, &source, &metadata);
+    super::artifacts::checked("record-variant", &packet.folder, &mut export)?;
     associated(&packet)
 }
 #[test]

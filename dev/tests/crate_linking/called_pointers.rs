@@ -2,11 +2,11 @@
 //! exported bodies, and constructors reified to fn pointers. Each consumer
 //! re-proves a call's signature against the callee's pointer type and its
 //! lexical safety, then calls the pointer value in its own lowering.
-//! Higher-ranked and C calls keep their fences by name, as do pointers stored
-//! in record variants; older profiles and readers reject the form, and
-//! malformed code-30 operand lists and unknown safety flags reject by name. A
-//! call through a nominal fn field exports since (ii), and an unsafe call in
-//! an associated fn since the guarded-methods item.
+//! Higher-ranked and C calls keep their fences by name; older profiles and
+//! readers reject the form, and malformed code-30 operand lists and unknown
+//! safety flags reject by name. A call through a nominal fn field exports since
+//! (ii), an unsafe call in an associated fn since the guarded-methods item, and
+//! a call through a record variant's fn field since (i).
 use super::fresh_packets::{Packet, Result, spliced, with_id};
 use rustgm::support::crates;
 const SPEC: &str = "pa29/tests/spec/pointer-calls";
@@ -34,7 +34,7 @@ const DIRECT: &str = "source Call requires its actual direct function-item appli
 const MALFORMED: &str = "body IR value node has malformed operands";
 /// Each generated provider opponent appends these lines to the frozen
 /// provider. rustc 1.98.0 compiles every one but `const-fn`.
-const OPPONENTS: [(&str, &str, &str); 4] = [
+const OPPONENTS: [(&str, &str, &str); 3] = [
     (
         "hr",
         "pub fn hr_call(f: for<'a> fn(&'a u8) -> &'a u8, v: &u8) -> u8 { *f(v) }\n",
@@ -46,11 +46,6 @@ const OPPONENTS: [(&str, &str, &str); 4] = [
         CALLABLE,
     ),
     (
-        "record-variant",
-        "pub enum Kind { Placeholder { value: u8, formatter: unsafe fn(u8, u8) -> i32 }, Count(u16) }\npub struct Arg { pub ty: Kind }\npub fn stored(value: u8) -> Arg { Arg { ty: Kind::Placeholder { value, formatter: render } } }\npub unsafe fn stored_fmt(arg: &Arg, f: u8) -> i32 { match arg.ty { Kind::Placeholder { value, formatter } => unsafe { formatter(value, f) }, Kind::Count(_) => 7 } }\n",
-        "source record variants require their wider profile",
-    ),
-    (
         "const-fn",
         "pub const fn const_call(f: fn(u8) -> i32) -> i32 { f(7) }\n",
         "non-const calls are not allowed in const functions",
@@ -60,6 +55,10 @@ const OPPONENTS: [(&str, &str, &str); 4] = [
 /// amendment 2.
 const FIELD: &str =
     "pub struct Slot { pub f: fn(u8) -> i32 }\npub fn via(s: &Slot) -> i32 { (s.f)(7) }\n";
+/// The former `record-variant` opponent, core's stored formatter, which
+/// exports since (i) on (ii): outcomes amendment 5. Its native witness is
+/// `braced_variants`'.
+pub(super) const RECORD_VARIANT: &str = "pub enum Kind { Placeholder { value: u8, formatter: unsafe fn(u8, u8) -> i32 }, Count(u16) }\npub struct Arg { pub ty: Kind }\npub fn stored(value: u8) -> Arg { Arg { ty: Kind::Placeholder { value, formatter: render } } }\npub unsafe fn stored_fmt(arg: &Arg, f: u8) -> i32 { match arg.ty { Kind::Placeholder { value, formatter } => unsafe { formatter(value, f) }, Kind::Count(_) => 7 } }\n";
 /// The former `associated` opponent, which exports since the guarded-methods
 /// item: outcomes amendment 3, mover M3.
 const ASSOCIATED: &str =
@@ -132,14 +131,16 @@ fn clients_call_pointers_and_stored_pointers_keep_their_fences() -> Result {
         packet.rejected(name, &mut export, diagnostic)?;
         assert!(unwritten(&metadata)?, "{name} wrote a packet");
     }
-    let source = packet.folder.join("field.rs");
-    std::fs::write(
-        &source,
-        format!("{provider}// Generated pointer-call opponent.\n{FIELD}"),
-    )?;
-    let metadata = packet.folder.join("field.rgcrate");
-    let mut export = packet.export(PROFILE, &source, &metadata);
-    super::artifacts::checked("field", &packet.folder, &mut export)?;
+    for (name, lines) in [("field", FIELD), ("record-variant", RECORD_VARIANT)] {
+        let source = packet.folder.join(format!("{name}.rs"));
+        std::fs::write(
+            &source,
+            format!("{provider}// Generated pointer-call opponent.\n{lines}"),
+        )?;
+        let metadata = packet.folder.join(format!("{name}.rgcrate"));
+        let mut export = packet.export(PROFILE, &source, &metadata);
+        super::artifacts::checked(name, &packet.folder, &mut export)?;
+    }
     associated(&packet, &provider)
 }
 #[test]

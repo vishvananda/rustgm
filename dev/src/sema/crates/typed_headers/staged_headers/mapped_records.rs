@@ -167,20 +167,7 @@ fn record_fields(
         budget.charge(field.name.len().saturating_add(1))?;
         budget.reserve(field.name.len().saturating_mul(4))?;
         let ty = graph.ty(field.ty)?;
-        let name = Name::Named(
-            facts
-                .members
-                .names
-                .intern_exact_paid(&field.name, &mut |growth| {
-                    budget
-                        .charge(growth.work)
-                        .map_err(|_| "source nominal name work exceeded header budget")?;
-                    budget
-                        .reserve(growth.bytes)
-                        .map_err(|_| "source nominal name storage exceeded header budget")
-                })
-                .map_err(error)?,
-        );
+        let name = interned(facts, budget, &field.name)?;
         fields.push(Field {
             origin: Origin::External(owner),
             name,
@@ -253,6 +240,7 @@ fn enum_rows(
     let mut variants = Vec::with_capacity(source.len());
     for variant in source {
         let payload = variant.fields.slice(&rows.enums().fields).map_err(error)?;
+        let names = rows.enums().record_names(variant).map_err(error)?;
         budget.charge(payload.len().saturating_add(1))?;
         budget.reserve(
             payload
@@ -263,9 +251,17 @@ fn enum_rows(
         let mut types = Vec::with_capacity(payload.len());
         for (index, field) in (0_u32..).zip(payload) {
             let ty = graph.ty(field.ty)?;
+            let name = match names.and_then(|names| names.get(index as usize)) {
+                Some(spelling) => {
+                    budget.charge(spelling.len().saturating_add(1))?;
+                    budget.reserve(spelling.len().saturating_mul(4))?;
+                    interned(facts, budget, spelling)?
+                }
+                None => Name::Index(index),
+            };
             fields.push(Field {
                 origin: Origin::External(owner),
-                name: Name::Index(index),
+                name,
                 ty,
                 access: Access::Public,
             });
@@ -275,6 +271,7 @@ fn enum_rows(
             shape: match variant.shape {
                 s::VariantShape::Unit => Shape::Unit,
                 s::VariantShape::Tuple => Shape::Tuple,
+                s::VariantShape::Record => Shape::Record,
             },
             fields,
             constructor: context.definition(variant.declaration, budget)?,
@@ -303,6 +300,23 @@ fn enum_rows(
             variants,
             nullable,
         },
+    ))
+}
+/// A record field's name, record structs' and record variants' alike.
+fn interned(facts: &mut Declarations, budget: &mut Headers, spelling: &str) -> Result<Name, Error> {
+    Ok(Name::Named(
+        facts
+            .members
+            .names
+            .intern_exact_paid(spelling, &mut |growth| {
+                budget
+                    .charge(growth.work)
+                    .map_err(|_| "source nominal name work exceeded header budget")?;
+                budget
+                    .reserve(growth.bytes)
+                    .map_err(|_| "source nominal name storage exceeded header budget")
+            })
+            .map_err(error)?,
     ))
 }
 /// The provider's source nullable rule, re-derived from the validated header:

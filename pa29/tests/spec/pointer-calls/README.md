@@ -39,11 +39,11 @@ outcomes file and built by `crate_linking::pointer_calls`. RustGM's version-13
 export rejects each by name:
 
 - higher-ranked and C pointers;
-- an unsafe pointer call in an associated fn;
-- the stored formatter in a record variant, a pre-existing nominal-header
-  fence outside R2's body scope;
 - a const fn calling a pointer, which rustc also rejects.
 
-rustc accepts all but the last, so the first four are known rejects-valid. A
-sixth opponent, a call through a struct's fn-pointer field, exports since
-Lane C's (ii) (outcomes amendment 2).
+rustc accepts all but the last, so the first two are known rejects-valid.
+Three former opponents export: a call through a struct's fn-pointer field
+since Lane C's (ii) (outcomes amendment 2), an unsafe pointer call in an
+associated fn since the associated-unsafe item (outcomes amendment 3), and
+the stored formatter in a record variant since Lane D's (i) on (ii) (outcomes
+amendment 5).

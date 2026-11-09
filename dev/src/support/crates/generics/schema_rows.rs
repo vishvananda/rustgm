@@ -577,6 +577,7 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
         headers: Vec::new(),
         variants: Vec::new(),
         fields: Vec::new(),
+        names: Vec::new(),
     },
     pattern_ranges: Vec::new(),
     diagnostics: Vec::new(),

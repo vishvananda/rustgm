@@ -136,7 +136,9 @@ oracle and candidate run (`pa29/tests/pointer-call-outcomes.json`).
     exports since the associated-unsafe item
     ([guarded-methods.md](guarded-methods.md), outcomes amendment 3).
   - The stored-formatter witness, a record variant holding an `unsafe fn`,
-    stops at "source record variants require their wider profile".
+    stopped at "source record variants require their wider profile". It
+    exports since Lane D's (i) on (ii), and a fresh consumer calling through
+    it exits 42 natively (outcomes amendment 5).
   - A field call `(s.f)(7)` stopped at "source shared call type requires an
     actual closed callable frame". It exports since (ii) (outcomes
     amendment 2).

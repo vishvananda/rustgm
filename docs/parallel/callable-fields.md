@@ -78,8 +78,11 @@ the oracle (`pa29/tests/callable-field-outcomes.json`).
 - **Opponents, known rejects-valid.**
   - Higher-ranked, early-region and C fn fields keep "source anonymous
     callable requires its supported closed Rust frame" at export.
-  - A record variant holding a fn, and core's `ArgumentType` shape, keep
-    "source record variants require their wider profile": item (i).
+  - A record variant holding a fn, and core's `ArgumentType` shape, kept
+    "source record variants require their wider profile" until item (i).
+    Since (i) the first exports, and a fresh consumer calling through it
+    exits 42 natively. `ArgumentType`'s formatter has a late-bound `&mut`,
+    so it keeps the higher-ranked text above (outcomes amendment 4).
   - A safe associated fn calling an unsafe fn field kept "source unsafe
     associated Calls require their wider actual profile". An unsafe
     associated declaration instead hits "source nonordinary callable

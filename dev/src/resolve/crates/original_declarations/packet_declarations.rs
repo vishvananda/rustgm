@@ -106,12 +106,15 @@ fn reserve_definitions(
     imported: &Imported,
     work: &mut Work,
 ) -> Result<Vec<DefId>, Error> {
-    let (definitions, owners) = declarations(resolver, scope, artifact, rows, imported, work)?;
+    let records = Records::new(&rows, work)?;
+    let (definitions, owners) =
+        declarations(resolver, scope, artifact, rows, imported, &records, work)?;
     let body_scopes = scope_rows::bodies(resolver, &rows, &owners, rows.body_owners().len(), work)?;
+    let marked = (&*rows, &records);
     if rows.descriptor().profile().module_contracts() {
-        scope_rows::namespace_assign(resolver, &rows, &definitions, &owners, &body_scopes, work)?;
+        scope_rows::namespace_assign(resolver, marked, &definitions, &owners, &body_scopes, work)?;
     } else {
-        scope_rows::assign(resolver, &rows, &definitions, &owners, &body_scopes, work)?;
+        scope_rows::assign(resolver, marked, &definitions, &owners, &body_scopes, work)?;
     }
     Ok(definitions)
 }
@@ -183,6 +186,7 @@ fn declarations(
     artifact: &Interface,
     rows: s::ValidatedView<'_>,
     imported: &Imported,
+    records: &Records,
     work: &mut Work,
 ) -> Result<(Vec<DefId>, Vec<ScopeId>), Error> {
     let root = ExternalDef::new(
@@ -230,7 +234,7 @@ fn declarations(
             u32::try_from(resolver.facts.definitions.len())
                 .map_err(|_| error("source declaration remap overflow"))?,
         );
-        let (kind, namespace) = kind(row.definition.kind);
+        let (kind, namespace) = records.kind(index, row);
         resolver.facts.definitions.push(Definition {
             name,
             namespace,
@@ -253,6 +257,41 @@ fn declarations(
         scope_rows::owners(resolver, scope, root_index, &rows, work)?
     };
     Ok((definitions, owners))
+}
+/// Version thirteen: the declaration rows of record variants. A record
+/// variant has no constructor, so its one row names its type-namespace
+/// definition; every other variant row names its value constructor.
+pub(super) struct Records(Vec<bool>);
+impl Records {
+    pub(super) fn new(rows: &s::Columns, work: &mut Work) -> Result<Self, Error> {
+        let variants = &rows.enums().variants;
+        work.charge(variants.len().saturating_add(1))?;
+        if variants
+            .iter()
+            .all(|variant| variant.shape != s::VariantShape::Record)
+        {
+            return Ok(Self(Vec::new()));
+        }
+        work.charge(rows.declarations.len())?;
+        let mut records = vec![false; rows.declarations.len()];
+        for variant in variants {
+            if variant.shape == s::VariantShape::Record {
+                *records
+                    .get_mut(variant.declaration.0 as usize)
+                    .ok_or_else(|| error("source record variant has no declaration row"))? = true;
+            }
+        }
+        Ok(Self(records))
+    }
+    /// The resolver kind and namespace of declaration row `index`.
+    pub(super) fn kind(&self, index: usize, row: &s::Declaration) -> (DefKind, Namespace) {
+        let (kind, namespace) = kind(row.definition.kind);
+        if self.0.get(index).copied().unwrap_or(false) {
+            (kind, Namespace::Type)
+        } else {
+            (kind, namespace)
+        }
+    }
 }
 pub(super) fn kind(kind: s::DefinitionKind) -> (DefKind, Namespace) {
     match kind {

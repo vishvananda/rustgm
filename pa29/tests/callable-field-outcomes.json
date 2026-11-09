@@ -36,6 +36,13 @@
       "before": "any oracle or candidate run of Lane C's associated-unsafe item (pa29/tests/guarded-method-outcomes.json), which names this move (M4)",
       "governs": "Lane C's associated-unsafe item (pa29/tests/guarded-method-outcomes.json)",
       "change": "the `associated` opponent, `impl Table { pub fn go(&self, p: *const ()) -> i32 { unsafe { (self.call)(p) } } }`, is expected exported under module-bodies-v13 with a packet written, and a client calling `go` on a client-built `Table`, obj/parallel/associated-unsafe/gen-clients/m4-associated.rs (sha256 3ea57e3c07ace54f6066ae95b3167e8a8a806ff1f188a2d6f50260ff745294fd), accepted with native exit 42, no longer rejected with `source unsafe associated Calls require their wider actual profile`. rustc 1.98.0 accepted the provider in (ii)'s oracle, and this item's oracle runs it with the client. Every other case is unchanged. The generated opponents become five. M4, approved by name by the integrator (2026-11-09), conditional on its rustc oracle accepting"
+    },
+    {
+      "recorded": "2026-11-09T18:44:48Z",
+      "before": "any candidate run of (i) on the a6be80084 base; declared in record-variant-outcomes.json amendment 4 with its code-reading predictions",
+      "governs": "the (i) x (ii) interaction: Lane D's (i), record variants under version 13 (pa29/tests/record-variant-outcomes.json amendment 4)",
+      "change": "(i) retires `source record variants require their wider profile`. The `record-variant` opponent is expected exported under module-bodies-v13 with a packet written: its zero-slot `unsafe fn` field forms in Kind's own header frame, as a tuple variant's does. The integrator approved this flip by name on two conditions: the recorded rustc status 0, and a fresh-consumer native exit-42 witness that calls through the record variant's fn field (record-variant-outcomes.json witness W1, which builds `base::Kind::Placeholder { value: 20, formatter: base::render }`, matches it by name and calls `formatter(value, 22)`). The `argument-type` opponent is expected rejected with `source anonymous callable requires its supported closed Rust frame`, the `hr` opponent's text, because its formatter's elided `&mut` is a late-bound region. Control 0's `record-variant` clause becomes pointer-call amendment 5's export, and limits/1 becomes the record-variant limit below. With amendment 3's `associated` move, the generated opponents become four; every other case is unchanged",
+      "renumbered": "recorded as amendment 3 on a6be80084, where its count read five generated opponents; numbered 4 on the rebase onto 198fdea9b, after Lane C's amendment 3 (18:11:59Z), which keeps its number, and its count becomes the union's"
     }
   ],
   "rule": "approved design, with no wire change. Version 13 admits a CallableType binder owned by a nominal, with no parent and no slots (frame_owners, gate a); versions 10 and 12 keep `source shared call type requires an actual closed callable frame`. The port plan forms a nominal field's Function root in that nominal's header frame (Rewrite::Nominal), and a called constructor's payload in its own nominal's header frame (Target::Constructor), checking zero slots, the Rust convention and the exact owner; function targets keep their checks (gate b). A field type whose frame binds slots keeps `source nominal callable field requires its wider binder profile`. A call signature's closed CallableType frame must belong to a function header (request_ports), so a nominal's frame never types a call",
@@ -196,7 +203,8 @@
       "appended": "pub enum Kind { Placeholder { value: u8, formatter: unsafe fn(u8, u8) -> i32 }, Count(u16) }\n",
       "rustc_status": 0,
       "rustgm_export": "source record variants require their wider profile",
-      "note": "a record variant holding a fn: item (i), Lane D after F; known rejects-valid"
+      "note": "a record variant holding a fn: item (i), Lane D after F; known rejects-valid",
+      "amended_rustgm_export": "exported: module-bodies-v13 writes a packet (amendment 4, (i) x (ii)); witness W1 exits 42 natively"
     },
     "associated": {
       "appended": "impl Table { pub fn go(&self, p: *const ()) -> i32 { unsafe { (self.call)(p) } } }\n",
@@ -209,7 +217,8 @@
       "appended": "pub enum ArgumentType<'a> { Placeholder { value: *const (), formatter: unsafe fn(*const (), &mut u8) -> i32, _lifetime: PhantomData<&'a ()> }, Count(u16) }\n",
       "rustc_status": 0,
       "rustgm_export": "source record variants require their wider profile",
-      "note": "core's fmt::rt ArgumentType: its record variant fences first, and its formatter is also higher-ranked; known rejects-valid"
+      "note": "core's fmt::rt ArgumentType: its record variant fences first, and its formatter is also higher-ranked; known rejects-valid",
+      "amended_rustgm_export": "source anonymous callable requires its supported closed Rust frame (amendment 4, (i) x (ii))"
     }
   },
   "controls": [
@@ -217,7 +226,8 @@
       "control": "approved flip: R2's generated `field` opponent (pointer-call-outcomes.json amendment 2)",
       "rustc_status": 0,
       "expected": "spec/pointer-calls/provider.rs plus `pub struct Slot { pub f: fn(u8) -> i32 }` and `via` exports under module-bodies-v13; versions 12 and 10 keep their texts; `record-variant` keeps `source record variants require their wider profile`",
-      "observed": "as expected in the flip survey; called_pointers' amended control exports it (fastcheck fc3, receipt obj/qualification/fast/1794241171146984764, 30 exact tests)"
+      "observed": "as expected in the flip survey; called_pointers' amended control exports it (fastcheck fc3, receipt obj/qualification/fast/1794241171146984764, 30 exact tests)",
+      "amended_expected": "amendment 4: `record-variant` exports under module-bodies-v13 (pointer-call amendment 5)"
     },
     {
       "control": "older profile: spec/source-branches/provider.rs plus `// Generated callable-field control.` and `pub struct Slot { pub f: fn(u8) -> i32 }`",
@@ -299,8 +309,9 @@
     "clients": 16,
     "accepted_clients": 15,
     "rejected_clients": 1,
-    "generated_opponents": 5,
-    "known_rejects_valid": "hr, region, c, record-variant, argument-type, and the arena control"
+    "generated_opponents": 4,
+    "known_rejects_valid": "hr, region, c, argument-type, and the arena control",
+    "amended_controls": "2 (associated, amendment 3; record-variant, amendment 4)"
   },
   "native": {
     "expected": "the 15 accepted clients exit 42 natively with empty stdout, as rustc's do",
@@ -313,5 +324,8 @@
     "the exporter's pre-existing arena fence rejects the source-nominals provider plus a fn field in every profile on the base pin and the candidate",
     "the provider leaves out RawWakerVTable's `derive(PartialEq)`: comparing fn pointers is unpredictable, and rustc warns `unpredictable_function_pointer_comparisons`"
   ],
-  "oracle_observed": "rustc 1.98.0 (obj/parallel/callable-fields/oracle/run.log): after amendment 1 all 15 accepted clients exit 42 with no warnings; narrow is rejected (status 1) with the unnumbered `lifetime may not live long enough`; the provider compiles with one unused_unsafe warning at the inherited safe_block; every generated provider and control compiles (status 0). The first run (run1.log) ICEd on apply and pair (amendment 1)"
+  "oracle_observed": "rustc 1.98.0 (obj/parallel/callable-fields/oracle/run.log): after amendment 1 all 15 accepted clients exit 42 with no warnings; narrow is rejected (status 1) with the unnumbered `lifetime may not live long enough`; the provider compiles with one unused_unsafe warning at the inherited safe_block; every generated provider and control compiles (status 0). The first run (run1.log) ICEd on apply and pair (amendment 1)",
+  "amended_limits": {
+    "1": "amendment 4: record variants export under (i), and their zero-slot fn fields form as tuple variants' do; a record variant's fn field with bound slots, as core's ArgumentType formatter, keeps the higher-ranked fence"
+  }
 }

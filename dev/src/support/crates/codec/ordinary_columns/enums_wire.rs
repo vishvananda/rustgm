@@ -1,5 +1,8 @@
 //! Version thirteen's enum variant columns follow the associated-result columns
-//! exactly when the declaration table names an enum.
+//! exactly when the declaration table names an enum. A dense name column
+//! follows the field rows exactly when some variant row is a record variant:
+//! each record variant's field names, in variant-row and ordinal order, with
+//! no count, as the record variants' field ranges imply it.
 use super::{Input, Writer, g, id, range, s};
 use crate::support::crates::{MAX_COMPONENTS, owner_catalog::DeclarationRef};
 
@@ -21,7 +24,13 @@ pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(),
     let enums = rows.enums();
     super::write_copy(out, &enums.headers, header_write)?;
     super::write_copy(out, &enums.variants, variant_write)?;
-    super::write_copy(out, &enums.fields, field_write)
+    super::write_copy(out, &enums.fields, field_write)?;
+    for variant in &enums.variants {
+        for name in enums.record_names(variant)?.unwrap_or_default() {
+            out.string(name)?;
+        }
+    }
+    Ok(())
 }
 pub(super) fn decode(
     read: &mut Input<'_, '_>,
@@ -34,14 +43,46 @@ pub(super) fn decode(
     let headers = read.list(MAX_COMPONENTS, 13, header_read)?;
     let variants = read.list(MAX_COMPONENTS, 33, variant_read)?;
     let fields = read.list(MAX_COMPONENTS, 16, field_read)?;
+    let names = names_read(read, &variants, fields.len())?;
     if !(headers.is_empty() && variants.is_empty() && fields.is_empty()) {
         read.cold(rows)?.enums = s::EnumColumns {
             headers,
             variants,
             fields,
+            names,
         };
     }
     Ok(())
+}
+/// Presence and length derive from the decoded variant rows: one name slot
+/// per field row once any variant is a record variant, filled from the wire
+/// for record variants' fields and empty for positional ones.
+fn names_read(
+    read: &mut Input<'_, '_>,
+    variants: &[s::VariantHeader],
+    fields: usize,
+) -> Result<Vec<String>, &'static str> {
+    if !variants
+        .iter()
+        .any(|variant| variant.shape == s::VariantShape::Record)
+    {
+        return Ok(Vec::new());
+    }
+    read.reserve(fields.saturating_mul(size_of::<String>()))?;
+    let mut names = vec![String::new(); fields];
+    for variant in variants {
+        if variant.shape != s::VariantShape::Record {
+            continue;
+        }
+        let slots = names
+            .get_mut(variant.fields.start as usize..variant.fields.end as usize)
+            .ok_or("source record variant names have incomplete field coverage")?;
+        read.reader.atoms(slots.len())?;
+        for slot in slots {
+            *slot = read.string()?;
+        }
+    }
+    Ok(names)
 }
 fn header_write(out: &mut Writer, row: s::EnumHeader) -> Result<(), &'static str> {
     id(out, row.declaration.0)?;
@@ -70,6 +111,7 @@ fn variant_write(out: &mut Writer, row: s::VariantHeader) -> Result<(), &'static
     out.u8(match row.shape {
         s::VariantShape::Unit => 0,
         s::VariantShape::Tuple => 1,
+        s::VariantShape::Record => 2,
     })?;
     out.bytes(&row.discriminant.to_le_bytes())?;
     range(out, row.fields)
@@ -81,6 +123,7 @@ fn variant_read(read: &mut Input<'_, '_>) -> Result<s::VariantHeader, &'static s
         shape: match read.reader.u8()? {
             0 => s::VariantShape::Unit,
             1 => s::VariantShape::Tuple,
+            2 => s::VariantShape::Record,
             _ => return Err("unknown source variant shape"),
         },
         discriminant: read.reader.u128()?,

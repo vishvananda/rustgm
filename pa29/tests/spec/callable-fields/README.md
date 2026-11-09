@@ -50,8 +50,10 @@ The generated opponents and the older-profile controls are listed in the
 outcomes file and built by `crate_linking::fielded_callables`. RustGM's
 version-13 export rejects each opponent by name:
 
-- higher-ranked, early-region and C fn fields;
-- a record variant holding a fn, and core's `ArgumentType` shape;
-- a safe associated fn calling an unsafe fn field in an unsafe block.
+- higher-ranked, early-region and C fn fields, and core's `ArgumentType`
+  shape, whose formatter is higher-ranked (outcomes amendment 4).
 
-rustc accepts all six, so they are known rejects-valid.
+rustc accepts all four, so they are known rejects-valid. Two former opponents
+export: a safe associated fn calling an unsafe fn field in an unsafe block
+since the associated-unsafe item (outcomes amendment 3), and a record variant
+holding a zero-slot fn since Lane D's (i) (outcomes amendment 4).

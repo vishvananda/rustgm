@@ -131,7 +131,10 @@
     },
     {
       "mutation": "Opt::Some shape byte 2",
-      "observed": "unknown source variant shape"
+      "observed": "unknown source variant shape",
+      "amended_mutation": "Opt::Some shape byte 3",
+      "amended_observed": "unknown source variant shape",
+      "amended_by": "record-variant-outcomes.json amendment 3: version 13 assigns shape byte 2 to record variants, and the byte-2 row now reports `truncated metadata artifact`"
     },
     {
       "mutation": "version byte relabelled 13 to 12",

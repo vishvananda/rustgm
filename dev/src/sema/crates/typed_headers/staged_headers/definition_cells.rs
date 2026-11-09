@@ -70,26 +70,28 @@ pub(super) fn prepare(
     let mut result = Vec::with_capacity(rows.declarations.len());
     for (index, (raw, cell)) in rows.declarations.iter().zip(cells).enumerate() {
         budget.charge(1)?;
-        let required = matches!(
-            raw.definition.kind,
+        let row = u32::try_from(index).map_err(|_| error("source type cell ordinal overflow"))?;
+        let required = match raw.definition.kind {
             s::DefinitionKind::Struct
-                | s::DefinitionKind::Enum
-                | s::DefinitionKind::Variant
-                | s::DefinitionKind::AssociatedType
-                | s::DefinitionKind::Function
-                | s::DefinitionKind::Constant
-                | s::DefinitionKind::SelfType
-                | s::DefinitionKind::TypeParameter
-                | s::DefinitionKind::ConstParameter
-        );
+            | s::DefinitionKind::Enum
+            | s::DefinitionKind::AssociatedType
+            | s::DefinitionKind::Function
+            | s::DefinitionKind::Constant
+            | s::DefinitionKind::SelfType
+            | s::DefinitionKind::TypeParameter
+            | s::DefinitionKind::ConstParameter => true,
+            // A record variant is no value: `E::V` names no constructor.
+            s::DefinitionKind::Variant => !rows
+                .record_variant(crate::support::crates::owner_catalog::DeclarationRef(row))
+                .map_err(error)?,
+            _ => false,
+        };
         if required != cell.is_some() {
             return Err(error(
                 "source declaration has a missing or invented canonical type cell",
             ));
         }
         if let Some(ty) = cell {
-            let row =
-                u32::try_from(index).map_err(|_| error("source type cell ordinal overflow"))?;
             let definition = context.definition(
                 crate::support::crates::owner_catalog::DeclarationRef(row),
                 budget,
@@ -111,7 +113,7 @@ pub(super) fn prepare(
 }
 /// A unit variant's cell is its enum's own type. A tuple variant's is the
 /// constructor item over `fn(payload) -> Enum`, exactly as local declarations
-/// complete it; the header supplies no signature.
+/// complete it; the header supplies no signature. A record variant has none.
 fn variant_cells(
     context: &mapped_source::Context<'_>,
     graph: &mapped_source::Graph,
@@ -134,6 +136,7 @@ fn variant_cells(
         {
             budget.charge(1)?;
             let ty = match variant.shape {
+                s::VariantShape::Record => continue,
                 s::VariantShape::Unit => owner,
                 s::VariantShape::Tuple => {
                     let payload = variant.fields.slice(&rows.enums().fields).map_err(error)?;

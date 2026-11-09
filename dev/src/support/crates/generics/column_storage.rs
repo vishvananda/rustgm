@@ -390,4 +390,18 @@ impl<'a> ValidatedView<'a> {
             .copied()
             .ok_or("source declaration header is outside the completed ledger")
     }
+    /// Version thirteen: whether a declaration is a record variant, whose one
+    /// row names its type-namespace definition and which has no value.
+    /// # Errors
+    /// Rejects a reference outside the same immutable declaration catalog.
+    pub fn record_variant(&self, declaration: DeclarationRef) -> Result<bool, &'static str> {
+        Ok(match self.header(declaration)? {
+            Some(super::super::HeaderRef::Variant(index)) => self
+                .enums()
+                .variants
+                .get(index as usize)
+                .is_some_and(|variant| variant.shape == super::super::VariantShape::Record),
+            _ => false,
+        })
+    }
 }
