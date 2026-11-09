@@ -57,7 +57,7 @@ fn entry(packet: &Packet, name: &str, body: &str) -> Result<std::path::PathBuf> 
 /// header contract with no `must_use` or inline advisory, then the repeated
 /// declaration, scope, self type, field and input ranges, declared inputs
 /// and the representation byte.
-fn header_row(bytes: &[u8], offset: usize) -> bool {
+pub(super) fn header_row(bytes: &[u8], offset: usize) -> bool {
     (42..bytes.len()).contains(&offset)
         && bytes[offset - 42..offset - 38] == bytes[offset - 32..offset - 28]
         && bytes[offset - 34..offset - 32] == [0, 0]
@@ -158,17 +158,22 @@ fn forged_transparent_headers_reject_in_fresh_consumers() -> Result {
     )?;
     let mut honest = packet.consumer(&user, "unwrap", &packet.metadata, &packet.owner());
     super::artifacts::checked("unwrap", &packet.folder, &mut honest)?;
+    let enumerated = "source enum nominal header carries record fields or representation";
+    // Amended with B2 slice S: byte 3 is now SIMD, which the fresh consumer
+    // re-proves from `Wrap`'s own field; byte 4 stays unknown.
     for (name, wire, diagnostic) in [
         (
             "representation",
-            with_byte(&bytes, wrap, 3),
+            with_byte(&bytes, wrap, 4),
             "unknown source nominal representation",
         ),
         (
-            "enum-transparent",
-            with_byte(&bytes, mode, 2),
-            "source enum nominal header carries record fields or representation",
+            "simd-scalar",
+            with_byte(&bytes, wrap, 3),
+            "SIMD representation requires an array field",
         ),
+        ("enum-transparent", with_byte(&bytes, mode, 2), enumerated),
+        ("enum-simd", with_byte(&bytes, mode, 3), enumerated),
         ("two-transparent", with_byte(&bytes, pair, 2), NONTRIVIAL),
         (
             "version-12",

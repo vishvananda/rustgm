@@ -90,6 +90,8 @@ mod scheduling_context;
 mod source_nominals;
 #[path = "crate_linking/spelled_roles.rs"]
 mod spelled_roles;
+#[path = "crate_linking/vector_records.rs"]
+mod vector_records;
 #[path = "crate_linking/whole_arrays.rs"]
 mod whole_arrays;
 

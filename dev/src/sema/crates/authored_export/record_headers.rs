@@ -101,6 +101,7 @@ impl Stage {
             .ok_or("source nominal lacks its completed shape")?;
         let enumeration = shape.kind == aggregate::Kind::Enum;
         let repr = record_repr(shape.repr, enumeration, self.body_nodes())?;
+        concrete_simd(facts, owner, repr)?;
         if facts.aggregates.shared_mutation(item) != Some(aggregate::SharedMutation::Ordinary)
             || facts.aggregates.permits_dangling_pointers(item) != Some(false)
             || !(shape.kind == aggregate::Kind::Struct
@@ -256,9 +257,22 @@ impl Stage {
         Ok(())
     }
 }
+/// Stricter than rustc for now: a generic SIMD record waits for its wider
+/// contract, so no consumer sees an imported generic SIMD definition.
+fn concrete_simd(facts: &Declarations, owner: DefId, repr: RecordRepr) -> Result<(), &'static str> {
+    let generic = facts
+        .generics
+        .parameters
+        .get(&owner)
+        .is_some_and(|parameters| !parameters.is_empty());
+    if repr == RecordRepr::Simd && generic {
+        return Err("source generic SIMD record requires its wider complete contract");
+    }
+    Ok(())
+}
 /// The record representation a nominal header carries; an enum's integer
 /// tag travels in its variant table. Version thirteen also carries a
-/// transparent struct.
+/// transparent struct and a SIMD struct with no modifier.
 fn record_repr(
     repr: aggregate::Repr,
     enumeration: bool,
@@ -286,6 +300,13 @@ fn record_repr(
             tag: None,
             arguments: aggregate::ArgumentPassing::Ordinary,
         } if !enumeration && body_nodes => RecordRepr::Transparent,
+        aggregate::Repr {
+            representation: aggregate::Representation::Simd,
+            packed: None,
+            align: None,
+            tag: None,
+            arguments: aggregate::ArgumentPassing::Ordinary,
+        } if !enumeration && body_nodes => RecordRepr::Simd,
         // An enum's integer tag travels in its variant table.
         aggregate::Repr {
             representation: aggregate::Representation::Rust,

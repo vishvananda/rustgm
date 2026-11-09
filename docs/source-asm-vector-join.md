@@ -225,6 +225,16 @@ crate still stops at `__m128`'s `repr(simd)`, before those impls, as declared
 before and after T in `pa29/tests/array-type-outcomes.json`. S's
 representation byte comes next.
 
+Amendment (B2 S, [SIMD header rows](parallel/simd-header-rows.md)): version
+13 now carries `#[repr(simd)]` as nominal header representation byte 3, so
+`__m128` and its `[f32; 4]` field export. The stream body's crate now stops at
+`_mm_stream_ps`'s `#[target_feature]`, with
+"source named/foreign/target-feature function metadata requires its wider
+profile", as declared in `pa41/tests/simd-transport-outcomes.json`. F owns
+that row. Each consumer now re-proves an imported asm body's `xmm_reg`
+operand: S's `store` client lowers `movups [{p}],{a}` over an imported
+`V([u32; 4])` and exits 42 natively.
+
 ### Qualification
 
 All outcomes except the stream body's publication error were declared in

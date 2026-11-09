@@ -17,6 +17,10 @@ pub enum RecordRepr {
     /// `#[repr(transparent)]`: only a version-thirteen source struct header
     /// carries it, and every consumer re-proves it from its own fields.
     Transparent,
+    /// `#[repr(simd)]` with no modifier: only a version-thirteen source
+    /// struct header carries it, and every consumer re-proves the lanes from
+    /// its own single array field.
+    Simd,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

@@ -79,6 +79,7 @@ pub(super) fn prepare(
                 RecordRepr::C => aggregate::Representation::C,
                 // The consumer's own layout pass re-proves it.
                 RecordRepr::Transparent => aggregate::Representation::Transparent,
+                RecordRepr::Simd => aggregate::Representation::Simd,
             },
             ..aggregate::Repr::default()
         };

@@ -6737,6 +6737,29 @@ transparent struct as `repr(Rust)` without detection: the representation is
 authenticated by the packet's inventory identity, not re-proved, and a later
 ABI digest may close that gap.
 
+A version-thirteen struct header may also be `#[repr(simd)]`: representation
+byte 3 = Simd, read only under `body_nodes()`, while bytes from 4 up stay
+unknown. Only a non-generic struct header with no packing, alignment or tag
+carries it. A packed or aligned SIMD struct keeps "source nominal
+representation requires its wider complete contract". A SIMD struct with any
+type, const or lifetime parameter fails with "source generic SIMD record
+requires its wider complete contract", stricter than rustc for now. An enum
+header with byte 3 is rejected. No lane, count or layout fact travels: the
+lanes are the struct's one field type, an ordinary tag-14 array row. A
+consumer interns the struct as SIMD, and its own layout pass re-runs the SIMD
+declaration and representation checks over its own field. SIMD shapes and
+layouts are computed on demand, and an imported asm body's `xmm_reg` operand
+is re-proved by the consumer's own 128-bit operand check, which fails with
+"assembly SIMD operand requires its completed genuine representation" when the
+header is not SIMD. Older profiles reject a SIMD struct by name, and the older
+non-source record writer rejects it with "SIMD record metadata is not
+implemented". Packets without one keep their exact bytes. Rewriting byte 3 to
+byte 0 changes ABI-visible facts: alignment 16 versus 4, and vector-register
+passing at C boundaries. An asm operand's re-proof rejects that rewrite by
+name. Without one, it is a silent mismatch that, like the transparent rewrite,
+is authenticated only by the packet's inventory identity and left for a later
+ABI digest.
+
 A version-thirteen role row may also name `PhantomData`: the existing spelled
 form (tag 255, `phantom_data` and the declaration address), alone of the
 Pointee family. Its declaration is an ordinary `repr(Rust)` unit struct

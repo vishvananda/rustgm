@@ -5,6 +5,28 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane D [B2 S, SIMD header rows](parallel/simd-header-rows.md) carries
+`#[repr(simd)]` structs under version 13 as nominal header representation
+byte 3. No lane, count or layout fact travels: each consumer maps the byte to
+its own SIMD representation, re-runs the declaration and layout checks over
+its own field, and re-proves an imported asm body's `xmm_reg` operand.
+
+- The `store` client lowers `movups [{p}],{a}` over an imported
+  `V([u32; 4])` and exits 42 natively. Forging `V`'s byte to 0 fails that
+  re-proof by name.
+- Known stricter-than-rustc item (S3): a SIMD struct with any type, const or
+  lifetime parameter fails at export with "source generic SIMD record
+  requires its wider complete contract", which rustc 1.98.0 accepts. It
+  waits for a lane proof at each consumer's instantiation.
+- Packed and aligned SIMD structs keep the representation fence, and lane
+  limits keep theirs. Both old readers reject the packet by name, and
+  existing v13 packets are byte-identical.
+- Integrity limit (S4): without asm, a 3-to-0 rewrite is ABI-visible and
+  undetected, like the transparent 2-to-0 rewrite. It is left for a later
+  ABI digest.
+- Open: F. The stream witness now stops at `_mm_stream_ps`'s
+  `#[target_feature]`.
+
 Lane D [B2 T, array type rows](parallel/array-type-rows.md) exports whole
 `[T; N]` values under version 13 as type recipe tag 14, `14 | element |
 term`, with K's const term in place and a dense cold length column. Each

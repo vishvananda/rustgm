@@ -1,0 +1,183 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj) with the client object and a C main",
+ "providers": [
+  {
+   "file": "spec/simd-transport/provider.rs",
+   "sha256": "35d2a0c47c43f805a9b42eb5aea2c0080cf07711f4ed68780ff44c735e5019b6",
+   "foundation": "lines 1-73 of spec/asm-native/native.rs (the prelude, the genuine `__m128([f32;4])`, the `[T; N]` Clone and Copy impls and `__m128`'s, before `// Pinned stdarch`), byte-identical, then `// Authored SIMD transport section.`"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "declared": "2026-11-09T10:54:35Z",
+ "development_note": "declared before any rustc run of these files and before any S code, from the integrator-approved S notice (2026-11-09). Before declaring, the S baseline, the T candidate CLI (SHA-256 ca3ba92fd045950ea44cf4eb6357954c51a7ce67a393fc5a94cb7093bacc7e39; rebuilt from 008593ab5 at 2026-11-09T10:49Z with identical bytes and pinned as obj/parallel/simd-transport/base), ran the pre-S checks recorded in obj/parallel/simd-transport/twins: (1) it exported the provider and every generated control, giving the `before` texts below; (2) it compiled each client body appended to the provider as one crate (base:: -> crate::) in the default metadata profile: the store twin passes the local frontend and stops only at publishing (`source stability contracts are outside this metadata profile`), and the mistyped twin fails with `incompatible types`. No native twin is possible before S: the CLI lowers a no_core crate only through a source-core publication, and the baseline cannot publish a SIMD header",
+ "rule": "integrator-approved B2 slice S: version thirteen's NominalHeader representation byte 3 is `Simd`, admitted only under body_nodes(); bytes 0, 1 and 2 are unchanged and 4 and above stay unknown. The exporter writes 3 for exactly `#[repr(simd)]` with no packed, align or integer tag on a non-generic struct; every other SIMD form keeps a named fence. No lane, count or layout fact travels: every consumer maps the byte to its own Representation::Simd and re-runs validate_simd_declaration and validate_repr over every aggregate, imports included, and simd_shape and simd_layout on demand. An imported asm body's xmm_reg operand is re-proved by the consumer's own simd_operand. The legacy codec refuses a SIMD record by name",
+ "cases": [
+  {
+   "file": "spec/simd-transport/store.rs",
+   "provider": "spec/simd-transport/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "c7609a62d796ba7b03de4f6b972835523d109f1206f2ff59fdd87957a521ff69",
+   "note": "the fresh consumer imports `V` as SIMD and re-proves `put`'s xmm_reg operand with simd_operand (Ready { u32, 4 }, 128 bits) and the SSE baseline; `put` stores V([42, 1, 2, 3]) through `movups [{p}],{a}` into a local [u32; 4] addressed as `*mut base::V`, and lane 0 is read back through a raw pointer",
+   "lowir": "exactly one assembly template, whose pieces are text `movups [`, operand 0, text `],` and operand 1",
+   "amended": {
+    "recorded": "2026-11-09T10:58:02Z, after the first oracle run and before any development or candidate run",
+    "observed": "rustc 1.98.0 rejected the declared client (f2612754e72db3615421e3974d236f8db6572e0cacd157b9aff7d6b9923b9143) with `requires `freeze` lang_item`; the provider built, mistyped failed with E0308 as declared, and every generated control matched its declared rustc outcome (obj/parallel/simd-transport/rustc, first run)",
+    "cause": "the pinned foundation declares no `freeze` lang item, and the client took `&raw mut` of a local of the ADT `V`, which asks rustc whether `V` is Freeze; A's `stored` client borrows only a u32, which is trivially Freeze",
+    "change": "the local is now `[0u32, 0, 0, 0]` and `p` is `&raw mut out as *mut base::V`; the call, the movups store and the lane-0 read are unchanged. movups does not require a 16-byte-aligned destination",
+    "expected": "unchanged: rustc accepts and the client exits 42; RustGM accepts, lowers one template and exits 42"
+   }
+  },
+  {
+   "file": "spec/simd-transport/mistyped.rs",
+   "provider": "spec/simd-transport/provider.rs",
+   "accepted": false,
+   "rustc": "E0308",
+   "candidate_diagnostic": "incompatible types",
+   "local_twin": "incompatible types",
+   "sha256": "f8b217076b5c6116c63e1f026c0306edf01ba0b5162eba1ab1545c67780964fc",
+   "note": "passes a [u32; 4] to `put` in place of a `V`"
+  }
+ ],
+ "packet": {
+  "envelope": "Lane B's macro envelope (version tag 14, envelope version 2) around the version [13, 0] core, as A's provider packet has, for the foundation's builtin `arch::asm` row",
+  "roundtrip": "encode(decode(bytes)) == bytes",
+  "simd_headers": "exactly two nominal header rows carry representation byte 3: `__m128` and then `V`, in declaration order",
+  "array_rows": "the `[f32; 4]` and `[u32; 4]` field types are tag-14 rows with value terms of length 4 on the usize row, and the impls' `[T; N]` is a slot term"
+ },
+ "export_controls": {
+  "note": "generated providers: the provider's first 73 lines (the foundation, with `__m128`) then one control line, compiled by the oracle as libraries",
+  "provider_v13": {
+   "before": "source nominal representation requires its wider complete contract",
+   "after": "exports (see packet)"
+  },
+  "provider_older_profiles": {
+   "profiles": [
+    "module-branches-v12",
+    "module-nominals-v10"
+   ],
+   "before_and_after": "source declaration kind is outside the initial source profile",
+   "note": "the provider stops both older profiles before its first nominal header, so it cannot witness their representation gate; the older gate below does"
+  },
+  "older_gate": {
+   "control": "`pa29/tests/spec/source-nominals/provider.rs` with `repr_simd` added to its first line's feature list, then `#[repr(simd)] pub struct V { pub lanes: [u32; 4] }`",
+   "rustc": "accepted",
+   "older_before_and_after": "source nominal representation requires its wider complete contract",
+   "v13_before": "source nominal representation requires its wider complete contract",
+   "v13_after": "exports"
+  },
+  "foundation": {
+   "control": "the first 73 lines alone",
+   "rustc": "accepted",
+   "before": "source nominal representation requires its wider complete contract",
+   "after": "exports"
+  },
+  "packed": {
+   "control": "#[repr(simd, packed)] pub struct P(pub [f32; 3]);",
+   "rustc": "accepted",
+   "before_and_after": "source nominal representation requires its wider complete contract",
+   "note": "S2: byte 3 is never written with a modifier dropped"
+  },
+  "align": {
+   "control": "#[repr(simd, align(32))] pub struct A(pub [f32; 4]);",
+   "rustc": "accepted",
+   "before_and_after": "source nominal representation requires its wider complete contract"
+  },
+  "generic": {
+   "control": "#[repr(simd)] pub struct G<T>(pub [T; 4]);",
+   "rustc": "accepted",
+   "before": "source nominal representation requires its wider complete contract",
+   "after": "source generic SIMD record requires its wider complete contract",
+   "note": "S3, stricter than rustc for now: no concrete-only validator ever sees an imported generic SIMD definition"
+  },
+  "const_generic": {
+   "control": "#[repr(simd)] pub struct N<const L: usize>(pub [f32; L]);",
+   "rustc": "accepted",
+   "before": "source nominal representation requires its wider complete contract",
+   "after": "source generic SIMD record requires its wider complete contract"
+  },
+  "lane_limit": {
+   "control": "#[repr(simd)] #[rustc_simd_monomorphize_lane_limit = \"8\"] pub struct L(pub [f32; 4]);",
+   "rustc": "accepted",
+   "before_and_after": "SIMD lane limits require authenticated representation metadata transport",
+   "note": "checked before any header is written; also the local text in the default metadata profile"
+  },
+  "c": {
+   "control": "#[repr(simd, C)] pub struct K(pub [f32; 4]);",
+   "rustc": "E0566 (conflicting_repr_hints, deny by default)",
+   "before_and_after": "conflicting representation hints",
+   "note": "local, before export"
+  }
+ },
+ "forged_rows": {
+  "note": "each forged packet is consumed by a fresh client and rejected by name",
+  "simd_transport": {
+   "v_repr_0": "assembly SIMD operand requires its completed genuine representation",
+   "v_repr_4": "unknown source nominal representation"
+  },
+  "transparent_records_wire_control": {
+   "note": "pa29 spec/transparent-records' generated wire control, recorded as an amendment in pa29/tests/transparent-record-outcomes.json, not a rebless",
+   "wrap_byte_3": {
+    "before": "unknown source nominal representation",
+    "after": "SIMD representation requires an array field",
+    "note": "the fresh consumer's complete_layouts re-validates the imported `Wrap(pub u32)` as SIMD"
+   },
+   "wrap_byte_4": {
+    "after": "unknown source nominal representation",
+    "note": "takes over the old byte-3 control's role"
+   },
+   "mode_byte_3": {
+    "after": "source enum nominal header carries record fields or representation"
+   }
+  },
+  "codec": {
+   "repr_3_without_body_nodes": "unknown source nominal representation",
+   "repr_3_under_body_nodes": "reads back as Simd and writes byte 3",
+   "repr_4_under_body_nodes": "unknown source nominal representation"
+  },
+  "legacy_codec": {
+   "simd_record": "SIMD record metadata is not implemented",
+   "transparent_record": "transparent record metadata is not implemented (the existing guard, now also pinned at the codec)"
+  }
+ },
+ "forged_row_levels": {
+  "v_repr": "byte patches of the honest provider packet's `V` header representation byte. The notice's row-level forgery (decode, set V's repr to Rust, re-encode) is not reachable from an integration test; the representation is one fixed-width byte, so the patched packet is the packet that re-encoding would write. `V`'s byte is the second of exactly two header rows whose representation byte is 3, and only `V` is an asm operand, so the declared re-proof text also shows which header was patched",
+  "transparent_records": "byte patches located by provider-pair differences, as the pa29 wire control already does; `Mode`'s header row follows `Two`'s",
+  "codec": "a library unit control in dev/tests/invariants/vector_headers.rs writes and reads one NominalHeader row under each profile",
+  "legacy_codec": "an Interface with a legacy Nominals table, encoded through crates::encode in dev/tests/metadata_codec/extents.rs"
+ },
+ "old_readers": {
+  "pre_s_reader": "the S baseline (the T candidate ca3ba92f, the reader S changes) consuming the S provider packet rejects it with `unknown source nominal representation`: the type table, which now holds tag 14, decodes before the nominal headers",
+  "pre_t_reader": "the fence candidate 3960ec90 consuming the S provider packet rejects it with `unknown source function type recipe`: the type table precedes the nominal headers",
+  "legacy_decode": "unchanged: `unknown metadata record representation`"
+ },
+ "byte_identity": "the S base (ca3ba92f, built from 008593ab5) and the S candidate publish identical version-thirteen packets for pa29 spec/transparent-records, spec/panic-attributes, spec/macro-contexts, spec/const-parameters, spec/pointer-slices, spec/named-constants and spec/array-types providers, pa41 spec/asm-transport/provider.rs and the native.rs prelude before `#[repr(simd)]`",
+ "flip_survey": "every pa29 and pa41 spec directory with a provider, exported by the S base and the S candidate under version 13, and each of its clients: no accepted packet changes a byte, and every reject-to-accept flip is listed by name before integration. Predicted: only spec/simd-transport, whose provider and store client flip to accepted and whose mistyped client fails with `incompatible types` once a packet exists",
+ "width": "RecordRepr stays 1 B and s::NominalHeader keeps its size (asserted); no column, row or value code is added",
+ "bounded_work": "not declared: S adds no table; each header still writes and reads one representation byte",
+ "stream_witness": {
+  "source": "pa41/tests/spec/asm-native/native.rs before `// Authored observers`",
+  "before": "source nominal representation requires its wider complete contract",
+  "after": "source named/foreign/target-feature function metadata requires its wider profile",
+  "note": "from `_mm_stream_ps`'s `#[target_feature]`, recorded as an amendment in pa41/tests/spec/asm-native/contract.json"
+ },
+ "native": {
+  "store": "exits 42 through the configured locked CPPGM backend; the native leg is the ignored part of the split test",
+  "failed_prediction_rule": "integrator ruling (e): movups is the one instruction in the leg that has not yet run natively (the pinned encoder's 0F 11 store form). If the backend's assembler rejects it, S stops and reports a failed prediction with no backend change",
+  "later_control": "movntps on `V`, once V's 16-byte alignment is shown natively"
+ },
+ "limits": {
+  "s3": "generic SIMD records are stricter than rustc for now, with a docs/library-build-blockers.md entry",
+  "s4": "a forged 3 -> 0 rewrite is ABI-visible (alignment 16 versus 4, vector-register passing at C boundaries). With asm, the re-proof catches it by name; without asm it is a silent runtime mismatch that inventory identity guards and the deferred ABI digest would cover. Recorded beside the transparent limit and F's bit-3 limit"
+ },
+ "oracle": {
+  "observed": "2026-11-09T10:58Z, rustc 1.98.0 (88d9e12ae 2026-08-18), obj/parallel/simd-transport/rustc, on the amended client c7609a62d796ba7b03de4f6b972835523d109f1206f2ff59fdd87957a521ff69",
+  "result": "the provider builds and its object holds `movups %xmm0,(%rdi)`; store links with the provider object and exits 42; mistyped fails with E0308; the packed, align, generic, const-generic and lane-limit controls and the older gate build as libraries; the C control fails with E0566, as declared",
+  "baseline_twin_rerun": "the S baseline's store twin on the amended client still passes the local frontend and stops only at publishing (`source stability contracts are outside this metadata profile`), 2026-11-09T10:59Z"
+ }
+}

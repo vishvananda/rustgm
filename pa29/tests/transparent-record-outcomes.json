@@ -101,7 +101,13 @@
   },
   {
    "control": "forged representation byte 3 on `Wrap`'s nominal header",
-   "expected": "rejected with `unknown source nominal representation`"
+   "expected": "rejected with `unknown source nominal representation`",
+   "amended": {
+    "reason": "B2 slice S admits representation byte 3 as SIMD under version 13, so a forged byte 3 on `Wrap` now decodes and reaches the fresh consumer's layout pass; an amendment, not a rebless",
+    "control": "forged representation byte 4 on `Wrap`'s nominal header, which takes over the unknown-byte role; byte 3 on `Wrap`; and byte 3 on the wire control's `Mode` enum header",
+    "expected": "byte 4 rejected with `unknown source nominal representation`; byte 3 on `Wrap` rejected in the fresh consumer with `SIMD representation requires an array field`, from its own complete_layouts over `Wrap(pub u32)`; byte 3 on `Mode` rejected with `source enum nominal header carries record fields or representation`",
+    "declared": "2026-11-09T10:54:35Z in pa41/tests/simd-transport-outcomes.json (forged_rows.transparent_records_wire_control), before any S development or candidate run; recorded here at 2026-11-09T11:08:55Z"
+   }
   },
   {
    "control": "forged representation byte 2 on an enum's nominal header (the shared lines' `Opt`)",

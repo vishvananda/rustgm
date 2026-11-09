@@ -28,3 +28,12 @@ run. The comment fence's amendments, declared at 2026-11-09T08:12:41Z, are
 recorded beside them. They are checkpoint inputs, not an active grading
 suite. The evidence is in
 [asm-transport.md](../../docs/parallel/asm-transport.md).
+
+`spec/simd-transport/` holds B2 slice S's module-body packet: a provider
+whose first 73 lines are `spec/asm-native/native.rs` through `__m128`'s
+Clone and Copy impls, byte for byte, one accepted client and one opponent.
+`simd-transport-outcomes.json` lists every input with its sha256 and froze
+their outcomes, the generated export controls and the forged rows before any
+run. Its one client amendment is recorded beside the outcome it changes.
+They are checkpoint inputs, not an active grading suite. The evidence is in
+[simd-header-rows.md](../../docs/parallel/simd-header-rows.md).

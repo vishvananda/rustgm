@@ -16,8 +16,12 @@ pub(super) fn encode(
         out.u32(0)?; // Current artifact owner; never a local definition ordinal.
         out.bytes(&[0, 3, u8::from(record.public())])?; // Type namespace, named record.
         out.path(record.definition().path())?;
-        if record.repr() == RecordRepr::Transparent {
-            return Err("transparent record metadata is not implemented");
+        match record.repr() {
+            RecordRepr::Transparent => {
+                return Err("transparent record metadata is not implemented");
+            }
+            RecordRepr::Simd => return Err("SIMD record metadata is not implemented"),
+            RecordRepr::Rust | RecordRepr::C => {}
         }
         if profile.aggregates {
             out.u8(u8::from(record.repr() == RecordRepr::C))?;

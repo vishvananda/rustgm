@@ -2,19 +2,19 @@
 use super::{Input, Writer, id, range, s};
 use crate::support::crates::{RecordRepr, generics::TypeRef, owner_catalog::DeclarationRef};
 pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(), &'static str> {
-    // Version thirteen alone carries a transparent struct header.
+    // Version thirteen alone carries a transparent or SIMD struct header.
     if !rows.descriptor().profile().body_nodes()
         && rows
             .nominals
             .iter()
-            .any(|row| row.repr == RecordRepr::Transparent)
+            .any(|row| matches!(row.repr, RecordRepr::Transparent | RecordRepr::Simd))
     {
         return Err("source nominal representation requires its wider complete contract");
     }
     super::write(out, &rows.nominals, nominal_write)?;
     super::write(out, &rows.fields, field_write)
 }
-fn nominal_write(out: &mut Writer, row: &s::NominalHeader) -> Result<(), &'static str> {
+pub(super) fn nominal_write(out: &mut Writer, row: &s::NominalHeader) -> Result<(), &'static str> {
     super::header_facts::row_write(out, &row.contract)?;
     id(out, row.declaration.0)?;
     id(out, row.scope.0)?;
@@ -26,6 +26,7 @@ fn nominal_write(out: &mut Writer, row: &s::NominalHeader) -> Result<(), &'stati
         RecordRepr::Rust => 0,
         RecordRepr::C => 1,
         RecordRepr::Transparent => 2,
+        RecordRepr::Simd => 3,
     })
 }
 pub(super) fn nominal_read(read: &mut Input<'_, '_>) -> Result<s::NominalHeader, &'static str> {
@@ -41,6 +42,7 @@ pub(super) fn nominal_read(read: &mut Input<'_, '_>) -> Result<s::NominalHeader,
             0 => RecordRepr::Rust,
             1 => RecordRepr::C,
             2 if read.profile.body_nodes() => RecordRepr::Transparent,
+            3 if read.profile.body_nodes() => RecordRepr::Simd,
             _ => return Err("unknown source nominal representation"),
         },
     })

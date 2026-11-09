@@ -126,6 +126,7 @@ fn publish(
                     RecordRepr::Rust => aggregate::Representation::Rust,
                     RecordRepr::C => aggregate::Representation::C,
                     RecordRepr::Transparent => aggregate::Representation::Transparent,
+                    RecordRepr::Simd => aggregate::Representation::Simd,
                 },
                 ..aggregate::Repr::default()
             },

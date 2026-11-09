@@ -37,6 +37,9 @@ mod supplied_tests;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/packet_roundtrip.rs"]
 mod tests;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/vector_headers.rs"]
+mod vector_tests;
 mod verbatim_exports;
 use super::{Reader, Writer};
 use crate::support::{

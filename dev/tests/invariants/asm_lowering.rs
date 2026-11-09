@@ -8,10 +8,12 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const SPEC: &str = "pa41/tests/spec/asm-native";
 /// The crate holding the real stream body. B1 observed it stopping at the
 /// crate-wide macro provenance fence, since `vps!` and `concat!` expand inside
-/// it. B2's macro-context slice admits those semi-opaque marks, and its
-/// const-parameter slice lifts the const-formal gate, so it stops at
-/// `__m128`'s `repr(simd)` representation, declared before the run.
-const STREAM_OBSERVED: &str = "source nominal representation requires its wider complete contract";
+/// it. B2's macro-context slice admits those semi-opaque marks, its
+/// const-parameter slice lifts the const-formal gate, and its SIMD slice
+/// carries `__m128`'s `repr(simd)` header, so it stops at `_mm_stream_ps`'s
+/// `#[target_feature]`, declared before the run.
+const STREAM_OBSERVED: &str =
+    "source named/foreign/target-feature function metadata requires its wider profile";
 /// The provider function whose `LowIR` the control demands.
 fn root(
     report: &crate::resolve::expansion::Report,

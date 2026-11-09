@@ -82,9 +82,13 @@ and `concat!` expand in it. The test pinned that observed text until B2's
 macro-context slice (`docs/parallel/macro-contexts.md`) admitted those marks.
 It then pinned the declared next stop, "source const parameters are outside
 the initial source profile", until B2's const-parameter slice
-(`docs/parallel/const-parameters.md`) admitted const formals. It now pins the
-declared stop after that, "source nominal representation requires its wider
-complete contract". `contract.json` keeps the B1 observation as recorded.
+(`docs/parallel/const-parameters.md`) admitted const formals. It then pinned
+the declared stop after that, "source nominal representation requires its
+wider complete contract", until B2's SIMD slice
+(`docs/parallel/simd-header-rows.md`) carried `__m128`'s `repr(simd)` header.
+It now pins the declared stop after that, "source named/foreign/target-feature
+function metadata requires its wider profile", from `_mm_stream_ps`'s
+`#[target_feature]`. `contract.json` keeps the B1 observation as recorded.
 
 Amendment (B2 A's comment fence, `docs/parallel/asm-transport.md`): the
 pinned backend's assembler reads only `#` comments. `block-comment.rs` and

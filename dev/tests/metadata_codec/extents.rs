@@ -165,6 +165,30 @@ fn record_representation_is_separate_from_callable_abi() -> Result {
     Ok(())
 }
 
+/// The legacy record table has no transparent or SIMD byte, so its encoder
+/// refuses both by name rather than writing either as `Rust`.
+#[test]
+fn legacy_records_refuse_transparent_and_simd_representations() -> Result {
+    for (repr, message) in [
+        (
+            RecordRepr::Transparent,
+            "transparent record metadata is not implemented",
+        ),
+        (RecordRepr::Simd, "SIMD record metadata is not implemented"),
+    ] {
+        let graph = TypeGraph::new(vec![TypeNode::Scalar(Scalar::U32), array(0, 4)])?;
+        let interface = Interface::with_nominals(
+            identity()?,
+            vec![],
+            vec![],
+            vec![],
+            Nominals::new(graph, vec![record(1, repr)?])?,
+        )?;
+        assert_eq!(crates::encode(&interface).err(), Some(message), "{repr:?}");
+    }
+    Ok(())
+}
+
 #[test]
 fn extended_wire_rejects_truncation_forward_edges_and_redundant_envelopes() -> Result {
     let bytes = crates::encode(&artifact(31)?)?;
