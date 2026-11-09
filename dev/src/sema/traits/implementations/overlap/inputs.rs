@@ -526,10 +526,11 @@ impl Inputs {
 
     /// A negative payment with `premises` assumes only that other header's
     /// Sized and `MetaSized` sets and written type-outlives premises. A rigid
-    /// parameter is that header's placeholder, so no shape proves it Sized.
-    /// The single-header comparisons have no premises: they pay Sized debts
-    /// from their own header's Sized premises or by shape, and no `MetaSized`
-    /// debt.
+    /// parameter is that header's placeholder, so no shape proves it Sized,
+    /// and any other Sized debt is paid by a shape walk under the same Sized
+    /// set, never by a representative's declarations. The single-header
+    /// comparisons have no premises: they pay Sized debts from their own
+    /// header's Sized premises or by shape, and no `MetaSized` debt.
     pub fn pay_negative(
         &self,
         facts: &mut Declarations,
@@ -556,17 +557,28 @@ impl Inputs {
             if member(context, &premises.sized, ty)? {
                 continue;
             }
-            if matches!(facts.types.kind(ty), Some(crate::types::Kind::Parameter(_)))
-                || !shapes
-                    .get_or_insert_with(|| crate::sema::nominals::Proof::new(None))
-                    .prove(
-                        facts,
-                        Predicate {
-                            ty,
-                            bound: Bound::Sized,
-                        },
-                    )?
-            {
+            if matches!(facts.types.kind(ty), Some(crate::types::Kind::Parameter(_))) {
+                return Ok(false);
+            }
+            if shapes.is_none() {
+                let (placeholders, work) = crate::types::parameters::shape::Placeholders::new(
+                    std::sync::Arc::clone(&premises.sized),
+                )?;
+                context.account_work(work).map_err(|e| e.to_string())?;
+                let mut proof = crate::sema::nominals::Proof::new(None);
+                proof.assume_placeholders(&facts.types, placeholders)?;
+                shapes = Some(proof);
+            }
+            let proof = shapes
+                .as_mut()
+                .ok_or("missing negative premise shape proof")?;
+            if !proof.prove(
+                facts,
+                Predicate {
+                    ty,
+                    bound: Bound::Sized,
+                },
+            )? {
                 return Ok(false);
             }
         }

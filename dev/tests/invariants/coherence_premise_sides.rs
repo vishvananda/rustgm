@@ -11,10 +11,13 @@ type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 const PACKET: &str = "pa31/tests/spec/negative-premise-sides";
 const SIDES: &str = "pa31/tests/spec/negative-metasized";
 const OVERLAP: &str = "overlapping trait implementation headers require coherence proof";
+const FENCE: &str = crate::sema::nominals::PLACEHOLDER_SIZE_FENCE;
 
-/// The checked rustc outcomes of `outcomes.json`, except the recorded
-/// residual, `nested-premise-side`, which rustc rejects with E0119.
-const CASES: [(&str, &str, Option<&str>); 23] = [
+/// The checked rustc outcomes of `outcomes.json`, except the known
+/// rejects-valid `nested-projected-size`, which rustc accepts: a
+/// projected-size nominal's size needs the nested trait proof, which has no
+/// header premises, so both orders reject it with the named fence.
+const CASES: [(&str, &str, Option<&str>); 47] = [
     (SIDES, "sized-premise-side", Some(OVERLAP)),
     (PACKET, "sized-premise-side-swapped", Some(OVERLAP)),
     (PACKET, "sized-client-side", None),
@@ -36,14 +39,33 @@ const CASES: [(&str, &str, Option<&str>); 23] = [
     (PACKET, "type-outlives-held", None),
     (PACKET, "type-outlives", Some(OVERLAP)),
     (PACKET, "type-outlives-premise-side", Some(OVERLAP)),
-    (PACKET, "nested-premise-side", None),
+    (PACKET, "nested-premise-side", Some(OVERLAP)),
     (PACKET, "nested-premise-side-swapped", Some(OVERLAP)),
+    (PACKET, "nested-client-side", None),
+    (PACKET, "nested-client-side-swapped", None),
+    (PACKET, "nested-copy-client-side", None),
+    (PACKET, "nested-copy-client-side-swapped", None),
+    (PACKET, "nested-written-premise", None),
+    (PACKET, "nested-written-premise-swapped", None),
+    (PACKET, "nested-deep", Some(OVERLAP)),
+    (PACKET, "nested-deep-swapped", Some(OVERLAP)),
+    (PACKET, "nested-tuple-tail", Some(OVERLAP)),
+    (PACKET, "nested-tuple-tail-swapped", Some(OVERLAP)),
+    (PACKET, "nested-tuple-head", None),
+    (PACKET, "nested-tuple-head-swapped", None),
+    (PACKET, "nested-array", None),
+    (PACKET, "nested-array-swapped", None),
+    (PACKET, "nested-metasized", Some(OVERLAP)),
+    (PACKET, "nested-metasized-swapped", Some(OVERLAP)),
+    (PACKET, "nested-metasized-held", None),
+    (PACKET, "nested-metasized-held-swapped", None),
+    (PACKET, "nested-wf-control", None),
+    (PACKET, "nested-wf-control-swapped", None),
+    (PACKET, "nested-projected-size", Some(FENCE)),
+    (PACKET, "nested-projected-size-swapped", Some(FENCE)),
+    (PACKET, "nested-projected-premise-side", Some(FENCE)),
+    (PACKET, "nested-projected-premise-side-swapped", Some(FENCE)),
 ];
-
-/// The recorded residual: `Wrap<V>: Sized` is still decided by the shape
-/// walk, which reads the declaration of the representative that `freeze`
-/// chose. Its two orders must still differ, so a fix must update the record.
-const RESIDUAL: &str = "nested-premise-side";
 
 /// A case's diagnostic, or for an accepted case whether its `Holds` pair may
 /// overlap with each header first.
@@ -102,17 +124,10 @@ fn negative_conditions_assume_only_the_other_headers_premises_in_either_order() 
             (Some(message), None) => return Err(format!("{name}: accepted, not {message}").into()),
         }
         if let Some([forward, backward]) = orders {
-            if name == RESIDUAL {
-                assert!(
-                    !forward && backward,
-                    "{name}: the recorded residual changed: {forward} {backward}"
-                );
-            } else {
-                assert!(
-                    !forward && !backward,
-                    "{name}: disjoint in one header order only: {forward} {backward}"
-                );
-            }
+            assert!(
+                !forward && !backward,
+                "{name}: disjoint in one header order only: {forward} {backward}"
+            );
         }
         outcomes.push((name, outcome));
     }
@@ -125,13 +140,9 @@ fn negative_conditions_assume_only_the_other_headers_premises_in_either_order() 
             .iter()
             .find(|(other, _)| *other == base)
             .ok_or_else(|| format!("{name} has no unswapped twin"))?;
-        if base == RESIDUAL {
-            assert_ne!(outcome, partner, "{name}: the recorded residual changed");
-        } else {
-            assert_eq!(outcome, partner, "{name} differs from {base}");
-        }
+        assert_eq!(outcome, partner, "{name} differs from {base}");
         pairs += 1;
     }
-    assert_eq!(pairs, 5, "every swapped twin is compared");
+    assert_eq!(pairs, 17, "every swapped twin is compared");
     Ok(())
 }

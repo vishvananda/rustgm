@@ -157,7 +157,8 @@ and `residual` in `outcomes.json`): `Wrap<V>: Sized` is still decided by the
 shape walk, which reads the declaration of the representative that `freeze`
 chose. The exempt pair's two orders must still differ. `nested-premise-side`
 is disjoint with the blanket first and not with the client first, and the
-twins are accepted and overlap. So a fix must update the record.
+twins are accepted and overlap. So a fix must update the record. The
+[nested-sizedness item](nested-sizedness.md) did so and removed `RESIDUAL`.
 
 ## 5. Amendments
 
@@ -177,18 +178,22 @@ twins are accepted and overlap. So a fix must update the record.
 - **negative-metasized.** `sized-premise-side` is amended from accepted to
   the overlap text, and its invariant row with it.
 
-## 6. Recorded gap: nested sizedness
+## 6. Recorded gap: nested sizedness (fixed)
 
-A non-parameter type whose sizedness depends on a rigid parameter is still
-decided by the shape walk, which reads the representative's declaration
-(`types/parameters/shape.rs:285-290`). An example is a nominal's sizedness
-argument (`Wrap<V>: Sized` for `struct Wrap<X: ?Sized>(X)`).
-`pay_negative`'s shape proof does the same. So `nested-premise-side` (the
-blanket's Sized `V` first) is accepted, while rustc rejects it with E0119,
-and `nested-premise-side-swapped` is rejected. The fix means threading the
-query's premises into `types/parameters/shape.rs`, a shared types facility.
-That is a separate design, recorded in
-[library build blockers](../library-build-blockers.md).
+When this batch landed, a non-parameter type whose sizedness depends on a
+rigid parameter was still decided by the shape walk, which read the
+representative's declaration (`types/parameters/shape.rs:285-290` at
+`7e8c5cbbf`). An example is a nominal's sizedness argument (`Wrap<V>: Sized`
+for `struct Wrap<X: ?Sized>(X)`). `pay_negative`'s shape proof did the same.
+So `nested-premise-side` (the blanket's Sized `V` first) was accepted, while
+rustc rejects it with E0119, and `nested-premise-side-swapped` was rejected.
+
+The [nested-sizedness item](nested-sizedness.md) fixes it. The negative
+query's shape walk, size query and payment now follow `sized_conditions`
+under the other header's Sized premises. Both twins are rejected, and the
+symmetry invariant has no exemption. A projected-size nominal stays behind a
+named fence, a known rejects-valid, until a later item threads the premises
+into the nested trait proof.
 
 ## 7. Work
 

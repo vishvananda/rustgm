@@ -806,17 +806,21 @@ batch, is now rejected as rustc rejects it. Each outcome was declared before
 its rustc 1.98.0 oracle, with three recorded amendments. A private invariant
 checks them; there is no graded manifest.
 
-`spec/negative-premise-sides/` freezes twenty-one declared no_core controls
-from Lane B's premise-sides batch. rustc negates each impl's predicates under
-the other impl's `param_env`, in both orders, so a negated clause's own
-header pays none of its debts. A rigid parameter's Sized and `MetaSized` come
+`spec/negative-premise-sides/` freezes forty-seven declared no_core controls
+from Lane B's premise-sides batch and its nested-sizedness item. rustc
+negates each impl's predicates under the other impl's `param_env`, in both
+orders, so a negated clause's own header pays none of its debts. A rigid parameter's Sized and `MetaSized` come
 only from the other header's premises, never from the declaration `freeze`
 chose. A lifetime obligation holds only through the other header's written
 type-outlives premises, with no WF types and no region-region bound. Sized,
-Copy, `MetaSized`, region and type-outlives twins are each checked with
-either header first. Twenty match rustc; `nested-premise-side`, whose
-`Wrap<V>: Sized` is decided by the shape walk, is a recorded accepts-invalid.
-Each outcome was declared before its rustc 1.98.0 oracle, with recorded
-amendments for one fixture correction and five wrong predictions. A private
-invariant checks them and the symmetry of every swapped pair; there is no
-graded manifest.
+Copy, `MetaSized`, region, type-outlives and nested-sizedness twins are each
+checked with either header first. A type built from a rigid parameter, such
+as `Wrap<V>`, a tuple tail or an array, is Sized by rustc's
+`sized_conditions` under the other header's premises. All match rustc but
+four: `nested-projected-size` and its swapped twin, a known rejects-valid
+that a named fence rejects until the premises reach the nested size proof,
+and the `probe-trait-premise` probe pair. Each outcome was declared before
+its rustc 1.98.0 oracle, with recorded amendments for one fixture
+correction and nine wrong predictions. A private invariant checks them and
+the symmetry of every swapped pair's diagnostic text; there is no graded
+manifest.

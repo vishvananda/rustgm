@@ -1,7 +1,11 @@
 //! One caller retains its size proof frontier across missing field declarations.
 use super::{Declarations, Environment, ItemId, Kind, TypeId, assumed, prepare};
 use crate::support::hash::{HashMap, HashSet};
-use crate::types::{Primitive, parameters::environment::BuiltinQuery, sizedness::Condition};
+use crate::types::{
+    Primitive,
+    parameters::environment::BuiltinQuery,
+    sizedness::{Condition, Rule},
+};
 use std::sync::Arc;
 
 pub(in crate::sema) enum Progress {
@@ -29,9 +33,20 @@ pub(in crate::sema) struct Query {
     root: Option<TypeId>,
     projection: Option<TypeId>,
     work: Vec<(TypeId, bool)>,
+    placeholders: Option<crate::types::parameters::shape::Placeholders>,
     pub steps: usize,
 }
 impl Query {
+    /// A negative coherence query's size proof under the other header's
+    /// Sized premises, if it has them; see [`Self::placeholder_begin`].
+    pub fn with_placeholders(
+        environment: Option<Arc<Environment>>,
+        placeholders: Option<crate::types::parameters::shape::Placeholders>,
+    ) -> Self {
+        let mut query = Self::new(environment);
+        query.placeholders = placeholders;
+        query
+    }
     pub fn new(environment: Option<Arc<Environment>>) -> Self {
         Self {
             environment,
@@ -44,6 +59,7 @@ impl Query {
             root: None,
             projection: None,
             work: Vec::new(),
+            placeholders: None,
             steps: 0,
         }
     }
@@ -170,9 +186,13 @@ impl Query {
             self.known(ty, true);
             return Ok(None);
         }
+        if self.placeholder_begin(facts, ty)? {
+            return Ok(None);
+        }
         match facts.types.kind(ty).ok_or("invalid nominal size subject")? {
             Kind::Adt(item, arguments) => {
                 if facts.types.nominal_sizes_sealed() {
+                    self.fence(facts.types.nominal_size_rule(item))?;
                     let before = self.conditions.steps();
                     let condition = self.conditions.apply(&mut facts.types, ty)?;
                     self.steps += self.conditions.steps() - before;
@@ -204,6 +224,7 @@ impl Query {
                     .size_rules
                     .as_mut()
                     .ok_or("missing size rules")?;
+                self.fence(pending.rules.get(item))?;
                 let before = pending.rules.steps;
                 let condition = pending.rules.apply(&mut facts.types, item, arguments)?;
                 self.steps += pending.rules.steps - before;
@@ -238,6 +259,62 @@ impl Query {
             _ => self.known(ty, true),
         }
         Ok(None)
+    }
+    /// rustc 1.98's `sized_conditions` under the other header's premises: a
+    /// premise is Sized, a rigid parameter, trait object or foreign type only
+    /// as a premise, an array always, a tuple as its last element and a
+    /// pattern as its base. A nominal, slice, `str` or projection keeps its
+    /// rule below, a projection descending into the same negative query. No
+    /// parameter declaration or interned property is read.
+    fn placeholder_begin(
+        &mut self,
+        facts: &Declarations,
+        ty: TypeId,
+    ) -> Result<bool, &'static str> {
+        let Some(placeholders) = &self.placeholders else {
+            return Ok(false);
+        };
+        let (member, work) = placeholders.sized(ty);
+        self.steps += work;
+        if member {
+            self.known(ty, true);
+            return Ok(true);
+        }
+        match facts.types.kind(ty).ok_or("invalid nominal size subject")? {
+            Kind::Parameter(_) | Kind::Dynamic { .. } | Kind::Foreign(_) => self.known(ty, false),
+            Kind::Array { .. } | Kind::ArrayTerm { .. } => self.known(ty, true),
+            Kind::Pattern { base, .. } => self.tail(ty, base)?,
+            Kind::Tuple(list) => match facts.types.list(list).ok_or("invalid size tuple")?.last() {
+                Some(&element) => self.tail(ty, element)?,
+                None => self.known(ty, true),
+            },
+            // Every other kind keeps its premise-less rule: a nominal by its
+            // sizedness rule, a projection or opaque in the same negative
+            // query, a slice or `str` never and the builtin Sized types always.
+            // The match lists every kind, so a new one must choose.
+            Kind::Adt(..)
+            | Kind::Projection(_)
+            | Kind::Opaque(..)
+            | Kind::Slice(_)
+            | Kind::Never
+            | Kind::Primitive(_)
+            | Kind::Future { .. }
+            | Kind::Reference { .. }
+            | Kind::Pointer { .. }
+            | Kind::Function { .. }
+            | Kind::FunctionItem { .. }
+            | Kind::Closure { .. } => return Ok(false),
+        }
+        Ok(true)
+    }
+    /// Under placeholders a projected-size nominal's size needs a nested
+    /// proof with header premises, so it is the named fence, as in the shape
+    /// walk of the negative builtin proof.
+    fn fence(&self, rule: Option<Rule>) -> Result<(), &'static str> {
+        if self.placeholders.is_some() && matches!(rule, Some(Rule::Projection(_))) {
+            return Err(crate::sema::nominals::PLACEHOLDER_SIZE_FENCE);
+        }
+        Ok(())
     }
     fn condition(&mut self, ty: TypeId, condition: Condition) -> Result<(), &'static str> {
         match condition {

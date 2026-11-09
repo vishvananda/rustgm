@@ -30,7 +30,13 @@ impl Search<'_> {
         let first = frame.available_region();
         let pending = frame.storage.get_or_insert_with(|| {
             Box::new(Pending {
-                query: sizes::Query::new(self.caller.environment.cloned()),
+                query: sizes::Query::with_placeholders(
+                    self.caller.environment.cloned(),
+                    self.query
+                        .negative_sizing
+                        .as_deref()
+                        .map(|sizing| sizing.placeholders().clone()),
+                ),
                 tail: None,
                 needed: None,
                 stopped: None,
@@ -78,6 +84,8 @@ impl Search<'_> {
         let first = frame.available_region();
         let pending = frame.storage.get_or_insert_with(|| {
             Box::new(Pending {
+                // This query holds only a tail goal and is never advanced; a
+                // change that advances it must thread the negative Sized set.
                 query: sizes::Query::new(None),
                 tail: Some(Tail {
                     subject,

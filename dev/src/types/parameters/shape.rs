@@ -13,6 +13,54 @@ pub struct Properties {
     pub sized: bool,
     pub well_formed: bool,
 }
+/// The other header's Sized premises in a negative coherence query, sorted
+/// by identity. rustc 1.98 negates one impl's predicates under the other
+/// impl's `param_env` with each unified header variable a placeholder, so a
+/// rigid parameter is Sized only as a member, never by the declaration of the
+/// parameter `freeze` made the representative.
+#[derive(Clone)]
+pub struct Placeholders {
+    sized: Arc<[TypeId]>,
+}
+impl Placeholders {
+    /// Orders and deduplicates the premises by identity, so no lookup depends
+    /// on its caller's order; an already ordered set is shared as it is. The
+    /// work, for the caller's budget, is one comparison per premise, plus
+    /// `n (ilog2(n) + 1)` when the set must be sorted.
+    ///
+    /// # Errors
+    /// Rejects a failed allocation of the ordered copy.
+    pub fn new(sized: Arc<[TypeId]>) -> Result<(Self, usize), &'static str> {
+        let count = sized.len();
+        let check = count.max(1);
+        if sized.windows(2).all(|pair| pair[0].0 < pair[1].0) {
+            return Ok((Self { sized }, check));
+        }
+        let mut ordered = Vec::new();
+        ordered
+            .try_reserve_exact(count)
+            .map_err(|_| "placeholder premises allocation failed")?;
+        ordered.extend_from_slice(&sized);
+        ordered.sort_unstable_by_key(|ty| ty.0);
+        ordered.dedup();
+        let sorting = count.saturating_mul(count.max(1).ilog2() as usize + 1);
+        Ok((
+            Self {
+                sized: Arc::from(ordered),
+            },
+            check.saturating_add(sorting),
+        ))
+    }
+    /// Whether `ty` is a premise, and the lookup's work.
+    #[must_use]
+    pub fn sized(&self, ty: TypeId) -> (bool, usize) {
+        let work = self.sized.len().max(1).ilog2() as usize + 1;
+        (
+            self.sized.binary_search_by_key(&ty.0, |ty| ty.0).is_ok(),
+            work,
+        )
+    }
+}
 pub struct Shapes {
     environment: Arc<Environment>,
     builtins: Option<Box<BuiltinQuery>>,
@@ -23,6 +71,7 @@ pub struct Shapes {
     steps: usize,
     defer_local_sized: bool,
     nominal: size_demands::Sizes,
+    placeholders: Option<Placeholders>,
 }
 #[derive(Default)]
 struct Scoped {
@@ -50,14 +99,44 @@ impl Shapes {
             steps: 0,
             defer_local_sized: false,
             nominal: size_demands::Sizes::default(),
+            placeholders: None,
         }
+    }
+    /// A negative coherence query's walk under the other header's Sized
+    /// premises. It follows rustc 1.98's `sized_conditions`, decides only
+    /// sizedness and reads no interned Sized or well-formedness property of a
+    /// type with parameters; see [`Self::placeholder_composite`].
+    #[must_use]
+    pub fn with_placeholders(environment: Arc<Environment>, placeholders: Placeholders) -> Self {
+        let mut shapes = Self::new(environment);
+        shapes.placeholders = Some(placeholders);
+        shapes
+    }
+    pub(crate) fn placeholders(&self) -> Option<&Placeholders> {
+        self.placeholders.as_ref()
     }
     /// Declaration formation may defer a Sized requirement mentioning a local
     /// binder. Its result still reports actual sizedness; it grants no use proof.
-    pub(crate) fn for_clause_terms(environment: Arc<Environment>) -> Self {
+    /// A negative coherence proof's clause terms keep its placeholders.
+    pub(crate) fn for_clause_terms(
+        environment: Arc<Environment>,
+        placeholders: Option<Placeholders>,
+    ) -> Self {
         let mut shapes = Self::new(environment);
         shapes.defer_local_sized = true;
+        shapes.placeholders = placeholders;
         shapes
+    }
+    /// The one sub-walker for separately normalized roots. It inherits this
+    /// walk's environment, local Sized deferral and placeholders, so no
+    /// sub-walker can drop an assumption of its parent.
+    fn normalized_query(&mut self) -> &mut Self {
+        self.normalized_queries.get_or_insert_with(|| {
+            let mut query = Self::new(Arc::clone(&self.environment));
+            query.defer_local_sized = self.defer_local_sized;
+            query.placeholders.clone_from(&self.placeholders);
+            Box::new(query)
+        })
     }
     /// # Errors
     /// Rejects invalid/foreign parameter types and exhausted graph work.
@@ -103,11 +182,7 @@ impl Shapes {
     ) -> Result<Properties, &'static str> {
         // Raw structural queries cannot reuse a cache populated under a
         // separately retained normalization proof.
-        let query = self.normalized_queries.get_or_insert_with(|| {
-            let mut queries = Self::new(Arc::clone(&self.environment));
-            queries.defer_local_sized = self.defer_local_sized;
-            Box::new(queries)
-        });
+        let query = self.normalized_query();
         let result = query.demand_with(types, ty, depth, true)?;
         if result.is_none() {
             query.cancel();
@@ -184,6 +259,16 @@ impl Shapes {
             }
             if !finish {
                 self.work.push((ty, depth, scope, true));
+                if self.placeholders.is_some() {
+                    sized_children(types, kind, |child| {
+                        if self.steps.saturating_add(self.work.len()) >= 1_000_000 {
+                            return Err("generic shape work budget exceeded");
+                        }
+                        self.work.push((child, depth, scope, false));
+                        Ok(())
+                    })?;
+                    continue;
+                }
                 let child_scope = if types.contains_projected_sizes(ty) == Some(true) {
                     self.nominal.children(kind, scope)?
                 } else {
@@ -205,7 +290,7 @@ impl Shapes {
                 )
                 && !self.nominal.answers.contains_key(&(ty, key_depth))
             {
-                if self.assumes_sized(types, ty, depth)? {
+                if self.premise_sized(types, ty, depth)? {
                     self.nominal.answers.insert((ty, key_depth), true);
                 } else {
                     self.work.push((ty, depth, scope, true));
@@ -213,7 +298,11 @@ impl Shapes {
                     return Ok(None);
                 }
             }
-            let value = self.composite(types, ty, kind, depth)?;
+            let value = if self.placeholders.is_some() {
+                self.placeholder_composite(types, ty, kind, depth)?
+            } else {
+                self.composite(types, ty, kind, depth)?
+            };
             self.save(ty, key_depth, value);
         }
         self.nominal.root = None;
@@ -260,7 +349,7 @@ impl Shapes {
         })?;
         match kind {
             Kind::Adt(item, arguments) => {
-                use crate::types::{arguments::Argument, sizedness::Rule};
+                use crate::types::sizedness::Rule;
                 value.sized = match types.nominal_size_rule(item) {
                     None | Some(Rule::Sized) => true,
                     Some(Rule::Unsized) => false,
@@ -270,12 +359,7 @@ impl Shapes {
                         .get(&(ty, cache_depth(types, ty, depth)))
                         .ok_or("missing projected nominal size proof")?,
                     Some(Rule::Argument(slot)) => {
-                        let Some(Argument::Type(ty)) = types
-                            .arguments(arguments)
-                            .and_then(|mut args| args.nth(slot as usize))
-                        else {
-                            return Err("missing nominal sizedness argument");
-                        };
+                        let ty = sizedness_argument(types, arguments, slot)?;
                         self.cached(ty, cache_depth(types, ty, depth))
                             .ok_or("missing nominal sizedness argument proof")?
                             .sized
@@ -303,6 +387,88 @@ impl Shapes {
         }
         value.sized = value.sized || self.assumes_sized(types, ty, depth)?;
         Ok(value)
+    }
+    /// rustc 1.98's `sized_conditions` under the other header's premises: a
+    /// tuple is Sized as its last element, a pattern as its base, a nominal by
+    /// its sizedness rule and a projection or opaque by its declared bounds;
+    /// the builtin Sized types always; a slice, `str`, a trait object, a
+    /// foreign type and a rigid parameter only as a premise. The match lists
+    /// every kind, so a new one cannot be Sized by default. Neither a
+    /// parameter's declaration nor an interned Sized or
+    /// well-formedness property of a type with parameters is read: they belong
+    /// to the representative `freeze` chose. rustc's negative query checks no
+    /// well-formedness (`resolve_regions` with no WF types), and each header
+    /// was checked under its own declarations, so every type is well-formed.
+    fn placeholder_composite(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+        kind: Kind,
+        depth: u16,
+    ) -> Result<Properties, &'static str> {
+        use crate::types::sizedness::Rule;
+        let child = |child: TypeId| {
+            self.cached(child, cache_depth(types, child, depth))
+                .map(|properties| properties.sized)
+                .ok_or("missing child shape")
+        };
+        let sized = match kind {
+            Kind::Tuple(list) => match types.list(list).ok_or("invalid shape tuple")?.last() {
+                Some(&element) => child(element)?,
+                None => true,
+            },
+            Kind::Pattern { base, .. } => child(base)?,
+            Kind::Adt(item, arguments) => match types.nominal_size_rule(item) {
+                None | Some(Rule::Sized) => true,
+                Some(Rule::Unsized) => false,
+                Some(Rule::Projection(_)) => *self
+                    .nominal
+                    .answers
+                    .get(&(ty, cache_depth(types, ty, depth)))
+                    .ok_or("missing projected nominal size proof")?,
+                Some(Rule::Argument(slot)) => child(sizedness_argument(types, arguments, slot)?)?,
+            },
+            Kind::Parameter(_)
+            | Kind::Foreign(_)
+            | Kind::Slice(_)
+            | Kind::Primitive(Primitive::Str)
+            | Kind::Dynamic { .. } => false,
+            Kind::Projection(application) => {
+                types
+                    .projection_schema(application.item)
+                    .ok_or("missing associated type declaration")?
+                    .sized
+                    || self.environment.projection_promises(application.item).sized
+            }
+            // rustc negates under non-body analysis, where an opaque is a
+            // rigid alias that its item bounds prove Sized, implicitly unless
+            // relaxed. Those bounds are the opaque's own declaration, never a
+            // representative's, whatever its arguments.
+            Kind::Opaque(id, _) => {
+                types
+                    .opaque_declaration(id)
+                    .ok_or("invalid opaque identity")?
+                    .sized
+            }
+            // Builtin Sized types with no condition: a coroutine (an authored
+            // future), an array (its element's Sized is formation, not
+            // sizedness), a reference, a raw or function pointer, a function
+            // item and a closure.
+            Kind::Never
+            | Kind::Primitive(_)
+            | Kind::Future { .. }
+            | Kind::Array { .. }
+            | Kind::ArrayTerm { .. }
+            | Kind::Reference { .. }
+            | Kind::Pointer { .. }
+            | Kind::Function { .. }
+            | Kind::FunctionItem { .. }
+            | Kind::Closure { .. } => true,
+        };
+        Ok(Properties {
+            sized: sized || self.premise_sized(types, ty, depth)?,
+            well_formed: true,
+        })
     }
     fn defers_sized(
         &mut self,
@@ -382,6 +548,24 @@ impl Shapes {
         self.account_lookup(work)?;
         let lowered: Option<_> = result?;
         Ok(lowered.is_some_and(|(subject, id)| self.environment.assumes_trait(subject, id)))
+    }
+    /// A written Sized premise: the environment's, or under placeholders the
+    /// other header's, each lookup charged to this walk.
+    fn premise_sized(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+        depth: u16,
+    ) -> Result<bool, &'static str> {
+        if self.assumes_sized(types, ty, depth)? {
+            return Ok(true);
+        }
+        let Some(placeholders) = &self.placeholders else {
+            return Ok(false);
+        };
+        let (member, work) = placeholders.sized(ty);
+        self.account_lookup(work)?;
+        Ok(member)
     }
     fn assumes_sized(
         &mut self,
@@ -493,6 +677,47 @@ fn children(
         _ => {}
     }
     Ok(())
+}
+
+/// The children whose sizedness decides their parent's under rustc 1.98's
+/// `sized_conditions`: a tuple's last element, a pattern's base and a
+/// nominal's sizedness argument. None of them enters a binder.
+fn sized_children(
+    types: &Store,
+    kind: Kind,
+    mut visit: impl FnMut(TypeId) -> Result<(), &'static str>,
+) -> Result<(), &'static str> {
+    match kind {
+        Kind::Tuple(list) => {
+            if let Some(&element) = types.list(list).ok_or("invalid shape tuple")?.last() {
+                visit(element)?;
+            }
+        }
+        Kind::Pattern { base, .. } => visit(base)?,
+        Kind::Adt(item, arguments) => {
+            if let Some(crate::types::sizedness::Rule::Argument(slot)) =
+                types.nominal_size_rule(item)
+            {
+                visit(sizedness_argument(types, arguments, slot)?)?;
+            }
+        }
+        _ => {}
+    }
+    Ok(())
+}
+
+fn sizedness_argument(
+    types: &Store,
+    arguments: crate::types::GenericArgs,
+    slot: u32,
+) -> Result<TypeId, &'static str> {
+    let Some(crate::types::arguments::Argument::Type(ty)) = types
+        .arguments(arguments)
+        .and_then(|mut args| args.nth(slot as usize))
+    else {
+        return Err("missing nominal sizedness argument");
+    };
+    Ok(ty)
 }
 
 fn argument_types(

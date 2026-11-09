@@ -97,10 +97,15 @@ pub(in crate::sema) fn may_overlap_with(
     if mode.negative()
         && let Some(premises) = premises
     {
-        context.account_work(1).map_err(|e| e.to_string())?;
-        search.query.negative_sizing = Some(Box::new(
-            super::sizing_fallback::NegativeSizing::assume(premises),
-        ));
+        let (sizing, work) = super::sizing_fallback::NegativeSizing::assume(premises)?;
+        context
+            .account_work(work.saturating_add(1))
+            .map_err(|e| e.to_string())?;
+        search
+            .query
+            .builtins
+            .assume_placeholders(&facts.types, sizing.placeholders().clone())?;
+        search.query.negative_sizing = Some(Box::new(sizing));
     }
     let progress = search.begin(facts, first)?;
     context

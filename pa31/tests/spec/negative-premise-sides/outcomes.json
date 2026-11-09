@@ -8,15 +8,18 @@
   "outcome_names": {
     "accepted": "status 0",
     "overlap": "overlapping trait implementation headers require coherence proof",
-    "region": "required lifetime does not outlive its target"
+    "region": "required lifetime does not outlive its target",
+    "fence": "projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+    "error": "shape parameter is outside its environment"
   },
   "amendments": [
     "2026-11-09 after oracle 1 and the probes, before any RustGM run (predictions2.json): the five region twins never reached negative coherence in rustc, since their goals name only foreign types and knowability already made each pair disjoint. They were rewritten with #[rustc_strict_coherence] on Holds, and region-strict-control was added",
     "2026-11-09 after oracle 2, before any RustGM run (predictions3.json): two wrong rustc predictions, region-client-side and region-head-unified (predicted 0, observed E0119): rustc never assumes a region-region premise between two inference regions",
-    "2026-11-09 after the base before-runs (predictions4.json and predictions5.json): three wrong before predictions, copy-premise-side, sized-client-side and sized-premise-side-swapped, each beside its declaration below. The cause is the representative's declaration (types/parameters/shape.rs:285-290)"
+    "2026-11-09 after the base before-runs (predictions4.json and predictions5.json): three wrong before predictions, copy-premise-side, sized-client-side and sized-premise-side-swapped, each beside its declaration below. The cause is the representative's declaration (types/parameters/shape.rs:285-290)",
+    "2026-11-09, before any oracle, RustGM run or code change of this item, after the integrator amended decision 1 from A to C (original predictions6.json sha256 b731d0f98a187222219afe5d3bb6a81558e9ddba9fe8ed65d3980b5b8524f3c4, kept as predictions6-original.json): nested-projected-size and -swapped are declared accepted after, not overlap; nested-projected-premise-side and -swapped are added to show the surviving order dependence (rustc E0119; before and after accepted blanket first, overlap client first); the symmetry invariant exempts exactly that pair by name, citing residual_projected.text",
+    "2026-11-09, after the rustc oracle (all 26 as declared) and the before-runs with CLI 56c5fad9729928af01e8af8e0ecdcb5f7c220406457cf443f1d1efd203ea6409 (22 of 26 as declared), before any code change or candidate run (first amendment sha256 04ccc20ca3df22f4429c3d72f1d029018235d814f892d92b2268b9e65d40b858, kept as predictions6-amend1.json): the four projected-size twins were declared accepted (and overlap client-first for the premise-side pair) and were observed rejected with \"shape parameter is outside its environment\" in both orders; cause in each case. Decision 1 is C3: their after-outcome is the named fence \"projected-size nominal in a negative builtins proof requires header premises in its nested size proof\" in both orders. residual_projected is superseded, because no exemption is needed. The rules gain: no rejected-to-accepted flip where rustc rejects without approval"
   ],
-  "symmetry": "one test over the packet: every case named X-swapped has the same outcome as X (in this packet or negative-metasized); every accepted case is also disjoint with its Holds pair passed to overlap::possible in both orders. Exempt by name: the residual pair nested-premise-side / nested-premise-side-swapped, whose outcomes must differ (accepted, overlap) so that a fix updates the record",
-  "residual": "a non-parameter type whose sizedness depends on a rigid parameter, such as a nominal's sizedness argument (`Wrap<V>: Sized`), is still decided by the shape walk, which reads the representative's declaration (types/parameters/shape.rs:285-290); pay_negative's shape proof does the same. The fix threads query premises into the shared types/parameters/shape.rs facility, a separate design. Recorded gap in docs/library-build-blockers.md",
+  "symmetry": "every X-swapped twin has X's diagnostic text and every accepted case is disjoint in both orders, with no exemption: the nested-premise-side residual is fixed, and the projected-size pairs give the same fence in both orders",
   "cases": {
     "copy-client-side.rs": {
       "sha256": "d7a71660fabd6e74de14ccfbdd6cc07b345bcc5378216004e1d59ec03453808d",
@@ -30,7 +33,9 @@
       "rustgm_before_rebased": "overlap",
       "rustgm_after": "accepted",
       "rustgm_after_note": "rejected-to-accepted: the client's U: Copy elaborates through Clone: Sized to a Sized clause, which the client's Sized set includes",
-      "rustgm_after_observed": "accepted"
+      "rustgm_after_observed": "accepted",
+      "rustgm_nested_base": "accepted",
+      "rustgm_nested_after_observed": "accepted"
     },
     "copy-premise-side.rs": {
       "sha256": "223b89a8d6c92b64e03d31c840fcddc3556e5b307cf565c81965c1a502dd2598",
@@ -47,7 +52,9 @@
       "rustgm_after": "overlap",
       "rustgm_after_note": "the blanket's own V: Copy is never assumed for its own clause",
       "rustgm_after_observed": "overlap",
-      "amendment": "2026-11-09, after the base before-runs: declared accepted in predictions.json, observed status 1, ERROR: file 0: 6366: overlapping trait implementation headers require coherence proof; rustc gives E0119 (rustc1.txt). the blanket is first, so its ?Sized V is freeze's representative; types/parameters/shape.rs:285-290 makes a rigid parameter's sizedness its representative's declaration, so `T: Sized` is absent before the union could pay it. Matches rustc by accident"
+      "amendment": "2026-11-09, after the base before-runs: declared accepted in predictions.json, observed status 1, ERROR: file 0: 6366: overlapping trait implementation headers require coherence proof; rustc gives E0119 (rustc1.txt). the blanket is first, so its ?Sized V is freeze's representative; types/parameters/shape.rs:285-290 makes a rigid parameter's sizedness its representative's declaration, so `T: Sized` is absent before the union could pay it. Matches rustc by accident",
+      "rustgm_nested_base": "overlap",
+      "rustgm_nested_after_observed": "overlap"
     },
     "metasized-sized-representative-swapped.rs": {
       "sha256": "6ebec99a5e9f88185e71797e241d3490bbb0f47f12ec752bd1cf7cdc96a34cdb",
@@ -61,7 +68,9 @@
       "rustgm_before_rebased": "accepted",
       "rustgm_after": "accepted",
       "rustgm_after_note": "symmetric",
-      "rustgm_after_observed": "accepted"
+      "rustgm_after_observed": "accepted",
+      "rustgm_nested_base": "accepted",
+      "rustgm_nested_after_observed": "accepted"
     },
     "metasized-sized-representative.rs": {
       "sha256": "87c53887f4d20534e97b8e01fc62635f4cb16f7686f2327f3bdc46fd0cc12850",
@@ -75,7 +84,185 @@
       "rustgm_before_rebased": "accepted",
       "rustgm_after": "accepted",
       "rustgm_after_note": "(f): V's MetaSized is decided and paid by the client's MetaSized set, not V's Sized declaration; without (f) this was the undeclared flip",
+      "rustgm_after_observed": "accepted",
+      "rustgm_nested_base": "accepted",
+      "rustgm_nested_after_observed": "accepted"
+    },
+    "nested-array-swapped.rs": {
+      "sha256": "4db10fa4fe0af8335db80d951a415901e3dd19d2c1bc19ebdd068c6d78c467e8",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "rustc's sized_conditions make an array Sized unconditionally; no WF obligation is registered",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "overlap",
+      "rustgm_before": "overlap",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "before: client first the interned [U; 1] is unsized and not WF (rejects-valid, order-dependent)",
       "rustgm_after_observed": "accepted"
+    },
+    "nested-array.rs": {
+      "sha256": "09f00f4265a62ae4e063d3365324e97be1b9915d08a8aec0b5a405be0752e9db",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "rustc's sized_conditions make an array Sized unconditionally; no WF obligation is registered",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "before: client first the interned [U; 1] is unsized and not WF (rejects-valid, order-dependent)",
+      "rustgm_after_observed": "accepted"
+    },
+    "nested-client-side-swapped.rs": {
+      "sha256": "7bf626c4bd74690afab8ff1d7e89155d3569f0a38dbd87d057f029e6a4009a7a",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "under the client's param_env U: Sized, so Wrap<U>: Sized through Wrap's sized constraint X",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "before: blanket first the ?Sized V is the representative, so the interned Wrap<V> is unsized (rejects-valid); client first the Sized U interns Wrap<U> Sized. After: V's placeholder is in the client's Sized set",
+      "rustgm_after_observed": "accepted"
+    },
+    "nested-client-side.rs": {
+      "sha256": "91790a2761723417377dfc44909e9469b191cf879db69476d7b26d24739a7da4",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "under the client's param_env U: Sized, so Wrap<U>: Sized through Wrap's sized constraint X",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "overlap",
+      "rustgm_before": "overlap",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "before: blanket first the ?Sized V is the representative, so the interned Wrap<V> is unsized (rejects-valid); client first the Sized U interns Wrap<U> Sized. After: V's placeholder is in the client's Sized set",
+      "rustgm_after_observed": "accepted"
+    },
+    "nested-copy-client-side-swapped.rs": {
+      "sha256": "dd3052b4c5fe8e72e0b7eb786eb0653bf0ca3f8ad02a8b14ba35733be20238fb",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "the client's U: Copy elaborates through Clone: Sized, so U: Sized and Wrap<U>: Sized",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "overlap",
+      "rustgm_before": "overlap",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "before: both representatives are declared ?Sized, so Wrap is interned unsized in both orders; after: U is in the client Sized set through Copy",
+      "rustgm_after_observed": "accepted"
+    },
+    "nested-copy-client-side.rs": {
+      "sha256": "8691d2fce47d1de82183d9feeb79ebc375a7a5d80fb2fc97b1e93481a05089ef",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "the client's U: Copy elaborates through Clone: Sized, so U: Sized and Wrap<U>: Sized",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "overlap",
+      "rustgm_before": "overlap",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "before: both representatives are declared ?Sized, so Wrap is interned unsized in both orders; after: U is in the client Sized set through Copy",
+      "rustgm_after_observed": "accepted"
+    },
+    "nested-deep-swapped.rs": {
+      "sha256": "749e64c1028fe4cec06000e8444a751689a5e531084f279bc8585569afd97759",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "Wrap<Wrap<U>>: Sized needs U: Sized, which the client's param_env lacks",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "overlap",
+      "rustgm_before": "overlap",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "before: blanket first the blanket's Sized V interns Wrap<Wrap<V>> Sized (accepts-invalid). Shows the interned Sized bit is never read in placeholder mode",
+      "rustgm_after_observed": "overlap"
+    },
+    "nested-deep.rs": {
+      "sha256": "6667e2bba90ca9594c70e0d0bf0ad04bce6df01231ea289ffd646cd2b83c184c",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "Wrap<Wrap<U>>: Sized needs U: Sized, which the client's param_env lacks",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "accepted",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "before: blanket first the blanket's Sized V interns Wrap<Wrap<V>> Sized (accepts-invalid). Shows the interned Sized bit is never read in placeholder mode",
+      "rustgm_after_observed": "overlap"
+    },
+    "nested-metasized-held-swapped.rs": {
+      "sha256": "dbd7cfadb3be7b3bd164ad64f8447c45af7c6785e84822c90094bb69812e401e",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "the client's ?Sized U is MetaSized, so WrapP<U>: MetaSized through its tail",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "control: after, the blanket-first order reaches V: MetaSized through the tail and (f) finds it in the client MetaSized set",
+      "rustgm_after_observed": "accepted"
+    },
+    "nested-metasized-held.rs": {
+      "sha256": "0341fd9befa197de2f9b3306816f19a94dfd84ea109ecb75f0c82179018beea0",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "the client's ?Sized U is MetaSized, so WrapP<U>: MetaSized through its tail",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "control: after, the blanket-first order reaches V: MetaSized through the tail and (f) finds it in the client MetaSized set",
+      "rustgm_after_observed": "accepted"
+    },
+    "nested-metasized-swapped.rs": {
+      "sha256": "7c673a9386ea1833eeeef3afa129862bce8d90a1dccf1538300e08bcc8d1f0e8",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "the negative impl's T: MetaSized needs WrapP<U>: MetaSized, so its tail U: MetaSized, which the client's PointeeSized U lacks",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "overlap",
+      "rustgm_before": "overlap",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "before: blanket first the source sizing shape reads WrapP<V> Sized by V's declaration and pays it as a Sized debt (accepts-invalid). After: the placeholder walk leaves WrapP<V> unsized, so the tail proof asks V: MetaSized, and (f) refuses. If rustc rejects WrapP itself, the fixture is corrected before any RustGM run",
+      "rustgm_after_observed": "overlap"
+    },
+    "nested-metasized.rs": {
+      "sha256": "adc23721581c3eaa43ea3cdacdf15ac3e90272ba8c4238f7fb6224723c859981",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "the negative impl's T: MetaSized needs WrapP<U>: MetaSized, so its tail U: MetaSized, which the client's PointeeSized U lacks",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "accepted",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "before: blanket first the source sizing shape reads WrapP<V> Sized by V's declaration and pays it as a Sized debt (accepts-invalid). After: the placeholder walk leaves WrapP<V> unsized, so the tail proof asks V: MetaSized, and (f) refuses. If rustc rejects WrapP itself, the fixture is corrected before any RustGM run",
+      "rustgm_after_observed": "overlap"
     },
     "nested-premise-side-swapped.rs": {
       "sha256": "d1064317704a92b23d1e522d623b228a5d12ba201eb20b3cb9eff29f20ae7108",
@@ -90,8 +277,12 @@
       "rustgm_before": "overlap",
       "rustgm_before_rebased": "overlap",
       "rustgm_after": "overlap",
-      "rustgm_after_note": "the recorded residual, other order",
-      "rustgm_after_observed": "overlap"
+      "rustgm_after_note": "unchanged; now equal to its twin",
+      "rustgm_after_observed": "overlap",
+      "rustgm_after_union": "overlap",
+      "rustgm_nested_base": "overlap",
+      "rustgm_nested_after_observed": "overlap",
+      "rustgm_after_observed_union": "overlap"
     },
     "nested-premise-side.rs": {
       "sha256": "ad932fced3a01526ddc5e86799aadb14e4681c51cdec1672b63f389223a7f1b9",
@@ -105,8 +296,194 @@
       "rustgm_before_declared": "accepted: the blanket is first, so its Sized V is the representative; `Wrap<V>: Sized` is valid by V's declaration through the nominal's sizedness argument, and pay_negative's shape proof pays the Wrap<V> debt by the same declaration",
       "rustgm_before": "accepted",
       "rustgm_before_rebased": "accepted",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "the recorded residual is fixed: Wrap<V>'s placeholder walk reads V from the client's Sized set (empty), not the blanket's declaration",
+      "rustgm_after_observed": "overlap",
+      "rustgm_after_union": "accepted",
+      "rustgm_nested_base": "accepted",
+      "rustgm_nested_after_observed": "overlap",
+      "rustgm_after_observed_union": "accepted"
+    },
+    "nested-projected-premise-side-swapped.rs": {
+      "sha256": "deecad858520f7f9db1360655f76531a7fa153cadbb8b7a356471e96259d2620",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "as nested-projected-premise-side: rustc checks both orders",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "overlap",
+      "rustgm_before": "error: shape parameter is outside its environment",
+      "rustgm_after": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "rustgm_after_note": "C3: the named fence in both orders, a rejection as rustc's E0119 in both orders. No order dependence remains for this pair",
+      "rustgm_after_observed": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "amendment": "2026-11-09, after the before-runs (CLI 56c5fad9729928af01e8af8e0ecdcb5f7c220406457cf443f1d1efd203ea6409, main 7e8c5cbbf) and before any code change: declared overlap, observed status=1 ERROR: file 0: 6486: shape parameter is outside its environment. Cause: the negative query's builtins proof has no Shapes; for a projected-size type nominals.rs prepare_shapes (:198-207) creates Shapes::new(Environment::new(&types, &[])), an environment with no parameters, and the walk's parameter arm (types/parameters/shape.rs:285-289) finds no abilities for P<V>'s argument V. Probes (scratchpad union/nested-probes*): it needs strict and negative coherence and the projected-size nominal, and not the negative impl; no survey fixture (0 of 336) and no census record reaches it"
+    },
+    "nested-projected-premise-side.rs": {
+      "sha256": "b80127c761fd0c34c8f75794cf8f602be928ae9f6e14963f37d2c44906af8aa0",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "P<U>: Sized needs <U as Tr>::Out: Sized, which normalizes to U; the client's param_env leaves U only MetaSized",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "error: shape parameter is outside its environment",
+      "rustgm_after": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "rustgm_after_note": "C3: the named fence in both orders, a rejection as rustc's E0119 in both orders. No order dependence remains for this pair",
+      "rustgm_after_observed": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "amendment": "2026-11-09, after the before-runs (CLI 56c5fad9729928af01e8af8e0ecdcb5f7c220406457cf443f1d1efd203ea6409, main 7e8c5cbbf) and before any code change: declared accepted, observed status=1 ERROR: file 0: 6505: shape parameter is outside its environment. Cause: the negative query's builtins proof has no Shapes; for a projected-size type nominals.rs prepare_shapes (:198-207) creates Shapes::new(Environment::new(&types, &[])), an environment with no parameters, and the walk's parameter arm (types/parameters/shape.rs:285-289) finds no abilities for P<V>'s argument V. Probes (scratchpad union/nested-probes*): it needs strict and negative coherence and the projected-size nominal, and not the negative impl; no survey fixture (0 of 336) and no census record reaches it"
+    },
+    "nested-projected-size-swapped.rs": {
+      "sha256": "4c932c368c119bf83a21e87b22c211a695e6f558c0e7553bbcbca277f5e5f237",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "P<U>: Sized needs <U as Tr>::Out: Sized, which normalizes to U, which the client's param_env makes Sized",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "error: shape parameter is outside its environment",
+      "rustgm_after": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "rustgm_after_note": "C3: under placeholders the projected-size nominal P<V> rejects with the named fence in both orders. A known rejects-valid (rustc accepts; on main it is the shape-parameter error); its fix is B",
+      "rustgm_after_observed": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "amendment": "2026-11-09, after the before-runs (CLI 56c5fad9729928af01e8af8e0ecdcb5f7c220406457cf443f1d1efd203ea6409, main 7e8c5cbbf) and before any code change: declared accepted, observed status=1 ERROR: file 0: 6478: shape parameter is outside its environment. Cause: the negative query's builtins proof has no Shapes; for a projected-size type nominals.rs prepare_shapes (:198-207) creates Shapes::new(Environment::new(&types, &[])), an environment with no parameters, and the walk's parameter arm (types/parameters/shape.rs:285-289) finds no abilities for P<V>'s argument V. Probes (scratchpad union/nested-probes*): it needs strict and negative coherence and the projected-size nominal, and not the negative impl; no survey fixture (0 of 336) and no census record reaches it",
+      "known_rejects_valid": "rustc accepts; the named fence rejects in both orders until B threads the header premises into the nested size proof"
+    },
+    "nested-projected-size.rs": {
+      "sha256": "d62e8eca87d73a5d6e39d9ff9fa57ffe304491baefefb3c19ba9293716fa24f1",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "P<U>: Sized needs <U as Tr>::Out: Sized, which normalizes to U, which the client's param_env makes Sized",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "error: shape parameter is outside its environment",
+      "rustgm_after": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "rustgm_after_note": "C3: under placeholders the projected-size nominal P<V> rejects with the named fence in both orders. A known rejects-valid (rustc accepts; on main it is the shape-parameter error); its fix is B",
+      "rustgm_after_observed": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "amendment": "2026-11-09, after the before-runs (CLI 56c5fad9729928af01e8af8e0ecdcb5f7c220406457cf443f1d1efd203ea6409, main 7e8c5cbbf) and before any code change: declared accepted, observed status=1 ERROR: file 0: 6505: shape parameter is outside its environment. Cause: the negative query's builtins proof has no Shapes; for a projected-size type nominals.rs prepare_shapes (:198-207) creates Shapes::new(Environment::new(&types, &[])), an environment with no parameters, and the walk's parameter arm (types/parameters/shape.rs:285-289) finds no abilities for P<V>'s argument V. Probes (scratchpad union/nested-probes*): it needs strict and negative coherence and the projected-size nominal, and not the negative impl; no survey fixture (0 of 336) and no census record reaches it",
+      "known_rejects_valid": "rustc accepts; the named fence rejects in both orders until B threads the header premises into the nested size proof"
+    },
+    "nested-tuple-head-swapped.rs": {
+      "sha256": "3fbbf2f88e20bab770b2451aa1801d3de46c708739bf25b1efb9f8da5017f219",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "rustc's sized_conditions for a tuple require only its last element (u8); the negative check registers no WF obligations",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "overlap",
+      "rustgm_before": "overlap",
       "rustgm_after": "accepted",
-      "rustgm_after_note": "the recorded residual: an accepts-invalid; breaks symmetry, exempt by name",
+      "rustgm_after_note": "before: client first the ?Sized U interns (U, u8) WF=false, Sized=false (rejects-valid, order-dependent). After: placeholder mode uses rustc's tuple rule and placeholder WF = true. Shows the interned WF bit is never read in placeholder mode",
+      "rustgm_after_observed": "accepted"
+    },
+    "nested-tuple-head.rs": {
+      "sha256": "b0ef8e8d5d7101b1106f12552d4489fd2836689b66f0183ef4d85da942bffdae",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "rustc's sized_conditions for a tuple require only its last element (u8); the negative check registers no WF obligations",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "before: client first the ?Sized U interns (U, u8) WF=false, Sized=false (rejects-valid, order-dependent). After: placeholder mode uses rustc's tuple rule and placeholder WF = true. Shows the interned WF bit is never read in placeholder mode",
+      "rustgm_after_observed": "accepted"
+    },
+    "nested-tuple-tail-swapped.rs": {
+      "sha256": "32ed78da7dbf3f3dd48afb22aed13b6390cb2fe3d7f7bcda3a9be57d9dd6154f",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "rustc's sized_conditions for a tuple require its last element, U, which the client's param_env does not make Sized",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "overlap",
+      "rustgm_before": "overlap",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "before: blanket first the interned tuple is Sized by V's declaration (accepts-invalid)",
+      "rustgm_after_observed": "overlap"
+    },
+    "nested-tuple-tail.rs": {
+      "sha256": "5e792810a9dd363ec2941df9de6071f2b0652179d50206524480502d7bfb3dba",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "rustc's sized_conditions for a tuple require its last element, U, which the client's param_env does not make Sized",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "accepted",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "before: blanket first the interned tuple is Sized by V's declaration (accepts-invalid)",
+      "rustgm_after_observed": "overlap"
+    },
+    "nested-wf-control-swapped.rs": {
+      "sha256": "584aa9e7a313a6f090eac81b4501c4f4243e57214792c6abb589dbf8021a5dd1",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "both headers declare their parameter Sized; WF of (U, u8) holds under both declarations",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "control: unchanged in both orders",
+      "rustgm_after_observed": "accepted"
+    },
+    "nested-wf-control.rs": {
+      "sha256": "7086449064673dcf0d912efd375e63bbc09c88044a27f956c3ae994088cb2b63",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "both headers declare their parameter Sized; WF of (U, u8) holds under both declarations",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "control: unchanged in both orders",
+      "rustgm_after_observed": "accepted"
+    },
+    "nested-written-premise-swapped.rs": {
+      "sha256": "590948ba2978aeacacaafed29aa4d403fd01270784a515dcac17f1eeb1c0aa1b",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "the client's param_env contains the written Wrap<U>: Sized, which proves the negative impl's T: Sized",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "overlap",
+      "rustgm_before": "overlap",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "before: builtins.prove reads the interned (unsized) Wrap and no written premise; after: Wrap<V>'s placeholder is a member of the client's Sized set (the walk's final assumption)",
+      "rustgm_after_observed": "accepted"
+    },
+    "nested-written-premise.rs": {
+      "sha256": "b7962505f344278a7e6dcfa6971f8ce6bbe0feed83e6584a5c15546b18a56275",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "the client's param_env contains the written Wrap<U>: Sized, which proves the negative impl's T: Sized",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "overlap",
+      "rustgm_before": "overlap",
+      "rustgm_after": "accepted",
+      "rustgm_after_note": "before: builtins.prove reads the interned (unsized) Wrap and no written premise; after: Wrap<V>'s placeholder is a member of the client's Sized set (the walk's final assumption)",
       "rustgm_after_observed": "accepted"
     },
     "premise-side-swapped.rs": {
@@ -123,7 +500,39 @@
       "rustgm_before_rebased": "overlap",
       "rustgm_after": "overlap",
       "rustgm_after_note": "symmetric with premise-side",
-      "rustgm_after_observed": "overlap"
+      "rustgm_after_observed": "overlap",
+      "rustgm_nested_base": "overlap",
+      "rustgm_nested_after_observed": "overlap"
+    },
+    "probe-trait-premise-swapped.rs": {
+      "sha256": "747c150cec6132de54de0d1aa9b2d85c009682c860ada5b33e4a5c117a87005d",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "under the client's param_env U: Tr, so the negative impl's T: Tr and T: Sized hold",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "overlap",
+      "rustgm_before": "overlap",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "probe only, no fix in this item (decision 5): a negative impl's trait condition is not assumed from the other header's trait premises. If rustc accepts, it is a recorded rejects-valid open item",
+      "rustgm_after_observed": "overlap",
+      "label": "probe: probe only, no fix in this item (decision 5): a negative impl's trait condition is not assumed from the other header's trait premises. If rustc accepts, it is a recorded rejects-valid open item"
+    },
+    "probe-trait-premise.rs": {
+      "sha256": "4b8161e8f25fdfe9b9b4c5059933045d9082b9958665f22266933e70950d826b",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "under the client's param_env U: Tr, so the negative impl's T: Tr and T: Sized hold",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "overlap",
+      "rustgm_before": "overlap",
+      "rustgm_after": "overlap",
+      "rustgm_after_note": "probe only, no fix in this item (decision 5): a negative impl's trait condition is not assumed from the other header's trait premises. If rustc accepts, it is a recorded rejects-valid open item",
+      "rustgm_after_observed": "overlap",
+      "label": "probe: probe only, no fix in this item (decision 5): a negative impl's trait condition is not assumed from the other header's trait premises. If rustc accepts, it is a recorded rejects-valid open item"
     },
     "region-absent.rs": {
       "sha256": "5002905b5c62b8f6c238abdf3672545ceea0c80cf308ba6967b22b329925bb0e",
@@ -139,7 +548,9 @@
       "rustgm_before_rebased": "region",
       "rustgm_after": "overlap",
       "rustgm_after_note": "declared text change under (b)",
-      "rustgm_after_observed": "overlap"
+      "rustgm_after_observed": "overlap",
+      "rustgm_nested_base": "overlap",
+      "rustgm_nested_after_observed": "overlap"
     },
     "region-client-side.rs": {
       "sha256": "8703306a95efe280c62b9d2a41d6b8e64213306d4f0a40bf2304596d4c4eb246",
@@ -156,7 +567,9 @@
       "rustgm_after": "overlap",
       "rustgm_after_note": "declared flip under (e): the client's 'q: 'p is region-region, never assumed",
       "rustgm_after_observed": "overlap",
-      "rustc_amendment": "2026-11-09, after oracle 2 and before any RustGM run: predicted 0, observed E0119: the client's region-region premise is never assumed"
+      "rustc_amendment": "2026-11-09, after oracle 2 and before any RustGM run: predicted 0, observed E0119: the client's region-region premise is never assumed",
+      "rustgm_nested_base": "overlap",
+      "rustgm_nested_after_observed": "overlap"
     },
     "region-head-unified.rs": {
       "sha256": "ab996f9daaf7663fcd4c874f1679859c1833821a57591d38fb9cf7c304f056a4",
@@ -173,7 +586,9 @@
       "rustgm_after": "overlap",
       "rustgm_after_note": "declared text change under (b); matches rustc",
       "rustgm_after_observed": "overlap",
-      "rustc_amendment": "2026-11-09, after oracle 2 and before any RustGM run: predicted 0 (low confidence), observed E0119, for the same reason; decision (c) is moot"
+      "rustc_amendment": "2026-11-09, after oracle 2 and before any RustGM run: predicted 0 (low confidence), observed E0119, for the same reason; decision (c) is moot",
+      "rustgm_nested_base": "overlap",
+      "rustgm_nested_after_observed": "overlap"
     },
     "region-implied.rs": {
       "sha256": "32bbea6facb008c0d7ecc43d0de7f44bdedd106edefcccb17635983642500479",
@@ -189,7 +604,9 @@
       "rustgm_before_rebased": "accepted",
       "rustgm_after": "overlap",
       "rustgm_after_note": "declared flip under (d)",
-      "rustgm_after_observed": "overlap"
+      "rustgm_after_observed": "overlap",
+      "rustgm_nested_base": "overlap",
+      "rustgm_nested_after_observed": "overlap"
     },
     "region-premise-side.rs": {
       "sha256": "f06efae963639b29551e669e43d915f20299cd8913fe32bcf49a3436424075ba",
@@ -205,7 +622,9 @@
       "rustgm_before_rebased": "accepted",
       "rustgm_after": "overlap",
       "rustgm_after_note": "declared flip under (b) and (e)",
-      "rustgm_after_observed": "overlap"
+      "rustgm_after_observed": "overlap",
+      "rustgm_nested_base": "overlap",
+      "rustgm_nested_after_observed": "overlap"
     },
     "region-strict-control.rs": {
       "sha256": "d6bf4a72a53158c947ecedf537b8a65e48b518321b398857c6285c5b0fe7fc1e",
@@ -221,7 +640,9 @@
       "rustgm_before_rebased": "overlap",
       "rustgm_after": "overlap",
       "rustgm_after_note": "unchanged",
-      "rustgm_after_observed": "overlap"
+      "rustgm_after_observed": "overlap",
+      "rustgm_nested_base": "overlap",
+      "rustgm_nested_after_observed": "overlap"
     },
     "sized-client-side-swapped.rs": {
       "sha256": "c4f48846accaab373ad05f252a0e7a59417acea0a10e3fede6ed8f504dd9cc7c",
@@ -235,7 +656,9 @@
       "rustgm_before_rebased": "accepted",
       "rustgm_after": "accepted",
       "rustgm_after_note": "symmetric with sized-client-side",
-      "rustgm_after_observed": "accepted"
+      "rustgm_after_observed": "accepted",
+      "rustgm_nested_base": "accepted",
+      "rustgm_nested_after_observed": "accepted"
     },
     "sized-client-side.rs": {
       "sha256": "ca8e77efb98c58ebeb793254019962ee6da35394c7f51cffb6149c06e28fad18",
@@ -250,7 +673,9 @@
       "rustgm_after": "accepted",
       "rustgm_after_note": "rejected-to-accepted: the client's Sized U decides V: Sized and pays its debt",
       "rustgm_after_observed": "accepted",
-      "amendment": "2026-11-09, after the base before-runs: declared accepted in predictions.json, observed status 1, ERROR: file 0: 6357: overlapping trait implementation headers require coherence proof; rustc gives 0 (rustc1.txt). the same representative declaration (the blanket's ?Sized V): a rejects-valid on main at dcb956cf8, fixed by (f)"
+      "amendment": "2026-11-09, after the base before-runs: declared accepted in predictions.json, observed status 1, ERROR: file 0: 6357: overlapping trait implementation headers require coherence proof; rustc gives 0 (rustc1.txt). the same representative declaration (the blanket's ?Sized V): a rejects-valid on main at dcb956cf8, fixed by (f)",
+      "rustgm_nested_base": "accepted",
+      "rustgm_nested_after_observed": "accepted"
     },
     "sized-premise-side-swapped.rs": {
       "sha256": "fc53f4b338670bdd9dd0bb378c9ff6ba7c6b1d9e0bb492bc150dd0e9d2dd26c6",
@@ -267,7 +692,9 @@
       "rustgm_after": "overlap",
       "rustgm_after_note": "symmetric with sized-premise-side",
       "rustgm_after_observed": "overlap",
-      "amendment": "2026-11-09, after the base before-runs: declared accepted in predictions.json, observed status 1, ERROR: file 0: 6333: overlapping trait implementation headers require coherence proof; rustc gives E0119 (rustc1.txt). the client is first, so its ?Sized U is the representative: absent by declaration. Matches rustc by accident; with sized-premise-side accepted, main's outcome depends on header order"
+      "amendment": "2026-11-09, after the base before-runs: declared accepted in predictions.json, observed status 1, ERROR: file 0: 6333: overlapping trait implementation headers require coherence proof; rustc gives E0119 (rustc1.txt). the client is first, so its ?Sized U is the representative: absent by declaration. Matches rustc by accident; with sized-premise-side accepted, main's outcome depends on header order",
+      "rustgm_nested_base": "overlap",
+      "rustgm_nested_after_observed": "overlap"
     },
     "strict-static-unheld.rs": {
       "sha256": "1ebd0a04dbf758266558f218c41c06865dae5cc322e409fbd00fa3833ea40747",
@@ -284,7 +711,9 @@
       "rustgm_after": "overlap",
       "rustgm_after_note": "probe-derived; declared text change under (b): 'q == 'static is Unsatisfied",
       "rustgm_after_observed": "overlap",
-      "label": "probe-derived: rustc outcome observed first, as probe-strict-static-unheld; RustGM outcomes declared here before any RustGM run"
+      "label": "probe-derived: rustc outcome observed first, as probe-strict-static-unheld; RustGM outcomes declared here before any RustGM run",
+      "rustgm_nested_base": "overlap",
+      "rustgm_nested_after_observed": "overlap"
     },
     "strict-unconditional.rs": {
       "sha256": "6625b32a6fa4b50d604bc6649258d3ab31c7a115a2c7c98683c8d1c3e7849d65",
@@ -299,7 +728,9 @@
       "rustgm_after": "accepted",
       "rustgm_after_note": "probe-derived; unchanged",
       "rustgm_after_observed": "accepted",
-      "label": "probe-derived: rustc outcome observed first, as probe-strict-unconditional; RustGM outcomes declared here before any RustGM run"
+      "label": "probe-derived: rustc outcome observed first, as probe-strict-unconditional; RustGM outcomes declared here before any RustGM run",
+      "rustgm_nested_base": "accepted",
+      "rustgm_nested_after_observed": "accepted"
     },
     "type-outlives-held.rs": {
       "sha256": "e98acebb981ebf04253f3b75a9144c2d24c51ef77a3f207a7931ece810d6fe75",
@@ -314,7 +745,9 @@
       "rustgm_after": "accepted",
       "rustgm_after_note": "probe-derived; the client's written U: 'p, kept by (e)",
       "rustgm_after_observed": "accepted",
-      "label": "probe-derived: rustc outcome observed first, as probe-strict-type-outlives-held; RustGM outcomes declared here before any RustGM run"
+      "label": "probe-derived: rustc outcome observed first, as probe-strict-type-outlives-held; RustGM outcomes declared here before any RustGM run",
+      "rustgm_nested_base": "accepted",
+      "rustgm_nested_after_observed": "accepted"
     },
     "type-outlives-premise-side.rs": {
       "sha256": "dc43e51daf7f237426286cf2c34371e96b2feb6081bfaad2dbdfdc9f1ec9af69",
@@ -330,7 +763,9 @@
       "rustgm_before_rebased": "accepted",
       "rustgm_after": "overlap",
       "rustgm_after_note": "declared flip: only the client's written type-outlives premises, and it has none",
-      "rustgm_after_observed": "overlap"
+      "rustgm_after_observed": "overlap",
+      "rustgm_nested_base": "overlap",
+      "rustgm_nested_after_observed": "overlap"
     },
     "type-outlives.rs": {
       "sha256": "0d614c72580d4a8e7d0d27d3366a3fb1c7119838ca0da0fbb83cc5ec25d6ee84",
@@ -347,7 +782,14 @@
       "rustgm_after": "overlap",
       "rustgm_after_note": "probe-derived; declared flip under (d): Verification is not disjoint under (b)",
       "rustgm_after_observed": "overlap",
-      "label": "probe-derived: rustc outcome observed first, as probe-strict-type-outlives; RustGM outcomes declared here before any RustGM run"
+      "label": "probe-derived: rustc outcome observed first, as probe-strict-type-outlives; RustGM outcomes declared here before any RustGM run",
+      "rustgm_nested_base": "overlap",
+      "rustgm_nested_after_observed": "overlap"
     }
-  }
+  },
+  "declared_nested": "2026-11-09. The nested-sizedness twins' outcomes for rustc and for this compiler before and after the change were declared before their rustc oracle and before any RustGM run of them, with two dated amendments before any code change (beside each case and in \"amendments\"). sha256: predictions6-original.json b731d0f98a187222219afe5d3bb6a81558e9ddba9fe8ed65d3980b5b8524f3c4, predictions6-amend1.json 04ccc20ca3df22f4429c3d72f1d029018235d814f892d92b2268b9e65d40b858, predictions6.json 2b261a8cec52295e622a3d2a96a251ad473c2681869ed2d921123fd3972a3abd",
+  "base_nested": "rustgm_nested_base and rustgm_before of the nested twins: main at 7e8c5cbbf, dev-fast CLI sha256 56c5fad9729928af01e8af8e0ecdcb5f7c220406457cf443f1d1efd203ea6409",
+  "candidate_nested": "rustgm_nested_after_observed and rustgm_after_observed of the nested twins: dev-fast CLI sha256 de490950d59d6c793a4d2df011c75a855dcd196380847f0a25f1a83026e5137e on 7e8c5cbbf",
+  "residual_union": "a non-parameter type whose sizedness depends on a rigid parameter, such as a nominal's sizedness argument (`Wrap<V>: Sized`), is still decided by the shape walk, which reads the representative's declaration (types/parameters/shape.rs:285-290); pay_negative's shape proof does the same. The fix threads query premises into the shared types/parameters/shape.rs facility, a separate design. Recorded gap in docs/library-build-blockers.md",
+  "residual": "fixed by the nested-sizedness item: under the other header's Sized premises the shape walk and size queries follow rustc 1.98's sized_conditions and read no representative declaration. Known rejects-valid: nested-projected-size and -swapped (rustc accepts) carry the named fence \"projected-size nominal in a negative builtins proof requires header premises in its nested size proof\" until B"
 }

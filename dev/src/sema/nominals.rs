@@ -19,6 +19,11 @@ pub(super) use requirements::{
 #[path = "../../tests/invariants/normalized_sizing_lifetimes.rs"]
 mod tests;
 
+/// Under placeholders, a projected-size nominal's size comes from a nested
+/// trait proof that has no header premises, so a negative coherence query
+/// rejects it rather than decide it by a representative's declarations.
+pub(in crate::sema) const PLACEHOLDER_SIZE_FENCE: &str = "projected-size nominal in a negative builtins proof requires header premises in its nested size proof";
+
 /// Predicate proofs are reusable only within one immutable declaration environment.
 pub(super) struct Proof {
     environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
@@ -125,6 +130,34 @@ impl Proof {
         proof.scope = Some((universals, first_region));
         proof
     }
+    /// A negative coherence query's premise-less builtin proof decides
+    /// sizedness under the other header's Sized premises; see
+    /// [`crate::types::parameters::shape::Shapes::with_placeholders`]. Its
+    /// shapes are never released, so [`Self::normalized_shape`] never falls
+    /// back to interned properties.
+    pub(in crate::sema) fn assume_placeholders(
+        &mut self,
+        types: &crate::types::Store,
+        placeholders: crate::types::parameters::shape::Placeholders,
+    ) -> Result<(), &'static str> {
+        if self.environment.is_some()
+            || self.shapes.is_some()
+            || self.term_shapes.is_some()
+            || self.traits.is_some()
+        {
+            return Err("placeholder sizing requires a fresh premise-less builtin proof");
+        }
+        self.shapes = Some(Box::new(
+            crate::types::parameters::shape::Shapes::with_placeholders(
+                std::sync::Arc::new(crate::types::parameters::environment::Environment::new(
+                    types,
+                    &[],
+                )?),
+                placeholders,
+            ),
+        ));
+        Ok(())
+    }
     /// Closed declaration bounds must not justify themselves through their environment.
     pub fn prove_closed_trait(
         &mut self,
@@ -190,8 +223,16 @@ impl Proof {
                     &[],
                 )?)
             };
+            let placeholders = self
+                .shapes
+                .as_deref()
+                .and_then(crate::types::parameters::shape::Shapes::placeholders)
+                .cloned();
             self.term_shapes = Some(Box::new(
-                crate::types::parameters::shape::Shapes::for_clause_terms(environment),
+                crate::types::parameters::shape::Shapes::for_clause_terms(
+                    environment,
+                    placeholders,
+                ),
             ));
         }
         if count.is_none()
@@ -209,7 +250,8 @@ impl Proof {
     }
     /// The shape of a root already normalized in this proof's environment: its
     /// remaining projections are rigid, and their formation stays with the
-    /// proof that normalized them.
+    /// proof that normalized them. A placeholder proof always has its shapes,
+    /// so only a premise-less proof without them reads interned properties.
     fn normalized_shape(
         &mut self,
         facts: &mut Declarations,
@@ -250,11 +292,20 @@ impl Proof {
         let Some(mut shapes) = shapes else {
             return Ok(None);
         };
+        // A placeholder proof keeps its shapes even when they fail, so its
+        // interned fallback stays unreachable. A fenced walk is cancelled
+        // first, so a later query on the proof starts fresh.
+        let keep = shapes.placeholders().is_some();
         let result = loop {
-            match shapes.advance(&facts.types, ty, u16::from(count.is_some()), normalized)? {
-                Progress::Ready(properties) => break Some(properties),
-                Progress::Projection => break None,
-                Progress::Size(request) => {
+            match shapes.advance(&facts.types, ty, u16::from(count.is_some()), normalized) {
+                Ok(Progress::Ready(properties)) => break Ok(Some(properties)),
+                Ok(Progress::Projection) => break Ok(None),
+                Ok(Progress::Size(request)) if keep => {
+                    break shapes
+                        .refuse_size(normalized, request)
+                        .and(Err(PLACEHOLDER_SIZE_FENCE));
+                }
+                Ok(Progress::Size(request)) => {
                     let sized = self.trait_state(facts)?.shape_size(
                         facts,
                         &mut shapes,
@@ -264,14 +315,17 @@ impl Proof {
                     )?;
                     shapes.answer_size(&facts.types, normalized, request, sized)?;
                 }
+                Err(error) => break Err(error),
             }
         };
-        if count.is_some() {
-            self.term_shapes = Some(shapes);
-        } else {
-            self.shapes = Some(shapes);
+        if result.is_ok() || keep {
+            if count.is_some() {
+                self.term_shapes = Some(shapes);
+            } else {
+                self.shapes = Some(shapes);
+            }
         }
-        Ok(result)
+        result
     }
     /// Physical properties alone carry no nominal trait-formation authority.
     /// Selection retains those requirements as ordinary child proof nodes first.
@@ -514,6 +568,12 @@ impl Proof {
         self.traits
             .as_deref()
             .map_or(0, traits::State::selection_steps)
+    }
+    #[cfg(test)]
+    pub(in crate::sema) fn shape_steps(&self) -> usize {
+        self.shapes
+            .as_deref()
+            .map_or(0, crate::types::parameters::shape::Shapes::steps)
     }
 
     /// Retain every selected lifetime obligation, including fresh existential identities.

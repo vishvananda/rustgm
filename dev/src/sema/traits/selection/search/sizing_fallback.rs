@@ -10,6 +10,10 @@ use crate::{
 };
 use std::ops::ControlFlow;
 
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/placeholder_sizing.rs"]
+mod placeholder_tests;
+
 /// rustc 1.98 negates one impl's predicates under the other impl's
 /// `param_env`, after plugging each unified header variable with a
 /// placeholder. A negative coherence query decides a rigid parameter's `Sized`
@@ -17,22 +21,34 @@ use std::ops::ControlFlow;
 /// declaration of the parameter `freeze` made the representative. A `Sized`
 /// decision stays an ordinary Sized debt, and each `MetaSized` node stays a
 /// debt that the `MetaSized` premises must pay. Every other query has none.
+/// The builtin proof's shape walk and size queries read the same Sized set.
 pub(super) struct NegativeSizing {
-    sized: std::sync::Arc<[crate::types::TypeId]>,
+    sized: crate::types::parameters::shape::Placeholders,
     meta_sized: std::sync::Arc<[crate::types::TypeId]>,
     debts: Vec<usize>,
 }
 impl NegativeSizing {
-    /// The premises are sorted by identity, as the overlap inputs resolve
-    /// them, and shared by every condition of one pair's side, so assuming
-    /// them is constant work. A lookup finds only an actual member, so a
-    /// misordered set could only assume less.
-    pub(super) fn assume(premises: super::coherence::NegativePremises<'_>) -> Self {
-        Self {
-            sized: std::sync::Arc::clone(premises.sized),
-            meta_sized: std::sync::Arc::clone(premises.meta_sized),
-            debts: Vec::new(),
-        }
+    /// The premises are shared by every condition of one pair's side. The
+    /// Sized set is ordered by [`Placeholders::new`], whose work is returned
+    /// for the query's budget; the overlap inputs sort both sets, so it is
+    /// one comparison per premise. A `MetaSized` lookup finds only an actual
+    /// member, so a misordered set could only assume less.
+    ///
+    /// [`Placeholders::new`]: crate::types::parameters::shape::Placeholders::new
+    pub(super) fn assume(
+        premises: super::coherence::NegativePremises<'_>,
+    ) -> Result<(Self, usize), &'static str> {
+        let (sized, work) = crate::types::parameters::shape::Placeholders::new(
+            std::sync::Arc::clone(premises.sized),
+        )?;
+        Ok((
+            Self {
+                sized,
+                meta_sized: std::sync::Arc::clone(premises.meta_sized),
+                debts: Vec::new(),
+            },
+            work,
+        ))
     }
     /// Whether the premises give a rigid parameter `kind`, and the lookup's work.
     fn parameter(
@@ -41,7 +57,7 @@ impl NegativeSizing {
         ty: crate::types::TypeId,
     ) -> Result<(bool, usize), &'static str> {
         let premises = match kind {
-            LangItem::Sized => &self.sized,
+            LangItem::Sized => return Ok(self.sized.sized(ty)),
             LangItem::MetaSized => &self.meta_sized,
             LangItem::PointeeSized => return Ok((true, 1)),
             _ => return Err("invalid negative coherence sizing kind"),
@@ -51,6 +67,10 @@ impl NegativeSizing {
             premises.binary_search_by_key(&ty.0, |ty| ty.0).is_ok(),
             work,
         ))
+    }
+    /// The Sized premises the shape walk and size queries assume.
+    pub(super) fn placeholders(&self) -> &crate::types::parameters::shape::Placeholders {
+        &self.sized
     }
     fn record(&mut self, selected: usize) -> Result<(), &'static str> {
         if self.debts.last().is_some_and(|&last| last >= selected) {

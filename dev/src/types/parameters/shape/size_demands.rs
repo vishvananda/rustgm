@@ -96,6 +96,22 @@ impl Shapes {
         Ok(())
     }
 
+    /// A caller that refuses the pending request abandons the suspended
+    /// frontier, as a rejected root does, so the next root on this walker
+    /// starts fresh. Completed siblings and answers remain reusable.
+    pub(crate) fn refuse_size(
+        &mut self,
+        normalized: bool,
+        request: Request,
+    ) -> Result<(), &'static str> {
+        let query = self.query(normalized);
+        if query.nominal.pending != Some(request) {
+            return Err("nominal size refusal does not match its pending shape request");
+        }
+        query.cancel();
+        Ok(())
+    }
+
     pub(crate) fn size_binder(
         &mut self,
         normalized: bool,
@@ -113,11 +129,7 @@ impl Shapes {
         if !normalized {
             return self;
         }
-        self.normalized_queries.get_or_insert_with(|| {
-            let mut query = Self::new(std::sync::Arc::clone(&self.environment));
-            query.defer_local_sized = self.defer_local_sized;
-            Box::new(query)
-        })
+        self.normalized_query()
     }
 }
 

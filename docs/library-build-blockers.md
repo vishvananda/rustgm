@@ -123,13 +123,24 @@ rustc 1.98's `impl_intersection_has_negative_obligation` does, on main
   accepted-to-rejected flip. One rejected case changes from the region text
   to the overlap text. The analysis-only census lookahead's `census.tsv` is
   byte-identical to the base's.
-- Recorded gap (accepts-invalid): nested sizedness. A non-parameter type
-  whose sizedness depends on a rigid parameter, such as `Wrap<V>: Sized` for
-  `struct Wrap<X: ?Sized>(X)`, is still decided by the shape walk. The walk
-  reads the representative's declaration (`types/parameters/shape.rs:285-290`).
-  Repro: `nested-premise-side` is accepted, while rustc rejects it with E0119,
-  and `nested-premise-side-swapped` is rejected. The fix threads query
-  premises into that shared types facility, as a separate design.
+- Fixed by the [nested-sizedness item](parallel/nested-sizedness.md): the
+  recorded accepts-invalid `nested-premise-side`. A non-parameter type whose
+  sizedness depends on a rigid parameter, such as `Wrap<V>: Sized` for
+  `struct Wrap<X: ?Sized>(X)`, is now Sized by rustc's `sized_conditions`
+  under the other header's Sized premises. The shape walk, size query and
+  payment no longer read the representative's declaration. Both twins are
+  rejected, as rustc rejects them with E0119. 26 new twins were declared
+  before their rustc 1.98.0 oracle. Of the 47 cases, 43 match rustc, and the
+  symmetry invariant has no exemption. The flip survey and the census
+  lookahead are byte-identical to the base.
+- Known rejects-valid: `nested-projected-size` and its swapped twin, which
+  rustc accepts. A projected-size nominal's size comes from a nested trait
+  proof without the header premises, so a named fence rejects it in both
+  orders. Fix B threads the premises into that proof, including
+  normalization inside the builtin proof, as a later item.
+- Open rejects-valid: the `probe-trait-premise` pair, which rustc accepts. It
+  is rejected in both orders because a negative impl's trait condition is not
+  assumed from the other header's trait premises.
 
 Lane A [census batch 17](parallel/census-batch17.md) repairs census 19's
 record. It was qualified on main `dcb956cf8`, and census 20 ran on
