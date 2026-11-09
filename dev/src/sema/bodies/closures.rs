@@ -242,7 +242,14 @@ impl Checker<'_> {
         } else {
             super::readiness::Completion::Ordinary
         };
-        self.park_nested(child, entry)
+        let source = entry.source;
+        self.park_nested(child, entry)?;
+        // The inherited view names interface binders. Its first fold needs
+        // their aliases even before any body expression has aliased one.
+        if mapped_environment {
+            self.prepare_universals(source)?;
+        }
+        Ok(())
     }
 
     pub(super) fn collect_closure(&mut self) -> Result<(), Error> {

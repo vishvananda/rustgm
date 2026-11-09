@@ -1,6 +1,6 @@
 # Generic bodies that select a region-binding impl
 
-Thirty-two no_core source-core libraries. The first seventeen are generic
+Thirty-nine no_core source-core libraries. The first seventeen are generic
 function bodies that select
 an impl with a region-binding condition, as core's `Scan`
 (`F: FnMut(&mut St, I::Item) -> Option<B>`) and `MapWindows`
@@ -37,12 +37,25 @@ Fifteen additions cover that change:
 - an opponent with two premises whose results differ in a type (E0284), which
   must stay ambiguous.
 
+Seven more select through such a premise in a closure body (audit a08). A
+closure body inherits the caller's premises mapped to its own lifetime
+binders, and its first selection folded them before any body step had aliased
+a caller lifetime, so it was rejected with "missing lifetime argument". The
+closure body now aliases them on entry, as an inline const body does:
+- the a08 shape, and the same selection placed before a turbofish that
+  aliases the lifetime;
+- the closure return annotation without a selection, an explicit-lifetime
+  closure without a premise, a `'static` premise and a lifetime-free premise;
+- an opponent whose closure return names an undeclared lifetime (E0261).
+
 The first seventeen outcomes were declared before the frozen rustc 1.98.0
 oracle and before any rustc or RustGM run of these files; RustGM probes of
 similar shapes ran first in scratch. Fourteen of the additions were
 exploration probes that rustc 1.98.0 and RustGM ran before their
 declaration, so they are a regression record; `repeated-selections` was
-declared before any run. See `outcomes.json`.
+declared before any run. The seven closure additions are exploration probes
+whose outcomes were declared before rustc 1.98.0 or RustGM ran them, so they
+are a regression record too. See `outcomes.json`.
 
 The lang-item prefix and the `Tuple`, `Fn`, `FnMut` and `FnOnce` declarations
 are the exact pinned Rust core fragment of

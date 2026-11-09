@@ -587,7 +587,7 @@ mismatch opponent and an opponent whose output names the bound region. Each
 outcome was declared before its rustc 1.98.0 oracle. A private invariant
 checks them; there is no graded manifest.
 
-`spec/scoped-body-selections/` freezes thirty-two declared no_core controls for
+`spec/scoped-body-selections/` freezes thirty-nine declared no_core controls for
 generic bodies that select an impl with a region-binding condition (core
 `Scan` adapter and `MapWindows` shapes) by method, path and qualified calls,
 with two mismatch opponents and two E0599 opponents. Seventeen more cover a
@@ -595,9 +595,12 @@ caller premise that names a caller lifetime in a body: impl selections whose
 parameter it determines, premises that let annotations, annotated
 well-formedness, turbofish, qualified paths and closure signatures name,
 `'static` and type-parameter outputs, ten repeated selections, and an E0284
-opponent with two premises whose results differ in a type. Each outcome was
-declared before its rustc 1.98.0 oracle. A private invariant checks them;
-there is no graded manifest.
+opponent with two premises whose results differ in a type. Seven more select
+through such a premise in a closure body before any body step aliases a
+caller lifetime, with annotation-only, explicit-lifetime, `'static` and
+lifetime-free controls and an E0261 opponent. Each outcome was declared before
+its rustc 1.98.0 oracle. A private invariant checks them; there is no graded
+manifest.
 
 `spec/impl-header-projections/` freezes fifteen declared no_core controls for
 an impl header that names a projection of its own parameter (core

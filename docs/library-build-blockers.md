@@ -266,11 +266,15 @@ Lane B [caller-region premises](parallel/caller-region-premises.md) and
     "overlapping trait implementation headers require coherence proof",
     where rustc accepts it. Lane C's C3 declares a control that flips with
     the fix.
-  - A closure whose declared return type names a caller lifetime. In
+  - Repaired: a selection in a closure body through a caller premise that
+    names a caller lifetime, before any body step has aliased one. In
     `fn item<'x, F: Out<O = Option<&'x u8>>>(s: &mut Wrap<F>)`, the closure
-    `|w: &mut Wrap<F>| -> Option<&'x u8> { w.next() }` is rejected with
+    `|w: &mut Wrap<F>| -> Option<&'x u8> { w.next() }` was rejected with
     "missing lifetime argument", where rustc 1.98.0 accepts it (caller-region
-    audit a08). Core's census does not reach it.
+    audit a08). This entry first blamed the closure's declared return type,
+    which does not matter. See
+    [closure entry aliases](parallel/closure-entry-aliases.md). Core's census
+    does not reach it.
 
 Lane A [census batch 14](parallel/census-batch14.md) repairs census 14's
 record on main `4a1ac00c4`. Census 15 (`6df12612`, from `d1756b87f`) checks

@@ -3,14 +3,15 @@
 //! as rustc proves the condition with its regions instantiated in a nested
 //! universe of the caller's. Its trait queries see the caller's premises in
 //! the body's alias form, so a premise that names a caller lifetime does not
-//! compete with its declaration-form copy.
+//! compete with its declaration-form copy. A closure body has that form from
+//! entry, before any of its expressions aliases a caller lifetime.
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
 const CONTROLS: &str = "pa31/tests/spec/scoped-body-selections";
 
 /// Independently checked rustc 1.98.0 outcomes: `None` accepts, otherwise the
 /// first error this compiler reports for the control rustc also rejects.
-const CASES: [(&str, Option<&str>); 32] = [
+const CASES: [(&str, Option<&str>); 39] = [
     ("path-call", None),
     ("qualified-call", None),
     ("matched", None),
@@ -52,12 +53,27 @@ const CASES: [(&str, Option<&str>); 32] = [
         "ambiguous-premises",
         Some("associated type requires an unambiguous validated implementation"),
     ),
+    ("closure-selection", None),
+    ("closure-selection-before-alias", None),
+    ("closure-annotation", None),
+    ("closure-explicit-region", None),
+    ("closure-premise-static", None),
+    ("closure-no-caller-region", None),
+    (
+        "closure-undeclared-region",
+        Some("file 0: 6629: unresolved lifetime name"),
+    ),
 ];
 
 fn analyze(name: &str) -> TestResult<Result<(), String>> {
     let path = format!("{CONTROLS}/{name}.rs");
     let source = crate::test_source::fixture(&path)?;
-    let report = crate::test_source::source_provider(&source, "scoped_bodies")?;
+    // Resolution rejects an undeclared lifetime, with its location, before
+    // semantic analysis.
+    let report = match crate::test_source::source_provider(&source, "scoped_bodies") {
+        Ok(report) => report,
+        Err(error) => return Ok(Err(error)),
+    };
     Ok(crate::pipeline::analyze_source(&report)
         .map(|_| ())
         .map_err(|error| error.message.clone()))

@@ -89,7 +89,7 @@ reaches `select_pending_goal`, and of every canonical requirement before its
 | qualified path `<F as Tr<'x>>::make` | a05 | alias | accepted | accepted |
 | qualified projection annotation | a06 | alias | accepted | accepted |
 | qualified impl path, self type naming `'x` | a07 | alias | rejected | accepted |
-| closure return annotation naming `'x` | a08 | no body query | "missing lifetime argument" | the same |
+| selection in a closure body, before any alias (written with a return annotation naming `'x`) | a08 | no body query | "missing lifetime argument" | the same |
 | closure with a qualified `'x` signature | a09 | alias, and canonical alias | accepted | accepted |
 | annotated `&'x mut` receiver | a10 | alias | rejected | accepted |
 
@@ -100,8 +100,9 @@ body trait query. Call instantiation and turbofish lifetimes are aliased
 canonical requirements through `alias_predicate` before their query. Where a
 declaration-form annotation term meets an alias-form result (a00), the body's
 own region equality relates them: `prepare_universals` records
-`(alias, bound)` for every body binder. a08 is a separate cause (a closure's
-declared return type naming a caller lifetime); it fails the same way before
+`(alias, bound)` for every body binder. a08 is a separate cause (a selection in
+a closure body before any body step has aliased a caller lifetime, first
+recorded as the closure's declared return type); it fails the same way before
 and after and is recorded under section 8.
 
 The ambiguity drafts a11–a13 (two written premises whose results differ in a
@@ -192,10 +193,14 @@ The split changes no behaviour.
 
 ## 8. Findings and open items
 
-- A closure whose declared return type names a caller lifetime
-  (`|w: &mut Wrap<F>| -> Option<&'x u8> { w.next() }`, audit a08) is rejected
+- Audit a08 (`|w: &mut Wrap<F>| -> Option<&'x u8> { w.next() }`) is rejected
   with "missing lifetime argument"; rustc 1.98.0 accepts it. It is a separate
-  cause, unchanged by this repair, and not a declared control.
+  cause, unchanged by this repair, and not a declared control. This entry first
+  blamed the closure's declared return type. A later reduction showed that the
+  annotation does not matter: a selection in a closure body through a premise
+  naming a caller lifetime fails when it runs before any body step has aliased
+  a caller lifetime. [Closure entry aliases](closure-entry-aliases.md) repairs
+  it.
 - Arrived-normalized frames and plain `prove()`: not reached. Two
   analysis-only builds (`obj/lane-b3/t3/dev/arrived1`, `arrived2`, binaries
   `94164e54…` and `d1e59941…`, patches kept, binaries retired) instrumented

@@ -279,9 +279,71 @@
    "error_codes": [
     "E0284"
    ]
+  },
+  "closure-selection.rs": {
+   "sha256": "16bf9bb8784745a81118e5bc4e2ca386242cdd92ef10defbfe678b3ad60e8964",
+   "declared": 0,
+   "reason": "audit a08: `|w: &mut Wrap<F>| -> Option<&'x u8> { w.next() }` selects `Wrap<F>: Iterator` in a closure body through the caller premise naming 'x before any body step aliases a caller lifetime",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "closure-selection-before-alias.rs": {
+   "sha256": "07b8dff0fc7036282dd265f04dcc889b07d030055c17a195023f0f610981c41c",
+   "declared": 0,
+   "reason": "the same selection first, then a `get::<'x, F>` turbofish that aliases 'x, so a lazily prepared alias would come too late",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "closure-annotation.rs": {
+   "sha256": "6f2cee15fbf4be6dbca327eb87ef683334d6bd2473f37fc39db1097def7d28ca",
+   "declared": 0,
+   "reason": "control: the same closure return annotation naming 'x with no selection in the closure body",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "closure-explicit-region.rs": {
+   "sha256": "d57173b26741bd1b4bae233989f92bc48cb1e2e8af1257a3f76968eedc1af35c",
+   "declared": 0,
+   "reason": "control: a closure parameter and return naming 'x with no caller premise and no selection",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "closure-premise-static.rs": {
+   "sha256": "aeddbca737ed29f42c0425ef808b99252d0f56787d6c210ec49ecf3d5045971d",
+   "declared": 0,
+   "reason": "control: the same selection in a closure body through a `'static` premise, which names no caller lifetime",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "closure-no-caller-region.rs": {
+   "sha256": "57246c06c4a8f1f3c0cd470668bc23277c2f1209386629afb2449b767bce396c",
+   "declared": 0,
+   "reason": "control: the same selection in a closure body through a premise whose output names no lifetime",
+   "declared_error_codes": [],
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "closure-undeclared-region.rs": {
+   "sha256": "5e3c55615d23f9c3d98d743b4701511fab13f4df3751c31b86cb08e0eed754ed",
+   "declared": 1,
+   "reason": "opponent: the closure return names an undeclared 'y",
+   "declared_error_codes": [
+    "E0261"
+   ],
+   "rustc_status": 1,
+   "error_codes": [
+    "E0261"
+   ]
   }
  },
  "declaration_sha256": "13ce8e0feacbaeb92a2b1bd15b5477040afc627e0b58f422e29ee5f7afd64f57",
  "additions_declared": "2026-11-08. Fifteen additions to scoped-body-selections for the alias-view environment of body trait queries. repeated-selections is declared before any rustc or RustGM run of its bytes. The other fourteen are exploration probes (obj/lane-b3/t3) that rustc 1.98.0 and this compiler ran before this declaration, so they are a regression record. caller-region and ordinary-region keep their declared and checked acceptance; only this compiler's expected outcome changes, from a recorded gap to acceptance.",
- "additions_declaration_sha256": "3e3c2e4a1c7ac1b7beb978cfcf6fe43cd671165967cf4e6baa39da40574e40f3"
+ "additions_declaration_sha256": "3e3c2e4a1c7ac1b7beb978cfcf6fe43cd671165967cf4e6baa39da40574e40f3",
+ "closure_entry_declared": "2026-11-08. Seven additions for a closure body's first selection through a caller premise (audit a08). All seven are exploration probes (obj/lane-b6/a08) whose outcomes were declared in predictions.json before rustc 1.98.0 or this compiler ran them, so they are a regression record; the committed bytes equal the probes and rustc 1.98.0 ran again on them.",
+ "closure_entry_declaration_sha256": "08136db69d87621c9c553a83ca0563b47cdcfe0c11f3abb7ce962a4c3c80bbe1"
 }
