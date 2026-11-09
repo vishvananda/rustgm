@@ -1,0 +1,214 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "candidate_profile": "module-bodies-v13",
+  "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+  "providers": [
+    {
+      "file": "spec/knowable-absence/provider.rs",
+      "sha256": "1aac461a2424ec09a5b6d8e8369dab4c9f7a5f84acd8d4d117178f7ad2ad5046"
+    }
+  ],
+  "expectation_frozen_before_candidate": true,
+  "declared": "2026-11-08T20:27:56Z",
+  "development_note": "declared before any candidate run of these files, after the rustc oracle and baseline probes, and acknowledged by the integrator. rustc 1.98.0 gave every declared rustc outcome. The provider is spec/unsafe-negative-impls/provider.rs plus `impl !Error for &str {}`, core's same-head pair beside `impl<T: Error + ?Sized> Error for &T`. The baseline is main's C3 CLI (531b1f839, sha256 f35ec380): on this packet every client but the two orphan ones is rejected with `overlapping trait implementation headers require coherence proof`, unlocated, because the consumer re-proves the imported pair from its own perspective and cannot close `str: Error`; against the C3 packet, which has no pair, answer and answer-local-impl are accepted and the four local-ownership clients and the five opponents are rejected with that text located at their own pair. Both orphan clients are rejected on both packets with `library trait implementation requires a local type`, located at the client impl, before coherence",
+  "rule": "approved design; no wire change. Coherence proves absence from the crate whose coherence it proves: a pair of two impls imported from one packet from that packet, any other pair (a client's own, a client impl against an imported one, and until a multi-packet profile one across two packets) from the consumer. Absence of a goal is knowable, as rustc 1.98's trait_ref_is_knowable decides it, when no downstream crate could implement it (closed inputs, or a concrete goal, as before) and that crate owns the trait, the trait is a closed language trait or a #[fundamental] trait, or that crate owns an input type (Self, then the trait arguments) after `&`, `&mut` and #[fundamental] nominals. rustc takes the first owned input with no uncovered parameter before it; closed inputs have none, so any owned input is that first one. Under a packet's perspective the consumer's own impls are never candidates: absence is decided over what that packet could see",
+  "cases": [
+    {
+      "file": "spec/knowable-absence/answer.rs",
+      "provider": "spec/knowable-absence/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "b175595b29abc481a8a08cb095ea7caf48c096ffa914470c8f54c0cf7424bed9"
+    },
+    {
+      "file": "spec/knowable-absence/answer-local-impl.rs",
+      "provider": "spec/knowable-absence/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "9a111bf967a7fe74adf9f20184294b6bc8e5eac3537637d821ad57fa1f87b685"
+    },
+    {
+      "file": "spec/knowable-absence/local-error-ref.rs",
+      "provider": "spec/knowable-absence/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "34d72836b1d71c8654e46ab14a2e7547cabb633d0c5b7f03e546b41b4766df32"
+    },
+    {
+      "file": "spec/knowable-absence/local-mut-ref.rs",
+      "provider": "spec/knowable-absence/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "3ec657267d154fd7523066ed0bbd9a112bf479c9275bbe6b5320c445cb811704"
+    },
+    {
+      "file": "spec/knowable-absence/local-copy.rs",
+      "provider": "spec/knowable-absence/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "505bfaabf10c205bb93fa3681153c0249f2c8e5b217a24261caa78feaeb65136"
+    },
+    {
+      "file": "spec/knowable-absence/trait-argument.rs",
+      "provider": "spec/knowable-absence/provider.rs",
+      "accepted": true,
+      "native_exit": 42,
+      "sha256": "09a2fca69ccec122b0956df148e463772285886e0d367304d58baef61f4a7036"
+    },
+    {
+      "file": "spec/knowable-absence/foreign-self.rs",
+      "provider": "spec/knowable-absence/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0119; note: upstream crates may add a new impl of trait `base::Error` for type `base::Counter` in future versions",
+      "candidate_diagnostic": "overlapping trait implementation headers require coherence proof",
+      "candidate_location": "file 0: 101: located at the client's own `impl Mine for base::Counter {}`",
+      "sha256": "85b8361aa8c732f63efe464ff9457c5206569ab3a2107f11262a4e0bdb117bfc"
+    },
+    {
+      "file": "spec/knowable-absence/uncovered.rs",
+      "provider": "spec/knowable-absence/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0119 (conflicting implementations of trait `Mine` for type `&_`)",
+      "candidate_diagnostic": "overlapping trait implementation headers require coherence proof",
+      "candidate_location": "file 0: 101: located at the client's own `impl<T> Mine for &T {}`",
+      "sha256": "62cb97056e33d3e213242bf946fbb688c9b8b05fe3084121f6e2e580534c26cb"
+    },
+    {
+      "file": "spec/knowable-absence/tuple-self.rs",
+      "provider": "spec/knowable-absence/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0119; note: upstream crates may add a new impl of trait `base::Error` for type `(Local, u8)` in future versions",
+      "candidate_diagnostic": "overlapping trait implementation headers require coherence proof",
+      "candidate_location": "file 0: 115: located at the client's own `impl Mine for (Local, u8) {}`",
+      "sha256": "15b254f7e73c77486824250fc7e3ee7a75d20ed4b58e00c76746160cd9c52cc5"
+    },
+    {
+      "file": "spec/knowable-absence/nonfundamental-wrapper.rs",
+      "provider": "spec/knowable-absence/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0119; note: upstream crates may add a new impl of trait `base::Error` for type `base::Slot<Local>` in future versions",
+      "candidate_diagnostic": "overlapping trait implementation headers require coherence proof",
+      "candidate_location": "file 0: 115: located at the client's own `impl Mine for base::Slot<Local> {}`",
+      "sha256": "0d5c970e8c6a358706667dd5755417142d321c4fc2d6eaf0239e4215028ca6df"
+    },
+    {
+      "file": "spec/knowable-absence/local-uncovered.rs",
+      "provider": "spec/knowable-absence/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0119; note: downstream crates may implement trait `Mark` for type `&_`",
+      "candidate_diagnostic": "overlapping trait implementation headers require coherence proof",
+      "candidate_location": "file 0: 108: located at the client's own `impl<T> Mine for &T {}`",
+      "sha256": "6a33ea7e116b5a0df1b97bfac807acc33559686532486dd87b827647d194db7e"
+    },
+    {
+      "file": "spec/knowable-absence/orphan-blanket.rs",
+      "provider": "spec/knowable-absence/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0210 (type parameter `T` must be used as an argument to some local type)",
+      "candidate_diagnostic": "library trait implementation requires a local type",
+      "candidate_location": "file 0: 52: located at the client's own `impl<T> base::Error for T {}`",
+      "sha256": "54b5e83aa13017adf98afc4ed2b2be851bc90de9e68a2a37d91709ab0cc72c24"
+    },
+    {
+      "file": "spec/knowable-absence/orphan-str.rs",
+      "provider": "spec/knowable-absence/provider.rs",
+      "accepted": false,
+      "native_exit": null,
+      "rustc": "E0117 (only traits defined in the current crate can be implemented for arbitrary types)",
+      "candidate_diagnostic": "library trait implementation requires a local type",
+      "candidate_location": "file 0: 52: located at the client's own `impl base::Error for str {}`",
+      "sha256": "20364dd6601fee91f73d940af754a2dae54a36d777237f1267d7015702ce5650"
+    }
+  ],
+  "outcome_counts": {
+    "provider": "1 export, accepted under module-bodies-v13",
+    "clients": 13,
+    "accepted_clients": 6,
+    "rejected_clients": 7,
+    "note": "14 declared outcomes: the provider export and 13 clients. rustc accepts six clients and rejects seven: five E0119 cases, orphan-blanket (E0210) and orphan-str (E0117). The candidate accepts the same six and rejects the same seven"
+  },
+  "native": {
+    "expected": "the six accepted clients exit 42 natively with empty stdout, as rustc's do"
+  },
+  "generated_controls": [
+    {
+      "control": "C3's pair control (crate_linking::modifier_transport): the C3 provider plus `impl !Error for &str {}`, exported under module-bodies-v13, and the answer client",
+      "rustc": "the provider compiles and the client exits 42",
+      "expected": "the export is accepted and the answer client is accepted: the consumer re-proves the pair from the packet's perspective, where `Error` is local. Amended beside C3's declaration in unsafe-negative-impl-outcomes.json before the C3b candidate run"
+    },
+    {
+      "control": "the provider plus N generated traits, each with `impl<T: E + ?Sized> E for &T {}` and `impl !E for &str {}`, for N = 8, 16 and 32, consumed by an empty client (dev/tests/invariants/absence_scaling.rs)",
+      "expected": "the client is accepted; every pair proves disjoint from the packet's perspective; packet bytes, the client's header-budget work and the pairs' coherence steps grow by at most a constant per pair"
+    },
+    {
+      "control": "condition-holds: the provider and a client with `struct Local; impl base::Error for Local {} impl base::Error for &Local {}`, so the imported `impl<T: Error + ?Sized> Error for &T`'s condition `Local: Error` holds and the pair overlaps",
+      "rustc": "E0119",
+      "expected": "rejected with `overlapping trait implementation headers require coherence proof`, located at the client's own `impl base::Error for &Local {}`: the imported where-clause is read in the provider's terms and does not make the pair disjoint",
+      "amendment": "declared 2026-11-08T22:29:45Z, after the first C3b candidate run and before the rustc oracle and any candidate run of this control (integrator conditions on the imported-conditions correction)"
+    },
+    {
+      "control": "the seal provider: the provider plus `pub trait Seal {}`, `impl<T: ?Sized> !Seal for &T {}`, `pub trait Holds<X: ?Sized> {}`, `impl<T: Seal + ?Sized, S> Holds<T> for S {}`, `pub trait Mark {}`, `impl<T: PointeeSized> !Mark for &T {}`, `pub trait Keeps<X: ?Sized> {}` and `impl<T: Mark + ?Sized, S> Keeps<T> for S {}`, each blanket's condition naming the provider's own trait with a ?Sized parameter",
+      "rustc": "compiles",
+      "expected": "exported under module-bodies-v13",
+      "amendment": "declared 2026-11-08T22:29:45Z, after the first C3b candidate run and before the rustc oracle and any candidate run of this control (integrator conditions on the imported-conditions correction)"
+    },
+    {
+      "control": "negative-metasized: a `with_negative_coherence` client of the seal provider with `struct Local; impl base::Holds<&'static str> for Local {}`; `&'static str: Seal` is not knowable for the client, so only the ?Sized negative impl can exclude the pair",
+      "rustc": "exit 42: negative coherence proves `&str: !Seal`",
+      "expected": "rejected with the overlap text located at the client impl: Lane B's recorded gap, pay_negative pays only Sized premises (C3's negative-coherence ?Sized row)",
+      "amendment": "declared 2026-11-08T22:29:45Z, after the first C3b candidate run and before the rustc oracle and any candidate run of this control (integrator conditions on the imported-conditions correction)",
+      "declared_before_run": "rejected",
+      "amended_expected": "accepted, recorded 2026-11-08 after the candidate run as a declaration error that rustc confirms, not a behaviour change; it stays a control that an imported ?Sized condition does not break",
+      "observed_rustgm_status": 0,
+      "rustc_oracle_exit": 42,
+      "amendment_reason": "the ?Sized negative impl's premise here is `str: MetaSized`, which is concrete, so this control never reaches pay_negative's intersection-parameter gap"
+    },
+    {
+      "control": "negative-metasized-param: a `with_negative_coherence` client of the seal provider with `struct Local; impl<U: ?base::Sized> base::Holds<&U> for Local {}`; the ?Sized negative impl's premise `U: MetaSized` is covered only by the client impl's own `U: ?Sized`",
+      "rustc": "exit 42",
+      "expected": "rejected with the overlap text located at the client impl: a known rejects-valid, Lane B's MetaSized gap (pay_negative pays only Sized premises); the MetaSized fix flips it",
+      "amendment": "declared 2026-11-08T22:41Z, after the second C3b candidate run and before their rustc oracle and any candidate run (integrator-approved parametric MetaSized data point)",
+      "spelling_note": "the first oracle run used `?Sized`, which a no_core client cannot name (E0405); corrected to `?base::Sized` before any candidate run, outcomes unchanged"
+    },
+    {
+      "control": "negative-pointee-param: a `with_negative_coherence` client of the seal provider with `struct Local; impl<U: ?base::Sized> base::Keeps<&U> for Local {}`",
+      "rustc": "exit 42",
+      "expected": "accepted: the PointeeSized negative impl's premise is paid",
+      "amendment": "declared 2026-11-08T22:41Z, after the second C3b candidate run and before their rustc oracle and any candidate run (integrator-approved parametric MetaSized data point)",
+      "spelling_note": "the first oracle run used `?Sized`, which a no_core client cannot name (E0405); corrected to `?base::Sized` before any candidate run, outcomes unchanged"
+    },
+    {
+      "control": "negative-pointee: a `with_negative_coherence` client of the seal provider with `struct Local; impl base::Keeps<&'static str> for Local {}`",
+      "rustc": "exit 42",
+      "expected": "accepted: the PointeeSized negative impl's premise is paid (C3's PointeeSized row)",
+      "amendment": "declared 2026-11-08T22:29:45Z, after the first C3b candidate run and before the rustc oracle and any candidate run of this control (integrator conditions on the imported-conditions correction)"
+    },
+    {
+      "control": "stable-pointee: the same impl in a client without `with_negative_coherence`",
+      "rustc": "E0119: no negative reasoning without the feature",
+      "expected": "rejected with the overlap text located at the client impl",
+      "amendment": "declared 2026-11-08T22:29:45Z, after the first C3b candidate run and before the rustc oracle and any candidate run of this control (integrator conditions on the imported-conditions correction)"
+    }
+  ],
+  "observations": [
+    "the provider exported under module-branches-v12 and module-nominals-v10 stops at `named, associated or generic alias transport requires its wider profile` on the baseline, as C3's provider does; the C3b rule is version-independent and changes no wire byte",
+    "the imported-pair failure on the baseline is unlocated (`input:`): an imported pair has no source key. C3b accepts honest pairs, but a dishonest pair in a forged packet would still be reported unlocated. Recorded as a diagnostic-quality item, not fixed in C3b",
+    "nonfundamental-wrapper uses the provider's existing plain `pub struct Slot<T> { pub value: T }`, which has no #[fundamental] attribute"
+  ],
+  "limits": [
+    "a pair across two imported packets is proved from the consumer, the conservative perspective, until a multi-packet profile records which packet is downstream; other packets' impls stay candidates under a packet perspective (presence only)",
+    "`dyn LocalTrait` and foreign types are never owned inputs; rustc treats a dyn of a local trait as local. Both are conservative",
+    "a packet cannot carry a #[fundamental] struct today (export stops at `general fundamental policy requires authenticated trait/nominal metadata transport`), so an imported nominal is never peeled; imported fundamental traits are the sizing traits, through their transported FUNDAMENTAL flag. Conservative",
+    "the input order is moot only because closed inputs have no uncovered parameter; a widening to open inputs must restore rustc's first-owned-input ordering",
+    "negative coherence over a `?Sized` negative impl's MetaSized premise stays Lane B's item; C3b does not change pay_negative"
+  ]
+}

@@ -2,30 +2,30 @@
 
 This is a Lane C checkpoint in `rustgm-async-work` on
 `implement/auto-traits-20261108`. C1 started on pushed main `b47b51e79` and
-landed as `89cb62ee5`. C2 landed as `c9fb67cc3`, and C3 is on main
-`078d3f238`. It is item 5 of the
+landed as `89cb62ee5`. C2 landed as `c9fb67cc3` and C3 as `bfbf43049`,
+and C3b is developed on main `bfbf43049`. It is item 5 of the
 [core census plan](../core-census-plan.md). It is a transport slice, not a
 library milestone, and makes no claim about an original-core artifact or a
 whole assignment.
 
 The integrator approved one item in three commits, which may be joined, and
-then added C3b, C2b and C2c:
+then added C3b and C2b:
 
 - **C1** (`89cb62ee5`): exact empty auto declarations, the auto-marker roles,
   and `Send`'s diagnostic identity.
 - **C2** (`c9fb67cc3`): auto impls, positive and negative, and the
   structural selection lift for imported custom auto traits
   ([C2](#c2-auto-impls)).
-- **C3**, this commit: unsafe traits that are not auto, and every trait
+- **C3** (`bfbf43049`): unsafe traits that are not auto, and every trait
   impl's own safety and polarity
   ([C3](#c3-unsafe-traits-and-non-auto-negative-impls)).
-- **C3b**, after C3 and before C2b: knowable absence relative to the crate
-  whose coherence is proved.
+- **C3b**, this commit: knowable absence relative to the crate whose
+  coherence is proved ([C3b](#c3b-knowable-absence)).
 - **C2b**, after C3b: an imported nominal's transported where-clauses as its
   formation requirements ([C2b](#c2b-imported-nominal-formation)).
-- **C2c**, after C2b and before 5b: census 16's lead record, core's
-  `CoerceUnsized` impl for `pattern_type!(*const T is !null)`
-  (`pat.rs:80`), routed to Lane C as the owner of item 4's pattern types.
+
+C2c, core's `CoerceUnsized` impl for `pattern_type!(*const T is !null)`
+(`pat.rs:80`), moved to Lane A and is done in census batch 16.
 
 The sections before [C2](#c2-auto-impls) record C1.
 
@@ -904,6 +904,9 @@ every path.
   closes absence only for a trait local to the consumer. Core's
   `impl<T: Error + ?Sized> Error for &T` beside `impl !Error for &str` is
   therefore a generated control, declared rejected; C3b closes it.
+  - C3b corrected this: the consumer re-proved the imported pair with no
+    conditions at all, not with conditions it could not close
+    ([imported conditions](#imported-conditions-in-coherence-correction-found-by-the-candidate)).
 - **Correction B.** A trait-impl method on a nominal Self already exports
   under version 13 (`conversion_profile::method`). The real limit is a
   trait-impl method under an impl that captures a lifetime (`&T`, `&mut T`),
@@ -1136,31 +1139,367 @@ At the join, owners review:
 - the removals in `staged_headers/impl_headers.rs::prepare` and
   `free_protocols.rs`.
 
+## C3b: knowable absence
+
+C3b is the fourth commit of this item, developed on main `bfbf43049` and
+rebased onto `2a27e11ca`, which carries the v3 backend lock. It proves
+coherence absence for the crate whose coherence a pair proves, as
+rustc 1.98's `trait_ref_is_knowable` does, so core's same-head pair
+`impl<T: Error + ?Sized> Error for &T` beside `impl !Error for &str` is
+accepted by its consumers. There is no wire change.
+
+### Rule (C3b)
+
+The integrator approved this design before code:
+
+- **The perspective** (`implementations/perspective.rs`). A pair's
+  perspective is `Packet(a)` when both impls were imported from origin-catalog
+  artifact `a`, and `Local` otherwise: a client's own pair, a client impl
+  against an imported one, and, until a multi-packet profile records which
+  packet is downstream, a pair across two packets. `overlap::instantiated`,
+  `inherent` and `iteration::possible` compute it from the two owners;
+  `reference_comparison` (a source impl against the canonical blanket) is
+  `Local`. `Packet` holds the artifact's ordinal as a `u16`: a catalog holds
+  at most `MAX_DEPENDENCIES` (1,024) artifacts, and a larger ordinal is an
+  error, never a truncation.
+- **The purpose carries it.** `Purpose::Coherence` and
+  `Purpose::NegativeCoherence` hold the perspective, and every frame
+  completion's `coherence_absence` passes it to `absence_closed`.
+- **Under a packet's perspective the consumer's own source impls are never
+  candidates** (`append_candidates`). Absence is decided over what that
+  packet could see, as its own coherence decided it. Other packets' impls
+  stay candidates, which can only add presence.
+- **`absence_closed` is knowable** when, as before, the inputs are closed or
+  the goal is concrete, and one of:
+  - the perspective owns the trait (`Local`: today's source-owner check;
+    `Packet(a)`: imported from `a`);
+  - the trait is a closed language trait (`associated/language.rs`,
+    unchanged);
+  - the trait is `#[fundamental]` (`header_attributes::fundamental_policy`).
+    rustc 1.98's are `PointeeSized`, `MetaSized`, `Sized`, `FnOnce`, `FnMut`,
+    `Fn` and `Coroutine`, and its fundamental nominals are `Pin`,
+    `FieldRepresentingType` and alloc's `Box`;
+  - the perspective owns any input root, Self and then the trait arguments,
+    after peeling `&`, `&mut` and `#[fundamental]` nominals
+    (`disjointness.rs::owns_input`, one unit of work per visited term).
+- **Imported conditions.** Coherence reads an imported impl's where-clauses
+  from the same original inputs selection does (see the correction below).
+- **Q1, any input root.** rustc takes the first owned input with no
+  uncovered parameter before it. Closed inputs have no uncovered parameter,
+  so any owned input is that first one and the order is moot. A widening to
+  open inputs must restore the order; the doc comment says so.
+
+### Fixtures and outcomes (C3b)
+
+`pa29/tests/knowable-absence-outcomes.json` was declared at 20:27:56Z, after
+the rustc oracle and baseline probes and before any candidate run. It holds
+14 outcomes: the provider export and 13 clients. The provider is C3's
+provider plus `impl !Error for &str {}` (see the packet README).
+
+| Client | rustc 1.98.0 | Baseline (C3 CLI) | C3b |
+| --- | --- | --- | --- |
+| answer, answer-local-impl | exit 42 | overlap text, unlocated | exit 42 |
+| local-error-ref, local-mut-ref, local-copy, trait-argument | exit 42 | overlap text, unlocated | exit 42 |
+| foreign-self, uncovered | E0119 | overlap text, unlocated | overlap text at offset 101 |
+| tuple-self, nonfundamental-wrapper | E0119 | overlap text, unlocated | overlap text at offset 115 |
+| local-uncovered | E0119 | overlap text, unlocated | overlap text at offset 108 |
+| orphan-blanket, orphan-str | E0210, E0117 | "library trait implementation requires a local type" at 52 | the same |
+
+- The overlap text is "overlapping trait implementation headers require
+  coherence proof". On the baseline every non-orphan client fails at the
+  imported pair, which has no source key. Under C3b each opponent's failure
+  is located at its own client impl, and the integration test asserts each
+  offset.
+- Against the C3 packet, which has no pair, the baseline accepted `answer`
+  and `answer-local-impl` and rejected the four local-ownership clients at
+  their own pairs: the knowable-absence gap for a client's own types.
+- `nonfundamental-wrapper` uses the provider's existing plain
+  `pub struct Slot<T> { pub value: T }`, which is not `#[fundamental]`.
+- `answer-local-impl` is integrator condition 3: an unrelated local
+  `impl base::Error for Local {}` beside the pair, which must not enter the
+  packet's proof.
+- Under versions 12 and 10 the provider stops at "named, associated or
+  generic alias transport requires its wider profile", as C3's does.
+
+### C3's pair control (declared before the candidate)
+
+C3's generated pair control in `crate_linking::modifier_transport` declared
+the answer client rejected, as the gap C3b closes. Its `c3b_amendment` in
+`unsafe-negative-impl-outcomes.json`, recorded before the first C3b
+candidate run, declares the export and the client accepted. The test now
+checks the client with `artifacts::checked`.
+
+### Imported conditions in coherence (correction found by the candidate)
+
+The first candidate run rejected every non-orphan client at the imported
+pair, still unlocated. A debug trace on `answer` found the cause. The pair's
+perspective was `Packet(0)`, as designed, but neither imported impl
+contributed a condition: `Inputs::conditions` and `reserve_traits` read
+`facts.generics.predicates_in_scope(owner)`, which holds only source
+predicates. `absence_closed` was never reached, and the pair stayed possible.
+
+- **Correction to C3's Correction A.** The consumer re-proved an imported
+  pair with no conditions at all, not with conditions it could not close.
+  `impl<T: Error + ?Sized> Error for &T` overlapped `impl !Error for &str`
+  because its `T: Error` was missing.
+- **The fix, approved by the integrator.** Coherence now reads the same
+  imported original inputs selection does. Both loops read
+  `declaration_inputs::all(&facts.generics, facts.crates.as_deref(), owner)`:
+  the source table, then the imported owner's original inputs
+  (`Linkage::original_inputs`). Selection's impl conditions
+  (`selection/instantiation.rs`) read the declared view of the same inputs.
+- Every consumer now re-proves imported pairs with their real where-clauses.
+  That can only exclude more pairs, so the flip survey's accepted flips are
+  each checked against rustc.
+
+Generated controls (`absence_transport::generated_controls_read_imported_conditions`)
+were declared at 22:29:45Z, after the first candidate run and before their
+rustc oracle and any candidate run of them. The seal provider is the packet's
+provider plus `Seal` with `impl<T: ?Sized> !Seal for &T`, `Mark` with
+`impl<T: PointeeSized> !Mark for &T`, and the blankets
+`impl<T: Seal + ?Sized, S> Holds<T> for S` and
+`impl<T: Mark + ?Sized, S> Keeps<T> for S`. Each blanket's condition names the
+provider's own trait with a `?Sized` parameter.
+
+| Control | rustc 1.98.0 | RustGM |
+| --- | --- | --- |
+| condition-holds: `impl base::Error for Local {}` and `impl base::Error for &Local {}`, so the imported blanket's `Local: Error` holds | E0119 | overlap text at the client's `&Local` impl |
+| the seal provider | compiles | exports under version 13 |
+| negative-metasized: a `with_negative_coherence` client, `impl base::Holds<&'static str> for Local {}` | exit 42 | accepted (declared rejected; a declaration error, below) |
+| negative-metasized-param: `impl<U: ?base::Sized> base::Holds<&U> for Local {}`, with the feature | exit 42 | overlap text at the client impl (Lane B's MetaSized gap) |
+| negative-pointee-param: `impl<U: ?base::Sized> base::Keeps<&U> for Local {}`, with the feature | exit 42 | accepted |
+| negative-pointee: `impl base::Keeps<&'static str> for Local {}`, with the feature | exit 42 | accepted |
+| stable-pointee: that impl without `with_negative_coherence` | E0119 | overlap text at the client impl |
+
+- `condition-holds` is the integrator's non-disjoint control. An honest
+  packet cannot carry an overlapping pair of its own, because the provider's
+  coherence rejects it before export, so the control pairs the imported
+  blanket with a client impl. Its rejection is at byte 96, the client's
+  `&Local` impl.
+- **A declaration error that rustc confirms.** `negative-metasized` was
+  declared rejected as Lane B's gap. The candidate accepted it (status 0),
+  and rustc's oracle, run before the candidate, exits 42. The `?Sized`
+  negative impl's premise there is `str: MetaSized`, which is concrete, so
+  the control never reaches `pay_negative`'s intersection-parameter gap. It
+  is not a behaviour change. The amendment keeps `declared_before_run` beside
+  the amended outcome, and the control stays as a check that an imported
+  `?Sized` condition does not break.
+- **`negative-metasized-param` is the parametric repro for Lane B.** The
+  negative impl's premise `U: MetaSized` is covered only by the client impl's
+  own `U: ?Sized`, and `pay_negative` pays only Sized premises. It is a known
+  rejects-valid, and Lane B's MetaSized fix flips it. Both parametric
+  controls were declared at 22:41Z, before their oracle and candidate runs.
+  Their first oracle run stopped at E0405, because a `no_core` client must
+  spell `?base::Sized`. The texts were corrected before any candidate run,
+  with the declared outcomes unchanged; the JSON's `spelling_note` records it.
+
+### Scaling (C3b)
+
+`tests/invariants/absence_scaling.rs`, mounted in `overlap::disjointness`,
+appends N generated traits to the provider, each with
+`impl<T: E + ?Sized> E for &T {}` and `impl !E for &str {}`, for N = 8, 16
+and 32. An empty client consumes each export. Packet bytes, the client's
+original header-budget work and the coherence steps of re-proving every
+same-trait pair grow by at most a constant per pair: each doubling stays
+within `2 * previous + 64`.
+
+### Limits and recorded items (C3b)
+
+- **Conservative limits.**
+  - A pair across two packets is proved for the consumer until a
+    multi-packet profile records which packet is downstream.
+  - `dyn` of an owned trait and foreign types are never owned inputs.
+  - A packet cannot carry a `#[fundamental]` struct today (export stops at
+    "general fundamental policy requires authenticated trait/nominal
+    metadata transport"), so an imported nominal is never peeled. Imported
+    fundamental traits are the sizing traits, through their transported
+    FUNDAMENTAL flag.
+- **Diagnostic quality** (not fixed in C3b). An imported pair's coherence
+  failure is unlocated (`input:`). C3b accepts honest pairs, but a dishonest
+  pair in a forged packet would still be reported that way.
+- **Out of scope.** MetaSized negative coherence stays Lane B's item;
+  `pay_negative` is unchanged. `negative-metasized-param` records the gap
+  with imported conditions.
+- **The search query's layout.** Because a coherence purpose carries its
+  perspective, `Query` grows by one word, from 680 to 688 bytes in the test
+  build. `tests/invariants/sharing_sizing.rs` now asserts
+  `664 + size_of::<Vec<usize>>()` in place of 656, with a comment giving the
+  reason. `Node` (160) and `Frame` (1,312) are unchanged. A `u32` ordinal
+  gives the same 688.
+
+### Lane B's `overlap/inputs.rs` delta
+
+Lane B's MetaSized item rebases onto this signature change:
+
+- `Inputs::excluded` gains a trailing `perspective: Perspective` parameter.
+- `Inputs::has_absent_local_trait` gains a trailing
+  `perspective: Perspective` and passes it to `absence_closed` and
+  `may_overlap`.
+- `may_overlap` and `may_overlap_with` (`search/coherence.rs`) gain
+  `perspective: Perspective` just before the `pay` closure.
+- The three closures that call `pay_negative` are unchanged inside; each
+  call site passes the one extra argument beside its closure: `excluded`'s
+  negative branch (its own `perspective`), `overlap.rs::reference_comparison`
+  (`Perspective::Local`) and `overlap/iteration.rs::possible` (the pair's
+  perspective).
+- `pay_negative`'s signature and premise logic are unchanged.
+- Body changes, with no further signature change:
+  - `Inputs::conditions` and `Inputs::reserve_traits` each iterate
+    `declaration_inputs::all(&facts.generics, facts.crates.as_deref(), owner)?`
+    instead of `facts.generics.predicates_in_scope(owner)`. The loop bodies are
+    unchanged; each item's `.value` is the same `Clause`.
+  - `use crate::sema::declaration_inputs;` is added.
+  - `has_absent_local_trait`'s doc comment now names the perspective.
+- `negative-metasized-param` is the parametric repro for Lane B's MetaSized
+  item (above).
+
+### Flip survey (C3b)
+
+The survey (`obj/parallel/auto-traits/flip4/`) ran two CLIs:
+
+- the baseline, C3's `531b1f839` (`candidate/rustgm`, sha256 `f35ec380`);
+- C3b on `bfbf43049` (sha256 `16c1adb8`), with the imported-conditions
+  correction, before the rebase.
+
+Each CLI exported every pa29 spec provider under versions 10, 12 and 13, then
+ran every fixture client against each export: 34 providers, 102 exports and
+1,209 runs. The expected flips were declared before the survey, and every
+accepted flip had to match a rustc outcome from an oracle run declared
+before it.
+
+- **Only `knowable-absence` under version 13 differs.**
+  - Six clients go from rejected to accepted, each matching rustc's exit 42
+    in the frozen oracle: answer, answer-local-impl, local-error-ref,
+    local-mut-ref, local-copy and trait-argument.
+  - The five E0119 opponents stay rejected. Their text moves from `input:`
+    to their own impl: foreign-self and uncovered at 101, tuple-self and
+    nonfundamental-wrapper at 115, local-uncovered at 108.
+  - The orphan clients are byte-identical.
+- In the other 33 packets every run's status, stderr and LowIR is
+  byte-identical. So reading imported conditions, and the perspective, change
+  no earlier packet's outcome.
+- There is no accepted→rejected flip and no unconfirmed acceptance.
+  - Version 13 accepts 201 runs before and 207 after.
+  - Version 12 accepts 14 runs both times, and version 10 accepts 6.
+
+- **On the final tree.** The final candidate (`cand3b/rustgm`, sha256
+  `7cc3e3ef`) was built after the rebase onto `2a27e11ca` and the `u16`
+  ordinal. It reran the same survey, declared byte-identical to the
+  pre-rebase candidate's outputs before it ran, and it was: `diff -rq` over
+  all 3,670 files (every run's status, stderr and LowIR) is empty. The
+  upstream commits since `bfbf43049` change no pa29 spec outcome.
+
+### Evidence (C3b)
+
+Every run below used the C3b tree rebased onto `2a27e11ca`. Receipts are under
+`obj/qualification/fast/`, and each one passed. The backend was first
+reconfigured to the v3 lock: `setup_backend.py` configured all three locked
+tools, and `make test-backend` passed its LowIR, object and assembly
+(`movntps`) handshakes.
+
+The focused run is receipt `1794182673981448852`, 8 tests:
+`absence_transport`'s two non-native tests, `modifier_transport`'s two
+non-native tests, and four lib cases. The lib cases are the scaling test,
+`future_tests`' absence case, `search::coherence`'s cutoff case and the
+sizing test. It ran after the last source edit, a doc comment in
+`perspective.rs`. The batch below ran on the tree just before that comment,
+with identical code.
+
+Non-native results:
+
+| Selection | Tests | Receipt |
+| --- | --- | --- |
+| lib cases of the touched modules | 409 | `1794179988417894818` |
+| `declaration_inputs`' lib cases | 2 | `1794181902711437560` |
+| auto-trait, inherent-overlap, impl-parameter and arbitrary-method roots | 19 | `1794180063331985699` |
+| tail-overlap, specialization, projected-condition and call-trait roots | 8 | `1794180163621159709` |
+| linking suite, part 1 | 50 | `1794180325839883901` |
+| linking suite, part 2 | 49 | `1794180627997622391` |
+| linking suite, part 3 | 49 | `1794180737614682794` |
+| linking suite, part 4 | 49 | `1794180829910078375` |
+| linking suite, part 5 | 49 | `1794180899725256456` |
+| private source-client cases, part 1 | 85 | `1794180986163705941` |
+| private source-client cases, part 2 | 84 | `1794181026720219038` |
+| course text pa1-pa12 | passed | `1794181241549094416` |
+| course text pa13-pa19, pa21-pa24 | passed | `1794181290273560078` |
+| course text pa20 | passed | `1794181364192735120` |
+
+- The 409 lib cases are every test under `sema::traits` (326),
+  `sema::declarations::traits` (61) and `resolve::body_origin` (22). They
+  include the scaling and sizing tests. `declaration_inputs`, which coherence
+  now reads, ran its two cases separately.
+- The five linking parts are the suite inventory's 246 non-ignored tests:
+  C3's 244 plus `absence_transport`'s two.
+- The private source-client cases are C1's two parts, unchanged.
+
+`make test-upstream` verified 128 pinned fixtures and 126 Reference files.
+`make test-harness` found 464 roots in 13 binaries, 44 stages and no orphan
+fixtures.
+
+Native results (`--ignored`, reported separately):
+
+| Selection | Tests | Receipt |
+| --- | --- | --- |
+| linking suite native, part 1 | 26 | `1794181066598271714` |
+| linking suite native, part 2 | 26 | `1794181134091580700` |
+
+The two parts are the inventory's 52 ignored tests: C3's 51 plus
+`absence_clients_execute_natively`, in which the six accepted clients exit
+42 with empty stdout. With the non-native parts, that is all 298.
+
+Oracles (rustc 1.98.0):
+
+- The fixture oracle ran before the outcomes were declared and before any
+  candidate run, and gave every declared outcome. The provider compiles
+  (sha256 `1aac461a2424ec09`). The six accepted clients exit 42 natively
+  with no warnings. foreign-self, tuple-self, nonfundamental-wrapper,
+  local-uncovered and uncovered give E0119, orphan-blanket E0210 and
+  orphan-str E0117. The committed `.rs` files are byte-identical to the
+  oracle's inputs.
+- `obj/parallel/auto-traits/oracle/c3bgen` holds the generated controls,
+  built as the test builds them (`oracle-c3bgen.sh`, `oracle-c3bparam.sh`).
+  The provider and seal provider compile; condition-holds and stable-pointee
+  give E0119; negative-metasized, negative-metasized-param,
+  negative-pointee-param and negative-pointee exit 42. The test's generated
+  sources are byte-identical to the oracle's.
+
+### Owner review (C3b)
+
+At the join, owners review:
+
+- `sema/traits/implementations/perspective.rs` and
+  `resolve/body_origin/declarations.rs::declaration_artifact`;
+- `sema/traits/implementations.rs`: `Purpose`'s perspective and
+  `append_candidates`' packet filter;
+- `sema/traits/implementations/overlap/disjointness.rs`: `absence_closed`'s
+  gates, `owns_trait` and `owns_input`;
+- the perspective at each pair: `overlap.rs` (`instantiated`, `inherent`,
+  `reference_comparison`), `overlap/iteration.rs`, `overlap/inputs.rs`
+  (Lane B's delta, above) and `selection/search/coherence.rs`;
+- `overlap/inputs.rs::conditions` and `reserve_traits`: imported impls'
+  original inputs in coherence (the correction above);
+- `tests/invariants/sharing_sizing.rs`: the `Query` assertion amended from
+  656 to 664 plus the test log, one word for the purpose's perspective, and
+  `Perspective::Packet`'s `u16` ordinal.
+
 ## Remaining gaps
 
-- **C3b** (Lane C, next, before C2b): knowable absence relative to the crate
-  whose coherence is proved. `absence_closed` holds when the trait is local
-  to the perspective crate, or the self type is, through rustc 1.98's
-  fundamental wrappers (`&`, `&mut`, `Box`, `Pin`). A consumer re-proves an
-  imported packet's same-head pair from that packet's perspective. C3's pair
-  control flips to accepted.
-- **C2b** (Lane C, after C3b, before 5b): an imported nominal's transported
+- **C2b** (Lane C, next, before 5b): an imported nominal's transported
   where-clauses are not formation requirements in a client, so
   `fn hold(_r: base::Rc<u8, NotAlloc>)` is accepted against rustc's E0277.
   C2's `negative.rs::imported_nominal_inputs` is its temporary workaround.
-- **C2c** (Lane C, after C2b, before 5b): "source CoerceUnsized
-  implementation does not retain a permitted pointer coercion" for core's
-  `pattern_type!(*const T is !null)` impl. `coercions.rs::pointer_pair` will
-  also admit a raw-pointer-based pattern type with the same pattern on both
-  sides, proved by the base pointer's Unsize. Pattern changes across the
-  coercion and the general arrays/CoerceUnsized item stay out of scope.
 - **Lifetime-capturing trait-impl methods** (a core transport blocker,
-  unowned, after C3b; a candidate for the multi-packet item): "source
+  unowned; a candidate for the multi-packet item): "source
   function early/captured callable frame transport is not implemented" for
   core's `DerefMut for &mut T` and `Error for &E`.
 - **Negative coherence over a `?Sized` negative impl** (Lane B, after
   chain-bytes; not a core blocker): `pay_negative` pays only Sized premises.
-  It flips C3's `negative-coherence`.
+  It flips C3's `negative-coherence`. It rebases onto C3b's
+  `overlap/inputs.rs` signatures ([delta](#lane-bs-overlapinputsrs-delta)).
+- **C3b's limits** ([C3b](#limits-and-recorded-items-c3b)): pairs across two
+  packets are proved for the consumer until multi-packet; `dyn` and foreign
+  types are never owned inputs; imported `#[fundamental]` nominals are never
+  peeled; an imported pair's coherence failure is unlocated.
 - **Conditional refutations' reasons.** `!Send for Arguments<'_>`,
   `!DerefMutLike for &T` and `!Clone for &mut T` stay conditional
   refutations, because their headers name a region. That is a

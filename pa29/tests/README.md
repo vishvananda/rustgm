@@ -512,3 +512,25 @@ packet holds:
 Amendments are recorded beside the declarations they amend, each before the
 run it governs. The `crate_linking::modifier_transport` integration controls
 consume it.
+
+`knowable-absence-outcomes.json` freezes the coherence packet under
+`spec/knowable-absence/`, which re-proves imported and client pairs from the
+crate whose coherence each proves. The packet holds:
+
+- the unsafe-negative-impls provider plus core's `impl !Error for &str {}`,
+  the same-head pair beside `Error for &T`;
+- six clients that rustc accepts, whose absence goals are knowable through
+  the packet's local trait, a client-local Self, `&mut Local`, or a local
+  trait argument;
+- seven opponents, each rejected at its own impl: five E0119 cases, whose
+  missing impl another crate could add, and two orphan-rule cases (E0210,
+  E0117);
+- a generated scaling control of N same-head pairs;
+- generated controls that an imported impl's where-clauses are read in
+  coherence: one that holds and keeps its pair overlapping, and `?Sized`
+  conditions under negative coherence, among them Lane B's parametric
+  MetaSized gap.
+
+Amendments are recorded beside the declarations they amend, each before the
+run it governs. The `crate_linking::absence_transport` integration controls
+and the `overlap::disjointness` scaling control consume it.

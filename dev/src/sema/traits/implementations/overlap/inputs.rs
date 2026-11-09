@@ -1,5 +1,6 @@
 //! Existential type equations retain each header's separate lifetime premises.
-use super::{Declarations, DefId, Predicate};
+use super::{Declarations, DefId, Perspective, Predicate};
+use crate::sema::declaration_inputs;
 use crate::types::{
     RegionId, TypeId,
     infer::{self, Context, Instantiation, TermId, arguments::Argument},
@@ -160,8 +161,9 @@ impl Inputs {
         context: &mut Context,
         headers: &[&Header],
         mode: crate::sema::coherence_policy::Mode,
+        perspective: Perspective,
     ) -> Result<bool, String> {
-        if mode.implicit() && self.has_absent_local_trait(facts, context)? {
+        if mode.implicit() && self.has_absent_local_trait(facts, context, perspective)? {
             return Ok(true);
         }
         if mode.negative() {
@@ -172,6 +174,7 @@ impl Inputs {
                     context,
                     goal,
                     crate::sema::coherence_policy::Mode::Strict,
+                    perspective,
                     |facts, context, proof, sized| self.pay_negative(facts, context, proof, sized),
                 )? {
                     return Ok(true);
@@ -192,7 +195,8 @@ impl Inputs {
         self.reserve_traits(facts, context, owner)?;
         let before = header.lifetimes.steps;
         let mut lowering = None;
-        for requirement in facts.generics.predicates_in_scope(owner) {
+        for requirement in declaration_inputs::all(&facts.generics, facts.crates.as_deref(), owner)?
+        {
             if let Clause::UnstableFeature(id) = requirement.value {
                 context.account_work(1).map_err(|e| e.to_string())?;
                 facts
@@ -262,7 +266,8 @@ impl Inputs {
         owner: DefId,
     ) -> Result<(), String> {
         let mut count = 0_usize;
-        for requirement in facts.generics.predicates_in_scope(owner) {
+        for requirement in declaration_inputs::all(&facts.generics, facts.crates.as_deref(), owner)?
+        {
             context.account_work(1).map_err(|e| e.to_string())?;
             let value = match requirement.value {
                 Clause::Predicate(value) => value,
@@ -329,19 +334,21 @@ impl Inputs {
         Ok(mapping)
     }
 
-    /// Closed local or fundamental traits exclude future upstream impls.
-    /// Open inputs still admit downstream implementations and remain possible.
+    /// A goal whose absence `perspective` can know excludes the pair when no
+    /// impl it could see holds. Open inputs still admit downstream
+    /// implementations and remain possible.
     pub fn has_absent_local_trait(
         &self,
         facts: &mut Declarations,
         context: &mut Context,
+        perspective: Perspective,
     ) -> Result<bool, String> {
         for goal in &self.traits {
             context.account_work(1).map_err(|e| e.to_string())?;
-            if !super::absence_closed(facts, context, goal)? {
+            if !super::absence_closed(facts, context, goal, perspective)? {
                 continue;
             }
-            if !crate::sema::traits::selection::may_overlap(facts, context, goal)? {
+            if !crate::sema::traits::selection::may_overlap(facts, context, goal, perspective)? {
                 return Ok(true);
             }
         }

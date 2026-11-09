@@ -1,7 +1,9 @@
 //! Only completed acyclic declaration absence proves existential disjointness.
 use super::{Context, Decision, Declarations, Frame, Goal, Search, continuation};
 use crate::sema::traits::{
-    assumptions::Assumptions, implementations::Availability, selection::Caller,
+    assumptions::Assumptions,
+    implementations::{Availability, Perspective, Purpose},
+    selection::Caller,
 };
 
 impl Search<'_> {
@@ -14,12 +16,13 @@ impl Search<'_> {
         decision: Decision,
     ) -> Result<Decision, String> {
         if decision == Decision::Absent
-            && self.query.purpose != crate::sema::traits::implementations::Purpose::Use
+            && let Some(perspective) = self.query.purpose.perspective()
             && frame.goal.trait_arguments().is_some()
             && !crate::sema::traits::implementations::overlap::absence_closed(
                 facts,
                 &mut frame.inputs.context,
                 &frame.goal,
+                perspective,
             )?
         {
             return Ok(Decision::Deferred);
@@ -32,12 +35,14 @@ pub(in crate::sema) fn may_overlap(
     facts: &mut Declarations,
     context: &mut Context,
     goal: &Goal,
+    perspective: Perspective,
 ) -> Result<bool, String> {
     may_overlap_with(
         facts,
         context,
         goal,
         crate::sema::coherence_policy::Mode::Stable,
+        perspective,
         |_, _, _, _| Ok(false),
     )
 }
@@ -46,6 +51,7 @@ pub(in crate::sema) fn may_overlap_with(
     context: &mut Context,
     goal: &Goal,
     mode: crate::sema::coherence_policy::Mode,
+    perspective: Perspective,
     pay: impl FnOnce(
         &mut Declarations,
         &mut Context,
@@ -71,9 +77,9 @@ pub(in crate::sema) fn may_overlap_with(
     let first = Frame::new(facts, context, goal, caller.first_region)?;
     let mut search = Search::new(caller, Availability::Declarations);
     search.query.purpose = if mode.negative() {
-        crate::sema::traits::implementations::Purpose::NegativeCoherence
+        Purpose::NegativeCoherence(perspective)
     } else {
-        crate::sema::traits::implementations::Purpose::Coherence
+        Purpose::Coherence(perspective)
     };
     let progress = search.begin(facts, first)?;
     context
@@ -116,7 +122,7 @@ fn unrelated_cycle_cutoff_cannot_contaminate_later_closed_disjointness()
     )?;
     let (mut context, goal) = super::tests::instantiate(&mut facts, goal)?;
     assert!(
-        may_overlap(&mut facts, &mut context, &goal)?,
+        may_overlap(&mut facts, &mut context, &goal, Perspective::Local)?,
         "a recursive cutoff is not closed absence"
     );
     let comparison = report
@@ -130,7 +136,7 @@ fn unrelated_cycle_cutoff_cannot_contaminate_later_closed_disjointness()
     let goal =
         Goal::trait_application(subject, ItemId(comparison.0), vec![Argument::Type(subject)]);
     assert!(
-        !may_overlap(&mut facts, &mut context, &goal)?,
+        !may_overlap(&mut facts, &mut context, &goal, Perspective::Local)?,
         "an unrelated prior cutoff cannot create overlap"
     );
     Ok(())

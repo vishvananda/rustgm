@@ -1114,6 +1114,43 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
     (`str/iter.rs:569`), "trait implementation does not satisfy the trait's
     requirements". Records 3 to 8 are unchanged.
 
+- **During Lane C's [auto traits](parallel/auto-traits.md) slice (item 5,
+  C3b)**, 2026-11-08.
+  - **Rule.** Coherence proves absence for the crate whose coherence it
+    proves. This is rustc 1.98's `trait_ref_is_knowable`, and there is no
+    wire change.
+    - A pair imported from one packet is proved from that packet, over what
+      it could see. The consumer's own impls are never candidates there.
+    - Every other pair is proved for the consumer, including a pair across
+      two packets, until multi-packet.
+    - Absence is knowable when no downstream crate could implement the goal
+      and that crate owns the trait or an input type, after `&`, `&mut` and
+      `#[fundamental]` nominals.
+    - Why: core's `impl<T: Error + ?Sized> Error for &T` beside
+      `impl !Error for &str` exports but was rejected by every consumer.
+      Clients' impls of an imported trait for their own types were rejected
+      too: `impl base::Error for &Local`, or a blanket over `T: base::Copy`
+      beside a local Self.
+  - **The C3 pair control flips to accepted**, and the C3 entry's C3b item
+    closes. Opponents stay rejected, each at its own impl.
+  - **Correction found by the candidate.** Coherence never read an imported
+    impl's where-clauses: the consumer re-proved imported pairs with no
+    conditions at all, not, as C3's Correction A said, with conditions it
+    could not close. Coherence now reads the same imported original inputs
+    selection does. Generated controls check a condition that holds, and
+    `?Sized` conditions under negative coherence.
+  - **Recorded open items:**
+    - conservative limits: cross-packet pairs are proved for the consumer;
+      `dyn` and foreign types are never owned inputs; an imported
+      `#[fundamental]` nominal is never peeled, since a packet cannot carry
+      one;
+    - an imported pair's failure is unlocated (`input:`), so a dishonest pair
+      in a forged packet would still be reported that way: a
+      diagnostic-quality item, not fixed in C3b;
+    - Lane B's MetaSized premise item follows in `overlap/inputs.rs`, rebased
+      on C3b; `negative-metasized-param` is its parametric repro with
+      imported conditions.
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

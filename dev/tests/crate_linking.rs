@@ -1,3 +1,5 @@
+#[path = "crate_linking/absence_transport.rs"]
+mod absence_transport;
 #[path = "crate_linking/addressed_views.rs"]
 mod addressed_views;
 #[path = "harness/crate_artifacts.rs"]

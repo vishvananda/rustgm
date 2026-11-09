@@ -7,8 +7,10 @@ mod specialization_access;
 pub(in crate::sema) use identity::Identity;
 pub(in crate::sema) use registry_keys::EntryKey;
 mod pending;
+mod perspective;
 mod polarity;
 pub(in crate::sema) use pending::{Candidates, Header as PendingHeader};
+pub(in crate::sema) use perspective::Perspective;
 pub(in crate::sema) use polarity::Polarity;
 use polarity::Status;
 pub(in crate::sema) mod overlap;
@@ -36,12 +38,23 @@ pub(in crate::sema) enum Availability {
     Declarations,
 }
 
-/// Compatible-world absence is a different question from ordinary trait use.
+/// Compatible-world absence is a different question from ordinary trait use,
+/// asked for the crate whose coherence is proved.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(in crate::sema) enum Purpose {
     Use,
-    Coherence,
-    NegativeCoherence,
+    Coherence(Perspective),
+    NegativeCoherence(Perspective),
+}
+impl Purpose {
+    pub(in crate::sema) const fn perspective(self) -> Option<Perspective> {
+        match self {
+            Self::Use => None,
+            Self::Coherence(perspective) | Self::NegativeCoherence(perspective) => {
+                Some(perspective)
+            }
+        }
+    }
 }
 pub struct Implementation {
     pub owner: DefId,
@@ -339,7 +352,14 @@ impl Implementations {
         context.account_work(bucket.map_or(0, Vec::len))?;
         for &index in bucket.into_iter().flatten() {
             let entry = &self.entries[index];
-            if purpose == Purpose::Coherence && entry.status.negative() {
+            if matches!(purpose, Purpose::Coherence(_)) && entry.status.negative() {
+                continue;
+            }
+            // A packet's pair is proved over what that packet could see, never
+            // over this crate's own impls.
+            if purpose.perspective().is_some_and(Perspective::packet)
+                && entry.value.source.is_some()
+            {
                 continue;
             }
             if purpose == Purpose::Use && entry.status.polarity() == Polarity::Reservation {

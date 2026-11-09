@@ -5,6 +5,39 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane C [auto traits](parallel/auto-traits.md), C3b, proves coherence absence
+for the crate whose coherence it proves, as rustc 1.98's
+`trait_ref_is_knowable` does. There is no wire change:
+
+- A consumer re-proves a pair imported from one packet from that packet's
+  perspective, over what the packet could see. Core's
+  `impl<T: Error + ?Sized> Error for &T` beside `impl !Error for &str`, which
+  exports but was rejected by every consumer, is now accepted: C3's generated
+  pair control and the new `knowable-absence` packet.
+- A client's own pairs are proved for the client. An imported trait's goal is
+  knowable when the client owns an input type, through `&`, `&mut` and
+  `#[fundamental]` nominals. So `impl base::Error for &Local {}` beside the
+  blanket `Error for &T` is accepted, as rustc accepts it.
+
+Six clients exit 42 natively. Seven opponents are rejected as rustc rejects
+them, each at its own impl: five E0119 cases whose missing impl another crate
+could add, and two orphan-rule cases.
+
+The candidate found that coherence never read an imported impl's
+where-clauses, so every consumer re-proved imported pairs with no conditions.
+It now reads the same imported original inputs selection does.
+
+- Open in this item:
+  - **Diagnostic quality.** An imported pair's coherence failure is unlocated
+    (`input:`), so a dishonest pair in a forged packet would still be
+    reported that way. It is not fixed in C3b.
+  - **Conservative limits.** A pair across two packets is proved for the
+    consumer until multi-packet; `dyn` and foreign types are never owned
+    inputs; an imported `#[fundamental]` nominal is never peeled, since a
+    packet cannot carry one.
+  - The C3 entry's other items stand. The lifetime-capturing trait-impl
+    method blocker, scheduled after C3b, stays unowned.
+
 Lane A [census batch 16](parallel/census-batch16.md), item C2c, repairs
 census 18's record on main `bfbf43049`. Census 19 (`480f4169`) checks 42,310
 declarations, with none failed or blocked. Its crate record, "trait

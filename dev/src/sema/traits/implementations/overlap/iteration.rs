@@ -1,5 +1,5 @@
 //! Closed absence of the canonical blanket prerequisite excludes only that pair.
-use super::{Declarations, DefId, Predicate, inputs::Inputs};
+use super::{Declarations, DefId, Perspective, Predicate, inputs::Inputs};
 use crate::{
     support::iteration::{Blanket, Trait},
     types::{
@@ -52,11 +52,13 @@ pub(in crate::sema) fn possible(
     if mode.negative() {
         Inputs::freeze(facts, &mut context, &[&bindings])?;
     }
+    let perspective = Perspective::of(facts, [left.1, right.1])?;
     let possible = crate::sema::traits::selection::may_overlap_with(
         facts,
         &mut context,
         &prerequisite,
         mode,
+        perspective,
         |facts, context, proof, sized| inputs.pay_negative(facts, context, proof, sized),
     )?;
     Ok((possible, context.steps))

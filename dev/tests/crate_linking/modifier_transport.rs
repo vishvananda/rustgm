@@ -212,8 +212,8 @@ fn forged_impl_modifiers_reject_in_fresh_consumers() -> Result {
 fn generated_modifier_controls_keep_their_diagnostics() -> Result {
     let packet = Packet::publish(GROUP, SPEC, "modifiers-gates", "provider", PROFILE)?;
     let fixture = std::fs::read_to_string(packet.fixture("provider"))?;
-    // Core's same-head pair exports, but a consumer cannot yet close `str:
-    // Error` for an imported trait: the gap C3b closes.
+    // Core's same-head pair exports, and a consumer re-proves it from the
+    // packet's perspective, where `Error` is local.
     let pair = source(
         &packet,
         "pair.rs",
@@ -227,7 +227,7 @@ fn generated_modifier_controls_keep_their_diagnostics() -> Result {
         "#![feature(no_core)]\n#![no_core]\nextern crate base;\n#[unsafe(no_mangle)]\npub extern \"C\" fn entry() -> i32 { 42 }\n",
     )?;
     let mut consumer = packet.consumer(&answer, "pair-answer", &metadata, &packet.owner());
-    packet.rejected("pair-answer", &mut consumer, OVERLAP)?;
+    super::artifacts::checked("pair-answer", &packet.folder, &mut consumer)?;
     // Older versions keep both fences: an unsafe trait meets the trait
     // fence, and a negative impl of a trait with members, which the ledger
     // now admits, meets the impl fence. Version 13 exports both.

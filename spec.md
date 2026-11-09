@@ -6797,6 +6797,28 @@ packet's version-13 declaration. A client's impl of an imported Freeze needs
 not formation requirements in a client, so negative coverage reads them from
 the nominal's transported inputs directly.
 
+Coherence proves a goal's absence for the crate whose coherence it proves, as
+rustc 1.98's `trait_ref_is_knowable` does. A consumer re-proves a pair of
+impls imported from one packet from that packet's perspective, over what the
+packet could see: the consumer's own impls are never candidates there. An
+imported impl's where-clauses enter coherence from the same original inputs
+selection reads. Every other pair is proved for the consumer, including a pair
+across two packets, until a multi-packet profile records which packet is
+downstream. Absence is knowable only when no downstream crate could implement
+the goal, and when that crate owns the trait or an input type (Self, then the
+trait arguments) after `&`, `&mut` and `#[fundamental]` nominals. Closed
+language traits and `#[fundamental]` traits also qualify, read from the
+attribute fact. rustc 1.98's fundamental traits are `PointeeSized`,
+`MetaSized`, `Sized`, `FnOnce`, `FnMut`, `Fn` and `Coroutine`, and its
+fundamental nominals `Pin`, `FieldRepresentingType` and alloc's `Box`. rustc
+takes the first owned input with no uncovered parameter before it. Closed
+inputs have no uncovered parameter, so any owned input is that first one, and
+a widening to open inputs must restore the order. A packet cannot carry a
+`#[fundamental]` nominal, so an imported one is never peeled. `dyn` and
+foreign types are never owned inputs. Both limits are conservative. The
+[knowable-absence packet](pa29/tests/spec/knowable-absence/README.md) records
+independent outcomes.
+
 Exported `macro_rules!` definitions travel in their own version-one envelope
 (tag 14), nested inside the native-link envelope and outside every core
 profile. A crate that exports no macros writes no envelope and keeps its exact

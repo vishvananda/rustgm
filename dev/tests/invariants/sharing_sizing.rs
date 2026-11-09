@@ -343,8 +343,10 @@ fn unrelated_builtin_does_not_acquire_sizing_sharing_and_hot_layouts_stay_fixed(
     );
     // Amended at batch 11's integration: the test build's `Query` also holds
     // the test-only `candidate_lists` log of `user_callable_output`; the
-    // production layout is unchanged.
-    assert_eq!(size_of::<Query>(), 656 + size_of::<Vec<usize>>());
+    // production layout is unchanged. Amended at C3b: a coherence purpose
+    // carries its perspective's artifact ordinal, one word per query; the
+    // per-node and per-frame layouts below are unchanged.
+    assert_eq!(size_of::<Query>(), 664 + size_of::<Vec<usize>>());
     assert_eq!(size_of::<Node>(), 160);
     assert_eq!(size_of::<super::super::Frame>(), 1312);
     Ok(())

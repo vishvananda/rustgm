@@ -166,7 +166,8 @@
     {
       "control": "the provider plus `impl !Error for &str {}` (core's same-head pair in error.rs and str/mod.rs), exported under module-bodies-v13, and the answer client",
       "rustc": "the provider compiles and the client exits 42",
-      "expected": "the export is accepted; the answer client is rejected with `overlapping trait implementation headers require coherence proof`: the consumer re-proves the packet's same-head pair, and absence_closed admits only a trait local to the consumer. Recorded as the gap C3b closes"
+      "expected": "the export is accepted; the answer client is rejected with `overlapping trait implementation headers require coherence proof`: the consumer re-proves the packet's same-head pair, and absence_closed admits only a trait local to the consumer. Recorded as the gap C3b closes",
+      "c3b_amendment": "declared on 2026-11-08, before the C3b candidate run: C3b re-proves an imported packet's pair from that packet's perspective, where `Error` is local, so `str: Error` is knowable and absent; the export and the answer client are both accepted. The same pair is the fixture of knowable-absence-outcomes.json"
     },
     {
       "control": "`#![feature(negative_impls)]`, lines 2-58 of the provider (the foundation: C1's sized family, LegacyReceiver, Clone, Copy and Freeze) and `pub unsafe trait TrustedFused {}`, exported under module-bodies-v13, module-branches-v12 and module-nominals-v10",

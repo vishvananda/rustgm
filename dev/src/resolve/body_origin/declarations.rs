@@ -90,6 +90,17 @@ impl Catalog {
         self.charge(1)?;
         Ok(self.definitions.get(&definition).copied())
     }
+    /// The artifact that imported `definition`, or None for a declaration no
+    /// artifact of this catalog owns.
+    pub(crate) fn declaration_artifact(
+        &self,
+        definition: DefId,
+    ) -> Result<Option<u32>, &'static str> {
+        let Some(id) = self.declaration_if_imported(definition)? else {
+            return Ok(None);
+        };
+        Ok(Some(self.declaration_row(id)?.artifact))
+    }
     pub(super) fn declaration_row(
         &self,
         id: ImportedDeclarationId,
