@@ -499,10 +499,11 @@ packet holds:
   `TrustedFused` and `Searcher` with conditional, scalar and nominal unsafe
   impls whose methods have and lack receivers, and a safe negative impl of an
   unsafe trait;
-- five clients that rustc accepts, and eleven opponents: six E0277 cases, the
-  three safety errors (E0200, E0199, E0198), a positive impl beside a
-  provider negative (E0751), and `negative-coherence`, which rustc accepts
-  and which is a recorded negative-coherence gap;
+- six clients that rustc accepts, among them `negative-coherence`, a
+  recorded negative-coherence gap until Lane B's MetaSized batch amended it
+  to accepted, and ten opponents: six E0277 cases, the three safety errors
+  (E0200, E0199, E0198) and a positive impl beside a provider negative
+  (E0751);
 - generated controls: core's same-head `Error` pair (C3b's gap), and
   older-profile gates for an unsafe trait and for a negative impl of a trait
   with members;
@@ -528,8 +529,8 @@ crate whose coherence each proves. The packet holds:
 - a generated scaling control of N same-head pairs;
 - generated controls that an imported impl's where-clauses are read in
   coherence: one that holds and keeps its pair overlapping, and `?Sized`
-  conditions under negative coherence, among them Lane B's parametric
-  MetaSized gap.
+  conditions under negative coherence, among them `negative-metasized-param`,
+  a recorded gap until Lane B's MetaSized batch amended it to accepted.
 
 Amendments are recorded beside the declarations they amend, each before the
 run it governs. The `crate_linking::absence_transport` integration controls

@@ -5,6 +5,35 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane B [MetaSized premises](parallel/negative-metasized.md) proves a
+negative impl's `MetaSized` condition from the other header's premises, as
+rustc 1.98's `impl_intersection_has_negative_obligation` does, on main
+`68c26f42a`:
+
+- A negative coherence query for one header's condition assumes the other
+  header's `MetaSized` premises: its Sized parameters, its Sized, Copy and
+  Clone subjects and its `MetaSized` clauses, written, defaulted from
+  `?Sized` or implied by a supertrait. A proof from them stays a debt that
+  only that set pays. So `impl<T: ?Sized> !Seal for &T` makes a blanket over
+  `T: Seal` disjoint from `impl<U: ?Sized> Holds<&U> for Local`.
+- 13 PA31 controls were declared before their rustc 1.98.0 oracle, and
+  rustc gives every declared outcome. This compiler matches rustc on 12;
+  `sized-premise-side` is the recorded accepts-invalid below. One declared
+  RustGM outcome was a wrong prediction: `supertrait-implied`, declared
+  fenced, is accepted, as rustc accepts it.
+- C3's `negative-coherence` client and C3b's `negative-metasized-param`
+  control, which rustc accepts, are amended from recorded gaps to accepted.
+- Open, Lane B's next item (accepts-invalid): negative coherence still pays
+  a Sized debt from both headers' Sized premises. `overlap/inputs.rs` gathers
+  both headers' Sized parameters and Sized, Copy and Clone subjects into one
+  `sized` set, and `freeze` makes the first header's binding the rigid
+  representative, so the negated clause's own impl can prove its Sized
+  condition. rustc assumes only `param_env(impl1)` while negating impl2's
+  clauses. Repro: `sized-premise-side`, which rustc rejects with E0119 and
+  this compiler accepts. `prove` also assumes both headers' regions,
+  outlives and formed types; the next item's lifetime-premise twin checks
+  that side.
+
 Lane C [auto traits](parallel/auto-traits.md), C2b, forms each imported
 nominal a client names under that nominal's transported where-clauses, as
 rustc does. There is no wire change:
@@ -147,9 +176,10 @@ with no new tag, bit or row:
   completes as `NegativeValidated` with no further proof, as rustc's does,
   and is never positive evidence.
 
-Five clients exit 42 natively. Ten opponents are rejected, as rustc rejects
-them; `deref-shared` and `clone-mut` for a different reason than rustc's.
-`negative-coherence`, which rustc accepts, is a recorded gap (below).
+Six clients exit 42 natively, `negative-coherence` since Lane B's
+[MetaSized premises](parallel/negative-metasized.md) (below). Ten opponents
+are rejected, as rustc rejects them; `deref-shared` and `clone-mut` for a
+different reason than rustc's.
 
 - Open in this item:
   - **C3b, next** (Lane C, before C2b): knowable absence relative to the crate
@@ -163,8 +193,10 @@ them; `deref-shared` and `clone-mut` for a different reason than rustc's.
     "source function early/captured callable frame transport is not
     implemented". Core's `DerefMut for &mut T` and `Error for &E` need it.
     Scheduled after C3b; a candidate to fold into the multi-packet item.
-  - **Negative coherence over a `?Sized` negative impl** (Lane B, after
-    chain-bytes; not a core blocker today). `pay_negative`
+  - **Repaired: negative coherence over a `?Sized` negative impl** (Lane B,
+    [MetaSized premises](parallel/negative-metasized.md)). A negative
+    coherence query now assumes the other header's own `MetaSized` premises,
+    so the first two rows below are accepted. Before, `pay_negative`
     (`overlap/inputs.rs`) pays only Sized premises, so a `?Sized` (MetaSized)
     negative impl's premise is never paid from the intersection's own
     MetaSized assumption. It is independent of transport: with every item
@@ -178,14 +210,14 @@ them; `deref-shared` and `clone-mut` for a different reason than rustc's.
 
     | Negative impl's `T` | `B for &T`'s `T` | rustc 1.98.0 | RustGM |
     | --- | --- | --- | --- |
-    | `?Sized` | `?Sized` | accepted | overlap text |
-    | `MetaSized` | `MetaSized` | accepted | overlap text |
+    | `?Sized` | `?Sized` | accepted | accepted (was overlap text) |
+    | `MetaSized` | `MetaSized` | accepted | accepted (was overlap text) |
     | `PointeeSized` | `?Sized` | accepted | accepted |
     | `PointeeSized` | `PointeeSized` | accepted | accepted |
     | `Sized` | `Sized` | accepted | accepted |
 
-    C3's `negative-coherence` client is declared rejected with the overlap
-    text; the fix flips it.
+    C3's `negative-coherence` client, declared rejected with the overlap
+    text, is amended to accepted and exits 42.
   - **`may_dangle`**, under the existing open item (frontend dropck; it
     blocks alloc, not core). It has three parts: resolving the attribute
     (`#[may_dangle]` is "unresolved attribute macro is not in path scope"
@@ -281,14 +313,12 @@ Lane B [caller-region premises](parallel/caller-region-premises.md) and
   512 chained lifetime nominals all wait now stays inside its input-graph
   bound; before, the limit was about 200.
 - Queued for Lane B, low priority, in this order:
-  - Negative coherence with a `?Sized` or `MetaSized` negative impl:
-    `pay_negative` (`overlap/inputs.rs`) pays only `Sized` premises, so the
-    negative impl's `MetaSized` premise is never paid from the intersection's
-    own assumption. `pub trait A {} impl<T: ?Sized> !A for &T {} pub trait B
-    {} impl<T: A> B for T {} impl<T: ?Sized> B for &T {}` is rejected with
+  - Repaired: negative coherence with a `?Sized` or `MetaSized` negative
+    impl. `pub trait A {} impl<T: ?Sized> !A for &T {} pub trait B {}
+    impl<T: A> B for T {} impl<T: ?Sized> B for &T {}` was rejected with
     "overlapping trait implementation headers require coherence proof",
-    where rustc accepts it. Lane C's C3 declares a control that flips with
-    the fix.
+    where rustc accepts it. See
+    [MetaSized premises](parallel/negative-metasized.md).
   - Repaired: a selection in a closure body through a caller premise that
     names a caller lifetime, before any body step has aliased one. In
     `fn item<'x, F: Out<O = Option<&'x u8>>>(s: &mut Wrap<F>)`, the closure

@@ -93,12 +93,14 @@ impl Search<'_> {
         )
         .finish(end);
         let mut sized = Vec::new();
+        let mut meta_sized = Vec::new();
         self.collect_graph(
             facts,
             [root],
             Some((owner, arguments)),
             &mut proof,
             &mut sized,
+            Some(&mut meta_sized),
         )?;
         let refutation = if debt_free {
             Refutation::DebtFree(Box::new(closed))
@@ -107,6 +109,7 @@ impl Search<'_> {
                 identity: closed,
                 proof,
                 sized,
+                meta_sized,
             }))
         };
         refutation.validate(expected, &self.caller, self.query.availability)?;

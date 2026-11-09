@@ -345,8 +345,11 @@ fn unrelated_builtin_does_not_acquire_sizing_sharing_and_hot_layouts_stay_fixed(
     // the test-only `candidate_lists` log of `user_callable_output`; the
     // production layout is unchanged. Amended at C3b: a coherence purpose
     // carries its perspective's artifact ordinal, one word per query; the
-    // per-node and per-frame layouts below are unchanged.
-    assert_eq!(size_of::<Query>(), 664 + size_of::<Vec<usize>>());
+    // per-node and per-frame layouts below are unchanged. Amended at
+    // MetaSized: a negative coherence query's `MetaSized` premises and debts
+    // are one optional box, one word per query, since only those cold queries
+    // have them; the per-node and per-frame layouts are unchanged.
+    assert_eq!(size_of::<Query>(), 672 + size_of::<Vec<usize>>());
     assert_eq!(size_of::<Node>(), 160);
     assert_eq!(size_of::<super::super::Frame>(), 1312);
     Ok(())

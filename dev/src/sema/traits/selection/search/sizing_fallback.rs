@@ -9,6 +9,45 @@ use crate::{
     types::{Kind, aggregate::MetadataPreparation},
 };
 use std::ops::ControlFlow;
+
+/// rustc 1.98 negates one impl's predicates under the other impl's
+/// `param_env`. A negative coherence query assumes only that other header's
+/// own `MetaSized` premises, and each node one of them proves stays a debt
+/// that the same premises must pay. Every other query has none.
+pub(super) struct NegativeSizing {
+    premises: std::sync::Arc<[crate::types::TypeId]>,
+    debts: Vec<usize>,
+}
+impl NegativeSizing {
+    /// `premises` are sorted by identity, as the overlap inputs resolve them,
+    /// and shared by every condition of one pair's side, so assuming them is
+    /// constant work. A lookup finds only an actual member, so a misordered
+    /// set could only assume less.
+    pub(super) fn assume(premises: &std::sync::Arc<[crate::types::TypeId]>) -> Self {
+        Self {
+            premises: std::sync::Arc::clone(premises),
+            debts: Vec::new(),
+        }
+    }
+    fn assumes(&self, ty: crate::types::TypeId) -> bool {
+        self.premises.binary_search_by_key(&ty.0, |ty| ty.0).is_ok()
+    }
+    fn record(&mut self, selected: usize) -> Result<(), &'static str> {
+        if self.debts.last().is_some_and(|&last| last >= selected) {
+            return Err("negative coherence MetaSized debts lost their order");
+        }
+        self.debts
+            .try_reserve(1)
+            .map_err(|_| "negative coherence MetaSized debts allocation failed")?;
+        self.debts.push(selected);
+        Ok(())
+    }
+    /// Node indices are allocated in increasing order and never reused.
+    pub(super) fn debt(&self, index: usize) -> bool {
+        self.debts.binary_search(&index).is_ok()
+    }
+}
+
 impl Search<'_> {
     pub(super) fn source_sizing_kind(
         facts: &Declarations,
@@ -72,6 +111,8 @@ impl Search<'_> {
         if !shape.well_formed {
             return Ok(Some(Action::Complete(Decision::Absent)));
         }
+        let assumed =
+            kind == LangItem::MetaSized && self.assumes_meta_sized(facts, shape.sized, goal.ty);
         let valid = if kind == LangItem::Sized || shape.sized {
             shape.sized
         } else {
@@ -102,10 +143,8 @@ impl Search<'_> {
                 {
                     true
                 }
-                Kind::Foreign(_)
-                | Kind::Array { .. }
-                | Kind::ArrayTerm { .. }
-                | Kind::Parameter(_) => false,
+                Kind::Foreign(_) | Kind::Array { .. } | Kind::ArrayTerm { .. } => false,
+                Kind::Parameter(_) => assumed,
                 // A normalized projection is rigid. Its own item bounds were
                 // consulted before this fallback and did not prove the goal.
                 Kind::Projection(_) if Self::normalized_inputs(frame) => false,
@@ -136,17 +175,50 @@ impl Search<'_> {
         }
         match kind {
             LangItem::Sized | LangItem::MetaSized | LangItem::PointeeSized => {
-                let node = self.source_builtin_node(frame, goal, shape.sized);
-                let selected = self.query.push_source_sizing(
-                    facts,
-                    node,
-                    frame.scope,
-                    frame.first..frame.first,
-                )?;
-                Ok(Some(Action::Complete(Decision::Proven(selected))))
+                self.complete_source_sizing(facts, frame, goal, (shape.sized, assumed))
             }
             _ => Err("invalid source sizing fallback kind".into()),
         }
+    }
+    /// An assumed premise is retained like a Sized debt, so its node is never
+    /// debt-free and never pays an equality-only negative.
+    fn complete_source_sizing(
+        &mut self,
+        facts: &Declarations,
+        frame: &mut Frame,
+        goal: Predicate,
+        (sized, assumed): (bool, bool),
+    ) -> Result<Option<Action>, String> {
+        let node = self.source_builtin_node(frame, goal, sized || assumed);
+        let selected =
+            self.query
+                .push_source_sizing(facts, node, frame.scope, frame.first..frame.first)?;
+        if assumed {
+            self.query.steps = self.query.steps.saturating_add(1);
+            self.query
+                .negative_sizing
+                .as_mut()
+                .ok_or("negative coherence MetaSized proof lost its premises")?
+                .record(selected)?;
+        }
+        Ok(Some(Action::Complete(Decision::Proven(selected))))
+    }
+    /// A rigid parameter is `MetaSized` in a negative coherence query when the
+    /// other header's premises say so; its proof is retained as their debt.
+    fn assumes_meta_sized(
+        &self,
+        facts: &Declarations,
+        sized: bool,
+        ty: crate::types::TypeId,
+    ) -> bool {
+        self.caller.retain_sized
+            && !sized
+            && matches!(facts.types.kind(ty), Some(Kind::Parameter(_)))
+            && self
+                .query
+                .negative_sizing
+                .as_ref()
+                .is_some_and(|sizing| sizing.assumes(ty))
     }
     /// After input normalization, an assumption over another projection may be
     /// incomparable with this one. A sizing marker has no items or arguments, so

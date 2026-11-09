@@ -1,0 +1,185 @@
+{
+  "schema": 1,
+  "declared": "2026-11-09. The local twins' outcomes for rustc and for this compiler before and after the change were declared in Lane B's MetaSized design notice (obj/lane-b7/metasized/predictions.json, sha256 8c3f306210786426359de31909f19682b304f05f44aeebb272333cd584d39ee4), the edge twins' in predictions-edge.json (90ddc57374a2785cf49f5042d78beb2854b26392dcd497e1f3b023e9925f0334) and the side twins' in predictions-side.json (3589a8d4d5df404bd6d258f5b8a5866ddf95f8a0f1e6ce13c64cec9ff12e63bc), each before any rustc oracle, RustGM run or draft file of its twins. The frozen oracle and the base RustGM CLI ran after those declarations",
+  "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+  "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+  "base": "main at 68c26f42a, containing C3b aa6c36f65; dev-fast CLI sha256 17ffccbc...",
+  "amendments": [
+    "2026-11-09 after the first oracle run and before any RustGM run of any twin (predictions-corrections.json, sha256 de6412fbba37a8a0f7a6dd6c90f28b7b539daed08aba4b389a808dea6c08b28c): rustc rejected four twins for the fixture itself. edge-pointee and edge-specialized failed with E0277, since a non-auto trait has an implicit `Self: MetaSized` supertrait, and with min_specialization's 'specialization impl does not specialize any associated items'; `Cond` now declares `PointeeSized` and one item that the `PointeeSized` impl defaults and the `?Sized` impl specializes. premise-side and sized-premise-side failed with E0637, since a where-clause `&V` needs a lifetime; their blankets now name `'a`. No declared outcome changed",
+    "2026-11-09 after candidate run 1 (CLI sha256 c87ef088a03d8495a0c700cbc2dbdf66eb185a9f54adbe9cf5c2058c9702bfc2, obj/lane-b7/metasized/after1.txt): supertrait-implied was declared fenced (the overlap text) and is accepted, as rustc accepts it (status 0). The declaration was a wrong prediction, not a behaviour this batch chose: Generics::elaborate_trait_bounds (dev/src/sema/generics/traits.rs:25-49) already appends each owner's supertrait-implied predicates after its declared ones, and declaration_inputs::all returns them, so Foo's implicit `Self: MetaSized` reaches the client's premises as `U: MetaSized`, as in rustc's elaborated param_env. The declared fields stay as declared; the twin now checks that elaborated premises are assumed"
+  ],
+  "cases": {
+    "metasized-param.rs": {
+      "sha256": "3f8f6caaa5640fbd4d078ffbeb1d4b0a9ea1f949c5502513c14475f2a57dd283",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "declared": 0,
+      "declared_error_codes": [],
+      "reason": "the client's `U: ?Sized` gives it the default `U: MetaSized`. rustc negates the blanket's `&U: Seal` under the client's param_env, where `impl<T: ?Sized> !Seal for &T` holds, so the impls are disjoint",
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_before": "overlap",
+      "rustgm_after": "accepted"
+    },
+    "metasized-written.rs": {
+      "sha256": "0cf782425beda753d33e60e2777c8eb058b1ca094cbe96a41cefe03f6da41ea2",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "declared": 0,
+      "declared_error_codes": [],
+      "reason": "the same intersection with a written `U: MetaSized` premise",
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_before": "overlap",
+      "rustgm_after": "accepted"
+    },
+    "metasized-strict.rs": {
+      "sha256": "0a3e185cc21edc6f2982acaf6911efee72ffb18fbc4c0663f44133487c6d4b97",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "declared": 0,
+      "declared_error_codes": [],
+      "reason": "the same intersection for a `#[rustc_strict_coherence]` trait, which uses negative impls without implicit absence",
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_before": "overlap",
+      "rustgm_after": "accepted"
+    },
+    "sized-param.rs": {
+      "sha256": "685b01ced5bd85c442ce1505a72bc27e6d1484c1d7fa8dc5f8d4f2430e0266a5",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "declared": 0,
+      "declared_error_codes": [],
+      "reason": "a Sized client parameter: its Sized premise also implies MetaSized; RustGM pays the debt from the Sized premises as before",
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_before": "accepted",
+      "rustgm_after": "accepted"
+    },
+    "pointee-param.rs": {
+      "sha256": "13925d19104df0f0f7ae66e8c6404932b2b72545ab4a5239be62ed7e0fbc9bfd",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "declared": 1,
+      "declared_error_codes": [
+        "E0119"
+      ],
+      "reason": "a `PointeeSized` client parameter has no MetaSized premise, so `&U: !Seal` cannot be proved",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "rustgm_before": "overlap",
+      "rustgm_after": "overlap"
+    },
+    "sized-negative.rs": {
+      "sha256": "12e2044d2e3266b972d0c10848f2e34634565dabbc5d52bb2894f18adebb4e54",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "declared": 1,
+      "declared_error_codes": [
+        "E0119"
+      ],
+      "reason": "the negative impl requires `T: Sized`, which a `?Sized` client's MetaSized premise cannot pay",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "rustgm_before": "overlap",
+      "rustgm_after": "overlap"
+    },
+    "metasized-stable.rs": {
+      "sha256": "cb48878c89b14f95245e57bf72fb7414834b4250e2bc3b0742a95727bcb0cdb3",
+      "features": "#![feature(negative_impls)]",
+      "declared": 1,
+      "declared_error_codes": [
+        "E0119"
+      ],
+      "reason": "without `with_negative_coherence` the negative impl proves nothing about the intersection",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "rustgm_before": "overlap",
+      "rustgm_after": "overlap"
+    },
+    "supertrait-implied.rs": {
+      "sha256": "20301de49b7ebfedc00ab93533d6562df42b0af79ca020d880e79d4d5fd7ce3d",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "declared": 0,
+      "declared_error_codes": [],
+      "reason": "rustc elaborates `U: Foo` to Foo's implicit `Self: MetaSized` supertrait; RustGM does not elaborate supertrait-implied MetaSized premises in this batch, a recorded open item (docs/library-build-blockers.md)",
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_before": "overlap",
+      "rustgm_after": "overlap (fenced)",
+      "rustgm_after_observed": "accepted",
+      "amended": "after candidate run 1; see the second amendment"
+    },
+    "edge-pointee.rs": {
+      "sha256": "e20e0584bfe097dd0a774c02e273f1bb44a24c0561a21e7296cf61caabde600e",
+      "features": "#![feature(negative_impls,with_negative_coherence,min_specialization)]",
+      "declared": 0,
+      "declared_error_codes": [],
+      "reason": "a specializing `impl<T: ?Sized> Cond for T` cannot apply without a MetaSized premise for U, so the `PointeeSized` base impl proves `U: Cond` and `&U: !Seal` holds",
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_before": "accepted",
+      "rustgm_after": "accepted"
+    },
+    "edge-specialized.rs": {
+      "sha256": "c3f970a84c8f7ae3e62f905f8b277d3484e6624aef204cd0aeec117ff81bdc39",
+      "features": "#![feature(negative_impls,with_negative_coherence,min_specialization)]",
+      "declared": 0,
+      "declared_error_codes": [],
+      "reason": "with the client's MetaSized premise both Cond impls apply; rustc's winnowing prefers the specializing impl. RustGM must still accept: a rejection is an accepted-to-rejected flip that stops the batch",
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_before": "accepted",
+      "rustgm_after": "declared observation",
+      "rustgm_after_observed": "accepted"
+    },
+    "premise-side.rs": {
+      "sha256": "107dc7fcc0a9b188c1531bfd1d288094f21236952a0c49ab3003ba4060f70c15",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "declared": 1,
+      "declared_error_codes": [
+        "E0119"
+      ],
+      "reason": "the negated `&'a V: Seal` is the blanket's own clause, so only the client's premises are assumed, and the client's `U: PointeeSized` has no MetaSized premise; the blanket's own `V: ?Sized` default must not pay it",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "rustgm_before": "overlap",
+      "rustgm_after": "overlap"
+    },
+    "sized-premise-side.rs": {
+      "sha256": "c3951e788fdb122dee2322ad4949a82074c9b8bfabc371dd9aeb84e44d88da09",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "declared": 1,
+      "declared_error_codes": [
+        "E0119"
+      ],
+      "reason": "the same side question for a Sized debt: the blanket's own `V: Sized` is not in the client's param_env. Sized debts keep both headers' premises in this batch, so RustGM's acceptance is the recorded accepts-invalid open item, not a flip",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "rustgm_before": "accepted",
+      "rustgm_after": "declared observation of the Sized union",
+      "rustgm_after_observed": "accepted (the recorded accepts-invalid)"
+    },
+    "supertrait-premise-side.rs": {
+      "sha256": "ca0266fbaf1118fa58c7ac099367a5151ef23ee0e3681b6a53426a4a3066719b",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "declared": 1,
+      "declared_error_codes": [
+        "E0119"
+      ],
+      "reason": "the supertrait-implied `V: MetaSized` of the blanket's `V: PointeeSized + Foo` belongs to the blanket, the side whose `&'a V: Seal` is negated; the client's `U: PointeeSized` has no MetaSized premise",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "rustgm_before": "not run: the base CLI was retired before this twin existed; declared as the overlap text",
+      "rustgm_after": "overlap"
+    }
+  },
+  "supertrait_premise_side_declared": "2026-11-09T01:51:00Z, after candidate run 1 and before any rustc oracle, RustGM run or file of this twin (obj/lane-b7/metasized/predictions-supertrait-side.json, sha256 4dd8959379c2bf331bfddde8a8c4c10dfa195aeb7efaf29fe6c7eed38e620d93). It checks that an elaborated premise keeps the side of the impl whose generics own it"
+}

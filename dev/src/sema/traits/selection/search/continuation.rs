@@ -80,6 +80,9 @@ pub(super) struct Query {
     #[cfg(test)]
     pub candidate_lists: Vec<usize>,
     pub builtins: crate::sema::nominals::Proof,
+    /// Only a negative coherence query with `MetaSized` premises has one.
+    /// Those queries are cold, so every other query pays one word.
+    pub negative_sizing: Option<Box<super::sizing_fallback::NegativeSizing>>,
     pub stack: Vec<Frame>,
     waiting: Option<Dependency>,
     decision: Option<Decision>,
@@ -141,6 +144,7 @@ impl<'a> Search<'a> {
                 storage_steps: 0,
                 #[cfg(test)]
                 candidate_lists: Vec::new(),
+                negative_sizing: None,
                 stack: Vec::new(),
                 waiting: None,
                 decision: None,

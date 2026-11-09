@@ -791,3 +791,16 @@ accepted. A default naming another trait's member is accepted when it
 satisfies the parameter's bound and rejected when it does not (E0277); the
 accepted case is a recorded gap. Each outcome was declared before its rustc
 1.98.0 oracle. A private invariant checks them; there is no graded manifest.
+
+`spec/negative-metasized/` freezes thirteen declared no_core controls from
+Lane B's MetaSized batch: pairs that only a `?Sized` negative impl
+(`impl<T: ?Sized> !Seal for &T`) makes disjoint. rustc negates one impl's
+predicates under the other impl's `param_env`, so the other header's own
+`MetaSized` premises prove the negative impl's condition. A client's `?Sized`,
+written `MetaSized`, Sized or supertrait-implied premise is accepted, under
+strict coherence too. A `PointeeSized` premise, a `Sized` negative impl, the
+pair without `with_negative_coherence` and a premise of the negated clause's
+own impl are rejected (E0119). Two specialization edges are accepted, and
+`sized-premise-side`, which rustc rejects, is a recorded accepts-invalid.
+Each outcome was declared before its rustc 1.98.0 oracle, with two recorded
+amendments. A private invariant checks them; there is no graded manifest.

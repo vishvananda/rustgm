@@ -52,8 +52,8 @@ const SEAL: [&str; 8] = [
 /// Generated clients: `features`, a client-local `Local`, `item`, and an
 /// entry returning 42. `negative-metasized`'s premise `str: MetaSized` is
 /// concrete; `negative-metasized-param`'s `U: MetaSized` is covered only by
-/// the client impl's own `U: ?Sized`, which `pay_negative` cannot pay yet
-/// (Lane B's recorded rejects-valid gap; rustc accepts it).
+/// the client impl's own `U: ?Sized`, the other header's premise that rustc
+/// assumes when it negates the imported blanket's condition.
 const CONTROLS: [(&str, &str, &str, bool); 5] = [
     (
         "negative-metasized",
@@ -65,7 +65,7 @@ const CONTROLS: [(&str, &str, &str, bool); 5] = [
         "negative-metasized-param",
         "no_core,with_negative_coherence",
         "impl<U: ?base::Sized> base::Holds<&U> for Local {}",
-        false,
+        true,
     ),
     (
         "negative-pointee-param",
@@ -122,7 +122,7 @@ fn packet_and_client_pairs_prove_knowable_absence() -> Result {
 /// Coherence reads an imported impl's where-clauses as selection does, in the
 /// provider's terms. A condition that holds keeps its pair overlapping, and a
 /// `with_negative_coherence` client excludes a pair only through a negative
-/// impl whose premise it can pay: `PointeeSized`, not yet `MetaSized`.
+/// impl whose premise the other header's premises pay.
 #[test]
 fn generated_controls_read_imported_conditions() -> Result {
     let packet = Packet::publish(GROUP, SPEC, "absence-gates", "provider", PROFILE)?;

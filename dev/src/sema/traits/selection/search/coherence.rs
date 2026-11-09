@@ -43,19 +43,24 @@ pub(in crate::sema) fn may_overlap(
         goal,
         crate::sema::coherence_policy::Mode::Stable,
         perspective,
-        |_, _, _, _| Ok(false),
+        None,
+        |_, _, _, _, _| Ok(false),
     )
 }
+/// `premises` are the other header's own `MetaSized` premises, sorted by
+/// identity. `pay` receives the proof's Sized debts, then its `MetaSized` debts.
 pub(in crate::sema) fn may_overlap_with(
     facts: &mut Declarations,
     context: &mut Context,
     goal: &Goal,
     mode: crate::sema::coherence_policy::Mode,
     perspective: Perspective,
+    premises: Option<&std::sync::Arc<[crate::types::TypeId]>>,
     pay: impl FnOnce(
         &mut Declarations,
         &mut Context,
         &crate::types::lifetime_proof::Obligations,
+        &[crate::types::TypeId],
         &[crate::types::TypeId],
     ) -> Result<bool, String>,
 ) -> Result<bool, String> {
@@ -81,6 +86,14 @@ pub(in crate::sema) fn may_overlap_with(
     } else {
         Purpose::Coherence(perspective)
     };
+    if mode.negative()
+        && let Some(premises) = premises.filter(|premises| !premises.is_empty())
+    {
+        context.account_work(1).map_err(|e| e.to_string())?;
+        search.query.negative_sizing = Some(Box::new(
+            super::sizing_fallback::NegativeSizing::assume(premises),
+        ));
+    }
     let progress = search.begin(facts, first)?;
     context
         .account_work(search.query.steps)
@@ -94,7 +107,9 @@ pub(in crate::sema) fn may_overlap_with(
             let expected = search.query.nodes[node].goal;
             let refutation = search.refutation(facts, node, expected)?;
             refutation
-                .disjoint_with(|proof, sized| pay(facts, context, proof, sized))
+                .disjoint_with(|proof, sized, meta_sized| {
+                    pay(facts, context, proof, sized, meta_sized)
+                })
                 .map(|disjoint| !disjoint)
         }
         _ => Ok(true),

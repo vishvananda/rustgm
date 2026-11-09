@@ -21,14 +21,17 @@ const IMPL_FENCE: &str =
     "source const/negative/unsafe implementation requires a wider explicit profile";
 const CONDITIONAL: &str = "conditional negative implementation requires scoped debt payment";
 /// Frozen outcomes from `pa29/tests/unsafe-negative-impl-outcomes.json`.
-const ACCEPTED: [&str; 5] = [
+const ACCEPTED: [&str; 6] = [
     "trusted",
     "local-trusted",
     "exclusive",
     "error-fault",
     "local-negative",
+    // Negative coherence assumes the other header's `T: MetaSized` premise
+    // when it negates `&T: DerefMutLike`, as rustc does.
+    "negative-coherence",
 ];
-const REJECTED: [(&str, &str); 11] = [
+const REJECTED: [(&str, &str); 10] = [
     ("safe-searcher", SAFETY),
     ("unsafe-plain", SAFETY),
     ("unsafe-negative", SAFETY),
@@ -39,10 +42,6 @@ const REJECTED: [(&str, &str); 11] = [
     ("clone-mut", CONDITIONAL),
     ("fuse-plain", GENERIC),
     ("searcher-fault", GENERIC),
-    // rustc accepts it: a recorded frontend gap. Negative coherence does not
-    // pay the `?Sized` negative impl's MetaSized premise from the
-    // intersection, with every item local or imported alike.
-    ("negative-coherence", OVERLAP),
 ];
 /// An impl header row: see `polarity_transport.rs`.
 const IMPL_ROW: usize = 52;

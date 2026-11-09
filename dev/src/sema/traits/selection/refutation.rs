@@ -26,17 +26,27 @@ pub(in crate::sema) struct Conditional {
     pub(super) identity: Closed,
     pub(super) proof: super::Obligations,
     pub(super) sized: Vec<crate::types::TypeId>,
+    /// Debts proved from the negative query's assumed `MetaSized` premises.
+    pub(super) meta_sized: Vec<crate::types::TypeId>,
 }
 impl Refutation {
     /// A declaration's intersection can pay scoped debts using only its actual
     /// header premises. This result remains separate from positive evidence.
     pub(in crate::sema) fn disjoint_with(
         self,
-        pay: impl FnOnce(&super::Obligations, &[crate::types::TypeId]) -> Result<bool, String>,
+        pay: impl FnOnce(
+            &super::Obligations,
+            &[crate::types::TypeId],
+            &[crate::types::TypeId],
+        ) -> Result<bool, String>,
     ) -> Result<bool, String> {
         match self {
             Self::DebtFree(_) | Self::Equalities(_) => Ok(true),
-            Self::Conditional(conditional) => pay(&conditional.proof, &conditional.sized),
+            Self::Conditional(conditional) => pay(
+                &conditional.proof,
+                &conditional.sized,
+                &conditional.meta_sized,
+            ),
         }
     }
     pub(super) fn validate(
@@ -101,8 +111,9 @@ impl Refutation {
                     identity,
                     proof,
                     sized,
+                    meta_sized,
                 } = *conditional;
-                let _unpaid = (identity, proof, sized);
+                let _unpaid = (identity, proof, sized, meta_sized);
                 Err("conditional negative implementation requires scoped debt payment")
             }
         }

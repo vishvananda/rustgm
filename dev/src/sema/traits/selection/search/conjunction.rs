@@ -149,7 +149,7 @@ impl Search<'_> {
         // One union traversal visits shared prerequisites once and retains every
         // root's actual region, equality, formation and sizing obligations.
         self.query.reused = true;
-        self.collect_graph(facts, roots, None, &mut proof, &mut sized)?;
+        self.collect_graph(facts, roots, None, &mut proof, &mut sized, None)?;
         Ok(Conjunction::Proven {
             proof,
             sized,

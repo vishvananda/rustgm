@@ -177,7 +177,11 @@
       "rustc": "exit 42",
       "expected": "rejected with the overlap text located at the client impl: a known rejects-valid, Lane B's MetaSized gap (pay_negative pays only Sized premises); the MetaSized fix flips it",
       "amendment": "declared 2026-11-08T22:41Z, after the second C3b candidate run and before their rustc oracle and any candidate run (integrator-approved parametric MetaSized data point)",
-      "spelling_note": "the first oracle run used `?Sized`, which a no_core client cannot name (E0405); corrected to `?base::Sized` before any candidate run, outcomes unchanged"
+      "spelling_note": "the first oracle run used `?Sized`, which a no_core client cannot name (E0405); corrected to `?base::Sized` before any candidate run, outcomes unchanged",
+      "rustc_oracle_exit": 42,
+      "prior_rustgm": "rejected with the overlap text located at the client impl: the declared rejects-valid",
+      "amended_expected": "accepted (Lane B's MetaSized batch)",
+      "amendment_2": "declared 2026-11-09, before any candidate run of the MetaSized change: rustc 1.98 negates the imported blanket's `&U: Seal` under the client impl's param_env, whose `U: ?base::Sized` default `U: MetaSized` proves the imported `impl<T: ?Sized> !Seal for &T`'s condition, and the candidate now assumes exactly that other header's MetaSized premises (pa31/tests/spec/negative-metasized)"
     },
     {
       "control": "negative-pointee-param: a `with_negative_coherence` client of the seal provider with `struct Local; impl<U: ?base::Sized> base::Keeps<&U> for Local {}`",

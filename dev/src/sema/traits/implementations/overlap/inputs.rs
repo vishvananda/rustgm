@@ -15,6 +15,13 @@ use crate::types::{
 pub(super) struct Inputs {
     pub sized: Vec<TermId>,
     traits: Vec<infer::predicates::Predicate>,
+    /// The header whose own clause each of `traits` is.
+    trait_sides: Vec<Side>,
+    /// Each header's own premises that imply `MetaSized`: its Sized
+    /// parameters, its Sized, Copy and Clone subjects and its `MetaSized`
+    /// clauses, including the default of a `?Sized` parameter.
+    meta_sized: [Vec<TermId>; 2],
+    headers: u8,
     universals: u32,
     regions: Vec<(RegionId, RegionId)>,
     outlives: Vec<(TermId, RegionId)>,
@@ -24,6 +31,28 @@ pub(super) struct Header {
     substitution: Instantiation,
     lifetimes: substitute::Bound,
     bindings: Vec<(crate::types::parameters::ParameterId, Argument)>,
+    side: Side,
+}
+/// One header of the compared pair.
+#[derive(Clone, Copy, Default)]
+enum Side {
+    #[default]
+    First,
+    Second,
+}
+impl Side {
+    const fn index(self) -> usize {
+        match self {
+            Self::First => 0,
+            Self::Second => 1,
+        }
+    }
+    const fn other(self) -> Self {
+        match self {
+            Self::First => Self::Second,
+            Self::Second => Self::First,
+        }
+    }
 }
 impl Inputs {
     pub fn instantiate(
@@ -86,6 +115,12 @@ impl Inputs {
         context: &mut Context,
         owner: DefId,
     ) -> Result<Header, String> {
+        let side = match self.headers {
+            0 => Side::First,
+            1 => Side::Second,
+            _ => return Err("coherence inputs compare at most two headers".into()),
+        };
+        self.headers += 1;
         let ids = facts.generics.parameter_ids(&facts.types, owner)?;
         let mut bindings = Vec::with_capacity(ids.len());
         for id in ids {
@@ -99,6 +134,7 @@ impl Inputs {
                 )
             {
                 self.sized.push(term);
+                self.meta_sized[side.index()].push(term);
             }
             bindings.push((id, argument));
         }
@@ -109,6 +145,7 @@ impl Inputs {
             substitution,
             lifetimes,
             bindings,
+            side,
         })
     }
     /// Freeze the common intersection with actual source parameters as rigid
@@ -168,14 +205,24 @@ impl Inputs {
         }
         if mode.negative() {
             Self::freeze(facts, context, headers)?;
-            for goal in &self.traits {
+            if self.trait_sides.len() != self.traits.len() {
+                return Err("coherence conditions lost their headers".into());
+            }
+            let premises = self.meta_sized_premises(facts, context)?;
+            for (goal, side) in self.traits.iter().zip(&self.trait_sides) {
+                // rustc 1.98 negates one impl's predicates under the other's
+                // param_env, so only the other header's premises are assumed.
+                let assumed = &premises[side.other().index()];
                 if !crate::sema::traits::selection::may_overlap_with(
                     facts,
                     context,
                     goal,
                     crate::sema::coherence_policy::Mode::Strict,
                     perspective,
-                    |facts, context, proof, sized| self.pay_negative(facts, context, proof, sized),
+                    Some(assumed),
+                    |facts, context, proof, sized, meta_sized| {
+                        self.pay_negative(facts, context, proof, sized, meta_sized, assumed)
+                    },
                 )? {
                     return Ok(true);
                 }
@@ -218,16 +265,16 @@ impl Inputs {
                 continue;
             };
             if predicate.bound.trait_parts().is_some() {
+                let premise = meta_sized_clause(facts, predicate.bound)?;
                 let predicate = header.lifetimes.predicate(&mut facts.types, predicate)?;
-                self.traits.push(
-                    context
-                        .instantiate_predicate(
-                            &mut facts.types,
-                            predicate,
-                            &mut header.substitution,
-                        )
-                        .map_err(|e| e.to_string())?,
-                );
+                let goal = context
+                    .instantiate_predicate(&mut facts.types, predicate, &mut header.substitution)
+                    .map_err(|e| e.to_string())?;
+                if premise {
+                    self.meta_sized[header.side.index()].push(goal.subject());
+                }
+                self.traits.push(goal);
+                self.trait_sides.push(header.side);
                 continue;
             }
             if !matches!(
@@ -244,6 +291,7 @@ impl Inputs {
                 self.outlives.push((term, region));
             } else {
                 self.sized.push(term);
+                self.meta_sized[header.side.index()].push(term);
             }
         }
         let lowered = lowering.map_or(0, |lowering: substitute::Bound| lowering.steps);
@@ -295,17 +343,23 @@ impl Inputs {
                 .and_then(|owner| owner.headers.as_ref())
                 .is_some()
             {
-                let bytes = if self.traits.capacity() - self.traits.len() < count {
+                let mut bytes = if self.traits.capacity() - self.traits.len() < count {
                     count.saturating_mul(size_of::<infer::predicates::Predicate>())
                 } else {
                     0
                 };
+                if self.trait_sides.capacity() - self.trait_sides.len() < count {
+                    bytes = bytes.saturating_add(count.saturating_mul(size_of::<Side>()));
+                }
                 crate::sema::header_attributes::charge_attribute_retention(facts, count, bytes)
                     .map_err(|e| e.to_string())?;
             }
             self.traits
                 .try_reserve(count)
                 .map_err(|_| "coherence trait conditions allocation failed")?;
+            self.trait_sides
+                .try_reserve(count)
+                .map_err(|_| "coherence trait condition headers allocation failed")?;
         }
         Ok(())
     }
@@ -417,13 +471,57 @@ impl Inputs {
         Ok(())
     }
 
+    /// Resolve each header's own `MetaSized` premises once, after the pair is
+    /// frozen, sorted by identity for the negative queries' lookups.
+    fn meta_sized_premises(
+        &self,
+        facts: &mut Declarations,
+        context: &mut Context,
+    ) -> Result<[std::sync::Arc<[TypeId]>; 2], String> {
+        let mut premises: [Vec<TypeId>; 2] = Default::default();
+        for (side, terms) in premises.iter_mut().zip(&self.meta_sized) {
+            let count = terms.len();
+            let growth = crate::support::retained::Growth::vector::<TypeId>(0, 0, count);
+            let sorting = count.saturating_mul(count.max(1).ilog2() as usize + 1);
+            // The resolved vector, then its shared copy.
+            let shared = count.saturating_mul(size_of::<TypeId>());
+            let work = growth.work.saturating_add(growth.bytes);
+            context
+                .account_work(work.saturating_add(shared).saturating_add(sorting))
+                .map_err(|e| e.to_string())?;
+            side.try_reserve_exact(count)
+                .map_err(|_| "negative coherence MetaSized premises allocation failed")?;
+            for &term in terms {
+                if let Some(ty) = resolved(facts, context, term)? {
+                    side.push(ty);
+                }
+            }
+            side.sort_unstable_by_key(|ty| ty.0);
+            side.dedup();
+        }
+        // Each side is shared by its conditions' queries, not copied per query.
+        Ok(premises.map(std::sync::Arc::from))
+    }
+
+    /// Sized debts are paid from both headers' Sized premises or by shape.
+    /// `MetaSized` debts are paid only from the `premises` the query assumed.
     pub fn pay_negative(
         &self,
         facts: &mut Declarations,
         context: &mut Context,
         proof: &Obligations,
         sized: &[TypeId],
+        meta_sized: &[TypeId],
+        premises: &[TypeId],
     ) -> Result<bool, String> {
+        for &ty in meta_sized {
+            context
+                .account_work(premises.len().max(1).ilog2() as usize + 1)
+                .map_err(|e| e.to_string())?;
+            if premises.binary_search_by_key(&ty.0, |ty| ty.0).is_err() {
+                return Ok(false);
+            }
+        }
         if !sized.is_empty() {
             let mut assumed = crate::support::hash::HashSet::default();
             let growth =
@@ -460,6 +558,23 @@ impl Inputs {
     }
 }
 
+/// A clause naming the actual `MetaSized` declaration, written or the default
+/// of a `?Sized` parameter.
+fn meta_sized_clause(facts: &Declarations, bound: Bound) -> Result<bool, String> {
+    let Some((application, _)) = bound.trait_parts() else {
+        return Ok(false);
+    };
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(false);
+    };
+    let item = facts
+        .types
+        .trait_application(application)
+        .ok_or("missing coherence premise application")?
+        .item;
+    Ok(catalog.sizing_kind(DefId(item.0))? == Some(crate::support::bindings::LangItem::MetaSized))
+}
+
 fn resolved(
     facts: &mut Declarations,
     context: &mut Context,
@@ -473,6 +588,9 @@ fn resolved(
     }
 }
 
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/negative_metasized_premises.rs"]
+mod metasized_tests;
 #[cfg(test)]
 #[path = "../../../../../tests/invariants/vacuous_callable_coherence.rs"]
 mod vacuous_tests;

@@ -749,9 +749,12 @@ impl Search<'_> {
             None,
             &mut evidence.proof,
             &mut evidence.sized,
+            None,
         )?;
         Ok(evidence)
     }
+    /// With `meta_sized`, the Sized debts of each node an assumed `MetaSized`
+    /// premise proved move there. Without it they remain ordinary Sized debts.
     fn collect_graph(
         &mut self,
         facts: &Declarations,
@@ -759,6 +762,7 @@ impl Search<'_> {
         negative: Option<(crate::resolve::model::DefId, crate::types::GenericArgs)>,
         proof: &mut super::Obligations,
         sized: &mut Vec<super::TypeId>,
+        mut meta_sized: Option<&mut Vec<super::TypeId>>,
     ) -> Result<(), String> {
         let mut scopes = self.query.scopes.take();
         let mut work: Vec<_> = roots.into_iter().collect();
@@ -785,6 +789,7 @@ impl Search<'_> {
                 _ => super::refutation::require_positive_source(facts, node.source.as_ref())?,
             }
             work.extend(std::mem::take(&mut node.children));
+            let retained = sized.len();
             if let Some(scopes) = &mut scopes {
                 scopes.collect(index, node, proof, sized)?;
             } else {
@@ -792,6 +797,15 @@ impl Search<'_> {
                 proof.outlives.append(&mut node.outlives);
                 proof.types.append(&mut node.type_outlives);
                 sized.append(&mut node.sized);
+            }
+            if let Some(meta_sized) = meta_sized.as_deref_mut()
+                && self
+                    .query
+                    .negative_sizing
+                    .as_ref()
+                    .is_some_and(|sizing| sizing.debt(index))
+            {
+                meta_sized.extend(sized.drain(retained..));
             }
         }
         if let Some(scopes) = scopes {

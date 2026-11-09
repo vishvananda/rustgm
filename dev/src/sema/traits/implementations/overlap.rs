@@ -185,7 +185,11 @@ pub(in crate::sema) fn reference_comparison(
         &prerequisite,
         mode,
         Perspective::Local,
-        |facts, context, proof, sized| inputs.pay_negative(facts, context, proof, sized),
+        // This single-header comparison still assumes no MetaSized premise.
+        None,
+        |facts, context, proof, sized, meta_sized| {
+            inputs.pay_negative(facts, context, proof, sized, meta_sized, &[])
+        },
     )?;
     Ok((possible, context.steps))
 }

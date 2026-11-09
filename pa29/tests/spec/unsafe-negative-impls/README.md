@@ -30,7 +30,7 @@ The core-derived shapes follow the Rust project under its MIT/Apache-2.0
 licence, and the repository NOTICE applies to them. Their bodies are
 authored: the traits are reduced to the members each control needs.
 
-Five clients prove or use an imported trait and return 42:
+Six clients prove or use an imported trait and return 42:
 
 - `trusted`: `Counter` and `Fuse<Counter>` are TrustedFused, and both
   Searcher impls answer `haystack` and `make`;
@@ -39,9 +39,15 @@ Five clients prove or use an imported trait and return 42:
 - `exclusive`: `DerefMutLike::exclusive` on `u8`;
 - `error-fault`: `Fault`, `&Fault` and `&&Fault` are Error;
 - `local-negative`: a local type with its own negative Error, Searcher and
-  DerefMutLike impls.
+  DerefMutLike impls;
+- `negative-coherence`: a local `Pick` with `impl<T: DerefMutLike> Pick for
+  T` and `impl<T: ?Sized> Pick for &T`, disjoint through the provider's
+  `!DerefMutLike for &T`. It was declared rejected, a recorded frontend gap:
+  negative coherence did not pay a `?Sized` negative impl's MetaSized
+  premise. Lane B's MetaSized batch repairs it, and the outcomes file
+  amends it to accepted.
 
-Eleven clients are rejected:
+Ten clients are rejected:
 
 - E0277: `str: Error` (`error-str`), `[u8]: Iterator` (`iterator-slice`),
   `&u8: DerefMutLike` (`deref-shared`), `&mut u8: Clone` (`clone-mut`),
@@ -49,12 +55,7 @@ Eleven clients are rejected:
 - `safe-searcher` (E0200), `unsafe-plain` (E0199) and `unsafe-negative`
   (E0198);
 - `deref-positive`: `DerefMutLike for &Local` beside the provider's negative
-  impl (E0751);
-- `negative-coherence`, which rustc accepts (exit 42): a local `Pick` with
-  `impl<T: DerefMutLike> Pick for T` and `impl<T: ?Sized> Pick for &T`,
-  disjoint through the provider's `!DerefMutLike for &T`. It is a recorded
-  frontend gap: negative coherence does not pay a `?Sized` negative impl's
-  MetaSized premise, with every item local as with this imported one.
+  impl (E0751).
 
 rustc 1.98.0 gave every declared outcome, and its six accepted clients exit
 42 natively.

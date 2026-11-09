@@ -144,23 +144,25 @@
     {
       "file": "spec/unsafe-negative-impls/negative-coherence.rs",
       "provider": "spec/unsafe-negative-impls/provider.rs",
-      "accepted": false,
-      "native_exit": null,
+      "accepted": true,
+      "native_exit": 42,
       "rustc": "accepted, exit 42",
-      "candidate_diagnostic": "overlapping trait implementation headers require coherence proof",
       "gap": "a frontend negative-coherence gap independent of transport: the provider and this body compiled as one source core are rejected the same way. Negative coherence does not pay the `?Sized` negative impl's MetaSized premise from the intersection's own MetaSized assumption; with PointeeSized or Sized parameters the same shape passes. Recorded in docs/library-build-blockers.md as its own item, outside C3b",
+      "prior_accepted": false,
+      "prior_candidate_diagnostic": "overlapping trait implementation headers require coherence proof",
+      "amendment": "declared 2026-11-09, before any candidate run of Lane B's MetaSized change: the recorded rejects-valid gap closes. rustc 1.98 negates the client's `&T: DerefMutLike` under the other impl's param_env, whose `T: ?base::Sized` default `T: MetaSized` proves the imported `!DerefMutLike for &T`'s condition; the candidate now assumes exactly that other header's MetaSized premises, so the client is accepted and exits 42 natively like rustc's",
       "sha256": "dc74a9f1e3ac72544db9965f790d409b6c6a5b35f1ff59efb821f2a02d053e68"
     }
   ],
   "outcome_counts": {
     "provider": "1 export, accepted under module-bodies-v13",
     "clients": 16,
-    "accepted_clients": 5,
-    "rejected_clients": 11,
-    "note": "17 declared outcomes: the provider export and 16 clients. rustc accepts six clients and rejects ten: six E0277 cases, safe-searcher (E0200), unsafe-plain (E0199), unsafe-negative (E0198) and deref-positive (E0751). The candidate accepts five; negative-coherence, which rustc accepts, is declared rejected as a recorded gap"
+    "accepted_clients": 6,
+    "rejected_clients": 10,
+    "note": "17 declared outcomes: the provider export and 16 clients. rustc accepts six clients and rejects ten: six E0277 cases, safe-searcher (E0200), unsafe-plain (E0199), unsafe-negative (E0198) and deref-positive (E0751). The candidate accepts the same six since Lane B's MetaSized change (2026-11-09 amendment of negative-coherence); before it, negative-coherence was declared rejected as a recorded gap and the candidate accepted five"
   },
   "native": {
-    "expected": "the five accepted clients exit 42 natively, as rustc's do"
+    "expected": "the six accepted clients exit 42 natively, as rustc's do; five before the 2026-11-09 amendment"
   },
   "generated_controls": [
     {
