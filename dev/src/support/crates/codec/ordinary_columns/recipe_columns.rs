@@ -5,23 +5,44 @@ use crate::support::constness::Constness;
 /// Version thirteen's pattern constraint kinds after tag 16 and its base.
 const NON_NULL: u8 = 0;
 const SCALAR_RANGE: u8 = 1;
-/// Every type row, with each range pattern's endpoints written in place. The
-/// ranges are dense in type-row order, so the reader rebuilds the same refs.
+/// Version thirteen's array type recipe tag, followed by its element and its
+/// length's const term.
+const ARRAY: u8 = 14;
+/// The out-of-line columns some type rows write in place.
+pub(super) struct TypeColumns<'a> {
+    pub ranges: &'a [s::PatternRange],
+    pub lengths: &'a [s::ConstTerm],
+}
+/// Every type row, with each range pattern's endpoints and each array's
+/// length term written in place. Both columns are dense in type-row order,
+/// so the reader rebuilds the same refs.
 pub(super) fn types_write(
     out: &mut Writer,
     rows: &[s::Type],
-    ranges: &[s::PatternRange],
+    columns: &TypeColumns<'_>,
 ) -> Result<(), &'static str> {
     out.u32(rows.len())?;
     let mut next = 0_usize;
+    let mut lengths = 0_usize;
     for row in rows {
-        if let s::Type::Pattern { base, constraint } = *row {
+        if let s::Type::Array { element, length } = *row {
+            let term = columns
+                .lengths
+                .get(lengths)
+                .filter(|_| length.0 as usize == lengths)
+                .ok_or("source array lengths are not in type-row order")?;
+            out.u8(ARRAY)?;
+            id(out, element.0)?;
+            const_term_write(out, *term)?;
+            lengths += 1;
+        } else if let s::Type::Pattern { base, constraint } = *row {
             out.u8(16)?;
             id(out, base.0)?;
             match constraint {
                 s::PatternConstraint::NonNull => out.u8(NON_NULL)?,
                 s::PatternConstraint::Range(reference) => {
-                    let range = ranges
+                    let range = columns
+                        .ranges
                         .get(next)
                         .filter(|_| reference.0 as usize == next)
                         .ok_or("source pattern ranges are not in type-row order")?;
@@ -35,8 +56,11 @@ pub(super) fn types_write(
             type_write(out, row)?;
         }
     }
-    if next != ranges.len() {
+    if next != columns.ranges.len() {
         return Err("source pattern range has no type row");
+    }
+    if lengths != columns.lengths.len() {
+        return Err("source array length has no type row");
     }
     Ok(())
 }
@@ -100,15 +124,34 @@ fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static str> {
             id(out, application.0)
         }
         s::Type::Pattern { .. } => Err("source pattern type requires its range table"),
+        s::Type::Array { .. } => Err("source array type requires its length table"),
     }
 }
-/// One type row. A range pattern's endpoints are appended to `ranges`, and
-/// the row names them by position.
+/// The dense out-of-line columns a type table's reader fills.
+#[derive(Default)]
+pub(super) struct TypeTables {
+    pub ranges: Vec<s::PatternRange>,
+    pub lengths: Vec<s::ConstTerm>,
+}
+/// One type row. A range pattern's endpoints and an array's length term are
+/// appended to their tables, and the row names them by position.
 pub(super) fn type_read(
     read: &mut Input<'_, '_>,
-    ranges: &mut Vec<s::PatternRange>,
+    tables: &mut TypeTables,
 ) -> Result<s::Type, &'static str> {
     Ok(match read.reader.u8()? {
+        ARRAY if read.profile.body_nodes() => {
+            let element = g::TypeRef(read.id()?);
+            let term = const_term_read(read)?;
+            read.reserve(size_of::<s::ConstTerm>())?;
+            let reference = u32::try_from(tables.lengths.len())
+                .map_err(|_| "source array length table overflow")?;
+            tables.lengths.push(term);
+            s::Type::Array {
+                element,
+                length: s::ArrayLengthRef(reference),
+            }
+        }
         16 if read.profile.body_nodes() => {
             let base = g::TypeRef(read.id()?);
             let constraint = match read.reader.u8()? {
@@ -119,9 +162,9 @@ pub(super) fn type_read(
                         end: read.reader.u128()?,
                     };
                     read.reserve(size_of::<s::PatternRange>())?;
-                    let reference = u32::try_from(ranges.len())
+                    let reference = u32::try_from(tables.ranges.len())
                         .map_err(|_| "source pattern range table overflow")?;
-                    ranges.push(range);
+                    tables.ranges.push(range);
                     s::PatternConstraint::Range(s::PatternRangeRef(reference))
                 }
                 _ => return Err("unknown source pattern constraint"),

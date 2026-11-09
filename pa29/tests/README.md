@@ -584,6 +584,21 @@ Amendments are recorded beside the declarations they amend, each before the
 run it governs. The `crate_linking::valued_generics` integration controls
 consume it, and the `valued_slots` validation invariant reads its provider.
 
+`array-type-outcomes.json` freezes the version-thirteen array-type packet
+under `spec/array-types/`, B2's array type row (T). The packet holds:
+
+- whole `[T; N]` values in signatures, record and tuple-struct fields, nested
+  arrays, a const-generic record, the `[T; N]` Clone and Copy impl headers,
+  and bodies that copy and store whole arrays;
+- five accepted clients and four opponents (E0308 three times, E0382);
+- generated controls: list, repeat, element-pattern, unsizing and indexing
+  fences, the older-profile gate and scaling, beside forged terms, slots,
+  elements and codec rows.
+
+The indexing control's text is frozen as observed after one approved probe.
+The `crate_linking::whole_arrays` integration controls consume it, and the
+`dense_lengths` validation invariant reads its provider.
+
 `reified-item-outcomes.json` freezes the reification packet under
 `spec/reified-items/`. Its provider bodies return fn items reified to closed
 Rust fn pointers, and its clients call those pointers. The packet holds:

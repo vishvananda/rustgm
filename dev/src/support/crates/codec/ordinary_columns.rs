@@ -271,7 +271,14 @@ fn encode_profile(
     write(out, &rows.slots, owner_rows::slot_write)?;
     write(out, &rows.scopes, owner_rows::scope_write)?;
     write(out, &rows.binders, owner_rows::binder_write)?;
-    recipe_columns::types_write(out, &rows.types, rows.pattern_ranges())?;
+    recipe_columns::types_write(
+        out,
+        &rows.types,
+        &recipe_columns::TypeColumns {
+            ranges: rows.pattern_ranges(),
+            lengths: rows.array_lengths(),
+        },
+    )?;
     write_copy(out, &rows.roots, recipe_columns::root_write)?;
     write(out, &rows.regions, recipe_columns::region_write)?;
     recipe_columns::arguments_write(out, &rows.arguments, rows.consts())?;
@@ -415,7 +422,7 @@ fn decode_profile_with(
         base,
         profile,
     };
-    let mut ranges = Vec::new();
+    let mut tables = recipe_columns::TypeTables::default();
     let mut diagnostics = Vec::new();
     let mut consts = Vec::new();
     let mut rows = s::SourceRows {
@@ -438,7 +445,7 @@ fn decode_profile_with(
         scopes: read.list(crates::MAX_COMPONENTS, 17, owner_rows::scope_read)?,
         binders: read.list(crates::MAX_COMPONENTS, 10, owner_rows::binder_read)?,
         types: read.list(crates::MAX_COMPONENTS, 2, |read| {
-            recipe_columns::type_read(read, &mut ranges)
+            recipe_columns::type_read(read, &mut tables)
         })?,
         roots: read.list(crates::MAX_COMPONENTS, 4, recipe_columns::root_read)?,
         regions: read.list(crates::MAX_COMPONENTS, 1, recipe_columns::region_read)?,
@@ -482,9 +489,14 @@ fn decode_profile_with(
             Vec::new()
         },
     };
-    if !ranges.is_empty() || !diagnostics.is_empty() || !consts.is_empty() {
+    if !tables.ranges.is_empty()
+        || !tables.lengths.is_empty()
+        || !diagnostics.is_empty()
+        || !consts.is_empty()
+    {
         let cold = read.cold(&mut rows)?;
-        cold.pattern_ranges = ranges;
+        cold.pattern_ranges = tables.ranges;
+        cold.array_lengths = tables.lengths;
         cold.diagnostics = diagnostics;
         cold.consts = consts;
     }

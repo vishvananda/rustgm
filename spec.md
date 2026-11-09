@@ -6689,7 +6689,8 @@ A version-thirteen type recipe may also be a raw pointer or a slice.
   has no region, and its pointee may be unsized: `str`, a slice, or a
   `?Sized` parameter.
 - Tag 13 is `[u8 13][id element]`: the unsized `[T]`.
-- Tags 14 and 15 are reserved for arrays and `dyn` trait objects.
+- Tag 14 is an array, described below. Tag 15 is reserved for `dyn` trait
+  objects.
 
 No sizedness travels. Validation rejects a slice whose element row is `str`
 or a slice. A fresh consumer interns each row in its own store and proves a
@@ -6700,6 +6701,27 @@ Signature comparison follows a pointer's or slice's child and requires equal
 pointer mutability. Older profiles reject both forms by name ("source type
 form requires an explicitly supported transport row"), and packets without
 them keep their exact bytes.
+
+A version-thirteen type recipe may also be an array (tag 14):
+`[u8 14][id element][term length]`. The length is K's const term written in
+place: `[u8 0][id ty][u128 bits]` for a value or `[u8 1][id slot]` for a
+const parameter. Any other term tag is rejected ("unknown source const
+term"). The reader appends each term to a dense cold column in type-row
+order, so the row stays 20 bytes. A value's type must be the usize row and
+its bits canonical for usize. A slot must name a usize const parameter.
+Validation rejects an element row that is `str` or a slice. No sizedness
+travels: a fresh consumer proves the element sized from its own facts. It
+folds a value length to its own `[T; N]` and a slot to an array over its
+const parameter, so each array type has one wire form. Signature comparison
+follows the element and requires equal lengths. Version thirteen moves whole
+array values: signatures, fields, locals, reads, stores and copies, and impl
+headers over `[T; N]`. Element access keeps its fences by name: list and
+repeat rvalues ("source rvalue requires a complete wider transport row"),
+element patterns' constant-index projections ("source projection transport
+requires its wider explicit contract"), and unsizing and indexing, which
+stop before export without `CoerceUnsized` or `Index` declarations. Older
+profiles keep the type-form rejection, and packets without arrays keep their
+exact bytes.
 
 A version-thirteen struct header may also be `#[repr(transparent)]`. The
 nominal header's representation byte, its last, gains 2 = Transparent beside

@@ -56,6 +56,10 @@ impl Builder<'_, '_> {
                 | s::Type::RawPointer { pointee: child, .. }
                 | s::Type::Slice(child)
                 | s::Type::Pattern { base: child, .. } => self.push_type(child, work)?,
+                s::Type::Array { element, length } => {
+                    self.push_term(rows.array_lengths().get(length.0 as usize), work)?;
+                    self.push_type(element, work)?;
+                }
                 s::Type::Tuple(elements) => {
                     for &element in elements.slice(&rows.roots)?.iter().rev() {
                         self.push_type(element, work)?;
@@ -118,11 +122,22 @@ impl Builder<'_, '_> {
     ) -> Result<(), &'static str> {
         match argument {
             s::Argument::Type(ty) => self.push_type(ty, work),
-            s::Argument::Const(term) => match self.headers.rows().consts().get(term.0 as usize) {
-                Some(&s::ConstTerm::Value(value)) => self.push_type(value.ty, work),
-                _ => Ok(()),
-            },
+            s::Argument::Const(term) => {
+                self.push_term(self.headers.rows().consts().get(term.0 as usize), work)
+            }
             s::Argument::Region(_) => Ok(()),
+        }
+    }
+    /// A const value's type row precedes it; a slot or an absent term
+    /// depends on no row, and its finisher names the gap.
+    fn push_term(
+        &mut self,
+        term: Option<&s::ConstTerm>,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        match term {
+            Some(&s::ConstTerm::Value(value)) => self.push_type(value.ty, work),
+            _ => Ok(()),
         }
     }
     pub(super) fn finish(&self, node: usize, work: &mut Work) -> Result<Summary, &'static str> {
@@ -180,6 +195,7 @@ impl Builder<'_, '_> {
             s::Type::Pattern { base, constraint } => {
                 self.pattern_summary(base, constraint, work)?
             }
+            s::Type::Array { element, length } => self.array_summary(element, length, work)?,
             s::Type::Function(signature) => self.signature(signature, work)?,
             s::Type::Tuple(elements) => {
                 let elements = elements.slice(&rows.roots)?;
@@ -240,6 +256,53 @@ impl Builder<'_, '_> {
             }
         }
         self.child(base, work)
+    }
+    /// An array row carries no region. A structurally unsized element is
+    /// rejected here, and every consumer still re-proves the element sized
+    /// from its own facts. The length is a canonical usize value or a usize
+    /// const slot.
+    fn array_summary(
+        &self,
+        element: g::TypeRef,
+        length: s::ArrayLengthRef,
+        work: &mut Work,
+    ) -> Result<Summary, &'static str> {
+        work.charge(1)?;
+        let rows = self.headers.rows();
+        if matches!(
+            rows.types.get(element.0 as usize),
+            Some(s::Type::Str | s::Type::Slice(_))
+        ) {
+            return Err("source array element requires a sized type");
+        }
+        let child = self.child(element, work)?;
+        let usize_row = |ty: g::TypeRef| {
+            matches!(
+                rows.types.get(ty.0 as usize),
+                Some(s::Type::Scalar(Scalar::Usize))
+            )
+        };
+        let length = match rows.array_lengths().get(length.0 as usize) {
+            Some(&s::ConstTerm::Value(value)) => {
+                self.child(value.ty, work)?;
+                if !usize_row(value.ty) {
+                    return Err("source array length term is not usize");
+                }
+                crate::support::crates::generics::source::const_value(&rows.types, value)?;
+                Summary::default()
+            }
+            Some(&s::ConstTerm::Parameter(slot)) => match rows.slots.get(slot.0 as usize) {
+                Some(row) if matches!(row.kind, s::ParameterKind::Const { ty } if usize_row(ty)) => {
+                    Summary {
+                        parameter: Some(slot),
+                        ..Summary::default()
+                    }
+                }
+                _ => return Err("source array length slot is not a usize const parameter"),
+            },
+            None => return Err("source array type has no length row"),
+        };
+        self.merge(child, length, work)
     }
     fn nominal_summary(
         &self,

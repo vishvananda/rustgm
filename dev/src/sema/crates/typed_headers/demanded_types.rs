@@ -561,6 +561,9 @@ impl<M: Storage> Worklist<M> {
             s::Type::Pattern { base, constraint } => {
                 return self.pattern(port, store, base, constraint, budget);
             }
+            s::Type::Array { element, length } => {
+                array(port, store, self.child(element)?, length, budget)?
+            }
             s::Type::Function(signature) => {
                 signature_shapes::check(port.rows(), None, signature)?;
                 let frame = port.rows().binders[signature.binder.0 as usize];
@@ -808,6 +811,7 @@ fn next(
         }
         | s::Type::RawPointer { pointee: child, .. }
         | s::Type::Slice(child)
+        | s::Type::Array { element: child, .. }
         | s::Type::Pattern { base: child, .. } => (cursor == 0).then_some(child),
         s::Type::Tuple(elements) => elements
             .slice(&rows.roots)
@@ -927,6 +931,53 @@ pub(super) fn const_argument<'rows, B: Budget, P: Port<'rows, B>>(
         },
         None => Err(error("source const argument has no term row")),
     }
+}
+/// Version thirteen: an array over its completed element, whose sizedness
+/// comes from this consumer's own structural facts, never from the wire. A
+/// value length is a canonical usize and folds to `Kind::Array`; a slot length
+/// is this consumer's own usize const argument, which the store folds again
+/// when the slot is concrete.
+fn array<'rows, B: Budget, P: Port<'rows, B>>(
+    port: &mut P,
+    store: &mut Store,
+    element: TypeId,
+    length: s::ArrayLengthRef,
+    budget: &mut B,
+) -> Result<Kind, Error> {
+    budget.charge(1)?;
+    if store.is_sized(element) != Some(true) {
+        return Err(error("source array element requires a sized type"));
+    }
+    let rows = port.rows();
+    let term = rows
+        .array_lengths()
+        .get(length.0 as usize)
+        .copied()
+        .ok_or_else(|| error("source array type has no length row"))?;
+    Ok(match term {
+        s::ConstTerm::Value(value) => {
+            if !matches!(
+                rows.types.get(value.ty.0 as usize),
+                Some(s::Type::Scalar(crate::support::crates::Scalar::Usize))
+            ) {
+                return Err(error("source array length term is not usize"));
+            }
+            s::const_value(&rows.types, value).map_err(error)?;
+            Kind::Array {
+                element,
+                length: u64::try_from(value.bits)
+                    .map_err(|_| error("array length exceeds target usize"))?,
+            }
+        }
+        s::ConstTerm::Parameter(slot) => match port.slot(store, slot, budget)? {
+            Argument::Const(length) => Kind::ArrayTerm { element, length },
+            _ => {
+                return Err(error(
+                    "source array length slot is not a usize const parameter",
+                ));
+            }
+        },
+    })
 }
 /// Closed leaf rows need neither the port nor a store entry.
 fn leaf(row: s::Type) -> Result<Demand<TypeId>, Error> {

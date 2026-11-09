@@ -5,6 +5,30 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane D [B2 T, array type rows](parallel/array-type-rows.md) exports whole
+`[T; N]` values under version 13 as type recipe tag 14, `14 | element |
+term`, with K's const term in place and a dense cold length column. Each
+consumer proves the element sized from its own facts, and folds a value
+length to its own array and a slot to an array over its const parameter.
+
+- Five clients exit 42 natively: array values and `[u8; 0]`, a generic
+  `pass<T, const N: usize>`, record, tuple-struct and nested-array fields, a
+  const-generic record, and whole-array copies and stores through the
+  imported `[T; N]` Clone and Copy headers. Four opponents fail as their
+  local twins do.
+- Boundary (ruling c): T owns array types and whole-value Read, Store and
+  copy. List and repeat rvalues, element patterns, unsizing and indexing
+  keep their fences by name, and stay with Lane C's arrays item with
+  `CoerceUnsized` and core's `array/mod.rs` impls.
+- Failed prediction: rustc 1.98.0 rejects the declared indexing control with
+  E0608 without an `Index` item, so both compilers stop it before export.
+  RustGM's text was frozen as observed on T's first build.
+- Older profiles keep the type-form text, the comment-fence reader rejects
+  tag 14 by name, forged lengths, slots and elements fail by name, and
+  existing v13 packets are byte-identical.
+- Open: S, then F. The stream witness still stops at `__m128`'s
+  `repr(simd)`.
+
 Lane C [scheduling-context fence](parallel/scheduling-context.md) removes
 "implementation validation has no source scheduling context" for imported
 headers. A source client with no source core, outside selected mode, now

@@ -67,6 +67,7 @@ impl Columns {
             || !cold.pattern_ranges.is_empty()
             || !cold.diagnostics.is_empty()
             || !cold.consts.is_empty()
+            || !cold.array_lengths.is_empty()
             || !cold.constants.is_empty())
         .then(|| {
             Box::new(super::super::ColdColumns {
@@ -75,6 +76,7 @@ impl Columns {
                 pattern_ranges: cold.pattern_ranges.clone(),
                 diagnostics: cold.diagnostics.clone(),
                 consts: cold.consts.clone(),
+                array_lengths: cold.array_lengths.clone(),
                 constants: cold.constants.clone(),
                 bodies: None,
             })
@@ -99,6 +101,10 @@ impl Columns {
     #[must_use]
     pub fn consts(&self) -> &[super::super::ConstTerm] {
         &self.cold().consts
+    }
+    #[must_use]
+    pub fn array_lengths(&self) -> &[super::super::ConstTerm] {
+        &self.cold().array_lengths
     }
     #[must_use]
     pub fn constants(&self) -> &[super::super::ConstantHeader] {

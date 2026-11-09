@@ -162,6 +162,29 @@ fn same_self(
                 }
                 pending.extend(left.iter().copied().zip(right.iter().copied()));
             }
+            // Version thirteen: the length terms agree exactly; a slot is the
+            // same captured const parameter, as a type parameter is.
+            (
+                s::Type::Array {
+                    element: expected,
+                    length: left,
+                },
+                s::Type::Array {
+                    element: actual,
+                    length: right,
+                },
+            ) => {
+                let lengths = rows.array_lengths();
+                let (Some(left), Some(right)) =
+                    (lengths.get(left.0 as usize), lengths.get(right.0 as usize))
+                else {
+                    return Err("source array type has no length row");
+                };
+                if left != right {
+                    return Err(error);
+                }
+                pending.push((expected, actual));
+            }
             _ => return Err(error),
         }
     }

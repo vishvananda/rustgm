@@ -74,6 +74,12 @@ pub(super) enum Node {
     /// Version thirteen: the unsized `[T]`; its element's sizedness is
     /// re-proved by every consumer.
     Slice(NodeId),
+    /// Version thirteen: `[T; N]` over its element and its length's
+    /// `ConstValue` or const `Parameter` node.
+    Array {
+        element: NodeId,
+        length: NodeId,
+    },
     /// Version thirteen: a pattern over a raw pointer or concrete scalar
     /// base. Signature matching compares range constraints by value.
     Pattern {
@@ -338,6 +344,17 @@ impl Arena {
             }
             Node::Slice(element) => {
                 let mut facts = self.facts_of(element, work)?;
+                if matches!(self.nodes.get(element.0 as usize), Some(Node::Parameter(_))) {
+                    facts.0 &= !NodeFacts::FORMED;
+                }
+                facts
+            }
+            // `[T; N]` needs `T: Sized` as `[T]` does; its length adds no
+            // formation condition.
+            Node::Array { element, length } => {
+                let mut facts = self
+                    .facts_of(element, work)?
+                    .combine(self.facts_of(length, work)?);
                 if matches!(self.nodes.get(element.0 as usize), Some(Node::Parameter(_))) {
                     facts.0 &= !NodeFacts::FORMED;
                 }

@@ -23,7 +23,7 @@ commit.
   `str`, a slice, or a `?Sized` parameter.
 - **Tag 13, `Slice`:** `[u8 13][id element]`.
 - **Reserved:** tag 14 for arrays and tag 15 for `dyn` trait objects. Neither
-  is used.
+  was used here. Tag 14 is now the [array row](array-type-rows.md).
 
 Both tags are read only under `body_nodes()`. The exporter emits them only
 under `body_nodes()` (`recipe_emission::type_row`). Older profiles keep

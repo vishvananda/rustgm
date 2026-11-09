@@ -21,6 +21,12 @@ enum Recipe {
         child: Key,
     },
     Slice(Key),
+    /// Version thirteen: `[T; N]` follows its element child; its length is a
+    /// term, not a type child.
+    Array {
+        child: Key,
+        length: s::ArrayLengthRef,
+    },
     /// Version thirteen: a pattern follows its one base child.
     Pattern {
         constraint: s::PatternConstraint,
@@ -76,6 +82,7 @@ impl Arena {
                         | Recipe::Reference { child, .. }
                         | Recipe::Pointer { child, .. }
                         | Recipe::Slice(child)
+                        | Recipe::Array { child, .. }
                         | Recipe::Pattern { child, .. } => {
                             self.push(pending, Task::Enter(child), work)?;
                         }
@@ -111,23 +118,12 @@ impl Arena {
                         Recipe::Leaf(node) => self.intern(node, work)?,
                         Recipe::Existing(node) => node,
                         Recipe::Alias(child) => self.child(child, work)?,
-                        Recipe::Reference {
-                            mutable,
-                            region,
-                            child,
-                        } => {
-                            let referent = self.child(child, work)?;
-                            self.intern(
-                                Node::Reference {
-                                    mutable,
-                                    region,
-                                    referent,
-                                },
-                                work,
-                            )?
-                        }
-                        Recipe::Pointer { .. } | Recipe::Slice(_) | Recipe::Pattern { .. } => {
-                            self.single_child(recipe, work)?
+                        Recipe::Reference { .. }
+                        | Recipe::Pointer { .. }
+                        | Recipe::Slice(_)
+                        | Recipe::Array { .. }
+                        | Recipe::Pattern { .. } => {
+                            self.single_child(domains, key, recipe, work)?
                         }
                         Recipe::Nominal(declaration, arguments) => {
                             let regions = Regions::of(declaration);
@@ -223,12 +219,24 @@ impl Arena {
         rewrite: Rewrite,
         work: &mut Work,
     ) -> Result<NodeId, &'static str> {
-        work.charge(1)?;
-        let rows = domains.headers.rows();
-        let term = *rows
+        let term = *domains
+            .headers
+            .rows()
             .consts()
             .get(term.0 as usize)
             .ok_or("source const argument has no term row")?;
+        self.term_node(domains, term, rewrite, work)
+    }
+    /// A const argument's or an array length's term node.
+    fn term_node(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        term: s::ConstTerm,
+        rewrite: Rewrite,
+        work: &mut Work,
+    ) -> Result<NodeId, &'static str> {
+        work.charge(1)?;
+        let rows = domains.headers.rows();
         let slot = match term {
             s::ConstTerm::Value(value) => {
                 let scalar = s::const_value(&rows.types, value)?;
@@ -351,6 +359,10 @@ impl Arena {
                 s::Type::Slice(element) => {
                     Recipe::Slice(uses::key(domains, element, key.rewrite, key.caller, work)?)
                 }
+                s::Type::Array { element, length } => Recipe::Array {
+                    child: uses::key(domains, element, key.rewrite, key.caller, work)?,
+                    length,
+                },
                 s::Type::Pattern { base, constraint } => Recipe::Pattern {
                     constraint,
                     child: uses::key(domains, base, key.rewrite, key.caller, work)?,
@@ -373,15 +385,43 @@ impl Arena {
             },
         )
     }
-    /// Version thirteen's raw pointer, slice and pattern nodes over their one
-    /// completed child.
-    fn single_child(&mut self, recipe: Recipe, work: &mut Work) -> Result<NodeId, &'static str> {
+    /// A reference, raw pointer, slice, array or pattern node over its one
+    /// completed child. An array's length is its term's node under the key's
+    /// rewrite.
+    fn single_child(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        key: Key,
+        recipe: Recipe,
+        work: &mut Work,
+    ) -> Result<NodeId, &'static str> {
         let node = match recipe {
+            Recipe::Reference {
+                mutable,
+                region,
+                child,
+            } => Node::Reference {
+                mutable,
+                region,
+                referent: self.child(child, work)?,
+            },
             Recipe::Pointer { mutable, child } => Node::RawPointer {
                 mutable,
                 pointee: self.child(child, work)?,
             },
             Recipe::Slice(child) => Node::Slice(self.child(child, work)?),
+            Recipe::Array { child, length } => {
+                let term = *domains
+                    .headers
+                    .rows()
+                    .array_lengths()
+                    .get(length.0 as usize)
+                    .ok_or("source array type has no length row")?;
+                Node::Array {
+                    element: self.child(child, work)?,
+                    length: self.term_node(domains, term, key.rewrite, work)?,
+                }
+            }
             Recipe::Pattern { constraint, child } => Node::Pattern {
                 base: self.child(child, work)?,
                 constraint,

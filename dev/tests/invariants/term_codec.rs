@@ -1,6 +1,6 @@
 //! Version thirteen's const rows: declaration tag 12, slot tag 3, argument
-//! tag 2 and its in-place term. Each is admitted only under `body_nodes()`,
-//! and every other term tag is rejected by name.
+//! tag 2 and type tag 14, each with its in-place term. Each is admitted only
+//! under `body_nodes()`, and every other term tag is rejected by name.
 use super::*;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 type Row<T> = std::result::Result<T, &'static str>;
@@ -10,6 +10,8 @@ const _: [(); 20] = [(); size_of::<s::Type>()];
 const _: [(); 8] = [(); size_of::<s::Argument>()];
 const _: [(); 12] = [(); size_of::<s::ParameterKind>()];
 const _: [(); 40] = [(); size_of::<s::ParameterSlot>()];
+// An array's length term lives in its own cold column: one Vec, 24 B.
+const _: [(); 224] = [(); size_of::<s::ColdColumns>()];
 
 const BODIES: s::Profile = s::Profile::Source2024ModuleBodies;
 const BRANCHES: s::Profile = s::Profile::Source2024ModuleBranches;
@@ -45,6 +47,75 @@ fn arguments(bytes: &[u8], profile: s::Profile) -> Row<(Vec<s::Argument>, Vec<s:
         })
     })?;
     Ok((rows, consts))
+}
+fn types(bytes: &[u8], profile: s::Profile) -> Row<(Vec<s::Type>, Vec<s::ConstTerm>)> {
+    let mut tables = recipe_columns::TypeTables::default();
+    let rows = read(bytes, profile, |read| {
+        read.list(crates::MAX_COMPONENTS, 2, |read| {
+            recipe_columns::type_read(read, &mut tables)
+        })
+    })?;
+    if !tables.ranges.is_empty() {
+        return Err("array rows read a pattern range");
+    }
+    Ok((rows, tables.lengths))
+}
+fn types_written(rows: &[s::Type], lengths: &[s::ConstTerm]) -> Result<Vec<u8>> {
+    written(|out| {
+        recipe_columns::types_write(
+            out,
+            rows,
+            &recipe_columns::TypeColumns {
+                ranges: &[],
+                lengths,
+            },
+        )
+    })
+}
+
+#[test]
+fn array_rows_write_their_length_terms_in_place_and_read_them_densely() -> Result {
+    let array = |length| s::Type::Array {
+        element: g::TypeRef(7),
+        length: s::ArrayLengthRef(length),
+    };
+    let rows = [array(0), array(1)];
+    let terms = [
+        s::ConstTerm::Value(s::ConstValue {
+            ty: g::TypeRef(3),
+            bits: 4,
+        }),
+        s::ConstTerm::Parameter(s::SlotRef(2)),
+    ];
+    let bytes = types_written(&rows, &terms)?;
+    // The count, then `14 | element | 0 | ty | bits` and `14 | element | 1 | slot`.
+    let mut value = vec![14, 7, 0, 0, 0, 0, 3, 0, 0, 0, 4];
+    value.extend([0; 15]);
+    assert_eq!(bytes[..4], [2, 0, 0, 0]);
+    assert_eq!(bytes[4..30], value[..]);
+    assert_eq!(bytes[30..], [14, 7, 0, 0, 0, 1, 2, 0, 0, 0]);
+    assert_eq!(types(&bytes, BODIES)?, (rows.to_vec(), terms.to_vec()));
+    assert_eq!(
+        types(&bytes, BRANCHES).err(),
+        Some("unknown source function type recipe")
+    );
+    let order = "source array lengths are not in type-row order";
+    for (rows, lengths, message) in [
+        (&rows[..], &terms[..1], order),
+        (&[array(1), array(0)][..], &terms[..], order),
+        (
+            &rows[..1],
+            &terms[..],
+            "source array length has no type row",
+        ),
+    ] {
+        let error = types_written(rows, lengths).err();
+        assert_eq!(
+            error.map(|error| error.to_string()),
+            Some(message.to_owned())
+        );
+    }
+    Ok(())
 }
 
 #[test]

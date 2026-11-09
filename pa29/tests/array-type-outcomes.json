@@ -1,0 +1,196 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj) with each client object and a C main",
+ "providers": [
+  {
+   "file": "spec/array-types/provider.rs",
+   "sha256": "d6b3e3b7529671d3b45b7a3e0e8f6d572091333f0017aaa04bd42a993cedc467"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "declared": "2026-11-09T09:31:35Z",
+ "development_note": "declared before any rustc run of these files and before any T code. Before declaring, the T baseline, the comment-fence candidate CLI (SHA-256 3960ec9069c910fbb832b580299b2a7c2ec73b45c7af8f47a00569374504c24c, built from 1aa288ad1) made two kinds of pre-T checks, recorded in obj/parallel/array-types/{twins,client-twins}. (1) It exported the provider and the generated controls, giving the `before` texts below. (2) It compiled each client as a client of the pointer-slices provider packet, with the T provider's authored array section moved into the client crate without `pub` and without its two [T; N] impls (they would be orphans there) and without `copied`, which needs them: values, generic, fields and wide ran natively to 42, and wrong-length, wrong-element, moved and wide-length gave the client_shape_twin texts below. No twin of the full provider is possible before T, because the baseline cannot export any array row and a source-core library is checked only through its export",
+ "rule": "integrator-approved B2 slice T under Lane C's T1-T6: version thirteen's type recipe tag 14, `14 | element | term`, with K's const term `0 | ty | bits(16 B LE)` or `1 | slot`, admitted only under body_nodes() and emitted only through recipe_emission::type_row. The term is written in place and read into a dense cold `array_lengths` column in type-row order. A value term's ty is exactly the usize row and its bits are canonical for usize; a slot term names a usize const parameter. A value folds to the consumer's Kind::Array and a slot to Kind::ArrayTerm, so each array type has one wire form. Each consumer proves the element sized from its own facts. T owns whole-value Read, Store and copy of array-typed places; list and repeat rvalues, indexing, element patterns, unsizing, general CoerceUnsized and core's array/mod.rs impls stay with Lane C's arrays item",
+ "cases": [
+  {
+   "file": "spec/array-types/values.rs",
+   "provider": "spec/array-types/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "b6eb53975dec8a4bc640289d03227e30d3fd215847ee78d3286664f44776ad2a",
+   "note": "a [u8; 4] value round-trips through `keep` and a [u8; 0] through `empty`; lane 0 is read through a raw pointer"
+  },
+  {
+   "file": "spec/array-types/generic.rs",
+   "provider": "spec/array-types/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "e773d3453ae2b130eb073711a9d421eed7dc6eff743575e6e8bd1f3bedcff72c",
+   "note": "the imported generic `pass<T, const N: usize>` is instantiated at [u8; 4] and, by turbofish, at [bool; 2]"
+  },
+  {
+   "file": "spec/array-types/fields.rs",
+   "provider": "spec/array-types/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "45b69a02b07a38fb3d5d862d9bdcf54e51acb7d97ea970fcae8aabaa4fe8528d",
+   "note": "a record field ([u8; 4] in `Buf`) and a nested tuple-struct field ([[u8; 2]; 2] in `Grid`, built through its transported constructor) move out whole"
+  },
+  {
+   "file": "spec/array-types/wide.rs",
+   "provider": "spec/array-types/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "fd0db9028054bddbabe7dd0e75a95aa92c9dfdbe7024bc6b499009cad731bbde",
+   "note": "`Wide<T, const N: usize> { items: [T; N] }` is formed at <u8, 2> and <bool, 1>; the client matches `w.items` with array patterns locally"
+  },
+  {
+   "file": "spec/array-types/copies.rs",
+   "provider": "spec/array-types/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "b315a328182b326054e766fb0e89c2a522ad2988a85711c965dd260e9ea286be",
+   "note": "the client reuses a local [u8; 4] after a move and calls `base::Clone::clone` on one, which needs the imported `impl<T: Copy, const N: usize> Copy/Clone for [T; N]` headers; the imported bodies of `copied` (a whole-value copy out of `*a`) and `store` (`*p = a`) run"
+  },
+  {
+   "file": "spec/array-types/wrong-length.rs",
+   "provider": "spec/array-types/provider.rs",
+   "accepted": false,
+   "rustc": "E0308",
+   "candidate_diagnostic": "incompatible types",
+   "client_shape_twin": "incompatible types",
+   "sha256": "9e6d982730f494eae672e158102ff6709c6078b58a59d335b53dfd1abc1c9221",
+   "note": "binds `keep`'s [u8; 4] result to [u8; 3]"
+  },
+  {
+   "file": "spec/array-types/wrong-element.rs",
+   "provider": "spec/array-types/provider.rs",
+   "accepted": false,
+   "rustc": "E0308",
+   "candidate_diagnostic": "incompatible types",
+   "client_shape_twin": "incompatible types",
+   "sha256": "875cd4b38a486e6e35b50e7d90f2da3acb0b6caf788828f879811d123258ac88",
+   "note": "passes [u16; 4] to `keep`"
+  },
+  {
+   "file": "spec/array-types/moved.rs",
+   "provider": "spec/array-types/provider.rs",
+   "accepted": false,
+   "rustc": "E0382",
+   "candidate_diagnostic": "local may be uninitialized or moved at this read",
+   "client_shape_twin": "local may be uninitialized or moved at this read",
+   "sha256": "79939c136509e0c20222eef3995e4156d2d76c4f385a10f2b7b8cab07b776d09",
+   "note": "[Opt<u8>; 1] is not Copy, since the imported Copy impl requires T: Copy"
+  },
+  {
+   "file": "spec/array-types/wide-length.rs",
+   "provider": "spec/array-types/provider.rs",
+   "accepted": false,
+   "rustc": "E0308",
+   "candidate_diagnostic": "incompatible types",
+   "client_shape_twin": "incompatible types",
+   "sha256": "932e46e954fe43f49e403e3638c8f7c4ca0540e848deb8623bbf0e82e62c8437",
+   "note": "binds `wide([42u8, 0])` to Wide<u8, 3>"
+  }
+ ],
+ "export_controls": {
+  "note": "generated providers: lines 1-147 of the provider (the lifetime-nominals foundation), then one control",
+  "provider_v13": {
+   "before": "source type form requires an explicitly supported transport row",
+   "after": "exports; the packet is a plain version [13, 0] core with no macro envelope"
+  },
+  "provider_older_profiles": {
+   "profiles": [
+    "module-branches-v12",
+    "module-nominals-v10"
+   ],
+   "before_and_after": "named, associated or generic alias transport requires its wider profile",
+   "note": "the foundation's aliases stop both older profiles first, as K recorded"
+  },
+  "older_profile_array_gate": {
+   "control": "`spec/source-nominals/provider.rs`, as the transparent-records gate uses, plus `pub fn keep(a: [u8; 4]) -> [u8; 4] { a }`",
+   "older_before_and_after": "source type form requires an explicitly supported transport row",
+   "v13_before": "source type form requires an explicitly supported transport row",
+   "v13_after": "exports"
+  },
+  "list": {
+   "control": "pub fn list(x: u8) -> [u8; 2] { [x, x] }",
+   "rustc": "accepted",
+   "before": "source type form requires an explicitly supported transport row",
+   "after": "source rvalue requires a complete wider transport row"
+  },
+  "repeat": {
+   "control": "pub fn zeros() -> [u8; 4] { [0; 4] }",
+   "rustc": "accepted",
+   "before": "source type form requires an explicitly supported transport row",
+   "after": "source rvalue requires a complete wider transport row"
+  },
+  "element_pattern": {
+   "control": "pub fn head(a: [u8; 4]) -> u8 { let [x, _, _, _] = a; x }",
+   "rustc": "accepted",
+   "before": "source type form requires an explicitly supported transport row",
+   "after": "source projection transport requires its wider explicit contract"
+  },
+  "unsizing": {
+   "control": "pub fn view(a: &[u8; 4]) -> &[u8] { a }",
+   "rustc": "E0308 (the foundation has no Unsize or CoerceUnsized language item)",
+   "before_and_after": "reference unsizing requires its actual source CoerceUnsized declaration",
+   "note": "checked locally, before export"
+  },
+  "index": {
+   "control": "an oracle-only `#[cfg(rustc_oracle)] #[lang = \"panic_bounds_check\"] #[track_caller] fn panic_bounds_check(index: usize, len: usize) -> ! { abort() }`, then `pub fn at(a: [u8; 4], i: usize) -> u8 { a[i] }`",
+   "rustc": "accepted",
+   "before": "source binary operator requires its actual language declaration (observed on the baseline: the foundation declares no Index language item, so the provider stops locally)",
+   "after": "source binary operator requires its actual language declaration",
+   "rustc_failed_prediction": "rustc 1.98.0 rejects the control with E0608, \"cannot index into a value of type `[u8; 4]`\": with no Index language item, rustc indexes nothing, not even an array. The declared `accepted` was wrong and stays recorded. The control is unchanged, so under this foundation both compilers stop runtime indexing before export",
+   "observed": "2026-11-09T09:41Z, by the approved probe and before any other T run: T's first development CLI (SHA-256 5f97486dff97e032e54bc92573d6942b0e4c3d5ad22315f57dc4e50a34c033fd) rejected the control (SHA-256 d55751114bc22b7389d60c519c422c44156edbf520916a9f7d20c0675d101fb1) with this text at `a[i]`, as the baseline did. The foundation declares no Index language item, so the provider stops locally before export. The text is frozen as observed, not predicted (obj/parallel/array-types/index-probe)"
+  }
+ },
+ "forged_rows": {
+  "note": "codec and validation controls on the provider's own packet. Each is rejected by name",
+  "wire": {
+   "anchor": "the one tag-14 row whose value term has bits 4, [u8; 4]: `14 | element | 0 | ty | 04 00..`",
+   "term_tag_2": "unknown source const term",
+   "bits_above_usize_width": "non-canonical source const value",
+   "term_type_is_the_element_u8_row": "source array length term is not usize",
+   "relabelled_v12": "unknown source declaration kind (declaration tag 12 precedes the type table)"
+  },
+  "rows": {
+   "slot_term_names_a_type_slot": "source array length slot is not a usize const parameter",
+   "element_is_the_str_row": "source array element requires a sized type"
+  },
+  "codec": {
+   "tag_14_without_body_nodes": "unknown source function type recipe",
+   "lengths_out_of_type_row_order": "source array lengths are not in type-row order",
+   "length_without_a_type_row": "source array length has no type row"
+  }
+ },
+ "old_readers": {
+  "pre_t_reader": "the T baseline (fence candidate 3960ec90) consuming the T provider packet rejects it with `unknown source function type recipe`: the type table precedes the arguments and the nominal headers"
+ },
+ "byte_identity": "the T baseline and the T candidate publish identical version-thirteen packets for spec/transparent-records, spec/panic-attributes, spec/macro-contexts, spec/const-parameters, spec/pointer-slices and spec/named-constants providers, pa41 spec/asm-transport/provider.rs and the native.rs prelude before `#[repr(simd)]`",
+ "flip_survey": "every pa29 and pa41 provider with a provider.rs, exported by the baseline and the candidate under version 13, and each of its clients: no accepted packet changes a byte, and every reject-to-accept flip is listed by name before integration",
+ "width": "s::Type stays 20 B and the port-plan Node 20 B; ColdColumns gains the one array_lengths Vec (+24 B), pinned with the existing size asserts; each tag-14 row read reserves size_of::<ConstTerm>()",
+ "scaling": "generated providers of the foundation plus 6, 24 and 96 functions `pub fn aNNN(a: [u8; NNN]) -> [u8; NNN] { a }` (three-digit names and lengths): packet bytes grow by the same amount per function, and a fresh client that names no function emits identical LowIR for all three",
+ "stream_witness": {
+  "source": "pa41/tests/spec/asm-native/native.rs before `// Authored observers`",
+  "before_and_after": "source nominal representation requires its wider complete contract"
+ },
+ "oracle": {
+  "observed": "2026-11-09T09:33Z, rustc 1.98.0 (88d9e12ae 2026-08-18), obj/parallel/array-types/rustc, on the committed bytes",
+  "result": "the provider builds; values, generic, fields, wide and copies link with the provider object and exit 42; wrong-length, wrong-element and wide-length fail with E0308 and moved with E0382; the list, repeat and element-pattern controls and the older-profile gate build; unsizing fails with E0308; indexing fails with E0608 (the failed prediction above). Every other declared rustc outcome holds"
+ },
+ "amendments": [
+  {
+   "number": 1,
+   "recorded": "2026-11-09T10:30Z, after the first candidate receipts run and before any base-pin run",
+   "observed": "the T baseline 3960ec90 rejects spec/named-constants/provider.rs under version 13 with \"source declaration kind is outside the initial source profile\" (obj/parallel/array-types/receipts)",
+   "correction": "3960ec90 is the comment-fence candidate built from the fence commit on A (f62db7da9), before its rebase onto 5b-1 (a42f21a01) as 1aa288ad1. It is not built from 1aa288ad1, as development_note says, and it lacks 5b-1. Its pre-T texts above involve no constant and stand. It stays the integrator-approved old-reader pin",
+   "change": "byte_identity and flip_survey compare the T candidate against a base pin built from origin/main 1aa288ad1 itself (obj/parallel/array-types/base), so that 5b-1's packet is compared and every difference is T's. The declared outcomes are unchanged"
+  }
+ ]
+}

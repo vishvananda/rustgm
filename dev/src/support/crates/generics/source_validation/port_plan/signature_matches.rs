@@ -122,6 +122,18 @@ impl Arena {
             (Node::RawPointer { .. } | Node::Slice(_) | Node::Pattern { .. }, _) => {
                 (single_child(domains, nodes)?, None)
             }
+            // Version thirteen: an array compares its element, then its
+            // length's value or const parameter node.
+            (
+                Node::Array {
+                    element: ae,
+                    length: al,
+                },
+                Node::Array {
+                    element: be,
+                    length: bl,
+                },
+            ) => ((ae, be), Some((al, bl))),
             (
                 Node::Nominal {
                     declaration: a,

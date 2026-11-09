@@ -218,6 +218,13 @@ and `opponents/line-comment.rs` join the 16 opponents. `joined.rs` now uses
 `quoted.rs` keeps `//` and `/*` inside a quoted `.ascii` string and lowers.
 `contract.json` records each change with its before and after values.
 
+Amendment (B2 T, [array type rows](parallel/array-type-rows.md)): version 13
+now exports whole array types as type recipe tag 14, with impl headers over
+`[T; N]` like the Clone and Copy impls after `__m128` here. The stream body's
+crate still stops at `__m128`'s `repr(simd)`, before those impls, as declared
+before and after T in `pa29/tests/array-type-outcomes.json`. S's
+representation byte comes next.
+
 ### Qualification
 
 All outcomes except the stream body's publication error were declared in

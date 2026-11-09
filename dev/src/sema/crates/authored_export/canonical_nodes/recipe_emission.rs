@@ -49,11 +49,13 @@ impl Stage {
                     }
                     | Kind::Pointer { pointee: child, .. }
                     | Kind::Slice(child)
+                    | Kind::Array { element: child, .. }
+                    | Kind::ArrayTerm { element: child, .. }
                     | Kind::Pattern { base: child, .. }
                         if matches!(kind, Kind::Reference { .. }) || self.body_nodes() =>
                     {
-                        // A pointer, slice or pattern row, like a reference,
-                        // follows its one completed child.
+                        // A pointer, slice, array or pattern row, like a
+                        // reference, follows its one completed child.
                         self.type_work(&mut pending, Task::Reference(key, context))?;
                         let child = self.type_key(facts, child, context)?;
                         self.type_work(&mut pending, Task::Enter(child, context))?;
@@ -246,6 +248,18 @@ impl Stage {
             Kind::Pattern { base, constraint } if self.body_nodes() => {
                 self.pattern_row(facts, base, constraint, context)?
             }
+            Kind::Array { element, length } if self.body_nodes() => {
+                let element = self.completed_child(facts, element, context)?;
+                let usize = TypeId::primitive(crate::types::Primitive::Usize);
+                let ty = self.ty(facts, usize, context)?;
+                let bits = u128::from(length);
+                self.array_row(element, s::ConstTerm::Value(s::ConstValue { ty, bits }))?
+            }
+            Kind::ArrayTerm { element, length } if self.body_nodes() => {
+                let element = self.completed_child(facts, element, context)?;
+                let term = self.const_term(facts, length, context)?;
+                self.array_row(element, term)?
+            }
             Kind::Primitive(crate::types::Primitive::Str) if self.body_nodes() => s::Type::Str,
             Kind::Never if self.body_nodes() => s::Type::Never,
             Kind::Primitive(_) | Kind::Tuple(_)
@@ -308,8 +322,28 @@ impl Stage {
         })
     }
 
-    /// The single child of a reference, pointer or slice row, which the
-    /// iterative walk completed before its parent.
+    /// Version thirteen: an array row over its completed element. Its length
+    /// term is appended in type-row order, after any row the term's own type
+    /// needed, so the row that follows is the one that names it.
+    fn array_row(
+        &mut self,
+        element: g::TypeRef,
+        length: s::ConstTerm,
+    ) -> Result<s::Type, &'static str> {
+        self.reserve(4 * size_of::<s::ConstTerm>())?;
+        let lengths = &mut self.cold()?.array_lengths;
+        let reference = s::ArrayLengthRef(
+            u32::try_from(lengths.len()).map_err(|_| "source array length overflow")?,
+        );
+        lengths.push(length);
+        Ok(s::Type::Array {
+            element,
+            length: reference,
+        })
+    }
+
+    /// The single child of a reference, pointer, slice or array row, which
+    /// the iterative walk completed before its parent.
     fn completed_child(
         &mut self,
         facts: &Declarations,

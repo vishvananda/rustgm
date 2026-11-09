@@ -239,6 +239,13 @@ pub enum Type {
     /// Version thirteen: the unsized slice `[T]`, reachable only behind a
     /// reference or pointer recipe. Each consumer proves its element sized.
     Slice(TypeRef),
+    /// Version thirteen: `[T; N]`. Its length term is held out of line in
+    /// [`ColdColumns::array_lengths`], so a type row stays small. Each
+    /// consumer proves the element sized from its own facts.
+    Array {
+        element: TypeRef,
+        length: ArrayLengthRef,
+    },
     /// Version thirteen: a pattern type over `base`. Each consumer re-proves
     /// the constraint against its own base; no layout or niche fact travels.
     Pattern {
@@ -257,6 +264,9 @@ pub enum PatternConstraint {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct PatternRangeRef(pub u32);
+/// An array type row's length term in [`ColdColumns::array_lengths`].
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct ArrayLengthRef(pub u32);
 /// A canonical inclusive interval in raw target-width bits. A signed interval
 /// whose start follows its end in value order wraps through the base's
 /// maximum, as a connected `A | B` alternative does.
@@ -554,6 +564,8 @@ pub struct ColdColumns {
     pub diagnostics: Vec<DiagnosticBinding>,
     /// Version thirteen: each const argument's term, in argument-row order.
     pub consts: Vec<ConstTerm>,
+    /// Version thirteen: each array type row's length term, in type-row order.
+    pub array_lengths: Vec<ConstTerm>,
     /// Version thirteen: one header row per constant declaration, in
     /// declaration order. Each row holds its own term in place.
     pub constants: Vec<ConstantHeader>,
@@ -569,6 +581,7 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
     pattern_ranges: Vec::new(),
     diagnostics: Vec::new(),
     consts: Vec::new(),
+    array_lengths: Vec::new(),
     constants: Vec::new(),
     bodies: None,
 };
@@ -583,6 +596,7 @@ impl ColdColumns {
             && self.pattern_ranges.is_empty()
             && self.diagnostics.is_empty()
             && self.consts.is_empty()
+            && self.array_lengths.is_empty()
             && self.constants.is_empty()
             && self.bodies.is_none()
     }
@@ -611,6 +625,10 @@ impl Rows {
     #[must_use]
     pub fn consts(&self) -> &[ConstTerm] {
         &self.cold().consts
+    }
+    #[must_use]
+    pub fn array_lengths(&self) -> &[ConstTerm] {
+        &self.cold().array_lengths
     }
     #[must_use]
     pub fn constants(&self) -> &[ConstantHeader] {

@@ -11,6 +11,9 @@ use crate::{
     },
 };
 
+#[path = "dense_lengths.rs"]
+mod dense_lengths;
+
 const PROVIDER: &str = "pa29/tests/spec/const-parameters/provider.rs";
 const NON_CANONICAL: &str = "non-canonical source const value";
 type Mutation = fn(&mut s::SourceRows) -> Option<()>;

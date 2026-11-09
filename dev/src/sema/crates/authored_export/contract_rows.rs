@@ -248,9 +248,9 @@ impl Stage {
         self.argument_rows(facts, actual, context)
     }
 
-    /// A const argument's term: an evaluated value of a primitive const
-    /// parameter type, or the rigid const parameter's own slot.
-    fn const_term(
+    /// A const argument's or array length's term: an evaluated value of a
+    /// primitive const parameter type, or the rigid const parameter's own slot.
+    pub(super) fn const_term(
         &mut self,
         facts: &Declarations,
         term: crate::types::arguments::ConstId,
