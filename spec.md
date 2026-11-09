@@ -2092,6 +2092,16 @@ one. The [const supertrait controls](pa31/tests/spec/const-supertrait-requiremen
 record independent outcomes; they include core's const callable reference
 impls through the callable sugar controls.
 
+Method lookup ignores constness, as rustc 1.98's probe does. A method of a
+const trait resolves through an ordinary impl or an ordinary premise: the
+trait's `[const]` supertraits are lookup conditions only as their ordinary
+bounds, and a `[const]` supertrait and its elaborated ordinary bound are one
+condition. The chosen callable still proves its complete clause under the
+use's effect, so the same call in a const context through an ordinary impl
+or premise is rejected, and two applicable trait methods are ambiguous. The
+[const supertrait lookup controls](pa31/tests/spec/const-supertrait-lookup/README.md)
+record independent outcomes for core's `<*const VTable>::cmp` shape.
+
 A trait object, like a slice or str, has no fixed layout. The crate-wide layout
 pass demands no static layout for a declaration whose last field is, or ends
 in, a trait object, as rustc 1.98 accepts such declarations; any other unsized

@@ -765,6 +765,17 @@ beside an ordinary supertrait impl, an ordinary premise and a `const` premise
 that do not satisfy it (E0277). Each outcome was declared before its rustc
 1.98.0 oracle. A private invariant checks them; there is no graded manifest.
 
+`spec/const-supertrait-lookup/` freezes twenty-two declared no_core controls
+from census batch 20: a method of `const trait Cmp` with `[const]`
+supertraits, called through a non-const impl or an ordinary `T: Cmp`
+premise in the type-qualified and method-call forms, as core's
+`<*const VTable>::cmp`, is accepted, beside the plain hierarchy, a plain
+const trait, const impls, `[const]` premises and four binder controls. The
+same calls in a const fn or const item (E0277) and beside a second
+applicable `cmp` (E0034) are rejected. Each outcome was declared before its
+rustc 1.98.0 oracle. A private invariant checks them; there is no graded
+manifest.
+
 `spec/copy-impl-targets/` freezes thirteen declared no_core Copy impl targets
 from census batch 13: core's `impl Copy for !`, scalars, raw pointers and
 arrays, including an array whose element is only Clone, are accepted without

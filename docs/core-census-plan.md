@@ -1427,6 +1427,34 @@ and Lane C's [lifetime nominals](parallel/lifetime-nominals-transport.md):
       failed prediction; a consistent forgery with its formation input
       reaches the re-proof (outcomes amendment 1).
 
+- **During Lane A's [census batch 20](parallel/census-batch20.md)**,
+  2026-11-09, on main `4df942467`, under the approved notice `2db17f41` and
+  its addendum `79dc69ab`.
+  - **D0** (code reading and eight declared probe rounds): method
+    applicability pushed a `[const]` supertrait as a conditional goal, which
+    an ordinary impl or an ordinary premise cannot prove, so lookup dropped
+    the candidate in both the type-qualified and the method-call form.
+  - **Fix** (option A, gated by grep plus comment): method lookup ignores
+    constness, as rustc 1.98's probe does. `declaration_conditions` maps a
+    `[const]` condition to its ordinary bound; the chosen callable still
+    proves its complete clause under the use's effect. **A-dedupe**
+    (amendment 2, after the declared work invariant failed in `fc-1`): of a
+    `[const]` condition and its equal elaborated ordinary bound, lookup
+    keeps the first, at most P·M canonical steps. A `[const]` hierarchy then
+    pays exactly its plain twin's probes and steps, and with no `[const]`
+    condition all 26 work counters equal the base's.
+  - **Controls:** 22 declared PA31 controls agree with rustc 1.98.0, with
+    four flips to accept and two E0034 accepts-invalid repairs. The flip
+    survey over 3,299 committed `[const]` inputs changed none of them.
+  - **Census 23** (pin `93fb6b89`): 42,310 declarations, none failed or
+    blocked, one record. Record 1 at `ptr/metadata.rs:251` is gone. The
+    crate record is `local_annotations` at `array/mod.rs:643`, in
+    `<[T; N]>::try_map`: `drain::Drain::new(&mut me, &mut f)` reports
+    "quantified clause requires a scoped consumer". It is batch 21's lead.
+  - **Tracked:** the std-mode E0034 accepts-invalid, the std-mode raw
+    pointer comparison rejects-valid, and b1's `[const]` placement
+    accepts-invalid (library-build-blockers.md).
+
 ## Lanes
 
 | Lane | Worktree | Work | Exit |

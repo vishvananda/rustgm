@@ -1,0 +1,176 @@
+{
+ "schema": 1,
+ "declared": "2026-11-09, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run of them, in obj/parallel/census-batch20/fixtures/declared.txt (sha256 85b8ab985c40b39c156764dd068abb263b20930bef397765d80705fa917d413e). The shapes reduce census 22's crate record \"no applicable trait method for this prefix\" at core's `<*const VTable>::cmp(&self.vtable_ptr(), &other.vtable_ptr())` (library/core/src/ptr/metadata.rs:251), a call of a method of `const trait Ord: [const] Eq + [const] PartialOrd<Self> + PointeeSized` (cmp.rs:982) through the non-const `impl<T: PointeeSized> Ord for *const T`. Exploration probes with other bytes were run first: obj/parallel/census-batch20/probes/r1 to r8, each declared before its run, with the census 22 pin and rustc 1.98.0. Each outcome follows the rule observed in those rustc runs: method lookup ignores constness, so the method resolves through an ordinary impl or an ordinary `T: Cmp` premise, a `[const]` supertrait of its trait is required only when the call is in a const context, where an ordinary impl or premise does not satisfy it (E0277), and two applicable trait methods are ambiguous (E0034)",
+ "declaration_sha256": "f94ec580d35c4b15b28e9a5905662b4ee5eb3af8e4f8024790399b1be77bb929",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+ "amendments": [],
+ "cases": {
+  "ord-qualified.rs": {
+   "sha256": "62eb7cff9ac587ce04bf1617aedef777134b762022e6e1e66a92b835a388c08a",
+   "declared": 0,
+   "reason": "record 1's shape: `<*const V>::cmp(&a, &b)` in a non-const fn, of `const trait Cmp: [const] EqL + [const] PartialOrdL<Self>` through non-const impls for `*const T`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "ord-method.rs": {
+   "sha256": "6ae9b182dc2891c0d674cf0717bf81e8d98a7f7d2364b3399042b78b5b339756",
+   "declared": 0,
+   "reason": "the method-call form `a.cmp(&b)` of the same call",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "generic-qualified.rs": {
+   "sha256": "0b8038ed420ac731ceea2a65433742c449af6407ab85bb204f21fc2fc06d0dda",
+   "declared": 0,
+   "reason": "`T::cmp(a, b)` in `fn g<T: Cmp>`; the ordinary premise elaborates to ordinary supertraits, which a non-const call needs",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "generic-method.rs": {
+   "sha256": "0c14df296b4f29db791679038474f5e84ae28e989e980f93f2902ebf5db8dd90",
+   "declared": 0,
+   "reason": "the method-call form `a.cmp(b)` under `T: Cmp`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "plain-ord-qualified.rs": {
+   "sha256": "27a4ed96d2f55355132a0a481b4c181102ed4ebcf06b83ebe297719cfc5cd9ca",
+   "declared": 0,
+   "reason": "control: the same hierarchy as non-const traits with plain supertraits",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "plain-ord-method.rs": {
+   "sha256": "f1cccbd9ed6dffdcb7fb64829224e15df36c1259771724fc815b799114152502",
+   "declared": 0,
+   "reason": "control: its method-call form",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "simple-qualified.rs": {
+   "sha256": "4b5ed9ab74e893e76b038574447c2fb03257dd87d04bc467175a63ee7aba7b07",
+   "declared": 0,
+   "reason": "control: `const trait Cmp: PointeeSized` without `[const]` supertraits, through a non-const impl",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "simple-method.rs": {
+   "sha256": "f759a0e2ab016510d0e168182df532dc4ec034036491d1d251a45c1c99c8d15b",
+   "declared": 0,
+   "reason": "control: its method-call form",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "const-impls.rs": {
+   "sha256": "23ab99f47d81e3cbf6cf13588bd89abba4ccdda5dd321492f54cf66c33da5891",
+   "declared": 0,
+   "reason": "control: the `[const]` hierarchy with `const impl` for `*const T`, called from a non-const fn",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "const-impls-const-fn.rs": {
+   "sha256": "1191443e4c7ddbb95e2a3115b1f78e0324be0148ff908b1b9ce564170cefd5cb",
+   "declared": 0,
+   "reason": "control: the const impls called from a const fn; each `[const]` supertrait holds through a const impl",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "maybe-const-generic-method.rs": {
+   "sha256": "c37dd8568b8b0c4b32d0041b6446ace31a57a5e12f5a34cfab9f5e8366154803",
+   "declared": 0,
+   "reason": "control: `a.cmp(b)` in `const fn g<T: [const] Cmp>`; the `[const]` premise elaborates to `[const]` supertraits",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "maybe-const-generic-qualified.rs": {
+   "sha256": "67b83f23842f3fc0664f63ddd81c413067f982058fa416f4d3dbe3a22307a41c",
+   "declared": 0,
+   "reason": "control: `T::cmp(a, b)` in the same const fn",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "binder-plain-method.rs": {
+   "sha256": "6577052de36ce926a90d8a26a34bbf9483adeafba4f6f7ed182be12eda8c652c",
+   "declared": 0,
+   "reason": "binder control: a trait method with `F: for<'a> Tr<'a>`, called through a non-const impl",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "binder-const-impl.rs": {
+   "sha256": "e60b3d6ec77100eb1a834d165cb9866278eb11ecd7b90bf2dea60779e60c88d4",
+   "declared": 0,
+   "reason": "binder control: the same with `F: for<'a> [const] Tr<'a>` in a `const impl`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "binder-inherent.rs": {
+   "sha256": "ace4547bb435cee66fa70801e9cb99dc42c250c54d3e71e4788b1a4e7e8a2b3d",
+   "declared": 0,
+   "reason": "binder control: an inherent `const fn m<F>` with `F: for<'a> [const] Tr<'a>`, called by method and by path from non-const fns with a non-const `Tr` impl",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "binder-plain-inherent.rs": {
+   "sha256": "7554a96565253c5d8d18db1ea7918a3828b3fca9d842a692cdc2fe951ea8ba88",
+   "declared": 0,
+   "reason": "binder control: the inherent twin with a non-const fn and `F: for<'a> Tr<'a>`",
+   "rustc_status": 0,
+   "error_codes": []
+  },
+  "ord-const-fn.rs": {
+   "sha256": "3c60025b2e663bef8d131061fc7c9edf946d9fd3540814c6b2a0c0975ce36233",
+   "declared": 1,
+   "reason": "opponent: record 1's call in a const fn; `*const V: [const] Cmp` needs a const impl (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "ord-const-item.rs": {
+   "sha256": "5261f72bc8207a3f3ef0bb876eb914f8d7e72cdbceb5976315d3d46dd904d67e",
+   "declared": 1,
+   "reason": "opponent: the call in a const item initializer; `*const V: const Cmp` needs a const impl (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "generic-const-fn.rs": {
+   "sha256": "c041f400c394b041f3554cf89247d102093dee8dbb6d13f64b0a51f631d53a05",
+   "declared": 1,
+   "reason": "opponent: `a.cmp(b)` in `const fn g<T: Cmp>`; the ordinary premise does not prove `T: [const] Cmp` (E0277)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0277"
+   ]
+  },
+  "ambiguous-ord-seq.rs": {
+   "sha256": "bfd93a9764b1d82d7119a4851d28c83180be6454e9a85bfe59d253a5e68cc790",
+   "declared": 1,
+   "reason": "opponent: the `[const]` hierarchy's `Cmp::cmp` beside a plain `Seq::cmp`, both for `*const T`; `<*const V>::cmp` is ambiguous (E0034)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0034"
+   ]
+  },
+  "ambiguous-ord-seq-method.rs": {
+   "sha256": "0ec5a134e393236e0f76c86f9dc276739060c4dc605d6bd6179cec78186b227d",
+   "declared": 1,
+   "reason": "opponent: its method-call form (E0034)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0034"
+   ]
+  },
+  "ambiguous-plain-seq.rs": {
+   "sha256": "f8a53db54d8ac4e71dc0350d74a4a6321aff3bcfdc0d438e0ca8211aced7a60d",
+   "declared": 1,
+   "reason": "control opponent: the non-const hierarchy's `Cmp::cmp` beside `Seq::cmp` (E0034)",
+   "rustc_status": 1,
+   "error_codes": [
+    "E0034"
+   ]
+  }
+ }
+}

@@ -15,6 +15,9 @@ use crate::{
     },
 };
 use std::sync::Arc;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/supertrait_lookups.rs"]
+mod tests;
 
 pub(super) struct Conditions {
     pub builtins: Vec<(TermId, Bound)>,
@@ -126,6 +129,7 @@ fn declaration_conditions(
     caller: Caller<'_>,
     mut conditions: Conditions,
 ) -> Result<Option<Conditions>, &'static str> {
+    let mut mapped = Vec::new();
     for predicate in facts.generics.predicates_in_scope(owner) {
         if let crate::types::parameters::clauses::Clause::UnstableFeature(id) = predicate.value {
             let work = std::cell::Cell::new(0_usize);
@@ -160,6 +164,62 @@ fn declaration_conditions(
                 | Bound::ProjectionEqual(_)
                 | Bound::Auto(_)
         ) {
+            // Method lookup ignores constness, as rustc 1.98's probe does: a
+            // `[const]` condition is its ordinary bound here, and the chosen
+            // callable proves its complete clause under the use's effect.
+            // prepare is the only caller, for the type-qualified (paths.rs)
+            // and method-call (receiver.rs) lookups.
+            use crate::types::parameters::clauses::Clause;
+            let written = predicate;
+            let predicate = crate::sema::traits::effects::in_context(
+                &mut facts.types,
+                Clause::Predicate(written),
+                crate::support::constness::Constness::Ordinary,
+            )?
+            .ordinary()?;
+            // A trait's `[const]` supertrait is also in scope as its self
+            // bound's elaborated ordinary consequence. Of a `[const]` condition
+            // and an equal ordinary one, lookup keeps the first in scope order;
+            // no other duplicate is compared. Each visit is charged.
+            let conditional = matches!(written.bound, Bound::MaybeConstTrait(_));
+            let mut steps = 0_usize;
+            let twin = if conditional {
+                facts
+                    .generics
+                    .predicates_in_scope(owner)
+                    .take_while(|earlier| {
+                        steps += 1;
+                        earlier.value != Clause::Predicate(written)
+                    })
+                    .any(|earlier| earlier.value == Clause::Predicate(predicate))
+            } else if matches!(predicate.bound, Bound::Trait(_)) {
+                steps = mapped.len();
+                mapped.contains(&predicate)
+            } else {
+                false
+            };
+            facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
+            #[cfg(test)]
+            crate::sema::copy_trace::record(|| {
+                let (size, maybe) = facts.generics.predicates_in_scope(owner).fold(
+                    (0_usize, 0_usize),
+                    |(size, maybe), located| {
+                        let bound = located.value.ordinary().map(|p| p.bound);
+                        let found = matches!(bound, Ok(Bound::MaybeConstTrait(_)));
+                        (size + 1, maybe + usize::from(found))
+                    },
+                );
+                format!(
+                    "supertrait-lookup scope={size} conditional={maybe} charge={steps} kept={} {predicate:?}",
+                    !twin
+                )
+            });
+            if twin {
+                continue;
+            }
+            if conditional {
+                mapped.push(predicate);
+            }
             conditions.traits.push(
                 context
                     .instantiate_predicate(&mut facts.types, predicate, substitution)

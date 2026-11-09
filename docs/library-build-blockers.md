@@ -5,6 +5,39 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 20](parallel/census-batch20.md) repairs census 22's
+record. It was qualified and censused on main `4df942467`. Census 23
+(`93fb6b89`) checks 42,310 declarations, with none failed or blocked, and
+has one record. The crate record is `local_annotations` at
+`array/mod.rs:643`, in `<[T; N]>::try_map`: `drain::Drain::new(&mut me,
+&mut f)` reports "quantified clause requires a scoped consumer".
+
+- Method lookup now ignores constness, as rustc 1.98's probe does: a
+  `[const]` supertrait is a lookup condition only as its ordinary bound, and
+  equal to its elaborated ordinary bound it is one condition. `:251` passes.
+  Twenty-two PA31 controls were declared before the rustc 1.98.0 oracle;
+  all agree, four flip to accept and two `[const]` ambiguity
+  accepts-invalids are now E0034-shaped rejections.
+- Tracked accepts-invalid (std mode, census batch 20 probes `s6` to `s8`):
+  a user trait method named like a prelude comparison method does not
+  compete with the prelude's method. `<u8>::cmp(&a, &b)` and
+  `<*const V>::cmp(&a, &b)`, and the method-call form `a.cmp(&b)`, with a
+  user `trait Cmp { fn cmp(&self, other: &Self) -> u8; }` implemented for
+  the type, compile in std mode, where rustc 1.98.0 reports E0034. The root
+  is the std prelude model's method candidates, not method applicability:
+  batch 20's fix does not change it, and its source-core twin is now
+  rejected.
+- Tracked rejects-valid (std mode, probes `s2` to `s5`): the std prelude
+  model offers no comparison impls for raw pointers. `<*const u8>::cmp`,
+  `a.cmp(&b)`, `Ord::cmp(&a, &b)` and `<*const u8>::eq` on `*const u8` are
+  rejected, where rustc 1.98.0 accepts them. std needs them.
+- Tracked accepts-invalid (probe `b1`): a `[const]` bound in the where
+  clause of a method of a non-const impl, such as
+  `F: for<'a> [const] Tr<'a>`, is accepted, where rustc 1.98.0 rejects it
+  ("`[const]` is not allowed here"). The root is `[const]` placement
+  checking, not method lookup.
+- Census 23's record 1 is batch 21's lead.
+
 Lane D [B2 F, target-feature rows](parallel/target-feature-rows.md)
 carries a free `unsafe fn`'s declared target features under version 13 as
 function header bit 3. No closure or table index travels: each consumer
