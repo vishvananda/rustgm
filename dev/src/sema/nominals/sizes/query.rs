@@ -1,11 +1,7 @@
 //! One caller retains its size proof frontier across missing field declarations.
 use super::{Declarations, Environment, ItemId, Kind, TypeId, assumed, prepare};
 use crate::support::hash::{HashMap, HashSet};
-use crate::types::{
-    Primitive,
-    parameters::environment::BuiltinQuery,
-    sizedness::{Condition, Rule},
-};
+use crate::types::{Primitive, Store, parameters::environment::BuiltinQuery, sizedness::Condition};
 use std::sync::Arc;
 
 pub(in crate::sema) enum Progress {
@@ -79,7 +75,8 @@ impl Query {
                     let normalized = normalize(facts, ty)?;
                     self.projection = None;
                     if normalized == ty {
-                        self.known(ty, facts.types.is_sized(ty) == Some(true));
+                        let sized = self.rigid_sized(&facts.types, ty)?;
+                        self.known(ty, sized);
                     } else {
                         self.tail(ty, normalized)?;
                     }
@@ -192,7 +189,6 @@ impl Query {
         match facts.types.kind(ty).ok_or("invalid nominal size subject")? {
             Kind::Adt(item, arguments) => {
                 if facts.types.nominal_sizes_sealed() {
-                    self.fence(facts.types.nominal_size_rule(item))?;
                     let before = self.conditions.steps();
                     let condition = self.conditions.apply(&mut facts.types, ty)?;
                     self.steps += self.conditions.steps() - before;
@@ -224,7 +220,6 @@ impl Query {
                     .size_rules
                     .as_mut()
                     .ok_or("missing size rules")?;
-                self.fence(pending.rules.get(item))?;
                 let before = pending.rules.steps;
                 let condition = pending.rules.apply(&mut facts.types, item, arguments)?;
                 self.steps += pending.rules.steps - before;
@@ -307,14 +302,27 @@ impl Query {
         }
         Ok(true)
     }
-    /// Under placeholders a projected-size nominal's size needs a nested
-    /// proof with header premises, so it is the named fence, as in the shape
-    /// walk of the negative builtin proof.
-    fn fence(&self, rule: Option<Rule>) -> Result<(), &'static str> {
-        if self.placeholders.is_some() && matches!(rule, Some(Rule::Projection(_))) {
-            return Err(crate::sema::nominals::PLACEHOLDER_SIZE_FENCE);
+    /// A projection or opaque that normalizes to itself is rigid. Without
+    /// placeholders its interned sizedness answers. Under them rustc 1.98's
+    /// `sized_conditions` leaves an alias to the other header's premises and
+    /// its own item bounds: [`Self::placeholder_begin`] already looked this
+    /// type up in the premises before it could become the pending projection,
+    /// so only its declared bound remains, read from its declaration.
+    fn rigid_sized(&self, types: &Store, ty: TypeId) -> Result<bool, &'static str> {
+        if self.placeholders.is_none() {
+            return Ok(types.is_sized(ty) == Some(true));
         }
-        Ok(())
+        match types.kind(ty).ok_or("invalid nominal size subject")? {
+            Kind::Projection(application) => Ok(types
+                .projection_schema(application.item)
+                .ok_or("missing associated type declaration")?
+                .sized),
+            Kind::Opaque(id, _) => Ok(types
+                .opaque_declaration(id)
+                .ok_or("invalid opaque identity")?
+                .sized),
+            _ => Err("rigid nominal size subject is not an alias"),
+        }
     }
     fn condition(&mut self, ty: TypeId, condition: Condition) -> Result<(), &'static str> {
         match condition {

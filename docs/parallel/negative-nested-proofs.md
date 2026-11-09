@@ -264,3 +264,278 @@ amendments, each written before the run it governs.
     clients (2);
   - native negative coherence (1);
   - `pa20` (10).
+
+## 4. The fences retire (checkpoint 3b)
+
+The checkpoint's outcomes were declared in five parts, each written before the
+runs it governs: part 1 before any code, part 2 after the rustc 1.98.0 oracle
+of the fourteen new twins, part 3 after their base runs, part 4 during coding
+before any build, and part 5 after the first runs, before any change they
+suggested. The base is `base3`, the dev-fast CLI of `7acc24208`, and the
+candidate is `cand5`, built from the fixed 3b tree.
+
+### The change
+
+- **Shape walk:** under placeholders, the walk's size request is answered by
+  the proof's trait `State`, through `State::shape_size`, as the premise-less
+  arm already was. If the size proof or the answer fails, `refuse_size`
+  cancels the walk, the proof keeps its shapes and the error is returned, so
+  the interned fallback stays unreachable.
+- **The State a walk starts** takes the walk's own set
+  (`Proof::walk_trait_state`), never the proof's shapes slot, which the walk
+  has emptied. Starting a State is one function, `start_trait_state`, which
+  takes its premises explicitly. See the plumbing gap below.
+- **Size query:** `sizes::Query::fence` is gone. Under placeholders the query
+  applies a projected rule and descends into its tail, which the State's
+  Cursor normalizes under the set.
+- **Rigid aliases (`sizes/query.rs:82`):** a projection or opaque that
+  normalizes to itself is decided by `rigid_sized`. Without placeholders it
+  reads `is_sized`, as before. Under them it reads the alias's declared bound.
+- **Failed size proofs:** under placeholders, `State::shape_size` drops the
+  failed scope's size query and its Cursor before it returns the error, so the
+  next size request in that scope starts afresh (part 4).
+- `PLACEHOLDER_SIZE_FENCE` is removed. `PLACEHOLDER_EQUALITY_FENCE` and
+  `PLACEHOLDER_REINSTALL` stay.
+- **Test-only additions:** a thread-local count of the normalizations that
+  size proofs start, premise-less and under a set; `State::work`;
+  `Proof::trait_state_work`; and `Proof::trait_state_premised`. Part 3
+  assumed that `types` would need an accessor for `infer::Context::steps`.
+  That field is already public, so none was added (part 4).
+
+### The `:82` argument, for test D
+
+No input can make the declared bound differ from the interned bit, so the
+change at `:82` changes how the answer is read, not the answer.
+
+- `projection_properties` (`types/projection.rs:101-104`) sets a projection's
+  Sized property to `projection_schema(item).sized`, and `opaque_properties`
+  (`types/opaque.rs:105`) sets an opaque's to `declaration.sized`.
+  `seal_nominal_sizes` recomputes both from the same declarations.
+- The declarations are immutable: `declare_projection` rejects a conflicting
+  schema, and nothing rewrites an opaque contract.
+- No other bound applies. A placeholder `State`, `Cursor` and `Search` have no
+  environment, so no environment projection promise adds one. rustc's other
+  input for an alias is a `param_env` premise, membership of the alias
+  itself, and `placeholder_begin` decides membership before `:82` is reached.
+
+Test D, `rigid_aliases_decide_their_size_by_premises_and_declared_bounds`,
+reaches `:82` under a set with a normalizer that returns its input. The
+`?Sized` alias is not Sized under the empty set, the implicitly Sized alias is,
+and an alias in the set is Sized without a normalization. For both aliases the
+interned bit equals the declared bound, and the premise-less query gives the
+same answer as the empty set.
+
+### Work bound of the reset
+
+In production a failed size proof ends the negative query, so a scope pays at
+most one failed demand per analysis. Only test C retries on the same proof.
+Every caller on the path returns the error with `?` and none retries:
+
+- `pay_negative`;
+- the Search's builtin proofs and `builtin_requirement`;
+- `overlap::possible`, `iteration` and `inherent`;
+- method overlap (`method_overlap.rs:69`) and conformance overlap
+  (`conformance.rs:137`);
+- `methods/overlap.rs`, which maps the error and returns it.
+
+### The premise plumbing gap (part 5)
+
+The first runs failed five unit predictions and two twins (fastcheck
+`1794237160822701743` and the `cand4` CLI). A trace CLI, never evidence, found
+the cause.
+
+- `Proof::shape_properties` takes `self.shapes` and `term_shapes` out of the
+  proof for the walk. The keep arm then started the trait State lazily, and
+  `trait_state` read its premises from `self.shapes`, which was empty. So the
+  State, its size query, its Cursor, `normal_form` and their Searches all ran
+  without the set.
+- A premise-less nested proof decides a rigid parameter by its declaration.
+  That is how eight of `cand4`'s rejected → accepted files and `P<A>` under the
+  empty set were answered: the leak this item forbids. They agreed with rustc
+  only because each representative's declaration happened to match the other
+  header's premises. None of `cand4`'s observations is evidence.
+- Before 3b the path was unreachable: the keep arm returned the fence before it
+  started a State. Step 2's and 3a's tests checked the State's set with the
+  shapes in place.
+- Section 3's cache audit covered memos and interned reads. It did not ask
+  whether every holder of a set reads it from a slot that can be empty, so it
+  could not find this gap.
+- **Fix:** the State takes its premises explicitly, and the keep arm passes
+  `shapes.placeholders()`. Premise-less proofs are unchanged.
+- **Guard:** every placeholder-set test that starts a State asserts that the
+  State holds a set (`trait_state_premised`): B, C, E and the q2 proofs of
+  test 1.
+- **Set shape:** production puts every Sized premise into the `MetaSized` set
+  as well (`overlap/inputs.rs:143-145` and `:310-312`, with written
+  `MetaSized` premises at `:289-292`). The new `premises(sized, meta_only)`
+  helper builds that shape. The older `placeholders(set)` helper gives a Sized
+  set with an empty `MetaSized` set, which production never builds. The
+  accepted step-2 and 3a tests that use it (the walk and size-query tests,
+  `placeholder_callers_install_their_premises_in_every_search`,
+  `placeholder_owners_take_their_premises_once_before_any_work`, and q1 of
+  test 1) read no `MetaSized` premise, and they keep it.
+
+#### Appendix: the holder sweep
+
+Every holder of a set on the placeholder path was read for where it gets its
+set.
+
+- **Taken slots:** only `Proof.shapes` and `term_shapes` are ever taken, and
+  only inside `shape_properties`. The `State`, `Cursor`, Search caller and
+  `negative_sizing` fields are never taken. The tests' `Search::new` sets
+  none.
+- **Explicit holders**, which receive the set from their constructor or
+  their owner:
+  - Searches: `search.rs:207`, `conjunction.rs:38`, `coherence.rs:90` and
+    `suspension.rs:371`.
+  - `Caller` and `OwnedCaller`: `traits.rs:226` and `:573`,
+    `quantified.rs:57`, `conjunction.rs:68`, `decide.rs:39`,
+    `normal_form.rs:458` and `:573`, `cursor.rs:208`, `resumed_queries.rs:26`
+    and `suspension.rs:95`. A closed requirement passes none.
+  - `normal_form`'s State: `normal_form.rs:206`, through `opening.rs:45`.
+  - Size queries: `shape_normalization.rs:118` and `sized_obligations.rs:33`.
+    `sized_obligations.rs:89` is never advanced.
+  - Cursors: `shape_normalization.rs:116`, `term_normalization.rs:82`, and
+    the `Session` at `normalization.rs:34`, through `projections.rs:153`.
+  - `Shapes::normalized_query` (`shape.rs:160`) inherits its walk's set.
+  - `NegativeSizing`: `continuation.rs:129`.
+  - Proofs: `inputs.rs:568` is explicit; `inputs.rs:612` is the premise-less
+    `pay_own`; `continuation.rs:145` and `:150` install the set right after
+    construction.
+- **Three holders without a set, each safe:**
+  - The Cursor at `disjointness.rs:302` has none, but only closed tails, with
+    `contains_parameters` false, reach it.
+  - A `Normalizer` holds no set: a Search's normalizations descend on that
+    proof's own stack.
+  - `prepare_shapes` (`nominals.rs:220-238`) copies `self.shapes`' set into
+    `term_shapes`. It is called only at proof entry (`:200` and `:377`),
+    before anything is taken, and nothing inside a walk re-enters its proof.
+
+No other holder reads its set from a slot that can be empty.
+
+### Tests
+
+- **Test 1** gains q2, `P<B>` Sized. Without a set it fails with "shape
+  parameter is outside its environment", under {B} it is Ok(true) and under
+  {A}, with B `MetaSized` only, it is Ok(false). The four orders on shared
+  facts each answer as a fresh proof does. q1 keeps its 3a sets and answers.
+- **B**, `placeholder_proofs_decide_projected_sizes_by_premises_and_never_fall_back`:
+  `P<A>` is Sized under {A}, though its interned property is not, and not
+  Sized when A is `MetaSized` only, though A's declaration is Sized.
+- **C**, `failed_placeholder_size_proofs_cancel_their_walk_and_answer_afresh`:
+  `Q<A>` has no implementation to normalize its field. The same proof fails
+  it twice with the same error and twice the walk work, then answers a closed
+  type, a type with parameters and `Q<A>` as a fresh proof does.
+- **D:** above.
+- **E**, `placeholder_projected_size_work_is_linear_in_depth`, at depths 1,
+  2, 4 and 10, under `premises([B])` (Sized) and `premises([A], [B])` (not
+  Sized). It asserts:
+  - parity: the placeholder proof of `P^d<B>` starts as many normalizations,
+    all under its set, as the premise-less proof of `P^d<A>` in an
+    environment;
+  - its accounted work, the walk's steps plus the State's work, stays on or
+    under the line through depths 1 and 2;
+  - the State holds a set.
+
+  It does not assert the count: both proofs start 2^d - 1 normalizations. That
+  is the pre-existing performance item recorded in the
+  [blockers](../library-build-blockers.md): the nested proofs of each level
+  share no work, and their work is not charged to the outer proof. The
+  observed work is 22, 38, 70 and 166 (Sized) and 23, 39, 71 and 167, exactly
+  16 a level. The premise-less twin is over the Sized A, because a hand-built
+  environment gives a `?Sized` parameter no `MetaSized` premise.
+- **WF test:** it no longer checks that a header failing well-formedness
+  avoids the fence, which is gone. It still requires a well-formedness error,
+  never the overlap text.
+- **`coherence_premise_sides`:** the fence is gone. CASES has 59 entries,
+  47 before; the probes stay out. The symmetry pairs go from 17 to 23.
+- State stays 808 bytes, and `Caller` and `OwnedCaller` stay 32.
+
+### Twins
+
+Twelve files flip, all approved by name. The other 62 of the 74 are
+byte-identical to `base3`, status lines and stderr.
+
+| Twin pair, both orders | rustc 1.98.0 | `base3` | 3b |
+| --- | --- | --- | --- |
+| `nested-projected-size` | 0 | fence | 0 |
+| `nested-projected-sized-impl` | 0 | fence | 0 |
+| `nested-projected-composite` | 0 | fence | 0 |
+| `nested-projected-metasized` | 0 | fence | 0 |
+| `nested-projected-premise-side` | E0119 | fence | overlap |
+| `nested-projected-unsized` | E0119 | fence | overlap |
+
+- The `nested-projected-written` and `nested-normalized-builtin` pairs are
+  accepted by both, as rustc accepts them.
+- The `probe-projection-premise` pair is rejected by both with the overlap
+  text, and rustc accepts it. It is a known rejects-valid for item C: the
+  negative impl `impl<T> !Seal for &T` first retains `P<V>`'s formation goal
+  `V: Tr`, which fails because the other header's `U: Tr` is a trait premise,
+  so no shape walk reaches `P<V>`.
+
+### Reach
+
+An instrumented `cand5` (CLI `5fd50567…`, never committed; the five
+instrumented files were restored and their hashes checked) printed a marker at
+each placeholder install, walk, size request, State size proof under a set
+(`size-proof`) and `normal_form` selection under a set (`normalize`). Its
+status lines and stderr, without the markers, equal `cand5`'s.
+
+| File | size | size-proof | normalize |
+| --- | --- | --- | --- |
+| `nested-projected-size`, each order | 8 | 2 | 2 |
+| `nested-projected-sized-impl`, each order | 8 | 2 | 2 |
+| `nested-projected-composite`, each order | 10 | 2 | 2 |
+| `nested-projected-metasized`, each order | 3 | 1 | 1 |
+| `nested-projected-premise-side`, each order | 5 | 1 | 1 |
+| `nested-projected-unsized`, each order | 5 | 1 | 1 |
+| `nested-projected-written`, each order | 1 | 0 | 0 |
+| `nested-normalized-builtin`, each order | 0 | 0 | 0 |
+| `probe-projection-premise`, each order | 0 | 0 | 0 |
+
+- Every declared marker appears, the written pair has no size proof, and the
+  probe has neither new marker.
+- The 336 survey files print no size-proof and no normalize marker, and no
+  walk or size marker; 31 installs in all.
+
+### Recorded failed predictions
+
+1. **Probe before (part 2):** declared as the fence; `base3` gave the
+   overlap text in both orders. Part 2's trace began at `P<V>`'s size request
+   and missed the formation goal that comes first, so its after and reach
+   predictions for the probe were wrong as well. Part 3 amended them before
+   any candidate run.
+2. **Flip count:** parts 2 and 3 gave 16 and 14 flip files. There are 12,
+   the 8 rejected → accepted and 4 rejected → rejected files above. The
+   files and outcomes were declared correctly; the totals were miscounted.
+3. **Part 5:** the five unit predictions and two twins above, failed by the
+   plumbing gap. They pass as declared after the fix, and none of the
+   failing run's observations is evidence.
+4. **Test E's count:** declared as exactly d normalizations; fastcheck
+   `1794238322804605380` counted 3 at d = 2. The diagnosis
+   (`obj/lane-b9/step3b/diag/depth-diagnosis.txt`, a diagnostic build) shows
+   2^d - 1 for the premise-less and placeholder proofs alike, through d = 12.
+   E now asserts parity, not the count.
+5. **Test E's twin:** declared over `P^d<B>` in a hand-built environment;
+   fastcheck `1794240293859845637` failed it with "associated type requires
+   an unambiguous validated implementation", because that environment gives
+   the `?Sized` B no `MetaSized` premise. The twin is over the Sized A.
+
+Not evidence: fastcheck `1794236873051504922`, which ran out of budget cold,
+and the diagnostic fastchecks.
+
+### Evidence before the rebase
+
+| Gate | `base3` | `cand5` |
+| --- | --- | --- |
+| 74 twins, status lines | `7a396df0…` (60 files) and `e0eda4ed…` (the 14 new) | `72d756f1…`; only the 12 files above differ, in status and stderr |
+| Flip survey, 336 files | `9e1b7e43…` | `9e1b7e43…` |
+| Census lookahead, `census.tsv`, 23 records | `9d654755…` | `9d654755…` |
+| Golden table | `399d7a0e…`, 5674 lines, 60 fixtures | `6d634d2f…`, 8356 lines, 74 fixtures |
+
+- The golden table moves only on the four projected twins, which now give
+  their overlap or acceptance rows, and gains the 14 new fixtures.
+- Focused fastcheck `1794240625255197153` passed the 20 selected private
+  cases and the crate-linking integration case.
+- The final gates, on the rebased tree against a fresh base pin, are in
+  checkpoint 4.

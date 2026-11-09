@@ -19,10 +19,6 @@ pub(super) use requirements::{
 #[path = "../../tests/invariants/normalized_sizing_lifetimes.rs"]
 mod tests;
 
-/// Under placeholders, a projected-size nominal's size comes from a nested
-/// trait proof that has no header premises, so a negative coherence query
-/// rejects it rather than decide it by a representative's declarations.
-pub(in crate::sema) const PLACEHOLDER_SIZE_FENCE: &str = "projected-size nominal in a negative builtins proof requires header premises in its nested size proof";
 /// A placeholder proof's trait State and normalization cursors take their set
 /// once, before they cache any work, so no cached answer belongs to another set.
 pub(in crate::sema) const PLACEHOLDER_REINSTALL: &str =
@@ -300,17 +296,26 @@ impl Proof {
             return Ok(None);
         };
         // A placeholder proof keeps its shapes even when they fail, so its
-        // interned fallback stays unreachable. A fenced walk is cancelled
-        // first, so a later query on the proof starts fresh.
+        // interned fallback stays unreachable. Its trait State decides a
+        // projected size under the same premises; a walk whose size proof
+        // fails is cancelled first, so a later query on the proof starts fresh.
         let keep = shapes.placeholders().is_some();
         let result = loop {
             match shapes.advance(&facts.types, ty, u16::from(count.is_some()), normalized) {
                 Ok(Progress::Ready(properties)) => break Ok(Some(properties)),
                 Ok(Progress::Projection) => break Ok(None),
                 Ok(Progress::Size(request)) if keep => {
-                    break shapes
-                        .refuse_size(normalized, request)
-                        .and(Err(PLACEHOLDER_SIZE_FENCE));
+                    let answered = self
+                        .walk_trait_state(facts, &shapes)
+                        .and_then(|state| {
+                            state.shape_size(facts, &mut shapes, request, count, normalized)
+                        })
+                        .and_then(|sized| {
+                            shapes.answer_size(&facts.types, normalized, request, sized)
+                        });
+                    if let Err(error) = answered {
+                        break shapes.refuse_size(normalized, request).and(Err(error));
+                    }
                 }
                 Ok(Progress::Size(request)) => {
                     let sized = self.trait_state(facts)?.shape_size(
@@ -560,19 +565,39 @@ impl Proof {
         facts: &mut Declarations,
     ) -> Result<&mut traits::State, &'static str> {
         if self.traits.is_none() {
-            let mut state = traits::State::new(facts, self.environment.clone(), self.scope)?;
             // A placeholder proof's nested trait proofs assume its premises.
-            state.assume_placeholders(
-                self.shapes
-                    .as_deref()
-                    .and_then(crate::types::parameters::shape::Shapes::placeholders)
-                    .cloned(),
-            )?;
-            self.traits = Some(Box::new(state));
+            let placeholders = self
+                .shapes
+                .as_deref()
+                .and_then(crate::types::parameters::shape::Shapes::placeholders)
+                .cloned();
+            self.start_trait_state(facts, placeholders)?;
         }
         self.traits
             .as_deref_mut()
             .ok_or("missing nominal trait proof")
+    }
+    /// A walk holds its proof's shapes while it asks for a size, so a trait
+    /// State it starts takes the walk's own premises, never the emptied slot.
+    fn walk_trait_state(
+        &mut self,
+        facts: &mut Declarations,
+        shapes: &crate::types::parameters::shape::Shapes,
+    ) -> Result<&mut traits::State, &'static str> {
+        if self.traits.is_none() {
+            self.start_trait_state(facts, shapes.placeholders().cloned())?;
+        }
+        self.trait_state(facts)
+    }
+    fn start_trait_state(
+        &mut self,
+        facts: &mut Declarations,
+        placeholders: Option<crate::types::parameters::shape::Placeholders>,
+    ) -> Result<(), &'static str> {
+        let mut state = traits::State::new(facts, self.environment.clone(), self.scope)?;
+        state.assume_placeholders(placeholders)?;
+        self.traits = Some(Box::new(state));
+        Ok(())
     }
 
     pub(in crate::sema) fn trait_selection_steps(&self) -> usize {
@@ -614,6 +639,18 @@ impl Proof {
         self.shapes
             .as_deref()
             .map_or(0, crate::types::parameters::shape::Shapes::steps)
+    }
+    /// The work this proof's trait State has accounted, or none before it has one.
+    #[cfg(test)]
+    pub(in crate::sema) fn trait_state_work(&self) -> usize {
+        self.traits.as_deref().map_or(0, traits::State::work)
+    }
+    /// Whether this proof's trait State, if it has started one, holds a set.
+    #[cfg(test)]
+    pub(in crate::sema) fn trait_state_premised(&self) -> Option<bool> {
+        self.traits
+            .as_deref()
+            .map(|state| state.placeholders().is_some())
     }
 
     /// Retain every selected lifetime obligation, including fresh existential identities.

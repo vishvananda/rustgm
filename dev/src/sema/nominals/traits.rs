@@ -28,6 +28,27 @@ use crate::{
 use opening::Opening;
 use std::sync::Arc;
 
+#[cfg(test)]
+thread_local! {
+    /// Normalizations that size proofs started on this thread: premise-less
+    /// first, then under a placeholder set.
+    static SIZE_NORMALIZATIONS: std::cell::Cell<[usize; 2]> = const { std::cell::Cell::new([0; 2]) };
+}
+#[cfg(test)]
+fn count_size_normalization(premised: bool) {
+    SIZE_NORMALIZATIONS.with(|cell| {
+        let mut counts = cell.get();
+        counts[usize::from(premised)] += 1;
+        cell.set(counts);
+    });
+}
+/// Normalizations that size proofs have started on this thread: premise-less
+/// first, then under a placeholder set.
+#[cfg(test)]
+pub(in crate::sema) fn size_normalizations() -> [usize; 2] {
+    SIZE_NORMALIZATIONS.with(std::cell::Cell::get)
+}
+
 enum CopyFailure {
     Ordinary(&'static str),
     Pending(selection::Dependency),
@@ -410,6 +431,12 @@ impl State {
             || self.quantified.is_some()
             || self.terms.is_some()
             || self.shapes.is_some()
+    }
+    /// The work this State has accounted. Nested proofs that its searches
+    /// start are not charged to it.
+    #[cfg(test)]
+    pub(super) const fn work(&self) -> usize {
+        self.context.steps
     }
     #[cfg(test)]
     pub(super) fn placeholders(&self) -> Option<&crate::types::parameters::shape::Placeholders> {

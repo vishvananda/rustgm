@@ -124,7 +124,11 @@ impl State {
             .get_mut(&scope)
             .ok_or("missing size proof scope")?;
         let before = query.sizes.steps;
+        #[cfg(test)]
+        let premised = self.placeholders.is_some();
         let result = query.sizes.demand(facts, ty, |facts, ty| {
+            #[cfg(test)]
+            super::count_size_normalization(premised);
             query.cursor.start(facts, ty)?;
             match query
                 .cursor
@@ -140,7 +144,18 @@ impl State {
                     Err("final nominal size proof requires completed declarations")
                 }
             }
-        })?;
+        });
+        let result = match result {
+            Ok(result) => result,
+            Err(error) => {
+                // A placeholder proof keeps its shapes when a size proof
+                // fails, so its next size request in this scope starts afresh.
+                if self.placeholders.is_some() {
+                    sizes.queries.remove(&scope);
+                }
+                return Err(error);
+            }
+        };
         self.context
             .account_work(query.sizes.steps.saturating_sub(before))
             .map_err(|_| "nominal size proof budget exceeded")?;

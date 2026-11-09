@@ -9,7 +9,7 @@
     "accepted": "status 0",
     "overlap": "overlapping trait implementation headers require coherence proof",
     "region": "required lifetime does not outlive its target",
-    "fence": "projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+    "fence": "projected-size nominal in a negative builtins proof requires header premises in its nested size proof (retired by item B)",
     "error": "shape parameter is outside its environment"
   },
   "amendments": [
@@ -17,9 +17,11 @@
     "2026-11-09 after oracle 2, before any RustGM run (predictions3.json): two wrong rustc predictions, region-client-side and region-head-unified (predicted 0, observed E0119): rustc never assumes a region-region premise between two inference regions",
     "2026-11-09 after the base before-runs (predictions4.json and predictions5.json): three wrong before predictions, copy-premise-side, sized-client-side and sized-premise-side-swapped, each beside its declaration below. The cause is the representative's declaration (types/parameters/shape.rs:285-290)",
     "2026-11-09, before any oracle, RustGM run or code change of this item, after the integrator amended decision 1 from A to C (original predictions6.json sha256 b731d0f98a187222219afe5d3bb6a81558e9ddba9fe8ed65d3980b5b8524f3c4, kept as predictions6-original.json): nested-projected-size and -swapped are declared accepted after, not overlap; nested-projected-premise-side and -swapped are added to show the surviving order dependence (rustc E0119; before and after accepted blanket first, overlap client first); the symmetry invariant exempts exactly that pair by name, citing residual_projected.text",
-    "2026-11-09, after the rustc oracle (all 26 as declared) and the before-runs with CLI 56c5fad9729928af01e8af8e0ecdcb5f7c220406457cf443f1d1efd203ea6409 (22 of 26 as declared), before any code change or candidate run (first amendment sha256 04ccc20ca3df22f4429c3d72f1d029018235d814f892d92b2268b9e65d40b858, kept as predictions6-amend1.json): the four projected-size twins were declared accepted (and overlap client-first for the premise-side pair) and were observed rejected with \"shape parameter is outside its environment\" in both orders; cause in each case. Decision 1 is C3: their after-outcome is the named fence \"projected-size nominal in a negative builtins proof requires header premises in its nested size proof\" in both orders. residual_projected is superseded, because no exemption is needed. The rules gain: no rejected-to-accepted flip where rustc rejects without approval"
+    "2026-11-09, after the rustc oracle (all 26 as declared) and the before-runs with CLI 56c5fad9729928af01e8af8e0ecdcb5f7c220406457cf443f1d1efd203ea6409 (22 of 26 as declared), before any code change or candidate run (first amendment sha256 04ccc20ca3df22f4429c3d72f1d029018235d814f892d92b2268b9e65d40b858, kept as predictions6-amend1.json): the four projected-size twins were declared accepted (and overlap client-first for the premise-side pair) and were observed rejected with \"shape parameter is outside its environment\" in both orders; cause in each case. Decision 1 is C3: their after-outcome is the named fence \"projected-size nominal in a negative builtins proof requires header premises in its nested size proof\" in both orders. residual_projected is superseded, because no exemption is needed. The rules gain: no rejected-to-accepted flip where rustc rejects without approval",
+    "2026-11-09, item B 3b part 3, after the base3 before-runs and before any code change: probe-projection-premise was declared with the fence before and observed with the overlap text in both orders; its after outcome was redeclared as overlap",
+    "2026-11-09, item B 3b part 5, before any evidence run: a first candidate rejected nested-projected-premise-side-swapped and nested-projected-metasized-swapped with \"associated type requires an unambiguous validated implementation\" and decided the other projected twins by the representative's declaration, because a trait State started inside a placeholder walk had no premises. The fix was approved before any further run; no twin outcome was redeclared and no observation of that candidate is evidence"
   ],
-  "symmetry": "every X-swapped twin has X's diagnostic text and every accepted case is disjoint in both orders, with no exemption: the nested-premise-side residual is fixed, and the projected-size pairs give the same fence in both orders",
+  "symmetry": "every X-swapped twin has X's diagnostic text and every accepted case is disjoint in both orders, with no exemption",
   "cases": {
     "copy-client-side.rs": {
       "sha256": "d7a71660fabd6e74de14ccfbdd6cc07b345bcc5378216004e1d59ec03453808d",
@@ -319,7 +321,11 @@
       "rustgm_after": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
       "rustgm_after_note": "C3: the named fence in both orders, a rejection as rustc's E0119 in both orders. No order dependence remains for this pair",
       "rustgm_after_observed": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
-      "amendment": "2026-11-09, after the before-runs (CLI 56c5fad9729928af01e8af8e0ecdcb5f7c220406457cf443f1d1efd203ea6409, main 7e8c5cbbf) and before any code change: declared overlap, observed status=1 ERROR: file 0: 6486: shape parameter is outside its environment. Cause: the negative query's builtins proof has no Shapes; for a projected-size type nominals.rs prepare_shapes (:198-207) creates Shapes::new(Environment::new(&types, &[])), an environment with no parameters, and the walk's parameter arm (types/parameters/shape.rs:285-289) finds no abilities for P<V>'s argument V. Probes (scratchpad union/nested-probes*): it needs strict and negative coherence and the projected-size nominal, and not the negative impl; no survey fixture (0 of 336) and no census record reaches it"
+      "amendment": "2026-11-09, after the before-runs (CLI 56c5fad9729928af01e8af8e0ecdcb5f7c220406457cf443f1d1efd203ea6409, main 7e8c5cbbf) and before any code change: declared overlap, observed status=1 ERROR: file 0: 6486: shape parameter is outside its environment. Cause: the negative query's builtins proof has no Shapes; for a projected-size type nominals.rs prepare_shapes (:198-207) creates Shapes::new(Environment::new(&types, &[])), an environment with no parameters, and the walk's parameter arm (types/parameters/shape.rs:285-289) finds no abilities for P<V>'s argument V. Probes (scratchpad union/nested-probes*): it needs strict and negative coherence and the projected-size nominal, and not the negative impl; no survey fixture (0 of 336) and no census record reaches it",
+      "rustgm_b_before": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "rustgm_b_after_declared": "overlap",
+      "rustgm_b_after_observed": "overlap",
+      "rustgm_b_note": "item B: under the client's premises V is only MetaSized, so P<V>: Sized fails and the pair overlaps in both orders, as rustc's E0119. Declared in item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0)"
     },
     "nested-projected-premise-side.rs": {
       "sha256": "b80127c761fd0c34c8f75794cf8f602be928ae9f6e14963f37d2c44906af8aa0",
@@ -336,7 +342,11 @@
       "rustgm_after": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
       "rustgm_after_note": "C3: the named fence in both orders, a rejection as rustc's E0119 in both orders. No order dependence remains for this pair",
       "rustgm_after_observed": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
-      "amendment": "2026-11-09, after the before-runs (CLI 56c5fad9729928af01e8af8e0ecdcb5f7c220406457cf443f1d1efd203ea6409, main 7e8c5cbbf) and before any code change: declared accepted, observed status=1 ERROR: file 0: 6505: shape parameter is outside its environment. Cause: the negative query's builtins proof has no Shapes; for a projected-size type nominals.rs prepare_shapes (:198-207) creates Shapes::new(Environment::new(&types, &[])), an environment with no parameters, and the walk's parameter arm (types/parameters/shape.rs:285-289) finds no abilities for P<V>'s argument V. Probes (scratchpad union/nested-probes*): it needs strict and negative coherence and the projected-size nominal, and not the negative impl; no survey fixture (0 of 336) and no census record reaches it"
+      "amendment": "2026-11-09, after the before-runs (CLI 56c5fad9729928af01e8af8e0ecdcb5f7c220406457cf443f1d1efd203ea6409, main 7e8c5cbbf) and before any code change: declared accepted, observed status=1 ERROR: file 0: 6505: shape parameter is outside its environment. Cause: the negative query's builtins proof has no Shapes; for a projected-size type nominals.rs prepare_shapes (:198-207) creates Shapes::new(Environment::new(&types, &[])), an environment with no parameters, and the walk's parameter arm (types/parameters/shape.rs:285-289) finds no abilities for P<V>'s argument V. Probes (scratchpad union/nested-probes*): it needs strict and negative coherence and the projected-size nominal, and not the negative impl; no survey fixture (0 of 336) and no census record reaches it",
+      "rustgm_b_before": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "rustgm_b_after_declared": "overlap",
+      "rustgm_b_after_observed": "overlap",
+      "rustgm_b_note": "item B: under the client's premises V is only MetaSized, so P<V>: Sized fails and the pair overlaps in both orders, as rustc's E0119. Declared in item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0)"
     },
     "nested-projected-size-swapped.rs": {
       "sha256": "4c932c368c119bf83a21e87b22c211a695e6f558c0e7553bbcbca277f5e5f237",
@@ -352,7 +362,11 @@
       "rustgm_after_note": "C3: under placeholders the projected-size nominal P<V> rejects with the named fence in both orders. A known rejects-valid (rustc accepts; on main it is the shape-parameter error); its fix is B",
       "rustgm_after_observed": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
       "amendment": "2026-11-09, after the before-runs (CLI 56c5fad9729928af01e8af8e0ecdcb5f7c220406457cf443f1d1efd203ea6409, main 7e8c5cbbf) and before any code change: declared accepted, observed status=1 ERROR: file 0: 6478: shape parameter is outside its environment. Cause: the negative query's builtins proof has no Shapes; for a projected-size type nominals.rs prepare_shapes (:198-207) creates Shapes::new(Environment::new(&types, &[])), an environment with no parameters, and the walk's parameter arm (types/parameters/shape.rs:285-289) finds no abilities for P<V>'s argument V. Probes (scratchpad union/nested-probes*): it needs strict and negative coherence and the projected-size nominal, and not the negative impl; no survey fixture (0 of 336) and no census record reaches it",
-      "known_rejects_valid": "rustc accepts; the named fence rejects in both orders until B threads the header premises into the nested size proof"
+      "rustgm_b_before": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "rustgm_b_after_declared": "accepted",
+      "rustgm_b_after_observed": "accepted",
+      "rustgm_b_note": "item B: the trait State decides P<V>: Sized under the client's Sized premises: <V as Tr>::Out normalizes to V, a premise. Declared in item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0)",
+      "known_rejects_valid_retired": "item B: accepted in both orders, as rustc accepts"
     },
     "nested-projected-size.rs": {
       "sha256": "d62e8eca87d73a5d6e39d9ff9fa57ffe304491baefefb3c19ba9293716fa24f1",
@@ -368,7 +382,11 @@
       "rustgm_after_note": "C3: under placeholders the projected-size nominal P<V> rejects with the named fence in both orders. A known rejects-valid (rustc accepts; on main it is the shape-parameter error); its fix is B",
       "rustgm_after_observed": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
       "amendment": "2026-11-09, after the before-runs (CLI 56c5fad9729928af01e8af8e0ecdcb5f7c220406457cf443f1d1efd203ea6409, main 7e8c5cbbf) and before any code change: declared accepted, observed status=1 ERROR: file 0: 6505: shape parameter is outside its environment. Cause: the negative query's builtins proof has no Shapes; for a projected-size type nominals.rs prepare_shapes (:198-207) creates Shapes::new(Environment::new(&types, &[])), an environment with no parameters, and the walk's parameter arm (types/parameters/shape.rs:285-289) finds no abilities for P<V>'s argument V. Probes (scratchpad union/nested-probes*): it needs strict and negative coherence and the projected-size nominal, and not the negative impl; no survey fixture (0 of 336) and no census record reaches it",
-      "known_rejects_valid": "rustc accepts; the named fence rejects in both orders until B threads the header premises into the nested size proof"
+      "rustgm_b_before": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "rustgm_b_after_declared": "accepted",
+      "rustgm_b_after_observed": "accepted",
+      "rustgm_b_note": "item B: the trait State decides P<V>: Sized under the client's Sized premises: <V as Tr>::Out normalizes to V, a premise. Declared in item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0)",
+      "known_rejects_valid_retired": "item B: accepted in both orders, as rustc accepts"
     },
     "nested-tuple-head-swapped.rs": {
       "sha256": "3fbbf2f88e20bab770b2451aa1801d3de46c708739bf25b1efb9f8da5017f219",
@@ -785,11 +803,220 @@
       "label": "probe-derived: rustc outcome observed first, as probe-strict-type-outlives; RustGM outcomes declared here before any RustGM run",
       "rustgm_nested_base": "overlap",
       "rustgm_nested_after_observed": "overlap"
+    },
+    "nested-projected-sized-impl.rs": {
+      "sha256": "00702815aa5aa949b988192bd5520bcb73c4a8ba13ca19cf22fa332a1a36944e",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "impl<X> Tr for X { type Out = X; }: normalizing <V as Tr>::Out needs V: Sized, which the client's Sized U gives, and P<V>: Sized needs the same",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "fence",
+      "rustgm_before": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "rustgm_after": "accepted",
+      "rustgm_after_observed": "accepted",
+      "declared_in": "item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0)"
+    },
+    "nested-projected-sized-impl-swapped.rs": {
+      "sha256": "19054ee19609074835b4ce3d95a153a7fcfe917737b76aa01d2c7fb26e4ddc73",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "impl<X> Tr for X { type Out = X; }: normalizing <V as Tr>::Out needs V: Sized, which the client's Sized U gives, and P<V>: Sized needs the same",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "fence",
+      "rustgm_before": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "rustgm_after": "accepted",
+      "rustgm_after_observed": "accepted",
+      "declared_in": "item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0)"
+    },
+    "nested-projected-composite.rs": {
+      "sha256": "3846c5300432b303fa5e915a9922f1549f7841644881e3eb4ac90274b4dab01b",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "type Out = Wrap<X>: P<V>'s tail normalizes to Wrap<V>, Sized by its argument rule under the client's Sized U",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "fence",
+      "rustgm_before": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "rustgm_after": "accepted",
+      "rustgm_after_observed": "accepted",
+      "declared_in": "item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0)"
+    },
+    "nested-projected-composite-swapped.rs": {
+      "sha256": "418b295b1c3d98b5dedcca0cce226e358565b15e5120bbfaa2e2d02d38140cfe",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "type Out = Wrap<X>: P<V>'s tail normalizes to Wrap<V>, Sized by its argument rule under the client's Sized U",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "fence",
+      "rustgm_before": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "rustgm_after": "accepted",
+      "rustgm_after_observed": "accepted",
+      "declared_in": "item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0)"
+    },
+    "nested-projected-unsized.rs": {
+      "sha256": "1dfce7a501284c12a9fe73283748ac772c42f5ab4846f9606563290b31e008b1",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "type Out = [X]: P<V>'s tail normalizes to a slice, never Sized, so the negative impl's T: Sized fails and the pair overlaps",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "fence",
+      "rustgm_before": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "rustgm_after": "overlap",
+      "rustgm_after_observed": "overlap",
+      "declared_in": "item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0)"
+    },
+    "nested-projected-unsized-swapped.rs": {
+      "sha256": "74caaee9cf9c7e9089b63e072ea532d7275d3ae8314e7ce09fd2442e7d351d4b",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "E0119",
+      "rustc_status": 1,
+      "error_codes": [
+        "E0119"
+      ],
+      "reason": "type Out = [X]: P<V>'s tail normalizes to a slice, never Sized, so the negative impl's T: Sized fails and the pair overlaps",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "fence",
+      "rustgm_before": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "rustgm_after": "overlap",
+      "rustgm_after_observed": "overlap",
+      "declared_in": "item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0)"
+    },
+    "nested-projected-written.rs": {
+      "sha256": "08edc03570076f8aace37633a0373ec5277bc8643fc8fd614f6e549c7cdf50e8",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "the client's written where P<U>: Sized is a premise of the set, a member before any size request",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_observed": "accepted",
+      "declared_in": "item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0)"
+    },
+    "nested-projected-written-swapped.rs": {
+      "sha256": "86a28b5481b3ec0c53e42e7b5555705cc16de9a154ec91e1270a5c0227fdbc8a",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "the client's written where P<U>: Sized is a premise of the set, a member before any size request",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_observed": "accepted",
+      "declared_in": "item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0)"
+    },
+    "nested-normalized-builtin.rs": {
+      "sha256": "b01e66a3c4f06ccf59fd895680db17255e9f54e1e4a5d3fa3c49b0523421c3e4",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "the blanket's &'a <V as Tr>::Out: Seal normalizes to &'a V; the negative impl's V: Sized holds under the client's Sized U",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_observed": "accepted",
+      "declared_in": "item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0)"
+    },
+    "nested-normalized-builtin-swapped.rs": {
+      "sha256": "ed32c2eab9a5ea9d4e0aedb596df756d705567ef5c259a94f08d310b52f8c77f",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "the blanket's &'a <V as Tr>::Out: Seal normalizes to &'a V; the negative impl's V: Sized holds under the client's Sized U",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "accepted",
+      "rustgm_before": "accepted",
+      "rustgm_after": "accepted",
+      "rustgm_after_observed": "accepted",
+      "declared_in": "item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0)"
+    },
+    "nested-projected-metasized.rs": {
+      "sha256": "7003a34c44fb19d9c671deb64aca9e781d340fdaeab0ab1e440e8344093476d0",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "impl<T: ?Sized> !Seal for &T needs P<V>: MetaSized, through its projected tail V, which the client's U: ?Sized gives",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "fence",
+      "rustgm_before": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "rustgm_after": "accepted",
+      "rustgm_after_observed": "accepted",
+      "declared_in": "item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0)"
+    },
+    "nested-projected-metasized-swapped.rs": {
+      "sha256": "6da984bb5335066c6e3d4d4a2e0771464f9d6edd81d40efd5218d86e43d855de",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "impl<T: ?Sized> !Seal for &T needs P<V>: MetaSized, through its projected tail V, which the client's U: ?Sized gives",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "fence",
+      "rustgm_before": "fence: projected-size nominal in a negative builtins proof requires header premises in its nested size proof",
+      "rustgm_after": "accepted",
+      "rustgm_after_observed": "accepted",
+      "declared_in": "item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0)"
+    },
+    "probe-projection-premise.rs": {
+      "sha256": "6c123d08db8e392c1cd1e438bcafe2ef333dfa87099a4934daac4083c6536d15",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "probe: P's formation goal V: Tr fails before any Sized goal, because the client's U: Tr<Out = u8> is a trait premise, which item B does not assume",
+      "order": "blanket first: its binding is the representative",
+      "rustgm_before_declared": "fence",
+      "rustgm_before": "overlap",
+      "rustgm_after": "overlap",
+      "rustgm_after_observed": "overlap",
+      "declared_in": "item B 3b, part 2 (b2da44b2b3c8bbf220facebffe08573ac5f58bab5ab82590c540c3d137e36e74) and part 3 (b4f16aa9f3fdc0ef501d8bfcc53bd07ccae41ae47817f91f9a467b48ed252dc1)",
+      "amendment": "item B 3b part 3, after the base3 before-runs and before any code change: declared fence before and \"associated type requires an unambiguous validated implementation\" after; observed the overlap text in both orders before, because the formation goal V: Tr fails first. The after outcome was redeclared as overlap",
+      "known_rejects_valid": "rustc accepts; rejected in both orders until item C assumes the other header's trait and projection premises",
+      "label": "probe: out of CASES, as probe-trait-premise"
+    },
+    "probe-projection-premise-swapped.rs": {
+      "sha256": "d85ca40159c1db0cc275c5ba3287418a99b437bd3e8ccc508be3f3d67181f1b5",
+      "features": "#![feature(negative_impls,with_negative_coherence)]",
+      "rustc_declared": "0",
+      "rustc_status": 0,
+      "error_codes": [],
+      "reason": "probe: P's formation goal V: Tr fails before any Sized goal, because the client's U: Tr<Out = u8> is a trait premise, which item B does not assume",
+      "order": "client first: its binding is the representative",
+      "rustgm_before_declared": "fence",
+      "rustgm_before": "overlap",
+      "rustgm_after": "overlap",
+      "rustgm_after_observed": "overlap",
+      "declared_in": "item B 3b, part 2 (b2da44b2b3c8bbf220facebffe08573ac5f58bab5ab82590c540c3d137e36e74) and part 3 (b4f16aa9f3fdc0ef501d8bfcc53bd07ccae41ae47817f91f9a467b48ed252dc1)",
+      "amendment": "item B 3b part 3, after the base3 before-runs and before any code change: declared fence before and \"associated type requires an unambiguous validated implementation\" after; observed the overlap text in both orders before, because the formation goal V: Tr fails first. The after outcome was redeclared as overlap",
+      "known_rejects_valid": "rustc accepts; rejected in both orders until item C assumes the other header's trait and projection premises",
+      "label": "probe: out of CASES, as probe-trait-premise"
     }
   },
   "declared_nested": "2026-11-09. The nested-sizedness twins' outcomes for rustc and for this compiler before and after the change were declared before their rustc oracle and before any RustGM run of them, with two dated amendments before any code change (beside each case and in \"amendments\"). sha256: predictions6-original.json b731d0f98a187222219afe5d3bb6a81558e9ddba9fe8ed65d3980b5b8524f3c4, predictions6-amend1.json 04ccc20ca3df22f4429c3d72f1d029018235d814f892d92b2268b9e65d40b858, predictions6.json 2b261a8cec52295e622a3d2a96a251ad473c2681869ed2d921123fd3972a3abd",
   "base_nested": "rustgm_nested_base and rustgm_before of the nested twins: main at 7e8c5cbbf, dev-fast CLI sha256 56c5fad9729928af01e8af8e0ecdcb5f7c220406457cf443f1d1efd203ea6409",
   "candidate_nested": "rustgm_nested_after_observed and rustgm_after_observed of the nested twins: dev-fast CLI sha256 de490950d59d6c793a4d2df011c75a855dcd196380847f0a25f1a83026e5137e on 7e8c5cbbf",
   "residual_union": "a non-parameter type whose sizedness depends on a rigid parameter, such as a nominal's sizedness argument (`Wrap<V>: Sized`), is still decided by the shape walk, which reads the representative's declaration (types/parameters/shape.rs:285-290); pay_negative's shape proof does the same. The fix threads query premises into the shared types/parameters/shape.rs facility, a separate design. Recorded gap in docs/library-build-blockers.md",
-  "residual": "fixed by the nested-sizedness item: under the other header's Sized premises the shape walk and size queries follow rustc 1.98's sized_conditions and read no representative declaration. Known rejects-valid: nested-projected-size and -swapped (rustc accepts) carry the named fence \"projected-size nominal in a negative builtins proof requires header premises in its nested size proof\" until B"
+  "residual": "fixed by the nested-sizedness item and item B: under the other header's Sized and MetaSized premises the shape walk, the size queries and the nested trait proofs follow rustc 1.98 and read no representative declaration. Known rejects-valid: the probe-trait-premise and probe-projection-premise pairs (rustc accepts), until item C assumes the other header's trait premises",
+  "declared_b": "2026-11-09. Item B checkpoint 3b declared each new twin's rustc and RustGM outcomes before its rustc oracle and before any RustGM run, in parts 1 to 3; part 4 (fb808699470efa04c5c5649e6fe911fca0a30498a5f74b1983626262fa8cac56) and part 5 (3134ff0ac4876767b29ee3fb7a79e6f9c90ccf7240bdb58c88fc1d0aa3b23693) amended the code before the evidence runs and redeclared no twin. sha256: item B 3b, part 1 (877431ad59f7ddc80e7b52cef3ac328dc306128e6d8d9e45dfbbaa406ff94cd0); item B 3b, part 2 (b2da44b2b3c8bbf220facebffe08573ac5f58bab5ab82590c540c3d137e36e74) and part 3 (b4f16aa9f3fdc0ef501d8bfcc53bd07ccae41ae47817f91f9a467b48ed252dc1)",
+  "base_b": "rustgm_b_before and the new twins' rustgm_before: base3, the dev-fast CLI at 7acc24208, sha256 f0f2d48b39b36be8911ac5fd71dd44619e21a485d94e2f54888bb364b9468571",
+  "candidate_b": "rustgm_b_after_observed and the new twins' rustgm_after_observed: cand5, the dev-fast CLI of the 3b tree on a82c774c9, sha256 642cb4af128d3052907df3e88d818b522fd3c9214c36075e125942aad5c12ca4"
 }

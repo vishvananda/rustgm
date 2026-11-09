@@ -8,9 +8,7 @@ use super::NegativeSizing;
 use crate::{
     sema::{
         model::Declarations,
-        nominals::{
-            PLACEHOLDER_EQUALITY_FENCE, PLACEHOLDER_REINSTALL, PLACEHOLDER_SIZE_FENCE, Proof, sizes,
-        },
+        nominals::{PLACEHOLDER_EQUALITY_FENCE, PLACEHOLDER_REINSTALL, Proof, sizes},
     },
     support::bindings::LangItem,
     types::{
@@ -35,7 +33,7 @@ const WELL_FORMED: [&str; 3] = [
     "trait argument must be well-formed",
     "bound subject must be well-formed",
 ];
-const TAIL: &str = "pub struct Wrap<X: ?Sized>(X); pub struct Carrier<A, B: ?Sized>(A, *const B); pub trait Tr { type Out: ?Sized; } impl<X: ?Sized> Tr for X { type Out = X; } pub struct P<T: ?Sized + Tr>(<T as Tr>::Out);";
+const TAIL: &str = "pub struct Wrap<X: ?Sized>(X); pub struct Carrier<A, B: ?Sized>(A, *const B); pub trait Tr { type Out: ?Sized; } impl<X: ?Sized> Tr for X { type Out = X; } pub struct P<T: ?Sized + Tr>(<T as Tr>::Out); pub trait Tn { type Out: ?Sized; } pub struct Q<T: ?Sized + Tn>(<T as Tn>::Out); pub trait Ts { type Out; } pub struct R<T: Ts>(<T as Ts>::Out);";
 
 /// The no-core prefix every twin of the packet shares.
 fn prefix() -> TestResult<String> {
@@ -54,7 +52,7 @@ fn analyze(source: &str) -> TestResult<Result<Declarations, String>> {
         .map_err(|error| error.message.clone()))
 }
 
-fn item(report_source: &str, facts: &Declarations, name: &str) -> TestResult<ItemId> {
+fn definition(report_source: &str, name: &str) -> TestResult<ItemId> {
     let report = crate::test_source::source_provider(report_source, "placeholder_sizing")?;
     let index = report
         .resolution
@@ -62,7 +60,11 @@ fn item(report_source: &str, facts: &Declarations, name: &str) -> TestResult<Ite
         .iter()
         .position(|definition| report.package.names.get(definition.name) == name)
         .ok_or(name.to_owned())?;
-    let item = ItemId(u32::try_from(index)?);
+    Ok(ItemId(u32::try_from(index)?))
+}
+
+fn item(report_source: &str, facts: &Declarations, name: &str) -> TestResult<ItemId> {
+    let item = definition(report_source, name)?;
     facts
         .types
         .nominal_size_rule(item)
@@ -89,6 +91,11 @@ struct Fixture {
     facts: Declarations,
     wrap: ItemId,
     projected: ItemId,
+    /// `Q`, whose projected field has no implementation to normalize it.
+    failing: ItemId,
+    /// `<T as Tn>::Out` and `<T as Ts>::Out`: rigid projections whose
+    /// declarations relax and keep Sized.
+    rigid: [TypeId; 2],
     sized: TypeId,
     unsized_: TypeId,
 }
@@ -99,6 +106,23 @@ fn fixture() -> TestResult<Fixture> {
     let wrap = item(&source, &facts, "Wrap")?;
     let carrier = item(&source, &facts, "Carrier")?;
     let projected = item(&source, &facts, "P")?;
+    let failing = item(&source, &facts, "Q")?;
+    let rigid = |name: &str| -> TestResult<TypeId> {
+        let trait_item = definition(&source, name)?;
+        for index in 0..facts.types.len() {
+            let ty = TypeId(u32::try_from(index)?);
+            if let Some(Kind::Projection(application)) = facts.types.kind(ty)
+                && facts
+                    .types
+                    .projection_schema(application.item)
+                    .is_some_and(|schema| schema.trait_item == trait_item)
+            {
+                return Ok(ty);
+            }
+        }
+        Err(format!("{name} projection").into())
+    };
+    let rigid = [rigid("Tn")?, rigid("Ts")?];
     let owned: Vec<_> = parameters(&facts)?
         .into_iter()
         .filter(|(_, owner, _)| *owner == carrier)
@@ -113,6 +137,8 @@ fn fixture() -> TestResult<Fixture> {
     Ok(Fixture {
         wrap,
         projected,
+        failing,
+        rigid,
         sized: find(true)?,
         unsized_: find(false)?,
         facts,
@@ -149,9 +175,19 @@ fn shapes_of(facts: &mut Declarations, wrap: ItemId, p: TypeId) -> TestResult<[T
 }
 
 /// A Sized premise set in any order, with no `MetaSized` premise;
-/// [`Placeholders::new`] orders it.
+/// [`Placeholders::new`] orders it. This is not the shape production gives a
+/// set, so only the walk and size-query tests, which read no `MetaSized`
+/// premise, use it.
 fn placeholders(set: Vec<TypeId>) -> TestResult<Placeholders> {
     Ok(Placeholders::new(set.into(), Arc::from([]))?.0)
+}
+
+/// Premises shaped as the overlap inputs build them: every Sized premise is a
+/// `MetaSized` premise too, and `meta_only` are `MetaSized` alone, as a
+/// `?Sized` parameter is.
+fn premises(sized: &[TypeId], meta_only: &[TypeId]) -> TestResult<Placeholders> {
+    let meta: Vec<_> = sized.iter().chain(meta_only).copied().collect();
+    Ok(Placeholders::new(sized.into(), meta.into())?.0)
 }
 
 fn empty(facts: &Declarations) -> TestResult<Arc<Environment>> {
@@ -275,17 +311,37 @@ fn prove_sized(
     )
 }
 
+/// A placeholder proof decides a projected-size nominal through its trait
+/// State under the same premises, never by an interned property or a
+/// declaration: `P<A>` is Sized under {A}, though its interned property, set
+/// by its projected rule, is not, and it is not Sized when A is only
+/// `MetaSized`, though A's declaration is Sized. The State the walk starts
+/// holds the walk's own set. The placeholder size query descends into the
+/// nominal's tail.
 #[test]
-fn placeholder_proofs_fence_projected_sizes_and_never_fall_back() -> TestResult {
+fn placeholder_proofs_decide_projected_sizes_by_premises_and_never_fall_back() -> TestResult {
     let mut fixture = fixture()?;
     let facts = &mut fixture.facts;
     let [sized, unsized_] = [fixture.sized, fixture.unsized_];
     let projected = nominal(facts, fixture.projected, sized)?;
-    let mut proof = Proof::new(None);
-    proof.assume_placeholders(&facts.types, placeholders(vec![sized])?)?;
-    assert_eq!(
-        prove_sized(&mut proof, facts, projected),
-        Err(PLACEHOLDER_SIZE_FENCE)
+    let hidden = nominal(facts, fixture.projected, unsized_)?;
+    assert_eq!(facts.types.is_sized(projected), Some(false));
+    for (ty, set, expected) in [
+        (projected, premises(&[sized], &[])?, true),
+        (projected, premises(&[], &[sized])?, false),
+        (hidden, premises(&[unsized_], &[])?, true),
+    ] {
+        let mut proof = Proof::new(None);
+        proof.assume_placeholders(&facts.types, set)?;
+        assert_eq!(prove_sized(&mut proof, facts, ty), Ok(expected), "{ty:?}");
+        assert_eq!(proof.trait_state_premised(), Some(true), "{ty:?}");
+    }
+    let mut query = sizes::Query::with_placeholders(None, Some(placeholders(vec![])?));
+    let sizes::Step::Projection(tail) = query.advance(facts, projected)? else {
+        return Err("a projected-size nominal descends into its tail".into());
+    };
+    assert!(
+        matches!(facts.types.kind(tail), Some(Kind::Projection(application)) if application.subject == sized)
     );
     let mut size = |set: Option<Placeholders>, ty| {
         let mut query = sizes::Query::with_placeholders(None, set);
@@ -295,10 +351,6 @@ fn placeholder_proofs_fence_projected_sizes_and_never_fall_back() -> TestResult 
             Err(error) => Err(error),
         }
     };
-    assert_eq!(
-        size(Some(placeholders(vec![])?), projected),
-        Err(PLACEHOLDER_SIZE_FENCE)
-    );
     for (set, expected) in [(vec![], false), (vec![sized], true)] {
         let set = placeholders(set)?;
         assert_eq!(size(Some(set.clone()), sized), Ok(Some(expected)));
@@ -310,42 +362,156 @@ fn placeholder_proofs_fence_projected_sizes_and_never_fall_back() -> TestResult 
     Ok(())
 }
 
-/// A fenced walk is cancelled, never kept suspended: the same placeholder
-/// proof fences its root again for the same work, then answers a closed type
-/// and a type with parameters as a fresh placeholder proof does, for the same
-/// work and never from the representative's interned properties.
+/// A failed size proof cancels its walk and its scope's size query, never
+/// keeping either suspended: the same placeholder proof fails its root again
+/// for the same walk work, then answers a closed type, a type with parameters
+/// and the failing root as a fresh placeholder proof does, for the same work
+/// and never from the representative's interned properties. `Q`'s field has
+/// no implementation to normalize it.
 #[test]
-fn fenced_placeholder_proofs_cancel_their_walk_and_answer_afresh() -> TestResult {
+fn failed_placeholder_size_proofs_cancel_their_walk_and_answer_afresh() -> TestResult {
+    const UNIMPLEMENTED: &str = "associated type requires an unambiguous validated implementation";
     let mut fixture = fixture()?;
     let facts = &mut fixture.facts;
     let sized = fixture.sized;
-    let projected = nominal(facts, fixture.projected, sized)?;
+    let failing = nominal(facts, fixture.failing, sized)?;
     let wrapped = nominal(facts, fixture.wrap, sized)?;
     let closed = nominal(facts, fixture.wrap, TypeId::primitive(Primitive::U8))?;
     let mut proof = Proof::new(None);
-    proof.assume_placeholders(&facts.types, placeholders(vec![sized])?)?;
-    assert_eq!(
-        prove_sized(&mut proof, facts, projected),
-        Err(PLACEHOLDER_SIZE_FENCE)
-    );
-    let fenced = proof.shape_steps();
-    assert!(fenced > 0);
-    assert_eq!(
-        prove_sized(&mut proof, facts, projected),
-        Err(PLACEHOLDER_SIZE_FENCE)
-    );
-    assert_eq!(proof.shape_steps(), 2 * fenced);
+    proof.assume_placeholders(&facts.types, premises(&[sized], &[])?)?;
+    assert_eq!(prove_sized(&mut proof, facts, failing), Err(UNIMPLEMENTED));
+    assert_eq!(proof.trait_state_premised(), Some(true));
+    let failed = proof.shape_steps();
+    assert!(failed > 0);
+    assert_eq!(prove_sized(&mut proof, facts, failing), Err(UNIMPLEMENTED));
+    assert_eq!(proof.shape_steps(), 2 * failed);
     for (ty, expected) in [
         (closed, Ok(true)),
         (wrapped, Ok(true)),
-        (projected, Err(PLACEHOLDER_SIZE_FENCE)),
+        (failing, Err(UNIMPLEMENTED)),
     ] {
         let mut fresh = Proof::new(None);
-        fresh.assume_placeholders(&facts.types, placeholders(vec![sized])?)?;
+        fresh.assume_placeholders(&facts.types, premises(&[sized], &[])?)?;
         assert_eq!(prove_sized(&mut fresh, facts, ty), expected, "{ty:?}");
+        assert_ne!(fresh.trait_state_premised(), Some(false), "{ty:?}");
         let before = proof.shape_steps();
         assert_eq!(prove_sized(&mut proof, facts, ty), expected, "{ty:?}");
         assert_eq!(proof.shape_steps() - before, fresh.shape_steps(), "{ty:?}");
+    }
+    assert_eq!(proof.trait_state_premised(), Some(true));
+    Ok(())
+}
+
+/// `sizes/query.rs:82`: a projection that normalizes to itself is rigid.
+/// Under placeholders it is Sized by a premise, which the query looks up
+/// before the projection can be pending, or by its own declared bound. The
+/// interned bit cannot disagree with that bound: `projection_properties` and
+/// `opaque_properties` set it from the same immutable declaration, which the
+/// seal recomputes and `declare_projection` never replaces; a placeholder
+/// State, Cursor or Search has no environment to add a projection promise;
+/// and membership of the alias itself is decided first. So the query reads
+/// the declaration and asserts the agreement.
+#[test]
+fn rigid_aliases_decide_their_size_by_premises_and_declared_bounds() -> TestResult {
+    fn rigid(
+        facts: &mut Declarations,
+        set: Option<Placeholders>,
+        ty: TypeId,
+    ) -> TestResult<(bool, usize)> {
+        let mut query = sizes::Query::with_placeholders(None, set);
+        let mut calls = 0_usize;
+        let answer = query.demand(facts, ty, |_, ty| {
+            calls += 1;
+            Ok(ty)
+        })?;
+        let sizes::Progress::Ready {
+            sized,
+            provisional: false,
+        } = answer
+        else {
+            return Err("a rigid alias answers at once".into());
+        };
+        Ok((sized, calls))
+    }
+    let mut fixture = fixture()?;
+    let facts = &mut fixture.facts;
+    let [relaxed, bounded] = fixture.rigid;
+    for (ty, declared) in [(relaxed, false), (bounded, true)] {
+        let Some(Kind::Projection(application)) = facts.types.kind(ty) else {
+            return Err("rigid projection".into());
+        };
+        let schema = facts
+            .types
+            .projection_schema(application.item)
+            .ok_or("schema")?;
+        assert_eq!(schema.sized, declared, "{ty:?}");
+        assert_eq!(facts.types.is_sized(ty), Some(declared), "{ty:?}");
+        assert_eq!(
+            rigid(facts, Some(placeholders(vec![])?), ty)?,
+            (declared, 1)
+        );
+        assert_eq!(rigid(facts, None, ty)?, (declared, 1));
+    }
+    assert_eq!(
+        rigid(facts, Some(placeholders(vec![relaxed])?), relaxed)?,
+        (true, 0)
+    );
+    Ok(())
+}
+
+/// A placeholder proof of `P^d<B>` under its own set normalizes exactly as
+/// often as the premise-less proof of `P^d<A>` in an environment, and its
+/// accounted work stays under the line through depths 1 and 2. The walk's
+/// own steps are constant in d, because a projected-rule nominal has no sized
+/// children: the walk raises one size request, and the State's size proof
+/// descends the levels, so the bound counts the State's accounted work as
+/// well. The count itself is not asserted: both proofs start 2^d - 1
+/// normalizations, a recorded pre-existing performance item, because the
+/// nested proofs of each level share no work and their work is not charged
+/// to this proof.
+#[test]
+fn placeholder_projected_size_work_is_linear_in_depth() -> TestResult {
+    use crate::sema::nominals::traits::size_normalizations;
+    let mut fixture = fixture()?;
+    let (b, a) = (fixture.unsized_, fixture.sized);
+    let environment = scoped(&fixture.facts)?;
+    for (sized, meta_only, expected) in [(vec![b], vec![], true), (vec![a], vec![b], false)] {
+        // The premise-less twin is over the Sized A: a hand-built environment
+        // gives a `?Sized` parameter no `MetaSized` premise.
+        let mut work = Vec::new();
+        for depth in [1_usize, 2, 4, 10] {
+            let facts = &mut fixture.facts;
+            let (mut ty, mut plain_ty) = (b, a);
+            for _ in 0..depth {
+                ty = nominal(facts, fixture.projected, ty)?;
+                plain_ty = nominal(facts, fixture.projected, plain_ty)?;
+            }
+            let mut plain = Proof::new(Some(Arc::clone(&environment)));
+            let before = size_normalizations();
+            assert_eq!(
+                prove_sized(&mut plain, facts, plain_ty),
+                Ok(true),
+                "{depth}"
+            );
+            assert_eq!(plain.trait_state_premised(), Some(false), "{depth}");
+            let premise_less = size_normalizations()[0] - before[0];
+            let mut proof = Proof::new(None);
+            proof.assume_placeholders(&facts.types, premises(&sized, &meta_only)?)?;
+            let before = size_normalizations();
+            assert_eq!(prove_sized(&mut proof, facts, ty), Ok(expected), "{depth}");
+            assert_eq!(proof.trait_state_premised(), Some(true), "{depth}");
+            let after = size_normalizations();
+            assert_eq!(
+                after[0], before[0],
+                "{depth}: every normalization is under the set"
+            );
+            assert_eq!(after[1] - before[1], premise_less, "{depth}");
+            work.push(proof.shape_steps() + proof.trait_state_work());
+        }
+        eprintln!("placeholder projected size work, Sized {expected}: {work:?}");
+        let slope = work[1].checked_sub(work[0]).ok_or("work fell with depth")?;
+        assert!(work[2] <= work[0] + 3 * slope, "{work:?}");
+        assert!(work[3] <= work[0] + 9 * slope, "{work:?}");
     }
     Ok(())
 }
@@ -548,10 +714,7 @@ fn well_formedness_failing_headers_never_reach_the_placeholder_walk() -> TestRes
             let error = analyze(&source)?
                 .err()
                 .ok_or("a WF-failing header was accepted")?;
-            assert!(
-                error != OVERLAP && error != PLACEHOLDER_SIZE_FENCE,
-                "{error}"
-            );
+            assert_ne!(error, OVERLAP);
             assert!(WELL_FORMED.contains(&error.as_str()), "{blanket}: {error}");
             errors.push(error);
         }
@@ -641,51 +804,111 @@ enum Premise {
     A,
 }
 
-/// q1, `(u8, Wrap<B>)` Sized, by a fresh builtin proof under `premise` over
-/// the fixture's shared facts.
-fn q1(fixture: &mut Fixture, premise: Premise) -> TestResult<Result<bool, &'static str>> {
-    let facts = &mut fixture.facts;
-    let wrapped = nominal(facts, fixture.wrap, fixture.unsized_)?;
-    let ty = tuple(facts, &[TypeId::primitive(Primitive::U8), wrapped])?;
-    let mut proof = Proof::new(None);
-    let set = match premise {
-        Premise::Without => None,
-        Premise::B => Some(vec![fixture.unsized_]),
-        Premise::A => Some(vec![fixture.sized]),
-    };
-    if let Some(set) = set {
-        proof.assume_placeholders(&facts.types, placeholders(set)?)?;
-    }
-    Ok(prove_sized(&mut proof, facts, ty))
+/// The questions of the facts-memo orders: q1, `(u8, Wrap<B>)` Sized, which
+/// the shape walk decides, and q2, `P<B>` Sized, which the proof's trait
+/// State decides by normalizing `<B as Tr>::Out` under the same premises.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Question {
+    Q1,
+    Q2,
 }
 
-/// No facts-level memo keeps a placeholder answer: q1 is Sized only under
-/// {B}, and every order of premise-less, {B} and {A} proofs on shared facts
-/// answers as the same proof does on fresh facts. Only answers are compared,
-/// because premise-free memos legitimately cheapen a later proof.
+/// `question` by a fresh builtin proof under `premise` over the fixture's
+/// shared facts.
+fn ask(
+    fixture: &mut Fixture,
+    question: Question,
+    premise: Premise,
+) -> TestResult<Result<bool, &'static str>> {
+    let facts = &mut fixture.facts;
+    let ty = match question {
+        Question::Q1 => {
+            let wrapped = nominal(facts, fixture.wrap, fixture.unsized_)?;
+            tuple(facts, &[TypeId::primitive(Primitive::U8), wrapped])?
+        }
+        Question::Q2 => nominal(facts, fixture.projected, fixture.unsized_)?,
+    };
+    let mut proof = Proof::new(None);
+    let [b, a] = [fixture.unsized_, fixture.sized];
+    // q1 keeps checkpoint 3a's Sized-only sets. q2's sets are shaped as the
+    // overlap inputs build them; under {A}, B is `MetaSized` alone.
+    let set = match (question, premise) {
+        (_, Premise::Without) => None,
+        (Question::Q1, Premise::B) => Some(placeholders(vec![b])?),
+        (Question::Q1, Premise::A) => Some(placeholders(vec![a])?),
+        (Question::Q2, Premise::B) => Some(premises(&[b], &[])?),
+        (Question::Q2, Premise::A) => Some(premises(&[a], &[b])?),
+    };
+    let premised = set.is_some();
+    if let Some(set) = set {
+        proof.assume_placeholders(&facts.types, set)?;
+    }
+    let answer = prove_sized(&mut proof, facts, ty);
+    assert_ne!(
+        proof.trait_state_premised(),
+        Some(!premised),
+        "{question:?} {premise:?}"
+    );
+    if question == Question::Q2 && premised {
+        assert_eq!(proof.trait_state_premised(), Some(true), "{premise:?}");
+    }
+    Ok(answer)
+}
+
+/// No facts-level memo keeps a placeholder answer: q1 and q2 are Sized only
+/// under {B}, and every order of premise-less, {B} and {A} proofs on shared
+/// facts answers as the same proof does on fresh facts. A premise-less proof
+/// of q2 fails, because its shapes have no environment for B; under {A}, B is
+/// only `MetaSized`. Every State a placeholder proof starts holds its set.
+/// Only answers are compared, because premise-free memos legitimately cheapen
+/// a later proof.
 #[test]
 fn placeholder_answers_leave_no_trace_in_facts_memos() -> TestResult {
     use Premise::{A, B, Without};
+    use Question::{Q1, Q2};
     let mut single = Vec::new();
-    for premise in [Without, B, A] {
-        single.push((premise, q1(&mut fixture()?, premise)?));
+    for question in [Q1, Q2] {
+        for premise in [Without, B, A] {
+            let answer = ask(&mut fixture()?, question, premise)?;
+            single.push(((question, premise), answer));
+        }
     }
-    let fresh = |premise: Premise| {
+    let fresh = |key: (Question, Premise)| {
         single
             .iter()
-            .find(|(each, _)| *each == premise)
+            .find(|(each, _)| *each == key)
             .map(|(_, answer)| *answer)
             .ok_or("premise")
     };
-    assert_eq!(fresh(Without)?, Ok(false));
-    assert_eq!(fresh(B)?, Ok(true));
-    assert_eq!(fresh(A)?, Ok(false));
-    assert_ne!(fresh(Without)?, fresh(B)?, "the set changes q1's answer");
-    assert_ne!(fresh(B)?, fresh(A)?, "which set it is changes q1's answer");
-    for order in [[Without, B], [B, Without], [B, A], [A, B]] {
-        let mut shared = fixture()?;
-        for premise in order {
-            assert_eq!(q1(&mut shared, premise)?, fresh(premise)?, "{order:?}");
+    assert_eq!(fresh((Q1, Without))?, Ok(false));
+    assert_eq!(fresh((Q1, B))?, Ok(true));
+    assert_eq!(fresh((Q1, A))?, Ok(false));
+    assert_eq!(
+        fresh((Q2, Without))?,
+        Err("shape parameter is outside its environment")
+    );
+    assert_eq!(fresh((Q2, B))?, Ok(true));
+    assert_eq!(fresh((Q2, A))?, Ok(false));
+    for question in [Q1, Q2] {
+        assert_ne!(
+            fresh((question, Without))?,
+            fresh((question, B))?,
+            "the set changes {question:?}'s answer"
+        );
+        assert_ne!(
+            fresh((question, B))?,
+            fresh((question, A))?,
+            "which set it is changes {question:?}'s answer"
+        );
+        for order in [[Without, B], [B, Without], [B, A], [A, B]] {
+            let mut shared = fixture()?;
+            for premise in order {
+                assert_eq!(
+                    ask(&mut shared, question, premise)?,
+                    fresh((question, premise))?,
+                    "{question:?} {order:?}"
+                );
+            }
         }
     }
     Ok(())

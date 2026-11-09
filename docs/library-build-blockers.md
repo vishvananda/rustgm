@@ -5,6 +5,52 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane B [item B, negative premises in nested trait proofs](parallel/negative-nested-proofs.md)
+carries the other header's Sized and `MetaSized` premises into every nested
+trait proof of a negative coherence query and retires the projected-size
+fence:
+
+- Repaired: the known rejects-valid `nested-projected-size` and its swapped
+  twin. A projected-size nominal's size is now decided by the proof's trait
+  State under the same premises: it normalizes the projected tail under the
+  set, and decides a rigid alias by the set and its own declared bound.
+  `nested-projected-premise-side` and its swapped twin are rejected with the
+  overlap text, as rustc rejects them with E0119.
+- 14 new twins were declared before their rustc 1.98.0 oracle. Of the 61
+  cases, all but two probe pairs match rustc.
+- Fixed before landing: a trait State started inside a placeholder walk took
+  its premises from the proof's shapes slot, which the walk had taken, so its
+  nested proofs ran premise-less and read the representative's declaration.
+  The walk now passes its own set. A sweep found no other holder that reads
+  its set from a slot that can be empty.
+- Open rejects-valid for item C: the `probe-projection-premise` pair, which
+  rustc accepts. P's formation goal `V: Tr` fails before any Sized goal,
+  because the other header's `U: Tr<Out = u8>` is a trait premise, which this
+  item does not assume. The `probe-trait-premise` pair stays open for the
+  same reason.
+- Pre-existing performance item, found by item B's test E. The shared
+  nominal size proof starts 2^d - 1 normalizations for `P^d<T>`, where
+  `struct P<T: ?Sized + Tr>(<T as Tr>::Out)` and `impl<X: ?Sized> Tr for X`.
+  The premise-less and placeholder proofs have the same counts (1, 3, 7, 15,
+  63, 255, 1023 and 4095 for d = 1, 2, 3, 4, 6, 8, 10 and 12). The CLI takes
+  0.36 s on `pub struct Field<U>(P^8<U>, u8)`, about 5.5 s at d = 12, and
+  times out after 60 s at d = 16, on main and with item B alike. A
+  premise-less unit proof overflows a 2 MiB test-thread stack at d = 16.
+  It has two parts:
+  1. No reuse between the sibling nested proofs of each `P^k<T>`. This is the
+     likely mechanism and is still to be traced: each level's normalization
+     selects `impl<X: ?Sized> Tr for X`, whose `X: MetaSized` re-proves the
+     next level in a fresh nested proof.
+  2. Nested proof work is never charged to the outer proof's accounting. The
+     accounted work stays linear, about 16 to 18 steps a level, so no work
+     budget stops the blow-up. It ends as a timeout or a stack overflow, never
+     a named budget failure. This part alone is a robustness bug: any input
+     can run unbounded.
+
+  Lane B's next item, ahead of item C, makes the count linear in d and
+  charges nested work to the outer budget, with a named budget failure at a
+  declared depth.
+
 Lane C [zero-slot nominal callable fields](parallel/callable-fields.md), (ii),
 lets a version-13 export carry a struct's or tuple variant's closed Rust fn
 field, with no wire change. Version 13 admits a callable-type binder that a
@@ -394,11 +440,10 @@ rustc 1.98's `impl_intersection_has_negative_obligation` does, on main
   before their rustc 1.98.0 oracle. Of the 47 cases, 43 match rustc, and the
   symmetry invariant has no exemption. The flip survey and the census
   lookahead are byte-identical to the base.
-- Known rejects-valid: `nested-projected-size` and its swapped twin, which
-  rustc accepts. A projected-size nominal's size comes from a nested trait
-  proof without the header premises, so a named fence rejects it in both
-  orders. Fix B threads the premises into that proof, including
-  normalization inside the builtin proof, as a later item.
+- Known rejects-valid until item B, which repairs it: `nested-projected-size`
+  and its swapped twin, which rustc accepts. A projected-size nominal's size
+  came from a nested trait proof without the header premises, so a named
+  fence rejected it in both orders.
 - Open rejects-valid: the `probe-trait-premise` pair, which rustc accepts. It
   is rejected in both orders because a negative impl's trait condition is not
   assumed from the other header's trait premises.

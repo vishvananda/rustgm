@@ -1,6 +1,6 @@
 # Negative coherence under the other header's premises
 
-Forty-seven no_core source-core libraries, checked against rustc 1.98. Each
+Sixty-one no_core source-core libraries, checked against rustc 1.98. Each
 pair can be disjoint only through a negative impl, and they ask the same
 question: which header's premises may pay the negated clause's debts?
 
@@ -84,23 +84,58 @@ in its nested size proof".
 The union batch's residual, `nested-premise-side`, is fixed. Under the other
 header's Sized premises, the shape walk and the nominal size query follow
 rustc 1.98's `sized_conditions` and read no parameter declaration and no
-interned property of a type with parameters. So every outcome is rustc's,
-except in these cases:
+interned property of a type with parameters. Until item B, every outcome was
+rustc's, except in these cases:
 
-- `nested-projected-size` and its swapped twin are a known rejects-valid.
-  A projected-size nominal's size is answered by a nested trait proof that
-  has no header premises, so both orders reject it with the fence. On main
-  they were the shape-parameter error. Threading the premises into that
-  proof (B) is a separate item.
-- `nested-projected-premise-side` rejects with the fence in both orders,
+- `nested-projected-size` and its swapped twin were a known rejects-valid.
+  A projected-size nominal's size was answered by a nested trait proof that
+  had no header premises, so both orders rejected it with the fence. On main
+  they were the shape-parameter error.
+- `nested-projected-premise-side` rejected with the fence in both orders,
   where rustc rejects with E0119.
 - `probe-trait-premise` is a probe, rejected in both orders while rustc
   accepts it: a negative impl's trait condition is not assumed from the
   other header's trait premises. It is recorded, with no fix.
 
+Item B (2026-11-09, on `7acc24208`) carries the other header's premises into
+every nested trait proof of the negative query and retires the fence. Its
+fourteen twins follow the same naming. "Before" is the `7acc24208` CLI, the
+same in both orders.
+
+| Twin | Shape | rustc 1.98.0 | Before | After |
+| --- | --- | --- | --- | --- |
+| `nested-projected-size` | as above | accepted | fence | accepted |
+| `nested-projected-premise-side` | as above | E0119 | fence | overlap |
+| `nested-projected-sized-impl` | `impl<X> Tr for X { type Out = X; }`, client's Sized `U` | accepted | fence | accepted |
+| `nested-projected-composite` | `type Out = Wrap<X>`, client's Sized `U` | accepted | fence | accepted |
+| `nested-projected-unsized` | `impl<X> Tr for X { type Out = [X]; }`, client's Sized `U` | E0119 | fence | overlap |
+| `nested-projected-metasized` | `impl<T: ?Sized> !Seal for &T`, client's `U: ?Sized` | accepted | fence | accepted |
+| `nested-projected-written` | client's `U: ?Sized` with `where P<U>: Sized` | accepted | accepted | accepted |
+| `nested-normalized-builtin` | blanket's `where &'a <V as Tr>::Out: Seal` over `Holds<&'a V>` | accepted | accepted | accepted |
+| `probe-projection-premise` | `V: Tr` with no impl of `Tr`, client's `U: Tr<Out = u8>` (probe) | accepted | overlap | overlap |
+
+So every outcome is rustc's, except for the two probe pairs.
+`probe-projection-premise` is a known rejects-valid for item C. P's
+formation goal `V: Tr` fails before any Sized goal, because the client's
+`U: Tr<Out = u8>` is a trait premise, which item B does not assume.
+
 Outcomes were declared before each twin's frozen rustc 1.98.0 oracle and
 before any RustGM run of it. `outcomes.json` records both, with these
 amendments:
+
+- **Item B, probe.** `probe-projection-premise` was declared with the fence
+  before and with "associated type requires an unambiguous validated
+  implementation" after. The before-runs showed the overlap text in both
+  orders: P's formation goal `V: Tr` fails before any Sized goal. Its after
+  outcome was redeclared as overlap before any code change.
+- **Item B, premise plumbing.** The first candidate rejected
+  `nested-projected-premise-side-swapped` and
+  `nested-projected-metasized-swapped` with "associated type requires an
+  unambiguous validated implementation", and accepted the other projected
+  twins only by reading the representative's declaration: a trait State
+  started inside the placeholder walk had no premises. The fix was declared
+  and approved before any further run. No outcome was redeclared, and none
+  of that candidate's observations is evidence.
 
 - **Projected sizes (nested item, two amendments).** Before any oracle or
   RustGM run, `nested-projected-size` was redeclared accepted after, and
@@ -131,14 +166,14 @@ Each file is one crate feature line, then the same pinned prefix as
 MIT/Apache-2.0 attribution; see the root NOTICE and `third_party/sources.json`.
 
 `dev/tests/invariants/coherence_premise_sides.rs` checks every case but the
-probe, which only `outcomes.json` records. Its symmetry check covers every
-checked pair:
+two probe pairs, which only `outcomes.json` records. Its symmetry check
+covers every checked pair:
 
 - every `X-swapped` twin has `X`'s diagnostic text;
 - every accepted case is disjoint with its `Holds` pair passed to
   `overlap::possible` in both orders.
 
-No pair is exempt: it compares diagnostic texts, and the projected-size
-pairs give the same fence in both orders. See
-`docs/parallel/negative-premise-sides.md` and
-`docs/parallel/nested-sizedness.md`.
+No pair is exempt: it compares diagnostic texts. See
+`docs/parallel/negative-premise-sides.md`,
+`docs/parallel/nested-sizedness.md` and
+`docs/parallel/negative-nested-proofs.md`.

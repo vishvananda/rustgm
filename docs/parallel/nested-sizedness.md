@@ -102,6 +102,11 @@ accepts. B, threading the set into the nested trait proof, is a separate item.
 A projection the size query meets still descends into the same negative
 query, which has the set.
 
+[Item B](negative-nested-proofs.md) retires this fence at its checkpoint 3b:
+the proof's trait State decides the size under the same premises, and
+`nested-projected-size` and its swapped twin are accepted, as rustc accepts
+them.
+
 ### Premise-less behaviour of each shared change
 
 | File | Without placeholders |
@@ -226,7 +231,8 @@ The declarations are `predictions6.json` (`2b261a8c…`), with its predecessors
 ## 8. Open items
 
 - B: thread the header premises into the nested trait proof, for projected
-  sizes and for normalization inside the builtin proof.
+  sizes and for normalization inside the builtin proof. Done by
+  [item B](negative-nested-proofs.md).
 - `probe-trait-premise`: a rejects-valid probe pair, which rustc accepts. A
   negative impl's trait condition is not assumed from the other header's
   trait premises.

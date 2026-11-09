@@ -11,13 +11,10 @@ type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 const PACKET: &str = "pa31/tests/spec/negative-premise-sides";
 const SIDES: &str = "pa31/tests/spec/negative-metasized";
 const OVERLAP: &str = "overlapping trait implementation headers require coherence proof";
-const FENCE: &str = crate::sema::nominals::PLACEHOLDER_SIZE_FENCE;
 
-/// The checked rustc outcomes of `outcomes.json`, except the known
-/// rejects-valid `nested-projected-size`, which rustc accepts: a
-/// projected-size nominal's size needs the nested trait proof, which has no
-/// header premises, so both orders reject it with the named fence.
-const CASES: [(&str, &str, Option<&str>); 47] = [
+/// The checked rustc outcomes of `outcomes.json`. The probes, which need
+/// the other header's trait premises, are left out.
+const CASES: [(&str, &str, Option<&str>); 59] = [
     (SIDES, "sized-premise-side", Some(OVERLAP)),
     (PACKET, "sized-premise-side-swapped", Some(OVERLAP)),
     (PACKET, "sized-client-side", None),
@@ -61,10 +58,26 @@ const CASES: [(&str, &str, Option<&str>); 47] = [
     (PACKET, "nested-metasized-held-swapped", None),
     (PACKET, "nested-wf-control", None),
     (PACKET, "nested-wf-control-swapped", None),
-    (PACKET, "nested-projected-size", Some(FENCE)),
-    (PACKET, "nested-projected-size-swapped", Some(FENCE)),
-    (PACKET, "nested-projected-premise-side", Some(FENCE)),
-    (PACKET, "nested-projected-premise-side-swapped", Some(FENCE)),
+    (PACKET, "nested-projected-size", None),
+    (PACKET, "nested-projected-size-swapped", None),
+    (PACKET, "nested-projected-premise-side", Some(OVERLAP)),
+    (
+        PACKET,
+        "nested-projected-premise-side-swapped",
+        Some(OVERLAP),
+    ),
+    (PACKET, "nested-projected-sized-impl", None),
+    (PACKET, "nested-projected-sized-impl-swapped", None),
+    (PACKET, "nested-projected-composite", None),
+    (PACKET, "nested-projected-composite-swapped", None),
+    (PACKET, "nested-projected-unsized", Some(OVERLAP)),
+    (PACKET, "nested-projected-unsized-swapped", Some(OVERLAP)),
+    (PACKET, "nested-projected-written", None),
+    (PACKET, "nested-projected-written-swapped", None),
+    (PACKET, "nested-normalized-builtin", None),
+    (PACKET, "nested-normalized-builtin-swapped", None),
+    (PACKET, "nested-projected-metasized", None),
+    (PACKET, "nested-projected-metasized-swapped", None),
 ];
 
 /// A case's diagnostic, or for an accepted case whether its `Holds` pair may
@@ -154,7 +167,7 @@ fn negative_conditions_assume_only_the_other_headers_premises_in_either_order() 
         assert_eq!(outcome, partner, "{name} differs from {base}");
         pairs += 1;
     }
-    assert_eq!(pairs, 17, "every swapped twin is compared");
+    assert_eq!(pairs, 23, "every swapped twin is compared");
     Ok(())
 }
 
