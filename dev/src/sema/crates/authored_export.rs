@@ -1007,9 +1007,16 @@ fn require_export_mode(
             return Err("source availability export requires its completed actual library policy");
         }
     }
-    if report.resolution.bindings.has_contextual_items()
-        || report.package.marks.context_count() != 1
-    {
+    // Version thirteen admits semi-opaque and transparent marks that leave
+    // every item name at the root and bind no local, parameter or label: no
+    // row then depends on a mark. Older profiles keep the crate-wide gate.
+    let marked = if languages {
+        report.package.marks.has_item_contexts()
+            || report.resolution.bindings.has_contextual_locals()
+    } else {
+        report.package.marks.context_count() != 1
+    };
+    if report.resolution.bindings.has_contextual_items() || marked {
         return Err("source macro/semantic-name provenance metadata is not implemented");
     }
     facts

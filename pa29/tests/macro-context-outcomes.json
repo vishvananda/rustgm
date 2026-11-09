@@ -1,0 +1,113 @@
+{
+ "schema": 1,
+ "edition": "2024",
+ "toolchain": "1.98.0",
+ "target": "x86_64-unknown-linux-gnu",
+ "candidate_profile": "module-bodies-v13",
+ "oracle_flags": "RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle; the oracle links the provider object (--emit=link,obj)",
+ "providers": [
+  {
+   "file": "spec/macro-contexts/provider.rs",
+   "sha256": "143998287d83a2d624017e7c6a571b5e5bf0d4101ff2662b8b2dc9c234b4e5b5"
+  }
+ ],
+ "expectation_frozen_before_candidate": true,
+ "declared": "2026-11-09T00:57:03Z",
+ "development_note": "declared before any rustc or RustGM run of these files. Before this slice, main rejects the provider at export with `source macro/semantic-name provenance metadata is not implemented`, because its `macro_rules!` expansions make the crate's mark count 2 or more",
+ "gate_rule": "integrator-approved B2 slice M (LIB-059 sub-item): version thirteen keeps `has_contextual_items` and replaces the crate-wide `context_count() != 1` test with two rejections: any mark whose item projection is not the root (opaque marks: macro 2.0 and formatting expansions), and any local, parameter or label bound by a marked name token. Exported macro definitions keep Lane B's envelope (tag 14) unchanged; a macro-generated one is rejected by its existing name, now located at the exported macro. Older profiles keep the crate-wide test. No metadata row changes",
+ "cases": [
+  {
+   "file": "spec/macro-contexts/forty-two.rs",
+   "provider": "spec/macro-contexts/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "75c1487a571722e0c3a870278d7b144dab1ff0f38c1ed8d45107a1918fc21081"
+  },
+  {
+   "file": "spec/macro-contexts/plus-forty.rs",
+   "provider": "spec/macro-contexts/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "87777b24e8433df1b5810ccf5561c273d955d527a28615b106fc77380985b7e4"
+  },
+  {
+   "file": "spec/macro-contexts/relay.rs",
+   "provider": "spec/macro-contexts/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "f9b27a217113ced07e5670c77c87057190ca7d226fd93477dbd9c9d35ebf7cdc"
+  },
+  {
+   "file": "spec/macro-contexts/answer.rs",
+   "provider": "spec/macro-contexts/provider.rs",
+   "accepted": true,
+   "native_exit": 42,
+   "sha256": "35471991c23df6d3e567959b5457197e8d8aa0d85996baf58219df5a7cf596d0",
+   "note": "the client expands the exported `answer!`, whose `$crate` path resolves to the provider"
+  },
+  {
+   "file": "spec/macro-contexts/mismatch.rs",
+   "provider": "spec/macro-contexts/provider.rs",
+   "accepted": false,
+   "rustc": "E0308",
+   "candidate_diagnostic": "incompatible types",
+   "sha256": "5efd6ac431c2829b403ea95bb0b70af2f1a1ff390ff26d385a1a4713b8fe085a"
+  }
+ ],
+ "export_controls": {
+  "note": "generated providers: lines 1-147 of the provider, optionally preceded by `#![feature(decl_macro)]`, then one control. rustc accepts every control crate",
+  "provider_v13": {
+   "before": "source macro/semantic-name provenance metadata is not implemented",
+   "after": "exports; the packet carries version [13, 0] and one exported macro row, `answer`",
+   "amended": "2026-11-09, after the first candidate run and before the second: the [13, 0] version is the wrapped core's. Lane B's macro envelope (tag 14, version 1) wraps it, so the outer packet starts with that envelope's header. The first run's test read the outer bytes; no outcome changed"
+  },
+  "provider_older_profiles": {
+   "profiles": ["module-branches-v12", "module-nominals-v10"],
+   "before_and_after": "source macro/semantic-name provenance metadata is not implemented"
+  },
+  "hygienic_local": {
+   "control": "macro_rules! keep { ($e:expr) => {{ let x = $e; x }} } pub fn kept() -> u8 { keep!(42) }",
+   "before_and_after": "source macro/semantic-name provenance metadata is not implemented"
+  },
+  "hygienic_label": {
+   "control": "macro_rules! spin { () => { 'out: loop { break 'out 42 } } } pub fn spun() -> u8 { spin!() }",
+   "before_and_after": "source macro/semantic-name provenance metadata is not implemented"
+  },
+  "macro_parameter": {
+   "control": "macro_rules! define { () => { pub fn made(x: u8) -> u8 { x } } } define!();",
+   "before_and_after": "source macro/semantic-name provenance metadata is not implemented"
+  },
+  "opaque_expansion": {
+   "control": "macro seven() { 42 } pub fn seven_up() -> u8 { seven!() }",
+   "decl_macro": true,
+   "before_and_after": "source macro/semantic-name provenance metadata is not implemented"
+  },
+  "contextual_item": {
+   "control": "macro def() { fn hidden() -> u8 { 42 } pub fn shown() -> u8 { hidden() } } def!();",
+   "decl_macro": true,
+   "before_and_after": "source macro/semantic-name provenance metadata is not implemented"
+  },
+  "generated_exported_macro": {
+   "control": "macro_rules! make { () => { #[macro_export] macro_rules! made { () => { 1 } } } } make!{}",
+   "before": "source macro/semantic-name provenance metadata is not implemented",
+   "after": "macro-generated exported macros are outside the macro metadata profile, located at the generated `macro_rules! made` item",
+   "amended": "2026-11-09, after the first candidate run and before the second: that run reported the rejection at the generated definition's expanded offset (file 0: 6065, past the 6045-byte source). The source-core publication now projects macro-table errors through expansion provenance, as its other phase errors are, so the location names the generating tokens inside `make!`'s body. The text is unchanged"
+  },
+  "generated_exported_macro_ordinary_path": {
+   "declared": "2026-11-09T01:32:17Z, after Lane B's review of the M commit and before any run of this control. Lane B found that the ordinary library path (build_library_prepared, export_with_originals, with_envelopes) did not project the macro table, so M's located rejection named an expanded offset there; before M it named file 0: 0. with_envelopes now projects the table's errors. Every other error the table raises is at file 0: 0 and keeps that location",
+   "control": "dev/tests/crate_linking/declarative_exports.rs, the source `macro_rules! make{()=>{#[macro_export] macro_rules! made{()=>{1}}}}make!{}`",
+   "before_m": "file 0: 0: macro-generated exported macros are outside the macro metadata profile",
+   "after": "file 0: 39: macro-generated exported macros are outside the macro metadata profile, at `macro_rules! made` inside `make!`'s body, with the trace `in macro make at file 0: 67; defined at file 0: 0`"
+  },
+  "crate_path_macro_unused": {
+   "control": "pub fn forty_two() -> u8 { 42 } #[macro_export] macro_rules! answer { () => { $crate::forty_two() } }",
+   "before_and_after": "exports, with identical packet bytes"
+  }
+ },
+ "byte_identity": "existing version-thirteen providers published by the baseline and the candidate CLI produce identical packets: spec/transparent-records/provider.rs, spec/panic-attributes/provider.rs and the crate_path_macro_unused control",
+ "stream_witness": {
+  "source": "pa41/tests/spec/asm-native/native.rs before `// Authored observers`",
+  "before": "source macro/semantic-name provenance metadata is not implemented",
+  "after": "source const parameters are outside the initial source profile"
+ }
+}

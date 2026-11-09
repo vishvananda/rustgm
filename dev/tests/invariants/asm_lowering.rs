@@ -8,10 +8,11 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const SPEC: &str = "pa41/tests/spec/asm-native";
 /// The v13 module-body publication has no assembly value row.
 const TRANSPORT: &str = "source rvalue requires a complete wider transport row";
-/// Observed after the first run, not predicted: the crate holding the real
-/// stream body stops at the crate-wide macro provenance fence, since `vps!`
-/// and `concat!` expand inside it.
-const STREAM_OBSERVED: &str = "source macro/semantic-name provenance metadata is not implemented";
+/// The crate holding the real stream body. B1 observed it stopping at the
+/// crate-wide macro provenance fence, since `vps!` and `concat!` expand inside
+/// it. B2's macro-context slice admits those semi-opaque marks, so it stops at
+/// its first const parameter, declared before the run.
+const STREAM_OBSERVED: &str = "source const parameters are outside the initial source profile";
 /// The provider function whose `LowIR` the control demands.
 fn root(
     report: &crate::resolve::expansion::Report,

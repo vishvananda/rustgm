@@ -50,6 +50,30 @@ fn projections_preserve_only_the_marks_that_own_each_namespace() -> TestResult {
     Ok(())
 }
 
+/// The version-thirteen macro gate: `macro_rules!` and eager builtins mark
+/// tokens semi-opaquely, which keeps every item projection at the root even
+/// when nested or invoked from marked call sites; one opaque mark does not.
+#[test]
+fn only_opaque_marks_give_an_item_context() -> TestResult {
+    let mut marks = Marks::default();
+    let root = SyntaxContextId::ROOT;
+    assert!(!marks.has_item_contexts());
+    let rules = marks.apply(root, ExpansionId(1), Transparency::SemiOpaque, root)?;
+    let nested = marks.apply(root, ExpansionId(2), Transparency::SemiOpaque, rules)?;
+    let captured = marks.apply(rules, ExpansionId(3), Transparency::SemiOpaque, nested)?;
+    let transparent = marks.apply(captured, ExpansionId(4), Transparency::Transparent, rules)?;
+    for context in [rules, nested, captured, transparent] {
+        assert_eq!(marks.item(context)?, ItemContext::ROOT);
+        assert_ne!(marks.local(context)?, LocalContext::ROOT);
+    }
+    assert!(marks.context_count() > 4);
+    assert!(!marks.has_item_contexts());
+    let opaque = marks.apply(root, ExpansionId(5), Transparency::Opaque, rules)?;
+    assert_ne!(marks.item(opaque)?, ItemContext::ROOT);
+    assert!(marks.has_item_contexts());
+    Ok(())
+}
+
 #[test]
 fn mixed_prefixes_are_shared_but_actual_invocations_remain_distinct() -> TestResult {
     let mut marks = Marks::default();

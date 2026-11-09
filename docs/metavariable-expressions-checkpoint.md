@@ -44,6 +44,10 @@ CPPGM backend: seven commands, two native executions,4.61 seconds. Evidence is
 `e4b935eec1ea61cb3a2a7101086e16b67d0743689f16db07023e0f7688e166b4`.
 The original library-output consumer remains blocked by real source
 macro/semantic-name provenance metadata; its failures stay in native-v1/v2.
+Amended 2026-11-09: since [B2 M](parallel/macro-contexts.md) its publication
+stops at "conditional member requires its actual From declaration" instead
+(edition 2024), still with no packet; the
+[packet README](../pa31/tests/spec/metavariable-expressions/README.md) records it.
 
 Immutable development-build A/A plus paired ABBA measurements retain every raw
 observation and output equality. Nested depths8/16/32 show candidate median

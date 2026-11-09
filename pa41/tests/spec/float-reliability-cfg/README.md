@@ -42,6 +42,13 @@ and bool/u8 implementations. Actual RustGM checking and lowering through the
 locked backend produce `0 0 0 0`. SourceCore library publication still rejects
 macro/name provenance that its current metadata profile cannot encode. Retain
 that required transport boundary; executable success grants no metadata authority.
+Amended 2026-11-09: since B2 M
+([macro contexts](../../../../docs/parallel/macro-contexts.md)), version 13
+admits these semi-opaque marks, and the same publication stops at "source Copy
+language item is missing" in edition 2024 and at "source export requires
+defining Rust2024 edition" in 2021. It still publishes no packet.
+`native-execution-v2.json` keeps the original observation and records the new
+stops with the observing binary.
 
 Failed setup versions remain explicit: the original native fixture placed an
 inner feature attribute after declarations, corrected in v2 without changing an

@@ -180,6 +180,12 @@ So for this body at least three fences stand before the asm value row:
 macro provenance, the `repr(simd)` record contract and the const-generic
 array impls. B2's design notice starts there.
 
+Amendment (B2 M, [macro contexts](parallel/macro-contexts.md)): version 13
+now admits the semi-opaque marks `vps!` and `concat!` leave, so this crate
+stops at its first const parameter, "source const parameters are outside the
+initial source profile". That outcome was declared before the run, and the
+test pins it in place of the B1 observation.
+
 ### Qualification
 
 All outcomes except the stream body's publication error were declared in

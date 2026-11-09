@@ -163,12 +163,16 @@ fn with_envelopes(
     facts: &Declarations,
     interface: Interface,
 ) -> Result<Interface, Error> {
-    let interface =
-        if let Some(macros) = declarative_rows::collect(report, interface.dependencies())? {
-            interface.with_macros(macros).map_err(error)?
-        } else {
-            interface
-        };
+    // A generated exported definition is located in expanded text; project
+    // it to the tokens that produced it. The source-core publication reads
+    // this table through `macro_table` and projects it there instead.
+    let table = declarative_rows::collect(report, interface.dependencies())
+        .map_err(|e| report.diagnostic(e))?;
+    let interface = if let Some(macros) = table {
+        interface.with_macros(macros).map_err(error)?
+    } else {
+        interface
+    };
     if let Some(plan) = facts
         .foreign
         .as_deref()

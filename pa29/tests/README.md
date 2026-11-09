@@ -554,3 +554,17 @@ under its transported where-clauses. The packet holds:
 
 The `crate_linking::where_clause_transport` integration controls and the
 `nominals::requirements` payment and scaling invariants consume it.
+
+`macro-context-outcomes.json` freezes the version-thirteen macro-context
+packet under `spec/macro-contexts/`, B2's macro-context slice of LIB-059. The
+packet holds:
+
+- private `macro_rules!` expansions, nested and with a root captured operand,
+  in exported bodies, and an exported `$crate` macro the provider also invokes;
+- four accepted clients, one of which expands the imported macro, and one
+  opponent (E0308);
+- generated controls: older-profile gates, a local, label and parameter bound
+  by marked tokens, a macro 2.0 expansion and item, a macro-generated
+  exported macro and an unused exported `$crate` macro.
+
+The `crate_linking::hygienic_exports` integration controls consume it.

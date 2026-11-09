@@ -272,8 +272,19 @@ impl Table {
             .get(&node)
             .map(|&index| &report.definitions[index])
             .ok_or_else(|| error("missing exported macro definition"))?;
+        // An introduction-zero definition lies in physical source, whose every
+        // token has the root context; only a generated one can carry marks.
         if definition.introduction.0 != 0 {
-            return Err(error(
+            return Err(Error::at(
+                node.file,
+                report
+                    .package
+                    .unit(node.file)
+                    .configured
+                    .ast
+                    .node(node.node)
+                    .span
+                    .start,
                 "macro-generated exported macros are outside the macro metadata profile",
             ));
         }

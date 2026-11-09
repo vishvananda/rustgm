@@ -21,6 +21,14 @@ definition's edition, context and source anchor.
 Pinned Rust prints `3 3 2 33`; candidate library publication still rejects
 unimplemented source macro/semantic-name provenance transport. The first
 candidate invocation also omitted `--crate-type=lib`; both failures are retained.
+Amended 2026-11-09: since B2 M
+([macro contexts](../../../../docs/parallel/macro-contexts.md)), version 13
+admits the provider's `macro_rules!` marks. Publishing `execute-counts-owned.rs`
+now stops at "conditional member requires its actual From declaration" in
+edition 2024 and at "source export requires defining Rust2024 edition" in 2021,
+observed with `obj/parallel/macro-contexts/candidate/rustgm` (SHA-256
+`e6d207087e2b915cf300efc39d2b144629b23fd3422fd1811a4655ffcfa53be6`). No packet
+is published, so the library consumer still cannot run.
 The separately frozen `execute-counts-bin.rs`, `observe-counts-bin.c` and
 `native-bin-predictions.json` exercise the same four functions through an actual
 executable entry. Both pinned Rust and the candidate with the locked CPPGM

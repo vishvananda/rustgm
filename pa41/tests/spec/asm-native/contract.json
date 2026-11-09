@@ -177,8 +177,24 @@
       }
     }
   },
+  "amendments": [
+    {
+      "item": "B2 M, the macro-context slice (docs/parallel/macro-contexts.md)",
+      "declared": "2026-11-09T00:57:03Z, before the candidate run, in pa29/tests/macro-context-outcomes.json",
+      "stream_body_module_bodies_v13": {
+        "before": "source macro/semantic-name provenance metadata is not implemented",
+        "after": "source const parameters are outside the initial source profile",
+        "reason": "version 13 admits the semi-opaque marks vps! and concat! leave: every item projection stays the root and no marked token binds a local"
+      },
+      "README.md": {
+        "before": "efff24998f26945ccd9f24d54afea25520ed38c27127258c80bd09dc708f5376",
+        "after": "624c737a9c4a2c7dac5ed87a2eb050bb0d57938920745b0c2255f7b9a3a85803"
+      },
+      "unchanged": "observations_after_run keeps the B1 observation as recorded"
+    }
+  ],
   "files": {
-    "README.md": "efff24998f26945ccd9f24d54afea25520ed38c27127258c80bd09dc708f5376",
+    "README.md": "624c737a9c4a2c7dac5ed87a2eb050bb0d57938920745b0c2255f7b9a3a85803",
     "entry.c": "98452b8d8fabcf47485e56e1b93d1965cbdc46132d8114ff42f835fc9765b266",
     "expected.stdout": "d01b7cec7494caaf9554d95bd3352dfe829a351b0be188b1a1ae905d03ea7522",
     "native.rs": "1631be50578cad11c570aa89b0ca8d5be751bf64f62fb07b8150c48e63fd5e94",

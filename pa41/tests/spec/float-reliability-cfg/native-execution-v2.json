@@ -21,5 +21,19 @@
     "completion": "Not implemented; source executable execution grants no publication/transport authority."
   },
   "predecessor_contract_sha256": "a7187a8b02130d8468af98601e58f5865fec0c0f2094f664c2c4edc73f6bbbe2",
-  "setup_correction": "v1 executable omitted actual source Copy/Clone roles required by checked source-body execution. v2 appends genuine roles, receiver implementations and bool/u8 implementations. All four observed function bodies and entry/observer remain unchanged."
+  "setup_correction": "v1 executable omitted actual source Copy/Clone roles required by checked source-body execution. v2 appends genuine roles, receiver implementations and bool/u8 implementations. All four observed function bodies and entry/observer remain unchanged.",
+  "amendments": [
+    {
+      "date": "2026-11-09",
+      "item": "B2 M, the macro-context slice (docs/parallel/macro-contexts.md)",
+      "publication_boundary": {
+        "note": "the recorded message is the original observation and stays. Since B2 M, version 13 admits this source's semi-opaque macro_rules! marks, so the same publication now stops at another fence and still publishes no packet",
+        "edition_2024": "file 0: 450: source Copy language item is missing",
+        "edition_2021": "source export requires defining Rust2024 edition",
+        "observed_with": "obj/parallel/macro-contexts/candidate/rustgm, SHA-256 e6d207087e2b915cf300efc39d2b144629b23fd3422fd1811a4655ffcfa53be6",
+        "baseline": "obj/parallel/macro-contexts/baseline/rustgm at f32b8d168, SHA-256 deb2a3a24eab844f9c75ec0861272906821edb1d198094f36b748dc6e3d38c33, reports the recorded message in both editions"
+      },
+      "unchanged": "native-execution-v1.json records the same boundary and stays as written, because predecessor_contract_sha256 pins it"
+    }
+  ]
 }

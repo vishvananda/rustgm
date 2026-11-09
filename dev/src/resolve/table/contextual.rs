@@ -1,6 +1,9 @@
 //! Non-root item keys share the table's declaration ordinals and scope order.
 use super::{BindingKey, BindingTable};
-use crate::{expand::marks::ItemContext, support::hash::HashMap};
+use crate::{
+    expand::marks::{ItemContext, LocalContext},
+    support::hash::HashMap,
+};
 
 #[derive(Default)]
 pub(super) struct Index {
@@ -17,6 +20,14 @@ impl BindingTable {
     #[must_use]
     pub fn has_contextual_items(&self) -> bool {
         self.contextual.is_some()
+    }
+    /// A local, parameter or label bound by a marked name token. Body-local
+    /// declaration rows carry only a spelling, never this context.
+    #[must_use]
+    pub fn has_contextual_locals(&self) -> bool {
+        self.locals
+            .iter()
+            .any(|local| local.context != LocalContext::ROOT)
     }
     pub(super) fn find_key(&self, key: BindingKey) -> Option<u32> {
         if key.3 == ItemContext::ROOT {

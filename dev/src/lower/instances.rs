@@ -374,7 +374,10 @@ pub fn build_source_library_profile(
             let interface = source
                 .complete_publication(report, facts, base, modules, profile)
                 .map_err(|error| facts.retain_error_warnings(error))?;
-            let table = crate::sema::crates::macro_table(report, interface.dependencies())?;
+            // A generated exported definition is located in expanded text;
+            // project it to the tokens that produced it.
+            let table = crate::sema::crates::macro_table(report, interface.dependencies())
+                .map_err(|error| report.diagnostic(error))?;
             let interface = match table {
                 Some(macros)
                     if interface.macros().is_none() && interface.native_links().is_none() =>

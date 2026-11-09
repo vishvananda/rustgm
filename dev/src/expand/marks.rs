@@ -68,6 +68,16 @@ impl Marks {
     pub(crate) fn context_count(&self) -> usize {
         self.0.as_ref().map_or(1, |data| data.nodes.len() + 1)
     }
+    /// Whether any mark changes item-namespace resolution. Only an opaque
+    /// mark (a macro 2.0 or formatting expansion) gives a context a non-root
+    /// item projection; semi-opaque and transparent marks keep their parent's.
+    pub(crate) fn has_item_contexts(&self) -> bool {
+        self.0.as_ref().is_some_and(|data| {
+            data.nodes
+                .iter()
+                .any(|node| node.item != SyntaxContextId::ROOT)
+        })
+    }
 
     /// Apply one invocation to an actual definition token's retained context.
     /// Captured tokens preserve their existing context and do not call this.

@@ -5,6 +5,25 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane D [B2 M, macro contexts](parallel/macro-contexts.md) narrows version 13's
+crate-wide macro provenance gate, a LIB-059 sub-item, with no row change.
+
+- `has_contextual_items` stays. The `context_count() != 1` test becomes two
+  rejections: a non-root item projection (an opaque mark) and a local,
+  parameter or label bound by a marked token. Older profiles keep the old test.
+- A pa29 provider whose exported bodies expand private `macro_rules!` now
+  exports; four fresh clients exit 42 natively, one expanding the exported
+  `$crate` macro. Five rustc-accepted marked controls keep the provenance
+  text, and a macro-generated exported macro keeps Lane B's rejection, now
+  located at its generating tokens.
+- Existing v13 packets are byte-identical between baseline and candidate.
+  The stream witness now stops at its const parameter, as declared.
+- Any opaque mark, such as a private `format_args!`, keeps the fence
+  crate-wide. Core expands `format_args!` through `panic!` and `assert!`, so
+  this will be core's library-export stop. The recorded pa41 float and pa31
+  metavariable publications stop at other fences; each record has a dated
+  amendment.
+
 Lane B [MetaSized premises](parallel/negative-metasized.md) proves a
 negative impl's `MetaSized` condition from the other header's premises, as
 rustc 1.98's `impl_intersection_has_negative_obligation` does, on main
@@ -72,9 +91,10 @@ templates and `asm` invocations, on main `2a27e11ca`.
   included, pass unchanged. `Operation` and `Instruction` keep 32 and 40
   bytes.
 - What remains: asm bodies still do not cross module-body transport (B2), so
-  LIB-045 stays open. The real stream body's crate first stops at the
+  LIB-045 stays open. The real stream body's crate first stopped at the
   crate-wide macro provenance fence, with the `repr(simd)` record contract
-  and const-generic array impls behind it.
+  and const-generic array impls behind it. Since B2 M it stops at its const
+  parameter.
 
 Lane C [auto traits](parallel/auto-traits.md), C3b, proves coherence absence
 for the crate whose coherence it proves, as rustc 1.98's
@@ -3104,7 +3124,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-056 | Finite source/native producer qualified; wider consumers retained | Actual source PartialEq/PartialOrd scalar comparisons | PA19 source traits +PA26 operator-kernel +PA31 source-runtime / Count::from_usize and fmt::write/as_str helpers | Integrator | [Joined checkpoint](pa31-source-comparisons-wip.md) passes18 proof/work/cleanup controls; actual/profile and authored-override native traces plus closed const members match Rust through frozen CPPGM. Precise wrong-impl/Ordering/Copy lowering opponents and both producers pass the final guarded warm replay in35.92s after cache retirement. Source Count/panic/Formatter consumers, provided-default const execution and metadata/artifact closure remain required. |
 | LIB-057 | Generic Clone/payload prerequisite integrated; wider derive execution retained | Generic/payload paired source derives with real trait bounds and fieldwise bodies | PA26 derives +PA8 syntax/provenance +PA31 actual Result/Option/ControlFlow headers | Integrator | [Combined qualification](pa31-generic-payload-derive-checkpoint.md) preserves all original member lists, actual bounds and hygiene; genuine non-Copy Clone executes the exact independent field trace. Ten private controls, production Clippy/lexer/PA6 and8605 unchanged text cases pass. Other runtime derive families and complete generic forms remain required; expansion alone does not qualify their execution. |
 | LIB-058 | Finite producers and explicit cap integrated; broader parity deferred | Deprecation events, real expectations and separate diagnostic cap | PA40 lints +PA8 structure/hygiene +PA31 exact source +PA34 driver inputs | Integrator | [Cap integration](pa40-lint-cap-allow-checkpoint.md) passes private15/production55, PA6/805PA13,104 worker+12 extra independent Rust observations and separate strict/capped unchanged722 probes. Genuine expected IDs/deferred source debt remain truthful; hard features/API/unsafe/CTFE checks remain enforced. Both stop at the real trait feature contract. Imported diagnostic transport and broader parity remain required, deferred unless compilation needs them. |
-| LIB-059 | Integrated finite source metadata/native exit | Authenticated source stability and provenance in library metadata | PA29 declaration/body transport +PA31 compiler/library source contracts / genuine staged source-functions provider and fresh generic identity clients | C + integrator | [Bounded v3 checkpoint](pa31-availability-transport.md): complete declaration/binding policies and real origins survive7152-byte encode/decode and canonical import. Root private21/production53+PA6 pass; all28 fresh LowIR/metadata/source outputs equal the seven independently qualified native7 clients. Actual target/module gates, missing/copy/legacy owners, private None and bounded cold/warm work are retained. Macro/name provenance, imported deprecation, wider body/default-const profiles and original core/alloc/std artifacts remain required. |
+| LIB-059 | Integrated finite source metadata/native exit | Authenticated source stability and provenance in library metadata | PA29 declaration/body transport +PA31 compiler/library source contracts / genuine staged source-functions provider and fresh generic identity clients | C + integrator | [Bounded v3 checkpoint](pa31-availability-transport.md): complete declaration/binding policies and real origins survive7152-byte encode/decode and canonical import. Root private21/production53+PA6 pass; all28 fresh LowIR/metadata/source outputs equal the seven independently qualified native7 clients. Actual target/module gates, missing/copy/legacy owners, private None and bounded cold/warm work are retained. Lane D's [macro-context slice](parallel/macro-contexts.md) (B2 M) admits version-13 crates whose semi-opaque marks leave every item name at the root and bind no local. Any opaque mark anywhere in a crate still keeps the fence crate-wide, including a private `format_args!`; core expands it through `panic!` and `assert!` throughout, so this is core's library-export stop once core export is reached. Opaque-mark, exported-macro and general name provenance, imported deprecation, wider body/default-const profiles and original core/alloc/std artifacts remain required. |
 | LIB-060 | Finite source/native and v4 primitive transport qualified; original nominal/C clients retained | Whole non-type feature predicates and real source trait-method callers | PA19 predicates +PA29 metadata/body contracts +PA31 actual source / genuine feature-bound providers and fresh clients | B + integrator | [Joined v4 checkpoint](lib060-feature-predicate-metadata-v4-checkpoint.md) passes actual API/predicate conjunction, fresh primitive impl conformance/dispatch, real identity and literal-return native7, private provider identity, whole-Clause remap and old profile controls. Root twelve-case qualification includes production/private strict Clippy and global audits; seven scalar native functions also match Rust. Header presence grants no body proof or caller permission. Original7 still requires genuine nominal/constructor/promotion and exact C source-body transport (LIB-063/064); do not substitute primitive fixtures for it. |
 | LIB-061 | Deferred advisory producer; strict failure retained | implicit_provenance_casts expectation | PA40 lint producer +PA27 pointer casts +PA31 actual source / original ptr/const_ptr.rs186 | Root, deferred | Qualified strict CLI41d3842a opens68 original sources and reports the real unimplemented expect producer. User prioritizes compilation; explicit --cap-lints=allow defers this advisory producer without fabricated fulfillment. Preserve policy, strict failure and assignment requirement; do not spend the compilation lane implementing this producer now. |
 | LIB-062 | Finite local/source-native prelude exit qualified; whole crate remains open | Source-owned prelude_import module and trait selection | PA6 module/name lookup +PA19 trait discovery +PA31 source feature/attribute authority; PA34 owns automatic crate injection | C + integrator | [Joined prelude checkpoint](pa31-source-prelude-integration.md) passes private44+lexer10+PA6 and five actual native constructor/method/shadow/opaque/no_implicit programs matching pinned Rust. Distinct gate, authenticated cold selector and existing member/dependency/trait indexes preserve scope/privacy/hygiene without a root glob or new dense fields. Fresh Allow observes block-owned derives instead of the earlier prelude diagnostic; no compiled-file/artifact claim. General selectors/automatic injection and full source closure remain required. |

@@ -158,22 +158,25 @@ fn forged_relabelled_and_nested_macro_rows_are_rejected_by_name() -> Result {
     Ok(())
 }
 
+/// The generated definition of `pa29/tests/macro-context-outcomes.json`'s
+/// ordinary-path control, located at `macro_rules! made` inside `make!`'s body.
+const GENERATED: &str =
+    "macro_rules! make{()=>{#[macro_export] macro_rules! made{()=>{1}}}}make!{}";
 #[test]
 fn generated_documented_and_permissioned_macro_exports_fail_by_name() -> Result {
-    for (text, message) in [
-        (
-            "macro_rules! make{()=>{#[macro_export] macro_rules! made{()=>{1}}}}make!{}",
-            "macro-generated exported macros are outside the macro metadata profile",
-        ),
-        (
-            "#[macro_export] macro_rules! documented{()=>{\n/// doc\npub fn f(){}}}",
-            "doc comments in exported macro bodies are outside the macro metadata profile",
-        ),
-    ] {
-        let Err(error) = compile(text, "rejected") else {
-            return Err(format!("unsupported macro export was published: {text}").into());
-        };
-        assert!(error.to_string().contains(message), "{error}");
-    }
+    let Err(error) = compile(GENERATED, "generated") else {
+        return Err("a macro-generated exported macro was published".into());
+    };
+    assert_eq!(
+        error.to_string(),
+        "file 0: 39: macro-generated exported macros are outside the macro metadata profile\n  \
+         in macro make at file 0: 67; defined at file 0: 0"
+    );
+    let text = "#[macro_export] macro_rules! documented{()=>{\n/// doc\npub fn f(){}}}";
+    let message = "doc comments in exported macro bodies are outside the macro metadata profile";
+    let Err(error) = compile(text, "rejected") else {
+        return Err(format!("unsupported macro export was published: {text}").into());
+    };
+    assert!(error.to_string().contains(message), "{error}");
     Ok(())
 }

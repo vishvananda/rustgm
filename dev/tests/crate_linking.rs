@@ -30,6 +30,8 @@ mod fn_roles;
 mod fresh_packets;
 #[path = "crate_linking/guard_transport.rs"]
 mod guard_transport;
+#[path = "crate_linking/hygienic_exports.rs"]
+mod hygienic_exports;
 #[path = "crate_linking/imported_records.rs"]
 mod imported_records;
 #[path = "crate_linking/imported_regions.rs"]
