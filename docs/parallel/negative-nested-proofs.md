@@ -107,7 +107,7 @@ and the test-only State accessor.
 | --- | --- |
 | Sixty negative-premise twins | status lines and every stderr byte-identical |
 | Flip survey, 336 files | byte-identical |
-| Census lookahead | `census.tsv` byte-identical, 23 records; `result.json` differs only in CLI, producer and timing identity |
+| Census lookahead | `census.tsv` byte-identical, 23 lines with 8 records; `result.json` differs only in CLI, producer and timing identity |
 | Golden table, premise-less pass | byte-identical |
 | Golden table, placeholder pass (empty set, every type parameter) | byte-identical, so no placeholder row moved |
 | Scaled `MetaSized` pair and `PointeeSized` control | unchanged: 1965, 3810, 7559 and 1693, 3256, 6427, in both runs |
@@ -215,7 +215,7 @@ amendments, each written before the run it governs.
 | --- | --- |
 | Sixty negative-premise twins | status lines and every stderr byte-identical |
 | Flip survey, 336 files | byte-identical |
-| Census lookahead | `census.tsv` byte-identical, 23 records; `result.json` differs only in CLI, output path, process and timing identity |
+| Census lookahead | `census.tsv` byte-identical, 23 lines with 8 records; `result.json` differs only in CLI, output path, process and timing identity |
 | Golden table, both passes | byte-identical, 5674 lines |
 | New texts in gate outputs | neither `PLACEHOLDER_EQUALITY_FENCE` nor `PLACEHOLDER_REINSTALL` appears |
 | Scaled `MetaSized` pair and `PointeeSized` control | unchanged: 1965, 3810, 7559 and 1693, 3256, 6427, in both runs |
@@ -530,7 +530,7 @@ and the diagnostic fastchecks.
 | --- | --- | --- |
 | 74 twins, status lines | `7a396df0…` (60 files) and `e0eda4ed…` (the 14 new) | `72d756f1…`; only the 12 files above differ, in status and stderr |
 | Flip survey, 336 files | `9e1b7e43…` | `9e1b7e43…` |
-| Census lookahead, `census.tsv`, 23 records | `9d654755…` | `9d654755…` |
+| Census lookahead, `census.tsv`, 23 lines with 8 records | `9d654755…` | `9d654755…` |
 | Golden table | `399d7a0e…`, 5674 lines, 60 fixtures | `6d634d2f…`, 8356 lines, 74 fixtures |
 
 - The golden table moves only on the four projected twins, which now give
@@ -539,3 +539,72 @@ and the diagnostic fastchecks.
   cases and the crate-linking integration case.
 - The final gates, on the rebased tree against a fresh base pin, are in
   checkpoint 4.
+
+## 5. Final evidence and notice (checkpoint 4)
+
+The four commits were rebased once onto `c8c2a8eda`: step 1 is `b37529879`,
+step 2 `6231c4955`, 3a `54e6b984d` and 3b `196fd2667`. The only conflict was
+the blockers tracker's top entry, where both entries were kept. The final
+gates were declared after the rebase and before any build or run, with one
+amendment for the golden hook, also written before any run.
+
+- **Base:** `base6`, the dev-fast CLI of `c8c2a8eda`, sha256 `b612c926…`. It
+  has none of item B, so these gates span all four commits.
+- **Candidate:** `cand6`, the dev-fast CLI of `196fd2667`, sha256 `75472a60…`.
+
+| Gate | `base6` | `cand6` |
+| --- | --- | --- |
+| 74 twins, status lines | `4642dfe2…`; its lines and every stderr equal `base3`'s | `72d756f1…`, equal to `cand5`'s |
+| Flip survey, 336 files | `9e1b7e43…` | `9e1b7e43…` |
+| Census lookahead, `census.tsv` | `9b678716…` | `9b678716…` |
+| Golden table | `399d7a0e…`, 60 fixtures | `6d634d2f…`, 74 fixtures |
+
+- **Twins:** exactly the twelve files of section 4 differ, in status and
+  stderr. Every other file is byte-identical.
+- **Census:** `result.json` differs only in CLI identity, the output path in
+  stderr, and the traced process and timing identity. Main's `4df942467`
+  changed the census itself since `base3`: it now has 9 lines with one
+  record, `local_annotations` at `ptr/metadata.rs`, after 42310 checked
+  declarations.
+- **Golden:** the tables equal `base3`'s and `cand5`'s. The base uses the hook
+  with main's one-set `Placeholders::new`; it differs from the candidate's
+  hook only in those two calls. The tables differ only on the four projected
+  twins and the fourteen new fixtures.
+- **Texts:** neither `PLACEHOLDER_REINSTALL` nor `PLACEHOLDER_EQUALITY_FENCE`
+  appears in any gate output, and the retired fence text appears in no
+  candidate output.
+- **Work:** the scaled `MetaSized` pair and `PointeeSized` control are
+  unchanged, 1965, 3810, 7559 and 1693, 3256, 6427, in both runs. Both
+  scaling tests print the same lines as at 3a.
+- **Fixtures:** `make test-upstream` verified 128 pinned upstream fixtures
+  and 126 Reference files.
+- **Checks:** focused fastchecks passed on `196fd2667`:
+  - the 3b set: 20 private cases and the crate-linking case;
+  - the private bodies, methods and dispatch chunks (459, 325 and 213
+    cases), with step 2's list carrying 3b's two renamed tests;
+  - the trait integration roots (116 and 240);
+  - crate linking's absence and modifier transport (5) and their native
+    clients (2);
+  - native negative coherence (1);
+  - `pa20` (10).
+- **Not evidence:** a cold fastcheck that ran out of budget in its build, and
+  a selection failure before step 2's list was given 3b's two test names.
+- **Correction:** sections 2 to 4 first called the census "23 records". It
+  is 23 lines, with 8 records.
+
+### Notice
+
+- A negative coherence query's nested trait proofs now assume the other
+  header's Sized and `MetaSized` premises: the builtin proof's trait State,
+  its size queries and Cursors, `normal_form` and every Search they start.
+  A projected-size nominal is decided under the set, and the projected-size
+  fence text is gone.
+- A holder of a placeholder set takes it from its owner explicitly. None may
+  read it from a slot that a walk can take.
+- Twelve twins change outcome, as listed in section 4. Every other input of
+  the gates is unchanged.
+- Open for item C: the `probe-projection-premise` and `probe-trait-premise`
+  pairs, which rustc accepts, need the other header's trait premises.
+- Open, and Lane B's next item: the pre-existing 2^d - 1 nested
+  normalizations of `P^d<T>`, whose work is not charged to the outer proof
+  (see the [blockers](../library-build-blockers.md)).
