@@ -73,12 +73,14 @@ impl State {
             // Conjunctive universal terms add no local hypotheses. Equal-arity
             // terms may share a universe, but each selection owns fresh witnesses.
             let scope = self.obligations.scope(ScopeId::ROOT, count)?;
-            entry.insert(Cursor::new(
+            let mut cursor = Cursor::new(
                 self.environment.clone(),
                 &self.obligations,
                 scope,
                 self.availability,
-            )?);
+            )?;
+            cursor.assume_placeholders(self.placeholders.clone())?;
+            entry.insert(cursor);
         }
         let cursor = terms
             .cursors

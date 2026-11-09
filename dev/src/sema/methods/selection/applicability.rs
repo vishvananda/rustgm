@@ -309,6 +309,7 @@ fn trait_requirements(
                     first_region,
 
                     retain_sized: false,
+                    placeholders: None,
                 },
                 caller.availability,
             )

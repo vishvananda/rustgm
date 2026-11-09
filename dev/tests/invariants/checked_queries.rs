@@ -16,6 +16,7 @@ fn checked(
             environment: inputs.environment.as_ref(),
             first_region: inputs.first_region,
             retain_sized: inputs.retain_sized,
+            placeholders: None,
         },
         Availability::Executable,
     )

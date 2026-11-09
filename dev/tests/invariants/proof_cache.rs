@@ -87,6 +87,7 @@ pub(super) fn caller<'a>(
         first_region: 1,
 
         retain_sized: false,
+        placeholders: None,
     }
 }
 

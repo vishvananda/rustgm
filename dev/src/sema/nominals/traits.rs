@@ -75,6 +75,10 @@ pub(crate) struct State {
     quantified: Option<Box<quantified::Queries>>,
     terms: Option<Box<term_normalization::Terms>>,
     shapes: Option<Box<shape_normalization::Sizes>>,
+    /// A negative coherence query's other-header sizing premises, for every
+    /// search and normalization this State starts; see
+    /// [`selection::Caller::placeholders`].
+    placeholders: Option<crate::types::parameters::shape::Placeholders>,
 }
 pub(crate) struct Projected {
     pub provisional_size: bool,
@@ -208,6 +212,7 @@ impl State {
             environment: self.environment.as_ref(),
             first_region: self.obligations.regions.end,
             retain_sized: false,
+            placeholders: self.placeholders.as_ref(),
         };
         #[cfg(test)]
         selection::copy_trace::record_checked(|| {
@@ -377,7 +382,25 @@ impl State {
             quantified: None,
             terms: None,
             shapes: None,
+            placeholders: None,
         })
+    }
+
+    /// The premises of the placeholder proof that owns this State; a State of
+    /// any other proof has none.
+    pub(super) fn assume_placeholders(
+        &mut self,
+        placeholders: Option<crate::types::parameters::shape::Placeholders>,
+    ) -> Result<(), &'static str> {
+        if placeholders.is_some() && self.environment.is_some() {
+            return Err("placeholder premises require a premise-less trait proof");
+        }
+        self.placeholders = placeholders;
+        Ok(())
+    }
+    #[cfg(test)]
+    pub(super) fn placeholders(&self) -> Option<&crate::types::parameters::shape::Placeholders> {
+        self.placeholders.as_ref()
     }
 
     pub fn prove(
@@ -513,6 +536,13 @@ impl State {
             },
             first_region: self.obligations.regions.end,
             retain_sized: self.retain_sized,
+            // A closed requirement mentions no parameter, so its reuse slot
+            // stays shared and premise-independent.
+            placeholders: if closed {
+                None
+            } else {
+                self.placeholders.as_ref()
+            },
         };
         let reuse = &mut self.reusable[usize::from(closed)];
         if reuse.is_none()

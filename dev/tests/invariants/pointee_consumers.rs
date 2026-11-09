@@ -215,6 +215,7 @@ fn search_argument(report: &Report, facts: &mut Declarations, root: TypeId) -> T
             environment: None,
             first_region: 1,
             retain_sized: false,
+            placeholders: None,
         },
         Availability::Validated,
     )?
@@ -313,6 +314,7 @@ fn missing_actual_result_bound(report: &Report) -> TestResult {
                 environment: None,
                 first_region: 1,
                 retain_sized: false,
+                placeholders: None,
             },
             Availability::Validated,
         )?,

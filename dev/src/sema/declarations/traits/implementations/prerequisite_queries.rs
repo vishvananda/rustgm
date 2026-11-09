@@ -90,6 +90,7 @@ impl Attempt {
                         environment,
                         first_region: 1,
                         retain_sized: false,
+                        placeholders: None,
                     },
                     &mut self.query_work,
                 )?

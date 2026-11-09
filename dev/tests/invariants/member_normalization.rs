@@ -67,6 +67,7 @@ impl Fixture {
                 environment: Some(caller),
                 first_region: 100,
                 retain_sized: false,
+                placeholders: None,
             },
         )?;
         Ok((selected, context.steps))
@@ -342,6 +343,7 @@ fn nested_member_applications_survive_header_waits_without_reopening_callable_sc
             environment: None,
             first_region: 100,
             retain_sized: false,
+            placeholders: None,
         },
         Availability::Declarations,
     )?

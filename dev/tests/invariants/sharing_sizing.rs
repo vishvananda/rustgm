@@ -62,6 +62,7 @@ fn select(
             environment: None,
             first_region: 1,
             retain_sized: false,
+            placeholders: None,
         },
         (Availability::Validated, false),
         reuse,
@@ -137,6 +138,7 @@ fn formation_reuses_only_actual_sizing_proofs_for_the_exact_closed_root() -> Res
                 environment: None,
                 first_region: 1,
                 retain_sized: false,
+                placeholders: None,
             },
             Availability::Validated,
         );
@@ -222,6 +224,7 @@ fn sizing_sharing_preserves_each_debt_and_scope() -> Result {
                 environment: None,
                 first_region: 1,
                 retain_sized: false,
+                placeholders: None,
             },
             Availability::Validated,
         );
@@ -270,6 +273,7 @@ fn sizing_sharing_requires_every_completed_formation_sibling() -> Result {
                 environment: None,
                 first_region: 1,
                 retain_sized: false,
+                placeholders: None,
             },
             Availability::Validated,
         );
@@ -315,6 +319,7 @@ fn unrelated_builtin_does_not_acquire_sizing_sharing_and_hot_layouts_stay_fixed(
             environment: None,
             first_region: 1,
             retain_sized: false,
+            placeholders: None,
         },
         Availability::Validated,
     );

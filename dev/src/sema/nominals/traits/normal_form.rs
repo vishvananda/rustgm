@@ -42,6 +42,15 @@ pub(in crate::sema) struct Query {
     conditions: Option<Box<crate::sema::projections::families::Requirements>>,
 }
 
+/// How a normalization's own selections decide sizing: whether they retain
+/// Sized debts, and a negative coherence query's placeholder premises, which a
+/// premise-less normalization of that query's nested obligations carries.
+#[derive(Clone, Copy)]
+pub(in crate::sema) struct Sizing<'p> {
+    pub retain_sized: bool,
+    pub placeholders: Option<&'p crate::types::parameters::shape::Placeholders>,
+}
+
 /// The enclosing normalizer retains the formation proof of every request input.
 #[cfg(test)]
 pub(in crate::sema) fn begin(
@@ -57,7 +66,10 @@ pub(in crate::sema) fn begin(
         environment,
         (request, 0),
         first,
-        retain_sized,
+        Sizing {
+            retain_sized,
+            placeholders: None,
+        },
         availability,
         None,
     )
@@ -81,7 +93,10 @@ pub(in crate::sema) fn begin_with_scope(
         environment,
         request,
         first,
-        retain_sized,
+        Sizing {
+            retain_sized,
+            placeholders: None,
+        },
         availability,
         None,
     )
@@ -95,7 +110,7 @@ pub(in crate::sema) fn begin_reusing(
     environment: Option<Arc<Environment>>,
     request: (Request, u16),
     first: u32,
-    retain_sized: bool,
+    sizing: Sizing<'_>,
     availability: Availability,
     reuse: Option<&mut selection::Reuse>,
 ) -> Result<Progress, &'static str> {
@@ -114,7 +129,7 @@ pub(in crate::sema) fn begin_reusing(
         environment,
         request,
         first,
-        retain_sized,
+        sizing,
         availability,
         reuse,
     )
@@ -154,7 +169,7 @@ fn select(
     environment: Option<Arc<Environment>>,
     request: (Request, u16),
     first: u32,
-    retain_sized: bool,
+    sizing: Sizing<'_>,
     availability: Availability,
     reuse: Option<&mut selection::Reuse>,
 ) -> Result<Progress, &'static str> {
@@ -184,10 +199,11 @@ fn select(
         environment,
         (requirement, request.alias.arguments()),
         first,
-        retain_sized,
+        sizing.retain_sized,
         availability,
         &mut conditions,
     )?;
+    state.assume_placeholders(sizing.placeholders.cloned())?;
     let goal = state.projection_goal(facts, requirement)?;
     let frontier = state.obligations.regions.end;
     Query {
@@ -439,6 +455,11 @@ impl Query {
                 },
                 first_region: state.obligations.regions.end,
                 retain_sized: state.retain_sized,
+                placeholders: if self.closed {
+                    None
+                } else {
+                    state.placeholders.as_ref()
+                },
             };
             selection::begin_borrowed(
                 facts,
@@ -549,6 +570,11 @@ impl State {
             },
             first_region: self.obligations.regions.end,
             retain_sized: self.retain_sized,
+            placeholders: if closed {
+                None
+            } else {
+                self.placeholders.clone()
+            },
         }
     }
 

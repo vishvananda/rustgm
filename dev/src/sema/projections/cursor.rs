@@ -57,6 +57,7 @@ pub(in crate::sema) struct Cursor {
     selected: Option<Box<Selected>>,
     header: Option<Header>,
     before: usize,
+    placeholders: Option<crate::types::parameters::shape::Placeholders>,
 }
 impl Cursor {
     pub fn new(
@@ -79,7 +80,21 @@ impl Cursor {
             selected: None,
             header: None,
             before: 0,
+            placeholders: None,
         })
+    }
+
+    /// The premises of the placeholder trait proof that owns this cursor; its
+    /// selections decide a rigid parameter's sizing only from them.
+    pub(in crate::sema) fn assume_placeholders(
+        &mut self,
+        placeholders: Option<crate::types::parameters::shape::Placeholders>,
+    ) -> Result<(), &'static str> {
+        if placeholders.is_some() && self.environment.is_some() {
+            return Err("placeholder premises require a premise-less normalization");
+        }
+        self.placeholders = placeholders;
+        Ok(())
     }
 
     pub fn start(&mut self, facts: &mut Declarations, ty: TypeId) -> Result<(), &'static str> {
@@ -180,7 +195,10 @@ impl Cursor {
                     environment,
                     (request, self.callable_depth),
                     proof.regions.end,
-                    false,
+                    normal_form::Sizing {
+                        retain_sized: false,
+                        placeholders: self.placeholders.as_ref(),
+                    },
                     self.availability,
                     reuse,
                 )?

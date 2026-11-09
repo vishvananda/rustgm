@@ -183,6 +183,7 @@ impl Direction {
                         environment: self.inputs.environment.clone(),
                         first_region: self.proof.regions.end,
                         retain_sized: false,
+                        placeholders: None,
                     },
                     &mut self.query_work,
                 )

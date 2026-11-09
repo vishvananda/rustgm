@@ -359,6 +359,7 @@ impl Checker<'_> {
                     environment: environment.as_ref(),
                     first_region: first,
                     retain_sized: false,
+                    placeholders: None,
                 },
             )
             .map(selection::Progress::Ready)
@@ -373,6 +374,7 @@ impl Checker<'_> {
                     environment,
                     first_region: first,
                     retain_sized: false,
+                    placeholders: None,
                 },
                 self.availability,
                 self.state.call_types.bound_regions(index),
@@ -434,6 +436,7 @@ impl Checker<'_> {
                 environment,
                 first_region: first,
                 retain_sized: false,
+                placeholders: None,
             },
             self.availability,
             &mut untouched,

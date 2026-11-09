@@ -214,12 +214,16 @@ pub(in crate::sema) struct Caller<'a> {
     pub first_region: u32,
     /// Alias normalization retains builtin premises whose implicit parameter bounds are unenforced.
     pub retain_sized: bool,
+    /// A negative coherence query's other-header sizing premises, which every
+    /// search proving its nested obligations decides rigid parameters by.
+    pub placeholders: Option<&'a crate::types::parameters::shape::Placeholders>,
 }
 pub(in crate::sema) struct OwnedCaller {
     pub assumptions: Arc<Assumptions>,
     pub environment: Option<Arc<Environment>>,
     pub first_region: u32,
     pub retain_sized: bool,
+    pub placeholders: Option<crate::types::parameters::shape::Placeholders>,
 }
 
 /// A negative outer-head result excludes a candidate without importing its graph.

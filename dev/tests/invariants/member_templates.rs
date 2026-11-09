@@ -53,6 +53,7 @@ fn expose(
             environment: None,
             first_region: 100,
             retain_sized: false,
+            placeholders: None,
         },
     )?)
 }

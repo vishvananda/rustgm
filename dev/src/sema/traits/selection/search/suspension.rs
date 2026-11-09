@@ -92,6 +92,7 @@ impl OwnedCaller {
             environment: self.environment.as_ref(),
             first_region: self.first_region,
             retain_sized: self.retain_sized,
+            placeholders: self.placeholders.as_ref(),
         }
     }
 }
@@ -367,7 +368,7 @@ fn begin_borrowed_inputs(
     if let Mode::Projection(application) = mode {
         first.prepare_formation(facts, application, formation)?;
     }
-    let mut search = Search::new(caller, availability);
+    let mut search = Search::assuming(&facts.types, caller, availability)?;
     if let Some(reuse) = reuse.as_deref_mut() {
         if !facts.types.nominal_sizes_sealed() {
             return Err("proof reuse requires sealed nominal sizes".into());

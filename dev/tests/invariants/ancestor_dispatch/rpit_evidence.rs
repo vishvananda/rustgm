@@ -70,6 +70,7 @@ fn search_result(facts: &mut Declarations, root: TypeId) -> TestResult<Obligatio
         environment: None,
         first_region: 1,
         retain_sized: false,
+        placeholders: None,
     };
     let selection::Selection::Proven(evidence) =
         selection::select_available(facts, &mut context, &goal, caller, Availability::Validated)

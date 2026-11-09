@@ -62,6 +62,7 @@ fn select(
             environment: None,
             first_region: 1,
             retain_sized: false,
+            placeholders: None,
         },
         (Availability::Validated, false),
         reuse,

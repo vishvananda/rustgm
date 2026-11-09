@@ -105,7 +105,41 @@ impl Query {
 }
 
 impl<'a> Search<'a> {
-    pub(super) fn new(caller: Caller<'a>, availability: Availability) -> Self {
+    /// The one production construction. A caller's placeholder premises
+    /// (a negative coherence query, or a search proving one of its nested
+    /// obligations) decide a rigid parameter's sizing and the builtin proof's
+    /// shape walks; they require a premise-less caller, as rustc's
+    /// `param_env(impl1)` is the only environment of that query.
+    pub(super) fn assuming(
+        types: &crate::types::Store,
+        caller: Caller<'a>,
+        availability: Availability,
+    ) -> Result<Self, &'static str> {
+        let placeholders = caller.placeholders;
+        if placeholders.is_some() && caller.environment.is_some() {
+            return Err("placeholder premises require a premise-less caller");
+        }
+        let mut search = Self::premise_less(caller, availability);
+        if let Some(placeholders) = placeholders {
+            search
+                .query
+                .builtins
+                .assume_placeholders(types, placeholders.clone())?;
+            search.query.negative_sizing = Some(Box::new(
+                super::sizing_fallback::NegativeSizing::assume(placeholders),
+            ));
+        }
+        Ok(search)
+    }
+    /// A premise-less search; production constructs through [`Self::assuming`].
+    #[cfg(test)]
+    pub(super) fn new(mut caller: Caller<'a>, availability: Availability) -> Self {
+        caller.placeholders = None;
+        Self::premise_less(caller, availability)
+    }
+    /// The construction body shared by [`Self::assuming`] and the tests' `new`;
+    /// it installs no placeholder premises.
+    fn premise_less(caller: Caller<'a>, availability: Availability) -> Self {
         let builtins = match availability {
             Availability::Declarations => {
                 crate::sema::nominals::Proof::for_unvalidated_implementations(

@@ -144,6 +144,7 @@ pub(super) fn compatible(
         environment: Some(&prepared.environment),
         first_region: prepared.first,
         retain_sized: false,
+        placeholders: None,
     };
     let result = selection::select(facts, &mut context, &goal, caller);
     header_attributes::charge_source_contract_query(facts, context.steps)

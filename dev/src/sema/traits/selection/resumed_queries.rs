@@ -23,6 +23,7 @@ pub(in crate::sema) fn select_prepared(
         environment: caller.environment.cloned(),
         first_region: caller.first_region,
         retain_sized: caller.retain_sized,
+        placeholders: caller.placeholders.cloned(),
     };
     let mut work = 0;
     let progress = selection::begin_executable_counted(facts, context, goal, caller, &mut work);

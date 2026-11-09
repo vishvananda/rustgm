@@ -155,6 +155,13 @@ where
             local,
         })
     }
+    /// The premises of the placeholder trait proof that owns this session.
+    pub(crate) fn assume_placeholders(
+        &mut self,
+        placeholders: Option<crate::types::parameters::shape::Placeholders>,
+    ) -> Result<(), &'static str> {
+        self.cursor.assume_placeholders(placeholders)
+    }
     pub(crate) fn normalize(
         &mut self,
         facts: &mut Declarations,

@@ -63,6 +63,7 @@ fn begin(
             environment: None,
             first_region: 2,
             retain_sized: false,
+            placeholders: None,
         },
         Availability::Declarations,
         Some(1),

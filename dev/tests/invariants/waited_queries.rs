@@ -90,6 +90,7 @@ fn caller() -> OwnedCaller {
         environment: None,
         first_region: 1,
         retain_sized: false,
+        placeholders: None,
     }
 }
 fn pending(progress: Progress, owner: DefId) -> Result<Box<Pending>> {
@@ -243,6 +244,7 @@ fn borrowed_ready_queries_do_not_retain_or_clone_the_caller() -> Result {
             environment: None,
             first_region: 1,
             retain_sized: false,
+            placeholders: None,
         },
         (Availability::Validated, true),
         None,
@@ -272,6 +274,7 @@ fn borrowed_queries_retain_the_actual_frontier_only_when_the_search_waits() -> R
             environment: None,
             first_region: 1,
             retain_sized: false,
+            placeholders: None,
         },
         (Availability::Executable, true),
         None,

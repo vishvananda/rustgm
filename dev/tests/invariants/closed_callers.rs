@@ -412,7 +412,9 @@ fn actual_original_opening_work_retains_width_sites_and_noise_controls()
         assert!(pair[1] <= pair[0].saturating_mul(6));
     }
     assert_eq!(size_of::<Environment>(), 64);
-    assert_eq!(size_of::<super::State>(), 800);
+    // Item B: one `Option<Placeholders>` word for a negative coherence
+    // query's nested trait proofs.
+    assert_eq!(size_of::<super::State>(), 808);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     assert_eq!(size_of::<crate::body::regions::Contract>(), 184);
     Ok(())

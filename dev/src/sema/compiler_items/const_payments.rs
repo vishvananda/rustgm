@@ -287,6 +287,7 @@ pub(crate) fn pay(
                 environment: caller,
                 first_region: 1,
                 retain_sized: false,
+                placeholders: None,
             },
         );
         facts.body_work.canonical_steps = facts

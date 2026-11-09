@@ -293,6 +293,7 @@ impl Checker<'_> {
                 environment,
                 first_region: first,
                 retain_sized: false,
+                placeholders: None,
             },
             self.availability,
             &ambient,

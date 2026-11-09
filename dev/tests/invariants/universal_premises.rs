@@ -71,6 +71,7 @@ fn select(
             environment: None,
             first_region: proof.regions.end,
             retain_sized: false,
+            placeholders: None,
         },
         Availability::Validated,
     )?
@@ -372,6 +373,7 @@ fn assumption_instances_after_header_waits_exclude_foreign_allocation_gaps() -> 
             environment: None,
             first_region: 2,
             retain_sized: false,
+            placeholders: None,
         },
         Availability::Declarations,
     );
@@ -575,6 +577,7 @@ fn implementation_conditions_retain_the_assumed_child_interval() -> TestResult {
             environment: Some(&environment),
             first_region: proof.regions.end,
             retain_sized: false,
+            placeholders: None,
         },
         Availability::Validated,
     )?

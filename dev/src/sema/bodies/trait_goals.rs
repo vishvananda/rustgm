@@ -44,10 +44,9 @@ impl Checker<'_> {
             .state
             .canonical_trait_inference
             .get_or_insert_with(Default::default);
-        let enabled = matches!(
-            self.availability,
-            crate::sema::traits::implementations::Availability::Validated
-        ) && self.facts.types.nominal_sizes_sealed();
+        let enabled = self.availability
+            == crate::sema::traits::implementations::Availability::Validated
+            && self.facts.types.nominal_sizes_sealed();
         if enabled
             && self.state.canonical_trait_proofs.is_none()
             && selection::Reuse::needed(self.facts, predicate)
@@ -86,6 +85,7 @@ impl Checker<'_> {
                 environment: environment.as_ref(),
                 first_region,
                 retain_sized: false,
+                placeholders: None,
             };
             if let Some(reuse) = reuse {
                 selection::select_reusing(

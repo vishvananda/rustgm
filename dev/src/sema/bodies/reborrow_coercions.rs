@@ -95,6 +95,7 @@ impl Checker<'_> {
                 environment: environment.as_ref(),
                 first_region,
                 retain_sized: false,
+                placeholders: None,
             },
             self.availability,
         )

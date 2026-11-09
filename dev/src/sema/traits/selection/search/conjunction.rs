@@ -35,7 +35,8 @@ pub(in crate::sema) fn prove_conjunction(
     availability: Availability,
     mut reuse: Option<&mut super::Reuse>,
 ) -> Result<Conjunction, Failure> {
-    let mut search = Search::new(caller, availability);
+    let mut search = Search::assuming(&facts.types, caller, availability)
+        .map_err(|error| Failure::Invalid(error.into()))?;
     if let Some(reuse) = reuse.as_deref_mut() {
         if !facts.types.nominal_sizes_sealed() {
             return Err(Failure::Invalid(

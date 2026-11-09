@@ -72,6 +72,7 @@ fn select(facts: &mut Declarations, predicate: Canonical) -> TestResult<selectio
             environment: None,
             first_region: 1,
             retain_sized: false,
+            placeholders: None,
         },
     )?)
 }

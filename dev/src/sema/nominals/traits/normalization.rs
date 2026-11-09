@@ -24,14 +24,15 @@ impl State {
         } else {
             original
         };
-        let (normalized, steps) = Session::new(
+        let mut session = Session::new(
             self.environment.clone(),
             &mut self.obligations,
             ScopeId::ROOT,
             self.availability,
             |_, _| Ok(None),
-        )?
-        .normalize(facts, opened)?;
+        )?;
+        session.assume_placeholders(self.placeholders.clone())?;
+        let (normalized, steps) = session.normalize(facts, opened)?;
         self.context
             .account_work(steps)
             .map_err(|_| "declaration normalization work budget exceeded")?;

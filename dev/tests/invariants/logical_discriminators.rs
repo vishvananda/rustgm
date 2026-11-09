@@ -332,7 +332,8 @@ fn search_argument(report: &Report, facts: &mut Declarations, root: TypeId) -> T
                 assumptions: &assumptions,
                 environment: None,
                 first_region: 1,
-                retain_sized: false
+                retain_sized: false,
+                placeholders: None
             },
             Availability::Validated
         )?,

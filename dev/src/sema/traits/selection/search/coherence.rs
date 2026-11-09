@@ -75,30 +75,24 @@ pub(in crate::sema) fn may_overlap_with(
         return Ok(false);
     }
     let empty = Assumptions::default();
+    let placeholders = premises.filter(|_| mode.negative());
     let caller = Caller {
         assumptions: &empty,
         environment: None,
         first_region: 1,
         retain_sized: true,
+        placeholders,
     };
     let first = Frame::new(facts, context, goal, caller.first_region)?;
-    let mut search = Search::new(caller, Availability::Declarations);
+    if placeholders.is_some() {
+        context.account_work(1).map_err(|e| e.to_string())?;
+    }
+    let mut search = Search::assuming(&facts.types, caller, Availability::Declarations)?;
     search.query.purpose = if mode.negative() {
         Purpose::NegativeCoherence(perspective)
     } else {
         Purpose::Coherence(perspective)
     };
-    if mode.negative()
-        && let Some(premises) = premises
-    {
-        context.account_work(1).map_err(|e| e.to_string())?;
-        let sizing = super::sizing_fallback::NegativeSizing::assume(premises);
-        search
-            .query
-            .builtins
-            .assume_placeholders(&facts.types, sizing.placeholders().clone())?;
-        search.query.negative_sizing = Some(Box::new(sizing));
-    }
     let progress = search.begin(facts, first)?;
     context
         .account_work(search.query.steps)

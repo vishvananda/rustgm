@@ -570,6 +570,7 @@ impl Dispatcher {
             environment: caller.and_then(|c| c.environment.as_ref()),
             first_region: first,
             retain_sized: false,
+            placeholders: None,
         };
         let (target, proof) = if closed {
             // No inference term or private identity from a discharged closed

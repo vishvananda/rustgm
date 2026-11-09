@@ -107,14 +107,16 @@ impl State {
                     Ok::<_, &'static str>(Arc::new(shifted))
                 })
                 .transpose()?;
+            let mut cursor = Cursor::new(
+                self.environment.clone(),
+                &self.obligations,
+                scope,
+                self.availability,
+            )?;
+            cursor.assume_placeholders(self.placeholders.clone())?;
             entry.insert(Scope {
-                sizes: sizes::Query::new(environment),
-                cursor: Cursor::new(
-                    self.environment.clone(),
-                    &self.obligations,
-                    scope,
-                    self.availability,
-                )?,
+                sizes: sizes::Query::with_placeholders(environment, self.placeholders.clone()),
+                cursor,
             });
         }
         let query = sizes

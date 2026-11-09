@@ -107,6 +107,7 @@ impl Pending {
                     environment: caller.environment.as_ref(),
                     first_region: self.first,
                     retain_sized: false,
+                    placeholders: None,
                 },
                 caller.availability,
             )
@@ -121,6 +122,7 @@ impl Pending {
                     environment: caller.environment.clone(),
                     first_region: self.first,
                     retain_sized: false,
+                    placeholders: None,
                 },
                 caller.availability,
             )

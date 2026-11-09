@@ -204,7 +204,8 @@ pub(super) fn prove_checked(
         // even when the search discards a candidate or reuses a child result.
         first.normalized_inputs = Some(frames::NormalizedInputs { proof: None });
     }
-    let mut search = Search::new(caller, availability);
+    let mut search = Search::assuming(&facts.types, caller, availability)
+        .map_err(|error| super::Failure::Invalid(error.into()))?;
     // Only completed declaration schemas may support reusable physical conditions.
     if reuse.is_some() && !facts.types.nominal_sizes_sealed() {
         return Err(super::Failure::Invalid(

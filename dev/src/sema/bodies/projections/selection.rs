@@ -244,6 +244,7 @@ impl Checker<'_> {
             environment: environment.as_ref(),
             first_region: proof.regions.end,
             retain_sized: false,
+            placeholders: None,
         };
         if pending_parent
             || selection::requires_resolved_inputs(self.facts, &mut self.state.infer, term, &caller)
@@ -457,6 +458,7 @@ impl Opened {
             environment: self.environment.as_ref(),
             first_region: self.proof.regions.end,
             retain_sized: false,
+            placeholders: None,
         };
         facts.body_work.projection_selections += 1;
         let selected = selection::select_available(

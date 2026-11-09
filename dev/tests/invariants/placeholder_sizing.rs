@@ -557,3 +557,76 @@ fn well_formedness_failing_headers_never_reach_the_placeholder_walk() -> TestRes
     }
     Ok(())
 }
+
+fn caller<'a>(
+    assumptions: &'a crate::sema::traits::assumptions::Assumptions,
+    placeholders: Option<&'a Placeholders>,
+) -> crate::sema::traits::selection::Caller<'a> {
+    crate::sema::traits::selection::Caller {
+        assumptions,
+        environment: None,
+        first_region: 1,
+        retain_sized: false,
+        placeholders,
+    }
+}
+
+/// A search assumes its caller's placeholder premises from its construction:
+/// (f) decides its rigid parameters and its builtin proof walks under them,
+/// and a placeholder proof's trait State hands them to the searches and
+/// normalizations it starts. An environment with a set is rejected, and the
+/// tests' premise-less constructor installs none.
+#[test]
+fn placeholder_callers_install_their_premises_in_every_search() -> TestResult {
+    use crate::sema::traits::implementations::Availability;
+    let mut fixture = fixture()?;
+    let facts = &mut fixture.facts;
+    let set = placeholders(vec![fixture.sized])?;
+    let assumptions = crate::sema::traits::assumptions::Assumptions::default();
+    let search = super::super::Search::assuming(
+        &facts.types,
+        caller(&assumptions, Some(&set)),
+        Availability::Declarations,
+    )?;
+    assert!(search.query.negative_sizing.is_some());
+    assert!(search.query.builtins.assumes_placeholders());
+    let plain = super::super::Search::assuming(
+        &facts.types,
+        caller(&assumptions, None),
+        Availability::Declarations,
+    )?;
+    assert!(plain.query.negative_sizing.is_none());
+    assert!(!plain.query.builtins.assumes_placeholders());
+    let tests =
+        super::super::Search::new(caller(&assumptions, Some(&set)), Availability::Validated);
+    assert!(tests.query.negative_sizing.is_none());
+    assert!(!tests.query.builtins.assumes_placeholders());
+    let environment = empty(facts)?;
+    let rejected = super::super::Search::assuming(
+        &facts.types,
+        crate::sema::traits::selection::Caller {
+            environment: Some(&environment),
+            ..caller(&assumptions, Some(&set))
+        },
+        Availability::Declarations,
+    );
+    assert_eq!(
+        rejected.err(),
+        Some("placeholder premises require a premise-less caller")
+    );
+    let mut proof = Proof::new(None);
+    proof.assume_placeholders(&facts.types, set)?;
+    assert!(proof.trait_state_placeholders(facts)?);
+    assert!(!Proof::new(None).trait_state_placeholders(facts)?);
+    Ok(())
+}
+
+/// The premises cost each caller and each nominal trait State one word.
+#[test]
+fn placeholder_premises_cost_callers_and_trait_states_one_word() {
+    assert_eq!(size_of::<Placeholders>(), 8);
+    assert_eq!(size_of::<Option<Placeholders>>(), 8);
+    assert_eq!(size_of::<crate::sema::traits::selection::Caller<'_>>(), 32);
+    assert_eq!(size_of::<crate::sema::traits::selection::OwnedCaller>(), 32);
+    assert_eq!(size_of::<crate::sema::nominals::traits::State>(), 808);
+}

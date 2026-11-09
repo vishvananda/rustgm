@@ -553,11 +553,15 @@ impl Proof {
         facts: &mut Declarations,
     ) -> Result<&mut traits::State, &'static str> {
         if self.traits.is_none() {
-            self.traits = Some(Box::new(traits::State::new(
-                facts,
-                self.environment.clone(),
-                self.scope,
-            )?));
+            let mut state = traits::State::new(facts, self.environment.clone(), self.scope)?;
+            // A placeholder proof's nested trait proofs assume its premises.
+            state.assume_placeholders(
+                self.shapes
+                    .as_deref()
+                    .and_then(crate::types::parameters::shape::Shapes::placeholders)
+                    .cloned(),
+            )?;
+            self.traits = Some(Box::new(state));
         }
         self.traits
             .as_deref_mut()
@@ -568,6 +572,20 @@ impl Proof {
         self.traits
             .as_deref()
             .map_or(0, traits::State::selection_steps)
+    }
+    #[cfg(test)]
+    pub(in crate::sema) fn assumes_placeholders(&self) -> bool {
+        self.shapes
+            .as_deref()
+            .and_then(crate::types::parameters::shape::Shapes::placeholders)
+            .is_some()
+    }
+    #[cfg(test)]
+    pub(in crate::sema) fn trait_state_placeholders(
+        &mut self,
+        facts: &mut Declarations,
+    ) -> Result<bool, &'static str> {
+        Ok(self.trait_state(facts)?.placeholders().is_some())
     }
     #[cfg(test)]
     pub(in crate::sema) fn shape_steps(&self) -> usize {

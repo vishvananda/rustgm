@@ -54,6 +54,11 @@ impl State {
             },
             first_region: self.obligations.regions.end,
             retain_sized: false,
+            placeholders: if closed {
+                None
+            } else {
+                self.placeholders.as_ref()
+            },
         };
         self.quantified.get_or_insert_with(Default::default).prove(
             facts,

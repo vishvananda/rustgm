@@ -41,6 +41,7 @@ impl Checker<'_> {
                 environment: environment.as_ref(),
                 first_region,
                 retain_sized: false,
+                placeholders: None,
             },
             self.availability,
             self.state.canonical_trait_proofs.as_deref_mut(),

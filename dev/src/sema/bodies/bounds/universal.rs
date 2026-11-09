@@ -97,6 +97,7 @@ impl Checker<'_> {
                 environment: shared.environment.as_ref(),
                 first_region: first,
                 retain_sized: false,
+                placeholders: None,
             },
         };
         if !shared

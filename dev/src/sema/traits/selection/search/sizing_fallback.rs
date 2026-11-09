@@ -134,7 +134,12 @@ impl Search<'_> {
             if !holds {
                 return Ok(Some(Action::Complete(Decision::Absent)));
             }
-            let debt = (kind == LangItem::Sized, kind == LangItem::MetaSized);
+            // Only the negative query's root pays a `MetaSized` debt from the
+            // premises; a search proving a nested obligation has decided it.
+            let debt = (
+                kind == LangItem::Sized,
+                kind == LangItem::MetaSized && self.caller.retain_sized,
+            );
             return self.complete_source_sizing(facts, frame, goal, debt);
         }
         let shape = self.builtin_shape(facts, frame, goal.ty)?;
@@ -236,15 +241,16 @@ impl Search<'_> {
         Ok(Some(Action::Complete(Decision::Proven(selected))))
     }
     /// A rigid parameter's sizing `kind` in a negative coherence query with
-    /// premises, which only the other header's premises decide; `None` for
-    /// every other subject and query.
+    /// premises, or in a search proving one of its nested obligations, which
+    /// only the other header's premises decide; `None` for every other subject
+    /// and query.
     fn negative_parameter_sizing(
         &mut self,
         facts: &Declarations,
         kind: LangItem,
         ty: crate::types::TypeId,
     ) -> Result<Option<bool>, &'static str> {
-        if !self.caller.retain_sized || !matches!(facts.types.kind(ty), Some(Kind::Parameter(_))) {
+        if !matches!(facts.types.kind(ty), Some(Kind::Parameter(_))) {
             return Ok(None);
         }
         let Some(sizing) = self.query.negative_sizing.as_deref() else {

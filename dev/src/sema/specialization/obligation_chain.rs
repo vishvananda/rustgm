@@ -178,6 +178,7 @@ impl Active {
                 assumptions: std::sync::Arc::clone(&inputs.caller.assumptions),
                 environment: inputs.caller.environment.clone(),
                 retain_sized: inputs.caller.retain_sized,
+                placeholders: None,
             };
             selection::begin_canonical_counted(
                 facts,
