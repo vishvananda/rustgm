@@ -26,7 +26,9 @@ unsupported boundary until actual constant and relocation producers exist.
 One optional boxed payload belongs to its existing Body. Cloning, instantiation,
 storage accounting, initialization/loan proof and lowering consume that same
 typed data. Payload and output identities are revalidated. Runtime lowering
-currently reports unavailable backend capability; it cannot erase the effect or
+emits a backend assembly template only for the
+[initial profile](source-asm-vector-join.md#initial-native-assembly-profile);
+every other form fails with its own fence. Lowering cannot erase the effect or
 substitute an ordinary store. No assembly metadata codec is implemented.
 
 Actual combined widths are Kind28, Node36, Body456, Rvalue20 and Value24 bytes.

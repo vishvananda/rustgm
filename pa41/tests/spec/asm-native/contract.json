@@ -1,0 +1,207 @@
+{
+  "state": "outcomes declared before observation",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "target": "x86_64-unknown-linux-gnu",
+  "edition": "2024",
+  "originals": [
+    {
+      "path": "library/stdarch/crates/core_arch/src/x86/macros.rs",
+      "lines": "102-107",
+      "sha256": "7caf09952fcfc77c508242ce44b917b1bda8718aa434acaab53e8f7d2caa4e65"
+    },
+    {
+      "path": "library/stdarch/crates/core_arch/src/x86/sse.rs",
+      "lines": "2064-2077",
+      "sha256": "0e2d474c55edc93cd7513dec204a29296f3f94803b8abd54178de408d23f0042"
+    }
+  ],
+  "native": {
+    "rustgm": [
+      "--emit-lowir",
+      "--cap-lints=allow",
+      "--source-core",
+      "probe@asm_native",
+      "--crate-name",
+      "probe",
+      "--crate-disambiguator",
+      "asm_native"
+    ],
+    "backend": "scripts/backend.py --native-object observer.o",
+    "independent": [
+      "+1.98.0",
+      "--edition=2024",
+      "--crate-type=lib",
+      "--emit=obj",
+      "--cap-lints=allow",
+      "-Cpanic=abort",
+      "-Copt-level=0"
+    ],
+    "independent_link": "cc independent.o observer.o entry.o",
+    "harness": "observed_program::compare cannot be used: pinned rustc needs a `start` lang item to build a no_core `fn main` executable, and RustGM supports none. Pinned Rust therefore compiles the same native.rs as a library object and links entry.c, whose C main calls rg_observe; RustGM's executable main calls the same rg_observe.",
+    "backend_path": "backend.py --native-object goes through cppgm++ -c and cc. This slice does not exercise standalone lowir2native; the make test-backend assembly handshake covers that path.",
+    "stdout": "expected.stdout",
+    "exit_status": 0,
+    "templates": 6,
+    "invocations": 6,
+    "headers": {
+      "intel readwrite 1 24 0 2": 5,
+      "intel readwrite 13 24 7 2": 1
+    },
+    "rustgm_movntps": 6,
+    "independent_movntps": "at least 1"
+  },
+  "header": {
+    "memory": "readwrite; nomem and readonly are fenced",
+    "properties": "1 (side effect), plus 4|8 (stack, red zone) unless nostack",
+    "state_writes": "0 with preserves_flags, otherwise 1|2|4: EFLAGS status, x87 status and MXCSR status",
+    "state_reads": 24,
+    "state_reads_rules": {
+      "asm.rules.reg-not-input": "Any registers not specified as inputs will contain an undefined value on entry to the assembly code.",
+      "asm.rules.x86-df": "On x86, the direction flag (DF in `EFLAGS`) is clear on entry to the assembly code and must be clear on exit."
+    },
+    "state_reads_tradeoff": "8|16 keeps the x87 and MXCSR control fields live into the asm, so a template may depend on the rounding and exception-mask state. The status flags hold an undefined value on entry and DF is clear, so no status or DF read is declared. The conservative 63 would also forbid the backend from moving status-flag producers across the asm."
+  },
+  "stream_template": "stream-template.lowir",
+  "controls": {
+    "opponents/joined.rs": "one template: text \"/* { \", use 0, text \" } */\\nnop\"",
+    "opponents/transport.rs": {
+      "source": "appended to native.rs before `#[repr(simd)]`, naming asm! through its source-owned arch declaration; that prelude alone publishes in version 13",
+      "lowered": "one template: text \"prefetchnta [\", use 0, text \"]\"",
+      "module-bodies-v13": "source rvalue requires a complete wider transport row"
+    },
+    "scaling": "1, 8 and 32 instances of one generic asm body give exactly that many templates; the same counts of asm-free instances allocate no template storage"
+  },
+  "opponents": [
+    {
+      "source": "opponents/pure.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly pure option is outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/nomem.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly nomem option is outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/readonly.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly readonly option is outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/noreturn.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly noreturn option is outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/att-syntax.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly att_syntax option is outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/raw.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly raw option is outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/output.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly output operand is outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/inout.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly output operand is outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/clobber.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly output operand is outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/reg-integer.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly reg input other than a raw pointer is outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/reg-function.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly reg input other than a raw pointer is outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/reg-abcd.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly reg_abcd operand is outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/reg-byte.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly reg_byte operand is outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/explicit.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly explicit register operand is outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/xmm-scalar.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly xmm_reg input other than a 128-bit vector is outside the initial assembly profile"
+    },
+    {
+      "source": "opponents/modifier.rs",
+      "rustc_metadata_status": 0,
+      "rustgm": "inline assembly template modifier is outside the initial assembly profile"
+    }
+  ],
+  "changed_expectations": {
+    "dev/tests/invariants/asm_effect_contracts.rs scalar_inputs_and_outputs_reach_real_original_proof_then_profile_fence (renamed from ..._then_backend_denial)": {
+      "before": "inline assembly requires an unavailable locked backend capability",
+      "after": "inline assembly pure option is outside the initial assembly profile",
+      "reason": "options are fenced first in bit order, and its inout(reg) invocation has options(pure, nomem, nostack)"
+    },
+    "dev/tests/invariants/asm_vector_inputs.rs real_stream_body_keeps_simd_types_proofs_and_lowers_its_declared_template (renamed from ..._and_capability_fences)": {
+      "before": "inline assembly requires an unavailable locked backend capability",
+      "after": "lowers to exactly stream-template.lowir and one asm invocation",
+      "reason": "the original _mm_stream_ps is the form this profile lowers"
+    }
+  },
+  "observations_after_run": {
+    "stream_body_module_bodies_v13": {
+      "state": "observed, not predicted; pinned after the run",
+      "source": "native.rs before `// Authored observers`: the prelude, __m128 with its array Clone/Copy impls, vps! and the original _mm_stream_ps",
+      "error": "source macro/semantic-name provenance metadata is not implemented",
+      "behind_it, from one exploratory run and not pinned by a test": {
+        "prelude and __m128 with the const-generic array impls": "source const parameters are outside the initial source profile",
+        "prelude and __m128 with concrete [f32; 4] impls": "source nominal representation requires its wider complete contract",
+        "the full prefix with concrete [f32; 4] impls": "source macro/semantic-name provenance metadata is not implemented"
+      }
+    }
+  },
+  "files": {
+    "README.md": "efff24998f26945ccd9f24d54afea25520ed38c27127258c80bd09dc708f5376",
+    "entry.c": "98452b8d8fabcf47485e56e1b93d1965cbdc46132d8114ff42f835fc9765b266",
+    "expected.stdout": "d01b7cec7494caaf9554d95bd3352dfe829a351b0be188b1a1ae905d03ea7522",
+    "native.rs": "1631be50578cad11c570aa89b0ca8d5be751bf64f62fb07b8150c48e63fd5e94",
+    "observer.c": "c7541d6d2cbaebc5763a2eac2220b12e426e9bfe1b18f17cd3f8925d042bad6f",
+    "opponents/att-syntax.rs": "b2a73cc3d79a05540105b5ea64358b73759f18167f7178ba24e976059380b372",
+    "opponents/clobber.rs": "2ba026749a2a46f313d72eea949370a9c9ecd51a60a7b1daad0e50cdf090cecc",
+    "opponents/explicit.rs": "9c126f2e791a2ae134f89cd99576a724c36bc09c83c5e98f953a56a77d1a9d5b",
+    "opponents/inout.rs": "37731feff3424d0c43f76f23b586f1212f26ada60c72070471ae037ab1c8cb69",
+    "opponents/joined.rs": "db2dd46f017d4ddfdba25f7028e201f43c984fee522c583415f788b7b4dac964",
+    "opponents/modifier.rs": "ca80ef930094b22b6e5569c3f7a6e996feddbd9f6497b4807da1221c42813fa4",
+    "opponents/nomem.rs": "55ce7f99553dce4cbd035f95af853153bf4e6944e08601afe86599a6d15a74fb",
+    "opponents/noreturn.rs": "58e3b2b27ae70e602d7e8441b6e088ce9a7ad844afdb67075bc421d78a950302",
+    "opponents/output.rs": "6d25f6077caae3bbd7cd112d4dc06e63207d59f5a5ee4c96d248f02568ac7e5c",
+    "opponents/pure.rs": "b79eb3ac7d13dbd5abe15adfdc468e8ac10cd773c0596e525cdec4837033e131",
+    "opponents/raw.rs": "ad15d7300e2a900dfa3fb1c743ea8371a3d73c8d142c6c05fbcc4829510c2f2d",
+    "opponents/readonly.rs": "502b4c85a273bbed87d8432608da948e73a8dee3c32df3364242431bb32a5d0b",
+    "opponents/reg-abcd.rs": "52779886544f703189128b03bf03d0ec438a64511d14b67b5c5a97ef01d51075",
+    "opponents/reg-byte.rs": "117d30346a1c5f636b235594556f062ee47b55a9ebd8dd898178eb04e7f96fc9",
+    "opponents/reg-function.rs": "1e555a963a52f788a7e106ced3cee6e6819e20037b37cd5594c5110c877289c5",
+    "opponents/reg-integer.rs": "5e31144c71ddb2065097cbd7d5fb72af4272e49b671a81bc2756cdda1b04d21e",
+    "opponents/transport.rs": "a79a84e9fee07ee563dddfaaf0d160c9b84ef062242f0247b70607e2802ef8fc",
+    "opponents/xmm-scalar.rs": "e13d8b426dab41b8c9e35b09c5980c80c875e33c7eb61304d924e1ac70f46dcd",
+    "opponents.tsv": "85bbc6a3d8acf45bbf9895763c9f25d4a93715722e2e5e6338cd4cbd711af870",
+    "stream-template.lowir": "b2ab124985e4755193c76c01a4bd05a181cf2b2cf75301bdcda9edf007365270"
+  }
+}

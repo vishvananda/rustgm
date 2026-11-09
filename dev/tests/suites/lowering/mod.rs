@@ -35,6 +35,8 @@ mod object_dispatch;
 pub(crate) mod qualify;
 #[path = "../../support/semantic.rs"]
 pub(crate) mod semantic;
+#[path = "../../stream_assembly.rs"]
+mod stream_assembly;
 #[path = "../../thin_references.rs"]
 mod thin_references;
 #[path = "../../typed_bodies.rs"]

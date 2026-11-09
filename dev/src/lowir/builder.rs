@@ -1,5 +1,6 @@
 //! Function construction emits contiguous block ranges and diagnoses invalid state.
 use super::{
+    asm::AssemblyId,
     program::{
         self, Access, Block, BlockId, Function, Instruction, Literal, LiteralId, MemorySpan,
         Operand, Operation, Range, ResultId, SignatureId, SlotId, SpanId, Storage, TempId,
@@ -445,6 +446,37 @@ impl Builder {
         callee: Operand,
         arguments: &[Value],
     ) -> Result<Option<Value>, &'static str> {
+        let operation = Operation::Call {
+            signature,
+            callee,
+            arguments: program::CallArguments::Scalar(self.arguments(arguments)?),
+        };
+        if result == Type::Void {
+            self.emit(operation, None)?;
+            Ok(None)
+        } else {
+            self.value(result, operation).map(Some)
+        }
+    }
+    /// Invoke a defined template, passing each operand's `ptr` argument in
+    /// template order; it has no result in the initial profile.
+    /// # Errors
+    /// Rejects non-pointer arguments, exhausted identities and invalid state.
+    pub fn asm(&mut self, template: AssemblyId, arguments: &[Value]) -> Result<(), &'static str> {
+        if arguments.iter().any(|argument| argument.ty != Type::Ptr) {
+            return Err("LowIR assembly arguments are pointers in the initial profile");
+        }
+        let arguments = self.arguments(arguments)?;
+        self.emit(
+            Operation::Asm {
+                template,
+                arguments,
+            },
+            None,
+        )
+    }
+    /// Append one operation's arguments to the function's argument list.
+    fn arguments(&mut self, arguments: &[Value]) -> Result<Range, &'static str> {
         let start = program::index(self.function.arguments.len())?;
         let end = program::index(
             self.function
@@ -454,17 +486,7 @@ impl Builder {
                 .ok_or("LowIR argument space exhausted")?,
         )?;
         self.function.arguments.extend_from_slice(arguments);
-        let operation = Operation::Call {
-            signature,
-            callee,
-            arguments: program::CallArguments::Scalar(Range { start, end }),
-        };
-        if result == Type::Void {
-            self.emit(operation, None)?;
-            Ok(None)
-        } else {
-            self.value(result, operation).map(Some)
-        }
+        Ok(Range { start, end })
     }
     /// # Errors
     /// Rejects termination outside a block and unknown branch targets.

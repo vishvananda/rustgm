@@ -2,7 +2,7 @@
 use super::{Result, source};
 use crate::{body, pipeline, types::aggregate::SimdShape};
 use std::fmt::Write as _;
-fn foundation() -> Result<String> {
+pub(super) fn foundation() -> Result<String> {
     let mut text = source("")?.replacen("#![feature(", "#![feature(repr_simd,", 1);
     text.push_str("#[rustc_builtin_macro(asm)]macro_rules!asm{($($t:tt)*)=>{};}");
     for primitive in [
@@ -18,7 +18,12 @@ fn foundation() -> Result<String> {
     Ok(text)
 }
 fn vector_source(name: &str) -> Result<String> {
-    let input = crate::test_source::fixture(&format!("pa41/tests/spec/asm-vectors/{name}.rs"))?;
+    fixture_source(&format!("pa41/tests/spec/asm-vectors/{name}.rs"))
+}
+/// A std-form fixture on the `no_core` foundation: its crate attributes and
+/// `asm` import are dropped and a derived `V` Clone/Copy becomes explicit.
+pub(super) fn fixture_source(path: &str) -> Result<String> {
+    let input = crate::test_source::fixture(path)?;
     let copy = input.contains("#[derive(Clone,Copy)]");
     let mut text = foundation()?;
     for line in input
@@ -91,7 +96,7 @@ fn vector_outputs_and_inputs_retain_place_copy_and_initialization_obligations() 
     Ok(())
 }
 #[test]
-fn real_stream_body_keeps_simd_types_proofs_and_capability_fences() -> Result {
+fn real_stream_body_keeps_simd_types_proofs_and_lowers_its_declared_template() -> Result {
     let reducer = crate::test_source::fixture("pa41/tests/spec/asm-frontend/stream-ps.rs")?;
     let original = reducer
         .split("#[inline]")
@@ -156,7 +161,7 @@ fn real_stream_body_keeps_simd_types_proofs_and_capability_fences() -> Result {
         })
         .ok_or("actual original function")?
         .definition;
-    let error = crate::lower::instances::build_roots_prepared(
+    let program = crate::lower::instances::build_roots_prepared(
         &report,
         &mut fresh.facts,
         crate::lower::Roots {
@@ -164,14 +169,14 @@ fn real_stream_body_keeps_simd_types_proofs_and_capability_fences() -> Result {
             exports: &[root],
         },
         fresh.prepared,
-    )
-    .err()
-    .ok_or("asm backend capability silently granted")?;
-    assert!(
-        error
-            .to_string()
-            .contains("unavailable locked backend capability"),
-        "{error}"
-    );
+    )?;
+    assert_eq!(program.assembly_templates(), Some(1));
+    let mut bytes = Vec::new();
+    crate::lowir::writer::write(&program, &mut bytes)?;
+    let lowir = String::from_utf8(bytes)?;
+    let declared = crate::test_source::fixture("pa41/tests/spec/asm-native/stream-template.lowir")?;
+    assert!(lowir.starts_with(&declared), "{lowir}");
+    assert_eq!(lowir.matches("assembly @").count(), 1);
+    assert_eq!(lowir.matches("    asm @asm0(").count(), 1);
     Ok(())
 }

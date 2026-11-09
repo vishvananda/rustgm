@@ -35,10 +35,10 @@ required; body features provide none of those permissions.
 
 The original function bytes, `vps!`/`concat!`, `movntps [{p}],{a}`, two real
 operand types and `nostack`/`preserves_flags` survive through the typed body and
-original/instance proof. Demanded lowering still rejects the unavailable locked
-backend capability. Existing source/target/SIMD publication fences stay closed;
-no assembly body codec, imported policy, target instruction or external backend
-change is added.
+original/instance proof. Demanded lowering now emits the pinned backend's
+optional assembly template for this form ([below](#initial-native-assembly-profile)).
+Existing source/target/SIMD publication fences stay closed; no assembly body
+codec or imported policy is added.
 
 ## Qualification and retained failures
 
@@ -95,7 +95,164 @@ to the existing typed collector; distinct source Copy goals still share one set,
 sort and caller proof. No wall-time speedup or whole-compiler performance claim
 is inferred from the counters.
 
-Remaining LIB-045/PA41 work includes actual full-width non-temporal native
-emission and its Rust/C ABI/memory/sentinel controls, authenticated assembly body
-transport, demanded const/symbol operands and broader target/register/option/
-clobber/global/naked/unwind closure. Backend work remains separately coordinated.
+Remaining LIB-045/PA41 work includes authenticated assembly body transport (B2),
+the other library forms in the [inventory](#pinned-library-asm-inventory),
+demanded const/symbol operands and broader target/register/option/clobber/
+global/naked/unwind closure. Backend work remains separately coordinated.
+
+## Initial native assembly profile
+
+RustGM now lowers the checked asm body nodes of the original `_mm_stream_ps`
+to the pinned backend's optional LowIR `assembly` templates and `asm`
+invocations. It reads only the retained body payload, through the existing
+`instruction()` check. Every other checked form fails in lowering with its own
+text, and module-body transport still rejects asm bodies (B2).
+
+Each invocation in each emitted body gets its own template, `@asmN`, numbered
+in emission order and written after the globals and before the functions. A
+template declares:
+
+| Field | Value |
+|---|---|
+| Dialect, memory | `intel readwrite`. AT&T, `nomem` and `readonly` are fenced. |
+| Properties | 1 (side effect), plus 4\|8 (stack, red zone) unless `nostack` |
+| State reads | 24: x87 control and MXCSR control |
+| State writes | 0 with `preserves_flags`, otherwise 7: EFLAGS status, x87 status and MXCSR status |
+| `in(reg)` raw pointer | `operand ptr i -1 1 0 0`, one group each of rax, rcx, rdx, rsi, rdi and r8–r15. rbx, rbp and rsp are excluded, as in rustc's x86-64 `reg` class. |
+| `in(xmm_reg)` 128-bit vector | `operand v128 i -1 1 1 0`, groups xmm0–xmm15. The argument is the address of the operand's snapshot, and the backend loads it into the register. |
+| `{name}` | `use OP 0 0 0`: the operand's own view, with no modifier |
+
+Template strings are joined with `\n`, `{{` and `}}` are unescaped, and the
+text uses the backend reader's escapes. The snapshot is the object copy that an
+object-typed read already makes, so a later assignment to the local, including
+one inside a later operand's expression, cannot reach the asm.
+
+State reads are 8|16, not the conservative 63. The Reference says that "Any
+registers not specified as inputs will contain an undefined value on entry to
+the assembly code" (`asm.rules.reg-not-input`) and that "the direction flag
+(DF in `EFLAGS`) is clear on entry to the assembly code and must be clear on
+exit" (`asm.rules.x86-df`). The status flags therefore carry nothing into the
+asm, and DF needs no read. The control fields stay live because a template may
+depend on rounding or exception masks. Declaring 63 would also forbid the
+backend from moving status-flag producers across the asm.
+
+### Fences
+
+Options are checked first in bit order, then operands in source order, then
+template modifiers. Each text is `inline assembly <form> is outside the
+initial assembly profile`, with these forms:
+
+- `pure option`, `nomem option`, `readonly option`, `noreturn option`,
+  `att_syntax option`, `raw option`
+- `output operand`: `out`, `lateout`, `inout`, `inlateout` and discarded
+  clobbers
+- `reg input other than a raw pointer`: integers, floats and function pointers
+- `reg_abcd operand`, `reg_byte operand`, `explicit register operand`
+- `xmm_reg input other than a 128-bit vector`: the 4- and 8-byte scalars that
+  the frontend accepts in `xmm_reg`
+- `template modifier`
+
+`const`, `sym` and `label` operands, ymm and the other unimplemented classes
+stay rejected earlier, at body construction or in the frontend.
+
+### Module-body transport
+
+B1 adds no transport. A pointer-only `#[inline]` asm body on `native.rs`'s
+prelude lowers in its own crate. The prelude alone publishes in version 13;
+with the body, the packet fails with "source rvalue requires a complete wider
+transport row".
+
+The crate holding the real stream body (`native.rs` before its authored
+observers) was observed after the first run, not predicted. It stops at
+"source macro/semantic-name provenance metadata is not implemented", which
+the test now pins. That fence is crate-wide: `vps!` and `concat!` expand in
+the body, so the crate has more than one syntax context. One exploratory run
+(`obj/qualification/fast/1794180468170512714`, not pinned by a test) shows
+what lies behind it:
+
+| Source | First error |
+|---|---|
+| prelude and `__m128`, const-generic `[T; N]` impls | source const parameters are outside the initial source profile |
+| prelude and `__m128`, concrete `[f32; 4]` impls | source nominal representation requires its wider complete contract |
+| the full prefix, concrete `[f32; 4]` impls | source macro/semantic-name provenance metadata is not implemented |
+
+So for this body at least three fences stand before the asm value row:
+macro provenance, the `repr(simd)` record contract and the const-generic
+array impls. B2's design notice starts there.
+
+### Qualification
+
+All outcomes except the stream body's publication error were declared in
+`pa41/tests/spec/asm-native/` before any observation.
+
+- Private 7 pass in 131.70s at
+  `obj/qualification/fast/1794181994637258348/receipt.json` (SHA256
+  `d4a0fd71247f8a5786d674417ee3e6c630cd3efc019bac9821d8b1435334d634`): the
+  16 declared fences, joined templates, the transport control and stream
+  observation, the 1/8/32 scaling control, the declared stream template, the
+  scalar effect contract and the LowIR record sizes. Strict private Clippy,
+  formatting and the architecture audit pass on those bytes.
+- The native root passes 2 in 132.15s at
+  `obj/qualification/fast/1794182411807900717/receipt.json` (SHA256
+  `c9b175166fc0e8e92e40c810578380e600dc269885cafe1ea4e299fb7c5d5474`), with
+  CLI strict Clippy. Both executables print `expected.stdout`. RustGM's
+  object has six `movntps XMMWORD PTR [r10],xmm14`, and pinned Rust's has
+  six `movntps` with `rdi` or `rax` and `xmm0`. Pinned Rust accepts all 16
+  opponents as metadata.
+- PA11, PA14, PA16, PA18, PA19, PA20, PA21 and PA24 pass 5130/5130 text
+  cases, LowIR oracles included, at
+  `obj/qualification/fast/1794182577425192096/receipt.json` (SHA256
+  `2becdb3d27b20f50b68dd0f6e3ac9ae2c2f1248287354b404e7fad31839d9deb`).
+- `make test-upstream` verifies 128 upstream fixtures and 126 Reference
+  files. `make test-harness` passes 307 script tests, 465 maintainer roots in
+  13 binaries and the layout check.
+
+Retained failures, all fixed before the passing runs:
+
+- The audit rejected ten `assembly` and seven `inline` file stems. The LowIR builder
+  and writer code moved into `builder.rs` and `writer.rs`, and the new
+  modules are `lowir/asm.rs`, `lower/function/asm_invocations.rs` and
+  `tests/stream_assembly.rs`.
+- Strict Clippy rejected unquoted `LowIR` in four test doc comments and a
+  101-line native test.
+- The first transport control used the private test foundation. Its
+  const-generic `Index`, `Clone` and `Copy` array impls stopped publication
+  with "source const parameters are outside the initial source profile"
+  before the asm body was reached. The control now uses `native.rs`'s
+  prelude, which publishes on its own.
+- An exploratory run showed that `__m128`'s `Copy` needs `[T; N]` impls,
+  which pinned core provides in `array/mod.rs`. `native.rs` gained two of
+  the same form before its first native run.
+
+### Template storage
+
+`Operation` stays 32 bytes and `Instruction` 40. `Program` gains one
+optional boxed template store, allocated by the first template; asm-free
+programs allocate none. A generic asm body emitted for 1, 8 and 32 types
+gives exactly 1, 8 and 32 templates, and the same asm-free counts allocate
+no store. Templates hold ranges into one operand-kind vector, one piece
+vector and one text buffer.
+
+## Pinned library asm inventory
+
+Every `asm!` in the pinned (88d9) core, alloc and std sources that is active
+for x86_64-unknown-linux-gnu, by form. Alloc, std's Linux paths and
+portable-simd contain none. Core's `dec2flt/fpu.rs` (x86 without SSE2), the
+x86 `__cpuid_count` branch and the x86 `eflags.rs` variants are inactive on
+this target. Paths are under `library/stdarch/crates/core_arch/src/`.
+
+| Form | Sites | Needs |
+|---|---|---|
+| `in(reg)` raw pointer, `in(xmm_reg)` 128-bit vector; `nostack, preserves_flags` | 5: `x86/sse.rs:2071` `_mm_stream_ps`, `x86/sse2.rs:1440` `_mm_stream_si128`, `x86/sse2.rs:2800` `_mm_stream_pd`, `x86/sse4a.rs:114` `_mm_stream_sd`, `x86/sse4a.rs:140` `_mm_stream_ss` | nothing more: this profile |
+| `in(reg)` raw pointer, `in(reg)` integer; `nostack, preserves_flags` | 2: `x86/sse2.rs:1468` `_mm_stream_si32` (`{a:e}`), `x86_64/sse2.rs:82` `_mm_stream_si64` | integer `reg` inputs; the `e` modifier for si32 |
+| `out(xmm_reg)`, `in(reg)` raw pointer; `pure, readonly, nostack, preserves_flags` | 1: `x86/sse41.rs:1174` `_mm_stream_load_si128` | outputs, `pure`, `readonly` |
+| `in(reg)` raw pointer, `in(reg)` integer, `out(reg_byte)`; `nostack, att_syntax`, plus `pure, readonly` for `_bittest` and `_bittest64` | 8: `x86/bt.rs:29,48,67,86` (32-bit `{b:e}`), `x86_64/bt.rs:29,48,67,86` | outputs, `reg_byte`, AT&T, the `e` modifier for the 32-bit forms |
+| `out(reg)` (`{0:r}`), `inout("eax")`, `inout("ecx")`, `out("edx")`; `nostack, preserves_flags` | 1: `x86/cpuid.rs:88` `__cpuid_count` | outputs, explicit registers, the `r` modifier |
+| `out(reg)`; `nomem, att_syntax`, uses the stack | 1: `x86/eflags.rs:35` `__readeflags` | outputs, `nomem`, AT&T |
+| `in(reg)` integer; `nomem, att_syntax`, uses the stack | 1: `x86/eflags.rs:66` `__writeeflags` | integer `reg` inputs, `nomem`, AT&T |
+| ymm, zmm and kreg operands (AVX, AVX2, AVX-512F, AVX-512FP16 stream stores, stream loads and masked scalar loads and stores) | 17: `x86/avx.rs` 3, `x86/avx2.rs` 1, `x86/avx512f.rs` 10, `x86/avx512fp16.rs` 3 | wider vector and mask classes |
+
+That is 36 sites. The order for stage C follows from it: integer `reg`
+inputs with the `e` modifier (2 sites), then outputs with `pure`/`readonly`
+(1), then the `bt` family and the remaining scalar forms (11), then wider
+classes (17).

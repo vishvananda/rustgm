@@ -1,8 +1,9 @@
 //! Serialize the typed scalar model using the pinned CPPGM `LowIR` vocabulary.
 use super::{
+    asm::{AssemblyId, Piece},
     program::{
-        Access, Function, Instruction, Literal, Operand, Operation, Program, SignatureId, Storage,
-        Terminator,
+        Access, Function, Instruction, Literal, Operand, Operation, Program, Range, SignatureId,
+        Storage, Terminator,
     },
     validation,
     vocabulary::Type,
@@ -52,6 +53,7 @@ pub fn count(program: &Program, out: &mut impl Write) -> io::Result<()> {
 /// Propagates output errors and inconsistent typed identities.
 pub fn write(program: &Program, out: &mut impl Write) -> io::Result<()> {
     globals(program, out)?;
+    templates(program, out)?;
     for symbol in &program.symbols {
         if symbol.body.is_none() {
             write!(out, "declare ")?;
@@ -141,6 +143,95 @@ fn globals(program: &Program, out: &mut impl Write) -> io::Result<()> {
         writeln!(out, "}}")?;
     }
     Ok(())
+}
+/// Each template, in definition order, as `assembly @asmN`.
+fn templates(program: &Program, out: &mut impl Write) -> io::Result<()> {
+    let Some(assemblies) = program.assemblies.as_deref() else {
+        return Ok(());
+    };
+    for (index, template) in assemblies.templates.iter().enumerate() {
+        let operands = assemblies.operands(template).map_err(io::Error::other)?;
+        writeln!(
+            out,
+            "assembly @asm{index} intel readwrite {} {} {} {} {{",
+            template.properties,
+            template.reads,
+            template.writes,
+            operands.len()
+        )?;
+        for (input, kind) in operands.iter().enumerate() {
+            writeln!(
+                out,
+                "  operand {} {input} -1 1 {} 0 {{\n    alternative 1 0 -1 {{",
+                kind.type_name(),
+                kind.stored()
+            )?;
+            for register in kind.registers() {
+                writeln!(out, "      group ({register}:0)")?;
+            }
+            writeln!(out, "    }}\n  }}")?;
+        }
+        for piece in assemblies.pieces(template).map_err(io::Error::other)? {
+            match *piece {
+                Piece::Text(range) => {
+                    write!(out, "  text ")?;
+                    quoted(assemblies.text(range).map_err(io::Error::other)?, out)?;
+                    writeln!(out)?;
+                }
+                Piece::Use(operand) => writeln!(out, "  use {operand} 0 0 0")?,
+            }
+        }
+        writeln!(out, "}}")?;
+    }
+    Ok(())
+}
+/// The backend reader's escapes; every other byte is literal.
+fn quoted(text: &str, out: &mut impl Write) -> io::Result<()> {
+    out.write_all(b"\"")?;
+    for byte in text.bytes() {
+        match byte {
+            b'\n' => out.write_all(b"\\n")?,
+            b'\t' => out.write_all(b"\\t")?,
+            b'\r' => out.write_all(b"\\r")?,
+            b'\\' | b'"' => out.write_all(&[b'\\', byte])?,
+            _ => out.write_all(&[byte])?,
+        }
+    }
+    out.write_all(b"\"")
+}
+/// `asm @asmN(arguments)`, checked against the template's arity.
+fn invocation(
+    program: &Program,
+    function: &Function,
+    template: AssemblyId,
+    arguments: Range,
+    out: &mut impl Write,
+) -> io::Result<()> {
+    let assemblies = program
+        .assemblies
+        .as_deref()
+        .ok_or_else(|| io::Error::other("LowIR assembly invocation without templates"))?;
+    let declared = assemblies
+        .template(template)
+        .and_then(|template| assemblies.operands(template))
+        .map_err(io::Error::other)?;
+    let values = function
+        .arguments
+        .get(arguments.start as usize..arguments.end as usize)
+        .ok_or_else(|| io::Error::other("invalid LowIR assembly argument range"))?;
+    if values.len() != declared.len() {
+        return Err(io::Error::other(
+            "LowIR assembly invocation differs from its template arity",
+        ));
+    }
+    write!(out, "asm @asm{}(", template.0)?;
+    for (index, value) in values.iter().enumerate() {
+        if index != 0 {
+            write!(out, ", ")?;
+        }
+        operand(program, function, value.operand, out)?;
+    }
+    write!(out, ")")
 }
 fn function_body(
     program: &Program,
@@ -379,6 +470,10 @@ fn instruction(
             value.operand
         }
         Operation::Call { .. } => return objects::call(program, function, signature, inst, out),
+        Operation::Asm {
+            template,
+            arguments,
+        } => return invocation(program, function, template, arguments, out),
     };
     operand(program, function, value, out)
 }

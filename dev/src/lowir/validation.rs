@@ -236,6 +236,9 @@ pub(super) fn scalar_operation(
     {
         return Err("object result on scalar LowIR instruction");
     }
+    if matches!(instruction.operation, Operation::Asm { .. }) && instruction.result.is_some() {
+        return Err("LowIR assembly invocation has no result in the initial profile");
+    }
     let scalar = |value: Value| {
         scalar_operand(value.operand)?;
         if let Operand::Temporary(id) = value.operand
@@ -263,6 +266,15 @@ pub(super) fn scalar_operation(
         Operation::Index { base, offset, .. } => {
             scalar_operand(base)?;
             scalar_operand(offset)?;
+        }
+        Operation::Asm { arguments, .. } => {
+            for &value in function
+                .arguments
+                .get(arguments.start as usize..arguments.end as usize)
+                .ok_or("invalid LowIR assembly argument range")?
+            {
+                scalar(value)?;
+            }
         }
         _ => {}
     }

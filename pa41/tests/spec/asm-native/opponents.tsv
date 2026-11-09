@@ -1,0 +1,17 @@
+# path	pinned rustc --emit=metadata status	declared RustGM lowering text
+opponents/pure.rs	0	inline assembly pure option is outside the initial assembly profile
+opponents/nomem.rs	0	inline assembly nomem option is outside the initial assembly profile
+opponents/readonly.rs	0	inline assembly readonly option is outside the initial assembly profile
+opponents/noreturn.rs	0	inline assembly noreturn option is outside the initial assembly profile
+opponents/att-syntax.rs	0	inline assembly att_syntax option is outside the initial assembly profile
+opponents/raw.rs	0	inline assembly raw option is outside the initial assembly profile
+opponents/output.rs	0	inline assembly output operand is outside the initial assembly profile
+opponents/inout.rs	0	inline assembly output operand is outside the initial assembly profile
+opponents/clobber.rs	0	inline assembly output operand is outside the initial assembly profile
+opponents/reg-integer.rs	0	inline assembly reg input other than a raw pointer is outside the initial assembly profile
+opponents/reg-function.rs	0	inline assembly reg input other than a raw pointer is outside the initial assembly profile
+opponents/reg-abcd.rs	0	inline assembly reg_abcd operand is outside the initial assembly profile
+opponents/reg-byte.rs	0	inline assembly reg_byte operand is outside the initial assembly profile
+opponents/explicit.rs	0	inline assembly explicit register operand is outside the initial assembly profile
+opponents/xmm-scalar.rs	0	inline assembly xmm_reg input other than a 128-bit vector is outside the initial assembly profile
+opponents/modifier.rs	0	inline assembly template modifier is outside the initial assembly profile

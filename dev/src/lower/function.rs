@@ -1,6 +1,7 @@
 //! Function-local slots, snapshots and control flow consume the PA10 typed body.
 mod aggregate;
 mod argument_sources;
+mod asm_invocations;
 mod c_boundary;
 mod callback_dispatch;
 #[path = "function/tracked_locations.rs"]
@@ -894,13 +895,10 @@ impl Lower<'_, '_, '_> {
                 let value = self.value(operand)?.runtime()?;
                 casts::cast(&mut self.builder, kind, source, target, value, ty)?
             }
-            Rvalue::Assembly { instruction, .. } => {
-                crate::body::assembly::instruction(self.body, instruction)?;
-                return Err("inline assembly requires an unavailable locked backend capability");
-            }
+            Rvalue::Assembly { instruction, .. } => return self.assembly(instruction),
             Rvalue::AssemblyOutput { effect, operand } => {
                 crate::body::assembly::output(self.body, effect, operand, value.ty)?;
-                return Err("inline assembly requires an unavailable locked backend capability");
+                return Err(asm_invocations::OUTPUT);
             }
             Rvalue::Intrinsic {
                 intrinsic,

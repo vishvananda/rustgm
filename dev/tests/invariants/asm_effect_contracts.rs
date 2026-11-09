@@ -1,6 +1,8 @@
 //! Source-owned asm retains typed effects while actual emission stays capability-checked.
 use crate::{body, syntax::ast::Kind};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+#[path = "asm_lowering.rs"]
+mod lowering;
 #[path = "asm_vector_inputs.rs"]
 mod vectors;
 const DECL: &str = "#[rustc_builtin_macro(asm)]macro_rules!actual{($($t:tt)*)=>{9u8};}";
@@ -97,7 +99,7 @@ fn actual_templates_keep_one_parser_and_source_role_without_hot_node_growth() ->
     Ok(())
 }
 #[test]
-fn scalar_inputs_and_outputs_reach_real_original_proof_then_backend_denial() -> Result {
+fn scalar_inputs_and_outputs_reach_real_original_proof_then_profile_fence() -> Result {
     let mut report = expanded(
         "pub fn main(){let mut x:usize=7;unsafe{actual!(\"add {x},1\",x=inout(reg)x,options(pure,nomem,nostack));}let _=x;}",
     )?;
@@ -139,11 +141,11 @@ fn scalar_inputs_and_outputs_reach_real_original_proof_then_backend_denial() -> 
         analysis.prepared,
     )
     .err()
-    .ok_or("unsupported backend silently emitted asm")?;
+    .ok_or("unsupported asm form silently lowered")?;
     assert!(
         error
             .to_string()
-            .contains("unavailable locked backend capability"),
+            .contains("inline assembly pure option is outside the initial assembly profile"),
         "{error}"
     );
     operand_evaluation_order()?;

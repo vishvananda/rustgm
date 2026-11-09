@@ -1,5 +1,8 @@
 //! Compact typed identities and function-owned `LowIR` arenas.
-use super::vocabulary::{Binary, Convert, Predicate, Type, Unary};
+use super::{
+    asm::{Assemblies, AssemblyId, Draft},
+    vocabulary::{Binary, Convert, Predicate, Type, Unary},
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct SymbolId(pub u32);
@@ -163,6 +166,11 @@ pub enum Operation {
         callee: Operand,
         arguments: CallArguments,
     },
+    /// An inline assembly invocation: one `ptr` argument per template operand.
+    Asm {
+        template: AssemblyId,
+        arguments: Range,
+    },
 }
 pub struct Instruction {
     pub result: Option<ResultId>,
@@ -228,6 +236,8 @@ pub struct Program {
     pub parameters: Vec<Type>,
     pub signatures: Vec<Signature>,
     pub(super) objects: Option<Box<super::boundary::Signatures>>,
+    /// Inline assembly templates, allocated only by a program that has one.
+    pub(super) assemblies: Option<Box<Assemblies>>,
     pub symbols: Vec<Symbol>,
     pub(super) names: crate::support::hash::HashMap<String, Name>,
     /// The last installed body's emptied construction vectors, lent to the
@@ -258,6 +268,20 @@ impl Function {
     }
 }
 impl Program {
+    /// Begin one inline assembly template.
+    ///
+    /// # Errors
+    /// Rejects exhausted identities.
+    pub fn assembly(&mut self) -> Result<Draft<'_>, &'static str> {
+        Draft::new(self.assemblies.get_or_insert_with(Box::default))
+    }
+    /// The number of defined templates, or `None` when none was ever begun.
+    #[must_use]
+    pub fn assembly_templates(&self) -> Option<usize> {
+        self.assemblies
+            .as_deref()
+            .map(|assemblies| assemblies.templates.len())
+    }
     /// A builder for the next body that reuses the emptied storage of the
     /// last installed body.
     pub fn body_builder(&mut self) -> super::builder::Builder {

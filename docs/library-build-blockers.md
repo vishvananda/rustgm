@@ -5,6 +5,26 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane D [stage B1](source-asm-vector-join.md#initial-native-assembly-profile)
+lowers the original `_mm_stream_ps` to the pinned backend's LowIR `assembly`
+templates and `asm` invocations, on main `2a27e11ca`.
+
+- RustGM and pinned Rust build one source, with the original `_mm_stream_ps`
+  and `vps!` bytes, against one C observer. Both print the same 128 bits for
+  eight edge-case lanes with every sentinel intact, and both objects contain
+  `movntps`, six each.
+- Raw-pointer `in(reg)` and 128-bit vector `in(xmm_reg)` inputs lower, with
+  `nostack, preserves_flags` or no options. 16 other forms that pinned Rust
+  accepts each fail with their own "inline assembly <form> is outside the
+  initial assembly profile" text.
+- All 5130 text cases of PA11, PA14, PA16, PA18–PA21 and PA24, LowIR oracles
+  included, pass unchanged. `Operation` and `Instruction` keep 32 and 40
+  bytes.
+- What remains: asm bodies still do not cross module-body transport (B2), so
+  LIB-045 stays open. The real stream body's crate first stops at the
+  crate-wide macro provenance fence, with the `repr(simd)` record contract
+  and const-generic array impls behind it.
+
 Lane C [auto traits](parallel/auto-traits.md), C3b, proves coherence absence
 for the crate whose coherence it proves, as rustc 1.98's
 `trait_ref_is_knowable` does. There is no wire change:
@@ -72,9 +92,8 @@ profile records the optional `assembly` capability.
   The 7 PA13 and PA18 harness gaps already on main repeat unchanged.
 - The PA28 atomic and PA31 source-attribute contracts now bind the v3 lock.
   None of their declared outcomes changed.
-- What remains: LIB-045's `_mm_stream_ps` still stops at the fence. RustGM does
-  not lower `asm!` yet; that is the next PA41 slice. Only the backend can emit
-  `movntps` so far.
+- What remained, lowering LIB-045's `_mm_stream_ps` in RustGM, is stage B1
+  above.
 
 Lane A [census batch 15](parallel/census-batch15.md), section 8, keeps the
 census fold's cause kinds on main `347373f7f`. Census 18 (`b5bcfc0f`) has
@@ -3014,7 +3033,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-042 | Payer correction integrated; original core advances | Account general attribute traversal through its actual policy owner, separate from real panic permissions | PA31 source contracts + PA8 shared expansion, PA32 whole-core acceptance / actual generated-owner/prefix and exhausted-payer controls | A + integrator | All7 worker controls and root22 production/CLI plus fullPA7/8 pass. Generic classification uses existing10M policy; permission1M and both64MiB caps unchanged. Actual native input bytes remain equal; CLIf9a61273 reaches LIB-043. Stacked derive-prefix replay remains separate debt. |
 | LIB-043 | Local grammar/execution qualified; original boundary passed | Forward typed literal fragments into const-generic arguments without reparsing rendered source | PA18 const arguments + PA7/8 shared opaque grammar, PA31 source reducer / earliest PA18 ordinary fixtures and unchanged swap_prefix reducer | A + integrator | CLI fac1e54d clears unchanged swap_prefix. All19 declared outcomes,11 paired native programs and498 PA18 text cases pass;39 frontend/CLI controls plus full PA5/7/8 pass in93.63s. Only19 independently qualified references are generated. Single-segment opaque expression paths and gated const blocks remain explicit siblings; no whole-core claim. |
 | LIB-044 | Typed input/feature authority qualified; original boundary passed | Consume typed captured strings in cfg predicates with actual atomic facts and feature authority | PA3 cfg grammar + PA8 opaque input + PA31 internal cfg features / ordinary cases and actual atomic reducer | A + integrator | All52 pinned Rust hypotheses, seven worker controls and39 combined frontend/CLI controls pass; full PA3/7/8 text and27 new oracles pass. Actual macro retains9 supported impls/11 predicates. CLI62daa4a5 clears atomic.rs311. Cold Features8/MacroFeatures1, Client88 and cfg-use sizes measured; no new hot fields/cache. |
-| LIB-045 | Typed expansion/effect proof qualified; required SIMD/target/native work open | Genuine inline assembly with typed operands/options and explicit target/backend support | PA41 required by PA32 now; PA31 builtin binding and PA27/28 shared place/safety/memory rules, PA25/29 const/transport / owning assembly controls and unchanged SSE reducer | Integrator direct; C SIMD/target slice | Combined33 private controls and final CLI strict/lexer10 pass; CLI9156793b passes the old expansion boundary. Typed effects preserve actual operand/place order, output stores and noreturn; backend remains explicit unsupported. Body456 adds8 bytes to every body. Real SIMD/ABI, target features, demanded const/sym, metadata transport and full-width non-temporal emission remain required. No source erasure or scalar substitution. |
+| LIB-045 | Typed expansion/effect proof and initial native profile qualified; body transport and other forms open | Genuine inline assembly with typed operands/options and explicit target/backend support | PA41 required by PA32 now; PA31 builtin binding and PA27/28 shared place/safety/memory rules, PA25/29 const/transport / owning assembly controls and unchanged SSE reducer | Integrator direct; C SIMD/target slice | Combined33 private controls and final CLI strict/lexer10 pass; CLI9156793b passes the old expansion boundary. Typed effects preserve actual operand/place order, output stores and noreturn. Stage B1 lowers `_mm_stream_ps` to the pinned backend's assembly template and matches pinned Rust natively; every other form keeps its profile fence. Body456 adds8 bytes to every body. Demanded const/sym, asm body transport (B2) and the other inventoried library forms remain required. No source erasure or scalar substitution. |
 | LIB-046 | Latest storage recurrence cleared; broader original crate closure remains | Share repeated immutable import provenance within unchanged limits | PA6/8 imports +PA31 source provenance +PA32 acceptance +PA40 diagnostic caps | Root only | [Measured repair](import-lineage-storage-checkpoint.md): actual failure is glob source retention at229376 edges, not an established policy-cache defect. Complete snapshots now share dense IDs; nine private/18 production/365 text pass. CLI7f41f3f4 clears storage and reaches LIB-116 under unchanged722 hashes, target and finite limits. Hard policy/source witnesses and all uncapped requirements remain. |
 | LIB-047 | Implementation gap closed; component publication pending | Emit required unsafe_op_in_unsafe_fn/static_mut_refs Warn diagnostics | PA27 unsafe-places / default and lexical policies, provenance, deduplication, error retention | Integrator | [Qualified repair](unsafe-policy-warning-gap.md): private11 PASS159.45s, affected CLI13 PASS110.62s; exact named warning bytes and ordinary empty stderr enforced. Actual growth2 steps/405 retained bytes per warning, Body456 unchanged. Full harness PASS14.85s. Canonical ManuallyDrop still requires operator-kernel before component publication; no whole-PA completion or new core artifact. |
 | LIB-048 | Source/native gap closed; publication pending | Selected Index/IndexMut inside mutable closure captures | PA24 capture/place prerequisite + PA26 operator-kernel / unchanged index-mut/captured.rs, source and native loan/order controls | C + integrator | [Qualified join](pa26-selected-index-captures.md):27 independent controls,21 native pairs, final source44 old outcomes plus new modes/widths. Integrator reuses all2928 identical compiler/Cargo bytes, then actual CLI→backend→execution and full harness pass17.99s. Original positive now accepted with no Rust-only exception. No new fields, ABI or metadata change. |
