@@ -1,3 +1,81 @@
+# RustGM single-worker continuation — 2026-11-09
+
+This current section supersedes the historical multi-lane snapshot below.
+The user explicitly asked for one worker. Do not spawn workers or create worktrees.
+The goal remains original core, then alloc/std, with every owning assignment
+requirement retained. No original core/alloc/std artifact exists.
+
+## Published and qualified
+
+- Record variants landed as `bf615d74d` + `84baefb8c`, with exactly the
+  qualified source from `5e5665580`; the only other diff is handoff.md.
+  Reused 2,022 passing private selections after verifying all recorded source
+  hashes. Fresh 16 affected integration cases and 5 native groups pass, as do
+  313 harness tests, 465 registered roots, layout and upstream verification.
+- Full predecessor CI `42689087036` succeeded. Record-variant full CI
+  `42701179456` is running; its fast job passed. Do not cancel it with another
+  dispatch. A push has a separate concurrency group and does not cancel it.
+- This compiler checkpoint completes batch 22 P1: unresolved projections stay
+  possible during lookup, while chosen-callable proof remains mandatory.
+  See docs/parallel/census-batch22.md. Thirteen byte-identical independent Rust
+  controls, 11 exact private/integration tests, strict production/private Clippy,
+  format, audit, unchanged ordinary counters, all 2,032 paired survey inputs,
+  harness and upstream checks pass. Fastcheck: `1794260103818124314`.
+  Earlier compilation-budget failures are retained and are not passing tests.
+
+## Current original-core frontier
+
+Census 25, CLI `e9b628a3`, clears Intersperse at iterator.rs:698.
+It checks 42,310 declarations, none failed/blocked, then stops in
+`local_annotations` at "constant storage layout requires completed fields".
+Bodies remain at zero; one census record is not one remaining compiler gap.
+All 722 original inputs, 375 opened sources, profile and limits are unchanged.
+
+A declared analysis-only trace (`b3609a12`, fully reverted) locates the stop at
+sync/atomic.rs:1590, AtomicPtr::from_mut's align_of::<AtomicPtr<()>>() assertion.
+The pending storage root has an actual aggregate declaration. File 199 is
+reached, confirming file 175 completed. AtomicPtr<T> aliases Atomic<*mut T>;
+Atomic has the projected field UnsafeCell<T::Storage>. Investigate the existing
+stored_fields producer and layout preparation boundary; do not replace a typed
+field-normalization proof with an ABI assumption. Split::new remains provisional
+and follows this observed lead. Close f01 before widening A+O bound-region lookup.
+
+## Next work, one worker
+
+1. Finish nested-proof reuse in pa26-work, starting with the prep byte-identity
+   gates. Prep binary `ed4cf61a` exists and matches its recorded SHA at b621764b0.
+   Checkpoints 2 and 3 still land together; no accepted-to-rejected intermediate
+   checkpoint is published. See its restart note below and the approved notice.
+2. Repair the observed closed projected-field layout requirement, reusing typed
+   phase results, then run the next census and follow its actual first record.
+3. HR transport may start from main now that record variants landed. Its approved
+   notice and existing scratch worktree remain available; no HR code exists.
+4. Client exports remain an incomplete design, with source-client availability
+   and an actual three-crate Rust witness still required. Keep backend v3 frozen.
+
+## Evidence and tools
+
+- Durable decision log: /mnt/vizier/rustgm-scratch/integrator-20261109/pending_decisions.md.
+- New resume_record_variants.py replaces the old join restart: explicit stages,
+  no /tmp exclusions, no pre-execution seen mutation, and failure stops the stage.
+  Old joined_d7.sh/fresh.py are historical, not the next runner.
+- Batch22 artifacts: pa29-work/obj/parallel/census-batch22/. Keep the qualified
+  candidate pin until a replacement census baseline is published. Source-binding
+  supplements reconstruct each pin's exact saved HEAD/diff, including pre-format
+  bytes and diagnostic instrumentation; raw observation bindings are preserved.
+- All diagnostic emitters are reverted. Before another implementation edit, compare
+  against fastcheck's 3,906 recorded compiler/test source hashes. No new builds in
+  /home/vishvananda/rustgm. Use existing scratch trees only and wrapped commands.
+- About 229 GiB was free. Keep one heavy local command at a time for now; perform
+  guarded cleanup at idle boundaries. Never change reserves to obtain admission.
+- Standing rm rule: literal, inspected absolute paths only; bulk cleanup goes
+  through storage.py/make tidy. Single-line commit subjects, no trailers. Do not
+  modify cppgm-extended or v5rust, or raise the pinned backend.
+
+---
+
+## Historical multi-lane snapshot (superseded state; retained restart details)
+
 # RustGM handoff — 2026-11-09
 
 The goal is unchanged: **complete all assignment requirements to build the

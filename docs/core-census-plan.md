@@ -6,6 +6,18 @@ and process only. Assignment requirements, the [unit graph](../assignment-plan.j
 `spec.md`, source pins and the frozen CPPGM backend boundary are unchanged.
 The [blocker tracker](library-build-blockers.md) still owns concrete failures.
 
+Single-worker continuation, 2026-11-09: record variants are integrated on
+`84baefb8c`; their focused join reuses 2,022 source-identical passing selections
+and freshly passes 16 affected integration cases and five native groups.
+[Census batch 22](parallel/census-batch22.md) then clears Intersperse's
+unresolved-projection lookup with 13 independent controls and a 2,032-input
+paired survey. Census 25's new record is an unprepared storage shape for
+`AtomicPtr<()>`, reached by `from_mut`'s alignment assertion at
+`sync/atomic.rs:1590`. All original inputs/profile/limits are unchanged;
+42,310 declarations are checked, but body checking remains unreached. Follow
+this observed lead before the provisional Split lead; f01 must close before
+A+O widens bound-region lookup. Whole-assignment and artifact gates are unchanged.
+
 ## Assessment
 
 The probe/fix/reprobe loop cleared LIB-019 (10-24) through LIB-192 (11-07), but

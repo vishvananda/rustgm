@@ -3798,6 +3798,12 @@ type/const graph into each isolated candidate context, preserving variable
 equivalence classes and domains. Failed equations never constrain the source
 context. Built-in candidate properties consume actual caller assumptions and
 current implementations, separately from compatible-world coherence queries.
+An associated projection with unresolved inputs remains possible during this
+filter. Inspect only its reachable inference graph, charging every resolution
+visit; unresolved inputs grant no builtin or trait permission. Resolved
+projections retain the named normalization boundary until that consumer can
+normalize them under the caller's actual premises. Resource or graph failures
+remain errors. The selected callable independently proves its complete bounds.
 After selection, ordinary body inference commits owner arguments and performs
 the complete ownership, lifetime and lowering checks.
 

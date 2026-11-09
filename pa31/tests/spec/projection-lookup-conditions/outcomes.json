@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "declared": "2026-11-09, before fixture execution; byte-identical to previously declared and independently checked probes, including the wind-down corrections recorded in handoff.md",
+  "declaration_sha256": "a52cb32e2a3254c65b9da649d01792e1fff5b13d44f262362fdf96708a31b8a5",
+  "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+  "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+  "cases": {
+    "free-inferred.rs": {
+      "sha256": "82123386595206fd1dec95aa73d73b1eeae7f28460e1059628ade46c89022602",
+      "declared": 0,
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_status": 0,
+      "rustgm_error": null,
+      "oracle_reused_from": "obj/parallel/census-batch22/probes/p1/out-base/rustc/h01-free-inferred.err",
+      "rustc_stderr_sha256": "cf7194b7aea4f8cea25e870c0cff0919fa60ab157fead187206b1bac90e7951d"
+    },
+    "core-default-method.rs": {
+      "sha256": "d5ef40476772efec01f1d072df250f95818f11277daf70c527f449846782883b",
+      "declared": 0,
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_status": 0,
+      "rustgm_error": null,
+      "oracle_reused_from": "obj/parallel/census-batch22/probes/p1/out-base/rustc/h02-core-default-method.err",
+      "rustc_stderr_sha256": "215caff43a5539ac5e684bbca2255ca1a744d4755bcba1ac9e3813d32e04ed84"
+    },
+    "unique-inherent.rs": {
+      "sha256": "cc474dd3843f3df4f40908f873b61907b8e7f0342b3b6fee3036125b28973863",
+      "declared": 0,
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_status": 0,
+      "rustgm_error": null,
+      "oracle_reused_from": "obj/parallel/census-batch22/probes/p1/out-base/rustc/h03-unique-inherent.err",
+      "rustc_stderr_sha256": "b9f94ce6961a9d244abd947c0856aece5c2822f09837db1b1a44750e2ff65752"
+    },
+    "explicit-rigid.rs": {
+      "sha256": "4bb6052392c7792f68e6771daa41043ac287b8adf2e24c82f9d70c052d22c9f5",
+      "declared": 0,
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_status": 1,
+      "rustgm_error": "candidate properties require associated type normalization",
+      "oracle_reused_from": "obj/parallel/census-batch22/probes/p1/out-base/rustc/h04-explicit-rigid.err",
+      "rustc_stderr_sha256": "e40da9ad95af71f0998d1515a66749fb10636ed7b6f46adc610f870491120582"
+    },
+    "explicit-concrete.rs": {
+      "sha256": "e0e08a2828786cfcac1d15272dad83d8fcaab9a544d440cfccc2e6893689559c",
+      "declared": 0,
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_status": 1,
+      "rustgm_error": "candidate properties require associated type normalization",
+      "oracle_reused_from": "obj/parallel/census-batch22/probes/p1/out-base/rustc/h05-explicit-concrete.err",
+      "rustc_stderr_sha256": "d42540b21e9ef25fa1ee4f2d8e2ccc68fdd4d1a25b30974d8ea4b99600f2de3a"
+    },
+    "explicit-concrete-fail.rs": {
+      "sha256": "d7aaadda85212318dfddb18ee23a1fd734c316fdc0a6a4c32b34be497cea3f95",
+      "declared": 1,
+      "rustc_status": 1,
+      "error_codes": [
+        "E0599"
+      ],
+      "rustgm_status": 1,
+      "rustgm_error": "no applicable trait method for this prefix",
+      "oracle_reused_from": "obj/parallel/census-batch22/probes/p1/out-base/rustc/h06-explicit-concrete-fail.err",
+      "rustc_stderr_sha256": "ded183572ff01fa403a243a4a0f485972ff2a7b730eb72222c99ce5d6daadfb5"
+    },
+    "explicit-concrete-fallback.rs": {
+      "sha256": "8f82fb776c024b1185de199d4ffe9c2269ade9015f0aead25855cadd286791ea",
+      "declared": 0,
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_status": 0,
+      "rustgm_error": null,
+      "oracle_reused_from": "obj/parallel/census-batch22/probes/p1/out-base/rustc/h07-explicit-concrete-fallback.err",
+      "rustc_stderr_sha256": "4ee6ed8d8eab326f20be7044f8d6c9e733860083943d47c99f27ebdb8ec6fac9"
+    },
+    "inferred-concrete.rs": {
+      "sha256": "5a741c3fa0a2473b0fd390247116ae62acb2d591a11eb72034056aa0dad171ce",
+      "declared": 0,
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_status": 0,
+      "rustgm_error": null,
+      "oracle_reused_from": "obj/parallel/census-batch22/probes/p1/out-base/rustc/h08-inferred-concrete.err",
+      "rustc_stderr_sha256": "015665410810ad7f5a6c715d88249bb8f4b420aefda5af4cce52457f40a8c38b"
+    },
+    "inferred-concrete-fail.rs": {
+      "sha256": "f844e7d6be504f70838ecc5096f43c9d4bb52fb358fe82ae0f16375cbb396662",
+      "declared": 1,
+      "rustc_status": 1,
+      "error_codes": [
+        "E0277"
+      ],
+      "rustgm_status": 1,
+      "rustgm_error": "trait obligation requires an unambiguous matching assumption or implementation",
+      "oracle_reused_from": "obj/parallel/census-batch22/probes/p1/out-base/rustc/h09-inferred-concrete-fail.err",
+      "rustc_stderr_sha256": "805ee4ab346e57dabb1c506bbe105d53a38717e353791717524e2d55916869e9"
+    },
+    "free-copy.rs": {
+      "sha256": "6efd5ba3a082c42d02d34cfceebd5ad83c2939fcfe78894303d88b1a45f85f7f",
+      "declared": 0,
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_status": 0,
+      "rustgm_error": null,
+      "oracle_reused_from": "obj/parallel/census-batch22/probes/p1/out-base/rustc/h10-free-copy.err",
+      "rustc_stderr_sha256": "4ee97b4ad3f537dffa6178e9a4fadcffab7ab99723b51967aa6c6c01096fee58"
+    },
+    "free-sized.rs": {
+      "sha256": "795547573320f199df3b9d9a8776376765bca500d7040d1b5e872671891edc8f",
+      "declared": 0,
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_status": 0,
+      "rustgm_error": null,
+      "oracle_reused_from": "obj/parallel/census-batch22/probes/p1/out-base/rustc/h11-free-sized.err",
+      "rustc_stderr_sha256": "dae75a40ce38c8a7057165ae5f736704d9f0d3e78a978abf519e340be83a4c30"
+    },
+    "method-rigid.rs": {
+      "sha256": "f120d5d135b57ab4efe08d97ebb6cd0935fcadc5096edb456b7252f300ae8f4b",
+      "declared": 0,
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_status": 1,
+      "rustgm_error": "candidate properties require associated type normalization",
+      "oracle_reused_from": "obj/parallel/census-batch22/probes/p1/out-base/rustc/h12-method-rigid.err",
+      "rustc_stderr_sha256": "c7127052d2cc21d6e8d29d4897cb14e516d626ab428f16ba4efa61ebc728e661"
+    },
+    "method-unresolved.rs": {
+      "sha256": "aa3138e8ea157bf2204fa5fbdbf7bc5a7f14e10103191809ae8b743ded301060",
+      "declared": 0,
+      "rustc_status": 0,
+      "error_codes": [],
+      "rustgm_status": 0,
+      "rustgm_error": null,
+      "oracle_reused_from": "obj/parallel/census-batch22/probes/p1/out-base/rustc/h13-method-unresolved.err",
+      "rustc_stderr_sha256": "78aa9f45d2d2d987881fbbcfd1cbf1fe64648f687afd433f392a1f1831f1620b"
+    }
+  }
+}

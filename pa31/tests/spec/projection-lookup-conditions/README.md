@@ -1,0 +1,7 @@
+# Projection conditions in method lookup
+
+These thirteen no_core libraries reduce core Iterator::intersperse and use the attributed function-pointers foundation unchanged. Every input and its SHA-256 appears in outcomes.json. Files are exact copies of the predeclared batch-22 probes; their independent pinned rustc outcomes are reused by byte identity. The corrected declarations precede all candidate runs, and the fixture declaration precedes fixture tests. No generated text oracle is used.
+
+An unresolved projection remains possible during candidate filtering. The selected callable still proves its complete obligations: inferred-concrete-fail rejects in bodies. free-inferred, core-default-method, inferred-concrete, free-copy, free-sized and method-unresolved change from rejected to accepted. unique-inherent and explicit-concrete-fallback remain accepted. explicit-concrete-fail remains rejected.
+
+explicit-rigid, explicit-concrete and method-rigid retain the named normalization fence as known rejects-valid. Resolved projection normalization is separate work after proof reuse; there is no witnessed error-propagation bug in explicit-concrete-fallback. The private unresolved_projection_lookups invariant owns fixture outcomes and bounded-work controls. PA31 remains planned and has no graded manifest.

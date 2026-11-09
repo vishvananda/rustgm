@@ -5,6 +5,25 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+Lane A [census batch 22](parallel/census-batch22.md) clears the unresolved
+projection lookup at `Iterator::intersperse`. The charged possibility filter
+keeps an unresolved projection possible and leaves complete proof to the chosen
+callable. Six declared controls now accept and an invalid call still rejects
+in its body proof. The 2,032-input paired survey changes only those six and
+the declared diagnostic move; ordinary lookup counter lines are unchanged.
+
+- Census 25 checks 42,310 declarations with none failed or blocked and stops
+  in `local_annotations` at "constant storage layout requires completed
+  fields"; body checking remains unreached. Diagnostic attribution locates it
+  at `sync/atomic.rs:1590`, `align_of::<AtomicPtr<()>>()` in `from_mut`. The
+  aggregate declaration exists but its storage shape is unprepared. This is
+  the next original-core lead, before the provisional Split lookup.
+- Known rejects-valid: the explicit rigid/concrete prefixes and rigid
+  method receiver in the new packet retain the projection-normalization fence.
+  Normalize them under their actual caller premises after proof reuse.
+- h07 already selects Make::new on the base and remains accepted. The prior
+  proposed error-propagation entry has no witness and is not retained.
+
 Lane D [record variants](parallel/record-variants.md), item (i), carries
 enums with record variants under version 13: variant shape byte 2 and a dense
 name column that travels exactly when some variant row is a record variant.
@@ -86,11 +105,11 @@ condition.
   and six bound-region shapes rustc accepts stay rejected as known
   rejects-valid ("quantified clause requires a scoped consumer"), among them
   core's `Split::new` shape.
-- **f01, batch 22's lead-in** (tracked accepts-invalid, census batch 21
+- **f01, prerequisite of bound-region lookup** (tracked accepts-invalid, census batch 21
   probe `f01`): `S::<u8>::new()` of `impl<F: for<'r> Tr<'r>> S<F>` with only
   `impl Tr<'static> for u8` is accepted on the unique route, where rustc
   1.98.0 reports E0599. The bound fails only by rustc's higher-ranked leak
-  check. Batch 22 closes f01; then the bound-region lookup shapes (A+O) can
+  check. Close f01 before the bound-region lookup shapes (A+O) can
   open a quantified lifetime.
 - Tracked rejects-valid, low priority (probe `f03a`): a const trait with a
   `[const]` callable-sugar supertrait, `pub const trait Run: [const]

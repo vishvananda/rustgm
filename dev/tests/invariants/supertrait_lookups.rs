@@ -49,6 +49,9 @@ const CASES: [(&str, Option<&str>); 22] = [
 #[path = "empty_binder_lookups.rs"]
 mod empty_binders;
 
+#[path = "unresolved_projection_lookups.rs"]
+mod unresolved_projections;
+
 #[test]
 fn const_supertrait_lookups_match_declared_outcomes() -> TestResult {
     match_outcomes(CONTROLS, &CASES, "const_supertrait_lookup")

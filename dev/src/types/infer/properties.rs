@@ -66,9 +66,13 @@ impl Query {
             let value = match term.value {
                 Value::Variable(_) => Possible::UNKNOWN,
                 Value::Known(ty) => self.known(store, definitions, selected, ty)?,
-                Value::Construct(Constructor::Projection(_)) => {
-                    return Err("candidate properties require associated type normalization");
-                }
+                Value::Construct(Constructor::Projection(_)) => match context.resolved(store, id) {
+                    Err(Error::Unresolved) => Possible::UNKNOWN,
+                    Ok(_) => {
+                        return Err("candidate properties require associated type normalization");
+                    }
+                    Err(error) => return Err(inference(error)),
+                },
                 Value::Construct(kind) => {
                     if matches!(kind, Constructor::Adt(item, _) | Constructor::AdtArgs(item, _)
                         if selected.get(&item).is_some_and(|declaration| !declaration.has_argument_bounds()))

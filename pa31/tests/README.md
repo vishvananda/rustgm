@@ -787,6 +787,17 @@ rejects-valid. Non-callable arguments are rejected (E0277, E0599). Each
 outcome was declared before its rustc 1.98.0 oracle. A private invariant
 checks them; there is no graded manifest.
 
+`spec/projection-lookup-conditions/` freezes thirteen declared no_core controls
+from census batch 22. Unresolved associated projections remain possible while
+filtering an inherent candidate, including core's `Intersperse::new` shape and
+an unresolved receiver. The selected callable still proves all bounds. Resolved
+rigid, concrete and method-receiver projections retain the named normalization
+fence as known rejects-valid; an applicable trait fallback stays accepted.
+The files preserve the exact bytes of independently checked rustc 1.98.0 probes.
+The private `unresolved_projection_lookups` invariant checks their outcomes,
+reachable resolution work, sticky exhaustion and affine lookup work. Every
+input appears in the packet's outcomes.json; there is no graded manifest.
+
 `spec/copy-impl-targets/` freezes thirteen declared no_core Copy impl targets
 from census batch 13: core's `impl Copy for !`, scalars, raw pointers and
 arrays, including an array whose element is only Clone, are accepted without
