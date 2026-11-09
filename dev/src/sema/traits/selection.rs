@@ -44,13 +44,13 @@ pub(in crate::sema) use search::source_object_marker;
 #[cfg(test)]
 pub(in crate::sema) use search::specialization_layouts;
 pub(in crate::sema) use search::{Conjunction, prove_conjunction};
-pub(in crate::sema) use search::{NegativePremises, may_overlap, may_overlap_with};
 pub(in crate::sema) use search::{
     Pending, Progress, Reuse, begin, begin_borrowed, begin_canonical, begin_canonical_counted,
     begin_declaration_counted, begin_executable_counted, begin_projection, begin_refining,
     begin_refining_untouched, begin_scoped_refining,
 };
 pub(in crate::sema) use search::{copying_predicate, no_drop_predicate};
+pub(in crate::sema) use search::{may_overlap, may_overlap_with};
 use std::sync::Arc;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]

@@ -13,53 +13,74 @@ pub struct Properties {
     pub sized: bool,
     pub well_formed: bool,
 }
-/// The other header's Sized premises in a negative coherence query, sorted
-/// by identity. rustc 1.98 negates one impl's predicates under the other
-/// impl's `param_env` with each unified header variable a placeholder, so a
-/// rigid parameter is Sized only as a member, never by the declaration of the
-/// parameter `freeze` made the representative.
+/// The other header's Sized and `MetaSized` premises in a negative coherence
+/// query, each sorted by identity, behind one shared handle. rustc 1.98
+/// negates one impl's predicates under the other impl's `param_env` with each
+/// unified header variable a placeholder, so a rigid parameter is Sized or
+/// `MetaSized` only as a member, never by the declaration of the parameter
+/// `freeze` made the representative.
 #[derive(Clone)]
 pub struct Placeholders {
+    sets: Arc<Sets>,
+}
+struct Sets {
     sized: Arc<[TypeId]>,
+    meta_sized: Arc<[TypeId]>,
 }
 impl Placeholders {
-    /// Orders and deduplicates the premises by identity, so no lookup depends
-    /// on its caller's order; an already ordered set is shared as it is. The
-    /// work, for the caller's budget, is one comparison per premise, plus
-    /// `n (ilog2(n) + 1)` when the set must be sorted.
+    /// Orders and deduplicates both premise sets by identity, so no lookup
+    /// depends on its caller's order; an already ordered set is shared as it
+    /// is. The work, for the caller's budget, is one comparison per premise of
+    /// each set, at least one per set, plus `n (ilog2(n) + 1)` for each set
+    /// that must be sorted.
     ///
     /// # Errors
-    /// Rejects a failed allocation of the ordered copy.
-    pub fn new(sized: Arc<[TypeId]>) -> Result<(Self, usize), &'static str> {
-        let count = sized.len();
-        let check = count.max(1);
-        if sized.windows(2).all(|pair| pair[0].0 < pair[1].0) {
-            return Ok((Self { sized }, check));
-        }
-        let mut ordered = Vec::new();
-        ordered
-            .try_reserve_exact(count)
-            .map_err(|_| "placeholder premises allocation failed")?;
-        ordered.extend_from_slice(&sized);
-        ordered.sort_unstable_by_key(|ty| ty.0);
-        ordered.dedup();
-        let sorting = count.saturating_mul(count.max(1).ilog2() as usize + 1);
+    /// Rejects a failed allocation of an ordered copy.
+    pub fn new(
+        sized: Arc<[TypeId]>,
+        meta_sized: Arc<[TypeId]>,
+    ) -> Result<(Self, usize), &'static str> {
+        let (sized, sized_work) = ordered(sized)?;
+        let (meta_sized, meta_sized_work) = ordered(meta_sized)?;
         Ok((
             Self {
-                sized: Arc::from(ordered),
+                sets: Arc::new(Sets { sized, meta_sized }),
             },
-            check.saturating_add(sorting),
+            sized_work.saturating_add(meta_sized_work),
         ))
     }
-    /// Whether `ty` is a premise, and the lookup's work.
+    /// Whether `ty` is a Sized premise, and the lookup's work.
     #[must_use]
     pub fn sized(&self, ty: TypeId) -> (bool, usize) {
-        let work = self.sized.len().max(1).ilog2() as usize + 1;
-        (
-            self.sized.binary_search_by_key(&ty.0, |ty| ty.0).is_ok(),
-            work,
-        )
+        lookup(&self.sets.sized, ty)
     }
+    /// Whether `ty` is a `MetaSized` premise, and the lookup's work.
+    #[must_use]
+    pub fn meta_sized(&self, ty: TypeId) -> (bool, usize) {
+        lookup(&self.sets.meta_sized, ty)
+    }
+}
+/// One premise set, ordered by identity and deduplicated, and its work.
+fn ordered(set: Arc<[TypeId]>) -> Result<(Arc<[TypeId]>, usize), &'static str> {
+    let count = set.len();
+    let check = count.max(1);
+    if set.windows(2).all(|pair| pair[0].0 < pair[1].0) {
+        return Ok((set, check));
+    }
+    let mut ordered = Vec::new();
+    ordered
+        .try_reserve_exact(count)
+        .map_err(|_| "placeholder premises allocation failed")?;
+    ordered.extend_from_slice(&set);
+    ordered.sort_unstable_by_key(|ty| ty.0);
+    ordered.dedup();
+    let sorting = count.saturating_mul(count.max(1).ilog2() as usize + 1);
+    Ok((Arc::from(ordered), check.saturating_add(sorting)))
+}
+/// A binary search of one ordered premise set, and its work.
+fn lookup(set: &[TypeId], ty: TypeId) -> (bool, usize) {
+    let work = set.len().max(1).ilog2() as usize + 1;
+    (set.binary_search_by_key(&ty.0, |ty| ty.0).is_ok(), work)
 }
 pub struct Shapes {
     environment: Arc<Environment>,

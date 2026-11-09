@@ -510,18 +510,20 @@ impl Inputs {
     }
 
     /// Resolve one header's own Sized and `MetaSized` premises once, after the
-    /// pair is frozen, sorted by identity for the negative queries' lookups.
+    /// pair is frozen, sorted by identity into the one handle the negative
+    /// queries, their shape walks and their payments look up.
     fn premises(
         &self,
         facts: &mut Declarations,
         context: &mut Context,
         side: Side,
     ) -> Result<Premises, String> {
-        Ok(Premises {
-            side,
-            sized: sorted(facts, context, &self.sized_premises[side.index()])?,
-            meta_sized: sorted(facts, context, &self.meta_sized[side.index()])?,
-        })
+        let sized = sorted(facts, context, &self.sized_premises[side.index()])?;
+        let meta_sized = sorted(facts, context, &self.meta_sized[side.index()])?;
+        let (placeholders, work) =
+            crate::types::parameters::shape::Placeholders::new(sized, meta_sized)?;
+        context.account_work(work).map_err(|e| e.to_string())?;
+        Ok(Premises { side, placeholders })
     }
 
     /// A negative payment with `premises` assumes only that other header's
@@ -548,25 +550,21 @@ impl Inputs {
             return self.pay_own(facts, context, proof, sized);
         };
         for &ty in meta_sized {
-            if !member(context, &premises.meta_sized, ty)? {
+            if !member(context, premises.placeholders.meta_sized(ty))? {
                 return Ok(false);
             }
         }
         let mut shapes = None;
         for &ty in sized {
-            if member(context, &premises.sized, ty)? {
+            if member(context, premises.placeholders.sized(ty))? {
                 continue;
             }
             if matches!(facts.types.kind(ty), Some(crate::types::Kind::Parameter(_))) {
                 return Ok(false);
             }
             if shapes.is_none() {
-                let (placeholders, work) = crate::types::parameters::shape::Placeholders::new(
-                    std::sync::Arc::clone(&premises.sized),
-                )?;
-                context.account_work(work).map_err(|e| e.to_string())?;
                 let mut proof = crate::sema::nominals::Proof::new(None);
-                proof.assume_placeholders(&facts.types, placeholders)?;
+                proof.assume_placeholders(&facts.types, premises.placeholders.clone())?;
                 shapes = Some(proof);
             }
             let proof = shapes
@@ -629,19 +627,15 @@ impl Inputs {
     }
 }
 
-/// One header's own sizing premises, each sorted by identity and shared by
-/// the negative queries of the other header's conditions.
+/// One header's own sizing premises, each set sorted by identity in one
+/// handle shared by the negative queries of the other header's conditions.
 pub(super) struct Premises {
     side: Side,
-    sized: std::sync::Arc<[TypeId]>,
-    meta_sized: std::sync::Arc<[TypeId]>,
+    placeholders: crate::types::parameters::shape::Placeholders,
 }
 impl Premises {
-    fn negative(&self) -> crate::sema::traits::selection::NegativePremises<'_> {
-        crate::sema::traits::selection::NegativePremises {
-            sized: &self.sized,
-            meta_sized: &self.meta_sized,
-        }
+    fn negative(&self) -> &crate::types::parameters::shape::Placeholders {
+        &self.placeholders
     }
 }
 
@@ -676,12 +670,10 @@ fn sorted(
     Ok(std::sync::Arc::from(premises))
 }
 
-/// Whether a sorted premise set has `ty`, charged for its binary search.
-fn member(context: &mut Context, premises: &[TypeId], ty: TypeId) -> Result<bool, String> {
-    context
-        .account_work(premises.len().max(1).ilog2() as usize + 1)
-        .map_err(|e| e.to_string())?;
-    Ok(premises.binary_search_by_key(&ty.0, |ty| ty.0).is_ok())
+/// One premise lookup's answer, charged for its binary search.
+fn member(context: &mut Context, (found, work): (bool, usize)) -> Result<bool, String> {
+    context.account_work(work).map_err(|e| e.to_string())?;
+    Ok(found)
 }
 
 /// The sizing kind of a clause naming an actual sizing declaration, written,

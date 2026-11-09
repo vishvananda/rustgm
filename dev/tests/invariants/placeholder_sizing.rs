@@ -4,7 +4,6 @@
 //! queries follow rustc's `sized_conditions`, read neither a parameter's
 //! declaration nor an interned property of a type with parameters, agree with
 //! the rigid parameter rule of the search, and cost one lookup per node.
-use super::super::coherence::NegativePremises;
 use super::NegativeSizing;
 use crate::{
     sema::{
@@ -147,9 +146,10 @@ fn shapes_of(facts: &mut Declarations, wrap: ItemId, p: TypeId) -> TestResult<[T
     ])
 }
 
-/// A premise set in any order; [`Placeholders::new`] orders it.
+/// A Sized premise set in any order, with no `MetaSized` premise;
+/// [`Placeholders::new`] orders it.
 fn placeholders(set: Vec<TypeId>) -> TestResult<Placeholders> {
-    Ok(Placeholders::new(set.into())?.0)
+    Ok(Placeholders::new(set.into(), Arc::from([]))?.0)
 }
 
 fn empty(facts: &Declarations) -> TestResult<Arc<Environment>> {
@@ -441,11 +441,10 @@ fn rigid_parameter_rule_and_placeholder_walk_agree() -> TestResult {
                     set.sort_by_key(|ty| ty.0);
                     set.dedup();
                     let sized: Arc<[TypeId]> = set.into();
-                    let (sizing, construction) = NegativeSizing::assume(NegativePremises {
-                        sized: &sized,
-                        meta_sized: &meta_sized,
-                    })?;
-                    assert_eq!(construction, sized.len().max(1), "{name} {p:?}");
+                    let (premises, construction) =
+                        Placeholders::new(Arc::clone(&sized), Arc::clone(&meta_sized))?;
+                    assert_eq!(construction, sized.len().max(1) + 1, "{name} {p:?}");
+                    let sizing = NegativeSizing::assume(&premises);
                     let (holds, work) = sizing.parameter(LangItem::Sized, p)?;
                     let mut shapes =
                         Shapes::with_placeholders(empty(&facts)?, sizing.placeholders().clone());
@@ -461,26 +460,40 @@ fn rigid_parameter_rule_and_placeholder_walk_agree() -> TestResult {
     Ok(())
 }
 
-/// [`Placeholders::new`] orders and deduplicates its premises, so no lookup
-/// depends on its caller's order. An ordered set costs one comparison per
-/// premise; any other set also costs its sort.
+/// [`Placeholders::new`] orders and deduplicates both premise sets, each on
+/// its own, so no lookup depends on its caller's order. An ordered set costs
+/// one comparison per premise, at least one; any other set also costs its sort.
 #[test]
 fn placeholder_premises_are_ordered_whatever_their_callers_order() -> TestResult {
     let ordered: Arc<[TypeId]> = (0..64).map(|index| TypeId(3 * index + 1)).collect();
-    let (set, work) = Placeholders::new(Arc::clone(&ordered))?;
-    assert_eq!(work, 64);
+    let none: Arc<[TypeId]> = Arc::from([]);
+    let (set, work) = Placeholders::new(Arc::clone(&ordered), Arc::clone(&none))?;
+    assert_eq!(work, 64 + 1);
     let mut shuffled: Vec<_> = ordered.iter().rev().copied().collect();
     shuffled.extend(ordered.iter().step_by(5).copied());
     let count = shuffled.len();
-    let (unordered, work) = Placeholders::new(shuffled.into())?;
-    assert_eq!(work, count + count * (count.ilog2() as usize + 1));
+    let sorting = count + count * (count.ilog2() as usize + 1);
+    let (unordered, work) = Placeholders::new(shuffled.clone().into(), Arc::clone(&none))?;
+    assert_eq!(work, sorting + 1);
+    let (meta, work) = Placeholders::new(Arc::clone(&none), shuffled.into())?;
+    assert_eq!(work, 1 + sorting);
     for index in 0..200 {
         let ty = TypeId(index);
-        assert_eq!(unordered.sized(ty), set.sized(ty), "{index}");
-        assert_eq!(set.sized(ty), (index % 3 == 1 && index < 192, 7), "{index}");
+        let member = (index % 3 == 1 && index < 192, 7);
+        assert_eq!(
+            (unordered.sized(ty), set.sized(ty), meta.meta_sized(ty)),
+            (member, member, member),
+            "{index}"
+        );
+        assert_eq!(
+            (set.meta_sized(ty), meta.sized(ty)),
+            ((false, 1), (false, 1)),
+            "{index}"
+        );
     }
-    let (empty, work) = Placeholders::new(Vec::new().into())?;
-    assert_eq!((empty.sized(TypeId(1)), work), ((false, 1), 1));
+    let (empty, work) = Placeholders::new(Arc::clone(&none), none)?;
+    let answers = (empty.sized(TypeId(1)), empty.meta_sized(TypeId(1)), work);
+    assert_eq!(answers, ((false, 1), (false, 1), 2));
     Ok(())
 }
 
@@ -492,8 +505,8 @@ fn placeholder_walk_work_is_linear_in_depth_and_logarithmic_in_premises() -> Tes
     let facts = &mut fixture.facts;
     for n in [1_u32, 64, 4096] {
         // Sorted identities far beyond every type the chains intern.
-        let (set, _) =
-            Placeholders::new((0..n).map(|index| TypeId(u32::MAX - n + index)).collect())?;
+        let sized = (0..n).map(|index| TypeId(u32::MAX - n + index)).collect();
+        let (set, _) = Placeholders::new(sized, Arc::from([]))?;
         let lookup = n.ilog2() as usize + 1;
         let mut observed = Vec::new();
         for depth in [8_usize, 16, 32] {

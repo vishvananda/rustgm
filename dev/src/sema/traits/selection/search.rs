@@ -37,7 +37,7 @@ mod reflected_fields;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/refutation_layout.rs"]
 mod refutation_layout;
-pub(in crate::sema) use coherence::{NegativePremises, may_overlap, may_overlap_with};
+pub(in crate::sema) use coherence::{may_overlap, may_overlap_with};
 mod completed_proofs;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/classification_trace.rs"]
