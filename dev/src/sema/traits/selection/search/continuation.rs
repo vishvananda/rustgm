@@ -140,7 +140,7 @@ impl<'a> Search<'a> {
     /// The construction body shared by [`Self::assuming`] and the tests' `new`;
     /// it installs no placeholder premises.
     fn premise_less(caller: Caller<'a>, availability: Availability) -> Self {
-        let builtins = match availability {
+        let mut builtins = match availability {
             Availability::Declarations => {
                 crate::sema::nominals::Proof::for_unvalidated_implementations(
                     caller.environment.cloned(),
@@ -150,6 +150,8 @@ impl<'a> Search<'a> {
                 crate::sema::nominals::Proof::new(caller.environment.cloned())
             }
         };
+        // The builtin proof is one unit below this search.
+        builtins.nest_at(caller.nesting.nested());
         let first = caller.first_region;
         Self {
             caller,

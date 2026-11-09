@@ -80,13 +80,7 @@ impl Checker<'_> {
                 .map_err(|e| {
                     crate::sema::model::Declarations::error(self.report, key, e.to_string())
                 })?;
-            let caller = Caller {
-                assumptions: &assumptions,
-                environment: environment.as_ref(),
-                first_region,
-                retain_sized: false,
-                placeholders: None,
-            };
+            let caller = Caller::root(&assumptions, environment.as_ref(), first_region);
             if let Some(reuse) = reuse {
                 selection::select_reusing(
                     self.facts,

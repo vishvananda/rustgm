@@ -63,6 +63,7 @@ fn begin(
             environment: None,
             first_region: 2,
             retain_sized: false,
+            nesting: crate::sema::traits::selection::Nesting::ROOT,
             placeholders: None,
         },
         Availability::Declarations,

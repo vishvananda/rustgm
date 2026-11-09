@@ -49,6 +49,8 @@ pub(in crate::sema) struct Query {
 pub(in crate::sema) struct Sizing<'p> {
     pub retain_sized: bool,
     pub placeholders: Option<&'p crate::types::parameters::shape::Placeholders>,
+    /// The normalization's own level: one unit below the proof that starts it.
+    pub nesting: selection::Nesting,
 }
 
 /// The enclosing normalizer retains the formation proof of every request input.
@@ -69,6 +71,7 @@ pub(in crate::sema) fn begin(
         Sizing {
             retain_sized,
             placeholders: None,
+            nesting: selection::Nesting::ROOT,
         },
         availability,
         None,
@@ -96,6 +99,7 @@ pub(in crate::sema) fn begin_with_scope(
         Sizing {
             retain_sized,
             placeholders: None,
+            nesting: selection::Nesting::ROOT,
         },
         availability,
         None,
@@ -204,6 +208,7 @@ fn select(
         &mut conditions,
     )?;
     state.assume_placeholders(sizing.placeholders.cloned())?;
+    state.nest_at(sizing.nesting);
     let goal = state.projection_goal(facts, requirement)?;
     let frontier = state.obligations.regions.end;
     Query {
@@ -455,6 +460,7 @@ impl Query {
                 },
                 first_region: state.obligations.regions.end,
                 retain_sized: state.retain_sized,
+                nesting: state.nesting.nested(),
                 placeholders: if self.closed {
                     None
                 } else {
@@ -570,6 +576,7 @@ impl State {
             },
             first_region: self.obligations.regions.end,
             retain_sized: self.retain_sized,
+            nesting: self.nesting.nested(),
             placeholders: if closed {
                 None
             } else {

@@ -232,6 +232,7 @@ fn missing_prepared_callable_effect_remains_pending_after_real_header_completion
             environment: None,
             first_region: 1,
             retain_sized: false,
+            nesting: crate::sema::traits::selection::Nesting::ROOT,
             placeholders: None,
         },
     )?;
@@ -256,6 +257,7 @@ fn missing_prepared_callable_effect_remains_pending_after_real_header_completion
             environment: None,
             first_region: 1,
             retain_sized: false,
+            nesting: crate::sema::traits::selection::Nesting::ROOT,
             placeholders: None,
         },
     )?;

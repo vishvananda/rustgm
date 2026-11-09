@@ -207,6 +207,20 @@ pub(in crate::sema) enum Selection {
     Proven(Evidence),
     Refuted(Refutation),
 }
+/// How deeply a trait proof is nested below its root: each normal-form query,
+/// selection search and builtin nominal proof started on behalf of another
+/// proof is one unit deeper than the proof that started it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub(in crate::sema) struct Nesting(u16);
+impl Nesting {
+    /// The level of a proof that no other trait proof started.
+    pub const ROOT: Self = Self(0);
+    /// The level of a proof this one starts.
+    #[must_use]
+    pub const fn nested(self) -> Self {
+        Self(self.0.saturating_add(1))
+    }
+}
 pub(in crate::sema) struct Caller<'a> {
     pub assumptions: &'a Assumptions,
     pub environment: Option<&'a Arc<Environment>>,
@@ -214,15 +228,35 @@ pub(in crate::sema) struct Caller<'a> {
     pub first_region: u32,
     /// Alias normalization retains builtin premises whose implicit parameter bounds are unenforced.
     pub retain_sized: bool,
+    /// The level of the search this caller starts.
+    pub nesting: Nesting,
     /// A negative coherence query's other-header sizing premises, which every
     /// search proving its nested obligations decides rigid parameters by.
     pub placeholders: Option<&'a crate::types::parameters::shape::Placeholders>,
+}
+impl<'a> Caller<'a> {
+    /// A root caller that retains no Sized debts and has no placeholder premises.
+    pub(in crate::sema) const fn root(
+        assumptions: &'a Assumptions,
+        environment: Option<&'a Arc<Environment>>,
+        first_region: u32,
+    ) -> Self {
+        Self {
+            assumptions,
+            environment,
+            first_region,
+            retain_sized: false,
+            nesting: Nesting::ROOT,
+            placeholders: None,
+        }
+    }
 }
 pub(in crate::sema) struct OwnedCaller {
     pub assumptions: Arc<Assumptions>,
     pub environment: Option<Arc<Environment>>,
     pub first_region: u32,
     pub retain_sized: bool,
+    pub nesting: Nesting,
     pub placeholders: Option<crate::types::parameters::shape::Placeholders>,
 }
 

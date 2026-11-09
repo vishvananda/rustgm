@@ -54,6 +54,7 @@ impl State {
             },
             first_region: self.obligations.regions.end,
             retain_sized: false,
+            nesting: self.nesting.nested(),
             placeholders: if closed {
                 None
             } else {

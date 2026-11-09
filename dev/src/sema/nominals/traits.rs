@@ -100,6 +100,9 @@ pub(crate) struct State {
     /// search and normalization this State starts; see
     /// [`selection::Caller::placeholders`].
     placeholders: Option<crate::types::parameters::shape::Placeholders>,
+    /// The level of the proof that owns this State; every search and
+    /// normalization it starts is nested below it.
+    nesting: selection::Nesting,
 }
 pub(crate) struct Projected {
     pub provisional_size: bool,
@@ -233,6 +236,7 @@ impl State {
             environment: self.environment.as_ref(),
             first_region: self.obligations.regions.end,
             retain_sized: false,
+            nesting: self.nesting.nested(),
             placeholders: self.placeholders.as_ref(),
         };
         #[cfg(test)]
@@ -404,6 +408,7 @@ impl State {
             terms: None,
             shapes: None,
             placeholders: None,
+            nesting: selection::Nesting::ROOT,
         })
     }
 
@@ -422,6 +427,11 @@ impl State {
         }
         self.placeholders = placeholders;
         Ok(())
+    }
+    /// The level of the proof that owns this State: a builtin proof's or a
+    /// normal-form query's.
+    pub(in crate::sema) const fn nest_at(&mut self, nesting: selection::Nesting) {
+        self.nesting = nesting;
     }
     /// Whether a reuse slot, a normal form or a nested query holds work that
     /// was computed under this State's premises.
@@ -579,6 +589,7 @@ impl State {
             },
             first_region: self.obligations.regions.end,
             retain_sized: self.retain_sized,
+            nesting: self.nesting.nested(),
             // A closed requirement mentions no parameter, so its reuse slot
             // stays shared and premise-independent.
             placeholders: if closed {

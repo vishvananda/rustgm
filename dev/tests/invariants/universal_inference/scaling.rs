@@ -89,6 +89,7 @@ fn empty_input_quantifiers_preserve_their_scope_and_older_captures() -> TestResu
             environment: None,
             first_region: 2,
             retain_sized: false,
+            nesting: crate::sema::traits::selection::Nesting::ROOT,
             placeholders: None,
         },
         Availability::Declarations,

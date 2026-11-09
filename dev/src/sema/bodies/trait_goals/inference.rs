@@ -359,6 +359,7 @@ impl Checker<'_> {
                     environment: environment.as_ref(),
                     first_region: first,
                     retain_sized: false,
+                    nesting: crate::sema::traits::selection::Nesting::ROOT,
                     placeholders: None,
                 },
             )
@@ -374,6 +375,7 @@ impl Checker<'_> {
                     environment,
                     first_region: first,
                     retain_sized: false,
+                    nesting: selection::Nesting::ROOT,
                     placeholders: None,
                 },
                 self.availability,
@@ -436,6 +438,7 @@ impl Checker<'_> {
                 environment,
                 first_region: first,
                 retain_sized: false,
+                nesting: selection::Nesting::ROOT,
                 placeholders: None,
             },
             self.availability,

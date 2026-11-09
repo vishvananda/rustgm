@@ -175,6 +175,7 @@ fn actual_sized_unresolved_subject_defers_without_committing_inference() -> Resu
             environment: None,
             first_region: 1,
             retain_sized: true,
+            nesting: crate::sema::traits::selection::Nesting::ROOT,
             placeholders: None,
         },
     )?;

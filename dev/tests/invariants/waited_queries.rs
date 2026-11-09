@@ -90,6 +90,7 @@ fn caller() -> OwnedCaller {
         environment: None,
         first_region: 1,
         retain_sized: false,
+        nesting: crate::sema::traits::selection::Nesting::ROOT,
         placeholders: None,
     }
 }
@@ -244,6 +245,7 @@ fn borrowed_ready_queries_do_not_retain_or_clone_the_caller() -> Result {
             environment: None,
             first_region: 1,
             retain_sized: false,
+            nesting: selection::Nesting::ROOT,
             placeholders: None,
         },
         (Availability::Validated, true),
@@ -274,6 +276,7 @@ fn borrowed_queries_retain_the_actual_frontier_only_when_the_search_waits() -> R
             environment: None,
             first_region: 1,
             retain_sized: false,
+            nesting: selection::Nesting::ROOT,
             placeholders: None,
         },
         (Availability::Executable, true),

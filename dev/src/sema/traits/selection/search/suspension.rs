@@ -92,6 +92,7 @@ impl OwnedCaller {
             environment: self.environment.as_ref(),
             first_region: self.first_region,
             retain_sized: self.retain_sized,
+            nesting: self.nesting,
             placeholders: self.placeholders.as_ref(),
         }
     }

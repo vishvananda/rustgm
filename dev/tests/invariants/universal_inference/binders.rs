@@ -15,6 +15,7 @@ fn caller() -> OwnedCaller {
         environment: None,
         first_region: 2,
         retain_sized: false,
+        nesting: crate::sema::traits::selection::Nesting::ROOT,
         placeholders: None,
     }
 }

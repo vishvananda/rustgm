@@ -121,6 +121,7 @@ fn proved_parent_refines_before_member_output_and_never_completes_the_query() ->
             environment: None,
             first_region: 300,
             retain_sized: false,
+            nesting: crate::sema::traits::selection::Nesting::ROOT,
             placeholders: None,
         },
     )?

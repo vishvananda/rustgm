@@ -162,6 +162,13 @@ where
     ) -> Result<(), &'static str> {
         self.cursor.assume_placeholders(placeholders)
     }
+    /// The level of the trait proof that owns this session.
+    pub(in crate::sema) const fn nest_at(
+        &mut self,
+        nesting: crate::sema::traits::selection::Nesting,
+    ) {
+        self.cursor.nest_at(nesting);
+    }
     pub(crate) fn normalize(
         &mut self,
         facts: &mut Declarations,

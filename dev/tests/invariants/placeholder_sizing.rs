@@ -732,6 +732,7 @@ fn caller<'a>(
         environment: None,
         first_region: 1,
         retain_sized: false,
+        nesting: crate::sema::traits::selection::Nesting::ROOT,
         placeholders,
     }
 }

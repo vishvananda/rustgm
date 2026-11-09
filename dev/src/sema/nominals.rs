@@ -37,6 +37,8 @@ pub(super) struct Proof {
     checked: Requirements,
     traits: Option<Box<traits::State>>,
     scope: Option<(u32, u32)>,
+    /// This proof's level below its root trait proof, which its trait State shares.
+    nesting: crate::sema::traits::selection::Nesting,
     provisional: bool,
 }
 impl Proof {
@@ -85,6 +87,7 @@ impl Proof {
             checked: Requirements::default(),
             traits: None,
             scope: None,
+            nesting: crate::sema::traits::selection::Nesting::ROOT,
             provisional: false,
         }
     }
@@ -111,8 +114,14 @@ impl Proof {
             checked: Requirements::default(),
             traits: None,
             scope: None,
+            nesting: crate::sema::traits::selection::Nesting::ROOT,
             provisional: false,
         }
+    }
+    /// The level of a builtin proof that a selection search starts; its trait
+    /// State and every proof that State starts are nested below it.
+    pub(in crate::sema) fn nest_at(&mut self, nesting: crate::sema::traits::selection::Nesting) {
+        self.nesting = nesting;
     }
     /// Declaration selection may use derive contracts before fields finish.
     /// The mandatory nominal gates still validate every selected derive later.
@@ -596,6 +605,7 @@ impl Proof {
     ) -> Result<(), &'static str> {
         let mut state = traits::State::new(facts, self.environment.clone(), self.scope)?;
         state.assume_placeholders(placeholders)?;
+        state.nest_at(self.nesting);
         self.traits = Some(Box::new(state));
         Ok(())
     }

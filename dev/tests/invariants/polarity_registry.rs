@@ -341,6 +341,7 @@ fn source_auto_override_incomplete_bucket_is_not_cached_absence()
                 environment: None,
                 first_region: 1,
                 retain_sized: false,
+                nesting: selection::Nesting::ROOT,
                 placeholders: None,
             },
         );

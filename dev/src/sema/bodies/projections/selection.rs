@@ -239,13 +239,7 @@ impl Checker<'_> {
         let assumptions =
             caller_assumptions(self.facts, &mut self.state.infer, environment.as_ref())
                 .map_err(|e| self.error(node, e))?;
-        let caller = Caller {
-            assumptions: &assumptions,
-            environment: environment.as_ref(),
-            first_region: proof.regions.end,
-            retain_sized: false,
-            placeholders: None,
-        };
+        let caller = Caller::root(&assumptions, environment.as_ref(), proof.regions.end);
         if pending_parent
             || selection::requires_resolved_inputs(self.facts, &mut self.state.infer, term, &caller)
                 .map_err(|e| self.error(node, e))?
@@ -458,6 +452,7 @@ impl Opened {
             environment: self.environment.as_ref(),
             first_region: self.proof.regions.end,
             retain_sized: false,
+            nesting: crate::sema::traits::selection::Nesting::ROOT,
             placeholders: None,
         };
         facts.body_work.projection_selections += 1;

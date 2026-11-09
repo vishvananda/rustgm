@@ -58,6 +58,9 @@ pub(in crate::sema) struct Cursor {
     header: Option<Header>,
     before: usize,
     placeholders: Option<crate::types::parameters::shape::Placeholders>,
+    /// The level of the trait proof that owns this cursor; each query it
+    /// starts is one unit below it.
+    nesting: crate::sema::traits::selection::Nesting,
     /// Whether this cursor has started a query.
     used: bool,
 }
@@ -83,6 +86,7 @@ impl Cursor {
             header: None,
             before: 0,
             placeholders: None,
+            nesting: crate::sema::traits::selection::Nesting::ROOT,
             used: false,
         })
     }
@@ -102,6 +106,14 @@ impl Cursor {
         }
         self.placeholders = placeholders;
         Ok(())
+    }
+
+    /// The level of the trait proof that owns this cursor.
+    pub(in crate::sema) const fn nest_at(
+        &mut self,
+        nesting: crate::sema::traits::selection::Nesting,
+    ) {
+        self.nesting = nesting;
     }
 
     pub fn start(&mut self, facts: &mut Declarations, ty: TypeId) -> Result<(), &'static str> {
@@ -206,6 +218,7 @@ impl Cursor {
                     normal_form::Sizing {
                         retain_sized: false,
                         placeholders: self.placeholders.as_ref(),
+                        nesting: self.nesting.nested(),
                     },
                     self.availability,
                     reuse,

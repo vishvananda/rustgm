@@ -3,7 +3,7 @@ use super::{Context, Decision, Declarations, Frame, Goal, Search, continuation};
 use crate::sema::traits::{
     assumptions::Assumptions,
     implementations::{Availability, Perspective, Purpose},
-    selection::Caller,
+    selection::{Caller, Nesting},
 };
 
 impl Search<'_> {
@@ -81,6 +81,7 @@ pub(in crate::sema) fn may_overlap_with(
         environment: None,
         first_region: 1,
         retain_sized: true,
+        nesting: Nesting::ROOT,
         placeholders,
     };
     let first = Frame::new(facts, context, goal, caller.first_region)?;

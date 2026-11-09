@@ -206,6 +206,7 @@ impl Checker<'_> {
                     environment,
                     first_region: first,
                     retain_sized: false,
+                    nesting: selection::Nesting::ROOT,
                     placeholders: None,
                 },
                 (self.availability, count),

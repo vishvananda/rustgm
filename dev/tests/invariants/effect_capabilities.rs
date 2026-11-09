@@ -62,6 +62,7 @@ fn select(
             environment: None,
             first_region: 1,
             retain_sized: false,
+            nesting: selection::Nesting::ROOT,
             placeholders: None,
         },
         (Availability::Validated, false),

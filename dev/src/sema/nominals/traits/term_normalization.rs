@@ -80,6 +80,7 @@ impl State {
                 self.availability,
             )?;
             cursor.assume_placeholders(self.placeholders.clone())?;
+            cursor.nest_at(self.nesting);
             entry.insert(cursor);
         }
         let cursor = terms

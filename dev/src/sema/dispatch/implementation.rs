@@ -97,6 +97,7 @@ impl super::Dispatcher {
                 environment: caller.and_then(|caller| caller.environment.as_ref()),
                 first_region: self.obligations.regions.end,
                 retain_sized: false,
+                nesting: selection::Nesting::ROOT,
                 placeholders: None,
             },
             self.availability,

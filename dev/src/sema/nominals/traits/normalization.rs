@@ -32,6 +32,7 @@ impl State {
             |_, _| Ok(None),
         )?;
         session.assume_placeholders(self.placeholders.clone())?;
+        session.nest_at(self.nesting);
         let (normalized, steps) = session.normalize(facts, opened)?;
         self.context
             .account_work(steps)

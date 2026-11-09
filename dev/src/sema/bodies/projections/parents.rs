@@ -293,6 +293,7 @@ impl Checker<'_> {
                 environment,
                 first_region: first,
                 retain_sized: false,
+                nesting: crate::sema::traits::selection::Nesting::ROOT,
                 placeholders: None,
             },
             self.availability,

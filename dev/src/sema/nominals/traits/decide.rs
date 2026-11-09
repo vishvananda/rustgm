@@ -36,6 +36,7 @@ impl State {
                 environment: self.environment.as_ref(),
                 first_region: self.obligations.regions.end,
                 retain_sized: self.retain_sized,
+                nesting: self.nesting.nested(),
                 placeholders: self.placeholders.as_ref(),
             },
             self.availability,

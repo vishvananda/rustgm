@@ -400,6 +400,7 @@ fn trait_requirements(
                     first_region,
 
                     retain_sized: false,
+                    nesting: selection::Nesting::ROOT,
                     placeholders: None,
                 },
                 caller.availability,
