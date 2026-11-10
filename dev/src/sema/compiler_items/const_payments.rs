@@ -301,7 +301,7 @@ pub(crate) fn pay(
             selection::Selection::Proven(evidence)
                 if evidence.proof.is_empty()
                     && evidence.sized.is_empty()
-                    && !evidence.provisional_size => {}
+                    && !evidence.completion.provisional() => {}
             selection::Selection::Proven(_) => {
                 return Err(
                     "source const-call payment of new lifetime or size debts is not implemented",

@@ -123,7 +123,7 @@ fn negative_owner_cannot_enter_positive_extraction_or_reuse() -> Result {
                     .is_err()
             );
         } else {
-            assert!(search.evidence(&facts, root).is_err());
+            assert!(search.evidence(&facts, root, None).is_err());
         }
     }
     Ok(())
@@ -272,7 +272,7 @@ fn source_nominal_freeze_formation_retains_actual_sizing_obligations() -> Result
             .any(|node| { matches!(node.goal.bound, Bound::Trait(_)) && node.goal.ty == n })
     );
     assert!(search.query.active.is_empty());
-    let evidence = search.evidence(&facts, root)?;
+    let evidence = search.evidence(&facts, root, None)?;
     assert!(matches!(evidence.source, Source::Builtin));
     Ok(())
 }

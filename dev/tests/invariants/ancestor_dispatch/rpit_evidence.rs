@@ -79,7 +79,7 @@ fn search_result(facts: &mut Declarations, root: TypeId) -> TestResult<Obligatio
     else {
         return Err("search did not retain an actual normalization proof".into());
     };
-    assert!(!evidence.provisional_size && evidence.sized.is_empty());
+    assert!(!evidence.completion.provisional() && evidence.sized.is_empty());
     let mut proof = evidence.proof;
     proof.equalities.append(&mut context.region_equalities);
     Ok(proof)

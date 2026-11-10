@@ -36,6 +36,7 @@ pub(in crate::sema) struct Query {
     pending: Option<Box<selection::Pending>>,
     inherited: Option<Box<origin_results::Continuation>>,
     source: Option<selection::Source>,
+    chain: Option<Box<selection::Chain>>,
     closed: bool,
     frontier: u32,
     template: bool,
@@ -224,6 +225,7 @@ fn select(
         pending: None,
         inherited: None,
         source: None,
+        chain: None,
         closed: false,
         frontier,
         template: false,
@@ -288,7 +290,12 @@ impl Query {
                     self.pending = Some(pending);
                     return Ok(Progress::Pending(owner, Box::new(self)));
                 }
-                selection::Progress::Ready(selected) => self.state.accept_selection(selected)?,
+                selection::Progress::Ready(mut selected) => {
+                    if let selection::Selection::Proven(evidence) = &mut selected {
+                        self.chain = evidence.completion.take_chain();
+                    }
+                    self.state.accept_selection(selected)?
+                }
             };
             // Failed trials may have reserved IDs before the wait. They carry
             // no constraints and cannot turn foreign allocations into evidence.
@@ -527,11 +534,40 @@ impl Query {
         })
     }
 
+    /// Consume only child sources proved in this query's existing lifetime namespace.
+    fn chain_result(
+        &mut self,
+        facts: &mut Declarations,
+    ) -> Result<Option<crate::types::TypeId>, &'static str> {
+        let Some(chain) = self.chain.take() else {
+            return Ok(None);
+        };
+        if self.conditions.is_some()
+            || self.alias.arguments() != crate::types::GenericArgs::EMPTY
+            || self.state.environment.as_ref().is_some_and(|environment| {
+                environment.requires_region_mapping()
+                    || environment.has_normal_premises()
+                    || environment.projection_clauses().next().is_some()
+            })
+        {
+            return Ok(None);
+        }
+        let (ty, steps) = chain.resolve(facts, self.alias)?;
+        self.state
+            .context
+            .account_work(steps)
+            .map_err(|_| "selected projection chain work budget exceeded")?;
+        Ok(ty)
+    }
+
     fn finish(
         mut self,
         facts: &mut Declarations,
         mut resolution: Option<Resolution>,
     ) -> Result<Progress, &'static str> {
+        if resolution.is_none() {
+            resolution = self.chain_result(facts)?.map(Resolution::Type);
+        }
         let work = self
             .state
             .context

@@ -196,7 +196,7 @@ impl Direction {
                     return Ok(Next::Pending(dependency));
                 }
                 selection::Progress::Ready(selection::Selection::Proven(evidence)) => {
-                    if evidence.provisional_size || !evidence.sized.is_empty() {
+                    if evidence.completion.provisional() || !evidence.sized.is_empty() {
                         return Err(
                             "specialization implication requires finalized sized contracts".into(),
                         );

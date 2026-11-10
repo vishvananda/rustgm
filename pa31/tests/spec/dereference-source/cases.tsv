@@ -35,3 +35,5 @@ pa31/tests/spec/dereference-source/conjunction-bound.rs	0
 pa31/tests/spec/dereference-source/conjunction-missing.rs	1
 pa31/tests/spec/dereference-source/conjunction-static.rs	0
 pa31/tests/spec/dereference-source/conjunction-escape.rs	1
+pa31/tests/spec/dereference-source/receiver-chain-static.rs	0
+pa31/tests/spec/dereference-source/receiver-chain-unpaid.rs	1

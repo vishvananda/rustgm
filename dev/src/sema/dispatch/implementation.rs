@@ -34,7 +34,7 @@ pub(super) fn select_using(
     Ok((
         Target { owner, arguments },
         evidence.proof,
-        evidence.provisional_size,
+        evidence.completion.provisional(),
     ))
 }
 
@@ -103,7 +103,7 @@ impl super::Dispatcher {
             self.availability,
             preparation,
         )?;
-        self.provisional_size |= evidence.provisional_size;
+        self.provisional_size |= evidence.completion.provisional();
         Ok(evidence)
     }
 }

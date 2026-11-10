@@ -633,9 +633,9 @@ impl State {
         match selected {
             selection::Selection::Proven(mut evidence) => {
                 let source = evidence.source.clone();
-                self.provisional_size |= evidence.provisional_size;
+                self.provisional_size |= evidence.completion.provisional();
                 self.sized.append(&mut evidence.sized);
-                self.retain_sizes(evidence.learned.take())?;
+                self.retain_sizes(evidence.completion.take_sizes())?;
                 self.obligations.append(evidence)?;
                 Ok(Some(source))
             }

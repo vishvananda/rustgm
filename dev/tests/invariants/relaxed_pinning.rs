@@ -140,7 +140,7 @@ fn actual_formation_work_is_linear_and_internal_marker_cannot_replace_the_trait(
         }
         previous = Some((work, edges));
         eprintln!("UnsafeUnpin depth={depth} work={work} edges={edges}");
-        search.evidence(&facts, root)?;
+        search.evidence(&facts, root, None)?;
         let (mut context, goal) = tests::instantiate(&mut facts, Predicate { ty, bound })?;
         let mut rejected = Search::new(tests::caller(&assumptions, None), Availability::Validated);
         rejected.query.steps = 1_000_000;

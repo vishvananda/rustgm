@@ -59,7 +59,7 @@ impl State {
             }
             selection::Selection::Deferred => Err("scoped decision requires pending source proof"),
             selection::Selection::Proven(mut evidence) => {
-                if evidence.provisional_size || !evidence.sized.is_empty() {
+                if evidence.completion.provisional() || !evidence.sized.is_empty() {
                     return Err("scoped decision requires completed sized evidence");
                 }
                 evidence

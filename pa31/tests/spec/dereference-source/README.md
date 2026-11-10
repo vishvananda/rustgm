@@ -1,7 +1,7 @@
 # Actual source dereference contracts
 
-The 37 complete authored inputs in `contract.json` and `cases.tsv` freeze outcomes
-before observing RustGM. Pinned Rust1.98.0 (88d9e12ae) independently confirms the original 32 and five added controls;
+The 39 complete authored inputs in `contract.json` and `cases.tsv` freeze outcomes
+before observing RustGM. Pinned Rust1.98.0 (88d9e12ae) independently confirms the original 32, five earlier controls and the two selected-chain lifetime controls;
 `foundation.rs` and the C observer are authenticated auxiliary inputs. Preserve
 repository NOTICE and the inherited source-foundation attribution.
 
@@ -35,3 +35,8 @@ requires canonical work to grow by at most two for each doubled depth. The four
 conjunction controls preserve genuine missing-bound and escaping-lifetime
 rejections alongside their independently accepted counterparts. Shared roots
 retain every formation and lifetime obligation in their actual caller scope.
+
+`receiver-chain-static.rs` and `receiver-chain-unpaid.rs` retain sixteen actual
+Deref implementations whose conditions require a static pointer. Pinned Rust
+accepts the explicitly static receiver and rejects the anonymous lifetime with
+E0477. Contracting selected associated results must preserve that lifetime debt.

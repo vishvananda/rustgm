@@ -194,10 +194,53 @@ impl Source {
         })
     }
 }
+/// Optional completion details occupy the old flag's padded word. Ordinary
+/// complete evidence allocates nothing; provisional and structural data are cold.
+#[derive(Default)]
+pub(in crate::sema) struct Completion(Option<Box<Details>>);
+struct Details {
+    provisional: bool,
+    sizes: Option<Box<crate::sema::nominals::sizes::Learned>>,
+    chain: Option<Box<search::Chain>>,
+}
+impl Completion {
+    pub fn new(
+        provisional: bool,
+        sizes: Option<Box<crate::sema::nominals::sizes::Learned>>,
+        chain: Option<Box<search::Chain>>,
+    ) -> Self {
+        if !provisional && sizes.is_none() && chain.is_none() {
+            return Self::default();
+        }
+        Self(Some(Box::new(Details {
+            provisional,
+            sizes,
+            chain,
+        })))
+    }
+    pub fn provisional(&self) -> bool {
+        self.0.as_ref().is_some_and(|details| details.provisional)
+    }
+    pub fn take_chain(&mut self) -> Option<Box<search::Chain>> {
+        let details = self.0.as_mut()?;
+        if details.provisional {
+            None
+        } else {
+            details.chain.take()
+        }
+    }
+    pub fn take_sizes(&mut self) -> Option<Box<crate::sema::nominals::sizes::Learned>> {
+        let details = self.0.as_mut()?;
+        if details.provisional {
+            None
+        } else {
+            details.sizes.take()
+        }
+    }
+}
+pub(in crate::sema) use search::Chain;
 pub(in crate::sema) struct Evidence {
-    pub learned: Option<Box<crate::sema::nominals::sizes::Learned>>,
-    /// At least one selected branch assumed an active nominal's unfinished size.
-    pub provisional_size: bool,
+    pub completion: Completion,
     pub source: Source,
     pub proof: Obligations,
     pub sized: Vec<TypeId>,
@@ -579,8 +622,7 @@ pub(in crate::sema) fn select_assumption(
             let mut obligations = Obligations::new(proof.regions.start);
             obligations.regions.end = proof.regions.end;
             Ok(Selection::Proven(Evidence {
-                learned: None,
-                provisional_size: false,
+                completion: Completion::default(),
                 source,
                 proof: obligations,
                 sized: Vec::new(),

@@ -38,6 +38,11 @@ mod reflected_fields;
 #[path = "../../../../tests/invariants/refutation_layout.rs"]
 mod refutation_layout;
 pub(in crate::sema) use coherence::{may_overlap, may_overlap_with};
+mod chain;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/dereference_suffixes.rs"]
+mod chain_tests;
+pub(in crate::sema) use chain::Chain;
 mod completed_proofs;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/classification_trace.rs"]
@@ -256,8 +261,15 @@ impl Search<'_> {
             suspension::observe_work(&mut attempted, self.query.steps);
             result?;
         }
+        let (chain, chain_work) = if let Decision::Proven(root) = decision {
+            self.selected_chain(facts, root)?
+        } else {
+            (None, 0)
+        };
         suspension::observe_work(&mut attempted, self.query.steps);
-        context.account_work(self.query.steps).map_err(inference)?;
+        context
+            .account_work(self.query.steps.saturating_add(chain_work))
+            .map_err(inference)?;
         context
             .account_nested(self.query.nested as usize)
             .map_err(inference)?;
@@ -287,7 +299,7 @@ impl Search<'_> {
                         )
                         .map_err(inference)?;
                 }
-                self.evidence(facts, root).map(Selection::Proven)
+                self.evidence(facts, root, chain).map(Selection::Proven)
             }
         }
     }
@@ -792,14 +804,22 @@ impl Search<'_> {
         }
         Ok(())
     }
-    fn evidence(mut self, facts: &Declarations, root: usize) -> Result<Evidence, String> {
+    fn evidence(
+        mut self,
+        facts: &Declarations,
+        root: usize,
+        chain: Option<Box<Chain>>,
+    ) -> Result<Evidence, String> {
         let source = self.query.nodes[root]
             .source
             .clone()
             .ok_or("missing selected trait evidence")?;
         let mut evidence = Evidence {
-            learned: self.query.builtins.take_sizes(),
-            provisional_size: self.query.nodes[root].provisional_size,
+            completion: super::Completion::new(
+                self.query.nodes[root].provisional_size,
+                self.query.builtins.take_sizes(),
+                chain,
+            ),
             source,
             proof: std::mem::replace(
                 &mut self.query.allocations,

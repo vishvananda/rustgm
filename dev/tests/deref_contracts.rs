@@ -42,7 +42,7 @@ fn actual_source_deref_and_mutable_places_keep_real_bodies_and_proofs() -> TestR
         }
         count += 1;
     }
-    assert_eq!(count, 37);
+    assert_eq!(count, 39);
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }

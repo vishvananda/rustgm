@@ -107,7 +107,7 @@ impl Attempt {
                     return Ok(Step::Unsupported(Unsupported::ProofDebt));
                 }
                 selection::Progress::Ready(selection::Selection::Proven(evidence)) => {
-                    if evidence.provisional_size
+                    if evidence.completion.provisional()
                         || !evidence.sized.is_empty()
                         || !evidence.proof.is_empty()
                         || !self.context.region_equalities.is_empty()

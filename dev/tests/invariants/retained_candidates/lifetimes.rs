@@ -50,7 +50,7 @@ fn partial_lifetimes_preserve_final_debts_and_foreign_allocation_gaps() -> TestR
             return Err("partial lifetime goal did not finish selection".into());
         };
         context.equate_proved_predicate(&mut facts.types, &goal, search.query.nodes[root].goal)?;
-        let mut evidence = search.evidence(&facts, root)?;
+        let mut evidence = search.evidence(&facts, root, None)?;
         evidence
             .proof
             .equalities

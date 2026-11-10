@@ -176,7 +176,7 @@ fn hidden_marker_queries_wait_without_replaying_and_keep_private_traits_private(
         assert!(search.query.active.is_empty());
         if let Decision::Proven(root) = result {
             assert!(matches!(
-                search.evidence(&facts, root)?.source,
+                search.evidence(&facts, root, None)?.source,
                 super::Source::Builtin
             ));
         }

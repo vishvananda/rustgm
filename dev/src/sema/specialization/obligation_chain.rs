@@ -85,7 +85,7 @@ impl ProjectionRequirements {
                     return Ok(Some(dependency));
                 }
                 selection::Progress::Ready(selection::Selection::Proven(evidence)) => {
-                    if evidence.provisional_size || !evidence.sized.is_empty() {
+                    if evidence.completion.provisional() || !evidence.sized.is_empty() {
                         return Err(
                             "inherited result requires finalized formation contracts".into()
                         );

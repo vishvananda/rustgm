@@ -71,8 +71,7 @@ impl Reuse {
         };
         validate_source(facts, goal, source)?;
         Ok(Some(super::Selection::Proven(super::Evidence {
-            learned: None,
-            provisional_size: false,
+            completion: super::super::Completion::default(),
             source: source.clone(),
             proof: super::super::Obligations::new(first),
             sized: Vec::new(),

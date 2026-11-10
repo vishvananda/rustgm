@@ -78,8 +78,7 @@ impl Memo {
             return None;
         };
         Some(Selection::Proven(Evidence {
-            learned: None,
-            provisional_size: false,
+            completion: super::Completion::default(),
             source: Source::Implementation {
                 owner: answer.owner,
                 arguments: answer.arguments,
@@ -137,7 +136,7 @@ fn trivial(evidence: &Evidence, first: u32) -> Option<Answer> {
     let Source::Implementation { owner, arguments } = evidence.source else {
         return None;
     };
-    (!evidence.provisional_size
+    (!evidence.completion.provisional()
         && evidence.sized.is_empty()
         && proof.regions == (first..first)
         && proof.equalities.is_empty()

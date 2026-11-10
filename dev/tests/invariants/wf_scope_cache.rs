@@ -90,6 +90,6 @@ fn active_completed_and_binder_depth_formation_entries_remain_distinct() -> Resu
             .get(&member_conditions::Key::Nominal(ty, 1, ScopeId::ROOT)),
         Some(member_conditions::Entry::Active)
     ));
-    assert!(search.evidence(&facts, prefix).is_err());
+    assert!(search.evidence(&facts, prefix, None).is_err());
     Ok(())
 }

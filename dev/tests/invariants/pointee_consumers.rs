@@ -223,7 +223,7 @@ fn search_argument(report: &Report, facts: &mut Declarations, root: TypeId) -> T
     else {
         return Err("actual generic argument normalization did not prove Sink<()>".into());
     };
-    assert!(!evidence.provisional_size && evidence.sized.is_empty());
+    assert!(!evidence.completion.provisional() && evidence.sized.is_empty());
     Ok(())
 }
 #[test]

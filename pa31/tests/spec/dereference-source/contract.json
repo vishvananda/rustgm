@@ -227,6 +227,20 @@
       "path": "pa31/tests/spec/dereference-source/conjunction-escape.rs",
       "sha256": "3feff13cc3729a794a52525618f8147cf5d8e22fa68e63d9c4ded2085190ad66",
       "rustc_status": 1
+    },
+    {
+      "name": "receiver-chain-static",
+      "path": "pa31/tests/spec/dereference-source/receiver-chain-static.rs",
+      "sha256": "3de554c3c866f6425c04c0676515a61c70e6b2a027811bd32339f5d5983284ab",
+      "rustc_status": 0,
+      "purpose": "The whole selected dereference chain retains its actual static lifetime requirement"
+    },
+    {
+      "name": "receiver-chain-unpaid",
+      "path": "pa31/tests/spec/dereference-source/receiver-chain-unpaid.rs",
+      "sha256": "39976a5af2790d5495c716541b4fb17c8205f7155ede349cc2640aae6791d75c",
+      "rustc_status": 1,
+      "purpose": "The whole selected dereference chain retains its actual static lifetime requirement"
     }
   ],
   "auxiliary": [
