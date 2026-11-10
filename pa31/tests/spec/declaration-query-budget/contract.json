@@ -11,7 +11,8 @@
     "source operator required headers",
     "source comparison headers",
     "source range helper identity",
-    "source transmute size queries"
+    "source transmute size queries",
+    "source method candidate probes"
   ],
   "deferred": [
     "source layout intrinsic consumers"
@@ -42,6 +43,10 @@
     {
       "path": "pa31/tests/spec/source-transmute/generic-borrowed-const.rs",
       "sha256": "6aa8034dfffea93bba1b6cf7523e7778357e2888c2ff3c8145033ddbbf3d9265"
+    },
+    {
+      "path": "pa31/tests/spec/const-supertrait-lookup/plain-ord-method.rs",
+      "sha256": "f1cccbd9ed6dffdcb7fb64829224e15df36c1259771724fc815b799114152502"
     }
   ],
   "checks": [
@@ -51,6 +56,8 @@
     "dev/tests/invariants/neg_contracts.rs:actual_discriminants_require_current_neg_and_const_impl_before_scalar_evaluation",
     "dev/tests/invariants/division_authority.rs:div_work_is_paid_on_warm_failure_and_repetition_with_an_ordinary_control",
     "dev/tests/invariants/bitcast_allowance.rs:transmute_queries_keep_local_work_and_sticky_source_payment",
-    "dev/tests/invariants/bitcast_allowance.rs:local_transmute_limit_still_rejects_before_layout_mutation"
+    "dev/tests/invariants/bitcast_allowance.rs:local_transmute_limit_still_rejects_before_layout_mutation",
+    "dev/tests/invariants/probe_allowance.rs:source_method_queries_ignore_prior_observations_and_preserve_actual_selection",
+    "dev/tests/invariants/probe_allowance.rs:actual_source_probe_exhaustion_is_sticky_and_ordinary_cap_stays_fixed"
   ]
 }

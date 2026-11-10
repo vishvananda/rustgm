@@ -18,3 +18,9 @@ states. Equal-size acceptance, unequal-size rejection and exact actual payments
 are invariant. True producer exhaustion and a local exhausted query both fail
 before cold layout mutation. Completed child work and layout state prepayment
 still belong to the real producer. General layout intrinsics remain separate.
+
+The source-mode method-probe reduction checks actual complete selected calls
+with cumulative probe observations0/1000000/2000000. Each actual probe pays the
+same source producer ledger; source exhaustion stays sticky after observation
+reset. The ordinary PA19 cumulative candidate cap remains1000000, and each
+source probe retains that local inference/candidate bound.

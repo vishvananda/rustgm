@@ -162,7 +162,16 @@ pub(super) fn trait_groups(
 pub(super) fn account_probe(facts: &mut Declarations, steps: usize) -> Result<(), &'static str> {
     facts.methods.selection_probes += 1;
     facts.methods.selection_steps = facts.methods.selection_steps.saturating_add(steps);
-    if facts.methods.selection_steps > 1_000_000 {
+    let limit = crate::support::crates::MAX_COMPONENTS;
+    if facts.source_bindings.is_some() {
+        // The source producer owns repeated probes across the whole crate.
+        // Context's local inference bound still limits each individual probe.
+        crate::sema::header_attributes::charge_source_contract_query(facts, steps)
+            .map_err(|_| "source method selection query work exhausted")?;
+        if steps > limit {
+            return Err("method selection work budget exceeded");
+        }
+    } else if facts.methods.selection_steps > limit {
         return Err("method selection work budget exceeded");
     }
     Ok(())
@@ -399,3 +408,7 @@ fn prepare_candidates(
     }
     facts.methods.retain_candidate_index(key, identity, index)
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/probe_allowance.rs"]
+mod budget_tests;
