@@ -44,5 +44,6 @@ claimed: the preceding census attempts exhausted120/170s observer windows.
 Incremental progress is the next diagnostic improvement; compiler quotas and
 observer ceilings remain fixed. Whole original core/alloc/std, source-client
 exports, quantified-object/nominal-tail Unsize and assignment releases remain
-required. Full predecessor42805641905 remains active; wait until it terminates
-before dispatching this checkpoint's full successor.
+required. Full42805641905 failed one real quantified fallback budget regression;
+[the alias-work repair](pa21-failed-alias-work.md) passes its exact focused check.
+The joined full successor remains required.

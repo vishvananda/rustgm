@@ -40,6 +40,15 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
+[Failed alias-work accounting](docs/pa21-failed-alias-work.md), compiler67b277950/
+CLI8a653e24, repairs the one real regression in full42805641905. That run failed
+trait-fallback-leak's source budget;3056 other private and all regular targets
+passed, later stages skipped. A plain unsatisfied alias graph now pays completed
+work instead of its full unused allowance; rich/budget failures keep conservative
+payment. Five private and three production groups, harness/upstream and30 full-
+output-equal paired observations pass. No quota or oracle change. Full joined
+successor is due after publication; incremental census progress remains next.
+
 The [source Unsize upcast checkpoint](docs/pa31-source-object-upcasts.md),
 compiler6d3b6d424/CLIec0e1273, supports non-quantified intrinsic object upcasts
 with all original equality/marker/lifetime/formation debts. Ten new PA31 outcomes,
@@ -49,8 +58,8 @@ upstream and selected strict checks pass. Two custom-auto object forms remain
 required; no oracle or backend contract changed. This addresses a shared cause
 of17 retained body fences; no complete new census or original artifact is claimed.
 Next add incremental census progress to diagnose the unchanged120/170s timeout
-without another observer-window increase. Full predecessor42805641905 is active;
-wait for its terminal result before dispatching the upcast successor.
+without another observer-window increase. Full42805641905 failed one fallback budget regression; the repair above passes
+focused checks and its joined successor is due.
 
 The [source-probe/body-session checkpoint](docs/pa26-body-place-session.md)
 clears the cumulative method-probe guard and a newly exposed stale indexing
@@ -147,8 +156,8 @@ push-fast is separate.
 
 - Durable decisions: /mnt/vizier/rustgm-scratch/integrator-20261109/pending_decisions.md.
 - Current compiler/test source hashes are bound in pa26-work's
-  obj/parallel/source-upcast/candidate-dev-fast/producer.json. Current receipts are
-  under obj/parallel/source-upcast; body-session receipts are under
+  obj/parallel/alias-query-work/candidate-dev-fast/producer.json. Current receipts are
+  under obj/parallel/alias-query-work and obj/parallel/source-upcast; body-session receipts are under
   obj/parallel/place-session and obj/parallel/source-probe-budget; scoped lookup is
   under obj/parallel/scoped-lookup; f01 receipts and
   f01 evidence are under obj/parallel/scoped-inherent. Multiplication receipts and
