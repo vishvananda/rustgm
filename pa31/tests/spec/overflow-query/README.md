@@ -18,6 +18,6 @@ policy transport remain independently proved requirements.
 The first malformed-result probe forced evaluation and produced a reference
 compiler ICE. That failed probe remains unqualified under obj; the frozen
 opponent declares the invalid signature without evaluating it and gives ordinary
-E0308 under both independent profiles. PA31 owns the typed intrinsic identity;
+E0308 under both independent profiles. PA31 owns the compiler-configuration query policy;
 no earlier ordinary same-name source reproduces the blocker. No grading
 activation or text oracle is generated.

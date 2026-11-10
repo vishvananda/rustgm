@@ -17,5 +17,5 @@ multiple evaluations without relying on the hint's boolean.
 Independent native stdout is `0 7 1\n`: the fixed CTFE policy, a runtime branch
 valid for either answer, and the single-evaluation count. The runtime path requires
 the actual provided fallback body and ordinary source/body/call proof. The
-intrinsic's typed source identity belongs to PA31; no earlier ordinary same-name
+compiler knowledge-hint policy belongs to PA31; no earlier ordinary same-name
 case reproduces it. No grading activation or text oracle is generated.

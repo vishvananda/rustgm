@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "bootstrap": "1",
+  "overflow_checks": true,
+  "baseline_sha256": "9af9f1877ce5e71ec9335a80503f683506adba15585e34a6c4b6ad1b87ae4552",
+  "cases": [
+    {
+      "file": "direct.rs",
+      "source_sha256": "a5186ed2da52acdd4e7ab4d4774c2a7214974f623c0e4301f1d8288a3647743e",
+      "expected_status": 0,
+      "rustc_yes": 0,
+      "baseline_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 1525: source intrinsic constant execution is not implemented\n"
+    },
+    {
+      "file": "signed.rs",
+      "source_sha256": "193a4223173f265640800d0fd7debc3cb5b70bf711cfc9e3fc84e7abfa789476",
+      "expected_status": 0,
+      "rustc_yes": 0,
+      "baseline_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 1523: source intrinsic constant execution is not implemented\n"
+    },
+    {
+      "file": "ordinary.rs",
+      "source_sha256": "2493e78205ba3c6007e72ad96267bfd558c793df9517ea81ba88b72ac942b60a",
+      "expected_status": 0,
+      "rustc_yes": 0,
+      "baseline_status": 0,
+      "baseline_diagnostic": ""
+    },
+    {
+      "file": "noncopy.rs",
+      "source_sha256": "8ee9f202bf05fbc1352916ba4ef011ccf8826f2d336f4ffd18c37d80d4c9a0ae",
+      "expected_status": 1,
+      "rustc_yes": 1,
+      "baseline_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 1539: trait obligation requires an unambiguous matching assumption or implementation\n"
+    },
+    {
+      "file": "widths.rs",
+      "source_sha256": "0c6c7c7de0e3bf29148fadfad68a231f0c0b4374fda134e9a55523051e69f45d",
+      "expected_status": 0,
+      "rustc_yes": 0,
+      "baseline_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 1525: source intrinsic constant execution is not implemented\n"
+    },
+    {
+      "file": "native.rs",
+      "source_sha256": "4e79b0f8f6686425371e961874b2eea656253fd6474b943260a0c0a7f4b9e9d2",
+      "expected_status": 0,
+      "rustc_yes": 0,
+      "baseline_status": 0,
+      "baseline_diagnostic": ""
+    }
+  ],
+  "auxiliary": [
+    {
+      "path": "observer.c",
+      "sha256": "923f410b8009a3a5a32432225e84239aeefd94c19fe653f79b9770ede5b2aaae"
+    },
+    {
+      "path": "expected.stdout",
+      "sha256": "a1da28c59b9891aff415b6dbbff96c9ff757333c747ea530a557bf8ecaed22b7"
+    }
+  ],
+  "native_status": 0,
+  "native_rows": 156,
+  "native_stdout_sha256": "a1da28c59b9891aff415b6dbbff96c9ff757333c747ea530a557bf8ecaed22b7"
+}

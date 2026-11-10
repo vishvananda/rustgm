@@ -1,5 +1,6 @@
 //! Rust checked scalar operations, without C++ overflow metadata.
 use super::casts;
+mod products;
 use crate::{
     lex::token::Punctuation,
     lowir::{
@@ -228,25 +229,12 @@ impl Arithmetic<'_, '_> {
     ) -> Result<Value, &'static str> {
         // Same-width sum/difference checks need two operations; widening needs
         // five and makes 64-bit operands 128-bit. Products keep one wide multiply.
-        if matches!(op, Binary::Add | Binary::Sub) {
+        if matches!(op, Binary::Add | Binary::Sub) || left.ty == Type::I128 {
             return self.wide(op, cause, signed, left, right);
         }
-        let wide = match left.ty.bits() {
-            8 => Type::I16,
-            16 => Type::I32,
-            32 => Type::I64,
-            64 => Type::I128,
-            128 => return self.wide(op, cause, signed, left, right),
-            _ => return Err("invalid checked arithmetic width"),
-        };
-        let lhs = casts::integer(self.builder, left, wide, signed)?;
-        let rhs = casts::integer(self.builder, right, wide, signed)?;
-        let result = self.builder.binary(op, lhs, rhs)?;
-        let narrowed = casts::integer(self.builder, result, left.ty, signed)?;
-        let restored = casts::integer(self.builder, narrowed, wide, signed)?;
-        let fault = self.builder.compare(Predicate::Ne, result, restored)?;
+        let (result, fault) = self.multiply_overflow(signed, left, right)?;
         self.guard(fault, cause)?;
-        Ok(narrowed)
+        Ok(result)
     }
     fn wide(
         &mut self,

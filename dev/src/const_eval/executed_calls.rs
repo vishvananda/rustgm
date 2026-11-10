@@ -42,7 +42,7 @@ impl Machine<'_, '_> {
         };
         match catalog.intrinsic_kind(crate::resolve::model::DefId(item.0))? {
             Some(kind)
-                if crate::sema::compiler_items::wrapping_operator(kind).is_some()
+                if crate::sema::compiler_items::scalar_arithmetic(kind)
                     || crate::sema::compiler_items::bit_counts::operation(kind).is_some()
                     || crate::sema::compiler_items::assume_contract::is_assumption(kind)
                     || crate::sema::compiler_items::guaranteed_compare::is_operation(kind)

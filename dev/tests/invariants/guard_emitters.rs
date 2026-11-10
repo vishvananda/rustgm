@@ -74,3 +74,39 @@ fn flag_only_subtraction_and_literal_negation_emit_no_panic_guard() -> Result {
     assert_eq!(size_of::<Reader<'_>>(), 8);
     Ok(())
 }
+
+#[test]
+fn flag_only_products_keep_bounded_work_and_never_acquire_a_panic_guard() -> Result {
+    let facts = source_facts("panic_const_mul_overflow")?;
+    for ty in [Type::I8, Type::I16, Type::I32, Type::I64, Type::I128] {
+        for signed in [false, true] {
+            let mut builder = Builder::default();
+            let entry = builder.block()?;
+            builder.enter(entry)?;
+            let lhs = builder.integer(ty, 13)?;
+            let rhs = builder.integer(ty, 7)?;
+            let mut panic = None;
+            let (result, flag) = Arithmetic {
+                builder: &mut builder,
+                panic: &mut panic,
+                constants: Reader::new(&facts),
+            }
+            .multiply_overflow(signed, lhs, rhs)?;
+            assert_eq!(result.ty, ty);
+            assert_eq!(flag.ty, Type::I64);
+            assert_eq!(panic, None);
+            builder.terminate(Terminator::Return(Some(result)))?;
+            let function = builder.finish()?;
+            assert_eq!(function.blocks.len(), 1);
+            assert!(function.instructions.len() <= 24);
+            assert!(!function.instructions.iter().any(|instruction| matches!(
+                instruction.operation,
+                crate::lowir::program::Operation::Binary {
+                    op: Binary::Div,
+                    ..
+                }
+            )));
+        }
+    }
+    Ok(())
+}

@@ -79,12 +79,21 @@ impl Lower<'_, '_, '_> {
                 .binary(Binary::Sub, left, right)
                 .map(|result| Some(Selected::Runtime(result)));
         }
-        let (result, overflow) = Arithmetic {
+        let mut arithmetic = Arithmetic {
             constants: self.context.constants,
             builder: &mut self.builder,
             panic: &mut self.panic,
-        }
-        .subtract_overflow(signed, left, right)?;
+        };
+        let (result, overflow) =
+            match crate::sema::compiler_items::overflowing_operator(selected.kind) {
+                Some(crate::lex::token::Punctuation::Minus) => {
+                    arithmetic.subtract_overflow(signed, left, right)?
+                }
+                Some(crate::lex::token::Punctuation::Star) => {
+                    arithmetic.multiply_overflow(signed, left, right)?
+                }
+                _ => return Err("source arithmetic lost its selected overflow operation"),
+            };
         self.store_subtraction_tuple(result, overflow, selected.input, selected.output)
             .map(Some)
     }

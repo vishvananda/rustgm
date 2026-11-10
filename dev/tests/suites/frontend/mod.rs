@@ -79,6 +79,8 @@ mod glob_provenance;
 mod glue_provider;
 #[path = "../../hygiene.rs"]
 mod hygiene;
+#[path = "../../integer_products.rs"]
+mod integer_products;
 #[path = "../../interpolation.rs"]
 mod interpolation;
 #[path = "../../interval_sources.rs"]

@@ -35,3 +35,8 @@ Put required regressions here, in the earliest assignment owning all their
 features. Register every input in its declared contract manifest; active grading
 cases use `manifest.json`, while these planned capability controls retain their
 explicit companion manifest. No undiscovered fixtures.
+
+`spec/multiply-overflow/outcomes.json` freezes six source outcomes plus a
+156-pair native observer across all12 integer types, with declared mathematical
+result bits/flags independently checked against a pinned Rust object. This numeric
+intrinsic execution packet follows the source-subtraction ownership in PA28.

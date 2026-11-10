@@ -31,6 +31,16 @@ pub(crate) fn scalar_arithmetic(kind: SourceIntrinsic) -> bool {
         kind,
         SourceIntrinsic::UncheckedSub | SourceIntrinsic::SubWithOverflow
     ) || wrapping_operator(kind).is_some()
+        || overflowing_operator(kind).is_some()
+}
+pub(crate) fn overflowing_operator(kind: SourceIntrinsic) -> Option<Punctuation> {
+    match kind {
+        SourceIntrinsic::SubWithOverflow => Some(Punctuation::Minus),
+        SourceIntrinsic::Declaration(identity) if identity.name() == "mul_with_overflow" => {
+            Some(Punctuation::Star)
+        }
+        _ => None,
+    }
 }
 
 pub(crate) struct SubtractionSelection {
@@ -129,7 +139,7 @@ fn signature(
     }
     let valid = match kind {
         SourceIntrinsic::UncheckedSub => result == input,
-        SourceIntrinsic::SubWithOverflow => {
+        kind if overflowing_operator(kind).is_some() => {
             matches!(facts.types.kind(result), Some(Kind::Tuple(fields)) if facts.types.list(fields)==Some(&[input,TypeId::primitive(Primitive::Bool)]))
         }
         kind if wrapping_operator(kind).is_some() => result == input,

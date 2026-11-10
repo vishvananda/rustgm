@@ -62,7 +62,7 @@ pub(crate) mod knowledge;
 mod subtraction_contract;
 mod wrapping_contract;
 pub(crate) use subtraction_contract::SubtractionSelection;
-pub(crate) use subtraction_contract::{scalar_arithmetic, wrapping_operator};
+pub(crate) use subtraction_contract::{overflowing_operator, scalar_arithmetic, wrapping_operator};
 pub(crate) use wrapping_contract::WrappingOffsetSelection;
 #[path = "compiler_items/reflection_fields.rs"]
 pub(in crate::sema) mod field_protocol;
