@@ -1,5 +1,12 @@
 # Library build blocker tracker
 
+Latest semantic checkpoint: [inclusive source calls](pa31-inclusive-source-calls.md)
+closes the actual constructor fence through ordinary calls.22 new active outcomes,
+five private controls, six native programs and bounded width/noise checks pass.
+The unchanged120s original observation still times out;265 records/4086 item
+attempts reach slice/mod.rs, with no inclusive call-plan fence in that prefix.
+Two early header constants remain required; no complete new census or artifact.
+
 Latest diagnostic checkpoint: [incremental census progress](census-progress.md)
 retains345 failure records and6469 item attempts before the unchanged120s
 observer timeout. This remains an infrastructure failure and incomplete prefix,
