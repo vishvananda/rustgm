@@ -253,11 +253,7 @@ impl Checker<'_> {
             selection::Progress::Ready(selected) => {
                 let reservation = std::mem::take(&mut pending.reservation);
                 if let Selection::Proven(proof) = selected {
-                    // Computed callable results retain capture/body duties for
-                    // their owning callable and final body-region consumers.
-                    if !proof.source.callable_result() {
-                        self.check_closed_universal_call(node, index, &proof.proof)?;
-                    }
+                    self.check_closed_universal_call(node, index, &proof)?;
                     if self.state.call_types.intrinsic(index)
                         && !matches!(
                             proof.source,

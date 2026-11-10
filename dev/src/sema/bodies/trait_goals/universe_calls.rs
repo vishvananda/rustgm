@@ -1,5 +1,6 @@
 //! Closed universal calls consume their actual scoped evidence without exporting permission.
 use super::{Checker, Error, NodeId};
+use crate::sema::traits::selection::{Evidence, Source};
 use crate::types::{infer, lifetime_proof::Obligations, outlives::Queries, relations::Constraints};
 
 impl Checker<'_> {
@@ -7,8 +8,18 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
         index: usize,
-        proof: &Obligations,
+        evidence: &Evidence,
     ) -> Result<(), Error> {
+        // Builtin, equality and computed language results retain their own
+        // scoped/capture duties. This consumer closes ordinary trait calls.
+        if !matches!(
+            evidence.source,
+            Source::Implementation { .. }
+                | Source::Assumption(_)
+                | Source::QuantifiedAssumption { .. }
+        ) {
+            return Ok(());
+        }
         if self
             .state
             .call_types
@@ -37,7 +48,7 @@ impl Checker<'_> {
         {
             return Ok(());
         }
-        self.discharge_closed_call_scope(node, proof)
+        self.discharge_closed_call_scope(node, &evidence.proof)
     }
 
     fn discharge_closed_call_scope(
