@@ -1,0 +1,573 @@
+function @rg.30() -> void {
+  block ^b0:
+    %t0 = call u8 @rg.29.i4(7, 3, 1)
+    %t1 = cmp eq u8 %t0, 14
+    %t2 = convert trunc i1 i64 %t1
+    call void @rg.13(%t2)
+    %t3 = call u8 @rg.29.i4(7, 3, 0)
+    %t4 = cmp eq u8 %t3, 12
+    %t5 = convert trunc i1 i64 %t4
+    call void @rg.13(%t5)
+    return void
+}
+function @rg.29.i4(%p0 : u8, %p1 : u8, %p2 : i1) -> u8 {
+  slot $s0 : u8
+  slot $s1 : u8
+  slot $s2 : i1
+  slot $s3 : u8
+  slot $s4 : u8
+  slot $s5 : u8
+  slot $s6 : u8
+  slot $s7 : u8
+  slot $s8 : u8
+  slot $s9 : u8
+  slot $s10 : u8
+  slot $s11 : u8
+  slot $s12 : u8
+  slot $s13 : u8
+  slot $s14 : u8
+  slot $s15 : u8
+  slot $s16 : u8
+  slot $s17 : u8
+  slot $s18 : u8
+  slot $s19 : u8
+  slot $s20 : u8
+  slot $s21 : u8
+  slot $s22 : u8
+  slot $s23 : u8
+  slot $s24 : u8
+  slot $s25 : u8
+  slot $s26 : u8
+  slot $s27 : u8
+  slot $s28 : u8
+  slot $s29 : u8
+  slot $s30 : u8
+  slot $s31 : u8
+  slot $s32 : u8
+  slot $s33 : u8
+  slot $s34 : u8
+  slot $s35 : u8
+  slot $s36 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    store u8 %p1, $s1
+    store i1 %p2, $s2
+    %t0 = load i1 $s2
+    branch %t0, ^b1, ^b2
+  block ^b2:
+    %t1 = load u8 $s1
+    %t2 = call u8 @rg.21(%t1, 2)
+    store u8 %t2, $s3
+    jump ^b3
+  block ^b1:
+    %t3 = load u8 $s0
+    %t4 = call u8 @rg.21(%t3, 1)
+    store u8 %t4, $s3
+    jump ^b3
+  block ^b3:
+    %t5 = load u8 $s3
+    %t6 = load i1 $s2
+    branch %t6, ^b4, ^b5
+  block ^b5:
+    %t7 = load u8 $s1
+    %t8 = call u8 @rg.21(%t7, 2)
+    store u8 %t8, $s4
+    jump ^b6
+  block ^b4:
+    %t9 = load u8 $s0
+    %t10 = call u8 @rg.21(%t9, 1)
+    store u8 %t10, $s4
+    jump ^b6
+  block ^b6:
+    %t11 = load u8 $s4
+    %t12 = load i1 $s2
+    branch %t12, ^b7, ^b8
+  block ^b8:
+    %t13 = load u8 $s1
+    %t14 = call u8 @rg.21(%t13, 2)
+    store u8 %t14, $s5
+    jump ^b9
+  block ^b7:
+    %t15 = load u8 $s0
+    %t16 = call u8 @rg.21(%t15, 1)
+    store u8 %t16, $s5
+    jump ^b9
+  block ^b9:
+    %t17 = load u8 $s5
+    %t18 = load i1 $s2
+    branch %t18, ^b10, ^b11
+  block ^b11:
+    %t19 = load u8 $s1
+    %t20 = call u8 @rg.21(%t19, 2)
+    store u8 %t20, $s6
+    jump ^b12
+  block ^b10:
+    %t21 = load u8 $s0
+    %t22 = call u8 @rg.21(%t21, 1)
+    store u8 %t22, $s6
+    jump ^b12
+  block ^b12:
+    %t23 = load u8 $s6
+    %t24 = load i1 $s2
+    branch %t24, ^b13, ^b14
+  block ^b14:
+    %t25 = load u8 $s1
+    %t26 = call u8 @rg.21(%t25, 2)
+    store u8 %t26, $s7
+    jump ^b15
+  block ^b13:
+    %t27 = load u8 $s0
+    %t28 = call u8 @rg.21(%t27, 1)
+    store u8 %t28, $s7
+    jump ^b15
+  block ^b15:
+    %t29 = load u8 $s7
+    %t30 = load i1 $s2
+    branch %t30, ^b16, ^b17
+  block ^b17:
+    %t31 = load u8 $s1
+    %t32 = call u8 @rg.21(%t31, 2)
+    store u8 %t32, $s8
+    jump ^b18
+  block ^b16:
+    %t33 = load u8 $s0
+    %t34 = call u8 @rg.21(%t33, 1)
+    store u8 %t34, $s8
+    jump ^b18
+  block ^b18:
+    %t35 = load u8 $s8
+    %t36 = load i1 $s2
+    branch %t36, ^b19, ^b20
+  block ^b20:
+    %t37 = load u8 $s1
+    %t38 = call u8 @rg.21(%t37, 2)
+    store u8 %t38, $s9
+    jump ^b21
+  block ^b19:
+    %t39 = load u8 $s0
+    %t40 = call u8 @rg.21(%t39, 1)
+    store u8 %t40, $s9
+    jump ^b21
+  block ^b21:
+    %t41 = load u8 $s9
+    %t42 = load i1 $s2
+    branch %t42, ^b22, ^b23
+  block ^b23:
+    %t43 = load u8 $s1
+    %t44 = call u8 @rg.21(%t43, 2)
+    store u8 %t44, $s10
+    jump ^b24
+  block ^b22:
+    %t45 = load u8 $s0
+    %t46 = call u8 @rg.21(%t45, 1)
+    store u8 %t46, $s10
+    jump ^b24
+  block ^b24:
+    %t47 = load u8 $s10
+    %t48 = load i1 $s2
+    branch %t48, ^b25, ^b26
+  block ^b26:
+    %t49 = load u8 $s1
+    %t50 = call u8 @rg.21(%t49, 2)
+    store u8 %t50, $s11
+    jump ^b27
+  block ^b25:
+    %t51 = load u8 $s0
+    %t52 = call u8 @rg.21(%t51, 1)
+    store u8 %t52, $s11
+    jump ^b27
+  block ^b27:
+    %t53 = load u8 $s11
+    %t54 = load i1 $s2
+    branch %t54, ^b28, ^b29
+  block ^b29:
+    %t55 = load u8 $s1
+    %t56 = call u8 @rg.21(%t55, 2)
+    store u8 %t56, $s12
+    jump ^b30
+  block ^b28:
+    %t57 = load u8 $s0
+    %t58 = call u8 @rg.21(%t57, 1)
+    store u8 %t58, $s12
+    jump ^b30
+  block ^b30:
+    %t59 = load u8 $s12
+    %t60 = load i1 $s2
+    branch %t60, ^b31, ^b32
+  block ^b32:
+    %t61 = load u8 $s1
+    %t62 = call u8 @rg.21(%t61, 2)
+    store u8 %t62, $s13
+    jump ^b33
+  block ^b31:
+    %t63 = load u8 $s0
+    %t64 = call u8 @rg.21(%t63, 1)
+    store u8 %t64, $s13
+    jump ^b33
+  block ^b33:
+    %t65 = load u8 $s13
+    %t66 = load i1 $s2
+    branch %t66, ^b34, ^b35
+  block ^b35:
+    %t67 = load u8 $s1
+    %t68 = call u8 @rg.21(%t67, 2)
+    store u8 %t68, $s14
+    jump ^b36
+  block ^b34:
+    %t69 = load u8 $s0
+    %t70 = call u8 @rg.21(%t69, 1)
+    store u8 %t70, $s14
+    jump ^b36
+  block ^b36:
+    %t71 = load u8 $s14
+    %t72 = load i1 $s2
+    branch %t72, ^b37, ^b38
+  block ^b38:
+    %t73 = load u8 $s1
+    %t74 = call u8 @rg.21(%t73, 2)
+    store u8 %t74, $s15
+    jump ^b39
+  block ^b37:
+    %t75 = load u8 $s0
+    %t76 = call u8 @rg.21(%t75, 1)
+    store u8 %t76, $s15
+    jump ^b39
+  block ^b39:
+    %t77 = load u8 $s15
+    %t78 = load i1 $s2
+    branch %t78, ^b40, ^b41
+  block ^b41:
+    %t79 = load u8 $s1
+    %t80 = call u8 @rg.21(%t79, 2)
+    store u8 %t80, $s16
+    jump ^b42
+  block ^b40:
+    %t81 = load u8 $s0
+    %t82 = call u8 @rg.21(%t81, 1)
+    store u8 %t82, $s16
+    jump ^b42
+  block ^b42:
+    %t83 = load u8 $s16
+    %t84 = load i1 $s2
+    branch %t84, ^b43, ^b44
+  block ^b44:
+    %t85 = load u8 $s1
+    %t86 = call u8 @rg.21(%t85, 2)
+    store u8 %t86, $s17
+    jump ^b45
+  block ^b43:
+    %t87 = load u8 $s0
+    %t88 = call u8 @rg.21(%t87, 1)
+    store u8 %t88, $s17
+    jump ^b45
+  block ^b45:
+    %t89 = load u8 $s17
+    %t90 = load i1 $s2
+    branch %t90, ^b46, ^b47
+  block ^b47:
+    %t91 = load u8 $s1
+    %t92 = call u8 @rg.21(%t91, 2)
+    store u8 %t92, $s18
+    jump ^b48
+  block ^b46:
+    %t93 = load u8 $s0
+    %t94 = call u8 @rg.21(%t93, 1)
+    store u8 %t94, $s18
+    jump ^b48
+  block ^b48:
+    %t95 = load u8 $s18
+    %t96 = load i1 $s2
+    branch %t96, ^b49, ^b50
+  block ^b50:
+    %t97 = load u8 $s1
+    %t98 = call u8 @rg.21(%t97, 2)
+    store u8 %t98, $s19
+    jump ^b51
+  block ^b49:
+    %t99 = load u8 $s0
+    %t100 = call u8 @rg.21(%t99, 1)
+    store u8 %t100, $s19
+    jump ^b51
+  block ^b51:
+    %t101 = load u8 $s19
+    %t102 = load i1 $s2
+    branch %t102, ^b52, ^b53
+  block ^b53:
+    %t103 = load u8 $s1
+    %t104 = call u8 @rg.21(%t103, 2)
+    store u8 %t104, $s20
+    jump ^b54
+  block ^b52:
+    %t105 = load u8 $s0
+    %t106 = call u8 @rg.21(%t105, 1)
+    store u8 %t106, $s20
+    jump ^b54
+  block ^b54:
+    %t107 = load u8 $s20
+    %t108 = load i1 $s2
+    branch %t108, ^b55, ^b56
+  block ^b56:
+    %t109 = load u8 $s1
+    %t110 = call u8 @rg.21(%t109, 2)
+    store u8 %t110, $s21
+    jump ^b57
+  block ^b55:
+    %t111 = load u8 $s0
+    %t112 = call u8 @rg.21(%t111, 1)
+    store u8 %t112, $s21
+    jump ^b57
+  block ^b57:
+    %t113 = load u8 $s21
+    %t114 = load i1 $s2
+    branch %t114, ^b58, ^b59
+  block ^b59:
+    %t115 = load u8 $s1
+    %t116 = call u8 @rg.21(%t115, 2)
+    store u8 %t116, $s22
+    jump ^b60
+  block ^b58:
+    %t117 = load u8 $s0
+    %t118 = call u8 @rg.21(%t117, 1)
+    store u8 %t118, $s22
+    jump ^b60
+  block ^b60:
+    %t119 = load u8 $s22
+    %t120 = load i1 $s2
+    branch %t120, ^b61, ^b62
+  block ^b62:
+    %t121 = load u8 $s1
+    %t122 = call u8 @rg.21(%t121, 2)
+    store u8 %t122, $s23
+    jump ^b63
+  block ^b61:
+    %t123 = load u8 $s0
+    %t124 = call u8 @rg.21(%t123, 1)
+    store u8 %t124, $s23
+    jump ^b63
+  block ^b63:
+    %t125 = load u8 $s23
+    %t126 = load i1 $s2
+    branch %t126, ^b64, ^b65
+  block ^b65:
+    %t127 = load u8 $s1
+    %t128 = call u8 @rg.21(%t127, 2)
+    store u8 %t128, $s24
+    jump ^b66
+  block ^b64:
+    %t129 = load u8 $s0
+    %t130 = call u8 @rg.21(%t129, 1)
+    store u8 %t130, $s24
+    jump ^b66
+  block ^b66:
+    %t131 = load u8 $s24
+    %t132 = load i1 $s2
+    branch %t132, ^b67, ^b68
+  block ^b68:
+    %t133 = load u8 $s1
+    %t134 = call u8 @rg.21(%t133, 2)
+    store u8 %t134, $s25
+    jump ^b69
+  block ^b67:
+    %t135 = load u8 $s0
+    %t136 = call u8 @rg.21(%t135, 1)
+    store u8 %t136, $s25
+    jump ^b69
+  block ^b69:
+    %t137 = load u8 $s25
+    %t138 = load i1 $s2
+    branch %t138, ^b70, ^b71
+  block ^b71:
+    %t139 = load u8 $s1
+    %t140 = call u8 @rg.21(%t139, 2)
+    store u8 %t140, $s26
+    jump ^b72
+  block ^b70:
+    %t141 = load u8 $s0
+    %t142 = call u8 @rg.21(%t141, 1)
+    store u8 %t142, $s26
+    jump ^b72
+  block ^b72:
+    %t143 = load u8 $s26
+    %t144 = load i1 $s2
+    branch %t144, ^b73, ^b74
+  block ^b74:
+    %t145 = load u8 $s1
+    %t146 = call u8 @rg.21(%t145, 2)
+    store u8 %t146, $s27
+    jump ^b75
+  block ^b73:
+    %t147 = load u8 $s0
+    %t148 = call u8 @rg.21(%t147, 1)
+    store u8 %t148, $s27
+    jump ^b75
+  block ^b75:
+    %t149 = load u8 $s27
+    %t150 = load i1 $s2
+    branch %t150, ^b76, ^b77
+  block ^b77:
+    %t151 = load u8 $s1
+    %t152 = call u8 @rg.21(%t151, 2)
+    store u8 %t152, $s28
+    jump ^b78
+  block ^b76:
+    %t153 = load u8 $s0
+    %t154 = call u8 @rg.21(%t153, 1)
+    store u8 %t154, $s28
+    jump ^b78
+  block ^b78:
+    %t155 = load u8 $s28
+    %t156 = load i1 $s2
+    branch %t156, ^b79, ^b80
+  block ^b80:
+    %t157 = load u8 $s1
+    %t158 = call u8 @rg.21(%t157, 2)
+    store u8 %t158, $s29
+    jump ^b81
+  block ^b79:
+    %t159 = load u8 $s0
+    %t160 = call u8 @rg.21(%t159, 1)
+    store u8 %t160, $s29
+    jump ^b81
+  block ^b81:
+    %t161 = load u8 $s29
+    %t162 = load i1 $s2
+    branch %t162, ^b82, ^b83
+  block ^b83:
+    %t163 = load u8 $s1
+    %t164 = call u8 @rg.21(%t163, 2)
+    store u8 %t164, $s30
+    jump ^b84
+  block ^b82:
+    %t165 = load u8 $s0
+    %t166 = call u8 @rg.21(%t165, 1)
+    store u8 %t166, $s30
+    jump ^b84
+  block ^b84:
+    %t167 = load u8 $s30
+    %t168 = load i1 $s2
+    branch %t168, ^b85, ^b86
+  block ^b86:
+    %t169 = load u8 $s1
+    %t170 = call u8 @rg.21(%t169, 2)
+    store u8 %t170, $s31
+    jump ^b87
+  block ^b85:
+    %t171 = load u8 $s0
+    %t172 = call u8 @rg.21(%t171, 1)
+    store u8 %t172, $s31
+    jump ^b87
+  block ^b87:
+    %t173 = load u8 $s31
+    %t174 = load i1 $s2
+    branch %t174, ^b88, ^b89
+  block ^b89:
+    %t175 = load u8 $s1
+    %t176 = call u8 @rg.21(%t175, 2)
+    store u8 %t176, $s32
+    jump ^b90
+  block ^b88:
+    %t177 = load u8 $s0
+    %t178 = call u8 @rg.21(%t177, 1)
+    store u8 %t178, $s32
+    jump ^b90
+  block ^b90:
+    %t179 = load u8 $s32
+    %t180 = load i1 $s2
+    branch %t180, ^b91, ^b92
+  block ^b92:
+    %t181 = load u8 $s1
+    %t182 = call u8 @rg.21(%t181, 2)
+    store u8 %t182, $s33
+    jump ^b93
+  block ^b91:
+    %t183 = load u8 $s0
+    %t184 = call u8 @rg.21(%t183, 1)
+    store u8 %t184, $s33
+    jump ^b93
+  block ^b93:
+    %t185 = load u8 $s33
+    %t186 = load i1 $s2
+    branch %t186, ^b94, ^b95
+  block ^b95:
+    %t187 = load u8 $s1
+    %t188 = call u8 @rg.21(%t187, 2)
+    store u8 %t188, $s34
+    jump ^b96
+  block ^b94:
+    %t189 = load u8 $s0
+    %t190 = call u8 @rg.21(%t189, 1)
+    store u8 %t190, $s34
+    jump ^b96
+  block ^b96:
+    %t191 = load u8 $s34
+    %t192 = load i1 $s2
+    branch %t192, ^b97, ^b98
+  block ^b98:
+    %t193 = load u8 $s1
+    %t194 = call u8 @rg.21(%t193, 2)
+    store u8 %t194, $s35
+    jump ^b99
+  block ^b97:
+    %t195 = load u8 $s0
+    %t196 = call u8 @rg.21(%t195, 1)
+    store u8 %t196, $s35
+    jump ^b99
+  block ^b99:
+    %t197 = load u8 $s35
+    store u8 %t197, $s36
+    %t198 = load u8 $s36
+    return u8 %t198
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.21(%p0 : u8, %p1 : u32) -> u8 {
+  slot $s0 : u8
+  slot $s1 : u32
+  block ^b0:
+    store u8 %p0, $s0
+    store u32 %p1, $s1
+    %t0 = load u8 $s0
+    %t1 = load u32 $s1
+    %t2 = cmp uge u32 %t1, 8
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    %t3 = convert trunc u8 u32 %t1
+    %t4 = binary shl u8 %t0, %t3
+    return u8 %t4
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.30()
+    return i64 0
+}

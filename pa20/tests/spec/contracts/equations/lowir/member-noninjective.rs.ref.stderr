@@ -1,1 +1,1 @@
-ERROR: file 0: 125: associated type projection requires normalization
+ERROR: file 0: 125: body types require a provable associated-result equality

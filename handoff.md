@@ -40,47 +40,51 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-[Projected receiver methods](docs/pa20-projected-receiver-methods.md), compiler77b274787 /
-CLI030ca340, fix CastInto<i16> lookup through the real completed Int result.
-PA20 owns26 new outcomes (18 accept,8 reject). Nine production controls,
-30 native programs, all1535 PA20 texts,315 harness/468 roots/upstream and30
-complete-output-equal paired observations pass. Only26 new references were
-generated; existing bytes are unchanged. Raw projection/parent/Copy/arguments,
-visibility/ambiguity/lifetime and budget gates remain. Candidate import reuses
-only the actual caller's completed receiver shape; ordinary selected calls still
-prove every debt. Result-template indexing avoids unrelated candidate admission.
+[Pending join inputs](docs/pa20-pending-join-inputs.md), compilerc542453da /
+CLIae2e09ae, advance ready call equations before projected joins. PA20 owns29
+new outcomes (23 accept,6 reject). Seven production controls, stronger five-counter
+scaling,51 native programs,4157 text checks across PA19/20/21/24,315 harness/
+468 roots/upstream and30 output-equal paired observations pass. Ordinary inference
+and coherence retain their conservative normalization behavior. Body-only equality
+diagnostics reject missing caller proofs; all conversions still use their original
+proof paths. Work24/CallTypes728, no hot fields/quotas/backend changes. One retained
+pending box preserves actual query/evidence/reservation/cursor ownership.
 
-The original120s observation still FAILS at121.20s:268 records/4643 item attempts
-through function9434, task/wake.rs file255 byte38495, node1189. integer_decode
-advances to file36 byte6203's mantissa if-expression with associated type
-projection requires normalization. Its old cast lookup fence is absent, not a
-checked-body success. Partial SHA
-bbf8ba77ff7d7e7f2f3124ceccb4a311334098d0868139a24a03331179e7f048.
-No full census or original artifact. All722 inputs, six configuration bindings,
-semantic profile and quotas stay unchanged. Different partial prefixes are not
-failure-count/speed comparisons. Next reduce opaque associated branch-result
-inference against direct parameters, explicit annotations and block/tuple
-controls before implementation. No next conditional implementation has begun.
+Only29 new reference triples and7 reviewed old negative triples were generated.
+All19 inventoried old rejections were independently checked first; source/statuses
+are unchanged. Six equality diagnostics match Rust E0308; PA19's function-as-type
+suffix matches E0575. Other12 raw controls are byte-identical. No blanket bless.
+The tiny unoptimized direct control is1.266x baseline; other ratios.989/1.015,
+A/A.785/.976/.997. Output equality and linear work pass; no speed claim.
 
-[Projected constant paths](docs/pa20-projected-constant-paths.md), compiler5167b30c7,
-precede this with27 PA20 outcomes and63 natives. Its13 old PA31 lookup controls
-retain their original analysis boundary: stronger free-copy/free-sized library
-lowering still fails identically on its baseline/candidate and remains required.
-The parameter/closure-cast full42847850912 and42857585036 PASSED every stage,
-resolving their earlier private pending checks.
+The unchanged120s original observation still FAILS at121.18s:262 records/4434 item
+attempts through function9025, time.rs file241 byte6527 node182. integer_decode's
+old conditional fence is absent; first fmt in num/error.rs file39 byte762 now
+fails string-literal fmt(f) lookup inside a qualified Display impl. Partial SHA
+7fcb8110537b458fcfcbdc0ecba116c90e14eef8edca6af0452133f38cd8d9b9.
+No full census, checked-body count or original artifact. All722 source hashes,
+six configuration bindings/profile/quotas remain unchanged; prefixes are not raw
+count/speed comparisons.
 
-Constant successor42865122492 FAILED all-target lint on a private Query initializer
-missing normalized_prefix; later stages were skipped. Repair4446962e1 supplies
-None. Local exact private1794331972028719541 timed out during cold Clippy/link
-before tests; production guard1794332296024917531 passed. Full repair42867198200
-has passed all-target lint, architecture/harness and host graph, and is active in
-release/course tests at this checkpoint. Do not cancel it with a new full dispatch;
-this semantic successor needs full qualification after that run terminates.
+Next discovery is independently reduced in obj/parallel/impl-trait-scope/probe1:
+ordinary module-qualified current-impl trait scope fails on primitive/str receivers,
+while explicit import/qualification controls pass. Outside/different-impl negatives
+still reject, but a genuinely ambiguous second trait is wrongly accepted. Earliest
+owner PA19. Freeze its source/native/negative/scaling packet before implementation.
+No next scope implementation has begun; one worker stays in the existing B tree.
 
-Current immutable030ca340 binds77b274787/empty patch/3883 Rust hashes. Retire the
-superseded e64 comparison pin after publishing this replacement; retain optimized
-21f66e51 for the still-pending nested-proof A/A+ABBA/release-stack controls.
-One worker, existing tree, unchanged budgets. No original core/alloc/std artifact.
+Full constant repair42867198200 on4446962e1 is terminal FAILED solely on PA19's
+qualified further-suffix stderr. All3063 private and regular integration cases
+passed, as did the other active course checks. Later native/debug/independent
+stages were skipped. The independently reviewed oracle above repairs this failure.
+A new full semantic successor is due after publication; first confirm no other full
+run is active and never cancel one through manual redispatch. Older parameter/cast
+full42847850912 and42857585036 passed every stage.
+
+Current immutableae2e09ae bindsc542453da/empty patch/3884 Rust hashes. Retire the
+superseded030 comparison pin after publication; e64 already retired by scoped
+prune1794333776376766690. Keep optimized21f66e51 for the still-pending nested-proof
+A/A+ABBA/release-stack controls. No original core/alloc/std artifact exists.
 
 [Incremental census progress](docs/census-progress.md) preserves diagnostics when
 the observer times out. Full joined diagnostic CI42820032217 on df8507cd8 now

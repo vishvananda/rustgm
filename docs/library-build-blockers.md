@@ -1,5 +1,23 @@
 # Library build blocker tracker
 
+Latest semantic checkpoint: [pending join inputs](pa20-pending-join-inputs.md)
+advances ready call equations before projected common-type joins. PA20 owns29
+outcomes;7 production checks, five-counter linear/noise invariants,51 natives,
+all4157 PA19/20/21/24 texts and harness/upstream pass. Exactly7 old negative
+diagnostics were independently reviewed/generated alongside29 new triples;
+all sources/rejection outcomes remain unchanged. Full predecessor42867198200
+passed3063 private and every regular group, but failed the repaired PA19 suffix
+oracle; later gates skipped. Current semantic successor full is due after publish.
+
+The original120s observation still FAILS at121.18s:262 records/4434 attempts,
+through function9025 time.rs file241:6527. integer_decode's old if fence is absent;
+first fmt atnum/error.rs39:762 now fails literal.fmt(f) in a qualified Display impl.
+No full census/body count/artifact. Seven independently checked ordinary probes
+reduce current-impl trait visibility to PA19; imports/qualification pass, implicit
+current trait fails, and true ambiguity is wrongly accepted. Freeze that packet
+next. Tiny unoptimized direct control1.266x, bounded work/output equality pass;
+optimized measurement remains pending.
+
 Latest semantic checkpoint: [projected receiver methods](pa20-projected-receiver-methods.md)
 closes CastInto<i16> lookup through the completed associated Int result. PA20 owns26
 new outcomes;9 production checks,30 native programs, all1535 PA20 texts,
