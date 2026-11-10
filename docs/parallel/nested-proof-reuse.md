@@ -40,9 +40,9 @@ their owning work ledger. Dispatch normalization needs the same ownership audit.
 No frontend worker thread or CLI stack change is included. PA31 stays planned,
 and original core/alloc/std artifacts remain required.
 
-## Qualified development evidence
+## Initial qualified development evidence
 
-The final development CLI is `f5b5db49798fb73c7141c414b3ab97a0bc9d727c1e33afbe2c85584a553724fe`.
+The initial development CLI is `f5b5db49798fb73c7141c414b3ab97a0bc9d727c1e33afbe2c85584a553724fe`.
 Production fastcheck `1794273825146180434` passes strict Clippy, formatting,
 architecture and the exact binder regression. Private source/status joins
 verify 130 distinct passing cases: 124 unchanged cases from `1794273169797051159`,
@@ -91,3 +91,14 @@ Raw receipts, exact source bindings, all failed predictions, fixture oracles,
 stack observations and timing records remain under
 `obj/lane-b10/{cp2,cp3,prep-single}` in the existing pa26-work tree. The full
 scheduled/manual CI gates remain separate.
+
+## CI follow-up and integration
+
+Full77e6b407e CI42736874497 exposed an Evidence/Selection size regression and
+three receiver128 work-budget failures. The
+[selected-chain repair and projected-layout join](nested-proof-ci-repair.md)
+retains the original136-byte guard and restores the real receiver under the
+same budget. Combined151 private,6 production and1 native controls pass. The
+new joined CLIa73fa135 advances the unchanged original-core census past atomic
+layout to fmt/num.rs's symbolic slice-range requirement. Optimized measurement,
+full successor CI and the other named debts above remain pending.

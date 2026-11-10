@@ -825,6 +825,12 @@ satisfies the parameter's bound and rejected when it does not (E0277); the
 accepted case is a recorded gap. Each outcome was declared before its rustc
 1.98.0 oracle. A private invariant checks them; there is no graded manifest.
 
+`spec/dereference-source/` now lists39 actual source-role inputs in its contract
+and cases.tsv, including the existing128-layer receiver and two independently
+checked sixteen-layer static/unpaid lifetime controls. The selected-chain private
+regression preserves the whole parent proof after resolving the common output;
+source formation, borrowing and native behavior retain their existing tests.
+
 `spec/closed-projected-layout/` freezes independently accepted projected and
 direct-field alignment assertions for the AtomicPtr storage-layout blocker.
 `outcomes.json` declares acceptance and the exact baseline failure; the private

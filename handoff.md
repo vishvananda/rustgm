@@ -7,77 +7,94 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Published and qualified
 
-- Record variants landed as `bf615d74d` + `84baefb8c`, with exactly the
-  qualified source from `5e5665580`; the only other diff is handoff.md.
-  Reused 2,022 passing private selections after verifying all recorded source
-  hashes. Fresh 16 affected integration cases and 5 native groups pass, as do
-  313 harness tests, 465 registered roots, layout and upstream verification.
-- Full predecessor CI `42689087036`, record-variant full CI `42701179456` and
-  P1 full CI `42708775327` succeeded. A new full dispatch must wait for any
-  existing full run to terminate; pushes use a separate concurrency group.
-- The P1 compiler checkpoint completed batch 22: unresolved projections stay
-  possible during lookup, while chosen-callable proof remains mandatory.
-  See docs/parallel/census-batch22.md. Thirteen byte-identical independent Rust
-  controls, 11 exact private/integration tests, strict production/private Clippy,
-  format, audit, unchanged ordinary counters, all 2,032 paired survey inputs,
-  harness and upstream checks pass. Fastcheck: `1794260103818124314`.
-  Earlier compilation-budget failures are retained and are not passing tests.
+- Record variants and P1 are published. Full predecessor CI42689087036,
+  record-variant CI42701179456 and P1 CI42708775327 succeeded.
+- Nested-proof prep/accounting/reuse landed together through77e6b407e.
+  [Its initial checkpoint](docs/parallel/nested-proof-reuse.md) records130
+  passing private cases, identical8356-row golden table and74/336 complete
+  outcome comparisons. PA31 has eight frozen projected-size source reductions.
+  Normalization count is linear; total work remains quadratic. Optimized
+  A/A+ABBA and release-stack checks remain pending outside the local five-minute
+  feedback loop; the old release build took7m20s.
+- Full77e CI42736874497 failed one Evidence/Selection136-byte guard (actual144)
+  and three actual receiver128 tests with the projection work budget. Other3039
+  private and545 frontend cases passed. Later native/debug/independent steps
+  were skipped. Do not describe that run as qualified.
+- CI repair748ef1aaa retains cold completion detail in the old padded flag word,
+  preserves the136-byte guard, and contracts actual selected Deref suffixes
+  inside their original proof query. Whole-parent lifetime evidence remains
+  mandatory; const/scoped/provisional/equality-dependent cases fall back.
+- Projected-layout correction5334dd135 follows the repair. It consumes shared
+  typed stored fields, independently discharges a fresh caller's lifetimes and
+  charges completed graph/caller/nested work between producer steps. PA31's two
+  independently checked alignment reductions freeze the original atomic blocker.
+- [The joined checkpoint](docs/parallel/nested-proof-ci-repair.md) passes151
+  exact private tests (1794282814262496754),6 production tests including all3
+  original CI failures (1794282980906312191), and1 real native nested-borrow
+  observer (1794283232090614989; stdout23). Strict selected/private Clippy,
+  formatting, architecture,313 harness tests/465 roots/44 stages,128 upstream
+  fixtures and126 Reference files pass. The PA31 dereference packet now lists39
+  cases, including independently checked static/unpaid lifetime controls.
+  Full successor CI remains pending. Wait for an existing full dispatch to
+  terminate before dispatching another; push-fast uses separate concurrency.
 
 ## Current original-core frontier
 
-Census 25, CLI `e9b628a3`, clears Intersperse at iterator.rs:698.
-It checks 42,310 declarations, none failed/blocked, then stops in
-`local_annotations` at "constant storage layout requires completed fields".
-Bodies remain at zero; one census record is not one remaining compiler gap.
-All 722 original inputs, 375 opened sources, profile and limits are unchanged.
+Joined immutable dev-fast CLI
+`a73fa1351c91c32a3ccdff0baddafb60daf583e3763c29e35a9eb8ca5929a5f7`
+clears AtomicPtr::from_mut's closed projected-field layout requirement.
+The unchanged722-input census opens375 sources and checks42310 declarations,
+none failed/blocked, then stops in local_annotations at fmt/num.rs byte2783
+(radix_integers expansion): "symbolic slice reference lacks its normalized range".
+Bodies remain0; a census record is discovery, not artifact completion. TSV SHA
+`da6e9262ea7683ae3b03d84d0d4d9d615b8d9c84bd82539f2038b49685705423`
+exactly matches both isolated atomic candidates. Profile, limits and source pins
+remain unchanged.
 
-A declared analysis-only trace (`b3609a12`, fully reverted) locates the stop at
-sync/atomic.rs:1590, AtomicPtr::from_mut's align_of::<AtomicPtr<()>>() assertion.
-The pending storage root has an actual aggregate declaration. File 199 is
-reached, confirming file 175 completed. AtomicPtr<T> aliases Atomic<*mut T>;
-Atomic has the projected field UnsafeCell<T::Storage>. Investigate the existing
-stored_fields producer and layout preparation boundary; do not replace a typed
-field-normalization proof with an ABI assumption. Split::new remains provisional
-and follows this observed lead. Close f01 before widening A+O bound-region lookup.
+Ordinary const slice calls, identity, len and slice-pattern probes (seven cases)
+all pass independently and in the joined CLI; ordinary is_ascii stops earlier at
+unsupported inherent lookup. None reproduces the exact current error, so no
+misleading earlier-PA reducer was added. Inspect the actual source is_ascii /
+const_eval_select path and the symbolic reference range producer next. The error
+is in const_eval/memory/bytes/slice_words.rs; do not replace provenance/range
+validation with a guessed length. Split::new remains provisional. Close f01
+before widening A+O bound-region lookup.
 
 ## Next work, one worker
 
-1. Nested-proof reuse is now qualified for development integration in pa26-work:
-   prep d810f780c, accounting d4dbbd4ba and this reuse checkpoint land together.
-   [The checkpoint](docs/parallel/nested-proof-reuse.md) records 130 passing private
-   cases, strict production checks, identical 8,356-row golden table, 74/336 paired
-   outcomes, fixture/upstream gates and unchanged original-core census. Final
-   source-bound dev-fast pin f5b5db49 passes generic 31/32 and closed 12/31; stack
-   bracket 448–512 KiB. Two development A/A+ABBA cycles are output-equal. Total work
-   remains quadratic; optimized A/A+ABBA and its release-stack check are pending
-   (the old release build took 7m20s), as are full CI gates. No artifact or whole
-   PA completion is implied. PA31 has eight frozen minimal source reductions.
-2. Repair the observed closed projected-field layout requirement, reusing typed
-   phase results, then run the next census and follow its actual first record.
-3. HR transport may start from main now that record variants landed. Its approved
-   notice and existing scratch worktree remain available; no HR code exists.
-4. Client exports remain an incomplete design, with source-client availability
-   and an actual three-crate Rust witness still required. Keep backend v3 frozen.
+1. Reduce and repair the observed symbolic slice-range requirement, using the
+   earliest PA that actually reproduces it. Declare outcomes before freezing
+   fixtures and independently check them. Then rerun the unchanged census.
+2. Inspect the joined successor full CI when available and repair actual failures;
+   preserve pending optimized nested-proof measurements and all remaining debts.
+3. HR transport may start now that record variants landed. Its approved notice
+   and existing scratch tree remain available; no HR implementation exists.
+4. Client exports remain incomplete: source-client availability and an actual
+   three-crate Rust witness are required. Backend v3 remains frozen.
 
-## Evidence and tools
+## Evidence, measurements and tools
 
-- Durable decision log: /mnt/vizier/rustgm-scratch/integrator-20261109/pending_decisions.md.
-- New resume_record_variants.py replaces the old join restart: explicit stages,
-  no /tmp exclusions, no pre-execution seen mutation, and failure stops the stage.
-  Old joined_d7.sh/fresh.py are historical, not the next runner.
-- Batch22 artifacts: pa29-work/obj/parallel/census-batch22/. Keep the qualified
-  candidate pin until a replacement census baseline is published. Source-binding
-  supplements reconstruct each pin's exact saved HEAD/diff, including pre-format
-  bytes and diagnostic instrumentation; raw observation bindings are preserved.
-- All diagnostic emitters are reverted. Before another implementation edit,
-  compare compiler/test hashes with pa26-work/obj/lane-b10/cp3b-dev-fast/producer.json.
-  No new builds in /home/vishvananda/rustgm. Use existing scratch trees only and
-  wrapped commands.
-- The resource wrapper continues to enforce the 150 GiB reserve. Keep one heavy local command at a time for now; perform
-  guarded cleanup at idle boundaries. Never change reserves to obtain admission.
+- Durable decisions: /mnt/vizier/rustgm-scratch/integrator-20261109/pending_decisions.md.
+- Current compiler/test source hashes are bound in pa26-work's
+  obj/parallel/reuse-ci/join-dev-fast/producer.json. Final census and receipts
+  are under obj/parallel/reuse-ci; the isolated atomic checkpoint is under
+  obj/parallel/atomic-layout. All temporary production/test diagnostics are gone.
+- The receiver benchmark preserves30 accepted same-profile A/A+ABBA observations
+  with identical complete LowIR and a real exported return7/calling entry point.
+  Dev-fast ratios at8/16/32 are0.815/0.651/0.437;74 ordinary inputs retain10
+  complete-output-equal observations, ratio0.991. No optimized speed claim.
+  The first emit-types comparison stops on intentionally removed private type
+  inventory rows; the second LowIR setup omitted main and is disqualified.
+  Both failed/setup observations remain retained. No oracle was regenerated.
+- Never build in /home/vishvananda/rustgm. Use existing registered scratch trees,
+  storage/resource wrappers, one heavy command at a time, explicit16GiB output
+  caps and the150GiB reserve. Do not lower reserves for admission. Use guarded
+  cleanup at idle boundaries; keep only current immutable comparison pins.
 - Standing rm rule: literal, inspected absolute paths only; bulk cleanup goes
-  through storage.py/make tidy. Single-line commit subjects, no trailers. Do not
-  modify cppgm-extended or v5rust, or raise the pinned backend.
+  through storage.py/make tidy. Commits have single-line subjects and no trailers.
+  Do not modify cppgm-extended or v5rust, or raise the pinned v3 backend.
+- resume_record_variants.py retains explicit restart stages and source-hash
+  joins. Old joined_d7.sh/fresh.py are historical runners, not the next sequence.
 
 ---
 

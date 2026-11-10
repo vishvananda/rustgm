@@ -1275,6 +1275,15 @@ rebuilding the dependency graph. The
 [source storage checkpoint](docs/source-storage-contracts-checkpoint.md) records
 the genuine associated-constant wrappers and native evidence.
 
+Closed constant layout with projected field templates consumes the existing
+stored-field Preparation/Query and a fresh concrete normalization proof.
+Independently discharge retained lifetimes before readiness or layout-cache use;
+shared structural recipes grant no new caller authority. Allocate disposable
+regions beyond the actual BodyRegions frontier. Charge graph, caller and nested
+work between each producer step, including failures, before advancing another
+child. Missing nominal field templates retain their declaration wait. See the
+[projected-layout checkpoint](docs/pa31-closed-projected-layout.md).
+
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle
@@ -2068,6 +2077,17 @@ answers never replace nominal formation or selected trait/lifetime evidence;
 exclude provisional and private-region results. The [nested proof checkpoint](docs/parallel/nested-proof-reuse.md)
 records linear normalization counts, the remaining affine-work target and
 PA31's independently checked source reductions.
+
+A flat ordinary Deref query may retain already-selected implementation sources
+reachable from its own parent proof and follow same-member result suffixes
+before the original lifetime restoration. Retain the whole parent proof and
+charge graph edges and definition steps. Exclude scoped, universal, placeholder,
+retained-Sized, provisional and cyclic selections, const-qualified roots, own
+member conditions, GAT inputs and mapped or equality-dependent environments.
+Unsupported cases retain the ordinary normalizer. Store completion detail cold
+without growing Evidence/Selection. The
+[selected-chain repair](docs/parallel/nested-proof-ci-repair.md) includes an
+independent unpaid-lifetime opponent and the original128-layer receiver.
 
 Source sizing follows rustc 1.98's hierarchy. `PointeeSized` holds for every
 type. A rigid projection is `MetaSized` or `Sized` only from an environment

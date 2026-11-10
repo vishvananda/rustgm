@@ -5,6 +5,16 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+The single-worker [proof/layout join](parallel/nested-proof-ci-repair.md) clears
+AtomicPtr::from_mut using actual normalized stored fields and independently
+checked lifetime evidence. CLIa73fa135 opens375 unchanged original sources out
+of722 and checks42310 declarations, none failed/blocked; bodies remain0. The next
+record is fmt/num.rs byte2783, symbolic slice reference lacks its normalized range.
+Seven ordinary const slice-call/pattern controls pass independently and in RustGM;
+they do not reproduce this record. Reduce the actual source CTFE path before
+changing it. Full successor CI, optimized measurement and original artifacts
+remain required.
+
 Lane A [census batch 22](parallel/census-batch22.md) clears the unresolved
 projection lookup at `Iterator::intersperse`. The charged possibility filter
 keeps an unresolved projection possible and leaves complete proof to the chosen
@@ -17,7 +27,8 @@ the declared diagnostic move; ordinary lookup counter lines are unchanged.
   fields"; body checking remains unreached. Diagnostic attribution locates it
   at `sync/atomic.rs:1590`, `align_of::<AtomicPtr<()>>()` in `from_mut`. The
   aggregate declaration exists but its storage shape is unprepared. This is
-  the next original-core lead, before the provisional Split lookup.
+  now repaired by the joined projected-layout checkpoint above. Split remains
+  provisional, with f01 required before wider bound-region lookup.
 - Known rejects-valid: the explicit rigid/concrete prefixes and rigid
   method receiver in the new packet retain the projection-normalization fence.
   Normalize them under their actual caller premises after proof reuse.

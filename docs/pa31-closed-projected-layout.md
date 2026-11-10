@@ -25,7 +25,7 @@ its diagnostic staging and actual lifetime checks are retained.
 Private fastcheck 1794276982567407752 passes all 19 focused cases, including
 shared/replayed fields, waits, unowned real lifetime debts, vtable consumers and
 the new cold-budget control. Production 1794277185114392564 passes three actual
-object-lowering controls, strict Clippy, formatting and architecture. Final
+object-lowering controls, strict Clippy, formatting and architecture. The isolated
 source-bound CLI 734c14fea58694f877a7bbd941bf9d4fe93ad91562b1632aa8da89c7367a9806
 accepts both frozen alignment assertions. Harness 313/465 roots/44 stages and
 128 upstream fixtures/126 Reference files pass. Twenty immutable development
@@ -40,7 +40,10 @@ SHA-256 da6e9262ea7683ae3b03d84d0d4d9d615b8d9c84bd82539f2038b49685705423.
 This is discovery, not an original core artifact. Inputs/profile/limits and the
 backend are unchanged. Raw evidence remains in pa26-work/obj/parallel/atomic-layout.
 
-Full predecessor CI 42736874497 separately found a hot Evidence/Selection size
-regression and three depth 128 receiver-budget regressions in the earlier nested
-reuse checkpoint. This atomic correction is kept local while those are repaired;
-no full release/native/debug/independent pass is claimed for it. PA31 stays planned.
+Full predecessor CI42736874497 found an Evidence/Selection size regression and
+three depth128 receiver-budget failures in the earlier nested reuse checkpoint.
+The [joined repair](parallel/nested-proof-ci-repair.md) passes151 private,
+6 production and1 native controls with unchanged guards. Joined CLIa73fa135
+rechecks both layout reductions and reproduces this same next core record.
+Full successor CI remains pending; PA31 stays planned and original artifacts
+remain required.
