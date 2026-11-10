@@ -433,16 +433,8 @@ pub(in crate::sema) fn may_have_subject(
         // remain owned by ordinary comparison selection.
         return Ok(true);
     }
-    if let super::heads::Subject::Rigid(super::heads::Head::Opaque(id)) = subject {
-        return Ok(super::results::may_have_opaque_trait(facts, id, item));
-    }
-    if matches!(
-        subject,
-        super::heads::Subject::Rigid(super::heads::Head::Dynamic(_))
-    ) {
-        // This is only an exclusion filter; complete object evidence is selected
-        // against all trait inputs and retained lifetime obligations below.
-        return Ok(true);
+    if let Some(possible) = result_subject(facts, item, subject) {
+        return Ok(possible);
     }
     Ok(
         assumptions.is_some_and(|a| a.may_have_subject(item, subject))
@@ -452,6 +444,31 @@ pub(in crate::sema) fn may_have_subject(
                 .as_ref()
                 .is_some_and(|registry| registry.may_have_subject(item, subject)),
     )
+}
+
+/// Declaration indexes describe possible result bounds, never proof of a use.
+/// A projection without a declared bound can still have an explicit caller
+/// assumption or an ordinary implementation, so it keeps those other indexes.
+fn result_subject(
+    facts: &Declarations,
+    item: crate::types::ItemId,
+    subject: super::heads::Subject,
+) -> Option<bool> {
+    use super::heads::{Head, Subject};
+    use crate::types::outlives::ResultId;
+    let result = match subject {
+        Subject::Rigid(Head::Opaque(id)) => {
+            return Some(super::results::may_have_trait(
+                facts,
+                ResultId::Opaque(id),
+                item,
+            ));
+        }
+        Subject::Rigid(Head::Projection(id)) => ResultId::Associated(id),
+        Subject::Rigid(Head::Dynamic(_)) => return Some(true),
+        _ => return None,
+    };
+    super::results::may_have_trait(facts, result, item).then_some(true)
 }
 
 pub(in crate::sema) fn select(

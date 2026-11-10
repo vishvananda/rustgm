@@ -389,15 +389,13 @@ impl Search<'_> {
                     .ok_or("missing receiver candidate owner")?
             };
             let mut probe = Context::default();
-            let actual = probe
-                .import(&self.facts.types, self.source, term)
-                .map_err(inference)?;
+            let actual = self.import_receiver(
+                &mut probe,
+                term,
+                self.depth - dereferences + u32::from(borrow.is_some()),
+            )?;
             let subject = if matches!(lane, Lane::Bound) {
-                Some(
-                    probe
-                        .import(&self.facts.types, self.source, self.base)
-                        .map_err(inference)?,
-                )
+                Some(self.import_receiver(&mut probe, self.base, 0)?)
             } else if matches!(lane, Lane::Inherent) && !nominal {
                 let mut subject = actual;
                 let mut possible = true;
@@ -437,6 +435,39 @@ impl Search<'_> {
             }
         }
         Ok(selected)
+    }
+
+    /// The actual caller completed the base before receiver search read its head.
+    /// Reuse only that type shape in this caller's disposable candidate; ordinary
+    /// selected-call proof still owns every formation, argument and lifetime debt.
+    fn import_receiver(
+        &mut self,
+        probe: &mut Context,
+        term: TermId,
+        references: u32,
+    ) -> Result<TermId, &'static str> {
+        let actual = probe
+            .import(&self.facts.types, self.source, term)
+            .map_err(inference)?;
+        if matches!(
+            self.source
+                .head(&self.facts.types, self.base)
+                .map_err(inference)?,
+            Some(Constructor::Projection(_))
+        ) {
+            let ty = self
+                .source
+                .resolved(&mut self.facts.types, self.base)
+                .map_err(inference)?;
+            let mut base = actual;
+            for _ in 0..references {
+                base = probe.child(&self.facts.types, base, 0).map_err(inference)?;
+            }
+            probe
+                .apply_normalization(&mut self.facts.types, base, ty)
+                .map_err(inference)?;
+        }
+        Ok(actual)
     }
 
     fn library_candidate(&mut self, term: TermId, method: DefId) -> Result<bool, &'static str> {

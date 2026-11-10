@@ -161,21 +161,16 @@ pub(in crate::sema) fn auto(
     Ok((index.autos & (1 << obligation.marker as u8) != 0, steps))
 }
 
-pub(super) fn may_have_opaque_trait(
+pub(super) fn may_have_trait(
     facts: &Declarations,
-    id: crate::types::opaque::OpaqueId,
+    result: crate::types::outlives::ResultId,
     item: ItemId,
 ) -> bool {
     facts
         .generics
         .traits
         .as_ref()
-        .and_then(|contracts| {
-            contracts
-                .result_rules
-                .templates
-                .get(&crate::types::outlives::ResultId::Opaque(id))
-        })
+        .and_then(|contracts| contracts.result_rules.templates.get(&result))
         .is_none_or(|index| index.candidates(item).is_some())
 }
 

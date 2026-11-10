@@ -24516,6 +24516,520 @@
         "default_lints": true
       },
       "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/projected-receivers/direct-control.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "2af140ce4f0f9b9869c28560144723478a31bb6c46938c4843f7e65f7636dfe8",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/projected.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "e2130d95e67d6185325e8a43236ae0e2ce9fa515b57ec991cb99364cb426d23e",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/qualified-control.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "4625c49de54e0faa7c0f399a6475f59125bf14f94ac9b9d1682ba0c94bcc3361",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/explicit-assumption.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "4917b60999c75fa04857b5ccb5663d10399e5bcff85f2563a945b8feaf439bdf",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/forwarded.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "d53d4db4607fe4bd69feb909bcd32c93f092ed0cd431f17c84caf046c587129a",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/self-default.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "39e5ec06f56c2470c0057877d2aa62c0845d9c595430087794778570df28bdf2",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/borrowed.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "d83bbcde6f316e6d17c792fd9165d6df105425fa9da45a93073616bdb1867e5b",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/mutable.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "4388ba0a02aa57ea2b64ea55c012cb9dea682e73138514fcdbec969fe6e22f5e",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/borrowed-result.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "4bb057888bec973b13f3efbf767999bd3ab2eccbabc3085be84764b41da4fe47",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/nested.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "ff033c5ab5e243795965da3ad91c38a9bc6f433145fac16d39cffc81bc25e3c1",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/multiple-targets.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "b4781a7f0085c3da7ad6a49bee4fd3d3c701c1b2c29704d9cb1b098eb5613002",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/const-argument.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "bf8edf827eea28d0ea170b758a32a597f5e9e65450cf762214a2cabce16a6af0",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/missing-result-bound.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "0da3036369d87050687cb6dfd2df4ec76ce7c1264a70875e693022dae84f632f",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/projected-receivers/wrong-target.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "33c5303bfa724e69bdc786e3c2d50944f1d157a04654c3104823c1686430fbb5",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/projected-receivers/missing-parent.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "60371177632d14867dfd6d630d1640820dbd51d649b8ad95d47b2037e3b5a2fb",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/projected-receivers/different-result.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "fa486ecbc4853333bbec95a58d9507f2a151ca28cdaec0b94134396d45afce26",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/projected-receivers/ambiguous-method.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "ec104f86fa69dad2ebe082ea06bd0eb83671fb80f3534d833dca4b1e036e5a9f",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/projected-receivers/hidden-trait.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "ef1a04a942a3f457e43d6df9830183ff0f066bcbceb49fa96dff7586f3d6b2f1",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/projected-receivers/static-escape.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "17cc2b705c880545b0ea2164da526f5704a214fd67b5adf6a02e845a1345a8bd",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/projected-receivers/missing-copy.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "a954abc74b09d785aa90259dff1c1f1dca6d981ee8c60bd4ec77968ec50cd35a",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/projected-receivers/width-8-noise-0.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "49b3e08a28dc11b7a5f02d38d00d780bc6f2f20490b2588cd42ca3a6a53dd942",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/width-8-noise-128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "4b6d7573b149356e4a6ab6b5681bb43f709a7f7d330f65fdf742f747b3910f2f",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/width-32-noise-0.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "a5dd219ccd636499297b3590a57b436a99121a89cf38639f3d11255d70fda44e",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/width-32-noise-128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "6ee6fd2063583a468306083e7cae47b51442ba88b75c5f538e9fc5cd1cc700bb",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/width-128-noise-0.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "eb8811b9618192672516dd33a96a688d868d77f770ac94a0da866834bf18aa6e",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-receivers/width-128-noise-128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "2293cb38bf7dedb97465617d9e73e1becd2736a66893d9ea2396448803b8aa9a",
+      "input": "file",
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

@@ -1271,5 +1271,7 @@ mod elision;
 
 #[path = "associated_declarations/argument_expectations.rs"]
 mod argument_expectations;
+#[path = "associated_declarations/cast_receivers.rs"]
+mod cast_receivers;
 #[path = "associated_declarations/prefix_members.rs"]
 mod prefix_members;
