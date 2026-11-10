@@ -19,7 +19,9 @@ cannot establish a forced constructor mismatch. The ordinary comparison and
 raw equality queries retain their prior behavior. No type variable, lifetime,
 parent application, trait or conversion permission is inferred by this filter.
 The eventual ordinary equality, lifetime, formation and source proofs still run.
-Known sibling mismatches remain discoverable. Invalid identities and exhausted
+Once a complete canonical opaque input shape is compared, the outer paired walk
+continues with its other queued siblings rather than revisiting that shape's
+nested inputs. Known sibling mismatches remain discoverable. Invalid identities and exhausted
 work remain errors. No hot fields, caches, limits or backend contracts change.
 
 The iterative paired graph walk and constructor compatibility dispatch are now
@@ -65,7 +67,17 @@ Evidence is in B's `obj/parallel/tagged-request/`:
   the separately required tuple-factory cleanup boundary.
 
 `harness.log` passes315 harness tests,468 roots/13 binaries/44 stages,128 pinned
-upstream fixtures and126 Reference files. Strict selected production/CLI/test
+upstream fixtures and126 Reference files. The initial implementation passed functional checks but its nested-depth guard
+failed:205 steps at depth8 and2,737 at depth32 (receipt1794350289219220965).
+The paired walk was repeating complete shape comparison at every nested opaque
+operation. `public5.log`, receipt1794350414882768771,88.83s, passes seven exact
+tests after stopping that duplicate descent, including all26 outcomes and the
+8/32/128 depth invariant. Query work stays at most64×depth+128 and4×previous+128;
+other queued siblings, raw fences and the work budget remain checked.
+`native-final.log`, receipt1794350534890245310,54.12s, repeats all20 real native
+programs after that algorithm correction. The before/after receipts are retained.
+
+Strict selected production/CLI/test
 Clippy, full formatting and architecture pass.
 The initial name exceeded the projection filename-stem ownership limit; later
 attempts stopped at the constructor dispatch's103-line limit and a raw fixture's

@@ -213,3 +213,59 @@ fn completed_opaque_discovery_preserves_raw_fences_and_complete_input_shapes() -
     );
     Ok(())
 }
+
+#[test]
+fn completed_nested_opaque_inputs_are_compared_without_rewalking_their_prefixes() -> TestResult {
+    use rustgm::types::{
+        ItemId, Kind, Primitive, RegionId, Store, TypeId,
+        arguments::Argument,
+        infer::Context,
+        projection::{Application, Schema},
+    };
+    let mut previous = None;
+    for depth in [8, 32, 128] {
+        let mut store = Store::default();
+        store.declare_projection(
+            ItemId(11),
+            Schema {
+                trait_item: ItemId(10),
+                sized: true,
+                copies: rustgm::types::copy::Properties::default(),
+            },
+        )?;
+        let mut infer = Context::default();
+        let mut roots = Vec::new();
+        for index in [0, 1] {
+            let arguments =
+                store.intern_arguments(&[Argument::Lifetime(RegionId::bound(0, index)?)])?;
+            let trait_application =
+                store.intern_trait_application(rustgm::types::traits::Application {
+                    item: ItemId(10),
+                    arguments,
+                })?;
+            let mut ty = TypeId::primitive(Primitive::U8);
+            for _ in 0..depth {
+                ty = store.intern(Kind::Projection(Application {
+                    item: ItemId(11),
+                    subject: ty,
+                    trait_application,
+                    arguments: rustgm::types::GenericArgs::EMPTY,
+                }))?;
+                let term = infer.known(&store, ty)?;
+                // Each distinct operation has its own completed producer.
+                infer.apply_normalization(&mut store, term, ty)?;
+            }
+            roots.push(infer.known(&store, ty)?);
+        }
+        let before = infer.steps;
+        assert!(!infer.unsizing_mismatch(&store, roots[0], roots[1])?);
+        let steps = infer.steps - before;
+        println!("opaque input depth={depth} steps={steps}");
+        assert!(steps <= 64 * depth + 128, "depth={depth} steps={steps}");
+        if let Some(old) = previous {
+            assert!(steps <= 4 * old + 128, "{old}->{steps}");
+        }
+        previous = Some(steps);
+    }
+    Ok(())
+}

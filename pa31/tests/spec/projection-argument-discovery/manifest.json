@@ -20,7 +20,13 @@
       0,
       128
     ],
-    "invariant": "Fourfold growth at most4x+1024 in eight actual call work counters; unrelated types add no call work."
+    "invariant": "Fourfold growth at most4x+1024 in eight actual call work counters; unrelated types add no call work.",
+    "nested_opaque_depths": [
+      8,
+      32,
+      128
+    ],
+    "nested_opaque_bound": "Each complete canonical input shape is traversed once; query work <=64*depth+128 and at most4x+128 under fourfold depth growth. Raw typed graphs independently mark every nested operation complete; sibling mismatch, equality and proof budgets remain checked."
   },
   "native_client": {
     "path": "pa31/tests/spec/projection-argument-discovery/observer.c",

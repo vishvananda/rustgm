@@ -19,3 +19,9 @@ object-checked before implementation. Native positives must return9 and23,
 including a real borrowed representation and complete generic forwarding.
 The original upstream files and provenance are unchanged. No text oracle is
 created; whole PA31 remains planned.
+
+The call-width cases check eight counters at8/32/128 and128 unrelated types.
+A separate typed boundary test grows a chain of independently completed opaque
+operations at depths8/32/128. Comparing a complete canonical input shape must not
+repeat the same traversal at each nested operation. Remaining queued siblings and
+ordinary equality/parent/lifetime proofs keep their existing requirements.

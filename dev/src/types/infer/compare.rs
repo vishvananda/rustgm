@@ -50,7 +50,20 @@ impl Context {
             ) else {
                 continue;
             };
-            let compatible = self.compatible_heads(store, (a, b), (left, right), unsizing)?;
+            if unsizing
+                && matches!(
+                    (left, right),
+                    (Constructor::Projection(_), Constructor::Projection(_))
+                )
+            {
+                if self.opaque_mismatch(store, a, b)? {
+                    return Ok(true);
+                }
+                // Complete canonical input shapes were compared already. Do
+                // not repeat that traversal at each nested opaque operation.
+                continue;
+            }
+            let compatible = self.compatible_heads(store, (left, right), unsizing)?;
             if !compatible {
                 return Ok(true);
             }
@@ -71,11 +84,9 @@ impl Context {
     fn compatible_heads(
         &mut self,
         store: &Store,
-        terms: (TermId, TermId),
         heads: (Constructor, Constructor),
         unsizing: bool,
     ) -> Result<bool, Error> {
-        let (a, b) = terms;
         let (left, right) = heads;
         Ok(match (left, right) {
             (Constructor::Adt(x, known), Constructor::AdtArgs(y, inferred))
@@ -136,9 +147,6 @@ impl Context {
             | (Constructor::ArrayTerm(id), Constructor::ArrayInfer(a)) => {
                 let b = self.known_const(store, id)?;
                 !self.const_mismatch(a, b)?
-            }
-            (Constructor::Projection(_), Constructor::Projection(_)) if unsizing => {
-                !self.opaque_mismatch(store, a, b)?
             }
             (a, b) => a == b,
         })
