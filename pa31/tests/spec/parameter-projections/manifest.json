@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "owner": "pa31 actual Iterator/callable source companions to pa24 parameter projections",
+  "contract": "Before execution: all three genuinely source-bound Iterator/Fn roles must pass complete typed lowering and independent metadata/object admission. Diverging callback methods claim no native execution. Required next and Clone const API policy follow the pinned source contract; early setup diagnostics remain in obj/parallel/callback-inputs.",
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/parameter-projections/source-iterator.rs",
+      "sha256": "3203e857c610767f2cbc59f8851a70131b34bb7f34ac7b2b1488d275132c5157",
+      "exit_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/parameter-projections/source-typed.rs",
+      "sha256": "b8075b85afef903a482195b2d43992240a7d7eb57e1800e43c2b9ef3402489de",
+      "exit_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/parameter-projections/source-renamed.rs",
+      "sha256": "1fee3b2b20a0d98e0dc5ca8d7e7cbb7b7c146dfcf34dfb2499784254a110fdb9",
+      "exit_status": 0
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "schema": 1,
+  "owner": "pa24 projected callback parameter patterns",
+  "contract": "All outcomes declared before independent checks, implementation or oracle generation. Imported closure input projections must be registered in the child before parameter annotations or structural patterns inspect them. Generic functions, methods, inherited projections, generic parents, named/tuple/array controls and exact native booleans retain ordinary trait, annotation, mutability and move proof.",
+  "inputs": [
+    {
+      "path": "pa24/tests/spec/parameter-projections/free-generic.rs",
+      "sha256": "522c13ad55ca4a3a7321f94ad3d8e0f34908fe6b1f571a6babab732c9a2c442a",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/free-typed.rs",
+      "sha256": "87cd6d01f6d09303d3faba83f89889dfd6b8ee6e8be2eb7da464c91817eb3ef1",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/method-generic.rs",
+      "sha256": "7f22c2f4d9c0a7bd9c93dec798fb90cdddfab7fe8cd4bc318577bdad5726df75",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/method-typed.rs",
+      "sha256": "7c22680869df2011b6e966c7f99d3e1c56c4c2a47524237dba7bb48a1cff036d",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/method-forward.rs",
+      "sha256": "80d2008e9a2a604d25736eb1f702e22df88ee671428baf95bf7146de591b0667",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/generic-parent.rs",
+      "sha256": "576e374120d1a4471bdb4a2dca739ead02861c749c426c72e09cf9abb07e635f",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/named-control.rs",
+      "sha256": "c5a675404de001b0579b005cb2b88c4813dd9397e7c41451746770c4ecb50f61",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/tuple-pattern.rs",
+      "sha256": "5a1c45622cc47f0a79e08ad5da58387227a11f24c4c6eeafbd896bfe17f9e06d",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/array-pattern.rs",
+      "sha256": "24945c2f87aad932d969634ef4386690e897732720361015ed00e3960d241a48",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/wrong-mutability.rs",
+      "sha256": "7ba9b42c5cc25f653f560f3d89b7cf7f13306fe561b2d6cd15a09f96327b7f69",
+      "exit_status": 1
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/wrong-annotation.rs",
+      "sha256": "9ef0111f94f55a52afc6b712493a1e03ce3c594a423cd9c67f397fedc1a5473c",
+      "exit_status": 1
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/move-from-shared.rs",
+      "sha256": "b23e82b78e920d66e2b2edb100889d38a3fad1e92b7d1014b415515aa3e43edf",
+      "exit_status": 1
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/width-8-noise-0.rs",
+      "sha256": "dd80f42862bc7933cee13ea8cbd4e5e20dea5a6b9e675951fdc4e7b6e5970aff",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/width-8-noise-128.rs",
+      "sha256": "0786197e7f50602ad68f607e9d52228ef70996d92089449e79bc352811af4797",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/width-32-noise-0.rs",
+      "sha256": "d84e85a96cc20f9c6f3d407a38862b2b536412059ed8182f54894d4b885a9c15",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/width-32-noise-128.rs",
+      "sha256": "47c914654da1b4e644bb4ef69a571be6512ead92de70c219f20b8d986a2b0bb2",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/width-128-noise-0.rs",
+      "sha256": "f9396ca9d4e5f111388b27714c22c5bb552c0fd933d4673f69e5182bbb4bab72",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/parameter-projections/width-128-noise-128.rs",
+      "sha256": "4cdfafd8d0600f3a47ebfab4cfffa865780372801377365b07c760121630c0bf",
+      "exit_status": 0
+    }
+  ],
+  "scaling": {
+    "widths": [
+      8,
+      32,
+      128
+    ],
+    "unrelated_types": [
+      0,
+      128
+    ],
+    "invariant": "At most4x+256 inference/canonical work per fourfold site count; unrelated declarations must add no inference work and exactly no canonical work. Noise follows main to retain active AST identities."
+  }
+}

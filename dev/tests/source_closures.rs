@@ -407,6 +407,8 @@ mod identity;
 
 #[path = "source_closures/captures.rs"]
 mod captures;
+#[path = "source_closures/parameter_projections.rs"]
+mod parameter_projections;
 #[path = "source_closures/prefix_growth.rs"]
 mod prefix_growth;
 #[path = "source_closures/receivers.rs"]

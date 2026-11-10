@@ -129,7 +129,6 @@ impl Checker<'_> {
                 lifetimes,
             }),
         })?;
-        self.closure_parameters(node, signature, nodes, result)?;
         // Importing a captured type transfers its shape, not the parent's
         // normalization evidence. Register every selected root in this body
         // before an expression can inspect its head.
@@ -140,6 +139,8 @@ impl Checker<'_> {
         }
         self.normalize_closure_inputs(node, signature)?;
         self.advance_projections(node)?;
+        // Annotations and structural patterns inspect these imported heads.
+        self.closure_parameters(node, signature, nodes, result)?;
         self.state.work.push(Work::CollectClosure(None));
         self.start_body(body)
     }
