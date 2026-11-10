@@ -1,0 +1,455 @@
+global @rg.data.0 : obj<1x1> [storage=readonly] = {
+  zero 1
+}
+global @rg.data.1 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.2 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.3 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.4 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.5 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.6 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.7 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.8 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.9 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.10 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.11 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.12 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.13 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.14 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.15 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.16 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.17 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.18 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.19 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.20 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.21 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.22 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.23 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.24 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.25 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.26 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.27 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.28 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.29 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.30 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.31 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.32 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+function @rg.25() -> void {
+  slot $s0 : ptr
+  block ^b0:
+    %t0 = addr @rg.data.0
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    %t2 = call u8 @rg.24(%t1)
+    %t3 = cmp eq u8 %t2, 7
+    %t4 = convert trunc i1 i64 %t3
+    call void @rg.13(%t4)
+    return void
+}
+function @rg.24(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  slot $s1 : u32
+  block ^b0:
+    store ptr %p0, $s0
+    store u32 0, $s1
+    %t0 = load u32 $s1
+    %t1 = addr @rg.data.1
+    %t2 = call u8 @rg.20(%t1)
+    %t3 = convert zext u32 u8 %t2
+    %t4 = binary add u32 %t0, %t3
+    %t5 = cmp ult u32 %t4, %t0
+    branch %t5, ^b1, ^b2
+  block ^b2:
+    store u32 %t4, $s1
+    %t6 = load u32 $s1
+    %t7 = addr @rg.data.2
+    %t8 = call u8 @rg.20(%t7)
+    %t9 = convert zext u32 u8 %t8
+    %t10 = binary add u32 %t6, %t9
+    %t11 = cmp ult u32 %t10, %t6
+    branch %t11, ^b1, ^b3
+  block ^b3:
+    store u32 %t10, $s1
+    %t12 = load u32 $s1
+    %t13 = addr @rg.data.3
+    %t14 = call u8 @rg.20(%t13)
+    %t15 = convert zext u32 u8 %t14
+    %t16 = binary add u32 %t12, %t15
+    %t17 = cmp ult u32 %t16, %t12
+    branch %t17, ^b1, ^b4
+  block ^b4:
+    store u32 %t16, $s1
+    %t18 = load u32 $s1
+    %t19 = addr @rg.data.4
+    %t20 = call u8 @rg.20(%t19)
+    %t21 = convert zext u32 u8 %t20
+    %t22 = binary add u32 %t18, %t21
+    %t23 = cmp ult u32 %t22, %t18
+    branch %t23, ^b1, ^b5
+  block ^b5:
+    store u32 %t22, $s1
+    %t24 = load u32 $s1
+    %t25 = addr @rg.data.5
+    %t26 = call u8 @rg.20(%t25)
+    %t27 = convert zext u32 u8 %t26
+    %t28 = binary add u32 %t24, %t27
+    %t29 = cmp ult u32 %t28, %t24
+    branch %t29, ^b1, ^b6
+  block ^b6:
+    store u32 %t28, $s1
+    %t30 = load u32 $s1
+    %t31 = addr @rg.data.6
+    %t32 = call u8 @rg.20(%t31)
+    %t33 = convert zext u32 u8 %t32
+    %t34 = binary add u32 %t30, %t33
+    %t35 = cmp ult u32 %t34, %t30
+    branch %t35, ^b1, ^b7
+  block ^b7:
+    store u32 %t34, $s1
+    %t36 = load u32 $s1
+    %t37 = addr @rg.data.7
+    %t38 = call u8 @rg.20(%t37)
+    %t39 = convert zext u32 u8 %t38
+    %t40 = binary add u32 %t36, %t39
+    %t41 = cmp ult u32 %t40, %t36
+    branch %t41, ^b1, ^b8
+  block ^b8:
+    store u32 %t40, $s1
+    %t42 = load u32 $s1
+    %t43 = addr @rg.data.8
+    %t44 = call u8 @rg.20(%t43)
+    %t45 = convert zext u32 u8 %t44
+    %t46 = binary add u32 %t42, %t45
+    %t47 = cmp ult u32 %t46, %t42
+    branch %t47, ^b1, ^b9
+  block ^b9:
+    store u32 %t46, $s1
+    %t48 = load u32 $s1
+    %t49 = addr @rg.data.9
+    %t50 = call u8 @rg.20(%t49)
+    %t51 = convert zext u32 u8 %t50
+    %t52 = binary add u32 %t48, %t51
+    %t53 = cmp ult u32 %t52, %t48
+    branch %t53, ^b1, ^b10
+  block ^b10:
+    store u32 %t52, $s1
+    %t54 = load u32 $s1
+    %t55 = addr @rg.data.10
+    %t56 = call u8 @rg.20(%t55)
+    %t57 = convert zext u32 u8 %t56
+    %t58 = binary add u32 %t54, %t57
+    %t59 = cmp ult u32 %t58, %t54
+    branch %t59, ^b1, ^b11
+  block ^b11:
+    store u32 %t58, $s1
+    %t60 = load u32 $s1
+    %t61 = addr @rg.data.11
+    %t62 = call u8 @rg.20(%t61)
+    %t63 = convert zext u32 u8 %t62
+    %t64 = binary add u32 %t60, %t63
+    %t65 = cmp ult u32 %t64, %t60
+    branch %t65, ^b1, ^b12
+  block ^b12:
+    store u32 %t64, $s1
+    %t66 = load u32 $s1
+    %t67 = addr @rg.data.12
+    %t68 = call u8 @rg.20(%t67)
+    %t69 = convert zext u32 u8 %t68
+    %t70 = binary add u32 %t66, %t69
+    %t71 = cmp ult u32 %t70, %t66
+    branch %t71, ^b1, ^b13
+  block ^b13:
+    store u32 %t70, $s1
+    %t72 = load u32 $s1
+    %t73 = addr @rg.data.13
+    %t74 = call u8 @rg.20(%t73)
+    %t75 = convert zext u32 u8 %t74
+    %t76 = binary add u32 %t72, %t75
+    %t77 = cmp ult u32 %t76, %t72
+    branch %t77, ^b1, ^b14
+  block ^b14:
+    store u32 %t76, $s1
+    %t78 = load u32 $s1
+    %t79 = addr @rg.data.14
+    %t80 = call u8 @rg.20(%t79)
+    %t81 = convert zext u32 u8 %t80
+    %t82 = binary add u32 %t78, %t81
+    %t83 = cmp ult u32 %t82, %t78
+    branch %t83, ^b1, ^b15
+  block ^b15:
+    store u32 %t82, $s1
+    %t84 = load u32 $s1
+    %t85 = addr @rg.data.15
+    %t86 = call u8 @rg.20(%t85)
+    %t87 = convert zext u32 u8 %t86
+    %t88 = binary add u32 %t84, %t87
+    %t89 = cmp ult u32 %t88, %t84
+    branch %t89, ^b1, ^b16
+  block ^b16:
+    store u32 %t88, $s1
+    %t90 = load u32 $s1
+    %t91 = addr @rg.data.16
+    %t92 = call u8 @rg.20(%t91)
+    %t93 = convert zext u32 u8 %t92
+    %t94 = binary add u32 %t90, %t93
+    %t95 = cmp ult u32 %t94, %t90
+    branch %t95, ^b1, ^b17
+  block ^b17:
+    store u32 %t94, $s1
+    %t96 = load u32 $s1
+    %t97 = addr @rg.data.17
+    %t98 = call u8 @rg.20(%t97)
+    %t99 = convert zext u32 u8 %t98
+    %t100 = binary add u32 %t96, %t99
+    %t101 = cmp ult u32 %t100, %t96
+    branch %t101, ^b1, ^b18
+  block ^b18:
+    store u32 %t100, $s1
+    %t102 = load u32 $s1
+    %t103 = addr @rg.data.18
+    %t104 = call u8 @rg.20(%t103)
+    %t105 = convert zext u32 u8 %t104
+    %t106 = binary add u32 %t102, %t105
+    %t107 = cmp ult u32 %t106, %t102
+    branch %t107, ^b1, ^b19
+  block ^b19:
+    store u32 %t106, $s1
+    %t108 = load u32 $s1
+    %t109 = addr @rg.data.19
+    %t110 = call u8 @rg.20(%t109)
+    %t111 = convert zext u32 u8 %t110
+    %t112 = binary add u32 %t108, %t111
+    %t113 = cmp ult u32 %t112, %t108
+    branch %t113, ^b1, ^b20
+  block ^b20:
+    store u32 %t112, $s1
+    %t114 = load u32 $s1
+    %t115 = addr @rg.data.20
+    %t116 = call u8 @rg.20(%t115)
+    %t117 = convert zext u32 u8 %t116
+    %t118 = binary add u32 %t114, %t117
+    %t119 = cmp ult u32 %t118, %t114
+    branch %t119, ^b1, ^b21
+  block ^b21:
+    store u32 %t118, $s1
+    %t120 = load u32 $s1
+    %t121 = addr @rg.data.21
+    %t122 = call u8 @rg.20(%t121)
+    %t123 = convert zext u32 u8 %t122
+    %t124 = binary add u32 %t120, %t123
+    %t125 = cmp ult u32 %t124, %t120
+    branch %t125, ^b1, ^b22
+  block ^b22:
+    store u32 %t124, $s1
+    %t126 = load u32 $s1
+    %t127 = addr @rg.data.22
+    %t128 = call u8 @rg.20(%t127)
+    %t129 = convert zext u32 u8 %t128
+    %t130 = binary add u32 %t126, %t129
+    %t131 = cmp ult u32 %t130, %t126
+    branch %t131, ^b1, ^b23
+  block ^b23:
+    store u32 %t130, $s1
+    %t132 = load u32 $s1
+    %t133 = addr @rg.data.23
+    %t134 = call u8 @rg.20(%t133)
+    %t135 = convert zext u32 u8 %t134
+    %t136 = binary add u32 %t132, %t135
+    %t137 = cmp ult u32 %t136, %t132
+    branch %t137, ^b1, ^b24
+  block ^b24:
+    store u32 %t136, $s1
+    %t138 = load u32 $s1
+    %t139 = addr @rg.data.24
+    %t140 = call u8 @rg.20(%t139)
+    %t141 = convert zext u32 u8 %t140
+    %t142 = binary add u32 %t138, %t141
+    %t143 = cmp ult u32 %t142, %t138
+    branch %t143, ^b1, ^b25
+  block ^b25:
+    store u32 %t142, $s1
+    %t144 = load u32 $s1
+    %t145 = addr @rg.data.25
+    %t146 = call u8 @rg.20(%t145)
+    %t147 = convert zext u32 u8 %t146
+    %t148 = binary add u32 %t144, %t147
+    %t149 = cmp ult u32 %t148, %t144
+    branch %t149, ^b1, ^b26
+  block ^b26:
+    store u32 %t148, $s1
+    %t150 = load u32 $s1
+    %t151 = addr @rg.data.26
+    %t152 = call u8 @rg.20(%t151)
+    %t153 = convert zext u32 u8 %t152
+    %t154 = binary add u32 %t150, %t153
+    %t155 = cmp ult u32 %t154, %t150
+    branch %t155, ^b1, ^b27
+  block ^b27:
+    store u32 %t154, $s1
+    %t156 = load u32 $s1
+    %t157 = addr @rg.data.27
+    %t158 = call u8 @rg.20(%t157)
+    %t159 = convert zext u32 u8 %t158
+    %t160 = binary add u32 %t156, %t159
+    %t161 = cmp ult u32 %t160, %t156
+    branch %t161, ^b1, ^b28
+  block ^b28:
+    store u32 %t160, $s1
+    %t162 = load u32 $s1
+    %t163 = addr @rg.data.28
+    %t164 = call u8 @rg.20(%t163)
+    %t165 = convert zext u32 u8 %t164
+    %t166 = binary add u32 %t162, %t165
+    %t167 = cmp ult u32 %t166, %t162
+    branch %t167, ^b1, ^b29
+  block ^b29:
+    store u32 %t166, $s1
+    %t168 = load u32 $s1
+    %t169 = addr @rg.data.29
+    %t170 = call u8 @rg.20(%t169)
+    %t171 = convert zext u32 u8 %t170
+    %t172 = binary add u32 %t168, %t171
+    %t173 = cmp ult u32 %t172, %t168
+    branch %t173, ^b1, ^b30
+  block ^b30:
+    store u32 %t172, $s1
+    %t174 = load u32 $s1
+    %t175 = addr @rg.data.30
+    %t176 = call u8 @rg.20(%t175)
+    %t177 = convert zext u32 u8 %t176
+    %t178 = binary add u32 %t174, %t177
+    %t179 = cmp ult u32 %t178, %t174
+    branch %t179, ^b1, ^b31
+  block ^b31:
+    store u32 %t178, $s1
+    %t180 = load u32 $s1
+    %t181 = addr @rg.data.31
+    %t182 = call u8 @rg.20(%t181)
+    %t183 = convert zext u32 u8 %t182
+    %t184 = binary add u32 %t180, %t183
+    %t185 = cmp ult u32 %t184, %t180
+    branch %t185, ^b1, ^b32
+  block ^b32:
+    store u32 %t184, $s1
+    %t186 = load u32 $s1
+    %t187 = addr @rg.data.32
+    %t188 = call u8 @rg.20(%t187)
+    %t189 = convert zext u32 u8 %t188
+    %t190 = binary add u32 %t186, %t189
+    %t191 = cmp ult u32 %t190, %t186
+    branch %t191, ^b1, ^b33
+  block ^b33:
+    store u32 %t190, $s1
+    %t192 = load u32 $s1
+    %t193 = cmp eq u32 %t192, 224
+    %t194 = convert trunc i1 i64 %t193
+    call void @rg.13(%t194)
+    return u8 7
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.20(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    return u8 7
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.25()
+    return i64 0
+}

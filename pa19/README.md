@@ -247,9 +247,9 @@ source-to-LowIR functionality can compile the same program.
 
 ## Validation
 
-The manifest contains 1,124 cases: 721 accepted and 403 rejected. There are 440
-semantic inspection cases and 684 LowIR cases. The LowIR lane has 285 accepted
-programs, all with declared clean execution through rustc and CPPGM, and 399
+The manifest contains 1,233 cases: 788 accepted and 445 rejected. There are 468
+semantic inspection cases and 765 LowIR cases. The LowIR lane has 334 accepted
+programs, all with declared clean execution through rustc and CPPGM, and 431
 rejections. No accepted native control is silently skipped.
 
 Five acceptance differences are explicit: one later-stage boundary, one

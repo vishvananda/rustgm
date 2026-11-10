@@ -1,0 +1,167 @@
+global @rg.data.0 : obj<1x1> [storage=readonly] = {
+  zero 1
+}
+global @rg.data.1 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.2 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.3 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.4 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.5 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.6 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.7 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+global @rg.data.8 : obj<1x1> [storage=readonly] = {
+  u8 3
+}
+function @rg.25() -> void {
+  slot $s0 : ptr
+  block ^b0:
+    %t0 = addr @rg.data.0
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    %t2 = call u8 @rg.24(%t1)
+    %t3 = cmp eq u8 %t2, 7
+    %t4 = convert trunc i1 i64 %t3
+    call void @rg.13(%t4)
+    return void
+}
+function @rg.24(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  slot $s1 : u32
+  block ^b0:
+    store ptr %p0, $s0
+    store u32 0, $s1
+    %t0 = load u32 $s1
+    %t1 = addr @rg.data.1
+    %t2 = call u8 @rg.20(%t1)
+    %t3 = convert zext u32 u8 %t2
+    %t4 = binary add u32 %t0, %t3
+    %t5 = cmp ult u32 %t4, %t0
+    branch %t5, ^b1, ^b2
+  block ^b2:
+    store u32 %t4, $s1
+    %t6 = load u32 $s1
+    %t7 = addr @rg.data.2
+    %t8 = call u8 @rg.20(%t7)
+    %t9 = convert zext u32 u8 %t8
+    %t10 = binary add u32 %t6, %t9
+    %t11 = cmp ult u32 %t10, %t6
+    branch %t11, ^b1, ^b3
+  block ^b3:
+    store u32 %t10, $s1
+    %t12 = load u32 $s1
+    %t13 = addr @rg.data.3
+    %t14 = call u8 @rg.20(%t13)
+    %t15 = convert zext u32 u8 %t14
+    %t16 = binary add u32 %t12, %t15
+    %t17 = cmp ult u32 %t16, %t12
+    branch %t17, ^b1, ^b4
+  block ^b4:
+    store u32 %t16, $s1
+    %t18 = load u32 $s1
+    %t19 = addr @rg.data.4
+    %t20 = call u8 @rg.20(%t19)
+    %t21 = convert zext u32 u8 %t20
+    %t22 = binary add u32 %t18, %t21
+    %t23 = cmp ult u32 %t22, %t18
+    branch %t23, ^b1, ^b5
+  block ^b5:
+    store u32 %t22, $s1
+    %t24 = load u32 $s1
+    %t25 = addr @rg.data.5
+    %t26 = call u8 @rg.20(%t25)
+    %t27 = convert zext u32 u8 %t26
+    %t28 = binary add u32 %t24, %t27
+    %t29 = cmp ult u32 %t28, %t24
+    branch %t29, ^b1, ^b6
+  block ^b6:
+    store u32 %t28, $s1
+    %t30 = load u32 $s1
+    %t31 = addr @rg.data.6
+    %t32 = call u8 @rg.20(%t31)
+    %t33 = convert zext u32 u8 %t32
+    %t34 = binary add u32 %t30, %t33
+    %t35 = cmp ult u32 %t34, %t30
+    branch %t35, ^b1, ^b7
+  block ^b7:
+    store u32 %t34, $s1
+    %t36 = load u32 $s1
+    %t37 = addr @rg.data.7
+    %t38 = call u8 @rg.20(%t37)
+    %t39 = convert zext u32 u8 %t38
+    %t40 = binary add u32 %t36, %t39
+    %t41 = cmp ult u32 %t40, %t36
+    branch %t41, ^b1, ^b8
+  block ^b8:
+    store u32 %t40, $s1
+    %t42 = load u32 $s1
+    %t43 = addr @rg.data.8
+    %t44 = call u8 @rg.20(%t43)
+    %t45 = convert zext u32 u8 %t44
+    %t46 = binary add u32 %t42, %t45
+    %t47 = cmp ult u32 %t46, %t42
+    branch %t47, ^b1, ^b9
+  block ^b9:
+    store u32 %t46, $s1
+    %t48 = load u32 $s1
+    %t49 = cmp eq u32 %t48, 56
+    %t50 = convert trunc i1 i64 %t49
+    call void @rg.13(%t50)
+    return u8 7
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.20(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    return u8 7
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.25()
+    return i64 0
+}

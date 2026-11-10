@@ -40,51 +40,50 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-[Pending join inputs](docs/pa20-pending-join-inputs.md), compilerc542453da /
-CLIae2e09ae, advance ready call equations before projected joins. PA20 owns29
-new outcomes (23 accept,6 reject). Seven production controls, stronger five-counter
-scaling,51 native programs,4157 text checks across PA19/20/21/24,315 harness/
-468 roots/upstream and30 output-equal paired observations pass. Ordinary inference
-and coherence retain their conservative normalization behavior. Body-only equality
-diagnostics reject missing caller proofs; all conversions still use their original
-proof paths. Work24/CallTypes728, no hot fields/quotas/backend changes. One retained
-pending box preserves actual query/evidence/reservation/cursor ownership.
+[Implemented trait scope](docs/pa19-implemented-trait-scope.md), compiler17baa8cb9 /
+CLI9beaaac9, adds each source impl's resolved trait identity to its actual lexical
+scope once. PA19 owns34 independently checked outcomes (25accept/9reject), including
+nested/generated scopes, generic arguments, priority, missing proofs and ambiguity.
+All34 completeLowIR outcomes,4 existing controls, six-counter scaling,25 native
+executions, all1233PA19 texts and315harness/468roots/upstream pass. Only34 new
+reference triples were generated; every existingPA19 reference is unchanged.
+No hot fields/new cache/quotas/backend changes. Bound priority and implicit
+supertrait visibility are unchanged; the contribution supplies lexical eligibility.
 
-Only29 new reference triples and7 reviewed old negative triples were generated.
-All19 inventoried old rejections were independently checked first; source/statuses
-are unchanged. Six equality diagnostics match Rust E0308; PA19's function-as-type
-suffix matches E0575. Other12 raw controls are byte-identical. No blanket bless.
-The tiny unoptimized direct control is1.266x baseline; other ratios.989/1.015,
-A/A.785/.976/.997. Output equality and linear work pass; no speed claim.
+Thirty immutable A/A+twoABBA controls preserve complete ordinary LowIR and74 frozen
+survey outcomes. Candidate/base1.069/.994/1.004, A/A.885/.991/1.016; no speed claim.
+The unrelated128unit-struct cost is384visibility steps for scopes/type/value
+bindings, constant across8/32/128call widths; other five call-work counters addnone.
+Initial supertrait/source and scaling assumptions were independently corrected;
+failed receipts remain in the checkpoint, without changing old oracles.
 
-The unchanged120s original observation still FAILS at121.18s:262 records/4434 item
-attempts through function9025, time.rs file241 byte6527 node182. integer_decode's
-old conditional fence is absent; first fmt in num/error.rs file39 byte762 now
-fails string-literal fmt(f) lookup inside a qualified Display impl. Partial SHA
-7fcb8110537b458fcfcbdc0ecba116c90e14eef8edca6af0452133f38cd8d9b9.
-No full census, checked-body count or original artifact. All722 source hashes,
-six configuration bindings/profile/quotas remain unchanged; prefixes are not raw
-count/speed comparisons.
+The unchanged120s original observation still FAILS at121.2436s:253 failure records/
+5122item attempts, through function10219, file279:9949 node427 (x86/ssse3.rs).
+No num/error.rs failure remains in its recorded prefix. First failure is now
+Alignment::try_from, mem/alignment.rs file55:11798, `align.get().try_into()` with
+associated type projection requires normalization. Partial SHA
+769a0935d408714c3614bc02c95c9eba52287755bf855d467ccaa0926c5d9308.
+All722source hashes/sixconfigurationbindings/profile/quotas stay fixed. No complete
+census/body count/original artifact; unequal prefixes are not raw speed comparisons.
 
-Next discovery is independently reduced in obj/parallel/impl-trait-scope/probe1:
-ordinary module-qualified current-impl trait scope fails on primitive/str receivers,
-while explicit import/qualification controls pass. Outside/different-impl negatives
-still reject, but a genuinely ambiguous second trait is wrongly accepted. Earliest
-owner PA19. Freeze its source/native/negative/scaling packet before implementation.
-No next scope implementation has begun; one worker stays in the existing B tree.
+Next independently reduce ordinary blanket conversion and return-type inference
+from Alignment's const TryFrom<NonZero<usize>> body. Select the earliest PA owning
+all reduction features; keep a genuine const/source companion if ordinary code
+already passes. Discriminant<T>::fmt's actual Debug obligation is the next record.
+One worker continues in the existing B tree; no workers or worktrees are queued.
 
-Full constant repair42867198200 on4446962e1 is terminal FAILED solely on PA19's
-qualified further-suffix stderr. All3063 private and regular integration cases
-passed, as did the other active course checks. Later native/debug/independent
-stages were skipped. The independently reviewed oracle above repairs this failure.
-A new full semantic successor is due after publication; first confirm no other full
-run is active and never cancel one through manual redispatch. Older parameter/cast
-full42847850912 and42857585036 passed every stage.
+Full pending-join qualification42882896962 on8feedb05a is active after lint,
+architecture/harness and host graph, currently release/course tests. Do not cancel
+it by redispatching. The new scope semantic successor needs full qualification
+after the existing run terminates; focused evidence supports development publication.
+Older parameter/cast full42847850912 and42857585036 passed every stage.
 
-Current immutableae2e09ae bindsc542453da/empty patch/3884 Rust hashes. Retire the
-superseded030 comparison pin after publication; e64 already retired by scoped
-prune1794333776376766690. Keep optimized21f66e51 for the still-pending nested-proof
-A/A+ABBA/release-stack controls. No original core/alloc/std artifact exists.
+Current immutable9beaaac9 binds17baa8cb9/empty patch/3885Rust hashes. Retire ae2e09ae
+comparison pin after publication;030/e64/f7 pins are already retired. Keep optimized
+21f66e51 for pending nested-proof A/A+ABBA/release-stack checks. The preceding
+[pending-join checkpoint](docs/pa20-pending-join-inputs.md) retains its separate
+1.266x tiny unoptimized direct-control limitation and all prior qualification.
+No original core/alloc/std artifact exists.
 
 [Incremental census progress](docs/census-progress.md) preserves diagnostics when
 the observer times out. Full joined diagnostic CI42820032217 on df8507cd8 now

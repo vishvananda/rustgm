@@ -1,22 +1,27 @@
 # Library build blocker tracker
 
-Latest semantic checkpoint: [pending join inputs](pa20-pending-join-inputs.md)
-advances ready call equations before projected common-type joins. PA20 owns29
-outcomes;7 production checks, five-counter linear/noise invariants,51 natives,
-all4157 PA19/20/21/24 texts and harness/upstream pass. Exactly7 old negative
-diagnostics were independently reviewed/generated alongside29 new triples;
-all sources/rejection outcomes remain unchanged. Full predecessor42867198200
-passed3063 private and every regular group, but failed the repaired PA19 suffix
-oracle; later gates skipped. Current semantic successor full is due after publish.
+Latest semantic checkpoint: [implemented trait scope](pa19-implemented-trait-scope.md)
+adds the implemented trait declaration to its actual lexical scope once. PA19
+owns34 independently checked reductions (25accept9reject): all completeLowIR,
+25native executions, six-counter scaling and all1233PA19 texts pass. Only34 new
+reference triples; all existingPA19 oracle bytes unchanged. Harness315/468roots/
+upstream pass. No hot fields/new cache/quotas/backend. Existing full42882896962 on
+8feedb05a is active in release/course after lint/host/harness; never cancel it by
+manual redispatch. This scope semantic successor's full qualification remains due.
 
-The original120s observation still FAILS at121.18s:262 records/4434 attempts,
-through function9025 time.rs file241:6527. integer_decode's old if fence is absent;
-first fmt atnum/error.rs39:762 now fails literal.fmt(f) in a qualified Display impl.
-No full census/body count/artifact. Seven independently checked ordinary probes
-reduce current-impl trait visibility to PA19; imports/qualification pass, implicit
-current trait fails, and true ambiguity is wrongly accepted. Freeze that packet
-next. Tiny unoptimized direct control1.266x, bounded work/output equality pass;
-optimized measurement remains pending.
+Original120s observation still FAILS at121.2436s:253 failures/5122item attempts,
+through function10219,file279:9949,node427 in x86/ssse3.rs. Earlier num/error.rs
+literal/match fmt lookup fences are absent in the retained prefix. First failure:
+Alignment::try_from, mem/alignment.rs55:11798, `align.get().try_into()` with associated
+type projection requires normalization. No complete census/body count/artifact;
+all722hashes/sixpins/profile/quotas fixed, unequal prefixes are not speed evidence.
+Reduce ordinary blanket conversion/return inference first; retain const/source
+contracts if needed. The next record is Discriminant<T>::fmt's genuine Debug proof.
+Thirty output-equal A/A+twoABBA controls retain ratios1.069/.994/1.004, no speed claim.
+
+Previous [pending-join inputs](pa20-pending-join-inputs.md) retain their qualified
+PA20 packet, source/proof ownership and separate1.266x unoptimized direct-control
+limitation. Earlier observations and required broader checks remain historical.
 
 Latest semantic checkpoint: [projected receiver methods](pa20-projected-receiver-methods.md)
 closes CastInto<i16> lookup through the completed associated Int result. PA20 owns26
