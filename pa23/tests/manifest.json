@@ -6501,6 +6501,83 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix"
+    },
+    {
+      "path": "tests/spec/nominal-reference-casts/shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/nominal-reference-casts/mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/nominal-reference-casts/borrowed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/nominal-reference-casts/missing-principal.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs"
+    },
+    {
+      "path": "tests/spec/nominal-reference-casts/escaping-object.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs"
     }
   ]
 }

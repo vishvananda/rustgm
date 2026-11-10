@@ -1,0 +1,3 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct Tail<T:?Sized>{tag:u8,tail:T}
+fn cast(x:&mut Tail<[u8;2]>)->&Tail<[u8]>{x as &Tail<[u8]>}fn main(){let mut x=Tail{tag:7,tail:[3u8,5]};let s=cast(&mut x);check(s.tag==7);check(s.tail[1]==5);check(match s.tail{[_,_]=>true,_=>false});}

@@ -156,14 +156,23 @@ impl Checker<'_> {
         {
             let referent = self.child(node, source, 0)?;
             let pointee = self.child(node, target, 0)?;
-            if matches!(
-                self.head(node, referent)?,
-                Some(
-                    Constructor::Array(_) | Constructor::ArrayTerm(_) | Constructor::ArrayInfer(_)
+            let heads = (self.head(node, referent)?, self.head(node, pointee)?);
+            let array = matches!(
+                heads,
+                (
+                    Some(
+                        Constructor::Array(_)
+                            | Constructor::ArrayTerm(_)
+                            | Constructor::ArrayInfer(_)
+                    ),
+                    Some(Constructor::Slice)
                 )
-            ) && self.head(node, pointee)? == Some(Constructor::Slice)
-            {
-                // A coercion cast keeps the ordinary reborrow and unsizing proof.
+            );
+            let nominal = matches!(heads,
+                (Some(Constructor::Adt(a, _) | Constructor::AdtArgs(a, _)),
+                 Some(Constructor::Adt(b, _) | Constructor::AdtArgs(b, _))) if a == b);
+            if array || nominal {
+                // The existing selection owns the actual tail and reborrow proof.
                 return self.coerce(value, target);
             }
         }
@@ -266,7 +275,7 @@ impl Checker<'_> {
             .and_then(|f| f.adjustment)
             .map_or(original, |adjustment| adjustment.target);
         let target = self.ty(target)?;
-        if source == target && self.array_slice_reference_cast(value, target)? {
+        if source == target && self.reference_unsizing_cast(value, target)? {
             return Ok(Some(Cast::Pointer));
         }
         let (from, to) = (self.facts.types.kind(source), self.facts.types.kind(target));
@@ -332,7 +341,7 @@ impl Checker<'_> {
         }
         Ok(Some(kind))
     }
-    fn array_slice_reference_cast(
+    fn reference_unsizing_cast(
         &mut self,
         mut value: NodeId,
         target: TypeId,
@@ -344,10 +353,10 @@ impl Checker<'_> {
             }
             value = child;
         }
-        Ok(selected_slice_cast(self.facts, self.key(value), target))
+        Ok(selected_reference_cast(self.facts, self.key(value), target))
     }
 }
-fn selected_slice_cast(
+fn selected_reference_cast(
     facts: &crate::sema::model::Declarations,
     source: crate::resolve::unit::NodeKey,
     target: TypeId,
@@ -384,12 +393,16 @@ fn selected_slice_cast(
     else {
         return false;
     };
-    (!to_mutable || from_mutable)
-        && matches!(
-            facts.types.kind(from),
-            Some(Type::Array { .. } | Type::ArrayTerm { .. })
-        )
-        && matches!(facts.types.kind(to), Some(Type::Slice(_)))
+    if to_mutable && !from_mutable {
+        return false;
+    }
+    match (facts.types.kind(from), facts.types.kind(to)) {
+        (Some(Type::Array { .. } | Type::ArrayTerm { .. }), Some(Type::Slice(_))) => true,
+        (Some(Type::Adt(a, _)), Some(Type::Adt(b, _))) if a == b && from != to => {
+            facts.unsizing_adjustments.contains_key(&source)
+        }
+        _ => false,
+    }
 }
 #[cfg(test)]
 #[path = "../../../tests/invariants/unsizing_casts.rs"]

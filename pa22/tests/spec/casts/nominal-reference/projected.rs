@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait Storage{type Output:?Sized;}struct Array;struct Slice;impl Storage for Array{type Output=[u8;2];}impl Storage for Slice{type Output=[u8];}struct Projected<T:Storage>{tag:u8,tail:T::Output}fn cast(x:&Projected<Array>)->&Projected<Slice>{x as &Projected<Slice>}fn main(){let x=Projected::<Array>{tag:7,tail:[3u8,5]};let s=cast(&x);check(s.tag==7);check(s.tail[1]==5);check(match s.tail{[_,_]=>true,_=>false});}

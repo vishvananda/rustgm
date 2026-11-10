@@ -5623,6 +5623,570 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/mutable-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/aliases.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/projected.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/grouped.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/zst.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/noncopy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/shared-covariance.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/evaluate-once.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/padded-prefix.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/raw-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/implicit-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/wrong-element.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs"
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/shared-mutable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs"
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs"
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/unpaid-element-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs"
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/mutable-invariance.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs"
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/nested-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs"
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/reverse.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs"
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/changed-owner.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs"
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/nested-elements.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs"
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/changed-prefix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs"
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/active-loan.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs"
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/packed-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs"
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/width-8-noise-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/width-8-noise-128.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/width-32-noise-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/width-32-noise-128.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/width-128-noise-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/nominal-reference/width-128-noise-128.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/unsize_views.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

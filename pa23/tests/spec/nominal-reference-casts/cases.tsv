@@ -1,0 +1,5 @@
+shared.rs	0
+mutable.rs	0
+borrowed.rs	0
+missing-principal.rs	1
+escaping-object.rs	1
