@@ -45,7 +45,7 @@ clears cumulative unary and transmute allowances without changing limits.
 Compiler1d88db5df, immutable CLIaa421ca4, retains actual producer payments and
 per-query caps. On unchanged722 inputs/375 opened sources,42310 declarations
 pass; bodies report checked0/failed119/blocked0 before method-selection budget
-record120 at iter/adapters/chain.rs, file142 byte3640.82.96s, TSV
+record120 at iter/adapters/flatten.rs, file142 byte3640.82.96s, TSV
  e21ad8822d098081b987f654afc5fcfc122cb54f49b9c992029e01030f0b4d4e.
 Seven new private checks and the production MaybeUninit regression group pass,
 plus harness/upstream and30 complete-output-equal paired observations. Inspect
@@ -113,7 +113,7 @@ push-fast is separate.
 
 ## Next work, one worker
 
-1. Attribute and repair the body method-selection budget at chain.rs byte3640 without
+1. Attribute and repair the body method-selection budget at flatten.rs byte3640 without
    changing limits. Use the newly reached census to batch body failures by cause:
    Source Unsize, inclusive ranges, receiver lookup and projections lead the list.
    Freeze independently checked reductions in the earliest owning PA.

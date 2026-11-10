@@ -52,7 +52,7 @@ CLIaa421ca4165df46249a91a1f13ab50f36e33a9cdf8bbe0c6ee134af9c0dc92bb
 binds committed1d88db5df and an empty patch. The82.96s original census retains
 all722 inputs/375 opens/profile/limits and42310 passing declarations. Bodies
 report checked0/failed119/blocked0 before budget record120 at file142 byte3640,
-iter/adapters/chain.rs: method selection work budget exceeded. TSV SHA256
+iter/adapters/flatten.rs: method selection work budget exceeded. TSV SHA256
 e21ad8822d098081b987f654afc5fcfc122cb54f49b9c992029e01030f0b4d4e.
 Failures include22 receiver lookups,17 dyn Unsize fences,14 unresolved-call
 obligations,12 inclusive ranges and11 projection-normalization errors. Inspect
