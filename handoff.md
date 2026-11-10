@@ -40,6 +40,18 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
+The [source Unsize upcast checkpoint](docs/pa31-source-object-upcasts.md),
+compiler6d3b6d424/CLIec0e1273, supports non-quantified intrinsic object upcasts
+with all original equality/marker/lifetime/formation debts. Ten new PA31 outcomes,
+seven private controls, a width8/32/128+8192-type noise invariant, three paired
+Rust/CPPGM native observers and30 unchanged-path observations pass. Harness314,
+upstream and selected strict checks pass. Two custom-auto object forms remain
+required; no oracle or backend contract changed. This addresses a shared cause
+of17 retained body fences; no complete new census or original artifact is claimed.
+Next add incremental census progress to diagnose the unchanged120/170s timeout
+without another observer-window increase. Full predecessor42805641905 is active;
+wait for its terminal result before dispatching the upcast successor.
+
 The [source-probe/body-session checkpoint](docs/pa26-body-place-session.md)
 clears the cumulative method-probe guard and a newly exposed stale indexing
 place-offset panic. Compiler6c4ae3d04/CLI61c983f6 has passing focused private,
@@ -120,7 +132,7 @@ push-fast is separate.
 
 ## Next work, one worker
 
-1. Complete bounded original-body discovery and batch the retained body failures
+1. Add incremental census progress, complete bounded original-body discovery and batch retained failures
    by shared cause:
    Source Unsize, inclusive ranges, receiver lookup and projections lead the list.
    Freeze independently checked reductions in the earliest owning PA.
@@ -135,8 +147,9 @@ push-fast is separate.
 
 - Durable decisions: /mnt/vizier/rustgm-scratch/integrator-20261109/pending_decisions.md.
 - Current compiler/test source hashes are bound in pa26-work's
-  obj/parallel/place-session/candidate-dev-fast/producer.json. Current receipts are
-  under obj/parallel/place-session and obj/parallel/source-probe-budget; scoped lookup is
+  obj/parallel/source-upcast/candidate-dev-fast/producer.json. Current receipts are
+  under obj/parallel/source-upcast; body-session receipts are under
+  obj/parallel/place-session and obj/parallel/source-probe-budget; scoped lookup is
   under obj/parallel/scoped-lookup; f01 receipts and
   f01 evidence are under obj/parallel/scoped-inherent. Multiplication receipts and
   census are under obj/parallel/multiply-overflow; prior query evidence is under

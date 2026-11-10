@@ -1,5 +1,13 @@
 # Library build blocker tracker
 
+Latest semantic checkpoint: [source Unsize upcasts](pa31-source-object-upcasts.md)
+supports non-quantified intrinsic object upcasts with full retained debts.
+Ten PA31 outcomes, seven private controls, bounded diamond/noise work and three
+paired native observers pass. The retained core table had17 upcast fences;
+whole-core verification remains pending behind its observer timeout. Add
+incremental census progress next, preserving compiler quotas and observer ceilings.
+
+
 
 Latest checkpoint: [source probes/body sessions](pa26-body-place-session.md)
 clears the cumulative method guard and a newly exposed stale indexing offset
