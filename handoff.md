@@ -72,10 +72,17 @@ all reduction features; keep a genuine const/source companion if ordinary code
 already passes. Discriminant<T>::fmt's actual Debug obligation is the next record.
 One worker continues in the existing B tree; no workers or worktrees are queued.
 
-Full pending-join qualification42882896962 on8feedb05a is active after lint,
-architecture/harness and host graph, currently release/course tests. Do not cancel
-it by redispatching. The new scope semantic successor needs full qualification
-after the existing run terminates; focused evidence supports development publication.
+Full pending-join qualification42882896962 on8feedb05a is terminal FAILED: two
+stale private diagnostic assertions,3061otherprivate/allregularintegration pass;
+course/native/debug/independent gates skipped. Existing PA31 assumed-parent,
+unknown-result and residual-Try-type sources independently RustE0308 reject;
+unchangedCLI9be rejectsallthree with the body missing-equality diagnostic. Two
+private expected literals are corrected; raw opaque normalization/property proofs,
+fixtures, production and references unchanged. Exactprivate1794340234386664156
+passesformat/audit then244.70sClippy-driverbuild/linktimeout(total275.87s), zero
+privateexecutions. Retainthisfailure; fullsuccessorprivate checks remain required.
+No duplicatecargo-testlib/releasebuild. Publishrepair then dispatchnewfull only
+after confirming nootherfull isactive; nevercancelmanualpredecessor.
 Older parameter/cast full42847850912 and42857585036 passed every stage.
 
 Current immutable9beaaac9 binds17baa8cb9/empty patch/3885Rust hashes. Retire ae2e09ae

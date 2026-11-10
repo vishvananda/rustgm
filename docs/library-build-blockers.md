@@ -5,9 +5,13 @@ adds the implemented trait declaration to its actual lexical scope once. PA19
 owns34 independently checked reductions (25accept9reject): all completeLowIR,
 25native executions, six-counter scaling and all1233PA19 texts pass. Only34 new
 reference triples; all existingPA19 oracle bytes unchanged. Harness315/468roots/
-upstream pass. No hot fields/new cache/quotas/backend. Existing full42882896962 on
-8feedb05a is active in release/course after lint/host/harness; never cancel it by
-manual redispatch. This scope semantic successor's full qualification remains due.
+upstream pass. No hot fields/new cache/quotas/backend. Full42882896962 on8feedb05a
+failedtwo staleprivate diagnostic assertions;3061otherprivate/allregular groups
+pass, latercourse/native/debug/independent skipped. Two expectedbody-equality
+messages are corrected after allthree existing negatives independently RustE0308
+and CLI reject. Raw proofs/production/fixtures/references unchanged. Exactprivate
+1794340234386664156 timed out inClippy-driverlink(total275.87s), zeroexecutions;
+format/auditpass. Fullsuccessor remains due; nevercancelanactivefull run.
 
 Original120s observation still FAILS at121.2436s:253 failures/5122item attempts,
 through function10219,file279:9949,node427 in x86/ssse3.rs. Earlier num/error.rs

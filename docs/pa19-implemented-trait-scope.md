@@ -75,9 +75,27 @@ Immutable dev-fast CLI
 `9beaaac99f97adebc999cc42342c9bace29730ed14cbfb9600281e6408929a2d`
 binds commit 17baa8cb943d5386cd056c0d89c5be2b05baf5d5, an empty patch and
 3,885 compiler/CLI/test Rust hashes. The prior full run 42882896962 on 8feedb05a
-is still active after lint, architecture, harness and host graph checks. This
-semantic successor's full qualification and the earlier optimized nested-proof
+failed two stale private body-diagnostic assertions after 3,061 other private and
+all regular integration cases passed. Course/native/debug/independent gates were
+skipped after Cargo failed. Both controls still rejected the invalid sources;
+they expected the old normalization wording. The correction below retains every
+raw proof assertion. Full qualification and earlier optimized nested-proof
 controls remain pending. Do not cancel an active full run by redispatching.
+
+### Private diagnostic correction
+
+The existing pointee assumed-parent/unknown-result and residual Try-type mismatch
+sources independently reject with Rust E0308. The unchanged immutable CLI rejects
+all three with the checked-body missing-equality diagnostic. Only two private
+expected-message literals change; source fixtures, production code, raw opaque
+normalization/property assertions and all reference bytes remain unchanged.
+
+Evidence is in `obj/parallel/join-private-diagnostics/`: the frozen plan, Rust
+object/CLI diagnostics and complete CI log. Exact private fastcheck receipt
+1794340234386664156 passed format and architecture, then timed out during the
+single Clippy-driver build/link at 244.70 seconds; total 275.87 seconds. Neither
+private test executed locally. No duplicate cargo test or release build was run;
+private lint/link/execution remain pending in the full successor.
 
 ## Original core
 

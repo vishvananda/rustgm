@@ -12,7 +12,7 @@ const CASES: [(&str, Option<&str>); 4] = [
     ("residual-output-mismatch", Some("incompatible types")),
     (
         "residual-try-type-mismatch",
-        Some("associated type projection requires normalization"),
+        Some("body types require a provable associated-result equality"),
     ),
 ];
 

@@ -259,7 +259,7 @@ fn sized_fallback_never_overrides_assumed_parent_or_actual_equality() -> TestRes
             .err()
             .ok_or("unproved unit result accepted")?;
         assert_eq!(
-            error.message, "associated type projection requires normalization",
+            error.message, "body types require a provable associated-result equality",
             "{name}: {error}"
         );
     }
