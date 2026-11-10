@@ -40,31 +40,38 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-Joined immutable dev-fast CLI
-`a73fa1351c91c32a3ccdff0baddafb60daf583e3763c29e35a9eb8ca5929a5f7`
-clears AtomicPtr::from_mut's closed projected-field layout requirement.
-The unchanged722-input census opens375 sources and checks42310 declarations,
-none failed/blocked, then stops in local_annotations at fmt/num.rs byte2783
-(radix_integers expansion): "symbolic slice reference lacks its normalized range".
-Bodies remain0; a census record is discovery, not artifact completion. TSV SHA
-`da6e9262ea7683ae3b03d84d0d4d9d615b8d9c84bd82539f2038b49685705423`
-exactly matches both isolated atomic candidates. Profile, limits and source pins
-remain unchanged.
+The [whole-slice correction](docs/pa31-whole-slice-validity.md), compiler7d13f1244,
+clears fmt/num.rs's named digit-table failure. PA31 whole-slice-validity freezes
+five independent Rust outcomes before implementation; byte/array/empty reproduce
+the exact old missing-range error, while str and an ordinary wrapper are controls.
+The actual MaybeDangling role activates strict result validation. All temporary
+traces are withdrawn. Existing initialization, bounds, element, lifetime and write
+checks remain; an array-unsized pointer keeps its actual location and metadata.
 
-Ordinary const slice calls, identity, len and slice-pattern probes (seven cases)
-all pass independently and in the joined CLI; ordinary is_ascii stops earlier at
-unsupported inherent lookup. None reproduces the exact current error, so no
-misleading earlier-PA reducer was added. Inspect the actual source is_ascii /
-const_eval_select path and the symbolic reference range producer next. The error
-is in const_eval/memory/bytes/slice_words.rs; do not replace provenance/range
-validation with a guessed length. Split::new remains provisional. Close f01
-before widening A+O bound-region lookup.
+Private1794285598981203174 passes16 cases; production1794285826400693246 passes
+33 wrapper+37 MaybeUninit outcomes; native1794286021356961497 passes three actual
+programs. Strict lint/format/audit,313 harness/465 roots/44 stages/upstream checks
+pass. Current immutable dev-fast CLI is
+`61e80685835aaf615a40d2eb527c6d1ef15fad700778f7c6e1bc13f3659c6782`.
+Its source-bound unchanged722-input census opens375 sources, checks42310
+declarations, none failed/blocked, bodies0. The next record is local_annotations
+at num/uint_macros.rs:1824, byte75957, checked_ilog: "source intrinsic constant
+execution is not implemented". Expansion uint_impl is at num/mod.rs byte49157.
+TSV SHA`aef48e5a37e6c4e936af398fac7f39769f09213ff230e0a79d1358cc9f1d276a`.
+Inputs, profile and limits remain unchanged; this is discovery, not an artifact.
+Inspect the actual registered intrinsic next; is_val_statically_known is the
+first source lead. Split::new remains provisional; close f01 before widening A+O.
+
+Full predecessor42754442914 oncca1dbd4d has passed fast, lint/architecture/harness,
+independent host build graph, release/course and native maintainer checks. Broad
+native, debug and independent stages remain pending. Push-fast42754389428 passes.
+Do not dispatch the slice successor while predecessor full is active.
 
 ## Next work, one worker
 
-1. Reduce and repair the observed symbolic slice-range requirement, using the
-   earliest PA that actually reproduces it. Declare outcomes before freezing
-   fixtures and independently check them. Then rerun the unchanged census.
+1. Confirm and repair the observed checked_ilog intrinsic requirement, using the
+   actual pinned declaration and semantics. Freeze independently checked reducers
+   in their earliest owning PA, then rerun the unchanged census.
 2. Inspect the joined successor full CI when available and repair actual failures;
    preserve pending optimized nested-proof measurements and all remaining debts.
 3. HR transport may start now that record variants landed. Its approved notice
@@ -76,10 +83,11 @@ before widening A+O bound-region lookup.
 
 - Durable decisions: /mnt/vizier/rustgm-scratch/integrator-20261109/pending_decisions.md.
 - Current compiler/test source hashes are bound in pa26-work's
-  obj/parallel/reuse-ci/join-dev-fast/producer.json. Final census and receipts
-  are under obj/parallel/reuse-ci; the isolated atomic checkpoint is under
-  obj/parallel/atomic-layout. All temporary production/test diagnostics are gone.
-- The receiver benchmark preserves30 accepted same-profile A/A+ABBA observations
+  obj/parallel/radix-slice/candidate-dev-fast/producer.json. Current receipts and
+  census are under obj/parallel/radix-slice; prior joined proof/layout evidence is
+  under obj/parallel/reuse-ci and obj/parallel/atomic-layout. All temporary production/test diagnostics are gone.
+- Current strict-str/74-control A/A+ABBA retains20 full-output-equal observations,
+  ratios0.966/1.003, with no timing conclusion. The earlier receiver benchmark preserves30 accepted same-profile A/A+ABBA observations
   with identical complete LowIR and a real exported return7/calling entry point.
   Dev-fast ratios at8/16/32 are0.815/0.651/0.437;74 ordinary inputs retain10
   complete-output-equal observations, ratio0.991. No optimized speed claim.

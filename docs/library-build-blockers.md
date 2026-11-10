@@ -5,11 +5,21 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+The [whole-slice result-validity correction](pa31-whole-slice-validity.md) clears
+fmt/num.rs's digit-table range failure under the actual MaybeDangling policy.
+CLI61e80685 preserves all722/375 source hashes/profile/limits and reaches
+checked_ilog at num/uint_macros.rs:1824 (byte75957): source intrinsic constant
+execution is not implemented. Declaration count42310, failed/blocked0, bodies0.
+Five independently accepted PA31 reductions,16 private,2 production groups and
+three native observers qualify the finite correction. Full successor CI and
+original artifacts remain required.
+
 The single-worker [proof/layout join](parallel/nested-proof-ci-repair.md) clears
 AtomicPtr::from_mut using actual normalized stored fields and independently
 checked lifetime evidence. CLIa73fa135 opens375 unchanged original sources out
-of722 and checks42310 declarations, none failed/blocked; bodies remain0. The next
-record is fmt/num.rs byte2783, symbolic slice reference lacks its normalized range.
+of722 and checks42310 declarations, none failed/blocked; bodies remain0. That
+record was fmt/num.rs byte2783, symbolic slice reference lacks its normalized range;
+the later whole-slice correction above clears it.
 Seven ordinary const slice-call/pattern controls pass independently and in RustGM;
 they do not reproduce this record. Reduce the actual source CTFE path before
 changing it. Full successor CI, optimized measurement and original artifacts

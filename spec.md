@@ -7466,6 +7466,15 @@ The unchanged nested-readiness invariant must still reject overlapping execution
 at the maximum budget that admits either initializer alone. See the
 [CI repair](docs/source-wrappers-ci-repair.md).
 
+Strict slice-result validity accepts an array-unsized pointer that retains its
+original zero-offset array place and actual length metadata. When no explicit
+range is retained, validate that metadata prefix against the same actual array
+backing, element, bound, alignment, initialization, static and write policies.
+Do not invent length metadata, accept an unnormalized byte offset, rewrite the
+pointer's provenance or reuse an earlier successful validity check after mutation.
+The [whole-slice checkpoint](docs/pa31-whole-slice-validity.md) retains empty,
+nonempty, role-lookalike and strict lifetime/initialization opponents.
+
 Source NoDrop field rules consume the exact completed language identity and
 ordinary source Copy/component proofs. Reuse the existing suspended component
 frontier, retaining caller scope and every child debt; a builtin marker proof
