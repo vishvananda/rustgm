@@ -140,7 +140,7 @@ impl Checker<'_> {
         }
         self.normalize_closure_inputs(node, signature)?;
         self.advance_projections(node)?;
-        self.state.work.push(Work::CollectClosure);
+        self.state.work.push(Work::CollectClosure(None));
         self.start_body(body)
     }
 
@@ -252,7 +252,10 @@ impl Checker<'_> {
         Ok(())
     }
 
-    pub(super) fn collect_closure(&mut self) -> Result<(), Error> {
+    pub(super) fn collect_closure(
+        &mut self,
+        casts: Option<super::pointer_casts::QueuedCasts>,
+    ) -> Result<(), Error> {
         // This child's fresh work queue placed CollectClosure below Enter and
         // CoerceElement. Dependencies resume above it, and mutable-place choices
         // have settled. The enclosing and sibling states remain parked. Prepare
@@ -292,6 +295,9 @@ impl Checker<'_> {
         completed.map_err(|e| self.error(body, e))?;
         self.prepare_nested_output(&mut metadata.lifetimes, parent.body)?;
         self.closure_result_boundary(&metadata.lifetimes)?;
+        // The child resumes these after its real incoming caller constraints.
+        // Existing Exit work then performs the full original cast preparation.
+        self.resume_closure_casts(casts)?;
         std::mem::swap(&mut entry.inputs.context, &mut self.state.infer);
         let mut identity = metadata
             .lifetimes

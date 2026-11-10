@@ -277,7 +277,7 @@ enum Work {
     AssignmentValue(NodeId),
     ForIterator(NodeId),
     ForPattern(NodeId, TermId),
-    CollectClosure,
+    CollectClosure(Option<pointer_casts::QueuedCasts>),
     CollectInline,
 }
 const _: [(); 24] = [(); size_of::<Work>()];
@@ -943,7 +943,7 @@ impl Checker<'_> {
                         return Ok(Some(dependency));
                     }
                 }
-                Work::CollectClosure => self.collect_closure()?,
+                Work::CollectClosure(casts) => self.collect_closure(casts)?,
                 Work::CollectInline => self.collect_inline()?,
                 Work::Conditional {
                     node,
@@ -1870,6 +1870,9 @@ impl Checker<'_> {
             Kind::Cast { value, ty } => {
                 let source = self.term(value)?;
                 let target = self.term(ty)?;
+                if self.defer_closure_cast(node, source, target)? {
+                    return Ok(target);
+                }
                 self.prepare_pointer_cast(node, value, source, target)?;
                 if matches!(
                     self.head(node, source)?,

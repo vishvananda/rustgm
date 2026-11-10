@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "owner": "pa31 actual source Index and callable companions",
+  "contract": "Four source counterparts of the PA24 late closure cast contract; metadata/object checks are declared positive; diverging method bodies isolate source header proof and make no native claim. Source prefix follows the existing source-index-places and source-try-blocks packets; original upstream bytes stay unchanged.",
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/projection-casts/source-chain-called.rs",
+      "sha256": "e1904cf4d80edaf1ebca476f80dfea8e9336d248436d0d085cb58dcf00ce58e6",
+      "exit_status": 0,
+      "rustc_metadata_status": 0,
+      "rustc_object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/projection-casts/source-chain-called-typed.rs",
+      "sha256": "d03f28bf183b4df404d43aa2552af64e33221f6801905bef1e543246a5d95adf",
+      "exit_status": 0,
+      "rustc_metadata_status": 0,
+      "rustc_object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/projection-casts/source-chain-generic-called.rs",
+      "sha256": "fbaeb121c1ff8104b0ff5cf7c23ad84d05966bfc6a959a086abecf458436f1df",
+      "exit_status": 0,
+      "rustc_metadata_status": 0,
+      "rustc_object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/projection-casts/source-chain-local-constant-called.rs",
+      "sha256": "1f89daa53014c164741277b5984a4be6739898a578d6799c34eb5747e8c8664a",
+      "exit_status": 0,
+      "rustc_metadata_status": 0,
+      "rustc_object_status": 0
+    }
+  ],
+  "object_prerequisite": "Initial object checks lacked the genuine panic_bounds_check language declaration. Raw errors and original bytes remain in obj/parallel/projection-casts; this revision supplies a real tracked diverging function. Positive outcomes are unchanged."
+}

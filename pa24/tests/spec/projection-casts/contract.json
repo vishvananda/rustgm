@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "owner": "pa24 closure inputs inferred from later calls",
+  "contract": "Declared before independent execution and reference generation. Cast preparation must resume after the real closure input constraints arrive, retaining scalar/function-pointer validity, trait/move/lifetime obligations and native equality.",
+  "inputs": [
+    {
+      "path": "pa24/tests/spec/projection-casts/called.rs",
+      "sha256": "57ffcfa74f46ab48dec585bb816e7f7a6a839e6e44dfba017de530848c96885f",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/projection-casts/typed-control.rs",
+      "sha256": "45f48df84a744f9142441b07c73b9d1646db10bce07cae16a9fb6fe8ffe73581",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/projection-casts/generic-parent.rs",
+      "sha256": "a2c414a6cd6d6c97a2ab775b9d8b0dfb577a048ff6895d04f0a032c376f31da4",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/projection-casts/nested.rs",
+      "sha256": "fcff3440a0a15678811db9f2c3b7544c2dd683a0ff67808d422c048f31793a92",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/projection-casts/tuple-input.rs",
+      "sha256": "c9db998c89bac3ec8ab88eda2d9efd33d7746019bc54bebb88e644f7f80f8aa9",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/projection-casts/early-return.rs",
+      "sha256": "50b77f7d89ae87462af28bf129a3f095878b3a4528598240e107e55e20f1082b",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/projection-casts/record-output.rs",
+      "sha256": "03dd0ad2361bf2df950f2d1cab6f6f9541c23f5f9fa2d935ad26081a316daee7",
+      "exit_status": 1
+    },
+    {
+      "path": "pa24/tests/spec/projection-casts/unpaid.rs",
+      "sha256": "e252dc13b998355cdead298a38c888fbed9a391a11302596fe7b48f3283afbef",
+      "exit_status": 1
+    },
+    {
+      "path": "pa24/tests/spec/projection-casts/uncalled.rs",
+      "sha256": "1a7b4a35a3f848a456a3d768b8d57288c4564f55f64c335fb4ab53064c5353b5",
+      "exit_status": 1
+    },
+    {
+      "path": "pa24/tests/spec/projection-casts/function-item.rs",
+      "sha256": "e6f58660cb94a5eaa7799d0678ef7cd319cf5938a2c4b3da6aa1705c0f0fa766",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/projection-casts/width-8-noise-0.rs",
+      "sha256": "edb402d95654a3cfad7d8898759bdeb973b53eaffc478b6edfea668cf52b8d3a",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/projection-casts/width-8-noise-128.rs",
+      "sha256": "0abbb4aeb143e62388404996317b0063834d49a38b70525d64485524b5ea1aad",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/projection-casts/width-32-noise-0.rs",
+      "sha256": "36a6a3945a6e0f5889089c0ee28cf1d0d1f1f3805a54cda9676eac2fde617cf8",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/projection-casts/width-32-noise-128.rs",
+      "sha256": "66d26dfc05c8ccee0ce51798e87c40e3a724efdbbd0ed05aed0a398db2427dbd",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/projection-casts/width-128-noise-0.rs",
+      "sha256": "adfb51e1c984afabc8c76d4812be058955ee79d91b49ce908e78d35df7b07cd2",
+      "exit_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/projection-casts/width-128-noise-128.rs",
+      "sha256": "9b6954e8f1493b13e9adc9c82924de263edcb6edee9e6c9fd71d19164d585731",
+      "exit_status": 0
+    }
+  ],
+  "scaling": {
+    "widths": [
+      8,
+      32,
+      128
+    ],
+    "unrelated_types": [
+      0,
+      128
+    ],
+    "invariant": "inference/canonical work at most4x+256 per fourfold width; unrelated types must not increase inference work and must preserve canonical work exactly"
+  },
+  "control_revision": "Noise declarations follow main so active function/closure AST identities stay fixed. Original preceding-noise inputs and failing counter observations are retained in obj/parallel/projection-casts/control-revision. Expectations are unchanged.",
+  "uncalled_diagnostic": "Rust rejects E0282 because no caller fixes the input. Baseline and candidate both reject with associated type projection requires normalization; this is the one explicitly allowed unresolved-input diagnostic, not a passing input.",
+  "counter_review": "The whole-body inference counter includes reusable scratch/capacity work: adding128 unused types reduced width8 inference3018->2862 even with fixed active AST IDs, while canonical work stayed10. The controlling invariant forbids increases; exact inference equality is not claimed. Both failed equality checks are retained."
+}

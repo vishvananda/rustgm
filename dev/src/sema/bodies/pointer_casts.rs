@@ -1,12 +1,124 @@
 //! Explicit casts may reinterpret raw pointees but cannot invent pointer metadata.
-use super::{Checker, Constructor, Error, Kind, NodeId, TermId, Type, TypeId};
+use super::{Checker, Constructor, Error, Kind, NodeId, TermId, Type, TypeId, Work};
 use crate::{
     abi::metadata::Metadata,
     sema::model::{AdjustmentKind, Cast},
-    types::infer::Solved,
+    support::retained::Growth,
+    types::infer::{Error as InferError, Solved},
 };
 
+/// A cold owned queue keeps the ordinary Work payload one pointer wide.
+pub(super) type QueuedCasts = Box<Vec<NodeId>>;
+
 impl Checker<'_> {
+    /// A closure's first pass can precede the call that fixes these inputs.
+    /// Its existing bottom continuation owns the cold queue, so parking the
+    /// child preserves it without widening ordinary body or closure records.
+    pub(super) fn defer_closure_cast(
+        &mut self,
+        node: NodeId,
+        source: TermId,
+        target: TermId,
+    ) -> Result<bool, Error> {
+        if !matches!(self.state.work.first(), Some(Work::CollectClosure(_))) {
+            return Ok(false);
+        }
+        let mut pending = false;
+        for term in [source, target] {
+            match self.state.infer.head(&self.facts.types, term) {
+                Ok(None) | Err(InferError::Normalization) => pending = true,
+                Ok(Some(_)) => {}
+                Err(error) => return Err(self.error(node, error)),
+            }
+        }
+        if !pending {
+            return Ok(false);
+        }
+        let Some(Work::CollectClosure(casts)) = self.state.work.first() else {
+            return Err(self.error(node, "cast lost its closure collection frontier"));
+        };
+        let (length, capacity) = casts
+            .as_deref()
+            .map_or((0, 0), |casts| (casts.len(), casts.capacity()));
+        let mut growth = Growth::vector::<NodeId>(length, capacity, 1);
+        growth.bytes = growth
+            .bytes
+            .saturating_add(usize::from(casts.is_none()) * size_of::<Vec<NodeId>>());
+        self.pay_closure_casts(node, growth, 1)?;
+        let Some(Work::CollectClosure(casts)) = self.state.work.first_mut() else {
+            return Err(self.error(node, "cast lost its prepaid closure frontier"));
+        };
+        let casts = casts.get_or_insert_with(|| Box::new(Vec::new()));
+        let needed = if length == capacity {
+            length.saturating_mul(2).max(4) - length
+        } else {
+            0
+        };
+        casts.try_reserve_exact(needed).map_err(|_| {
+            crate::sema::model::Declarations::error(
+                self.report,
+                self.state.body,
+                "closure cast allocation failed",
+            )
+        })?;
+        if casts
+            .capacity()
+            .saturating_sub(capacity)
+            .saturating_mul(size_of::<NodeId>())
+            > growth.bytes
+        {
+            return Err(self.error(node, "closure cast allocation exceeds its prepaid bound"));
+        }
+        casts.push(node);
+        Ok(true)
+    }
+
+    pub(super) fn resume_closure_casts(&mut self, casts: Option<QueuedCasts>) -> Result<(), Error> {
+        let Some(casts) = casts else {
+            return Ok(());
+        };
+        let node = self.state.body.node;
+        let growth = Growth::vector::<Work>(
+            self.state.work.len(),
+            self.state.work.capacity(),
+            casts.len(),
+        );
+        self.pay_closure_casts(node, growth, casts.len())?;
+        self.state.work.try_reserve(casts.len()).map_err(|_| {
+            crate::sema::model::Declarations::error(
+                self.report,
+                self.state.body,
+                "closure cast work allocation failed",
+            )
+        })?;
+        // Reverse insertion retains original expression order on the work stack.
+        self.state
+            .work
+            .extend((*casts).into_iter().rev().map(Work::Exit));
+        Ok(())
+    }
+
+    fn pay_closure_casts(
+        &mut self,
+        node: NodeId,
+        growth: Growth,
+        entries: usize,
+    ) -> Result<(), Error> {
+        let work = growth.work.saturating_add(entries);
+        self.state
+            .infer
+            .account_work(work)
+            .map_err(|e| self.error(node, e))?;
+        if self.facts.source_bindings.is_some() {
+            crate::sema::header_attributes::charge_source_retention(
+                self.facts,
+                work,
+                growth.bytes,
+            )?;
+        }
+        Ok(())
+    }
+
     pub(super) fn hint_pointer_cast(
         &mut self,
         node: NodeId,
@@ -282,3 +394,7 @@ fn selected_slice_cast(
 #[cfg(test)]
 #[path = "../../../tests/invariants/unsizing_casts.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/postponed_casts.rs"]
+mod postponed_cast_tests;

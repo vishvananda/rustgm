@@ -1,0 +1,16 @@
+pa24/tests/spec/projection-casts/called.rs	0
+pa24/tests/spec/projection-casts/typed-control.rs	0
+pa24/tests/spec/projection-casts/generic-parent.rs	0
+pa24/tests/spec/projection-casts/nested.rs	0
+pa24/tests/spec/projection-casts/tuple-input.rs	0
+pa24/tests/spec/projection-casts/early-return.rs	0
+pa24/tests/spec/projection-casts/record-output.rs	1
+pa24/tests/spec/projection-casts/unpaid.rs	1
+pa24/tests/spec/projection-casts/uncalled.rs	1
+pa24/tests/spec/projection-casts/function-item.rs	0
+pa24/tests/spec/projection-casts/width-8-noise-0.rs	0
+pa24/tests/spec/projection-casts/width-8-noise-128.rs	0
+pa24/tests/spec/projection-casts/width-32-noise-0.rs	0
+pa24/tests/spec/projection-casts/width-32-noise-128.rs	0
+pa24/tests/spec/projection-casts/width-128-noise-0.rs	0
+pa24/tests/spec/projection-casts/width-128-noise-128.rs	0

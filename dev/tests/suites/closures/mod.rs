@@ -49,3 +49,6 @@ pub(crate) mod resolve;
 pub(crate) mod semantic;
 #[path = "../../source_closures.rs"]
 mod source_closures;
+
+#[path = "../../postponed_casts.rs"]
+mod postponed_casts;
