@@ -2184,6 +2184,16 @@ including declared-result and parent premises, before structural fallback. The
 [projected erasure packet](docs/pa31-projected-object-erasure.md) retains source,
 negative, native and bounded-work controls and separate tuple-factory requirements.
 
+Unsizing discovery compares the complete canonical input shapes of independently
+normalized associated results before treating their argument-layout identities as
+a forced mismatch. Region-only differences supply neither equality nor conversion
+permission. Each complete opaque input shape is compared once; other queued
+siblings remain checked. Ordinary comparison, raw equality, parent and lifetime
+proofs retain their existing boundaries. The
+[associated-result input packet](docs/pa31-projection-argument-discovery.md)
+includes native payload/borrow witnesses, complete input distinctions and nested
+8/32/128 work bounds.
+
 Conditional source const calls retain declaration requirements separately from
 caller permission. Prepare immutable requirements once for each complete Code
 instance, then prove them under the actual caller environment at every reached

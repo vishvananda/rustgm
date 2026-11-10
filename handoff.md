@@ -40,51 +40,49 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-[Projected source object erasure](docs/pa31-projected-object-erasure.md), compiler
-b642ca4a8 / CLI0107a690, now pays all ordinary object and endpoint requirements for
-a projected source awaiting normalization. Failed requirements remain deferred;
-known object upcasts retain intrinsic principal evidence. Internal marker queries
-select the actual source application. No hot fields, caches, limits or backend
-contract changes. One worker in existing B; no workers or new worktrees.
+[Associated-result input regions](docs/pa31-projection-argument-discovery.md),
+compiler96548ba41 / CLIe06cd0d9, repairs request_by_type_tag's source CoerceUnsized
+mis-discovery. Two independently completed opaque results have identical complete
+input shapes but fresh versus bound lifetime IDs. The unsizing filter now reuses
+existing normalized shapes, with no equality/region/parent/conversion permission.
+Other raw operations remain unchanged. Complete shapes are traversed once, not
+again at every nested input. No hot fields, caches, limits or backend changes.
 
-PA31 owns26 active source outcomes (19accept7reject), independently object-checked,
-all complete LowIR and19 Rust/CPPGM native comparisons (`9 23`). Eight-counter
-width8/32/128/noise128 bounds, source auto-trait/upcast controls, raw comparison/
-equation/identity guards and old unsizing/coercion groups pass.315 harness tests,
-468 roots/13 binaries/44 stages,128 upstream fixtures and126 Reference files pass.
-No text oracles changed. Three original tuple-factory sources are preserved under
-required/, with Rust acceptance/native evidence: their generated const cleanup
-owner still incorrectly requires an authored function header. These remain valid
-unsupported requirements, not passing source outcomes. Active intrinsic twins
-build the same aggregate with a struct literal, retaining the exact field proof.
-No wrapper Copy implementation was added; whole PA31 stays planned.
+PA31 owns26 new outcomes (19accept7reject), independently object-checked and19
+Rust-native9 23 results before implementation. All26 complete LowIR outcomes,
+eight-counter call/noise bounds and typed input/member/const/group/raw equality/
+identity/budget guards pass. Nested8/32/128 growth is linear. The first attempt
+was functionally correct but repeated prefixes (205steps at8,2737at32); its failed
+receipt remains. Final7 exact tests1794350414882768771 pass88.83s; finalNative20
+(19new+oldwrapper/cleanup1)1794350534890245310 pass54.12s. Six old source/nominal,
+pointer ownership and receiver-reference/slice controls pass.315harness/468roots/
+13bins/44stages/128upstream/126Reference pass. No oracles changed; PA31 planned.
 
-Immutable0107 binds b642ca4a8/emptydiff/3887 compiler/CLI/test Rust hashes. Forty
-same-profile A/A+twoABBA observations preserve complete ordinary LowIR, two source
-control outputs and74 frozen outcomes. Ratios0.981/1.000/0.999/0.991;
-A/A0.821/0.981/0.859/1.026, no speed claim. Diagnostic445c/3350 binaries retired by
-scoped prune1794347695205404555. Retain optimized21f for older pending optimized
-nested-proof controls. Baseline6549 retired after publication/comparison by scoped prune1794347786790155449;
-its metadata and observations remain, and its binary is unavailable for new runs.
+Finalimmutablee06 binds96548ba41/emptydiff/3888Rusthashes. Evidence is in B's
+obj/parallel/tagged-request/. Forty A/A+twoABBA observations preserve complete
+ordinary LowIR, two source outputs and74 frozen outcomes; ratios1.008/1.056/1.016/
+0.982, A/A0.648/0.841/1.005/0.999; no speed claim. Initial7892 candidate retired by
+scoped1794350742473176755, analysis02bd trace also retired. Keep only currente06
+and optimized21f after retiring baseline0107 following publication/comparison.
+One worker, existing B, no new trees or agents.
 
-The unchanged120s original observation FAILS at121.1915s:230 failure records/4354
-item attempts, through function8923,file232:10709,node466 in str/mod.rs. All722
-source hashes/six bindings/profile/limits fixed. Progress SHA
-b377219abcf86a5d6d31960dbc657f2dcf82c91923e612a9954504eeb445ed7b.
-No mem/mod.rs failure remains; Discriminant<T>::fmt's old object-proof fence is
-absent. First is now request_by_type_tag, error.rs,file78:15853, unambiguous trait
-obligation. It constructs Tagged<TaggedOption<'a,I>>, calls provide(as_request())
-and returns I::Reified. Following as_request has a separate scalar-operation
-fence. Reduce the actual tags::Type/Reified and receiver proof before shared
-kernel changes. Prefixes differ; raw counts are not speed evidence. No complete
-census, checked-body count or original core/alloc/std artifact exists.
+Unchanged120s original observation FAILS at121.1873s:229failure records/4426item
+attempts through function8996,file232:110334,node2429 in str/mod.rs. All722 hashes,
+sixbindings/profile/limits fixed. Progress SHA
+832a38f90433b1590380edf7a68880c08a9ac646a3ba93de793f61ad353d8ef0.
+No request_by_type_tag failure remains in the prefix. First is now as_request,
+error.rs78:34589: operation requires a scalar type. The explicit reference cast
+from Tagged<TaggedOption<'a,I>> to Tagged<dynErased<'a>> fails an ordinary reduction,
+while implicit erasure passes. Next reduce nominal DST reference casts with a
+slice tail, then retain actual objects/source roles if necessary. Earliest owning
+PA follows that reduction; do not assume PA31 merely because core exposed it.
+Prefixes differ; no raw speed/count comparison, full census/bodycount or artifact.
 
-Full42900791503 on8ac237506 passed every stage (source-coercion predecessor).
-Full42909829598 on3273d5032 is now active for this semantic checkpoint. Do not
-cancel it by redispatching; push-fast is separate. The later CI-status edit changes
-only documentation and retains exactly the same compiler and fixture hashes. The older
-42882896962 failure and local private link timeout remain retained failures;
-42890284924 executed and passed the repaired controls in its full successful run.
+Full42909829598 on3273d5032 passed every stage for the preceding erasure checkpoint.
+This newer semantic checkpoint needs its full successor after publication. Never
+cancel an active full run with a new dispatch. [Projected erasure](docs/pa31-projected-object-erasure.md)
+retains its26 outcomes/19native and3 separately required Rust-positive tuple-factory
+cleanup owners. No original core/alloc/std artifact or whole PA31 completion.
 
 [PA19implementedtraitscope](docs/pa19-implemented-trait-scope.md) remains published
 with34newoutcomes/25native/all1233texts andzeroexistingreferencechanges. The prior

@@ -86,6 +86,37 @@ No blanket lint allowance, repeated private-harness build, release build, oracle
 change or backend-contract change was added. Temporary tracing was restored before
 implementation; its binary is analysis-only.
 
-Full42909829598 on3273d5032 covers the preceding erasure checkpoint and remains
-active. This newer semantic change needs a successor after that run terminates;
-never cancel a live full run by redispatching. Original core remains unbuilt.
+Full42909829598 on3273d5032 passed every stage for the preceding erasure
+checkpoint. This newer semantic change requires its own full successor after
+publication; never cancel a live full run by redispatching. Original core remains unbuilt.
+
+## Immutable controls and original core
+
+Final dev-fast CLI
+`e06cd0d9d8cb3cfc0835c2f766f5f2a014e38cbcf853e7cc90e4fd54a3c2b4dc`
+binds compiler96548ba413a3555d2acf5ff73cd29de213462341, an empty patch and3,888
+compiler/CLI/test Rust hashes. Forty immutable A/A and two paired ABBA observations
+retain complete ordinary LowIR, two accepted source-control type outputs and74
+frozen outcomes. Ratios are1.008/1.056/1.016/0.982; A/A ratios0.648/0.841/1.005/0.999.
+These preserve output equality, without a speed claim. The nested and call-width
+work invariants above cover the actual changed path. The initial7892 candidate
+was retired by scoped prune1794350742473176755; its metadata remains retained.
+The diagnostic02bd trace was also retired after its exact sources were restored.
+
+The unchanged120-second original observation fails its infrastructure deadline at
+121.1873seconds. Its partial stream has229 failure records and4,426 item attempts,
+ending at function8996,file232 byte110334,node2429 in str/mod.rs. All722 original
+source hashes, six configuration bindings, profile, compiler limits and observer
+window remain fixed. Progress SHA-256 is
+`832a38f90433b1590380edf7a68880c08a9ac646a3ba93de793f61ad353d8ef0`.
+
+No request_by_type_tag failure remains in the recorded prefix. The first failure
+is now as_request at error.rs,file78 byte34589: operation requires a scalar type.
+Its explicit cast from &mut Tagged<TaggedOption<'a,I>> to
+&mut Tagged<dyn Erased<'a>+'a> already fails an independently accepted ordinary
+reduction; implicit erasure passes. First reduce nominal DST reference casts
+using an ordinary slice tail, then retain trait objects or source roles if needed.
+This determines the earliest PA rather than assigning the whole core call toPA31.
+
+The prefixes end at different items, so raw counts are not whole-core performance
+evidence. No complete census, checked-body count or original core artifact exists.

@@ -1,29 +1,29 @@
 # Library build blocker tracker
 
-Latest semantic checkpoint: [projected source object erasure](pa31-projected-object-erasure.md),
-compiler b642ca4a8 / CLI0107a690. Projected unknown heads generate complete ordinary
-object, Sized, equality, marker, lifetime and endpoint goals. Failure stays
-deferred; actual source marker applications own declared and caller proof. Known
-dyn upcasts retain intrinsic principal restrictions. No new hot fields, caches,
-limits, backend changes or oracles. PA31 retains26 active outcomes/19 native,
-eight-counter scaling/noise and old controls;315 harness/468 roots/upstream pass.
-Three separately manifested Rust-positive tuple factories remain required cleanup
-owner work. Whole PA31 stays planned.
+Latest semantic checkpoint: [associated-result input regions](pa31-projection-argument-discovery.md),
+compiler96548ba41 / CLIe06cd0d9. Source nominal discovery compares independently
+completed opaque input shapes without treating lifetime IDs as constructors.
+Existing equality, lifetime, parent and actual conversion proofs remain mandatory.
+Complete shapes are traversed once; nested8/32/128 and call/noise work bounds pass.
+PA31 owns26 new outcomes/19 native, with all complete LowIR and raw guards passing.
+FinalNative20 includes the old wrapper transfer/cleanup observer. Six affected old
+controls, strict selected checks,315 harness/468 roots/upstream pass. No hot fields,
+caches, limits, backend or oracle changes; whole PA31 remains planned.
 
-Original120s observation FAILS at121.1915s:230records/4354attempts through
-function8923,file232:10709,node466 in str/mod.rs. No mem/mod.rs failure remains;
-Discriminant<T>::fmt's old object-proof fence is absent. First is now
-request_by_type_tag, error.rs78:15853, actual trait-goal proof for TaggedOption's
-projected representation and provide/as_request receiver. Next as_request has a
-scalar-operation fence. All722 hashes/six bindings/profile/limits fixed; partial
-SHA b377219abcf86a5d6d31960dbc657f2dcf82c91923e612a9954504eeb445ed7b.
-Unequal prefixes are not speed evidence. No complete census or original artifact.
+Original120s observation FAILS at121.1873s:229records/4426attempts through
+function8996,file232:110334,node2429 in str/mod.rs. No request_by_type_tag failure
+remains. First is now as_request, error.rs78:34589, scalar-operation fence at an
+explicit nominal DST reference cast. Ordinary explicit cast fails while implicit
+erasure passes; reduce a slice tail before assigning PA ownership. All722 hashes,
+sixbindings/profile/limits fixed. Partial SHA
+832a38f90433b1590380edf7a68880c08a9ac646a3ba93de793f61ad353d8ef0.
+Unequal prefixes are not speed evidence. No full census or original artifact.
 
-Full42900791503 on8ac passed every stage. Full42909829598 on3273d5032 is active
-for this semantic successor; do not cancel it with another full dispatch. Forty immutable A/A+twoABBA controls preserve
-complete ordinary LowIR, source outputs and74 frozen outcomes without a speed
-claim. The PA19 scope and prior coercion checkpoints remain qualified. Keep the
-three tuple-factory requirements and earlier optimized nested-proof checks open.
+Full42909829598 on3273 passed every stage for preceding projected erasure. This
+new semantic checkpoint requires its full successor after publication. Forty
+immutable A/A+twoABBA controls preserve complete ordinary/source outputs and74
+frozen outcomes; no speed claim. Previous erasure's three valid unsupported tuple
+factories and earlier optimized nested-proof checks remain required.
 
 Previous [pending-join inputs](pa20-pending-join-inputs.md) retain their qualified
 PA20 packet, source/proof ownership and separate1.266x unoptimized direct-control
