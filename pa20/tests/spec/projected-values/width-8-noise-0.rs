@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait Word:Copy{const VALUE:u8;}impl Word for u8{const VALUE:u8=7;}trait Float{type Int:Word;}struct F;impl Float for F{type Int=u8;}fn values<T:Float>(){check(T::Int::VALUE==7);check(T::Int::VALUE==7);check(T::Int::VALUE==7);check(T::Int::VALUE==7);check(T::Int::VALUE==7);check(T::Int::VALUE==7);check(T::Int::VALUE==7);check(T::Int::VALUE==7);}fn main(){values::<F>();}

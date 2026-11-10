@@ -51,6 +51,8 @@ struct Trial {
 pub(in crate::sema) struct Query {
     prefix: Context,
     term: TermId,
+    /// The declaration elaborator completed this prefix in the same caller.
+    normalized_prefix: Option<crate::types::TypeId>,
     mode: Mode,
     members: std::vec::IntoIter<DefId>,
     lexical: Option<Vec<DefId>>,
@@ -159,6 +161,7 @@ impl Query {
         Ok(Self {
             prefix,
             term,
+            normalized_prefix: None,
             mode: Mode::Inherent(site),
             members: members.into_iter(),
             lexical: None,
@@ -183,6 +186,22 @@ impl Query {
             terms: HashMap::default(),
         };
         let term = Scratch::default().infer(&mut source, prefix)?;
+        // Only completed canonical annotations carry this result. Partial
+        // prefixes keep their original inference graph and pending proofs.
+        let normalized_prefix = source
+            .facts
+            .node(prefix)
+            .and_then(|node| node.ty)
+            .filter(|ty| source.facts.types.contains_projections(*ty) == Some(true));
+        if let Some(ty) = normalized_prefix {
+            source
+                .infer
+                .apply_normalization(&mut source.facts.types, term, ty)
+                .map_err(|error| {
+                    Declarations::error(report, key, applicability::inference(error))
+                })?;
+        }
+
         let [bound, lexical] = trait_groups(
             report,
             source.facts,
@@ -199,6 +218,7 @@ impl Query {
         Ok(Self {
             prefix: source.infer,
             term,
+            normalized_prefix,
             mode: Mode::Trait { bound: !object },
             members: bound.into_iter(),
             lexical: Some(lexical),
@@ -289,6 +309,13 @@ impl Query {
         let prefix = context
             .import(&facts.types, &mut self.prefix, self.term)
             .map_err(applicability::inference)?;
+        if let Some(ty) = self.normalized_prefix {
+            // A disposable candidate reuses only the completed type shape;
+            // its original conditions and the selected body still prove use.
+            context
+                .apply_normalization(&mut facts.types, prefix, ty)
+                .map_err(applicability::inference)?;
+        }
         let Some(conditions) = applicability::prepare(
             facts,
             &mut context,

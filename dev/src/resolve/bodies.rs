@@ -1,4 +1,5 @@
 //! Lexical traversal resolves uses in evaluation order and introduces local bindings.
+mod qualification_segments;
 use super::{
     index::{Context, Resolver},
     lookup::{Lookup, LookupMode},
@@ -299,16 +300,17 @@ impl Resolver<'_> {
                 else {
                     return Err(self.error(c, node, "qualified suffix requires parsed segments"));
                 };
-                self.facts.qualified_paths.insert(
-                    NodeKey { file: c.file, node },
-                    super::model::QualifiedPath {
-                        namespace: ns,
-                        scope: c.scope,
-                        ty,
-                        trait_path,
-                        suffix: segments.iter().copied().zip(names).collect(),
-                    },
-                );
+                let qualified = super::model::QualifiedPath {
+                    namespace: ns,
+                    scope: c.scope,
+                    ty,
+                    trait_path,
+                    suffix: segments.iter().copied().zip(names).collect(),
+                };
+                let qualified = self.projected_qualified_path(c, node, qualified)?;
+                self.facts
+                    .qualified_paths
+                    .insert(NodeKey { file: c.file, node }, qualified);
                 self.visit(c, ty, Namespace::Type)?;
                 self.optional(c, trait_path, Namespace::Type)?;
                 // Associated suffixes are selected from typed receiver/trait facts later.
@@ -571,7 +573,7 @@ impl Resolver<'_> {
         let found = self.primitive_reference(found, absolute, path.view(), ns);
         let target = self.target(c, node, &found, ns)?;
         if let Lookup::Associated(owner, start) | Lookup::Member(_, owner, start) = found {
-            self.associated_path(c, node, start, &path, ns, owner)?;
+            self.associated_path(c, node, start, (absolute, path.view()), ns, owner)?;
         }
         self.record_availability(
             NodeKey { file: c.file, node },
@@ -691,7 +693,7 @@ impl Resolver<'_> {
         c: Context,
         node: NodeId,
         start: usize,
-        names: &[crate::support::names::NameId],
+        (absolute, names): (bool, super::paths::Identified<'_>),
         namespace: Namespace,
         owner: DefId,
     ) -> Result<(), Error> {
@@ -707,20 +709,21 @@ impl Resolver<'_> {
         if segments.len() != names.len() || start >= names.len() {
             return Err(self.error(c, node, "invalid associated path suffix"));
         }
-        self.facts.associated_paths.insert(
-            NodeKey { file: c.file, node },
-            super::model::AssociatedPath {
-                owner,
-                namespace,
-                scope: c.scope,
-                prefix,
-                suffix: segments[start..]
-                    .iter()
-                    .copied()
-                    .zip(names[start..].iter().copied())
-                    .collect(),
-            },
-        );
+        let path = super::model::AssociatedPath {
+            owner,
+            namespace,
+            scope: c.scope,
+            prefix,
+            suffix: segments[start..]
+                .iter()
+                .copied()
+                .zip(names[start..].iter().copied())
+                .collect(),
+        };
+        let path = self.projected_value_path(c, node, (absolute, names), path)?;
+        self.facts
+            .associated_paths
+            .insert(NodeKey { file: c.file, node }, path);
         Ok(())
     }
     pub(super) fn lifetime(

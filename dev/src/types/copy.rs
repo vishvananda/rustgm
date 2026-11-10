@@ -317,6 +317,35 @@ impl Copies {
             _ => Properties::BOTH,
         })
     }
+    /// Read an opaque normal form's declared and exact caller abilities.
+    /// Its caller has already retained formation of all projection inputs;
+    /// an absent Copy/Clone promise remains false, never an inferred grant.
+    pub(in crate::types) fn opaque_result(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+    ) -> Result<Properties, &'static str> {
+        let Some(Kind::Projection(application)) = types.kind(ty) else {
+            return Err("opaque Copy result requires an associated projection");
+        };
+        let assumed = self
+            .scope
+            .as_mut()
+            .and_then(|scope| {
+                scope
+                    .environment
+                    .as_ref()
+                    .map(|environment| environment.assumed_with(types, ty, &mut scope.builtins))
+            })
+            .transpose()?;
+        let mut result = self.projected_copies(types, application.item, true)?;
+        if let Some(properties) = assumed {
+            result.copy |= properties.copy;
+            result.clone_ |= properties.clone_;
+        }
+        Ok(result)
+    }
+
     fn projected_copies(
         &self,
         types: &Store,

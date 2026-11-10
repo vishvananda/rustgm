@@ -1,0 +1,156 @@
+{
+  "schema": 1,
+  "owner": "pa20 associated constants through projected type prefixes",
+  "contract": "All expected outcomes declared before independent execution, implementation and text generation. Nested generic/Self projected constant shorthand must preserve the same selected identity, full owner arguments, defaults/override, parent formation, lifetime and complete body/native proof as explicit qualification. Ambiguity, missing bound, wrong arguments, member arguments and static escape remain rejections. No rendering/reparsing of paths.",
+  "inputs": [
+    {
+      "path": "pa20/tests/spec/projected-values/nested-shorthand.rs",
+      "sha256": "15d7e00edb4a818fd0dc2965cc1ac649c96958d094559ea1c61a017ecd2c9bdc",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/nested-qualified.rs",
+      "sha256": "de84d0c3733df74c239aefd6a413f1bfaa8f99683003db6b491c49f1a28cdbb6",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/self-shorthand.rs",
+      "sha256": "3bb574c3281a72fd880003b903729503e57f5d86094511398ed798217252269d",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/self-qualified.rs",
+      "sha256": "065a64b12b32ad84a6d0889eda58f169fc2cc8ce5e8c86d9395cc4fdba737b8f",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/direct-control.rs",
+      "sha256": "15fc7a5ed0fc63d236edf1101a554c92a114916576e2875e12793e3dfe054f46",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/defaults-overrides.rs",
+      "sha256": "4ff11a30ed4a4c9b6e6af30920b60fae63d31b054f020a646999971ef258d755",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/supertrait.rs",
+      "sha256": "a3d350971357f50866b113ed2d32201f50b5a63739bac7d29bb20f79a3fd87a0",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/mixed-arguments.rs",
+      "sha256": "c62635714d190f1ee917576f39df87d2dd626ec4e02293da403666a9c7bb3ac0",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/deep-chain.rs",
+      "sha256": "fe9f8e536c80dcb52eae9f5bbe8de4323080de9f468893341b6161c7d26d4579",
+      "exit_status": 1
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/borrowed-result.rs",
+      "sha256": "5111a9ca7dfbdee2874497b75dd20daa5a2ff2971c97c2b63ebbf9c46db3c3d4",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/ambiguous-constants.rs",
+      "sha256": "fd3cf9a024a9dd4b854a0dfc647be9ced310e8011a0a7efc0d264fd475f39c82",
+      "exit_status": 1
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/missing-result-bound.rs",
+      "sha256": "3faa3399780a209950264bb75788dea454fd62aa04903d55c098f425f5c56046",
+      "exit_status": 1
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/wrong-trait-arguments.rs",
+      "sha256": "5b036fd2ea426e7ead66befe133fe87f8e9220b194b8defbad57f40b280bcbc7",
+      "exit_status": 1
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/member-arguments.rs",
+      "sha256": "8839a81a72165b29d0e2662a4267e3147495af6ab6dcf5c1518d79a518fe2274",
+      "exit_status": 1
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/static-escape.rs",
+      "sha256": "0e284dba346b506a3b21ee90513c70d7c9ded154d66b02b8777c0644bff49ea6",
+      "exit_status": 1
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/width-8-noise-0.rs",
+      "sha256": "20174afe98af6f29c7a2a050d8375097d28fcdfd92db322d1cfbdb9b0bf896fe",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/width-8-noise-128.rs",
+      "sha256": "78bb428d885eaaf084fd3281dcfa200552d25ebea0627302d16224911614381a",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/width-32-noise-0.rs",
+      "sha256": "36edd0b985d781736a929cc90bffac3e9e95784333430bab827996f1ff017c49",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/width-32-noise-128.rs",
+      "sha256": "55f5a6dbc4dd4eba7a6eae26557f66a0b9ac002cd28bc88e6ea3da3095680c60",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/width-128-noise-0.rs",
+      "sha256": "8759ebbc653013b616e3c21706f65eb94e15cc9ae9c4c1735607cc9533ae1afa",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/width-128-noise-128.rs",
+      "sha256": "a48d8e74714f2ff9bd120ff768614fa1595b8d41a28ca7ad4331b029eab893fa",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/deep-qualified.rs",
+      "sha256": "c2d5542a25149f4129d714a4c3118b4937173eea2b8d806cbd91bda55fd9f2ae",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/noncopy-prefix.rs",
+      "sha256": "fa312d9aeb6d2c48af6ea189b0e3ed608797de82105c87b8994fb6f16d300473",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/enum-prefix.rs",
+      "sha256": "11f9c7d3182242385706df510ad0dffabaeb4f6862cc6236d69b0bca6537c0cd",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/inherent-prefix.rs",
+      "sha256": "a88a0d6c190023d7488d4fb6844f29b0decc7489d8bf50ccf995b4332b7dd421",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/primitive-prefix.rs",
+      "sha256": "62544e3de3d540a3f75c8042e0c0c673e5cf3a3045070500cd01c72c39e6a502",
+      "exit_status": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-values/hidden-trait.rs",
+      "sha256": "d3f93e1d832071f6ad52dcfdde39dccbcf98e573461f857052ce4edf6494aeed",
+      "exit_status": 1
+    }
+  ],
+  "scaling": {
+    "widths": [
+      8,
+      32,
+      128
+    ],
+    "unrelated_types": [
+      0,
+      128
+    ],
+    "invariant": "At most4x+256 inference/canonical work per fourfold site count; unrelated declarations add no inference or canonical work. Active AST identities are preserved by noise after main."
+  },
+  "prediction_revision": "Independent Rust1.98 rejects the original second shorthand type projection T::Int::Repr::ZERO as E0223. Original source bytes and failed positive prediction are retained; deep-chain is a negative boundary, and explicit intermediate type qualification is the added positive. No implementation or oracle existed before this correction.",
+  "scaling_revision": "The first width packet equated Int=u8, which eliminated the opaque lookup path. Original sources are retained under obj/parallel/projected-constants/opaque-scaling-revision. These still-positive controls now retain generic opaque Int and read a fixed u8 result, exercising the changed path. Native expectations stay identical."
+}

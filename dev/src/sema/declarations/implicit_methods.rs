@@ -165,7 +165,15 @@ impl Checker<'_> {
                 node: path.prefix,
                 ..key
             },
-            owner: Some(path.owner),
+            owner: (!self
+                .report
+                .resolution
+                .associated_paths
+                .contains_key(&NodeKey {
+                    node: path.prefix,
+                    ..key
+                }))
+            .then_some(path.owner),
             suffix: NodeKey {
                 node: path.suffix[0].0,
                 ..key

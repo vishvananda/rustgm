@@ -32,13 +32,22 @@ impl Checker<'_> {
                 let [(suffix, name)] = path.suffix.as_slice() else {
                     return None;
                 };
-                if !matches!(
-                    self.report.resolution.definitions[path.owner.0 as usize].kind,
-                    DefKind::Primitive | DefKind::TypeAlias | DefKind::SelfType
-                ) {
+                if self.projected_method_prefix(key).is_none()
+                    && !matches!(
+                        self.report.resolution.definitions[path.owner.0 as usize].kind,
+                        DefKind::Primitive | DefKind::TypeAlias | DefKind::SelfType
+                    )
+                {
                     return None;
                 }
-                (path.prefix, *suffix, *name, Some(path.owner))
+                (
+                    path.prefix,
+                    *suffix,
+                    *name,
+                    self.projected_method_prefix(key)
+                        .is_none()
+                        .then_some(path.owner),
+                )
             };
         let member = match self.report.package.names.get(name) {
             "MAX" => Member::Max,

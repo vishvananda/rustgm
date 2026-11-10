@@ -66,6 +66,18 @@ impl Query {
             let value = match term.value {
                 Value::Variable(_) => Possible::UNKNOWN,
                 Value::Known(ty) => self.known(store, definitions, selected, ty)?,
+                Value::Construct(Constructor::Projection(_))
+                    if context.opaque_projection(id).is_some() =>
+                {
+                    let ty = context
+                        .opaque_projection(id)
+                        .ok_or("missing completed candidate projection")?;
+                    Possible {
+                        ty: Some(ty),
+                        abilities: self.copies.opaque_result(store, ty)?,
+                        sized: self.shapes.normalized(store, ty)?.sized,
+                    }
+                }
                 Value::Construct(Constructor::Projection(_)) => match context.resolved(store, id) {
                     Err(Error::Unresolved) => Possible::UNKNOWN,
                     Ok(_) => {

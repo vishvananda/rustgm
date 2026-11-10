@@ -26,8 +26,14 @@ impl Checker<'_> {
     fn implicit_projection_path(&self, key: NodeKey) -> Result<Option<Path>, Error> {
         let (prefix, owner, suffix) =
             if let Some(path) = self.report.resolution.associated_paths.get(&key) {
-                if path.namespace != Namespace::Type || path.suffix.len() != 1 {
+                if path.namespace != Namespace::Type {
                     return Ok(None);
+                }
+                if path.suffix.len() != 1 {
+                    return Err(self.error(
+                        key,
+                        "ambiguous shorthand associated type; qualify the intermediate type",
+                    ));
                 }
                 (
                     NodeKey {

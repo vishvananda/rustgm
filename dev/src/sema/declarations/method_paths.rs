@@ -48,6 +48,14 @@ impl Checker<'_> {
             self.schedule_method_prefix(prefix, None, context, steps, limit, scan)?;
             return Ok(true);
         }
+        if let Some(prefix) = self.projected_method_prefix(key) {
+            if self.completed_method_path(key) {
+                return Ok(true);
+            }
+            self.work.push(Work::MethodPrefix(key, context));
+            self.schedule_method_prefix(prefix, None, context, steps, limit, scan)?;
+            return Ok(true);
+        }
         if self.schedule_slice_alias(key, context, steps, limit, scan)? {
             return Ok(true);
         }
@@ -167,27 +175,71 @@ impl Checker<'_> {
         })
     }
 
-    fn explicit_method_path(&self, key: NodeKey) -> Option<Path> {
-        let path = self.report.resolution.qualified_paths.get(&key)?;
-        if path.namespace != Namespace::Value || path.trait_path.is_some() || path.suffix.len() != 1
-        {
+    pub(super) fn projected_method_prefix(&self, key: NodeKey) -> Option<NodeKey> {
+        let path = self.report.resolution.associated_paths.get(&key)?;
+        if path.namespace != Namespace::Value || path.suffix.len() != 1 {
             return None;
         }
         let prefix = NodeKey {
-            node: path.ty,
+            node: path.prefix,
             ..key
         };
-        let suffix = NodeKey {
-            node: path.suffix[0].0,
-            ..key
-        };
-        let (name, scope, namespace) = (path.suffix[0].1, path.scope, path.namespace);
-        let head = self.inherent_prefix_head(prefix)?;
+        (self
+            .report
+            .resolution
+            .associated_paths
+            .get(&prefix)
+            .is_some_and(|path| path.namespace == Namespace::Type)
+            || self
+                .report
+                .resolution
+                .qualified_paths
+                .get(&prefix)
+                .is_some_and(|path| path.namespace == Namespace::Type))
+        .then_some(prefix)
+    }
+
+    fn explicit_method_path(&self, key: NodeKey) -> Option<Path> {
+        let (prefix, suffix, name, scope, namespace) =
+            if let Some(path) = self.report.resolution.qualified_paths.get(&key) {
+                if path.namespace != Namespace::Value
+                    || path.trait_path.is_some()
+                    || path.suffix.len() != 1
+                {
+                    return None;
+                }
+                (
+                    NodeKey {
+                        node: path.ty,
+                        ..key
+                    },
+                    NodeKey {
+                        node: path.suffix[0].0,
+                        ..key
+                    },
+                    path.suffix[0].1,
+                    path.scope,
+                    path.namespace,
+                )
+            } else {
+                let prefix = self.projected_method_prefix(key)?;
+                let path = self.report.resolution.associated_paths.get(&key)?;
+                (
+                    prefix,
+                    NodeKey {
+                        node: path.suffix[0].0,
+                        ..key
+                    },
+                    path.suffix[0].1,
+                    path.scope,
+                    path.namespace,
+                )
+            };
         Some(Path {
             prefix,
             suffix,
             owner: None,
-            head,
+            head: self.inherent_prefix_head(prefix)?,
             name,
             scope,
             namespace,

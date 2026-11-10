@@ -93,13 +93,20 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         if matches!(
             kind,
-            Kind::Path { .. } | Kind::Applied { .. } | Kind::Qualified { .. }
+            Kind::Path { .. } | Kind::Applied { .. } | Kind::Qualified { .. } | Kind::Name(..)
         ) && (self.schedule_inherent_type(key, context)?
             || self.schedule_implicit_projection(key, context)?)
         {
             return Ok(());
         }
-        if matches!(kind, Kind::Qualified { .. }) {
+        if matches!(kind, Kind::Qualified { .. })
+            || self
+                .report
+                .resolution
+                .qualified_paths
+                .get(&key)
+                .is_some_and(|path| path.namespace == crate::resolve::model::Namespace::Type)
+        {
             return self.schedule_projection_path(key, context);
         }
         if let Kind::FunctionType(_) = kind {
